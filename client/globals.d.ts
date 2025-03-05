@@ -20,6 +20,10 @@ declare global {
 			paymentTimeline: boolean;
 			isDisputeIssuerEvidenceEnabled: boolean;
 			isPaymentOverviewWidgetEnabled?: boolean;
+			/**
+			 * The development feature flag for the merchant feedback prompt. See issue #10323.
+			 */
+			isMerchantFeedbackPromptDevFlagEnabled: boolean;
 			multiCurrency?: boolean;
 		};
 		accountFees: Record< string, any >;
@@ -74,6 +78,16 @@ declare global {
 			fraudProtection: {
 				declineOnAVSFailure: boolean;
 				declineOnCVCFailure: boolean;
+			};
+			/**
+			 * Campaigns are temporary flags that are used to enable/disable features for a limited time.
+			 */
+			campaigns: {
+				/**
+				 * The flag for the WordPress.org merchant review campaign in 2025.
+				 * Eligibility is determined per-account on transact-platform-server.
+				 */
+				wporgReview2025: boolean;
 			};
 		} >;
 		accountLoans: {
@@ -230,6 +244,10 @@ declare global {
 		siteTitle: string;
 	};
 
+	const wcpayPluginSettings: {
+		exitSurveyLastShown: string | null;
+	};
+
 	interface WcSettings {
 		ece_data?: WCPayExpressCheckoutParams;
 		woocommerce_payments_data: typeof wcpaySettings;
@@ -250,5 +268,6 @@ declare global {
 		wc: typeof wc;
 		wcTracks: typeof wcTracks;
 		wcSettings: typeof wcSettings;
+		wcpayPluginSettings?: typeof wcpayPluginSettings;
 	}
 }
