@@ -73,7 +73,6 @@ if ( ! $is_autoloading_ready ) {
 	return;
 }
 
-
 /**
  * Initialize the Jetpack functionalities: connection, identity crisis, etc.
  *
@@ -86,29 +85,26 @@ function wcpay_jetpack_init() {
 	if ( ! wcpay_check_old_jetpack_version() ) {
 		return;
 	}
-	$connection_version = Automattic\Jetpack\Connection\Package_Version::PACKAGE_VERSION;
-
-	$custom_content = version_compare( $connection_version, '6.1.0', '>' ) ?
-		'wcpay_get_jetpack_idc_custom_content' :
-		wcpay_get_jetpack_idc_custom_content();
+	// Always use the actual array result instead of conditionally passing function name or result
+	$custom_content = wcpay_get_jetpack_idc_custom_content();
 
 	$jetpack_config = new Automattic\Jetpack\Config();
 	$jetpack_config->ensure(
 		'connection',
-		[
+		array(
 			'slug' => 'woocommerce-payments',
 			'name' => 'WooPayments',
-		]
+		)
 	);
 	$jetpack_config->ensure(
 		'identity_crisis',
-		[
+		array(
 			'slug'          => 'woocommerce-payments',
 			'customContent' => $custom_content,
 			'logo'          => plugins_url( 'assets/images/logo.svg', WCPAY_PLUGIN_FILE ),
 			'admin_page'    => '/wp-admin/admin.php?page=wc-admin',
 			'priority'      => 5,
-		]
+		)
 	);
 
 	// When only WooPayments is active, minimize the data to send back to WPCOM, tied to merchant's privacy settings.
@@ -116,23 +112,23 @@ function wcpay_jetpack_init() {
 		'sync',
 		array_merge_recursive(
 			\Automattic\Jetpack\Sync\Data_Settings::MUST_SYNC_DATA_SETTINGS,
-			[
+			array(
 				'jetpack_sync_modules'           =>
-					[
+					array(
 						'Automattic\Jetpack\Sync\Modules\Full_Sync_Immediately',
 						'Automattic\Jetpack\Sync\Modules\Options',
 						'Automattic\Jetpack\Sync\Modules\Posts',
 						'Automattic\Jetpack\Sync\Modules\Meta',
-					],
+					),
 				'jetpack_sync_options_whitelist' =>
-					[
+					array(
 						'active_plugins',
 						'blogdescription',
 						'blogname',
 						'timezone_string',
 						'gmt_offset',
-					],
-			]
+					),
+			)
 		)
 	);
 
@@ -217,11 +213,11 @@ if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 
 			// Check if specified $plugin_name is in the process of being activated via the WP CLI.
 			if ( defined( 'WP_CLI' ) && WP_CLI && isset( $GLOBALS['argv'] ) ) {
-				$expected_arguments = [
+				$expected_arguments = array(
 					'plugin',
 					'activate',
 					$plugin_name,
-				];
+				);
 				if ( array_intersect( $expected_arguments, $GLOBALS['argv'] ) === $expected_arguments ) {
 					return true;
 				}
@@ -310,7 +306,7 @@ function wcpay_show_old_jetpack_notice() {
  * @return array
  */
 function wcpay_get_jetpack_idc_custom_content(): array {
-	$custom_content = [
+	$custom_content = array(
 		'headerText'                => __( 'Safe Mode', 'woocommerce-payments' ),
 		'mainTitle'                 => __( 'Safe Mode activated', 'woocommerce-payments' ),
 		'mainBodyText'              => sprintf(
@@ -344,13 +340,16 @@ function wcpay_get_jetpack_idc_custom_content(): array {
 			__( '%s Safe Mode', 'woocommerce-payments' ),
 			'WooPayments'
 		),
+		// New fields added to support staging sites (added in PR #37023)
+		'stayInSafeModeButtonLabel' => __( 'Stay in Safe Mode', 'woocommerce-payments' ),
+		'safeModeTitle'             => __( 'Stay in Safe Mode', 'woocommerce-payments' ),
 		'dynamicSiteUrlText'        => sprintf(
 			/* translators: %s: WooPayments. */
 			__( "<strong>Notice:</strong> It appears that your 'wp-config.php' file might be using dynamic site URL values. Dynamic site URLs could cause %s to enter Safe Mode. <dynamicSiteUrlSupportLink>Learn how to set a static site URL.</dynamicSiteUrlSupportLink>", 'woocommerce-payments' ),
 			'WooPayments'
 		),
 		'dynamicSiteUrlSupportLink' => 'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/safe-mode/#dynamic-site-urls',
-	];
+	);
 
 	$urls = Automattic\Jetpack\Identity_Crisis::get_mismatched_urls();
 	if ( false !== $urls ) {
@@ -377,10 +376,42 @@ function wcpay_get_jetpack_idc_custom_content(): array {
 			'WooPayments'
 		);
 
+		// Regular "Start Fresh" card body text - used for non-development sites
 		$custom_content['startFreshCardBodyText'] = sprintf(
 			/* translators: %1$s: The current site domain name. %2$s: The original site domain name. Please keep hostname tags in your translation so that they can be formatted properly. %3$s: WooPayments. */
 			__(
 				'Create a new connection to %3$s for <hostname>%1$s</hostname>. You’ll have to re-verify your business details to begin accepting payments. Your <hostname>%2$s</hostname> connection will remain as is.',
+				'woocommerce-payments'
+			),
+			$current_url,
+			$wpcom_url,
+			'WooPayments'
+		);
+
+		// Add custom content for the development/staging site version of the Start Fresh card
+		// This is used when isDevelopmentSite is true
+		$custom_content['startFreshCardBodyTextDev'] = sprintf(
+			/* translators: %1$s: The current site domain name. %2$s: The original site domain name. %3$s: WooPayments. */
+			__(
+				'<p><strong>Recommended for</strong></p>' .
+				'<list><item>development sites</item><item>sites that need access to all %3$s features</item></list>' .
+				'<p><strong>Please note</strong> that creating a fresh connection for <hostname>%1$s</hostname> would require restoring the connection on <hostname>%2$s</hostname> if that site is cloned back to production. ' .
+				'<safeModeLink>Learn more</safeModeLink>.</p>',
+				'woocommerce-payments'
+			),
+			$current_url,
+			$wpcom_url,
+			'WooPayments'
+		);
+
+		// Add custom content for the Safe Mode card in development sites
+		$custom_content['safeModeCardBodyText'] = sprintf(
+			/* translators: %1$s: The current site domain name. %2$s: The original site domain name. %3$s: WooPayments. */
+			__(
+				'<p><strong>Recommended for</strong></p>' .
+				'<list><item>short-lived test sites</item><item>sites that will be cloned back to production after testing</item></list>' .
+				'<p><strong>Please note</strong> that staying in Safe mode will disable some %3$s features, including security features such as SSO, firewall, and site monitor. ' .
+				'<safeModeLink>Learn more</safeModeLink>.</p>',
 				'woocommerce-payments'
 			),
 			$current_url,
