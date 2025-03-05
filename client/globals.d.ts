@@ -182,14 +182,11 @@ declare global {
 			stripe_key: string;
 			title: string;
 			description: string;
-			capabilities: string[];
+			settings_icon_url: string;
 			currencies: string[];
-			countries: string[];
 			allows_manual_capture: boolean;
 			allows_pay_later: boolean;
 			accepts_only_domestic_payment: boolean;
-			settings_icon_url: string;
-			icons: PaymentMethodIcons;
 		}
 	>;
 
