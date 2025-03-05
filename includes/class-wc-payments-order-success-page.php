@@ -445,7 +445,7 @@ class WC_Payments_Order_Success_Page {
 					<td class="td">
 						<table cellpadding="6">
 							<tr>
-								<td rowspan="2" style="padding: 0 5px 0 0;'">
+								<td rowspan="2" style="padding: 0 5px 0 0;">
 									<div
 										style="background-color: #f6f7f7; border: 1px solid rgba( 109, 109, 109, 0.16 ); border-radius: 4px; box-sizing: border-box; padding: 10px;">
 										<img style="margin: 0; height: 35px; width: 35px;"
