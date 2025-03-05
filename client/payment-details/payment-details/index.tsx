@@ -18,6 +18,7 @@ import PaymentTransactionBreakdown from '../transaction-breakdown';
 import { ApiError } from '../../types/errors';
 import { Charge } from '../../types/charges';
 import { PaymentIntent } from '../../types/payment-intents';
+import { MaybeShowMerchantFeedbackPrompt } from '../../merchant-feedback-prompt';
 
 interface PaymentDetailsProps {
 	id: string;
@@ -57,6 +58,7 @@ const PaymentDetails: React.FC< PaymentDetailsProps > = ( {
 
 	return (
 		<Page maxWidth={ 1032 } className="wcpay-payment-details">
+			<MaybeShowMerchantFeedbackPrompt />
 			<TestModeNotice currentPage="payments" isDetailsView={ true } />
 			<ErrorBoundary>
 				<PaymentDetailsSummary

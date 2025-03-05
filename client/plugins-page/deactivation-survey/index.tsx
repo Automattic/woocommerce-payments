@@ -12,11 +12,20 @@ import './style.scss';
 import Loadable from 'wcpay/components/loadable';
 import WooPaymentsIcon from 'assets/images/woopayments.svg?asset';
 
-const PluginDisableSurvey = ( { onRequestClose } ) => {
+interface PluginDisableSurveyProps {
+	/**
+	 * Callback to close the modal.
+	 */
+	onRequestClose: () => void;
+}
+const PluginDisableSurvey = ( {
+	onRequestClose,
+}: PluginDisableSurveyProps ) => {
 	const [ isLoading, setIsLoading ] = useState( true );
 
 	return (
 		<Modal
+			// @ts-expect-error - The Modal component expects a string but we're intentionally using a React element.
 			title={
 				<img
 					src={ WooPaymentsIcon }
