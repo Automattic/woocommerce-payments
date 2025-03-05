@@ -69,6 +69,7 @@ use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\Payment_Methods\Grabpay_Payment_Method;
 use WCPay\Payment_Methods\Wechatpay_Payment_Method;
+use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 
 /**
  * Gateway class for WooPayments
@@ -1691,7 +1692,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							$payment_needed ? 'pi' : 'si',
 							$order_id,
 							$client_secret,
-							wp_create_nonce( 'wcpay_update_order_status_nonce' )
+							wp_create_nonce( 'wcpay_update_order_status_nonce' ),
 						),
 						// Include the payment method ID so the Blocks integration can save cards.
 						'payment_method' => $payment_information->get_payment_method(),
@@ -3987,6 +3988,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$available_methods[] = Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Grabpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Wechatpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+
+		// This gets all the registered payment method definitions. As new payment methods are converted from the legacy style, they need to be removed from the list above.
+		$payment_method_definitions = PaymentMethodDefinitionRegistry::instance()->get_all_payment_method_definitions();
+
+		foreach ( $payment_method_definitions as $definition_class ) {
+			$available_methods[] = $definition_class::get_id();
+		}
 
 		$available_methods = array_values(
 			apply_filters(

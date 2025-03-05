@@ -19,6 +19,7 @@ import { __ } from '@wordpress/i18n';
  */
 import { recordEvent } from 'wcpay/tracks';
 import { NegativeFeedbackModal } from './negative-modal';
+import { useMerchantFeedbackPromptState } from './hooks';
 import './style.scss';
 
 /**
@@ -203,12 +204,11 @@ const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
  * This is used to ensure the prompt is only rendered if the account is eligible for the campaign and the user has not dismissed the prompt.
  */
 export function MaybeShowMerchantFeedbackPrompt() {
-	// TODO: This is a temporary local state to track if the prompt has been dismissed. Move to a user-persistent state in #10329.
-	const [ hasUserDismissed, setHasUserDismissed ] = useState( false );
-
-	const isAccountEligible =
-		wcpaySettings?.featureFlags?.isMerchantFeedbackPromptDevFlagEnabled &&
-		wcpaySettings?.accountStatus?.campaigns?.wporgReview2025;
+	const {
+		isAccountEligible,
+		hasUserDismissedPrompt,
+		dismissPrompt,
+	} = useMerchantFeedbackPromptState();
 
 	const [
 		isNegativeFeedbackModalOpen,
@@ -223,13 +223,13 @@ export function MaybeShowMerchantFeedbackPrompt() {
 		);
 	}
 
-	if ( hasUserDismissed || ! isAccountEligible ) {
+	if ( hasUserDismissedPrompt || ! isAccountEligible ) {
 		return null;
 	}
 
 	return (
 		<MerchantFeedbackPrompt
-			dismissPrompt={ () => setHasUserDismissed( true ) }
+			dismissPrompt={ dismissPrompt }
 			showNegativeFeedbackModal={ () =>
 				setIsNegativeFeedbackModalOpen( true )
 			}
