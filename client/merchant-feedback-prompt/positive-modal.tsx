@@ -141,7 +141,7 @@ export const PositiveFeedbackModal: React.FC< PositiveFeedbackModalProps > = ( {
 				</Button>
 				<Button
 					variant="primary"
-					href="https://wordpress.org/support/plugin/woocommerce-payments/reviews/"
+					href="https://wordpress.org/support/plugin/woocommerce-payments/reviews/#new-post"
 					target="_blank"
 					onClick={ () => {
 						recordEvent(
