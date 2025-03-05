@@ -923,7 +923,7 @@ class WC_Payments {
 		} catch ( Exception $e ) {
 			if ( function_exists( 'wc_get_logger' ) ) {
 				$logger = wc_get_logger();
-				$logger->warning( 'Failed to order gateways: ' . $e->getMessage(), [ 'source' => 'woocommerce-payments' ] );
+				$logger->warning( 'Failed to order gateways: ' . $e->getMessage(), [ 'source' => 'woopayments' ] );
 			}
 			return $ordering;
 		}
