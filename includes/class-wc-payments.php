@@ -866,8 +866,8 @@ class WC_Payments {
 	}
 
 	/**
-	 * By default, new payment gateways are put at the bottom of the list on the admin "Payments" settings screen.
-	 * For visibility, we want WooPayments to be at the top of the list.
+	 * Sets WooPayments gateways at the beginning if not already in the ordering.
+	 * Sets WooPayments gateways after the main gateway if already in the ordering.
 	 *
 	 * @param array $ordering Existing ordering of the payment gateways.
 	 *
@@ -875,17 +875,58 @@ class WC_Payments {
 	 */
 	public static function set_gateway_top_of_list( $ordering ) {
 		try {
-			require_once __DIR__ . '/util/class-gateway-orderer.php';
+			$ordering                = (array) $ordering;
+			$woopayments_gateway_ids = self::get_woopayments_gateway_ids();
+			$main_gateway_id         = self::get_gateway()->id;
+			$new_ordering            = [];
 
-			if ( class_exists( 'WC_Pay_Gateway_Orderer' ) ) {
-				$gateway_orderer = new WC_Pay_Gateway_Orderer( $ordering, self::get_woopayments_gateway_ids(), self::get_gateway()->id );
-				return $gateway_orderer->order_gateways();
+			// If gateway is not in the ordering, add all WooPayments gateways at the beginning.
+			if ( ! isset( $ordering[ $main_gateway_id ] ) || ! is_numeric( $ordering[ $main_gateway_id ] ) ) {
+				$index          = 0;
+				$start_position = empty( $ordering ) ? 0 : ( min( $ordering ) - count( $woopayments_gateway_ids ) );
+
+				// Add all WooPayments gateways at the beginning.
+				foreach ( $woopayments_gateway_ids as $gateway_id ) {
+					$new_ordering[ $gateway_id ] = $start_position + $index++;
+				}
+
+				// Add all other gateways after WooPayments gateways.
+				foreach ( $ordering as $gateway_id => $position ) {
+					if ( ! in_array( $gateway_id, $woopayments_gateway_ids, true ) ) {
+						$new_ordering[ $gateway_id ] = $position;
+					}
+				}
+			} else {
+				$index                 = 0;
+				$main_gateway_position = $ordering[ $main_gateway_id ];
+
+				// Add gateways that come before the main gateway.
+				foreach ( $ordering as $gateway_id => $position ) {
+					if ( $position < $main_gateway_position && ! in_array( $gateway_id, $woopayments_gateway_ids, true ) ) {
+						$new_ordering[ $gateway_id ] = $index++;
+					}
+				}
+
+				// Add WooPayments gateways.
+				foreach ( $woopayments_gateway_ids as $gateway_id ) {
+					$new_ordering[ $gateway_id ] = $index++;
+				}
+
+				// Add gateways that come after the main gateway.
+				foreach ( $ordering as $gateway_id => $position ) {
+					if ( $position > $main_gateway_position && ! in_array( $gateway_id, $woopayments_gateway_ids, true ) ) {
+						$new_ordering[ $gateway_id ] = $index++;
+					}
+				}
 			}
+
+			return $new_ordering;
 		} catch ( Exception $e ) {
 			if ( function_exists( 'wc_get_logger' ) ) {
 				$logger = wc_get_logger();
-				$logger->warning( 'Failed to use Gateway Orderer: ' . $e->getMessage(), [ 'source' => 'woocommerce-payments' ] );
+				$logger->warning( 'Failed to order gateways: ' . $e->getMessage(), [ 'source' => 'woocommerce-payments' ] );
 			}
+			return $ordering;
 		}
 	}
 
