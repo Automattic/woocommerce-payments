@@ -18,6 +18,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { recordEvent } from 'wcpay/tracks';
+import { PositiveFeedbackModal } from './positive-modal';
 import './style.scss';
 
 /**
@@ -54,6 +55,8 @@ const WCFooterPortal = ( { children }: { children: React.ReactNode } ) => {
 interface MerchantFeedbackPromptProps {
 	/** A function to be called when the user dismisses the prompt and it is to be removed. */
 	dismissPrompt: () => void;
+	/** A function to be called when the user clicks the "Yes" button and the positive feedback modal is to be shown. */
+	showPositiveFeedbackModal: () => void;
 }
 
 /**
@@ -64,6 +67,7 @@ interface MerchantFeedbackPromptProps {
  */
 const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
 	dismissPrompt,
+	showPositiveFeedbackModal,
 } ) => {
 	// Get the core notices, which we'll use to ensure we're not rendering the prompt if there are other notices being displayed.
 	const coreNotices = useSelect(
@@ -113,6 +117,7 @@ const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
 											recordEvent(
 												'wcpay_merchant_feedback_prompt_yes_click'
 											);
+											showPositiveFeedbackModal();
 											dismissPrompt();
 										} }
 									>
@@ -201,6 +206,19 @@ export function MaybeShowMerchantFeedbackPrompt() {
 	// TODO: This is a temporary local state to track if the prompt has been dismissed. Move to a user-persistent state in #10329.
 	const [ hasUserDismissed, setHasUserDismissed ] = useState( false );
 
+	const [
+		isPositiveFeedbackModalOpen,
+		setIsPositiveFeedbackModalOpen,
+	] = useState( true );
+
+	if ( isPositiveFeedbackModalOpen ) {
+		return (
+			<PositiveFeedbackModal
+				onRequestClose={ () => setIsPositiveFeedbackModalOpen( false ) }
+			/>
+		);
+	}
+
 	const isAccountEligible =
 		wcpaySettings?.featureFlags?.isMerchantFeedbackPromptDevFlagEnabled &&
 		wcpaySettings?.accountStatus?.campaigns?.wporgReview2025;
@@ -212,6 +230,9 @@ export function MaybeShowMerchantFeedbackPrompt() {
 	return (
 		<MerchantFeedbackPrompt
 			dismissPrompt={ () => setHasUserDismissed( true ) }
+			showPositiveFeedbackModal={ () =>
+				setIsPositiveFeedbackModalOpen( true )
+			}
 		/>
 	);
 }
