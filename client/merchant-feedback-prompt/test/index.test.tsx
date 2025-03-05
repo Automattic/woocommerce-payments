@@ -31,6 +31,22 @@ jest.mock( 'wcpay/tracks', () => ( {
 	recordEvent: jest.fn(),
 } ) );
 
+// Mock the useUserPreferences hook
+let preferences = {
+	wc_payments_wporg_review_2025_prompt_dismissed: undefined,
+};
+jest.mock( '@woocommerce/data', () => {
+	return {
+		useUserPreferences: jest.fn( () => ( {
+			...preferences,
+			updateUserPreferences: jest.fn( ( newPrefs ) => {
+				preferences = { ...preferences, ...newPrefs };
+				return preferences;
+			} ),
+		} ) ),
+	};
+} );
+
 // Mock the wcpaySettings object
 declare const global: {
 	wcpaySettings: {
@@ -57,6 +73,11 @@ describe( 'MerchantFeedbackPrompt', () => {
 		( select as jest.Mock ).mockImplementation( () => ( {
 			getNotices: jest.fn().mockReturnValue( [] ),
 		} ) );
+
+		// Reset the preferences to the initial state
+		preferences = {
+			wc_payments_wporg_review_2025_prompt_dismissed: undefined,
+		};
 
 		// Mock the dev feature flag to be enabled
 		global.wcpaySettings = {
@@ -160,7 +181,8 @@ describe( 'MerchantFeedbackPrompt', () => {
 	} );
 
 	it( 'does not render after being dismissed', async () => {
-		render( <MaybeShowMerchantFeedbackPrompt /> );
+		// First render
+		const { rerender } = render( <MaybeShowMerchantFeedbackPrompt /> );
 
 		// Verify prompt is initially rendered
 		expect(
@@ -178,6 +200,9 @@ describe( 'MerchantFeedbackPrompt', () => {
 			'wcpay_merchant_feedback_prompt_dismiss'
 		);
 
+		// Re-render the component to verify it's no longer shown
+		rerender( <MaybeShowMerchantFeedbackPrompt /> );
+
 		// The prompt should no longer be rendered
 		expect(
 			screen.queryByText( 'Are you satisfied with WooPayments?' )
@@ -185,16 +210,22 @@ describe( 'MerchantFeedbackPrompt', () => {
 	} );
 
 	it( 'records event when Yes button is clicked', () => {
-		render( <MaybeShowMerchantFeedbackPrompt /> );
+		// First render
+		const { rerender } = render( <MaybeShowMerchantFeedbackPrompt /> );
 
 		// Click the Yes button
-		const yesButton = screen.getByText( 'Yes' );
+		const yesButton = screen.getByText( 'Yes', {
+			ignore: '.a11y-speak-region',
+		} );
 		fireEvent.click( yesButton );
 
 		// Expect the event to be recorded
 		expect( recordEvent ).toHaveBeenCalledWith(
 			'wcpay_merchant_feedback_prompt_yes_click'
 		);
+
+		// Re-render the component to verify it's no longer shown
+		rerender( <MaybeShowMerchantFeedbackPrompt /> );
 
 		// The prompt should no longer be rendered
 		expect(
@@ -203,16 +234,22 @@ describe( 'MerchantFeedbackPrompt', () => {
 	} );
 
 	it( 'records event when No button is clicked', () => {
-		render( <MaybeShowMerchantFeedbackPrompt /> );
+		// First render
+		const { rerender } = render( <MaybeShowMerchantFeedbackPrompt /> );
 
 		// Click the No button
-		const noButton = screen.getByText( 'No' );
+		const noButton = screen.getByText( 'No', {
+			ignore: '.a11y-speak-region',
+		} );
 		fireEvent.click( noButton );
 
 		// Expect the event to be recorded
 		expect( recordEvent ).toHaveBeenCalledWith(
 			'wcpay_merchant_feedback_prompt_no_click'
 		);
+
+		// Re-render the component to verify it's no longer shown
+		rerender( <MaybeShowMerchantFeedbackPrompt /> );
 
 		// The prompt should no longer be rendered
 		expect(
