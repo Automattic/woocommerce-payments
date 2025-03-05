@@ -46,6 +46,7 @@ use WCPay\Compatibility_Service;
 use WCPay\Duplicates_Detection_Service;
 use WCPay\Payment_Methods\Grabpay_Payment_Method;
 use WCPay\WC_Payments_Currency_Manager;
+use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 
 /**
  * Main class for the WooPayments extension. Its responsibility is to initialize the extension.
@@ -585,6 +586,15 @@ class WC_Payments {
 			Grabpay_Payment_Method::class,
 			Wechatpay_Payment_Method::class,
 		];
+
+		// Initialize and get payment method classes from the registry for those that have been converted.
+		$registry = PaymentMethodDefinitionRegistry::instance();
+		$registry->init();
+		$payment_method_definitions = $registry->get_all_payment_method_definitions();
+
+		foreach ( $payment_method_definitions as $definition_class ) {
+			$payment_method_classes[] = $definition_class::get_payment_method_class();
+		}
 
 		$payment_methods = [];
 		foreach ( $payment_method_classes as $payment_method_class ) {
