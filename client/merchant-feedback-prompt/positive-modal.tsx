@@ -47,7 +47,7 @@ export const PositiveFeedbackModal: React.FC< PositiveFeedbackModalProps > = ( {
 		>
 			<p>
 				{ __(
-					'Thanks for sharing your feedback on WooPayments! Would you mind leave us a quick review on WordPress.org?',
+					'Thanks for sharing your feedback on WooPayments! Would you mind leaving us a quick review on WordPress.org?',
 					'woocommerce-payments'
 				) }
 			</p>

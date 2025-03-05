@@ -209,7 +209,7 @@ export function MaybeShowMerchantFeedbackPrompt() {
 	const [
 		isPositiveFeedbackModalOpen,
 		setIsPositiveFeedbackModalOpen,
-	] = useState( true );
+	] = useState( false );
 
 	if ( isPositiveFeedbackModalOpen ) {
 		return (
