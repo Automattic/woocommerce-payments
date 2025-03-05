@@ -79,4 +79,7 @@ export type PayoutFailureCode =
 	| 'incorrect_account_type'
 	| 'incorrect_account_holder_details'
 	| 'bank_ownership_changed'
-	| 'exceeds_count_limit';
+	| 'exceeds_count_limit'
+	| 'incorrect_account_holder_address'
+	| 'incorrect_account_holder_tax_id'
+	| 'invalid_account_number_length';

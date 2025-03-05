@@ -134,4 +134,16 @@ export const payoutFailureMessages: Record< PayoutFailureCode, string > = {
 		'The selected card has exceeded its card usage frequency limit. Please switch to a different card or payment method. Contact the issuing bank for clarification.',
 		'woocommerce-payments'
 	),
+	incorrect_account_holder_address: __(
+		'Your bank notified us that the bank account holder address on file is incorrect.',
+		'woocommerce-payments'
+	),
+	incorrect_account_holder_tax_id: __(
+		'Your bank notified us that the bank account holder tax ID on file is incorrect.',
+		'woocommerce-payments'
+	),
+	invalid_account_number_length: __(
+		'Your bank notified us that the bank account number is too long.',
+		'woocommerce-payments'
+	),
 };
