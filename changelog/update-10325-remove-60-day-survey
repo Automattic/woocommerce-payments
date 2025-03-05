@@ -1,4 +1,4 @@
 Significance: minor
 Type: update
 
-Removed the admin note to take the 60 day survey.
+Remove the 60 day survey admin note, since it will be redundant after we add the reviews prompt. 
