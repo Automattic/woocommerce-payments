@@ -227,10 +227,6 @@ export default class WCPayAPI {
 						getConfig( 'ajaxUrl' );
 
 					const isChangingPayment = getConfig( 'isChangingPayment' );
-					console.log(
-						'Config source isChangingPayment:',
-						isChangingPayment
-					);
 
 					const ajaxCall = this.request( ajaxUrl, {
 						action: 'update_order_status',
@@ -242,7 +238,9 @@ export default class WCPayAPI {
 						should_save_payment_method: shouldSavePaymentMethod
 							? 'true'
 							: 'false',
-						is_changing_payment: isChangingPayment,
+						is_changing_payment: isChangingPayment
+							? 'true'
+							: 'false',
 					} );
 
 					return [ ajaxCall, result.error ];
