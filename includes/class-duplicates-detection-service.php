@@ -100,7 +100,6 @@ class Duplicates_Detection_Service {
 		$keywords = [
 			'bancontact' => Bancontact_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'sepa'       => Sepa_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-			'alipay'     => AlipayDefinition::get_id(),
 			'p24'        => P24_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'przelewy24' => P24_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'ideal'      => Ideal_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
