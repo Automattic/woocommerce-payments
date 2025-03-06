@@ -207,8 +207,6 @@ export default class WCPayAPI {
 			} );
 		};
 
-		const isChangingPayment = getConfig( 'isChangingPayment' );
-
 		return (
 			confirmPaymentOrSetup()
 				// ToDo: Switch to an async function once it works with webpack.
@@ -227,6 +225,12 @@ export default class WCPayAPI {
 					const ajaxUrl =
 						getExpressCheckoutConfig( 'ajax_url' ) ??
 						getConfig( 'ajaxUrl' );
+
+					const isChangingPayment = getConfig( 'isChangingPayment' );
+					console.log(
+						'Config source isChangingPayment:',
+						isChangingPayment
+					);
 
 					const ajaxCall = this.request( ajaxUrl, {
 						action: 'update_order_status',
