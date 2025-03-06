@@ -67,12 +67,6 @@ export function updateEnabledPaymentMethodIds( methodIds ) {
 	} );
 }
 
-export function updateAvailablePaymentMethodIds( methodIds ) {
-	return updateSettingsValues( {
-		available_payment_method_ids: [ ...methodIds ],
-	} );
-}
-
 export function updateIsSavingSettings( isSaving, error ) {
 	return {
 		type: ACTION_TYPES.SET_IS_SAVING_SETTINGS,
@@ -139,26 +133,6 @@ export function updateAccountStatementDescriptorKana(
 	} );
 }
 
-export function updateAccountBusinessName( accountBusinessName ) {
-	return updateSettingsValues( {
-		account_business_name: accountBusinessName,
-	} );
-}
-
-export function updateAccountBusinessURL( accountBusinessURL ) {
-	return updateSettingsValues( {
-		account_business_url: accountBusinessURL,
-	} );
-}
-
-export function updateAccountBusinessSupportAddress(
-	accountBusinessSupportAddress
-) {
-	return updateSettingsValues( {
-		account_business_support_address: accountBusinessSupportAddress,
-	} );
-}
-
 export function updateAccountBusinessSupportEmail(
 	accountBusinessSupportEmail
 ) {
@@ -172,12 +146,6 @@ export function updateAccountBusinessSupportPhone(
 ) {
 	return updateSettingsValues( {
 		account_business_support_phone: accountBusinessSupportPhone,
-	} );
-}
-
-export function updateAccountBrandingLogo( accountBrandingLogo ) {
-	return updateSettingsValues( {
-		account_branding_logo: accountBrandingLogo,
 	} );
 }
 
