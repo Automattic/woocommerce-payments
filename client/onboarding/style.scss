@@ -83,6 +83,10 @@ body.wcpay-onboarding__body {
 				text-wrap: wrap;
 				color: $studio-gray-60;
 				margin: $gap-small 0 $gap-largest;
+
+				@media screen and ( max-width: $break-small ) {
+					text-wrap: balance;
+				}
 			}
 
 			&__content {
