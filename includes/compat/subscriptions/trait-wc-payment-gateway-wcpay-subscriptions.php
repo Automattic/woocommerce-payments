@@ -326,6 +326,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 		$token = $this->get_payment_token( $renewal_order );
 		if ( is_null( $token ) && ! WC_Payments::is_network_saved_cards_enabled() ) {
+			$renewal_order->add_order_note( 'Subscription renewal failed: No saved payment method found.' );
 			Logger::error( 'There is no saved payment token for order #' . $renewal_order->get_id() );
 			// TODO: Update to use Order_Service->mark_payment_failed.
 			$renewal_order->update_status( 'failed' );
@@ -380,6 +381,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	public function update_failing_payment_method( $subscription, $renewal_order ) {
 		$renewal_token = $this->get_payment_token( $renewal_order );
 		if ( is_null( $renewal_token ) ) {
+			$renewal_order->add_order_note( 'Unable to update subscription payment method: No valid payment token or method found.' );
 			Logger::error( 'Failing subscription could not be updated: there is no saved payment token for order #' . $renewal_order->get_id() );
 			return;
 		}

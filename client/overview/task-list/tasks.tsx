@@ -103,7 +103,7 @@ export const getTasks = ( {
 			getUpdateBusinessDetailsTask(
 				errorMessages,
 				status ?? '',
-				accountLink,
+				accountLink ?? '',
 				Number( currentDeadline ) ?? null,
 				pastDue ?? false,
 				detailsSubmitted ?? true

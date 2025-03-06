@@ -21,3 +21,11 @@
 	margin-left: 1px !important;
 	width: 99% !important;
 }
+
+// Preview button
+@supports not ( -webkit-appearance: -apple-pay-button ) {
+	/* stylelint-disable-next-line selector-id-pattern */
+	#express-payment-method-woocommerce_payments_express_checkout_applePay:has( #express-checkout-button-preview-applePay ) {
+		display: none;
+	}
+}

@@ -143,13 +143,13 @@ exports[`Order details page should match the snapshot - Charge without payment i
                   <span
                     class="woocommerce-list__item-title"
                   >
-                    Channel
+                    Sales channel
                   </span>
                   <span
                     class="woocommerce-list__item-content"
                   >
                     <span>
-                      Online
+                      Online store
                     </span>
                   </span>
                 </div>
