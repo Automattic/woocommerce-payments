@@ -303,7 +303,7 @@ class UPE_Payment_Method {
 	 */
 	public function get_testing_instructions( string $account_country ) {
 		if ( null !== $this->definition ) {
-			return $this->definition::get_testing_instructions();
+			return $this->definition::get_testing_instructions( $account_country );
 		}
 		return '';
 	}
