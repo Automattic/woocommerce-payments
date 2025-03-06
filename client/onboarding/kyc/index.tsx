@@ -49,7 +49,7 @@ const OnboardingKycPage: React.FC = () => {
 		};
 	}, [] );
 	return (
-		<Page className="wcpay-onboarding-prototype">
+		<Page className="wcpay-onboarding-mox">
 			<OnboardingContextProvider>
 				<div className="stepper__nav">
 					<img

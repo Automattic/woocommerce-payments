@@ -20,7 +20,7 @@ export default {
 				'woocommerce-payments'
 			),
 			subheading: __(
-				'We’ll use these details to enable payments for your store.',
+				'We’ll use these details to enable payments for your store. This information can’t be changed after your account is created.',
 				'woocommerce-payments'
 			),
 		},
@@ -61,7 +61,7 @@ export default {
 	},
 	fields: {
 		country: __(
-			'Where is your business legally registered?',
+			'Where is your business located?',
 			'woocommerce-payments'
 		),
 		business_type: __(
