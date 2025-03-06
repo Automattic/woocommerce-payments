@@ -25,6 +25,7 @@ import {
 	shippingRateChangeHandler,
 } from './event-handlers';
 import expressCheckoutButtonUi from './button-ui';
+import { SHIPPING_RATES_UPPER_LIMIT_COUNT } from 'wcpay/express-checkout/constants';
 
 jQuery( ( $ ) => {
 	// Don't load if blocks checkout is being loaded.
@@ -224,7 +225,10 @@ jQuery( ( $ ) => {
 					} ) );
 			};
 
-			const shippingRates = getShippingRates();
+			const shippingRates = getShippingRates().slice(
+				0,
+				SHIPPING_RATES_UPPER_LIMIT_COUNT
+			);
 
 			// This is a bit of a hack, but we need some way to get the shipping information before rendering the button, and
 			// since we don't have any address information at this point it seems best to rely on what came with the cart response.

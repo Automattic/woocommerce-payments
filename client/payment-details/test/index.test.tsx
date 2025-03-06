@@ -56,6 +56,13 @@ jest.mock( '@woocommerce/navigation', () => ( {
 	addHistoryListener: jest.fn(),
 } ) );
 
+jest.mock( '@woocommerce/data', () => ( {
+	useUserPreferences: jest.fn( () => ( {
+		updateUserPreferences: jest.fn(),
+		wc_payments_wporg_review_2025_prompt_dismissed: false,
+	} ) ),
+} ) );
+
 const chargeMock = {
 	id: 'ch_mock',
 	amount: 1500,
