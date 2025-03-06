@@ -21,7 +21,7 @@ interface Props {
 
 const Step: React.FC< Props > = ( { name, children, showHeading = true } ) => {
 	const { trackAbandoned } = useTrackAbandoned();
-	const { prevStep, exit } = useStepperContext();
+	const { exit } = useStepperContext();
 	const handleExit = () => {
 		trackAbandoned( 'exit' );
 		exit();
