@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 
 /**
  * Internal Dependencies
@@ -13,7 +13,6 @@ const paymentGatewaysContainer = document.getElementById(
 	'wcpay-payment-gateways-container'
 );
 if ( paymentGatewaysContainer ) {
-	ReactDOM.createRoot( paymentGatewaysContainer ).render(
-		<PaymentGatewaysConfirmation />
-	);
+	const root = createRoot( paymentGatewaysContainer );
+	root.render( <PaymentGatewaysConfirmation /> );
 }

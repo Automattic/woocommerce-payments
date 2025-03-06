@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 
 /**
  * Internal dependencies
@@ -32,12 +32,15 @@ const renderWooPayExpressCheckoutButton = ( listenForCartChanges = {} ) => {
 		while ( oldWoopayContainers.length > 0 ) {
 			// Ensure previous buttons are unmounted and cleaned up.
 			const oldWoopayContainer = oldWoopayContainers.pop();
-			ReactDOM.unmountComponentAtNode( oldWoopayContainer );
+
+			const rootOldWoopayContainer = createRoot( oldWoopayContainer );
+			rootOldWoopayContainer.unmount();
 		}
 
 		oldWoopayContainers.push( woopayContainer );
 
-		ReactDOM.createRoot( woopayContainer ).render(
+		const root = createRoot( woopayContainer );
+		root.render(
 			<WoopayExpressCheckoutButton
 				listenForCartChanges={ listenForCartChanges }
 				buttonSettings={ getConfig( 'woopayButton' ) }

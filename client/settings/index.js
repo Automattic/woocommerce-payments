@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 
 /**
  * Internal dependencies
@@ -21,7 +21,8 @@ const settingsContainer = document.getElementById(
 	'wcpay-account-settings-container'
 );
 if ( settingsContainer ) {
-	ReactDOM.createRoot( settingsContainer ).render(
+	const settingsRoot = createRoot( settingsContainer );
+	settingsRoot.render(
 		<WCPaySettingsContext.Provider value={ wcpaySettings }>
 			<ErrorBoundary>
 				<SettingsManager />
@@ -36,7 +37,8 @@ const expressCheckoutSettingsContainer = document.getElementById(
 if ( expressCheckoutSettingsContainer ) {
 	const methodId = expressCheckoutSettingsContainer.dataset.methodId;
 
-	ReactDOM.createRoot( expressCheckoutSettingsContainer ).render(
+	const expressCheckoutRoot = createRoot( expressCheckoutSettingsContainer );
+	expressCheckoutRoot.render(
 		<WCPaySettingsContext.Provider value={ wcpaySettings }>
 			<ErrorBoundary>
 				<ExpressCheckoutSettings methodId={ methodId } />

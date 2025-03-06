@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React, { useState } from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 
 /**
  * Internal dependencies
@@ -50,6 +50,7 @@ const MultiCurrencySettingsPage = () => {
 	);
 };
 
-ReactDOM.createRoot(
+const root = createRoot(
 	document.querySelector( '#wcpay_multi_currency_settings_container' )
-).render( <MultiCurrencySettingsPage /> );
+);
+root.render( <MultiCurrencySettingsPage /> );

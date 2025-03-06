@@ -2,7 +2,9 @@
  * External dependencies
  */
 import React, { useState, useEffect, useCallback } from 'react';
-import ReactDOM from 'react-dom';
+import { useDispatch } from '@wordpress/data';
+import { createRoot } from 'react-dom/client';
+import { OPTIONS_STORE_NAME } from '@woocommerce/data';
 
 /**
  * Internal dependencies
@@ -98,6 +100,7 @@ const PluginsPage = () => {
 	);
 };
 
-ReactDOM.createRoot(
+const root = createRoot(
 	document.querySelector( '#woopayments-plugins-page-app' )
-).render( <PluginsPage /> );
+);
+root.render( <PluginsPage /> );
