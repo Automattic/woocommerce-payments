@@ -464,9 +464,14 @@ class WC_Payments_Order_Success_Page {
 								<td style="padding: 0;">
 									<?php
 									printf(
-									/* translators: %s: expiry date */
-										esc_html__( 'Expires %s', 'woocommerce-payments' ),
-										'<strong>' . $expiry_date . '</strong>'
+										/* translators: %s: expiry date */
+										WC_Payments_Utils::esc_interpolated_html(
+											__( 'Expires <strong>%s</strong>', 'woocommerce-payments' ),
+											[
+												'strong' => '<strong>',
+											]
+										),
+										$expiry_date
 									);
 									?>
 								</td>
