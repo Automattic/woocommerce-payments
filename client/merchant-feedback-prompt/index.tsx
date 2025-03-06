@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import {
 	Button,
@@ -223,17 +223,13 @@ export function MaybeShowMerchantFeedbackPrompt() {
 		);
 	}
 
-	const isAccountEligible =
-		wcpaySettings?.featureFlags?.isMerchantFeedbackPromptDevFlagEnabled &&
-		wcpaySettings?.accountStatus?.campaigns?.wporgReview2025;
-
-	if ( hasUserDismissed || ! isAccountEligible ) {
+	if ( hasUserDismissedPrompt || ! isAccountEligible ) {
 		return null;
 	}
 
 	return (
 		<MerchantFeedbackPrompt
-			dismissPrompt={ () => setHasUserDismissed( true ) }
+			dismissPrompt={ dismissPrompt }
 			showPositiveFeedbackModal={ () =>
 				setIsPositiveFeedbackModalOpen( true )
 			}
