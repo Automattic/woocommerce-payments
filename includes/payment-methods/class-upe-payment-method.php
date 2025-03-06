@@ -1,6 +1,6 @@
 <?php
 /**
- * Abstract UPE Payment Method class
+ * UPE Payment Method class
  *
  * Handles general functionality for UPE payment methods
  *
@@ -15,19 +15,20 @@ use WC_Payments_Token_Service;
 use WC_Payment_Token_CC;
 use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Subscriptions_Utilities;
-use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface;
 
 /**
- * Extendable abstract class for payment methods.
+ * Extendable class for payment methods.
+ *
+ * @template T of \WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface
  */
-abstract class UPE_Payment_Method {
+class UPE_Payment_Method {
 
 	use WC_Payments_Subscriptions_Utilities;
 
 	/**
 	 * Payment method definition.
 	 *
-	 * @var PaymentMethodDefinitionInterface
+	 * @var class-string<T>|null
 	 */
 	protected $definition;
 
@@ -115,9 +116,22 @@ abstract class UPE_Payment_Method {
 	 * Create instance of payment method
 	 *
 	 * @param WC_Payments_Token_Service $token_service Instance of WC_Payments_Token_Service.
+	 * @param class-string<T>|null      $definition    Optional payment method definition class name.
 	 */
-	public function __construct( $token_service ) {
+	public function __construct( $token_service, ?string $definition = null ) {
 		$this->token_service = $token_service;
+		$this->definition    = $definition;
+
+		if ( null !== $this->definition ) {
+			// Cache values that don't require context.
+			$this->stripe_id                    = $this->definition::get_stripe_id();
+			$this->is_reusable                  = $this->definition::is_reusable();
+			$this->currencies                   = $this->definition::get_supported_currencies();
+			$this->accept_only_domestic_payment = $this->definition::accepts_only_domestic_payments();
+			$this->limits_per_currency          = $this->definition::get_limits_per_currency();
+			$this->is_bnpl                      = $this->definition::is_bnpl();
+			$this->countries                    = $this->definition::get_supported_countries();
+		}
 	}
 
 	/**
@@ -126,6 +140,9 @@ abstract class UPE_Payment_Method {
 	 * @return string
 	 */
 	public function get_id() {
+		if ( null !== $this->definition ) {
+			return $this->definition::get_id();
+		}
 		return $this->stripe_id;
 	}
 
@@ -140,6 +157,9 @@ abstract class UPE_Payment_Method {
 	 * @phpcs:disable VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 	 */
 	public function get_title( ?string $account_country = null, $payment_details = false ) {
+		if ( null !== $this->definition ) {
+			return $this->definition::get_title( $account_country );
+		}
 		return $this->title;
 	}
 
@@ -281,7 +301,12 @@ abstract class UPE_Payment_Method {
 	 * @param string $account_country The country of the account.
 	 * @return string
 	 */
-	abstract public function get_testing_instructions( string $account_country );
+	public function get_testing_instructions( string $account_country ) {
+		if ( null !== $this->definition ) {
+			return $this->definition::get_testing_instructions( $account_country );
+		}
+		return '';
+	}
 
 	/**
 	 * Returns the payment method icon URL or an empty string.
@@ -292,6 +317,9 @@ abstract class UPE_Payment_Method {
 	 * @phpcs:disable VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable
 	 */
 	public function get_icon( ?string $account_country = null ) {
+		if ( null !== $this->definition ) {
+			return $this->definition::get_icon_url( $account_country );
+		}
 		return isset( $this->icon_url ) ? $this->icon_url : '';
 	}
 
@@ -302,6 +330,9 @@ abstract class UPE_Payment_Method {
 	 * @return string
 	 */
 	public function get_dark_icon( ?string $account_country = null ) {
+		if ( null !== $this->definition ) {
+			return $this->definition::get_dark_icon_url( $account_country );
+		}
 		return isset( $this->dark_icon_url ) ? $this->dark_icon_url : $this->get_icon( $account_country );
 	}
 
