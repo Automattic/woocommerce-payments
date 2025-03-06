@@ -1,6 +1,6 @@
 <?php
 /**
- * Class Affirm_Payment_Method
+ * Class Klarna_Payment_Method
  *
  * @package WCPay\Payment_Methods
  */
@@ -13,7 +13,7 @@ use WCPay\Constants\Country_Code;
 use WCPay\Constants\Currency_Code;
 
 /**
- * Affirm Payment Method class extending UPE base class
+ * Klarna Payment Method class extending UPE base class
  */
 class Klarna_Payment_Method extends UPE_Payment_Method {
 
