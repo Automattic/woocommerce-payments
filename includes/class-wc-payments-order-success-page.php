@@ -181,7 +181,7 @@ class WC_Payments_Order_Success_Page {
 		ob_start();
 		?>
 		<div class="wc-payment-gateway-method-logo-wrapper wc-payment-lpm-logo wc-payment-lpm-logo--<?php echo esc_attr( $payment_method->get_id() ); ?>">
-			<img alt="<?php echo esc_attr( $payment_method->get_title() ); ?>" src="<?php echo esc_url_raw( $method_logo_url ); ?>">
+			<img alt="<?php echo esc_attr( $payment_method->get_title() ); ?>" title="<?php echo esc_attr( $payment_method->get_title() ); ?>" src="<?php echo esc_url_raw( $method_logo_url ); ?>">
 		</div>
 		<?php
 		return ob_get_clean();

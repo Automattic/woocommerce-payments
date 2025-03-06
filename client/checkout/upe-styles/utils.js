@@ -105,21 +105,25 @@ export const dashedToCamelCase = ( string ) => {
 /**
  * Searches through array of CSS selectors and returns first visible background color.
  *
- * @param {Array} selectors List of CSS selectors to check.
+ * @param {Array}  selectors List of CSS selectors to check.
+ * @param {Object} scope     The document scope to search in.
  * @return {string} CSS color value.
  */
-export const getBackgroundColor = ( selectors ) => {
+export const getBackgroundColor = ( selectors, scope = document ) => {
 	const defaultColor = '#ffffff';
 	let color = null;
 	let i = 0;
 	while ( ! color && i < selectors.length ) {
-		const element = document.querySelector( selectors[ i ] );
+		const element = scope.querySelector( selectors[ i ] );
 		if ( ! element ) {
 			i++;
 			continue;
 		}
 
-		const bgColor = window.getComputedStyle( element ).backgroundColor;
+		const windowObject = scope.defaultView || window;
+
+		const bgColor = windowObject.getComputedStyle( element )
+			.backgroundColor;
 		// If backgroundColor property present and alpha > 0.
 		if ( bgColor && tinycolor( bgColor ).getAlpha() > 0 ) {
 			color = bgColor;

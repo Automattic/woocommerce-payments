@@ -29,6 +29,7 @@ import {
 
 import {
 	PAYMENT_METHOD_NAME_CARD,
+	PAYMENT_METHOD_NAME_ALIPAY,
 	PAYMENT_METHOD_NAME_BANCONTACT,
 	PAYMENT_METHOD_NAME_BECS,
 	PAYMENT_METHOD_NAME_EPS,
@@ -41,6 +42,7 @@ import {
 	PAYMENT_METHOD_NAME_AFTERPAY,
 	PAYMENT_METHOD_NAME_KLARNA,
 	PAYMENT_METHOD_NAME_GRABPAY,
+	PAYMENT_METHOD_NAME_WECHAT_PAY,
 } from '../constants.js';
 import { getDeferredIntentCreationUPEFields } from './payment-elements';
 import { handleWooPayEmailInput } from '../woopay/email-input-iframe';
@@ -51,6 +53,7 @@ import '../utils/copy-test-number';
 
 const upeMethods = {
 	card: PAYMENT_METHOD_NAME_CARD,
+	alipay: PAYMENT_METHOD_NAME_ALIPAY,
 	bancontact: PAYMENT_METHOD_NAME_BANCONTACT,
 	au_becs_debit: PAYMENT_METHOD_NAME_BECS,
 	eps: PAYMENT_METHOD_NAME_EPS,
@@ -63,6 +66,7 @@ const upeMethods = {
 	afterpay_clearpay: PAYMENT_METHOD_NAME_AFTERPAY,
 	klarna: PAYMENT_METHOD_NAME_KLARNA,
 	grabpay: PAYMENT_METHOD_NAME_GRABPAY,
+	wechat_pay: PAYMENT_METHOD_NAME_WECHAT_PAY,
 };
 
 const enabledPaymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );

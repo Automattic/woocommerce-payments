@@ -67,6 +67,10 @@
 	background-image: url( '../images/cards/visa.svg' );
 }
 
+.payment-method__brand--alipay {
+	background-image: url( '../images/payment-methods/alipay-logo.svg' );
+}
+
 .payment-method__brand--cartes_bancaires {
 	background-image: url( '../images/cards/cartes_bancaires.svg' );
 }
@@ -133,6 +137,14 @@
 
 .payment-method__brand--klarna {
 	background-image: url( '../images/payment-methods/klarna.svg' );
+}
+
+.payment-method__brand--grabpay {
+	background-image: url( '../images/payment-methods/grabpay.svg' );
+}
+
+.payment-method__brand--wechat_pay {
+	background-image: url( '../images/payment-methods/wechat-pay.svg' );
 }
 
 .wc_gateways tr[data-gateway_id='woocommerce_payments'] .payment-method__icon {

@@ -143,13 +143,13 @@ exports[`Order details page should match the snapshot - Charge without payment i
                   <span
                     class="woocommerce-list__item-title"
                   >
-                    Channel
+                    Sales channel
                   </span>
                   <span
                     class="woocommerce-list__item-content"
                   >
                     <span>
-                      Online
+                      Online store
                     </span>
                   </span>
                 </div>
@@ -203,7 +203,7 @@ exports[`Order details page should match the snapshot - Charge without payment i
                       data-link-type="external"
                       href="http://wcpay.test/wp-admin/post.php?post=776&action=edit"
                     >
-                      776
+                      custom-776
                     </a>
                   </span>
                 </div>

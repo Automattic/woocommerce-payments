@@ -56,12 +56,12 @@ export const getBusinessTypes = (): Country[] => {
 };
 
 /**
- * Make an API request to create an account session.
+ * Make an API request to create an KYC account session.
  *
  * @param data The form data.
  * @param isPoEligible Whether the user is eligible for a PO account.
  */
-export const createAccountSession = async (
+export const createKycAccountSession = async (
 	data: OnboardingFields,
 	isPoEligible: boolean
 ): Promise< AccountKycSession > => {

@@ -11,6 +11,7 @@ import { __ } from '@wordpress/i18n';
  */
 import Loadable from 'components/loadable';
 import AffirmDetails from './affirm';
+import AlipayDetails from './alipay';
 import AfterpayClearpayDetails from './afterpay-clearpay';
 import BancontactDetails from './bancontact';
 import BecsDetails from './becs';
@@ -18,14 +19,17 @@ import CardDetails from './card';
 import CardPresentDetails from './card-present';
 import EpsDetails from './eps';
 import GiropayDetails from './giropay';
+import GrabPayDetails from './grabpay';
 import IdealDetails from './ideal';
 import KlarnaDetails from './klarna';
 import P24Details from './p24';
 import SepaDetails from './sepa';
 import SofortDetails from './sofort';
+import WeChatPayDetails from './wechat-pay';
 
 const detailsComponentMap = {
 	affirm: AffirmDetails,
+	alipay: AlipayDetails,
 	afterpay_clearpay: AfterpayClearpayDetails,
 	au_becs_debit: BecsDetails,
 	bancontact: BancontactDetails,
@@ -33,11 +37,13 @@ const detailsComponentMap = {
 	card_present: CardPresentDetails,
 	eps: EpsDetails,
 	giropay: GiropayDetails,
+	grabpay: GrabPayDetails,
 	ideal: IdealDetails,
 	klarna: KlarnaDetails,
 	p24: P24Details,
 	sepa_debit: SepaDetails,
 	sofort: SofortDetails,
+	wechat_pay: WeChatPayDetails,
 };
 
 const PaymentDetailsPaymentMethod = ( { charge = {}, isLoading } ) => {

@@ -32,6 +32,16 @@ class WC_REST_Payments_Accounts_Controller extends WC_Payments_REST_Controller {
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/session',
+			[
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'create_embedded_account_session' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
 	}
 
 	/**
@@ -76,5 +86,22 @@ class WC_REST_Payments_Accounts_Controller extends WC_Payments_REST_Controller {
 		}
 
 		return rest_ensure_response( $account );
+	}
+
+	/**
+	 * Create an account embedded session via the API.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 *
+	 * @return WP_Error|WP_REST_Response
+	 */
+	public function create_embedded_account_session( WP_REST_Request $request ) {
+		$account_session = WC_Payments::get_account_service()->create_embedded_account_session();
+
+		if ( $account_session ) {
+			$account_session['locale'] = get_user_locale();
+		}
+
+		return rest_ensure_response( $account_session );
 	}
 }

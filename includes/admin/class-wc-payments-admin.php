@@ -11,6 +11,7 @@ use WCPay\Core\Server\Request;
 use WCPay\Database_Cache;
 use WCPay\Logger;
 use WCPay\WooPay\WooPay_Utilities;
+use WCPay\PaymentMethods\Configs\Utils\PaymentMethodUtils;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -659,6 +660,13 @@ class WC_Payments_Admin {
 				$this->get_js_settings()
 			);
 
+			$payment_method_definitions = rawurlencode( PaymentMethodUtils::get_payment_method_definitions_json() );
+			wp_add_inline_script(
+				'WCPAY_ADMIN_SETTINGS',
+				"window.woopaymentsPaymentMethodDefinitions = JSON.parse( decodeURIComponent( '" . esc_js( $payment_method_definitions ) . "' ) );",
+				'before'
+			);
+
 			// Output the settings JS and CSS only on the settings page.
 			wp_enqueue_script( 'WCPAY_ADMIN_SETTINGS' );
 			wp_enqueue_style( 'WCPAY_ADMIN_SETTINGS' );
@@ -682,6 +690,13 @@ class WC_Payments_Admin {
 				'WCPAY_DASH_APP',
 				'wcpaySettings',
 				$this->get_js_settings()
+			);
+
+			$payment_method_definitions = rawurlencode( PaymentMethodUtils::get_payment_method_definitions_json() );
+			wp_add_inline_script(
+				'WCPAY_DASH_APP',
+				"window.woopaymentsPaymentMethodDefinitions = JSON.parse( decodeURIComponent( '" . esc_js( $payment_method_definitions ) . "' ) );",
+				'before'
 			);
 
 			wp_enqueue_script( 'WCPAY_DASH_APP' );
@@ -898,7 +913,7 @@ class WC_Payments_Admin {
 		}
 
 		$connect_url       = WC_Payments_Account::get_connect_url();
-		$connect_incentive = $this->incentives_service->get_cached_connect_incentive();
+		$connect_incentive = $this->incentives_service->get_connect_incentive();
 		// If we have an incentive ID, attach it to the connect URL.
 		if ( ! empty( $connect_incentive['id'] ) ) {
 			$connect_url = add_query_arg( [ 'promo' => sanitize_text_field( $connect_incentive['id'] ) ], $connect_url );

@@ -1,4 +1,5 @@
 export const PAYMENT_METHOD_NAME_CARD = 'woocommerce_payments';
+export const PAYMENT_METHOD_NAME_ALIPAY = 'woocommerce_payments_alipay';
 export const PAYMENT_METHOD_NAME_BANCONTACT = 'woocommerce_payments_bancontact';
 export const PAYMENT_METHOD_NAME_BECS = 'woocommerce_payments_au_becs_debit';
 export const PAYMENT_METHOD_NAME_EPS = 'woocommerce_payments_eps';
@@ -12,6 +13,7 @@ export const PAYMENT_METHOD_NAME_AFTERPAY =
 	'woocommerce_payments_afterpay_clearpay';
 export const PAYMENT_METHOD_NAME_KLARNA = 'woocommerce_payments_klarna';
 export const PAYMENT_METHOD_NAME_GRABPAY = 'woocommerce_payments_grabpay';
+export const PAYMENT_METHOD_NAME_WECHAT_PAY = 'woocommerce_payments_wechat_pay';
 export const PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT =
 	'woocommerce_payments_express_checkout';
 export const PAYMENT_METHOD_NAME_WOOPAY_EXPRESS_CHECKOUT =
@@ -21,6 +23,7 @@ export const WC_STORE_CART = 'wc/store/cart';
 
 export function getPaymentMethodsConstants() {
 	return [
+		PAYMENT_METHOD_NAME_ALIPAY,
 		PAYMENT_METHOD_NAME_BANCONTACT,
 		PAYMENT_METHOD_NAME_BECS,
 		PAYMENT_METHOD_NAME_EPS,
@@ -34,6 +37,7 @@ export function getPaymentMethodsConstants() {
 		PAYMENT_METHOD_NAME_CARD,
 		PAYMENT_METHOD_NAME_KLARNA,
 		PAYMENT_METHOD_NAME_GRABPAY,
+		PAYMENT_METHOD_NAME_WECHAT_PAY,
 	];
 }
 

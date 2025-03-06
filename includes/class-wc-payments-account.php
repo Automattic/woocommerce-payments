@@ -351,6 +351,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			'status'                => $account['status'],
 			'created'               => $account['created'] ?? '',
 			'testDrive'             => $account['is_test_drive'] ?? false,
+			'isLive'                => $account['is_live'] ?? false,
 			'paymentsEnabled'       => $account['payments_enabled'],
 			'detailsSubmitted'      => $account['details_submitted'] ?? true,
 			'deposits'              => $account['deposits'] ?? [],
@@ -371,6 +372,11 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			'fraudProtection'       => [
 				'declineOnAVSFailure' => $account['fraud_mitigation_settings']['avs_check_enabled'] ?? null,
 				'declineOnCVCFailure' => $account['fraud_mitigation_settings']['cvc_check_enabled'] ?? null,
+			],
+			// Campaigns are temporary flags that are used to enable/disable features for a limited time.
+			'campaigns'             => [
+				// The flag for the WordPress.org merchant review campaign in 2025. Eligibility is determined per-account on transact-platform-server.
+				'wporgReview2025' => $account['eligibility_wporg_review_campaign_2025'] ?? false,
 			],
 		];
 	}
@@ -2643,6 +2649,36 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	public function get_lifetime_total_payment_volume(): int {
 		$account = $this->get_cached_account_data();
 		return (int) ! empty( $account ) && isset( $account['lifetime_total_payment_volume'] ) ? $account['lifetime_total_payment_volume'] : 0;
+	}
+
+	/**
+	 * Retrieve the embedded account session.
+	 *
+	 * Will return the session key used to initialise the embedded session.
+	 *
+	 * @return array Session data.
+	 *
+	 * @throws API_Exception|Exception
+	 */
+	public function create_embedded_account_session(): array {
+		if ( ! $this->payments_api_client->is_server_connected() ) {
+			return [];
+		}
+
+		try {
+			$account_session = $this->payments_api_client->create_embedded_account_session();
+		} catch ( API_Exception $e ) {
+			// If we fail to create the session, return an empty array.
+			return [];
+		}
+
+		return [
+			'clientSecret'   => $account_session['client_secret'] ?? '',
+			'expiresAt'      => $account_session['expires_at'] ?? 0,
+			'accountId'      => $account_session['account_id'] ?? '',
+			'isLive'         => $account_session['is_live'] ?? false,
+			'publishableKey' => $account_session['publishable_key'] ?? '',
+		];
 	}
 
 	/**

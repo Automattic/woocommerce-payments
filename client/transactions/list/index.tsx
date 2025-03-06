@@ -159,8 +159,8 @@ const getColumns = (
 		},
 		{
 			key: 'channel',
-			label: __( 'Channel', 'woocommerce-payments' ),
-			screenReaderLabel: __( 'Channel', 'woocommerce-payments' ),
+			label: __( 'Sales channel', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Sales channel', 'woocommerce-payments' ),
 			required: true,
 			isLeftAligned: true,
 		},
@@ -582,11 +582,12 @@ export const TransactionsList = (
 
 	const downloadable = !! rows.length;
 
-	const onDownload = async () => {
-		recordEvent( 'wcpay_transactions_download_csv_click', {
-			location: props.depositId ? 'deposit_details' : 'transactions',
-			exported_transactions: rows.length,
-			total_transactions: transactionsSummary.count,
+	const { path } = getQuery();
+	const onExport = async () => {
+		recordEvent( 'wcpay_csv_export_click', {
+			row_type: 'transactions',
+			source: path,
+			exported_row_count: transactionsSummary.count,
 		} );
 
 		const userEmail = wcpaySettings.currentUserEmail;
@@ -682,14 +683,11 @@ export const TransactionsList = (
 				'success',
 				sprintf(
 					__(
-						'Now processing your export. The file will download automatically and will be emailed to %s.',
+						'We’re processing your export. 🎉 The file will download automatically and be emailed to %s.',
 						'woocommerce-payments'
 					),
 					userEmail
-				),
-				{
-					icon: '✅',
-				}
+				)
 			);
 		}
 	};
@@ -810,7 +808,7 @@ export const TransactionsList = (
 							key="download"
 							isDisabled={ isLoading || isExportInProgress }
 							isBusy={ isExportInProgress }
-							onClick={ onDownload }
+							onClick={ onExport }
 						/>
 					),
 				] }

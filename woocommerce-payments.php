@@ -11,7 +11,7 @@
  * WC tested up to: 9.6.0
  * Requires at least: 6.0
  * Requires PHP: 7.3
- * Version: 8.9.1
+ * Version: 9.0.0
  * Requires Plugins: woocommerce
  *
  * @package WooCommerce\Payments
@@ -32,6 +32,10 @@ require_once __DIR__ . '/includes/woopay/class-woopay-session.php';
  * Plugin activation hook.
  */
 function wcpay_activated() {
+	// Clear the WC-shared incentives cache.
+	// This way we don't end up with stale incentives that were caller-bound.
+	delete_transient( 'woocommerce_admin_pes_incentive_woopayments_cache' );
+
 	// When WooCommerce Payments is installed and activated from the WooCommerce onboarding wizard (via wc-admin REST request), check if the site is eligible for subscriptions.
 	if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
 		update_option( 'wcpay_check_subscriptions_eligibility_after_onboarding', true );
@@ -52,6 +56,10 @@ function wcpay_activated() {
  * Plugin deactivation hook.
  */
 function wcpay_deactivated() {
+	// Clear the WC-shared incentives cache.
+	// This way we don't end up with stale incentives that were caller-bound.
+	delete_transient( 'woocommerce_admin_pes_incentive_woopayments_cache' );
+
 	require_once WCPAY_ABSPATH . '/includes/class-wc-payments.php';
 	WC_Payments::remove_woo_admin_notes();
 }

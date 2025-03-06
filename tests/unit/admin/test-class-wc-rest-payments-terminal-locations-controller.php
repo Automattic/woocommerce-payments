@@ -427,4 +427,60 @@ class WC_REST_Payments_Terminal_Locations_Controller_Test extends WCPAY_UnitTest
 		$result = $this->controller->get_all_locations( $request );
 		$this->assertEquals( [ $this->location ], $result->get_data() );
 	}
+
+	public function test_handles_puerto_rico_as_us_state() {
+		delete_transient( Controller::STORE_LOCATIONS_TRANSIENT_KEY );
+
+		// Set the store location for Puerto Rico.
+		update_option( 'woocommerce_store_city', 'San Juan' );
+		update_option( 'woocommerce_default_country', 'PR' );
+		update_option( 'woocommerce_store_address', 'Calle Normandie' );
+		update_option( 'woocommerce_store_postcode', '00907' );
+
+		$request = $this->mock_wcpay_request( Get_Request::class );
+
+		$request->expects( $this->once() )
+			->method( 'set_api' )
+			->with( WC_Payments_API_Client::TERMINAL_LOCATIONS_API );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( [] );
+
+		// Verify that create_terminal_location is called with US as country and PR as state.
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'create_terminal_location' )
+			->with(
+				$this->location['display_name'],
+				[
+					'city'        => 'San Juan',
+					'country'     => 'US',
+					'line1'       => 'Calle Normandie',
+					'postal_code' => '00907',
+					'state'       => 'PR',
+				]
+			)
+			->willReturn( $this->location );
+
+		// Setup the request.
+		$request = new WP_REST_Request(
+			'GET',
+			'/wc/v3/payments/terminal/locations/store'
+		);
+		$request->set_header( 'Content-Type', 'application/json' );
+
+		// Mock the second request that fetches all locations.
+		$get_locations_request = $this->mock_wcpay_request( Get_Request::class );
+		$get_locations_request->expects( $this->once() )
+			->method( 'set_api' )
+			->with( WC_Payments_API_Client::TERMINAL_LOCATIONS_API );
+		$get_locations_request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( [ $this->location ] );
+
+		$response = $this->controller->get_store_location( $request );
+		$this->assertInstanceOf( WP_REST_Response::class, $response );
+		$this->assertEquals( $this->location, $response->get_data() );
+		$this->assertSame( [ $this->location ], get_transient( Controller::STORE_LOCATIONS_TRANSIENT_KEY ) );
+	}
 }

@@ -13,6 +13,7 @@ use WCPay\Core\Mode;
 use WCPay\Core\Server\Request;
 use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
 use WCPay\Payment_Methods\CC_Payment_Method;
+use WCPay\Payment_Methods\Alipay_Payment_Method;
 use WCPay\Payment_Methods\Bancontact_Payment_Method;
 use WCPay\Payment_Methods\Becs_Payment_Method;
 use WCPay\Payment_Methods\Giropay_Payment_Method;
@@ -22,6 +23,7 @@ use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Eps_Payment_Method;
+use WCPay\Payment_Methods\Wechatpay_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\WooPay_Tracker;
 use WCPay\WooPay\WooPay_Utilities;
@@ -44,6 +46,7 @@ use WCPay\Compatibility_Service;
 use WCPay\Duplicates_Detection_Service;
 use WCPay\Payment_Methods\Grabpay_Payment_Method;
 use WCPay\WC_Payments_Currency_Manager;
+use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 
 /**
  * Main class for the WooPayments extension. Its responsibility is to initialize the extension.
@@ -346,6 +349,7 @@ class WC_Payments {
 		}
 
 		add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
+		add_action( 'admin_init', [ __CLASS__, 'remove_deprecated_notes' ] );
 		add_action( 'init', [ __CLASS__, 'install_actions' ] );
 
 		add_action( 'woocommerce_blocks_payment_method_type_registration', [ __CLASS__, 'register_checkout_gateway' ] );
@@ -426,6 +430,7 @@ class WC_Payments {
 		include_once __DIR__ . '/payment-methods/class-cc-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-upe-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-cc-payment-method.php';
+		include_once __DIR__ . '/payment-methods/class-alipay-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-bancontact-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-sepa-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-giropay-payment-method.php';
@@ -439,6 +444,7 @@ class WC_Payments {
 		include_once __DIR__ . '/payment-methods/class-afterpay-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-klarna-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-grabpay-payment-method.php';
+		include_once __DIR__ . '/payment-methods/class-wechatpay-payment-method.php';
 		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-button-helper.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-sepa.php';
 		include_once __DIR__ . '/class-wc-payments-status.php';
@@ -461,7 +467,6 @@ class WC_Payments {
 		include_once __DIR__ . '/exceptions/class-invalid-price-exception.php';
 		include_once __DIR__ . '/exceptions/class-fraud-ruleset-exception.php';
 		include_once __DIR__ . '/exceptions/class-fraud-prevention-enabled-exception.php';
-		include_once __DIR__ . '/exceptions/class-new-process-payment-exception.php';
 		include_once __DIR__ . '/exceptions/class-order-not-found-exception.php';
 		include_once __DIR__ . '/exceptions/class-order-id-mismatch-exception.php';
 		include_once __DIR__ . '/exceptions/class-rate-limiter-enabled-exception.php';
@@ -565,6 +570,7 @@ class WC_Payments {
 
 		$payment_method_classes = [
 			CC_Payment_Method::class,
+			Alipay_Payment_Method::class,
 			Bancontact_Payment_Method::class,
 			Sepa_Payment_Method::class,
 			Giropay_Payment_Method::class,
@@ -578,7 +584,17 @@ class WC_Payments {
 			Afterpay_Payment_Method::class,
 			Klarna_Payment_Method::class,
 			Grabpay_Payment_Method::class,
+			Wechatpay_Payment_Method::class,
 		];
+
+		// Initialize and get payment method classes from the registry for those that have been converted.
+		$registry = PaymentMethodDefinitionRegistry::instance();
+		$registry->init();
+		$payment_method_definitions = $registry->get_all_payment_method_definitions();
+
+		foreach ( $payment_method_definitions as $definition_class ) {
+			$payment_method_classes[] = $definition_class::get_payment_method_class();
+		}
 
 		$payment_methods = [];
 		foreach ( $payment_method_classes as $payment_method_class ) {
@@ -733,7 +749,7 @@ class WC_Payments {
 		}
 
 		// Load Stripe Billing subscription integration.
-		if ( self::should_load_stripe_billing_integration() ) {
+		if ( WC_Payments_Features::is_stripe_billing_eligible() ) {
 			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions.php';
 			WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::$order_service, self::$account, self::$token_service );
 		}
@@ -934,6 +950,9 @@ class WC_Payments {
 				'wc_payments_payouts_hidden_columns',
 				'wc_payments_disputes_hidden_columns',
 				'wc_payments_documents_hidden_columns',
+
+				// WPORG 2025 merchant feedback prompt user dismissed state.
+				'wc_payments_wporg_review_2025_prompt_dismissed',
 			]
 		);
 	}
@@ -1496,9 +1515,6 @@ class WC_Payments {
 		}
 
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-qualitative-feedback.php';
-			WC_Payments_Notes_Qualitative_Feedback::possibly_add_note();
-
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-https-for-checkout.php';
 			WC_Payments_Notes_Set_Https_For_Checkout::possibly_add_note();
 
@@ -1512,6 +1528,18 @@ class WC_Payments {
 		}
 
 		add_filter( 'admin_notices', [ __CLASS__, 'wcpay_show_old_woocommerce_for_hungary_sweden_and_czech_republic' ] );
+	}
+
+	/**
+	 * Removes deprecated notes i.e. no longer required notes.
+	 *
+	 * @return void
+	 */
+	public static function remove_deprecated_notes() {
+		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-qualitative-feedback.php';
+			WC_Payments_Notes_Qualitative_Feedback::possibly_delete_note();
+		}
 	}
 
 	/**
