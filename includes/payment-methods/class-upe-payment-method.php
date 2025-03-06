@@ -5,8 +5,6 @@
  * Handles general functionality for UPE payment methods
  *
  * @package WCPay\Payment_Methods
- *
- * @template T of PaymentMethodDefinitionInterface
  */
 
 namespace WCPay\Payment_Methods;
@@ -20,6 +18,8 @@ use WC_Payments_Subscriptions_Utilities;
 
 /**
  * Extendable class for payment methods.
+ *
+ * @template T of \WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface
  */
 class UPE_Payment_Method {
 
