@@ -111,5 +111,17 @@ describe( 'expressCheckoutIframe', () => {
 				);
 			} );
 		} );
+
+		test( 'should handle missing email in wcpayCustomerData', async () => {
+			// Remove email from customer data
+			window.wcpayCustomerData = {};
+
+			expressCheckoutIframe( api, null, '#email' );
+
+			await waitFor( () => {
+				const woopayIframe = document.querySelector( 'iframe' );
+				expect( woopayIframe.src ).not.toContain( 'email=' );
+			} );
+		} );
 	} );
 } );
