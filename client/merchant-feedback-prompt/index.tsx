@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import {
 	Button,
@@ -19,6 +19,7 @@ import { __ } from '@wordpress/i18n';
  */
 import { recordEvent } from 'wcpay/tracks';
 import { PositiveFeedbackModal } from './positive-modal';
+import { useMerchantFeedbackPromptState } from './hooks';
 import './style.scss';
 
 /**
@@ -203,8 +204,11 @@ const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
  * This is used to ensure the prompt is only rendered if the account is eligible for the campaign and the user has not dismissed the prompt.
  */
 export function MaybeShowMerchantFeedbackPrompt() {
-	// TODO: This is a temporary local state to track if the prompt has been dismissed. Move to a user-persistent state in #10329.
-	const [ hasUserDismissed, setHasUserDismissed ] = useState( false );
+	const {
+		isAccountEligible,
+		hasUserDismissedPrompt,
+		dismissPrompt,
+	} = useMerchantFeedbackPromptState();
 
 	const [
 		isPositiveFeedbackModalOpen,
