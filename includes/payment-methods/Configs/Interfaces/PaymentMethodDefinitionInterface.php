@@ -127,9 +127,10 @@ interface PaymentMethodDefinitionInterface {
 	/**
 	 * Get the testing instructions for the payment method
 	 *
+	 * @param string $account_country The merchant's account country.
 	 * @return string HTML string containing testing instructions
 	 */
-	public static function get_testing_instructions(): string;
+	public static function get_testing_instructions( string $account_country ): string;
 
 	/**
 	 * Whether this payment method is available for the given currency and country
