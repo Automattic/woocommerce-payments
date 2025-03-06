@@ -18,6 +18,8 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { recordEvent } from 'wcpay/tracks';
+import { PositiveFeedbackModal } from './positive-modal';
+import { useMerchantFeedbackPromptState } from './hooks';
 import './style.scss';
 
 /**
@@ -54,6 +56,8 @@ const WCFooterPortal = ( { children }: { children: React.ReactNode } ) => {
 interface MerchantFeedbackPromptProps {
 	/** A function to be called when the user dismisses the prompt and it is to be removed. */
 	dismissPrompt: () => void;
+	/** A function to be called when the user clicks the "Yes" button and the positive feedback modal is to be shown. */
+	showPositiveFeedbackModal: () => void;
 }
 
 /**
@@ -64,6 +68,7 @@ interface MerchantFeedbackPromptProps {
  */
 const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
 	dismissPrompt,
+	showPositiveFeedbackModal,
 } ) => {
 	// Get the core notices, which we'll use to ensure we're not rendering the prompt if there are other notices being displayed.
 	const coreNotices = useSelect(
@@ -113,6 +118,7 @@ const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
 											recordEvent(
 												'wcpay_merchant_feedback_prompt_yes_click'
 											);
+											showPositiveFeedbackModal();
 											dismissPrompt();
 										} }
 									>
@@ -198,20 +204,35 @@ const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
  * This is used to ensure the prompt is only rendered if the account is eligible for the campaign and the user has not dismissed the prompt.
  */
 export function MaybeShowMerchantFeedbackPrompt() {
-	// TODO: This is a temporary local state to track if the prompt has been dismissed. Move to a user-persistent state in #10329.
-	const [ hasUserDismissed, setHasUserDismissed ] = useState( false );
+	const {
+		isAccountEligible,
+		hasUserDismissedPrompt,
+		dismissPrompt,
+	} = useMerchantFeedbackPromptState();
 
-	const isAccountEligible =
-		wcpaySettings?.featureFlags?.isMerchantFeedbackPromptDevFlagEnabled &&
-		wcpaySettings?.accountStatus?.campaigns?.wporgReview2025;
+	const [
+		isPositiveFeedbackModalOpen,
+		setIsPositiveFeedbackModalOpen,
+	] = useState( false );
 
-	if ( hasUserDismissed || ! isAccountEligible ) {
+	if ( isPositiveFeedbackModalOpen ) {
+		return (
+			<PositiveFeedbackModal
+				onRequestClose={ () => setIsPositiveFeedbackModalOpen( false ) }
+			/>
+		);
+	}
+
+	if ( hasUserDismissedPrompt || ! isAccountEligible ) {
 		return null;
 	}
 
 	return (
 		<MerchantFeedbackPrompt
-			dismissPrompt={ () => setHasUserDismissed( true ) }
+			dismissPrompt={ dismissPrompt }
+			showPositiveFeedbackModal={ () =>
+				setIsPositiveFeedbackModalOpen( true )
+			}
 		/>
 	);
 }
