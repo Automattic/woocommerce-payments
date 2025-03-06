@@ -14,7 +14,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 use WC_Payments;
 use WCPay\Payment_Methods\Affirm_Payment_Method;
 use WCPay\Payment_Methods\Afterpay_Payment_Method;
-use WCPay\Payment_Methods\Alipay_Payment_Method;
 use WCPay\Payment_Methods\Bancontact_Payment_Method;
 use WCPay\Payment_Methods\Becs_Payment_Method;
 use WCPay\Payment_Methods\CC_Payment_Method;
@@ -25,6 +24,7 @@ use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\Grabpay_Payment_Method;
 use WCPay\Payment_Methods\Wechatpay_Payment_Method;
+use WCPay\PaymentMethods\Configs\Definitions\AlipayDefinition;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 
 /**
@@ -100,7 +100,7 @@ class Duplicates_Detection_Service {
 		$keywords = [
 			'bancontact' => Bancontact_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'sepa'       => Sepa_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-			'alipay'     => Alipay_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+			'alipay'     => AlipayDefinition::get_id(),
 			'p24'        => P24_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'przelewy24' => P24_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'ideal'      => Ideal_Payment_Method::PAYMENT_METHOD_STRIPE_ID,

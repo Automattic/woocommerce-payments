@@ -622,6 +622,12 @@ class WC_Payments_Admin {
 		);
 
 		WC_Payments::register_script_with_dependencies( 'WCPAY_PAYMENT_GATEWAYS_PAGE', 'dist/payment-gateways' );
+		$payment_method_definitions = rawurlencode( PaymentMethodUtils::get_payment_method_definitions_json() );
+		wp_add_inline_script(
+			'WCPAY_PAYMENT_GATEWAYS_PAGE',
+			"window.woopaymentsPaymentMethodDefinitions = JSON.parse( decodeURIComponent( '" . esc_js( $payment_method_definitions ) . "' ) );",
+			'before'
+		);
 
 		WC_Payments_Utils::register_style(
 			'WCPAY_PAYMENT_GATEWAYS_PAGE',
