@@ -34,13 +34,6 @@ interface PaymentMethodDefinitionInterface {
 	public static function get_stripe_id(): string;
 
 	/**
-	 * Get the payment method class name that implements this definition.
-	 *
-	 * @return class-string The payment method class name.
-	 */
-	public static function get_payment_method_class(): string;
-
-	/**
 	 * Get the customer-facing title of the payment method
 	 *
 	 * @param string|null $account_country Optional. The merchant's account country.
@@ -134,9 +127,10 @@ interface PaymentMethodDefinitionInterface {
 	/**
 	 * Get the testing instructions for the payment method
 	 *
+	 * @param string $account_country The merchant's account country.
 	 * @return string HTML string containing testing instructions
 	 */
-	public static function get_testing_instructions(): string;
+	public static function get_testing_instructions( string $account_country ): string;
 
 	/**
 	 * Whether this payment method is available for the given currency and country

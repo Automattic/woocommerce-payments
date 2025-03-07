@@ -587,20 +587,25 @@ class WC_Payments {
 			Wechatpay_Payment_Method::class,
 		];
 
-		// Initialize and get payment method classes from the registry for those that have been converted.
-		$registry = PaymentMethodDefinitionRegistry::instance();
-		$registry->init();
-		$payment_method_definitions = $registry->get_all_payment_method_definitions();
-
-		foreach ( $payment_method_definitions as $definition_class ) {
-			$payment_method_classes[] = $definition_class::get_payment_method_class();
-		}
-
 		$payment_methods = [];
+		// Initialize legacy payment methods.
 		foreach ( $payment_method_classes as $payment_method_class ) {
 			$payment_method                               = new $payment_method_class( self::$token_service );
 			$payment_methods[ $payment_method->get_id() ] = $payment_method;
 		}
+
+		// Initialize definition-based payment methods.
+		// Initialize and get payment method classes from the registry for those that have been converted.
+		$registry = PaymentMethodDefinitionRegistry::instance();
+		$registry->init();
+
+		$payment_method_definitions = $registry->get_all_payment_method_definitions();
+
+		foreach ( $payment_method_definitions as $definition_class ) {
+			$payment_method                               = new UPE_Payment_Method( self::$token_service, $definition_class );
+			$payment_methods[ $payment_method->get_id() ] = $payment_method;
+		}
+
 		foreach ( $payment_methods as $payment_method ) {
 			self::$payment_method_map[ $payment_method->get_id() ] = $payment_method;
 

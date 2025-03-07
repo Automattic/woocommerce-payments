@@ -18,6 +18,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { recordEvent } from 'wcpay/tracks';
+import { PositiveFeedbackModal } from './positive-modal';
 import { NegativeFeedbackModal } from './negative-modal';
 import { useMerchantFeedbackPromptState } from './hooks';
 import './style.scss';
@@ -56,6 +57,8 @@ const WCFooterPortal = ( { children }: { children: React.ReactNode } ) => {
 interface MerchantFeedbackPromptProps {
 	/** A function to be called when the user dismisses the prompt and it is to be removed. */
 	dismissPrompt: () => void;
+	/** A function to be called when the user clicks the "Yes" button and the positive feedback modal is to be shown. */
+	showPositiveFeedbackModal: () => void;
 	/** A function to be called when the user clicks the "No" button and the negative feedback modal is to be shown. */
 	showNegativeFeedbackModal: () => void;
 }
@@ -68,6 +71,7 @@ interface MerchantFeedbackPromptProps {
  */
 const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
 	dismissPrompt,
+	showPositiveFeedbackModal,
 	showNegativeFeedbackModal,
 } ) => {
 	// Get the core notices, which we'll use to ensure we're not rendering the prompt if there are other notices being displayed.
@@ -118,6 +122,7 @@ const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
 											recordEvent(
 												'wcpay_merchant_feedback_prompt_yes_click'
 											);
+											showPositiveFeedbackModal();
 											dismissPrompt();
 										} }
 									>
@@ -211,9 +216,22 @@ export function MaybeShowMerchantFeedbackPrompt() {
 	} = useMerchantFeedbackPromptState();
 
 	const [
+		isPositiveFeedbackModalOpen,
+		setIsPositiveFeedbackModalOpen,
+	] = useState( false );
+
+	const [
 		isNegativeFeedbackModalOpen,
 		setIsNegativeFeedbackModalOpen,
 	] = useState( false );
+
+	if ( isPositiveFeedbackModalOpen ) {
+		return (
+			<PositiveFeedbackModal
+				onRequestClose={ () => setIsPositiveFeedbackModalOpen( false ) }
+			/>
+		);
+	}
 
 	if ( isNegativeFeedbackModalOpen ) {
 		return (
@@ -230,6 +248,9 @@ export function MaybeShowMerchantFeedbackPrompt() {
 	return (
 		<MerchantFeedbackPrompt
 			dismissPrompt={ dismissPrompt }
+			showPositiveFeedbackModal={ () =>
+				setIsPositiveFeedbackModalOpen( true )
+			}
 			showNegativeFeedbackModal={ () =>
 				setIsNegativeFeedbackModalOpen( true )
 			}

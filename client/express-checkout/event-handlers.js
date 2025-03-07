@@ -19,6 +19,7 @@ import {
 	trackExpressCheckoutButtonClick,
 	trackExpressCheckoutButtonLoad,
 } from './tracking';
+import { SHIPPING_RATES_UPPER_LIMIT_COUNT } from 'wcpay/express-checkout/constants';
 
 let lastSelectedAddress = null;
 
@@ -36,7 +37,10 @@ export const shippingAddressChangeHandler = async ( api, event, elements ) => {
 			} );
 
 			event.resolve( {
-				shippingRates: response.shipping_options,
+				shippingRates: response.shipping_options?.slice(
+					0,
+					SHIPPING_RATES_UPPER_LIMIT_COUNT
+				),
 				lineItems: normalizeLineItems( response.displayItems ),
 			} );
 		} else {
