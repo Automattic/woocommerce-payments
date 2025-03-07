@@ -16,7 +16,6 @@ import {
 	getMccsFlatList,
 } from 'onboarding/utils';
 import { BusinessType } from 'onboarding/types';
-import InlineNotice from 'components/inline-notice';
 import strings from 'onboarding/strings';
 
 /**
@@ -29,7 +28,7 @@ const BusinessDetails: React.FC = () => {
 	const mccsFlatList = getMccsFlatList();
 
 	const selectedCountry = businessTypes.find( ( country ) => {
-		// Special case for Puerto Rico as it's considered a separate country in Core, but the business country should be US
+		// Special case for Puerto Rico as it's considered a separate country in Core, but the business country should be US.
 		if ( data.country === 'PR' ) {
 			return country.key === 'US';
 		}
@@ -84,33 +83,13 @@ const BusinessDetails: React.FC = () => {
 
 	return (
 		<>
-			{ selectedCountry && (
-				<InlineNotice
-					isDismissible={ false }
-					buttonVariant={ 'link' }
-					actions={ [
-						{
-							label: strings.inlineNotice.action,
-							onClick: () => handleTiedChange( 'country', null ),
-						},
-					] }
-					status="info"
-				>
-					<div className="wcpay-inline-notice__content__title">
-						{ strings.inlineNotice.title }{ ' ' }
-						<b>{ selectedCountry.name }</b>
-					</div>
-				</InlineNotice>
-			) }
-			{ ! selectedCountry && (
-				<span data-testid={ 'country-select' }>
-					<OnboardingSelectField
-						name="country"
-						options={ countries }
-						onChange={ handleTiedChange }
-					/>
-				</span>
-			) }
+			<span data-testid={ 'country-select' }>
+				<OnboardingSelectField
+					name="country"
+					options={ countries }
+					onChange={ handleTiedChange }
+				/>
+			</span>
 			{ selectedCountry && selectedCountry.types.length > 0 && (
 				<span data-testid={ 'business-type-select' }>
 					<OnboardingSelectField

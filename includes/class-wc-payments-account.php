@@ -373,6 +373,11 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				'declineOnAVSFailure' => $account['fraud_mitigation_settings']['avs_check_enabled'] ?? null,
 				'declineOnCVCFailure' => $account['fraud_mitigation_settings']['cvc_check_enabled'] ?? null,
 			],
+			// Campaigns are temporary flags that are used to enable/disable features for a limited time.
+			'campaigns'             => [
+				// The flag for the WordPress.org merchant review campaign in 2025. Eligibility is determined per-account on transact-platform-server.
+				'wporgReview2025' => $account['eligibility_wporg_review_campaign_2025'] ?? false,
+			],
 		];
 	}
 

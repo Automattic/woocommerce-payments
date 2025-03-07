@@ -1,0 +1,5 @@
+Significance: patch
+Type: update
+Comment: Behind feature flag: Store WP.org review prompt dismissal state in user preferences to prevent it from reappearing after user interaction.
+
+

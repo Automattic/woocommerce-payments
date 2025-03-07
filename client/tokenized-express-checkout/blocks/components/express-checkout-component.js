@@ -11,6 +11,9 @@ import {
 } from '../../event-handlers';
 import { useExpressCheckout } from '../hooks/use-express-checkout';
 import { PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT } from 'wcpay/checkout/constants';
+import ExpressCheckoutButtonPreview, {
+	SUPPORTED_PREVIEW_PAYMENT_METHODS,
+} from './express-checkout-button-preview';
 
 const getPaymentMethodsOverride = ( enabledPaymentMethod ) => {
 	const allDisabled = {
@@ -131,16 +134,28 @@ const ExpressCheckoutComponent = ( {
 		};
 	};
 
+	const checkoutElementOptions = {
+		...withBlockOverride(),
+		...adjustButtonHeights( withBlockOverride(), expressPaymentMethod ),
+		...getPaymentMethodsOverride( expressPaymentMethod ),
+	};
+
+	if (
+		isPreview &&
+		SUPPORTED_PREVIEW_PAYMENT_METHODS.includes( expressPaymentMethod )
+	) {
+		return (
+			<ExpressCheckoutButtonPreview
+				expressPaymentMethod={ expressPaymentMethod }
+				buttonAttributes={ buttonAttributes }
+				options={ checkoutElementOptions }
+			/>
+		);
+	}
+
 	return (
 		<ExpressCheckoutElement
-			options={ {
-				...withBlockOverride(),
-				...adjustButtonHeights(
-					withBlockOverride(),
-					expressPaymentMethod
-				),
-				...getPaymentMethodsOverride( expressPaymentMethod ),
-			} }
+			options={ checkoutElementOptions }
 			onClick={ onClickHandler }
 			onConfirm={ onConfirm }
 			onReady={ onElementsReady }
