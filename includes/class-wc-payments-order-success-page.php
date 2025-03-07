@@ -26,6 +26,7 @@ class WC_Payments_Order_Success_Page {
 		add_filter( 'woocommerce_thankyou_order_received_text', [ $this, 'add_notice_previous_paid_order' ], 11 );
 		add_filter( 'woocommerce_thankyou_order_received_text', [ $this, 'add_notice_previous_successful_intent' ], 11 );
 		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+		add_action( 'woocommerce_email_order_details', [ $this, 'add_multibanco_payment_instructions_to_order_on_hold_email' ], 10, 4 );
 	}
 
 	/**
@@ -400,5 +401,114 @@ class WC_Payments_Order_Success_Page {
 			&& time() - $date_created->getTimestamp() <= $verification_grace_period;
 
 		return ! $is_within_grace_period;
+	}
+
+	/**
+	 * Add Multibanco payment instructions to the order on-hold email.
+	 *
+	 * @param WC_Order|mixed  $order The order object.
+	 * @param bool|mixed      $sent_to_admin Whether the email is being sent to the admin.
+	 * @param bool|mixed      $plain_text Whether the email is plain text.
+	 * @param WC_Email|string $email The email object.
+	 */
+	public function add_multibanco_payment_instructions_to_order_on_hold_email( $order, $sent_to_admin = false, $plain_text = false, $email = '' ): void {
+		if ( ! $email instanceof WC_Email_Customer_On_Hold_Order || ! $order || $order->get_payment_method() !== 'woocommerce_payments_' . Payment_Method::MULTIBANCO ) {
+			return;
+		}
+
+		$order_service         = WC_Payments::get_order_service();
+		$multibanco_info       = $order_service->get_multibanco_info_from_order( $order );
+		$unix_expiry           = $multibanco_info['expiry'];
+		$expiry_date           = date_i18n( wc_date_format() . ' ' . wc_time_format(), $unix_expiry );
+		$formatted_order_total = $order->get_formatted_order_total();
+
+		if ( $plain_text ) {
+			echo "----------------------------------------\n";
+			echo __( 'Multibanco Payment instructions', 'woocommerce-payments' ) . "\n\n";
+			printf(
+			/* translators: %s: expiry date */
+				__( 'Expires %s', 'woocommerce-payments' ) . "\n\n",
+				$expiry_date
+			);
+			echo '1. ' . __( 'In your online bank account or from an ATM, choose "Payment and other services".', 'woocommerce-payments' ) . "\n";
+			echo '2. ' . __( 'Click "Payments of services/shopping".', 'woocommerce-payments' ) . "\n";
+			echo '3. ' . __( 'Enter the entity number, reference number, and amount.', 'woocommerce-payments' ) . "\n\n";
+			echo __( 'Entity', 'woocommerce-payments' ) . ': ' . $multibanco_info['entity'] . "\n";
+			echo __( 'Reference', 'woocommerce-payments' ) . ': ' . $multibanco_info['reference'] . "\n";
+			echo __( 'Amount', 'woocommerce-payments' ) . ': ' . wp_strip_all_tags( $formatted_order_total ) . "\n";
+			echo "----------------------------------------\n\n";
+		} else {
+			?>
+			<table class="td" cellspacing="0" cellpadding="6" border="1" width="100%">
+				<tbody>
+				<tr>
+					<td class="td">
+						<table cellpadding="6">
+							<tr>
+								<td rowspan="2" style="padding: 0 5px 0 0;">
+									<div
+										style="background-color: #f6f7f7; border: 1px solid rgba( 109, 109, 109, 0.16 ); border-radius: 4px; box-sizing: border-box; padding: 10px;">
+										<img style="margin: 0; height: 35px; width: 35px;"
+											src="<?php echo esc_url_raw( plugins_url( 'assets/images/payment-methods/multibanco-instructions.svg', WCPAY_PLUGIN_FILE ) ); ?>"
+											alt="<?php esc_attr_e( 'Multibanco', 'woocommerce-payments' ); ?>">
+									</div>
+								</td>
+								<td style="font-size: 20px; padding: 0;">
+									<?php
+									/* translators: %s: order number */
+									printf( esc_html__( 'Order #%s', 'woocommerce-payments' ), $order->get_order_number() );
+									?>
+								</td>
+							</tr>
+							<tr>
+								<td style="padding: 0;">
+									<?php
+									printf(
+										WC_Payments_Utils::esc_interpolated_html(
+											/* translators: %s: expiry date */
+											__( 'Expires <strong>%s</strong>', 'woocommerce-payments' ),
+											[
+												'strong' => '<strong>',
+											]
+										),
+										$expiry_date
+									);
+									?>
+								</td>
+							</tr>
+						</table>
+						<!-- Using a paragraph to add consistent spacing between the table and the text below. -->
+						<p></p>
+						<p><strong><?php esc_html_e( 'Payment instructions', 'woocommerce-payments' ); ?></strong></p>
+						<ol>
+							<li><?php esc_html_e( 'In your online bank account or from an ATM, choose "Payment and other services".', 'woocommerce-payments' ); ?></li>
+							<li><?php esc_html_e( 'Click "Payments of services/shopping".', 'woocommerce-payments' ); ?></li>
+							<li><?php esc_html_e( 'Enter the entity number, reference number, and amount.', 'woocommerce-payments' ); ?></li>
+						</ol>
+
+						<table class="td" cellspacing="0" cellpadding="6" border="1" width="100%">
+							<tbody>
+							<tr>
+								<th class="td"><?php esc_html_e( 'Entity', 'woocommerce-payments' ); ?></th>
+								<td class="td"><?php echo esc_html( $multibanco_info['entity'] ); ?></td>
+							</tr>
+							<tr>
+								<th class="td"><?php esc_html_e( 'Reference', 'woocommerce-payments' ); ?></th>
+								<td class="td"><?php echo esc_html( $multibanco_info['reference'] ); ?></td>
+							</tr>
+							<tr>
+								<th class="td"><?php esc_html_e( 'Amount', 'woocommerce-payments' ); ?></th>
+								<td class="td"><?php echo wp_strip_all_tags( $formatted_order_total ); ?></td>
+							</tr>
+							</tbody>
+						</table>
+					</td>
+				</tr>
+				</tbody>
+			</table>
+			<!-- Using a paragraph to add consistent spacing between the table and the text below. -->
+			<p></p>
+			<?php
+		}
 	}
 }
