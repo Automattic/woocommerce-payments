@@ -83,7 +83,7 @@ const PaymentMethodInformationObject: Record<
 					className
 				) }
 				src={ CreditCardAsset }
-				alt={ __( 'Credit / Debit Cards', 'woocommerce-payments' ) }
+				alt={ __( 'Credit card / Debit card', 'woocommerce-payments' ) }
 				{ ...props }
 			/>
 		),
