@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "525771a930bd333915ebd21a74fd46da",
+    "content-hash": "91b9ba4e2d42229c3065c6cab465461b",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -315,16 +315,16 @@
         },
         {
             "name": "automattic/jetpack-connection",
-            "version": "v6.7.1",
+            "version": "v6.7.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Automattic/jetpack-connection.git",
-                "reference": "46dc2fdd2807c06df0b7d743a47eff7b4bca8360"
+                "reference": "13a9ec9bcae9343d9e897b682345dfbcc9fdd45b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Automattic/jetpack-connection/zipball/46dc2fdd2807c06df0b7d743a47eff7b4bca8360",
-                "reference": "46dc2fdd2807c06df0b7d743a47eff7b4bca8360",
+                "url": "https://api.github.com/repos/Automattic/jetpack-connection/zipball/13a9ec9bcae9343d9e897b682345dfbcc9fdd45b",
+                "reference": "13a9ec9bcae9343d9e897b682345dfbcc9fdd45b",
                 "shasum": ""
             },
             "require": {
@@ -384,9 +384,9 @@
             ],
             "description": "Everything needed to connect to the Jetpack infrastructure",
             "support": {
-                "source": "https://github.com/Automattic/jetpack-connection/tree/v6.7.1"
+                "source": "https://github.com/Automattic/jetpack-connection/tree/v6.7.2"
             },
-            "time": "2025-03-05T12:25:40+00:00"
+            "time": "2025-03-06T11:40:08+00:00"
         },
         {
             "name": "automattic/jetpack-constants",
