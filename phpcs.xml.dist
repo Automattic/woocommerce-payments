@@ -81,6 +81,16 @@
 		</properties>
 	</rule>
 
+	<!-- REMOVE BEFORE MERGING:Only for poc/centralized-payment-method-definitions -->
+	<rule ref="WordPress.Files.FileName.NotHyphenatedLowercase">
+		<exclude-pattern>includes/payment-methods/Configs/</exclude-pattern>
+	</rule>
+
+	<rule ref="WordPress.Files.FileName.InvalidClassFileName">
+		<exclude-pattern>includes/payment-methods/Configs/</exclude-pattern>
+	</rule>
+	<!-- END REMOVE BEFORE MERGING: poc/centralized-payment-method-definitions -->
+
 	<rule ref="WordPress.Security">
 		<exclude-pattern>./tests/*</exclude-pattern>
 	</rule>

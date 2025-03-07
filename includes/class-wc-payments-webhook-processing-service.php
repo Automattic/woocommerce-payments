@@ -426,6 +426,7 @@ class WC_Payments_Webhook_Processing_Service {
 			Payment_Method::CARD_PRESENT,
 			Payment_Method::US_BANK_ACCOUNT,
 			Payment_Method::BECS,
+			Payment_Method::WECHAT_PAY,
 		];
 
 		if ( empty( $payment_method_type ) || ! in_array( $payment_method_type, $actionable_methods, true ) ) {
