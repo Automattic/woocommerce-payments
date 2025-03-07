@@ -9,6 +9,7 @@ import { decodeEntities } from '@wordpress/html-entities';
  */
 import { getExpressCheckoutData } from '../utils';
 import { applyFilters } from '@wordpress/hooks';
+import { SHIPPING_RATES_UPPER_LIMIT_COUNT } from 'wcpay/tokenized-express-checkout/constants';
 
 /**
  * GooglePay/ApplePay expect the prices to be formatted in cents.
@@ -140,6 +141,7 @@ export const transformCartDataForShippingRates = ( cartData ) =>
 
 			return rateA.selected ? -1 : 1; // Objects with 'selected: true' come first
 		} )
+		.slice( 0, SHIPPING_RATES_UPPER_LIMIT_COUNT )
 		.map( ( rate ) => ( {
 			id: rate.rate_id,
 			displayName: decodeEntities( rate.name ),
