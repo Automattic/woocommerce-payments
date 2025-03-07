@@ -9,12 +9,8 @@ import {
 	updateAccountStatementDescriptor,
 	updatePaymentRequestLocations,
 	updateIsPaymentRequestEnabled,
-	updateAccountBusinessName,
-	updateAccountBusinessURL,
-	updateAccountBusinessSupportAddress,
 	updateAccountBusinessSupportEmail,
 	updateAccountBusinessSupportPhone,
-	updateAccountBrandingLogo,
 	updateIsWooPayEnabled,
 	updateWooPayCustomMessage,
 	updateWooPayStoreLogo,
@@ -311,21 +307,6 @@ describe( 'Settings reducer tests', () => {
 	describe( 'SET_MERCHANT_SETTINGS', () => {
 		const merchantSettings = [
 			{
-				updateFunc: updateAccountBusinessName,
-				stateKey: 'account_business_name',
-				settingValue: 'Business name',
-			},
-			{
-				updateFunc: updateAccountBusinessURL,
-				stateKey: 'account_business_url',
-				settingValue: 'Business url',
-			},
-			{
-				updateFunc: updateAccountBusinessSupportAddress,
-				stateKey: 'account_business_support_address',
-				settingValue: 'Business address',
-			},
-			{
 				updateFunc: updateAccountBusinessSupportEmail,
 				stateKey: 'account_business_support_email',
 				settingValue: 'Business email',
@@ -334,11 +315,6 @@ describe( 'Settings reducer tests', () => {
 				updateFunc: updateAccountBusinessSupportPhone,
 				stateKey: 'account_business_support_phone',
 				settingValue: 'Business phone',
-			},
-			{
-				updateFunc: updateAccountBrandingLogo,
-				stateKey: 'account_branding_logo',
-				settingValue: 'Branding logo',
 			},
 		];
 

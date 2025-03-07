@@ -78,7 +78,7 @@ class SecondMockPaymentMethodDefinition implements PaymentMethodDefinitionInterf
 		return 'https://example.com/settings-icon.png';
 	}
 
-	public static function get_testing_instructions(): string {
+	public static function get_testing_instructions( string $account_country ): string {
 		return 'Test instructions';
 	}
 
