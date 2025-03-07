@@ -78,7 +78,7 @@ class WC_REST_Payments_Payment_Intents_Controller extends WC_Payments_REST_Contr
 	 *
 	 * @param WC_Payments_API_Client   $api_client       WooCommerce Payments API client.
 	 * @param WC_Payment_Gateway_WCPay $gateway          WooCommerce Payments payment gateway.
-	 * @param OrderService             $order_service    The new order servie.
+	 * @param OrderService             $order_service    The new order service.
 	 * @param Level3Service            $level3_service   Level3 service instance.
 	 */
 	public function __construct(
