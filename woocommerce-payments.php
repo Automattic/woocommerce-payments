@@ -86,7 +86,6 @@ function wcpay_jetpack_init() {
 	if ( ! wcpay_check_old_jetpack_version() ) {
 		return;
 	}
-	// TODO - check the convo https://github.com/Automattic/woocommerce-payments/pull/10489#discussion_r1982481513.
 	$connection_version = Automattic\Jetpack\Connection\Package_Version::PACKAGE_VERSION;
 
 	$custom_content = version_compare( $connection_version, '6.1.0', '>' ) ?
@@ -336,7 +335,7 @@ function wcpay_get_jetpack_idc_custom_content(): array {
 		'nonAdminTitle'             => __( 'Safe Mode activated', 'woocommerce-payments' ),
 		'nonAdminBodyText'          => sprintf(
 			/* translators: %s: WooPayments. */
-			__( 'We’ve detected that you have duplicate sites connected to %s. When Safe Mode is active, payments will not be interrupted. However, some features may not be available until you’ve resolved this issue below. Safe Mode is most frequently activated when you’re transferring your site from one domain to another, or creating a staging site for testing. A site adminstrator can resolve this issue. <safeModeLink>Learn more</safeModeLink>', 'woocommerce-payments' ),
+			__( 'We’ve detected that you have duplicate sites connected to %s. When Safe Mode is active, payments will not be interrupted. However, some features may not be available until you’ve resolved this issue below. Safe Mode is most frequently activated when you’re transferring your site from one domain to another, or creating a staging site for testing. A site administrator can resolve this issue. <safeModeLink>Learn more</safeModeLink>', 'woocommerce-payments' ),
 			'WooPayments'
 		),
 		'supportURL'                => 'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/safe-mode/',
@@ -346,7 +345,6 @@ function wcpay_get_jetpack_idc_custom_content(): array {
 			'WooPayments'
 		),
 		'stayInSafeModeButtonLabel' => __( 'Stay in Safe Mode', 'woocommerce-payments' ),
-		'safeModeTitle'             => __( 'Stay in Safe Mode', 'woocommerce-payments' ),
 		'dynamicSiteUrlText'        => sprintf(
 			/* translators: %s: WooPayments. */
 			__( "<strong>Notice:</strong> It appears that your 'wp-config.php' file might be using dynamic site URL values. Dynamic site URLs could cause %s to enter Safe Mode. <dynamicSiteUrlSupportLink>Learn how to set a static site URL.</dynamicSiteUrlSupportLink>", 'woocommerce-payments' ),
@@ -406,7 +404,7 @@ function wcpay_get_jetpack_idc_custom_content(): array {
 
 		// Safe Mode card body text when in the development mode.
 		$custom_content['safeModeCardBodyText'] = sprintf(
-		/* translators: %s: WooPayments. */
+			/* translators: %s: WooPayments. */
 			__(
 				'<p><strong>Recommended for</strong></p><list><item>short-lived test sites</item><item>sites that will be cloned back to production after testing</item></list><p><strong>Please note</strong> that staying in Safe Mode will cause issues for some %s features such as dispute and refund updates, payment confirmations for local payment methods. <safeModeLink>Learn more</safeModeLink>.</p>',
 				'woocommerce-payments'
