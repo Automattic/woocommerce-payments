@@ -9,25 +9,23 @@ import classNames from 'classnames';
  * Internal dependencies
  */
 
-import {
-	AlipayIcon,
-	AffirmIcon,
-	AfterpayIcon,
-	ClearpayIcon,
-	BancontactIcon,
-	BankDebitIcon,
-	CreditCardIcon,
-	EpsIcon,
-	GiropayIcon,
-	IdealIcon,
-	JCBIcon,
-	KlarnaIcon,
-	P24Icon,
-	SepaIcon,
-	SofortIcon,
-	GrabPayIcon,
-	WeChatPayIcon,
-} from 'wcpay/payment-methods-icons';
+import GrabPayAsset from 'assets/images/payment-methods/grabpay.svg?asset';
+import AffirmAsset from 'assets/images/payment-methods/affirm-badge.svg?asset';
+import AlipayAsset from 'assets/images/payment-methods/alipay-logo.svg';
+import BankDebitAsset from 'assets/images/payment-methods/bank-debit.svg?asset';
+import AfterpayAsset from 'assets/images/payment-methods/afterpay-logo.svg?asset';
+import ClearpayAsset from 'assets/images/payment-methods/clearpay.svg?asset';
+import BancontactAsset from 'assets/images/payment-methods/bancontact.svg?asset';
+import WeChatPayAsset from 'assets/images/payment-methods/wechat-pay.svg?asset';
+import SofortAsset from 'assets/images/payment-methods/sofort.svg?asset';
+import SepaAsset from 'assets/images/payment-methods/sepa-debit.svg?asset';
+import P24Asset from 'assets/images/payment-methods/p24.svg?asset';
+import IdealAsset from 'assets/images/payment-methods/ideal.svg?asset';
+import KlarnaAsset from 'assets/images/payment-methods/klarna.svg?asset';
+import EpsAsset from 'assets/images/payment-methods/eps.svg?asset';
+import GiropayAsset from 'assets/images/payment-methods/giropay.svg?asset';
+import JCBAsset from 'assets/images/payment-methods/jcb.svg?asset';
+import CreditCardAsset from 'assets/images/payment-methods/cc.svg?asset';
 
 const accountCountry = window.wcpaySettings?.accountStatus?.country || 'US';
 
@@ -78,7 +76,17 @@ const PaymentMethodInformationObject: Record<
 			'Let your customers pay with major credit and debit cards without leaving your store.',
 			'woocommerce-payments'
 		),
-		icon: CreditCardIcon,
+		icon: ( { className, ...props } ) => (
+			<img
+				className={ classNames(
+					'payment-method__icon no-border',
+					className
+				) }
+				src={ CreditCardAsset }
+				alt={ __( 'Credit / Debit Cards', 'woocommerce-payments' ) }
+				{ ...props }
+			/>
+		),
 		currencies: [],
 		stripe_key: 'card_payments',
 		allows_manual_capture: true,
@@ -92,7 +100,14 @@ const PaymentMethodInformationObject: Record<
 			'Alipay is a popular wallet in China, operated by Ant Financial Services Group, a financial services provider affiliated with Alibaba.',
 			'woocommerce-payments'
 		),
-		icon: AlipayIcon,
+		icon: ( { className, ...props } ) => (
+			<img
+				className={ classNames( 'payment-method__icon', className ) }
+				src={ AlipayAsset }
+				alt={ __( 'Alipay', 'woocommerce-payments' ) }
+				{ ...props }
+			/>
+		),
 		currencies: [],
 		stripe_key: 'alipay_payments',
 		allows_manual_capture: false,
@@ -106,7 +121,14 @@ const PaymentMethodInformationObject: Record<
 			'Bulk Electronic Clearing System — Accept secure bank transfer from Australia.',
 			'woocommerce-payments'
 		),
-		icon: BankDebitIcon,
+		icon: ( { className, ...props } ) => (
+			<img
+				className={ classNames( 'payment-method__icon', className ) }
+				src={ BankDebitAsset }
+				alt={ __( 'BECS Direct Debit', 'woocommerce-payments' ) }
+				{ ...props }
+			/>
+		),
 		currencies: [ 'AUD' ],
 		stripe_key: 'au_becs_debit_payments',
 		allows_manual_capture: false,
@@ -120,7 +142,14 @@ const PaymentMethodInformationObject: Record<
 			'Bancontact is a bank redirect payment method offered by more than 80% of online businesses in Belgium.',
 			'woocommerce-payments'
 		),
-		icon: BancontactIcon,
+		icon: ( { className, ...props } ) => (
+			<img
+				className={ classNames( 'payment-method__icon', className ) }
+				src={ BancontactAsset }
+				alt={ __( 'Bancontact', 'woocommerce-payments' ) }
+				{ ...props }
+			/>
+		),
 		currencies: [ 'EUR' ],
 		stripe_key: 'bancontact_payments',
 		allows_manual_capture: false,
@@ -134,7 +163,14 @@ const PaymentMethodInformationObject: Record<
 			'Accept your payment with EPS — a common payment method in Austria.',
 			'woocommerce-payments'
 		),
-		icon: EpsIcon,
+		icon: ( { className, ...props } ) => (
+			<img
+				className={ classNames( 'payment-method__icon', className ) }
+				src={ EpsAsset }
+				alt={ __( 'EPS', 'woocommerce-payments' ) }
+				{ ...props }
+			/>
+		),
 		currencies: [ 'EUR' ],
 		stripe_key: 'eps_payments',
 		allows_manual_capture: false,
@@ -148,7 +184,14 @@ const PaymentMethodInformationObject: Record<
 			'Expand your business with giropay — Germany’s second most popular payment system.',
 			'woocommerce-payments'
 		),
-		icon: GiropayIcon,
+		icon: ( { className, ...props } ) => (
+			<img
+				className={ classNames( 'payment-method__icon', className ) }
+				src={ GiropayAsset }
+				alt={ __( 'giropay', 'woocommerce-payments' ) }
+				{ ...props }
+			/>
+		),
 		currencies: [ 'EUR' ],
 		stripe_key: 'giropay_payments',
 		allows_manual_capture: false,
@@ -162,7 +205,14 @@ const PaymentMethodInformationObject: Record<
 			'Expand your business with iDEAL — Netherlands’s most popular payment method.',
 			'woocommerce-payments'
 		),
-		icon: IdealIcon,
+		icon: ( { className, ...props } ) => (
+			<img
+				className={ classNames( 'payment-method__icon', className ) }
+				src={ IdealAsset }
+				alt={ __( 'iDEAL', 'woocommerce-payments' ) }
+				{ ...props }
+			/>
+		),
 		currencies: [ 'EUR' ],
 		stripe_key: 'ideal_payments',
 		allows_manual_capture: false,
@@ -176,7 +226,14 @@ const PaymentMethodInformationObject: Record<
 			'Accept payments with Przelewy24 (P24), the most popular payment method in Poland.',
 			'woocommerce-payments'
 		),
-		icon: P24Icon,
+		icon: ( { className, ...props } ) => (
+			<img
+				className={ classNames( 'payment-method__icon', className ) }
+				src={ P24Asset }
+				alt={ __( 'Przelewy24 (P24)', 'woocommerce-payments' ) }
+				{ ...props }
+			/>
+		),
 		currencies: [ 'EUR', 'PLN' ],
 		stripe_key: 'p24_payments',
 		allows_manual_capture: false,
@@ -190,7 +247,14 @@ const PaymentMethodInformationObject: Record<
 			'Reach 500 million customers and over 20 million businesses across the European Union.',
 			'woocommerce-payments'
 		),
-		icon: SepaIcon,
+		icon: ( { className, ...props } ) => (
+			<img
+				className={ classNames( 'payment-method__icon', className ) }
+				src={ SepaAsset }
+				alt={ __( 'SEPA Direct Debit', 'woocommerce-payments' ) }
+				{ ...props }
+			/>
+		),
 		currencies: [ 'EUR' ],
 		stripe_key: 'sepa_debit_payments',
 		allows_manual_capture: false,
@@ -204,7 +268,14 @@ const PaymentMethodInformationObject: Record<
 			'Accept secure bank transfers from Austria, Belgium, Germany, Italy, Netherlands, and Spain.',
 			'woocommerce-payments'
 		),
-		icon: SofortIcon,
+		icon: ( { className, ...props } ) => (
+			<img
+				className={ classNames( 'payment-method__icon', className ) }
+				src={ SofortAsset }
+				alt={ __( 'Sofort', 'woocommerce-payments' ) }
+				{ ...props }
+			/>
+		),
 		currencies: [ 'EUR' ],
 		stripe_key: 'sofort_payments',
 		allows_manual_capture: false,
@@ -218,7 +289,14 @@ const PaymentMethodInformationObject: Record<
 			'Allow customers to pay over time with Affirm.',
 			'woocommerce-payments'
 		),
-		icon: AffirmIcon,
+		icon: ( { className, ...props } ) => (
+			<img
+				className={ classNames( 'payment-method__icon', className ) }
+				src={ AffirmAsset }
+				alt={ __( 'Affirm', 'woocommerce-payments' ) }
+				{ ...props }
+			/>
+		),
 		currencies: [ 'USD', 'CAD' ],
 		stripe_key: 'affirm_payments',
 		allows_manual_capture: false,
@@ -241,7 +319,18 @@ const PaymentMethodInformationObject: Record<
 						'Allow customers to pay over time with Afterpay.',
 						'woocommerce-payments'
 				  ),
-		icon: 'GB' === accountCountry ? ClearpayIcon : AfterpayIcon,
+		icon: ( { className, ...props } ) => (
+			<img
+				className={ classNames( 'payment-method__icon', className ) }
+				src={ 'GB' === accountCountry ? ClearpayAsset : AfterpayAsset }
+				alt={
+					'GB' === accountCountry
+						? __( 'Clearpay', 'woocommerce-payments' )
+						: __( 'Afterpay', 'woocommerce-payments' )
+				}
+				{ ...props }
+			/>
+		),
 		currencies: [ 'USD', 'AUD', 'CAD', 'NZD', 'GBP' ],
 		stripe_key: 'afterpay_clearpay_payments',
 		allows_manual_capture: false,
@@ -255,7 +344,14 @@ const PaymentMethodInformationObject: Record<
 			'Let your customers pay with JCB, the only international payment brand based in Japan.',
 			'woocommerce-payments'
 		),
-		icon: JCBIcon,
+		icon: ( { className, ...props } ) => (
+			<img
+				className={ classNames( 'payment-method__icon', className ) }
+				src={ JCBAsset }
+				alt={ __( 'JCB', 'woocommerce-payments' ) }
+				{ ...props }
+			/>
+		),
 		currencies: [ 'JPY' ],
 		stripe_key: 'jcb_payments',
 		allows_manual_capture: false,
@@ -269,7 +365,14 @@ const PaymentMethodInformationObject: Record<
 			'Allow customers to pay over time or pay now with Klarna.',
 			'woocommerce-payments'
 		),
-		icon: KlarnaIcon,
+		icon: ( { className, ...props } ) => (
+			<img
+				className={ classNames( 'payment-method__icon', className ) }
+				src={ KlarnaAsset }
+				alt={ __( 'Klarna', 'woocommerce-payments' ) }
+				{ ...props }
+			/>
+		),
 		currencies: [ 'EUR', 'GBP', 'USD', 'DKK', 'NOK', 'SEK' ],
 		stripe_key: 'klarna_payments',
 		allows_manual_capture: false,
@@ -283,7 +386,14 @@ const PaymentMethodInformationObject: Record<
 			'A popular digital wallet for cashless payments in Singapore.',
 			'woocommerce-payments'
 		),
-		icon: GrabPayIcon,
+		icon: ( { className, ...props } ) => (
+			<img
+				className={ classNames( 'payment-method__icon', className ) }
+				src={ GrabPayAsset }
+				alt={ __( 'GrabPay', 'woocommerce-payments' ) }
+				{ ...props }
+			/>
+		),
 		currencies: [ 'SGD' ],
 		stripe_key: 'grabpay_payments',
 		allows_manual_capture: false,
@@ -297,7 +407,14 @@ const PaymentMethodInformationObject: Record<
 			'A digital wallet popular with customers from China.',
 			'woocommerce-payments'
 		),
-		icon: WeChatPayIcon,
+		icon: ( { className, ...props } ) => (
+			<img
+				className={ classNames( 'payment-method__icon', className ) }
+				src={ WeChatPayAsset }
+				alt={ __( 'WeChat Pay', 'woocommerce-payments' ) }
+				{ ...props }
+			/>
+		),
 		currencies: [
 			'USD',
 			'CNY',

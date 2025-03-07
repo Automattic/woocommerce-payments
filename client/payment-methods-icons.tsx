@@ -8,135 +8,42 @@ import classNames from 'classnames';
 /**
  * Internal dependencies
  */
-import AlipayAsset from 'assets/images/payment-methods/alipay-logo.svg';
-import BancontactAsset from 'assets/images/payment-methods/bancontact.svg?asset';
-import EpsAsset from 'assets/images/payment-methods/eps.svg?asset';
-import GiropayAsset from 'assets/images/payment-methods/giropay.svg?asset';
-import SofortAsset from 'assets/images/payment-methods/sofort.svg?asset';
-import SepaAsset from 'assets/images/payment-methods/sepa-debit.svg?asset';
-import P24Asset from 'assets/images/payment-methods/p24.svg?asset';
-import IdealAsset from 'assets/images/payment-methods/ideal.svg?asset';
-import BankDebitAsset from 'assets/images/payment-methods/bank-debit.svg?asset';
-import AffirmAsset from 'assets/images/payment-methods/affirm-badge.svg?asset';
-import AfterpayAsset from 'assets/images/payment-methods/afterpay-logo.svg?asset';
-import ClearpayAsset from 'assets/images/payment-methods/clearpay.svg?asset';
-import JCBAsset from 'assets/images/payment-methods/jcb.svg?asset';
-import KlarnaAsset from 'assets/images/payment-methods/klarna.svg?asset';
-import GrabPayAsset from 'assets/images/payment-methods/grabpay.svg?asset';
 import WooAsset from 'assets/images/payment-methods/woo.svg?asset';
 import WooAssetShort from 'assets/images/payment-methods/woo-short.svg?asset';
 import ApplePayAsset from 'assets/images/cards/apple-pay.svg?asset';
 import GooglePayAsset from 'assets/images/cards/google-pay.svg?asset';
 import LinkAsset from 'assets/images/payment-methods/link.svg?asset';
-import CreditCardAsset from 'assets/images/payment-methods/cc.svg?asset';
-import WeChatPayAsset from 'assets/images/payment-methods/wechat-pay.svg?asset';
 import './style.scss';
 
-const iconComponent = (
-	src: string,
-	alt: string,
-	border = true
-): ReactImgFuncComponent => ( { className, ...props } ) => (
+const iconComponent = ( src: string, alt: string ): ReactImgFuncComponent => ( {
+	className,
+	...props
+} ) => (
 	<img
-		className={ classNames(
-			'payment-method__icon',
-			border ? '' : 'no-border',
-			className
-		) }
+		className={ classNames( 'payment-method__icon', className ) }
 		src={ src }
 		alt={ alt }
 		{ ...props }
 	/>
 );
 
-export const AffirmIcon = iconComponent(
-	AffirmAsset,
-	__( 'Affirm', 'woocommerce-payments' )
-);
-export const AfterpayIcon = iconComponent(
-	AfterpayAsset,
-	__( 'Afterpay', 'woocommerce-payments' )
-);
-export const ClearpayIcon = iconComponent(
-	ClearpayAsset,
-	__( 'Clearpay', 'woocommerce-payments' )
-);
 export const ApplePayIcon = iconComponent(
 	ApplePayAsset,
 	__( 'Apple Pay', 'woocommerce-payments' )
-);
-export const AlipayIcon = iconComponent(
-	AlipayAsset,
-	__( 'Alipay', 'woocommerce-payments' )
-);
-export const BancontactIcon = iconComponent(
-	BancontactAsset,
-	__( 'Bancontact', 'woocommerce-payments' )
-);
-export const BankDebitIcon = iconComponent(
-	BankDebitAsset,
-	__( 'BECS Direct Debit', 'woocommerce-payments' )
-);
-export const CreditCardIcon = iconComponent(
-	CreditCardAsset,
-	__( 'Credit card / Debit card', 'woocommerce-payments' ),
-	false
-);
-export const EpsIcon = iconComponent(
-	EpsAsset,
-	__( 'EPS', 'woocommerce-payments' )
-);
-export const GiropayIcon = iconComponent(
-	GiropayAsset,
-	__( 'Giropay', 'woocommerce-payments' )
 );
 export const GooglePayIcon = iconComponent(
 	GooglePayAsset,
 	__( 'Google Pay', 'woocommerce-payments' )
 );
-export const IdealIcon = iconComponent(
-	IdealAsset,
-	__( 'iDEAL', 'woocommerce-payments' )
-);
-export const JCBIcon = iconComponent(
-	JCBAsset,
-	__( 'JCB', 'woocommerce-payments' )
-);
-export const KlarnaIcon = iconComponent(
-	KlarnaAsset,
-	__( 'Klarna', 'woocommerce-payments' )
-);
 export const LinkIcon = iconComponent(
 	LinkAsset,
 	__( 'Link', 'woocommerce-payments' )
 );
-export const P24Icon = iconComponent(
-	P24Asset,
-	__( 'Przelewy24 (P24)', 'woocommerce-payments' )
-);
-export const SepaIcon = iconComponent(
-	SepaAsset,
-	__( 'SEPA Direct Debit', 'woocommerce-payments' )
-);
-export const SofortIcon = iconComponent(
-	SofortAsset,
-	__( 'Sofort', 'woocommerce-payments' )
-);
-export const GrabPayIcon = iconComponent(
-	GrabPayAsset,
-	__( 'GrabPay', 'woocommerce-payments' )
-);
-export const WeChatPayIcon = iconComponent(
-	WeChatPayAsset,
-	__( 'WeChat Pay', 'woocommerce-payments' )
-);
 export const WooIcon = iconComponent(
 	WooAsset,
-	__( 'WooPay', 'woocommerce-payments' ),
-	false
+	__( 'WooPay', 'woocommerce-payments' )
 );
 export const WooIconShort = iconComponent(
 	WooAssetShort,
-	__( 'WooPay', 'woocommerce-payments' ),
-	false
+	__( 'WooPay', 'woocommerce-payments' )
 );
