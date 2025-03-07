@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Scoped CSS selectors for WP components to prevent unintended styling on other pages

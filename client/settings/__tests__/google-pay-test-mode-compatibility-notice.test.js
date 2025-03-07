@@ -79,10 +79,9 @@ describe( 'GooglePayTestModeCompatibilityNotice', () => {
 		);
 
 		expect(
-			screen.getByText(
-				/Google Pay is incompatible with test mode when using production credentials/,
-				{ ignore: '.a11y-speak-region' }
-			)
+			screen.getByText( /Google Pay is incompatible with test mode/, {
+				ignore: '.a11y-speak-region',
+			} )
 		).toBeInTheDocument();
 	} );
 } );

@@ -209,7 +209,7 @@ describe( 'MerchantFeedbackPrompt', () => {
 		).not.toBeInTheDocument();
 	} );
 
-	it( 'records event when Yes button is clicked', () => {
+	it( 'opens the positive feedback modal and records event when Yes button is clicked', () => {
 		// First render
 		const { rerender } = render( <MaybeShowMerchantFeedbackPrompt /> );
 
@@ -231,6 +231,12 @@ describe( 'MerchantFeedbackPrompt', () => {
 		expect(
 			screen.queryByText( 'Are you satisfied with WooPayments?' )
 		).not.toBeInTheDocument();
+
+		// The positive feedback modal should be rendered
+		expect( screen.getByText( 'Share your feedback' ) ).toBeInTheDocument();
+		expect(
+			screen.getByText( /Would you mind leaving us a quick review/ )
+		).toBeInTheDocument();
 	} );
 
 	it( 'records event when No button is clicked', () => {
