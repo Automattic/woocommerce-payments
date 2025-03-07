@@ -876,6 +876,25 @@ class WC_Payments_Utils {
 	}
 
 	/**
+	 * Check if any BNPL method is available for a given country.
+	 *
+	 * @param array  $enabled_methods Array of enabled BNPL methods.
+	 * @param string $country_code Country code.
+	 * @param string $currency_code Currency code.
+	 * @return bool True if any BNPL method is available, false otherwise.
+	 */
+	public static function is_any_bnpl_supporting_country( array $enabled_methods, string $country_code, string $currency_code ): bool {
+		foreach ( $enabled_methods as $method ) {
+			$limits = self::get_bnpl_limits_per_currency( $method );
+			if ( isset( $limits[ $currency_code ][ $country_code ] ) ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
 	 * Saves the minimum amount required for transactions in a given currency.
 	 *
 	 * @param string $currency The currency.

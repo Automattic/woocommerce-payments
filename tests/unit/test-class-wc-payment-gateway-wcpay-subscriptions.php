@@ -265,7 +265,15 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 
 	public function test_update_failing_payment_method_does_not_copy_method_if_renewal_has_no_method() {
 		$subscription  = WC_Helper_Order::create_order( self::USER_ID );
-		$renewal_order = WC_Helper_Order::create_order( self::USER_ID );
+		$renewal_order = $this->createMock( WC_Order::class );
+
+		$renewal_order->expects( $this->once() )
+			->method( 'get_payment_tokens' )
+			->willReturn( [] );
+
+		$renewal_order->expects( $this->once() )
+			->method( 'add_order_note' )
+			->with( 'Unable to update subscription payment method: No valid payment token or method found.' );
 
 		$this->wcpay_gateway->update_failing_payment_method( $subscription, $renewal_order );
 

@@ -120,7 +120,7 @@ const composePaymentSummaryItems = ( {
 				: '–',
 		},
 		{
-			title: __( 'Channel', 'woocommerce-payments' ),
+			title: __( 'Sales channel', 'woocommerce-payments' ),
 			content: (
 				<span>
 					{ isTapToPay( metadata?.reader_model )
@@ -199,7 +199,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 
 	const { authorization } = useAuthorization(
 		charge.payment_intent as string,
-		charge.order?.number as number,
+		charge.order?.id as number,
 		shouldFetchAuthorization
 	);
 
@@ -458,7 +458,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 							{ ! isLoading && isFraudOutcomeReview && (
 								<div className="payment-details-summary__fraud-outcome-action">
 									<CancelAuthorizationButton
-										orderId={ charge.order?.number || 0 }
+										orderId={ charge.order?.id || 0 }
 										paymentIntentId={
 											charge.payment_intent || ''
 										}
@@ -484,7 +484,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 
 									<CaptureAuthorizationButton
 										buttonIsPrimary
-										orderId={ charge.order?.number || 0 }
+										orderId={ charge.order?.id || 0 }
 										paymentIntentId={
 											charge.payment_intent || ''
 										}
@@ -599,7 +599,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 																	charge.payment_intent,
 																order_id:
 																	charge.order
-																		?.number,
+																		?.id,
 															}
 														);
 														window.location =
@@ -679,7 +679,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 							actions={
 								! isFraudOutcomeReview ? (
 									<CaptureAuthorizationButton
-										orderId={ charge.order?.number || 0 }
+										orderId={ charge.order?.id || 0 }
 										paymentIntentId={
 											charge.payment_intent || ''
 										}

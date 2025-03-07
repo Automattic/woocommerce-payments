@@ -18,15 +18,6 @@ import { TransactionsList } from '../';
 import { useTransactions, useTransactionsSummary } from 'data/index';
 import type { Transaction } from 'data/transactions/hooks';
 
-jest.mock( '@woocommerce/csv-export', () => {
-	const actualModule = jest.requireActual( '@woocommerce/csv-export' );
-
-	return {
-		...actualModule,
-		downloadCSVFile: jest.fn(),
-	};
-} );
-
 jest.mock( '@woocommerce/data', () => {
 	const actualModule = jest.requireActual( '@woocommerce/data' );
 
@@ -117,7 +108,8 @@ const getMockTransactions: () => Transaction[] = () => [
 		type: 'refund',
 		source: 'visa',
 		order: {
-			number: 123,
+			id: 123,
+			number: 'custom-123',
 			url: 'https://example.com/order/123',
 			// eslint-disable-next-line camelcase
 			customer_url: 'https://example.com/customer/my-name',
@@ -148,7 +140,8 @@ const getMockTransactions: () => Transaction[] = () => [
 		type: 'charge',
 		source: 'mastercard',
 		order: {
-			number: 125,
+			id: 123,
+			number: 'custom-125',
 			url: 'https://example.com/order/125',
 			// eslint-disable-next-line camelcase
 			customer_url: 'https://example.com/customer/my-name',
@@ -179,7 +172,8 @@ const getMockTransactions: () => Transaction[] = () => [
 		type: 'charge',
 		source: 'visa',
 		order: {
-			number: 335,
+			id: 123,
+			number: 'custom-335',
 			url: 'https://example.com/order/335',
 			// eslint-disable-next-line camelcase
 			customer_url: 'https://example.com/customer/my-name',
@@ -433,7 +427,7 @@ describe( 'Transactions list', () => {
 		const mockTransactions = getMockTransactions();
 		mockTransactions[ 0 ].order.subscriptions = [
 			{
-				number: 246,
+				number: 'custom-246',
 				url: 'https://example.com/subscription/246',
 			},
 		];

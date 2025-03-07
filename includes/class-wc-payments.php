@@ -46,6 +46,7 @@ use WCPay\Compatibility_Service;
 use WCPay\Duplicates_Detection_Service;
 use WCPay\Payment_Methods\Grabpay_Payment_Method;
 use WCPay\WC_Payments_Currency_Manager;
+use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 
 /**
  * Main class for the WooPayments extension. Its responsibility is to initialize the extension.
@@ -348,6 +349,7 @@ class WC_Payments {
 		}
 
 		add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
+		add_action( 'admin_init', [ __CLASS__, 'remove_deprecated_notes' ] );
 		add_action( 'init', [ __CLASS__, 'install_actions' ] );
 
 		add_action( 'woocommerce_blocks_payment_method_type_registration', [ __CLASS__, 'register_checkout_gateway' ] );
@@ -465,7 +467,6 @@ class WC_Payments {
 		include_once __DIR__ . '/exceptions/class-invalid-price-exception.php';
 		include_once __DIR__ . '/exceptions/class-fraud-ruleset-exception.php';
 		include_once __DIR__ . '/exceptions/class-fraud-prevention-enabled-exception.php';
-		include_once __DIR__ . '/exceptions/class-new-process-payment-exception.php';
 		include_once __DIR__ . '/exceptions/class-order-not-found-exception.php';
 		include_once __DIR__ . '/exceptions/class-order-id-mismatch-exception.php';
 		include_once __DIR__ . '/exceptions/class-rate-limiter-enabled-exception.php';
@@ -587,10 +588,24 @@ class WC_Payments {
 		];
 
 		$payment_methods = [];
+		// Initialize legacy payment methods.
 		foreach ( $payment_method_classes as $payment_method_class ) {
 			$payment_method                               = new $payment_method_class( self::$token_service );
 			$payment_methods[ $payment_method->get_id() ] = $payment_method;
 		}
+
+		// Initialize definition-based payment methods.
+		// Initialize and get payment method classes from the registry for those that have been converted.
+		$registry = PaymentMethodDefinitionRegistry::instance();
+		$registry->init();
+
+		$payment_method_definitions = $registry->get_all_payment_method_definitions();
+
+		foreach ( $payment_method_definitions as $definition_class ) {
+			$payment_method                               = new UPE_Payment_Method( self::$token_service, $definition_class );
+			$payment_methods[ $payment_method->get_id() ] = $payment_method;
+		}
+
 		foreach ( $payment_methods as $payment_method ) {
 			self::$payment_method_map[ $payment_method->get_id() ] = $payment_method;
 
@@ -739,7 +754,7 @@ class WC_Payments {
 		}
 
 		// Load Stripe Billing subscription integration.
-		if ( self::should_load_stripe_billing_integration() ) {
+		if ( WC_Payments_Features::is_stripe_billing_eligible() ) {
 			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions.php';
 			WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::$order_service, self::$account, self::$token_service );
 		}
@@ -940,6 +955,9 @@ class WC_Payments {
 				'wc_payments_payouts_hidden_columns',
 				'wc_payments_disputes_hidden_columns',
 				'wc_payments_documents_hidden_columns',
+
+				// WPORG 2025 merchant feedback prompt user dismissed state.
+				'wc_payments_wporg_review_2025_prompt_dismissed',
 			]
 		);
 	}
@@ -1502,9 +1520,6 @@ class WC_Payments {
 		}
 
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
-			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-qualitative-feedback.php';
-			WC_Payments_Notes_Qualitative_Feedback::possibly_add_note();
-
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-https-for-checkout.php';
 			WC_Payments_Notes_Set_Https_For_Checkout::possibly_add_note();
 
@@ -1518,6 +1533,18 @@ class WC_Payments {
 		}
 
 		add_filter( 'admin_notices', [ __CLASS__, 'wcpay_show_old_woocommerce_for_hungary_sweden_and_czech_republic' ] );
+	}
+
+	/**
+	 * Removes deprecated notes i.e. no longer required notes.
+	 *
+	 * @return void
+	 */
+	public static function remove_deprecated_notes() {
+		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '4.4.0', '>=' ) ) {
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-qualitative-feedback.php';
+			WC_Payments_Notes_Qualitative_Feedback::possibly_delete_note();
+		}
 	}
 
 	/**

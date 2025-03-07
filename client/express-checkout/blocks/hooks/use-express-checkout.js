@@ -22,6 +22,7 @@ import {
 	onConfirmHandler,
 	onReadyHandler,
 } from 'wcpay/express-checkout/event-handlers';
+import { SHIPPING_RATES_UPPER_LIMIT_COUNT } from 'wcpay/express-checkout/constants';
 
 export const useExpressCheckout = ( {
 	api,
@@ -68,15 +69,15 @@ export const useExpressCheckout = ( {
 					0;
 
 				if ( hasValidRates ) {
-					shippingRates = shippingData.shippingRates[ 0 ].shipping_rates.map(
-						( rate ) => {
+					shippingRates = shippingData.shippingRates[ 0 ].shipping_rates
+						.map( ( rate ) => {
 							return {
 								id: rate.rate_id,
 								amount: parseInt( rate.price, 10 ),
 								displayName: rate.name,
 							};
-						}
-					);
+						} )
+						.slice( 0, SHIPPING_RATES_UPPER_LIMIT_COUNT );
 				} else {
 					shippingRates = [
 						{

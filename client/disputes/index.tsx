@@ -44,6 +44,7 @@ import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
 import { useReportExport } from 'wcpay/hooks/use-report-export';
 import { useDispatch } from '@wordpress/data';
+import { MaybeShowMerchantFeedbackPrompt } from 'wcpay/merchant-feedback-prompt';
 
 const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 	{
@@ -345,15 +346,16 @@ export const DisputesList = (): JSX.Element => {
 	const downloadable = !! rows.length;
 
 	const onDownload = async () => {
-		recordEvent( 'wcpay_disputes_download', {
-			exported_disputes: rows.length,
-			total_disputes: disputesSummary.count,
-		} );
-
 		// We destructure page and path to get the right params.
 		// eslint-disable-next-line @typescript-eslint/no-unused-vars
 		const { page, path, ...params } = getQuery();
 		const userEmail = wcpaySettings.currentUserEmail;
+
+		recordEvent( 'wcpay_csv_export_click', {
+			row_type: 'disputes',
+			source: path,
+			exported_row_count: disputesSummary.count,
+		} );
 
 		const userLocale = wcpaySettings.userLocale.code;
 		const {
@@ -445,6 +447,7 @@ export const DisputesList = (): JSX.Element => {
 
 	return (
 		<Page>
+			<MaybeShowMerchantFeedbackPrompt />
 			<TestModeNotice currentPage="disputes" />
 			<DisputesFilters storeCurrencies={ storeCurrencies } />
 			<TableCard

@@ -96,11 +96,11 @@ class WC_Payments_Product_Service {
 		if ( WC_Payments_Features::should_use_stripe_billing() ) {
 			add_action( 'shutdown', [ $this, 'create_or_update_products' ] );
 			add_action( 'untrashed_post', [ $this, 'maybe_unarchive_product' ] );
+			add_action( 'wp_trash_post', [ $this, 'maybe_archive_product' ] );
 
 			$this->add_product_update_listeners();
 		}
 
-		add_action( 'wp_trash_post', [ $this, 'maybe_archive_product' ] );
 		add_filter( 'woocommerce_duplicate_product_exclude_meta', [ $this, 'exclude_meta_wcpay_product' ] );
 	}
 
@@ -201,6 +201,10 @@ class WC_Payments_Product_Service {
 	 * @param int $product_id The ID of the product to handle.
 	 */
 	public function maybe_schedule_product_create_or_update( int $product_id ) {
+		if ( ! class_exists( 'WC_Subscriptions_Product' ) ) {
+			return;
+		}
+
 		// Skip products which have already been scheduled or aren't subscriptions.
 		$product = wc_get_product( $product_id );
 		if ( ! $product || isset( $this->products_to_update[ $product_id ] ) || ! WC_Subscriptions_Product::is_subscription( $product ) ) {
@@ -292,7 +296,7 @@ class WC_Payments_Product_Service {
 	 * @param WC_Product $product The product to update.
 	 */
 	public function update_products( WC_Product $product ) {
-		if ( ! WC_Subscriptions_Product::is_subscription( $product ) ) {
+		if ( ! class_exists( 'WC_Subscriptions_Product' ) || ! WC_Subscriptions_Product::is_subscription( $product ) ) {
 			return;
 		}
 
@@ -343,6 +347,10 @@ class WC_Payments_Product_Service {
 	 * @param int $post_id The ID of the post to handle. Only subscription product IDs will be archived in WC Pay.
 	 */
 	public function maybe_archive_product( int $post_id ) {
+		if ( ! class_exists( 'WC_Subscriptions_Product' ) ) {
+			return;
+		}
+
 		$product = wc_get_product( $post_id );
 
 		if ( $product && WC_Subscriptions_Product::is_subscription( $product ) ) {
@@ -360,6 +368,10 @@ class WC_Payments_Product_Service {
 	 * @param int $post_id The ID of the post to handle. Only Subscription product post IDs will be unarchived in WC Pay.
 	 */
 	public function maybe_unarchive_product( int $post_id ) {
+		if ( ! class_exists( 'WC_Subscriptions_Product' ) ) {
+			return;
+		}
+
 		$product = wc_get_product( $post_id );
 
 		if ( $product && WC_Subscriptions_Product::is_subscription( $product ) ) {
@@ -447,7 +459,7 @@ class WC_Payments_Product_Service {
 	 * @param int $product_id ID of the product that's being saved.
 	 */
 	public function limit_subscription_product_intervals( $product_id ) {
-		if ( $this->is_subscriptions_plugin_active() ) {
+		if ( $this->is_subscriptions_plugin_active() || ! class_exists( 'WC_Subscriptions_Product' ) ) {
 			return;
 		}
 
@@ -488,7 +500,7 @@ class WC_Payments_Product_Service {
 	 * @param int $index Variation index in the incoming array.
 	 */
 	public function limit_subscription_variation_intervals( $product_id, $index ) {
-		if ( $this->is_subscriptions_plugin_active() ) {
+		if ( $this->is_subscriptions_plugin_active() || ! class_exists( 'WC_Subscriptions_Product' ) ) {
 			return;
 		}
 
@@ -780,6 +792,10 @@ class WC_Payments_Product_Service {
 	public function get_wcpay_price_id( WC_Product $product, $test_mode = null ): string {
 		wc_deprecated_function( __FUNCTION__, '3.3.0' );
 		$price_id = $product->get_meta( self::get_wcpay_price_id_option( $test_mode ), true );
+
+		if ( ! class_exists( 'WC_Subscriptions_Product' ) ) {
+			return $price_id;
+		}
 
 		// If the subscription product doesn't have a WC Pay price ID, create one now.
 		if ( empty( $price_id ) && WC_Subscriptions_Product::is_subscription( $product ) ) {
