@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Skip email input search in pay for order flow and use email provided in order data for WooPay iframe.
