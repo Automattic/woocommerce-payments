@@ -198,7 +198,10 @@ class WC_Payments_Admin {
 		// If the store is transitioning from coming soon to live, Stripe should be notified.
 		// This is triggered by updating the account business URL.
 		if ( 'no' === $coming_soon_new_value && $coming_soon_value !== $coming_soon_new_value ) {
-			$this->wcpay_gateway->update_account_settings( [ 'account_business_url' => $this->account->get_business_url() ] );
+			$response = $this->wcpay_gateway->update_account_settings( [ 'account_business_url' => $this->account->get_business_url() ] );
+			if ( is_wp_error( $response ) ) {
+				Logger::error( 'Failed to update account business URL.' );
+			}
 		}
 	}
 
