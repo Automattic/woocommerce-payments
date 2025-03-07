@@ -91,7 +91,7 @@ const OnboardingPage: React.FC = () => {
 	}, [] );
 
 	return (
-		<Page className="wcpay-onboarding-prototype">
+		<Page className="wcpay-onboarding-mox">
 			<OnboardingContextProvider initialData={ initialData }>
 				<OnboardingStepper />
 			</OnboardingContextProvider>
