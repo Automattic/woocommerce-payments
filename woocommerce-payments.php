@@ -86,6 +86,7 @@ function wcpay_jetpack_init() {
 	if ( ! wcpay_check_old_jetpack_version() ) {
 		return;
 	}
+	// TODO - check the convo https://github.com/Automattic/woocommerce-payments/pull/10489#discussion_r1982481513.
 	$connection_version = Automattic\Jetpack\Connection\Package_Version::PACKAGE_VERSION;
 
 	$custom_content = version_compare( $connection_version, '6.1.0', '>' ) ?
@@ -344,6 +345,8 @@ function wcpay_get_jetpack_idc_custom_content(): array {
 			__( '%s Safe Mode', 'woocommerce-payments' ),
 			'WooPayments'
 		),
+		'stayInSafeModeButtonLabel' => __( 'Stay in Safe Mode', 'woocommerce-payments' ),
+		'safeModeTitle'             => __( 'Stay in Safe Mode', 'woocommerce-payments' ),
 		'dynamicSiteUrlText'        => sprintf(
 			/* translators: %s: WooPayments. */
 			__( "<strong>Notice:</strong> It appears that your 'wp-config.php' file might be using dynamic site URL values. Dynamic site URLs could cause %s to enter Safe Mode. <dynamicSiteUrlSupportLink>Learn how to set a static site URL.</dynamicSiteUrlSupportLink>", 'woocommerce-payments' ),
@@ -377,6 +380,7 @@ function wcpay_get_jetpack_idc_custom_content(): array {
 			'WooPayments'
 		);
 
+		// Regular "Start Fresh" card body text - used for non-development sites.
 		$custom_content['startFreshCardBodyText'] = sprintf(
 			/* translators: %1$s: The current site domain name. %2$s: The original site domain name. Please keep hostname tags in your translation so that they can be formatted properly. %3$s: WooPayments. */
 			__(
@@ -385,6 +389,28 @@ function wcpay_get_jetpack_idc_custom_content(): array {
 			),
 			$current_url,
 			$wpcom_url,
+			'WooPayments'
+		);
+
+		// Start Fresh card body text when in the development mode.
+		$custom_content['startFreshCardBodyTextDev'] = sprintf(
+			/* translators: %1$s: The current site domain name. %2$s: The original site domain name. %3$s: WooPayments. */
+			__(
+				'<p><strong>Recommended for</strong></p><list><item>development sites</item><item>sites that need access to all %3$s features</item></list><p><strong>Please note</strong> that creating a fresh connection for <hostname>%1$s</hostname> would require restoring the connection on <hostname>%2$s</hostname> if that site is cloned back to production. <safeModeLink>Learn more</safeModeLink>.</p>',
+				'woocommerce-payments'
+			),
+			$current_url,
+			$wpcom_url,
+			'WooPayments'
+		);
+
+		// Safe Mode card body text when in the development mode.
+		$custom_content['safeModeCardBodyText'] = sprintf(
+		/* translators: %s: WooPayments. */
+			__(
+				'<p><strong>Recommended for</strong></p><list><item>short-lived test sites</item><item>sites that will be cloned back to production after testing</item></list><p><strong>Please note</strong> that staying in Safe Mode will cause issues for some %s features such as dispute and refund updates, payment confirmations for local payment methods. <safeModeLink>Learn more</safeModeLink>.</p>',
+				'woocommerce-payments'
+			),
 			'WooPayments'
 		);
 	}
