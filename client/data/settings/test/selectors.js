@@ -10,12 +10,8 @@ import {
 	isSavingSettings,
 	getPaymentRequestLocations,
 	getIsPaymentRequestEnabled,
-	getAccountBusinessName,
-	getAccountBusinessURL,
-	getAccountBusinessSupportAddress,
 	getAccountBusinessSupportEmail,
 	getAccountBusinessSupportPhone,
-	getAccountBrandingLogo,
 	getIsWooPayEnabled,
 	getWooPayCustomMessage,
 	getWooPayStoreLogo,
@@ -282,12 +278,6 @@ describe( 'Settings selectors tests', () => {
 	} );
 
 	describe.each( [
-		{ getFunc: getAccountBusinessName, setting: 'account_business_name' },
-		{ getFunc: getAccountBusinessURL, setting: 'account_business_url' },
-		{
-			getFunc: getAccountBusinessSupportAddress,
-			setting: 'account_business_support_address',
-		},
 		{
 			getFunc: getAccountBusinessSupportEmail,
 			setting: 'account_business_support_email',
@@ -296,7 +286,6 @@ describe( 'Settings selectors tests', () => {
 			getFunc: getAccountBusinessSupportPhone,
 			setting: 'account_business_support_phone',
 		},
-		{ getFunc: getAccountBrandingLogo, setting: 'account_branding_logo' },
 	] )( 'Test get method: %j', ( setting ) => {
 		test( 'returns the value of state.settings.data.${setting.setting}', () => {
 			const state = {
