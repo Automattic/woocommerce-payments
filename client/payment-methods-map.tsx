@@ -188,7 +188,7 @@ const PaymentMethodInformationObject: Record<
 			<img
 				className={ classNames( 'payment-method__icon', className ) }
 				src={ GiropayAsset }
-				alt={ __( 'giropay', 'woocommerce-payments' ) }
+				alt={ __( 'Giropay', 'woocommerce-payments' ) }
 				{ ...props }
 			/>
 		),
