@@ -411,6 +411,16 @@ function wcpay_get_jetpack_idc_custom_content(): array {
 			),
 			'WooPayments'
 		);
+
+		$custom_content['mainBodyTextDev'] = sprintf(
+			/* translators: %1$s: The current site domain name. %2$s: The original site domain name. */
+			__(
+				'<span>Your site is in Safe Mode because <hostname>%1$s</hostname> appears to be a staging or development copy of <hostname>%2$s</hostname>.</span> Two sites that are telling WooPayments they’re the same site. <safeModeLink>Learn more about Safe Mode issues</safeModeLink>.',
+				'woocommerce-payments'
+			),
+			$current_url,
+			$wpcom_url,
+		);
 	}
 
 	return $custom_content;
