@@ -10,6 +10,7 @@ import { Modal } from '@wordpress/components';
  */
 import './style.scss';
 import { recordEvent } from 'wcpay/tracks';
+import { dispatch } from '@wordpress/data';
 
 interface NegativeFeedbackModalProps {
 	onRequestClose: () => void;
@@ -74,6 +75,13 @@ export const NegativeFeedbackModal: React.FC< NegativeFeedbackModalProps > = ( {
 								'wcpay_merchant_feedback_prompt_negative_feedback',
 								{ feedback: textareaRef.current?.value || '' }
 							);
+							dispatch( 'core/notices' ).createSuccessNotice(
+								__(
+									'Thank you for your feedback!',
+									'woocommerce-payments'
+								)
+							);
+							onRequestClose();
 						} }
 					>
 						{ __( 'Send', 'woocommerce-payments' ) }
