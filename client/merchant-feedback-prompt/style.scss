@@ -31,17 +31,27 @@
 }
 
 .wcpay-merchant-feedback-modal {
-	.components-modal__content {
-		padding: 0;
-		overflow: hidden;
+	border-radius: 0 !important;
+
+	&__question {
+		font-weight: bold;
 	}
-	&__iframe {
+
+	&__textarea {
 		width: 100%;
-		height: 100%;
-		border: none;
-		min-height: 470px; // Removes the vertical scrollbar.
-		@media ( min-width: 600px ) {
-			width: 600px;
+		min-height: 120px;
+		padding: 8px;
+	}
+
+	&__privacy {
+		a {
+			text-decoration: none;
 		}
+	}
+
+	&__actions {
+		display: flex;
+		justify-content: flex-end;
+		gap: 8px;
 	}
 }

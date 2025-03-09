@@ -251,9 +251,13 @@ export function MaybeShowMerchantFeedbackPrompt() {
 			showPositiveFeedbackModal={ () =>
 				setIsPositiveFeedbackModalOpen( true )
 			}
-			showNegativeFeedbackModal={ () =>
-				setIsNegativeFeedbackModalOpen( true )
-			}
+			showNegativeFeedbackModal={ () => {
+				if ( window.wcTracks.isEnabled ) {
+					setIsNegativeFeedbackModalOpen( true );
+				} else {
+					dismissPrompt();
+				}
+			} }
 		/>
 	);
 }

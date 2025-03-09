@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React, { useRef } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Modal } from '@wordpress/components';
 
@@ -9,7 +9,7 @@ import { Modal } from '@wordpress/components';
  * Internal dependencies
  */
 import './style.scss';
-import Loadable from 'wcpay/components/loadable';
+import { recordEvent } from 'wcpay/tracks';
 
 interface NegativeFeedbackModalProps {
 	onRequestClose: () => void;
@@ -18,7 +18,7 @@ interface NegativeFeedbackModalProps {
 export const NegativeFeedbackModal: React.FC< NegativeFeedbackModalProps > = ( {
 	onRequestClose,
 } ) => {
-	const [ isLoading, setIsLoading ] = useState( true );
+	const textareaRef = useRef< HTMLTextAreaElement >( null );
 
 	return (
 		<Modal
@@ -29,19 +29,57 @@ export const NegativeFeedbackModal: React.FC< NegativeFeedbackModalProps > = ( {
 			shouldCloseOnEsc={ true }
 			onRequestClose={ onRequestClose }
 		>
-			<Loadable isLoading={ isLoading }>
-				<iframe
-					title={ __(
-						'WooPayments Disable Survey',
+			<div className="wcpay-merchant-feedback-modal__content">
+				<p>
+					{ __(
+						'Thanks for sharing your feedback on WooPayments! Your feedback helps us to continue to improve and deliver the best tools for your business.',
 						'woocommerce-payments'
 					) }
-					src="https://automattic.survey.fm/woopayments-feedback-campaign-h1-2025"
-					className="wcpay-merchant-feedback-modal__iframe"
-					onLoad={ () => {
-						setIsLoading( false );
-					} }
+				</p>
+				<p className="wcpay-merchant-feedback-modal__question">
+					{ __(
+						'Would you mind sharing more about why you chose that option?',
+						'woocommerce-payments'
+					) }
+				</p>
+				<textarea
+					ref={ textareaRef }
+					className="wcpay-merchant-feedback-modal__textarea"
+					placeholder={ __(
+						'Share your feedback here…',
+						'woocommerce-payments'
+					) }
 				/>
-			</Loadable>
+				<p className="wcpay-merchant-feedback-modal__privacy">
+					{ __(
+						'Your feedback will be sent to the WooCommerce team. Your personal information is secure and will not be shared with third parties. For more details, please see our',
+						'woocommerce-payments'
+					) }
+					<a href="https://automattic.com/privacy/">
+						{ __( 'privacy policy', 'woocommerce-payments' ) }
+					</a>
+					.
+				</p>
+				<div className="wcpay-merchant-feedback-modal__actions">
+					<button
+						className="components-button"
+						onClick={ onRequestClose }
+					>
+						{ __( 'Close', 'woocommerce-payments' ) }
+					</button>
+					<button
+						className="components-button is-primary"
+						onClick={ () => {
+							recordEvent(
+								'wcpay_merchant_feedback_prompt_negative_feedback',
+								{ feedback: textareaRef.current?.value || '' }
+							);
+						} }
+					>
+						{ __( 'Send', 'woocommerce-payments' ) }
+					</button>
+				</div>
+			</div>
 		</Modal>
 	);
 };
