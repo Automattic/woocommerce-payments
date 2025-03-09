@@ -64,7 +64,12 @@ export const NegativeFeedbackModal: React.FC< NegativeFeedbackModalProps > = ( {
 				<div className="wcpay-merchant-feedback-modal__actions">
 					<button
 						className="components-button"
-						onClick={ onRequestClose }
+						onClick={ () => {
+							recordEvent(
+								'wcpay_merchant_feedback_prompt_close_negative_feedback_modal'
+							);
+							onRequestClose();
+						} }
 					>
 						{ __( 'Close', 'woocommerce-payments' ) }
 					</button>
