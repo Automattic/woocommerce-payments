@@ -890,49 +890,33 @@ class WC_Payments {
 	 */
 	public static function order_woopayments_gateways( $ordering ) {
 		try {
-			$ordering                = (array) $ordering;
-			$woopayments_gateway_ids = self::get_woopayments_gateway_ids();
-			$main_gateway_id         = self::get_gateway()->id;
-			$new_ordering            = [];
+			$ordering = (array) $ordering;
 
-			// If gateway is not in the ordering, add all WooPayments gateways at the beginning.
-			if ( ! isset( $ordering[ $main_gateway_id ] ) || ! is_numeric( $ordering[ $main_gateway_id ] ) ) {
-				$index          = 0;
-				$start_position = empty( $ordering ) ? 0 : ( min( $ordering ) - count( $woopayments_gateway_ids ) );
+			$woopayments_payment_methods = array_flip( self::get_woopayments_gateway_ids() );
+			$main_gateway_id             = self::get_gateway()->id;
+			$main_gateway_position       = $ordering[ $main_gateway_id ] ?? null;
 
-				// Add all WooPayments gateways at the beginning.
-				foreach ( $woopayments_gateway_ids as $gateway_id ) {
-					$new_ordering[ $gateway_id ] = $start_position + $index++;
+			$before = [];
+			$after  = [];
+
+			foreach ( $ordering as $gateway_id => $position ) {
+				if ( null === $main_gateway_position || $position < $main_gateway_position ) {
+					$before[ $gateway_id ] = null; // `null` for now, the position will be set later.
+				} elseif ( $position > $main_gateway_position && ! isset( $woopayments_payment_methods[ $gateway_id ] ) ) {
+					$after[ $gateway_id ] = null; // `null` for now, the position will be set later.
 				}
+			}
 
-				// Add all other gateways after WooPayments gateways.
-				foreach ( $ordering as $gateway_id => $position ) {
-					if ( ! in_array( $gateway_id, $woopayments_gateway_ids, true ) ) {
-						$new_ordering[ $gateway_id ] = $position;
-					}
-				}
+			$new_ordering = [];
+			if ( null === $main_gateway_position ) {
+				$new_ordering = array_merge( $woopayments_payment_methods, $before, $after );
 			} else {
-				$index                 = 0;
-				$main_gateway_position = $ordering[ $main_gateway_id ];
+				$new_ordering = array_merge( $before, $woopayments_payment_methods, $after );
+			}
 
-				// Add gateways that come before the main gateway.
-				foreach ( $ordering as $gateway_id => $position ) {
-					if ( $position < $main_gateway_position && ! in_array( $gateway_id, $woopayments_gateway_ids, true ) ) {
-						$new_ordering[ $gateway_id ] = $index++;
-					}
-				}
-
-				// Add WooPayments gateways.
-				foreach ( $woopayments_gateway_ids as $gateway_id ) {
-					$new_ordering[ $gateway_id ] = $index++;
-				}
-
-				// Add gateways that come after the main gateway.
-				foreach ( $ordering as $gateway_id => $position ) {
-					if ( $position > $main_gateway_position && ! in_array( $gateway_id, $woopayments_gateway_ids, true ) ) {
-						$new_ordering[ $gateway_id ] = $index++;
-					}
-				}
+			$index = 0;
+			foreach ( array_keys( $new_ordering ) as $gateway_id ) {
+				$new_ordering[ $gateway_id ] = $index++;
 			}
 
 			return $new_ordering;
