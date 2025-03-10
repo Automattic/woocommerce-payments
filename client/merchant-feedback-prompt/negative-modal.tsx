@@ -1,16 +1,16 @@
 /**
  * External dependencies
  */
-import React, { useRef } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Modal } from '@wordpress/components';
+import { dispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
-import './style.scss';
 import { recordEvent } from 'wcpay/tracks';
-import { dispatch } from '@wordpress/data';
+import './style.scss';
 
 interface NegativeFeedbackModalProps {
 	onRequestClose: () => void;
@@ -20,6 +20,10 @@ export const NegativeFeedbackModal: React.FC< NegativeFeedbackModalProps > = ( {
 	onRequestClose,
 } ) => {
 	const textareaRef = useRef< HTMLTextAreaElement >( null );
+	// Record tracks event when the modal is opened.
+	useEffect( () => {
+		recordEvent( 'wcpay_merchant_feedback_prompt_negative_modal_view' );
+	}, [] );
 
 	return (
 		<Modal
@@ -28,7 +32,12 @@ export const NegativeFeedbackModal: React.FC< NegativeFeedbackModalProps > = ( {
 			isDismissible={ true }
 			shouldCloseOnClickOutside={ false } // Should be false because of the iframe.
 			shouldCloseOnEsc={ true }
-			onRequestClose={ onRequestClose }
+			onRequestClose={ () => {
+				recordEvent(
+					'wcpay_merchant_feedback_prompt_negative_modal_close_click'
+				);
+				onRequestClose();
+			} }
 		>
 			<div className="wcpay-merchant-feedback-negative-modal__content">
 				<p>
@@ -66,7 +75,7 @@ export const NegativeFeedbackModal: React.FC< NegativeFeedbackModalProps > = ( {
 						className="components-button"
 						onClick={ () => {
 							recordEvent(
-								'wcpay_merchant_feedback_prompt_close_negative_feedback_modal'
+								'wcpay_merchant_feedback_prompt_negative_modal_close_click'
 							);
 							onRequestClose();
 						} }
