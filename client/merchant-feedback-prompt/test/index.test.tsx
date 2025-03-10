@@ -245,6 +245,11 @@ describe( 'MerchantFeedbackPrompt', () => {
 			screen.queryByText( 'Are you satisfied with WooPayments?' )
 		).not.toBeInTheDocument();
 
+		// Expect the modal view event to be recorded
+		expect( recordEvent ).toHaveBeenCalledWith(
+			'wcpay_merchant_feedback_prompt_positive_modal_view'
+		);
+
 		// The positive feedback modal should be rendered
 		expect( screen.getByText( 'Share your feedback' ) ).toBeInTheDocument();
 		expect(
@@ -276,6 +281,11 @@ describe( 'MerchantFeedbackPrompt', () => {
 		expect(
 			screen.queryByText( 'Are you satisfied with WooPayments?' )
 		).not.toBeInTheDocument();
+
+		// Expect the modal view event to be recorded
+		expect( recordEvent ).toHaveBeenCalledWith(
+			'wcpay_merchant_feedback_prompt_negative_modal_view'
+		);
 
 		// The negative feedback modal should be rendered
 		expect( screen.getByText( 'Share your feedback' ) ).toBeInTheDocument();
