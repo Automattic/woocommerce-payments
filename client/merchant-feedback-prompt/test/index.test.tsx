@@ -109,23 +109,6 @@ describe( 'MerchantFeedbackPrompt', () => {
 		document.body.removeChild( portalRoot );
 	} );
 
-	it( 'does not render when the dev feature flag is disabled', () => {
-		global.wcpaySettings = {
-			accountStatus: {
-				campaigns: {
-					wporgReview2025: true,
-				},
-			},
-		};
-
-		render( <MaybeShowMerchantFeedbackPrompt /> );
-
-		// The prompt should not be rendered
-		expect(
-			screen.queryByText( 'Are you satisfied with WooPayments?' )
-		).not.toBeInTheDocument();
-	} );
-
 	it( 'does not render when the account is not eligible for the campaign', () => {
 		global.wcpaySettings = {
 			accountStatus: {
