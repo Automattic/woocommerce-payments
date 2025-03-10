@@ -9,7 +9,7 @@
 	margin-bottom: $gap-small;
 	width: auto;
 
-	// Prevent SnackbarList animations to reduce annoying animations on each page transition.
+	// Prevent SnackbarList animations to reduce annoyance on each page transition.
 	// Required due to the React portal workaround used to render the prompt in the WC footer.
 	&.components-snackbar-list {
 		&__notice-container,
