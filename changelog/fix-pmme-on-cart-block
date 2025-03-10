@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Init PMME container in cart block so that it can be dynamically rendered once the requirements are met.

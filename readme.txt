@@ -87,6 +87,33 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 
 == Changelog ==
 
+= 9.1.0-test-2 - unreleased =
+* Add - Add WeChat Pay response handling.
+* Add - Inform Stripe when a store switch from coming soon to live mode
+* Add - Show failure reason in details page for failed payout. This will help merchants get better support, or understand the next steps needed to fix the failing payouts.
+* Fix - Add an order note when a recurring payment fails or when updating the payment method fails due to a missing or invalid payment token.
+* Fix - fix: GooglePay/ApplePay fail when there are more than 9 shipping options.
+* Fix - fix: GooglePay/ApplePay script dependencies with WooCommerce 9.7
+* Fix - Fix issue where survey modal is not scrollable on smaller screen sizes.
+* Fix - Init PMME container in cart block so that it can be dynamically rendered once the requirements are met.
+* Fix - Make sure that WooPayments gateways follow the main WooPayments card gateway in gateway ordering on the page.
+* Fix - Manual capture fails in the transaction detail screen with a customized order number
+* Fix - Properly extract styles when using the site editor.
+* Fix - Renamed function parameters to avoid reserved keyword conflicts
+* Fix - Scoped CSS selectors for WP components to prevent unintended styling on other pages
+* Fix - Show Express Checkout button previews in template editor
+* Fix - Skip email input search in pay for order flow and use email provided in order data for WooPay iframe.
+* Fix - Skip limits per currency check on admin pages
+* Update - Change wording for Sales Channel, Online Store, In-Person, and In-Person (POS)
+* Update - Enhancements to country select field in onboarding.
+* Update - feat: add compatibility notice for Google Pay with live mode accounts.
+* Update - Jetpack packages in composer
+* Update - Remove the 60 day survey admin note, since it will be redundant after we add the reviews prompt.
+* Update - update: tokenize ECE initialization and update flow on pricing change.
+* Dev - Add centralized payment method definitions to streamline implementation and maintenance of payment methods.
+* Dev - Exclude playwright-report from eslint.
+* Dev - Include transaction ID when requesting card reader fee charges summary.
+
 = 9.0.0 - 2025-02-26 =
 * Add - Add E2E tests for currency switching at checkout.
 * Add - Add GrabPay payment method details to the View Transaction page.
