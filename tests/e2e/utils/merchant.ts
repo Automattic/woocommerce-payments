@@ -230,6 +230,13 @@ export const disableAllEnabledCurrencies = async ( page: Page ) => {
 			.first()
 			.click();
 
+		const removeButtonFromConfirmationModal = page.getByRole( 'button', {
+			name: 'Remove',
+		} );
+		if ( removeButtonFromConfirmationModal ) {
+			await removeButtonFromConfirmationModal.click();
+		}
+
 		const snackbar = page.locator( '.components-snackbar__content', {
 			hasText: 'Enabled currencies updated.',
 		} );
