@@ -27,6 +27,10 @@ import '../style.scss';
  */
 const getVatPrefix = () => {
 	switch ( wcpaySettings.accountStatus.country ) {
+		case 'AU':
+			// AU ABN or ACN numbers are not prefixed.
+			// Based on a test lookup at https://abr.business.gov.au/
+			return '';
 		case 'JP':
 			// Corporate numbers are not prefixed.
 			return '';
@@ -41,6 +45,11 @@ const getVatPrefix = () => {
 
 const getVatTaxIDName = () => {
 	switch ( wcpaySettings.accountStatus.country ) {
+		case 'AU':
+			// Note – AU GST numbers are actually ABN or ACN numbers.
+			// https://vatstack.com/articles/australian-business-number-abn-validation
+			// https://business.gov.au/registrations/register-for-taxes/tax-registration-for-your-business
+			return __( 'GST Number', 'woocommerce-payments' );
 		case 'JP':
 			return __( 'Corporate Number', 'woocommerce-payments' );
 		default:
@@ -50,6 +59,11 @@ const getVatTaxIDName = () => {
 
 const getVatTaxIDRequirementHint = () => {
 	switch ( wcpaySettings.accountStatus.country ) {
+		case 'AU':
+			// To be determined - confirm details before merge.
+			// TODO
+			return __( '', 'woocommerce-payments' );
+
 		case 'JP':
 			// Leaving this blank intentionally, as I don't know what the requirements are in JP.
 			// Better to add this info later than clutter the dialog with vague/assumed legal requirements.
@@ -66,6 +80,12 @@ const getVatTaxIDRequirementHint = () => {
 
 const getVatTaxIDValidationHint = () => {
 	switch ( wcpaySettings.accountStatus.country ) {
+		case 'AU':
+			// https://abr.business.gov.au/Help/AbnFormat
+			return __(
+				'Your ABN or ACN is an 11 digit number.',
+				'woocommerce-payments'
+			);
 		case 'JP':
 			return __(
 				'A 13 digit number, for example 1234567890123.',
