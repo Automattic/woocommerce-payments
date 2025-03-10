@@ -3921,14 +3921,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// with the payment methods which are sent with the payment intent request, otherwise
 				// Stripe returns an error.
 
-				// force_currency_check = 0 is_admin = 0 currency_is_checked = 1.
-				// force_currency_check = 0 is_admin = 1 currency_is_checked = 0.
-				// force_currency_check = 1 is_admin = 0 currency_is_checked = 1.
-				// force_currency_check = 1 is_admin = 1 currency_is_checked = 1.
+				// In order to allow payment methods to be displayed in admin pages (e.g. blocks editor),
+				// we need to skip the currency check (unless force_currency_check is true).
+				// force_currency_check = 0 is_admin = 0 -> skip_currency_check = 0.
+				// force_currency_check = 0 is_admin = 1 -> skip_currency_check = 1.
+				// force_currency_check = 1 is_admin = 0 -> skip_currency_check = 0.
+				// force_currency_check = 1 is_admin = 1 -> skip_currency_check = 0.
 
 				$skip_currency_check       = ! $force_currency_check && is_admin();
 				$processing_payment_method = $this->payment_methods[ $payment_method_id ];
-				if ( $processing_payment_method->is_enabled_at_checkout( $this->get_account_country() ) && ( $skip_currency_check || $processing_payment_method->is_currency_valid( $this->get_account_domestic_currency(), $order_id ) ) ) {
+				if ( $processing_payment_method->is_enabled_at_checkout( $this->get_account_country(), $skip_currency_check ) && ( $skip_currency_check || $processing_payment_method->is_currency_valid( $this->get_account_domestic_currency(), $order_id ) ) ) {
 					$status = $active_payment_methods[ $payment_method_capability_key ]['status'] ?? null;
 					if ( 'active' === $status ) {
 						$enabled_payment_methods[] = $payment_method_id;
