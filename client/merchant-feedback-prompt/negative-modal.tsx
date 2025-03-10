@@ -53,7 +53,7 @@ export const NegativeFeedbackModal: React.FC< NegativeFeedbackModalProps > = ( {
 				/>
 				<p className="wcpay-merchant-feedback-negative-modal__privacy">
 					{ __(
-						'Your feedback will be sent to the WooCommerce team. Your personal information is secure and will not be shared with third parties. For more details, please see our',
+						'Your feedback will be sent to the WooCommerce team. Your personal information is secure and will not be shared with third parties. For more details, please see our ',
 						'woocommerce-payments'
 					) }
 					<a href="https://automattic.com/privacy/">
