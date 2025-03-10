@@ -65,13 +65,15 @@ class WC_Payments_Currency_Manager {
 	 * @return array The currencies keyed with the related payment method
 	 */
 	public function get_enabled_payment_method_currencies() {
-		$enabled_payment_methods          = array_values( $this->gateway->wc_payments_get_payment_method_map() );
+		$enabled_payment_method_ids = $this->gateway->get_upe_enabled_payment_method_ids();
+		// getting all the payment methods that are also present in `$enabled_payment_method_ids`.
+		$enabled_payment_methods          = array_values( array_intersect_key( $this->gateway->wc_payments_get_payment_method_map(), array_flip( $enabled_payment_method_ids ) ) );
 		$account_currency                 = $this->gateway->get_account_domestic_currency();
 		$payment_methods_needing_currency = array_reduce(
 			$enabled_payment_methods,
 			function ( $result, $payment_method_instance ) use ( $account_currency ) {
 				$method = $payment_method_instance->get_id();
-				if ( in_array( $method, [ 'card', 'card_present', 'link' ], true ) ) {
+				if ( in_array( $method, [ 'card', 'card_present' ], true ) ) {
 					return $result;
 				}
 
