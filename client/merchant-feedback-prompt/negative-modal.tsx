@@ -24,20 +24,20 @@ export const NegativeFeedbackModal: React.FC< NegativeFeedbackModalProps > = ( {
 	return (
 		<Modal
 			title={ __( 'Share your feedback', 'woocommerce-payments' ) }
-			className="wcpay-merchant-feedback-modal"
+			className="wcpay-merchant-feedback-negative-modal"
 			isDismissible={ true }
 			shouldCloseOnClickOutside={ false } // Should be false because of the iframe.
 			shouldCloseOnEsc={ true }
 			onRequestClose={ onRequestClose }
 		>
-			<div className="wcpay-merchant-feedback-modal__content">
+			<div className="wcpay-merchant-feedback-negative-modal__content">
 				<p>
 					{ __(
 						'Thanks for sharing your feedback on WooPayments! Your feedback helps us to continue to improve and deliver the best tools for your business.',
 						'woocommerce-payments'
 					) }
 				</p>
-				<p className="wcpay-merchant-feedback-modal__question">
+				<p className="wcpay-merchant-feedback-negative-modal__question">
 					{ __(
 						'Would you mind sharing more about why you chose that option?',
 						'woocommerce-payments'
@@ -45,13 +45,13 @@ export const NegativeFeedbackModal: React.FC< NegativeFeedbackModalProps > = ( {
 				</p>
 				<textarea
 					ref={ textareaRef }
-					className="wcpay-merchant-feedback-modal__textarea"
+					className="wcpay-merchant-feedback-negative-modal__textarea"
 					placeholder={ __(
 						'Share your feedback here…',
 						'woocommerce-payments'
 					) }
 				/>
-				<p className="wcpay-merchant-feedback-modal__privacy">
+				<p className="wcpay-merchant-feedback-negative-modal__privacy">
 					{ __(
 						'Your feedback will be sent to the WooCommerce team. Your personal information is secure and will not be shared with third parties. For more details, please see our',
 						'woocommerce-payments'
@@ -61,7 +61,7 @@ export const NegativeFeedbackModal: React.FC< NegativeFeedbackModalProps > = ( {
 					</a>
 					.
 				</p>
-				<div className="wcpay-merchant-feedback-modal__actions">
+				<div className="wcpay-merchant-feedback-negative-modal__actions">
 					<button
 						className="components-button"
 						onClick={ () => {

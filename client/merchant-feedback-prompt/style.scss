@@ -30,9 +30,12 @@
 	}
 }
 
-.wcpay-merchant-feedback-modal {
-	max-width: 600px;
+.wcpay-merchant-feedback-negative-modal {
 	border-radius: 0 !important;
+
+	&__content {
+		max-width: 600px;
+	}
 
 	&__question {
 		font-weight: bold;
