@@ -47,33 +47,6 @@ export const SuspendedDepositNotice: React.FC = () => {
 };
 
 /**
- * Renders a notice informing the user that the next deposit will include funds from a loan disbursement.
- */
-export const DepositIncludesLoanPayoutNotice: React.FC = () => (
-	<InlineNotice icon status="warning" isDismissible={ false }>
-		{ interpolateComponents( {
-			mixedString: __(
-				'This payout will include funds from your WooCommerce Capital loan. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
-				'woocommerce-payments'
-			),
-			components: {
-				learnMoreLink: (
-					// Link content is in the format string above. Consider disabling jsx-a11y/anchor-has-content.
-					// eslint-disable-next-line jsx-a11y/anchor-has-content
-					<a
-						href={
-							'https://woocommerce.com/document/woopayments/stripe-capital/overview/'
-						}
-						target="_blank"
-						rel="noreferrer"
-					/>
-				),
-			},
-		} ) }
-	</InlineNotice>
-);
-
-/**
  * Renders a notice informing the user of the new account deposit waiting period.
  */
 export const NewAccountWaitingPeriodNotice: React.FC = () => (

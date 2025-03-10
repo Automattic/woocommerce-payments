@@ -18,6 +18,9 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { recordEvent } from 'wcpay/tracks';
+import { PositiveFeedbackModal } from './positive-modal';
+import { NegativeFeedbackModal } from './negative-modal';
+import { useMerchantFeedbackPromptState } from './hooks';
 import './style.scss';
 
 /**
@@ -54,6 +57,10 @@ const WCFooterPortal = ( { children }: { children: React.ReactNode } ) => {
 interface MerchantFeedbackPromptProps {
 	/** A function to be called when the user dismisses the prompt and it is to be removed. */
 	dismissPrompt: () => void;
+	/** A function to be called when the user clicks the "Yes" button and the positive feedback modal is to be shown. */
+	showPositiveFeedbackModal: () => void;
+	/** A function to be called when the user clicks the "No" button and the negative feedback modal is to be shown. */
+	showNegativeFeedbackModal: () => void;
 }
 
 /**
@@ -64,6 +71,8 @@ interface MerchantFeedbackPromptProps {
  */
 const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
 	dismissPrompt,
+	showPositiveFeedbackModal,
+	showNegativeFeedbackModal,
 } ) => {
 	// Get the core notices, which we'll use to ensure we're not rendering the prompt if there are other notices being displayed.
 	const coreNotices = useSelect(
@@ -113,6 +122,7 @@ const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
 											recordEvent(
 												'wcpay_merchant_feedback_prompt_yes_click'
 											);
+											showPositiveFeedbackModal();
 											dismissPrompt();
 										} }
 									>
@@ -139,6 +149,7 @@ const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
 											recordEvent(
 												'wcpay_merchant_feedback_prompt_no_click'
 											);
+											showNegativeFeedbackModal();
 											dismissPrompt();
 										} }
 									>
@@ -193,25 +204,60 @@ const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
 };
 
 /**
- * A wrapper component that conditionally renders the merchant feedback prompt.
+ * A wrapper component that conditionally renders the merchant feedback prompt, including the positive and negative feedback modals.
  *
  * This is used to ensure the prompt is only rendered if the account is eligible for the campaign and the user has not dismissed the prompt.
  */
 export function MaybeShowMerchantFeedbackPrompt() {
-	// TODO: This is a temporary local state to track if the prompt has been dismissed. Move to a user-persistent state in #10329.
-	const [ hasUserDismissed, setHasUserDismissed ] = useState( false );
+	const {
+		isAccountEligible,
+		hasUserDismissedPrompt,
+		dismissPrompt,
+	} = useMerchantFeedbackPromptState();
 
-	const isAccountEligible =
-		wcpaySettings?.featureFlags?.isMerchantFeedbackPromptDevFlagEnabled &&
-		wcpaySettings?.accountStatus?.campaigns?.wporgReview2025;
+	const [
+		isPositiveFeedbackModalOpen,
+		setIsPositiveFeedbackModalOpen,
+	] = useState( false );
 
-	if ( hasUserDismissed || ! isAccountEligible ) {
+	const [
+		isNegativeFeedbackModalOpen,
+		setIsNegativeFeedbackModalOpen,
+	] = useState( false );
+
+	if ( isPositiveFeedbackModalOpen ) {
+		return (
+			<PositiveFeedbackModal
+				onRequestClose={ () => setIsPositiveFeedbackModalOpen( false ) }
+			/>
+		);
+	}
+
+	if ( isNegativeFeedbackModalOpen ) {
+		return (
+			<NegativeFeedbackModal
+				onRequestClose={ () => setIsNegativeFeedbackModalOpen( false ) }
+			/>
+		);
+	}
+
+	if ( hasUserDismissedPrompt || ! isAccountEligible ) {
 		return null;
 	}
 
 	return (
 		<MerchantFeedbackPrompt
-			dismissPrompt={ () => setHasUserDismissed( true ) }
+			dismissPrompt={ dismissPrompt }
+			showPositiveFeedbackModal={ () =>
+				setIsPositiveFeedbackModalOpen( true )
+			}
+			showNegativeFeedbackModal={ () => {
+				if ( window.wcTracks.isEnabled ) {
+					setIsNegativeFeedbackModalOpen( true );
+				} else {
+					dismissPrompt();
+				}
+			} }
 		/>
 	);
 }

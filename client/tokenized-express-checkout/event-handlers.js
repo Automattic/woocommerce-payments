@@ -65,7 +65,7 @@ export const shippingAddressChangeHandler = async ( event, elements ) => {
 		} );
 
 		event.resolve( {
-			shippingRates: transformCartDataForShippingRates( cartData ),
+			shippingRates,
 			lineItems: transformCartDataForDisplayItems( cartData ),
 		} );
 	} catch ( error ) {

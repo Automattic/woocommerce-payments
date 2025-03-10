@@ -69,6 +69,7 @@ use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\Payment_Methods\Grabpay_Payment_Method;
 use WCPay\Payment_Methods\Wechatpay_Payment_Method;
+use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 
 /**
  * Gateway class for WooPayments
@@ -1691,7 +1692,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 							$payment_needed ? 'pi' : 'si',
 							$order_id,
 							$client_secret,
-							wp_create_nonce( 'wcpay_update_order_status_nonce' )
+							wp_create_nonce( 'wcpay_update_order_status_nonce' ),
 						),
 						// Include the payment method ID so the Blocks integration can save cards.
 						'payment_method' => $payment_information->get_payment_method(),
@@ -3920,14 +3921,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// with the payment methods which are sent with the payment intent request, otherwise
 				// Stripe returns an error.
 
-				// force_currency_check = 0 is_admin = 0 currency_is_checked = 1.
-				// force_currency_check = 0 is_admin = 1 currency_is_checked = 0.
-				// force_currency_check = 1 is_admin = 0 currency_is_checked = 1.
-				// force_currency_check = 1 is_admin = 1 currency_is_checked = 1.
+				// In order to allow payment methods to be displayed in admin pages (e.g. blocks editor),
+				// we need to skip the currency check (unless force_currency_check is true).
+				// force_currency_check = 0 is_admin = 0 -> skip_currency_check = 0.
+				// force_currency_check = 0 is_admin = 1 -> skip_currency_check = 1.
+				// force_currency_check = 1 is_admin = 0 -> skip_currency_check = 0.
+				// force_currency_check = 1 is_admin = 1 -> skip_currency_check = 0.
 
 				$skip_currency_check       = ! $force_currency_check && is_admin();
 				$processing_payment_method = $this->payment_methods[ $payment_method_id ];
-				if ( $processing_payment_method->is_enabled_at_checkout( $this->get_account_country() ) && ( $skip_currency_check || $processing_payment_method->is_currency_valid( $this->get_account_domestic_currency(), $order_id ) ) ) {
+				if ( $processing_payment_method->is_enabled_at_checkout( $this->get_account_country(), $skip_currency_check ) && ( $skip_currency_check || $processing_payment_method->is_currency_valid( $this->get_account_domestic_currency(), $order_id ) ) ) {
 					$status = $active_payment_methods[ $payment_method_capability_key ]['status'] ?? null;
 					if ( 'active' === $status ) {
 						$enabled_payment_methods[] = $payment_method_id;
@@ -3987,6 +3990,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$available_methods[] = Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Grabpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Wechatpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+
+		// This gets all the registered payment method definitions. As new payment methods are converted from the legacy style, they need to be removed from the list above.
+		$payment_method_definitions = PaymentMethodDefinitionRegistry::instance()->get_all_payment_method_definitions();
+
+		foreach ( $payment_method_definitions as $definition_class ) {
+			$available_methods[] = $definition_class::get_id();
+		}
 
 		$available_methods = array_values(
 			apply_filters(

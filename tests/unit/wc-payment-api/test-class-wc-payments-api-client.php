@@ -794,8 +794,8 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 * Data provider for test_redacting_params
 	 */
 	public function redacting_params_data() {
-		$string_should_not_include_secret = function ( $string ) {
-			return false === strpos( $string, 'some-secret' );
+		$string_should_not_include_secret = function ( $input ) {
+			return false === strpos( $input, 'some-secret' );
 		};
 
 		return [
