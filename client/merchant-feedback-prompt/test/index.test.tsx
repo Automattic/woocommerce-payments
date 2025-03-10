@@ -63,9 +63,6 @@ jest.mock( '@woocommerce/data', () => {
 // Mock the wcpaySettings object
 declare const global: {
 	wcpaySettings: {
-		featureFlags: {
-			isMerchantFeedbackPromptDevFlagEnabled: boolean;
-		};
 		accountStatus: {
 			campaigns: {
 				wporgReview2025: boolean;
@@ -94,9 +91,6 @@ describe( 'MerchantFeedbackPrompt', () => {
 
 		// Mock the dev feature flag to be enabled
 		global.wcpaySettings = {
-			featureFlags: {
-				isMerchantFeedbackPromptDevFlagEnabled: true,
-			},
 			accountStatus: {
 				campaigns: {
 					wporgReview2025: true,
@@ -117,9 +111,6 @@ describe( 'MerchantFeedbackPrompt', () => {
 
 	it( 'does not render when the dev feature flag is disabled', () => {
 		global.wcpaySettings = {
-			featureFlags: {
-				isMerchantFeedbackPromptDevFlagEnabled: false,
-			},
 			accountStatus: {
 				campaigns: {
 					wporgReview2025: true,
@@ -137,9 +128,6 @@ describe( 'MerchantFeedbackPrompt', () => {
 
 	it( 'does not render when the account is not eligible for the campaign', () => {
 		global.wcpaySettings = {
-			featureFlags: {
-				isMerchantFeedbackPromptDevFlagEnabled: true,
-			},
 			accountStatus: {
 				campaigns: {
 					wporgReview2025: false,

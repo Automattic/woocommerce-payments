@@ -20,10 +20,6 @@ declare global {
 			paymentTimeline: boolean;
 			isDisputeIssuerEvidenceEnabled: boolean;
 			isPaymentOverviewWidgetEnabled?: boolean;
-			/**
-			 * The development feature flag for the merchant feedback prompt. See issue #10323.
-			 */
-			isMerchantFeedbackPromptDevFlagEnabled: boolean;
 			multiCurrency?: boolean;
 		};
 		accountFees: Record< string, any >;

@@ -31,7 +31,6 @@ class WC_Payments_Features {
 	const TOKENIZED_CART_ECE_FLAG_NAME          = '_wcpay_feature_tokenized_cart_ece';
 	const PAYMENT_OVERVIEW_WIDGET_FLAG_NAME     = '_wcpay_feature_payment_overview_widget';
 	const WOOPAY_GLOBAL_THEME_SUPPORT_FLAG_NAME = '_wcpay_feature_woopay_global_theme_support';
-	const PROMPT_MERCHANT_FOR_REVIEW_FLAG_NAME  = '_wcpay_feature_prompt_merchant_for_review';
 
 	/**
 	 * Indicates whether card payments are enabled for this (Stripe) account.
@@ -372,14 +371,13 @@ class WC_Payments_Features {
 	public static function to_array() {
 		return array_filter(
 			[
-				'multiCurrency'                          => self::is_customer_multi_currency_enabled(),
-				'woopay'                                 => self::is_woopay_eligible(),
-				'documents'                              => self::is_documents_section_enabled(),
-				'woopayExpressCheckout'                  => self::is_woopay_express_checkout_enabled(),
-				'isAuthAndCaptureEnabled'                => self::is_auth_and_capture_enabled(),
-				'isDisputeIssuerEvidenceEnabled'         => self::is_dispute_issuer_evidence_enabled(),
-				'isPaymentOverviewWidgetEnabled'         => self::is_payment_overview_widget_ui_enabled(),
-				'isMerchantFeedbackPromptDevFlagEnabled' => self::is_merchant_feedback_prompt_dev_flag_enabled(),
+				'multiCurrency'                  => self::is_customer_multi_currency_enabled(),
+				'woopay'                         => self::is_woopay_eligible(),
+				'documents'                      => self::is_documents_section_enabled(),
+				'woopayExpressCheckout'          => self::is_woopay_express_checkout_enabled(),
+				'isAuthAndCaptureEnabled'        => self::is_auth_and_capture_enabled(),
+				'isDisputeIssuerEvidenceEnabled' => self::is_dispute_issuer_evidence_enabled(),
+				'isPaymentOverviewWidgetEnabled' => self::is_payment_overview_widget_ui_enabled(),
 			]
 		);
 	}
@@ -394,14 +392,5 @@ class WC_Payments_Features {
 		$woopayments_enabled_setting = $woopayments_settings['enabled'] ?? 'no';
 
 		return 'yes' === $woopayments_enabled_setting;
-	}
-
-	/**
-	 * This is a temporary development flag for the merchant feedback prompt (see issue #10323) that will be removed once the feature is ready for production.
-	 *
-	 * @return bool
-	 */
-	public static function is_merchant_feedback_prompt_dev_flag_enabled(): bool {
-		return '1' === get_option( self::PROMPT_MERCHANT_FOR_REVIEW_FLAG_NAME, '0' );
 	}
 }

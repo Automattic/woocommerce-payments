@@ -23,7 +23,6 @@ export const useMerchantFeedbackPromptState = () => {
 	} = useUserPreferences() as UserPreferences;
 
 	const isAccountEligible =
-		wcpaySettings?.featureFlags?.isMerchantFeedbackPromptDevFlagEnabled &&
 		wcpaySettings?.accountStatus?.campaigns?.wporgReview2025;
 
 	const hasUserDismissedPrompt =
