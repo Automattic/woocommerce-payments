@@ -7,11 +7,10 @@ import {
 	Button,
 	Flex,
 	FlexItem,
-	Icon,
 	NoticeList,
 	SnackbarList,
 } from '@wordpress/components';
-import { thumbsUp, thumbsDown } from '@wordpress/icons';
+import { Icon, thumbsUp, thumbsDown } from '@wordpress/icons';
 import { useSelect } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 
