@@ -335,7 +335,7 @@ describe( 'MerchantFeedbackPrompt', () => {
 
 		// Expect the event to be recorded
 		expect( recordEvent ).toHaveBeenCalledWith(
-			'wcpay_merchant_feedback_prompt_close_negative_feedback_modal'
+			'wcpay_merchant_feedback_prompt_negative_modal_close_click'
 		);
 
 		expect( closeHandler ).toHaveBeenCalledWith();
