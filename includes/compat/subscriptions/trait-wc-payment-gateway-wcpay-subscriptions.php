@@ -252,6 +252,11 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			return $update_payment_method;
 		}
 
+		// If the payment method is a saved payment method, we don't need to stop WC Subscriptions from updating it.
+		if ( ( isset( $_POST[ 'wc-' . $new_payment_method . '-payment-token' ] ) && 'new' !== $_POST[ 'wc-' . $new_payment_method . '-payment-token' ] ) ) {
+			return $update_payment_method;
+		}
+
 		return false;
 	}
 
