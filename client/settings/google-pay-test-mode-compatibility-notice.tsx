@@ -36,7 +36,7 @@ const GooglePayTestModeCompatibilityNotice = () => {
 		<InlineNotice status="warning" icon={ true } isDismissible={ false }>
 			{ interpolateComponents( {
 				mixedString: __(
-					'Google Pay is incompatible with test mode when using production credentials. {{learnMore}}Learn more{{/learnMore}}.',
+					'Google Pay is incompatible with test mode. {{learnMore}}Learn more{{/learnMore}}.',
 					'woocommerce-payments'
 				),
 				components: {

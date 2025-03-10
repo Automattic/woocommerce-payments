@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import {
 	Button,
@@ -18,6 +18,8 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { recordEvent } from 'wcpay/tracks';
+import { PositiveFeedbackModal } from './positive-modal';
+import { NegativeFeedbackModal } from './negative-modal';
 import { useMerchantFeedbackPromptState } from './hooks';
 import './style.scss';
 
@@ -55,6 +57,10 @@ const WCFooterPortal = ( { children }: { children: React.ReactNode } ) => {
 interface MerchantFeedbackPromptProps {
 	/** A function to be called when the user dismisses the prompt and it is to be removed. */
 	dismissPrompt: () => void;
+	/** A function to be called when the user clicks the "Yes" button and the positive feedback modal is to be shown. */
+	showPositiveFeedbackModal: () => void;
+	/** A function to be called when the user clicks the "No" button and the negative feedback modal is to be shown. */
+	showNegativeFeedbackModal: () => void;
 }
 
 /**
@@ -65,6 +71,8 @@ interface MerchantFeedbackPromptProps {
  */
 const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
 	dismissPrompt,
+	showPositiveFeedbackModal,
+	showNegativeFeedbackModal,
 } ) => {
 	// Get the core notices, which we'll use to ensure we're not rendering the prompt if there are other notices being displayed.
 	const coreNotices = useSelect(
@@ -114,6 +122,7 @@ const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
 											recordEvent(
 												'wcpay_merchant_feedback_prompt_yes_click'
 											);
+											showPositiveFeedbackModal();
 											dismissPrompt();
 										} }
 									>
@@ -140,6 +149,7 @@ const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
 											recordEvent(
 												'wcpay_merchant_feedback_prompt_no_click'
 											);
+											showNegativeFeedbackModal();
 											dismissPrompt();
 										} }
 									>
@@ -194,7 +204,7 @@ const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
 };
 
 /**
- * A wrapper component that conditionally renders the merchant feedback prompt.
+ * A wrapper component that conditionally renders the merchant feedback prompt, including the positive and negative feedback modals.
  *
  * This is used to ensure the prompt is only rendered if the account is eligible for the campaign and the user has not dismissed the prompt.
  */
@@ -205,9 +215,49 @@ export function MaybeShowMerchantFeedbackPrompt() {
 		dismissPrompt,
 	} = useMerchantFeedbackPromptState();
 
+	const [
+		isPositiveFeedbackModalOpen,
+		setIsPositiveFeedbackModalOpen,
+	] = useState( false );
+
+	const [
+		isNegativeFeedbackModalOpen,
+		setIsNegativeFeedbackModalOpen,
+	] = useState( false );
+
+	if ( isPositiveFeedbackModalOpen ) {
+		return (
+			<PositiveFeedbackModal
+				onRequestClose={ () => setIsPositiveFeedbackModalOpen( false ) }
+			/>
+		);
+	}
+
+	if ( isNegativeFeedbackModalOpen ) {
+		return (
+			<NegativeFeedbackModal
+				onRequestClose={ () => setIsNegativeFeedbackModalOpen( false ) }
+			/>
+		);
+	}
+
 	if ( hasUserDismissedPrompt || ! isAccountEligible ) {
 		return null;
 	}
 
-	return <MerchantFeedbackPrompt dismissPrompt={ dismissPrompt } />;
+	return (
+		<MerchantFeedbackPrompt
+			dismissPrompt={ dismissPrompt }
+			showPositiveFeedbackModal={ () =>
+				setIsPositiveFeedbackModalOpen( true )
+			}
+			showNegativeFeedbackModal={ () => {
+				if ( window.wcTracks.isEnabled ) {
+					setIsNegativeFeedbackModalOpen( true );
+				} else {
+					dismissPrompt();
+				}
+			} }
+		/>
+	);
 }
