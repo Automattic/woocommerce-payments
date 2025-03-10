@@ -24,7 +24,7 @@ import {
 	ApplePayIcon,
 	GooglePayIcon,
 	LinkIcon,
-	WooIcon,
+	WooIconShort,
 } from 'wcpay/payment-methods-icons';
 
 const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
@@ -64,9 +64,8 @@ const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 					mixedString: sprintf(
 						/* translators: %s: WooPayments */
 						__(
-							'%s is currently powering multiple popular payment methods on your store. ' +
-								'Without it, they will no longer be available to your customers ' +
-								'which may {{strong}}influence conversions and sales on your store.{{/strong}}',
+							'%s is currently powering multiple popular payment methods on your store.' +
+								' Without it, they will no longer be available to your customers, which may influence sales.',
 							'woocommerce-payments'
 						),
 						'WooPayments'
@@ -77,34 +76,14 @@ const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 				} ) }
 			</p>
 			<p>
-				{ interpolateComponents( {
-					mixedString: sprintf(
-						/* translators: %s: WooPayments */
-						__(
-							'You can enable %s again at any time in {{settingsLink}}settings{{/settingsLink}}.',
-							'woocommerce-payments'
-						),
-						'WooPayments'
+				{ sprintf(
+					/* translators: %s: WooPayments */
+					__(
+						'Payment methods that need %s:',
+						'woocommerce-payments'
 					),
-					components: {
-						settingsLink: (
-							// eslint-disable-next-line jsx-a11y/anchor-has-content
-							<a href="admin.php?page=wc-settings&tab=checkout&section" />
-						),
-					},
-				} ) }
-			</p>
-			<p>
-				<strong>
-					{ sprintf(
-						/* translators: %s: WooPayments */
-						__(
-							'Payment methods that need %s:',
-							'woocommerce-payments'
-						),
-						'WooPayments'
-					) }
-				</strong>
+					'WooPayments'
+				) }
 			</p>
 			<ul className="disable-confirmation-modal__payment-methods-list">
 				{ enabledMethodIds
@@ -153,13 +132,13 @@ const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 				{ isWooPayEnabled && (
 					<li>
 						<PaymentMethodIcon
-							Icon={ WooIcon }
+							Icon={ WooIconShort }
 							label={ __( 'WooPay', 'woocommerce-payments' ) }
 						/>
 					</li>
 				) }
 			</ul>
-			<p>
+			<p className="no-padding">
 				{ interpolateComponents( {
 					mixedString: sprintf(
 						/* translators: %s: WooPayments */

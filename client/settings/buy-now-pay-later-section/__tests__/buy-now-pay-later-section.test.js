@@ -45,9 +45,7 @@ jest.mock( 'wcpay/data', () => ( {
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {
-	useDispatch: jest
-		.fn()
-		.mockReturnValue( { updateAvailablePaymentMethodIds: jest.fn() } ),
+	useDispatch: jest.fn().mockReturnValue( {} ),
 	select: jest.fn(),
 } ) );
 
@@ -68,11 +66,9 @@ describe( 'BuyNowPayLaterSection', () => {
 			au_becs_debit: upeCapabilityStatuses.ACTIVE,
 			bancontact_payments: upeCapabilityStatuses.ACTIVE,
 			eps_payments: upeCapabilityStatuses.ACTIVE,
-			giropay_payments: upeCapabilityStatuses.ACTIVE,
 			ideal_payments: upeCapabilityStatuses.ACTIVE,
 			p24_payments: upeCapabilityStatuses.ACTIVE,
 			sepa_debit_payments: upeCapabilityStatuses.ACTIVE,
-			sofort_payments: upeCapabilityStatuses.ACTIVE,
 		} );
 		useManualCapture.mockReturnValue( [ false, jest.fn() ] );
 		global.wcpaySettings = {

@@ -21,10 +21,6 @@ export const getSettings = ( state ) => {
 	return getSettingsState( state ).data || EMPTY_OBJ;
 };
 
-const getSupportAddressState = ( state ) => {
-	return getSettings( state ).account_business_support_address || EMPTY_OBJ;
-};
-
 export const getDuplicatedPaymentMethodIds = ( state ) => {
 	return getSettings( state ).duplicated_payment_method_ids || EMPTY_OBJ;
 };
@@ -65,42 +61,6 @@ export const getAccountStatementDescriptorKana = ( state ) => {
 	return getSettings( state ).account_statement_descriptor_kana || '';
 };
 
-export const getAccountBusinessName = ( state ) => {
-	return getSettings( state ).account_business_name || '';
-};
-
-export const getAccountBusinessURL = ( state ) => {
-	return getSettings( state ).account_business_url || '';
-};
-
-export const getAccountBusinessSupportAddress = ( state ) => {
-	return getSettings( state ).account_business_support_address || '';
-};
-
-export const getAccountBusinessSupportAddressCountry = ( state ) => {
-	return getSupportAddressState( state ).country || '';
-};
-
-export const getAccountBusinessSupportAddressLine1 = ( state ) => {
-	return getSupportAddressState( state ).line1 || '';
-};
-
-export const getAccountBusinessSupportAddressLine2 = ( state ) => {
-	return getSupportAddressState( state ).line2 || '';
-};
-
-export const getAccountBusinessSupportAddressCity = ( state ) => {
-	return getSupportAddressState( state ).city || '';
-};
-
-export const getAccountBusinessSupportAddressState = ( state ) => {
-	return getSupportAddressState( state ).state || '';
-};
-
-export const getAccountBusinessSupportAddressPostalCode = ( state ) => {
-	return getSupportAddressState( state ).postal_code || '';
-};
-
 export const getAccountBusinessSupportEmail = ( state ) => {
 	return getSettings( state ).account_business_support_email || '';
 };
@@ -109,20 +69,12 @@ export const getAccountBusinessSupportPhone = ( state ) => {
 	return getSettings( state ).account_business_support_phone || '';
 };
 
-export const getAccountBrandingLogo = ( state ) => {
-	return getSettings( state ).account_branding_logo || '';
-};
-
 export const getAccountDomesticCurrency = ( state ) => {
 	return getSettings( state ).account_domestic_currency || '';
 };
 
 export const getDepositScheduleInterval = ( state ) => {
 	return getSettings( state ).deposit_schedule_interval || '';
-};
-
-export const getExportLanguage = ( state ) => {
-	return getSettings( state ).reporting_export_language || '';
 };
 
 export const getDepositScheduleWeeklyAnchor = ( state ) => {

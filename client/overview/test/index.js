@@ -67,6 +67,7 @@ jest.mock( 'wcpay/data', () => ( {
 		.mockReturnValue( { overviews: { currencies: [] } } ),
 	useActiveLoanSummary: jest.fn().mockReturnValue( { isLoading: true } ),
 } ) );
+jest.mock( 'wcpay/utils/embedded-components/account-session' );
 
 select.mockReturnValue( {
 	getSettings: () => settingsMock,
@@ -146,16 +147,6 @@ describe( 'Overview page', () => {
 			container.querySelector(
 				'.wcpay-banner-notice.is-error.wcpay-login-error'
 			)
-		).toBeVisible();
-	} );
-
-	it( 'Displays the success message for query param wcpay-connection-success=1', () => {
-		getQuery.mockReturnValue( { 'wcpay-connection-success': '1' } );
-
-		const { container } = render( <OverviewPage /> );
-
-		expect(
-			container.querySelector( '.wcpay-connection-success' )
 		).toBeVisible();
 	} );
 
@@ -326,7 +317,7 @@ describe( 'Overview page', () => {
 		render( <OverviewPage /> );
 
 		expect(
-			screen.getByText( 'You’re ready to sell.' )
+			screen.getByText( "You're ready to accept payments!" )
 		).toBeInTheDocument();
 	} );
 
@@ -353,23 +344,55 @@ describe( 'Overview page', () => {
 		expect( query() ).not.toBeInTheDocument();
 	} );
 
-	it( 'shows payout rename notice if not yet dismissed', () => {
-		global.wcpaySettings.isPayoutsRenameNoticeDismissed = false;
+	it( 'displays ConnectionSuccessModal if progressiveOnboarding is not enabled', () => {
+		getQuery.mockReturnValue( { 'wcpay-connection-success': '1' } );
+
+		global.wcpaySettings.accountStatus.progressiveOnboarding.isEnabled = false;
+		global.wcpaySettings.testModeOnboarding = false;
 
 		render( <OverviewPage /> );
 
 		expect(
-			screen.queryByText( 'Deposits are now known as Payouts!' )
+			screen.getByText( "You're ready to accept payments!" )
 		).toBeInTheDocument();
 	} );
 
-	it( 'does not display payout rename notice if already dismissed', () => {
-		global.wcpaySettings.isPayoutsRenameNoticeDismissed = true;
+	it( 'displays ConnectionSuccessModal if progressiveOnboarding is enabled and complete', () => {
+		getQuery.mockReturnValue( { 'wcpay-connection-success': '1' } );
+
+		global.wcpaySettings.accountStatus.progressiveOnboarding.isEnabled = true;
+		global.wcpaySettings.accountStatus.progressiveOnboarding.isComplete = true;
+		global.wcpaySettings.testModeOnboarding = false;
 
 		render( <OverviewPage /> );
 
 		expect(
-			screen.queryByText( 'Deposits are now known as Payouts!' )
-		).not.toBeInTheDocument();
+			screen.getByText( "You're ready to accept payments!" )
+		).toBeInTheDocument();
+	} );
+
+	it( 'does not displays ConnectionSuccessModal connection success false', () => {
+		const query = () =>
+			screen.queryByText( "You're ready to accept payments!" );
+
+		global.wcpaySettings.accountStatus.progressiveOnboarding.isEnabled = false;
+		global.wcpaySettings.testModeOnboarding = false;
+
+		render( <OverviewPage /> );
+
+		expect( query() ).not.toBeInTheDocument();
+	} );
+
+	it( 'does not displays ConnectionSuccessModal if testModeOnboarding is false', () => {
+		const query = () =>
+			screen.queryByText( "You're ready to accept payments!" );
+		getQuery.mockReturnValue( { 'wcpay-connection-success': '1' } );
+
+		global.wcpaySettings.accountStatus.progressiveOnboarding.isEnabled = false;
+		global.wcpaySettings.testModeOnboarding = true;
+
+		render( <OverviewPage /> );
+
+		expect( query() ).not.toBeInTheDocument();
 	} );
 } );

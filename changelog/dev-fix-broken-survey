@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Fix issue where survey modal is not scrollable on smaller screen sizes.

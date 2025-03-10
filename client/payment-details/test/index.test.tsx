@@ -20,6 +20,8 @@ declare const global: {
 		connect: {
 			country: string;
 		};
+		dateFormat: string;
+		timeFormat: string;
 	};
 };
 
@@ -52,6 +54,13 @@ jest.mock( '@woocommerce/navigation', () => ( {
 		replace: mockHistoryReplace,
 	} ),
 	addHistoryListener: jest.fn(),
+} ) );
+
+jest.mock( '@woocommerce/data', () => ( {
+	useUserPreferences: jest.fn( () => ( {
+		updateUserPreferences: jest.fn(),
+		wc_payments_wporg_review_2025_prompt_dismissed: false,
+	} ) ),
 } ) );
 
 const chargeMock = {
@@ -141,6 +150,8 @@ global.wcpaySettings = {
 	featureFlags: { paymentTimeline: true },
 	zeroDecimalCurrencies: [ 'usd' ],
 	connect: { country: 'US' },
+	dateFormat: 'M j, Y',
+	timeFormat: 'g:ia',
 };
 
 describe( 'Payment details page', () => {

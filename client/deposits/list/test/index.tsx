@@ -3,46 +3,38 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { render, waitFor } from '@testing-library/react';
 import { updateQueryString } from '@woocommerce/navigation';
-import { downloadCSVFile } from '@woocommerce/csv-export';
 import apiFetch from '@wordpress/api-fetch';
-
-import os from 'os';
+import { useUserPreferences } from '@woocommerce/data';
 
 /**
  * Internal dependencies
  */
 import { DepositsList } from '../';
-import {
-	useDeposits,
-	useDepositsSummary,
-	useReportingExportLanguage,
-} from 'wcpay/data';
-import { formatDate, getUnformattedAmount } from 'wcpay/utils/test-utils';
+import { useDeposits, useDepositsSummary } from 'wcpay/data';
 import {
 	CachedDeposit,
 	CachedDeposits,
 	DepositsSummary,
 } from 'wcpay/types/deposits';
-import React from 'react';
 
 jest.mock( 'wcpay/data', () => ( {
 	useDeposits: jest.fn(),
 	useDepositsSummary: jest.fn(),
-	useReportingExportLanguage: jest.fn( () => [ 'en', jest.fn() ] ),
 } ) );
 
-jest.mock( '@woocommerce/csv-export', () => {
-	const actualModule = jest.requireActual( '@woocommerce/csv-export' );
+jest.mock( '@wordpress/api-fetch', () => jest.fn() );
+
+jest.mock( '@woocommerce/data', () => {
+	const actualModule = jest.requireActual( '@woocommerce/data' );
 
 	return {
 		...actualModule,
-		downloadCSVFile: jest.fn(),
+		useUserPreferences: jest.fn(),
 	};
 } );
-
-jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 
 const mockDeposits = [
 	{
@@ -53,6 +45,7 @@ const mockDeposits = [
 		status: 'paid',
 		bankAccount: 'MOCK BANK •••• 1234 (USD)',
 		currency: 'USD',
+		bank_reference_key: 'mock_reference_key',
 	} as CachedDeposit,
 	{
 		id: 'po_mock2',
@@ -62,6 +55,7 @@ const mockDeposits = [
 		status: 'pending',
 		bankAccount: 'MOCK BANK •••• 1234 (USD)',
 		currency: 'USD',
+		bank_reference_key: 'mock_reference_key',
 	} as CachedDeposit,
 	{
 		id: 'po_mock3',
@@ -71,6 +65,7 @@ const mockDeposits = [
 		status: 'paid',
 		bankAccount: 'MOCK BANK •••• 1234 (USD)',
 		currency: 'USD',
+		bank_reference_key: 'mock_reference_key',
 	} as CachedDeposit,
 ];
 
@@ -82,8 +77,9 @@ declare const global: {
 		connect: {
 			country: string;
 		};
-		reporting?: {
-			exportModalDismissed: boolean;
+		dateFormat: string;
+		userLocale: {
+			code: string;
 		};
 	};
 };
@@ -114,12 +110,8 @@ const mockUseDepositsSummary = useDepositsSummary as jest.MockedFunction<
 	typeof useDepositsSummary
 >;
 
-const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
-	typeof downloadCSVFile
->;
-
-const mockUseReportingExportLanguage = useReportingExportLanguage as jest.MockedFunction<
-	typeof useReportingExportLanguage
+const mockUseUserPreferences = useUserPreferences as jest.MockedFunction<
+	typeof useUserPreferences
 >;
 
 describe( 'Deposits list', () => {
@@ -129,7 +121,11 @@ describe( 'Deposits list', () => {
 		// the query string is preserved across tests, so we need to reset it
 		updateQueryString( {}, '/', {} );
 
-		mockUseReportingExportLanguage.mockReturnValue( [ 'en', jest.fn() ] );
+		mockUseUserPreferences.mockReturnValue( {
+			updateUserPreferences: jest.fn(),
+			wc_payments_payouts_hidden_columns: '',
+			isRequesting: false,
+		} as any );
 
 		global.wcpaySettings = {
 			zeroDecimalCurrencies: [],
@@ -147,8 +143,9 @@ describe( 'Deposits list', () => {
 					precision: 2,
 				},
 			},
-			reporting: {
-				exportModalDismissed: true,
+			dateFormat: 'M j Y',
+			userLocale: {
+				code: 'en',
 			},
 		};
 	} );
@@ -232,7 +229,7 @@ describe( 'Deposits list', () => {
 		expect( tableSummary ).toHaveLength( 1 );
 	} );
 
-	describe( 'Download button', () => {
+	describe( 'Export button', () => {
 		test( 'renders when there are one or more deposits', () => {
 			mockUseDeposits.mockReturnValue( {
 				deposits: mockDeposits,
@@ -240,7 +237,7 @@ describe( 'Deposits list', () => {
 			} as CachedDeposits );
 
 			const { queryByRole } = render( <DepositsList /> );
-			const button = queryByRole( 'button', { name: 'Download' } );
+			const button = queryByRole( 'button', { name: 'Export' } );
 
 			expect( button ).not.toBeNull();
 		} );
@@ -253,7 +250,7 @@ describe( 'Deposits list', () => {
 			} as CachedDeposits );
 
 			const { queryByRole } = render( <DepositsList /> );
-			const button = queryByRole( 'button', { name: 'Download' } );
+			const button = queryByRole( 'button', { name: 'Export' } );
 
 			expect( button ).toBeNull();
 		} );
@@ -276,64 +273,6 @@ describe( 'Deposits list', () => {
 			} );
 		} );
 
-		test( 'should render expected columns in CSV when the download button is clicked', () => {
-			const { getByRole } = render( <DepositsList /> );
-			getByRole( 'button', { name: 'Download' } ).click();
-
-			const expected = [
-				'"Payout Id"',
-				'Date',
-				'Type',
-				'Amount',
-				'Status',
-				'"Bank account"',
-			];
-
-			const csvContent = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ];
-			const csvHeaderRow = csvContent.split( os.EOL )[ 0 ].split( ',' );
-			expect( csvHeaderRow ).toEqual( expected );
-		} );
-
-		test( 'should match the visible rows', () => {
-			const { getByRole, getAllByRole } = render( <DepositsList /> );
-			getByRole( 'button', { name: 'Download' } ).click();
-
-			const csvContent = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ];
-			const csvRows = csvContent.split( os.EOL );
-			const displayRows = getAllByRole( 'row' );
-
-			expect( csvRows.length ).toEqual( displayRows.length );
-
-			const csvFirstDeposit = csvRows[ 1 ].split( ',' );
-			const displayFirstDeposit = Array.from(
-				displayRows[ 1 ].querySelectorAll( 'td' )
-			).map( ( td ) => td.textContent );
-
-			// Note:
-			//
-			// 1. CSV and display indexes are off by 1 because the first field in CSV is deposit id,
-			//    which is missing in display.
-			//
-			// 2. The indexOf check in amount's expect is because the amount in CSV may not contain
-			//    trailing zeros as in the display amount.
-			//
-			expect( formatDate( csvFirstDeposit[ 1 ], 'M j, Y' ) ).toBe(
-				displayFirstDeposit[ 0 ]
-			); // date
-			expect( csvFirstDeposit[ 2 ] ).toBe( displayFirstDeposit[ 1 ] ); // type
-			expect(
-				getUnformattedAmount( displayFirstDeposit[ 2 ] ).indexOf(
-					csvFirstDeposit[ 3 ]
-				)
-			).not.toBe( -1 ); // amount
-			expect( csvFirstDeposit[ 4 ] ).toBe(
-				`"${ displayFirstDeposit[ 3 ] }"`
-			); // status
-			expect( csvFirstDeposit[ 5 ] ).toBe(
-				`"${ displayFirstDeposit[ 4 ] }"`
-			); // bank account
-		} );
-
 		test( 'should fetch export after confirmation when download button is selected for unfiltered exports larger than 1000.', async () => {
 			window.confirm = jest.fn( () => true );
 			mockUseDepositsSummary.mockReturnValue( {
@@ -346,7 +285,7 @@ describe( 'Deposits list', () => {
 
 			const { getByRole } = render( <DepositsList /> );
 
-			getByRole( 'button', { name: 'Download' } ).click();
+			getByRole( 'button', { name: 'Export' } ).click();
 
 			expect( window.confirm ).toHaveBeenCalledTimes( 1 );
 			expect( window.confirm ).toHaveBeenCalledWith(
@@ -375,7 +314,7 @@ describe( 'Deposits list', () => {
 
 			const { getByRole } = render( <DepositsList /> );
 
-			getByRole( 'button', { name: 'Download' } ).click();
+			getByRole( 'button', { name: 'Export' } ).click();
 
 			expect( window.confirm ).toHaveBeenCalledTimes( 1 );
 			expect( window.confirm ).toHaveBeenCalledWith(

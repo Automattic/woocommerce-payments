@@ -20,6 +20,7 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	const BUSINESS_TYPES_KEY          = 'wcpay_business_types_data';
 	const PAYMENT_PROCESS_FACTORS_KEY = 'wcpay_payment_process_factors';
 	const FRAUD_SERVICES_KEY          = 'wcpay_fraud_services_data';
+	const RECOMMENDED_PAYMENT_METHODS = 'wcpay_recommended_payment_methods';
 
 	/**
 	 * Refresh during AJAX calls is avoided, but white-listing
@@ -403,6 +404,11 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 				break;
 			case self::CONNECT_INCENTIVE_KEY:
 				$ttl = $cache_contents['data']['ttl'] ?? HOUR_IN_SECONDS * 6;
+				break;
+			case self::CONNECT_INCENTIVE_KEY . '_has_orders':
+				// If has orders, cache for 90 days since it won't change.
+				// If no orders, cache for an hour to check again soon.
+				$ttl = $cache_contents['data'] ? DAY_IN_SECONDS * 90 : HOUR_IN_SECONDS;
 				break;
 			case self::PAYMENT_PROCESS_FACTORS_KEY:
 				$ttl = 2 * HOUR_IN_SECONDS;

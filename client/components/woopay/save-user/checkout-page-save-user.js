@@ -26,7 +26,6 @@ import request from '../../../checkout/utils/request';
 import useSelectedPaymentMethod from '../hooks/use-selected-payment-method';
 import { recordUserEvent } from 'tracks';
 import './style.scss';
-import { compare } from 'compare-versions';
 
 const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	const errorId = 'invalid-woopay-phone-number';
@@ -55,14 +54,15 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	const { isWCPayChosen, isNewPaymentTokenChosen } = useSelectedPaymentMethod(
 		isBlocksCheckout
 	);
+
+	// In classic checkout the saved tokens are under WCPay, so we need to check if new token is selected or not,
+	// under WCPay. For blocks checkout considering isWCPayChosen is enough.
+	const isWCPayWithNewTokenChosen = isBlocksCheckout
+		? isWCPayChosen
+		: isWCPayChosen && isNewPaymentTokenChosen;
+
 	const viewportWidth = window.document.documentElement.clientWidth;
 	const viewportHeight = window.document.documentElement.clientHeight;
-	const wooCommerceVersionString = window.wcSettings?.wcVersion;
-	const wcVersionGreaterThan91 = compare(
-		wooCommerceVersionString,
-		'9.1',
-		'>='
-	);
 
 	useEffect( () => {
 		if ( ! isBlocksCheckout ) {
@@ -200,7 +200,11 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 			return;
 		}
 
-		if ( isSaveDetailsChecked && ! isPhoneValid ) {
+		if (
+			isSaveDetailsChecked &&
+			! isPhoneValid &&
+			isWCPayWithNewTokenChosen
+		) {
 			setValidationErrors( {
 				[ errorId ]: {
 					message: __(
@@ -219,13 +223,8 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		isSaveDetailsChecked,
 		sendExtensionData,
 		setValidationErrors,
+		isWCPayWithNewTokenChosen,
 	] );
-
-	// In classic checkout the saved tokens are under WCPay, so we need to check if new token is selected or not,
-	// under WCPay. For blocks checkout considering isWCPayChosen is enough.
-	const isWCPayWithNewTokenChosen = isBlocksCheckout
-		? isWCPayChosen
-		: isWCPayChosen && isNewPaymentTokenChosen;
 
 	const updatePhoneNumber = useCallback( () => {
 		if ( isPhoneNumberTouched.current ) {
@@ -276,25 +275,39 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		isBlocksCheckout,
 	] );
 
+	useEffect( () => {
+		if (
+			! getConfig( 'forceNetworkSavedCards' ) ||
+			! isWCPayWithNewTokenChosen ||
+			isRegisteredUser
+		) {
+			// Clicking the place order button sets the extension data in backend. If user changes the payment method
+			// due to an error, we need to clear the extension data in backend.
+			if ( isBlocksCheckout && userDataSent ) {
+				sendExtensionData( true );
+			}
+			clearValidationError( errorId );
+		}
+	}, [
+		clearValidationError,
+		errorId,
+		isBlocksCheckout,
+		isRegisteredUser,
+		isWCPayWithNewTokenChosen,
+		sendExtensionData,
+		userDataSent,
+	] );
+
 	if (
 		! getConfig( 'forceNetworkSavedCards' ) ||
 		! isWCPayWithNewTokenChosen ||
 		isRegisteredUser
 	) {
-		// Clicking the place order button sets the extension data in backend. If user changes the payment method
-		// due to an error, we need to clear the extension data in backend.
-		if ( isBlocksCheckout && userDataSent ) {
-			sendExtensionData( true );
-		}
-		clearValidationError( errorId );
 		return null;
 	}
 
 	return (
-		<Container
-			isBlocksCheckout={ isBlocksCheckout }
-			wcVersionGreaterThan91={ wcVersionGreaterThan91 }
-		>
+		<Container isBlocksCheckout={ isBlocksCheckout }>
 			<div className="save-details">
 				<div className="save-details-header">
 					<div
@@ -313,10 +326,6 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 								id="save_user_in_woopay"
 								value="true"
 								className={ `save-details-checkbox ${
-									wcVersionGreaterThan91
-										? 'without-margin-right'
-										: ''
-								} ${
 									isBlocksCheckout
 										? 'wc-block-components-checkbox__input'
 										: ''

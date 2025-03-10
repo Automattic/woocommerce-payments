@@ -3,7 +3,7 @@
  */
 import React, { useState } from 'react';
 import { useDispatch } from '@wordpress/data';
-import { Flex } from '@wordpress/components';
+import { Card, CardBody, CardHeader, Flex } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 import { Link } from '@woocommerce/components';
@@ -73,22 +73,25 @@ const AccountBalances: React.FC = () => {
 		};
 
 		return (
-			<Flex gap={ 0 } className="wcpay-account-balances__balances">
-				<BalanceBlock
-					id={ `wcpay-account-balances-${ loadingData.currencyCode }-total` }
-					title={ fundLabelStrings.total }
-					amount={ 0 }
-					currencyCode={ loadingData.currencyCode }
-					isLoading
-				/>
-				<BalanceBlock
-					id={ `wcpay-account-balances-${ loadingData.currencyCode }-available` }
-					title={ fundLabelStrings.available }
-					amount={ 0 }
-					currencyCode={ loadingData.currencyCode }
-					isLoading
-				/>
-			</Flex>
+			<Card className="wcpay-account-balances">
+				<CardHeader>Balance</CardHeader>
+				<CardBody className="wcpay-account-balances__balances">
+					<BalanceBlock
+						id={ `wcpay-account-balances-${ loadingData.currencyCode }-total` }
+						title={ fundLabelStrings.total }
+						amount={ 0 }
+						currencyCode={ loadingData.currencyCode }
+						isLoading
+					/>
+					<BalanceBlock
+						id={ `wcpay-account-balances-${ loadingData.currencyCode }-available` }
+						title={ fundLabelStrings.available }
+						amount={ 0 }
+						currencyCode={ loadingData.currencyCode }
+						isLoading
+					/>
+				</CardBody>
+			</Card>
 		);
 	}
 
@@ -115,26 +118,31 @@ const AccountBalances: React.FC = () => {
 
 	return (
 		<>
-			<Flex gap={ 0 } className="wcpay-account-balances__balances">
-				<BalanceBlock
-					id={ `wcpay-account-balances-${ selectedOverview.currencyCode }-total` }
-					title={ fundLabelStrings.total }
-					amount={ totalBalance }
-					currencyCode={ selectedOverview.currencyCode }
-					tooltip={ <TotalBalanceTooltip balance={ totalBalance } /> }
-				/>
-				<BalanceBlock
-					id={ `wcpay-account-balances-${ selectedOverview.currencyCode }-available` }
-					title={ fundLabelStrings.available }
-					amount={ selectedOverview.availableFunds }
-					currencyCode={ selectedOverview.currencyCode }
-					tooltip={
-						<AvailableBalanceTooltip
-							balance={ selectedOverview.availableFunds }
-						/>
-					}
-				/>
-			</Flex>
+			<Card className="wcpay-account-balances">
+				<CardHeader>Balance</CardHeader>
+				<CardBody className="wcpay-account-balances__balances">
+					<BalanceBlock
+						id={ `wcpay-account-balances-${ selectedOverview.currencyCode }-total` }
+						title={ fundLabelStrings.total }
+						amount={ totalBalance }
+						currencyCode={ selectedOverview.currencyCode }
+						tooltip={
+							<TotalBalanceTooltip balance={ totalBalance } />
+						}
+					/>
+					<BalanceBlock
+						id={ `wcpay-account-balances-${ selectedOverview.currencyCode }-available` }
+						title={ fundLabelStrings.available }
+						amount={ selectedOverview.availableFunds }
+						currencyCode={ selectedOverview.currencyCode }
+						tooltip={
+							<AvailableBalanceTooltip
+								balance={ selectedOverview.availableFunds }
+							/>
+						}
+					/>
+				</CardBody>
+			</Card>
 			{ selectedOverview.instantBalance &&
 				selectedOverview.instantBalance.amount > 0 && (
 					<Flex

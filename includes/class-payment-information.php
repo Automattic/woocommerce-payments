@@ -144,15 +144,15 @@ class Payment_Information {
 	 */
 	public function __construct(
 		string $payment_method,
-		\WC_Order $order = null,
-		Payment_Type $payment_type = null,
-		\WC_Payment_Token $token = null,
-		Payment_Initiated_By $payment_initiated_by = null,
-		Payment_Capture_Type $manual_capture = null,
-		string $cvc_confirmation = null,
+		?\WC_Order $order = null,
+		?Payment_Type $payment_type = null,
+		?\WC_Payment_Token $token = null,
+		?Payment_Initiated_By $payment_initiated_by = null,
+		?Payment_Capture_Type $manual_capture = null,
+		?string $cvc_confirmation = null,
 		string $fingerprint = '',
-		string $payment_method_stripe_id = null,
-		string $customer_id = null
+		?string $payment_method_stripe_id = null,
+		?string $customer_id = null
 	) {
 		if ( empty( $payment_method ) && empty( $token ) && ! \WC_Payments::is_network_saved_cards_enabled() ) {
 			// If network-wide cards are enabled, a payment method or token may not be specified and the platform default one will be used.
@@ -259,11 +259,11 @@ class Payment_Information {
 	 */
 	public static function from_payment_request(
 		array $request,
-		\WC_Order $order = null,
-		Payment_Type $payment_type = null,
-		Payment_Initiated_By $payment_initiated_by = null,
-		Payment_Capture_Type $manual_capture = null,
-		string $payment_method_stripe_id = null
+		?\WC_Order $order = null,
+		?Payment_Type $payment_type = null,
+		?Payment_Initiated_By $payment_initiated_by = null,
+		?Payment_Capture_Type $manual_capture = null,
+		?string $payment_method_stripe_id = null
 	): Payment_Information {
 		$payment_method   = self::get_payment_method_from_request( $request );
 		$token            = self::get_token_from_request( $request );

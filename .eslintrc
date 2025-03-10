@@ -21,8 +21,7 @@
 		"wcpaySettings": true,
 		"page": true,
 		"browser": true,
-		"context": true,
-		"jestPuppeteer": true
+		"context": true
 	},
 	"settings": {
 		"react": {
@@ -32,7 +31,7 @@
 			"typescript": {}
 		}
 	},
-	"ignorePatterns": [ "docs/rest-api/source/**/*.js" ],
+	"ignorePatterns": [ "docs/rest-api/source/**/*.js", "playwright-report/**/*.js" ],
 	"rules": {
 		"camelcase": [
 			"error",

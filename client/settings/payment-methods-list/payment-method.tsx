@@ -130,7 +130,7 @@ const PaymentMethod = ( {
 		upeCapabilityStatuses.INACTIVE === status || isPoInProgress;
 	const {
 		accountFees,
-	}: { accountFees: Record< string, FeeStructure > } = useContext(
+	}: { accountFees?: Record< string, FeeStructure > } = useContext(
 		WCPaySettingsContext
 	);
 	const [ isManualCaptureEnabled ] = useManualCapture();

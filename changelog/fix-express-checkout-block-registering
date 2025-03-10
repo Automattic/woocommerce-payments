@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Register Expresss Checkout block only when enabled in the settings

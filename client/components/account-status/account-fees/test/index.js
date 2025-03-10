@@ -46,6 +46,7 @@ describe( 'AccountFees', () => {
 					precision: 2,
 				},
 			},
+			dateFormat: 'F j, Y',
 		};
 	} );
 

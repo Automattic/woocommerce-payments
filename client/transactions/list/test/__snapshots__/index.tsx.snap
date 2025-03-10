@@ -4,6 +4,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
 <div>
   <div
     class=" woocommerce-payments-page"
+    id=""
   >
     <div
       class="woocommerce-filters-transactions"
@@ -153,22 +154,26 @@ exports[`Transactions list renders correctly when can filter by several currenci
               type="button"
             >
               <svg
-                class="gridicon gridicons-cloud-download"
+                fill="currentColor"
                 height="24"
                 viewBox="0 0 24 24"
                 width="24"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                <g>
-                  <path
-                    d="M18 9c-.009 0-.017.002-.025.003A6.496 6.496 0 005 9.5a6.5 6.5 0 00.186 1.519C5.123 11.016 5.064 11 5 11a4 4 0 00-4 4c0 1.202.541 2.267 1.38 3h18.593C22.196 17.089 23 15.643 23 14a5 5 0 00-5-5zm-6 7l-4-5h3V8h2v3h3l-4 5z"
-                  />
-                </g>
+                <path
+                  d="M18.5 15v5H20v-5h-1.5zM4 15v5h1.5v-5H4zm0 5h16v-1.5H4V20z"
+                />
+                <path
+                  d="M12.25 16L6.5 10.75M12.25 16V3M12.25 16l5.25-5.25"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
               </svg>
               <span
                 class="woocommerce-table__download-button__label"
               >
-                Download
+                Export
               </span>
             </button>
           </div>
@@ -286,12 +291,12 @@ exports[`Transactions list renders correctly when can filter by several currenci
                     <span
                       aria-hidden="true"
                     >
-                      Channel
+                      Sales channel
                     </span>
                     <span
                       class="screen-reader-text"
                     >
-                      Channel
+                      Sales channel
                     </span>
                   </th>
                   <th
@@ -493,7 +498,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_j23jda9JJa&transaction_type=refund"
                       tabindex="-1"
                     >
-                      Jan 2, 2020 / 12:46PM
+                      Jan 2, 2020 / 5:46PM
                     </a>
                   </th>
                   <td
@@ -517,7 +522,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_j23jda9JJa&transaction_type=refund"
                       tabindex="-1"
                     >
-                      Online
+                      Online store
                     </a>
                   </td>
                   <td
@@ -563,7 +568,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                       data-link-type="external"
                       href="https://example.com/order/123"
                     >
-                      123
+                      custom-123
                     </a>
                   </td>
                   <td
@@ -651,7 +656,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
                       tabindex="-1"
                     >
-                      Jan 4, 2020 / 11:22PM
+                      Jan 5, 2020 / 4:22AM
                     </a>
                   </th>
                   <td
@@ -675,7 +680,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
                       tabindex="-1"
                     >
-                      Online
+                      Online store
                     </a>
                   </td>
                   <td
@@ -744,7 +749,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                       data-link-type="external"
                       href="https://example.com/order/125"
                     >
-                      125
+                      custom-125
                     </a>
                   </td>
                   <td
@@ -810,7 +815,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
                       tabindex="-1"
                     >
-                      Jan 2, 2020 / 2:55PM
+                      Jan 2, 2020 / 7:55PM
                     </a>
                   </th>
                   <td
@@ -892,7 +897,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                       data-link-type="external"
                       href="https://example.com/order/335"
                     >
-                      335
+                      custom-335
                     </a>
                   </td>
                   <td
@@ -1020,6 +1025,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
 <div>
   <div
     class=" woocommerce-payments-page"
+    id=""
   >
     <div
       class="woocommerce-filters-transactions"
@@ -1141,22 +1147,26 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
               type="button"
             >
               <svg
-                class="gridicon gridicons-cloud-download"
+                fill="currentColor"
                 height="24"
                 viewBox="0 0 24 24"
                 width="24"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                <g>
-                  <path
-                    d="M18 9c-.009 0-.017.002-.025.003A6.496 6.496 0 005 9.5a6.5 6.5 0 00.186 1.519C5.123 11.016 5.064 11 5 11a4 4 0 00-4 4c0 1.202.541 2.267 1.38 3h18.593C22.196 17.089 23 15.643 23 14a5 5 0 00-5-5zm-6 7l-4-5h3V8h2v3h3l-4 5z"
-                  />
-                </g>
+                <path
+                  d="M18.5 15v5H20v-5h-1.5zM4 15v5h1.5v-5H4zm0 5h16v-1.5H4V20z"
+                />
+                <path
+                  d="M12.25 16L6.5 10.75M12.25 16V3M12.25 16l5.25-5.25"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
               </svg>
               <span
                 class="woocommerce-table__download-button__label"
               >
-                Download
+                Export
               </span>
             </button>
           </div>
@@ -1274,12 +1284,12 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                     <span
                       aria-hidden="true"
                     >
-                      Channel
+                      Sales channel
                     </span>
                     <span
                       class="screen-reader-text"
                     >
-                      Channel
+                      Sales channel
                     </span>
                   </th>
                   <th
@@ -1481,7 +1491,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_j23jda9JJa&transaction_type=refund"
                       tabindex="-1"
                     >
-                      Jan 2, 2020 / 12:46PM
+                      Jan 2, 2020 / 5:46PM
                     </a>
                   </th>
                   <td
@@ -1505,7 +1515,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_j23jda9JJa&transaction_type=refund"
                       tabindex="-1"
                     >
-                      Online
+                      Online store
                     </a>
                   </td>
                   <td
@@ -1551,7 +1561,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                       data-link-type="external"
                       href="https://example.com/order/123"
                     >
-                      123
+                      custom-123
                     </a>
                   </td>
                   <td
@@ -1639,7 +1649,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
                       tabindex="-1"
                     >
-                      Jan 4, 2020 / 11:22PM
+                      Jan 5, 2020 / 4:22AM
                     </a>
                   </th>
                   <td
@@ -1663,7 +1673,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
                       tabindex="-1"
                     >
-                      Online
+                      Online store
                     </a>
                   </td>
                   <td
@@ -1732,7 +1742,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                       data-link-type="external"
                       href="https://example.com/order/125"
                     >
-                      125
+                      custom-125
                     </a>
                   </td>
                   <td
@@ -1798,7 +1808,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
                       tabindex="-1"
                     >
-                      Jan 2, 2020 / 2:55PM
+                      Jan 2, 2020 / 7:55PM
                     </a>
                   </th>
                   <td
@@ -1880,7 +1890,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                       data-link-type="external"
                       href="https://example.com/order/335"
                     >
-                      335
+                      custom-335
                     </a>
                   </td>
                   <td
@@ -2050,6 +2060,7 @@ exports[`Transactions list renders correctly when filtered by payout 1`] = `
 <div>
   <div
     class=" woocommerce-payments-page"
+    id=""
   >
     <div
       class="components-surface components-card woocommerce-table transactions-list woocommerce-report-table has-search has-actions has-menu css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
@@ -2126,22 +2137,26 @@ exports[`Transactions list renders correctly when filtered by payout 1`] = `
               type="button"
             >
               <svg
-                class="gridicon gridicons-cloud-download"
+                fill="currentColor"
                 height="24"
                 viewBox="0 0 24 24"
                 width="24"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                <g>
-                  <path
-                    d="M18 9c-.009 0-.017.002-.025.003A6.496 6.496 0 005 9.5a6.5 6.5 0 00.186 1.519C5.123 11.016 5.064 11 5 11a4 4 0 00-4 4c0 1.202.541 2.267 1.38 3h18.593C22.196 17.089 23 15.643 23 14a5 5 0 00-5-5zm-6 7l-4-5h3V8h2v3h3l-4 5z"
-                  />
-                </g>
+                <path
+                  d="M18.5 15v5H20v-5h-1.5zM4 15v5h1.5v-5H4zm0 5h16v-1.5H4V20z"
+                />
+                <path
+                  d="M12.25 16L6.5 10.75M12.25 16V3M12.25 16l5.25-5.25"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
               </svg>
               <span
                 class="woocommerce-table__download-button__label"
               >
-                Download
+                Export
               </span>
             </button>
           </div>
@@ -2259,12 +2274,12 @@ exports[`Transactions list renders correctly when filtered by payout 1`] = `
                     <span
                       aria-hidden="true"
                     >
-                      Channel
+                      Sales channel
                     </span>
                     <span
                       class="screen-reader-text"
                     >
-                      Channel
+                      Sales channel
                     </span>
                   </th>
                   <th
@@ -2450,7 +2465,7 @@ exports[`Transactions list renders correctly when filtered by payout 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
                       tabindex="-1"
                     >
-                      Jan 4, 2020 / 11:22PM
+                      Jan 5, 2020 / 4:22AM
                     </a>
                   </th>
                   <td
@@ -2474,7 +2489,7 @@ exports[`Transactions list renders correctly when filtered by payout 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
                       tabindex="-1"
                     >
-                      Online
+                      Online store
                     </a>
                   </td>
                   <td
@@ -2543,7 +2558,7 @@ exports[`Transactions list renders correctly when filtered by payout 1`] = `
                       data-link-type="external"
                       href="https://example.com/order/125"
                     >
-                      125
+                      custom-125
                     </a>
                   </td>
                   <td
@@ -2681,6 +2696,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
 <div>
   <div
     class=" woocommerce-payments-page"
+    id=""
   >
     <div
       class="woocommerce-filters-transactions"
@@ -2802,22 +2818,26 @@ exports[`Transactions list subscription column renders correctly 1`] = `
               type="button"
             >
               <svg
-                class="gridicon gridicons-cloud-download"
+                fill="currentColor"
                 height="24"
                 viewBox="0 0 24 24"
                 width="24"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                <g>
-                  <path
-                    d="M18 9c-.009 0-.017.002-.025.003A6.496 6.496 0 005 9.5a6.5 6.5 0 00.186 1.519C5.123 11.016 5.064 11 5 11a4 4 0 00-4 4c0 1.202.541 2.267 1.38 3h18.593C22.196 17.089 23 15.643 23 14a5 5 0 00-5-5zm-6 7l-4-5h3V8h2v3h3l-4 5z"
-                  />
-                </g>
+                <path
+                  d="M18.5 15v5H20v-5h-1.5zM4 15v5h1.5v-5H4zm0 5h16v-1.5H4V20z"
+                />
+                <path
+                  d="M12.25 16L6.5 10.75M12.25 16V3M12.25 16l5.25-5.25"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
               </svg>
               <span
                 class="woocommerce-table__download-button__label"
               >
-                Download
+                Export
               </span>
             </button>
           </div>
@@ -2935,12 +2955,12 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                     <span
                       aria-hidden="true"
                     >
-                      Channel
+                      Sales channel
                     </span>
                     <span
                       class="screen-reader-text"
                     >
-                      Channel
+                      Sales channel
                     </span>
                   </th>
                   <th
@@ -3158,7 +3178,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_j23jda9JJa&transaction_type=refund"
                       tabindex="-1"
                     >
-                      Jan 2, 2020 / 12:46PM
+                      Jan 2, 2020 / 5:46PM
                     </a>
                   </th>
                   <td
@@ -3182,7 +3202,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_j23jda9JJa&transaction_type=refund"
                       tabindex="-1"
                     >
-                      Online
+                      Online store
                     </a>
                   </td>
                   <td
@@ -3228,7 +3248,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                       data-link-type="external"
                       href="https://example.com/order/123"
                     >
-                      123
+                      custom-123
                     </a>
                   </td>
                   <td
@@ -3238,7 +3258,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                       data-link-type="external"
                       href="https://example.com/subscription/246"
                     >
-                      246
+                      custom-246
                     </a>
                   </td>
                   <td
@@ -3326,7 +3346,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
                       tabindex="-1"
                     >
-                      Jan 4, 2020 / 11:22PM
+                      Jan 5, 2020 / 4:22AM
                     </a>
                   </th>
                   <td
@@ -3350,7 +3370,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
                       tabindex="-1"
                     >
-                      Online
+                      Online store
                     </a>
                   </td>
                   <td
@@ -3419,7 +3439,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                       data-link-type="external"
                       href="https://example.com/order/125"
                     >
-                      125
+                      custom-125
                     </a>
                   </td>
                   <td
@@ -3488,7 +3508,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
                       tabindex="-1"
                     >
-                      Jan 2, 2020 / 2:55PM
+                      Jan 2, 2020 / 7:55PM
                     </a>
                   </th>
                   <td
@@ -3570,7 +3590,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                       data-link-type="external"
                       href="https://example.com/order/335"
                     >
-                      335
+                      custom-335
                     </a>
                   </td>
                   <td
@@ -3743,6 +3763,7 @@ exports[`Transactions list when not filtered by payout renders correctly 1`] = `
 <div>
   <div
     class=" woocommerce-payments-page"
+    id=""
   >
     <div
       class="woocommerce-filters-transactions"
@@ -3864,22 +3885,26 @@ exports[`Transactions list when not filtered by payout renders correctly 1`] = `
               type="button"
             >
               <svg
-                class="gridicon gridicons-cloud-download"
+                fill="currentColor"
                 height="24"
                 viewBox="0 0 24 24"
                 width="24"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                <g>
-                  <path
-                    d="M18 9c-.009 0-.017.002-.025.003A6.496 6.496 0 005 9.5a6.5 6.5 0 00.186 1.519C5.123 11.016 5.064 11 5 11a4 4 0 00-4 4c0 1.202.541 2.267 1.38 3h18.593C22.196 17.089 23 15.643 23 14a5 5 0 00-5-5zm-6 7l-4-5h3V8h2v3h3l-4 5z"
-                  />
-                </g>
+                <path
+                  d="M18.5 15v5H20v-5h-1.5zM4 15v5h1.5v-5H4zm0 5h16v-1.5H4V20z"
+                />
+                <path
+                  d="M12.25 16L6.5 10.75M12.25 16V3M12.25 16l5.25-5.25"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
               </svg>
               <span
                 class="woocommerce-table__download-button__label"
               >
-                Download
+                Export
               </span>
             </button>
           </div>
@@ -3997,12 +4022,12 @@ exports[`Transactions list when not filtered by payout renders correctly 1`] = `
                     <span
                       aria-hidden="true"
                     >
-                      Channel
+                      Sales channel
                     </span>
                     <span
                       class="screen-reader-text"
                     >
-                      Channel
+                      Sales channel
                     </span>
                   </th>
                   <th
@@ -4204,7 +4229,7 @@ exports[`Transactions list when not filtered by payout renders correctly 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_j23jda9JJa&transaction_type=refund"
                       tabindex="-1"
                     >
-                      Jan 2, 2020 / 12:46PM
+                      Jan 2, 2020 / 5:46PM
                     </a>
                   </th>
                   <td
@@ -4228,7 +4253,7 @@ exports[`Transactions list when not filtered by payout renders correctly 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_j23jda9JJa&transaction_type=refund"
                       tabindex="-1"
                     >
-                      Online
+                      Online store
                     </a>
                   </td>
                   <td
@@ -4274,7 +4299,7 @@ exports[`Transactions list when not filtered by payout renders correctly 1`] = `
                       data-link-type="external"
                       href="https://example.com/order/123"
                     >
-                      123
+                      custom-123
                     </a>
                   </td>
                   <td
@@ -4362,7 +4387,7 @@ exports[`Transactions list when not filtered by payout renders correctly 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
                       tabindex="-1"
                     >
-                      Jan 4, 2020 / 11:22PM
+                      Jan 5, 2020 / 4:22AM
                     </a>
                   </th>
                   <td
@@ -4386,7 +4411,7 @@ exports[`Transactions list when not filtered by payout renders correctly 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
                       tabindex="-1"
                     >
-                      Online
+                      Online store
                     </a>
                   </td>
                   <td
@@ -4455,7 +4480,7 @@ exports[`Transactions list when not filtered by payout renders correctly 1`] = `
                       data-link-type="external"
                       href="https://example.com/order/125"
                     >
-                      125
+                      custom-125
                     </a>
                   </td>
                   <td
@@ -4521,7 +4546,7 @@ exports[`Transactions list when not filtered by payout renders correctly 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
                       tabindex="-1"
                     >
-                      Jan 2, 2020 / 2:55PM
+                      Jan 2, 2020 / 7:55PM
                     </a>
                   </th>
                   <td
@@ -4603,7 +4628,7 @@ exports[`Transactions list when not filtered by payout renders correctly 1`] = `
                       data-link-type="external"
                       href="https://example.com/order/335"
                     >
-                      335
+                      custom-335
                     </a>
                   </td>
                   <td
@@ -4773,6 +4798,7 @@ exports[`Transactions list when not filtered by payout renders table summary onl
 <div>
   <div
     class=" woocommerce-payments-page"
+    id=""
   >
     <div
       class="woocommerce-filters-transactions"
@@ -4894,22 +4920,26 @@ exports[`Transactions list when not filtered by payout renders table summary onl
               type="button"
             >
               <svg
-                class="gridicon gridicons-cloud-download"
+                fill="currentColor"
                 height="24"
                 viewBox="0 0 24 24"
                 width="24"
                 xmlns="http://www.w3.org/2000/svg"
               >
-                <g>
-                  <path
-                    d="M18 9c-.009 0-.017.002-.025.003A6.496 6.496 0 005 9.5a6.5 6.5 0 00.186 1.519C5.123 11.016 5.064 11 5 11a4 4 0 00-4 4c0 1.202.541 2.267 1.38 3h18.593C22.196 17.089 23 15.643 23 14a5 5 0 00-5-5zm-6 7l-4-5h3V8h2v3h3l-4 5z"
-                  />
-                </g>
+                <path
+                  d="M18.5 15v5H20v-5h-1.5zM4 15v5h1.5v-5H4zm0 5h16v-1.5H4V20z"
+                />
+                <path
+                  d="M12.25 16L6.5 10.75M12.25 16V3M12.25 16l5.25-5.25"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="1.5"
+                />
               </svg>
               <span
                 class="woocommerce-table__download-button__label"
               >
-                Download
+                Export
               </span>
             </button>
           </div>
@@ -5027,12 +5057,12 @@ exports[`Transactions list when not filtered by payout renders table summary onl
                     <span
                       aria-hidden="true"
                     >
-                      Channel
+                      Sales channel
                     </span>
                     <span
                       class="screen-reader-text"
                     >
-                      Channel
+                      Sales channel
                     </span>
                   </th>
                   <th
@@ -5234,7 +5264,7 @@ exports[`Transactions list when not filtered by payout renders table summary onl
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_j23jda9JJa&transaction_type=refund"
                       tabindex="-1"
                     >
-                      Jan 2, 2020 / 12:46PM
+                      Jan 2, 2020 / 5:46PM
                     </a>
                   </th>
                   <td
@@ -5258,7 +5288,7 @@ exports[`Transactions list when not filtered by payout renders table summary onl
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_j23jda9JJa&transaction_type=refund"
                       tabindex="-1"
                     >
-                      Online
+                      Online store
                     </a>
                   </td>
                   <td
@@ -5304,7 +5334,7 @@ exports[`Transactions list when not filtered by payout renders table summary onl
                       data-link-type="external"
                       href="https://example.com/order/123"
                     >
-                      123
+                      custom-123
                     </a>
                   </td>
                   <td
@@ -5392,7 +5422,7 @@ exports[`Transactions list when not filtered by payout renders table summary onl
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
                       tabindex="-1"
                     >
-                      Jan 4, 2020 / 11:22PM
+                      Jan 5, 2020 / 4:22AM
                     </a>
                   </th>
                   <td
@@ -5416,7 +5446,7 @@ exports[`Transactions list when not filtered by payout renders table summary onl
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock&transaction_id=txn_oa9kaKaa8&transaction_type=charge"
                       tabindex="-1"
                     >
-                      Online
+                      Online store
                     </a>
                   </td>
                   <td
@@ -5485,7 +5515,7 @@ exports[`Transactions list when not filtered by payout renders table summary onl
                       data-link-type="external"
                       href="https://example.com/order/125"
                     >
-                      125
+                      custom-125
                     </a>
                   </td>
                   <td
@@ -5551,7 +5581,7 @@ exports[`Transactions list when not filtered by payout renders table summary onl
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=ch_rskkmpe46yu&transaction_id=txn_mmtr89gjh5&transaction_type=charge"
                       tabindex="-1"
                     >
-                      Jan 2, 2020 / 2:55PM
+                      Jan 2, 2020 / 7:55PM
                     </a>
                   </th>
                   <td
@@ -5633,7 +5663,7 @@ exports[`Transactions list when not filtered by payout renders table summary onl
                       data-link-type="external"
                       href="https://example.com/order/335"
                     >
-                      335
+                      custom-335
                     </a>
                   </td>
                   <td

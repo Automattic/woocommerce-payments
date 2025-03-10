@@ -68,6 +68,7 @@ declare const global: {
 		connect: {
 			country: string;
 		};
+		dateFormat: string;
 	};
 };
 
@@ -240,6 +241,7 @@ describe( 'Deposits Overview information', () => {
 					precision: 2,
 				},
 			},
+			dateFormat: 'F j, Y',
 		};
 		mockUseDepositIncludesLoan.mockReturnValue( {
 			includesFinancingPayout: false,

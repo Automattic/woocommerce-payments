@@ -1,5 +1,0 @@
-Significance: patch
-Type: update
-Comment: Part of a larger change to change 'deposit' to 'payout'. This PR specificially changes it for the transaction details timeline.
-
-

@@ -37,6 +37,15 @@
 			font-size: 20px;
 			line-height: 28px;
 		}
+
+		.wcpay-summary__item-detail {
+			color: $dark-gray-500;
+			word-wrap: break-word;
+
+			.woopayments-payout-bank-reference-id {
+				font-family: monospace;
+			}
+		}
 	}
 
 	.wcpay-deposit-fee {
@@ -47,10 +56,51 @@
 		color: $wp-green-70;
 	}
 
+	.woopayments-payout-details-header {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: space-between;
+		gap: 0.75rem;
+
+		&__bank-reference-id {
+			font-family: monospace;
+			color: $wp-gray-50;
+		}
+
+		&__value {
+			color: $wp-gray-50;
+			align-self: center;
+
+			@include breakpoint( '<660px' ) {
+				align-self: flex-start;
+			}
+		}
+
+		&__item {
+			display: flex;
+
+			@include breakpoint( '<660px' ) {
+				flex-direction: column;
+			}
+		}
+
+		h2 {
+			font-size: 0.6875rem;
+			font-weight: 500;
+			color: $wp-gray-90;
+			min-width: 11rem;
+			text-transform: uppercase;
+		}
+	}
+
 	.wcpay-deposit-automatic ul {
 		display: flex;
 		margin: 0;
 		list-style-type: none;
+
+		@include breakpoint( '<660px' ) {
+			flex-direction: column;
+		}
 
 		.woocommerce-summary__item {
 			border-bottom: 0;
@@ -58,6 +108,10 @@
 			color: inherit;
 			.woocommerce-summary__item-label:hover {
 				color: inherit;
+			}
+
+			@include breakpoint( '<660px' ) {
+				border-right: none;
 			}
 		}
 
@@ -67,6 +121,12 @@
 			text-align: right;
 			font-size: 36px;
 			line-height: 82px;
+
+			@include breakpoint( '<660px' ) {
+				line-height: 36px;
+				text-align: left;
+				border-top: 1px solid $studio-gray-5;
+			}
 		}
 	}
 

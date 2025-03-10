@@ -59,7 +59,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
-	 * Builds the line items to pass to Payment Request
+	 * Builds the line items to pass to Express Checkout
 	 *
 	 * @param boolean $itemized_display_items Indicates whether to show subtotals or itemized views.
 	 */
@@ -182,7 +182,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * @return int
 	 */
 	public function get_quantity() {
-		// Payment Request Button sends the quantity as qty. WooPay sends it as quantity.
+		// Express Checkout Element sends the quantity as qty. WooPay sends it as quantity.
 		if ( isset( $_POST['quantity'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			return absint( $_POST['quantity'] ); // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		} elseif ( isset( $_POST['qty'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -245,23 +245,19 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
-	 * Gets settings that are shared between the Payment Request button and the WooPay button.
+	 * Gets settings that are shared between the Express Checkout button and the WooPay button.
 	 *
 	 * @return array
 	 */
 	public function get_common_button_settings() {
 		$button_type = $this->gateway->get_option( 'payment_request_button_type' );
-		$settings    = [
+
+		return [
 			'type'   => $button_type,
 			'theme'  => $this->gateway->get_option( 'payment_request_button_theme' ),
 			'height' => $this->get_button_height(),
+			'radius' => $this->gateway->get_option( 'payment_request_button_border_radius' ),
 		];
-
-		if ( WC_Payments_Features::is_stripe_ece_enabled() ) {
-			$settings['radius'] = $this->gateway->get_option( 'payment_request_button_border_radius' );
-		}
-
-		return $settings;
 	}
 
 	/**
@@ -365,7 +361,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
-	 * Checks whether Payment Request Button should be available on this page.
+	 * Checks whether Express Checkout Element Button should be available on this page.
 	 *
 	 * @return bool
 	 */
@@ -377,7 +373,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 		// If no SSL, bail.
 		if ( ! WC_Payments::mode()->is_test() && ! is_ssl() ) {
-			Logger::log( 'Stripe Payment Request live mode requires SSL.' );
+			Logger::log( 'Stripe Express Checkout live mode requires SSL.' );
 
 			return false;
 		}
@@ -404,22 +400,22 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 		// Product page, but has unsupported product type.
 		if ( $this->is_product() && ! $this->is_product_supported() ) {
-			Logger::log( 'Product page has unsupported product type ( Payment Request button disabled )' );
+			Logger::log( 'Product page has unsupported product type ( Express Checkout Element button disabled )' );
 			return false;
 		}
 
 		// Cart has unsupported product type.
 		if ( ( $this->is_checkout() || $this->is_cart() ) && ! $this->has_allowed_items_in_cart() ) {
-			Logger::log( 'Items in the cart have unsupported product type ( Payment Request button disabled )' );
+			Logger::log( 'Items in the cart have unsupported product type ( Express Checkout Element button disabled )' );
 			return false;
 		}
 
 		// Order total doesn't matter for Pay for Order page. Thus, this page should always display payment buttons.
 		if ( $this->is_pay_for_order_page() ) {
-			return true;
+			return $this->is_pay_for_order_supported();
 		}
 
-		// Non-shipping product and billing is calculated based on shopper billing addres. Excludes Pay for Order page.
+		// Non-shipping product and tax is calculated based on shopper billing address. Excludes Pay for Order page.
 		if (
 			// If the product doesn't needs shipping.
 			(
@@ -430,8 +426,10 @@ class WC_Payments_Express_Checkout_Button_Helper {
 				( ( $this->is_cart() || $this->is_checkout() ) && ! WC()->cart->needs_shipping() )
 			)
 
-			// ...and billing is calculated based on billing address.
+			// ...and tax is calculated based on billing address.
+			&& wc_tax_enabled()
 			&& 'billing' === get_option( 'woocommerce_tax_based_on' )
+			&& 'yes' !== get_option( 'woocommerce_prices_include_tax' )
 		) {
 			return false;
 		}
@@ -443,7 +441,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			( $this->is_product() && 0.0 === (float) $this->get_product()->get_price() )
 
 		) {
-			Logger::log( 'Order price is 0 ( Payment Request button disabled )' );
+			Logger::log( 'Order price is 0 ( Express Checkout Element button disabled )' );
 			return false;
 		}
 
@@ -513,11 +511,11 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			}
 
 			/**
-			 * Filter whether product supports Payment Request Button on cart page.
+			 * Filter whether product supports Express Checkout Element Button on cart page.
 			 *
 			 * @since 6.9.0
 			 *
-			 * @param boolean $is_supported Whether product supports Payment Request Button on cart page.
+			 * @param boolean $is_supported Whether product supports Express Checkout Element Button on cart page.
 			 * @param object  $_product     Product object.
 			 */
 			if ( ! apply_filters( 'wcpay_payment_request_is_cart_supported', true, $_product ) ) {
@@ -534,7 +532,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			}
 		}
 
-		// We don't support multiple packages with Payment Request Buttons because we can't offer a good UX.
+		// We don't support multiple packages with Express Checkout Element Buttons because we can't offer a good UX.
 		$packages = WC()->cart->get_shipping_packages();
 		if ( 1 < ( is_countable( $packages ) ? count( $packages ) : 0 ) ) {
 			return false;
@@ -622,7 +620,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 	/**
 	 * Restores the shipping methods previously chosen for each recurring cart after shipping was reset and recalculated
-	 * during the Payment Request get_shipping_options flow.
+	 * during the Express Checkout get_shipping_options flow.
 	 *
 	 * When the cart contains multiple subscriptions with different billing periods, customers are able to select different shipping
 	 * methods for each subscription, however, this is not supported when purchasing with Apple Pay and Google Pay as it's
@@ -746,8 +744,41 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		$data['needs_shipping'] = ( wc_shipping_enabled() && 0 !== wc_get_shipping_method_count( true ) && $product->needs_shipping() );
 		$data['currency']       = strtolower( $currency );
 		$data['country_code']   = substr( get_option( 'woocommerce_default_country' ), 0, 2 );
+		$data['product_type']   = $product->get_type();
 
 		return apply_filters( 'wcpay_payment_request_product_data', $data, $product );
+	}
+
+	/**
+	 * The Store API doesn't allow checkout without the billing email address present on the order data.
+	 * https://github.com/woocommerce/woocommerce/issues/48540
+	 *
+	 * @return bool
+	 */
+	private function is_pay_for_order_supported() {
+		if ( ! WC_Payments_Features::is_tokenized_cart_ece_enabled() ) {
+			return true;
+		}
+
+		$order_id = absint( get_query_var( 'order-pay' ) );
+		if ( 0 === $order_id ) {
+			return false;
+		}
+
+		$order = wc_get_order( $order_id );
+		if ( ! is_a( $order, 'WC_Order' ) ) {
+			return false;
+		}
+
+		// we don't need to check its validity or value, we just need to ensure a billing email is present.
+		$billing_email = $order->get_billing_email();
+		if ( ! empty( $billing_email ) ) {
+			return true;
+		}
+
+		Logger::log( 'Billing email not present ( Express Checkout Element button disabled )' );
+
+		return false;
 	}
 
 	/**
@@ -764,22 +795,29 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		 *
 		 * @psalm-suppress UndefinedClass
 		 */
-		if ( is_null( $product )
-			|| ! is_object( $product )
-			|| ! in_array( $product->get_type(), $this->supported_product_types(), true )
-			|| ( class_exists( 'WC_Subscriptions_Product' ) && $product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $product ) > 0 ) // Trial subscriptions with shipping are not supported.
+
+		if ( is_null( $product ) || ! is_object( $product ) ) {
+			$is_supported = false;
+		} else {
+			// Simple subscription that needs shipping with free trials is not supported.
+			$is_free_trial_simple_subs = class_exists( 'WC_Subscriptions_Product' ) && $product->get_type() === 'subscription' && $product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $product ) > 0;
+
+			if (
+			! in_array( $product->get_type(), $this->supported_product_types(), true )
+			|| $is_free_trial_simple_subs
 			|| ( class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) // Pre Orders charge upon release not supported.
 			|| ( class_exists( 'WC_Composite_Products' ) && $product->is_type( 'composite' ) ) // Composite products are not supported on the product page.
 			|| ( class_exists( 'WC_Mix_and_Match' ) && $product->is_type( 'mix-and-match' ) ) // Mix and match products are not supported on the product page.
-		) {
-			$is_supported = false;
-		} elseif ( class_exists( 'WC_Product_Addons_Helper' ) ) {
-			// File upload addon not supported.
-			$product_addons = WC_Product_Addons_Helper::get_product_addons( $product->get_id() );
-			foreach ( $product_addons as $addon ) {
-				if ( 'file_upload' === $addon['type'] ) {
-					$is_supported = false;
-					break;
+			) {
+				$is_supported = false;
+			} elseif ( class_exists( 'WC_Product_Addons_Helper' ) ) {
+				// File upload addon not supported.
+				$product_addons = WC_Product_Addons_Helper::get_product_addons( $product->get_id() );
+				foreach ( $product_addons as $addon ) {
+					if ( 'file_upload' === $addon['type'] ) {
+						$is_supported = false;
+						break;
+					}
 				}
 			}
 		}
@@ -892,8 +930,8 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return $state;
 		}
 
-		// Try to match state from the Payment Request API list of states.
-		$state = $this->get_normalized_state_from_pr_states( $state, $country );
+		// Try to match state from the Express Checkout API list of states.
+		$state = $this->get_normalized_state_from_ece_states( $state, $country );
 
 		// If it's normalized, return.
 		if ( $this->is_normalized_state( $state, $country ) ) {
@@ -906,11 +944,11 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
-	 * The Payment Request API provides its own validation for the address form.
+	 * The Express Checkout Element API provides its own validation for the address form.
 	 * For some countries, it might not provide a state field, so we need to return a more descriptive
-	 * error message, indicating that the Payment Request button is not supported for that country.
+	 * error message, indicating that the Express Checkout Element button is not supported for that country.
 	 */
-	public static function validate_state() {
+	public function validate_state() {
 		$wc_checkout     = WC_Checkout::instance();
 		$posted_data     = $wc_checkout->get_posted_data();
 		$checkout_fields = $wc_checkout->get_checkout_fields();
@@ -931,7 +969,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			wc_add_notice(
 				sprintf(
 					/* translators: %s: country. */
-					__( 'The payment request button is not supported in %s because some required fields couldn\'t be verified. Please proceed to the checkout page and try again.', 'woocommerce-payments' ),
+					__( 'The express checkout is not supported in %s because some required fields couldn\'t be verified. Please proceed to the checkout page and try again.', 'woocommerce-payments' ),
 					$countries[ $posted_data['billing_country'] ] ?? $posted_data['billing_country']
 				),
 				'error'
@@ -950,6 +988,46 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		$billing_state    = ! empty( $_POST['billing_state'] ) ? wc_clean( wp_unslash( $_POST['billing_state'] ) ) : '';
 		$shipping_state   = ! empty( $_POST['shipping_state'] ) ? wc_clean( wp_unslash( $_POST['shipping_state'] ) ) : '';
 
+		// Due to a bug in Apple Pay, the "Region" part of a Hong Kong address is delivered in
+		// `shipping_postcode`, so we need some special case handling for that. According to
+		// our sources at Apple Pay people will sometimes use the district or even sub-district
+		// for this value. As such we check against all regions, districts, and sub-districts
+		// with both English and Mandarin spelling.
+		//
+		// @reykjalin: The check here is quite elaborate in an attempt to make sure this doesn't break once
+		// Apple Pay fixes the bug that causes address values to be in the wrong place. Because of that the
+		// algorithm becomes:
+		// 1. Use the supplied state if it's valid (in case Apple Pay bug is fixed)
+		// 2. Use the value supplied in the postcode if it's a valid HK region (equivalent to a WC state).
+		// 3. Fall back to the value supplied in the state. This will likely cause a validation error, in
+		// which case a merchant can reach out to us so we can either: 1) add whatever the customer used
+		// as a state to our list of valid states; or 2) let them know the customer must spell the state
+		// in some way that matches our list of valid states.
+		//
+		// @reykjalin: This HK specific sanitazation *should be removed* once Apple Pay fix
+		// the address bug. More info on that in pc4etw-bY-p2.
+		if ( 'HK' === $billing_country ) {
+			include_once WCPAY_ABSPATH . 'includes/constants/class-express-checkout-hong-kong-states.php';
+
+			if ( ! \WCPay\Constants\Express_Checkout_Hong_Kong_States::is_valid_state( strtolower( $billing_state ) ) ) {
+				$billing_postcode = ! empty( $_POST['billing_postcode'] ) ? wc_clean( wp_unslash( $_POST['billing_postcode'] ) ) : '';
+				if ( \WCPay\Constants\Express_Checkout_Hong_Kong_States::is_valid_state( strtolower( $billing_postcode ) ) ) {
+					$billing_state = $billing_postcode;
+				}
+			}
+		}
+		if ( 'HK' === $shipping_country ) {
+			include_once WCPAY_ABSPATH . 'includes/constants/class-express-checkout-hong-kong-states.php';
+
+			if ( ! \WCPay\Constants\Express_Checkout_Hong_Kong_States::is_valid_state( strtolower( $shipping_state ) ) ) {
+				$shipping_postcode = ! empty( $_POST['shipping_postcode'] ) ? wc_clean( wp_unslash( $_POST['shipping_postcode'] ) ) : '';
+				if ( \WCPay\Constants\Express_Checkout_Hong_Kong_States::is_valid_state( strtolower( $shipping_postcode ) ) ) {
+					$shipping_state = $shipping_postcode;
+				}
+			}
+		}
+
+		// Finally we normalize the state value we want to process.
 		if ( $billing_state && $billing_country ) {
 			$_POST['billing_state'] = $this->get_normalized_state( $billing_state, $billing_country );
 		}
@@ -973,17 +1051,17 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
-	 * Get normalized state from Payment Request API dropdown list of states.
+	 * Get normalized state from Express Checkout API dropdown list of states.
 	 *
 	 * @param string $state Full state name or state code.
 	 * @param string $country Two-letter country code.
 	 *
 	 * @return string Normalized state or original state input value.
 	 */
-	public function get_normalized_state_from_pr_states( $state, $country ) {
-		// Include Payment Request API State list for compatibility with WC countries/states.
-		include_once WCPAY_ABSPATH . 'includes/constants/class-payment-request-button-states.php';
-		$pr_states = \WCPay\Constants\Payment_Request_Button_States::STATES;
+	public function get_normalized_state_from_ece_states( $state, $country ) {
+		// Include Express Checkout Element API State list for compatibility with WC countries/states.
+		include_once WCPAY_ABSPATH . 'includes/constants/class-express-checkout-element-states.php';
+		$pr_states = \WCPay\Constants\Express_Checkout_Element_States::STATES;
 
 		if ( ! isset( $pr_states[ $country ] ) ) {
 			return $state;
@@ -991,7 +1069,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 		foreach ( $pr_states[ $country ] as $wc_state_abbr => $pr_state ) {
 			$sanitized_state_string = $this->sanitize_string( $state );
-			// Checks if input state matches with Payment Request state code (0), name (1) or localName (2).
+			// Checks if input state matches with Express Checkout state code (0), name (1) or localName (2).
 			if (
 				( ! empty( $pr_state[0] ) && $sanitized_state_string === $this->sanitize_string( $pr_state[0] ) ) ||
 				( ! empty( $pr_state[1] ) && $sanitized_state_string === $this->sanitize_string( $pr_state[1] ) ) ||

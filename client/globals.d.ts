@@ -13,11 +13,20 @@ declare global {
 		isSubscriptionsActive: boolean;
 		featureFlags: {
 			customSearch: boolean;
+			woopay: boolean;
+			documents: boolean;
+			woopayExpressCheckout: boolean;
 			isAuthAndCaptureEnabled: boolean;
 			paymentTimeline: boolean;
 			isDisputeIssuerEvidenceEnabled: boolean;
 			isPaymentOverviewWidgetEnabled?: boolean;
+			/**
+			 * The development feature flag for the merchant feedback prompt. See issue #10323.
+			 */
+			isMerchantFeedbackPromptDevFlagEnabled: boolean;
+			multiCurrency?: boolean;
 		};
+		accountFees: Record< string, any >;
 		fraudServices: unknown[];
 		testMode: boolean;
 		testModeOnboarding: boolean;
@@ -26,9 +35,10 @@ declare global {
 		isJetpackIdcActive: boolean;
 		isAccountConnected: boolean;
 		isAccountValid: boolean;
-		accountStatus: {
+		accountStatus: Partial< {
 			email?: string;
 			created: string;
+			isLive?: boolean;
 			error?: boolean;
 			status?: string;
 			country?: string;
@@ -69,7 +79,17 @@ declare global {
 				declineOnAVSFailure: boolean;
 				declineOnCVCFailure: boolean;
 			};
-		};
+			/**
+			 * Campaigns are temporary flags that are used to enable/disable features for a limited time.
+			 */
+			campaigns: {
+				/**
+				 * The flag for the WordPress.org merchant review campaign in 2025.
+				 * Eligibility is determined per-account on transact-platform-server.
+				 */
+				wporgReview2025: boolean;
+			};
+		} >;
 		accountLoans: {
 			has_active_loan: boolean;
 			has_past_loans: boolean;
@@ -89,7 +109,6 @@ declare global {
 		fraudProtection: {
 			isWelcomeTourDismissed?: boolean;
 		};
-		isPayoutsRenameNoticeDismissed: boolean;
 		progressiveOnboarding?: {
 			isEnabled: boolean;
 			isComplete: boolean;
@@ -123,12 +142,27 @@ declare global {
 		storeName: string;
 		isNextDepositNoticeDismissed: boolean;
 		isInstantDepositNoticeDismissed: boolean;
-		reporting: {
-			exportModalDismissed?: boolean;
-		};
-		locale: {
+		isConnectionSuccessModalDismissed: boolean;
+		userLocale: {
+			/**
+			 * The locale of the current user profile, represented as a locale code supported by transact-platform-server.
+			 *
+			 * @example 'es' // Spanish
+			 *
+			 * @see WC_Payments_Utils::convert_locale_to_language_code
+			 */
 			code: string;
+			/**
+			 * The English name of the locale.
+			 *
+			 * @example 'Spanish'
+			 */
 			english_name: string;
+			/**
+			 * The native name of the locale.
+			 *
+			 * @example 'Español'
+			 */
 			native_name: string;
 		};
 		trackingInfo?: {
@@ -137,7 +171,24 @@ declare global {
 		isOverviewSurveySubmitted: boolean;
 		lifetimeTPV: number;
 		defaultExpressCheckoutBorderRadius: string;
+		dateFormat: string;
+		timeFormat: string;
 	};
+
+	const woopaymentsPaymentMethodDefinitions: Record<
+		string,
+		{
+			id: string;
+			stripe_key: string;
+			title: string;
+			description: string;
+			settings_icon_url: string;
+			currencies: string[];
+			allows_manual_capture: boolean;
+			allows_pay_later: boolean;
+			accepts_only_domestic_payment: boolean;
+		}
+	>;
 
 	const wc: {
 		wcSettings: typeof wcSettingsModule;
@@ -186,7 +237,25 @@ declare global {
 		adminUrl: string;
 		countries: Record< string, string >;
 		homeUrl: string;
+		locale: {
+			/**
+			 * The locale of the current site, as set in WP Admin → Settings → General.
+			 *
+			 * @example 'en_AU' // English (Australia)
+			 */
+			siteLocale: string;
+			/**
+			 * The locale of the current user profile, as set in WP Admin → Users → Profile → Language.
+			 *
+			 * @example 'en_UK' // English (United Kingdom)
+			 */
+			userLocale: string;
+		};
 		siteTitle: string;
+	};
+
+	const wcpayPluginSettings: {
+		exitSurveyLastShown: string | null;
 	};
 
 	interface WcSettings {
@@ -209,5 +278,6 @@ declare global {
 		wc: typeof wc;
 		wcTracks: typeof wcTracks;
 		wcSettings: typeof wcSettings;
+		wcpayPluginSettings?: typeof wcpayPluginSettings;
 	}
 }

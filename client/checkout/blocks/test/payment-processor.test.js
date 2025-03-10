@@ -41,9 +41,10 @@ describe( 'PaymentProcessor', () => {
 			.fn()
 			.mockResolvedValue( { paymentMethod: {} } );
 		mockApi = {
-			getStripeForUPE: () => ( {
-				createPaymentMethod: mockCreatePaymentMethod,
-			} ),
+			getStripeForUPE: () =>
+				Promise.resolve( {
+					createPaymentMethod: mockCreatePaymentMethod,
+				} ),
 		};
 	} );
 

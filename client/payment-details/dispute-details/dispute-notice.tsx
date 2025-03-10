@@ -64,7 +64,12 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 			{ createInterpolateElement(
 				sprintf( noticeText, shopperDisputeReason ),
 				{
-					a: <ExternalLink href={ learnMoreDocsUrl } />,
+					a: (
+						<ExternalLink
+							className="dispute-notice__link"
+							href={ learnMoreDocsUrl }
+						/>
+					),
 					strong: <strong />,
 				}
 			) }

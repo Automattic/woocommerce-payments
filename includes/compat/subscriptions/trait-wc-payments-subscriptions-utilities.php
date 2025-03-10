@@ -69,6 +69,9 @@ trait WC_Payments_Subscriptions_Utilities {
 	 * @return bool Indicates whether the save payment method checkbox should be displayed or not.
 	 */
 	public function display_save_payment_method_checkbox( $display ) {
+		if ( ! class_exists( 'WC_Subscriptions_Cart' ) ) {
+			return false;
+		}
 		if ( WC_Subscriptions_Cart::cart_contains_subscription() || $this->is_changing_payment_method_for_subscription() ) {
 			return false;
 		}
@@ -83,7 +86,7 @@ trait WC_Payments_Subscriptions_Utilities {
 	 * @return bool
 	 */
 	public function is_subscription_item_in_cart() {
-		if ( $this->is_subscriptions_enabled() ) {
+		if ( class_exists( 'WC_Subscriptions_Cart' ) && $this->is_subscriptions_enabled() ) {
 			return WC_Subscriptions_Cart::cart_contains_subscription() || $this->cart_contains_renewal();
 		}
 		return false;

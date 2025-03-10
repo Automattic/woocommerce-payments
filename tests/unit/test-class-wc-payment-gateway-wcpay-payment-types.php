@@ -149,12 +149,12 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 					$this->mock_action_scheduler_service,
 					$mock_payment_method,
 					[ 'card' => $mock_payment_method ],
-					$this->mock_rate_limiter,
 					$this->mock_order_service,
 					$mock_dpps,
 					$this->createMock( WC_Payments_Localization_Service::class ),
 					$this->createMock( WC_Payments_Fraud_Service::class ),
 					$this->createMock( Duplicates_Detection_Service::class ),
+					$this->mock_rate_limiter,
 				]
 			)
 			->setMethods(
@@ -319,6 +319,7 @@ class WC_Payment_Gateway_WCPay_Payment_Types extends WCPAY_UnitTestCase {
 		$mock_subscription->payment_method = 'woocommerce_payments';
 
 		$mock_subscription->update_meta_data( '_wcpay_subscription_id', 'test_is_wcpay_subscription' );
+		$order->update_meta_data( '_wcpay_subscription_id', 'test_is_wcpay_subscription' );
 
 		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
 			function ( $id ) use ( $mock_subscription ) {

@@ -126,7 +126,7 @@ describe( 'Express checkout event handlers', () => {
 
 		beforeEach( () => {
 			api = {
-				paymentRequestUpdateShippingDetails: jest.fn(),
+				expressCheckoutECEUpdateShippingDetails: jest.fn(),
 			};
 			event = {
 				shippingRate: {
@@ -153,7 +153,7 @@ describe( 'Express checkout event handlers', () => {
 				displayItems: [ { label: 'Sample Item', amount: 1000 } ],
 			};
 
-			api.paymentRequestUpdateShippingDetails.mockResolvedValue(
+			api.expressCheckoutECEUpdateShippingDetails.mockResolvedValue(
 				response
 			);
 
@@ -163,7 +163,7 @@ describe( 'Express checkout event handlers', () => {
 				response.displayItems
 			);
 			expect(
-				api.paymentRequestUpdateShippingDetails
+				api.expressCheckoutECEUpdateShippingDetails
 			).toHaveBeenCalledWith( event.shippingRate );
 			expect( elements.update ).toHaveBeenCalledWith( { amount: 1500 } );
 			expect( event.resolve ).toHaveBeenCalledWith( {
@@ -177,14 +177,14 @@ describe( 'Express checkout event handlers', () => {
 				result: 'error',
 			};
 
-			api.paymentRequestUpdateShippingDetails.mockResolvedValue(
+			api.expressCheckoutECEUpdateShippingDetails.mockResolvedValue(
 				response
 			);
 
 			await shippingRateChangeHandler( api, event, elements );
 
 			expect(
-				api.paymentRequestUpdateShippingDetails
+				api.expressCheckoutECEUpdateShippingDetails
 			).toHaveBeenCalledWith( event.shippingRate );
 			expect( elements.update ).not.toHaveBeenCalled();
 			expect( event.resolve ).not.toHaveBeenCalled();
@@ -192,14 +192,14 @@ describe( 'Express checkout event handlers', () => {
 		} );
 
 		test( 'should handle API call failure', async () => {
-			api.paymentRequestUpdateShippingDetails.mockRejectedValue(
+			api.expressCheckoutECEUpdateShippingDetails.mockRejectedValue(
 				new Error( 'API error' )
 			);
 
 			await shippingRateChangeHandler( api, event, elements );
 
 			expect(
-				api.paymentRequestUpdateShippingDetails
+				api.expressCheckoutECEUpdateShippingDetails
 			).toHaveBeenCalledWith( event.shippingRate );
 			expect( elements.update ).not.toHaveBeenCalled();
 			expect( event.resolve ).not.toHaveBeenCalled();
@@ -283,10 +283,7 @@ describe( 'Express checkout event handlers', () => {
 			);
 
 			expect( elements.submit ).toHaveBeenCalled();
-			expect( abortPayment ).toHaveBeenCalledWith(
-				event,
-				'Submit error'
-			);
+			expect( abortPayment ).toHaveBeenCalledWith( 'Submit error' );
 			expect( completePayment ).not.toHaveBeenCalled();
 		} );
 
@@ -310,7 +307,6 @@ describe( 'Express checkout event handlers', () => {
 				elements,
 			} );
 			expect( abortPayment ).toHaveBeenCalledWith(
-				event,
 				'Payment method error'
 			);
 			expect( completePayment ).not.toHaveBeenCalled();
@@ -340,7 +336,6 @@ describe( 'Express checkout event handlers', () => {
 				expectedOrderData
 			);
 			expect( abortPayment ).toHaveBeenCalledWith(
-				event,
 				'Order creation error'
 			);
 			expect( completePayment ).not.toHaveBeenCalled();
@@ -432,7 +427,6 @@ describe( 'Express checkout event handlers', () => {
 				'https://example.com/redirect'
 			);
 			expect( abortPayment ).toHaveBeenCalledWith(
-				event,
 				'Intent confirmation error'
 			);
 			expect( completePayment ).not.toHaveBeenCalled();
@@ -467,7 +461,6 @@ describe( 'Express checkout event handlers', () => {
 				expectedOrderData
 			);
 			expect( abortPayment ).toHaveBeenCalledWith(
-				event,
 				'Order creation error'
 			);
 			expect( completePayment ).not.toHaveBeenCalled();
@@ -562,7 +555,6 @@ describe( 'Express checkout event handlers', () => {
 				'https://example.com/redirect'
 			);
 			expect( abortPayment ).toHaveBeenCalledWith(
-				event,
 				'Intent confirmation error'
 			);
 			expect( completePayment ).not.toHaveBeenCalled();

@@ -4,8 +4,6 @@
  * External dependencies
  */
 import React from 'react';
-import moment from 'moment';
-import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 import { ExternalLink } from '@wordpress/components';
@@ -17,6 +15,7 @@ import InfoOutlineIcon from 'gridicons/dist/info-outline';
  */
 import { getAdminUrl } from 'utils';
 import { ClickTooltip } from 'components/tooltip';
+import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 
 interface DepositProps {
 	depositId?: string;
@@ -31,12 +30,9 @@ const Deposit: React.FC< DepositProps > = ( { depositId, dateAvailable } ) => {
 			id: depositId,
 		} );
 
-		const formattedDateAvailable = dateI18n(
-			'M j, Y',
-			moment.utc( dateAvailable ).toISOString(),
-			true // TODO Change call to gmdateI18n and remove this deprecated param once WP 5.4 support ends.
+		const formattedDateAvailable = formatDateTimeFromString(
+			dateAvailable
 		);
-
 		return <Link href={ depositUrl }>{ formattedDateAvailable }</Link>;
 	}
 

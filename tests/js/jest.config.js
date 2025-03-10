@@ -30,7 +30,6 @@ module.exports = {
 	setupFilesAfterEnv: [
 		'<rootDir>/node_modules/@wordpress/jest-preset-default/scripts/setup-test-framework.js',
 		'<rootDir>/tests/js/jest-extensions-setup.js',
-		'expect-puppeteer',
 	],
 	preset: '@wordpress/jest-preset-default',
 	testMatch: [
@@ -39,6 +38,14 @@ module.exports = {
 		'**/test/*.(js|ts|tsx)',
 	],
 	testPathIgnorePatterns: [
+		'/node_modules/',
+		'/vendor/',
+		'<rootDir>/.*/build/',
+		'<rootDir>/.*/build-module/',
+		'<rootDir>/docker/',
+		'<rootDir>/tests/e2e',
+	],
+	watchPathIgnorePatterns: [
 		'/node_modules/',
 		'/vendor/',
 		'<rootDir>/.*/build/',

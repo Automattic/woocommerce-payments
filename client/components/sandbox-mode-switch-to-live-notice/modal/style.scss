@@ -1,21 +1,30 @@
 .wcpay-setup-real-payments-modal {
-	color: $gray-900;
-	fill: $studio-woocommerce-purple-50;
+	&.components-modal__frame {
+		width: 512px;
+
+		@media screen and ( max-width: $break-small ) {
+			height: fit-content;
+			margin: auto auto;
+			max-width: 90vw;
+		}
+	}
 
 	.components-modal__content {
 		box-sizing: border-box;
 		max-width: 600px;
-		margin: auto;
+		margin: 0;
 		padding: $gap-smaller $gap-larger $gap-larger;
 	}
 
 	.components-modal__header {
 		position: initial;
-		padding: 0;
+		padding: 24px 0 16px 0;
+		height: auto;
 		border: 0;
 
 		h1 {
 			@include wp-title-small;
+			font-weight: 300;
 			margin-bottom: $gap-smaller;
 		}
 	}
@@ -24,20 +33,36 @@
 		@include wp-title-small;
 	}
 
-	&__headline {
-		font-weight: 600;
-	}
-
 	&__content {
-		display: grid;
-		grid-template-columns: auto 1fr;
-		gap: $gap;
-		padding: $gap-smallest;
-		align-items: center;
-		margin-bottom: $gap-large;
+		display: flex;
+		gap: $gap-large;
+		flex-direction: column;
+		padding: $gap-small 0 $gap 0;
+
+		&__item {
+			p {
+				line-height: 20px;
+				margin: 0;
+			}
+		}
+
+		&__item-flex {
+			display: flex;
+			gap: $gap;
+			padding-right: $gap-large;
+
+			&__description {
+				color: $gray-700;
+			}
+			p {
+				line-height: 20px;
+				margin: 0;
+			}
+		}
 	}
 
 	&__footer {
 		@include modal-footer-buttons;
+		padding-top: $gap-large;
 	}
 }

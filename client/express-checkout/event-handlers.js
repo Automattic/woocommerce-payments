@@ -13,13 +13,19 @@ import {
 	normalizeShippingAddress,
 	normalizeLineItems,
 	getExpressCheckoutData,
+	updateShippingAddressUI,
 } from './utils';
 import {
 	trackExpressCheckoutButtonClick,
 	trackExpressCheckoutButtonLoad,
 } from './tracking';
+import { SHIPPING_RATES_UPPER_LIMIT_COUNT } from 'wcpay/express-checkout/constants';
+
+let lastSelectedAddress = null;
 
 export const shippingAddressChangeHandler = async ( api, event, elements ) => {
+	lastSelectedAddress = event.address;
+
 	try {
 		const response = await api.expressCheckoutECECalculateShippingOptions(
 			normalizeShippingAddress( event.address )
@@ -29,8 +35,12 @@ export const shippingAddressChangeHandler = async ( api, event, elements ) => {
 			elements.update( {
 				amount: response.total.amount,
 			} );
+
 			event.resolve( {
-				shippingRates: response.shipping_options,
+				shippingRates: response.shipping_options?.slice(
+					0,
+					SHIPPING_RATES_UPPER_LIMIT_COUNT
+				),
 				lineItems: normalizeLineItems( response.displayItems ),
 			} );
 		} else {
@@ -43,7 +53,7 @@ export const shippingAddressChangeHandler = async ( api, event, elements ) => {
 
 export const shippingRateChangeHandler = async ( api, event, elements ) => {
 	try {
-		const response = await api.paymentRequestUpdateShippingDetails(
+		const response = await api.expressCheckoutECEUpdateShippingDetails(
 			event.shippingRate
 		);
 
@@ -71,7 +81,7 @@ export const onConfirmHandler = async (
 ) => {
 	const { error: submitError } = await elements.submit();
 	if ( submitError ) {
-		return abortPayment( event, submitError.message );
+		return abortPayment( submitError.message );
 	}
 
 	const { paymentMethod, error } = await stripe.createPaymentMethod( {
@@ -79,7 +89,7 @@ export const onConfirmHandler = async (
 	} );
 
 	if ( error ) {
-		return abortPayment( event, error.message );
+		return abortPayment( error.message );
 	}
 
 	try {
@@ -98,7 +108,6 @@ export const onConfirmHandler = async (
 
 		if ( orderResponse.result !== 'success' ) {
 			return abortPayment(
-				event,
 				getErrorMessageFromNotice( orderResponse.messages )
 			);
 		}
@@ -115,7 +124,6 @@ export const onConfirmHandler = async (
 		}
 	} catch ( e ) {
 		return abortPayment(
-			event,
 			e.message ??
 				__(
 					'There was a problem processing the order.',
@@ -171,5 +179,9 @@ export const onCompletePaymentHandler = () => {
 };
 
 export const onCancelHandler = () => {
+	if ( lastSelectedAddress ) {
+		updateShippingAddressUI( lastSelectedAddress );
+	}
+	lastSelectedAddress = null;
 	unblockUI();
 };

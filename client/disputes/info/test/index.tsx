@@ -29,6 +29,8 @@ declare const global: {
 				precision: number;
 			};
 		};
+		dateFormat: string;
+		timeFormat: string;
 	};
 };
 
@@ -49,6 +51,8 @@ describe( 'Dispute info', () => {
 					precision: 2,
 				},
 			},
+			dateFormat: 'M j, Y',
+			timeFormat: 'g:iA',
 		};
 	} );
 

@@ -455,6 +455,8 @@ export default ( { query } ) => {
 	const [ dispute, setDispute ] = useState();
 	const [ loading, setLoading ] = useState( false );
 	const [ evidence, setEvidence ] = useState( {} ); // Evidence to update.
+	const [ redirectAfterSave, setRedirectAfterSave ] = useState( false );
+
 	const {
 		createSuccessNotice,
 		createErrorNotice,
@@ -475,7 +477,7 @@ export default ( { query } ) => {
 		);
 
 	const confirmationNavigationCallback = useConfirmNavigation( () => {
-		if ( pristine ) {
+		if ( pristine || redirectAfterSave ) {
 			return;
 		}
 
@@ -488,6 +490,7 @@ export default ( { query } ) => {
 	useEffect( confirmationNavigationCallback, [
 		pristine,
 		confirmationNavigationCallback,
+		redirectAfterSave,
 	] );
 
 	useEffect( () => {
@@ -603,11 +606,6 @@ export default ( { query } ) => {
 		const message = submit
 			? __( 'Evidence submitted!', 'woocommerce-payments' )
 			: __( 'Evidence saved!', 'woocommerce-payments' );
-		const href = getAdminUrl( {
-			page: 'wc-admin',
-			path: '/payments/disputes',
-			filter: 'awaiting_response',
-		} );
 
 		recordEvent(
 			submit
@@ -639,8 +637,19 @@ export default ( { query } ) => {
 			],
 		} );
 
-		window.location.replace( href );
+		setRedirectAfterSave( true );
 	};
+
+	useEffect( () => {
+		if ( redirectAfterSave && pristine ) {
+			const href = getAdminUrl( {
+				page: 'wc-admin',
+				path: '/payments/disputes',
+				filter: 'awaiting_response',
+			} );
+			window.location.replace( href );
+		}
+	}, [ redirectAfterSave, pristine ] );
 
 	const handleSaveError = ( err, submit ) => {
 		recordEvent(
@@ -690,8 +699,8 @@ export default ( { query } ) => {
 				},
 			} );
 			setDispute( updatedDispute );
-			handleSaveSuccess( submit );
 			setEvidence( {} );
+			handleSaveSuccess( submit );
 			updateDisputeInStore( updatedDispute );
 		} catch ( err ) {
 			handleSaveError( err, submit );

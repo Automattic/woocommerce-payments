@@ -57,7 +57,7 @@
     "feeString": "Fee (3.51% + £0.21): -$0.88",
     "feeBreakdown": {
       "base": "Base fee: 2.9% + $0.30",
-      "additional-fx": "Foreign exchange fee: 1%",
+      "additional-fx": "Currency conversion fee: 1%",
       "discount": {
         "label": "Discount",
         "variable": "Variable fee: -0.39%",

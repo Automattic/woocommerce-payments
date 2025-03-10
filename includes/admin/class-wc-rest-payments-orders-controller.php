@@ -204,14 +204,26 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			$result = $is_intent_captured ? $result_for_captured_intent : $this->gateway->capture_charge( $order, false, $intent_metadata );
 
 			if ( Intent_Status::SUCCEEDED !== $result['status'] ) {
-				$http_code = $result['http_code'] ?? 502;
-				return new WP_Error(
-					'wcpay_capture_error',
-					sprintf(
+				$http_code     = $result['http_code'] ?? 502;
+				$extra_details = $result['extra_details'] ?? [];
+				$error_type    = $result['error_code'] ?? null;
+				$error_code    = 'wcpay_capture_error';
+
+				$message = sprintf(
 					// translators: %s: the error message.
-						__( 'Payment capture failed to complete with the following message: %s', 'woocommerce-payments' ),
-						$result['message'] ?? __( 'Unknown error', 'woocommerce-payments' )
-					),
+					__( 'Payment capture failed to complete with the following message: %s', 'woocommerce-payments' ),
+					$result['message'] ?? __( 'Unknown error', 'woocommerce-payments' )
+				);
+
+				if ( 'amount_too_small' === $error_type && ! empty( $extra_details ) ) {
+					// Make it easier to parse the error metadata for the mobile apps.
+					$error_code = 'wcpay_capture_error_amount_too_small';
+					$message    = esc_html( wp_json_encode( $extra_details ) );
+				}
+
+				return new WP_Error(
+					$error_code,
+					$message,
 					[ 'status' => $http_code ]
 				);
 			}
@@ -304,6 +316,8 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			$result = $this->gateway->capture_charge( $order, true, $intent_metadata );
 
 			if ( Intent_Status::SUCCEEDED !== $result['status'] ) {
+				$error_code    = $result['error_code'] ?? null;
+				$extra_details = $result['extra_details'] ?? [];
 				return new WP_Error(
 					'wcpay_capture_error',
 					sprintf(
@@ -311,7 +325,11 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 						__( 'Payment capture failed to complete with the following message: %s', 'woocommerce-payments' ),
 						$result['message'] ?? __( 'Unknown error', 'woocommerce-payments' )
 					),
-					[ 'status' => $result['http_code'] ?? 502 ]
+					[
+						'status'        => $result['http_code'] ?? 502,
+						'extra_details' => $extra_details,
+						'error_type'    => $error_code,
+					]
 				);
 			}
 

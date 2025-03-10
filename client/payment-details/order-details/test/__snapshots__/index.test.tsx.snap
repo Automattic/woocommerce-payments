@@ -4,6 +4,7 @@ exports[`Order details page should match the snapshot - Charge without payment i
 <div>
   <div
     class="wcpay-payment-details woocommerce-payments-page"
+    id=""
     style="max-width: 1032px;"
   >
     <div
@@ -30,21 +31,25 @@ exports[`Order details page should match the snapshot - Charge without payment i
               <div
                 class="payment-details-summary__section"
               >
-                <p
-                  class="payment-details-summary__amount"
+                <div
+                  class="payment-details-summary__amount-wrapper"
                 >
-                  $15.00
-                  <span
-                    class="payment-details-summary__amount-currency"
+                  <p
+                    class="payment-details-summary__amount"
                   >
-                    USD
-                  </span>
+                    $15.00
+                    <span
+                      class="payment-details-summary__amount-currency"
+                    >
+                      USD
+                    </span>
+                  </p>
                   <span
-                    class="chip chip-light"
+                    class="chip chip-light payment-details-summary__status"
                   >
                     Pending
                   </span>
-                </p>
+                </div>
                 <div
                   class="payment-details-summary__breakdown"
                 >
@@ -138,13 +143,13 @@ exports[`Order details page should match the snapshot - Charge without payment i
                   <span
                     class="woocommerce-list__item-title"
                   >
-                    Channel
+                    Sales channel
                   </span>
                   <span
                     class="woocommerce-list__item-content"
                   >
                     <span>
-                      Online
+                      Online store
                     </span>
                   </span>
                 </div>
@@ -198,7 +203,7 @@ exports[`Order details page should match the snapshot - Charge without payment i
                       data-link-type="external"
                       href="http://wcpay.test/wp-admin/post.php?post=776&action=edit"
                     >
-                      776
+                      custom-776
                     </a>
                   </span>
                 </div>
@@ -561,7 +566,7 @@ exports[`Order details page should match the snapshot - Charge without payment i
                 <h4
                   class="payment-method-detail__label"
                 >
-                  Zip check
+                  Postal code check
                 </h4>
                 <p
                   class="payment-method-detail__value"

@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Remove unnecessary '.woocommerce-table' css overrides to fix WC Analytics styling and a11y issues

@@ -182,3 +182,17 @@
 		margin-bottom: 0;
 	}
 }
+
+.dispute-notice {
+	.dispute-notice__link {
+		display: block;
+	}
+}
+
+@media screen and ( max-width: $break-small ) {
+	.wcpay-inline-notice.components-notice
+		.components-notice__content
+		a.dispute-notice__link {
+		white-space: normal;
+	}
+}

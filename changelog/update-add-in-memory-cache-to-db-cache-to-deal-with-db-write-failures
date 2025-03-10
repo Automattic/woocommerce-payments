@@ -1,4 +1,0 @@
-Significance: patch
-Type: update
-
-Add in-memory cache fallback for our database-cached objects in case of database write failures.

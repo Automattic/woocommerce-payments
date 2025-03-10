@@ -19,7 +19,7 @@
 
 	<!-- Configs -->
 	<config name="minimum_supported_wp_version" value="6.0" />
-	<config name="testVersion" value="7.3-" />
+	<config name="testVersion" value="7.3-7.4" />
 
 	<!-- Rules -->
 	<rule ref="WooCommerce-Core" >
@@ -80,6 +80,16 @@
 			<property name="text_domain" type="array" value="woocommerce-payments" />
 		</properties>
 	</rule>
+
+	<!-- REMOVE BEFORE MERGING:Only for poc/centralized-payment-method-definitions -->
+	<rule ref="WordPress.Files.FileName.NotHyphenatedLowercase">
+		<exclude-pattern>includes/payment-methods/Configs/</exclude-pattern>
+	</rule>
+
+	<rule ref="WordPress.Files.FileName.InvalidClassFileName">
+		<exclude-pattern>includes/payment-methods/Configs/</exclude-pattern>
+	</rule>
+	<!-- END REMOVE BEFORE MERGING: poc/centralized-payment-method-definitions -->
 
 	<rule ref="WordPress.Security">
 		<exclude-pattern>./tests/*</exclude-pattern>

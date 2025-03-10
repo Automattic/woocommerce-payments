@@ -3,12 +3,9 @@
 /**
  * External dependencies
  */
-import { React, useState, useEffect, useContext } from 'react';
+import { React } from 'react';
 import { __ } from '@wordpress/i18n';
-import {
-	PaymentRequestButtonElement,
-	useStripe,
-} from '@stripe/react-stripe-js';
+import { useStripe } from '@stripe/react-stripe-js';
 
 /**
  * Internal dependencies
@@ -23,7 +20,6 @@ import {
 	usePaymentRequestEnabledSettings,
 	useWooPayEnabledSettings,
 } from '../../data';
-import WCPaySettingsContext from '../wcpay-settings-context';
 import { ExpressCheckoutPreviewComponent } from 'wcpay/express-checkout/blocks/components/express-checkout-preview';
 
 const buttonSizeToPxMap = {
@@ -73,8 +69,6 @@ const PreviewRequirementsNotice = () => (
 
 const PaymentRequestButtonPreview = () => {
 	const stripe = useStripe();
-	const [ paymentRequest, setPaymentRequest ] = useState();
-	const [ isLoading, setIsLoading ] = useState( true );
 	const [ buttonType ] = usePaymentRequestButtonType();
 	const [ size ] = usePaymentRequestButtonSize();
 	const [ theme ] = usePaymentRequestButtonTheme();
@@ -82,50 +76,6 @@ const PaymentRequestButtonPreview = () => {
 	const [ isWooPayEnabled ] = useWooPayEnabledSettings();
 	const [ isPaymentRequestEnabled ] = usePaymentRequestEnabledSettings();
 
-	const {
-		featureFlags: { isStripeEceEnabled },
-	} = useContext( WCPaySettingsContext );
-
-	useEffect( () => {
-		if ( ! stripe ) {
-			return;
-		}
-
-		// We don't need a payment request when using the ECE buttons.
-		if ( isStripeEceEnabled ) {
-			setIsLoading( false );
-			return;
-		}
-
-		// Create a preview for payment button. The label and its total are placeholders.
-		const stripePaymentRequest = stripe.paymentRequest( {
-			country: 'US',
-			currency: 'usd',
-			total: {
-				label: __( 'Total', 'woocommerce-payments' ),
-				amount: 99,
-			},
-			requestPayerName: true,
-			requestPayerEmail: true,
-		} );
-
-		// Check the availability of the Payment Request API.
-		stripePaymentRequest.canMakePayment().then( ( result ) => {
-			if ( result ) {
-				setPaymentRequest( stripePaymentRequest );
-			}
-			setIsLoading( false );
-		} );
-	}, [ stripe, setPaymentRequest, setIsLoading, isStripeEceEnabled ] );
-
-	/**
-	 * If stripe is loading, then display nothing.
-	 * If stripe finished loading but payment request button failed to load (null), display info section.
-	 * If stripe finished loading and payment request button loads, display the button.
-	 */
-
-	// No need to check `isStripeEceEnabled` since that's not what controls whether the express checkout
-	// buttons are displayed or not, that's always controlled by `isPaymentRequestEnabled`.
 	if ( ! isWooPayEnabled && ! isPaymentRequestEnabled ) {
 		return (
 			<InlineNotice icon status="info" isDismissible={ false }>
@@ -138,6 +88,12 @@ const PaymentRequestButtonPreview = () => {
 		);
 	}
 
+	/**
+	 * If stripe is loading, then display nothing.
+	 * If stripe finished loading but payment request button failed to load (null), display info section.
+	 * If stripe finished loading and payment request button loads, display the button.
+	 */
+
 	const woopayPreview = isWooPayEnabled ? (
 		<WooPayButtonPreview
 			size={ size }
@@ -149,53 +105,25 @@ const PaymentRequestButtonPreview = () => {
 
 	const isHttpsEnabled = window.location.protocol === 'https:';
 
-	const expressCheckoutButtonPreview =
-		isPaymentRequestEnabled && isStripeEceEnabled
-			? ( isHttpsEnabled && (
-					<ExpressCheckoutPreviewComponent
-						stripe={ stripe }
-						buttonType={ buttonType }
-						theme={ theme }
-						height={
-							buttonSizeToPxMap[ size ] ||
-							buttonSizeToPxMap.medium
-						}
-						radius={ radius }
-					/>
-			  ) ) || <PreviewRequirementsNotice />
-			: null;
+	const expressCheckoutButtonPreview = isPaymentRequestEnabled
+		? ( isHttpsEnabled && (
+				<ExpressCheckoutPreviewComponent
+					stripe={ stripe }
+					buttonType={ buttonType }
+					theme={ theme }
+					height={
+						buttonSizeToPxMap[ size ] || buttonSizeToPxMap.medium
+					}
+					radius={ radius }
+				/>
+		  ) ) || <PreviewRequirementsNotice />
+		: null;
 
-	const prbButtonPreview =
-		isPaymentRequestEnabled && paymentRequest && ! isLoading
-			? ( isHttpsEnabled && (
-					<PaymentRequestButtonElement
-						key={ `${ buttonType }-${ theme }-${ size }` }
-						onClick={ ( e ) => {
-							e.preventDefault();
-						} }
-						options={ {
-							paymentRequest: paymentRequest,
-							style: {
-								paymentRequestButton: {
-									type: buttonType,
-									theme: theme,
-									height: `${
-										buttonSizeToPxMap[ size ] ||
-										buttonSizeToPxMap.medium
-									}px`,
-								},
-							},
-						} }
-					/>
-			  ) ) || <PreviewRequirementsNotice />
-			: null;
-
-	if ( woopayPreview || expressCheckoutButtonPreview || prbButtonPreview ) {
+	if ( woopayPreview || expressCheckoutButtonPreview ) {
 		return (
 			<ButtonPreviewWrapper theme={ theme }>
 				{ woopayPreview }
-				{ /* We never want to show both ECE and PRB previews at the same time. */ }
-				{ expressCheckoutButtonPreview || prbButtonPreview }
+				{ expressCheckoutButtonPreview }
 			</ButtonPreviewWrapper>
 		);
 	}

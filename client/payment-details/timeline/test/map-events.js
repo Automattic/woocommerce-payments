@@ -47,6 +47,7 @@ describe( 'mapTimelineEvents', () => {
 					precision: 2,
 				},
 			},
+			dateFormat: 'M j, Y',
 		};
 	} );
 
@@ -661,5 +662,60 @@ describe( 'mapTimelineEvents', () => {
 				] )
 			).toMatchSnapshot();
 		} );
+	} );
+
+	test( 'formats payment failure events with different error codes', () => {
+		const testCases = [
+			{
+				reason: 'insufficient_funds',
+				expectedMessage:
+					'A payment of $77.00 USD failed: The card has insufficient funds to complete the purchase.',
+			},
+			{
+				reason: 'expired_card',
+				expectedMessage:
+					'A payment of $77.00 USD failed: The card has expired.',
+			},
+			{
+				reason: 'invalid_cvc',
+				expectedMessage:
+					'A payment of $77.00 USD failed: The security code is invalid.',
+			},
+			{
+				reason: 'unknown_reason',
+				expectedMessage:
+					'A payment of $77.00 USD failed: The payment was declined.',
+			},
+		];
+
+		testCases.forEach( ( { reason, expectedMessage } ) => {
+			const events = mapTimelineEvents( [
+				{
+					amount: 7700,
+					currency: 'USD',
+					datetime: 1585712113,
+					reason,
+					type: 'failed',
+				},
+			] );
+
+			expect( events[ 1 ].headline ).toBe( expectedMessage );
+		} );
+	} );
+
+	test( 'formats payment failure events with different currencies', () => {
+		const events = mapTimelineEvents( [
+			{
+				amount: 7700,
+				currency: 'EUR',
+				datetime: 1585712113,
+				reason: 'card_declined',
+				type: 'failed',
+			},
+		] );
+
+		expect( events[ 1 ].headline ).toBe(
+			'A payment of €77.00 EUR failed: The card was declined by the bank.'
+		);
 	} );
 } );

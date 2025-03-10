@@ -8,10 +8,10 @@
  * Text Domain: woocommerce-payments
  * Domain Path: /languages
  * WC requires at least: 7.6
- * WC tested up to: 9.4.0
+ * WC tested up to: 9.6.0
  * Requires at least: 6.0
  * Requires PHP: 7.3
- * Version: 8.4.0
+ * Version: 9.0.0
  * Requires Plugins: woocommerce
  *
  * @package WooCommerce\Payments
@@ -32,6 +32,10 @@ require_once __DIR__ . '/includes/woopay/class-woopay-session.php';
  * Plugin activation hook.
  */
 function wcpay_activated() {
+	// Clear the WC-shared incentives cache.
+	// This way we don't end up with stale incentives that were caller-bound.
+	delete_transient( 'woocommerce_admin_pes_incentive_woopayments_cache' );
+
 	// When WooCommerce Payments is installed and activated from the WooCommerce onboarding wizard (via wc-admin REST request), check if the site is eligible for subscriptions.
 	if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
 		update_option( 'wcpay_check_subscriptions_eligibility_after_onboarding', true );
@@ -52,6 +56,10 @@ function wcpay_activated() {
  * Plugin deactivation hook.
  */
 function wcpay_deactivated() {
+	// Clear the WC-shared incentives cache.
+	// This way we don't end up with stale incentives that were caller-bound.
+	delete_transient( 'woocommerce_admin_pes_incentive_woopayments_cache' );
+
 	require_once WCPAY_ABSPATH . '/includes/class-wc-payments.php';
 	WC_Payments::remove_woo_admin_notes();
 }
@@ -78,6 +86,12 @@ function wcpay_jetpack_init() {
 	if ( ! wcpay_check_old_jetpack_version() ) {
 		return;
 	}
+	$connection_version = Automattic\Jetpack\Connection\Package_Version::PACKAGE_VERSION;
+
+	$custom_content = version_compare( $connection_version, '6.1.0', '>' ) ?
+		'wcpay_get_jetpack_idc_custom_content' :
+		wcpay_get_jetpack_idc_custom_content();
+
 	$jetpack_config = new Automattic\Jetpack\Config();
 	$jetpack_config->ensure(
 		'connection',
@@ -90,7 +104,7 @@ function wcpay_jetpack_init() {
 		'identity_crisis',
 		[
 			'slug'          => 'woocommerce-payments',
-			'customContent' => wcpay_get_jetpack_idc_custom_content(),
+			'customContent' => $custom_content,
 			'logo'          => plugins_url( 'assets/images/logo.svg', WCPAY_PLUGIN_FILE ),
 			'admin_page'    => '/wp-admin/admin.php?page=wc-admin',
 			'priority'      => 5,
@@ -154,7 +168,7 @@ function wcpay_init() {
 	 * Check https://github.com/Automattic/woocommerce-payments/issues/4759
 	 */
 	\WCPay\WooPay\WooPay_Session::init();
-	if ( WC_Payments_Features::is_tokenized_cart_prb_enabled() ) {
+	if ( WC_Payments_Features::is_tokenized_cart_ece_enabled() ) {
 		( new WC_Payments_Payment_Request_Session() )->init();
 	}
 }

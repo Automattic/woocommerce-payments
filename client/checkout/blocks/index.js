@@ -18,15 +18,18 @@ import { SavedTokenHandler } from './saved-token-handler';
 import PaymentMethodLabel from './payment-method-label';
 import request from '../utils/request';
 import enqueueFraudScripts from 'fraud-scripts';
-import paymentRequestPaymentMethod from '../../payment-request/blocks';
 import {
 	expressCheckoutElementApplePay,
 	expressCheckoutElementGooglePay,
 } from '../../express-checkout/blocks';
-import tokenizedCartPaymentRequestPaymentMethod from '../../tokenized-payment-request/blocks';
+import {
+	tokenizedExpressCheckoutElementApplePay,
+	tokenizedExpressCheckoutElementGooglePay,
+} from 'wcpay/tokenized-express-checkout/blocks';
 
 import {
 	PAYMENT_METHOD_NAME_CARD,
+	PAYMENT_METHOD_NAME_ALIPAY,
 	PAYMENT_METHOD_NAME_BANCONTACT,
 	PAYMENT_METHOD_NAME_BECS,
 	PAYMENT_METHOD_NAME_EPS,
@@ -38,6 +41,8 @@ import {
 	PAYMENT_METHOD_NAME_AFFIRM,
 	PAYMENT_METHOD_NAME_AFTERPAY,
 	PAYMENT_METHOD_NAME_KLARNA,
+	PAYMENT_METHOD_NAME_GRABPAY,
+	PAYMENT_METHOD_NAME_WECHAT_PAY,
 } from '../constants.js';
 import { getDeferredIntentCreationUPEFields } from './payment-elements';
 import { handleWooPayEmailInput } from '../woopay/email-input-iframe';
@@ -48,6 +53,7 @@ import '../utils/copy-test-number';
 
 const upeMethods = {
 	card: PAYMENT_METHOD_NAME_CARD,
+	alipay: PAYMENT_METHOD_NAME_ALIPAY,
 	bancontact: PAYMENT_METHOD_NAME_BANCONTACT,
 	au_becs_debit: PAYMENT_METHOD_NAME_BECS,
 	eps: PAYMENT_METHOD_NAME_EPS,
@@ -59,10 +65,11 @@ const upeMethods = {
 	affirm: PAYMENT_METHOD_NAME_AFFIRM,
 	afterpay_clearpay: PAYMENT_METHOD_NAME_AFTERPAY,
 	klarna: PAYMENT_METHOD_NAME_KLARNA,
+	grabpay: PAYMENT_METHOD_NAME_GRABPAY,
+	wechat_pay: PAYMENT_METHOD_NAME_WECHAT_PAY,
 };
 
 const enabledPaymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
-const upeAppearanceTheme = getUPEConfig( 'wcBlocksUPEAppearanceTheme' );
 const isStripeLinkEnabled = isLinkEnabled( enabledPaymentMethodsConfig );
 
 // Create an API object, which will be used throughout the checkout.
@@ -97,13 +104,13 @@ Object.entries( enabledPaymentMethodsConfig )
 			savedTokenComponent: <SavedTokenHandler api={ api } />,
 			canMakePayment: ( cartData ) => {
 				const billingCountry = cartData.billingAddress.country;
+				const needsPayment = cartData.cart.cartNeedsPayment;
 				const isRestrictedInAnyCountry = !! upeConfig.countries.length;
 				const isAvailableInTheCountry =
 					! isRestrictedInAnyCountry ||
 					upeConfig.countries.includes( billingCountry );
-				return (
-					isAvailableInTheCountry && !! api.getStripeForUPE( upeName )
-				);
+				// We used to check if stripe was loaded with `getStripeForUPE`, but we can't guarantee it will be loaded synchronously.
+				return needsPayment && isAvailableInTheCountry;
 			},
 			paymentMethodId: upeMethods[ upeName ],
 			// see .wc-block-checkout__payment-method styles in blocks/style.scss
@@ -115,7 +122,6 @@ Object.entries( enabledPaymentMethodsConfig )
 					iconLight={ upeConfig.icon }
 					iconDark={ upeConfig.darkIcon }
 					upeName={ upeName }
-					upeAppearanceTheme={ upeAppearanceTheme }
 				/>
 			),
 			ariaLabel: 'WooPayments',
@@ -161,15 +167,16 @@ if ( getUPEConfig( 'isWooPayEnabled' ) ) {
 }
 
 if ( getUPEConfig( 'isPaymentRequestEnabled' ) ) {
-	if ( getUPEConfig( 'isTokenizedCartPrbEnabled' ) ) {
+	if ( getUPEConfig( 'isTokenizedCartEceEnabled' ) ) {
 		registerExpressPaymentMethod(
-			tokenizedCartPaymentRequestPaymentMethod( api )
+			tokenizedExpressCheckoutElementApplePay( api )
 		);
-	} else if ( getUPEConfig( 'isExpressCheckoutElementEnabled' ) ) {
+		registerExpressPaymentMethod(
+			tokenizedExpressCheckoutElementGooglePay( api )
+		);
+	} else {
 		registerExpressPaymentMethod( expressCheckoutElementApplePay( api ) );
 		registerExpressPaymentMethod( expressCheckoutElementGooglePay( api ) );
-	} else {
-		registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
 	}
 }
 window.addEventListener( 'load', () => {

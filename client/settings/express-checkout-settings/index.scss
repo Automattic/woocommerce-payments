@@ -45,7 +45,6 @@
 		width: 64px;
 		height: 40px;
 		margin: 1px 17px 1px 1px; // 1px to accommodate for box-shadow
-		background: $studio-white;
 
 		svg {
 			display: inline-block;
@@ -58,6 +57,18 @@
 }
 
 .woopay-settings {
+	&__badge {
+		background-color: $studio-gray-5;
+		padding: 0 8px;
+		border-radius: 2px;
+		font-size: 12px;
+		line-height: 20px;
+		margin-left: 4px;
+	}
+	&__global-theme-label {
+		display: inline-flex;
+		align-items: center;
+	}
 	&__custom-message-wrapper {
 		position: relative;
 
@@ -265,7 +276,7 @@
 			}
 
 			&__checkout-button {
-				background-color: $studio-woocommerce-purple-60;
+				background-color: $studio-woocommerce-purple-40;
 				border-radius: 0.25rem;
 				align-items: center;
 				display: flex;
@@ -328,6 +339,10 @@
 		}
 		&[data-theme='light-outline'] {
 			background: #f0f0f0;
+		}
+
+		& > div {
+			margin: 4px;
 		}
 	}
 

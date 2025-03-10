@@ -5,7 +5,6 @@ import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 import { Link } from '@woocommerce/components';
-import { tip } from '@wordpress/icons';
 import { ExternalLink } from '@wordpress/components';
 import { addQueryArgs } from '@wordpress/url';
 
@@ -48,33 +47,6 @@ export const SuspendedDepositNotice: React.FC = () => {
 };
 
 /**
- * Renders a notice informing the user that the next deposit will include funds from a loan disbursement.
- */
-export const DepositIncludesLoanPayoutNotice: React.FC = () => (
-	<InlineNotice icon status="warning" isDismissible={ false }>
-		{ interpolateComponents( {
-			mixedString: __(
-				'This payout will include funds from your WooCommerce Capital loan. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
-				'woocommerce-payments'
-			),
-			components: {
-				learnMoreLink: (
-					// Link content is in the format string above. Consider disabling jsx-a11y/anchor-has-content.
-					// eslint-disable-next-line jsx-a11y/anchor-has-content
-					<a
-						href={
-							'https://woocommerce.com/document/woopayments/stripe-capital/overview/'
-						}
-						target="_blank"
-						rel="noreferrer"
-					/>
-				),
-			},
-		} ) }
-	</InlineNotice>
-);
-
-/**
  * Renders a notice informing the user of the new account deposit waiting period.
  */
 export const NewAccountWaitingPeriodNotice: React.FC = () => (
@@ -101,22 +73,6 @@ export const NewAccountWaitingPeriodNotice: React.FC = () => (
 				),
 			},
 		} ) }
-	</InlineNotice>
-);
-
-/**
- * Renders a notice informing the user of the number of days it may take for deposits to appear in their bank account.
- */
-export const DepositTransitDaysNotice: React.FC = () => (
-	<InlineNotice
-		icon={ tip }
-		isDismissible={ false }
-		className="wcpay-deposit-transit-days-notice"
-	>
-		{ __(
-			'It may take 1-3 business days for payouts to reach your bank account.',
-			'woocommerce-payments'
-		) }
 	</InlineNotice>
 );
 
@@ -222,7 +178,7 @@ export const DepositFailureNotice: React.FC< {
 	/**
 	 * The link to update the account details.
 	 */
-	updateAccountLink: string;
+	updateAccountLink?: string;
 } > = ( { updateAccountLink } ) => {
 	const accountLinkWithSource = updateAccountLink
 		? addQueryArgs( updateAccountLink, {

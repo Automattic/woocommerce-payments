@@ -139,6 +139,7 @@ describe( 'getTasks()', () => {
 					precision: 2,
 				},
 			},
+			dateFormat: 'M j, Y',
 		};
 	} );
 	afterEach( () => {

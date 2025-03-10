@@ -39,7 +39,7 @@ class PaymentRequest {
 	 * @param  LegacyProxy $legacy_proxy Legacy proxy.
 	 * @param  array|null  $request      Request data, this can be $_POST, or WP_REST_Request::get_params().
 	 */
-	public function __construct( LegacyProxy $legacy_proxy, array $request = null ) {
+	public function __construct( LegacyProxy $legacy_proxy, ?array $request = null ) {
 		$this->legacy_proxy = $legacy_proxy;
 		// phpcs:ignore WordPress.Security.NonceVerification.Missing
 		$this->request = $request ?? $_POST;

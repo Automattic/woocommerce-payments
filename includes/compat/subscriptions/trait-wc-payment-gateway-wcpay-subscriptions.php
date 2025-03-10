@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Exceptions\API_Exception;
+use WCPay\Exceptions\API_Merchant_Exception;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Exceptions\Order_Not_Found_Exception;
@@ -325,6 +326,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 		$token = $this->get_payment_token( $renewal_order );
 		if ( is_null( $token ) && ! WC_Payments::is_network_saved_cards_enabled() ) {
+			$renewal_order->add_order_note( 'Subscription renewal failed: No saved payment method found.' );
 			Logger::error( 'There is no saved payment token for order #' . $renewal_order->get_id() );
 			// TODO: Update to use Order_Service->mark_payment_failed.
 			$renewal_order->update_status( 'failed' );
@@ -342,6 +344,11 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			$renewal_order->update_status( 'failed' );
 
 			if ( ! empty( $payment_information ) ) {
+				$error_details = esc_html( rtrim( $e->getMessage(), '.' ) );
+				if ( $e instanceof API_Merchant_Exception ) {
+					$error_details = $error_details . '. ' . esc_html( rtrim( $e->get_merchant_message(), '.' ) );
+				}
+
 				$note = sprintf(
 					WC_Payments_Utils::esc_interpolated_html(
 					/* translators: %1: the failed payment amount, %2: error message  */
@@ -358,7 +365,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 						wc_price( $amount, [ 'currency' => WC_Payments_Utils::get_order_intent_currency( $renewal_order ) ] ),
 						$renewal_order
 					),
-					esc_html( rtrim( $e->getMessage(), '.' ) )
+					$error_details
 				);
 				$renewal_order->add_order_note( $note );
 			}
@@ -374,6 +381,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	public function update_failing_payment_method( $subscription, $renewal_order ) {
 		$renewal_token = $this->get_payment_token( $renewal_order );
 		if ( is_null( $renewal_token ) ) {
+			$renewal_order->add_order_note( 'Unable to update subscription payment method: No valid payment token or method found.' );
 			Logger::error( 'Failing subscription could not be updated: there is no saved payment token for order #' . $renewal_order->get_id() );
 			return;
 		}
@@ -870,17 +878,12 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @return bool True if the renewal order is linked to a renewal order. Otherwise false.
 	 */
 	private function is_wcpay_subscription_renewal_order( WC_Order $renewal_order ) {
-		/**
-		 * Check if WC_Payments_Subscription_Service class exists first before fetching the subscription for the renewal order.
-		 *
-		 * This class is only loaded when the store has the Stripe Billing feature turned on or has existing
-		 * WCPay Subscriptions @see WC_Payments::should_load_stripe_billing_integration().
-		 */
-		if ( ! class_exists( 'WC_Payments_Subscription_Service' ) ) {
+		// Renewal orders copy metadata from the parent subscription, so we can first check if it has the `_wcpay_subscription_id` meta.
+		if ( ! class_exists( 'WC_Payments_Subscription_Service' ) || ! $renewal_order->meta_exists( WC_Payments_Subscription_Service::SUBSCRIPTION_ID_META_KEY ) ) {
 			return false;
 		}
 
-		// Check if the renewal order is linked to a subscription which is a WCPay Subscription.
+		// Confirm the renewal order is linked to a subscription which is a WCPay Subscription.
 		foreach ( wcs_get_subscriptions_for_renewal_order( $renewal_order ) as $subscription ) {
 			if ( WC_Payments_Subscription_Service::is_wcpay_subscription( $subscription ) ) {
 				return true;

@@ -36,6 +36,7 @@ describe( 'DisputedOrderNoticeHandler', () => {
 			connect: {
 				country: 'US',
 			},
+			dateFormat: 'M j, Y',
 		};
 		useCharge.mockReturnValue( { data: mockCharge } );
 	} );

@@ -4,13 +4,12 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { dateI18n } from '@wordpress/date';
-import moment from 'moment';
 
 /**
  * Internal dependencies
  */
 import { formatCurrency } from 'multi-currency/interface/functions';
+import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 
 const ExpirationDescription = ( {
 	feeData: { volume_allowance: volumeAllowance, end_time: endTime, ...rest },
@@ -26,7 +25,7 @@ const ExpirationDescription = ( {
 				'woocommerce-payments'
 			),
 			formatCurrency( volumeAllowance, currencyCode ),
-			dateI18n( 'F j, Y', moment( endTime ).toISOString() )
+			formatDateTimeFromString( endTime )
 		);
 	} else if ( volumeAllowance ) {
 		description = sprintf(
@@ -44,7 +43,7 @@ const ExpirationDescription = ( {
 				'Discounted base fee expires on %1$s.',
 				'woocommerce-payments'
 			),
-			dateI18n( 'F j, Y', moment( endTime ).toISOString() )
+			formatDateTimeFromString( endTime )
 		);
 	} else {
 		return null;

@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-BNPL methods now work properly in Pay for Order when they are available. Default values are also provided when available.

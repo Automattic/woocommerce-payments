@@ -12,6 +12,7 @@ import { getQuery, updateQueryString } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import { TransactionsFilters } from '../';
+import { Transaction } from 'wcpay/data';
 
 // TODO: this is a bit of a hack as we're mocking an old version of WC, we should relook at this.
 jest.mock( '@woocommerce/settings', () => ( {
@@ -33,6 +34,11 @@ function addAdvancedFilter( filter: string ) {
 
 const storeCurrencies = [ 'eur', 'usd' ];
 const customerCurrencies = [ 'eur', 'usd', 'gbp' ];
+const transactionSources: Transaction[ 'source' ][] = [
+	'visa',
+	'mastercard',
+	'sofort',
+];
 
 declare const global: {
 	wcSettings: { countries: Record< string, string > };
@@ -71,6 +77,7 @@ describe( 'Transactions filters', () => {
 			<TransactionsFilters
 				storeCurrencies={ storeCurrencies }
 				customerCurrencies={ customerCurrencies }
+				transactionSources={ transactionSources }
 			/>
 		);
 
@@ -85,6 +92,7 @@ describe( 'Transactions filters', () => {
 			<TransactionsFilters
 				storeCurrencies={ storeCurrencies }
 				customerCurrencies={ customerCurrencies }
+				transactionSources={ transactionSources }
 			/>
 		);
 	} );
@@ -250,6 +258,52 @@ describe( 'Transactions filters', () => {
 		} );
 	} );
 
+	describe( 'when filtering by payment method', () => {
+		let ruleSelector: HTMLElement;
+
+		beforeEach( () => {
+			addAdvancedFilter( 'Payment method' );
+			ruleSelector = screen.getByRole( 'combobox', {
+				name: /payment method filter/i,
+			} );
+		} );
+
+		test( 'should render all types', () => {
+			const typeSelect = screen.getByRole( 'combobox', {
+				name: /payment method$/i,
+			} ) as HTMLSelectElement;
+			expect( typeSelect.options ).toMatchSnapshot();
+		} );
+
+		test( 'should filter by is', () => {
+			user.selectOptions( ruleSelector, 'is' );
+
+			user.selectOptions(
+				screen.getByRole( 'combobox', {
+					name: /Select a payment method$/i,
+				} ),
+				'visa'
+			);
+			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
+
+			expect( getQuery().source_is ).toEqual( 'visa' );
+		} );
+
+		test( 'should filter by is_not', () => {
+			user.selectOptions( ruleSelector, 'is_not' );
+
+			user.selectOptions(
+				screen.getByRole( 'combobox', {
+					name: /Select a payment method$/i,
+				} ),
+				'visa'
+			);
+			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
+
+			expect( getQuery().source_is_not ).toEqual( 'visa' );
+		} );
+	} );
+
 	describe( 'when filtering by source device', () => {
 		let ruleSelector: HTMLElement;
 
@@ -302,15 +356,15 @@ describe( 'Transactions filters', () => {
 		let ruleSelector: HTMLElement;
 
 		beforeEach( () => {
-			addAdvancedFilter( 'Channel' );
+			addAdvancedFilter( 'Sales channel' );
 			ruleSelector = screen.getByRole( 'combobox', {
-				name: /transaction channel filter/i,
+				name: /transaction sales channel filter/i,
 			} );
 		} );
 
 		test( 'should render all types', () => {
 			const typeSelect = screen.getByRole( 'combobox', {
-				name: /transaction channel$/i,
+				name: /transaction sales channel$/i,
 			} ) as HTMLSelectElement;
 			expect( typeSelect.options ).toMatchSnapshot();
 		} );
@@ -318,10 +372,9 @@ describe( 'Transactions filters', () => {
 		test( 'should filter by is', () => {
 			user.selectOptions( ruleSelector, 'is' );
 
-			// need to include $ in name, otherwise "Select a transaction type filter" is also matched.
 			user.selectOptions(
 				screen.getByRole( 'combobox', {
-					name: /transaction channel$/i,
+					name: /transaction sales channel$/i,
 				} ),
 				'online'
 			);
@@ -336,7 +389,7 @@ describe( 'Transactions filters', () => {
 			// need to include $ in name, otherwise "Select a transaction type filter" is also matched.
 			user.selectOptions(
 				screen.getByRole( 'combobox', {
-					name: /transaction channel$/i,
+					name: /transaction sales channel$/i,
 				} ),
 				'in_person'
 			);

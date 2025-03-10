@@ -298,12 +298,12 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_action_scheduler_service,
 					$this->mock_payment_method,
 					$this->mock_payment_methods,
-					$this->mock_rate_limiter,
 					$this->mock_order_service,
 					$this->mock_dpps,
 					$this->mock_localization_service,
 					$this->mock_fraud_service,
 					$this->mock_duplicates_detection_service,
+					$this->mock_rate_limiter,
 				]
 			)
 			->setMethods(
@@ -698,7 +698,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$afterpay_method   = $this->mock_payment_methods['afterpay_clearpay'];
 
 		$this->assertEquals( 'card', $card_method->get_id() );
-		$this->assertEquals( 'Credit card / debit card', $card_method->get_title( 'US' ) );
+		$this->assertEquals( 'Cards', $card_method->get_title( 'US' ) );
 		$this->assertEquals( 'Visa debit card', $card_method->get_title( 'US', $mock_visa_details ) );
 		$this->assertEquals( 'Mastercard credit card', $card_method->get_title( 'US', $mock_mastercard_details ) );
 		$this->assertTrue( $card_method->is_enabled_at_checkout( 'US' ) );
@@ -970,12 +970,12 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			$this->mock_action_scheduler_service,
 			$this->mock_payment_method,
 			$this->mock_payment_methods,
-			$this->mock_rate_limiter,
 			$this->mock_order_service,
 			$this->mock_dpps,
 			$this->mock_localization_service,
 			$this->mock_fraud_service,
-			$this->mock_duplicates_detection_service
+			$this->mock_duplicates_detection_service,
+			$this->mock_rate_limiter
 		);
 
 		$this->assertEquals( $expected_result, $gateway->get_upe_available_payment_methods() );

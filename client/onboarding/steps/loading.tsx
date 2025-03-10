@@ -88,7 +88,7 @@ const LoadingStep: React.FC< Props > = () => {
 	}, [] );
 
 	return (
-		<div className="loading-step">
+		<div className="loading-step centered">
 			<h1 className="stepper__heading">
 				{ strings.steps.loading.heading }
 			</h1>

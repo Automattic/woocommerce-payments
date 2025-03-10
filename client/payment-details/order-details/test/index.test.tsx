@@ -24,6 +24,8 @@ declare const global: {
 		connect: {
 			country: string;
 		};
+		dateFormat: string;
+		timeFormat: string;
 	};
 };
 
@@ -61,7 +63,8 @@ const chargeFromOrderMock = {
 	disputed: false,
 	outcome: null,
 	order: {
-		number: 776,
+		id: 776,
+		number: 'custom-776',
 		url: 'http://wcpay.test/wp-admin/post.php?post=776&action=edit',
 		customer_url:
 			'admin.php?page=wc-admin&path=/customers&filter=single_customer&customers=55',
@@ -106,6 +109,13 @@ jest.mock( '@wordpress/data', () => ( {
 	useSelect: jest.fn(),
 } ) );
 
+jest.mock( '@woocommerce/data', () => ( {
+	useUserPreferences: jest.fn( () => ( {
+		updateUserPreferences: jest.fn(),
+		wc_payments_wporg_review_2025_prompt_dismissed: false,
+	} ) ),
+} ) );
+
 const mockUseChargeFromOrder = useChargeFromOrder as jest.MockedFunction<
 	typeof useChargeFromOrder
 >;
@@ -141,6 +151,8 @@ describe( 'Order details page', () => {
 			featureFlags: { paymentTimeline: true },
 			zeroDecimalCurrencies: [],
 			connect: { country: 'US' },
+			timeFormat: 'g:ia',
+			dateFormat: 'M j, Y',
 		};
 
 		const selectMock = jest.fn( ( storeName ) =>

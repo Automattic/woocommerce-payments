@@ -1,6 +1,6 @@
 <?php
 /**
- * Class Affirm_Payment_Method
+ * Class Klarna_Payment_Method
  *
  * @package WCPay\Payment_Methods
  */
@@ -13,7 +13,7 @@ use WCPay\Constants\Country_Code;
 use WCPay\Constants\Currency_Code;
 
 /**
- * Affirm Payment Method class extending UPE base class
+ * Klarna Payment Method class extending UPE base class
  */
 class Klarna_Payment_Method extends UPE_Payment_Method {
 
@@ -27,7 +27,6 @@ class Klarna_Payment_Method extends UPE_Payment_Method {
 	public function __construct( $token_service ) {
 		parent::__construct( $token_service );
 		$this->stripe_id                    = self::PAYMENT_METHOD_STRIPE_ID;
-		$this->title                        = __( 'Klarna', 'woocommerce-payments' );
 		$this->is_reusable                  = false;
 		$this->is_bnpl                      = true;
 		$this->icon_url                     = plugins_url( 'assets/images/payment-methods/klarna-pill.svg', WCPAY_PLUGIN_FILE );
@@ -35,6 +34,18 @@ class Klarna_Payment_Method extends UPE_Payment_Method {
 		$this->accept_only_domestic_payment = true;
 		$this->countries                    = [ Country_Code::UNITED_STATES, Country_Code::UNITED_KINGDOM, Country_Code::AUSTRIA, Country_Code::GERMANY, Country_Code::NETHERLANDS, Country_Code::BELGIUM, Country_Code::SPAIN, Country_Code::ITALY, Country_Code::IRELAND, Country_Code::DENMARK, Country_Code::FINLAND, Country_Code::NORWAY, Country_Code::SWEDEN, Country_Code::FRANCE ];
 		$this->limits_per_currency          = WC_Payments_Utils::get_bnpl_limits_per_currency( self::PAYMENT_METHOD_STRIPE_ID );
+	}
+
+	/**
+	 * Returns payment method title
+	 *
+	 * @param string|null $account_country Country of merchants account.
+	 * @param array|false $payment_details Optional payment details from charge object.
+	 *
+	 * @return string
+	 */
+	public function get_title( ?string $account_country = null, $payment_details = false ) {
+		return __( 'Klarna', 'woocommerce-payments' );
 	}
 
 	/**

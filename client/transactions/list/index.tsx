@@ -3,13 +3,10 @@
 /**
  * External dependencies
  */
-import React, { Fragment, useState } from 'react';
+import React, { Fragment } from 'react';
 import { uniq } from 'lodash';
-import { useDispatch } from '@wordpress/data';
-import { useMemo } from '@wordpress/element';
-import { dateI18n } from '@wordpress/date';
 import { __, _n, sprintf } from '@wordpress/i18n';
-import moment from 'moment';
+import { useDispatch } from '@wordpress/data';
 import {
 	TableCard,
 	Search,
@@ -21,21 +18,11 @@ import {
 	getQuery,
 	updateQueryString,
 } from '@woocommerce/navigation';
-import {
-	downloadCSVFile,
-	generateCSVDataFromTable,
-	generateCSVFileName,
-} from '@woocommerce/csv-export';
-import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
  */
-import {
-	useTransactions,
-	useTransactionsSummary,
-	useReportingExportLanguage,
-} from 'data/index';
+import { useTransactions, useTransactionsSummary } from 'data/index';
 import { Transaction } from 'data/transactions/hooks';
 import OrderLink from 'components/order-link';
 import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
@@ -43,19 +30,13 @@ import ClickableCell from 'components/clickable-cell';
 import { getDetailsURL } from 'components/details-link';
 import { displayType } from 'transactions/strings';
 import { depositStatusLabels } from 'deposits/strings';
-import {
-	formatStringValue,
-	isExportModalDismissed,
-	getExportLanguage,
-	isDefaultSiteLanguage,
-	applyThousandSeparator,
-} from 'wcpay/utils';
+import { formatStringValue, applyThousandSeparator } from 'wcpay/utils';
 import {
 	formatCurrency,
 	formatExplicitCurrency,
 	formatExportAmount,
 } from 'multi-currency/interface/functions';
-import { getChargeChannel } from 'utils/charge';
+import { getTransactionChannel } from 'utils/charge';
 import Deposit from './deposit';
 import ConvertedAmount from './converted-amount';
 import autocompleter from 'transactions/autocompleter';
@@ -64,12 +45,16 @@ import TransactionsFilters from '../filters';
 import Page from '../../components/page';
 import { recordEvent } from 'tracks';
 import DownloadButton from 'components/download-button';
-import CSVExportModal from 'components/csv-export-modal';
-import { getTransactionsCSV } from '../../data/transactions/resolvers';
+import {
+	getTransactionsCSVRequestURL,
+	transactionsDownloadEndpoint,
+} from '../../data/transactions/resolvers';
 import p24BankList from '../../payment-details/payment-method/p24/bank-list';
 import { HoverTooltip } from 'components/tooltip';
 import { PAYMENT_METHOD_TITLES } from 'wcpay/constants/payment-method';
-import { ReportingExportLanguageHook } from 'wcpay/settings/reporting-settings/interfaces';
+import { formatDateTimeFromString } from 'wcpay/utils/date-time';
+import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
+import { useReportExport } from 'wcpay/hooks/use-report-export';
 
 interface TransactionsListProps {
 	depositId?: string;
@@ -94,7 +79,6 @@ interface Column extends TableCardColumn {
 		| 'deposit';
 	visible?: boolean;
 	cellClassName?: string;
-	labelInCsv?: string;
 }
 
 const getPaymentSourceDetails = ( txn: Transaction ) => {
@@ -151,7 +135,7 @@ const getColumns = (
 	[
 		{
 			key: 'transaction_id',
-			label: __( 'Transaction Id', 'woocommerce-payments' ),
+			label: __( 'Transaction ID', 'woocommerce-payments' ),
 			visible: false,
 			isLeftAligned: true,
 		},
@@ -159,7 +143,6 @@ const getColumns = (
 			key: 'date',
 			label: __( 'Date / Time', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Date and time', 'woocommerce-payments' ),
-			labelInCsv: __( 'Date / Time (UTC)', 'woocommerce-payments' ),
 			required: true,
 			isLeftAligned: true,
 			defaultOrder: 'desc',
@@ -176,8 +159,8 @@ const getColumns = (
 		},
 		{
 			key: 'channel',
-			label: __( 'Channel', 'woocommerce-payments' ),
-			screenReaderLabel: __( 'Channel', 'woocommerce-payments' ),
+			label: __( 'Sales channel', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Sales channel', 'woocommerce-payments' ),
 			required: true,
 			isLeftAligned: true,
 		},
@@ -203,7 +186,7 @@ const getColumns = (
 			visible: false,
 		},
 		{
-			key: 'deposit_currency',
+			key: 'currency',
 			label: __( 'Payout Currency', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Payout Currency', 'woocommerce-payments' ),
 			isSortable: true,
@@ -306,8 +289,6 @@ const getColumns = (
 export const TransactionsList = (
 	props: TransactionsListProps
 ): JSX.Element => {
-	const [ isDownloading, setIsDownloading ] = useState( false );
-	const { createNotice } = useDispatch( 'core/notices' );
 	const { transactions, isLoading } = useTransactions(
 		getQuery(),
 		props.depositId ?? ''
@@ -317,19 +298,15 @@ export const TransactionsList = (
 		isLoading: isSummaryLoading,
 	} = useTransactionsSummary( getQuery(), props.depositId ?? '' );
 
-	const [ isCSVExportModalOpen, setCSVExportModalOpen ] = useState( false );
+	const { requestReportExport, isExportInProgress } = useReportExport();
 
-	const [
-		exportLanguage,
-	] = useReportingExportLanguage() as ReportingExportLanguageHook;
+	const { createNotice } = useDispatch( 'core/notices' );
 
-	const columnsToDisplay = useMemo(
-		() =>
-			getColumns(
-				! props.depositId,
-				wcpaySettings.isSubscriptionsActive
-			),
-		[ props.depositId ]
+	const { onColumnsChange, columnsToDisplay } = usePersistedColumnVisibility<
+		Column
+	>(
+		'wc_payments_transactions_hidden_columns',
+		getColumns( ! props.depositId, wcpaySettings.isSubscriptionsActive )
 	);
 
 	const totalRows = transactionsSummary.count || 0;
@@ -421,12 +398,10 @@ export const TransactionsList = (
 			return {
 				value: feeAmount,
 				display: clickable(
-					0 !== feeAmount
-						? formatCurrency(
-								isCardReader ? txn.amount : txn.fees * -1,
-								currency
-						  )
-						: __( 'N/A', 'woocommerce-payments' )
+					formatCurrency(
+						isCardReader ? txn.amount : txn.fees * -1,
+						currency
+					)
 				),
 			};
 		};
@@ -445,6 +420,8 @@ export const TransactionsList = (
 		const isFinancingType =
 			-1 !==
 			[ 'financing_payout', 'financing_paydown' ].indexOf( txn.type );
+
+		const isReaderFee = dataType === 'card_reader_fee';
 
 		const deposit = ! isFinancingType && (
 			<Deposit
@@ -466,17 +443,16 @@ export const TransactionsList = (
 			date: {
 				value: txn.date,
 				display: clickable(
-					dateI18n(
-						'M j, Y / g:iA',
-						moment.utc( txn.date ).local().toISOString()
-					)
+					formatDateTimeFromString( txn.date, {
+						includeTime: true,
+					} )
 				),
 			},
 			channel: {
-				value: getChargeChannel( txn.channel ),
+				value: getTransactionChannel( txn.channel ),
 				display: clickable(
 					<Fragment>
-						{ getChargeChannel( txn.channel ) }
+						{ getTransactionChannel( txn.channel ) }
 						{ txn.source_device && getSourceDeviceIcon( txn ) }
 					</Fragment>
 				),
@@ -489,26 +465,29 @@ export const TransactionsList = (
 			},
 			source: {
 				value: txn.source,
-				display: ! isFinancingType ? (
-					clickable(
-						<span className="payment-method-details-list-item">
-							<HoverTooltip
-								isVisible={ false }
-								content={ PAYMENT_METHOD_TITLES[ txn.source ] }
-							>
-								<span
-									className={ `payment-method__brand payment-method__brand--${ txn.source }` }
-									aria-label={
+				display:
+					! isFinancingType && ! isReaderFee ? (
+						clickable(
+							<span className="payment-method-details-list-item">
+								<HoverTooltip
+									isVisible={ false }
+									content={
 										PAYMENT_METHOD_TITLES[ txn.source ]
 									}
-								/>
-							</HoverTooltip>
-							{ getPaymentSourceDetails( txn ) }
-						</span>
-					)
-				) : (
-					<span className={ 'payment-method__brand' }>—</span>
-				),
+								>
+									<span
+										className={ `payment-method__brand payment-method__brand--${ txn.source }` }
+										aria-label={
+											PAYMENT_METHOD_TITLES[ txn.source ]
+										}
+									/>
+								</HoverTooltip>
+								{ getPaymentSourceDetails( txn ) }
+							</span>
+						)
+					) : (
+						<span className={ 'payment-method__brand' }>—</span>
+					),
 			},
 			order: {
 				value: txn.order && txn.order.number,
@@ -520,15 +499,17 @@ export const TransactionsList = (
 			},
 			customer_name: {
 				value: txn.customer_name,
-				display: ! isFinancingType
-					? customerName
-					: __( 'N/A', 'woocommerce-payments' ),
+				display:
+					! isFinancingType && ! isReaderFee
+						? customerName
+						: __( 'N/A', 'woocommerce-payments' ),
 			},
 			customer_email: {
 				value: txn.customer_email,
-				display: ! isFinancingType
-					? customerEmail
-					: __( 'N/A', 'woocommerce-payments' ),
+				display:
+					! isFinancingType && ! isReaderFee
+						? customerEmail
+						: __( 'N/A', 'woocommerce-payments' ),
 			},
 			customer_country: {
 				value: txn.customer_country,
@@ -539,7 +520,7 @@ export const TransactionsList = (
 				display: clickable( txn.customer_currency.toUpperCase() ),
 			},
 			customer_amount: formatCustomerAmount(),
-			deposit_currency: {
+			currency: {
 				value: txn.currency.toUpperCase(),
 				display: clickable( txn.currency.toUpperCase() ),
 			},
@@ -601,13 +582,18 @@ export const TransactionsList = (
 
 	const downloadable = !! rows.length;
 
-	const endpointExport = async ( language: string ) => {
-		// We destructure page and path to get the right params.
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		const { page, path, ...params } = getQuery();
-		const userEmail = wcpaySettings.currentUserEmail;
+	const { path } = getQuery();
+	const onExport = async () => {
+		recordEvent( 'wcpay_csv_export_click', {
+			row_type: 'transactions',
+			source: path,
+			exported_row_count: transactionsSummary.count,
+		} );
 
-		const locale = getExportLanguage( language, exportLanguage );
+		const userEmail = wcpaySettings.currentUserEmail;
+		const userLocale = wcpaySettings.userLocale.code;
+		const depositId = props.depositId;
+
 		const {
 			date_after: dateAfter,
 			date_before: dateBefore,
@@ -626,13 +612,41 @@ export const TransactionsList = (
 			risk_level_is_not: riskLevelIsNot,
 			customer_currency_is: customerCurrencyIs,
 			customer_currency_is_not: customerCurrencyIsNot,
-		} = params;
-		const depositId = props.depositId;
+			source_is: sourceIs,
+			source_is_not: sourceIsNot,
+		} = getQuery();
+
+		const exportRequestURL = getTransactionsCSVRequestURL( {
+			userEmail,
+			userLocale,
+			dateAfter,
+			dateBefore,
+			dateBetween,
+			match,
+			search,
+			typeIs,
+			typeIsNot,
+			sourceDeviceIs,
+			sourceDeviceIsNot,
+			customerCurrencyIs,
+			customerCurrencyIsNot,
+			sourceIs,
+			sourceIsNot,
+			channelIs,
+			channelIsNot,
+			customerCountryIs,
+			customerCountryIsNot,
+			riskLevelIs,
+			riskLevelIsNot,
+			depositId,
+		} );
 
 		const isFiltered =
 			!! dateAfter ||
 			!! dateBefore ||
 			!! dateBetween ||
+			!! sourceIs ||
+			!! sourceIsNot ||
 			!! search ||
 			!! typeIs ||
 			!! typeIsNot ||
@@ -659,90 +673,23 @@ export const TransactionsList = (
 			totalRows < confirmThreshold ||
 			window.confirm( confirmMessage )
 		) {
-			try {
-				await apiFetch( {
-					path: getTransactionsCSV( {
-						userEmail,
-						locale,
-						dateAfter,
-						dateBefore,
-						dateBetween,
-						match,
-						search,
-						typeIs,
-						typeIsNot,
-						sourceDeviceIs,
-						sourceDeviceIsNot,
-						customerCurrencyIs,
-						customerCurrencyIsNot,
-						channelIs,
-						channelIsNot,
-						customerCountryIs,
-						customerCountryIsNot,
-						riskLevelIs,
-						riskLevelIsNot,
-						depositId,
-					} ),
-					method: 'POST',
-				} );
-
-				createNotice(
-					'success',
-					sprintf(
-						__(
-							'Your export will be emailed to %s',
-							'woocommerce-payments'
-						),
-						userEmail
-					)
-				);
-			} catch {
-				createNotice(
-					'error',
-					__(
-						'There was a problem generating your export.',
-						'woocommerce-payments'
-					)
-				);
-			}
-		}
-	};
-
-	const onDownload = async () => {
-		setIsDownloading( true );
-
-		// We destructure page and path to get the right params.
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		const { page, path, ...params } = getQuery();
-		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
-
-		recordEvent( 'wcpay_transactions_download_csv_click', {
-			location: props.depositId ? 'deposit_details' : 'transactions',
-			download_type: downloadType,
-			exported_transactions: rows.length,
-			total_transactions: transactionsSummary.count,
-		} );
-
-		if ( 'endpoint' === downloadType ) {
-			if ( ! isDefaultSiteLanguage() && ! isExportModalDismissed() ) {
-				setCSVExportModalOpen( true );
-			} else {
-				endpointExport( '' );
-			}
-		} else {
-			const columnsToDisplayInCsv = columnsToDisplay.map( ( column ) => {
-				if ( column.labelInCsv ) {
-					return { ...column, label: column.labelInCsv };
-				}
-				return column;
+			requestReportExport( {
+				exportRequestURL,
+				exportFileAvailabilityEndpoint: transactionsDownloadEndpoint,
+				userEmail,
 			} );
-			downloadCSVFile(
-				generateCSVFileName( title, params ),
-				generateCSVDataFromTable( columnsToDisplayInCsv, rows )
+
+			createNotice(
+				'success',
+				sprintf(
+					__(
+						'We’re processing your export. 🎉 The file will download automatically and be emailed to %s.',
+						'woocommerce-payments'
+					),
+					userEmail
+				)
 			);
 		}
-
-		setIsDownloading( false );
 	};
 
 	if ( ! wcpaySettings.featureFlags.customSearch ) {
@@ -812,21 +759,12 @@ export const TransactionsList = (
 		}
 	}
 
-	const closeModal = () => {
-		setCSVExportModalOpen( false );
-	};
-
-	const exportTransactions = ( language: string ) => {
-		endpointExport( language );
-
-		closeModal();
-	};
-
 	const showFilters = ! props.depositId;
 	const storeCurrencies =
 		transactionsSummary.store_currencies ||
 		( isCurrencyFiltered ? [ getQuery().store_currency_is ?? '' ] : [] );
 	const customerCurrencies = transactionsSummary.customer_currencies || [];
+	const transactionSources = transactionsSummary.sources || [];
 
 	return (
 		<Page>
@@ -834,6 +772,7 @@ export const TransactionsList = (
 				<TransactionsFilters
 					storeCurrencies={ storeCurrencies }
 					customerCurrencies={ customerCurrencies }
+					transactionSources={ transactionSources }
 				/>
 			) }
 			<TableCard
@@ -847,6 +786,7 @@ export const TransactionsList = (
 				summary={ summary }
 				query={ getQuery() }
 				onQueryChange={ onQueryChange }
+				onColumnsChange={ onColumnsChange }
 				actions={ [
 					<Search
 						allowFreeTextSearch={ true }
@@ -866,23 +806,13 @@ export const TransactionsList = (
 					downloadable && (
 						<DownloadButton
 							key="download"
-							isDisabled={ isLoading || isDownloading }
-							onClick={ onDownload }
+							isDisabled={ isLoading || isExportInProgress }
+							isBusy={ isExportInProgress }
+							onClick={ onExport }
 						/>
 					),
 				] }
 			/>
-
-			{ ! isDefaultSiteLanguage() &&
-				! isExportModalDismissed() &&
-				isCSVExportModalOpen && (
-					<CSVExportModal
-						onClose={ closeModal }
-						onSubmit={ exportTransactions }
-						totalItems={ totalRows }
-						exportType={ 'transactions' }
-					/>
-				) }
 		</Page>
 	);
 };

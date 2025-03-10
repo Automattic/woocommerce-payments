@@ -1,5 +1,0 @@
-Significance: patch
-Type: update
-Comment: Update 'deposit' to 'payout' in UI labels of the transaction list. This PR is a part of a project doing this rename across all parts of the UI.
-
-

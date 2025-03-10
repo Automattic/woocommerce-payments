@@ -53,7 +53,7 @@ class WC_Payments_Admin_Sections_Overwrite_Test extends WCPAY_UnitTestCase {
 
 		$this->assertEquals(
 			$expected_sections,
-			apply_filters( 'woocommerce_get_sections_checkout', $sections )
+			apply_filters( 'woocommerce_get_sections_checkout', $sections ) // phpcs:ignore WooCommerce.Commenting.CommentHooks.MissingHookComment
 		);
 	}
 }

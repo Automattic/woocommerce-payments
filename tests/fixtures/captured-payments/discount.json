@@ -60,7 +60,7 @@
     "feeBreakdown": {
       "base": "Base fee: 2.9% + $0.30",
       "additional-international": "International card fee: 1%",
-      "additional-fx": "Foreign exchange fee: 1%",
+      "additional-fx": "Currency conversion fee: 1%",
       "discount": {
         "label": "Discount",
         "variable": "Variable fee: -4.9%",

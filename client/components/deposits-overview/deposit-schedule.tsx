@@ -118,72 +118,24 @@ const DepositSchedule: React.FC< DepositScheduleProps > = ( {
 
 	const nextDepositHelpContent = (
 		<>
-			{ __(
-				'Payouts are initiated based on the following criteria:',
-				'woocommerce-payments'
-			) }
-			<ul>
-				<li>
-					{ interpolateComponents( {
-						mixedString: __(
-							'The {{link}}pending period{{/link}} in your country',
-							'woocommerce-payments'
-						),
-						components: {
-							link: (
-								// eslint-disable-next-line jsx-a11y/anchor-has-content
-								<a
-									rel="external noopener noreferrer"
-									target="_blank"
-									href={
-										'https://woocommerce.com/document/woopayments/payouts/payout-schedule/#pending-period-chart'
-									}
-								/>
-							),
-						},
-					} ) }
-				</li>
-				<li>
-					{ interpolateComponents( {
-						mixedString: __(
-							"Your account's {{link}}available funds{{/link}}",
-							'woocommerce-payments'
-						),
-						components: {
-							link: (
-								// eslint-disable-next-line jsx-a11y/anchor-has-content
-								<a
-									rel="external noopener noreferrer"
-									target="_blank"
-									href={
-										'https://woocommerce.com/document/woopayments/payouts/payout-schedule/#available-funds'
-									}
-								/>
-							),
-						},
-					} ) }
-				</li>
-				<li>
-					{ interpolateComponents( {
-						mixedString: __(
-							'Your {{link}}payout schedule{{/link}} settings',
-							'woocommerce-payments'
-						),
-						components: {
-							link: (
-								// eslint-disable-next-line jsx-a11y/anchor-has-content
-								<a
-									rel="external noopener noreferrer"
-									target="_blank"
-									href={
-										'https://woocommerce.com/document/woopayments/payouts/change-payout-schedule/'
-									}
-								/>
-							),
-						},
-					} ) }
-				</li>
-			</ul>
+			{ interpolateComponents( {
+				mixedString: __(
+					'The timing and amount of your payouts may vary due to several factors. Check out our {{link}}payout schedule guide{{/link}} for details.',
+					'woocommerce-payments'
+				),
+				components: {
+					link: (
+						// eslint-disable-next-line jsx-a11y/anchor-has-content
+						<a
+							rel="external noopener noreferrer"
+							target="_blank"
+							href={
+								'https://woocommerce.com/document/woopayments/payouts/payout-schedule/'
+							}
+						/>
+					),
+				},
+			} ) }
 		</>
 	);
 

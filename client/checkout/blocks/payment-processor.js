@@ -1,11 +1,7 @@
 /**
  * External dependencies
  */
-import {
-	PaymentElement,
-	useElements,
-	useStripe,
-} from '@stripe/react-stripe-js';
+import { PaymentElement, useElements } from '@stripe/react-stripe-js';
 import {
 	getPaymentMethods,
 	// eslint-disable-next-line import/no-unresolved
@@ -28,7 +24,10 @@ import { useCustomerData } from './utils';
 import enableStripeLinkPaymentMethod from 'wcpay/checkout/stripe-link';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { validateElements } from 'wcpay/checkout/classic/payment-processing';
-import { PAYMENT_METHOD_ERROR } from 'wcpay/checkout/constants';
+import {
+	PAYMENT_METHOD_ERROR,
+	PAYMENT_METHOD_NAME_CARD,
+} from 'wcpay/checkout/constants';
 
 const getBillingDetails = ( billingData ) => {
 	return {
@@ -67,9 +66,9 @@ const PaymentProcessor = ( {
 	onLoadError = noop,
 	theme,
 } ) => {
-	const stripe = useStripe();
 	const elements = useElements();
 	const hasLoadErrorRef = useRef( false );
+	const linkCleanupRef = useRef( null );
 
 	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
 	const isTestMode = getUPEConfig( 'testMode' );
@@ -81,7 +80,10 @@ const PaymentProcessor = ( {
 	} = useCustomerData();
 
 	useEffect( () => {
-		if ( isLinkEnabled( paymentMethodsConfig ) ) {
+		if (
+			activePaymentMethod === PAYMENT_METHOD_NAME_CARD &&
+			isLinkEnabled( paymentMethodsConfig )
+		) {
 			enableStripeLinkPaymentMethod( {
 				api: api,
 				elements: elements,
@@ -123,11 +125,22 @@ const PaymentProcessor = ( {
 					} );
 				},
 				onButtonShow: blocksShowLinkButtonHandler,
+			} ).then( ( cleanup ) => {
+				linkCleanupRef.current = cleanup;
 			} );
+
+			// Cleanup the Link button when the component unmounts
+			return () => {
+				if ( linkCleanupRef.current ) {
+					linkCleanupRef.current();
+					linkCleanupRef.current = null;
+				}
+			};
 		}
 	}, [
 		api,
 		elements,
+		activePaymentMethod,
 		paymentMethodsConfig,
 		setBillingAddress,
 		setShippingAddress,
@@ -183,16 +196,16 @@ const PaymentProcessor = ( {
 						};
 					}
 
-					const result = await api
-						.getStripeForUPE( paymentMethodId )
-						.createPaymentMethod( {
-							elements,
-							params: {
-								billing_details: getBillingDetails(
-									billingData
-								),
-							},
-						} );
+					const stripeForUPE = await api.getStripeForUPE(
+						paymentMethodId
+					);
+
+					const result = await stripeForUPE.createPaymentMethod( {
+						elements,
+						params: {
+							billing_details: getBillingDetails( billingData ),
+						},
+					} );
 
 					if ( result.error ) {
 						return {
@@ -251,8 +264,6 @@ const PaymentProcessor = ( {
 
 	usePaymentCompleteHandler(
 		api,
-		stripe,
-		elements,
 		onCheckoutSuccess,
 		emitResponse,
 		shouldSavePayment
