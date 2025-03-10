@@ -8,7 +8,7 @@ import { find } from 'lodash';
 
 /** Internal dependencies */
 import { formatCurrency } from 'multi-currency/interface/functions';
-import { formatFeeType, formatFeeRate } from '../utils';
+import { formatFeeType } from '../utils';
 import { TimelineItem, TimelineFeeRate } from 'wcpay/data/timeline/types';
 import { Flex, FlexItem } from '@wordpress/components';
 
@@ -33,15 +33,35 @@ const FeesBreakdown: React.FC< {
 	);
 	let remainingFixedDiscount = Math.abs( discountFee?.fixed_rate || 0 );
 
-	const FeeRow: React.FC< {
-		type: string;
-		additionalType?: string;
+	const BreakdownFeeRate = ( {
+		percentage,
+		fixed,
+		currency,
+		displayFixedPart,
+	}: {
 		percentage: number;
 		fixed: number;
 		currency: string;
-		amount?: number;
-		isDiscounted?: boolean;
-	} > = ( {
+		displayFixedPart?: boolean;
+	} ) => {
+		const formattedPercentage = percentage
+			? `${ Number.parseFloat( ( percentage * 100 ).toFixed( 2 ) ) }%`
+			: '0%';
+		const formattedFixed = formatCurrency( fixed, currency, storeCurrency );
+
+		return (
+			<>
+				{ formattedPercentage }
+				{ ( displayFixedPart || fixed > 0 ) && (
+					<>
+						{ ' + ' + formattedFixed }&nbsp;{ storeCurrency }
+					</>
+				) }
+			</>
+		);
+	};
+
+	const FeeRow = ( {
 		type,
 		additionalType,
 		percentage,
@@ -49,32 +69,48 @@ const FeesBreakdown: React.FC< {
 		currency,
 		amount,
 		isDiscounted,
+		displayFixedPart,
+	}: {
+		type: string;
+		additionalType?: string;
+		percentage: number;
+		fixed: number;
+		currency: string;
+		amount?: number;
+		isDiscounted?: boolean;
+		displayFixedPart?: boolean;
 	} ) => {
 		const formattedFeeType = formatFeeType(
 			type,
 			additionalType,
 			isDiscounted
 		);
-		const formattedFeeRate = formatFeeRate(
-			percentage,
-			fixed,
-			currency,
-			storeCurrency
-		);
-		const formattedFeeAmount = amount
-			? ` - ${ formatCurrency( amount, storeCurrency, storeCurrency ) }`
-			: '';
+		const formattedFeeAmount =
+			undefined !== amount
+				? ` - ${ formatCurrency(
+						amount,
+						storeCurrency,
+						storeCurrency
+				  ) } ${ storeCurrency }`
+				: '';
 		const feeType = type + ( additionalType ? `_${ additionalType }` : '' );
 
 		return (
 			<Flex
 				className={ `wcpay-transaction-breakdown__fee_info wcpay-transaction-breakdown__${ feeType }_fee_info` }
+				wrap={ true }
+				justify="end"
 			>
 				<FlexItem className="wcpay-transaction-breakdown__fee_name">
 					{ formattedFeeType }
 				</FlexItem>
 				<FlexItem className="wcpay-transaction-breakdown__fee_rate">
-					{ formattedFeeRate }
+					<BreakdownFeeRate
+						percentage={ percentage }
+						fixed={ fixed }
+						currency={ currency }
+						displayFixedPart={ displayFixedPart }
+					/>
 				</FlexItem>
 				<FlexItem className="wcpay-transaction-breakdown__fee_amount">
 					{ formattedFeeAmount }
@@ -104,6 +140,7 @@ const FeesBreakdown: React.FC< {
 			let percentage = fee.percentage_rate;
 			let fixed = fee.fixed_rate;
 			let isDiscounted = false;
+			const displayFixedPart = fee.fixed_rate > 0;
 
 			if ( remainingPercentageDiscount > 0 ) {
 				const percentageDiscount = Math.min(
@@ -136,6 +173,7 @@ const FeesBreakdown: React.FC< {
 					fixed={ fixed }
 					currency={ fee.currency }
 					isDiscounted={ isDiscounted }
+					displayFixedPart={ displayFixedPart }
 				/>
 			);
 			return null;
@@ -150,6 +188,7 @@ const FeesBreakdown: React.FC< {
 			fixed={ event.fee_rates.fixed / feeExchangeRate }
 			currency={ storeCurrency }
 			amount={ event.transaction_details.store_fee }
+			displayFixedPart={ true }
 		/>
 	);
 

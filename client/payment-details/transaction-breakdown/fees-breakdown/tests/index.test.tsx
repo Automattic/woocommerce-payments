@@ -84,8 +84,9 @@ describe( 'FeesBreakdown', () => {
 
 		expect( screen.getByText( 'Base fee' ) ).toBeInTheDocument();
 		expect(
-			screen.getByText( '2.9% + $0.30', {
-				selector: '.wcpay-transaction-breakdown__total_fee_info div',
+			screen.getByText( '2.9% + $0.30 USD', {
+				selector:
+					'.wcpay-transaction-breakdown__total_fee_info .wcpay-transaction-breakdown__fee_rate',
 			} )
 		).toBeInTheDocument();
 	} );
@@ -93,6 +94,16 @@ describe( 'FeesBreakdown', () => {
 	it( 'should render fees with discount when fee_history contains a discount', () => {
 		const eventWithDiscount: TimelineItem = {
 			...baseEvent,
+			transaction_details: {
+				store_currency: 'USD',
+				store_fee: 0,
+				customer_currency: 'USD',
+				customer_amount: 100,
+				customer_amount_captured: 100,
+				customer_fee: 0,
+				store_amount: 100,
+				store_amount_captured: 100,
+			},
 			fee_rates: {
 				...baseEvent.fee_rates,
 				percentage: 0.029,
@@ -131,28 +142,30 @@ describe( 'FeesBreakdown', () => {
 			screen.getByText( 'Base fee (discounted)' )
 		).toBeInTheDocument();
 		expect(
-			screen.getByText( '$0.05', {
-				selector: '.wcpay-transaction-breakdown__base_fee_info div',
+			screen.getByText( '0% + $0.05 USD', {
+				selector:
+					'.wcpay-transaction-breakdown__base_fee_info .wcpay-transaction-breakdown__fee_rate',
 			} )
 		).toBeInTheDocument();
 		expect(
 			screen.getByText( 'International card fee (discounted)', {
 				selector:
-					'.wcpay-transaction-breakdown__additional_international_fee_info div',
+					'.wcpay-transaction-breakdown__additional_international_fee_info  .wcpay-transaction-breakdown__fee_name',
 			} )
 		).toBeInTheDocument();
 		expect(
 			screen.getByText( '0.4%', {
 				selector:
-					'.wcpay-transaction-breakdown__additional_international_fee_info div',
+					'.wcpay-transaction-breakdown__additional_international_fee_info .wcpay-transaction-breakdown__fee_rate',
 			} )
 		).toBeInTheDocument();
 		expect(
 			screen.getByText( 'Total transaction fee' )
 		).toBeInTheDocument();
 		expect(
-			screen.getByText( /- \$0.10$/, {
-				selector: '.wcpay-transaction-breakdown__total_fee_info div',
+			screen.getByText( /- \$0.00 USD$/, {
+				selector:
+					'.wcpay-transaction-breakdown__total_fee_info .wcpay-transaction-breakdown__fee_amount',
 			} )
 		).toBeInTheDocument();
 	} );
@@ -192,22 +205,24 @@ describe( 'FeesBreakdown', () => {
 			screen.getByText( 'International card fee' )
 		).toBeInTheDocument();
 		expect(
-			screen.getByText( '2.9% + $0.30', {
-				selector: '.wcpay-transaction-breakdown__base_fee_info div',
+			screen.getByText( '2.9% + $0.30 USD', {
+				selector:
+					'.wcpay-transaction-breakdown__base_fee_info .wcpay-transaction-breakdown__fee_rate',
 			} )
 		).toBeInTheDocument();
 		expect(
 			screen.getByText( '1%', {
 				selector:
-					'.wcpay-transaction-breakdown__additional_international_fee_info div',
+					'.wcpay-transaction-breakdown__additional_international_fee_info .wcpay-transaction-breakdown__fee_rate',
 			} )
 		).toBeInTheDocument();
 		expect(
 			screen.getByText( 'Total transaction fee' )
 		).toBeInTheDocument();
 		expect(
-			screen.getByText( /- \$0.10$/, {
-				selector: '.wcpay-transaction-breakdown__total_fee_info div',
+			screen.getByText( /- \$0.10 USD$/, {
+				selector:
+					'.wcpay-transaction-breakdown__total_fee_info .wcpay-transaction-breakdown__fee_amount',
 			} )
 		).toBeInTheDocument();
 	} );
@@ -215,6 +230,16 @@ describe( 'FeesBreakdown', () => {
 	it( 'should render fee line with 0% when fee is fully discounted', () => {
 		const eventWithoutDiscount: TimelineItem = {
 			...baseEvent,
+			transaction_details: {
+				store_currency: 'USD',
+				store_fee: 0,
+				customer_currency: 'USD',
+				customer_amount: 100,
+				customer_amount_captured: 100,
+				customer_fee: 0,
+				store_amount: 100,
+				store_amount_captured: 100,
+			},
 			fee_rates: {
 				...baseEvent.fee_rates,
 				percentage: 0.029,
@@ -256,14 +281,81 @@ describe( 'FeesBreakdown', () => {
 			screen.getByText( 'International card fee (discounted)' )
 		).toBeInTheDocument();
 		expect(
-			screen.getByText( '0%', {
-				selector: '.wcpay-transaction-breakdown__base_fee_info div',
+			screen.getByText( '0% + $0.00 USD', {
+				selector:
+					'.wcpay-transaction-breakdown__base_fee_info .wcpay-transaction-breakdown__fee_rate',
 			} )
 		).toBeInTheDocument();
 		expect(
 			screen.getByText( '0%', {
 				selector:
-					'.wcpay-transaction-breakdown__additional_international_fee_info div',
+					'.wcpay-transaction-breakdown__additional_international_fee_info .wcpay-transaction-breakdown__fee_rate',
+			} )
+		).toBeInTheDocument();
+		expect(
+			screen.getByText( 'Total transaction fee' )
+		).toBeInTheDocument();
+		expect(
+			screen.getByText( /^- \$0.00 USD$/, {
+				selector:
+					'.wcpay-transaction-breakdown__total_fee_info .wcpay-transaction-breakdown__fee_amount',
+			} )
+		).toBeInTheDocument();
+	} );
+
+	it( 'should render fees without discount when fee_history has no discount', () => {
+		const eventWithoutDiscount: TimelineItem = {
+			...baseEvent,
+			fee_rates: {
+				...baseEvent.fee_rates,
+				percentage: 0.029,
+				fixed: 30,
+				fixed_currency: 'USD',
+				history: [
+					{
+						type: 'base',
+						percentage_rate: 0.029,
+						fixed_rate: 30,
+						currency: 'USD',
+						fee_id: 'base',
+					},
+					{
+						type: 'additional',
+						additional_type: 'international',
+						percentage_rate: 0.01,
+						fixed_rate: 0,
+						currency: 'USD',
+						fee_id: 'additional',
+					},
+				],
+			},
+		};
+
+		render( <FeesBreakdown event={ eventWithoutDiscount } /> );
+
+		expect( screen.getByText( 'Base fee' ) ).toBeInTheDocument();
+		expect(
+			screen.getByText( 'International card fee' )
+		).toBeInTheDocument();
+		expect(
+			screen.getByText( '2.9% + $0.30 USD', {
+				selector:
+					'.wcpay-transaction-breakdown__base_fee_info .wcpay-transaction-breakdown__fee_rate',
+			} )
+		).toBeInTheDocument();
+		expect(
+			screen.getByText( '1%', {
+				selector:
+					'.wcpay-transaction-breakdown__additional_international_fee_info .wcpay-transaction-breakdown__fee_rate',
+			} )
+		).toBeInTheDocument();
+		expect(
+			screen.getByText( 'Total transaction fee' )
+		).toBeInTheDocument();
+		expect(
+			screen.getByText( /- \$0.10 USD$/, {
+				selector:
+					'.wcpay-transaction-breakdown__total_fee_info .wcpay-transaction-breakdown__fee_amount',
 			} )
 		).toBeInTheDocument();
 	} );
