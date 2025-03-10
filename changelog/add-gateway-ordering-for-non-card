@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Make sure that WooPayments gateways follow the main WooPayments card gateway in gateway ordering on the page.
