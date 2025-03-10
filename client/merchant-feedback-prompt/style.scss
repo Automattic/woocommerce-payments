@@ -29,3 +29,31 @@
 		max-width: 600px;
 	}
 }
+
+.wcpay-merchant-feedback-negative-modal {
+	&__content {
+		max-width: 600px;
+	}
+
+	&__question {
+		font-weight: bold;
+	}
+
+	&__textarea {
+		width: 100%;
+		min-height: 120px;
+		padding: 8px;
+	}
+
+	&__privacy {
+		a {
+			text-decoration: none;
+		}
+	}
+
+	&__actions {
+		display: flex;
+		justify-content: flex-end;
+		gap: 8px;
+	}
+}
