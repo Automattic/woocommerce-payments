@@ -355,15 +355,6 @@ function wcpay_get_jetpack_idc_custom_content(): array {
 	$urls = Automattic\Jetpack\Identity_Crisis::get_mismatched_urls();
 	if ( false !== $urls ) {
 		$current_url = untrailingslashit( $urls['current_url'] );
-		/**
-		 * Undo the reverse the Jetpack IDC library is doing since we want to display the URL.
-		 *
-		 * @see https://github.com/Automattic/jetpack-identity-crisis/blob/trunk/src/class-identity-crisis.php#L471
-		 */
-		$idc_sync_error = Automattic\Jetpack\Identity_Crisis::check_identity_crisis();
-		if ( is_array( $idc_sync_error ) && ! empty( $idc_sync_error['reversed_url'] ) ) {
-			$urls['wpcom_url'] = strrev( $urls['wpcom_url'] );
-		}
 		$wpcom_url = untrailingslashit( $urls['wpcom_url'] );
 
 		$custom_content['migrateCardBodyText'] = sprintf(
