@@ -239,6 +239,8 @@ export default class WCPayAPI {
 						getExpressCheckoutConfig( 'ajax_url' ) ??
 						getConfig( 'ajaxUrl' );
 
+					const isChangingPayment = getConfig( 'isChangingPayment' );
+
 					const ajaxCall = this.request( ajaxUrl, {
 						action: 'update_order_status',
 						order_id: orderId,
@@ -247,6 +249,9 @@ export default class WCPayAPI {
 						_ajax_nonce: nonce,
 						intent_id: intentId,
 						should_save_payment_method: shouldSavePaymentMethod
+							? 'true'
+							: 'false',
+						is_changing_payment: isChangingPayment
 							? 'true'
 							: 'false',
 					} );
