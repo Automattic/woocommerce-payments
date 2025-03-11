@@ -747,12 +747,23 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		WC()->session->init();
 		WC()->cart->empty_cart();
-		// Total is 100 USD, which is above both payment methods (Affirm and AfterPay) minimums.
-		WC()->cart->add_to_cart( WC_Helper_Product::create_simple_product()->get_id(), 10 );
+		// Total is 10 USD, which is below Affirm minimum but above AfterPay minimum.
+		WC()->cart->add_to_cart( WC_Helper_Product::create_simple_product()->get_id(), 1 );
 		WC()->cart->calculate_totals();
 
 		$affirm_method   = $this->payment_methods['affirm'];
 		$afterpay_method = $this->payment_methods['afterpay_clearpay'];
+
+		$this->assertFalse( $affirm_method->is_enabled_at_checkout( 'US' ) ); // Affirm minimum is 50 USD.
+		$this->assertTrue( $afterpay_method->is_enabled_at_checkout( 'US' ) ); // AfterPay minimum is 1 USD.
+
+		// Currency Limits check for affirm can be skipped by passing a second parameter (this is a workaround for the blocks editor).
+		$this->assertTrue( $affirm_method->is_enabled_at_checkout( 'US', true ) );
+
+		WC()->cart->empty_cart();
+		// Total is 100 USD, which is above both payment methods (Affirm and AfterPay) minimums.
+		WC()->cart->add_to_cart( WC_Helper_Product::create_simple_product()->get_id(), 10 );
+		WC()->cart->calculate_totals();
 
 		$this->assertTrue( $affirm_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertTrue( $afterpay_method->is_enabled_at_checkout( 'US' ) );
