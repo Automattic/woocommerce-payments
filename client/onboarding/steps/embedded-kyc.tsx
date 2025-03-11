@@ -92,7 +92,9 @@ const EmbeddedKyc: React.FC< Props > = ( {
 			{ loadErrorMessage &&
 				( loadErrorType === 'api_connection_error' ? (
 					<BannerNotice
+						className={ 'wcpay-banner-notice--embedded-kyc' }
 						status="warning"
+						isDismissible={ false }
 						actions={ [
 							{
 								label: 'Learn more',
@@ -119,7 +121,11 @@ const EmbeddedKyc: React.FC< Props > = ( {
 						) }
 					</BannerNotice>
 				) : (
-					<BannerNotice status="error">
+					<BannerNotice
+						className={ 'wcpay-banner-notice--embedded-kyc' }
+						status="error"
+						isDismissible={ false }
+					>
 						{ loadErrorMessage }
 					</BannerNotice>
 				) ) }
