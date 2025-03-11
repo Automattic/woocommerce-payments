@@ -7,6 +7,7 @@ import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { ExternalLink } from '@wordpress/components';
 import { createInterpolateElement } from '@wordpress/element';
+import { Link } from '@woocommerce/components';
 
 /**
  * Internal dependencies
@@ -20,11 +21,13 @@ import { isInquiry } from 'wcpay/disputes/utils';
 interface DisputeNoticeProps {
 	dispute: Dispute;
 	isUrgent: boolean;
+	paymentMethod: string | null;
 }
 
 const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 	dispute,
 	isUrgent,
+	paymentMethod,
 } ) => {
 	const shopperDisputeReason =
 		reasons[ dispute.reason ]?.claim ??
@@ -52,6 +55,17 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 		);
 		learnMoreDocsUrl =
 			'https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries';
+
+		if ( paymentMethod === 'klarna' ) {
+			noticeText = __(
+				'Klarna inquiries may simply mean that the customer is trying to return their item(s). ' +
+					'You can issue a refund to close it without a dispute fee, or leave it open for 21 days, ' +
+					'after which it will become a dispute. Please see <link>this document</link> for more information.',
+				'woocommerce-payments'
+			);
+			learnMoreDocsUrl =
+				'https://woocommerce.com/document/woopayments/payment-methods/buy-now-pay-later/#klarna-inquiries-returns';
+		}
 	}
 
 	return (
@@ -68,6 +82,13 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 						<ExternalLink
 							className="dispute-notice__link"
 							href={ learnMoreDocsUrl }
+						/>
+					),
+					link: (
+						<Link
+							href={ learnMoreDocsUrl }
+							target="_blank"
+							type="external"
 						/>
 					),
 					strong: <strong />,
