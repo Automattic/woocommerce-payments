@@ -3,19 +3,32 @@
  */
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
-import { select } from '@wordpress/data';
+import { dispatch, select } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
 import { MaybeShowMerchantFeedbackPrompt } from '../index';
 import { recordEvent } from 'wcpay/tracks';
+import { NegativeFeedbackModal } from '../negative-modal';
 
 // Mock the WordPress data module
-jest.mock( '@wordpress/data', () => ( {
-	useSelect: jest.fn().mockImplementation( ( fn ) => fn( select ) ),
-	select: jest.fn(),
-} ) );
+jest.mock( '@wordpress/data', () => {
+	const noticesDispatch = {
+		createSuccessNotice: jest.fn(),
+	};
+
+	return {
+		useSelect: jest.fn().mockImplementation( ( fn ) => fn( select ) ),
+		select: jest.fn(),
+		dispatch: jest.fn().mockImplementation( ( storeName ) => {
+			if ( storeName === 'core/notices' ) {
+				return noticesDispatch;
+			}
+			return {};
+		} ),
+	};
+} );
 
 // Mock ReactDOM.createPortal
 jest.mock( 'react-dom', () => ( {
@@ -232,6 +245,11 @@ describe( 'MerchantFeedbackPrompt', () => {
 			screen.queryByText( 'Are you satisfied with WooPayments?' )
 		).not.toBeInTheDocument();
 
+		// Expect the modal view event to be recorded
+		expect( recordEvent ).toHaveBeenCalledWith(
+			'wcpay_merchant_feedback_prompt_positive_modal_view'
+		);
+
 		// The positive feedback modal should be rendered
 		expect( screen.getByText( 'Share your feedback' ) ).toBeInTheDocument();
 		expect(
@@ -239,7 +257,9 @@ describe( 'MerchantFeedbackPrompt', () => {
 		).toBeInTheDocument();
 	} );
 
-	it( 'records event when No button is clicked', () => {
+	it( 'opens the negative feedback modal and records event when No button is clicked', () => {
+		window.wcTracks.isEnabled = true;
+
 		// First render
 		const { rerender } = render( <MaybeShowMerchantFeedbackPrompt /> );
 
@@ -261,5 +281,105 @@ describe( 'MerchantFeedbackPrompt', () => {
 		expect(
 			screen.queryByText( 'Are you satisfied with WooPayments?' )
 		).not.toBeInTheDocument();
+
+		// Expect the modal view event to be recorded
+		expect( recordEvent ).toHaveBeenCalledWith(
+			'wcpay_merchant_feedback_prompt_negative_modal_view'
+		);
+
+		// The negative feedback modal should be rendered
+		expect( screen.getByText( 'Share your feedback' ) ).toBeInTheDocument();
+		expect(
+			screen.getByText(
+				/Would you mind sharing more about why you chose that option/
+			)
+		).toBeInTheDocument();
+	} );
+
+	it( 'when No button is clicked but tracking is disabled, do not open the negative feedback modal', () => {
+		window.wcTracks.isEnabled = false;
+
+		// First render
+		const { rerender } = render( <MaybeShowMerchantFeedbackPrompt /> );
+
+		// Click the No button
+		const noButton = screen.getByText( 'No', {
+			ignore: '.a11y-speak-region',
+		} );
+		fireEvent.click( noButton );
+
+		// Expect the event to be recorded
+		expect( recordEvent ).toHaveBeenCalledWith(
+			'wcpay_merchant_feedback_prompt_no_click'
+		);
+
+		// Re-render the component to verify it's no longer shown
+		rerender( <MaybeShowMerchantFeedbackPrompt /> );
+
+		// The prompt should no longer be rendered
+		expect(
+			screen.queryByText( 'Are you satisfied with WooPayments?' )
+		).not.toBeInTheDocument();
+
+		// The negative feedback modal should not be rendered
+		expect(
+			screen.queryByText( 'Share your feedback' )
+		).not.toBeInTheDocument();
+		expect(
+			screen.queryByText(
+				/Would you mind sharing more about why you chose that option/
+			)
+		).not.toBeInTheDocument();
+	} );
+
+	it( 'closes the negative feedback modal when the close button is clicked', () => {
+		const closeHandler = jest.fn();
+
+		render( <NegativeFeedbackModal onRequestClose={ closeHandler } /> );
+
+		// Click the close button
+		const closeButton = screen.getByText( 'Close', {
+			ignore: '.a11y-speak-region',
+		} );
+		fireEvent.click( closeButton );
+
+		// Expect the event to be recorded
+		expect( recordEvent ).toHaveBeenCalledWith(
+			'wcpay_merchant_feedback_prompt_negative_modal_close_click'
+		);
+
+		expect( closeHandler ).toHaveBeenCalledWith();
+	} );
+
+	it( 'when the send button is clicked, send negative feedback input by the user and shows thank you notice', () => {
+		const closeHandler = jest.fn();
+
+		render( <NegativeFeedbackModal onRequestClose={ closeHandler } /> );
+
+		// Find the textarea and fill it with text
+		const textarea = screen.getByPlaceholderText(
+			'Share your feedback here…'
+		);
+		fireEvent.change( textarea, { target: { value: 'some feedback' } } );
+
+		// Click the send button
+		const sendButton = screen.getByText( 'Send', {
+			ignore: '.a11y-speak-region',
+		} );
+		fireEvent.click( sendButton );
+
+		// Expect the event to be recorded
+		expect(
+			recordEvent
+		).toHaveBeenCalledWith(
+			'wcpay_merchant_feedback_prompt_negative_feedback',
+			{ feedback: 'some feedback' }
+		);
+
+		expect(
+			dispatch( 'core/notices' ).createSuccessNotice
+		).toHaveBeenCalledWith( 'Thank you for your feedback!' );
+
+		expect( closeHandler ).toHaveBeenCalled();
 	} );
 } );
