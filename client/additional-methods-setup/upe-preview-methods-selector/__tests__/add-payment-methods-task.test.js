@@ -32,6 +32,7 @@ import {
 
 import WCPaySettingsContext from '../../../settings/wcpay-settings-context';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
+import paymentMethodsMap from 'wcpay/payment-methods-map';
 
 jest.mock( '../../../data', () => ( {
 	useGetAvailablePaymentMethodIds: jest.fn(),
@@ -125,6 +126,23 @@ describe( 'AddPaymentMethodsTask', () => {
 			isMultiCurrencyEnabled: true,
 			storeCurrency: 'USD',
 			accountEmail: 'admin@example.com',
+		};
+		paymentMethodsMap.alipay = {
+			id: 'alipay',
+			label: 'Alipay',
+			description: 'Alipay description mock',
+			icon: ( { className } ) => (
+				<img
+					src="#not-found"
+					alt="Alipay icon mock"
+					className={ className }
+				/>
+			),
+			currencies: [],
+			stripe_key: 'alipay_payments',
+			allows_manual_capture: false,
+			allows_pay_later: false,
+			accepts_only_domestic_payment: false,
 		};
 	} );
 
