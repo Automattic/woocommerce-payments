@@ -73,7 +73,7 @@ class WC_Payments_Currency_Manager {
 			$enabled_payment_methods,
 			function ( $result, $payment_method_instance ) use ( $account_currency ) {
 				$method = $payment_method_instance->get_id();
-				if ( in_array( $method, [ 'card', 'card_present' ], true ) ) {
+				if ( in_array( $method, [ 'card', 'card_present', 'link' ], true ) ) {
 					return $result;
 				}
 

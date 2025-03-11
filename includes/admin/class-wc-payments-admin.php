@@ -656,10 +656,9 @@ class WC_Payments_Admin {
 		);
 
 		WC_Payments::register_script_with_dependencies( 'WCPAY_PAYMENT_GATEWAYS_PAGE', 'dist/payment-gateways' );
-		$payment_method_definitions = rawurlencode( PaymentMethodUtils::get_payment_method_definitions_json() );
 		wp_add_inline_script(
 			'WCPAY_PAYMENT_GATEWAYS_PAGE',
-			"window.woopaymentsPaymentMethodDefinitions = JSON.parse( decodeURIComponent( '" . esc_js( $payment_method_definitions ) . "' ) );",
+			new \WCPay\Inline_Script_Payloads\Woo_Payments_Payment_Method_Definitions(),
 			'before'
 		);
 
@@ -700,10 +699,9 @@ class WC_Payments_Admin {
 				$this->get_js_settings()
 			);
 
-			$payment_method_definitions = rawurlencode( PaymentMethodUtils::get_payment_method_definitions_json() );
 			wp_add_inline_script(
 				'WCPAY_ADMIN_SETTINGS',
-				"window.woopaymentsPaymentMethodDefinitions = JSON.parse( decodeURIComponent( '" . esc_js( $payment_method_definitions ) . "' ) );",
+				new \WCPay\Inline_Script_Payloads\Woo_Payments_Payment_Method_Definitions(),
 				'before'
 			);
 
@@ -732,10 +730,9 @@ class WC_Payments_Admin {
 				$this->get_js_settings()
 			);
 
-			$payment_method_definitions = rawurlencode( PaymentMethodUtils::get_payment_method_definitions_json() );
 			wp_add_inline_script(
 				'WCPAY_DASH_APP',
-				"window.woopaymentsPaymentMethodDefinitions = JSON.parse( decodeURIComponent( '" . esc_js( $payment_method_definitions ) . "' ) );",
+				new \WCPay\Inline_Script_Payloads\Woo_Payments_Payment_Method_Definitions(),
 				'before'
 			);
 

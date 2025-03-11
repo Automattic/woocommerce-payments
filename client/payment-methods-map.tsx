@@ -34,8 +34,8 @@ import type { PaymentMethodMapEntry } from './types/payment-methods';
 
 // Get any payment method definitions from the client.
 const PaymentMethodDefinitions =
-	typeof woopaymentsPaymentMethodDefinitions !== 'undefined'
-		? woopaymentsPaymentMethodDefinitions
+	typeof wooPaymentsPaymentMethodDefinitions !== 'undefined'
+		? wooPaymentsPaymentMethodDefinitions
 		: {};
 
 const convertedPaymentMethodDefinitions = Object.fromEntries<
