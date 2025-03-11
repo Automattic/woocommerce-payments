@@ -2559,35 +2559,35 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 * Adds order information to the charge object.
 	 *
 	 * @param string $charge_id Charge ID.
-	 * @param array  $object    Object to add order information.
+	 * @param array  $entity    Object to add order information.
 	 *
 	 * @return array
 	 */
-	private function add_order_info_to_charge_object( $charge_id, $object ) {
+	private function add_order_info_to_charge_object( $charge_id, $entity ) {
 		$order  = $this->wcpay_db->order_from_charge_id( $charge_id );
-		$object = $this->add_order_info_to_object( $order, $object );
+		$entity = $this->add_order_info_to_object( $order, $entity );
 
-		return $object;
+		return $entity;
 	}
 
 	/**
 	 * Returns a transaction with order information when it exists.
 	 *
 	 * @param  bool|\WC_Order|\WC_Order_Refund $order  Order object.
-	 * @param  array                           $object Object to add order information.
+	 * @param  array                           $entity Object to add order information.
 	 *
 	 * @return array new object with order information.
 	 */
-	private function add_order_info_to_object( $order, $object ) {
+	private function add_order_info_to_object( $order, $entity ) {
 		// Add order information to the `$transaction`.
 		// If the order couldn't be retrieved, return an empty order.
-		$object['order'] = [];
+		$entity['order'] = [];
 
 		if ( $order ) {
-			$object['order'] = $this->build_order_info( $order );
+			$entity['order'] = $this->build_order_info( $order );
 		}
 
-		return $object;
+		return $entity;
 	}
 
 	/**
@@ -2824,12 +2824,17 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	/**
 	 * Fetch readers charge summary.
 	 *
-	 * @param string $charge_date Charge date for readers.
+	 * @param string      $charge_date    Charge date for readers.
+	 * @param string|null $transaction_id Optional transaction ID to filter results.
 	 *
 	 * @return array reader objects.
 	 */
-	public function get_readers_charge_summary( string $charge_date ): array {
-		return $this->request( [ 'charge_date' => $charge_date ], self::READERS_CHARGE_SUMMARY, self::GET );
+	public function get_readers_charge_summary( string $charge_date, ?string $transaction_id = null ): array {
+		$params = [ 'charge_date' => $charge_date ];
+		if ( $transaction_id ) {
+			$params['transaction_id'] = $transaction_id;
+		}
+		return $this->request( $params, self::READERS_CHARGE_SUMMARY, self::GET );
 	}
 
 	/**
