@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Skip limits per currency check on admin pages

@@ -31,7 +31,7 @@
 			"typescript": {}
 		}
 	},
-	"ignorePatterns": [ "docs/rest-api/source/**/*.js" ],
+	"ignorePatterns": [ "docs/rest-api/source/**/*.js", "playwright-report/**/*.js" ],
 	"rules": {
 		"camelcase": [
 			"error",
