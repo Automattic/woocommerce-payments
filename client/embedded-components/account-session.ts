@@ -11,7 +11,7 @@ import {
 /**
  * Internal dependencies
  */
-import { createAccountSession } from 'wcpay/utils/embedded-components/utils';
+import { createAccountSession } from 'wcpay/embedded-components/utils';
 
 interface UseAccountSessionProps {
 	/**

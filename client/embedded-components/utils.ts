@@ -8,7 +8,7 @@ import apiFetch from '@wordpress/api-fetch';
  * Internal dependencies
  */
 import { NAMESPACE } from 'data/constants';
-import { AccountKycSession } from '../../onboarding/types';
+import { AccountKycSession } from 'onboarding/types';
 
 /**
  * Make an API request to create an account session.
