@@ -56,7 +56,7 @@ const PhoneNumberInput = ( {
 			}
 
 			if (
-				[ '805', '806', '807', '808', '809' ].includes(
+				[ '800', '805', '806', '807', '808', '809' ].includes(
 					instance.getNumber().substr( 3, 3 )
 				)
 			) {
