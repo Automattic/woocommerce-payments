@@ -115,7 +115,6 @@ const PaymentMethodsList = ( { methodIds } ) => {
 						allows_manual_capture: isAllowingManualCapture,
 						setup_required: isSetupRequired,
 						setup_tooltip: setupTooltip,
-						// TODO : fix in https://github.com/Automattic/woocommerce-payments/issues/10182 to remove duplicated logic
 						currencies,
 					} ) => {
 						if (

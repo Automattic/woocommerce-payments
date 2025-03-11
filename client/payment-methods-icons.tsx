@@ -8,7 +8,6 @@ import classNames from 'classnames';
 /**
  * Internal dependencies
  */
-import AlipayAsset from 'assets/images/payment-methods/alipay-logo.svg';
 import BancontactAsset from 'assets/images/payment-methods/bancontact.svg?asset';
 import EpsAsset from 'assets/images/payment-methods/eps.svg?asset';
 import GiropayAsset from 'assets/images/payment-methods/giropay.svg?asset';
@@ -75,10 +74,6 @@ export const AmericanExpressIcon = iconComponent(
 export const ApplePayIcon = iconComponent(
 	ApplePayAsset,
 	__( 'Apple Pay', 'woocommerce-payments' )
-);
-export const AlipayIcon = iconComponent(
-	AlipayAsset,
-	__( 'Alipay', 'woocommerce-payments' )
 );
 export const BancontactIcon = iconComponent(
 	BancontactAsset,
