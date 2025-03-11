@@ -598,12 +598,12 @@ class WC_Payments_Admin {
 			return;
 		}
 
+		WC_Payments::register_script_with_dependencies( 'WCPAY_DASH_APP', 'dist/index', [ 'wp-api-request' ] );
 		wp_add_inline_script(
 			'WCPAY_DASH_APP',
 			new Woo_Payments_Payment_Method_Definitions(),
 			'before'
 		);
-		WC_Payments::register_script_with_dependencies( 'WCPAY_DASH_APP', 'dist/index', [ 'wp-api-request' ] );
 
 		wp_set_script_translations( 'WCPAY_DASH_APP', 'woocommerce-payments' );
 
@@ -636,12 +636,12 @@ class WC_Payments_Admin {
 			'all'
 		);
 
+		WC_Payments::register_script_with_dependencies( 'WCPAY_ADMIN_SETTINGS', 'dist/settings' );
 		wp_add_inline_script(
 			'WCPAY_ADMIN_SETTINGS',
 			new Woo_Payments_Payment_Method_Definitions(),
 			'before'
 		);
-		WC_Payments::register_script_with_dependencies( 'WCPAY_ADMIN_SETTINGS', 'dist/settings' );
 
 		wp_localize_script(
 			'WCPAY_ADMIN_SETTINGS',
@@ -665,12 +665,12 @@ class WC_Payments_Admin {
 			'all'
 		);
 
+		WC_Payments::register_script_with_dependencies( 'WCPAY_PAYMENT_GATEWAYS_PAGE', 'dist/payment-gateways' );
 		wp_add_inline_script(
 			'WCPAY_PAYMENT_GATEWAYS_PAGE',
 			new Woo_Payments_Payment_Method_Definitions(),
 			'before'
 		);
-		WC_Payments::register_script_with_dependencies( 'WCPAY_PAYMENT_GATEWAYS_PAGE', 'dist/payment-gateways' );
 
 		WC_Payments_Utils::register_style(
 			'WCPAY_PAYMENT_GATEWAYS_PAGE',
