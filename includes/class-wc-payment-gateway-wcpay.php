@@ -49,7 +49,6 @@ use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
 use WCPay\Logger;
 use WCPay\Payment_Information;
 use WCPay\Payment_Methods\Link_Payment_Method;
-use WCPay\PaymentMethods\Configs\Definitions\AlipayDefinition;
 use WCPay\WooPay\WooPay_Order_Status_Sync;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;

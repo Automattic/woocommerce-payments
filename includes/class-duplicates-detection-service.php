@@ -24,7 +24,6 @@ use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\Grabpay_Payment_Method;
 use WCPay\Payment_Methods\Wechatpay_Payment_Method;
-use WCPay\PaymentMethods\Configs\Definitions\AlipayDefinition;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 
 /**

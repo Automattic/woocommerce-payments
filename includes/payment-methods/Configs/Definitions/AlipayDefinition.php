@@ -80,7 +80,7 @@ class AlipayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return boolean
 	 */
 	public static function is_reusable(): bool {
-		return false;
+		return PaymentMethodUtils::is_reusable( self::get_capabilities() );
 	}
 
 	/**
@@ -235,7 +235,7 @@ class AlipayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_settings_icon_url(): string {
-		return plugins_url( 'assets/images/payment-methods/alipay-logo.svg', WCPAY_PLUGIN_FILE );
+		return self::get_icon_url();
 	}
 
 	/**
