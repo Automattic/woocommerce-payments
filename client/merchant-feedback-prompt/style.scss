@@ -1,17 +1,18 @@
 // This is a temporary style to ensure the prompt is rendered in the WC footer.
 // It will be removed once the campaign is complete (paJDYF-gvt-p2).
 
-.wcpay-merchant-feedback-prompt-wrap {
-	// Borrowed from https://github.com/woocommerce/woocommerce/blob/7e7916106abc835c16388ac24097ba390a5f8d41/plugins/woocommerce/client/admin/client/layout/transient-notices/style.scss
-	position: absolute;
-	left: $gap;
-	bottom: 100%;
-	margin-bottom: $gap-small;
-	width: auto;
-
-	// Prevent SnackbarList animations to reduce annoyance on each page transition.
-	// Required due to the React portal workaround used to render the prompt in the WC footer.
+.wcpay-merchant-feedback-prompt-wrap.components-snackbar-list {
 	&.components-snackbar-list {
+		// Borrowed from https://github.com/woocommerce/woocommerce/blob/7e7916106abc835c16388ac24097ba390a5f8d41/plugins/woocommerce/client/admin/client/layout/transient-notices/style.scss
+		position: absolute;
+		left: $gap;
+		right: $gap;
+		bottom: 100%;
+		margin-bottom: $gap-small;
+		width: auto;
+
+		// Prevent SnackbarList animations to reduce annoyance on each page transition.
+		// Required due to the React portal workaround used to render the prompt in the WC footer.
 		&__notice-container,
 		> div {
 			transition: none !important;
