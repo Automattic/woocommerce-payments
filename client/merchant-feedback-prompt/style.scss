@@ -35,6 +35,16 @@
 			margin-left: 0.3em;
 			text-decoration: underline;
 		}
+
+		@include breakpoint( '<480px' ) {
+			&__action.components-button {
+				margin-right: 10px;
+			}
+
+			&__action-label {
+				display: none;
+			}
+		}
 	}
 }
 
