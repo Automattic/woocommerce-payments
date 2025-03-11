@@ -171,7 +171,7 @@ declare global {
 		timeFormat: string;
 	};
 
-	const woopaymentsPaymentMethodDefinitions: Record<
+	const wooPaymentsPaymentMethodDefinitions: Record<
 		string,
 		{
 			id: string;
