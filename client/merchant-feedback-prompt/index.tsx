@@ -7,10 +7,10 @@ import {
 	Button,
 	Flex,
 	FlexItem,
-	Icon,
 	NoticeList,
 	SnackbarList,
 } from '@wordpress/components';
+import { Icon, thumbsUp, thumbsDown } from '@wordpress/icons';
 import { useSelect } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 
@@ -127,7 +127,7 @@ const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
 										} }
 									>
 										<Icon
-											icon={ 'thumbs-up' }
+											icon={ thumbsUp }
 											aria-label={ __(
 												'"Yes" icon',
 												'woocommerce-payments'
@@ -154,7 +154,7 @@ const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
 										} }
 									>
 										<Icon
-											icon={ 'thumbs-down' }
+											icon={ thumbsDown }
 											aria-label={ __(
 												'"No" icon',
 												'woocommerce-payments'

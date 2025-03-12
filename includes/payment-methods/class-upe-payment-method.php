@@ -187,16 +187,17 @@ class UPE_Payment_Method {
 	 * can be used at checkout
 	 *
 	 * @param string $account_country Country of merchants account.
+	 * @param bool   $skip_limits_per_currency_check Whether to skip limits per currency check.
 	 *
 	 * @return bool
 	 */
-	public function is_enabled_at_checkout( string $account_country ) {
+	public function is_enabled_at_checkout( string $account_country, bool $skip_limits_per_currency_check = false ) {
 		if ( $this->is_subscription_item_in_cart() || $this->is_changing_payment_method_for_subscription() ) {
 			return $this->is_reusable();
 		}
 
 		// This part ensures that when payment limits for the currency declared, those will be respected (e.g. BNPLs).
-		if ( [] !== $this->limits_per_currency ) {
+		if ( [] !== $this->limits_per_currency && ! $skip_limits_per_currency_check ) {
 			$order = null;
 			if ( is_wc_endpoint_url( 'order-pay' ) ) {
 				$order = wc_get_order( absint( get_query_var( 'order-pay' ) ) );

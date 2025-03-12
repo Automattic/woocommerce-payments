@@ -9,6 +9,19 @@
 	margin-bottom: $gap-small;
 	width: auto;
 
+	// Prevent SnackbarList animations to reduce annoyance on each page transition.
+	// Required due to the React portal workaround used to render the prompt in the WC footer.
+	&.components-snackbar-list {
+		&__notice-container,
+		> div {
+			transition: none !important;
+			animation: none !important;
+			transform: none !important;
+			opacity: 1 !important;
+			height: auto !important;
+		}
+	}
+
 	.wcpay-merchant-feedback-prompt {
 		&__action.components-button {
 			color: inherit;

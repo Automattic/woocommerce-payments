@@ -225,6 +225,39 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 		// Update subscriptions token when user sets a default payment method.
 		add_filter( 'woocommerce_subscriptions_update_subscription_token', [ $this, 'update_subscription_token' ], 10, 3 );
+		add_filter( 'woocommerce_subscriptions_update_payment_via_pay_shortcode', [ $this, 'update_payment_method_for_subscriptions' ], 10, 3 );
+	}
+
+	/**
+	 * Stops WC Subscriptions from updating the payment method for subscriptions.
+	 *
+	 * @param bool            $update_payment_method Whether to update the payment method.
+	 * @param string          $new_payment_method The new payment method.
+	 * @param WC_Subscription $subscription The subscription.
+	 * @return bool
+	 */
+	public function update_payment_method_for_subscriptions( $update_payment_method, $new_payment_method, $subscription ) {
+		// Skip if the change payment method request was not made yet.
+		if ( ! isset( $_POST['_wcsnonce'] ) || ! wp_verify_nonce( sanitize_key( $_POST['_wcsnonce'] ), 'wcs_change_payment_method' ) ) {
+			return $update_payment_method;
+		}
+
+		// Avoid interfering with use-cases not related to updating payment method for subscriptions.
+		if ( ! $this->is_changing_payment_method_for_subscription() ) {
+			return $update_payment_method;
+		}
+
+		// Avoid interfering with other payment gateways' operations.
+		if ( $new_payment_method !== $this->id ) {
+			return $update_payment_method;
+		}
+
+		// If the payment method is a saved payment method, we don't need to stop WC Subscriptions from updating it.
+		if ( ( isset( $_POST[ 'wc-' . $new_payment_method . '-payment-token' ] ) && 'new' !== $_POST[ 'wc-' . $new_payment_method . '-payment-token' ] ) ) {
+			return $update_payment_method;
+		}
+
+		return false;
 	}
 
 	/**
