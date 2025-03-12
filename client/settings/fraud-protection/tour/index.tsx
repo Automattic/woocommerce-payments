@@ -17,7 +17,7 @@ const { desktop: firstStepId } = firstStep.referenceElements;
 
 const options = {
 	effects: {
-		overlay: true,
+		spotlight: {},
 		autoScroll: {
 			behavior: 'smooth',
 		},
@@ -89,17 +89,13 @@ const FraudProtectionTour: React.FC = () => {
 	if ( ! showTour ) return null;
 
 	return (
-		<>
-			<div id="fraud-protection-welcome-tour-first-step" />
-			<TourKit
-				config={ {
-					steps,
-					options,
-					placement: 'top',
-					closeHandler: handleTourEnd,
-				} }
-			/>
-		</>
+		<TourKit
+			config={ {
+				steps,
+				options,
+				closeHandler: handleTourEnd,
+			} }
+		/>
 	);
 };
 

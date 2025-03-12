@@ -7,7 +7,7 @@ import interpolateComponents from '@automattic/interpolate-components';
 
 const enhancedFraudProtectionStep = {
 	referenceElements: {
-		desktop: '#fraud-protection-welcome-tour-first-step',
+		desktop: '#fp-settings',
 	},
 	meta: {
 		name: 'enhanced-fraud-protection',
@@ -29,7 +29,7 @@ const enhancedFraudProtectionStep = {
 
 const chooseYourFilterLevelStep = {
 	referenceElements: {
-		desktop: '#fraud-protection-card-title',
+		desktop: '#fraud-protection-card-options',
 	},
 	meta: {
 		name: 'choose-your-filter-level',
@@ -45,7 +45,7 @@ const chooseYourFilterLevelStep = {
 
 const takeMoreControlStep = {
 	referenceElements: {
-		desktop: '#fraud-protection-level-select_advanced-level',
+		desktop: '[for=fraud-protection-level-select_advanced-level]',
 	},
 	meta: {
 		name: 'take-more-control',
