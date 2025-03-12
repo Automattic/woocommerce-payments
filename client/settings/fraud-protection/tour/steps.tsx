@@ -11,13 +11,10 @@ const enhancedFraudProtectionStep = {
 	},
 	meta: {
 		name: 'enhanced-fraud-protection',
-		heading: __(
-			'Enhanced fraud protection is here 🔒',
-			'woocommerce-payments'
-		),
+		heading: __( 'Enhanced fraud protection 🔒', 'woocommerce-payments' ),
 		descriptions: {
 			desktop: __(
-				'You can now choose a level of protection for screening incoming transactions. Screened transactions will be automatically blocked by your customized fraud filters.',
+				'You can choose a level of protection for screening incoming transactions. Screened transactions will be automatically blocked by your customized fraud filters.',
 				'woocommerce-payments'
 			),
 		},
