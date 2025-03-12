@@ -5,6 +5,8 @@ import React, { useEffect, useRef } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Modal } from '@wordpress/components';
 import { dispatch } from '@wordpress/data';
+import interpolateComponents from '@automattic/interpolate-components';
+import { Link } from '@woocommerce/components';
 
 /**
  * Internal dependencies
@@ -69,6 +71,25 @@ export const NegativeFeedbackModal: React.FC< NegativeFeedbackModalProps > = ( {
 						{ __( 'privacy policy', 'woocommerce-payments' ) }
 					</a>
 					.
+				</p>
+				<p>
+					{ interpolateComponents( {
+						// translators: {{a}}: placeholders are opening and closing anchor tags.
+						mixedString: __(
+							`Need help with a specific issue? {{a}}Contact our support team{{/a}} for personalized assistance.`,
+							'woocommerce-payments'
+						),
+						components: {
+							a: (
+								<Link
+									// Link to the WooCommerce support form with WooPayments selected.
+									href="https://woocommerce.com/my-account/contact-support/?select=5278104"
+									type="external"
+									rel="noreferrer noopener"
+								/>
+							),
+						},
+					} ) }
 				</p>
 				<div className="wcpay-merchant-feedback-negative-modal__actions">
 					<button
