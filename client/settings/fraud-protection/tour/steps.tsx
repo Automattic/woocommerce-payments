@@ -62,6 +62,7 @@ const takeMoreControlStep = {
 const readyForReviewStep = {
 	referenceElements: {
 		desktop: '#toplevel_page_wc-admin-path--payments-overview',
+		mobile: '.tour-kit woocommerce-tour-kit',
 	},
 	meta: {
 		name: 'review-blocked-transactions',
