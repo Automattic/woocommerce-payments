@@ -906,12 +906,13 @@ class WC_Payments_Order_Service {
 	 *
 	 * @param WC_Order                                                          $order The order.
 	 * @param WC_Payments_API_Payment_Intention|WC_Payments_API_Setup_Intention $intent The payment or setup intention object.
+	 * @param bool                                                              $allow_update_on_success Whether the payment is being changed for a subscription.
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function attach_intent_info_to_order( WC_Order $order, $intent ) {
-		// We don't want to allow metadata for a successful payment to be disrupted.
-		if ( Intent_Status::SUCCEEDED === $this->get_intention_status_for_order( $order ) ) {
+	public function attach_intent_info_to_order( WC_Order $order, $intent, $allow_update_on_success = false ) {
+		// We don't want to allow metadata for a successful payment to be disrupted (except for when changing payment method for subscription or renewing subscription).
+		if ( Intent_Status::SUCCEEDED === $this->get_intention_status_for_order( $order ) && ! $allow_update_on_success ) {
 			return;
 		}
 		// first, let's prepare all the metadata needed for refunds, required for status change etc.
@@ -2145,13 +2146,13 @@ class WC_Payments_Order_Service {
 	 * Handle insufficient balance for refund.
 	 *
 	 * @param WC_Order $order  The order being refunded.
-	 * @param int      $amount The refund amount.
+	 * @param int      $stripe_amount The refund amount.
 	 */
-	public function handle_insufficient_balance_for_refund( WC_Order $order, $amount ) {
+	public function handle_insufficient_balance_for_refund( WC_Order $order, int $stripe_amount ) {
 		$account_country = WC_Payments::get_account_service()->get_account_country();
 
 		$formatted_amount = wc_price(
-			WC_Payments_Utils::interpret_stripe_amount( $amount, $order->get_currency() ),
+			WC_Payments_Utils::interpret_stripe_amount( $stripe_amount, $order->get_currency() ),
 			[ 'currency' => $order->get_currency() ]
 		);
 

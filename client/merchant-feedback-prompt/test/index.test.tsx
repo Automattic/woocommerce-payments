@@ -253,7 +253,7 @@ describe( 'MerchantFeedbackPrompt', () => {
 		// The positive feedback modal should be rendered
 		expect( screen.getByText( 'Share your feedback' ) ).toBeInTheDocument();
 		expect(
-			screen.getByText( /Would you mind leaving us a quick review/ )
+			screen.getByText( /Would you mind leaving us a 5-star rating/ )
 		).toBeInTheDocument();
 	} );
 

@@ -214,7 +214,6 @@ const AddPaymentMethodsTask = () => {
 
 	const prepareUpePaymentMethods = ( upeMethodIds ) => {
 		return upeMethodIds.map( ( key ) => {
-			// TODO : fix in https://github.com/Automattic/woocommerce-payments/issues/10182 to remove duplicated logic
 			const { label, currencies } = paymentMethodsMap[ key ];
 
 			if ( availablePaymentMethods.includes( key ) ) {
