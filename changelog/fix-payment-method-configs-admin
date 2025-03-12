@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-Bypass enabled at checkout checks for payment methods configs in admin pages.
+Bypass enabled at checkout checks for rendering payment methods configs.
