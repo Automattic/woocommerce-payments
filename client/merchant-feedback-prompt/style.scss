@@ -34,6 +34,7 @@
 		&__action-label {
 			margin-left: 0.3em;
 			text-decoration: underline;
+			text-underline-offset: 3px;
 		}
 
 		@include breakpoint( '<480px' ) {
