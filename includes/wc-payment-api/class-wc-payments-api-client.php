@@ -2404,7 +2404,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 					$response_code
 				);
 			} elseif ( isset( $response_body['error'] ) ) {
-				$response_body_error_code = $response_body['error']['code'] ?? null;
+				$response_body_error_code = $response_body['error']['code'] ?? $response_body['error']['message_code'] ?? null;
 				$payment_intent_status    = $response_body['error']['payment_intent']['status'] ?? null;
 
 				// We redact the API error message to prevent prompting the merchant to contact Stripe support

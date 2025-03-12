@@ -61,7 +61,6 @@ use WCPay\Payment_Methods\Bancontact_Payment_Method;
 use WCPay\Payment_Methods\Becs_Payment_Method;
 use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Payment_Methods\Eps_Payment_Method;
-use WCPay\Payment_Methods\Alipay_Payment_Method;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Klarna_Payment_Method;
 use WCPay\Payment_Methods\P24_Payment_Method;
@@ -2274,19 +2273,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$currency = strtoupper( $refund['currency'] );
 			Tracker::track_admin( 'wcpay_edit_order_refund_success' );
 		} catch ( Exception $e ) {
+			if ( $e instanceof API_Exception && 'insufficient_balance_for_refund' === $e->get_error_code() ) {
+				// Handle insufficient_balance_for_refund error.
+				$this->order_service->handle_insufficient_balance_for_refund( $order, WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
+			} else {
+				$note = sprintf(
+					/* translators: %1: the successfully charged amount, %2: error message */
+					__( 'A refund of %1$s failed to complete: %2$s', 'woocommerce-payments' ),
+					WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order ),
+					$e->getMessage()
+				);
 
-			$note = sprintf(
-				/* translators: %1: the successfully charged amount, %2: error message */
-				__( 'A refund of %1$s failed to complete: %2$s', 'woocommerce-payments' ),
-				WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order ),
-				$e->getMessage()
-			);
+				Logger::log( $note );
+				$order->add_order_note( $note );
+			}
 
-			Logger::log( $note );
-			$order->add_order_note( $note );
 			$this->order_service->set_wcpay_refund_status_for_order( $order, 'failed' );
-			$order->save();
-
 			Tracker::track_admin( 'wcpay_edit_order_refund_failure', [ 'reason' => $note ] );
 			return new WP_Error( 'wcpay_edit_order_refund_failure', $e->getMessage() );
 		}
@@ -4017,7 +4019,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$available_methods = [ 'card' ];
 
 		$available_methods[] = Becs_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$available_methods[] = Alipay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Bancontact_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Eps_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Ideal_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
