@@ -2404,7 +2404,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 					$response_code
 				);
 			} elseif ( isset( $response_body['error'] ) ) {
-				$response_body_error_code = $response_body['error']['code'] ?? null;
+				$response_body_error_code = $response_body['error']['code'] ?? $response_body['error']['message_code'] ?? null;
 				$payment_intent_status    = $response_body['error']['payment_intent']['status'] ?? null;
 
 				// We redact the API error message to prevent prompting the merchant to contact Stripe support
@@ -2824,12 +2824,17 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	/**
 	 * Fetch readers charge summary.
 	 *
-	 * @param string $charge_date Charge date for readers.
+	 * @param string      $charge_date    Charge date for readers.
+	 * @param string|null $transaction_id Optional transaction ID to filter results.
 	 *
 	 * @return array reader objects.
 	 */
-	public function get_readers_charge_summary( string $charge_date ): array {
-		return $this->request( [ 'charge_date' => $charge_date ], self::READERS_CHARGE_SUMMARY, self::GET );
+	public function get_readers_charge_summary( string $charge_date, ?string $transaction_id = null ): array {
+		$params = [ 'charge_date' => $charge_date ];
+		if ( $transaction_id ) {
+			$params['transaction_id'] = $transaction_id;
+		}
+		return $this->request( $params, self::READERS_CHARGE_SUMMARY, self::GET );
 	}
 
 	/**
