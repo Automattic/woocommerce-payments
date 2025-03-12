@@ -2286,7 +2286,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 				Logger::log( $note );
 				$order->add_order_note( $note );
-				$order->save();
 			}
 
 			$this->order_service->set_wcpay_refund_status_for_order( $order, 'failed' );
