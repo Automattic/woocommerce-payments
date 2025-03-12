@@ -18,7 +18,6 @@ import ActiveLoanSummary from 'components/active-loan-summary';
 import ConnectionSuccessModal from './modal/connection-success';
 import DepositsOverview from 'components/deposits-overview';
 import ErrorBoundary from 'components/error-boundary';
-import FRTDiscoverabilityBanner from 'components/fraud-risk-tools-banner';
 import JetpackIdcNotice from 'components/jetpack-idc-notice';
 import Page from 'components/page';
 import PaymentActivity from 'wcpay/components/payment-activity';
@@ -302,10 +301,6 @@ const OverviewPage = () => {
 					actions={ [] }
 				/>
 			) }
-			<ErrorBoundary>
-				<FRTDiscoverabilityBanner />
-			</ErrorBoundary>
-
 			{ ! accountRejected && ! accountUnderReview && (
 				<ErrorBoundary>
 					<Welcome />
