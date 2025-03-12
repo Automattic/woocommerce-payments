@@ -50,9 +50,21 @@ const FraudProtectionTour: React.FC = () => {
 	const [ showTour, setShowTour ] = useState( false );
 
 	useEffect( () => {
-		if ( ! isLoading && ! isWelcomeTourDismissed ) {
-			setShowTour( true );
-		}
+		const reference = document.getElementById( 'fp-settings' );
+		if ( isWelcomeTourDismissed || isLoading || ! reference ) return;
+
+		const observer = new IntersectionObserver(
+			( [ entry ] ) => {
+				if ( entry.isIntersecting ) {
+					setShowTour( true );
+					observer.disconnect();
+				}
+			},
+			{ threshold: 1 }
+		);
+
+		observer.observe( reference );
+		return () => observer.disconnect();
 	}, [ isLoading, isWelcomeTourDismissed ] );
 
 	const handleTourEnd = (
