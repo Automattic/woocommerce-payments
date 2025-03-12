@@ -6,7 +6,6 @@ import { __ } from '@wordpress/i18n';
 import { Modal } from '@wordpress/components';
 import { dispatch } from '@wordpress/data';
 import interpolateComponents from '@automattic/interpolate-components';
-import { Link } from '@woocommerce/components';
 
 /**
  * Internal dependencies
@@ -81,11 +80,17 @@ export const NegativeFeedbackModal: React.FC< NegativeFeedbackModalProps > = ( {
 						),
 						components: {
 							a: (
-								<Link
+								// eslint-disable-next-line jsx-a11y/anchor-has-content -- content is provided in the mixedString property above.
+								<a
 									// Link to the WooCommerce support form with WooPayments selected.
 									href="https://woocommerce.com/my-account/contact-support/?select=5278104"
-									type="external"
+									target="_blank"
 									rel="noreferrer noopener"
+									onClick={ () => {
+										recordEvent(
+											'wcpay_merchant_feedback_prompt_negative_modal_contact_support_click'
+										);
+									} }
 								/>
 							),
 						},
