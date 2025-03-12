@@ -12,31 +12,21 @@ import { useSettings } from '../../../data';
 import { steps } from './steps';
 import { recordEvent } from 'tracks';
 
-const [ firstStep ] = steps;
-const { desktop: firstStepId } = firstStep.referenceElements;
-
 const options = {
 	effects: {
+		arrowIndicator: true,
 		spotlight: {},
+		styles: { padding: 8 },
 		autoScroll: {
 			behavior: 'smooth',
 		},
+		block: 'nearest',
 	},
 	popperModifiers: [
 		{
-			name: 'applyArrowHide',
-			enabled: true,
-			phase: 'write',
-			fn( { state }: any ) {
-				const { arrow, reference } = state.elements;
-
-				if ( ! arrow ) return;
-
-				if ( `#${ reference.id }` === firstStepId ) {
-					arrow.setAttribute( 'data-hide', '' );
-				} else {
-					arrow.removeAttribute( 'data-hide' );
-				}
+			name: 'offset',
+			options: {
+				offset: [ 0, 20 ],
 			},
 		},
 	],
