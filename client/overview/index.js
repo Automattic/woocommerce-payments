@@ -332,7 +332,7 @@ const OverviewPage = () => {
 									<Link
 										href={
 											// eslint-disable-next-line max-len
-											'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/'
+											'https://woocommerce.com/document/woopayments/startup-guide/#requirements'
 										}
 										target="_blank"
 										rel="noreferrer"

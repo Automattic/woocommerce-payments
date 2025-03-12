@@ -99,7 +99,8 @@ const EmbeddedKyc: React.FC< Props > = ( {
 							{
 								label: 'Learn more',
 								variant: 'primary',
-								url: 'https://woocommerce.com/payments/',
+								url:
+									'https://woocommerce.com/document/woopayments/startup-guide/#requirements',
 								urlTarget: '_blank',
 							},
 							{
