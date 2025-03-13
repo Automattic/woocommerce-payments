@@ -1,0 +1,184 @@
+/**
+ * Internal dependencies
+ */
+import { createKycAccountSession, createAccountSession } from './hooks';
+import appearance from './appearance';
+import { OnboardingFields } from 'wcpay/onboarding/types';
+import StripeSpinner from 'wcpay/components/stripe-spinner';
+import BannerNotice from 'wcpay/components/banner-notice';
+import { AccountSession } from 'wcpay/embedded-components/types';
+
+/**
+ * External dependencies
+ */
+import React, { useState, useEffect } from 'react';
+import {
+	loadConnectAndInitialize,
+	LoadError,
+	LoaderStart,
+	StripeConnectInstance,
+} from '@stripe/connect-js';
+import {
+	ConnectAccountOnboarding,
+	ConnectComponentsProvider,
+	ConnectNotificationBanner,
+} from '@stripe/react-connect-js';
+import { trackRedirected } from 'wcpay/onboarding/tracking';
+
+interface EmbeddedComponentProps {
+	onLoaderStart?: ( { elementTagName }: LoaderStart ) => void;
+	onLoadError?: ( { error, elementTagName }: LoadError ) => void;
+}
+
+interface EmbeddedAccountOnboardingProps extends EmbeddedComponentProps {
+	onExit: () => void;
+	onStepChange?: ( step: string ) => void;
+	collectPayoutRequirements?: boolean;
+	isPoEligible?: boolean;
+}
+
+interface EmbeddedAccountNotificationBannerProps
+	extends EmbeddedComponentProps {
+	onNotificationsChange: ( {
+		total,
+		actionRequired,
+	}: {
+		total: number;
+		actionRequired: number;
+	} ) => void;
+}
+
+const useInitializeStripe = (
+	isOnboarding: boolean,
+	onboardingData: OnboardingFields | null,
+	isPoEligible: boolean
+) => {
+	const [
+		stripeConnectInstance,
+		setStripeConnectInstance,
+	] = useState< StripeConnectInstance | null >( null );
+	const [ error, setError ] = useState< string | null >( null );
+	const [ loading, setLoading ] = useState< boolean >( true );
+
+	useEffect( () => {
+		const initializeStripe = async () => {
+			try {
+				let session: AccountSession;
+
+				if ( isOnboarding && onboardingData ) {
+					session = await createKycAccountSession(
+						onboardingData,
+						isPoEligible
+					);
+
+					// Track the embedded component redirection event.
+					trackRedirected( isPoEligible, true );
+				} else {
+					session = await createAccountSession();
+				}
+
+				const { clientSecret, publishableKey } = session;
+
+				if ( ! publishableKey ) {
+					throw new Error(
+						'Missing publishable key in session response'
+					);
+				}
+
+				const instance = loadConnectAndInitialize( {
+					publishableKey,
+					fetchClientSecret: async () => clientSecret,
+					appearance,
+				} );
+
+				setStripeConnectInstance( instance );
+			} catch ( err ) {
+				setError(
+					err instanceof Error ? err.message : 'Unknown error'
+				);
+			} finally {
+				setLoading( false );
+			}
+		};
+
+		initializeStripe();
+	}, [ isOnboarding, onboardingData, isPoEligible ] );
+
+	return { stripeConnectInstance, error, loading };
+};
+
+export const EmbeddedAccountOnboarding: React.FC< EmbeddedAccountOnboardingProps > = ( {
+	onExit,
+	onLoaderStart,
+	onLoadError,
+	onStepChange,
+	isPoEligible = false,
+	collectPayoutRequirements = false,
+} ) => {
+	const { stripeConnectInstance, error, loading } = useInitializeStripe(
+		true,
+		null,
+		isPoEligible
+	);
+
+	return (
+		<>
+			{ ( loading || ! stripeConnectInstance ) && <StripeSpinner /> }
+			{ error && <BannerNotice status="error">{ error }</BannerNotice> }
+			{ ! error && stripeConnectInstance && (
+				<ConnectComponentsProvider
+					connectInstance={ stripeConnectInstance }
+				>
+					<ConnectAccountOnboarding
+						onLoaderStart={ onLoaderStart }
+						onLoadError={ onLoadError }
+						onExit={ onExit }
+						onStepChange={ ( stepChange ) =>
+							onStepChange?.( stepChange.step )
+						}
+						collectionOptions={ {
+							fields: collectPayoutRequirements
+								? 'eventually_due'
+								: 'currently_due',
+							futureRequirements: 'omit',
+						} }
+					/>
+				</ConnectComponentsProvider>
+			) }
+		</>
+	);
+};
+
+export const EmbeddedConnectNotificationBanner: React.FC< EmbeddedAccountNotificationBannerProps > = ( {
+	onLoaderStart,
+	onLoadError,
+	onNotificationsChange,
+} ) => {
+	const { stripeConnectInstance, error, loading } = useInitializeStripe(
+		false,
+		null,
+		false
+	);
+
+	return (
+		<>
+			{ ( loading || ! stripeConnectInstance ) && <StripeSpinner /> }
+			{ error && <BannerNotice status="error">{ error }</BannerNotice> }
+			{ ! error && stripeConnectInstance && (
+				<ConnectComponentsProvider
+					connectInstance={ stripeConnectInstance }
+				>
+					<ConnectNotificationBanner
+						onLoaderStart={ onLoaderStart }
+						onLoadError={ onLoadError }
+						onNotificationsChange={ onNotificationsChange }
+						collectionOptions={ {
+							fields: 'eventually_due',
+							futureRequirements: 'omit',
+						} }
+					/>
+				</ConnectComponentsProvider>
+			) }
+		</>
+	);
+};

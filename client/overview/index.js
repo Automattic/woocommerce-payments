@@ -33,15 +33,10 @@ import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-
 import './style.scss';
 import BannerNotice from 'wcpay/components/banner-notice';
 import { MaybeShowMerchantFeedbackPrompt } from 'wcpay/merchant-feedback-prompt';
-import useAccountSession from 'wcpay/utils/embedded-components/account-session';
-import appearance from 'wcpay/utils/embedded-components/appearance';
-import {
-	ConnectComponentsProvider,
-	ConnectNotificationBanner,
-} from '@stripe/react-connect-js';
 import { recordEvent } from 'wcpay/tracks';
 import StripeSpinner from 'wcpay/components/stripe-spinner';
 import { getAdminUrl } from 'wcpay/utils';
+import { EmbeddedConnectNotificationBanner } from 'wcpay/embedded-components';
 
 const OverviewPageError = () => {
 	const queryParams = getQuery();
@@ -93,10 +88,6 @@ const OverviewPage = () => {
 		notificationsBannerMessage,
 		setNotificationsBannerMessage,
 	] = React.useState( '' );
-	const stripeConnectInstance = useAccountSession( {
-		setLoadErrorMessage: setStripeNotificationsBannerErrorMessage,
-		appearance,
-	} );
 	const [ stripeComponentLoading, setStripeComponentLoading ] = useState(
 		true
 	);
@@ -318,39 +309,29 @@ const OverviewPage = () => {
 								</div>
 							</Card>
 						) }
-					{ stripeConnectInstance && (
-						<div
-							className="stripe-notifications-banner-wrapper"
-							style={ {
-								display: notificationsBannerMessage
-									? 'block'
-									: 'none',
-							} }
-						>
-							<ErrorBoundary>
-								<ConnectComponentsProvider
-									connectInstance={ stripeConnectInstance }
-								>
-									<ConnectNotificationBanner
-										onLoadError={ ( loadError ) => {
-											setStripeNotificationsBannerErrorMessage(
-												loadError.error.message ||
-													'Unknown error'
-											);
-											setStripeComponentLoading( false );
-										} }
-										collectionOptions={ {
-											fields: 'eventually_due',
-											futureRequirements: 'omit',
-										} }
-										onNotificationsChange={
-											handleNotificationsChange
-										}
-									/>
-								</ConnectComponentsProvider>
-							</ErrorBoundary>
-						</div>
-					) }
+					<div
+						className="stripe-notifications-banner-wrapper"
+						style={ {
+							display: notificationsBannerMessage
+								? 'block'
+								: 'none',
+						} }
+					>
+						<ErrorBoundary>
+							<EmbeddedConnectNotificationBanner
+								onLoadError={ ( loadError ) => {
+									setStripeNotificationsBannerErrorMessage(
+										loadError.error.message ||
+											'Unknown error'
+									);
+									setStripeComponentLoading( false );
+								} }
+								onNotificationsChange={
+									handleNotificationsChange
+								}
+							/>
+						</ErrorBoundary>
+					</div>
 
 					{ showTaskList && (
 						<Card>
