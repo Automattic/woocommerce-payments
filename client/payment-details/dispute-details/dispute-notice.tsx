@@ -58,7 +58,7 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 		if ( paymentMethod === 'klarna' ) {
 			noticeText = __(
 				'Klarna inquiries may mean that the customer is trying to return their item(s). ' +
-					'<a>Please see this document for more information.</a>',
+					'<a>Please see this document for more information</a>',
 				'woocommerce-payments'
 			);
 			learnMoreDocsUrl =
