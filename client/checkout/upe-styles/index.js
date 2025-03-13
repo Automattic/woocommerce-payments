@@ -50,7 +50,7 @@ export const appearanceSelectors = {
 		pmmeRelativeTextSizeSelector: '.wc_payment_method > label',
 	},
 	blocksCheckout: {
-		appendTarget: '#contact-fields',
+		appendTarget: '.wc-block-checkout__contact-fields',
 		upeThemeInputSelector: '.wc-block-components-text-input #email',
 		upeThemeLabelSelector: '.wc-block-components-text-input label',
 		upeThemeTextSelectors: [
@@ -176,16 +176,17 @@ export const appearanceSelectors = {
 	 * Update selectors to use alternate if not present on DOM.
 	 *
 	 * @param {Object} selectors Object of selectors for updation.
+	 * @param {Object} scope     The document scope to search in.
 	 *
 	 * @return {Object} Updated selectors.
 	 */
-	updateSelectors: function ( selectors ) {
+	updateSelectors: function ( selectors, scope ) {
 		if ( selectors.hasOwnProperty( 'alternateSelectors' ) ) {
 			Object.entries( selectors.alternateSelectors ).forEach(
 				( altSelector ) => {
 					const [ key, value ] = altSelector;
 
-					if ( ! document.querySelector( selectors[ key ] ) ) {
+					if ( ! scope.querySelector( selectors[ key ] ) ) {
 						selectors[ key ] = value;
 					}
 				}
@@ -201,10 +202,11 @@ export const appearanceSelectors = {
 	 * Returns selectors based on checkout type.
 	 *
 	 * @param {boolean} elementsLocation The location of the elements.
+	 * @param {Object}  scope           The document scope to search in.
 	 *
 	 * @return {Object} Selectors for checkout type specified.
 	 */
-	getSelectors: function ( elementsLocation ) {
+	getSelectors: function ( elementsLocation, scope ) {
 		let appearanceSelector = this.blocksCheckout;
 
 		switch ( elementsLocation ) {
@@ -230,7 +232,7 @@ export const appearanceSelectors = {
 
 		return {
 			...this.default,
-			...this.updateSelectors( appearanceSelector ),
+			...this.updateSelectors( appearanceSelector, scope ),
 		};
 	},
 };
@@ -240,11 +242,12 @@ const hiddenElementsForUPE = {
 	 * Create hidden container for generating UPE styles.
 	 *
 	 * @param {string} elementID ID of element to create.
+	 * @param {Object} scope The document scope to search in.
 	 *
 	 * @return {Object} Object of the created hidden container element.
 	 */
-	getHiddenContainer: function ( elementID ) {
-		const hiddenDiv = document.createElement( 'div' );
+	getHiddenContainer: function ( elementID, scope ) {
+		const hiddenDiv = scope.createElement( 'div' );
 		hiddenDiv.setAttribute( 'id', this.getIDFromSelector( elementID ) );
 		hiddenDiv.style.border = 0;
 		hiddenDiv.style.clip = 'rect(0 0 0 0)';
@@ -261,12 +264,13 @@ const hiddenElementsForUPE = {
 	 * Create invalid element row for generating UPE styles.
 	 *
 	 * @param {string} elementType Type of element to create.
-	 * @param {Array} classes Array of classes to be added to the element. Default: empty array.
+	 * @param {Array}  classes     Array of classes to be added to the element. Default: empty array.
+	 * @param {Object} scope       The document scope to search in.
 	 *
 	 * @return {Object} Object of the created invalid row element.
 	 */
-	createRow: function ( elementType, classes = [] ) {
-		const newRow = document.createElement( elementType );
+	createRow: function ( elementType, classes = [], scope ) {
+		const newRow = scope.createElement( elementType );
 		if ( classes.length ) {
 			newRow.classList.add( ...classes );
 		}
@@ -276,12 +280,18 @@ const hiddenElementsForUPE = {
 	/**
 	 * Append elements to target container.
 	 *
-	 * @param {Object} appendTarget Element object where clone should be appended.
+	 * @param {Object} appendTarget   Element object where clone should be appended.
 	 * @param {string} elementToClone Selector of the element to be cloned.
-	 * @param {string} newElementID Selector for the cloned element.
+	 * @param {string} newElementID   Selector for the cloned element.
+	 * @param {Object} scope         The document scope to search in.
 	 */
-	appendClone: function ( appendTarget, elementToClone, newElementID ) {
-		const cloneTarget = document.querySelector( elementToClone );
+	appendClone: function (
+		appendTarget,
+		elementToClone,
+		newElementID,
+		scope
+	) {
+		const cloneTarget = scope.querySelector( elementToClone );
 		if ( cloneTarget ) {
 			const clone = cloneTarget.cloneNode( true );
 			clone.id = this.getIDFromSelector( newElementID );
@@ -309,11 +319,12 @@ const hiddenElementsForUPE = {
 	 * Initialize hidden fields to generate UPE styles.
 	 *
 	 * @param {boolean} elementsLocation The location of the elements.
+	 * @param {Object} scope The scope of the elements.
 	 */
-	init: function ( elementsLocation ) {
+	init: function ( elementsLocation, scope ) {
 		const selectors = appearanceSelectors.getSelectors( elementsLocation ),
-			appendTarget = document.querySelector( selectors.appendTarget ),
-			elementToClone = document.querySelector(
+			appendTarget = scope.querySelector( selectors.appendTarget ),
+			elementToClone = scope.querySelector(
 				selectors.upeThemeInputSelector
 			);
 
@@ -323,70 +334,77 @@ const hiddenElementsForUPE = {
 		}
 
 		// Remove hidden container is already present on DOM.
-		if ( document.querySelector( selectors.hiddenContainer ) ) {
-			this.cleanup();
+		if ( scope.querySelector( selectors.hiddenContainer ) ) {
+			this.cleanup( scope );
 		}
 
 		// Create hidden container & append to target.
 		const hiddenContainer = this.getHiddenContainer(
-			selectors.hiddenContainer
+			selectors.hiddenContainer,
+			scope
 		);
 		appendTarget.appendChild( hiddenContainer );
 
 		// Create hidden valid row & append to hidden container.
 		const hiddenValidRow = this.createRow(
 			selectors.rowElement,
-			selectors.validClasses
+			selectors.validClasses,
+			scope
 		);
 		hiddenContainer.appendChild( hiddenValidRow );
 
 		// Create hidden invalid row & append to hidden container.
 		const hiddenInvalidRow = this.createRow(
 			selectors.rowElement,
-			selectors.invalidClasses
+			selectors.invalidClasses,
+			scope
 		);
 		hiddenContainer.appendChild( hiddenInvalidRow );
 
-		// Clone & append target input  to hidden valid row.
+		// Clone & append target input to hidden valid row.
 		this.appendClone(
 			hiddenValidRow,
 			selectors.upeThemeInputSelector,
-			selectors.hiddenInput
+			selectors.hiddenInput,
+			scope
 		);
 
 		// Clone & append target label to hidden valid row.
 		this.appendClone(
 			hiddenValidRow,
 			selectors.upeThemeLabelSelector,
-			selectors.hiddenValidActiveLabel
+			selectors.hiddenValidActiveLabel,
+			scope
 		);
 
-		// Clone & append target input  to hidden invalid row.
+		// Clone & append target input to hidden invalid row.
 		this.appendClone(
 			hiddenInvalidRow,
 			selectors.upeThemeInputSelector,
-			selectors.hiddenInvalidInput
+			selectors.hiddenInvalidInput,
+			scope
 		);
 
 		// Clone & append target label to hidden invalid row.
 		this.appendClone(
 			hiddenInvalidRow,
 			selectors.upeThemeLabelSelector,
-			selectors.hiddenInvalidInput
+			selectors.hiddenInvalidInput,
+			scope
 		);
 
 		// Remove transitions & focus on hidden element.
-		const wcpayHiddenInput = document.querySelector(
-			selectors.hiddenInput
-		);
+		const wcpayHiddenInput = scope.querySelector( selectors.hiddenInput );
 		wcpayHiddenInput.style.transition = 'none';
 	},
 
 	/**
-	 * Remove hidden container from DROM.
+	 * Remove hidden container from DOM.
+	 *
+	 * @param {Object} scope The scope of the elements.
 	 */
-	cleanup: function () {
-		const element = document.querySelector(
+	cleanup: function ( scope ) {
+		const element = scope.querySelector(
 			appearanceSelectors.default.hiddenContainer
 		);
 		if ( element ) {
@@ -398,17 +416,20 @@ const hiddenElementsForUPE = {
 export const getFieldStyles = (
 	selector,
 	upeElement,
-	backgroundColor = null
+	backgroundColor = null,
+	scope
 ) => {
-	if ( ! document.querySelector( selector ) ) {
+	if ( ! scope.querySelector( selector ) ) {
 		return {};
 	}
 
+	const windowObject = scope.defaultView || window;
+
 	const validProperties = upeRestrictedProperties[ upeElement ];
 
-	const elem = document.querySelector( selector );
+	const elem = scope.querySelector( selector );
 
-	const styles = window.getComputedStyle( elem );
+	const styles = windowObject.getComputedStyle( elem );
 
 	const filteredStyles = {};
 	for ( let i = 0; i < styles.length; i++ ) {
@@ -455,9 +476,9 @@ export const getFieldStyles = (
 	return filteredStyles;
 };
 
-export const getFontRulesFromPage = () => {
+export const getFontRulesFromPage = ( scope = document ) => {
 	const fontRules = [],
-		sheets = document.styleSheets,
+		sheets = scope.styleSheets,
 		fontDomains = [
 			'fonts.googleapis.com',
 			'fonts.gstatic.com',
@@ -485,13 +506,15 @@ export const getFontRulesFromPage = () => {
  * @param {string} selector Selector of the element to be checked.
  * @param {string} fontSize Pre-computed font size.
  * @param {number} percentage Percentage (0-1) to be used relative to the font size of the target element.
+ * @param {Object} scope The scope of the elements.
  *
  * @return {string} Font size of the element.
  */
 function ensureFontSizeSmallerThan(
 	selector,
 	fontSize,
-	percentage = PMME_RELATIVE_TEXT_SIZE
+	percentage = PMME_RELATIVE_TEXT_SIZE,
+	scope
 ) {
 	const fontSizeNumber = parseFloat( fontSize );
 
@@ -500,7 +523,7 @@ function ensureFontSizeSmallerThan(
 	}
 
 	// If the element is not found, return the font size number multiplied by the percentage.
-	const elem = document.querySelector( selector );
+	const elem = scope.querySelector( selector );
 	if ( ! elem ) {
 		return `${ fontSizeNumber * percentage }px`;
 	}
@@ -520,21 +543,37 @@ function ensureFontSizeSmallerThan(
 	return `${ fontSizeNumber }px`;
 }
 
-export const getAppearance = ( elementsLocation, forWooPay = false ) => {
-	const selectors = appearanceSelectors.getSelectors( elementsLocation );
+export const getAppearance = (
+	elementsLocation,
+	forWooPay = false,
+	scope = document
+) => {
+	const selectors = appearanceSelectors.getSelectors(
+		elementsLocation,
+		scope
+	);
 
 	// Add hidden fields to DOM for generating styles.
-	hiddenElementsForUPE.init( elementsLocation );
+	hiddenElementsForUPE.init( elementsLocation, scope );
 
-	const inputRules = getFieldStyles( selectors.hiddenInput, '.Input' );
+	const inputRules = getFieldStyles(
+		selectors.hiddenInput,
+		'.Input',
+		null,
+		scope
+	);
 	const inputInvalidRules = getFieldStyles(
 		selectors.hiddenInvalidInput,
-		'.Input'
+		'.Input',
+		null,
+		scope
 	);
 
 	const labelRules = getFieldStyles(
 		selectors.upeThemeLabelSelector,
-		'.Label'
+		'.Label',
+		null,
+		scope
 	);
 
 	const labelRestingRules = {
@@ -543,13 +582,22 @@ export const getAppearance = ( elementsLocation, forWooPay = false ) => {
 
 	const paragraphRules = getFieldStyles(
 		selectors.upeThemeTextSelectors,
-		'.Text'
+		'.Text',
+		null,
+		scope
 	);
 
-	const tabRules = getFieldStyles( selectors.upeThemeInputSelector, '.Tab' );
+	const tabRules = getFieldStyles(
+		selectors.upeThemeInputSelector,
+		'.Tab',
+		null,
+		scope
+	);
 	const selectedTabRules = getFieldStyles(
 		selectors.hiddenInput,
-		'.Tab--selected'
+		'.Tab--selected',
+		null,
+		scope
 	);
 	const tabHoverRules = generateHoverRules( tabRules );
 
@@ -560,24 +608,57 @@ export const getAppearance = ( elementsLocation, forWooPay = false ) => {
 		color: selectedTabRules.color,
 	};
 
-	const backgroundColor = getBackgroundColor( selectors.backgroundSelectors );
-	const headingRules = getFieldStyles( selectors.headingSelectors, '.Label' );
+	const backgroundColor = getBackgroundColor(
+		selectors.backgroundSelectors,
+		scope
+	);
+	const headingRules = getFieldStyles(
+		selectors.headingSelectors,
+		'.Label',
+		null,
+		scope
+	);
 	const blockRules = getFieldStyles(
 		selectors.upeThemeLabelSelector,
 		'.Block',
-		backgroundColor
+		backgroundColor,
+		scope
 	);
-	const buttonRules = getFieldStyles( selectors.buttonSelectors, '.Input' );
-	const linkRules = getFieldStyles( selectors.linkSelectors, '.Label' );
+	const buttonRules = getFieldStyles(
+		selectors.buttonSelectors,
+		'.Input',
+		null,
+		scope
+	);
+	const linkRules = getFieldStyles(
+		selectors.linkSelectors,
+		'.Label',
+		null,
+		scope
+	);
 	const containerRules = getFieldStyles(
 		selectors.containerSelectors,
-		'.Container'
+		'.Container',
+		null,
+		scope
 	);
-	const headerRules = getFieldStyles( selectors.headerSelectors, '.Header' );
-	const footerRules = getFieldStyles( selectors.footerSelectors, '.Footer' );
+	const headerRules = getFieldStyles(
+		selectors.headerSelectors,
+		'.Header',
+		null,
+		scope
+	);
+	const footerRules = getFieldStyles(
+		selectors.footerSelectors,
+		'.Footer',
+		null,
+		scope
+	);
 	const footerLinkRules = getFieldStyles(
 		selectors.footerLink,
-		'.Footer--link'
+		'.Footer--link',
+		null,
+		scope
 	);
 	const globalRules = {
 		colorBackground: backgroundColor,
@@ -589,7 +670,9 @@ export const getAppearance = ( elementsLocation, forWooPay = false ) => {
 	if ( selectors.pmmeRelativeTextSizeSelector && globalRules.fontSizeBase ) {
 		globalRules.fontSizeBase = ensureFontSizeSmallerThan(
 			selectors.pmmeRelativeTextSizeSelector,
-			paragraphRules.fontSize
+			paragraphRules.fontSize,
+			PMME_RELATIVE_TEXT_SIZE,
+			scope
 		);
 	}
 
@@ -623,7 +706,9 @@ export const getAppearance = ( elementsLocation, forWooPay = false ) => {
 			appearance,
 			getFieldStyles(
 				selectors.hiddenValidActiveLabel,
-				'.Label--floating'
+				'.Label--floating',
+				null,
+				scope
 			)
 		);
 	}
@@ -642,6 +727,6 @@ export const getAppearance = ( elementsLocation, forWooPay = false ) => {
 	}
 
 	// Remove hidden fields from DOM.
-	hiddenElementsForUPE.cleanup();
+	hiddenElementsForUPE.cleanup( scope );
 	return appearance;
 };

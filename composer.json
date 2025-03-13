@@ -22,10 +22,10 @@
     "require": {
         "php": ">=7.3",
         "ext-json": "*",
-        "automattic/jetpack-connection": "6.2.0",
-        "automattic/jetpack-config": "3.0.0",
-        "automattic/jetpack-autoloader": "5.0.0",
-        "automattic/jetpack-sync": "4.1.0",
+        "automattic/jetpack-connection": "6.7.3",
+        "automattic/jetpack-config": "3.0.1",
+        "automattic/jetpack-autoloader": "5.0.2",
+        "automattic/jetpack-sync": "4.8.3",
         "woocommerce/subscriptions-core": "6.7.1"
     },
     "require-dev": {
@@ -90,6 +90,7 @@
     "autoload": {
         "psr-4": {
             "WCPay\\MultiCurrency\\": "includes/multi-currency",
+            "WCPay\\PaymentMethods\\Configs\\": "includes/payment-methods/Configs",
             "WCPay\\Vendor\\": "lib/packages",
             "WCPay\\": "src"
         },

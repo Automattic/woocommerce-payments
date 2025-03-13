@@ -51,6 +51,17 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 		$this->init_session_cookie();
 
 		if ( $this->_customer_id !== $this->_data['token_customer_id'] ) {
+			\WCPay\Logger::error(
+				sprintf(
+					'Tokenized ECE cookie and session customer mismatch - customer: %s (%s) , session: %s (%s)',
+					var_export( $this->_customer_id, true ), // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export -- should only be triggered when logging is enabled.
+					gettype( $this->_customer_id ),
+					var_export( $this->_data['token_customer_id'], true ), // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export -- should only be triggered when logging is enabled.
+					gettype( $this->_data['token_customer_id'] )
+				)
+			);
+
+			// throwing an exception here to prevent further processing of the request.
 			throw new Exception( __( 'Invalid token: cookie and session customer mismatch', 'woocommerce-payments' ) );
 		}
 

@@ -21,9 +21,9 @@ export const getVerifyBankAccountTask = (): any => {
 		progressiveOnboarding: {
 			isEnabled: poEnabled,
 			isComplete: poComplete,
-			tpv,
+			tpv = 0,
 			firstTransactionDate: firstPaymentDate,
-		},
+		} = {},
 		created: createdDate,
 	} = wcpaySettings.accountStatus;
 

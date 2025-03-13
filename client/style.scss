@@ -10,13 +10,15 @@
 	}
 }
 
-.components-card__body {
-	> *:first-child {
-		margin-top: 0;
-	}
+.woocommerce-payments-page {
+	.components-card__body {
+		> *:first-child {
+			margin-top: 0;
+		}
 
-	> *:last-child {
-		margin-bottom: 0;
+		> *:last-child {
+			margin-bottom: 0;
+		}
 	}
 }
 

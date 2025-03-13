@@ -426,6 +426,7 @@ class WC_Payments_Webhook_Processing_Service {
 			Payment_Method::CARD_PRESENT,
 			Payment_Method::US_BANK_ACCOUNT,
 			Payment_Method::BECS,
+			Payment_Method::WECHAT_PAY,
 		];
 
 		if ( empty( $payment_method_type ) || ! in_array( $payment_method_type, $actionable_methods, true ) ) {
@@ -689,14 +690,14 @@ class WC_Payments_Webhook_Processing_Service {
 	/**
 	 * Safely get a value from the webhook event body array.
 	 *
-	 * @param array  $array Array to read from.
+	 * @param array  $items Array to read from.
 	 * @param string $key   ID to fetch on.
 	 *
 	 * @return string|array|int|bool
 	 * @throws Invalid_Webhook_Data_Exception Thrown if ID not set.
 	 */
-	private function read_webhook_property( $array, $key ) {
-		if ( ! isset( $array[ $key ] ) ) {
+	private function read_webhook_property( $items, $key ) {
+		if ( ! isset( $items[ $key ] ) ) {
 			throw new Invalid_Webhook_Data_Exception(
 				sprintf(
 				/* translators: %1: ID being fetched */
@@ -705,19 +706,19 @@ class WC_Payments_Webhook_Processing_Service {
 				)
 			);
 		}
-		return $array[ $key ];
+		return $items[ $key ];
 	}
 
 	/**
 	 * Safely check whether a webhook contains a property.
 	 *
-	 * @param array  $array Array to read from.
+	 * @param array  $items Array to read from.
 	 * @param string $key   ID to fetch on.
 	 *
 	 * @return bool
 	 */
-	private function has_webhook_property( $array, $key ) {
-		return isset( $array[ $key ] );
+	private function has_webhook_property( $items, $key ) {
+		return isset( $items[ $key ] );
 	}
 
 	/**

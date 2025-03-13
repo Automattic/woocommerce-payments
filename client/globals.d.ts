@@ -13,11 +13,16 @@ declare global {
 		isSubscriptionsActive: boolean;
 		featureFlags: {
 			customSearch: boolean;
+			woopay: boolean;
+			documents: boolean;
+			woopayExpressCheckout: boolean;
 			isAuthAndCaptureEnabled: boolean;
 			paymentTimeline: boolean;
 			isDisputeIssuerEvidenceEnabled: boolean;
 			isPaymentOverviewWidgetEnabled?: boolean;
+			multiCurrency?: boolean;
 		};
+		accountFees: Record< string, any >;
 		fraudServices: unknown[];
 		testMode: boolean;
 		testModeOnboarding: boolean;
@@ -26,9 +31,10 @@ declare global {
 		isJetpackIdcActive: boolean;
 		isAccountConnected: boolean;
 		isAccountValid: boolean;
-		accountStatus: {
+		accountStatus: Partial< {
 			email?: string;
 			created: string;
+			isLive?: boolean;
 			error?: boolean;
 			status?: string;
 			country?: string;
@@ -69,7 +75,17 @@ declare global {
 				declineOnAVSFailure: boolean;
 				declineOnCVCFailure: boolean;
 			};
-		};
+			/**
+			 * Campaigns are temporary flags that are used to enable/disable features for a limited time.
+			 */
+			campaigns: {
+				/**
+				 * The flag for the WordPress.org merchant review campaign in 2025.
+				 * Eligibility is determined per-account on transact-platform-server.
+				 */
+				wporgReview2025: boolean;
+			};
+		} >;
 		accountLoans: {
 			has_active_loan: boolean;
 			has_past_loans: boolean;
@@ -155,6 +171,21 @@ declare global {
 		timeFormat: string;
 	};
 
+	const wooPaymentsPaymentMethodDefinitions: Record<
+		string,
+		{
+			id: string;
+			stripe_key: string;
+			title: string;
+			description: string;
+			settings_icon_url: string;
+			currencies: string[];
+			allows_manual_capture: boolean;
+			allows_pay_later: boolean;
+			accepts_only_domestic_payment: boolean;
+		}
+	>;
+
 	const wc: {
 		wcSettings: typeof wcSettingsModule;
 		tracks: {
@@ -219,6 +250,10 @@ declare global {
 		siteTitle: string;
 	};
 
+	const wcpayPluginSettings: {
+		exitSurveyLastShown: string | null;
+	};
+
 	interface WcSettings {
 		ece_data?: WCPayExpressCheckoutParams;
 		woocommerce_payments_data: typeof wcpaySettings;
@@ -239,5 +274,6 @@ declare global {
 		wc: typeof wc;
 		wcTracks: typeof wcTracks;
 		wcSettings: typeof wcSettings;
+		wcpayPluginSettings?: typeof wcpayPluginSettings;
 	}
 }

@@ -32,6 +32,7 @@ import { useDisputes, useGetSettings, useSettings } from 'data';
 import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
 import './style.scss';
 import BannerNotice from 'wcpay/components/banner-notice';
+import { MaybeShowMerchantFeedbackPrompt } from 'wcpay/merchant-feedback-prompt';
 import useAccountSession from 'wcpay/utils/embedded-components/account-session';
 import appearance from 'wcpay/utils/embedded-components/appearance';
 import {
@@ -243,6 +244,10 @@ const OverviewPage = () => {
 						explicitDismiss: true,
 					}
 				);
+				// No need to add extra params, we are interested in the total amount of actions here.
+				recordEvent(
+					'wcpay_overview_stripe_notifications_banner_action_completed'
+				);
 			}
 			setNotificationsBannerMessage( '' );
 		}
@@ -262,6 +267,7 @@ const OverviewPage = () => {
 
 	return (
 		<Page isNarrow className="wcpay-overview">
+			<MaybeShowMerchantFeedbackPrompt />
 			<OverviewPageError />
 			<JetpackIdcNotice />
 			{ showLoanOfferError && (
