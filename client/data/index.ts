@@ -25,14 +25,3 @@ export * from './payment-intents/hooks';
 export * from './authorizations/hooks';
 export * from './files/hooks';
 export * from './payment-activity/hooks';
-
-import { TimelineItem } from './timeline/types';
-import { ApiError } from '../types/errors';
-
-export declare function useTimeline(
-	transactionId: string
-): {
-	timeline: Array< TimelineItem >;
-	timelineError: ApiError | undefined;
-	isLoading: boolean;
-};
