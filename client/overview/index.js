@@ -244,6 +244,10 @@ const OverviewPage = () => {
 						explicitDismiss: true,
 					}
 				);
+				// No need to add extra params, we are interested in the total amount of actions here.
+				recordEvent(
+					'wcpay_overview_stripe_notifications_banner_action_completed'
+				);
 			}
 			setNotificationsBannerMessage( '' );
 		}
