@@ -1276,6 +1276,26 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $intent_id, $this->order->get_meta( '_intent_id', true ) );
 	}
 
+	public function test_attach_intent_order_with_allow_update_on_success() {
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'id'     => 'pi_mock',
+				'status' => Intent_Status::SUCCEEDED,
+			]
+		);
+		$this->order_service->attach_intent_info_to_order( $this->order, $intent );
+
+		$another_intent = WC_Helper_Intention::create_intention(
+			[
+				'id'     => 'pi_mock_2',
+				'status' => Intent_Status::CANCELED,
+			]
+		);
+		$this->order_service->attach_intent_info_to_order( $this->order, $another_intent, true );
+
+		$this->assertEquals( Intent_Status::CANCELED, $this->order->get_meta( '_intention_status', true ) );
+	}
+
 	public function test_attach_intent_info_to_order_after_successful_payment() {
 		$intent = WC_Helper_Intention::create_intention(
 			[
