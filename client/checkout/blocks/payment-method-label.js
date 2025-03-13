@@ -43,7 +43,10 @@ const breakpointConfigs = [
 	{ breakpoint: 330, maxElements: 1 },
 ];
 
-const bnplMethods = [ 'affirm', 'afterpay_clearpay', 'klarna' ];
+const bnplMethods = Object.keys(
+	window.wooPaymentsPaymentMethodsConfig
+).filter( ( key ) => window.wooPaymentsPaymentMethodsConfig[ key ].isBnpl );
+
 const PaymentMethodMessageWrapper = ( {
 	upeName,
 	countries,
