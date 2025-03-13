@@ -7,7 +7,6 @@ import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { ExternalLink } from '@wordpress/components';
 import { createInterpolateElement } from '@wordpress/element';
-import { Link } from '@woocommerce/components';
 
 /**
  * Internal dependencies
