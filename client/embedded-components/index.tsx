@@ -31,6 +31,7 @@ interface EmbeddedComponentProps {
 }
 
 interface EmbeddedAccountOnboardingProps extends EmbeddedComponentProps {
+	onboardingData: OnboardingFields;
 	onExit: () => void;
 	onStepChange?: ( step: string ) => void;
 	collectPayoutRequirements?: boolean;
@@ -119,6 +120,7 @@ const useInitializeStripe = (
 /**
  * Embedded Stripe Account Onboarding Component.
  *
+ * @param onboardingData - Data required for onboarding.
  * @param onExit - Callback function when the onboarding flow is exited.
  * @param onLoaderStart - Callback function when the onboarding loader starts.
  * @param onLoadError - Callback function when the onboarding load error occurs.
@@ -129,6 +131,7 @@ const useInitializeStripe = (
  * @return Rendered Account Onboarding component.
  */
 export const EmbeddedAccountOnboarding: React.FC< EmbeddedAccountOnboardingProps > = ( {
+	onboardingData,
 	onExit,
 	onLoaderStart,
 	onLoadError,
@@ -138,7 +141,7 @@ export const EmbeddedAccountOnboarding: React.FC< EmbeddedAccountOnboardingProps
 } ) => {
 	const { stripeConnectInstance, error, loading } = useInitializeStripe(
 		true,
-		null,
+		onboardingData,
 		isPoEligible
 	);
 

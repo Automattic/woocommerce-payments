@@ -88,6 +88,7 @@ const EmbeddedKyc: React.FC< Props > = ( {
 					onExit={ handleOnExit }
 					onStepChange={ handleStepChange }
 					isPoEligible={ isEligible }
+					onboardingData={ data }
 					collectPayoutRequirements={ collectPayoutRequirements }
 				/>
 			) }

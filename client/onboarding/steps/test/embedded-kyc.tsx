@@ -9,7 +9,7 @@ import { isPoEligible } from 'wcpay/onboarding/utils';
  * External dependencies
  */
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
 jest.mock( 'wcpay/onboarding/context', () => ( {
@@ -27,14 +27,23 @@ describe( 'EmbeddedKyc Component', () => {
 	} );
 
 	it( 'renders the EmbeddedAccountOnboarding component when not finalizing', async () => {
-		( useOnboardingContext as jest.Mock ).mockReturnValue( { data: {} } );
+		( useOnboardingContext as jest.Mock ).mockReturnValue( {
+			data: {},
+			setData: jest.fn(),
+			errors: {},
+			setErrors: jest.fn(),
+			touched: {},
+			setTouched: jest.fn(),
+		} );
 		( isPoEligible as jest.Mock ).mockResolvedValueOnce( true );
 
-		render( <EmbeddedKyc /> );
+		await act( async () => {
+			render( <EmbeddedKyc /> );
+		} );
 
-		await waitFor( () => {
+		await waitFor( async () => {
 			expect(
-				screen.getByTestId( 'embedded-account-onboarding' )
+				await screen.findByTestId( 'embedded-account-onboarding' )
 			).toBeInTheDocument();
 		} );
 	} );

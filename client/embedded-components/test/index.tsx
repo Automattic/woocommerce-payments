@@ -39,13 +39,54 @@ jest.mock( '../hooks', () => ( {
 	} ),
 } ) );
 
+// Mock onboarding data
+const mockOnboardingData = {
+	businessType: 'individual',
+	country: 'US',
+};
+
 // Tests for EmbeddedAccountOnboarding
 describe( 'EmbeddedAccountOnboarding', () => {
 	it( 'renders ConnectAccountOnboarding after initialization', async () => {
-		render( <EmbeddedAccountOnboarding onExit={ jest.fn() } /> );
+		const mockOnExit = jest.fn();
+		const mockOnStepChange = jest.fn();
+
+		render(
+			<EmbeddedAccountOnboarding
+				onboardingData={ mockOnboardingData }
+				onExit={ mockOnExit }
+				isPoEligible={ true }
+				collectPayoutRequirements={ false }
+				onStepChange={ mockOnStepChange }
+			/>
+		);
+
 		expect(
 			await screen.findByTestId( 'connect-account-onboarding' )
 		).toBeInTheDocument();
+		expect( mockOnExit ).not.toHaveBeenCalled();
+		expect( mockOnStepChange ).not.toHaveBeenCalled();
+	} );
+
+	it( 'passes correct props to ConnectAccountOnboarding', async () => {
+		const mockOnExit = jest.fn();
+		const mockOnStepChange = jest.fn();
+
+		render(
+			<EmbeddedAccountOnboarding
+				onboardingData={ mockOnboardingData }
+				onExit={ mockOnExit }
+				isPoEligible={ true }
+				collectPayoutRequirements={ true }
+				onStepChange={ mockOnStepChange }
+			/>
+		);
+
+		expect(
+			await screen.findByTestId( 'connect-account-onboarding' )
+		).toBeInTheDocument();
+		expect( mockOnExit ).not.toHaveBeenCalled();
+		expect( mockOnStepChange ).not.toHaveBeenCalled();
 	} );
 } );
 
