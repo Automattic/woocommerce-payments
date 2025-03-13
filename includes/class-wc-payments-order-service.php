@@ -2146,13 +2146,13 @@ class WC_Payments_Order_Service {
 	 * Handle insufficient balance for refund.
 	 *
 	 * @param WC_Order $order  The order being refunded.
-	 * @param int      $amount The refund amount.
+	 * @param int      $stripe_amount The refund amount.
 	 */
-	public function handle_insufficient_balance_for_refund( WC_Order $order, $amount ) {
+	public function handle_insufficient_balance_for_refund( WC_Order $order, int $stripe_amount ) {
 		$account_country = WC_Payments::get_account_service()->get_account_country();
 
 		$formatted_amount = wc_price(
-			WC_Payments_Utils::interpret_stripe_amount( $amount, $order->get_currency() ),
+			WC_Payments_Utils::interpret_stripe_amount( $stripe_amount, $order->get_currency() ),
 			[ 'currency' => $order->get_currency() ]
 		);
 
