@@ -209,10 +209,14 @@ const FeesBreakdown: React.FC< {
 	);
 
 	return (
-  <div className="wcpay-transaction-breakdown__fees-container" role="table" aria-label="Transaction fees breakdown">
-    {fees}
-  </div>
-);
+		<div
+			className="wcpay-transaction-breakdown__fees-container"
+			role="table"
+			aria-label="Transaction fees breakdown"
+		>
+			{ fees }
+		</div>
+	);
 };
 
 export default FeesBreakdown;
