@@ -46,10 +46,10 @@ const getVatPrefix = () => {
 const getVatTaxIDName = () => {
 	switch ( wcpaySettings.accountStatus.country ) {
 		case 'AU':
-			// Note – AU GST numbers are actually ABN or ACN numbers.
+			// Note – AU GST numbers are actually an ABN.
 			// https://vatstack.com/articles/australian-business-number-abn-validation
 			// https://business.gov.au/registrations/register-for-taxes/tax-registration-for-your-business
-			return __( 'GST Number', 'woocommerce-payments' );
+			return __( 'ABN', 'woocommerce-payments' );
 		case 'JP':
 			return __( 'Corporate Number', 'woocommerce-payments' );
 		default:
