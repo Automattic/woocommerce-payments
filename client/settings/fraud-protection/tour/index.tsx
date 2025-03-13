@@ -15,8 +15,7 @@ import { recordEvent } from 'tracks';
 const options = {
 	effects: {
 		arrowIndicator: true,
-		spotlight: {},
-		styles: { padding: 8 },
+		spotlight: { styles: { padding: 8 } },
 		autoScroll: {
 			behavior: 'smooth',
 		},
