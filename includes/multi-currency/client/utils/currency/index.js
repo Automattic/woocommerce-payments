@@ -252,11 +252,11 @@ export const formatExplicitCurrency = (
  * @param {Object} to            Target currency and amount for exchange rate calculation.
  * @param {string} to.currency   Target currency code.
  * @param {number} to.amount     Target amount.
- * @param {number|undefined} rate         Exchange rate.
  *
  * @return {string?} formatted string like `€1,00 → $1,19: $29.99`.
- */
-export const formatFX = ( from, to, rate ) => {
+ *
+ * */
+export const formatFX = ( from, to ) => {
 	if ( ! from.currency || ! to.currency ) {
 		return;
 	}
@@ -266,26 +266,13 @@ export const formatFX = ( from, to, rate ) => {
 		fromAmount,
 		from.currency,
 		true
-	) } → ${ formatExchangeRate( from, to, rate ) }: ${ formatExplicitCurrency(
+	) } → ${ formatExchangeRate( from, to ) }: ${ formatExplicitCurrency(
 		Math.abs( to.amount ),
 		to.currency
 	) }`;
 };
 
-/**
- * Formats exchange rate value string from one currency to another.
- *
- * @param {Object} from          Source currency and amount for exchange rate calculation.
- * @param {string} from.currency Source currency code.
- * @param {number} from.amount   Source amount.
- * @param {Object} to            Target currency and amount for exchange rate calculation.
- * @param {string} to.currency   Target currency code.
- * @param {number} to.amount     Target amount.
- * @param {number|undefined} rate         Exchange rate.
- *
- * @return {string?} formatted string like `1,19`.
- */
-function formatExchangeRate( from, to, rate ) {
+function formatExchangeRate( from, to ) {
 	const { currencyData } = wcpaySettings;
 
 	let exchangeRate =
@@ -294,9 +281,6 @@ function formatExchangeRate( from, to, rate ) {
 		from.amount !== 0
 			? Math.abs( to.amount / from.amount )
 			: 0;
-	if ( typeof rate === 'number' ) {
-		exchangeRate = rate;
-	}
 	if ( isZeroDecimalCurrency( to.currency ) ) {
 		exchangeRate *= 100;
 	}
