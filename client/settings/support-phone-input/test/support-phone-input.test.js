@@ -98,6 +98,75 @@ describe( 'SupportPhoneInput', () => {
 		).toEqual( 'Please enter a valid phone number.' );
 	} );
 
+	it( 'Singapore phone number validation special cases - starting with 800, 805, 806, 807, 808 or 809', async () => {
+		useAccountBusinessSupportPhone.mockReturnValue( [
+			'+6580600000', // test phone number.
+			jest.fn(),
+		] );
+		useTestModeOnboarding.mockReturnValue( true );
+
+		const { container } = render( <SupportPhoneInput /> );
+		expect(
+			container.querySelector( '.components-notice.is-error' )
+		).toBeNull();
+
+		fireEvent.change(
+			screen.getByLabelText(
+				'Support phone number (+1 0000000000 can be used in sandbox mode)'
+			),
+			{
+				target: { value: '+6580000000' },
+			}
+		);
+		expect(
+			container.querySelector( '.components-notice.is-error' )
+		).toBeNull();
+		fireEvent.change(
+			screen.getByLabelText(
+				'Support phone number (+1 0000000000 can be used in sandbox mode)'
+			),
+			{
+				target: { value: '+6580500000' },
+			}
+		);
+		expect(
+			container.querySelector( '.components-notice.is-error' )
+		).toBeNull();
+		fireEvent.change(
+			screen.getByLabelText(
+				'Support phone number (+1 0000000000 can be used in sandbox mode)'
+			),
+			{
+				target: { value: '+6580700000' },
+			}
+		);
+		expect(
+			container.querySelector( '.components-notice.is-error' )
+		).toBeNull();
+		fireEvent.change(
+			screen.getByLabelText(
+				'Support phone number (+1 0000000000 can be used in sandbox mode)'
+			),
+			{
+				target: { value: '+6580800000' },
+			}
+		);
+		expect(
+			container.querySelector( '.components-notice.is-error' )
+		).toBeNull();
+		fireEvent.change(
+			screen.getByLabelText(
+				'Support phone number (+1 0000000000 can be used in sandbox mode)'
+			),
+			{
+				target: { value: '+6580900000' },
+			}
+		);
+		expect(
+			container.querySelector( '.components-notice.is-error' )
+		).toBeNull();
+	} );
+
 	it( 'in sandbox mode, allow all 0s number', async () => {
 		useAccountBusinessSupportPhone.mockReturnValue( [
 			'+10000000000', // test phone number.

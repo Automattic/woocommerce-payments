@@ -309,7 +309,7 @@ class WC_Payments_Checkout {
 	 */
 	public function get_enabled_payment_method_config() {
 		$settings                = [];
-		$enabled_payment_methods = $this->gateway->get_payment_method_ids_enabled_at_checkout();
+		$enabled_payment_methods = $this->gateway->get_upe_enabled_payment_method_ids_based_on_manual_capture();
 
 		foreach ( $enabled_payment_methods as $payment_method_id ) {
 			// Link by Stripe should be validated with available fees.

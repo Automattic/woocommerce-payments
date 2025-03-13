@@ -1,6 +1,6 @@
 <?php
 /**
- * Set up refund policy note for WooCommerce inbox.
+ * Qualitative feedback inbox note for accounts that have been active for 60 days and have at least one transaction.
  *
  * @package WooCommerce\Payments\Admin
  */
@@ -11,7 +11,7 @@ use Automattic\WooCommerce\Admin\Notes\NoteTraits;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * Class WC_Payments_Notes_Set_Up_Refund_Policy
+ * Class WC_Payments_Notes_Qualitative_Feedback
  */
 class WC_Payments_Notes_Qualitative_Feedback {
 	use NoteTraits;
