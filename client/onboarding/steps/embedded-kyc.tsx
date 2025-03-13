@@ -25,6 +25,7 @@ const EmbeddedKyc: React.FC< Props > = ( {
 	const { data } = useOnboardingContext();
 	const [ finalizingAccount, setFinalizingAccount ] = useState( false );
 	const [ isEligible, setIsEligible ] = useState< boolean | null >( null );
+	const [ loading, setLoading ] = useState( true );
 
 	// Fetch whether the account is eligible for progressive onboarding
 	useEffect( () => {
@@ -83,19 +84,25 @@ const EmbeddedKyc: React.FC< Props > = ( {
 
 	return (
 		<>
-			{ ! finalizingAccount && isEligible !== null && (
-				<EmbeddedAccountOnboarding
-					onExit={ handleOnExit }
-					onStepChange={ handleStepChange }
-					isPoEligible={ isEligible }
-					onboardingData={ data }
-					collectPayoutRequirements={ collectPayoutRequirements }
-				/>
+			{ loading && (
+				<div className="embedded-kyc-loader-wrapper padded">
+					<StripeSpinner />
+				</div>
 			) }
 			{ finalizingAccount && (
 				<div className="embedded-kyc-loader-wrapper">
 					<StripeSpinner />
 				</div>
+			) }
+			{ ! finalizingAccount && isEligible !== null && (
+				<EmbeddedAccountOnboarding
+					onExit={ handleOnExit }
+					onStepChange={ handleStepChange }
+					onLoaderStart={ () => setLoading( false ) }
+					isPoEligible={ isEligible }
+					onboardingData={ data }
+					collectPayoutRequirements={ collectPayoutRequirements }
+				/>
 			) }
 		</>
 	);

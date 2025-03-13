@@ -1,14 +1,4 @@
 /**
- * Internal dependencies
- */
-import { createKycAccountSession, createAccountSession } from './hooks';
-import appearance from './appearance';
-import { OnboardingFields } from 'wcpay/onboarding/types';
-import StripeSpinner from 'wcpay/components/stripe-spinner';
-import BannerNotice from 'wcpay/components/banner-notice';
-import { AccountSession } from 'wcpay/embedded-components/types';
-
-/**
  * External dependencies
  */
 import React, { useState, useEffect } from 'react';
@@ -23,6 +13,16 @@ import {
 	ConnectComponentsProvider,
 	ConnectNotificationBanner,
 } from '@stripe/react-connect-js';
+
+/**
+ * Internal dependencies
+ */
+import { createKycAccountSession, createAccountSession } from './hooks';
+import appearance from './appearance';
+import { OnboardingFields } from 'wcpay/onboarding/types';
+import StripeSpinner from 'wcpay/components/stripe-spinner';
+import BannerNotice from 'wcpay/components/banner-notice';
+import { AccountSession } from 'wcpay/embedded-components/types';
 import { trackRedirected } from 'wcpay/onboarding/tracking';
 
 interface EmbeddedComponentProps {
@@ -147,7 +147,6 @@ export const EmbeddedAccountOnboarding: React.FC< EmbeddedAccountOnboardingProps
 
 	return (
 		<>
-			{ ( loading || ! stripeConnectInstance ) && <StripeSpinner /> }
 			{ error && <BannerNotice status="error">{ error }</BannerNotice> }
 			{ ! error && stripeConnectInstance && (
 				<ConnectComponentsProvider
