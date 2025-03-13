@@ -270,23 +270,22 @@ class WC_Payments_Order_Success_Page {
 		$order_id = absint( $wp->query_vars['order-received'] );
 		$order    = wc_get_order( $order_id );
 
-		if ( ! $order ) {
+		if ( ! $order ||
+			! $order->needs_payment() ||
+			0 !== strpos( $order->get_payment_method(), WC_Payment_Gateway_WCPay::GATEWAY_ID )
+		) {
 			return $text;
 		}
 
 		$should_show_failure = false;
 		$max_retries         = 6;
 		$retry_count         = 0;
-		$delay_seconds       = 1;
 
-		// First check if order is already marked as failed.
 		if ( $order->has_status( Order_Status::FAILED ) ) {
 			$should_show_failure = true;
-		} elseif ( $order->needs_payment() ) {
-			// If order still needs payment, poll a few times to see if status changes.
+		} else {
+			// Poll a few times to see if status changes.
 			while ( $retry_count < $max_retries ) {
-				sleep( $delay_seconds );
-
 				// Clear the order cache and get a fresh instance.
 				wp_cache_delete( $order_id, 'posts' );
 				$order = wc_get_order( $order_id );
@@ -304,6 +303,8 @@ class WC_Payments_Order_Success_Page {
 				if ( ! $order->needs_payment() ) {
 					break;
 				}
+
+				sleep( 1 );
 
 				++$retry_count;
 			}
