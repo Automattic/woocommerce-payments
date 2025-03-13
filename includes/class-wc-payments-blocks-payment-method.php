@@ -9,7 +9,6 @@ use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodTyp
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\WC_Payments_Checkout;
 use WCPay\WooPay\WooPay_Utilities;
-use WCPay\Inline_Script_Payloads\Woo_Payments_Payment_Methods_Config;
 
 /**
  * The payment method, which allows the gateway to work with WooCommerce Blocks.
@@ -86,13 +85,6 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 					'billingCountry' => WC()->customer ? WC()->customer->get_billing_country() : 'US',
 				]
 			) . ';',
-			'before'
-		);
-
-		// Add payment method config data here.
-		wp_add_inline_script(
-			'WCPAY_BLOCKS_CHECKOUT',
-			new Woo_Payments_Payment_Methods_Config(),
 			'before'
 		);
 
