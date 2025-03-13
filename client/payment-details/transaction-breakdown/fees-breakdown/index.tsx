@@ -134,14 +134,30 @@ const FeesBreakdown: React.FC< {
 	} else {
 		event.fee_rates.history.map( ( fee: TimelineFeeRate ) => {
 			if ( 'discount' === fee.type ) {
+				/**
+				 * Skip discount fees, because we will subtract discount fees from the other fees in the fee breadown.
+				 */
 				return null;
 			}
 
 			let percentage = fee.percentage_rate;
 			let fixed = fee.fixed_rate;
 			let isDiscounted = false;
+			/**
+			 * If fee happens to be fully discounted, but had the fixed part
+			 * before discount, we will display the fixed part in the fee
+			 * breakdown.
+			 */
 			const displayFixedPart = fee.fixed_rate > 0;
 
+			/**
+			 * For each fee we keep subtracting discount's percentage and
+			 * fixed parts until the remaining dicount parts become 0.
+			 *
+			 * We do this because the fee history contains fees in the
+			 * specific order, i.e. base followed by additional fees, and we
+			 * want to apply the discount to the fees in the correct order.
+			 */
 			if ( remainingPercentageDiscount > 0 ) {
 				const percentageDiscount = Math.min(
 					remainingPercentageDiscount,
