@@ -274,28 +274,38 @@ class WC_Payments_Order_Success_Page {
 			return $text;
 		}
 
-		$intent_id      = $order->get_meta( '_intent_id', true );
-		$payment_method = $order->get_payment_method();
-
-		// Strip the gateway ID prefix from the payment method.
-		$payment_method_type = str_replace( WC_Payment_Gateway_WCPay::GATEWAY_ID . '_', '', $payment_method );
-
 		$should_show_failure = false;
+		$max_retries         = 6;
+		$retry_count         = 0;
+		$delay_seconds       = 1;
 
-		// Check order status first to avoid unnecessary API calls.
+		// First check if order is already marked as failed.
 		if ( $order->has_status( Order_Status::FAILED ) ) {
 			$should_show_failure = true;
-		} elseif ( ! empty( $intent_id ) && ! empty( $payment_method_type ) && in_array( $payment_method_type, Payment_Method::REDIRECT_PAYMENT_METHODS, true ) ) {
-			// For redirect-based payment methods that haven't been marked as failed yet, check the intent status.
-			// Add a small delay to allow the intent to be updated.
-			sleep( 1 );
+		} elseif ( $order->needs_payment() ) {
+			// If order still needs payment, poll a few times to see if status changes.
+			while ( $retry_count < $max_retries ) {
+				sleep( $delay_seconds );
 
-			$intent        = Get_Intention::create( $intent_id );
-			$intent        = $intent->send();
-			$intent_status = $intent->get_status();
+				// Clear the order cache and get a fresh instance.
+				wp_cache_delete( $order_id, 'posts' );
+				$order = wc_get_order( $order_id );
 
-			if ( Intent_Status::REQUIRES_PAYMENT_METHOD === $intent_status && $intent->get_last_payment_error() ) {
-				$should_show_failure = true;
+				if ( ! $order ) {
+					break;
+				}
+
+				if ( $order->has_status( Order_Status::FAILED ) ) {
+					$should_show_failure = true;
+					break;
+				}
+
+				// If order no longer needs payment, we can stop polling.
+				if ( ! $order->needs_payment() ) {
+					break;
+				}
+
+				++$retry_count;
 			}
 		}
 
