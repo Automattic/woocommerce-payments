@@ -48,6 +48,15 @@ interface EmbeddedAccountNotificationBannerProps
 	} ) => void;
 }
 
+/**
+ * Hook to initialize Stripe Connect.
+ *
+ * @param {boolean} isOnboarding - Whether this is an onboarding flow.
+ * @param {OnboardingFields | null} onboardingData - Data required for onboarding.
+ * @param {boolean} isPoEligible - Whether the user is eligible for progressive onboarding.
+ *
+ * @return Returns stripeConnectInstance, error, and loading state.
+ */
 const useInitializeStripe = (
 	isOnboarding: boolean,
 	onboardingData: OnboardingFields | null,
@@ -107,6 +116,18 @@ const useInitializeStripe = (
 	return { stripeConnectInstance, error, loading };
 };
 
+/**
+ * Embedded Stripe Account Onboarding Component.
+ *
+ * @param {Function} onExit - Callback function when the onboarding flow is exited.
+ * @param onLoaderStart - Callback function when the onboarding loader starts.
+ * @param onLoadError - Callback function when the onboarding load error occurs.
+ * @param {Function} [onStepChange] - Callback function when the onboarding step changes.
+ * @param {boolean} [collectPayoutRequirements=false] - Whether to collect payout requirements.
+ * @param {boolean} [isPoEligible=false] - Whether the user is eligible for progressive onboarding.
+ *
+ * @return {JSX.Element} - Rendered Account Onboarding component.
+ */
 export const EmbeddedAccountOnboarding: React.FC< EmbeddedAccountOnboardingProps > = ( {
 	onExit,
 	onLoaderStart,
@@ -149,6 +170,15 @@ export const EmbeddedAccountOnboarding: React.FC< EmbeddedAccountOnboardingProps
 	);
 };
 
+/**
+ * Embedded Stripe Notification Banner Component.
+ *
+ * @param {Function} onLoaderStart - Callback when Stripe component starts rendering.
+ * @param {Function} onLoadError - Callback when Stripe component load error occurs.
+ * @param {Function} onNotificationsChange - Callback triggered when notifications change.
+ *
+ * @return {JSX.Element} - Rendered Notification Banner component.
+ */
 export const EmbeddedConnectNotificationBanner: React.FC< EmbeddedAccountNotificationBannerProps > = ( {
 	onLoaderStart,
 	onLoadError,
