@@ -58,9 +58,8 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 
 		if ( paymentMethod === 'klarna' ) {
 			noticeText = __(
-				'Klarna inquiries may simply mean that the customer is trying to return their item(s). ' +
-					'You can issue a refund to close it without a dispute fee, or leave it open for 21 days, ' +
-					'after which it will become a dispute. Please see <link>this document</link> for more information.',
+				'Klarna inquiries may mean that the customer is trying to return their item(s). ' +
+					'<a>Please see this document for more information.</a>',
 				'woocommerce-payments'
 			);
 			learnMoreDocsUrl =
@@ -82,13 +81,6 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 						<ExternalLink
 							className="dispute-notice__link"
 							href={ learnMoreDocsUrl }
-						/>
-					),
-					link: (
-						<Link
-							href={ learnMoreDocsUrl }
-							target="_blank"
-							type="external"
 						/>
 					),
 					strong: <strong />,
