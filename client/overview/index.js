@@ -6,8 +6,10 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Notice } from '@wordpress/components';
 import { getQuery } from '@woocommerce/navigation';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { dispatch } from '@wordpress/data';
+import interpolateComponents from '@automattic/interpolate-components';
+import { Link } from '@woocommerce/components';
 
 /**
  * Internal dependencies.
@@ -83,6 +85,10 @@ const OverviewPage = () => {
 	const [
 		stripeNotificationsBannerErrorMessage,
 		setStripeNotificationsBannerErrorMessage,
+	] = useState( '' );
+	const [
+		stripeNotificationsBannerErrorType,
+		setStripeNotificationsBannerErrorType,
 	] = useState( '' );
 	const [
 		notificationsBannerMessage,
@@ -297,6 +303,39 @@ const OverviewPage = () => {
 					actions={ [] }
 				/>
 			) }
+			{ stripeNotificationsBannerErrorMessage &&
+				stripeNotificationsBannerErrorType ===
+					'invalid_request_error' && (
+					<BannerNotice
+						status="warning"
+						icon={ true }
+						isDismissible={ false }
+					>
+						{ interpolateComponents( {
+							mixedString: sprintf(
+								__(
+									// eslint-disable-next-line max-len
+									'Some account related notifications require HTTPS and cannot be displayed. View them on our financial partner’s website. {{seeDetailsLink}}See details{{/seeDetailsLink}}',
+									'woocommerce-payments'
+								)
+							),
+							components: {
+								seeDetailsLink: (
+									// eslint-disable-next-line jsx-a11y/anchor-has-content
+									<Link
+										href={
+											// eslint-disable-next-line max-len
+											'https://woocommerce.com/document/woopayments/startup-guide/#requirements'
+										}
+										target="_blank"
+										rel="noreferrer"
+										type="external"
+									/>
+								),
+							},
+						} ) }
+					</BannerNotice>
+				) }
 			<ErrorBoundary>
 				<FRTDiscoverabilityBanner />
 			</ErrorBoundary>
@@ -327,6 +366,9 @@ const OverviewPage = () => {
 									setStripeNotificationsBannerErrorMessage(
 										loadError.error.message ||
 											'Unknown error'
+									);
+									setStripeNotificationsBannerErrorType(
+										loadError.error.type
 									);
 									setStripeComponentLoading( false );
 								} }

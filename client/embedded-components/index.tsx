@@ -67,7 +67,9 @@ const useInitializeStripe = (
 		stripeConnectInstance,
 		setStripeConnectInstance,
 	] = useState< StripeConnectInstance | null >( null );
-	const [ error, setError ] = useState< string | null >( null );
+	const [ initializationError, setInitializationError ] = useState<
+		string | null
+	>( null );
 	const [ loading, setLoading ] = useState< boolean >( true );
 
 	useEffect( () => {
@@ -107,7 +109,7 @@ const useInitializeStripe = (
 
 				setStripeConnectInstance( instance );
 			} catch ( err ) {
-				setError(
+				setInitializationError(
 					err instanceof Error ? err.message : 'Unknown error'
 				);
 			} finally {
@@ -118,7 +120,7 @@ const useInitializeStripe = (
 		initializeStripe();
 	}, [ isOnboarding, onboardingData, isPoEligible ] );
 
-	return { stripeConnectInstance, error, loading };
+	return { stripeConnectInstance, initializationError, loading };
 };
 
 /**
@@ -143,7 +145,7 @@ export const EmbeddedAccountOnboarding: React.FC< EmbeddedAccountOnboardingProps
 	isPoEligible = false,
 	collectPayoutRequirements = false,
 } ) => {
-	const { stripeConnectInstance, error } = useInitializeStripe(
+	const { stripeConnectInstance, initializationError } = useInitializeStripe(
 		true,
 		onboardingData,
 		isPoEligible
@@ -151,8 +153,12 @@ export const EmbeddedAccountOnboarding: React.FC< EmbeddedAccountOnboardingProps
 
 	return (
 		<>
-			{ error && <BannerNotice status="error">{ error }</BannerNotice> }
-			{ ! error && stripeConnectInstance && (
+			{ initializationError && (
+				<BannerNotice status="error">
+					{ initializationError }
+				</BannerNotice>
+			) }
+			{ stripeConnectInstance && (
 				<ConnectComponentsProvider
 					connectInstance={ stripeConnectInstance }
 				>
@@ -190,17 +196,21 @@ export const EmbeddedConnectNotificationBanner: React.FC< EmbeddedAccountNotific
 	onLoadError,
 	onNotificationsChange,
 } ) => {
-	const { stripeConnectInstance, error, loading } = useInitializeStripe(
-		false,
-		null,
-		false
-	);
+	const {
+		stripeConnectInstance,
+		initializationError,
+		loading,
+	} = useInitializeStripe( false, null, false );
 
 	return (
 		<>
 			{ ( loading || ! stripeConnectInstance ) && <StripeSpinner /> }
-			{ error && <BannerNotice status="error">{ error }</BannerNotice> }
-			{ ! error && stripeConnectInstance && (
+			{ initializationError && (
+				<BannerNotice status="error">
+					{ initializationError }
+				</BannerNotice>
+			) }
+			{ stripeConnectInstance && (
 				<ConnectComponentsProvider
 					connectInstance={ stripeConnectInstance }
 				>
