@@ -12,6 +12,13 @@ import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import '@testing-library/jest-dom';
 
+jest.mock( 'wcpay/embedded-components', () => {
+	return {
+		EmbeddedAccountOnboarding: () => (
+			<div data-testid="embedded-account-onboarding" />
+		),
+	};
+} );
 jest.mock( 'wcpay/onboarding/context', () => ( {
 	useOnboardingContext: jest.fn(),
 } ) );

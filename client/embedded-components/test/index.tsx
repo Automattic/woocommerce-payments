@@ -14,6 +14,13 @@ import {
 } from 'wcpay/embedded-components';
 
 // Mock dependencies
+jest.mock( '@stripe/connect-js', () => ( {
+	loadConnectAndInitialize: jest.fn( () => ( {
+		on: jest.fn(),
+		off: jest.fn(),
+		destroy: jest.fn(),
+	} ) ),
+} ) );
 jest.mock( '@stripe/react-connect-js', () => ( {
 	ConnectComponentsProvider: ( {
 		children,
@@ -32,10 +39,12 @@ jest.mock( '../hooks', () => ( {
 	createKycAccountSession: jest.fn().mockResolvedValue( {
 		clientSecret: 'test-secret',
 		publishableKey: 'test-key',
+		locale: 'en_US',
 	} ),
 	createAccountSession: jest.fn().mockResolvedValue( {
 		clientSecret: 'test-secret',
 		publishableKey: 'test-key',
+		locale: 'en_US',
 	} ),
 } ) );
 

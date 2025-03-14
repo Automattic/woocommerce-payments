@@ -19,6 +19,13 @@ const settingsMock = {
 	is_wcpay_enabled: true,
 };
 
+jest.mock( 'wcpay/embedded-components', () => {
+	return {
+		EmbeddedConnectNotificationBanner: () => (
+			<div className="embedded-connec-notification-banner"></div>
+		),
+	};
+} );
 jest.mock( '../task-list/tasks', () => ( { getTasks: jest.fn() } ) );
 jest.mock( '../inbox-notifications', () =>
 	jest.fn().mockImplementation( () => '[inbox-notifications]' )
