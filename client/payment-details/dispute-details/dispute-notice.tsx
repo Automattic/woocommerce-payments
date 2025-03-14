@@ -20,11 +20,13 @@ import { isInquiry } from 'wcpay/disputes/utils';
 interface DisputeNoticeProps {
 	dispute: Dispute;
 	isUrgent: boolean;
+	paymentMethod: string | null;
 }
 
 const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 	dispute,
 	isUrgent,
+	paymentMethod,
 } ) => {
 	const shopperDisputeReason =
 		reasons[ dispute.reason ]?.claim ??
@@ -52,6 +54,16 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 		);
 		learnMoreDocsUrl =
 			'https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries';
+
+		if ( paymentMethod === 'klarna' ) {
+			noticeText = __(
+				'Klarna inquiries may mean that the customer is trying to return their item(s). ' +
+					'<a>Please see this document for more information</a>',
+				'woocommerce-payments'
+			);
+			learnMoreDocsUrl =
+				'https://woocommerce.com/document/woopayments/payment-methods/buy-now-pay-later/#klarna-inquiries-returns';
+		}
 	}
 
 	return (
