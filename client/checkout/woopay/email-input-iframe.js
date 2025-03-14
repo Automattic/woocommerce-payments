@@ -22,6 +22,12 @@ export const handleWooPayEmailInput = async (
 	api,
 	isBlocksCheckout = false
 ) => {
+	const isPayForOrder = window.wcpayConfig?.pay_for_order === 'true';
+
+	if ( isPayForOrder ) {
+		return;
+	}
+
 	let timer;
 	const waitTime = 500;
 	const woopayEmailInput = await getTargetElement( field );

@@ -45,6 +45,14 @@ module.exports = {
 		'<rootDir>/docker/',
 		'<rootDir>/tests/e2e',
 	],
+	watchPathIgnorePatterns: [
+		'/node_modules/',
+		'/vendor/',
+		'<rootDir>/.*/build/',
+		'<rootDir>/.*/build-module/',
+		'<rootDir>/docker/',
+		'<rootDir>/tests/e2e',
+	],
 	transform: {
 		...tsjPreset.transform,
 		'^.+\\.(jpg|svg|png|gif)(\\?.*)?$': '<rootDir>/tests/js/fileMock.js',

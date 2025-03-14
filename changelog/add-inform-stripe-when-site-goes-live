@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Inform Stripe when a store switch from coming soon to live mode

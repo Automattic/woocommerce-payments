@@ -54,4 +54,8 @@ class Payment_Method extends Base_Constant {
 	const OFFLINE_PAYMENT_METHODS = [
 		self::MULTIBANCO,
 	];
+
+	const REDIRECT_PAYMENT_METHODS = [
+		self::WECHAT_PAY,
+	];
 }

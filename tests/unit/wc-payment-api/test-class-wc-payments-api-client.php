@@ -794,8 +794,8 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 * Data provider for test_redacting_params
 	 */
 	public function redacting_params_data() {
-		$string_should_not_include_secret = function ( $string ) {
-			return false === strpos( $string, 'some-secret' );
+		$string_should_not_include_secret = function ( $input ) {
+			return false === strpos( $input, 'some-secret' );
 		};
 
 		return [
@@ -1155,6 +1155,42 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		// Assert: Confirm we get the expected response.
 		$this->assertSame( 'success', $result['result'] );
 	}
+
+	public function test_get_readers_charge_summary() {
+		$transaction_id = uniqid( 'trx_' );
+		$charge_date    = gmdate( 'Y-m-d', 1634291278 );
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->willReturn(
+				[
+					'body'     => wp_json_encode(
+						[
+							'result' => 'success',
+							'data'   => [
+								(object) [
+									'reader_id' => 'reader_1',
+									'count'     => 1,
+									'status'    => 'active',
+									'fee'       => [
+										'amount'   => 100,
+										'currency' => 'USD',
+									],
+								],
+							],
+						]
+					),
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+				]
+			);
+
+		$result = $this->payments_api_client->get_readers_charge_summary( '2024-01-01', $transaction_id );
+		$this->assertSame( 1, $result['data'][0]['count'] );
+	}
+
 
 	public function test_get_tracking_info() {
 		$expect = [ 'hosting-provider' => 'test' ];

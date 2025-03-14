@@ -356,15 +356,15 @@ describe( 'Transactions filters', () => {
 		let ruleSelector: HTMLElement;
 
 		beforeEach( () => {
-			addAdvancedFilter( 'Channel' );
+			addAdvancedFilter( 'Sales channel' );
 			ruleSelector = screen.getByRole( 'combobox', {
-				name: /transaction channel filter/i,
+				name: /transaction sales channel filter/i,
 			} );
 		} );
 
 		test( 'should render all types', () => {
 			const typeSelect = screen.getByRole( 'combobox', {
-				name: /transaction channel$/i,
+				name: /transaction sales channel$/i,
 			} ) as HTMLSelectElement;
 			expect( typeSelect.options ).toMatchSnapshot();
 		} );
@@ -372,10 +372,9 @@ describe( 'Transactions filters', () => {
 		test( 'should filter by is', () => {
 			user.selectOptions( ruleSelector, 'is' );
 
-			// need to include $ in name, otherwise "Select a transaction type filter" is also matched.
 			user.selectOptions(
 				screen.getByRole( 'combobox', {
-					name: /transaction channel$/i,
+					name: /transaction sales channel$/i,
 				} ),
 				'online'
 			);
@@ -390,7 +389,7 @@ describe( 'Transactions filters', () => {
 			// need to include $ in name, otherwise "Select a transaction type filter" is also matched.
 			user.selectOptions(
 				screen.getByRole( 'combobox', {
-					name: /transaction channel$/i,
+					name: /transaction sales channel$/i,
 				} ),
 				'in_person'
 			);

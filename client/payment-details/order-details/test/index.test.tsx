@@ -109,6 +109,13 @@ jest.mock( '@wordpress/data', () => ( {
 	useSelect: jest.fn(),
 } ) );
 
+jest.mock( '@woocommerce/data', () => ( {
+	useUserPreferences: jest.fn( () => ( {
+		updateUserPreferences: jest.fn(),
+		wc_payments_wporg_review_2025_prompt_dismissed: false,
+	} ) ),
+} ) );
+
 const mockUseChargeFromOrder = useChargeFromOrder as jest.MockedFunction<
 	typeof useChargeFromOrder
 >;

@@ -1,44 +1,45 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
-import {
-	ConnectAccountOnboarding,
-	ConnectComponentsProvider,
-} from '@stripe/react-connect-js';
+import React, { useEffect, useState } from 'react';
 
 /**
  * Internal dependencies
  */
-import appearance from 'wcpay/utils/embedded-components/appearance';
-import BannerNotice from 'wcpay/components/banner-notice';
 import StripeSpinner from 'wcpay/components/stripe-spinner';
 import { useOnboardingContext } from 'wcpay/onboarding/context';
-import { finalizeOnboarding } from 'wcpay/onboarding/utils';
+import { finalizeOnboarding, isPoEligible } from 'wcpay/onboarding/utils';
 import { getConnectUrl, getOverviewUrl } from 'wcpay/utils';
-import useKycAccountSession from 'wcpay/utils/embedded-components/kyc-account-session';
 import { trackEmbeddedStepChange } from 'wcpay/onboarding/tracking';
+import { EmbeddedAccountOnboarding } from 'wcpay/embedded-components';
 
 interface Props {
 	continueKyc?: boolean;
 	collectPayoutRequirements?: boolean;
 }
 
-// TODO: extract this logic and move it to a generic component to be used for all embedded components, not just onboarding.
 const EmbeddedKyc: React.FC< Props > = ( {
 	continueKyc = false,
 	collectPayoutRequirements = false,
 } ) => {
 	const { data } = useOnboardingContext();
-	const [ loading, setLoading ] = useState( true );
 	const [ finalizingAccount, setFinalizingAccount ] = useState( false );
-	const [ loadErrorMessage, setLoadErrorMessage ] = useState( '' );
-	const stripeConnectInstance = useKycAccountSession( {
-		data,
-		continueKyc,
-		setLoadErrorMessage,
-		appearance,
-	} );
+	const [ isEligible, setIsEligible ] = useState< boolean | null >( null );
+	const [ loading, setLoading ] = useState( true );
+
+	// Fetch whether the account is eligible for progressive onboarding
+	useEffect( () => {
+		const checkEligibility = async () => {
+			const eligibility = await isPoEligible( data );
+			setIsEligible( eligibility );
+		};
+
+		if ( ! continueKyc ) {
+			checkEligibility();
+		} else {
+			setIsEligible( false );
+		}
+	}, [ continueKyc, data ] );
 
 	const handleStepChange = ( step: string ) => {
 		trackEmbeddedStepChange( step );
@@ -88,38 +89,24 @@ const EmbeddedKyc: React.FC< Props > = ( {
 					<StripeSpinner />
 				</div>
 			) }
-			{ loadErrorMessage && (
-				<BannerNotice status="error">{ loadErrorMessage }</BannerNotice>
-			) }
 			{ finalizingAccount && (
 				<div className="embedded-kyc-loader-wrapper">
 					<StripeSpinner />
 				</div>
 			) }
-			{ stripeConnectInstance && (
-				<ConnectComponentsProvider
-					connectInstance={ stripeConnectInstance }
-				>
-					<ConnectAccountOnboarding
-						onLoaderStart={ () => setLoading( false ) }
-						onLoadError={ ( loadError ) =>
-							setLoadErrorMessage(
-								loadError.error.message || 'Unknown error'
-							)
-						}
+			{
+				// Only render the embedded onboarding component once the PO eligibility has been determined.
+				isEligible !== null && (
+					<EmbeddedAccountOnboarding
 						onExit={ handleOnExit }
-						onStepChange={ ( stepChange ) =>
-							handleStepChange( stepChange.step )
-						}
-						collectionOptions={ {
-							fields: collectPayoutRequirements
-								? 'eventually_due'
-								: 'currently_due',
-							futureRequirements: 'omit',
-						} }
+						onStepChange={ handleStepChange }
+						onLoaderStart={ () => setLoading( false ) }
+						isPoEligible={ isEligible }
+						onboardingData={ data }
+						collectPayoutRequirements={ collectPayoutRequirements }
 					/>
-				</ConnectComponentsProvider>
-			) }
+				)
+			}
 		</>
 	);
 };
