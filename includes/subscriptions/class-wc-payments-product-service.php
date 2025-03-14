@@ -172,7 +172,7 @@ class WC_Payments_Product_Service {
 				if ( $existing_product ) {
 					// Product exists, migrate to new format.
 					$product = [
-						'wcpay_product_id'  => $existing_product['id'],
+						'wcpay_product_id'  => $existing_product['wcpay_product_id'],
 						'stripe_account_id' => $stripe_account_id,
 					];
 					update_option( $option_key_name, $product );
@@ -334,7 +334,8 @@ class WC_Payments_Product_Service {
 	 */
 	public function create_product( WC_Product $product ) {
 		try {
-			$product_data = $this->get_product_data( $product );
+			$product_data      = $this->get_product_data( $product );
+			$stripe_account_id = $this->account->get_stripe_account_id();
 
 			// Validate that we have enough data to create the product.
 			$this->validate_product_data( $product_data );
@@ -343,7 +344,7 @@ class WC_Payments_Product_Service {
 
 			$this->remove_product_update_listeners();
 			$this->set_wcpay_product_hash( $product, $this->get_product_hash( $product ) );
-			$this->set_wcpay_product_id( $product, $wcpay_product['wcpay_product_id'] );
+			$this->set_wcpay_product_id( $product, $wcpay_product['wcpay_product_id'], $stripe_account_id );
 			$this->add_product_update_listeners();
 		} catch ( \Exception $e ) {
 			Logger::log( sprintf( 'There was a problem creating the product #%s in WC Pay: %s', $product->get_id(), $e->getMessage() ) );
