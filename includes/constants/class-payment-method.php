@@ -49,4 +49,8 @@ class Payment_Method extends Base_Constant {
 		self::AFTERPAY,
 		self::KLARNA,
 	];
+
+	const REDIRECT_PAYMENT_METHODS = [
+		self::WECHAT_PAY,
+	];
 }
