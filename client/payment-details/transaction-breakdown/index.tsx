@@ -57,19 +57,25 @@ const PaymentTransactionBreakdown: React.FC< PaymentTransactionBreakdownProps > 
 
 	const { formattedAmount, isMultiCurrency } = transactionAmounts;
 	const feeExchangeRate = captureEvent.fee_rates.fee_exchange_rate?.rate || 1;
+	const paymentExchangeRate =
+		captureEvent.transaction_details.store_amount > 0
+			? captureEvent.transaction_details.customer_amount /
+			  captureEvent.transaction_details.store_amount
+			: 0;
 
-	const conversionRate = isMultiCurrency ? (
-		<FlexItem className="wcpay-transaction-breakdown__conversion_rate">
-			{ ' @ 1 ' }
-			{ captureEvent.transaction_details.customer_currency }
-			{ ' → ' }
-			{ Math.round( ( 1 / feeExchangeRate ) * 1000000 ) / 1000000 }
-			{ '	' }
-			{ captureEvent.transaction_details.store_currency }
-		</FlexItem>
-	) : (
-		''
-	);
+	const conversionRate =
+		isMultiCurrency && paymentExchangeRate > 0 ? (
+			<FlexItem className="wcpay-transaction-breakdown__conversion_rate">
+				{ ' @ 1 ' }
+				{ captureEvent.transaction_details.customer_currency }
+				{ ' → ' }
+				{ Math.round( 100000 / paymentExchangeRate ) / 1000000 }
+				{ '	' }
+				{ captureEvent.transaction_details.store_currency }
+			</FlexItem>
+		) : (
+			''
+		);
 
 	return captureEvent ? (
 		<Card size="large">
