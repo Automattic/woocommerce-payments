@@ -17,6 +17,13 @@ use WCPay\Constants\Order_Status;
 class WC_Payments_Order_Success_Page {
 
 	/**
+	 * Whether to hide the blocks status description.
+	 *
+	 * @var bool
+	 */
+	private $should_hide_status_description = false;
+
+	/**
 	 * Constructor.
 	 */
 	public function __construct() {
@@ -27,6 +34,7 @@ class WC_Payments_Order_Success_Page {
 		add_filter( 'woocommerce_thankyou_order_received_text', [ $this, 'add_notice_previous_successful_intent' ], 11 );
 		add_filter( 'woocommerce_thankyou_order_received_text', [ $this, 'replace_order_received_text_for_failed_orders' ], 11 );
 		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+		add_action( 'wp_footer', [ $this, 'output_footer_scripts' ] );
 	}
 
 	/**
@@ -303,6 +311,9 @@ class WC_Payments_Order_Success_Page {
 		}
 
 		if ( $should_show_failure ) {
+			// Store the failure state to use in wp_footer.
+			$this->should_hide_status_description = true;
+
 			$checkout_url = wc_get_checkout_url();
 			return sprintf(
 				/* translators: %s: checkout URL */
@@ -312,6 +323,22 @@ class WC_Payments_Order_Success_Page {
 		}
 
 		return $text;
+	}
+
+	/**
+	 * Output any necessary footer scripts
+	 */
+	public function output_footer_scripts() {
+		if ( ! empty( $this->should_hide_status_description ) ) {
+			echo "
+				<script type='text/javascript'>
+					const element = document.querySelector('.wc-block-order-confirmation-status-description');
+					if (element) {
+						element.style.display = 'none';
+					}
+				</script>
+			";
+		}
 	}
 
 	/**
