@@ -98,7 +98,11 @@ const useInitializeStripe = (
 				const instance = loadConnectAndInitialize( {
 					publishableKey,
 					fetchClientSecret: async () => clientSecret,
-					appearance,
+					appearance: {
+						overlays: 'drawer',
+						...appearance,
+					},
+					locale: session.locale.replace( '_', '-' ),
 				} );
 
 				setStripeConnectInstance( instance );
@@ -139,7 +143,7 @@ export const EmbeddedAccountOnboarding: React.FC< EmbeddedAccountOnboardingProps
 	isPoEligible = false,
 	collectPayoutRequirements = false,
 } ) => {
-	const { stripeConnectInstance, error, loading } = useInitializeStripe(
+	const { stripeConnectInstance, error } = useInitializeStripe(
 		true,
 		onboardingData,
 		isPoEligible

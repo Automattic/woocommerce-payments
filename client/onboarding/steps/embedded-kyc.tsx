@@ -94,16 +94,19 @@ const EmbeddedKyc: React.FC< Props > = ( {
 					<StripeSpinner />
 				</div>
 			) }
-			{ ! finalizingAccount && isEligible !== null && (
-				<EmbeddedAccountOnboarding
-					onExit={ handleOnExit }
-					onStepChange={ handleStepChange }
-					onLoaderStart={ () => setLoading( false ) }
-					isPoEligible={ isEligible }
-					onboardingData={ data }
-					collectPayoutRequirements={ collectPayoutRequirements }
-				/>
-			) }
+			{
+				// Only render the embedded onboarding component once the PO eligibility has been determined.
+				isEligible !== null && (
+					<EmbeddedAccountOnboarding
+						onExit={ handleOnExit }
+						onStepChange={ handleStepChange }
+						onLoaderStart={ () => setLoading( false ) }
+						isPoEligible={ isEligible }
+						onboardingData={ data }
+						collectPayoutRequirements={ collectPayoutRequirements }
+					/>
+				)
+			}
 		</>
 	);
 };
