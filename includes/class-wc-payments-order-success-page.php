@@ -7,11 +7,21 @@
 
 use WCPay\Constants\Payment_Method;
 use WCPay\Duplicate_Payment_Prevention_Service;
+use WCPay\Core\Server\Request\Get_Intention;
+use WCPay\Constants\Intent_Status;
+use WCPay\Constants\Order_Status;
 
 /**
  * Class handling order success page.
  */
 class WC_Payments_Order_Success_Page {
+
+	/**
+	 * Whether to hide the blocks status description.
+	 *
+	 * @var bool
+	 */
+	private $should_hide_status_description = false;
 
 	/**
 	 * Constructor.
@@ -22,7 +32,9 @@ class WC_Payments_Order_Success_Page {
 		add_action( 'woocommerce_order_details_before_order_table', [ $this, 'unregister_payment_method_override' ] );
 		add_filter( 'woocommerce_thankyou_order_received_text', [ $this, 'add_notice_previous_paid_order' ], 11 );
 		add_filter( 'woocommerce_thankyou_order_received_text', [ $this, 'add_notice_previous_successful_intent' ], 11 );
+		add_filter( 'woocommerce_thankyou_order_received_text', [ $this, 'replace_order_received_text_for_failed_orders' ], 11 );
 		add_action( 'wp_enqueue_scripts', [ $this, 'enqueue_scripts' ] );
+		add_action( 'wp_footer', [ $this, 'output_footer_scripts' ] );
 	}
 
 	/**
@@ -221,7 +233,6 @@ class WC_Payments_Order_Success_Page {
 		return $text;
 	}
 
-
 	/**
 	 * Formats the additional text to be displayed on the thank you page, with the side effect
 	 * as a workaround for an issue in Woo core 8.1.x and 8.2.x.
@@ -253,6 +264,81 @@ class WC_Payments_Order_Success_Page {
 		}
 
 		return sprintf( '<div class="woocommerce-info">%s</div>', $additional_text );
+	}
+
+	/**
+	 * Replace the order received text with a failure message when the order status is 'failed'.
+	 *
+	 * @param string $text The original thank you text.
+	 * @return string
+	 */
+	public function replace_order_received_text_for_failed_orders( $text ) {
+		global $wp;
+
+		$order_id = absint( $wp->query_vars['order-received'] );
+		$order    = wc_get_order( $order_id );
+
+		if ( ! $order ||
+			! $order->needs_payment() ||
+			0 !== strpos( $order->get_payment_method(), WC_Payment_Gateway_WCPay::GATEWAY_ID )
+		) {
+			return $text;
+		}
+
+		$intent_id      = $order->get_meta( '_intent_id', true );
+		$payment_method = $order->get_payment_method();
+
+		// Strip the gateway ID prefix from the payment method.
+		$payment_method_type = str_replace( WC_Payment_Gateway_WCPay::GATEWAY_ID . '_', '', $payment_method );
+
+		$should_show_failure = false;
+
+		// Check order status first to avoid unnecessary API calls.
+		if ( $order->has_status( Order_Status::FAILED ) ) {
+			$should_show_failure = true;
+		} elseif ( ! empty( $intent_id ) && ! empty( $payment_method_type ) && in_array( $payment_method_type, Payment_Method::REDIRECT_PAYMENT_METHODS, true ) ) {
+			// For redirect-based payment methods that haven't been marked as failed yet, check the intent status.
+			// Add a small delay to allow the intent to be updated.
+			sleep( 1 );
+
+			$intent        = Get_Intention::create( $intent_id );
+			$intent        = $intent->send();
+			$intent_status = $intent->get_status();
+
+			if ( Intent_Status::REQUIRES_PAYMENT_METHOD === $intent_status && $intent->get_last_payment_error() ) {
+				$should_show_failure = true;
+			}
+		}
+
+		if ( $should_show_failure ) {
+			// Store the failure state to use in wp_footer.
+			$this->should_hide_status_description = true;
+
+			$checkout_url = wc_get_checkout_url();
+			return sprintf(
+				/* translators: %s: checkout URL */
+				__( 'Unfortunately, your order has failed. Please <a href="%s">try checking out again</a>.', 'woocommerce-payments' ),
+				esc_url( $checkout_url )
+			);
+		}
+
+		return $text;
+	}
+
+	/**
+	 * Output any necessary footer scripts
+	 */
+	public function output_footer_scripts() {
+		if ( ! empty( $this->should_hide_status_description ) ) {
+			echo "
+				<script type='text/javascript'>
+					const element = document.querySelector('.wc-block-order-confirmation-status-description');
+					if (element) {
+						element.style.display = 'none';
+					}
+				</script>
+			";
+		}
 	}
 
 	/**
