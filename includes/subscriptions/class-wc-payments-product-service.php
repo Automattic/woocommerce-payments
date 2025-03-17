@@ -159,7 +159,7 @@ class WC_Payments_Product_Service {
 
 		// Case 1: No product found, create a new one.
 		if ( ! $product ) {
-			$product = $this->create_product_for_item_type( $sanitized_type, $stripe_account_id );
+			$product = $this->create_product_for_item_type( $sanitized_type );
 			return $product['wcpay_product_id'];
 		}
 
@@ -178,11 +178,11 @@ class WC_Payments_Product_Service {
 					update_option( $option_key_name, $product );
 				} else {
 					// Product doesn't exist, create new one.
-					$product = $this->create_product_for_item_type( $sanitized_type, $stripe_account_id );
+					$product = $this->create_product_for_item_type( $sanitized_type );
 				}
 			} catch ( \Exception $e ) {
 				// Error occurred, create new product.
-				$product = $this->create_product_for_item_type( $sanitized_type, $stripe_account_id );
+				$product = $this->create_product_for_item_type( $sanitized_type );
 			}
 
 			return $product['wcpay_product_id'];
@@ -190,7 +190,7 @@ class WC_Payments_Product_Service {
 
 		// Case 3: Product exists but for a different Stripe account, create new one.
 		if ( $product['stripe_account_id'] !== $stripe_account_id ) {
-			$product = $this->create_product_for_item_type( $sanitized_type, $stripe_account_id );
+			$product = $this->create_product_for_item_type( $sanitized_type );
 			return $product['wcpay_product_id'];
 		}
 
@@ -248,7 +248,15 @@ class WC_Payments_Product_Service {
 
 			return false;
 		} catch ( \Exception $e ) {
-			Logger::log( 'Error validating WCPay product: ' . $e->getMessage() );
+			Logger::log(
+				sprintf(
+					'Error validating WCPay product: product_id=%d, wcpay_product_id=%s, account_id=%s, error=%s',
+					$product->get_id(),
+					$wcpay_product_id,
+					$current_account_id,
+					$e->getMessage()
+				)
+			);
 			return false;
 		}
 	}
@@ -355,10 +363,9 @@ class WC_Payments_Product_Service {
 	 * Create a generic item product in WC Pay.
 	 *
 	 * @param string $type The item type to create a product for.
-	 * @param string $stripe_account_id Stripe account ID.
 	 * @return array The created product.
 	 */
-	public function create_product_for_item_type( string $type, string $stripe_account_id ): array {
+	private function create_product_for_item_type( string $type ): array {
 		$wcpay_product = $this->payments_api_client->create_product(
 			[
 				'description' => 'N/A',
@@ -366,7 +373,7 @@ class WC_Payments_Product_Service {
 			]
 		);
 
-		$wcpay_product['stripe_account_id'] = $stripe_account_id;
+		$wcpay_product['stripe_account_id'] = $this->account->get_stripe_account_id();
 
 		update_option( self::get_wcpay_product_id_option() . '_' . $type, $wcpay_product );
 
