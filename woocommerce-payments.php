@@ -265,7 +265,7 @@ if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 		new WC_Subscriptions_Core_Plugin();
 	}
 }
-add_action( 'plugins_loaded', 'wcpay_init_subscriptions_core', 0 );
+add_action( 'plugins_loaded', 'wcpay_init_subscriptions_core', 9 );
 
 /**
  * Check if WCPay is installed alongside an old version of Jetpack (8.1 or earlier). Due to the autoloader code in those old
