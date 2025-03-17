@@ -311,60 +311,61 @@ describe( 'Express checkout event handlers', () => {
 		it( 'should abort payment if cartApi.placeOrder throws an exception from the store', async () => {
 			cartApiPlaceOrderMock.mockRejectedValue( {
 				status: 400,
-				json: async () => ( {
-					order_id: 1111111,
-					status: 'failed',
-					order_key: 'wc_order_f41lur3',
-					order_number: '1111111',
-					customer_note: '',
-					customer_id: 1,
-					billing_address: {
-						first_name: 'Card',
-						last_name: 'Holder Name',
-						country: 'US',
-						address_1: '123 Main St',
-						address_2: 'Apt 4B',
-						city: 'New York',
-						state: 'NY',
-						postcode: '10001',
-						company: 'Some Company',
-						email: 'john.doe@example.com',
-						phone: '1234567890',
-					},
-					shipping_address: {
-						first_name: 'Card',
-						last_name: 'Holder Name',
-						country: 'US',
-						address_1: '123 Main St',
-						address_2: 'Apt 4B',
-						city: 'New York',
-						state: 'NY',
-						postcode: '10001',
-						company: 'Some Company',
-						phone: '1234567890',
-					},
-					payment_method: 'woocommerce_payments',
-					payment_result: {
-						payment_status: 'failure',
-						payment_details: [
-							{
-								key: 'errorMessage',
-								value: 'Error: Your card was declined.',
-							},
-							{
-								key: 'result',
-								value: 'fail',
-							},
-							{
-								key: 'redirect',
-								value: '',
-							},
-						],
-						redirect_url: '',
-					},
-					additional_fields: [],
-					extensions: {},
-				} ),
+				json: () =>
+					Promise.resolve( {
+						order_id: 1111111,
+						status: 'failed',
+						order_key: 'wc_order_f41lur3',
+						order_number: '1111111',
+						customer_note: '',
+						customer_id: 1,
+						billing_address: {
+							first_name: 'Card',
+							last_name: 'Holder Name',
+							country: 'US',
+							address_1: '123 Main St',
+							address_2: 'Apt 4B',
+							city: 'New York',
+							state: 'NY',
+							postcode: '10001',
+							company: 'Some Company',
+							email: 'john.doe@example.com',
+							phone: '1234567890',
+						},
+						shipping_address: {
+							first_name: 'Card',
+							last_name: 'Holder Name',
+							country: 'US',
+							address_1: '123 Main St',
+							address_2: 'Apt 4B',
+							city: 'New York',
+							state: 'NY',
+							postcode: '10001',
+							company: 'Some Company',
+							phone: '1234567890',
+						},
+						payment_method: 'woocommerce_payments',
+						payment_result: {
+							payment_status: 'failure',
+							payment_details: [
+								{
+									key: 'errorMessage',
+									value: 'Error: Your card was declined.',
+								},
+								{
+									key: 'result',
+									value: 'fail',
+								},
+								{
+									key: 'redirect',
+									value: '',
+								},
+							],
+							redirect_url: '',
+						},
+						additional_fields: [],
+						extensions: {},
+					} ),
 			} );
 
 			await onConfirmHandler(
