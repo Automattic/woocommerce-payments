@@ -12,6 +12,7 @@ export const upeMethods = [
 	'afterpay_clearpay',
 	'jcb',
 	'klarna',
+	'multibanco',
 	'grabpay',
 	'wechat_pay',
 ];

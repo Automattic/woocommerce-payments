@@ -66,6 +66,7 @@ use WCPay\Payment_Methods\Klarna_Payment_Method;
 use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Method;
+use WCPay\Payment_Methods\Multibanco_Payment_Method;
 use WCPay\Payment_Methods\Grabpay_Payment_Method;
 use WCPay\Payment_Methods\Wechatpay_Payment_Method;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
@@ -349,6 +350,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			'klarna'            => 'klarna_payments',
 			'grabpay'           => 'grabpay_payments',
 			'jcb'               => 'jcb_payments',
+			'multibanco'        => 'multibanco_payments',
 			'wechat_pay'        => 'wechat_pay_payments',
 		];
 
@@ -1626,6 +1628,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$processing    = [];
 		}
 
+		$is_offline_payment_method = $payment_information->is_offline_payment_method();
 		if ( ! empty( $intent ) ) {
 			if ( ! $intent->is_authorized() ) {
 				$intent_failed = true;
@@ -1676,11 +1679,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			if ( Intent_Status::REQUIRES_ACTION === $status ) {
-				if ( isset( $next_action['type'] ) && 'redirect_to_url' === $next_action['type'] && ! empty( $next_action['redirect_to_url']['url'] ) ) {
+				$next_action_type = $next_action['type'] ?? null;
+				if ( 'redirect_to_url' === $next_action_type && ! empty( $next_action[ $next_action_type ]['url'] ) ) {
 					$response = [
 						'result'   => 'success',
-						'redirect' => $next_action['redirect_to_url']['url'],
+						'redirect' => $next_action[ $next_action_type ]['url'],
 					];
+				} elseif ( 'multibanco_display_details' === $next_action_type ) {
+					$this->order_service->attach_multibanco_info_to_order(
+						$order,
+						$next_action[ $next_action_type ]['reference'],
+						$next_action[ $next_action_type ]['entity'],
+						$next_action[ $next_action_type ]['hosted_voucher_url'],
+						$next_action[ $next_action_type ]['expires_at']
+					);
 				} else {
 					$response = [
 						'result'         => 'success',
@@ -1712,7 +1724,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$allow_update_on_success = $this->is_changing_payment_method_for_subscription() || $this->is_subscription_item_in_cart();
 		$this->order_service->attach_intent_info_to_order( $order, $intent, $allow_update_on_success );
 		$this->attach_exchange_info_to_order( $order, $charge_id );
-		if ( Intent_Status::SUCCEEDED === $status ) {
+		if ( Intent_Status::SUCCEEDED === $status || ( Intent_Status::REQUIRES_ACTION === $status && $is_offline_payment_method ) ) {
 			$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
 		}
 		$this->order_service->update_order_status_from_intent( $order, $intent );
@@ -1731,7 +1743,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			exit;
 		}
 
-		if ( isset( $response ) ) {
+		if ( isset( $response ) && ! $is_offline_payment_method ) {
 			return $response;
 		}
 
@@ -4037,6 +4049,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$available_methods[] = Affirm_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Afterpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		$available_methods[] = Multibanco_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Grabpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Wechatpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 
