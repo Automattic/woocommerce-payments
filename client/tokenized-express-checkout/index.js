@@ -3,7 +3,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { addAction, removeAction } from '@wordpress/hooks';
+import { addAction, doAction, removeAction } from '@wordpress/hooks';
 
 /**
  * Internal dependencies
@@ -41,8 +41,10 @@ import {
 	transformCartDataForShippingRates,
 	transformPrice,
 } from './transformers/wc-to-stripe';
+import debounce from './debounce';
 
 let cachedCartData = null;
+let isEceInitialized = false;
 const noop = () => null;
 const fetchNewCartData = async () => {
 	if ( getExpressCheckoutData( 'button_context' ) !== 'product' ) {
@@ -211,6 +213,7 @@ jQuery( ( $ ) => {
 		 * @param {Object} creationOptions ECE initialization options.
 		 */
 		startExpressCheckoutElement: async ( creationOptions ) => {
+			isEceInitialized = false;
 			let addToCartPromise = Promise.resolve();
 			const stripe = await api.getStripe();
 			// https://docs.stripe.com/js/elements_object/create_without_intent
@@ -234,6 +237,10 @@ jQuery( ( $ ) => {
 				if ( ! document.getElementById( 'wcpay-woopay-button' ) ) {
 					expressCheckoutButtonUi.getButtonSeparator().hide();
 				}
+			} );
+
+			eceButton.on( 'ready', () => {
+				isEceInitialized = true;
 			} );
 
 			eceButton.on( 'click', function ( event ) {
@@ -434,7 +441,11 @@ jQuery( ( $ ) => {
 			addAction(
 				'wcpay.express-checkout.update-button-data',
 				'automattic/wcpay/express-checkout',
-				async () => {
+				debounce( 250, async () => {
+					if ( ! isEceInitialized ) {
+						return;
+					}
+
 					// if the product cannot be added to cart (because of missing variation selection, etc),
 					// don't try to add it to the cart to get new data - the call will likely fail.
 					if (
@@ -483,26 +494,20 @@ jQuery( ( $ ) => {
 					} catch ( e ) {
 						expressCheckoutButtonUi.hideContainer();
 					}
-				}
+				} )
 			);
 		},
 	};
 
-	// We don't need to initialize ECE on the checkout page now because it will be initialized by updated_checkout event.
-	if (
-		getExpressCheckoutData( 'button_context' ) !== 'checkout' ||
-		getExpressCheckoutData( 'button_context' ) === 'pay_for_order'
-	) {
-		wcpayECE.init();
-	}
+	wcpayECE.init();
 
 	// We need to refresh ECE data when total is updated.
 	$( document.body ).on( 'updated_cart_totals', () => {
-		wcpayECE.init();
+		doAction( 'wcpay.express-checkout.update-button-data' );
 	} );
 
 	// We need to refresh ECE data when total is updated.
 	$( document.body ).on( 'updated_checkout', () => {
-		wcpayECE.init();
+		doAction( 'wcpay.express-checkout.update-button-data' );
 	} );
 } );
