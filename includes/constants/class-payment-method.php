@@ -36,6 +36,7 @@ class Payment_Method extends Base_Constant {
 	const AFFIRM          = 'affirm';
 	const AFTERPAY        = 'afterpay_clearpay';
 	const KLARNA          = 'klarna';
+	const MULTIBANCO      = 'multibanco';
 	const GRABPAY         = 'grabpay';
 	const WECHAT_PAY      = 'wechat_pay';
 
@@ -48,5 +49,13 @@ class Payment_Method extends Base_Constant {
 		self::AFFIRM,
 		self::AFTERPAY,
 		self::KLARNA,
+	];
+
+	const OFFLINE_PAYMENT_METHODS = [
+		self::MULTIBANCO,
+	];
+
+	const REDIRECT_PAYMENT_METHODS = [
+		self::WECHAT_PAY,
 	];
 }

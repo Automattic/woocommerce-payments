@@ -8,6 +8,7 @@
 use WCPay\Constants\Fraud_Meta_Box_Type;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
+use WCPay\Constants\Payment_Method;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Fraud_Prevention\Models\Rule;
 use WCPay\Logger;
@@ -131,6 +132,34 @@ class WC_Payments_Order_Service {
 	const WCPAY_PAYMENT_TRANSACTION_ID_META_KEY = '_wcpay_payment_transaction_id';
 
 	/**
+	 * Meta key used to store the Multibanco entity.
+	 *
+	 * @const string
+	 */
+	const WCPAY_MULTIBANCO_ENTITY_META_KEY = '_wcpay_multibanco_entity';
+
+	/**
+	 * Meta key used to store the Multibanco reference.
+	 *
+	 * @const string
+	 */
+	const WCPAY_MULTIBANCO_REFERENCE_META_KEY = '_wcpay_multibanco_reference';
+
+	/**
+	 * Meta key used to store the Multibanco expiry.
+	 *
+	 * @const string
+	 */
+	const WCPAY_MULTIBANCO_EXPIRY_META_KEY = '_wcpay_multibanco_expiry';
+
+	/**
+	 * Meta key used to store the Multibanco URL.
+	 *
+	 * @const string
+	 */
+	const WCPAY_MULTIBANCO_URL_META_KEY = '_wcpay_multibanco_url';
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
 	 * @var WC_Payments_API_Client
@@ -183,6 +212,8 @@ class WC_Payments_Order_Service {
 				if ( ! empty( $intent_data['error'] ) ) {
 					$this->unlock_order_payment( $order );
 					$this->mark_payment_failed( $order, $intent_data['intent_id'], $intent_data['intent_status'], $intent_data['charge_id'], $intent_data['error']['message'] );
+				} elseif ( in_array( $intent->get_payment_method_type(), Payment_Method::OFFLINE_PAYMENT_METHODS, true ) ) {
+						$this->mark_payment_on_hold( $order, $intent_data );
 				} else {
 					$this->mark_payment_started( $order, $intent_data );
 				}
@@ -1149,6 +1180,28 @@ class WC_Payments_Order_Service {
 			$this->set_fraud_outcome_status_for_order( $order, Rule::FRAUD_OUTCOME_ALLOW );
 			$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::ALLOW );
 		}
+
+		$this->update_order_status( $order, Order_Status::ON_HOLD );
+		$order->add_order_note( $note );
+		$this->set_intention_status_for_order( $order, $intent_data['intent_status'] );
+	}
+
+	/**
+	 * Updates an order to on-hold status, while adding a note with a link to the transaction.
+	 *
+	 * @param WC_Order $order         Order object.
+	 * @param array    $intent_data   The intent data associated with this order.
+	 *
+	 * @return void
+	 */
+	private function mark_payment_on_hold( $order, $intent_data ) {
+		$note = $this->generate_payment_started_note( $order, $intent_data['intent_id'] );
+		if ( $this->order_note_exists( $order, $note ) ) {
+			return;
+		}
+
+		$fraud_meta_box_type = $this->intent_has_card_payment_type( $intent_data ) ? Fraud_Meta_Box_Type::PAYMENT_STARTED : Fraud_Meta_Box_Type::NOT_CARD;
+		$this->set_fraud_meta_box_type_for_order( $order, $fraud_meta_box_type );
 
 		$this->update_order_status( $order, Order_Status::ON_HOLD );
 		$order->add_order_note( $note );
@@ -2161,6 +2214,37 @@ class WC_Payments_Order_Service {
 		} else {
 			$order->add_order_note( $this->get_insufficient_balance_note( $formatted_amount ) );
 		}
+	}
+
+	/**
+	 * Attach Multibanco information to the order.
+	 *
+	 * @param WC_Order $order     The order being paid.
+	 * @param string   $reference The Multibanco reference.
+	 * @param string   $entity    The Multibanco entity.
+	 * @param string   $url       The Multibanco URL.
+	 * @param int      $expiry    The Multibanco expiry.
+	 */
+	public function attach_multibanco_info_to_order( WC_Order $order, string $reference, string $entity, string $url, int $expiry ): void {
+		$order->update_meta_data( self::WCPAY_MULTIBANCO_REFERENCE_META_KEY, $reference );
+		$order->update_meta_data( self::WCPAY_MULTIBANCO_ENTITY_META_KEY, $entity );
+		$order->update_meta_data( self::WCPAY_MULTIBANCO_URL_META_KEY, $url );
+		$order->update_meta_data( self::WCPAY_MULTIBANCO_EXPIRY_META_KEY, $expiry );
+	}
+
+	/**
+	 * Get Multibanco information from the order.
+	 *
+	 * @param WC_Order $order The order.
+	 * @return array
+	 */
+	public function get_multibanco_info_from_order( WC_Order $order ): array {
+		return [
+			'reference' => $order->get_meta( self::WCPAY_MULTIBANCO_REFERENCE_META_KEY ),
+			'entity'    => $order->get_meta( self::WCPAY_MULTIBANCO_ENTITY_META_KEY ),
+			'url'       => $order->get_meta( self::WCPAY_MULTIBANCO_URL_META_KEY ),
+			'expiry'    => $order->get_meta( self::WCPAY_MULTIBANCO_EXPIRY_META_KEY ),
+		];
 	}
 
 	/**

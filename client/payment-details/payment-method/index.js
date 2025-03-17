@@ -25,6 +25,7 @@ import KlarnaDetails from './klarna';
 import P24Details from './p24';
 import SepaDetails from './sepa';
 import SofortDetails from './sofort';
+import MultibancoDetails from './multibanco';
 import WeChatPayDetails from './wechat-pay';
 
 const detailsComponentMap = {
@@ -43,6 +44,7 @@ const detailsComponentMap = {
 	p24: P24Details,
 	sepa_debit: SepaDetails,
 	sofort: SofortDetails,
+	multibanco: MultibancoDetails,
 	wechat_pay: WeChatPayDetails,
 };
 

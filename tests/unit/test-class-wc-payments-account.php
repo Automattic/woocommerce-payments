@@ -428,7 +428,10 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		);
 
 		// Act.
+		// Some code paths in the onboarding output JSON, so we use output buffering to suppress it while testing.
+		ob_start();
 		$wcpay_account->maybe_handle_onboarding();
+		ob_end_clean();
 
 		remove_all_filters( 'wp_doing_ajax' );
 		remove_all_filters( 'wp_die_ajax_handler' );
