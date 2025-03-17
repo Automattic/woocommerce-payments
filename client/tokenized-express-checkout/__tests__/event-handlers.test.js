@@ -50,7 +50,7 @@ describe( 'Express checkout event handlers', () => {
 			jest.clearAllMocks();
 		} );
 
-		test( 'should handle successful response', async () => {
+		it( 'should handle successful response', async () => {
 			cartApiUpdateCustomerMock.mockResolvedValue( {
 				items: [],
 				shipping_rates: [
@@ -136,7 +136,7 @@ describe( 'Express checkout event handlers', () => {
 			expect( event.reject ).not.toHaveBeenCalled();
 		} );
 
-		test( 'should handle zero rates in the response', async () => {
+		it( 'should handle zero rates in the response', async () => {
 			cartApiUpdateCustomerMock.mockResolvedValue( {
 				items: [],
 				shipping_rates: [
@@ -175,7 +175,7 @@ describe( 'Express checkout event handlers', () => {
 			expect( event.reject ).toHaveBeenCalled();
 		} );
 
-		test( 'should handle unsuccessful response', async () => {
+		it( 'should handle unsuccessful response', async () => {
 			cartApiUpdateCustomerMock.mockRejectedValue( {} );
 
 			await shippingAddressChangeHandler( event, elements );
@@ -244,7 +244,7 @@ describe( 'Express checkout event handlers', () => {
 			};
 		} );
 
-		test( 'should abort payment if elements.submit fails', async () => {
+		it( 'should abort payment if elements.submit fails', async () => {
 			elements.submit.mockResolvedValue( {
 				error: { message: 'Submit error' },
 			} );
@@ -263,7 +263,7 @@ describe( 'Express checkout event handlers', () => {
 			expect( abortPayment ).toHaveBeenCalledWith( 'Submit error' );
 		} );
 
-		test( 'should abort payment if stripe.createPaymentMethod fails', async () => {
+		it( 'should abort payment if stripe.createPaymentMethod fails', async () => {
 			stripe.createPaymentMethod.mockResolvedValue( {
 				error: { message: 'Payment method error' },
 			} );
@@ -286,7 +286,7 @@ describe( 'Express checkout event handlers', () => {
 			);
 		} );
 
-		test( 'should abort payment if cartApi.placeOrder throws an exception because of a network error', async () => {
+		it( 'should abort payment if cartApi.placeOrder throws an exception because of a network error', async () => {
 			cartApiPlaceOrderMock.mockRejectedValue( {
 				code: 'fetch_error',
 				message: 'You are probably offline.',
@@ -308,7 +308,7 @@ describe( 'Express checkout event handlers', () => {
 			expect( completePayment ).not.toHaveBeenCalled();
 		} );
 
-		test( 'should abort payment if cartApi.placeOrder throws an exception from the store', async () => {
+		it( 'should abort payment if cartApi.placeOrder throws an exception from the store', async () => {
 			cartApiPlaceOrderMock.mockRejectedValue( {
 				status: 400,
 				json: async () => ( {
