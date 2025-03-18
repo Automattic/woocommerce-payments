@@ -124,7 +124,7 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
-	 * Gets the WC Pay product ID associated with a WC product.
+	 * Get or create the WC Pay product ID associated with a WC product.
 	 *
 	 * @param WC_Product $product The product to get the WC Pay ID for.
 	 * @param bool|null  $test_mode Is WC Pay in test/dev mode.
@@ -132,7 +132,7 @@ class WC_Payments_Product_Service {
 	 * @return string             The WC Pay product ID or an empty string.
 	 * @throws Exception
 	 */
-	public function get_wcpay_product_id( WC_Product $product, $test_mode = null ): string {
+	public function get_or_create_wcpay_product_id( WC_Product $product, $test_mode = null ): string {
 		// If the subscription product doesn't have a WC Pay product ID, create one.
 		if ( ! $this->has_wcpay_product_id( $product, $test_mode ) ) {
 			$is_current_environment = null === $test_mode || WC_Payments::mode()->is_test() === $test_mode;
@@ -795,8 +795,8 @@ class WC_Payments_Product_Service {
 	 */
 	private function get_all_wcpay_product_ids( WC_Product $product ) {
 		$environment_product_ids = [
-			'live' => $this->has_wcpay_product_id( $product, false ) ? $this->get_wcpay_product_id( $product, false ) : null,
-			'test' => $this->has_wcpay_product_id( $product, true ) ? $this->get_wcpay_product_id( $product, true ) : null,
+			'live' => $this->has_wcpay_product_id( $product, false ) ? $this->get_or_create_wcpay_product_id( $product, false ) : null,
+			'test' => $this->has_wcpay_product_id( $product, true ) ? $this->get_or_create_wcpay_product_id( $product, true ) : null,
 		];
 
 		return array_filter( $environment_product_ids );
