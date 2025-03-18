@@ -38,7 +38,7 @@ export const depositStatusLabels: Record<
  */
 export const payoutFailureMessages: Record< PayoutFailureCode, string > = {
 	insufficient_funds: __(
-		'Your account has insufficient funds to cover the transfer.',
+		'Your account has insufficient funds to cover your negative balance.',
 		'woocommerce-payments'
 	),
 	bank_account_restricted: __(
@@ -46,15 +46,15 @@ export const payoutFailureMessages: Record< PayoutFailureCode, string > = {
 		'woocommerce-payments'
 	),
 	debit_not_authorized: __(
-		'Debit transactions are not approved on the destination bank account. Bank accounts need to be set up for both credit and debit transfers.',
+		'Debit transactions are not approved on your bank account. Bank accounts need to be set up for both credit and debit transfers.',
 		'woocommerce-payments'
 	),
 	invalid_card: __(
-		'The card used was invalid. This usually means the card number is invalid or the account has been closed. Please verify the card details before retrying.',
+		'The card used was invalid. This usually means the card number is invalid or the account has been closed.',
 		'woocommerce-payments'
 	),
 	declined: __(
-		'The bank has declined this transfer. Please contact the bank before retrying.',
+		'The bank has declined this transfer. Please contact the bank for more information.',
 		'woocommerce-payments'
 	),
 	invalid_transaction: __(
@@ -62,7 +62,7 @@ export const payoutFailureMessages: Record< PayoutFailureCode, string > = {
 		'woocommerce-payments'
 	),
 	refer_to_card_issuer: __(
-		'The transfer was refused by the card issuer. Please contact the issuing bank for clarification before trying again.',
+		'The transfer was refused by the card issuer. Please contact the issuing bank for clarification.',
 		'woocommerce-payments'
 	),
 	unsupported_card: __(
@@ -74,11 +74,11 @@ export const payoutFailureMessages: Record< PayoutFailureCode, string > = {
 		'woocommerce-payments'
 	),
 	invalid_issuer: __(
-		'The issuer specified by the card number does not exist. Please verify card details before retrying.',
+		'The issuer specified by the card number does not exist. Please verify card details.',
 		'woocommerce-payments'
 	),
 	expired_card: __(
-		'The card used has expired. Please switch to a different card or payment method. Contact the issuing bank for clarification before trying again.',
+		'The card used has expired. Please switch to a different card or payment method. Contact the issuing bank for clarification.',
 		'woocommerce-payments'
 	),
 	could_not_process: __(
@@ -111,7 +111,7 @@ export const payoutFailureMessages: Record< PayoutFailureCode, string > = {
 		'woocommerce-payments'
 	),
 	issuer_unavailable: __(
-		'The issuing bank is currently unavailable. Please wait a bit before trying again, or switch to a different payment method or card.',
+		'The issuing bank is currently unavailable. Our system will automatically try again on your next payout date, or you can switch to a different payout method.',
 		'woocommerce-payments'
 	),
 	invalid_currency: __(
