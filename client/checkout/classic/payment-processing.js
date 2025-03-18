@@ -129,7 +129,7 @@ function submitForm( jQueryForm ) {
  * @return {boolean} True, if there are missing address fields. False, if the validation passes or is not applicable.
  */
 function isMissingRequiredAddressFieldsForBNPL( params, paymentMethodType ) {
-	if ( [ 'afterpay_clearpay', 'affirm' ].includes( paymentMethodType ) ) {
+	if ( ! [ 'afterpay_clearpay', 'affirm' ].includes( paymentMethodType ) ) {
 		return false;
 	}
 	const address = params?.billing_details?.address;
