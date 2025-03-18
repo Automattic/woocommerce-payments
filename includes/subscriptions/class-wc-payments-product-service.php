@@ -81,6 +81,13 @@ class WC_Payments_Product_Service {
 	private $products_to_update = [];
 
 	/**
+	 * The Stripe account ID.
+	 *
+	 * @var string
+	 */
+	private $stripe_account_id = null;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param WC_Payments_API_Client $payments_api_client Payments API client.
@@ -167,7 +174,7 @@ class WC_Payments_Product_Service {
 		// For existing products, check the linked account.
 		$linked_option_key = $option_key_name . '_linked_to';
 		$linked_account_id = get_option( $linked_option_key );
-		$stripe_account_id = $this->account->get_stripe_account_id();
+		$stripe_account_id = $this->get_stripe_account_id();
 
 		// Case 2: Product exists but linked account doesn't, validate and update if needed.
 		if ( ! $linked_account_id ) {
@@ -248,7 +255,7 @@ class WC_Payments_Product_Service {
 
 		// Check if we have the linked account metadata.
 		$linked_account_id  = $product->get_meta( $option_key . '_linked_to' );
-		$current_account_id = $this->account->get_stripe_account_id();
+		$current_account_id = $this->get_stripe_account_id();
 
 		// If we have linked account metadata, just compare with current account.
 		if ( ! empty( $linked_account_id ) ) {
@@ -364,7 +371,7 @@ class WC_Payments_Product_Service {
 	public function create_product( WC_Product $product ) {
 		try {
 			$product_data      = $this->get_product_data( $product );
-			$stripe_account_id = $this->account->get_stripe_account_id();
+			$stripe_account_id = $this->get_stripe_account_id();
 
 			// Validate that we have enough data to create the product.
 			$this->validate_product_data( $product_data );
@@ -395,7 +402,7 @@ class WC_Payments_Product_Service {
 				'name'        => ucfirst( $type ),
 			]
 		);
-		$stripe_account_id = $this->account->get_stripe_account_id();
+		$stripe_account_id = $this->get_stripe_account_id();
 		$this->save_wcpay_product_data( $wcpay_product['wcpay_product_id'], $stripe_account_id, $type );
 
 		return $wcpay_product['wcpay_product_id'];
@@ -423,7 +430,6 @@ class WC_Payments_Product_Service {
 		if ( empty( $wcpay_product_ids ) ) {
 			return;
 		}
-
 		if ( ! $this->product_needs_update( $product ) ) {
 			return;
 		}
@@ -741,10 +747,22 @@ class WC_Payments_Product_Service {
 	 * @param string     $stripe_account_id The Stripe account ID.
 	 */
 	private function set_wcpay_product_id( WC_Product $product, string $wcpay_product_id, string $stripe_account_id ) {
-		$option_key = self::get_wcpay_product_id_option();
+		$option_key = self::get_wcpay_product_id_meta_key();
 		$product->update_meta_data( $option_key, $wcpay_product_id );
 		$product->update_meta_data( $option_key . '_linked_to', $stripe_account_id );
 		$product->save();
+	}
+
+	/**
+	 * Returns the Stripe account ID. Used to avoid repeat calls to the account service.
+	 *
+	 * @return string
+	 */
+	private function get_stripe_account_id() {
+		if ( null === $this->stripe_account_id ) {
+			$this->stripe_account_id = $this->account->get_stripe_account_id();
+		}
+		return $this->stripe_account_id;
 	}
 
 	/**
@@ -771,7 +789,7 @@ class WC_Payments_Product_Service {
 		// This functions looks the same as the one above.
 		// It's here to avoid potential issue when we change the above function.
 		$test_mode = null === $test_mode ? WC_Payments::mode()->is_test() : $test_mode;
-		return $test_mode ? self::TEST_PRODUCT_ID_KEY : self::TEST_PRODUCT_ID_KEY;
+		return $test_mode ? self::TEST_PRODUCT_ID_KEY : self::LIVE_PRODUCT_ID_KEY;
 	}
 
 	/**
