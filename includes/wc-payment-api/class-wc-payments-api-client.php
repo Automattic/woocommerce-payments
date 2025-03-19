@@ -1038,19 +1038,30 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	/**
 	 * Get data needed to initialize the onboarding flow
 	 *
-	 * @param bool   $live_account                Whether to get the onboarding data for a live mode or test mode account.
-	 * @param string $return_url                  URL to redirect to at the end of the flow.
-	 * @param array  $site_data                   Data to track ToS agreement.
-	 * @param array  $user_data                   Data about the user doing the onboarding (location and device).
-	 * @param array  $account_data                Data to prefill the onboarding.
-	 * @param array  $actioned_notes              Actioned WCPay note names to be sent to the onboarding flow.
-	 * @param bool   $progressive                 Whether we need to enable progressive onboarding prefill.
-	 * @param bool   $collect_payout_requirements Whether we need to redirect user to Stripe KYC to complete their payouts data.
+	 * @param bool    $live_account                Whether to get the onboarding data for a live mode or test mode account.
+	 * @param string  $return_url                  URL to redirect to at the end of the flow.
+	 * @param array   $site_data                   Data to track ToS agreement.
+	 * @param array   $user_data                   Data about the user doing the onboarding (location and device).
+	 * @param array   $account_data                Data to prefill the onboarding.
+	 * @param array   $actioned_notes              Actioned WCPay note names to be sent to the onboarding flow.
+	 * @param bool    $progressive                 Whether we need to enable progressive onboarding prefill.
+	 * @param bool    $collect_payout_requirements Whether we need to redirect user to Stripe KYC to complete their payouts data.
+	 * @param ?string $referral_code              Referral code to be used for onboarding.
 	 *
 	 * @return array An array containing the url and state fields.
 	 * @throws API_Exception Exception thrown on request failure.
 	 */
-	public function get_onboarding_data( bool $live_account, string $return_url, array $site_data = [], array $user_data = [], array $account_data = [], array $actioned_notes = [], bool $progressive = false, bool $collect_payout_requirements = false ): array {
+	public function get_onboarding_data(
+		bool $live_account,
+		string $return_url,
+		array $site_data = [],
+		array $user_data = [],
+		array $account_data = [],
+		array $actioned_notes = [],
+		bool $progressive = false,
+		bool $collect_payout_requirements = false,
+		?string $referral_code = null
+	): array {
 		$request_args = apply_filters(
 			'wc_payments_get_onboarding_data_args',
 			[
@@ -1065,24 +1076,35 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			]
 		);
 
+		$request_args['referral_code'] = $referral_code;
+
 		return $this->request( $request_args, self::ONBOARDING_API . '/init', self::POST, true, true );
 	}
 
 	/**
 	 * Initialize the onboarding embedded KYC flow, returning a session object which is used by the frontend.
 	 *
-	 * @param bool  $live_account Whether to create live account.
-	 * @param array $site_data Site data.
-	 * @param array $user_data User data.
-	 * @param array $account_data Account data to be prefilled.
-	 * @param array $actioned_notes Actioned notes to be sent.
-	 * @param bool  $progressive Whether progressive onboarding should be enabled for this onboarding.
+	 * @param bool    $live_account Whether to create live account.
+	 * @param array   $site_data Site data.
+	 * @param array   $user_data User data.
+	 * @param array   $account_data Account data to be prefilled.
+	 * @param array   $actioned_notes Actioned notes to be sent.
+	 * @param bool    $progressive Whether progressive onboarding should be enabled for this onboarding.
+	 * @param ?string $referral_code Referral code to be used for onboarding.
 	 *
 	 * @return array
 	 *
 	 * @throws API_Exception
 	 */
-	public function initialize_onboarding_embedded_kyc( bool $live_account, array $site_data = [], array $user_data = [], array $account_data = [], array $actioned_notes = [], bool $progressive = false ): array {
+	public function initialize_onboarding_embedded_kyc(
+		bool $live_account,
+		array $site_data = [],
+		array $user_data = [],
+		array $account_data = [],
+		array $actioned_notes = [],
+		bool $progressive = false,
+		?string $referral_code = null
+	): array {
 		$request_args = apply_filters(
 			'wc_payments_get_onboarding_data_args',
 			[
@@ -1094,6 +1116,8 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 				'progressive'         => $progressive,
 			]
 		);
+
+		$request_args['referral_code'] = $referral_code;
 
 		$session = $this->request( $request_args, self::ONBOARDING_API . '/embedded', self::POST, true, true );
 

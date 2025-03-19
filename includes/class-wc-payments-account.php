@@ -40,6 +40,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	const TRACKS_EVENT_ACCOUNT_CONNECT_WPCOM_CONNECTION_FAILURE = 'wcpay_account_connect_wpcom_connection_failure';
 	const TRACKS_EVENT_ACCOUNT_CONNECT_FINISHED                 = 'wcpay_account_connect_finished';
 	const TRACKS_EVENT_KYC_REMINDER_MERCHANT_RETURNED           = 'wcpay_kyc_reminder_merchant_returned';
+	const TRACKS_EVENT_ACCOUNT_REFERRAL                         = 'wcpay_account_referral';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -117,6 +118,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		add_action( 'admin_init', [ $this, 'maybe_redirect_from_onboarding_wizard_page' ], 15 );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_from_connect_page' ], 15 );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_from_overview_page' ], 15 );
+		add_action( 'admin_init', [ $this, 'maybe_redirect_onboarding_referral' ], 15 );
 
 		// Add handlers for inbox notes and reminders.
 		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'handle_instant_deposits_inbox_note' ] );
@@ -866,6 +868,33 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		);
 
 		return true;
+	}
+
+	public function maybe_redirect_onboarding_referral(): void {
+		if ( ! is_admin() || wp_doing_ajax() || ! current_user_can( 'manage_woocommerce' ) ) {
+			return;
+		}
+
+		if ( ! isset( $_GET['woopayments-ref'] ) ) {
+			return;
+		}
+
+		$referral_code = sanitize_text_field( wp_unslash( $_GET['woopayments-ref'] ) );
+		$referral_code = $this->onboarding_service->normalize_and_store_referral_code( $referral_code );
+		if ( empty( $referral_code ) ) {
+			return;
+		}
+
+		// Track the referral code.
+		$this->tracks_event(
+			self::TRACKS_EVENT_ACCOUNT_REFERRAL,
+			[
+				'referral_code' => $referral_code,
+				'referrer'      => wp_get_referer(),
+			]
+		);
+
+		$this->redirect_service->redirect_to_connect_page( null, WC_Payments_Onboarding_Service::FROM_REFERRAL );
 	}
 
 	/**
@@ -2034,7 +2063,8 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			WC_Payments_Utils::array_filter_recursive( $account_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
 			WC_Payments_Onboarding_Service::get_actioned_notes(),
 			$progressive,
-			$collect_payout_requirements
+			$collect_payout_requirements,
+			$this->onboarding_service->get_referral_code()
 		);
 
 		$should_enable_woopay   = filter_var( $onboarding_data['woopay_enabled_by_default'] ?? false, FILTER_VALIDATE_BOOLEAN );
@@ -2604,7 +2634,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			$force_refresh
 		);
 	}
-
 
 	/**
 	 * Send a Tracks event.
