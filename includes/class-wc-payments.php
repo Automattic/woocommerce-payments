@@ -754,10 +754,8 @@ class WC_Payments {
 		}
 
 		// Load Stripe Billing subscription integration.
-		if ( WC_Payments_Features::is_stripe_billing_eligible() ) {
-			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions.php';
-			WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::$order_service, self::$account, self::$token_service );
-		}
+		include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions.php';
+		WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::$order_service, self::$account, self::$token_service );
 
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '7.9.0', '<' ) ) {
 			add_action( 'woocommerce_onboarding_profile_data_updated', 'WC_Payments_Features::maybe_enable_wcpay_subscriptions_after_onboarding', 10, 2 );
