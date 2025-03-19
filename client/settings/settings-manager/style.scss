@@ -1,17 +1,20 @@
 /* this can be removed after all the settings sections are converted to the new layout */
 
-body.woocommerce_page_wc-settings-checkout,
-body.woocommerce_page_wc-settings-checkout .settings-content,
-body.woocommerce_page_wc-settings-checkout #wpbody-content,
-body.woocommerce_page_wc-settings-checkout #wpcontent {
-	background: #fff !important;
+body.woocommerce_page_wc-settings.woocommerce_page_wc-settings-checkout,
+body.woocommerce_page_wc-settings.woocommerce_page_wc-settings-checkout
+	.settings-content,
+body.woocommerce_page_wc-settings.woocommerce_page_wc-settings-checkout
+	#wpbody-content,
+body.woocommerce_page_wc-settings.woocommerce_page_wc-settings-checkout
+	#wpcontent {
+	background: #fff;
 }
 
 /* this can be removed after the navigation is removed from core */
-body.woocommerce_page_wc-settings-checkout
+body.woocommerce_page_wc-settings.woocommerce_page_wc-settings-checkout
 	.woocommerce
 	nav.woo-nav-tab-wrapper {
-	display: none !important;
+	display: none;
 }
 
 body.woocommerce_page_wc-settings-checkout .wcpay-settings-layout {
