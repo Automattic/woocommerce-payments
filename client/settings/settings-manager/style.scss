@@ -7,6 +7,7 @@ body.woocommerce_page_wc-settings-checkout #wpcontent {
 	background: #fff !important;
 }
 
+/* this can be removed after the navigation is removed from core */
 body.woocommerce_page_wc-settings-checkout
 	.woocommerce
 	nav.woo-nav-tab-wrapper {
