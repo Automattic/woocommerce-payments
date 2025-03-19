@@ -43,12 +43,6 @@ const formatDetails = ( payment ) => {
 					{ paymentMethod.iban_last4 }
 				</Fragment>
 			);
-		case 'alipay':
-		case 'affirm':
-		case 'afterpay_clearpay':
-		case 'klarna':
-		case 'multibanco':
-		case 'wechat_pay':
 		default:
 			return <Fragment />;
 	}
