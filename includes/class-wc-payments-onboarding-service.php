@@ -510,7 +510,7 @@ class WC_Payments_Onboarding_Service {
 					'country'       => $self_assessment_data['country'] ?? null,
 					'email'         => $self_assessment_data['email'] ?? null,
 					'business_name' => $self_assessment_data['business_name'] ?? null,
-					'url'           => $self_assessment_data['url'] ?? null,
+					'url'           => $self_assessment_data['site'] ?? null,
 					'mcc'           => $self_assessment_data['mcc'] ?? null,
 					'business_type' => $business_type,
 					'company'       => [
