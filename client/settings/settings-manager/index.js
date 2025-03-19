@@ -29,7 +29,6 @@ import {
 } from '../../data';
 import FraudProtection from '../fraud-protection';
 import DuplicatedPaymentMethodsContext from './duplicated-payment-methods-context';
-import { unregisterPlugin, getPlugins } from '@wordpress/plugins';
 import './style.scss';
 
 const ExpressCheckoutDescription = () => (
@@ -180,14 +179,6 @@ const SettingsManager = () => {
 		dismissedDuplicateNotices,
 		setDismissedDuplicateNotices,
 	] = useState( wcpaySettings.dismissedDuplicateNotices || {} );
-
-	const ITEMS_TO_REMOVE = [ 'activity-panel-header-item' ];
-	const plugins = getPlugins( 'woocommerce-admin' );
-	plugins.forEach( ( plugin ) => {
-		if ( ITEMS_TO_REMOVE.includes( plugin.name ) ) {
-			unregisterPlugin( plugin.name );
-		}
-	} );
 
 	return (
 		<SettingsLayout>
