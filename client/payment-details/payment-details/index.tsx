@@ -14,7 +14,6 @@ import ErrorBoundary from '../../components/error-boundary';
 import PaymentDetailsSummary from '../summary';
 import PaymentDetailsTimeline from '../timeline';
 import PaymentDetailsPaymentMethod from '../payment-method';
-import PaymentTransactionBreakdown from '../transaction-breakdown';
 import { ApiError } from '../../types/errors';
 import { Charge } from '../../types/charges';
 import { PaymentIntent } from '../../types/payment-intents';
@@ -74,10 +73,6 @@ const PaymentDetails: React.FC< PaymentDetailsProps > = ( {
 					<PaymentDetailsTimeline paymentIntentId={ id } />
 				</ErrorBoundary>
 			) }
-
-			<ErrorBoundary>
-				<PaymentTransactionBreakdown paymentIntentId={ id } />
-			</ErrorBoundary>
 
 			<ErrorBoundary>
 				<PaymentDetailsPaymentMethod
