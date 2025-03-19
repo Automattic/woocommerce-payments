@@ -15,8 +15,6 @@ jest.mock( 'lodash', () => ( {
 describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 	let stripeElementMock, stripeInstance;
 	beforeEach( () => {
-		// jest.resetModules();
-
 		// ensuring jQuery is available globally.
 		global.$ = global.jQuery = $;
 		// ensuring that `callback` is immediately invoked on document.ready.
