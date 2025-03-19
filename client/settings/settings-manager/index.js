@@ -30,6 +30,7 @@ import {
 import FraudProtection from '../fraud-protection';
 import DuplicatedPaymentMethodsContext from './duplicated-payment-methods-context';
 import { unregisterPlugin, getPlugins } from '@wordpress/plugins';
+import './style.scss';
 
 const ExpressCheckoutDescription = () => (
 	<>
