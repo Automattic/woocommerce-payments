@@ -11,7 +11,8 @@
 	max-height: 20px;
 }
 
-.wc-payment-gateway-method-logo-wrapper.wc-payment-lpm-logo img {
+.wc-payment-gateway-method-logo-wrapper.wc-payment-lpm-logo img,
+.wc-payment-gateway-method-logo-wrapper.wc-payment-link-logo img {
 	max-height: 26px;
 }
 
