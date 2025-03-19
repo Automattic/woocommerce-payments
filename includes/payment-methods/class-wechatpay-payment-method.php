@@ -136,8 +136,8 @@ class Wechatpay_Payment_Method extends UPE_Payment_Method {
 					return [ Currency_Code::EURO ];
 				}
 
-				// Default to Chinese Yuan.
-				return [ Currency_Code::CHINESE_YUAN ];
+				// Defaulted to unsupported currency.
+				return [ 'UNSUPPORTED' ];
 		}
 	}
 }
