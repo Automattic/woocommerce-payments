@@ -15,6 +15,15 @@ import { PAYMENT_METHOD_TITLES } from 'wcpay/constants/payment-method';
  */
 const formatDetails = ( payment ) => {
 	const paymentMethod = payment[ payment.type ];
+	/**
+	 * FLAG: PAYMENT_METHODS_LIST
+	 *
+	 * When adding a payment method, if you need to display a specific detail, you can
+	 * add it here. If not, you don't need to list it here.
+	 *
+	 * If you're removing a payment method, you'll probably want to leave this section
+	 * section alone because we still need to display the details of existing transactions.
+	 */
 	switch ( payment.type ) {
 		case 'card':
 		case 'au_becs_debit':
