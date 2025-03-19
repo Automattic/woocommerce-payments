@@ -1,4 +1,0 @@
-Significance: patch
-Type: update
-
-Track action complete event in Stripe Notification embedded component.
