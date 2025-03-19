@@ -106,49 +106,34 @@ class Wechatpay_Payment_Method extends UPE_Payment_Method {
 		// Map countries to their primary currencies.
 		switch ( $account_country ) {
 			case Country_Code::AUSTRALIA:
-				return [ Currency_Code::AUSTRALIAN_DOLLAR, Currency_Code::CHINESE_YUAN ];
+				return [ Currency_Code::AUSTRALIAN_DOLLAR ];
 			case Country_Code::CANADA:
-				return [ Currency_Code::CANADIAN_DOLLAR, Currency_Code::CHINESE_YUAN ];
-			case Country_Code::CHINA:
-				return [ Currency_Code::CHINESE_YUAN ];
-			case Country_Code::DENMARK:
-				return [ Currency_Code::DANISH_KRONE, Currency_Code::EURO, Currency_Code::CHINESE_YUAN ];
+				return [ Currency_Code::CANADIAN_DOLLAR ];
 			case Country_Code::HONG_KONG:
-				return [ Currency_Code::HONG_KONG_DOLLAR, Currency_Code::CHINESE_YUAN ];
-			case Country_Code::JAPAN:
-				return [ Currency_Code::JAPANESE_YEN, Currency_Code::CHINESE_YUAN ];
-			case Country_Code::NORWAY:
-				return [ Currency_Code::NORWEGIAN_KRONE, Currency_Code::EURO, Currency_Code::CHINESE_YUAN ];
+				return [ Currency_Code::HONG_KONG_DOLLAR ];
 			case Country_Code::SINGAPORE:
-				return [ Currency_Code::SINGAPORE_DOLLAR, Currency_Code::CHINESE_YUAN ];
-			case Country_Code::SWEDEN:
-				return [ Currency_Code::SWEDISH_KRONA, Currency_Code::EURO, Currency_Code::CHINESE_YUAN ];
-			case Country_Code::SWITZERLAND:
-				return [ Currency_Code::SWISS_FRANC, Currency_Code::EURO, Currency_Code::CHINESE_YUAN ];
+				return [ Currency_Code::SINGAPORE_DOLLAR ];
 			case Country_Code::UNITED_KINGDOM:
-				return [ Currency_Code::POUND_STERLING, Currency_Code::CHINESE_YUAN ];
+				return [ Currency_Code::POUND_STERLING ];
 			case Country_Code::UNITED_STATES:
-				return [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::CHINESE_YUAN ];
+				return [ Currency_Code::UNITED_STATES_DOLLAR ];
 			default:
-				// For all European countries in the supported list, return EUR and CNY.
+				// For all European countries in the supported list, return EUR.
 				if ( in_array(
 					$account_country,
 					[
 						Country_Code::AUSTRIA,
 						Country_Code::BELGIUM,
-						Country_Code::FINLAND,
 						Country_Code::FRANCE,
 						Country_Code::GERMANY,
 						Country_Code::IRELAND,
 						Country_Code::ITALY,
-						Country_Code::LUXEMBOURG,
 						Country_Code::NETHERLANDS,
-						Country_Code::PORTUGAL,
 						Country_Code::SPAIN,
 					],
 					true
 				) ) {
-					return [ Currency_Code::EURO, Currency_Code::CHINESE_YUAN ];
+					return [ Currency_Code::EURO ];
 				}
 
 				// Default to Chinese Yuan.
