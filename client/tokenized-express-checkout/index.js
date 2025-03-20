@@ -278,9 +278,28 @@ jQuery( ( $ ) => {
 					// Otherwise, it might happen that the `shippingaddresschange` is triggered before the "add to cart" call is done,
 					// which can cause errors.
 					addToCartPromise = getCartApiHandler().addProductToCart();
-					addToCartPromise.finally( () => {
-						addToCartPromise = Promise.resolve();
-					} );
+					addToCartPromise
+						.catch( () => {
+							// if the product has not been added to the cart due to a server-side error,
+							// but after the customer clicked on the button, we need to completely remove the ECE element.
+							// I am displaying a generic error message.
+							// Technically, the error message could be parsed from the cart response. But it's not always useful.
+							getCartApiHandler().emptyCart();
+							eceButton.unmount();
+							elements = null;
+							wcpayECE.abortPayment(
+								__(
+									'There was an error processing the product with this payment method. ' +
+										'Please add the product to the cart, instead.',
+									'woocommerce-payments'
+								)
+							);
+							expressCheckoutButtonUi.hideContainer();
+							expressCheckoutButtonUi.getButtonSeparator().hide();
+						} )
+						.finally( () => {
+							addToCartPromise = Promise.resolve();
+						} );
 				}
 
 				const options = getOnClickOptions();
@@ -347,9 +366,13 @@ jQuery( ( $ ) => {
 				if (
 					getExpressCheckoutData( 'button_context' ) === 'product'
 				) {
-					// clearing the cart to avoid issues with products with low or limited availability
-					// being held hostage by customers cancelling the ECE.
-					getCartApiHandler().emptyCart();
+					// waiting for the "add to cart" promise to complete, before we remove the products.
+					// otherwise there's the risk that the promise hasn't completed yet and the cart isn't emptied.
+					addToCartPromise.finally( () => {
+						// clearing the cart to avoid issues with products with low or limited availability
+						// being held hostage by customers cancelling the ECE.
+						getCartApiHandler().emptyCart();
+					} );
 				}
 
 				onCancelHandler();
@@ -449,6 +472,9 @@ jQuery( ( $ ) => {
 							return;
 						}
 					}
+
+					// any previously added notices can be removed.
+					$( '.woocommerce-error' ).remove();
 
 					try {
 						expressCheckoutButtonUi.blockButton();
