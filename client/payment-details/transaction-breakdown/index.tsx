@@ -56,7 +56,7 @@ const PaymentTransactionBreakdown: React.FC< PaymentTransactionBreakdownProps > 
 	}
 
 	const { formattedAmount, isMultiCurrency } = transactionAmounts;
-	const feeExchangeRate = captureEvent.fee_rates.fee_exchange_rate?.rate || 1;
+	// const feeExchangeRate = captureEvent.fee_rates.fee_exchange_rate?.rate || 1;
 	const paymentExchangeRate =
 		captureEvent.transaction_details.store_amount > 0
 			? captureEvent.transaction_details.customer_amount /
@@ -91,15 +91,15 @@ const PaymentTransactionBreakdown: React.FC< PaymentTransactionBreakdownProps > 
 			<CardBody className="wcpay-transaction-breakdown">
 				<LoadableBlock isLoading={ isLoading } numLines={ 3 }>
 					<Flex direction="column">
-						<Flex align="top">
+						<Flex align="top" wrap={ true }>
 							<FlexItem>
 								{ __(
 									'Authorized payment',
 									'woocommerce-payments'
 								) }
 							</FlexItem>
-							<FlexItem>
-								<Flex direction="column">
+							<FlexItem className="wcpay-transaction-breakdown__authorized_payment_amount">
+								<Flex direction="column" align="end">
 									<FlexItem>{ formattedAmount }</FlexItem>
 									{ conversionRate }
 								</Flex>

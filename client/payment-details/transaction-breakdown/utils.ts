@@ -17,7 +17,7 @@ export const formatFeeType = (
 		base: __( 'Base fee', 'woocommerce-payments' ),
 		additional: {
 			international: __(
-				'International card fee',
+				'International payment fee',
 				'woocommerce-payments'
 			),
 			fx: __( 'Currency conversion fee', 'woocommerce-payments' ),

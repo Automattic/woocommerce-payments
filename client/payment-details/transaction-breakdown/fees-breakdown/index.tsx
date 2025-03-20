@@ -99,7 +99,8 @@ const FeesBreakdown: React.FC< {
 			<Flex
 				className={ `wcpay-transaction-breakdown__fee_info wcpay-transaction-breakdown__${ feeType }_fee_info` }
 				wrap={ true }
-				justify="end"
+				justify="space-between"
+				align="end"
 			>
 				<FlexItem className="wcpay-transaction-breakdown__fee_name">
 					{ formattedFeeType }
