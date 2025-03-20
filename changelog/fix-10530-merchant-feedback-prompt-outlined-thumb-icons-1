@@ -1,5 +1,0 @@
-Significance: patch
-Type: fix
-Comment: Behind feature flag: update the merchant feedback prompt thumbs up/down icons to use the current outlined version for consistent visual language with wp-admin
-
-

@@ -1,5 +1,0 @@
-Significance: patch
-Type: dev
-Comment: Add a single tracks event - wcadmin_wcpay_csv_export_click to track export requests of transactions, payouts and disputes, using the new async export method. See - https://github.com/Automattic/woocommerce-payments/issues/9969
-
-
