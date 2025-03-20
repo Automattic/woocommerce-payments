@@ -186,6 +186,21 @@ declare global {
 		}
 	>;
 
+	const wooPaymentsPaymentMethodsConfig: Record<
+		string,
+		{
+			isReusable: boolean;
+			isBnpl: boolean;
+			title: string;
+			icon: string;
+			darkIcon: string;
+			showSaveOption: boolean;
+			countries: string[];
+			testingInstructions: string;
+			forceNetworkSavedCards: boolean;
+		}
+	>;
+
 	const wc: {
 		wcSettings: typeof wcSettingsModule;
 		tracks: {
