@@ -496,8 +496,15 @@ class WC_Payments_Webhook_Processing_Service {
 		}
 
 		$application_fee_amount = $charges_data[0]['application_fee_amount'] ?? null;
+
 		if ( $application_fee_amount ) {
-			$meta_data_to_update['_wcpay_transaction_fee'] = WC_Payments_Utils::interpret_stripe_amount( $application_fee_amount, $currency );
+			$fee = WC_Payments_Utils::interpret_stripe_amount( $application_fee_amount, $currency );
+			$meta_data_to_update['_wcpay_transaction_fee'] = $fee;
+
+			$order_currency = $order->get_currency();
+			if ( $order_currency && strtolower( $currency ) === strtolower( $order_currency ) ) {
+				$meta_data_to_update['_wcpay_net'] = $order->get_total() - $fee;
+			}
 		}
 
 		foreach ( $meta_data_to_update as $key => $value ) {
