@@ -9,7 +9,7 @@
       "action": "activate"
     },
     "woocommerce-payments": {
-      "source": "../../../../woocommerce-payments",
+      "source": "../woocommerce-payments",
       "action": "test"
     }
   },
