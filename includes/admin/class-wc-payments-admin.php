@@ -400,6 +400,24 @@ class WC_Payments_Admin {
 				$menu_position,
 			);
 			remove_menu_page( 'wc-admin&path=/payments/connect' );
+
+			global $menu;
+			// If there are providers with active incentive, add a notice badge to the Payments menu item.
+			if ( apply_filters( 'woocommerce_admin_allowed_promo_notes', [] ) ) {
+				$badge = ' <span class="wcpay-menu-badge awaiting-mod count-1"><span class="plugin-count">1</span></span>';
+				foreach ( $menu as $index => $menu_item ) {
+					// Only add the badge markup if not already present and the menu item is the Payments menu item.
+					if ( 0 === strpos( $menu_item[0], $menu_title )
+						&& $menu_path === $menu_item[2]
+						&& false === strpos( $menu_item[0], $badge ) ) {
+
+						$menu[ $index ][0] .= $badge; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+						// One menu item with a badge is more than enough.
+						break;
+					}
+				}
+			}
 		}
 
 		// Merchants are unable to see their deposits, transactions, disputes and settings if their account is rejected or under review.
@@ -1198,7 +1216,7 @@ class WC_Payments_Admin {
 		$badge = self::MENU_NOTIFICATION_BADGE;
 		foreach ( $menu as $index => $menu_item ) {
 			if ( false === strpos( $menu_item[0], $badge )
-				&& ( 'wc-admin&path=/payments/connect' === $menu_item[2] || 'admin.php?page=wc-settings&tab=checkout' === $menu_item[2] ) ) {
+				&& ( 'wc-admin&path=/payments/connect' === $menu_item[2] ) ) {
 				$menu[ $index ][0] .= $badge; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 
 				// One menu item with a badge is more than enough.
