@@ -44,6 +44,8 @@ export interface Transaction {
 	// Usually last 4 digits for card payments, bank name for bank transfers...
 	source_identifier: string;
 	source_device?: string;
+	// FLAG: PAYMENT_METHODS_LIST
+	// This source could be the network, brand, or payment method ID.
 	source:
 		| 'ach_credit_transfer'
 		| 'ach_debit'
