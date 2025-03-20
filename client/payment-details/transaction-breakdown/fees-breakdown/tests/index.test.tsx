@@ -148,7 +148,7 @@ describe( 'FeesBreakdown', () => {
 			} )
 		).toBeInTheDocument();
 		expect(
-			screen.getByText( 'International card fee (discounted)', {
+			screen.getByText( 'International payment fee (discounted)', {
 				selector:
 					'.wcpay-transaction-breakdown__additional_international_fee_info  .wcpay-transaction-breakdown__fee_name',
 			} )
@@ -202,7 +202,7 @@ describe( 'FeesBreakdown', () => {
 
 		expect( screen.getByText( 'Base fee' ) ).toBeInTheDocument();
 		expect(
-			screen.getByText( 'International card fee' )
+			screen.getByText( 'International payment fee' )
 		).toBeInTheDocument();
 		expect(
 			screen.getByText( '2.9% + $0.30 USD', {
@@ -278,7 +278,7 @@ describe( 'FeesBreakdown', () => {
 			screen.getByText( 'Base fee (discounted)' )
 		).toBeInTheDocument();
 		expect(
-			screen.getByText( 'International card fee (discounted)' )
+			screen.getByText( 'International payment fee (discounted)' )
 		).toBeInTheDocument();
 		expect(
 			screen.getByText( '0% + $0.00 USD', {
@@ -335,7 +335,7 @@ describe( 'FeesBreakdown', () => {
 
 		expect( screen.getByText( 'Base fee' ) ).toBeInTheDocument();
 		expect(
-			screen.getByText( 'International card fee' )
+			screen.getByText( 'International payment fee' )
 		).toBeInTheDocument();
 		expect(
 			screen.getByText( '2.9% + $0.30 USD', {

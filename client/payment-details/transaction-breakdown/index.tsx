@@ -69,7 +69,7 @@ const PaymentTransactionBreakdown: React.FC< PaymentTransactionBreakdownProps > 
 				{ ' @ 1 ' }
 				{ captureEvent.transaction_details.customer_currency }
 				{ ' → ' }
-				{ Math.round( 100000 / paymentExchangeRate ) / 1000000 }
+				{ Math.round( 1000000 / paymentExchangeRate ) / 1000000 }
 				{ '	' }
 				{ captureEvent.transaction_details.store_currency }
 			</FlexItem>

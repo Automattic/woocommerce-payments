@@ -24,9 +24,9 @@ describe( 'formatFeeType', () => {
 		expect( formatFeeType( 'total' ) ).toBe( 'Total transaction fee' );
 	} );
 
-	it( 'returns international card fee text for additional international type', () => {
+	it( 'returns international payment fee text for additional international type', () => {
 		expect( formatFeeType( 'additional', 'international' ) ).toBe(
-			'International card fee'
+			'International payment fee'
 		);
 	} );
 

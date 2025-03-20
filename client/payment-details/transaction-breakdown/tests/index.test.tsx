@@ -219,7 +219,7 @@ describe( 'PaymentTransactionBreakdown', () => {
 			} )
 		).toBeInTheDocument();
 		expect(
-			screen.getByText( 'International card fee' )
+			screen.getByText( 'International payment fee' )
 		).toBeInTheDocument();
 		expect(
 			screen.getByText( '1%', {
@@ -302,8 +302,6 @@ describe( 'PaymentTransactionBreakdown', () => {
 			selector: 'div.wcpay-transaction-breakdown__conversion_rate',
 			exact: false,
 		} );
-		expect( conversionRateText ).toHaveTextContent(
-			'@ 1 USD → 1.176471 EUR'
-		);
+		expect( conversionRateText ).toHaveTextContent( '@ 1 USD → 0.85 EUR' );
 	} );
 } );
