@@ -18,8 +18,8 @@ const options = {
 		spotlight: { styles: { padding: 8 } },
 		autoScroll: {
 			behavior: 'smooth',
+			block: 'nearest',
 		},
-		block: 'nearest',
 	},
 	popperModifiers: [
 		{
