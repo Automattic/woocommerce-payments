@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Tests: Suppressed unexpected JSON output in maybe_handle_onboarding test by wrapping execution with ob_start() and ob_end_clean()

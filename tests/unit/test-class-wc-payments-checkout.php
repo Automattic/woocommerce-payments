@@ -388,6 +388,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 			[
 				'card' => [
 					'isReusable'             => true,
+					'isBnpl'                 => false,
 					'title'                  => 'Cards',
 					'icon'                   => $icon_url,
 					'darkIcon'               => $dark_icon_url,
@@ -398,6 +399,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 				],
 				'link' => [
 					'isReusable'             => true,
+					'isBnpl'                 => false,
 					'title'                  => 'Link',
 					'icon'                   => $icon_url,
 					'darkIcon'               => $dark_icon_url,

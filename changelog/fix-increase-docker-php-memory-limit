@@ -1,5 +1,0 @@
-Significance: patch
-Type: fix
-Comment: Increased the PHP memory limit for the Docker container
-
-

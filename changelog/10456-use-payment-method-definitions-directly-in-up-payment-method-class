@@ -1,5 +1,0 @@
-Significance: patch
-Type: dev
-Comment: Refactor payment method definitions to be used directly by UPE_Payment_Method, this feature is not in use yet.
-
-
