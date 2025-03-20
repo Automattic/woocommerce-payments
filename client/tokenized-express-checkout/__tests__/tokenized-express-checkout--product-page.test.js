@@ -19,9 +19,7 @@ jest.mock( '@wordpress/api-fetch', () => ( {
 } ) );
 
 describe( 'Tokenized Express Checkout Element - Product page logic', () => {
-	let stripeElementMock,
-		stripeInstance,
-		stripeElementRegisteredEventCallbacks;
+	let stripeElementMock, stripeInstance;
 	beforeEach( () => {
 		apiFetch.mockReset();
 		// ensuring jQuery is available globally.
@@ -97,7 +95,7 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 			</div>
 		);
 
-		stripeElementRegisteredEventCallbacks = {};
+		const stripeElementRegisteredEventCallbacks = {};
 		stripeElementMock = {
 			mount: jest.fn(),
 			unmount: jest.fn(),
