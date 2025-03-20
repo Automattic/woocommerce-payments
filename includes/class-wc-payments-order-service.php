@@ -1446,18 +1446,19 @@ class WC_Payments_Order_Service {
 	 * @param WC_Order_Refund $wc_refund The WC refund object.
 	 * @param string          $refund_id The refund ID.
 	 * @param string|null     $refund_balance_transaction_id The balance transaction ID of the refund.
+	 * @param string          $status The status of the refund (pending or succeeded).
 	 * @throws Order_Not_Found_Exception
 	 * @throws Exception
 	 */
-	public function add_note_and_metadata_for_refund( WC_Order $order, WC_Order_Refund $wc_refund, string $refund_id, ?string $refund_balance_transaction_id ): void {
-		$note = $this->generate_payment_refunded_note( $wc_refund->get_amount(), $wc_refund->get_currency(), $refund_id, $wc_refund->get_reason(), $order );
+	public function add_note_and_metadata_for_refund( WC_Order $order, WC_Order_Refund $wc_refund, string $refund_id, ?string $refund_balance_transaction_id, string $status ): void {
+		$note = $this->generate_payment_refunded_note( $wc_refund->get_amount(), $wc_refund->get_currency(), $refund_id, $wc_refund->get_reason(), $order, $status );
 
 		if ( ! $this->order_note_exists( $order, $note ) ) {
 			$order->add_order_note( $note );
 		}
 
 		// Set refund metadata.
-		$this->set_wcpay_refund_status_for_order( $order, 'successful' );
+		$this->set_wcpay_refund_status_for_order( $order, $status );
 		$this->set_wcpay_refund_id_for_refund( $wc_refund, $refund_id );
 		if ( isset( $refund_balance_transaction_id ) ) {
 			$this->set_wcpay_refund_transaction_id_for_order( $wc_refund, $refund_balance_transaction_id );
@@ -1872,35 +1873,49 @@ class WC_Payments_Order_Service {
 	/**
 	 * Generates the HTML note for a refunded payment.
 	 *
-	 * @param float    $refunded_amount Amount refunded.
-	 * @param string   $refunded_currency Refund currency.
-	 * @param string   $wcpay_refund_id WCPay Refund ID.
-	 * @param string   $refund_reason Refund reason.
-	 * @param WC_Order $order Order object.
+	 * @param float    $refunded_amount  Amount refunded.
+	 * @param string   $refunded_currency  Refund currency.
+	 * @param  string   $wcpay_refund_id  WCPay Refund ID.
+	 * @param  string   $refund_reason  Refund reason.
+	 * @param  WC_Order $order  Order object.
+	 * @param  string   $status The status of the refund (pending or succeeded).
+	 *
 	 * @return string HTML note.
 	 */
-	private function generate_payment_refunded_note( float $refunded_amount, string $refunded_currency, string $wcpay_refund_id, string $refund_reason, WC_Order $order ): string {
+	private function generate_payment_refunded_note( float $refunded_amount, string $refunded_currency, string $wcpay_refund_id, string $refund_reason, WC_Order $order, string $status ): string {
 		$multi_currency_instance = WC_Payments_Multi_Currency();
 		$formatted_price         = WC_Payments_Explicit_Price_Formatter::get_explicit_price( $multi_currency_instance->get_backend_formatted_wc_price( $refunded_amount, [ 'currency' => strtoupper( $refunded_currency ) ] ), $order );
+
+		$status_text = 'pending' === $status ?
+			sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+					__( 'is <a>pending</a>', 'woocommerce-payments' ),
+					[
+						'a' => '<a href="https://woocommerce.com/document/woopayments/managing-money/#pending-refunds" target="_blank" rel="noopener noreferrer">',
+					]
+				)
+			)
+			: __( 'was successfully processed', 'woocommerce-payments' );
 
 		if ( empty( $refund_reason ) ) {
 			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the refund amount, %2: WooPayments, %3: ID of the refund */
-					__( 'A refund of %1$s was successfully processed using %2$s (<code>%3$s</code>).', 'woocommerce-payments' ),
+				/* translators: %1: the refund amount, %2: WooPayments, %3: ID of the refund, %4: status text */
+					__( 'A refund of %1$s %4$s using %2$s (<code>%3$s</code>).', 'woocommerce-payments' ),
 					[
 						'code' => '<code>',
 					]
 				),
 				$formatted_price,
 				'WooPayments',
-				$wcpay_refund_id
+				$wcpay_refund_id,
+				$status_text
 			);
 		} else {
 			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the successfully charged amount, %2: WooPayments, %3: reason, %4: refund id */
-					__( 'A refund of %1$s was successfully processed using %2$s. Reason: %3$s. (<code>%4$s</code>)', 'woocommerce-payments' ),
+				/* translators: %1: the refund amount, %2: WooPayments, %3: reason, %4: refund id, %5: status text */
+					__( 'A refund of %1$s %5$s using %2$s. Reason: %3$s. (<code>%4$s</code>)', 'woocommerce-payments' ),
 					[
 						'code' => '<code>',
 					]
@@ -1908,7 +1923,8 @@ class WC_Payments_Order_Service {
 				$formatted_price,
 				'WooPayments',
 				$refund_reason,
-				$wcpay_refund_id
+				$wcpay_refund_id,
+				$status_text
 			);
 		}
 

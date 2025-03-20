@@ -2310,8 +2310,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// translators: %1$: order id.
 			return new WP_Error( 'wcpay_edit_order_refund_not_found', sprintf( __( 'A refund cannot be found for order: %1$s', 'woocommerce-payments' ), $order->get_id() ) );
 		}
-		// If the refund was successful, add a note to the order and update the refund status.
-		$this->order_service->add_note_and_metadata_for_refund( $order, $wc_refund, $refund['id'], $refund['balance_transaction'] ?? null );
+		// There is no error. Refund status can be either pending or succeeded, add a note to the order and update the refund status.
+		$this->order_service->add_note_and_metadata_for_refund( $order, $wc_refund, $refund['id'], $refund['balance_transaction'] ?? null, $refund['status'] );
 
 		return true;
 	}
@@ -4588,5 +4588,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( Payment_Method::AFTERPAY === $this->get_selected_stripe_payment_type_id() ) {
 			$this->handle_afterpay_shipping_requirement( $order, $request );
 		}
+	}
+
+	/**
+	 * Get a generic message for pending refunds.
+	 *
+	 * @param array $refund The refund data.
+	 * @return string The pending refund message.
+	 */
+	public function get_pending_refund_reason_message( $refund ) {
+		return __( 'Your refund is pending because the customer\'s bank is still processing the refund—and no action is required from you—or there\'s an insufficient balance in your Stripe account that you need to address.', 'woocommerce-payments' );
 	}
 }
