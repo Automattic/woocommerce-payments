@@ -155,3 +155,32 @@
 		}
 	}
 }
+
+body {
+	&.woocommerce_page_wc-settings-checkout {
+		.express-checkouts {
+			.express-checkouts-list {
+				.express-checkout {
+					padding-left: 0;
+					padding-right: 0;
+				}
+				.express-checkout__label-container {
+					display: block;
+				}
+			}
+		}
+	}
+}
+
+@media ( min-width: 661px ) {
+	body {
+		&.woocommerce_page_wc-settings-checkout {
+			.express-checkout__text-container {
+				width: 100%;
+			}
+			.express-checkout__link {
+				margin-left: auto;
+			}
+		}
+	}
+}

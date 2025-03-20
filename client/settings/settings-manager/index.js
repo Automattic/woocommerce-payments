@@ -29,6 +29,7 @@ import {
 } from '../../data';
 import FraudProtection from '../fraud-protection';
 import DuplicatedPaymentMethodsContext from './duplicated-payment-methods-context';
+import './style.scss';
 
 const ExpressCheckoutDescription = () => (
 	<>
@@ -146,12 +147,6 @@ const SettingsManager = () => {
 	const { isLoading } = useSettings();
 
 	useLayoutEffect( () => {
-		/**
-		 * This should be imported in the upper level after the new UX is implemented
-		 * for all settings pages.
-		 */
-		import( './style.scss' );
-
 		const { anchor } = getQuery();
 		const { hash } = window.location;
 		const scrollTo = anchor || hash;

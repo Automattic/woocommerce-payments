@@ -1,81 +1,60 @@
-/* this can be removed after all the settings sections are converted to the new layout */
+body {
+	/* this can be removed after all the settings sections are converted to the new layout */
+	&.woocommerce_page_wc-settings {
+		&.woocommerce_page_wc-settings-checkout {
+			background: #fff;
+			.settings-content {
+				background: #fff;
+			}
+			#wpbody-content {
+				background: #fff;
+			}
+			#wpcontent {
+				background: #fff;
+			}
 
-body.woocommerce_page_wc-settings.woocommerce_page_wc-settings-checkout,
-body.woocommerce_page_wc-settings.woocommerce_page_wc-settings-checkout
-	.settings-content,
-body.woocommerce_page_wc-settings.woocommerce_page_wc-settings-checkout
-	#wpbody-content,
-body.woocommerce_page_wc-settings.woocommerce_page_wc-settings-checkout
-	#wpcontent {
-	background: #fff;
-}
+			.woopay-settings {
+				.woopay-settings__appearance-card-settings {
+					box-shadow: none;
+				}
+				.woopay-settings__appearance-card-preview {
+					box-shadow: none;
+				}
+			}
+			.woopay-settings__preview .preview-layout {
+				border: 0;
+			}
+		}
 
-/* this can be removed after the navigation is removed from core */
-body.woocommerce_page_wc-settings.woocommerce_page_wc-settings-checkout
-	.woocommerce
-	nav.woo-nav-tab-wrapper {
-	display: none;
-}
-
-body.woocommerce_page_wc-settings-checkout
-	.settings-section__controls
-	.components-card__header.components-card-header.payment-methods__header {
-	padding-left: 0;
-}
-
-body.woocommerce_page_wc-settings-checkout .wcpay-settings-layout {
-	margin: 0;
-	max-width: 1184px;
-}
-
-body.woocommerce_page_wc-settings-checkout .components-surface.components-card {
-	box-shadow: none;
-}
-
-body.woocommerce_page_wc-settings-checkout
-	.components-card__body.components-card-body.wcpay-card-body {
-	padding: 0;
-}
-
-body.woocommerce_page_wc-settings-checkout
-	.settings-section:not( .settings-section:last-child ) {
-	margin-bottom: 50px;
-}
-
-body.woocommerce_page_wc-settings-checkout
-	.express-checkouts
-	.express-checkouts-list
-	.express-checkout__label-container {
-	display: block;
-}
-
-body.woocommerce_page_wc-settings-checkout
-	.express-checkouts
-	.express-checkouts-list
-	.express-checkout,
-body.woocommerce_page_wc-settings-checkout .payment-method__list-item {
-	padding-left: 0;
-	padding-right: 0;
-}
-
-@media ( min-width: 661px ) {
-	body.woocommerce_page_wc-settings-checkout
-		.express-checkout__text-container {
-		width: 100%;
+		/* this can be removed after the navigation is removed from core */
+		&.woocommerce_page_wc-settings-checkout {
+			.woocommerce {
+				nav {
+					&.woo-nav-tab-wrapper {
+						display: none;
+					}
+				}
+			}
+			.components-surface {
+				&.components-card {
+					box-shadow: none;
+				}
+			}
+		}
 	}
-	body.woocommerce_page_wc-settings-checkout .express-checkout__link {
-		margin-left: auto;
-	}
-}
 
-@media ( min-width: 961px ) {
-	body.woocommerce_page_wc-settings-checkout .wcpay-settings-layout {
-		padding: 0 30px;
-	}
-}
-
-@media ( max-width: 800px ) {
-	body.woocommerce_page_wc-settings-checkout .settings-section__details {
-		max-width: 100%;
+	&.woocommerce_page_wc-settings-checkout {
+		.components-surface.components-card {
+			box-shadow: none;
+		}
+		.components-card__body {
+			&.components-card-body.wcpay-card-body {
+				padding: 0;
+			}
+		}
+		.payment-method__list-item {
+			padding-left: 0;
+			padding-right: 0;
+		}
 	}
 }
