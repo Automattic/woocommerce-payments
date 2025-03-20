@@ -113,6 +113,13 @@ class UPE_Payment_Method {
 	protected $countries = [];
 
 	/**
+	 * Constant for all currencies supported
+	 *
+	 * @var string
+	 */
+	protected const ALL_CURRENCIES_SUPPORTED = 'ALL_CURRENCIES';
+
+	/**
 	 * Create instance of payment method
 	 *
 	 * @param WC_Payments_Token_Service $token_service Instance of WC_Payments_Token_Service.
@@ -279,9 +286,13 @@ class UPE_Payment_Method {
 			}
 		}
 
+		if ( $this->are_all_currencies_supported() ) {
+			return true;
+		}
+
 		$supported_currencies = $this->get_currencies();
 
-		return empty( $supported_currencies ) || in_array( $current_store_currency, $supported_currencies, true );
+		return ! empty( $supported_currencies ) && in_array( $current_store_currency, $supported_currencies, true );
 	}
 
 	/**
@@ -365,6 +376,15 @@ class UPE_Payment_Method {
 		$account_country = isset( $account['country'] ) ? strtoupper( $account['country'] ) : '';
 
 		return $this->has_domestic_transactions_restrictions() ? [ $account_country ] : $this->countries;
+	}
+
+	/**
+	 * Returns true if all currencies are supported
+	 *
+	 * @return bool
+	 */
+	private function are_all_currencies_supported() {
+		return [ self::ALL_CURRENCIES_SUPPORTED ] === $this->get_currencies();
 	}
 
 	/**
