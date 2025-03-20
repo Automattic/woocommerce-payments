@@ -11,6 +11,7 @@ use WCPay\Constants\Intent_Status;
 use WCPay\Core\Server\Request;
 use WCPay\Database_Cache;
 use WCPay\Inline_Script_Payloads\Woo_Payments_Payment_Method_Definitions;
+use WCPay\Inline_Script_Payloads\Woo_Payments_Payment_Methods_Config;
 use WCPay\Logger;
 use WCPay\WooPay\WooPay_Utilities;
 
@@ -602,6 +603,12 @@ class WC_Payments_Admin {
 		wp_add_inline_script(
 			'WCPAY_DASH_APP',
 			new Woo_Payments_Payment_Method_Definitions(),
+			'before'
+		);
+
+		wp_add_inline_script(
+			'WCPAY_DASH_APP',
+			new Woo_Payments_Payment_Methods_Config(),
 			'before'
 		);
 
