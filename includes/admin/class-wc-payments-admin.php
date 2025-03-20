@@ -395,7 +395,7 @@ class WC_Payments_Admin {
 				$menu_title,
 				'manage_woocommerce',
 				$menu_path,
-				null,
+				'',
 				$menu_icon,
 				$menu_position,
 			);
