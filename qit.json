@@ -1,0 +1,26 @@
+{
+  "wp": "stable",
+  "php_version": "7.4",
+  "plugins": {
+    "woocommerce": {
+      "action": "activate"
+    },
+    "wordpress-importer": {
+      "action": "activate"
+    },
+    "woocommerce-payments": {
+      "source": "../../../../woocommerce-payments",
+      "action": "test"
+    }
+  },
+  "themes": {
+    "storefront":  {
+      "source": "https://downloads.wordpress.org/theme/storefront.zip",
+      "action": "activate"
+    },
+    "twentytwentyfour": {
+      "source": "https://downloads.wordpress.org/theme/twentytwentyfour.zip",
+      "action": "activate"
+    }
+  }
+}
