@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "82ae2b86cd431fd736751ad4c4460abb",
+    "content-hash": "78c3dd01920b1599d23996677749a82d",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -6746,16 +6746,16 @@
         },
         {
             "name": "woocommerce/qit-cli",
-            "version": "0.4.0",
+            "version": "0.8.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/woocommerce/qit-cli.git",
-                "reference": "8c71a1ffd67879d43bde45512bb7fe3ff399814b"
+                "reference": "bd17555d648f88bbf2f5c7edb83b87bb65ca408c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/woocommerce/qit-cli/zipball/8c71a1ffd67879d43bde45512bb7fe3ff399814b",
-                "reference": "8c71a1ffd67879d43bde45512bb7fe3ff399814b",
+                "url": "https://api.github.com/repos/woocommerce/qit-cli/zipball/bd17555d648f88bbf2f5c7edb83b87bb65ca408c",
+                "reference": "bd17555d648f88bbf2f5c7edb83b87bb65ca408c",
                 "shasum": ""
             },
             "require": {
@@ -6773,9 +6773,9 @@
             "description": "A command line interface for WooCommerce Quality Insights Toolkit (QIT).",
             "support": {
                 "issues": "https://github.com/woocommerce/qit-cli/issues",
-                "source": "https://github.com/woocommerce/qit-cli/tree/0.4.0"
+                "source": "https://github.com/woocommerce/qit-cli/tree/0.8.7"
             },
-            "time": "2024-01-29T16:27:45+00:00"
+            "time": "2025-03-20T02:10:12+00:00"
         },
         {
             "name": "woocommerce/woocommerce-sniffs",
@@ -7019,9 +7019,9 @@
         "php": ">=7.3",
         "ext-json": "*"
     },
-    "platform-dev": [],
+    "platform-dev": {},
     "platform-overrides": {
         "php": "7.3"
     },
-    "plugin-api-version": "2.3.0"
+    "plugin-api-version": "2.6.0"
 }
