@@ -25,6 +25,16 @@ export const TransactionsFilters = ( {
 	customerCurrencies,
 	transactionSources,
 }: TransactionsFiltersProps ): JSX.Element => {
+	const getSourceTitle = ( source: Transaction[ 'source' ] ): string => {
+		return (
+			wooPaymentsPaymentMethodsConfig[ source ]?.title ||
+			PAYMENT_METHOD_TITLES[
+				source as keyof typeof PAYMENT_METHOD_TITLES
+			] ||
+			source
+		);
+	};
+
 	const advancedFilters = useMemo(
 		() =>
 			getAdvancedFilters(
@@ -35,7 +45,7 @@ export const TransactionsFilters = ( {
 				typeof transactionSources === 'undefined'
 					? []
 					: transactionSources.map( ( source ) => ( {
-							label: PAYMENT_METHOD_TITLES[ source ] || source,
+							label: getSourceTitle( source ),
 							value: source,
 					  } ) )
 			),

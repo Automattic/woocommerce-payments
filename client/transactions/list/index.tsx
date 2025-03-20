@@ -81,6 +81,8 @@ interface Column extends TableCardColumn {
 	cellClassName?: string;
 }
 
+// FLAG: PAYMENT_METHODS_LIST
+// If your payment method needs a custom display on the transactions list, you can add it here.
 const getPaymentSourceDetails = ( txn: Transaction ) => {
 	if ( ! txn.source_identifier ) {
 		return <Fragment></Fragment>;
@@ -417,6 +419,18 @@ export const TransactionsList = (
 			};
 		};
 
+		const getPaymentMethodTitle = (
+			source: Transaction[ 'source' ]
+		): string => {
+			return (
+				wooPaymentsPaymentMethodsConfig[ source ]?.title ||
+				PAYMENT_METHOD_TITLES[
+					source as keyof typeof PAYMENT_METHOD_TITLES
+				] ||
+				source
+			);
+		};
+
 		const isFinancingType =
 			-1 !==
 			[ 'financing_payout', 'financing_paydown' ].indexOf( txn.type );
@@ -471,15 +485,15 @@ export const TransactionsList = (
 							<span className="payment-method-details-list-item">
 								<HoverTooltip
 									isVisible={ false }
-									content={
-										PAYMENT_METHOD_TITLES[ txn.source ]
-									}
+									content={ getPaymentMethodTitle(
+										txn.source
+									) }
 								>
 									<span
 										className={ `payment-method__brand payment-method__brand--${ txn.source }` }
-										aria-label={
-											PAYMENT_METHOD_TITLES[ txn.source ]
-										}
+										aria-label={ getPaymentMethodTitle(
+											txn.source
+										) }
 									/>
 								</HoverTooltip>
 								{ getPaymentSourceDetails( txn ) }
