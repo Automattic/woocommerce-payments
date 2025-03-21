@@ -35,9 +35,9 @@ export enum PAYMENT_METHOD_BRANDS {
 	VISA = 'visa',
 }
 
-// This constant is used for rendering tooltip titles for payment methods in transaction list and details pages.
+// This constant is used for rendering tooltip titles for "payment methods" in transaction list and details pages.
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export const PAYMENT_METHOD_TITLES = {
+export const TRANSACTION_PAYMENT_METHOD_TITLES = {
 	ach_credit_transfer: __( 'ACH Credit Transfer', 'woocommerce-payments' ),
 	ach_debit: __( 'ACH Debit', 'woocommerce-payments' ),
 	acss_debit: __( 'ACSS Debit', 'woocommerce-payments' ),

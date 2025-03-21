@@ -11,7 +11,7 @@ import { getQuery } from '@woocommerce/navigation';
 import { getFilters, getAdvancedFilters } from './config';
 import { formatCurrencyName } from 'multi-currency/interface/functions';
 import { recordEvent } from 'tracks';
-import { PAYMENT_METHOD_TITLES } from 'wcpay/constants/payment-method';
+import { TRANSACTION_PAYMENT_METHOD_TITLES } from 'wcpay/constants/payment-method';
 import { Transaction } from 'wcpay/data';
 
 interface TransactionsFiltersProps {
@@ -28,8 +28,8 @@ export const TransactionsFilters = ( {
 	const getSourceTitle = ( source: Transaction[ 'source' ] ): string => {
 		return (
 			wooPaymentsPaymentMethodsConfig[ source ]?.title ||
-			PAYMENT_METHOD_TITLES[
-				source as keyof typeof PAYMENT_METHOD_TITLES
+			TRANSACTION_PAYMENT_METHOD_TITLES[
+				source as keyof typeof TRANSACTION_PAYMENT_METHOD_TITLES
 			] ||
 			source
 		);

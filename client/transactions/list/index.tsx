@@ -51,7 +51,7 @@ import {
 } from '../../data/transactions/resolvers';
 import p24BankList from '../../payment-details/payment-method/p24/bank-list';
 import { HoverTooltip } from 'components/tooltip';
-import { PAYMENT_METHOD_TITLES } from 'wcpay/constants/payment-method';
+import { TRANSACTION_PAYMENT_METHOD_TITLES } from 'wcpay/constants/payment-method';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
 import { useReportExport } from 'wcpay/hooks/use-report-export';
@@ -424,8 +424,8 @@ export const TransactionsList = (
 		): string => {
 			return (
 				wooPaymentsPaymentMethodsConfig[ source ]?.title ||
-				PAYMENT_METHOD_TITLES[
-					source as keyof typeof PAYMENT_METHOD_TITLES
+				TRANSACTION_PAYMENT_METHOD_TITLES[
+					source as keyof typeof TRANSACTION_PAYMENT_METHOD_TITLES
 				] ||
 				source
 			);
