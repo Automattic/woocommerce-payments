@@ -23,7 +23,9 @@ export const isEnabled = (): boolean => wcTracks.isEnabled;
  * By default Woo adds `url`, `blog_lang`, `blog_id`, `store_id`, `products_count`, and `wc_version`
  * properties to every event.
  *
- * @param {Event}  eventName         Name of the event.
+ * Event names will be prefixed with 'wcadmin_' when recorded.
+ *
+ * @param {Event}  eventName         Name of the event – don't include the 'wcadmin_' prefix, which will be added when recorded.
  * @param {Object} [eventProperties] Event properties (optional).
  */
 export const recordEvent = (
@@ -60,7 +62,9 @@ export const recordEvent = (
 /**
  * Records events from buyers (aka shoppers).
  *
- * @param {string}  eventName         Name of the event.
+ * Event names will be prefixed with 'wcpay_' when recorded.
+ *
+ * @param {string}  eventName         Name of the event – don't include the 'wcpay_' prefix, which will be added when recorded.
  * @param {Object}  [eventProperties] Event properties (optional).
  */
 export const recordUserEvent = (
