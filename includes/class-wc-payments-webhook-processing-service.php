@@ -475,6 +475,7 @@ class WC_Payments_Webhook_Processing_Service {
 		$charges_data  = $this->read_webhook_property( $event_charges, 'data' );
 		$charge_id     = $this->read_webhook_property( $charges_data[0], 'id' );
 		$metadata      = $this->read_webhook_property( $event_object, 'metadata' );
+		$charge_amount = $this->read_webhook_property( $event_object, 'amount' ) ?? $this->read_webhook_property( $charges_data[0], 'amount' );
 
 		$payment_method_id = $charges_data[0]['payment_method'] ?? null;
 		if ( ! $order ) {
@@ -501,10 +502,8 @@ class WC_Payments_Webhook_Processing_Service {
 			$fee = WC_Payments_Utils::interpret_stripe_amount( $application_fee_amount, $currency );
 			$meta_data_to_update['_wcpay_transaction_fee'] = $fee;
 
-			$order_currency = $order->get_currency();
-			if ( $order_currency && strtolower( $currency ) === strtolower( $order_currency ) ) {
-				$meta_data_to_update['_wcpay_net'] = $order->get_total() - $fee;
-			}
+			$charge_amount                     = WC_Payments_Utils::interpret_stripe_amount( $charge_amount, $currency );
+			$meta_data_to_update['_wcpay_net'] = $charge_amount - $fee;
 		}
 
 		foreach ( $meta_data_to_update as $key => $value ) {
