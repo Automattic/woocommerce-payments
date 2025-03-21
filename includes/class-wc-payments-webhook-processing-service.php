@@ -248,17 +248,15 @@ class WC_Payments_Webhook_Processing_Service {
 		$event_data   = $this->read_webhook_property( $event_body, 'data' );
 		$event_object = $this->read_webhook_property( $event_data, 'object' );
 
-		// First, check the reason for the update. We're only interested in a status of failed.
-		$status = $this->read_webhook_property( $event_object, 'status' );
-		if ( 'failed' !== $status ) {
-			return;
-		}
-
 		// Fetch the details of the failed refund so that we can find the associated order and write a note.
-		$charge_id = $this->read_webhook_property( $event_object, 'charge' );
-		$refund_id = $this->read_webhook_property( $event_object, 'id' );
-		$amount    = $this->read_webhook_property( $event_object, 'amount' );
-		$currency  = $this->read_webhook_property( $event_object, 'currency' );
+		$charge_id           = $this->read_webhook_property( $event_object, 'charge' );
+		$refund_id           = $this->read_webhook_property( $event_object, 'id' );
+		$amount              = $this->read_webhook_property( $event_object, 'amount' );
+		$currency            = $this->read_webhook_property( $event_object, 'currency' );
+		$status              = $this->read_webhook_property( $event_object, 'status' );
+		$balance_transaction = $this->has_webhook_property( $event_object, 'balance_transaction' )
+			? $this->read_webhook_property( $event_object, 'balance_transaction' )
+			: null;
 
 		// Look up the order related to this charge.
 		$order = $this->wcpay_db->order_from_charge_id( $charge_id );
@@ -273,29 +271,9 @@ class WC_Payments_Webhook_Processing_Service {
 			);
 		}
 
-		$note = sprintf(
-			WC_Payments_Utils::esc_interpolated_html(
-			/* translators: %1: the refund amount, %2: WooPayments, %3: ID of the refund */
-				__( 'A refund of %1$s was <strong>unsuccessful</strong> using %2$s (<code>%3$s</code>).', 'woocommerce-payments' ),
-				[
-					'strong' => '<strong>',
-					'code'   => '<code>',
-				]
-			),
-			WC_Payments_Explicit_Price_Formatter::get_explicit_price(
-				wc_price( WC_Payments_Utils::interpret_stripe_amount( $amount, $currency ), [ 'currency' => strtoupper( $currency ) ] ),
-				$order
-			),
-			'WooPayments',
-			$refund_id
-		);
-
-		if ( $this->order_service->order_note_exists( $order, $note ) ) {
-			return;
-		}
-
+		$attached_wc_refund = null;
 		/**
-		 * Get refunds from order and delete refund if matches wcpay refund id.
+		 * Get the WC_Refund from the WCPay refund ID.
 		 *
 		 * @var $wc_refunds WC_Order_Refund[]
 		 * */
@@ -304,22 +282,22 @@ class WC_Payments_Webhook_Processing_Service {
 			foreach ( $wc_refunds as $wc_refund ) {
 				$wcpay_refund_id = $this->order_service->get_wcpay_refund_id_for_order( $wc_refund );
 				if ( $refund_id === $wcpay_refund_id ) {
-					// Delete WC Refund.
-					$wc_refund->delete();
+					$attached_wc_refund = $wc_refund;
 					break;
 				}
 			}
 		}
 
-		// Update order status if order is fully refunded.
-		$current_order_status = $order->get_status();
-		if ( Order_Status::REFUNDED === $current_order_status ) {
-			$order->update_status( Order_Status::FAILED );
+		switch ( $status ) {
+			case 'failed':
+				$this->order_service->handle_failed_refund( $order, $refund_id, $amount, $currency, $attached_wc_refund );
+				break;
+			case 'succeeded':
+				if ( $attached_wc_refund ) {
+					$this->order_service->add_note_and_metadata_for_created_refund( $order, $attached_wc_refund, $refund_id, $balance_transaction ?? null );
+				}
+				break;
 		}
-
-		$order->add_order_note( $note );
-		$this->order_service->set_wcpay_refund_status_for_order( $order, 'failed' );
-		$order->save();
 
 		try {
 			$failure_reason = $this->read_webhook_property( $event_object, 'failure_reason' );

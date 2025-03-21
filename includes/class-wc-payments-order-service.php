@@ -1468,6 +1468,54 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Handle a failed refund by adding a note, updating metadata, and optionally deleting the refund.
+	 *
+	 * @param WC_Order             $order The order to add the note to.
+	 * @param string               $refund_id The ID of the failed refund.
+	 * @param int                  $amount The refund amount in cents.
+	 * @param string               $currency The currency code.
+	 * @param WC_Order_Refund|null $wc_refund The WC refund object to delete if provided.
+	 * @return void
+	 */
+	public function handle_failed_refund( WC_Order $order, string $refund_id, int $amount, string $currency, ?WC_Order_Refund $wc_refund = null ): void {
+		// Delete the refund if it exists.
+		if ( $wc_refund ) {
+			$wc_refund->delete();
+		}
+
+		$note = sprintf(
+			WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: the refund amount, %2: WooPayments, %3: ID of the refund */
+				__( 'A refund of %1$s was <strong>unsuccessful</strong> using %2$s (<code>%3$s</code>).', 'woocommerce-payments' ),
+				[
+					'strong' => '<strong>',
+					'code'   => '<code>',
+				]
+			),
+			WC_Payments_Explicit_Price_Formatter::get_explicit_price(
+				wc_price( WC_Payments_Utils::interpret_stripe_amount( $amount, $currency ), [ 'currency' => strtoupper( $currency ) ] ),
+				$order
+			),
+			'WooPayments',
+			$refund_id
+		);
+
+		if ( $this->order_note_exists( $order, $note ) ) {
+			return;
+		}
+
+		// Update order status if order is fully refunded.
+		$current_order_status = $order->get_status();
+		if ( Order_Status::REFUNDED === $current_order_status ) {
+			$order->update_status( Order_Status::FAILED );
+		}
+
+		$order->add_order_note( $note );
+		$this->set_wcpay_refund_status_for_order( $order, 'failed' );
+		$order->save();
+	}
+
+	/**
 	 * Get content for the success order note.
 	 *
 	 * @param string $intent_id        The payment intent ID related to the intent/order.
