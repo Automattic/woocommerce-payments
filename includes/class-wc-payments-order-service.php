@@ -9,6 +9,7 @@ use WCPay\Constants\Fraud_Meta_Box_Type;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Payment_Method;
+use WCPay\Constants\Refund_Status;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Fraud_Prevention\Models\Rule;
 use WCPay\Logger;
@@ -1458,7 +1459,7 @@ class WC_Payments_Order_Service {
 		}
 
 		// Set refund metadata.
-		$this->set_wcpay_refund_status_for_order( $order, $is_pending ? 'pending' : 'successful' );
+		$this->set_wcpay_refund_status_for_order( $order, $is_pending ? Refund_Status::PENDING : 'successful' );
 		$this->set_wcpay_refund_id_for_refund( $wc_refund, $refund_id );
 		if ( isset( $refund_balance_transaction_id ) ) {
 			$this->set_wcpay_refund_transaction_id_for_order( $wc_refund, $refund_balance_transaction_id );
@@ -1511,7 +1512,7 @@ class WC_Payments_Order_Service {
 		}
 
 		$order->add_order_note( $note );
-		$this->set_wcpay_refund_status_for_order( $order, 'failed' );
+		$this->set_wcpay_refund_status_for_order( $order, Refund_Status::FAILED );
 		$order->save();
 	}
 

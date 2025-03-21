@@ -14,6 +14,7 @@ use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Exceptions\Rest_Request_Exception;
 use WCPay\Logger;
+use WCPay\Constants\Refund_Status;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -289,7 +290,7 @@ class WC_Payments_Webhook_Processing_Service {
 		}
 
 		switch ( $status ) {
-			case 'failed':
+			case Refund_Status::FAILED:
 				$this->order_service->handle_failed_refund( $order, $refund_id, $amount, $currency, $attached_wc_refund );
 				if (
 					$this->has_webhook_property( $event_object, 'failure_reason' )
@@ -298,7 +299,7 @@ class WC_Payments_Webhook_Processing_Service {
 					$this->order_service->handle_insufficient_balance_for_refund( $order, $amount );
 				}
 				break;
-			case 'succeeded':
+			case Refund_Status::SUCCEEDED:
 				if ( $attached_wc_refund ) {
 					$this->order_service->add_note_and_metadata_for_created_refund( $order, $attached_wc_refund, $refund_id, $balance_transaction ?? null );
 				}
@@ -850,7 +851,7 @@ class WC_Payments_Webhook_Processing_Service {
 
 		$wc_refund = $this->order_service->create_refund_for_order( $order, $refunded_amount, $refund_reason, ( ! $is_partial_refund ? $order->get_items() : [] ) );
 		// Process the refund in the order service.
-		$this->order_service->add_note_and_metadata_for_created_refund( $order, $wc_refund, $refund_id, $refund_balance_transaction_id, 'pending' === $refund['status'] );
+		$this->order_service->add_note_and_metadata_for_created_refund( $order, $wc_refund, $refund_id, $refund_balance_transaction_id, Refund_Status::PENDING === $refund['status'] );
 	}
 
 	/**
