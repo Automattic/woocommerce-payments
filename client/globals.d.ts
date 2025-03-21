@@ -290,5 +290,6 @@ declare global {
 		wcTracks: typeof wcTracks;
 		wcSettings: typeof wcSettings;
 		wcpayPluginSettings?: typeof wcpayPluginSettings;
+		wooPaymentsPaymentMethodsConfig?: typeof wooPaymentsPaymentMethodsConfig;
 	}
 }

@@ -7,10 +7,26 @@ import { TRANSACTION_PAYMENT_METHOD_TITLES } from 'wcpay/constants/payment-metho
 describe( 'getTransactionPaymentMethodTitle', () => {
 	const mockConfig = {
 		custom_method: {
+			isReusable: true,
+			isBnpl: false,
 			title: 'Custom Payment Method',
+			icon: 'custom_icon',
+			darkIcon: 'custom_dark_icon',
+			showSaveOption: true,
+			countries: [ 'US', 'CA' ],
+			testingInstructions: 'Custom testing instructions',
+			forceNetworkSavedCards: false,
 		},
 		visa: {
+			isReusable: true,
+			isBnpl: false,
 			title: 'Custom Visa Title',
+			icon: 'visa_icon',
+			darkIcon: 'visa_dark_icon',
+			showSaveOption: true,
+			countries: [ 'US', 'CA' ],
+			testingInstructions: 'Custom testing instructions',
+			forceNetworkSavedCards: false,
 		},
 	};
 

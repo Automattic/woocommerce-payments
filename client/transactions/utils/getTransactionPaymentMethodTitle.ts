@@ -3,12 +3,6 @@
  */
 import { TRANSACTION_PAYMENT_METHOD_TITLES } from 'wcpay/constants/payment-method';
 
-declare global {
-	interface Window {
-		wooPaymentsPaymentMethodsConfig?: Record< string, { title: string } >;
-	}
-}
-
 type TransactionPaymentMethodId =
 	| keyof typeof TRANSACTION_PAYMENT_METHOD_TITLES
 	| string;
