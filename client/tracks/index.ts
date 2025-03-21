@@ -6,7 +6,7 @@ import domReady from '@wordpress/dom-ready';
 /**
  * Internal dependencies
  */
-import { Event } from './event';
+import { MerchantEvent, ShopperEvent } from './event';
 import { getConfig } from 'wcpay/utils/checkout';
 import { getExpressCheckoutConfig } from 'wcpay/utils/express-checkout';
 
@@ -29,7 +29,7 @@ export const isEnabled = (): boolean => wcTracks.isEnabled;
  * @param {Object} [eventProperties] Event properties (optional).
  */
 export const recordEvent = (
-	eventName: Event,
+	eventName: MerchantEvent,
 	eventProperties: Record< string, unknown > = {}
 ): void => {
 	// TODO: Load these properties in a new script to ensure it's available everywhere.
@@ -68,7 +68,7 @@ export const recordEvent = (
  * @param {Object}  [eventProperties] Event properties (optional).
  */
 export const recordUserEvent = (
-	eventName: string,
+	eventName: ShopperEvent,
 	eventProperties: Record< string, unknown > = {}
 ): void => {
 	const nonce =

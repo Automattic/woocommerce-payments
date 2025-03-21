@@ -1,14 +1,13 @@
 /**
- * The Event type represents the different events that can be tracked in WooPayments.
+ * Represents the different shopper events that can be tracked by WooPayments on the site's frontend.
+ *
+ * When recorded, these are prefixed with 'wcpay_'.
+ *
  * It also allows an arbitrary string for dynamic event names.
  *
  * @see https://github.com/Automattic/woocommerce-payments/issues/8075#issuecomment-1933823687
- * @typedef {string} Event
  */
-export type Event = ShopperEvent | MerchantEvent | string;
-
-/** Frontend, shopper events – when recorded, these are prefixed with 'wcpay_'. */
-type ShopperEvent =
+export type ShopperEvent =
 	| 'applepay_button_click'
 	| 'applepay_button_load'
 	| 'gpay_button_click'
@@ -24,10 +23,19 @@ type ShopperEvent =
 	| 'checkout_save_my_info_privacy_policy_click'
 	| 'checkout_save_my_info_tooltip_click'
 	| 'checkout_save_my_info_tooltip_learn_more_click'
-	| 'checkout_place_order_button_click';
+	| 'checkout_place_order_button_click'
+	| string;
 
-/** WP-admin, merchant events – when recorded, these are prefixed with 'wcadmin_'. */
-type MerchantEvent =
+/**
+ * Represents the different merchant events that can be tracked by WooPayments on the site's WP-admin.
+ *
+ * When recorded, these are prefixed with 'wcadmin_'.
+ *
+ * It also allows an arbitrary string for dynamic event names.
+ *
+ * @see https://github.com/Automattic/woocommerce-payments/issues/8075#issuecomment-1933823687
+ */
+export type MerchantEvent =
 	| 'page_view'
 	| 'wcpay_connect_account_clicked'
 	| 'wcpay_account_details_link_clicked'
@@ -120,4 +128,5 @@ type MerchantEvent =
 	| 'payments_transactions_details_partial_refund'
 	| 'payments_transactions_details_refund_full'
 	| 'payments_transactions_risk_review_list_review_button_click'
-	| 'payments_transactions_uncaptured_list_capture_charge_button_click';
+	| 'payments_transactions_uncaptured_list_capture_charge_button_click'
+	| string;
