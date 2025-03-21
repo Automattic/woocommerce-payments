@@ -470,12 +470,10 @@ class WC_Payments_Webhook_Processing_Service {
 		$intent_id     = $this->read_webhook_property( $event_object, 'id' );
 		$currency      = $this->read_webhook_property( $event_object, 'currency' );
 		$order         = $this->get_order_from_event_body( $event_body );
-		$intent_status = $this->read_webhook_property( $event_object, 'status' );
 		$event_charges = $this->read_webhook_property( $event_object, 'charges' );
 		$charges_data  = $this->read_webhook_property( $event_charges, 'data' );
 		$charge_id     = $this->read_webhook_property( $charges_data[0], 'id' );
-		$metadata      = $this->read_webhook_property( $event_object, 'metadata' );
-		$charge_amount = $this->read_webhook_property( $event_object, 'amount' ) ?? $this->read_webhook_property( $charges_data[0], 'amount' );
+		$charge_amount = $this->read_webhook_property( $event_object, 'amount' );
 
 		$payment_method_id = $charges_data[0]['payment_method'] ?? null;
 		if ( ! $order ) {
