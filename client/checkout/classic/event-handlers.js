@@ -163,7 +163,12 @@ jQuery( function ( $ ) {
 	}
 
 	async function injectStripePMMEContainers() {
-		const bnplMethods = [ 'affirm', 'afterpay_clearpay', 'klarna' ];
+		const paymentMethodsConfig =
+			getUPEConfig( 'paymentMethodsConfig' ) || {};
+		const bnplMethods = Object.keys( paymentMethodsConfig ).filter(
+			( key ) => paymentMethodsConfig[ key ]?.isBnpl
+		);
+
 		const labelBase = 'payment_method_woocommerce_payments_';
 		const paymentMethods = getUPEConfig( 'paymentMethodsConfig' );
 		const paymentMethodsKeys = Object.keys( paymentMethods );

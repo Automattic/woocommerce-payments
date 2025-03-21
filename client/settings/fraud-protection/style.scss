@@ -301,12 +301,6 @@
 	}
 }
 
-#fraud-protection-welcome-tour-first-step {
-	bottom: 26px;
-	left: 207px;
-	position: absolute;
-}
-
-.tour-kit-frame__arrow[data-hide]::before {
-	visibility: hidden;
+.tour-kit-frame__arrow::before {
+	background: #fff;
 }

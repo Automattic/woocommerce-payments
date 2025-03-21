@@ -365,6 +365,9 @@ handle_permissions $WCP_ROOT/screenshots
 echo "Disabling rate limiter for card declined in E2E tests"
 cli wp option set wcpay_session_rate_limiter_disabled_wcpay_card_declined_registry yes
 
+echo "Dismissing fraud protection welcome tour in E2E tests"
+cli wp option set wcpay_fraud_protection_welcome_tour_dismissed 1
+
 echo "Removing all coupons ..."
 cli wp db query "DELETE p, m FROM wp_posts p LEFT JOIN wp_postmeta m ON p.ID = m.post_id WHERE p.post_type = 'shop_coupon'"
 

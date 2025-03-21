@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Resolved an issue on stores that had the Stripe Billing feature enabled (US-only) and then changed their store location to an ineligible country.
