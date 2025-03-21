@@ -575,6 +575,83 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
+	 * Initialize a test-drive account.
+	 *
+	 * Note: This is a subset of the WC_Payments_Account::maybe_handle_onboarding method.
+	 *
+	 * @param array $capabilities Optional. List keyed by capabilities IDs (payment methods) with boolean values
+	 *                            indicating whether the capability should be requested when the account is created
+	 *                            and enabled in the settings.
+	 *
+	 * @return bool Whether the account was created.
+	 * @throws API_Exception When the API request fails.
+	 */
+	public function init_test_drive_account( array $capabilities = [] ): bool {
+		// Since there should be no Stripe KYC needed, make sure we start with a clean state.
+		delete_transient( WC_Payments_Account::ONBOARDING_STATE_TRANSIENT );
+		delete_option( WC_Payments_Account::EMBEDDED_KYC_IN_PROGRESS_OPTION );
+
+		// Set a quickly expiring transient to avoid duplicate requests.
+		// The duration should be sufficient for our platform to respond.
+		// There is no danger in having this transient expire too late
+		// because we delete it after we initiate the onboarding.
+		set_transient( WC_Payments_Account::ONBOARDING_STARTED_TRANSIENT, true, MINUTE_IN_SECONDS );
+
+		$site_data    = [
+			'site_username' => wp_get_current_user()->user_login,
+			'site_locale'   => get_locale(),
+		];
+		$user_data    = $this->get_onboarding_user_data();
+		$account_data = $this->get_account_data(
+			'test_drive',
+			[],
+			$capabilities
+		);
+
+		// Attempt to create the account.
+		$onboarding_data = $this->payments_api_client->get_onboarding_data(
+			false,
+			WC_Payments_Account::get_connect_url(),
+			$site_data,
+			WC_Payments_Utils::array_filter_recursive( $user_data ),
+			WC_Payments_Utils::array_filter_recursive( $account_data ),
+			self::get_actioned_notes(),
+		);
+
+		// Store the 'woopay_enabled_by_default' flag in a transient, to be enabled later.
+		if ( filter_var( $onboarding_data['woopay_enabled_by_default'] ?? false, FILTER_VALIDATE_BOOLEAN ) ) {
+			set_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT, true, DAY_IN_SECONDS );
+		}
+
+		// Our platform will respond with a URL set to false if the account was created and
+		// no further action is needed - which is the case for test-drive accounts.
+		$account_created = isset( $onboarding_data['url'] ) && false === $onboarding_data['url'];
+		if ( $account_created ) {
+			// Set the gateway options.
+			$gateway = WC_Payments::get_gateway();
+			$gateway->update_option( 'enabled', 'yes' );
+			$gateway->update_option( 'test_mode', empty( $onboarding_data['is_live'] ) ? 'yes' : 'no' );
+
+			// Handle the payment methods settings.
+			if ( ! empty( $capabilities ) ) {
+				$this->update_enabled_payment_methods_ids( $gateway, $capabilities );
+			}
+
+			// Store a state after completing KYC for tracks. This is stored temporarily in option because
+			// user might not have agreed to TOS yet.
+			update_option( '_wcpay_onboarding_stripe_connected', [ 'is_existing_stripe_account' => true ] );
+		}
+
+		// Clear the transient that is used to avoid duplicate requests.
+		delete_transient( WC_Payments_Account::ONBOARDING_STARTED_TRANSIENT );
+
+		// Clear the account cache to force a refresh.
+		WC_Payments::get_account_service()->clear_cache();
+
+		return $account_created;
+	}
+
+	/**
 	 * Determine whether an embedded KYC flow is in progress.
 	 *
 	 * @return bool True if embedded KYC is in progress, false otherwise.
