@@ -5,8 +5,10 @@
  * @see https://github.com/Automattic/woocommerce-payments/issues/8075#issuecomment-1933823687
  * @typedef {string} Event
  */
-export type Event =
-	// Frontend, shopper events – when recorded, these are prefixed with 'wcpay_'.
+export type Event = ShopperEvent | MerchantEvent | string;
+
+/** Frontend, shopper events – when recorded, these are prefixed with 'wcpay_'. */
+type ShopperEvent =
 	| 'applepay_button_click'
 	| 'applepay_button_load'
 	| 'gpay_button_click'
@@ -22,8 +24,10 @@ export type Event =
 	| 'checkout_save_my_info_privacy_policy_click'
 	| 'checkout_save_my_info_tooltip_click'
 	| 'checkout_save_my_info_tooltip_learn_more_click'
-	| 'checkout_place_order_button_click'
-	// WP-admin, merchant events – when recorded, these are prefixed with 'wcadmin_'.
+	| 'checkout_place_order_button_click';
+
+/** WP-admin, merchant events – when recorded, these are prefixed with 'wcadmin_'. */
+type MerchantEvent =
 	| 'page_view'
 	| 'wcpay_connect_account_clicked'
 	| 'wcpay_account_details_link_clicked'
@@ -116,5 +120,4 @@ export type Event =
 	| 'payments_transactions_details_partial_refund'
 	| 'payments_transactions_details_refund_full'
 	| 'payments_transactions_risk_review_list_review_button_click'
-	| 'payments_transactions_uncaptured_list_capture_charge_button_click'
-	| string;
+	| 'payments_transactions_uncaptured_list_capture_charge_button_click';
