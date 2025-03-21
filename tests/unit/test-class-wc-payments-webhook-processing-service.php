@@ -98,7 +98,15 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->order_service = $this->getMockBuilder( 'WC_Payments_Order_Service' )
 			->setConstructorArgs( [ $this->createMock( WC_Payments_API_Client::class ) ] )
-			->setMethods( [ 'get_wcpay_refund_id_for_order', 'add_note_and_metadata_for_refund', 'create_refund_for_order', 'mark_terminal_payment_failed', 'handle_insufficient_balance_for_refund' ] )
+			->setMethods(
+				[
+					'get_wcpay_refund_id_for_order',
+					'add_note_and_metadata_for_created_refund',
+					'create_refund_for_order',
+					'mark_terminal_payment_failed',
+					'handle_insufficient_balance_for_refund',
+				]
+			)
 			->getMock();
 
 		$this->mock_db_wrapper = $this->getMockBuilder( WC_Payments_DB::class )

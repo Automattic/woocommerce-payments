@@ -1446,19 +1446,19 @@ class WC_Payments_Order_Service {
 	 * @param WC_Order_Refund $wc_refund The WC refund object.
 	 * @param string          $refund_id The refund ID.
 	 * @param string|null     $refund_balance_transaction_id The balance transaction ID of the refund.
-	 * @param string          $status The status of the refund (pending or succeeded).
+	 * @param bool            $is_pending Created refund status can be either pending or succeeded. Default false, i.e. succeeded.
 	 * @throws Order_Not_Found_Exception
 	 * @throws Exception
 	 */
-	public function add_note_and_metadata_for_refund( WC_Order $order, WC_Order_Refund $wc_refund, string $refund_id, ?string $refund_balance_transaction_id, string $status ): void {
-		$note = $this->generate_payment_refunded_note( $wc_refund->get_amount(), $wc_refund->get_currency(), $refund_id, $wc_refund->get_reason(), $order, $status );
+	public function add_note_and_metadata_for_created_refund( WC_Order $order, WC_Order_Refund $wc_refund, string $refund_id, ?string $refund_balance_transaction_id, bool $is_pending = false ): void {
+		$note = $this->generate_payment_created_refund_note( $wc_refund->get_amount(), $wc_refund->get_currency(), $refund_id, $wc_refund->get_reason(), $order, $is_pending );
 
 		if ( ! $this->order_note_exists( $order, $note ) ) {
 			$order->add_order_note( $note );
 		}
 
 		// Set refund metadata.
-		$this->set_wcpay_refund_status_for_order( $order, $status );
+		$this->set_wcpay_refund_status_for_order( $order, $is_pending ? 'pending' : 'successful' );
 		$this->set_wcpay_refund_id_for_refund( $wc_refund, $refund_id );
 		if ( isset( $refund_balance_transaction_id ) ) {
 			$this->set_wcpay_refund_transaction_id_for_order( $wc_refund, $refund_balance_transaction_id );
@@ -1875,18 +1875,18 @@ class WC_Payments_Order_Service {
 	 *
 	 * @param float    $refunded_amount  Amount refunded.
 	 * @param string   $refunded_currency  Refund currency.
-	 * @param  string   $wcpay_refund_id  WCPay Refund ID.
-	 * @param  string   $refund_reason  Refund reason.
-	 * @param  WC_Order $order  Order object.
-	 * @param  string   $status The status of the refund (pending or succeeded).
+	 * @param string   $wcpay_refund_id  WCPay Refund ID.
+	 * @param string   $refund_reason  Refund reason.
+	 * @param WC_Order $order  Order object.
+	 * @param bool     $is_pending  Created refund status can be either pending or succeeded. Default false, i.e. succeeded.
 	 *
 	 * @return string HTML note.
 	 */
-	private function generate_payment_refunded_note( float $refunded_amount, string $refunded_currency, string $wcpay_refund_id, string $refund_reason, WC_Order $order, string $status ): string {
+	private function generate_payment_created_refund_note( float $refunded_amount, string $refunded_currency, string $wcpay_refund_id, string $refund_reason, WC_Order $order, bool $is_pending ): string {
 		$multi_currency_instance = WC_Payments_Multi_Currency();
 		$formatted_price         = WC_Payments_Explicit_Price_Formatter::get_explicit_price( $multi_currency_instance->get_backend_formatted_wc_price( $refunded_amount, [ 'currency' => strtoupper( $refunded_currency ) ] ), $order );
 
-		$status_text = 'pending' === $status ?
+		$status_text = $is_pending ?
 			sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
 					__( 'is <a>pending</a>', 'woocommerce-payments' ),
