@@ -12,6 +12,7 @@ export const PAYMENT_METHOD_NAME_AFFIRM = 'woocommerce_payments_affirm';
 export const PAYMENT_METHOD_NAME_AFTERPAY =
 	'woocommerce_payments_afterpay_clearpay';
 export const PAYMENT_METHOD_NAME_KLARNA = 'woocommerce_payments_klarna';
+export const PAYMENT_METHOD_NAME_MULTIBANCO = 'woocommerce_payments_multibanco';
 export const PAYMENT_METHOD_NAME_GRABPAY = 'woocommerce_payments_grabpay';
 export const PAYMENT_METHOD_NAME_WECHAT_PAY = 'woocommerce_payments_wechat_pay';
 export const PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT =
@@ -36,6 +37,7 @@ export function getPaymentMethodsConstants() {
 		PAYMENT_METHOD_NAME_AFTERPAY,
 		PAYMENT_METHOD_NAME_CARD,
 		PAYMENT_METHOD_NAME_KLARNA,
+		PAYMENT_METHOD_NAME_MULTIBANCO,
 		PAYMENT_METHOD_NAME_GRABPAY,
 		PAYMENT_METHOD_NAME_WECHAT_PAY,
 	];

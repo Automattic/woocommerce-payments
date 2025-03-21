@@ -221,6 +221,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 					<DisputeNotice
 						dispute={ dispute }
 						isUrgent={ countdownDays <= 2 }
+						paymentMethod={ paymentMethod }
 					/>
 					{ hasStagedEvidence && (
 						<InlineNotice icon={ edit } isDismissible={ false }>

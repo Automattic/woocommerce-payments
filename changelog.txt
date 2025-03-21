@@ -1,5 +1,48 @@
 *** WooPayments Changelog ***
 
+= 9.1.0 - 2025-03-19 =
+* Add - Add a prompt to encourage merchants to provide feedback or leave a WordPress.org review for WooPayments
+* Add - Add order failure message on Order Received page.
+* Add - Add support to change payment method to 3DS card for subscriptions.
+* Add - Add WeChat Pay response handling.
+* Add - Implement Multibanco payment method
+* Add - Implement specific handling for insufficient_balance_for_refund when refunding the admin order management
+* Add - Inform Stripe when a store switch from coming soon to live mode
+* Add - Show failure reason in details page for failed payout. This will help merchants get better support, or understand the next steps needed to fix the failing payouts.
+* Fix - Add an order note when a recurring payment fails or when updating the payment method fails due to a missing or invalid payment token.
+* Fix - Bypass enabled at checkout checks for rendering payment methods configs.
+* Fix - Correct the dispute notice for Klarna Inquiries
+* Fix - fix: GooglePay/ApplePay fail when there are more than 9 shipping options.
+* Fix - fix: GooglePay/ApplePay script dependencies with WooCommerce 9.7
+* Fix - Fix issue where survey modal is not scrollable on smaller screen sizes.
+* Fix - Fix validation for support phone numbers for Singapore
+* Fix - Improve payout failure messages for better clarity and accuracy
+* Fix - Inconsitent Safe Mode notice with the latest Jetpack version
+* Fix - Init PMME container in cart block so that it can be dynamically rendered once the requirements are met.
+* Fix - Make sure that WooPayments gateways follow the main WooPayments card gateway in gateway ordering on the page.
+* Fix - Manual capture fails in the transaction detail screen with a customized order number
+* Fix - Properly extract styles when using the site editor.
+* Fix - Renamed function parameters to avoid reserved keyword conflicts
+* Fix - Resolved an issue on stores that had the Stripe Billing feature enabled (US-only) and then changed their store location to an ineligible country.
+* Fix - Scoped CSS selectors for WP components to prevent unintended styling on other pages
+* Fix - Show Express Checkout button previews in template editor
+* Fix - Skip email input search in pay for order flow and use email provided in order data for WooPay iframe.
+* Fix - Skip limits per currency check on admin pages
+* Fix - Tests: Suppressed unexpected JSON output in maybe_handle_onboarding test by wrapping execution with ob_start() and ob_end_clean()
+* Update - Better handling of HTTPs errors in embedded components.
+* Update - Change wording for Sales Channel, Online Store, In-Person, and In-Person (POS)
+* Update - Enhancements to country select field in onboarding.
+* Update - feat: add compatibility notice for Google Pay with live mode accounts.
+* Update - Jetpack packages in composer
+* Update - Remove the 60 day survey admin note, since it will be redundant after we add the reviews prompt.
+* Update - Track action complete event in Stripe Notification embedded component.
+* Update - update: tokenize ECE initialization and update flow on pricing change.
+* Dev - Add centralized payment method definitions to streamline implementation and maintenance of payment methods.
+* Dev - Exclude playwright-report from eslint.
+* Dev - Include transaction ID when requesting card reader fee charges summary.
+* Dev - Refactors to the embedded compoennts logic.
+* Dev - Update @wordpress/icons version to latest version 10.19.0
+
 = 9.0.0 - 2025-02-26 =
 * Add - Add E2E tests for currency switching at checkout.
 * Add - Add GrabPay payment method details to the View Transaction page.

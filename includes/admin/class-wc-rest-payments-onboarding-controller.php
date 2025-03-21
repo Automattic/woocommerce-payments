@@ -91,9 +91,9 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 								'description' => 'The timeframe bucket for the estimated first live transaction.',
 								'required'    => true,
 							],
-							'url'               => [
+							'site'              => [
 								'type'        => 'string',
-								'description' => 'The URL of the store.',
+								'description' => 'The URL of the site.',
 								'required'    => true,
 							],
 						],
