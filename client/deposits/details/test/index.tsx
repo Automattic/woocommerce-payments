@@ -119,7 +119,7 @@ describe( 'Deposit overview', () => {
 		expect( getByText( 'Failure reason:' ) ).toBeInTheDocument();
 		expect(
 			getByText(
-				'Your account has insufficient funds to cover the transfer.'
+				'Your account has insufficient funds to cover your negative balance.'
 			)
 		).toBeInTheDocument();
 	} );

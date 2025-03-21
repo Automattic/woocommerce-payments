@@ -1,4 +1,0 @@
-Significance: minor
-Type: add
-
-Show failure reason in details page for failed payout. This will help merchants get better support, or understand the next steps needed to fix the failing payouts.

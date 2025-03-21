@@ -13,7 +13,6 @@ use WCPay\Core\Mode;
 use WCPay\Core\Server\Request;
 use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
 use WCPay\Payment_Methods\CC_Payment_Method;
-use WCPay\Payment_Methods\Alipay_Payment_Method;
 use WCPay\Payment_Methods\Bancontact_Payment_Method;
 use WCPay\Payment_Methods\Becs_Payment_Method;
 use WCPay\Payment_Methods\Giropay_Payment_Method;
@@ -25,6 +24,7 @@ use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Eps_Payment_Method;
 use WCPay\Payment_Methods\Wechatpay_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Method;
+use WCPay\Payment_Methods\Multibanco_Payment_Method;
 use WCPay\WooPay_Tracker;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\WooPay\WooPay_Order_Status_Sync;
@@ -430,7 +430,6 @@ class WC_Payments {
 		include_once __DIR__ . '/payment-methods/class-cc-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-upe-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-cc-payment-method.php';
-		include_once __DIR__ . '/payment-methods/class-alipay-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-bancontact-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-sepa-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-giropay-payment-method.php';
@@ -443,6 +442,7 @@ class WC_Payments {
 		include_once __DIR__ . '/payment-methods/class-affirm-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-afterpay-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-klarna-payment-method.php';
+		include_once __DIR__ . '/payment-methods/class-multibanco-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-grabpay-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-wechatpay-payment-method.php';
 		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-button-helper.php';
@@ -570,7 +570,6 @@ class WC_Payments {
 
 		$payment_method_classes = [
 			CC_Payment_Method::class,
-			Alipay_Payment_Method::class,
 			Bancontact_Payment_Method::class,
 			Sepa_Payment_Method::class,
 			Giropay_Payment_Method::class,
@@ -583,6 +582,7 @@ class WC_Payments {
 			Affirm_Payment_Method::class,
 			Afterpay_Payment_Method::class,
 			Klarna_Payment_Method::class,
+			Multibanco_Payment_Method::class,
 			Grabpay_Payment_Method::class,
 			Wechatpay_Payment_Method::class,
 		];
@@ -674,9 +674,8 @@ class WC_Payments {
 		}
 
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
-		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 2 );
-		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'set_gateway_top_of_list' ], 3 );
-		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'replace_wcpay_gateway_with_payment_methods' ], 4 );
+		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'order_woopayments_gateways' ], 2 );
+		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'order_woopayments_gateways' ], 3 );
 		add_filter( 'woocommerce_rest_api_option_permissions', [ __CLASS__, 'add_wcpay_options_to_woocommerce_permissions_list' ], 5 );
 		add_filter( 'woocommerce_admin_get_user_data_fields', [ __CLASS__, 'add_user_data_fields' ] );
 
@@ -720,6 +719,7 @@ class WC_Payments {
 
 		// Add admin screens.
 		if ( is_admin() ) {
+			include_once WCPAY_ABSPATH . 'includes/inline-script-payloads/class-woo-payments-payment-method-definitions.php';
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
 		}
 
@@ -754,10 +754,8 @@ class WC_Payments {
 		}
 
 		// Load Stripe Billing subscription integration.
-		if ( WC_Payments_Features::is_stripe_billing_eligible() ) {
-			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions.php';
-			WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::$order_service, self::$account, self::$token_service );
-		}
+		include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions.php';
+		WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::$order_service, self::$account, self::$token_service );
 
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '7.9.0', '<' ) ) {
 			add_action( 'woocommerce_onboarding_profile_data_updated', 'WC_Payments_Features::maybe_enable_wcpay_subscriptions_after_onboarding', 10, 2 );
@@ -882,54 +880,52 @@ class WC_Payments {
 	}
 
 	/**
-	 * By default, new payment gateways are put at the bottom of the list on the admin "Payments" settings screen.
-	 * For visibility, we want WooPayments to be at the top of the list.
+	 * Sets WooPayments gateways at the beginning if not already in the ordering.
+	 * Sets WooPayments gateways after the main gateway if already in the ordering.
 	 *
 	 * @param array $ordering Existing ordering of the payment gateways.
 	 *
 	 * @return array Modified ordering.
 	 */
-	public static function set_gateway_top_of_list( $ordering ) {
-		$ordering = (array) $ordering;
-		$id       = self::get_gateway()->id;
-		// Only tweak the ordering if the list hasn't been reordered with WooPayments in it already.
-		if ( ! isset( $ordering[ $id ] ) || ! is_numeric( $ordering[ $id ] ) ) {
-			$ordering[ $id ] = empty( $ordering ) ? 0 : ( min( $ordering ) - 1 );
-		}
-		return $ordering;
-	}
+	public static function order_woopayments_gateways( $ordering ) {
+		try {
+			$ordering = (array) $ordering;
 
-	/**
-	 * Replace the main WCPay gateway with all WCPay payment methods
-	 * when retrieving the "woocommerce_gateway_order" option.
-	 *
-	 * @param array $ordering Gateway order.
-	 *
-	 * @return array
-	 */
-	public static function replace_wcpay_gateway_with_payment_methods( $ordering ) {
-		$ordering    = (array) $ordering;
-		$wcpay_index = array_search(
-			self::get_gateway()->id,
-			array_keys( $ordering ),
-			true
-		);
+			$woopayments_payment_methods = array_flip( self::get_woopayments_gateway_ids() );
+			$main_gateway_id             = self::get_gateway()->id;
+			$main_gateway_position       = $ordering[ $main_gateway_id ] ?? null;
 
-		if ( false === $wcpay_index ) {
-			// The main WCPay gateway isn't on the list.
+			$before = [];
+			$after  = [];
+
+			foreach ( $ordering as $gateway_id => $position ) {
+				if ( null === $main_gateway_position || $position < $main_gateway_position ) {
+					$before[ $gateway_id ] = null; // `null` for now, the position will be set later.
+				} elseif ( $position > $main_gateway_position && ! isset( $woopayments_payment_methods[ $gateway_id ] ) ) {
+					$after[ $gateway_id ] = null; // `null` for now, the position will be set later.
+				}
+			}
+
+			$new_ordering = [];
+			if ( null === $main_gateway_position ) {
+				$new_ordering = array_merge( $woopayments_payment_methods, $before, $after );
+			} else {
+				$new_ordering = array_merge( $before, $woopayments_payment_methods, $after );
+			}
+
+			$index = 0;
+			foreach ( array_keys( $new_ordering ) as $gateway_id ) {
+				$new_ordering[ $gateway_id ] = $index++;
+			}
+
+			return $new_ordering;
+		} catch ( Exception $e ) {
+			if ( function_exists( 'wc_get_logger' ) ) {
+				$logger = wc_get_logger();
+				$logger->warning( 'Failed to order gateways: ' . $e->getMessage(), [ 'source' => 'woopayments' ] );
+			}
 			return $ordering;
 		}
-
-		$method_order = self::get_gateway()->get_option( 'payment_method_order', [] );
-
-		if ( empty( $method_order ) ) {
-			return $ordering;
-		}
-
-		$ordering = array_keys( $ordering );
-
-		array_splice( $ordering, $wcpay_index, 1, $method_order );
-		return array_flip( $ordering );
 	}
 
 	/**
@@ -1261,6 +1257,19 @@ class WC_Payments {
 			return false;
 		}
 		return self::$payment_gateway_map[ $payment_method_id ];
+	}
+
+	/**
+	 * Returns the WooPayments gateway IDs.
+	 *
+	 * @return array
+	 */
+	public static function get_woopayments_gateway_ids() {
+		$wcpay_gateway_ids = [];
+		foreach ( self::get_payment_gateway_map() as $gateway ) {
+			$wcpay_gateway_ids[] = $gateway->id;
+		}
+		return $wcpay_gateway_ids;
 	}
 
 	/**

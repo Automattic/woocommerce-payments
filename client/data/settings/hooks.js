@@ -157,54 +157,6 @@ export const useAccountStatementDescriptorKana = () => {
 	];
 };
 
-export const useAccountBusinessName = () => {
-	const { updateAccountBusinessName } = useDispatch( STORE_NAME );
-
-	const accountBusinessName = useSelect( ( select ) =>
-		select( STORE_NAME ).getAccountBusinessName()
-	);
-
-	return [ accountBusinessName, updateAccountBusinessName ];
-};
-
-export const useAccountBusinessURL = () => {
-	const { updateAccountBusinessURL } = useDispatch( STORE_NAME );
-
-	const accountBusinessUrl = useSelect( ( select ) =>
-		select( STORE_NAME ).getAccountBusinessURL()
-	);
-
-	return [ accountBusinessUrl, updateAccountBusinessURL ];
-};
-
-export const useAccountBusinessSupportAddress = () => {
-	const { updateAccountBusinessSupportAddress } = useDispatch( STORE_NAME );
-
-	const data = useSelect( ( select ) => {
-		const {
-			getAccountBusinessSupportAddress,
-			getAccountBusinessSupportAddressCountry,
-			getAccountBusinessSupportAddressLine1,
-			getAccountBusinessSupportAddressLine2,
-			getAccountBusinessSupportAddressCity,
-			getAccountBusinessSupportAddressState,
-			getAccountBusinessSupportAddressPostalCode,
-		} = select( STORE_NAME );
-
-		return [
-			getAccountBusinessSupportAddress(),
-			getAccountBusinessSupportAddressCountry(),
-			getAccountBusinessSupportAddressLine1(),
-			getAccountBusinessSupportAddressLine2(),
-			getAccountBusinessSupportAddressCity(),
-			getAccountBusinessSupportAddressState(),
-			getAccountBusinessSupportAddressPostalCode(),
-		];
-	} );
-
-	return [ ...data, updateAccountBusinessSupportAddress ];
-};
-
 export const useAccountBusinessSupportEmail = () => {
 	const { updateAccountBusinessSupportEmail } = useDispatch( STORE_NAME );
 
@@ -223,16 +175,6 @@ export const useAccountBusinessSupportPhone = () => {
 	);
 
 	return [ accountBusinessSupportPhone, updateAccountBusinessSupportPhone ];
-};
-
-export const useAccountBrandingLogo = () => {
-	const { updateAccountBrandingLogo } = useDispatch( STORE_NAME );
-
-	const accountBrandingLogo = useSelect( ( select ) =>
-		select( STORE_NAME ).getAccountBrandingLogo()
-	);
-
-	return [ accountBrandingLogo, updateAccountBrandingLogo ];
 };
 
 export const useDepositScheduleInterval = () => {

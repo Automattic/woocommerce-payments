@@ -8,6 +8,7 @@
 use WCPay\Constants\Fraud_Meta_Box_Type;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
+use WCPay\Constants\Payment_Method;
 use WCPay\Fraud_Prevention\Models\Rule;
 
 /**
@@ -474,6 +475,47 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 				'expected_fraud_meta_box' => Fraud_Meta_Box_Type::NOT_CARD,
 			],
 		];
+	}
+
+	/**
+	 * Tests if the order is marked with the payment on hold for offline payments.
+	 * Public method update_order_status_from_intent calls private method mark_payment_on_hold.
+	 */
+	public function test_mark_payment_on_hold() {
+		// Arrange: Create intention with provided args.
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'status'                 => Intent_Status::REQUIRES_ACTION,
+				'payment_method_types'   => [ 'offline_test_payment_method' ],
+				'payment_method_options' => [ Payment_Method::OFFLINE_PAYMENT_METHODS[0] => [] ],
+			]
+		);
+
+		// Act: Attempt to mark the payment on hold.
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+
+		// Assert: Check to make sure the intent_status meta was set.
+		$this->assertEquals( $intent->get_status(), $this->order_service->get_intention_status_for_order( $this->order ) );
+
+		// Assert: Confirm that the fraud outcome status and fraud meta box type meta were not set/set correctly.
+		$this->assertEquals( false, $this->order_service->get_fraud_outcome_status_for_order( $this->order ) );
+		$this->assertEquals( Fraud_Meta_Box_Type::NOT_CARD, $this->order_service->get_fraud_meta_box_type_for_order( $this->order ) );
+
+		// Assert: Check that the order status was updated to on hold.
+		$this->assertTrue( $this->order->has_status( Order_Status::ON_HOLD ) );
+
+		// Assert: Check that the notes were updated.
+		$notes = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertStringContainsString( 'started</strong> using WooPayments', $notes[0]->content );
+		$this->assertStringContainsString( 'Payments (<code>pi_mock</code>)', $notes[0]->content );
+
+		// Assert: Check that the order was unlocked.
+		$this->assertFalse( get_transient( 'wcpay_processing_intent_' . $this->order->get_id() ) );
+
+		// Assert: Applying the same data multiple times does not cause duplicate actions.
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+		$notes_2 = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertEquals( count( $notes ), count( $notes_2 ) );
 	}
 
 	/**
@@ -1274,6 +1316,26 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service->attach_intent_info_to_order( $this->order, $intent );
 
 		$this->assertEquals( $intent_id, $this->order->get_meta( '_intent_id', true ) );
+	}
+
+	public function test_attach_intent_order_with_allow_update_on_success() {
+		$intent = WC_Helper_Intention::create_intention(
+			[
+				'id'     => 'pi_mock',
+				'status' => Intent_Status::SUCCEEDED,
+			]
+		);
+		$this->order_service->attach_intent_info_to_order( $this->order, $intent );
+
+		$another_intent = WC_Helper_Intention::create_intention(
+			[
+				'id'     => 'pi_mock_2',
+				'status' => Intent_Status::CANCELED,
+			]
+		);
+		$this->order_service->attach_intent_info_to_order( $this->order, $another_intent, true );
+
+		$this->assertEquals( Intent_Status::CANCELED, $this->order->get_meta( '_intention_status', true ) );
 	}
 
 	public function test_attach_intent_info_to_order_after_successful_payment() {

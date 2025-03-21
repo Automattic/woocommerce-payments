@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+We switch to using site instead of url as the key in the self assessment data to avoid XSS firewall false-positives.

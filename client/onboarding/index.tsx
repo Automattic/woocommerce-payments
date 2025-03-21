@@ -65,7 +65,7 @@ const getComingSoonShareKey = () => {
 const initialData = {
 	business_name: wcSettings?.siteTitle,
 	mcc: getMccFromIndustry(),
-	url:
+	site:
 		location.hostname === 'localhost'
 			? 'https://wcpay.test'
 			: wcSettings?.homeUrl + getComingSoonShareKey(),
