@@ -51,10 +51,10 @@ import {
 } from '../../data/transactions/resolvers';
 import p24BankList from '../../payment-details/payment-method/p24/bank-list';
 import { HoverTooltip } from 'components/tooltip';
-import { TRANSACTION_PAYMENT_METHOD_TITLES } from 'wcpay/constants/payment-method';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
 import { useReportExport } from 'wcpay/hooks/use-report-export';
+import { getTransactionPaymentMethodTitle } from 'wcpay/transactions/utils/getTransactionPaymentMethodTitle';
 
 interface TransactionsListProps {
 	depositId?: string;
@@ -419,18 +419,6 @@ export const TransactionsList = (
 			};
 		};
 
-		const getPaymentMethodTitle = (
-			source: Transaction[ 'source' ]
-		): string => {
-			return (
-				wooPaymentsPaymentMethodsConfig[ source ]?.title ||
-				TRANSACTION_PAYMENT_METHOD_TITLES[
-					source as keyof typeof TRANSACTION_PAYMENT_METHOD_TITLES
-				] ||
-				source
-			);
-		};
-
 		const isFinancingType =
 			-1 !==
 			[ 'financing_payout', 'financing_paydown' ].indexOf( txn.type );
@@ -485,13 +473,13 @@ export const TransactionsList = (
 							<span className="payment-method-details-list-item">
 								<HoverTooltip
 									isVisible={ false }
-									content={ getPaymentMethodTitle(
+									content={ getTransactionPaymentMethodTitle(
 										txn.source
 									) }
 								>
 									<span
 										className={ `payment-method__brand payment-method__brand--${ txn.source }` }
-										aria-label={ getPaymentMethodTitle(
+										aria-label={ getTransactionPaymentMethodTitle(
 											txn.source
 										) }
 									/>
