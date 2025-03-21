@@ -291,25 +291,18 @@ class WC_Payments_Webhook_Processing_Service {
 		switch ( $status ) {
 			case 'failed':
 				$this->order_service->handle_failed_refund( $order, $refund_id, $amount, $currency, $attached_wc_refund );
+				if (
+					$this->has_webhook_property( $event_object, 'failure_reason' )
+					&& 'insufficient_funds' === $this->read_webhook_property( $event_object, 'failure_reason' )
+				) {
+					$this->order_service->handle_insufficient_balance_for_refund( $order, $amount );
+				}
 				break;
 			case 'succeeded':
 				if ( $attached_wc_refund ) {
 					$this->order_service->add_note_and_metadata_for_created_refund( $order, $attached_wc_refund, $refund_id, $balance_transaction ?? null );
 				}
 				break;
-		}
-
-		try {
-			$failure_reason = $this->read_webhook_property( $event_object, 'failure_reason' );
-
-			if ( 'insufficient_funds' === $failure_reason ) {
-				$this->order_service->handle_insufficient_balance_for_refund(
-					$order,
-					$amount
-				);
-			}
-		} catch ( Exception $e ) {
-			Logger::debug( 'Failed to handle insufficient balance for refund: ' . $e->getMessage() );
 		}
 	}
 
