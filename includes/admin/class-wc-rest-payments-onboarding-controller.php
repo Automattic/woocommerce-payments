@@ -126,6 +126,16 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 
 		register_rest_route(
 			$this->namespace,
+			'/' . $this->rest_base . '/fields',
+			[
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_fields' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
 			'/' . $this->rest_base . '/business_types',
 			[
 				'methods'             => WP_REST_Server::READABLE,
@@ -187,6 +197,24 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 				],
 				'callback'            => [ $this, 'get_progressive_onboarding_eligible' ],
 				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/test_drive_account/init',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'init_test_drive_account' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+				'args'                => [
+					'capabilities' => [
+						'required'    => false,
+						'description' => 'The capabilities to request and enable for the test-drive account. Leave empty to use the default capabilities.',
+						'type'        => 'array',
+						'default'     => [],
+					],
+				],
 			]
 		);
 	}
@@ -257,6 +285,22 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 	}
 
 	/**
+	 * Get fields data via API.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 *
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function get_fields( WP_REST_Request $request ) {
+		$fields = $this->onboarding_service->get_fields_data( get_user_locale() );
+		if ( is_null( $fields ) ) {
+			return new WP_Error( self::RESULT_BAD_REQUEST, 'Failed to retrieve the onboarding fields.', [ 'status' => 400 ] );
+		}
+
+		return rest_ensure_response( [ 'data' => $fields ] );
+	}
+
+	/**
 	 * Get business types via API.
 	 *
 	 * @param WP_REST_Request $request Request object.
@@ -282,6 +326,27 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 				'business_info'   => $request->get_param( 'business' ),
 				'store_info'      => $request->get_param( 'store' ),
 				'woo_store_stats' => $request->get_param( 'woo_store_stats' ) ?? [],
+			]
+		);
+	}
+
+	/**
+	 * Initialize a test-drive account.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 *
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function init_test_drive_account( WP_REST_Request $request ) {
+		try {
+			$success = $this->onboarding_service->init_test_drive_account( $request->get_param( 'capabilities' ) );
+		} catch ( Exception $e ) {
+			return new WP_Error( self::RESULT_BAD_REQUEST, $e->getMessage(), [ 'status' => 400 ] );
+		}
+
+		return rest_ensure_response(
+			[
+				'success' => $success,
 			]
 		);
 	}
