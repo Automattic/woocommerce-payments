@@ -95,13 +95,12 @@ if ( ! class_exists( 'WC_Payments_Email_IPP_Receipt' ) ) :
 		/**
 		 * Get preview order data for email preview.
 		 *
-		 * @param WC_Order $order The order instance.
+		 * @param WC_Order $order The dummy order instance.
 		 * @return WC_Order
+		 * @see WC_Email_Preview::get_dummy_order()
 		 */
 		public function get_preview_order( $order ) {
-			if ( ! $order instanceof WC_Order ) {
-				$order = new WC_Payments_Printed_Receipt_Sample_Order();
-			}
+			$order->set_payment_method_title( __( 'WooCommerce In-Person Payments', 'woocommerce-payments' ) );
 			return $order;
 		}
 
