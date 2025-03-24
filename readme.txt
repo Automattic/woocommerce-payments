@@ -87,6 +87,12 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 
 == Changelog ==
 
+= 9.2.0-test-1 - unreleased =
+* Update - Added _wcpay_net to the metadata.
+* Update - fix: parsing of error message for GooglePay/ApplePay buttons to be displayed to customer, instead of displaying generic error message on failure.
+* Update - Remove fraud protection discoverability and update tour
+* Dev - We switch to using site instead of url as the key in the self assessment data to avoid XSS firewall false-positives.
+
 = 9.1.0 - 2025-03-19 =
 * Add - Add a prompt to encourage merchants to provide feedback or leave a WordPress.org review for WooPayments
 * Add - Add order failure message on Order Received page.

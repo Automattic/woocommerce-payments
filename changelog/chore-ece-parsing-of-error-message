@@ -1,4 +1,0 @@
-Significance: patch
-Type: update
-
-fix: parsing of error message for GooglePay/ApplePay buttons to be displayed to customer, instead of displaying generic error message on failure.
