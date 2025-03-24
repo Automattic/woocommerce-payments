@@ -470,11 +470,10 @@ class WC_Payments_Webhook_Processing_Service {
 		$intent_id     = $this->read_webhook_property( $event_object, 'id' );
 		$currency      = $this->read_webhook_property( $event_object, 'currency' );
 		$order         = $this->get_order_from_event_body( $event_body );
-		$intent_status = $this->read_webhook_property( $event_object, 'status' );
 		$event_charges = $this->read_webhook_property( $event_object, 'charges' );
 		$charges_data  = $this->read_webhook_property( $event_charges, 'data' );
 		$charge_id     = $this->read_webhook_property( $charges_data[0], 'id' );
-		$metadata      = $this->read_webhook_property( $event_object, 'metadata' );
+		$charge_amount = $this->read_webhook_property( $event_object, 'amount' );
 
 		$payment_method_id = $charges_data[0]['payment_method'] ?? null;
 		if ( ! $order ) {
@@ -496,8 +495,13 @@ class WC_Payments_Webhook_Processing_Service {
 		}
 
 		$application_fee_amount = $charges_data[0]['application_fee_amount'] ?? null;
+
 		if ( $application_fee_amount ) {
-			$meta_data_to_update['_wcpay_transaction_fee'] = WC_Payments_Utils::interpret_stripe_amount( $application_fee_amount, $currency );
+			$fee = WC_Payments_Utils::interpret_stripe_amount( $application_fee_amount, $currency );
+			$meta_data_to_update['_wcpay_transaction_fee'] = $fee;
+
+			$charge_amount                     = WC_Payments_Utils::interpret_stripe_amount( $charge_amount, $currency );
+			$meta_data_to_update['_wcpay_net'] = $charge_amount - $fee;
 		}
 
 		foreach ( $meta_data_to_update as $key => $value ) {
