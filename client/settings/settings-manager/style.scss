@@ -26,15 +26,7 @@ body {
 			}
 		}
 
-		/* this can be removed after the navigation is removed from core */
 		&.woocommerce_page_wc-settings-checkout {
-			.woocommerce {
-				nav {
-					&.woo-nav-tab-wrapper {
-						display: none;
-					}
-				}
-			}
 			.components-surface {
 				&.components-card {
 					box-shadow: none;
