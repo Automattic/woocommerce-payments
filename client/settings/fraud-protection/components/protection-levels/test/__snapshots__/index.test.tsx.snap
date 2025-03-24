@@ -2,7 +2,9 @@
 
 exports[`ProtectionLevels renders 1`] = `
 <div>
-  <fieldset>
+  <fieldset
+    id="fraud-protection-card-options"
+  >
     <ul>
       <li>
         <div
@@ -133,6 +135,7 @@ exports[`ProtectionLevels renders an error message when settings can not be fetc
   </div>
   <fieldset
     disabled=""
+    id="fraud-protection-card-options"
   >
     <ul>
       <li>
@@ -219,7 +222,9 @@ exports[`ProtectionLevels renders an error message when settings can not be fetc
 
 exports[`ProtectionLevels renders with the advanced fraud protection settings selected 1`] = `
 <div>
-  <fieldset>
+  <fieldset
+    id="fraud-protection-card-options"
+  >
     <ul>
       <li>
         <div

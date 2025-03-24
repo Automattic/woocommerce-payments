@@ -64,7 +64,10 @@ const ProtectionLevels: React.FC = () => {
 					) }
 				</InlineNotice>
 			) }
-			<fieldset disabled={ 'error' === advancedFraudProtectionSettings }>
+			<fieldset
+				disabled={ 'error' === advancedFraudProtectionSettings }
+				id="fraud-protection-card-options"
+			>
 				<ul>
 					<li>
 						<div className="fraud-protection-radio-wrapper">
