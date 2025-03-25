@@ -192,6 +192,14 @@ class WC_Payments_Product_Service {
 				}
 			} catch ( \Exception $e ) {
 				// Error occurred, create new product.
+				Logger::log(
+					sprintf(
+						'Error occurred when fetching product : wcpay_product_id=%s, account_id=%s, error=%s',
+						$wcpay_product_id,
+						$stripe_account_id,
+						$e->getMessage()
+					)
+				);
 				return $this->create_product_for_item_type( $sanitized_type );
 			}
 		}
