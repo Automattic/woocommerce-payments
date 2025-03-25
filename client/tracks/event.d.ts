@@ -1,13 +1,41 @@
 /**
- * The Event type represents the different events that can be tracked in WooPayments.
+ * Represents the different shopper events that can be tracked by WooPayments on the site's frontend.
+ *
+ * When recorded, these are prefixed with 'wcpay_'.
+ *
  * It also allows an arbitrary string for dynamic event names.
  *
  * @see https://github.com/Automattic/woocommerce-payments/issues/8075#issuecomment-1933823687
- * @typedef {string} Event
  */
-export type Event =
+export type ShopperEvent =
 	| 'applepay_button_click'
 	| 'applepay_button_load'
+	| 'gpay_button_click'
+	| 'gpay_button_load'
+	| 'woopay_skipped'
+	| 'woopay_button_load'
+	| 'woopay_button_click'
+	| 'checkout_email_address_woopay_check'
+	| 'checkout_woopay_save_my_info_offered'
+	| 'checkout_woopay_save_my_info_country_click'
+	| 'checkout_woopay_save_my_info_mobile_enter'
+	| 'checkout_save_my_info_tos_click'
+	| 'checkout_save_my_info_privacy_policy_click'
+	| 'checkout_save_my_info_tooltip_click'
+	| 'checkout_save_my_info_tooltip_learn_more_click'
+	| 'checkout_place_order_button_click'
+	| string;
+
+/**
+ * Represents the different merchant events that can be tracked by WooPayments on the site's WP-admin.
+ *
+ * When recorded, these are prefixed with 'wcadmin_'.
+ *
+ * It also allows an arbitrary string for dynamic event names.
+ *
+ * @see https://github.com/Automattic/woocommerce-payments/issues/8075#issuecomment-1933823687
+ */
+export type MerchantEvent =
 	| 'page_view'
 	| 'wcpay_connect_account_clicked'
 	| 'wcpay_account_details_link_clicked'
@@ -46,8 +74,6 @@ export type Event =
 	| 'wcpay_fraud_protection_tour_abandoned'
 	| 'wcpay_fraud_outcome_transactions_download'
 	| 'wcpay_gateway_toggle'
-	| 'gpay_button_click'
-	| 'gpay_button_load'
 	| 'wcpay_inbox_action_dismissed'
 	| 'wcpay_inbox_action_click'
 	| 'wcpay_inbox_note_view'
@@ -89,7 +115,6 @@ export type Event =
 	| 'wcpay_multi_currency_enabled_currencies_updated'
 	| 'wcpay_payment_request_settings_change'
 	| 'wcpay_proceed_to_checkout_button_click'
-	| 'checkout_place_order_button_click'
 	| 'wcpay_subscriptions_empty_state_view'
 	| 'wcpay_subscriptions_empty_state_finish_setup'
 	| 'wcpay_subscriptions_empty_state_create_product'
@@ -104,15 +129,4 @@ export type Event =
 	| 'payments_transactions_details_refund_full'
 	| 'payments_transactions_risk_review_list_review_button_click'
 	| 'payments_transactions_uncaptured_list_capture_charge_button_click'
-	| 'checkout_email_address_woopay_check'
-	| 'checkout_woopay_save_my_info_offered'
-	| 'checkout_woopay_save_my_info_country_click'
-	| 'checkout_woopay_save_my_info_mobile_enter'
-	| 'checkout_save_my_info_tos_click'
-	| 'checkout_save_my_info_privacy_policy_click'
-	| 'checkout_save_my_info_tooltip_click'
-	| 'checkout_save_my_info_tooltip_learn_more_click'
-	| 'woopay_skipped'
-	| 'woopay_button_load'
-	| 'woopay_button_click'
 	| string;
