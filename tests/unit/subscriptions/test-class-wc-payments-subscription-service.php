@@ -798,7 +798,7 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 		$this->expectExceptionMessage( 'Subscription was made when WooPayments was in the test mode and cannot be renewed in the live mode.' );
 		$this->subscription_service->check_wcpay_mode_for_subscription( $items, $mock_order, $mock_subscription );
 
-		$mock_order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, Order_Mode::LIVE );
+		$mock_order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, Order_Mode::PRODUCTION );
 		$result = $this->subscription_service->check_wcpay_mode_for_subscription( $items, $mock_order, $mock_subscription );
 		$this->assertEquals( $items, $result );
 
