@@ -1,5 +1,7 @@
 <?php
 /**
+ * Customer IPP receipt email
+ *
  * This template can be overridden by copying it to yourtheme/woocommerce/emails/customer-ipp-receipt.php.
  *
  * HOWEVER, on occasion WooCommerce will need to update template files and you
@@ -27,6 +29,7 @@ do_action( 'woocommerce_email_header', $email_heading, $email ); ?>
 <p><?php printf( esc_html__( 'Hi %s,', 'woocommerce-payments' ), esc_html( $order->get_billing_first_name() ) ); ?></p>
 <?php /* translators: %s: Order number */ ?>
 <p><?php printf( esc_html__( 'This is the receipt for your order #%s:', 'woocommerce-payments' ), esc_html( $order->get_order_number() ) ); ?></p>
+
 <?php
 /**
  * Output the store details section of the IPP receipt email.
