@@ -59,7 +59,7 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 					'progressive'     => [
 						'required'    => false,
 						'description' => 'Whether the session is for progressive onboarding.',
-						'type'        => 'string',
+						'type'        => 'boolean',
 					],
 					'self_assessment' => [
 						'required'    => false,
