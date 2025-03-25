@@ -34,6 +34,9 @@ const getVatPrefix = () => {
 			return 'EL ';
 		case 'CH':
 			return 'CHE ';
+		case 'SG':
+			// Singapore UEN/GST numbers don't have a prefix
+			return '';
 		default:
 			return `${ wcpaySettings.accountStatus.country } `;
 	}
@@ -43,6 +46,11 @@ const getVatTaxIDName = () => {
 	switch ( wcpaySettings.accountStatus.country ) {
 		case 'JP':
 			return __( 'Corporate Number', 'woocommerce-payments' );
+		case 'SG':
+			return __(
+				'UEN or GST Registration Number',
+				'woocommerce-payments'
+			);
 		default:
 			return __( 'VAT Number', 'woocommerce-payments' );
 	}
@@ -54,6 +62,11 @@ const getVatTaxIDRequirementHint = () => {
 			// Leaving this blank intentionally, as I don't know what the requirements are in JP.
 			// Better to add this info later than clutter the dialog with vague/assumed legal requirements.
 			return __( '', 'woocommerce-payments' );
+		case 'SG':
+			return __(
+				'By providing your UEN or GST number you confirm you are a Singapore GST registered business and you are going to account for the GST.',
+				'woocommerce-payments'
+			);
 		default:
 			// Note: this message is a little alarming and doesn't provide guidance for confused merchants.
 			// Logged: https://github.com/Automattic/woocommerce-payments/issues/9161.
@@ -69,6 +82,11 @@ const getVatTaxIDValidationHint = () => {
 		case 'JP':
 			return __(
 				'A 13 digit number, for example 1234567890123.',
+				'woocommerce-payments'
+			);
+		case 'SG':
+			return __(
+				'Enter your UEN (e.g., 200312345A) or GST Registration Number (e.g., M91234567X)',
 				'woocommerce-payments'
 			);
 		default:
