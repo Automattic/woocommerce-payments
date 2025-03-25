@@ -771,7 +771,7 @@ class WC_Payments_Product_Service {
 	 *
 	 * @return string The WCPay product ID meta key/option name.
 	 */
-	public static function get_wcpay_product_id_option( string $type = null, $test_mode = null ): string {
+	public static function get_wcpay_product_id_option( ?string $type = null, ?bool $test_mode = null ): string {
 		$test_mode = null === $test_mode ? WC_Payments::mode()->is_test() : $test_mode;
 		$key       = $test_mode ? self::TEST_PRODUCT_ID_KEY : self::LIVE_PRODUCT_ID_KEY;
 		return $type ? $key . '_' . $type : $key;
@@ -785,7 +785,7 @@ class WC_Payments_Product_Service {
 	 *
 	 * @return string The WCPay product ID meta key/option name.
 	 */
-	public static function get_wcpay_product_id_linked_to_key( string $type = null, $test_mode = null ): string {
+	public static function get_wcpay_product_id_linked_to_key( ?string $type = null, ?bool $test_mode = null ): string {
 		$test_mode = null === $test_mode ? WC_Payments::mode()->is_test() : $test_mode;
 		$key       = $test_mode ? self::TEST_PRODUCT_ID_KEY : self::LIVE_PRODUCT_ID_KEY;
 		return ( $type ? $key . '_' . $type : $key ) . '_linked_to';
