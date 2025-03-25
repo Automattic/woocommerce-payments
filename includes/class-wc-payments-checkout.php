@@ -334,7 +334,7 @@ class WC_Payments_Checkout {
 		$payment_method_configs = [];
 
 		// Get all the registered payment methods.
-		$registered_payment_methods = $this->gateway->get_upe_available_payment_methods();
+		$registered_payment_methods = array_keys( $this->gateway->get_payment_methods() );
 
 		foreach ( $registered_payment_methods as $payment_method_id ) {
 			$payment_method_configs[ $payment_method_id ] = $this->get_config_for_payment_method( $payment_method_id, $this->account->get_account_country() );
