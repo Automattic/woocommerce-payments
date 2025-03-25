@@ -892,11 +892,14 @@ class WC_Payments_Subscription_Service {
 	 * @return array
 	 */
 	public function check_wcpay_mode_for_subscription( array $items, WC_Order $order, WC_Subscription $subscription ): array {
-		$subscription_mode = $subscription->get_meta( WC_Payments_Order_Service::WCPAY_MODE_META_KEY );
-		$current_mode      = WC_Payments::mode()->is_test() ? Order_Mode::TEST : Order_Mode::PRODUCTION;
+		$parent_order = $subscription->get_parent();
+		if ( false !== $parent_order ) {
+			$subscription_mode = $parent_order->get_meta( WC_Payments_Order_Service::WCPAY_MODE_META_KEY );
+			$current_mode      = WC_Payments::mode()->is_test() ? Order_Mode::TEST : Order_Mode::PRODUCTION;
 
-		if ( null !== $subscription_mode && $subscription_mode !== $current_mode ) {
-			throw new Subscription_Mode_Mismatch_Exception( 'The subscription was made in the mode that does not match the current WooPayments mode.' );
+			if ( is_string( $subscription_mode ) && '' !== $subscription_mode && $subscription_mode !== $current_mode ) {
+				throw new Subscription_Mode_Mismatch_Exception( 'The subscription was made in the mode "' . $subscription_mode . '" that does not match the current WooPayments mode "' . $current_mode . '".' );
+			}
 		}
 		return $items;
 	}

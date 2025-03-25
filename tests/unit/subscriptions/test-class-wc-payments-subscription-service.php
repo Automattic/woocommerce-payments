@@ -784,7 +784,7 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 		$mock_order        = WC_Helper_Order::create_order();
 		$mock_subscription = new WC_Subscription();
 		$mock_subscription->set_parent( $mock_order );
-		$mock_subscription->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, Order_Mode::TEST );
+		$mock_order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, Order_Mode::TEST );
 
 		WC_Payments::mode()->test();
 
