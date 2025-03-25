@@ -7,17 +7,14 @@ import interpolateComponents from '@automattic/interpolate-components';
 
 const enhancedFraudProtectionStep = {
 	referenceElements: {
-		desktop: '#fraud-protection-welcome-tour-first-step',
+		desktop: '#fp-settings',
 	},
 	meta: {
 		name: 'enhanced-fraud-protection',
-		heading: __(
-			'Enhanced fraud protection is here 🔒',
-			'woocommerce-payments'
-		),
+		heading: __( 'Enhanced fraud protection 🔒', 'woocommerce-payments' ),
 		descriptions: {
 			desktop: __(
-				'You can now choose a level of protection for screening incoming transactions. Screened transactions will be automatically blocked by your customized fraud filters.',
+				'You can choose a level of protection for screening incoming transactions. Screened transactions will be automatically blocked by your customized fraud filters.',
 				'woocommerce-payments'
 			),
 		},
@@ -29,7 +26,7 @@ const enhancedFraudProtectionStep = {
 
 const chooseYourFilterLevelStep = {
 	referenceElements: {
-		desktop: '#fraud-protection-card-title',
+		desktop: '#fraud-protection-card-options',
 	},
 	meta: {
 		name: 'choose-your-filter-level',
@@ -45,7 +42,7 @@ const chooseYourFilterLevelStep = {
 
 const takeMoreControlStep = {
 	referenceElements: {
-		desktop: '#fraud-protection-level-select_advanced-level',
+		desktop: '[for=fraud-protection-level-select_advanced-level]',
 	},
 	meta: {
 		name: 'take-more-control',
@@ -62,6 +59,7 @@ const takeMoreControlStep = {
 const readyForReviewStep = {
 	referenceElements: {
 		desktop: '#toplevel_page_wc-admin-path--payments-overview',
+		mobile: '.tour-kit woocommerce-tour-kit',
 	},
 	meta: {
 		name: 'review-blocked-transactions',
