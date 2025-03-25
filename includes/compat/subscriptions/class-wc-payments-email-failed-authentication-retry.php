@@ -155,16 +155,16 @@ class WC_Payments_Email_Failed_Authentication_Retry extends WC_Email_Failed_Orde
 	 * @param WC_Order|null $order Order object.
 	 */
 	public function trigger( $order_id, $order = null ) {
+		if ( ! $this->is_enabled() || ! $this->get_recipient() ) {
+			return;
+		}
+
 		$this->object = $order;
 
 		if ( class_exists( 'WCS_Retry_Manager' ) && function_exists( 'wcs_get_human_time_diff' ) ) {
 			$this->retry = WCS_Retry_Manager::store()->get_last_retry_for_order( wcs_get_objects_property( $order, 'id' ) );
 		} else {
 			Logger::log( 'WCS_Retry_Manager class or does not exist. Not able to send admin email about customer notification for authentication required for renewal payment.' );
-			return;
-		}
-
-		if ( ! $this->is_enabled() || ! $this->get_recipient() ) {
 			return;
 		}
 
