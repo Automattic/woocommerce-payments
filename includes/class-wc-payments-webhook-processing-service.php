@@ -272,7 +272,7 @@ class WC_Payments_Webhook_Processing_Service {
 			);
 		}
 
-		$attached_wc_refund = null;
+		$matched_wc_refund = null;
 		/**
 		 * Get the WC_Refund from the WCPay refund ID.
 		 *
@@ -283,15 +283,16 @@ class WC_Payments_Webhook_Processing_Service {
 			foreach ( $wc_refunds as $wc_refund ) {
 				$wcpay_refund_id = $this->order_service->get_wcpay_refund_id_for_order( $wc_refund );
 				if ( $refund_id === $wcpay_refund_id ) {
-					$attached_wc_refund = $wc_refund;
+					$matched_wc_refund = $wc_refund;
 					break;
 				}
 			}
 		}
 
+		// Refund update webhook events can be either failed or succeeded only.
 		switch ( $status ) {
 			case Refund_Status::FAILED:
-				$this->order_service->handle_failed_refund( $order, $refund_id, $amount, $currency, $attached_wc_refund );
+				$this->order_service->handle_failed_refund( $order, $refund_id, $amount, $currency, $matched_wc_refund );
 				if (
 					$this->has_webhook_property( $event_object, 'failure_reason' )
 					&& 'insufficient_funds' === $this->read_webhook_property( $event_object, 'failure_reason' )
@@ -300,10 +301,12 @@ class WC_Payments_Webhook_Processing_Service {
 				}
 				break;
 			case Refund_Status::SUCCEEDED:
-				if ( $attached_wc_refund ) {
-					$this->order_service->add_note_and_metadata_for_created_refund( $order, $attached_wc_refund, $refund_id, $balance_transaction ?? null );
+				if ( $matched_wc_refund ) {
+					$this->order_service->add_note_and_metadata_for_created_refund( $order, $matched_wc_refund, $refund_id, $balance_transaction ?? null );
 				}
 				break;
+			default:
+				throw new Invalid_Webhook_Data_Exception( 'Invalid refund update status: ' . $status );
 		}
 	}
 
