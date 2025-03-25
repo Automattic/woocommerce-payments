@@ -1,7 +1,7 @@
 body {
 	/* this can be removed after all the settings sections are converted to the new layout */
 	&.woocommerce_page_wc-settings {
-		&.woocommerce_page_wc-settings-checkout {
+		&.woocommerce-payments-checkout-section {
 			background: #fff;
 			.settings-content,
 			#wpbody-content,
@@ -20,7 +20,7 @@ body {
 			}
 		}
 
-		&.woocommerce_page_wc-settings-checkout {
+		&.woocommerce-payments-checkout-section {
 			.components-surface {
 				&.components-card {
 					box-shadow: none;
@@ -29,7 +29,7 @@ body {
 		}
 	}
 
-	&.woocommerce_page_wc-settings-checkout {
+	&.woocommerce-payments-checkout-section {
 		.components-surface.components-card {
 			box-shadow: none;
 		}

@@ -56,7 +56,7 @@
 }
 
 body {
-	&.woocommerce_page_wc-settings-checkout {
+	&.woocommerce-payments-checkout-section {
 		.settings-section {
 			&:not( &:last-child ) {
 				margin-bottom: 50px;
@@ -76,7 +76,7 @@ body {
 
 @media ( max-width: 800px ) {
 	body {
-		&.woocommerce_page_wc-settings-checkout {
+		&.woocommerce-payments-checkout-section {
 			.settings-section__details {
 				max-width: 100%;
 			}

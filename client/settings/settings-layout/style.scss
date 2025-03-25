@@ -10,7 +10,7 @@
 }
 
 body {
-	&.woocommerce_page_wc-settings-checkout {
+	&.woocommerce-payments-checkout-section {
 		.wcpay-settings-layout {
 			margin: 0;
 			max-width: 1184px;
@@ -20,7 +20,7 @@ body {
 
 @media ( min-width: 961px ) {
 	body {
-		&.woocommerce_page_wc-settings-checkout {
+		&.woocommerce-payments-checkout-section {
 			.wcpay-settings-layout {
 				padding: 0 30px;
 			}

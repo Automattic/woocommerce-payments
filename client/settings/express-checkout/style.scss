@@ -157,7 +157,7 @@
 }
 
 body {
-	&.woocommerce_page_wc-settings-checkout {
+	&.woocommerce-payments-checkout-section {
 		.express-checkouts {
 			.express-checkouts-list {
 				.express-checkout {
@@ -174,7 +174,7 @@ body {
 
 @media ( min-width: 661px ) {
 	body {
-		&.woocommerce_page_wc-settings-checkout {
+		&.woocommerce-payments-checkout-section {
 			.express-checkout__text-container {
 				width: 100%;
 			}
