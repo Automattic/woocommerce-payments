@@ -1395,7 +1395,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->order_service->attach_transaction_fee_to_order( $mock_order, new WC_Payments_API_Charge( 'ch_mock', 1500, new DateTime(), null, null, null, null, null, [], [], 'eur' ) );
 	}
 
-	public function test_add_note_and_metadata_for_refund_fully_refunded(): void {
+	public function test_add_note_and_metadata_for_created_refund_successful_fully_refunded(): void {
 		$order = WC_Helper_Order::create_order();
 		$order->save();
 
@@ -1412,6 +1412,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( $refunded_amount, $order_note, 'Order note does not contain expected refund amount' );
 		$this->assertStringContainsString( $refund_id, $order_note, 'Order note does not contain expected refund id' );
 		$this->assertStringContainsString( $refund_reason, $order_note, 'Order note does not contain expected refund reason' );
+		$this->assertStringContainsString( 'was successfully processed', $order_note, 'Order note should indicate successful processing' );
 
 		$this->assertSame( 'successful', $order->get_meta( WC_Payments_Order_Service::WCPAY_REFUND_STATUS_META_KEY, true ) );
 		$this->assertSame( $refund_id, $wc_refund->get_meta( WC_Payments_Order_Service::WCPAY_REFUND_ID_META_KEY, true ) );
@@ -1420,7 +1421,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		WC_Helper_Order::delete_order( $order->get_id() );
 	}
 
-	public function test_add_note_and_metadata_for_refund_partially_refunded(): void {
+	public function test_add_note_and_metadata_for_created_refund_successful_partially_refunded(): void {
 		$order = WC_Helper_Order::create_order();
 		$order->save();
 
@@ -1438,10 +1439,62 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertStringContainsString( $refunded_amount, $order_note, 'Order note does not contain expected refund amount' );
 		$this->assertStringContainsString( $refund_id, $order_note, 'Order note does not contain expected refund id' );
 		$this->assertStringContainsString( $refund_reason, $order_note, 'Order note does not contain expected refund reason' );
+		$this->assertStringContainsString( 'was successfully processed', $order_note, 'Order note should indicate successful processing' );
 
 		$this->assertSame( 'successful', $order->get_meta( WC_Payments_Order_Service::WCPAY_REFUND_STATUS_META_KEY, true ) );
 		$this->assertSame( $refund_id, $wc_refund->get_meta( WC_Payments_Order_Service::WCPAY_REFUND_ID_META_KEY, true ) );
 		$this->assertSame( $refund_balance_transaction_id, $order->get_refunds()[0]->get_meta( WC_Payments_Order_Service::WCPAY_REFUND_TRANSACTION_ID_META_KEY, true ) );
+
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	public function test_add_note_and_metadata_for_created_refund_pending(): void {
+		$order = WC_Helper_Order::create_order();
+		$order->save();
+
+		$refunded_amount               = 50;
+		$refund_id                     = 're_1J2a3B4c5D6e7F8g9H0';
+		$refund_reason                 = 'Test refund';
+		$refund_balance_transaction_id = 'txn_1J2a3B4c5D6e7F8g9H0';
+
+		$wc_refund = $this->order_service->create_refund_for_order( $order, $refunded_amount, $refund_reason, $order->get_items() );
+
+		$this->order_service->add_note_and_metadata_for_created_refund( $order, $wc_refund, $refund_id, $refund_balance_transaction_id, true );
+
+		$order_note = wc_get_order_notes( [ 'order_id' => $order->get_id() ] )[0]->content;
+		$this->assertStringContainsString( $refunded_amount, $order_note, 'Order note does not contain expected refund amount' );
+		$this->assertStringContainsString( $refund_id, $order_note, 'Order note does not contain expected refund id' );
+		$this->assertStringContainsString( $refund_reason, $order_note, 'Order note does not contain expected refund reason' );
+		$this->assertStringContainsString( 'is pending', $order_note, 'Order note should indicate pending status' );
+		$this->assertStringContainsString( 'https://woocommerce.com/document/woopayments/managing-money/#pending-refunds', $order_note, 'Order note should contain link to pending refunds documentation' );
+
+		$this->assertSame( Refund_Status::PENDING, $order->get_meta( WC_Payments_Order_Service::WCPAY_REFUND_STATUS_META_KEY, true ) );
+		$this->assertSame( $refund_id, $wc_refund->get_meta( WC_Payments_Order_Service::WCPAY_REFUND_ID_META_KEY, true ) );
+		$this->assertSame( $refund_balance_transaction_id, $order->get_refunds()[0]->get_meta( WC_Payments_Order_Service::WCPAY_REFUND_TRANSACTION_ID_META_KEY, true ) );
+
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	public function test_add_note_and_metadata_for_created_refund_no_duplicate_notes(): void {
+		$order = WC_Helper_Order::create_order();
+		$order->save();
+
+		$refunded_amount               = 50;
+		$refund_id                     = 're_1J2a3B4c5D6e7F8g9H0';
+		$refund_reason                 = 'Test refund';
+		$refund_balance_transaction_id = 'txn_1J2a3B4c5D6e7F8g9H0';
+
+		$wc_refund = $this->order_service->create_refund_for_order( $order, $refunded_amount, $refund_reason, $order->get_items() );
+
+		// Add note first time.
+		$this->order_service->add_note_and_metadata_for_created_refund( $order, $wc_refund, $refund_id, $refund_balance_transaction_id );
+		$initial_notes_count = count( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ) );
+
+		// Add note second time.
+		$this->order_service->add_note_and_metadata_for_created_refund( $order, $wc_refund, $refund_id, $refund_balance_transaction_id );
+		$final_notes_count = count( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ) );
+
+		$this->assertSame( $initial_notes_count, $final_notes_count, 'Duplicate notes should not be added' );
 
 		WC_Helper_Order::delete_order( $order->get_id() );
 	}

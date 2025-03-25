@@ -1458,7 +1458,7 @@ class WC_Payments_Order_Service {
 			$order->add_order_note( $note );
 		}
 
-		// Set refund metadata.
+		// Use `successful` to maintain the backward compatibility with the previous WooPayments versions.
 		$this->set_wcpay_refund_status_for_order( $order, $is_pending ? Refund_Status::PENDING : 'successful' );
 		$this->set_wcpay_refund_id_for_refund( $wc_refund, $refund_id );
 		if ( isset( $refund_balance_transaction_id ) ) {
@@ -1505,9 +1505,8 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		// Update order status if order is fully refunded.
-		$current_order_status = $order->get_status();
-		if ( Order_Status::REFUNDED === $current_order_status ) {
+		// If order has been fully refunded.
+		if ( Order_Status::REFUNDED === $order->get_status() ) {
 			$order->update_status( Order_Status::FAILED );
 		}
 
@@ -1937,12 +1936,8 @@ class WC_Payments_Order_Service {
 
 		$status_text = $is_pending ?
 			sprintf(
-				WC_Payments_Utils::esc_interpolated_html(
-					__( 'is <a>pending</a>', 'woocommerce-payments' ),
-					[
-						'a' => '<a href="https://woocommerce.com/document/woopayments/managing-money/#pending-refunds" target="_blank" rel="noopener noreferrer">',
-					]
-				)
+				'<a href="https://woocommerce.com/document/woopayments/managing-money/#pending-refunds" target="_blank" rel="noopener noreferrer">%1$s</a>',
+				__( 'is pending', 'woocommerce-payments' )
 			)
 			: __( 'was successfully processed', 'woocommerce-payments' );
 
