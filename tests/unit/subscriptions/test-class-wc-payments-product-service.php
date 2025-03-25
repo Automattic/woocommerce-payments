@@ -96,7 +96,7 @@ class WC_Payments_Product_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_product->save();
 
 		$this->mock_account_service
-			->expects( $this->once() )
+			->expects( $this->exactly( 2 ) )
 			->method( 'get_stripe_account_id' )
 			->willReturn( $account_id );
 
@@ -133,7 +133,7 @@ class WC_Payments_Product_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_product->save();
 
 		$this->mock_account_service
-			->expects( $this->once() )
+			->expects( $this->exactly( 4 ) )
 			->method( 'get_stripe_account_id' )
 			->willReturn( $account_id );
 
@@ -175,7 +175,7 @@ class WC_Payments_Product_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_product->save();
 
 		$this->mock_account_service
-			->expects( $this->once() )
+			->expects( $this->exactly( 2 ) )
 			->method( 'get_stripe_account_id' )
 			->willReturn( $account_id );
 
