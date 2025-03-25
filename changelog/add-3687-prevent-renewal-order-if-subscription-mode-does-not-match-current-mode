@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Prevent creation of the renewal orders if original order was created in the different WooPayments mode.
