@@ -1560,8 +1560,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id );
 			}
 		} else {
-			// phpcs:ignore WordPress.Security.NonceVerification.Missing
-			$woopay_intent_id = sanitize_user( wp_unslash( $_POST['platform-checkout-intent'] ?? '' ), true );
+			// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+			$woopay_intent_id = WooPay_Utilities::sanitize_intent_id( wp_unslash( $_POST['platform-checkout-intent'] ?? '' ) );
 
 			if ( ! empty( $woopay_intent_id ) ) {
 				// If the setup intent is included in the request use that intent.
