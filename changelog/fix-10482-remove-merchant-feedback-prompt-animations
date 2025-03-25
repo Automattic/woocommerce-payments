@@ -1,5 +1,0 @@
-Significance: patch
-Type: fix
-Comment: Behind a feature flag: this modified the behaviour of the merchant feedback prompt which is in development. Changelog entry coming for this feature when release planned.
-
-

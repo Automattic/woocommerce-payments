@@ -1,4 +1,0 @@
-Significance: minor
-Type: update
-
-Better handling of HTTPs errors in embedded components.

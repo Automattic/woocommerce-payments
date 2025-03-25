@@ -158,7 +158,7 @@ export const onConfirmHandler = async (
 	} catch ( e ) {
 		// API errors are not parsed, so we need to do it ourselves.
 		if ( e.json ) {
-			e = e.json();
+			e = await Promise.resolve( e.json() );
 		}
 
 		return abortPayment(

@@ -43,7 +43,11 @@ const breakpointConfigs = [
 	{ breakpoint: 330, maxElements: 1 },
 ];
 
-const bnplMethods = [ 'affirm', 'afterpay_clearpay', 'klarna' ];
+const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' ) || {};
+const bnplMethods = Object.keys( paymentMethodsConfig ).filter(
+	( key ) => paymentMethodsConfig[ key ].isBnpl
+);
+
 const PaymentMethodMessageWrapper = ( {
 	upeName,
 	countries,
