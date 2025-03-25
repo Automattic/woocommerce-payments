@@ -1076,9 +1076,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			]
 		);
 
-		if ( ! empty( $referral_code ) ) {
-			$request_args['referral_code'] = $referral_code;
-		}
+		$request_args['referral_code'] = $referral_code;
 
 		return $this->request( $request_args, self::ONBOARDING_API . '/init', self::POST, true, true );
 	}
@@ -1119,9 +1117,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			]
 		);
 
-		if ( ! empty( $referral_code ) ) {
-			$request_args['referral_code'] = $referral_code;
-		}
+		$request_args['referral_code'] = $referral_code;
 
 		$session = $this->request( $request_args, self::ONBOARDING_API . '/embedded', self::POST, true, true );
 

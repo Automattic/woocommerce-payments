@@ -1175,6 +1175,13 @@ class WC_Payments_Onboarding_Service {
 		}
 	}
 
+	/**
+	 * Given a referral code, normalize it and store it in a transient.
+	 *
+	 * @param string $referral_code The referral code to normalize and store.
+	 *
+	 * @return string The normalized referral code.
+	 */
 	public function normalize_and_store_referral_code( string $referral_code ): string {
 		$normalized = trim( strtolower( substr( $referral_code, 0, 50 ) ) );
 		if ( empty( $normalized ) ) {
@@ -1184,6 +1191,11 @@ class WC_Payments_Onboarding_Service {
 		return $normalized;
 	}
 
+	/**
+	 * Get the referral code from the transient.
+	 *
+	 * @return string|null The referral code or null if not found.
+	 */
 	public function get_referral_code(): ?string {
 		$value = get_transient( 'woopayments_referral_code' );
 

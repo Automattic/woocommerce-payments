@@ -114,11 +114,11 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		add_action( 'admin_init', [ $this, 'maybe_redirect_after_plugin_activation' ], 11 ); // Run this after the WC setup wizard and onboarding redirection logic.
 		add_action( 'admin_init', [ $this, 'maybe_redirect_by_get_param' ], 12 ); // Run this after the redirect to onboarding logic.
 		// Third, handle page redirections.
+		add_action( 'admin_init', [ $this, 'maybe_redirect_onboarding_referral' ], 13 );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_from_settings_page' ], 15 );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_from_onboarding_wizard_page' ], 15 );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_from_connect_page' ], 15 );
 		add_action( 'admin_init', [ $this, 'maybe_redirect_from_overview_page' ], 15 );
-		add_action( 'admin_init', [ $this, 'maybe_redirect_onboarding_referral' ], 15 );
 
 		// Add handlers for inbox notes and reminders.
 		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'handle_instant_deposits_inbox_note' ] );
@@ -870,6 +870,11 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		return true;
 	}
 
+	/**
+	 * Stores the account referral code and redirects to the connect page.
+	 *
+	 * @return void
+	 */
 	public function maybe_redirect_onboarding_referral(): void {
 		if ( ! is_admin() || wp_doing_ajax() || ! current_user_can( 'manage_woocommerce' ) ) {
 			return;
@@ -879,9 +884,18 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			return;
 		}
 
+		// Return early and redirect to the overview page if already connected.
+		if ( $this->is_stripe_account_valid() ) {
+			$this->redirect_service->redirect_to_overview_page();
+			return;
+		}
+
 		$referral_code = sanitize_text_field( wp_unslash( $_GET['woopayments-ref'] ) );
 		$referral_code = $this->onboarding_service->normalize_and_store_referral_code( $referral_code );
+
+		// Return and redirect early if the code is invalid.
 		if ( empty( $referral_code ) ) {
+			$this->redirect_service->redirect_to_connect_page();
 			return;
 		}
 
@@ -894,6 +908,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			]
 		);
 
+		// Redirect to the connect page.
 		$this->redirect_service->redirect_to_connect_page( null, WC_Payments_Onboarding_Service::FROM_REFERRAL );
 	}
 
