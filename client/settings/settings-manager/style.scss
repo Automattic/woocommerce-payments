@@ -3,20 +3,14 @@ body {
 	&.woocommerce_page_wc-settings {
 		&.woocommerce_page_wc-settings-checkout {
 			background: #fff;
-			.settings-content {
-				background: #fff;
-			}
-			#wpbody-content {
-				background: #fff;
-			}
+			.settings-content,
+			#wpbody-content,
 			#wpcontent {
 				background: #fff;
 			}
 
 			.woopay-settings {
-				.woopay-settings__appearance-card-settings {
-					box-shadow: none;
-				}
+				.woopay-settings__appearance-card-settings,
 				.woopay-settings__appearance-card-preview {
 					box-shadow: none;
 				}
