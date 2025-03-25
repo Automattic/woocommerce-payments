@@ -898,7 +898,11 @@ class WC_Payments_Subscription_Service {
 			$current_mode      = WC_Payments::mode()->is_test() ? Order_Mode::TEST : Order_Mode::PRODUCTION;
 
 			if ( is_string( $subscription_mode ) && '' !== $subscription_mode && $subscription_mode !== $current_mode ) {
-				throw new Subscription_Mode_Mismatch_Exception( 'The subscription was made in the mode "' . $subscription_mode . '" that does not match the current WooPayments mode "' . $current_mode . '".' );
+				if ( Order_Mode::TEST === $subscription_mode ) {
+					throw new Subscription_Mode_Mismatch_Exception( __( 'Subscription was made when WooPayments was in the test mode and cannot be renewed in the live mode.', 'woocommerce-payments' ) );
+				} else {
+					throw new Subscription_Mode_Mismatch_Exception( __( 'Subscription was made when WooPayments was in the live mode and cannot be renewed in the test mode.', 'woocommerce-payments' ) );
+				}
 			}
 		}
 		return $items;
