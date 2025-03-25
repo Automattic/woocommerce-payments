@@ -131,7 +131,7 @@ if ( ! class_exists( 'WC_Payments_Email_IPP_Receipt' ) ) :
 		 * @return array
 		 */
 		public function get_preview_placeholders( $placeholders ) {
-			$placeholders['{order_date}']   = wc_format_datetime( time() );
+			$placeholders['{order_date}']   = wc_format_datetime( new DateTime() );
 			$placeholders['{order_number}'] = '42';
 			return $placeholders;
 		}
