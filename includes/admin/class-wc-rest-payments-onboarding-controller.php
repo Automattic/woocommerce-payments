@@ -228,7 +228,7 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 	 */
 	public function get_embedded_kyc_session( WP_REST_Request $request ) {
 		$self_assessment_data = ! empty( $request->get_param( 'self_assessment' ) ) ? wc_clean( wp_unslash( $request->get_param( 'self_assessment' ) ) ) : [];
-		$progressive          = ! empty( $request->get_param( 'progressive' ) ) && 'true' === $request->get_param( 'progressive' );
+		$progressive          = ! empty( $request->get_param( 'progressive' ) ) && ( 'true' === $request->get_param( 'progressive' ) || true === $request->get_param( 'progressive' ) );
 
 		$account_session = $this->onboarding_service->create_embedded_kyc_session(
 			$self_assessment_data,
