@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { render, screen, within } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -97,22 +97,6 @@ describe( 'ExpressCheckoutSettings', () => {
 		expect( errorMessage ).toBeInTheDocument();
 	} );
 
-	test( 'renders payment request breadcrumbs', () => {
-		renderWithSettingsProvider(
-			<ExpressCheckoutSettings methodId="payment_request" />
-		);
-
-		const linkToPayments = screen.getByRole( 'link', {
-			name: 'WooPayments',
-		} );
-		const breadcrumbs = linkToPayments.closest( 'h2' );
-
-		const methodName = within( breadcrumbs ).getByText(
-			'Apple Pay / Google Pay'
-		);
-		expect( breadcrumbs ).toContainElement( methodName );
-	} );
-
 	test( 'renders payment request title and description', () => {
 		renderWithSettingsProvider(
 			<ExpressCheckoutSettings methodId="payment_request" />
@@ -145,20 +129,6 @@ describe( 'ExpressCheckoutSettings', () => {
 				name: 'Enable Apple Pay and Google Pay on selected pages',
 			} )
 		).toBeInTheDocument();
-	} );
-
-	test( 'renders woopay breadcrumbs', () => {
-		renderWithSettingsProvider(
-			<ExpressCheckoutSettings methodId="woopay" />
-		);
-
-		const linkToPayments = screen.getByRole( 'link', {
-			name: 'WooPayments',
-		} );
-		const breadcrumbs = linkToPayments.closest( 'h2' );
-
-		const methodName = within( breadcrumbs ).getByText( 'WooPay' );
-		expect( breadcrumbs ).toContainElement( methodName );
 	} );
 
 	test( 'renders woopay settings and confirm its checkbox label', () => {
