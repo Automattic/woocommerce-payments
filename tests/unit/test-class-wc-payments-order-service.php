@@ -1616,4 +1616,76 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		WC_Helper_Order::delete_order( $order->get_id() );
 	}
+
+	/**
+	 * Tests that handle_failed_refund adds the correct note for cancelled refunds.
+	 */
+	public function test_handle_failed_refund_cancelled(): void {
+		// Arrange: Create order and handle cancelled refund.
+		$order = WC_Helper_Order::create_order();
+		$order->save();
+
+		$refund_id = 're_123456789';
+		$amount    = 1000;
+		$currency  = 'usd';
+
+		// Act: Handle the cancelled refund.
+		$this->order_service->handle_failed_refund( $order, $refund_id, $amount, $currency, null, true );
+
+		// Assert: Check order note was added with cancelled status.
+		$notes = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
+		$this->assertStringContainsString( 'cancelled', $notes[0]->content );
+		$this->assertStringContainsString( $refund_id, $notes[0]->content );
+
+		// Assert: Check refund status was set to failed.
+		$this->assertSame( Refund_Status::FAILED, $this->order_service->get_wcpay_refund_status_for_order( $order ) );
+
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
+	 * Tests that handle_failed_refund doesn't add duplicate notes for cancelled refunds.
+	 */
+	public function test_handle_failed_refund_cancelled_no_duplicate_notes(): void {
+		// Arrange: Create order and handle cancelled refund twice.
+		$order = WC_Helper_Order::create_order();
+		$order->save();
+
+		$refund_id = 're_123456789';
+		$amount    = 1000;
+		$currency  = 'usd';
+
+		$this->order_service->handle_failed_refund( $order, $refund_id, $amount, $currency, null, true );
+		$initial_notes_count = count( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ) );
+
+		$this->order_service->handle_failed_refund( $order, $refund_id, $amount, $currency, null, true );
+		$final_notes_count = count( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ) );
+
+		// Assert: No duplicate notes were added.
+		$this->assertSame( $initial_notes_count, $final_notes_count );
+
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
+	 * Tests that handle_failed_refund updates order status to failed when fully refunded.
+	 */
+	public function test_handle_failed_refund_cancelled_updates_order_status(): void {
+		// Arrange: Create order and set it to refunded status.
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( Order_Status::REFUNDED );
+		$order->save();
+
+		$refund_id = 're_123456789';
+		$amount    = 1000;
+		$currency  = 'usd';
+
+		// Act: Handle the cancelled refund.
+		$this->order_service->handle_failed_refund( $order, $refund_id, $amount, $currency, null, true );
+
+		// Assert: Order status was updated to failed.
+		$this->assertTrue( $order->has_status( Order_Status::FAILED ) );
+
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
 }

@@ -20,4 +20,5 @@ class Refund_Status extends Base_Constant {
 	const PENDING   = 'pending';
 	const SUCCEEDED = 'succeeded';
 	const FAILED    = 'failed';
+	const CANCELLED = 'cancelled';
 }

@@ -289,7 +289,7 @@ class WC_Payments_Webhook_Processing_Service {
 			}
 		}
 
-		// Refund update webhook events can be either failed or succeeded only.
+		// Refund update webhook events can be either failed, cancelled (basically it's also a failure but triggered by the merchant), succeeded only.
 		switch ( $status ) {
 			case Refund_Status::FAILED:
 				$this->order_service->handle_failed_refund( $order, $refund_id, $amount, $currency, $matched_wc_refund );
@@ -299,6 +299,9 @@ class WC_Payments_Webhook_Processing_Service {
 				) {
 					$this->order_service->handle_insufficient_balance_for_refund( $order, $amount );
 				}
+				break;
+			case Refund_Status::CANCELLED:
+				$this->order_service->handle_failed_refund( $order, $refund_id, $amount, $currency, $matched_wc_refund, true );
 				break;
 			case Refund_Status::SUCCEEDED:
 				if ( $matched_wc_refund ) {

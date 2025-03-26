@@ -270,7 +270,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Test a failed refund without matched WC Refunds.
 	 */
-	public function test_failed_refund_update_webhook_without_matched_wc_refunds() {
+	public function test_failed_refund_update_webhook_without_matched_wc_refund() {
 		// Setup test request data.
 		$this->event_body['type']           = 'charge.refund.updated';
 		$this->event_body['livemode']       = true;
@@ -342,6 +342,56 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'handle_failed_refund' )
 			->with( $this->mock_order, 'test_refund_id', 999, 'usd', $mock_refund_2 );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Test a refund update with status `cancelled`
+	 */
+	public function test_cancelled_refund_update_webhook_with_matched_wc_refund() {
+		// Setup test request data.
+		$this->event_body['type']           = 'charge.refund.updated';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'status'   => Refund_Status::CANCELLED,
+			'charge'   => 'test_charge_id',
+			'id'       => 'test_refund_id',
+			'amount'   => 999,
+			'currency' => 'usd',
+		];
+
+		$mock_refund_1 = $this->createMock( WC_Order_Refund::class );
+		$mock_refund_2 = $this->createMock( WC_Order_Refund::class );
+		$this->order_service
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_wcpay_refund_id_for_order' )
+			->withConsecutive(
+				[ $mock_refund_1 ],
+				[ $mock_refund_2 ]
+			)->willReturnOnConsecutiveCalls(
+				'another_test_refund_id',
+				'test_refund_id'
+			);
+
+		$this->mock_order->method( 'get_refunds' )->willReturn(
+			[
+				$mock_refund_1,
+				$mock_refund_2,
+			]
+		);
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $this->mock_order );
+
+		$this->order_service
+			->expects( $this->once() )
+			->method( 'handle_failed_refund' )
+			->with( $this->mock_order, 'test_refund_id', 999, 'usd', $mock_refund_2, true );
 
 		// Run the test.
 		$this->webhook_processing_service->process( $this->event_body );

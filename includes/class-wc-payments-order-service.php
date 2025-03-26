@@ -1476,9 +1476,10 @@ class WC_Payments_Order_Service {
 	 * @param int                  $amount The refund amount in cents.
 	 * @param string               $currency The currency code.
 	 * @param WC_Order_Refund|null $wc_refund The WC refund object to delete if provided.
+	 * @param bool                 $is_cancelled Whether this is a cancellation rather than a failure. Default false.
 	 * @return void
 	 */
-	public function handle_failed_refund( WC_Order $order, string $refund_id, int $amount, string $currency, ?WC_Order_Refund $wc_refund = null ): void {
+	public function handle_failed_refund( WC_Order $order, string $refund_id, int $amount, string $currency, ?WC_Order_Refund $wc_refund = null, bool $is_cancelled = false ): void {
 		// Delete the refund if it exists.
 		if ( $wc_refund ) {
 			$wc_refund->delete();
@@ -1487,7 +1488,7 @@ class WC_Payments_Order_Service {
 		$note = sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %1: the refund amount, %2: WooPayments, %3: ID of the refund */
-				__( 'A refund of %1$s was <strong>unsuccessful</strong> using %2$s (<code>%3$s</code>).', 'woocommerce-payments' ),
+				__( 'A refund of %1$s was <strong>%4$s</strong> using %2$s (<code>%3$s</code>).', 'woocommerce-payments' ),
 				[
 					'strong' => '<strong>',
 					'code'   => '<code>',
@@ -1498,7 +1499,8 @@ class WC_Payments_Order_Service {
 				$order
 			),
 			'WooPayments',
-			$refund_id
+			$refund_id,
+			$is_cancelled ? __( 'cancelled', 'woocommerce-payments' ) : __( 'unsuccessful', 'woocommerce-payments' )
 		);
 
 		if ( $this->order_note_exists( $order, $note ) ) {
