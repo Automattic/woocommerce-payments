@@ -163,6 +163,12 @@ body {
 				.express-checkout {
 					padding-left: 0;
 					padding-right: 0;
+					&:first-child {
+						padding-top: 0;
+					}
+					&:last-child {
+						padding-bottom: 0;
+					}
 				}
 				.express-checkout__label-container {
 					display: block;
