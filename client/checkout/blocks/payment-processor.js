@@ -19,15 +19,13 @@ import {
 	blocksShowLinkButtonHandler,
 	getBlocksEmailValue,
 	isLinkEnabled,
+	getGatewayIdBy,
 } from 'wcpay/checkout/utils/upe';
 import { useCustomerData } from './utils';
 import enableStripeLinkPaymentMethod from 'wcpay/checkout/stripe-link';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { validateElements } from 'wcpay/checkout/classic/payment-processing';
-import {
-	PAYMENT_METHOD_ERROR,
-	PAYMENT_METHOD_NAME_CARD,
-} from 'wcpay/checkout/constants';
+import { PAYMENT_METHOD_ERROR } from 'wcpay/checkout/constants';
 
 const getBillingDetails = ( billingData ) => {
 	return {
@@ -72,7 +70,8 @@ const PaymentProcessor = ( {
 
 	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
 	const isTestMode = getUPEConfig( 'testMode' );
-	const gatewayConfig = getPaymentMethods()[ upeMethods[ paymentMethodId ] ];
+	const gatewayId = upeMethods[ paymentMethodId ].gatewayId;
+	const gatewayConfig = getPaymentMethods()[ gatewayId ];
 	const {
 		billingAddress: billingData,
 		setShippingAddress,
@@ -81,7 +80,7 @@ const PaymentProcessor = ( {
 
 	useEffect( () => {
 		if (
-			activePaymentMethod === PAYMENT_METHOD_NAME_CARD &&
+			activePaymentMethod === getGatewayIdBy( 'card' ) &&
 			isLinkEnabled( paymentMethodsConfig )
 		) {
 			enableStripeLinkPaymentMethod( {
@@ -150,9 +149,7 @@ const PaymentProcessor = ( {
 		() =>
 			onPaymentSetup( () => {
 				async function handlePaymentProcessing() {
-					if (
-						upeMethods[ paymentMethodId ] !== activePaymentMethod
-					) {
+					if ( gatewayId !== activePaymentMethod ) {
 						return;
 					}
 
@@ -214,8 +211,7 @@ const PaymentProcessor = ( {
 							type: 'success',
 							meta: {
 								paymentMethodData: {
-									payment_method:
-										upeMethods[ paymentMethodId ],
+									payment_method: gatewayId,
 									'wcpay-payment-method': PAYMENT_METHOD_ERROR,
 									'wcpay-payment-method-error-code':
 										result.error.code,
@@ -236,7 +232,7 @@ const PaymentProcessor = ( {
 						type: 'success',
 						meta: {
 							paymentMethodData: {
-								payment_method: upeMethods[ paymentMethodId ],
+								payment_method: gatewayId,
 								'wcpay-payment-method': result.paymentMethod.id,
 								'wcpay-fraud-prevention-token': getFraudPreventionToken(),
 								'wcpay-fingerprint': fingerprint,
@@ -255,7 +251,7 @@ const PaymentProcessor = ( {
 			paymentMethodId,
 			paymentMethodsConfig,
 			shouldSavePayment,
-			upeMethods,
+			gatewayId,
 			errorMessage,
 			onPaymentSetup,
 			billingData,

@@ -363,6 +363,7 @@ class WC_Payments_Checkout {
 		];
 
 		$gateway_for_payment_method    = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );
+		$config['gatewayId']           = $gateway_for_payment_method->id;
 		$config['testingInstructions'] = WC_Payments_Utils::esc_interpolated_html(
 			/* translators: link to Stripe testing page */
 			$payment_method->get_testing_instructions( $account_country ),
