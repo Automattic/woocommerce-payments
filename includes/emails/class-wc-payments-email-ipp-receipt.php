@@ -3,6 +3,21 @@
  * Class WC_Payments_Email_IPP_Receipt file
  *
  * @package WooCommerce\Emails
+ *
+ * @filter woocommerce_email_preview_dummy_order
+ *     Filters the dummy order object used for email previews.
+ *     @param WC_Order|bool $order The order object or false.
+ *     @return WC_Order The filtered order object.
+ *
+ * @filter woocommerce_email_preview_dummy_address
+ *     Filters the dummy address data used for email previews.
+ *     @param array $address The address data array.
+ *     @return array Modified address data array with store location details.
+ *
+ * @filter woocommerce_email_preview_placeholders
+ *     Filters the email preview placeholders.
+ *     @param array $placeholders Array of email preview placeholders.
+ *     @return array Modified array of placeholders with order date and number.
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -61,6 +76,11 @@ if ( ! class_exists( 'WC_Payments_Email_IPP_Receipt' ) ) :
 			// Triggers for this email.
 			add_action( 'woocommerce_payments_email_ipp_receipt_notification', [ $this, 'trigger' ], 10, 3 );
 
+			// WooCommerce Email preview filters.
+			add_filter( 'woocommerce_email_preview_dummy_order', [ $this, 'get_preview_order' ], 10, 1 );
+			add_filter( 'woocommerce_email_preview_dummy_address', [ $this, 'get_preview_address' ], 10, 1 );
+			add_filter( 'woocommerce_email_preview_placeholders', [ $this, 'get_preview_placeholders' ], 10, 1 );
+
 			/**
 			 * Please don't move. The call to the parent constructor here is intentional. It allows this class to merge
 			 * its placeholders with the parent's and prefix the settings with its own identifier.
@@ -70,6 +90,50 @@ if ( ! class_exists( 'WC_Payments_Email_IPP_Receipt' ) ) :
 			 * @see: WC_Email::_construct()
 			*/
 			parent::__construct();
+		}
+
+		/**
+		 * Get preview order data for email preview.
+		 *
+		 * @param WC_Order $order The dummy order instance.
+		 * @return WC_Order
+		 * @see WC_Email_Preview::get_dummy_order()
+		 */
+		public function get_preview_order( $order ) {
+			$order->set_payment_method_title( __( 'WooCommerce In-Person Payments', 'woocommerce-payments' ) );
+			return $order;
+		}
+
+		/**
+		 * Get preview address data for email preview.
+		 *
+		 * @param array $address The address data.
+		 * @return array
+		 */
+		public function get_preview_address( $address ) {
+			if ( empty( $address ) ) {
+				$address = [
+					'line1'       => '123 Sample Street',
+					'line2'       => 'Suite 100',
+					'city'        => 'Sample City',
+					'state'       => 'ST',
+					'postal_code' => '12345',
+					'country'     => 'US',
+				];
+			}
+			return $address;
+		}
+
+		/**
+		 * Get preview placeholders for email preview.
+		 *
+		 * @param array $placeholders The placeholders array.
+		 * @return array
+		 */
+		public function get_preview_placeholders( $placeholders ) {
+			$placeholders['{order_date}']   = wc_format_datetime( new DateTime() );
+			$placeholders['{order_number}'] = '42';
+			return $placeholders;
 		}
 
 		/**
@@ -172,6 +236,33 @@ if ( ! class_exists( 'WC_Payments_Email_IPP_Receipt' ) ) :
 		}
 
 		/**
+		 * Get preview merchant settings for email preview.
+		 *
+		 * @param array $settings The merchant settings.
+		 * @return array
+		 */
+		public function get_preview_merchant_settings( $settings ) {
+			if ( empty( $settings ) ) {
+				$settings = [
+					'business_name' => 'Sample Store',
+					'support_info'  => [
+						'address' => [
+							'line1'       => '123 Sample Street',
+							'line2'       => 'Suite 100',
+							'city'        => 'Sample City',
+							'state'       => 'ST',
+							'postal_code' => '12345',
+							'country'     => 'US',
+						],
+						'phone'   => '+1 (555) 123-4567',
+						'email'   => 'support@samplestore.com',
+					],
+				];
+			}
+			return $settings;
+		}
+
+		/**
 		 * Get store details content html
 		 *
 		 * @param array   $settings The settings.
@@ -179,32 +270,56 @@ if ( ! class_exists( 'WC_Payments_Email_IPP_Receipt' ) ) :
 		 * @return void
 		 */
 		public function store_details( array $settings, bool $plain_text ) {
+			// Ensure we have all required data for preview.
+			$settings = $this->get_preview_merchant_settings( $settings );
+
+			$template_data = [
+				'business_name'   => $settings['business_name'] ?? '',
+				'support_address' => $settings['support_info']['address'] ?? [],
+				'support_phone'   => $settings['support_info']['phone'] ?? '',
+				'support_email'   => $settings['support_info']['email'] ?? '',
+			];
+
 			if ( $plain_text ) {
 				wc_get_template(
 					'emails/plain/email-ipp-receipt-store-details.php',
-					[
-						'business_name'   => $settings['business_name'],
-						'support_address' => $settings['support_info']['address'],
-						'support_phone'   => $settings['support_info']['phone'],
-						'support_email'   => $settings['support_info']['email'],
-					],
+					$template_data,
 					'',
 					WCPAY_ABSPATH . 'templates/'
 				);
-
 			} else {
 				wc_get_template(
 					'emails/email-ipp-receipt-store-details.php',
-					[
-						'business_name'   => $settings['business_name'],
-						'support_address' => $settings['support_info']['address'],
-						'support_phone'   => $settings['support_info']['phone'],
-						'support_email'   => $settings['support_info']['email'],
-					],
+					$template_data,
 					'',
 					WCPAY_ABSPATH . 'templates/'
 				);
 			}
+		}
+
+		/**
+		 * Get preview charge data for email preview.
+		 *
+		 * @param array $charge The charge data.
+		 * @return array
+		 */
+		public function get_preview_charge( $charge ) {
+			if ( empty( $charge ) ) {
+				$charge = [
+					'payment_method_details' => [
+						'card_present' => [
+							'brand'   => 'visa',
+							'last4'   => '4242',
+							'receipt' => [
+								'application_preferred_name' => 'Sample App',
+								'dedicated_file_name' => 'Sample File',
+								'account_type'        => 'credit',
+							],
+						],
+					],
+				];
+			}
+			return $charge;
 		}
 
 		/**
@@ -215,23 +330,25 @@ if ( ! class_exists( 'WC_Payments_Email_IPP_Receipt' ) ) :
 		 * @return void
 		 */
 		public function compliance_details( array $charge, bool $plain_text ) {
+			// Ensure we have all required data for preview.
+			$charge = $this->get_preview_charge( $charge );
+
+			$template_data = [
+				'payment_method_details' => $charge['payment_method_details']['card_present'] ?? [],
+				'receipt'                => $charge['payment_method_details']['card_present']['receipt'] ?? [],
+			];
+
 			if ( $plain_text ) {
 				wc_get_template(
 					'emails/plain/email-ipp-receipt-compliance-details.php',
-					[
-						'payment_method_details' => $charge['payment_method_details']['card_present'],
-						'receipt'                => $charge['payment_method_details']['card_present']['receipt'],
-					],
+					$template_data,
 					'',
 					WCPAY_ABSPATH . 'templates/'
 				);
 			} else {
 				wc_get_template(
 					'emails/email-ipp-receipt-compliance-details.php',
-					[
-						'payment_method_details' => $charge['payment_method_details']['card_present'],
-						'receipt'                => $charge['payment_method_details']['card_present']['receipt'],
-					],
+					$template_data,
 					'',
 					WCPAY_ABSPATH . 'templates/'
 				);

@@ -51,10 +51,10 @@ import {
 } from '../../data/transactions/resolvers';
 import p24BankList from '../../payment-details/payment-method/p24/bank-list';
 import { HoverTooltip } from 'components/tooltip';
-import { PAYMENT_METHOD_TITLES } from 'wcpay/constants/payment-method';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
 import { useReportExport } from 'wcpay/hooks/use-report-export';
+import { getTransactionPaymentMethodTitle } from 'wcpay/transactions/utils/getTransactionPaymentMethodTitle';
 
 interface TransactionsListProps {
 	depositId?: string;
@@ -81,6 +81,8 @@ interface Column extends TableCardColumn {
 	cellClassName?: string;
 }
 
+// FLAG: PAYMENT_METHODS_LIST
+// If your payment method needs a custom display on the transactions list, you can add it here.
 const getPaymentSourceDetails = ( txn: Transaction ) => {
 	if ( ! txn.source_identifier ) {
 		return <Fragment></Fragment>;
@@ -471,15 +473,15 @@ export const TransactionsList = (
 							<span className="payment-method-details-list-item">
 								<HoverTooltip
 									isVisible={ false }
-									content={
-										PAYMENT_METHOD_TITLES[ txn.source ]
-									}
+									content={ getTransactionPaymentMethodTitle(
+										txn.source
+									) }
 								>
 									<span
 										className={ `payment-method__brand payment-method__brand--${ txn.source }` }
-										aria-label={
-											PAYMENT_METHOD_TITLES[ txn.source ]
-										}
+										aria-label={ getTransactionPaymentMethodTitle(
+											txn.source
+										) }
 									/>
 								</HoverTooltip>
 								{ getPaymentSourceDetails( txn ) }

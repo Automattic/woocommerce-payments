@@ -68,6 +68,7 @@ class WC_Payments_Onboarding_Service {
 	const FROM_WPCOM_CONNECTION = 'WPCOM_CONNECTION';
 	const FROM_STRIPE           = 'STRIPE';
 	const FROM_STRIPE_EMBEDDED  = 'STRIPE_EMBEDDED';
+	const FROM_REFERRAL         = 'REFERRAL';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -301,7 +302,8 @@ class WC_Payments_Onboarding_Service {
 				WC_Payments_Utils::array_filter_recursive( $user_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
 				WC_Payments_Utils::array_filter_recursive( $account_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
 				$actioned_notes,
-				$progressive
+				$progressive,
+				$this->get_referral_code()
 			);
 		} catch ( API_Exception $e ) {
 			// If we fail to create the session, return an empty array.
@@ -1171,6 +1173,37 @@ class WC_Payments_Onboarding_Service {
 		if ( empty( $capabilities['apple_google'] ) ) {
 			$gateway->update_option( 'payment_request', 'no' );
 		}
+	}
+
+	/**
+	 * Given a referral code, normalize it and store it in a transient.
+	 *
+	 * @param string $referral_code The referral code to normalize and store.
+	 *
+	 * @return string The normalized referral code.
+	 */
+	public function normalize_and_store_referral_code( string $referral_code ): string {
+		$normalized = trim( strtolower( substr( $referral_code, 0, 50 ) ) );
+		if ( empty( $normalized ) ) {
+			return '';
+		}
+		set_transient( 'woopayments_referral_code', $normalized, 30 * DAY_IN_SECONDS );
+		return $normalized;
+	}
+
+	/**
+	 * Get the referral code from the transient.
+	 *
+	 * @return string|null The referral code or null if not found.
+	 */
+	public function get_referral_code(): ?string {
+		$value = get_transient( 'woopayments_referral_code' );
+
+		if ( empty( $value ) ) {
+			return null;
+		}
+
+		return $value;
 	}
 
 	/**

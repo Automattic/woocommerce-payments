@@ -112,11 +112,6 @@ describe( 'Overview page', () => {
 				accountOverviewTaskList: true,
 			},
 			accountLoans: {},
-			frtDiscoverBannerSettings: JSON.stringify( {
-				remindMeCount: 0,
-				remindMeAt: null,
-				dontShowAgain: false,
-			} ),
 		};
 		getQuery.mockReturnValue( {} );
 		getTasks.mockReturnValue( [] );
