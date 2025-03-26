@@ -331,7 +331,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		/**
-		 * FLAG: PAYMENT_METHOD_LIST
+		 * FLAG: PAYMENT_METHODS_LIST
 		 * Once all payment methods are converted to use definitions, they will all
 		 * have a get_stripe_id() method that can be used instead of this map.
 		 */

@@ -124,7 +124,7 @@ function submitForm( jQueryForm ) {
 /**
  * Validates the contents of the address fields based on the requirements from BNPL payment methods.
  *
- * FLAG: PAYMENT_METHOD_LIST
+ * FLAG: PAYMENT_METHODS_LIST
  * This is specifically looking for Afterpay and Affirm payment methods - not all BNPL methods.
  *
  * @param {Object} params The parameters to be sent to `createPaymentMethod`.

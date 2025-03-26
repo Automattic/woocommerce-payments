@@ -718,7 +718,7 @@ class WC_Payments_Utils {
 	/**
 	 * Get the BNPL limits per currency for a specific payment method.
 	 *
-	 * FLAG: PAYMENT_METHOD_LIST
+	 * FLAG: PAYMENT_METHODS_LIST
 	 * This can be replaced once all BNPL methods are converted to use definitions.
 	 *
 	 * @param string $payment_method The payment method name ('affirm', 'afterpay_clearpay', or 'klarna').

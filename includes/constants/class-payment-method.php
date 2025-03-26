@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Payment_Method extends Base_Constant {
 	/**
-	 * FLAG: PAYMENT_METHOD_LIST
+	 * FLAG: PAYMENT_METHODS_LIST
 	 * We need to see how we can use the definitions to replace these constants.
 	 */
 	const ALIPAY          = 'alipay';
