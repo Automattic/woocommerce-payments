@@ -11,6 +11,7 @@ use WCPay\Constants\Intent_Status;
 use WCPay\Core\Server\Request;
 use WCPay\Database_Cache;
 use WCPay\Inline_Script_Payloads\Woo_Payments_Payment_Method_Definitions;
+use WCPay\Inline_Script_Payloads\Woo_Payments_Payment_Methods_Config;
 use WCPay\Logger;
 use WCPay\WooPay\WooPay_Utilities;
 
@@ -606,6 +607,12 @@ class WC_Payments_Admin {
 			'before'
 		);
 
+		wp_add_inline_script(
+			'WCPAY_DASH_APP',
+			new Woo_Payments_Payment_Methods_Config(),
+			'before'
+		);
+
 		wp_set_script_translations( 'WCPAY_DASH_APP', 'woocommerce-payments' );
 
 		WC_Payments_Utils::register_style(
@@ -1013,7 +1020,6 @@ class WC_Payments_Admin {
 			'enabledPaymentMethods'              => $this->get_enabled_payment_method_ids(),
 			'progressiveOnboarding'              => $this->account->get_progressive_onboarding_details(),
 			'accountDefaultCurrency'             => $this->account->get_account_default_currency(),
-			'frtDiscoverBannerSettings'          => get_option( 'wcpay_frt_discover_banner_settings', '' ),
 			'storeCurrency'                      => get_option( 'woocommerce_currency' ),
 			'isWooPayStoreCountryAvailable'      => WooPay_Utilities::is_store_country_available(),
 			'woopayLastDisableDate'              => $this->wcpay_gateway->get_option( 'platform_checkout_last_disable_date' ),

@@ -445,6 +445,7 @@ class WC_Payments {
 		include_once __DIR__ . '/payment-methods/class-multibanco-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-grabpay-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-wechatpay-payment-method.php';
+		include_once __DIR__ . '/inline-script-payloads/class-woo-payments-payment-methods-config.php';
 		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-button-helper.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-sepa.php';
 		include_once __DIR__ . '/class-wc-payments-status.php';
@@ -471,6 +472,7 @@ class WC_Payments {
 		include_once __DIR__ . '/exceptions/class-order-id-mismatch-exception.php';
 		include_once __DIR__ . '/exceptions/class-rate-limiter-enabled-exception.php';
 		include_once __DIR__ . '/exceptions/class-invalid-address-exception.php';
+		include_once __DIR__ . '/exceptions/class-subscription-mode-mismatch-exception.php';
 		include_once __DIR__ . '/constants/class-base-constant.php';
 		include_once __DIR__ . '/constants/class-country-code.php';
 		include_once __DIR__ . '/constants/class-country-test-cards.php';
@@ -1967,7 +1969,6 @@ class WC_Payments {
 	public static function add_wcpay_options_to_woocommerce_permissions_list( $permissions ) {
 		$wcpay_permissions_list = array_fill_keys(
 			[
-				'wcpay_frt_discover_banner_settings',
 				'wcpay_multi_currency_setup_completed',
 				'woocommerce_dismissed_todo_tasks',
 				'woocommerce_remind_me_later_todo_tasks',

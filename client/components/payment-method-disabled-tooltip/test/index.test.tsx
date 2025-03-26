@@ -8,16 +8,39 @@ import React from 'react';
 /**
  * Internal dependencies
  */
-import PAYMENT_METHOD_IDS from 'wcpay/constants/payment-method';
 import PaymentMethodDisabledTooltip, {
 	DocumentationUrlForDisabledPaymentMethod,
 	getDocumentationUrlForDisabledPaymentMethod,
 } from '../index';
 
+const mockWooPaymentsPaymentMethodsConfig: typeof window.wooPaymentsPaymentMethodsConfig = {
+	mock_payment_method_id: {
+		isBnpl: true, // This is the only property that matters for these tests.
+		title: 'Mock Payment Method',
+		icon: '',
+		darkIcon: '',
+		countries: [],
+		testingInstructions: '',
+		isReusable: false,
+		showSaveOption: false,
+		forceNetworkSavedCards: false,
+	},
+};
+
+// Set up the global configuration before tests
+beforeAll( () => {
+	window.wooPaymentsPaymentMethodsConfig = mockWooPaymentsPaymentMethodsConfig;
+} );
+
+// Clean up after tests
+afterAll( () => {
+	delete window.wooPaymentsPaymentMethodsConfig;
+} );
+
 describe( 'PaymentMethodDisabledTooltip', () => {
 	test.each( [
 		[
-			PAYMENT_METHOD_IDS.AFTERPAY_CLEARPAY,
+			'mock_payment_method_id',
 			DocumentationUrlForDisabledPaymentMethod.BNPLS,
 		],
 		[ 'default-method', DocumentationUrlForDisabledPaymentMethod.DEFAULT ],
