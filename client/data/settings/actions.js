@@ -5,6 +5,7 @@
  */
 import { dispatch, select } from '@wordpress/data';
 import { apiFetch } from '@wordpress/data-controls';
+import directApiFetch from '@wordpress/api-fetch';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -280,4 +281,12 @@ export function* submitStripeBillingSubscriptionMigration() {
 	yield dispatch( STORE_NAME ).finishResolution(
 		'scheduleStripeBillingMigration'
 	);
+}
+
+export function saveOption( optionKey, value ) {
+	directApiFetch( {
+		path: `${ NAMESPACE }/settings/${ optionKey }`,
+		method: 'post',
+		data: { value },
+	} ).catch( () => {} );
 }
