@@ -1967,7 +1967,6 @@ class WC_Payments {
 	public static function add_wcpay_options_to_woocommerce_permissions_list( $permissions ) {
 		$wcpay_permissions_list = array_fill_keys(
 			[
-				'wcpay_frt_discover_banner_settings',
 				'wcpay_multi_currency_setup_completed',
 				'woocommerce_dismissed_todo_tasks',
 				'woocommerce_remind_me_later_todo_tasks',
