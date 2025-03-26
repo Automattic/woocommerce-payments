@@ -305,6 +305,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 						'progressive'                 => false,
 						'collect_payout_requirements' => false,
 						'compatibility_data'          => $this->get_mock_compatibility_data(),
+						'referral_code'               => null,
 					]
 				),
 				true,

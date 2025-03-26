@@ -471,6 +471,7 @@ class WC_Payments {
 		include_once __DIR__ . '/exceptions/class-order-id-mismatch-exception.php';
 		include_once __DIR__ . '/exceptions/class-rate-limiter-enabled-exception.php';
 		include_once __DIR__ . '/exceptions/class-invalid-address-exception.php';
+		include_once __DIR__ . '/exceptions/class-subscription-mode-mismatch-exception.php';
 		include_once __DIR__ . '/constants/class-base-constant.php';
 		include_once __DIR__ . '/constants/class-country-code.php';
 		include_once __DIR__ . '/constants/class-country-test-cards.php';
