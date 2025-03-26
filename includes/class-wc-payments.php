@@ -1119,6 +1119,10 @@ class WC_Payments {
 		$settings_controller = new WC_REST_Payments_Settings_Controller( self::$api_client, self::get_gateway(), self::$account );
 		$settings_controller->register_routes();
 
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-settings-option-controller.php';
+		$settings_option_controller = new WC_REST_Payments_Settings_Option_Controller( self::$api_client );
+		$settings_option_controller->register_routes();
+
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-reader-controller.php';
 		$charges_controller = new WC_REST_Payments_Reader_Controller( self::$api_client, self::get_gateway(), self::$in_person_payments_receipts_service );
 		$charges_controller->register_routes();
