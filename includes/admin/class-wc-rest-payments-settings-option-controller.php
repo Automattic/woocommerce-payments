@@ -35,13 +35,6 @@ class WC_REST_Payments_Settings_Option_Controller extends WC_Payments_REST_Contr
 	];
 
 	/**
-	 * Endpoint namespace.
-	 *
-	 * @var string
-	 */
-	protected $namespace = 'wc/v3';
-
-	/**
 	 * Endpoint path.
 	 *
 	 * @var string
@@ -61,8 +54,8 @@ class WC_REST_Payments_Settings_Option_Controller extends WC_Payments_REST_Contr
 				'permission_callback' => [ $this, 'check_permission' ],
 				'args'                => [
 					'option_key' => [
-						'required' => true,
-						'enum'     => self::ALLOWED_OPTIONS,
+						'required'          => true,
+						'validate_callback' => [ $this, 'validate_option_key' ],
 					],
 					'value'      => [
 						'required' => true,
@@ -77,17 +70,27 @@ class WC_REST_Payments_Settings_Option_Controller extends WC_Payments_REST_Contr
 	 *
 	 * @return bool
 	 */
-	public function check_permission() {
+	public function check_permission(): bool {
 		return current_user_can( 'manage_woocommerce' );
+	}
+
+	/**
+	 * Validate the option key.
+	 *
+	 * @param string $option_key The option key to validate.
+	 * @return bool
+	 */
+	public function validate_option_key( string $option_key ): bool {
+		return in_array( $option_key, self::ALLOWED_OPTIONS, true );
 	}
 
 	/**
 	 * Update the option value.
 	 *
 	 * @param WP_REST_Request $request The request object.
-	 * @return WP_REST_Response|WP_Error
+	 * @return WP_REST_Response
 	 */
-	public function update_option( $request ) {
+	public function update_option( WP_REST_Request $request ) {
 		$option_key = $request->get_param( 'option_key' );
 		$value      = $request->get_param( 'value' );
 
@@ -96,7 +99,6 @@ class WC_REST_Payments_Settings_Option_Controller extends WC_Payments_REST_Contr
 		return rest_ensure_response(
 			[
 				'success' => true,
-				'value'   => $value,
 			]
 		);
 	}
