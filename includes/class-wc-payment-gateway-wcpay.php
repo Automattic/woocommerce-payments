@@ -330,6 +330,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$this->id = self::GATEWAY_ID . '_' . $this->stripe_id;
 		}
 
+		// FLAG: PAYMENT_METHOD_LIST
+		// Once all payment methods are converted to use definitions, they will all
+		// have a get_stripe_id() method that can be used instead of this map.
+
 		// Capabilities have different keys than the payment method ID's,
 		// so instead of appending '_payments' to the end of the ID, it'll be better
 		// to have a map for it instead, just in case the pattern changes.
