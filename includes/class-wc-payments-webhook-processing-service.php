@@ -300,7 +300,7 @@ class WC_Payments_Webhook_Processing_Service {
 					$this->order_service->handle_insufficient_balance_for_refund( $order, $amount );
 				}
 				break;
-			case Refund_Status::CANCELLED:
+			case Refund_Status::CANCELED:
 				$this->order_service->handle_failed_refund( $order, $refund_id, $amount, $currency, $matched_wc_refund, true );
 				break;
 			case Refund_Status::SUCCEEDED:

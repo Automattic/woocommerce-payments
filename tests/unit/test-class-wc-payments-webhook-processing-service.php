@@ -355,7 +355,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->event_body['type']           = 'charge.refund.updated';
 		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
-			'status'   => Refund_Status::CANCELLED,
+			'status'   => Refund_Status::CANCELED,
 			'charge'   => 'test_charge_id',
 			'id'       => 'test_refund_id',
 			'amount'   => 999,
