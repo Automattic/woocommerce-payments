@@ -20,6 +20,7 @@ enum PAYMENT_METHOD_IDS {
 	P24 = 'p24',
 	SEPA_DEBIT = 'sepa_debit',
 	SOFORT = 'sofort',
+	MULTIBANCO = 'multibanco',
 	WECHAT_PAY = 'wechat_pay',
 }
 

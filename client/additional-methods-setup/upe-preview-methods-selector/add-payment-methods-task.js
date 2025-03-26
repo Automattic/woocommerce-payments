@@ -37,7 +37,7 @@ import { LoadableBlock } from '../../components/loadable';
 import LoadableSettingsSection from '../../settings/loadable-settings-section';
 import CurrencyInformationForMethods from './currency-information-for-methods';
 import { getMissingCurrenciesTooltipMessage } from 'multi-currency/interface/functions';
-import { upeCapabilityStatuses, upeMethods } from '../constants';
+import { upeCapabilityStatuses } from '../constants';
 import paymentMethodsMap from '../../payment-methods-map';
 import ConfirmPaymentMethodActivationModal from 'wcpay/settings/payment-methods-list/activation-modal';
 import './add-payment-methods-task.scss';
@@ -155,7 +155,9 @@ const AddPaymentMethodsTask = () => {
 
 	useEffect( () => {
 		availablePaymentMethods
-			.filter( ( method ) => upeMethods.includes( method ) )
+			.filter(
+				( method ) => paymentMethodsMap[ method ] && method !== 'card'
+			)
 			.forEach( ( method ) => {
 				handlePaymentMethodChange( method, false );
 			} );
@@ -214,7 +216,6 @@ const AddPaymentMethodsTask = () => {
 
 	const prepareUpePaymentMethods = ( upeMethodIds ) => {
 		return upeMethodIds.map( ( key ) => {
-			// TODO : fix in https://github.com/Automattic/woocommerce-payments/issues/10182 to remove duplicated logic
 			const { label, currencies } = paymentMethodsMap[ key ];
 
 			if ( availablePaymentMethods.includes( key ) ) {
@@ -257,10 +258,15 @@ const AddPaymentMethodsTask = () => {
 		} );
 	};
 
-	const availableBuyNowPayLaterUpeMethods = upeMethods.filter(
-		( id ) =>
-			paymentMethodsMap[ id ].allows_pay_later &&
-			availablePaymentMethods.includes( id )
+	const availableUpeMethods = availablePaymentMethods.filter(
+		( method ) =>
+			paymentMethodsMap[ method ] &&
+			! paymentMethodsMap[ method ].allows_pay_later &&
+			method !== 'card' // Exclude the card payment method since it's rendered separately
+	);
+
+	const availableBuyNowPayLaterUpeMethods = availablePaymentMethods.filter(
+		( method ) => paymentMethodsMap[ method ]?.allows_pay_later
 	);
 
 	return (
@@ -343,11 +349,7 @@ const AddPaymentMethodsTask = () => {
 										name="card"
 									/>
 									{ prepareUpePaymentMethods(
-										upeMethods.filter(
-											( id ) =>
-												! paymentMethodsMap[ id ]
-													.allows_pay_later
-										)
+										availableUpeMethods
 									) }
 								</PaymentMethodCheckboxes>
 							</LoadableSettingsSection>

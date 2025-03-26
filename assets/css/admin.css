@@ -139,6 +139,10 @@
 	background-image: url( '../images/payment-methods/klarna.svg' );
 }
 
+.payment-method__brand--multibanco {
+	background-image: url( '../images/payment-methods/multibanco-icon.svg' );
+}
+
 .payment-method__brand--grabpay {
 	background-image: url( '../images/payment-methods/grabpay.svg' );
 }

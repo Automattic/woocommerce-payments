@@ -456,7 +456,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	 * @param WP_REST_Request $request Request object.
 	 * @param array           $default_value - default value.
 	 *
-	 * @return array|null
+	 * @return array
 	 * @throws \Exception
 	 */
 	public function get_terminal_intent_payment_method( $request, array $default_value = [ Payment_Method::CARD_PRESENT ] ): array {
@@ -484,7 +484,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	 * @param WP_REST_Request $request Request object.
 	 * @param string          $default_value default value.
 	 *
-	 * @return string|null
+	 * @return string
 	 * @throws \Exception
 	 */
 	public function get_terminal_intent_capture_method( $request, string $default_value = 'manual' ): string {

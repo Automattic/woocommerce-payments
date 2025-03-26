@@ -168,6 +168,16 @@ body.wcpay-onboarding__body {
 			}
 		}
 
+		.wcpay-banner-notice--embedded-kyc {
+			&.is-warning {
+				background-color: lighten( $alert-yellow, 35% );
+			}
+
+			&.is-error {
+				background-color: lighten( $alert-red, 35% );
+			}
+		}
+
 		.wcpay-onboarding__tos {
 			font-size: 12px;
 		}

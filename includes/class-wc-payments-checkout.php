@@ -309,7 +309,7 @@ class WC_Payments_Checkout {
 	 */
 	public function get_enabled_payment_method_config() {
 		$settings                = [];
-		$enabled_payment_methods = $this->gateway->get_payment_method_ids_enabled_at_checkout();
+		$enabled_payment_methods = $this->gateway->get_upe_enabled_payment_method_ids_based_on_manual_capture();
 
 		foreach ( $enabled_payment_methods as $payment_method_id ) {
 			// Link by Stripe should be validated with available fees.
@@ -323,6 +323,7 @@ class WC_Payments_Checkout {
 			$account_country                = $this->account->get_account_country();
 			$settings[ $payment_method_id ] = [
 				'isReusable'     => $payment_method->is_reusable(),
+				'isBnpl'         => $payment_method->is_bnpl(),
 				'title'          => $payment_method->get_title( $account_country ),
 				'icon'           => $payment_method->get_icon( $account_country ),
 				'darkIcon'       => $payment_method->get_dark_icon( $account_country ),

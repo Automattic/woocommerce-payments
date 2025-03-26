@@ -8,7 +8,6 @@
 namespace WCPay;
 
 use WC_Payment_Gateway_WCPay;
-use WCPay\Constants\Payment_Method;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -66,25 +65,17 @@ class WC_Payments_Currency_Manager {
 	 * @return array The currencies keyed with the related payment method
 	 */
 	public function get_enabled_payment_method_currencies() {
-		$enabled_payment_method_ids       = $this->gateway->get_upe_enabled_payment_method_ids();
+		$enabled_payment_method_ids = $this->gateway->get_upe_enabled_payment_method_ids();
+		// getting all the payment methods that are also present in `$enabled_payment_method_ids`.
+		$enabled_payment_methods          = array_values( array_intersect_key( $this->gateway->wc_payments_get_payment_method_map(), array_flip( $enabled_payment_method_ids ) ) );
 		$account_currency                 = $this->gateway->get_account_domestic_currency();
 		$payment_methods_needing_currency = array_reduce(
-			$enabled_payment_method_ids,
-			function ( $result, $method ) use ( $account_currency ) {
-				if ( in_array( $method, [ 'card', 'card_present' ], true ) ) {
+			$enabled_payment_methods,
+			function ( $result, $payment_method_instance ) use ( $account_currency ) {
+				$method = $payment_method_instance->get_id();
+				if ( in_array( $method, [ 'card', 'card_present', 'link' ], true ) ) {
 					return $result;
 				}
-				try {
-					$method_key = Payment_Method::search( $method );
-				} catch ( \InvalidArgumentException $e ) {
-					return $result;
-				}
-				$class_key  = ucfirst( strtolower( $method_key ? $method_key : $method ) );
-				$class_name = "\\WCPay\\Payment_Methods\\{$class_key}_Payment_Method";
-				if ( ! class_exists( $class_name ) ) {
-					return $result;
-				}
-				$payment_method_instance = new $class_name( null );
 
 				$result[ $method ] = [
 					'currencies' => $payment_method_instance->has_domestic_transactions_restrictions() ? [ $account_currency ] : $payment_method_instance->get_currencies(),
