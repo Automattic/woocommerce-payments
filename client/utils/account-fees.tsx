@@ -14,9 +14,9 @@ import { formatCurrency } from 'multi-currency/interface/functions';
 import { formatFee } from 'utils/fees';
 import React from 'react';
 import { BaseFee, DiscountFee, FeeStructure } from 'wcpay/types/fees';
-import { PaymentMethod } from 'wcpay/types/payment-methods';
 import { createInterpolateElement } from '@wordpress/element';
 import { ExternalLink } from '@wordpress/components';
+import PAYMENT_METHOD_IDS from 'constants/payment-method';
 
 const countryFeeStripeDocsBaseLink =
 	'https://woocommerce.com/document/woopayments/fees-and-debits/fees/#';
@@ -350,47 +350,27 @@ export const formatMethodFeesDescription = (
 };
 
 export const getTransactionsPaymentMethodName = (
-	paymentMethod: PaymentMethod
+	paymentMethod: PAYMENT_METHOD_IDS
 ): string => {
+	// Special cases that won't be in wooPaymentsPaymentMethodsConfig
+	// `card` WILL be in that config, but it's title is "Cards" and we want to show "Card transactions."
 	switch ( paymentMethod ) {
-		case 'au_becs_debit':
-			return __(
-				'BECS Direct Debit transactions',
-				'woocommerce-payments'
-			);
-		case 'bancontact':
-			return __( 'Bancontact transactions', 'woocommerce-payments' );
 		case 'card':
 			return __( 'Card transactions', 'woocommerce-payments' );
 		case 'card_present':
 			return __( 'In-person transactions', 'woocommerce-payments' );
-		case 'eps':
-			return __( 'EPS transactions', 'woocommerce-payments' );
-		case 'giropay':
-			return __( 'giropay transactions', 'woocommerce-payments' );
-		case 'ideal':
-			return __( 'iDEAL transactions', 'woocommerce-payments' );
-		case 'p24':
-			return __(
-				'Przelewy24 (P24) transactions',
-				'woocommerce-payments'
-			);
-		case 'sepa_debit':
-			return __(
-				'SEPA Direct Debit transactions',
-				'woocommerce-payments'
-			);
-		case 'sofort':
-			return __( 'Sofort transactions', 'woocommerce-payments' );
-		case 'affirm':
-			return __( 'Affirm transactions', 'woocommerce-payments' );
-		case 'afterpay_clearpay':
-			return __( 'Afterpay transactions', 'woocommerce-payments' );
-		case 'klarna':
-			return __( 'Klarna transactions', 'woocommerce-payments' );
-		case 'grabpay':
-			return __( 'GrabPay transactions', 'woocommerce-payments' );
-		default:
-			return __( 'Unknown transactions', 'woocommerce-payments' );
 	}
+
+	// Try to get the title from wooPaymentsPaymentMethodsConfig
+	const methodConfig = wooPaymentsPaymentMethodsConfig[ paymentMethod ];
+	if ( methodConfig?.title ) {
+		return sprintf(
+			/* translators: %s: Payment method title */
+			__( '%s transactions', 'woocommerce-payments' ),
+			methodConfig.title
+		);
+	}
+
+	// Fallback for unknown payment methods
+	return __( 'Unknown transactions', 'woocommerce-payments' );
 };
