@@ -20,6 +20,7 @@ use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Method;
+use WCPay\Constants\Refund_Status;
 use WCPay\Exceptions\{Add_Payment_Method_Exception,
 	Amount_Too_Small_Exception,
 	API_Merchant_Exception,
@@ -2310,8 +2311,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// translators: %1$: order id.
 			return new WP_Error( 'wcpay_edit_order_refund_not_found', sprintf( __( 'A refund cannot be found for order: %1$s', 'woocommerce-payments' ), $order->get_id() ) );
 		}
-		// If the refund was successful, add a note to the order and update the refund status.
-		$this->order_service->add_note_and_metadata_for_refund( $order, $wc_refund, $refund['id'], $refund['balance_transaction'] ?? null );
+		// There is no error. Refund status can be either pending or succeeded, add a note to the order and update the refund status.
+		$this->order_service->add_note_and_metadata_for_created_refund( $order, $wc_refund, $refund['id'], $refund['balance_transaction'] ?? null, Refund_Status::PENDING === $refund['status'] );
 
 		return true;
 	}
@@ -2323,7 +2324,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return boolean
 	 */
 	public function has_refund_failed( $order ) {
-		return 'failed' === $this->order_service->get_wcpay_refund_status_for_order( $order );
+		return Refund_Status::FAILED === $this->order_service->get_wcpay_refund_status_for_order( $order );
 	}
 
 	/**
