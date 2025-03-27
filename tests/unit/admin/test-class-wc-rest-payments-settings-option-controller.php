@@ -40,7 +40,7 @@ class WC_REST_Payments_Settings_Option_Controller_Test extends WCPAY_UnitTestCas
 		$this->assertTrue( $response->get_data()['success'] );
 	}
 
-	private function provider_option_names(): array {
+	public function provider_option_names(): array {
 		return [
 			'valid option: wcpay_multi_currency_setup_completed' => [
 				'wcpay_multi_currency_setup_completed',

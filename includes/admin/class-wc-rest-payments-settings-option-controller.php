@@ -96,7 +96,7 @@ class WC_REST_Payments_Settings_Option_Controller extends WC_Payments_REST_Contr
 	 * Update the option value.
 	 *
 	 * @param WP_REST_Request $request The request object.
-	 * @return WP_REST_Response
+	 * @return WP_Error|WP_REST_Response
 	 */
 	public function update_option( WP_REST_Request $request ) {
 		$option_name = $request->get_param( 'option_name' );
