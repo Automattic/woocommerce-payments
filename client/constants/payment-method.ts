@@ -3,6 +3,10 @@
  */
 import { __ } from '@wordpress/i18n';
 
+/**
+ * FLAG: PAYMENT_METHODS_LIST
+ * New payment methods should be added here, the value should match the definition ID.
+ */
 enum PAYMENT_METHOD_IDS {
 	AFFIRM = 'affirm',
 	AFTERPAY_CLEARPAY = 'afterpay_clearpay',
