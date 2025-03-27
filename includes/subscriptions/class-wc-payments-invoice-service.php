@@ -59,7 +59,7 @@ class WC_Payments_Invoice_Service {
 	 *
 	 * @param WC_Payments_API_Client      $payments_api_client  WooCommerce Payments API client.
 	 * @param WC_Payments_Product_Service $product_service      Product Service.
-	 * @param WC_Payments_Order_Service   $order_service              WC payments Order Service.
+	 * @param WC_Payments_Order_Service   $order_service         WC payments Order Service.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
@@ -377,6 +377,30 @@ class WC_Payments_Invoice_Service {
 	}
 
 	/**
+	 * Get recurring items of passed item (subscription).
+	 *
+	 * @param WC_Subscription $item Subscription to get recurring items for.
+	 *
+	 * @return array
+	 */
+	public function get_recurring_items( $item ) {
+		// Subscription service has this service as a dependency, so we can't inject it via constructor.
+		// With this we can mock this function in tests to return whatever we want.
+		return WC_Payments_Subscriptions::get_subscription_service()->get_recurring_item_data_for_subscription( $item );
+	}
+
+	/**
+	 * Get the WCPay subscription item ID for a WC subscription item.
+	 *
+	 * @param WC_Order_Item $item The WC subscription item.
+	 *
+	 * @return string The WCPay subscription item ID.
+	 */
+	public function get_wcpay_item_id( $item ) {
+		return WC_Payments_Subscription_Service::get_wcpay_subscription_item_id( $item );
+	}
+
+	/**
 	 * Sets the subscription last invoice ID meta for WC subscription.
 	 *
 	 * @param WC_Subscription $subscription The subscription.
@@ -415,10 +439,11 @@ class WC_Payments_Invoice_Service {
 		}
 
 		// Generate any repair data necessary to update the WCPay Subscription so it matches the WC subscription.
-		foreach ( WC_Payments_Subscriptions::get_subscription_service()->get_recurring_item_data_for_subscription( $subscription ) as $recurring_item_data ) {
+		$recurring_items = $this->get_recurring_items( $subscription );
+		foreach ( $recurring_items  as $recurring_item_data ) {
 			$item_id       = $recurring_item_data['metadata']['wc_item_id'];
 			$item          = $subscription_items[ $item_id ];
-			$wcpay_item_id = WC_Payments_Subscription_Service::get_wcpay_subscription_item_id( $item );
+			$wcpay_item_id = $this->get_wcpay_item_id( $item );
 
 			if ( ! isset( $wcpay_items[ $wcpay_item_id ] ) ) {
 				$message = __( 'The WCPay invoice items do not match WC subscription items.', 'woocommerce-payments' );
