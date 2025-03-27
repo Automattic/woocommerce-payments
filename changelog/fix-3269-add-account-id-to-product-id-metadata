@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Linked account ID to product ID to maintain consistency and prevent issues when the account ID changes.

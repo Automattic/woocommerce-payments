@@ -10,7 +10,6 @@ import React from 'react';
  * Internal dependencies
  */
 import { HoverTooltip } from 'components/tooltip';
-import PAYMENT_METHOD_IDS from 'wcpay/constants/payment-method';
 
 export const DocumentationUrlForDisabledPaymentMethod = {
 	DEFAULT:
@@ -22,17 +21,14 @@ export const DocumentationUrlForDisabledPaymentMethod = {
 export const getDocumentationUrlForDisabledPaymentMethod = (
 	paymentMethodId: string
 ): string => {
-	let url;
-	switch ( paymentMethodId ) {
-		case PAYMENT_METHOD_IDS.AFTERPAY_CLEARPAY:
-		case PAYMENT_METHOD_IDS.AFFIRM:
-		case PAYMENT_METHOD_IDS.KLARNA:
-			url = DocumentationUrlForDisabledPaymentMethod.BNPLS;
-			break;
-		default:
-			url = DocumentationUrlForDisabledPaymentMethod.DEFAULT;
+	const paymentMethodConfig =
+		window.wooPaymentsPaymentMethodsConfig?.[ paymentMethodId ];
+
+	if ( paymentMethodConfig?.isBnpl ) {
+		return DocumentationUrlForDisabledPaymentMethod.BNPLS;
 	}
-	return url;
+
+	return DocumentationUrlForDisabledPaymentMethod.DEFAULT;
 };
 
 const PaymentMethodDisabledTooltip = ( {

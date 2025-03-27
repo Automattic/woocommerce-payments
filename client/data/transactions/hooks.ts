@@ -11,6 +11,9 @@ import type { Query } from '@woocommerce/navigation';
  */
 import { STORE_NAME } from '../constants';
 import type { DepositStatus } from 'wcpay/types/deposits';
+import PAYMENT_METHOD_IDS, {
+	PAYMENT_METHOD_BRANDS,
+} from 'wcpay/constants/payment-method';
 
 export type TransactionType =
 	| 'charge'
@@ -18,6 +21,14 @@ export type TransactionType =
 	| 'card_reader_fee'
 	| 'financing_payout'
 	| 'financing_paydown';
+
+export type TransactionSource =
+	| 'ach_credit_transfer'
+	| 'ach_debit'
+	| 'acss_debit'
+	| 'stripe_account'
+	| typeof PAYMENT_METHOD_IDS[ keyof typeof PAYMENT_METHOD_IDS ]
+	| typeof PAYMENT_METHOD_BRANDS[ keyof typeof PAYMENT_METHOD_BRANDS ];
 
 // TODO: refine this type with more detailed information.
 export interface Transaction {
@@ -44,36 +55,7 @@ export interface Transaction {
 	// Usually last 4 digits for card payments, bank name for bank transfers...
 	source_identifier: string;
 	source_device?: string;
-	// FLAG: PAYMENT_METHODS_LIST
-	// This source could be the network, brand, or payment method ID.
-	source:
-		| 'ach_credit_transfer'
-		| 'ach_debit'
-		| 'acss_debit'
-		| 'affirm'
-		| 'afterpay_clearpay'
-		| 'alipay'
-		| 'amex'
-		| 'au_becs_debit'
-		| 'bancontact'
-		| 'diners'
-		| 'discover'
-		| 'eps'
-		| 'giropay'
-		| 'ideal'
-		| 'jcb'
-		| 'klarna'
-		| 'grabpay'
-		| 'link'
-		| 'mastercard'
-		| 'multibanco'
-		| 'p24'
-		| 'sepa_debit'
-		| 'sofort'
-		| 'stripe_account'
-		| 'unionpay'
-		| 'visa'
-		| 'wechat_pay';
+	source: TransactionSource;
 	loan_id?: string;
 	metadata?: {
 		charge_type: 'card_reader_fee';
