@@ -571,6 +571,10 @@ class WC_Payments {
 		self::$customer_service->init_hooks();
 		self::$token_service->init_hooks();
 
+		/**
+		 * FLAG: PAYMENT_METHODS_LIST
+		 * As payment methods are converted to use definitions, they need to be removed from the list below.
+		 */
 		$payment_method_classes = [
 			CC_Payment_Method::class,
 			Bancontact_Payment_Method::class,
