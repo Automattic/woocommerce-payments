@@ -283,9 +283,9 @@ export function* submitStripeBillingSubscriptionMigration() {
 	);
 }
 
-export function saveOption( optionKey, value ) {
+export function saveOption( optionName, value ) {
 	directApiFetch( {
-		path: `${ NAMESPACE }/settings/${ optionKey }`,
+		path: `${ NAMESPACE }/settings/${ optionName }`,
 		method: 'post',
 		data: { value },
 	} ).catch( () => {} );

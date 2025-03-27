@@ -13,7 +13,7 @@ defined( 'ABSPATH' ) || exit;
 class WC_REST_Payments_Settings_Option_Controller extends WC_Payments_REST_Controller {
 
 	/**
-	 * List of allowed option keys that can be updated via the REST API.
+	 * List of allowed option names that can be updated via the REST API.
 	 *
 	 * @var array
 	 */
@@ -47,18 +47,19 @@ class WC_REST_Payments_Settings_Option_Controller extends WC_Payments_REST_Contr
 	public function register_routes() {
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/(?P<option_key>[a-zA-Z0-9_-]+)',
+			'/' . $this->rest_base . '/(?P<option_name>[a-zA-Z0-9_-]+)',
 			[
 				'methods'             => WP_REST_Server::EDITABLE,
 				'callback'            => [ $this, 'update_option' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 				'args'                => [
-					'option_key' => [
+					'option_name' => [
 						'required'          => true,
-						'validate_callback' => [ $this, 'validate_option_key' ],
+						'validate_callback' => [ $this, 'validate_option_name' ],
 					],
-					'value'      => [
-						'required' => true,
+					'value'       => [
+						'required'          => true,
+						'validate_callback' => [ $this, 'validate_value' ],
 					],
 				],
 			]
@@ -66,22 +67,30 @@ class WC_REST_Payments_Settings_Option_Controller extends WC_Payments_REST_Contr
 	}
 
 	/**
-	 * Verify access.
+	 * Validate the option name.
 	 *
+	 * @param string $option_name The option name to validate.
 	 * @return bool
 	 */
-	public function check_permission(): bool {
-		return current_user_can( 'manage_woocommerce' );
+	public function validate_option_name( string $option_name ): bool {
+		return in_array( $option_name, self::ALLOWED_OPTIONS, true );
 	}
 
 	/**
-	 * Validate the option key.
+	 * Validate the value parameter.
 	 *
-	 * @param string $option_key The option key to validate.
-	 * @return bool
+	 * @param mixed $value The value to validate.
+	 * @return bool|WP_Error True if valid, WP_Error if invalid.
 	 */
-	public function validate_option_key( string $option_key ): bool {
-		return in_array( $option_key, self::ALLOWED_OPTIONS, true );
+	public function validate_value( $value ) {
+		if ( is_bool( $value ) || is_array( $value ) ) {
+			return true;
+		}
+		return new WP_Error(
+			'rest_invalid_param',
+			__( 'Invalid value type; must be either boolean or array', 'woocommerce-payments' ),
+			[ 'status' => 400 ]
+		);
 	}
 
 	/**
@@ -91,10 +100,10 @@ class WC_REST_Payments_Settings_Option_Controller extends WC_Payments_REST_Contr
 	 * @return WP_REST_Response
 	 */
 	public function update_option( WP_REST_Request $request ) {
-		$option_key = $request->get_param( 'option_key' );
-		$value      = $request->get_param( 'value' );
+		$option_name = $request->get_param( 'option_name' );
+		$value       = $request->get_param( 'value' );
 
-		update_option( $option_key, $value );
+		update_option( $option_name, $value );
 
 		return rest_ensure_response(
 			[
