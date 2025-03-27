@@ -97,6 +97,7 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 
 		const stripeElementRegisteredEventCallbacks = {};
 		stripeElementMock = {
+			submit: jest.fn(),
 			mount: jest.fn(),
 			unmount: jest.fn(),
 			__getRegisteredEvent: ( eventName ) =>
@@ -289,6 +290,11 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 		expect(
 			screen.getByTestId( 'wcpay-express-checkout-element' )
 		).not.toBeVisible();
+
+		// also ensuring that "confirm" doesn't trigger any other payment processing logic, if the "add to cart" failed.
+		stripeElementMock.__getRegisteredEvent( 'confirm' )( {} );
+
+		expect( stripeElementMock.submit ).not.toHaveBeenCalled();
 	} );
 
 	it( 'should provide fallback shipping rates on click', async () => {

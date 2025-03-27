@@ -211,6 +211,7 @@ jQuery( ( $ ) => {
 		 * @param {Object} creationOptions ECE initialization options.
 		 */
 		startExpressCheckoutElement: async ( creationOptions ) => {
+			let addToCartErrorMessage = '';
 			let addToCartPromise = Promise.resolve();
 			const stripe = await api.getStripe();
 			// https://docs.stripe.com/js/elements_object/create_without_intent
@@ -280,20 +281,22 @@ jQuery( ( $ ) => {
 					addToCartPromise = getCartApiHandler().addProductToCart();
 					addToCartPromise
 						.catch( () => {
+							addToCartErrorMessage = __(
+								'There was an error processing the product with this payment method. ' +
+									'Please add the product to the cart, instead.',
+								'woocommerce-payments'
+							);
 							// if the product has not been added to the cart due to a server-side error,
 							// but after the customer clicked on the button, we need to completely remove the ECE element.
 							// I am displaying a generic error message.
 							// Technically, the error message could be parsed from the cart response. But it's not always useful.
 							getCartApiHandler().emptyCart();
+
+							// the following instructions might not consistently work on all browsers
+							// We'll keep them here for the browsers they work with, but the fallback mechanism is on the `confirm` handler.
 							eceButton.unmount();
 							elements = null;
-							wcpayECE.abortPayment(
-								__(
-									'There was an error processing the product with this payment method. ' +
-										'Please add the product to the cart, instead.',
-									'woocommerce-payments'
-								)
-							);
+							wcpayECE.abortPayment( addToCartErrorMessage );
 							expressCheckoutButtonUi.hideContainer();
 							expressCheckoutButtonUi.getButtonSeparator().hide();
 						} )
@@ -344,6 +347,14 @@ jQuery( ( $ ) => {
 
 			eceButton.on( 'shippingaddresschange', async ( event ) => {
 				await addToCartPromise;
+
+				if ( addToCartErrorMessage ) {
+					// pretending like everything is fine - the payment will not be confirmed in the `confirm` method, later.
+					// this will prevent showing the "Invalid shipping address" message on the payment sheet, which can be misleading.
+					// Unfortunately, we don't have the ability to show an error message on the payment sheet.
+					return event.resolve();
+				}
+
 				return shippingAddressChangeHandler( event, elements );
 			} );
 
@@ -352,6 +363,12 @@ jQuery( ( $ ) => {
 			);
 
 			eceButton.on( 'confirm', async ( event ) => {
+				if ( addToCartErrorMessage ) {
+					// the message should have already been displayed earlier, but this will also remove any additional overlays.
+					wcpayECE.abortPayment( addToCartErrorMessage );
+					return;
+				}
+
 				return onConfirmHandler(
 					api,
 					stripe,
