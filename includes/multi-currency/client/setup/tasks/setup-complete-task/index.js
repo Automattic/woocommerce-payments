@@ -18,7 +18,7 @@ import { WizardTaskContext } from 'multi-currency/interface/functions';
 import './index.scss';
 
 import { useDefaultCurrency } from 'multi-currency/data';
-import { saveOption } from '../../../data/actions';
+import { saveOption } from 'multi-currency/data/actions';
 
 const SetupComplete = () => {
 	const { isActive } = useContext( WizardTaskContext );
