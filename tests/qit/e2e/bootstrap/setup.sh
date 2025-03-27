@@ -88,7 +88,7 @@ wp post update $CART_PAGE_ID --post_content='$CART_SHORTCODE'
 wp post update $CHECKOUT_PAGE_ID --post_content='$CHECKOUT_SHORTCODE'
 
 echo "Importing some sample data..."
-wp import wp-content/plugins/woocommerce/sample-data/sample_products.xml --authors=skip --quiet
+wp import /var/www/html/wp-content/plugins/woocommerce/sample-data/sample_products.xml --authors=skip --quiet
 
 echo "Removing customer account if present..."
 wp user delete $WC_CUSTOMER_USERNAME --yes

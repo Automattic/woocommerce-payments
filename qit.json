@@ -10,7 +10,12 @@
     },
     "woocommerce-payments": {
       "source": "../woocommerce-payments",
-      "action": "test"
+      "action": "test",
+      "test_tags": ["./tests/qit/e2e"]
+    },
+    "woocommerce-payments-dev-tools": {
+      "source": "../woocommerce-payments-dev-tools",
+      "action": "activate"
     }
   },
   "themes": {
