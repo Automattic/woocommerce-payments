@@ -827,7 +827,7 @@ class WC_Payments_Subscription_Service {
 			$data[] = [
 				'metadata'   => $this->get_item_metadata( $item ),
 				'quantity'   => $item->get_quantity(),
-				'price_data' => static::format_item_price_data( $subscription->get_currency(), $this->product_service->get_wcpay_product_id( $item->get_product() ), $item->get_subtotal() / $item->get_quantity(), $subscription->get_billing_period(), $subscription->get_billing_interval() ),
+				'price_data' => static::format_item_price_data( $subscription->get_currency(), $this->product_service->get_or_create_wcpay_product_id( $item->get_product() ), $item->get_subtotal() / $item->get_quantity(), $subscription->get_billing_period(), $subscription->get_billing_interval() ),
 			];
 		}
 
