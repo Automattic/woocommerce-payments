@@ -18,7 +18,6 @@ class WC_REST_Payments_Settings_Option_Controller extends WC_Payments_REST_Contr
 	 * @var array
 	 */
 	private const ALLOWED_OPTIONS = [
-		'wcpay_frt_discover_banner_settings',
 		'wcpay_multi_currency_setup_completed',
 		'woocommerce_dismissed_todo_tasks',
 		'woocommerce_remind_me_later_todo_tasks',
