@@ -152,5 +152,9 @@ export function saveOption( optionName, value ) {
 		path: `${ NAMESPACE }/settings/${ optionName }`,
 		method: 'post',
 		data: { value },
-	} ).catch( () => {} );
+	} ).catch( () => {
+		dispatch( 'core/notices' ).createErrorNotice(
+			__( 'Error saving option', 'woocommerce-payments' )
+		);
+	} );
 }
