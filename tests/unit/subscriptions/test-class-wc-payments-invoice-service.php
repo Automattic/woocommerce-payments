@@ -189,29 +189,29 @@ class WC_Payments_Invoice_Service_Test extends WCPAY_UnitTestCase {
 				'subscription_item' => 'si_test123_line_item',
 				'quantity'          => 4,
 				'price'             =>
-				[
-					'unit_amount_decimal' => 1000,
-					'currency'            => 'usd',
-					'recurring'           =>
 					[
-						'interval'       => 'month',
-						'interval_count' => 1,
+						'unit_amount_decimal' => 1000,
+						'currency'            => 'usd',
+						'recurring'           =>
+							[
+								'interval'       => 'month',
+								'interval_count' => 1,
+							],
 					],
-				],
 			],
 			[
 				'subscription_item' => 'si_test123_shipping',
 				'quantity'          => 1,
 				'price'             =>
-				[
-					'unit_amount_decimal' => 1000,
-					'currency'            => 'usd',
-					'recurring'           =>
 					[
-						'interval'       => 'month',
-						'interval_count' => 1,
+						'unit_amount_decimal' => 1000,
+						'currency'            => 'usd',
+						'recurring'           =>
+							[
+								'interval'       => 'month',
+								'interval_count' => 1,
+							],
 					],
-				],
 			],
 		];
 
@@ -225,7 +225,53 @@ class WC_Payments_Invoice_Service_Test extends WCPAY_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'update_subscription' );
 
-		$this->invoice_service->validate_invoice( $mock_item_data, $mock_discount_data, $mock_subscription );
+		$invoice_service = $this->getMockBuilder( WC_Payments_Invoice_Service::class )
+			->setConstructorArgs( [ $this->mock_api_client, $this->mock_product_service, $this->mock_order_service ] )
+			->onlyMethods( [ 'get_recurring_items', 'get_wcpay_item_id' ] )
+			->getMock();
+
+		$subscription_items = [];
+		foreach ( $mock_order->get_items( [ 'line_item', 'fee', 'shipping' ] ) as $item ) {
+			$subscription_items[ $item->get_id() ] = $item;
+		}
+
+		$invoice_service
+			->expects( $this->once() )
+			->method( 'get_recurring_items' )
+			->willReturn(
+				[
+					[
+						'quantity'   => 4,
+						'price_data' => [
+							'unit_amount_decimal' => 1000,
+							'currency'            => 'usd',
+						],
+						'metadata'   => [
+							'wc_item_id' => key( $subscription_items ),
+						],
+					],
+					[
+						'quantity'   => 1,
+						'price_data' => [
+							'unit_amount_decimal' => 1000,
+							'currency'            => 'usd',
+						],
+						'metadata'   => [
+							'wc_item_id' => array_keys( $subscription_items )[1],
+						],
+					],
+				]
+			);
+
+		$invoice_service
+			->method( 'get_wcpay_item_id' )
+			->willReturnCallback(
+				function ( $item ) {
+					return 'si_test123_' . $item->get_type();
+				}
+			);
+
+		$invoice_service->validate_invoice( $mock_item_data, $mock_discount_data, $mock_subscription );
 	}
 
 	/**
@@ -247,29 +293,29 @@ class WC_Payments_Invoice_Service_Test extends WCPAY_UnitTestCase {
 				'subscription_item' => 'si_test123_line_item',
 				'quantity'          => 1,
 				'price'             =>
-				[
-					'unit_amount_decimal' => 1000,
-					'currency'            => 'usd',
-					'recurring'           =>
 					[
-						'interval'       => 'month',
-						'interval_count' => 1,
+						'unit_amount_decimal' => 1000,
+						'currency'            => 'usd',
+						'recurring'           =>
+							[
+								'interval'       => 'month',
+								'interval_count' => 1,
+							],
 					],
-				],
 			],
 			[
 				'subscription_item' => 'si_test123_shipping',
 				'quantity'          => 1,
 				'price'             =>
-				[
-					'unit_amount_decimal' => 1000,
-					'currency'            => 'usd',
-					'recurring'           =>
 					[
-						'interval'       => 'month',
-						'interval_count' => 1,
+						'unit_amount_decimal' => 1000,
+						'currency'            => 'usd',
+						'recurring'           =>
+							[
+								'interval'       => 'month',
+								'interval_count' => 1,
+							],
 					],
-				],
 			],
 		];
 
@@ -298,7 +344,58 @@ class WC_Payments_Invoice_Service_Test extends WCPAY_UnitTestCase {
 				[ 'discounts' => [] ]
 			);
 
-		$this->invoice_service->validate_invoice( $mock_item_data, $mock_discount_data, $mock_subscription );
+		// Create a partial mock of the invoice service.
+		$invoice_service = $this->getMockBuilder( WC_Payments_Invoice_Service::class )
+			->setConstructorArgs( [ $this->mock_api_client, $this->mock_product_service, $this->mock_order_service ] )
+			->onlyMethods( [ 'get_recurring_items', 'get_wcpay_item_id' ] )
+			->getMock();
+
+		// Create a map of subscription items.
+		$subscription_items = [];
+		foreach ( $mock_order->get_items( [ 'line_item', 'fee', 'shipping' ] ) as $item ) {
+			$subscription_items[ $item->get_id() ] = $item;
+		}
+
+		// Mock get_recurring_items to return data that will trigger a quantity mismatch (4 instead of 1).
+		$invoice_service
+			->expects( $this->once() )
+			->method( 'get_recurring_items' )
+			->willReturn(
+				[
+					[
+						'quantity'   => 4, // Different quantity than in mock_item_data (1).
+						'price_data' => [
+							'unit_amount_decimal' => 1000,
+							'currency'            => 'usd',
+						],
+						'metadata'   => [
+							'wc_item_id' => key( $subscription_items ), // First item ID (line_item).
+						],
+					],
+					[
+						'quantity'   => 1,
+						'price_data' => [
+							'unit_amount_decimal' => 1000,
+							'currency'            => 'usd',
+						],
+						'metadata'   => [
+							'wc_item_id' => array_keys( $subscription_items )[1], // Second item ID.
+						],
+					],
+				]
+			);
+
+		// Mock get_wcpay_item_id to return the correct ID based on item type.
+		$invoice_service
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_wcpay_item_id' )
+			->willReturnCallback(
+				function ( $item ) {
+					return 'si_test123_' . $item->get_type();
+				}
+			);
+
+		$invoice_service->validate_invoice( $mock_item_data, $mock_discount_data, $mock_subscription );
 		$this->assertSame( [], $mock_subscription->get_meta( self::SUBSCRIPTION_DISCOUNT_IDS_META_KEY, true ) );
 	}
 

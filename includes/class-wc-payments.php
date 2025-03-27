@@ -483,6 +483,7 @@ class WC_Payments {
 		include_once __DIR__ . '/constants/class-payment-type.php';
 		include_once __DIR__ . '/constants/class-payment-initiated-by.php';
 		include_once __DIR__ . '/constants/class-intent-status.php';
+		include_once __DIR__ . '/constants/class-refund-status.php';
 		include_once __DIR__ . '/constants/class-payment-intent-status.php';
 		include_once __DIR__ . '/constants/class-payment-capture-type.php';
 		include_once __DIR__ . '/constants/class-payment-method.php';
@@ -1981,7 +1982,6 @@ class WC_Payments {
 				'wcpay_duplicate_payment_method_notices_dismissed',
 				'wcpay_exit_survey_dismissed',
 				'wcpay_instant_deposit_notice_dismissed',
-				'wcpay_date_format_notice_dismissed',
 			],
 			true
 		);
