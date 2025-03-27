@@ -1350,10 +1350,9 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Block based themes display the cart block even when the cart shortcode is used. has_block() isn't effective
-	 * in this case because it checks the page content for the block, which isn't present.
+	 * Determine if the current page is a cart block.
 	 *
-	 * @return bool
+	 * @return bool True if the current page is a cart block, false otherwise.
 	 *
 	 * @psalm-suppress UndefinedFunction
 	 */
