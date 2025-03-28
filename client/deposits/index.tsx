@@ -4,7 +4,6 @@
  * External dependencies
  */
 import React, { useState } from 'react';
-import { useDispatch } from '@wordpress/data';
 import { ExternalLink } from '@wordpress/components';
 import { addQueryArgs } from '@wordpress/url';
 
@@ -23,9 +22,9 @@ import DepositsList from './list';
 import { hasAutomaticScheduledDeposits } from 'wcpay/deposits/utils';
 import { recordEvent } from 'wcpay/tracks';
 import { MaybeShowMerchantFeedbackPrompt } from 'wcpay/merchant-feedback-prompt';
+import { saveOption } from 'wcpay/data/settings/actions';
 
 const useNextDepositNoticeState = () => {
-	const { updateOptions } = useDispatch( 'wc/admin/options' );
 	const [ isDismissed, setIsDismissed ] = useState(
 		wcpaySettings.isNextDepositNoticeDismissed
 	);
@@ -33,9 +32,7 @@ const useNextDepositNoticeState = () => {
 	const setNextDepositNoticeDismissed = () => {
 		setIsDismissed( true );
 		wcpaySettings.isNextDepositNoticeDismissed = true;
-		updateOptions( {
-			wcpay_next_deposit_notice_dismissed: true,
-		} );
+		saveOption( 'wcpay_next_deposit_notice_dismissed', true );
 	};
 
 	return {

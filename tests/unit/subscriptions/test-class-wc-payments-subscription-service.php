@@ -191,7 +191,7 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn( $mock_wcpay_product_id );
 
 		$this->mock_product_service->expects( $this->once() )
-			->method( 'get_wcpay_product_id' )
+			->method( 'get_or_create_wcpay_product_id' )
 			->willReturn( $mock_wcpay_product_id );
 
 		$this->mock_product_service->method( 'is_valid_billing_cycle' )->willReturn( true );
@@ -271,7 +271,7 @@ class WC_Payments_Subscription_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn( 'wcpay_prod_test123' );
 
 		$this->mock_product_service->expects( $this->once() )
-			->method( 'get_wcpay_product_id' )
+			->method( 'get_or_create_wcpay_product_id' )
 			->willReturn( 'wcpay_prod_test123' );
 
 		$this->mock_api_client->expects( $this->once() )
