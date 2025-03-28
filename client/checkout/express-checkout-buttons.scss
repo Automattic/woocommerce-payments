@@ -6,7 +6,6 @@
 	// new styles that should be added
 	display: flex;
 	flex-direction: column;
-	align-items: stretch;
 
 	// Move opacity handling to ECE element only
 	#wcpay-express-checkout-element {
@@ -46,7 +45,6 @@
 	}
 
 	> div {
-		margin: 4px;
 		margin-bottom: 12px;
 
 		&:last-of-type {
