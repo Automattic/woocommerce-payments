@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Fix unneeded double square brackets in the post-merge script

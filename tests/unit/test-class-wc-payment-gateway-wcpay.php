@@ -3942,6 +3942,10 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	private function init_payment_methods() {
 		$payment_methods = [];
 
+		/**
+		 * FLAG: PAYMENT_METHODS_LIST
+		 * As payment methods are converted to use definitions, they need to be removed from the list below.
+		 */
 		$payment_method_classes = [
 			CC_Payment_Method::class,
 			Bancontact_Payment_Method::class,

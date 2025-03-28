@@ -4,10 +4,7 @@
  * Internal dependencies
  */
 import { getUPEConfig } from 'wcpay/utils/checkout';
-import {
-	getPaymentMethodsConstants,
-	SHORTCODE_BILLING_ADDRESS_FIELDS,
-} from '../constants';
+import { SHORTCODE_BILLING_ADDRESS_FIELDS } from '../constants';
 
 /**
  * Generates terms for reusable payment methods
@@ -130,13 +127,13 @@ export const getUpeSettings = ( paymentMethodType ) => {
 	return upeSettings;
 };
 
-function getGatewayIdBy( paymentMethodType ) {
+export const getGatewayIdBy = ( paymentMethodType ) => {
 	const gatewayPrefix = 'woocommerce_payments';
 	// Only append underscore and payment method type for non-card payments
 	return paymentMethodType === 'card'
 		? gatewayPrefix
 		: `${ gatewayPrefix }_${ paymentMethodType }`;
-}
+};
 
 function shouldIncludeTerms( paymentMethodType ) {
 	if ( getUPEConfig( 'cartContainsSubscription' ) ) {
@@ -158,8 +155,8 @@ function shouldIncludeTerms( paymentMethodType ) {
 }
 
 export const generateCheckoutEventNames = () => {
-	return getPaymentMethodsConstants()
-		.map( ( method ) => `checkout_place_order_${ method }` )
+	return Object.values( getUPEConfig( 'paymentMethodsConfig' ) )
+		.map( ( method ) => `checkout_place_order_${ method.gatewayId }` )
 		.join( ' ' );
 };
 

@@ -2,17 +2,15 @@
  * External dependencies
  */
 import React, { useState, useEffect, useCallback } from 'react';
-import { useDispatch } from '@wordpress/data';
 import ReactDOM from 'react-dom';
-import { OPTIONS_STORE_NAME } from '@woocommerce/data';
 
 /**
  * Internal dependencies
  */
 import PluginDisableSurvey from './deactivation-survey';
+import { saveOption } from 'wcpay/data/settings/actions';
 
 const PluginsPage = () => {
-	const { updateOptions } = useDispatch( OPTIONS_STORE_NAME );
 	const [ modalOpen, setModalOpen ] = useState( false );
 	const surveyModalTimestamp =
 		window.wcpayPluginsSettings?.exitSurveyLastShown ?? null;
@@ -41,9 +39,7 @@ const PluginsPage = () => {
 		const currentDate = new Date();
 
 		// Update modal dismissed option.
-		await updateOptions( {
-			wcpay_exit_survey_last_shown: currentDate,
-		} );
+		saveOption( 'wcpay_exit_survey_last_shown', currentDate );
 
 		window.wcpayPluginsSettings.exitSurveyLastShown = currentDate;
 

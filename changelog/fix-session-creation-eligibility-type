@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Updated the progressive parameter in the KYC session creation API to use a boolean type.

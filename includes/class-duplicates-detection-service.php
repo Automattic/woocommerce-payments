@@ -94,8 +94,10 @@ class Duplicates_Detection_Service {
 	 * @return Duplicates_Detection_Service
 	 */
 	private function search_for_additional_payment_methods() {
-		// Get all payment method definitions.
-
+		/**
+		 * FLAG: PAYMENT_METHODS_LIST
+		 * As payment methods are converted to use definitions, they need to be removed from the list below.
+		 */
 		$keywords = [
 			'bancontact' => Bancontact_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'sepa'       => Sepa_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
@@ -112,6 +114,7 @@ class Duplicates_Detection_Service {
 			'wechatpay'  => Wechatpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 		];
 
+		// Get all payment method definitions.
 		$payment_method_definitions = PaymentMethodDefinitionRegistry::instance()->get_all_payment_method_definitions();
 
 		// This gets all the registered payment method definitions. As new payment methods are converted from the legacy style, they need to be removed from the list above.

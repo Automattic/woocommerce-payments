@@ -4,7 +4,7 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { Card, CardHeader } from '@wordpress/components';
+import { Card } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -62,17 +62,6 @@ const PaymentMethodsSection = () => {
 			<LoadableSettingsSection numLines={ 60 }>
 				<ErrorBoundary>
 					<Card className="payment-methods">
-						<CardHeader className="payment-methods__header">
-							<h4 className="payment-methods__heading">
-								<span>
-									{ __(
-										'Payment methods',
-										'woocommerce-payments'
-									) }
-								</span>
-							</h4>
-						</CardHeader>
-
 						<CardBody size={ null }>
 							<PaymentMethodsList
 								methodIds={

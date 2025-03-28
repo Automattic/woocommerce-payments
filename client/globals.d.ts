@@ -114,7 +114,6 @@ declare global {
 		dismissedDuplicateNotices: PaymentMethodToPluginsMap;
 		accountDefaultCurrency: string;
 		isFRTReviewFeatureActive: boolean;
-		frtDiscoverBannerSettings: string;
 		onboardingFieldsData?: {
 			business_types: Country[];
 			mccs_display_tree: MccsDisplayTreeItem[];
@@ -183,6 +182,21 @@ declare global {
 			allows_manual_capture: boolean;
 			allows_pay_later: boolean;
 			accepts_only_domestic_payment: boolean;
+		}
+	>;
+
+	const wooPaymentsPaymentMethodsConfig: Record<
+		string,
+		{
+			isReusable: boolean;
+			isBnpl: boolean;
+			title: string;
+			icon: string;
+			darkIcon: string;
+			showSaveOption: boolean;
+			countries: string[];
+			testingInstructions: string;
+			forceNetworkSavedCards: boolean;
 		}
 	>;
 
@@ -275,5 +289,6 @@ declare global {
 		wcTracks: typeof wcTracks;
 		wcSettings: typeof wcSettings;
 		wcpayPluginSettings?: typeof wcpayPluginSettings;
+		wooPaymentsPaymentMethodsConfig?: typeof wooPaymentsPaymentMethodsConfig;
 	}
 }
