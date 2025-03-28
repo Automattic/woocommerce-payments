@@ -15,6 +15,7 @@ import apiFetch from '@wordpress/api-fetch';
 import DismissConfirmationModal from './capability-request-dismiss-modal';
 import { CapabilityNoticeProps } from './types';
 import { Action } from 'wcpay/types/notices';
+import { saveOption } from 'wcpay/data/settings/actions';
 
 const CapabilityNotice = ( {
 	id,
@@ -22,7 +23,6 @@ const CapabilityNotice = ( {
 	country,
 	states,
 }: CapabilityNoticeProps ): JSX.Element | null => {
-	const { updateOptions } = useDispatch( 'wc/admin/options' );
 	const { createNotice } = useDispatch( 'core/notices' );
 	const { capabilityRequestNotices } = wcpaySettings;
 	const [ isDismissed, setIsDismissed ] = useState(
@@ -115,16 +115,15 @@ const CapabilityNotice = ( {
 	};
 
 	const dismissNotice = () => {
-		updateOptions( {
-			wcpay_capability_request_dismissed_notices: {
-				...capabilityRequestNotices,
-				[ id ]: true,
-			},
-		} );
-		wcpaySettings.capabilityRequestNotices = {
+		const updatedNotices = {
 			...capabilityRequestNotices,
 			[ id ]: true,
 		};
+		saveOption(
+			'wcpay_capability_request_dismissed_notices',
+			updatedNotices
+		);
+		wcpaySettings.capabilityRequestNotices = updatedNotices;
 
 		setIsDismissed( true );
 	};

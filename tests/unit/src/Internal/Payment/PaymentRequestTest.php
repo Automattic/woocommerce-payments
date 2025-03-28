@@ -52,15 +52,6 @@ class PaymentRequestTest extends WCPAY_UnitTestCase {
 	/**
 	 * @dataProvider provider_text_string_param
 	 */
-	public function test_get_woopay_intent_id( ?string $value, ?string $expected ) {
-		$request   = is_null( $value ) ? [] : [ 'platform-checkout-intent' => $value ];
-		$this->sut = new PaymentRequest( $this->mock_legacy_proxy, $request );
-		$this->assertSame( $expected, $this->sut->get_woopay_intent_id() );
-	}
-
-	/**
-	 * @dataProvider provider_text_string_param
-	 */
 	public function test_get_intent_id( ?string $value, ?string $expected ) {
 		$request   = is_null( $value ) ? [] : [ 'intent_id' => $value ];
 		$this->sut = new PaymentRequest( $this->mock_legacy_proxy, $request );
@@ -93,6 +84,36 @@ class PaymentRequestTest extends WCPAY_UnitTestCase {
 			'string will be changed after sanitization' => [
 				'value'    => " \n<tag>String-with_special_chars__@.#$%^&*()",
 				'expected' => 'String-with_special_chars__@.#$%^&*()',
+			],
+		];
+	}
+
+	/**
+	 * @dataProvider provider_get_woopay_intent_id
+	 */
+	public function test_get_woopay_intent_id( ?string $value, ?string $expected ) {
+		$request   = is_null( $value ) ? [] : [ 'platform-checkout-intent' => $value ];
+		$this->sut = new PaymentRequest( $this->mock_legacy_proxy, $request );
+		$this->assertSame( $expected, $this->sut->get_woopay_intent_id() );
+	}
+
+	public function provider_get_woopay_intent_id(): array {
+		return [
+			'Param is not set'                          => [
+				'value'    => null,
+				'expected' => null,
+			],
+			'empty string'                              => [
+				'value'    => '',
+				'expected' => '',
+			],
+			'normal string'                             => [
+				'value'    => 'String-with-dash_and_underscore',
+				'expected' => 'Stringwithdash_and_underscore',
+			],
+			'string will be changed after sanitization' => [
+				'value'    => " \n<tag>String-with_special_chars__@.#$%^&*()",
+				'expected' => 'tagStringwith_special_chars__',
 			],
 		];
 	}

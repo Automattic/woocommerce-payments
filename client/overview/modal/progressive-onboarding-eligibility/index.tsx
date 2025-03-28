@@ -6,7 +6,6 @@ import { __, sprintf } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
 import { Button, Modal } from '@wordpress/components';
 import { Icon, store, currencyDollar } from '@wordpress/icons';
-import { useDispatch } from '@wordpress/data';
 import interpolateComponents from '@automattic/interpolate-components';
 
 /**
@@ -14,6 +13,7 @@ import interpolateComponents from '@automattic/interpolate-components';
  */
 import { trackEligibilityModalClosed } from 'onboarding/tracking';
 import ConfettiAnimation from 'components/confetti-animation';
+import { saveOption } from 'wcpay/data/settings/actions';
 import './style.scss';
 
 const ProgressiveOnboardingEligibilityModal: React.FC = () => {
@@ -21,8 +21,6 @@ const ProgressiveOnboardingEligibilityModal: React.FC = () => {
 	const [ modalDismissed, setModalDismissed ] = useState(
 		wcpaySettings.progressiveOnboarding?.isEligibilityModalDismissed
 	);
-
-	const { updateOptions } = useDispatch( 'wc/admin/options' );
 
 	const urlParams = new URLSearchParams( window.location.search );
 	const urlSource =
@@ -32,9 +30,7 @@ const ProgressiveOnboardingEligibilityModal: React.FC = () => {
 		setModalDismissed( true );
 
 		// Update the option to mark the modal as dismissed.
-		await updateOptions( {
-			wcpay_onboarding_eligibility_modal_dismissed: true,
-		} );
+		saveOption( 'wcpay_onboarding_eligibility_modal_dismissed', true );
 	};
 
 	const handleSetup = () => {

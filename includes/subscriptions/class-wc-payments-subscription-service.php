@@ -5,9 +5,11 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Constants\Order_Mode;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\Cannot_Combine_Currencies_Exception;
+use WCPay\Exceptions\Subscription_Mode_Mismatch_Exception;
 use WCPay\Logger;
 
 /**
@@ -162,6 +164,8 @@ class WC_Payments_Subscription_Service {
 			add_action( 'woocommerce_admin_order_data_after_billing_address', [ $this, 'show_wcpay_subscription_id' ] );
 
 			add_action( 'woocommerce_subscription_payment_method_updated_from_' . WC_Payment_Gateway_WCPay::GATEWAY_ID, [ $this, 'maybe_cancel_subscription' ], 10, 2 );
+
+			add_action( 'wcs_renewal_order_items', [ $this, 'check_wcpay_mode_for_subscription' ], 10, 3 );
 		}
 	}
 
@@ -823,7 +827,7 @@ class WC_Payments_Subscription_Service {
 			$data[] = [
 				'metadata'   => $this->get_item_metadata( $item ),
 				'quantity'   => $item->get_quantity(),
-				'price_data' => static::format_item_price_data( $subscription->get_currency(), $this->product_service->get_wcpay_product_id( $item->get_product() ), $item->get_subtotal() / $item->get_quantity(), $subscription->get_billing_period(), $subscription->get_billing_interval() ),
+				'price_data' => static::format_item_price_data( $subscription->get_currency(), $this->product_service->get_or_create_wcpay_product_id( $item->get_product() ), $item->get_subtotal() / $item->get_quantity(), $subscription->get_billing_period(), $subscription->get_billing_interval() ),
 			];
 		}
 
@@ -872,6 +876,36 @@ class WC_Payments_Subscription_Service {
 			$subscription->delete_meta_data( self::SUBSCRIPTION_ID_META_KEY );
 			$subscription->save();
 		}
+	}
+
+	/**
+	 * Checks if the original subscription mode matches current WooPayments mode.
+	 *
+	 * If the original subscription was payed with WooPayments, but in the mode, that doesn't
+	 * match the current WooPayments mode, we need to throw an exception, to prevent the renewal
+	 * order from being created, as it would fail to be paid.
+	 *
+	 * @param array           $items        The items to be added to the renewal order.
+	 * @param WC_Order        $order        Renewal order.
+	 * @param WC_Subscription $subscription The original subscription.
+	 * @throws Subscription_Mode_Mismatch_Exception
+	 * @return array
+	 */
+	public function check_wcpay_mode_for_subscription( array $items, WC_Order $order, WC_Subscription $subscription ): array {
+		$parent_order = $subscription->get_parent();
+		if ( false !== $parent_order ) {
+			$subscription_mode = $parent_order->get_meta( WC_Payments_Order_Service::WCPAY_MODE_META_KEY );
+			$current_mode      = WC_Payments::mode()->is_test() ? Order_Mode::TEST : Order_Mode::PRODUCTION;
+
+			if ( is_string( $subscription_mode ) && '' !== $subscription_mode && $subscription_mode !== $current_mode ) {
+				if ( Order_Mode::TEST === $subscription_mode ) {
+					throw new Subscription_Mode_Mismatch_Exception( __( 'Subscription was made when WooPayments was in the test mode and cannot be renewed in the live mode.', 'woocommerce-payments' ) );
+				} else {
+					throw new Subscription_Mode_Mismatch_Exception( __( 'Subscription was made when WooPayments was in the live mode and cannot be renewed in the test mode.', 'woocommerce-payments' ) );
+				}
+			}
+		}
+		return $items;
 	}
 
 	/**
