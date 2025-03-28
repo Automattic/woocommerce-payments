@@ -1,7 +1,19 @@
 .wcpay-express-checkout-wrapper {
+	// existing styles that should not be changed
 	margin-top: 1em;
 	width: 100%;
 	clear: both;
+
+	// new styles that should be added
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	opacity: 0;
+	transition: all 0.3s ease-in-out;
+
+	&.is-ready {
+		opacity: 1;
+	}
 
 	.woocommerce-cart & {
 		margin-bottom: 0;
