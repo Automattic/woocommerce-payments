@@ -172,6 +172,7 @@ class WC_Payments_Admin {
 		add_action( 'woocommerce_admin_order_totals_after_total', [ $this, 'display_wcpay_transaction_fee' ] );
 		add_action( 'admin_init', [ $this, 'redirect_deposits_to_payouts' ] );
 		add_action( 'woocommerce_update_options_site-visibility', [ $this, 'inform_stripe_when_store_goes_live' ] );
+		add_action( 'admin_init', [ $this, 'add_css_classes' ] );
 	}
 
 	/**
@@ -999,7 +1000,7 @@ class WC_Payments_Admin {
 			'showUpdateDetailsTask'              => $this->get_should_show_update_business_details_task( $account_status_data ),
 			'wpcomReconnectUrl'                  => $this->payments_api_client->is_server_connected() && ! $this->payments_api_client->has_server_connection_owner() ? WC_Payments_Account::get_wpcom_reconnect_url() : null,
 			'multiCurrencySetup'                 => [
-				'isSetupCompleted' => get_option( 'wcpay_multi_currency_setup_completed' ),
+				'isSetupCompleted' => filter_var( get_option( 'wcpay_multi_currency_setup_completed' ), FILTER_VALIDATE_BOOLEAN ) ? 'yes' : 'no,',
 			],
 			'isMultiCurrencyEnabled'             => WC_Payments_Features::is_customer_multi_currency_enabled(),
 			'shouldUseExplicitPrice'             => WC_Payments_Explicit_Price_Formatter::should_output_explicit_price(),
@@ -1397,6 +1398,24 @@ class WC_Payments_Admin {
 				$submenu[ self::PAYMENTS_SUBMENU_SLUG ][ $index ][0] .= sprintf( self::UNRESOLVED_NOTIFICATION_BADGE_FORMAT, esc_html( $uncaptured_transactions ) ); // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
 				break;
 			}
+		}
+	}
+
+	/**
+	 * Add new custom css classes.
+	 *
+	 * @return void
+	 */
+	public function add_css_classes() {
+		global $current_tab;
+
+		if ( 'checkout' === $current_tab ) {
+			add_filter(
+				'admin_body_class',
+				static function ( $classes ) {
+					return "$classes woocommerce-payments-checkout-section";
+				}
+			);
 		}
 	}
 
