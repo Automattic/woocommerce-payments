@@ -30,7 +30,7 @@ function DuplicateNotice( {
 }: DuplicateNoticeProps ): JSX.Element | null {
 	const handleDismiss = useCallback( () => {
 		const updatedNotices = { ...dismissedNotices };
-		if ( updatedNotices[ paymentMethod ] ) {
+		if ( Array.isArray( updatedNotices[ paymentMethod ] ) ) {
 			// If there are existing dismissed notices for the payment method, append to the current array.
 			updatedNotices[ paymentMethod ] = [
 				...new Set( [
@@ -55,7 +55,7 @@ function DuplicateNotice( {
 		setDismissedDuplicateNotices,
 	] );
 
-	if ( dismissedNotices?.[ paymentMethod ] ) {
+	if ( Array.isArray( dismissedNotices?.[ paymentMethod ] ) ) {
 		const isNoticeDismissedForEveryGateway = gatewaysEnablingPaymentMethod.every(
 			( value ) => dismissedNotices[ paymentMethod ].includes( value )
 		);
