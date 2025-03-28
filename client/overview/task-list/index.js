@@ -52,7 +52,7 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 		dismissedTasks.splice( dismissedTodoTasks.indexOf( key ), 1 );
 		setVisibleTasks( getVisibleTasks() );
 
-		await saveOption( optionName, updatedDismissedTasks );
+		saveOption( optionName, updatedDismissedTasks );
 	};
 
 	const dismissSelectedTask = async ( {
@@ -66,7 +66,7 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 		dismissedTasks.push( key );
 		setVisibleTasks( getVisibleTasks() );
 
-		await saveOption( optionName, [ ...dismissedTasks ] );
+		saveOption( optionName, [ ...dismissedTasks ] );
 
 		createNotice( 'success', noticeMessage, {
 			actions: [
@@ -116,7 +116,7 @@ const TaskList = ( { overviewTasksVisibility, tasks } ) => {
 		delete remindMeLaterTodoTasks[ key ];
 		setVisibleTasks( getVisibleTasks() );
 
-		await saveOption(
+		saveOption(
 			'woocommerce_remind_me_later_todo_tasks',
 			updatedRemindMeLaterTasks
 		);

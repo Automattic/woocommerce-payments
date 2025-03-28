@@ -6,7 +6,6 @@ import { __, sprintf } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
 import { Button, Modal } from '@wordpress/components';
 import { Icon, store, currencyDollar } from '@wordpress/icons';
-import { useDispatch } from '@wordpress/data';
 import interpolateComponents from '@automattic/interpolate-components';
 
 /**

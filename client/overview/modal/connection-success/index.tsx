@@ -23,7 +23,7 @@ export const ConnectionSuccessModal = () => {
 		setIsDismissed( true );
 
 		// Update the option to mark the modal as dismissed.
-		await saveOption( 'wcpay_connection_success_modal_dismissed', true );
+		saveOption( 'wcpay_connection_success_modal_dismissed', true );
 	};
 
 	return (
