@@ -2,15 +2,15 @@
  * External dependencies
  */
 import React, { useEffect, useState } from 'react';
-import { useDispatch } from '@wordpress/data';
 import { TourKit } from '@woocommerce/components';
 
 /**
  * Internal dependencies
  */
-import { useSettings } from '../../../data';
+import { useSettings } from 'wcpay/data';
 import { steps } from './steps';
 import { recordEvent } from 'tracks';
+import { saveOption } from 'wcpay/data/settings/actions';
 
 const options = {
 	effects: {
@@ -35,7 +35,6 @@ const FraudProtectionTour: React.FC = () => {
 	const { isWelcomeTourDismissed } = wcpaySettings.fraudProtection;
 
 	const { isLoading } = useSettings();
-	const { updateOptions } = useDispatch( 'wc/admin/options' );
 	const [ showTour, setShowTour ] = useState( false );
 
 	useEffect( () => {
@@ -61,9 +60,7 @@ const FraudProtectionTour: React.FC = () => {
 		currentIndex: number,
 		element: string
 	) => {
-		updateOptions( {
-			wcpay_fraud_protection_welcome_tour_dismissed: true,
-		} );
+		saveOption( 'wcpay_fraud_protection_welcome_tour_dismissed', true );
 		wcpaySettings.fraudProtection.isWelcomeTourDismissed = true;
 
 		setShowTour( false );

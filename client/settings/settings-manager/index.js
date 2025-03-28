@@ -29,6 +29,7 @@ import {
 } from '../../data';
 import FraudProtection from '../fraud-protection';
 import DuplicatedPaymentMethodsContext from './duplicated-payment-methods-context';
+import './style.scss';
 
 const ExpressCheckoutDescription = () => (
 	<>

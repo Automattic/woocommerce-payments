@@ -5,7 +5,6 @@ import React from 'react';
 import { useEffect, useContext } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
 import { Button } from '@wordpress/components';
-import { useDispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -19,26 +18,23 @@ import { WizardTaskContext } from 'multi-currency/interface/functions';
 import './index.scss';
 
 import { useDefaultCurrency } from 'multi-currency/data';
+import { saveOption } from 'multi-currency/data/actions';
 
 const SetupComplete = () => {
 	const { isActive } = useContext( WizardTaskContext );
 	const defaultCurrency = useDefaultCurrency();
-	const { updateOptions } = useDispatch( 'wc/admin/options' );
 
 	useEffect( () => {
 		if ( ! isActive ) {
 			return;
 		}
 
-		updateOptions( {
-			// eslint-disable-next-line camelcase
-			wcpay_multi_currency_setup_completed: 'yes',
-		} );
+		saveOption( 'wcpay_multi_currency_setup_completed', true );
 
 		// Set the local `isSetupCompleted` to `yes` so that task appears completed on the list.
 		// Please note that marking an item as "completed" is different from "dismissing" it.
 		window.wcpaySettings.multiCurrencySetup.isSetupCompleted = 'yes';
-	}, [ isActive, updateOptions ] );
+	}, [ isActive ] );
 
 	return (
 		<WizardTaskItem
