@@ -28,7 +28,6 @@ class WC_REST_Payments_Settings_Option_Controller extends WC_Payments_REST_Contr
 		'wcpay_connection_success_modal_dismissed',
 		'wcpay_next_deposit_notice_dismissed',
 		'wcpay_duplicate_payment_method_notices_dismissed',
-		'wcpay_exit_survey_dismissed',
 		'wcpay_instant_deposit_notice_dismissed',
 	];
 
