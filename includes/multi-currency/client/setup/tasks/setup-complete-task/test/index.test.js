@@ -9,8 +9,8 @@ import { render } from '@testing-library/react';
 import { WizardTaskContext } from 'multi-currency/interface/functions';
 import SetupCompleteTask from '../../setup-complete-task';
 
-jest.mock( '@wordpress/data', () => ( {
-	useDispatch: jest.fn().mockReturnValue( { updateOptions: jest.fn() } ),
+jest.mock( 'multi-currency/data/actions', () => ( {
+	saveOption: jest.fn(),
 } ) );
 
 jest.mock( 'multi-currency/interface/data', () => ( {} ) );

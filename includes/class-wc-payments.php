@@ -679,7 +679,6 @@ class WC_Payments {
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
 		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'order_woopayments_gateways' ], 2 );
 		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'order_woopayments_gateways' ], 3 );
-		add_filter( 'woocommerce_rest_api_option_permissions', [ __CLASS__, 'add_wcpay_options_to_woocommerce_permissions_list' ], 5 );
 		add_filter( 'woocommerce_admin_get_user_data_fields', [ __CLASS__, 'add_user_data_fields' ] );
 
 		// Add note query support for source.
@@ -1121,6 +1120,10 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-settings-controller.php';
 		$settings_controller = new WC_REST_Payments_Settings_Controller( self::$api_client, self::get_gateway(), self::$account );
 		$settings_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-settings-option-controller.php';
+		$settings_option_controller = new WC_REST_Payments_Settings_Option_Controller( self::$api_client );
+		$settings_option_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-reader-controller.php';
 		$charges_controller = new WC_REST_Payments_Reader_Controller( self::$api_client, self::get_gateway(), self::$in_person_payments_receipts_service );
@@ -1959,43 +1962,6 @@ class WC_Payments {
 			wp_enqueue_script( 'WCPAY_RUNTIME', plugins_url( 'dist/runtime.js', WCPAY_PLUGIN_FILE ), [], self::get_file_version( 'dist/runtime.js' ), true );
 		}
 	}
-
-	/**
-	 * Adds WCPay options to Woo Core option allow list.
-	 *
-	 * @param   array $permissions Array containing the permissions.
-	 *
-	 * @return  array              An array containing the modified permissions.
-	 */
-	public static function add_wcpay_options_to_woocommerce_permissions_list( $permissions ) {
-		$wcpay_permissions_list = array_fill_keys(
-			[
-				'wcpay_multi_currency_setup_completed',
-				'woocommerce_dismissed_todo_tasks',
-				'woocommerce_remind_me_later_todo_tasks',
-				'woocommerce_deleted_todo_tasks',
-				'wcpay_fraud_protection_welcome_tour_dismissed',
-				'wcpay_capability_request_dismissed_notices',
-				'wcpay_onboarding_eligibility_modal_dismissed',
-				'wcpay_connection_success_modal_dismissed',
-				'wcpay_next_deposit_notice_dismissed',
-				'wcpay_duplicate_payment_method_notices_dismissed',
-				'wcpay_exit_survey_dismissed',
-				'wcpay_instant_deposit_notice_dismissed',
-			],
-			true
-		);
-
-		if ( is_array( $permissions ) ) {
-			return array_merge(
-				$permissions,
-				$wcpay_permissions_list
-			);
-		}
-
-		return $wcpay_permissions_list;
-	}
-
 
 	/**
 	 * Creates a new request object for a server call.
