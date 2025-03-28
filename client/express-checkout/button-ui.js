@@ -42,10 +42,9 @@ const expressCheckoutButtonUi = {
 	},
 
 	showContainer: () => {
-		const $container = jQuery( expressCheckoutElementId ).closest(
-			'.wcpay-express-checkout-wrapper'
-		);
-		$container.addClass( 'is-ready' );
+		get$Container()
+			.closest( '.wcpay-express-checkout-wrapper' )
+			.addClass( 'is-ready' );
 	},
 };
 
