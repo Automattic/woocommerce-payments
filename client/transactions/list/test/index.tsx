@@ -10,6 +10,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { useUserPreferences } from '@woocommerce/data';
 import { getUserTimeZone } from 'wcpay/utils/test-utils';
+import { PAYMENT_METHOD_BRANDS } from 'wcpay/constants/payment-method';
 
 /**
  * Internal dependencies
@@ -98,6 +99,7 @@ declare const global: {
 			code: string;
 		};
 	};
+	wooPaymentsPaymentMethodsConfig: Record< string, { title: string } >;
 };
 
 const getMockTransactions: () => Transaction[] = () => [
@@ -106,7 +108,7 @@ const getMockTransactions: () => Transaction[] = () => [
 		transaction_id: 'txn_j23jda9JJa',
 		date: '2020-01-02 17:46:02',
 		type: 'refund',
-		source: 'visa',
+		source: PAYMENT_METHOD_BRANDS.VISA,
 		order: {
 			id: 123,
 			number: 'custom-123',
@@ -138,7 +140,7 @@ const getMockTransactions: () => Transaction[] = () => [
 		date: '2020-01-05 04:22:59',
 		available_on: '2020-01-07 00:00:00',
 		type: 'charge',
-		source: 'mastercard',
+		source: PAYMENT_METHOD_BRANDS.MASTERCARD,
 		order: {
 			id: 123,
 			number: 'custom-125',
@@ -170,7 +172,7 @@ const getMockTransactions: () => Transaction[] = () => [
 		transaction_id: 'txn_mmtr89gjh5',
 		date: '2020-01-02 19:55:05',
 		type: 'charge',
-		source: 'visa',
+		source: PAYMENT_METHOD_BRANDS.VISA,
 		order: {
 			id: 123,
 			number: 'custom-335',
@@ -236,6 +238,9 @@ describe( 'Transactions list', () => {
 				code: 'en',
 			},
 		};
+
+		global.wooPaymentsPaymentMethodsConfig = {};
+
 		window.wcpaySettings.dateFormat = 'M j, Y';
 		window.wcpaySettings.timeFormat = 'g:iA';
 	} );

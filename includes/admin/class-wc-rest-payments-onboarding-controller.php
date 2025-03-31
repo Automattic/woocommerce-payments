@@ -59,7 +59,9 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 					'progressive'     => [
 						'required'    => false,
 						'description' => 'Whether the session is for progressive onboarding.',
-						'type'        => 'string',
+						// phpcs:ignore Squiz.PHP.CommentedOutCode.Found
+						// We expect a boolean (true, false, 0, 1, '0', '1', 'true', or 'false'), but will also accept `yes`/`no`.
+						'type'        => [ 'boolean', 'string' ],
 					],
 					'self_assessment' => [
 						'required'    => false,
@@ -228,7 +230,7 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 	 */
 	public function get_embedded_kyc_session( WP_REST_Request $request ) {
 		$self_assessment_data = ! empty( $request->get_param( 'self_assessment' ) ) ? wc_clean( wp_unslash( $request->get_param( 'self_assessment' ) ) ) : [];
-		$progressive          = ! empty( $request->get_param( 'progressive' ) ) && 'true' === $request->get_param( 'progressive' );
+		$progressive          = ! empty( $request->get_param( 'progressive' ) ) && filter_var( $request->get_param( 'progressive' ), FILTER_VALIDATE_BOOLEAN );
 
 		$account_session = $this->onboarding_service->create_embedded_kyc_session(
 			$self_assessment_data,

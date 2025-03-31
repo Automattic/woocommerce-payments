@@ -1298,6 +1298,23 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	}
 
 	/**
+	 * Fetch a product.
+	 *
+	 * @param string $product_id ID of the product to get.
+	 *
+	 * @return array The product.
+	 *
+	 * @throws API_Exception If fetching the product fails.
+	 */
+	public function get_product_by_id( string $product_id ): array {
+		return $this->request(
+			[],
+			self::PRODUCTS_API . '/' . $product_id,
+			self::GET
+		);
+	}
+
+	/**
 	 * Create a product.
 	 *
 	 * @param array $product_data Product data.

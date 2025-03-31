@@ -28,7 +28,7 @@ class AlipayDefinition implements PaymentMethodDefinitionInterface {
 	}
 
 	/**
-	 * Get the keywords for the payment method
+	 * Get the keywords for the payment method. These are used by the duplicates detection service.
 	 *
 	 * @return string[]
 	 */

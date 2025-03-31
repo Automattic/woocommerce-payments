@@ -188,6 +188,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 				'id'       => 're_123456789',
 				'amount'   => $amount,
 				'currency' => 'usd',
+				'status'   => 'succeeded',
 			]
 		);
 		$request  = $this->mock_wcpay_request( Refund_Charge::class );
