@@ -1,13 +1,10 @@
 .wcpay-express-checkout-wrapper {
-	// existing styles that should not be changed
 	width: 100%;
 	clear: both;
 
-	// new styles that should be added
 	display: flex;
 	flex-direction: column;
 
-	// Move opacity handling to ECE element only
 	#wcpay-express-checkout-element {
 		opacity: 0;
 		transition: all 0.3s ease-in-out;
@@ -16,10 +13,6 @@
 
 		&.is-ready {
 			opacity: 1;
-
-			&:first-child {
-				margin-top: 4px;
-			}
 
 			&:not( :first-child ) {
 				margin-top: 12px;
@@ -32,8 +25,6 @@
 	}
 
 	.woocommerce-checkout & {
-		margin-top: 0;
-
 		> div {
 			margin-top: 4px;
 		}
