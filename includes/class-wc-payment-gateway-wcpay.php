@@ -331,6 +331,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$this->id = self::GATEWAY_ID . '_' . $this->stripe_id;
 		}
 
+		/**
+		 * FLAG: PAYMENT_METHODS_LIST
+		 * Once all payment methods are converted to use definitions, they will all
+		 * have a get_stripe_id() method that can be used instead of this map.
+		 */
+
 		// Capabilities have different keys than the payment method ID's,
 		// so instead of appending '_payments' to the end of the ID, it'll be better
 		// to have a map for it instead, just in case the pattern changes.
@@ -4038,6 +4044,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function get_upe_available_payment_methods() {
 		$available_methods = [ 'card' ];
 
+		/**
+		 * FLAG: PAYMENT_METHODS_LIST
+		 * As payment methods are converted to use definitions, they need to be removed from the list below.
+		 */
 		$available_methods[] = Becs_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Bancontact_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Eps_Payment_Method::PAYMENT_METHOD_STRIPE_ID;

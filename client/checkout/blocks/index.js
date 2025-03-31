@@ -27,49 +27,12 @@ import {
 	tokenizedExpressCheckoutElementGooglePay,
 } from 'wcpay/tokenized-express-checkout/blocks';
 
-import {
-	PAYMENT_METHOD_NAME_CARD,
-	PAYMENT_METHOD_NAME_ALIPAY,
-	PAYMENT_METHOD_NAME_BANCONTACT,
-	PAYMENT_METHOD_NAME_BECS,
-	PAYMENT_METHOD_NAME_EPS,
-	PAYMENT_METHOD_NAME_GIROPAY,
-	PAYMENT_METHOD_NAME_IDEAL,
-	PAYMENT_METHOD_NAME_P24,
-	PAYMENT_METHOD_NAME_SEPA,
-	PAYMENT_METHOD_NAME_SOFORT,
-	PAYMENT_METHOD_NAME_AFFIRM,
-	PAYMENT_METHOD_NAME_AFTERPAY,
-	PAYMENT_METHOD_NAME_KLARNA,
-	PAYMENT_METHOD_NAME_MULTIBANCO,
-	PAYMENT_METHOD_NAME_GRABPAY,
-	PAYMENT_METHOD_NAME_WECHAT_PAY,
-} from '../constants.js';
 import { getDeferredIntentCreationUPEFields } from './payment-elements';
 import { handleWooPayEmailInput } from '../woopay/email-input-iframe';
 import { recordUserEvent } from 'tracks';
 import wooPayExpressCheckoutPaymentMethod from '../woopay/express-button/woopay-express-checkout-payment-method';
 import { isPreviewing } from '../preview';
 import '../utils/copy-test-number';
-
-const upeMethods = {
-	card: PAYMENT_METHOD_NAME_CARD,
-	alipay: PAYMENT_METHOD_NAME_ALIPAY,
-	bancontact: PAYMENT_METHOD_NAME_BANCONTACT,
-	au_becs_debit: PAYMENT_METHOD_NAME_BECS,
-	eps: PAYMENT_METHOD_NAME_EPS,
-	giropay: PAYMENT_METHOD_NAME_GIROPAY,
-	ideal: PAYMENT_METHOD_NAME_IDEAL,
-	p24: PAYMENT_METHOD_NAME_P24,
-	sepa_debit: PAYMENT_METHOD_NAME_SEPA,
-	sofort: PAYMENT_METHOD_NAME_SOFORT,
-	affirm: PAYMENT_METHOD_NAME_AFFIRM,
-	afterpay_clearpay: PAYMENT_METHOD_NAME_AFTERPAY,
-	klarna: PAYMENT_METHOD_NAME_KLARNA,
-	multibanco: PAYMENT_METHOD_NAME_MULTIBANCO,
-	grabpay: PAYMENT_METHOD_NAME_GRABPAY,
-	wechat_pay: PAYMENT_METHOD_NAME_WECHAT_PAY,
-};
 
 const enabledPaymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
 const isStripeLinkEnabled = isLinkEnabled( enabledPaymentMethodsConfig );
@@ -90,16 +53,16 @@ Object.entries( enabledPaymentMethodsConfig )
 	.filter( ( [ upeName ] ) => upeName !== 'link' )
 	.forEach( ( [ upeName, upeConfig ] ) => {
 		registerPaymentMethod( {
-			name: upeMethods[ upeName ],
+			name: upeConfig.gatewayId,
 			content: getDeferredIntentCreationUPEFields(
 				upeName,
-				upeMethods,
+				enabledPaymentMethodsConfig,
 				api,
 				upeConfig.testingInstructions
 			),
 			edit: getDeferredIntentCreationUPEFields(
 				upeName,
-				upeMethods,
+				enabledPaymentMethodsConfig,
 				api,
 				upeConfig.testingInstructions
 			),
@@ -114,7 +77,7 @@ Object.entries( enabledPaymentMethodsConfig )
 				// We used to check if stripe was loaded with `getStripeForUPE`, but we can't guarantee it will be loaded synchronously.
 				return needsPayment && isAvailableInTheCountry;
 			},
-			paymentMethodId: upeMethods[ upeName ],
+			paymentMethodId: upeConfig.gatewayId,
 			// see .wc-block-checkout__payment-method styles in blocks/style.scss
 			label: (
 				<PaymentMethodLabel
