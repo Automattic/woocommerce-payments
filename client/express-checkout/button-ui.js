@@ -38,18 +38,11 @@ const expressCheckoutButtonUi = {
 	},
 
 	hideContainer: () => {
-		get$Container().hide();
+		get$Container().removeClass( 'is-ready' ).hide();
 	},
 
 	showContainer: () => {
-		get$Container().show();
-		get$Container().addClass( 'is-ready' );
-	},
-
-	markAsReady: () => {
-		get$Container()
-			.closest( '.wcpay-express-checkout-wrapper' )
-			.addClass( 'is-ready' );
+		get$Container().addClass( 'is-ready' ).show();
 	},
 };
 
