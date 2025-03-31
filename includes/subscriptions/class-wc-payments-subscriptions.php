@@ -81,7 +81,7 @@ class WC_Payments_Subscriptions {
 		include_once __DIR__ . '/class-wc-payments-subscription-minimum-amount-handler.php';
 
 		// Instantiate additional classes.
-		self::$product_service      = new WC_Payments_Product_Service( $api_client );
+		self::$product_service      = new WC_Payments_Product_Service( $api_client, $account );
 		self::$invoice_service      = new WC_Payments_Invoice_Service( $api_client, self::$product_service, self::$order_service );
 		self::$subscription_service = new WC_Payments_Subscription_Service( $api_client, $customer_service, self::$product_service, self::$invoice_service );
 		self::$event_handler        = new WC_Payments_Subscriptions_Event_Handler( self::$invoice_service, self::$subscription_service );

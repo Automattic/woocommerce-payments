@@ -29,6 +29,7 @@ class WC_Payments_Onboarding_Service {
 	// This should be very sticky as opposed to the `from` value which is meant to represent the immediately previous step.
 	const SOURCE_WCADMIN_PAYMENT_TASK               = 'wcadmin-payment-task';
 	const SOURCE_WCADMIN_SETTINGS_PAGE              = 'wcadmin-settings-page';
+	const SOURCE_WCADMIN_NOX_IN_CONTEXT             = 'wcadmin-nox-in-context';
 	const SOURCE_WCADMIN_INCENTIVE_PAGE             = 'wcadmin-incentive-page';
 	const SOURCE_WCPAY_CONNECT_PAGE                 = 'wcpay-connect-page';
 	const SOURCE_WCPAY_OVERVIEW_PAGE                = 'wcpay-overview-page';
@@ -50,6 +51,7 @@ class WC_Payments_Onboarding_Service {
 	// Woo core places.
 	const FROM_WCADMIN_PAYMENTS_TASK     = 'WCADMIN_PAYMENT_TASK';
 	const FROM_WCADMIN_PAYMENTS_SETTINGS = 'WCADMIN_PAYMENT_SETTINGS';
+	const FROM_WCADMIN_NOX_IN_CONTEXT    = 'WCADMIN_NOX_IN_CONTEXT';
 	const FROM_WCADMIN_INCENTIVE         = 'WCADMIN_PAYMENT_INCENTIVE';
 	// WooPayments places.
 	const FROM_CONNECT_PAGE      = 'WCPAY_CONNECT';
@@ -68,6 +70,7 @@ class WC_Payments_Onboarding_Service {
 	const FROM_WPCOM_CONNECTION = 'WPCOM_CONNECTION';
 	const FROM_STRIPE           = 'STRIPE';
 	const FROM_STRIPE_EMBEDDED  = 'STRIPE_EMBEDDED';
+	const FROM_REFERRAL         = 'REFERRAL';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -301,7 +304,8 @@ class WC_Payments_Onboarding_Service {
 				WC_Payments_Utils::array_filter_recursive( $user_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
 				WC_Payments_Utils::array_filter_recursive( $account_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
 				$actioned_notes,
-				$progressive
+				$progressive,
+				$this->get_referral_code()
 			);
 		} catch ( API_Exception $e ) {
 			// If we fail to create the session, return an empty array.
@@ -839,6 +843,7 @@ class WC_Payments_Onboarding_Service {
 			[
 				self::FROM_WCADMIN_PAYMENTS_TASK,
 				self::FROM_WCADMIN_PAYMENTS_SETTINGS,
+				self::FROM_WCADMIN_NOX_IN_CONTEXT,
 				self::FROM_WCADMIN_INCENTIVE,
 				self::FROM_CONNECT_PAGE,
 				self::FROM_OVERVIEW_PAGE,
@@ -866,6 +871,10 @@ class WC_Payments_Onboarding_Service {
 		if ( false !== strpos( $referer, 'page=wc-settings&tab=checkout' ) ) {
 			return self::FROM_WCADMIN_PAYMENTS_SETTINGS;
 		}
+		if ( false !== strpos( $referer, 'page=wc-settings&tab=checkout' ) &&
+			false !== strpos( $referer, 'path=/woopayments/onboarding' ) ) {
+			return self::FROM_WCADMIN_NOX_IN_CONTEXT;
+		}
 		if ( false !== strpos( $referer, 'path=/wc-pay-welcome-page' ) ) {
 			return self::FROM_WCADMIN_INCENTIVE;
 		}
@@ -878,7 +887,8 @@ class WC_Payments_Onboarding_Service {
 		if ( false !== strpos( $referer, 'path=/payments/onboarding' ) ) {
 			return self::FROM_ONBOARDING_WIZARD;
 		}
-		if ( false !== strpos( $referer, 'path=/payments/deposits' ) || false !== strpos( $referer, 'path=/payments/payouts' ) ) {
+		if ( false !== strpos( $referer, 'path=/payments/deposits' ) ||
+			false !== strpos( $referer, 'path=/payments/payouts' ) ) {
 			return self::FROM_PAYOUTS;
 		}
 		if ( false !== strpos( $referer, 'wordpress.com' ) ) {
@@ -913,6 +923,7 @@ class WC_Payments_Onboarding_Service {
 		$valid_sources = [
 			self::SOURCE_WCADMIN_PAYMENT_TASK,
 			self::SOURCE_WCADMIN_SETTINGS_PAGE,
+			self::SOURCE_WCADMIN_NOX_IN_CONTEXT,
 			self::SOURCE_WCADMIN_INCENTIVE_PAGE,
 			self::SOURCE_WCPAY_CONNECT_PAGE,
 			self::SOURCE_WCPAY_OVERVIEW_PAGE,
@@ -967,6 +978,8 @@ class WC_Payments_Onboarding_Service {
 				return self::SOURCE_WCADMIN_PAYMENT_TASK;
 			case self::FROM_WCADMIN_PAYMENTS_SETTINGS:
 				return self::SOURCE_WCADMIN_SETTINGS_PAGE;
+			case self::FROM_WCADMIN_NOX_IN_CONTEXT:
+				return self::SOURCE_WCADMIN_NOX_IN_CONTEXT;
 			case self::FROM_WCADMIN_INCENTIVE:
 				return self::SOURCE_WCADMIN_INCENTIVE_PAGE;
 			default:
@@ -986,6 +999,8 @@ class WC_Payments_Onboarding_Service {
 			case self::FROM_SETTINGS:
 			case self::FROM_WCADMIN_PAYMENTS_SETTINGS:
 				return self::SOURCE_WCADMIN_SETTINGS_PAGE;
+			case self::FROM_WCADMIN_NOX_IN_CONTEXT:
+				return self::SOURCE_WCADMIN_NOX_IN_CONTEXT;
 			case self::FROM_WCADMIN_INCENTIVE:
 				return self::SOURCE_WCADMIN_INCENTIVE_PAGE;
 			case self::FROM_CONNECT_PAGE:
@@ -1038,6 +1053,12 @@ class WC_Payments_Onboarding_Service {
 				]
 			)
 		) ) {
+			// Discriminate between the settings page and the NOX in-context onboarding.
+			if ( ! empty( $referer_params['path'] ) &&
+				0 === strpos( $referer_params['path'], '/woopayments/onboarding' ) ) {
+				return self::SOURCE_WCADMIN_NOX_IN_CONTEXT;
+			}
+
 			return self::SOURCE_WCADMIN_SETTINGS_PAGE;
 		}
 		if ( 2 === count(
@@ -1171,6 +1192,37 @@ class WC_Payments_Onboarding_Service {
 		if ( empty( $capabilities['apple_google'] ) ) {
 			$gateway->update_option( 'payment_request', 'no' );
 		}
+	}
+
+	/**
+	 * Given a referral code, normalize it and store it in a transient.
+	 *
+	 * @param string $referral_code The referral code to normalize and store.
+	 *
+	 * @return string The normalized referral code.
+	 */
+	public function normalize_and_store_referral_code( string $referral_code ): string {
+		$normalized = trim( strtolower( substr( $referral_code, 0, 50 ) ) );
+		if ( empty( $normalized ) ) {
+			return '';
+		}
+		set_transient( 'woopayments_referral_code', $normalized, 30 * DAY_IN_SECONDS );
+		return $normalized;
+	}
+
+	/**
+	 * Get the referral code from the transient.
+	 *
+	 * @return string|null The referral code or null if not found.
+	 */
+	public function get_referral_code(): ?string {
+		$value = get_transient( 'woopayments_referral_code' );
+
+		if ( empty( $value ) ) {
+			return null;
+		}
+
+		return $value;
 	}
 
 	/**

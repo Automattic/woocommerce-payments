@@ -15,8 +15,6 @@ import {
 	isBillingInformationMissing,
 } from '../upe';
 
-import { getPaymentMethodsConstants } from '../../constants';
-
 import { getUPEConfig } from 'wcpay/utils/checkout';
 
 jest.mock( 'wcpay/utils/checkout' );
@@ -563,23 +561,34 @@ describe( 'UPE checkout utils', () => {
 
 	describe( 'generateCheckoutEventNames', () => {
 		it( 'should return empty string when there are no payment methods', () => {
-			getPaymentMethodsConstants.mockImplementation( () => [] );
-
+			getUPEConfig.mockImplementation( ( argument ) => {
+				if ( argument === 'paymentMethodsConfig' ) {
+					return {};
+				}
+			} );
 			const result = generateCheckoutEventNames();
 
 			expect( result ).toEqual( '' );
 		} );
 
 		it( 'should generate correct event names when there are payment methods', () => {
-			getPaymentMethodsConstants.mockImplementation( () => [
-				'woocommerce_payments_bancontact',
-				'woocommerce_payments_eps',
-			] );
+			getUPEConfig.mockImplementation( ( argument ) => {
+				if ( argument === 'paymentMethodsConfig' ) {
+					return {
+						test_method_one: {
+							gatewayId: 'woocommerce_payments_test_method_one',
+						},
+						test_method_two: {
+							gatewayId: 'woocommerce_payments_test_method_two',
+						},
+					};
+				}
+			} );
 
 			const result = generateCheckoutEventNames();
 
 			expect( result ).toEqual(
-				'checkout_place_order_woocommerce_payments_bancontact checkout_place_order_woocommerce_payments_eps'
+				'checkout_place_order_woocommerce_payments_test_method_one checkout_place_order_woocommerce_payments_test_method_two'
 			);
 		} );
 	} );

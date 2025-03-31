@@ -124,6 +124,9 @@ function submitForm( jQueryForm ) {
 /**
  * Validates the contents of the address fields based on the requirements from BNPL payment methods.
  *
+ * FLAG: PAYMENT_METHODS_LIST
+ * This is specifically looking for Afterpay and Affirm payment methods - not all BNPL methods.
+ *
  * @param {Object} params The parameters to be sent to `createPaymentMethod`.
  * @param {string} paymentMethodType The type of Stripe payment method to create.
  * @return {boolean} True, if there are missing address fields. False, if the validation passes or is not applicable.
