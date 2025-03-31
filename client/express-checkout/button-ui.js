@@ -32,7 +32,6 @@ const expressCheckoutButtonUi = {
 
 	renderButton: ( eceButton ) => {
 		if ( get$Container()?.length ) {
-			// expressCheckoutButtonUi.showContainer();
 			eceButton.mount( expressCheckoutElementId );
 		}
 	},

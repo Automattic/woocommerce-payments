@@ -37,7 +37,6 @@ jQuery( ( $ ) => {
 	}
 
 	const publishableKey = getExpressCheckoutData( 'stripe' ).publishableKey;
-	// const publishableKey = 'pk_test_51N000000000000000000000';
 	const quantityInputSelector = '.quantity .qty[type=number]';
 
 	if ( ! publishableKey ) {
