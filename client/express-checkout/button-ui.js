@@ -32,7 +32,7 @@ const expressCheckoutButtonUi = {
 
 	renderButton: ( eceButton ) => {
 		if ( get$Container()?.length ) {
-			expressCheckoutButtonUi.showContainer();
+			// expressCheckoutButtonUi.showContainer();
 			eceButton.mount( expressCheckoutElementId );
 		}
 	},
@@ -42,6 +42,11 @@ const expressCheckoutButtonUi = {
 	},
 
 	showContainer: () => {
+		get$Container().show();
+		get$Container().addClass( 'is-ready' );
+	},
+
+	markAsReady: () => {
 		get$Container()
 			.closest( '.wcpay-express-checkout-wrapper' )
 			.addClass( 'is-ready' );

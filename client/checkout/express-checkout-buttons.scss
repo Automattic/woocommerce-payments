@@ -19,21 +19,11 @@
 			padding: 0;
 			height: 0;
 		}
-	}
 
-	&.is-ready {
-		#wcpay-express-checkout-element {
+		&.is-ready {
+			margin-top: 12px;
 			opacity: 1;
 		}
-
-		#wcpay-express-checkout-button-separator {
-			opacity: 1;
-		}
-	}
-
-	// WooPay button is always visible
-	#wcpay-woopay-button {
-		opacity: 1;
 	}
 
 	.woocommerce-cart & {
@@ -42,14 +32,6 @@
 
 	.woocommerce-checkout & {
 		margin-top: 0;
-	}
-
-	> div {
-		margin-bottom: 12px;
-
-		&:last-of-type {
-			margin-bottom: 0;
-		}
 	}
 }
 
