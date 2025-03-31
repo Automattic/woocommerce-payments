@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Remove unused wcpay_date_format_notice_dismissed option from the permission list
