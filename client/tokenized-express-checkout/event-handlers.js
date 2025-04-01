@@ -37,6 +37,7 @@ export const shippingAddressChangeHandler = async ( event, elements ) => {
 	lastSelectedAddress = event.address;
 
 	try {
+		console.log( '### entering' );
 		// Please note that the `event.address` might not contain all the fields.
 		// Some fields might not be present (like `line_1` or `line_2`) due to semi-anonymized data.
 		const cartData = await cartApi.updateCustomer( {
@@ -46,11 +47,14 @@ export const shippingAddressChangeHandler = async ( event, elements ) => {
 			),
 		} );
 
+		console.log( cartData );
+
 		const shippingRates = transformCartDataForShippingRates( cartData );
 
 		// when no shipping options are returned, the API still returns a 200 status code.
 		// We need to ensure that shipping options are present - otherwise the ECE dialog won't update correctly.
 		if ( shippingRates.length === 0 ) {
+			console.log( '### no rates' );
 			event.reject();
 
 			return;
@@ -69,6 +73,7 @@ export const shippingAddressChangeHandler = async ( event, elements ) => {
 			lineItems: transformCartDataForDisplayItems( cartData ),
 		} );
 	} catch ( error ) {
+		console.log( '### err', error );
 		event.reject();
 	}
 };
