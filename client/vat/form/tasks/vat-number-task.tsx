@@ -28,7 +28,7 @@ import '../style.scss';
 const getVatPrefix = () => {
 	switch ( wcpaySettings.accountStatus.country ) {
 		case 'AU':
-			// AU ABN or ACN numbers are not prefixed.
+			// AU ABN numbers are not prefixed.
 			// Based on a test lookup at https://abr.business.gov.au/
 			return '';
 		case 'JP':
