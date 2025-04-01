@@ -83,7 +83,7 @@ const getVatTaxIDValidationHint = () => {
 		case 'AU':
 			// https://abr.business.gov.au/Help/AbnFormat
 			return __(
-				'Your ABN or ACN is an 11 digit number.',
+				'11-digit number, for example 51 824 753 556.',
 				'woocommerce-payments'
 			);
 		case 'JP':
