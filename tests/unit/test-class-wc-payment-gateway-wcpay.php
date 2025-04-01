@@ -2441,6 +2441,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->card_gateway->output_payments_settings_screen();
 		$output = ob_get_clean();
 		$this->assertStringMatchesFormat( '%aid="wcpay-account-settings-container"%a', $output );
+		$this->assertStringMatchesFormat( '%ahref="admin.php?page=wc-settings&#038;tab=checkout"%a', $output );
 	}
 
 	public function test_outputs_express_checkout_settings_screen() {
@@ -2450,6 +2451,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$output = ob_get_clean();
 		$this->assertStringMatchesFormat( '%aid="wcpay-express-checkout-settings-container"%a', $output );
 		$this->assertStringMatchesFormat( '%adata-method-id="foo"%a', $output );
+		$this->assertStringMatchesFormat( '%ahref="admin.php?page=wc-settings&#038;tab=checkout&#038;section=woocommerce_payments"%a', $output );
 	}
 
 	/**
