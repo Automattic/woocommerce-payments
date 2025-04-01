@@ -440,7 +440,7 @@ class UPE_Payment_Method {
 	 */
 	public function get_payment_method_information_object( string $account_country ) {
 		return [
-			'id'                            => $this->stripe_id,
+			'id'                            => $this->get_id(),
 			'label'                         => $this->get_settings_label( $account_country ),
 			'description'                   => $this->get_description( $account_country ),
 			'settings_icon_url'             => $this->get_settings_icon_url( $account_country ),
