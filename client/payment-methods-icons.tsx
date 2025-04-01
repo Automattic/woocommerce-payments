@@ -18,6 +18,7 @@ import IdealAsset from 'assets/images/payment-methods/ideal.svg?asset';
 import BankDebitAsset from 'assets/images/payment-methods/bank-debit.svg?asset';
 import AffirmAsset from 'assets/images/payment-methods/affirm-badge.svg?asset';
 import AfterpayAsset from 'assets/images/payment-methods/afterpay-logo.svg?asset';
+import AfterpayCashAppAsset from 'assets/images/payment-methods/afterpay-cashapp-badge.svg?asset';
 import ClearpayAsset from 'assets/images/payment-methods/clearpay.svg?asset';
 import JCBAsset from 'assets/images/payment-methods/jcb.svg?asset';
 import KlarnaAsset from 'assets/images/payment-methods/klarna.svg?asset';
@@ -62,6 +63,10 @@ export const AffirmIcon = iconComponent(
 );
 export const AfterpayIcon = iconComponent(
 	AfterpayAsset,
+	__( 'Afterpay', 'woocommerce-payments' )
+);
+export const AfterpayCashAppIcon = iconComponent(
+	AfterpayCashAppAsset,
 	__( 'Afterpay', 'woocommerce-payments' )
 );
 export const ClearpayIcon = iconComponent(

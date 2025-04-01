@@ -382,8 +382,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string
 	 */
 	public function get_title() {
-		$this->title        = $this->payment_method->get_title();
-		$this->method_title = "WooPayments ($this->title)";
+		if ( ! $this->title ) {
+			$this->title        = $this->payment_method->get_title();
+			$this->method_title = "WooPayments ($this->title)";
+		}
 		return parent::get_title();
 	}
 

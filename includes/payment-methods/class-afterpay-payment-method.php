@@ -50,6 +50,10 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 			return __( 'Clearpay', 'woocommerce-payments' );
 		}
 
+		if ( 'US' === $account_country ) {
+			return __( 'Cash App Afterpay', 'woocommerce-payments' );
+		}
+
 		return __( 'Afterpay', 'woocommerce-payments' );
 	}
 
@@ -64,7 +68,29 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 			return plugins_url( 'assets/images/payment-methods/clearpay.svg', WCPAY_PLUGIN_FILE );
 		}
 
+		if ( 'US' === $account_country ) {
+			return plugins_url( 'assets/images/payment-methods/afterpay-cashapp-logo.svg', WCPAY_PLUGIN_FILE );
+		}
+
 		return plugins_url( 'assets/images/payment-methods/afterpay-badge.svg', WCPAY_PLUGIN_FILE );
+	}
+
+	/**
+	 * Returns payment method dark icon.
+	 *
+	 * @param string|null $account_country Country of merchants account.
+	 * @return string|null
+	 */
+	public function get_dark_icon( ?string $account_country = null ) {
+		if ( 'GB' === $account_country ) {
+			return plugins_url( 'assets/images/payment-methods/clearpay-dark.svg', WCPAY_PLUGIN_FILE );
+		}
+
+		if ( 'US' === $account_country ) {
+			return plugins_url( 'assets/images/payment-methods/afterpay-cashapp-logo-dark.svg', WCPAY_PLUGIN_FILE );
+		}
+
+		return plugins_url( 'assets/images/payment-methods/afterpay-badge-dark.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**

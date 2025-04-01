@@ -12,6 +12,7 @@ import classNames from 'classnames';
 import {
 	AffirmIcon,
 	AfterpayIcon,
+	AfterpayCashAppIcon,
 	ClearpayIcon,
 	BancontactIcon,
 	BankDebitIcon,
@@ -246,7 +247,11 @@ const PaymentMethodInformationObject: Record<
 						'Allow customers to pay over time with Afterpay.',
 						'woocommerce-payments'
 				  ),
-		icon: 'GB' === accountCountry ? ClearpayIcon : AfterpayIcon,
+		icon: ( () => {
+			if ( accountCountry === 'GB' ) return ClearpayIcon;
+			if ( accountCountry === 'US' ) return AfterpayCashAppIcon;
+			return AfterpayIcon;
+		} )(),
 		currencies: [ 'USD', 'AUD', 'CAD', 'NZD', 'GBP' ],
 		stripe_key: 'afterpay_clearpay_payments',
 		allows_manual_capture: false,

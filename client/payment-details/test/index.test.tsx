@@ -15,6 +15,9 @@ import PaymentDetailsPage from '..';
 declare const global: {
 	wcSettings: { countries: Record< string, string > };
 	wcpaySettings: {
+		accountStatus: {
+			country: string;
+		};
 		zeroDecimalCurrencies: string[];
 		featureFlags: Record< string, boolean >;
 		connect: {
@@ -147,6 +150,9 @@ global.wcSettings = {
 };
 
 global.wcpaySettings = {
+	accountStatus: {
+		country: 'US',
+	},
 	featureFlags: { paymentTimeline: true },
 	zeroDecimalCurrencies: [ 'usd' ],
 	connect: { country: 'US' },
