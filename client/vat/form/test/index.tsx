@@ -57,6 +57,7 @@ const countryTaxNumberInfo = [
 	[ 'GR', 'EL', 'VAT Number' ],
 	[ 'CH', 'CHE', 'VAT Number' ],
 	[ 'JP', '', 'Corporate Number' ],
+	[ 'AU', '', 'ABN' ],
 ];
 
 describe( 'VAT form', () => {
