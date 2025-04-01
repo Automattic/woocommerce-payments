@@ -248,6 +248,25 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
+	 * Checks if the WooPay capabilities should be enabled by default.
+	 *
+	 * @param bool  $default_value Whether WooPay should be enabled by default.
+	 * @param array $capabilities The capabilities list.
+	 */
+	public function should_enable_woopay( bool $default_value, array $capabilities ): bool {
+		// The capabilities has `_payments` suffix.
+		$woopay_capability = 'woopay_payments';
+
+		// If the capabilities list is empty, we should return the default value.
+		if ( empty( $capabilities ) || ! isset( $capabilities[ $woopay_capability ] ) ) {
+			return $default_value;
+		}
+
+		// Return the value from the capabilities list.
+		return ! empty( $capabilities[ $woopay_capability ] );
+	}
+
+	/**
 	 * Retrieve the embedded KYC session and handle initial account creation (if necessary).
 	 *
 	 * Will return the session key used to initialise the embedded onboarding session.
