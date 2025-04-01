@@ -515,7 +515,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			add_filter( 'woocommerce_validate_postcode', [ $this, 'maybe_skip_postcode_validation' ], 10, 3 );
 		}
 
-		if ( isset( $request['shipping_address'] ) ) {
+		if ( isset( $request['shipping_address'] ) && is_array( $request['shipping_address'] ) ) {
 			$shipping_address = $request['shipping_address'];
 			$shipping_address = $this->transform_ece_address_state_data( $shipping_address );
 			// on the "update customer" route, Google Pay/Apple Pay might provide redacted postcode data.
@@ -523,9 +523,9 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			if ( $is_update_customer_route ) {
 				$shipping_address = $this->transform_ece_address_postcode_data( $shipping_address );
 			}
-			$request['shipping_address'] = $shipping_address;
+			$request->set_param( 'shipping_address', $shipping_address );
 		}
-		if ( isset( $request['billing_address'] ) ) {
+		if ( isset( $request['billing_address'] ) && is_array( $request['billing_address'] ) ) {
 			$billing_address = $request['billing_address'];
 			$billing_address = $this->transform_ece_address_state_data( $billing_address );
 			// on the "update customer" route, Google Pay/Apple Pay might provide redacted postcode data.
@@ -533,7 +533,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			if ( $is_update_customer_route ) {
 				$billing_address = $this->transform_ece_address_postcode_data( $billing_address );
 			}
-			$request['billing_address'] = $billing_address;
+			$request->set_param( 'billing_address', $billing_address );
 		}
 
 		return $response;
