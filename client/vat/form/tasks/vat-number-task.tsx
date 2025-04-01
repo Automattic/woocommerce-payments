@@ -60,10 +60,10 @@ const getVatTaxIDName = () => {
 const getVatTaxIDRequirementHint = () => {
 	switch ( wcpaySettings.accountStatus.country ) {
 		case 'AU':
-			// To be determined - confirm details before merge.
-			// TODO
-			return __( '', 'woocommerce-payments' );
-
+			return __(
+				'By inputting your ABN number you confirm that you are going to account for the GST.',
+				'woocommerce-payments'
+			);
 		case 'JP':
 			// Leaving this blank intentionally, as I don't know what the requirements are in JP.
 			// Better to add this info later than clutter the dialog with vague/assumed legal requirements.
