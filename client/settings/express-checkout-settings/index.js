@@ -10,7 +10,6 @@ import { __ } from '@wordpress/i18n';
  */
 import './index.scss';
 import SettingsSection from '../settings-section';
-import { getPaymentSettingsUrl } from '../../utils';
 import PaymentRequestSettings from './payment-request-settings';
 import WooPaySettings from './woopay-settings';
 import SettingsLayout from '../settings-layout';
@@ -137,15 +136,10 @@ const ExpressCheckoutSettings = ( { methodId } ) => {
 		} );
 	}
 
-	const { title, sections, controls: Controls } = method;
+	const { sections, controls: Controls } = method;
 
 	return (
 		<SettingsLayout>
-			<h2 className="express-checkout-settings__breadcrumbs">
-				<a href={ getPaymentSettingsUrl() }>{ 'WooPayments' }</a> &gt;{ ' ' }
-				<span>{ title }</span>
-			</h2>
-
 			{ sections.map( ( { section, description } ) => (
 				<SettingsSection key={ section } description={ description }>
 					<LoadableSettingsSection numLines={ 30 }>

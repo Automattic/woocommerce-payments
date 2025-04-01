@@ -980,6 +980,25 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		global $hide_save_button;
 		$hide_save_button = true;
 
+		$method_title = $this->get_method_title();
+		$return_url   = 'admin.php?page=wc-settings&tab=checkout';
+		if ( ! empty( $_GET['method'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			// Override the title and return url for method-specific pages in WooPayments settings.
+			$method       = sanitize_text_field( wp_unslash( $_GET['method'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$method_title = 'payment_request' === $method ? 'Apple Pay / Google Pay' : ( 'woopay' === $method ? 'WooPay' : $this->get_method_title() );
+			$return_url   = 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments';
+		}
+
+		if ( function_exists( 'wc_back_header' ) ) {
+			wc_back_header( $method_title, __( 'Return to payments', 'woocommerce-payments' ), $return_url );
+		} else {
+			// Until the wc_back_header function is available (WC Core 9.9) use the current available version.
+			echo '<h2>';
+			echo esc_html( $method_title );
+			wc_back_link( __( 'Return to payments', 'woocommerce-payments' ), $return_url );
+			echo '</h2>';
+		}
+
 		if ( ! empty( $_GET['method'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			?>
 			<div
