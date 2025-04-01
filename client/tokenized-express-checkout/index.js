@@ -34,7 +34,7 @@ import {
 } from './event-handlers';
 import ExpressCheckoutOrderApi from './order-api';
 import ExpressCheckoutCartApi from './cart-api';
-import { getUPEConfig } from 'wcpay/utils/checkout';
+import { getConfig } from 'wcpay/utils/checkout';
 import expressCheckoutButtonUi from './button-ui';
 import {
 	transformCartDataForDisplayItems,
@@ -151,9 +151,9 @@ jQuery( ( $ ) => {
 	if ( getExpressCheckoutData( 'button_context' ) === 'pay_for_order' ) {
 		setCartApiHandler(
 			new ExpressCheckoutOrderApi( {
-				orderId: getUPEConfig( 'order_id' ),
-				key: getUPEConfig( 'key' ),
-				billingEmail: getUPEConfig( 'billing_email' ),
+				orderId: getConfig( 'order_id' ),
+				key: getConfig( 'key' ),
+				billingEmail: getConfig( 'billing_email' ),
 			} )
 		);
 	}
