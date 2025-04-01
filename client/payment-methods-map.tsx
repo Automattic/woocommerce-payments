@@ -233,20 +233,33 @@ const PaymentMethodInformationObject: Record<
 	},
 	afterpay_clearpay: {
 		id: 'afterpay_clearpay',
-		label:
-			'GB' === accountCountry
-				? __( 'Clearpay', 'woocommerce-payments' )
-				: __( 'Afterpay', 'woocommerce-payments' ),
-		description:
-			'GB' === accountCountry
-				? __(
-						'Allow customers to pay over time with Clearpay.',
-						'woocommerce-payments'
-				  )
-				: __(
-						'Allow customers to pay over time with Afterpay.',
-						'woocommerce-payments'
-				  ),
+		label: ( () => {
+			if ( accountCountry === 'GB' ) {
+				return __( 'Clearpay', 'woocommerce-payments' );
+			}
+			if ( accountCountry === 'US' ) {
+				return __( 'Cash App Afterpay', 'woocommerce-payments' );
+			}
+			return __( 'Afterpay', 'woocommerce-payments' );
+		} )(),
+		description: ( () => {
+			if ( accountCountry === 'GB' ) {
+				return __(
+					'Allow customers to pay over time with Clearpay.',
+					'woocommerce-payments'
+				);
+			}
+			if ( accountCountry === 'US' ) {
+				return __(
+					'Allow customers to pay over time with Cash App Afterpay.',
+					'woocommerce-payments'
+				);
+			}
+			return __(
+				'Allow customers to pay over time with Afterpay.',
+				'woocommerce-payments'
+			);
+		} )(),
 		icon: ( () => {
 			if ( accountCountry === 'GB' ) return ClearpayIcon;
 			if ( accountCountry === 'US' ) return AfterpayCashAppIcon;
