@@ -14,10 +14,6 @@
 		&.is-ready {
 			opacity: 1;
 
-			&:first-child {
-				margin-top: 4px;
-			}
-
 			&:not( :first-child ) {
 				margin-top: 12px;
 			}
@@ -29,6 +25,11 @@
 	}
 
 	.woocommerce-checkout & {
+		// ECE button
+		#wcpay-express-checkout-element.is-ready:first-child {
+			margin-top: 4px;
+		}
+		// WooPay button
 		> div {
 			margin-top: 4px;
 		}
