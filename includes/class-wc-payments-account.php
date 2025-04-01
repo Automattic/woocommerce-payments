@@ -1079,6 +1079,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				WC_Payments_Onboarding_Service::get_from(),
 				[
 					WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD,
+					WC_Payments_Onboarding_Service::FROM_WCADMIN_NOX_IN_CONTEXT,
 					WC_Payments_Onboarding_Service::FROM_ONBOARDING_KYC,
 				],
 				true
@@ -1096,19 +1097,27 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		// Determine from where the merchant was directed to the Connect page.
 		$from = WC_Payments_Onboarding_Service::get_from();
 
-		// If the user came from the core Payments task list item,
+		// If the user came from the core Payments task list item or the WC Payments Settings NOX in-context flow,
 		// skip the Connect page and go directly to the Jetpack connection flow and/or onboarding wizard.
-		if ( WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_TASK === $from ) {
+		if ( in_array(
+			$from,
+			[
+				WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_TASK,
+				WC_Payments_Onboarding_Service::FROM_WCADMIN_NOX_IN_CONTEXT,
+			],
+			true
+		) ) {
 			// We use a connect link to allow our logic to determine what comes next:
 			// the Jetpack connection setup and/or onboarding wizard (MOX).
 			$this->redirect_service->redirect_to_wcpay_connect(
-				// The next step should treat the merchant as coming from the Payments task list item,
+				// The next step should treat the merchant as coming from the originating place,
 				// not the Connect page.
-				WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_TASK,
+				$from,
 				[
 					'source' => WC_Payments_Onboarding_Service::get_source(),
 				]
 			);
+
 			return true;
 		}
 
@@ -1973,6 +1982,14 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		switch ( $wcpay_connect_from ) {
 			case 'WC_SUBSCRIPTIONS_TABLE':
 				return admin_url( add_query_arg( [ 'post_type' => 'shop_subscription' ], 'edit.php' ) );
+			case WC_Payments_Onboarding_Service::FROM_WCADMIN_NOX_IN_CONTEXT:
+				// Build the URL to point to the WC NOX in-context onboarding.
+				$params = [
+					'page' => 'wc-admin',
+					'tab'  => 'checkout',
+					'path' => '/woopayments/onboarding',
+				];
+				return admin_url( add_query_arg( $params, 'admin.php' ) );
 			default:
 				return static::get_connect_url();
 		}

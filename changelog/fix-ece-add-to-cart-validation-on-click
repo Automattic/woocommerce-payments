@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: cancel GooglePay/ApplePay dialog on product page if add-to-cart product validation fails

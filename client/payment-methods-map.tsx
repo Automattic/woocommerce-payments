@@ -67,6 +67,11 @@ const convertedPaymentMethodDefinitions = Object.fromEntries<
 	] )
 );
 
+/**
+ * FLAG: PAYMENT_METHODS_LIST
+ *
+ * As we convert payment methods to use definitions, we'll remove them from this object.
+ */
 const PaymentMethodInformationObject: Record<
 	string,
 	PaymentMethodMapEntry
