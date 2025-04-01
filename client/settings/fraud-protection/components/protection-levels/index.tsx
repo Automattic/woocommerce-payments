@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { __ } from '@wordpress/i18n';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import { useState } from '@wordpress/element';
@@ -13,6 +13,8 @@ import { Button } from '@wordpress/components';
 import {
 	useCurrentProtectionLevel,
 	useAdvancedFraudProtectionSettings,
+	useSettings,
+	useGetSettings,
 } from 'wcpay/data';
 import { FraudProtectionHelpText, BasicFraudProtectionModal } from '../index';
 import { getAdminUrl } from 'wcpay/utils';
@@ -24,6 +26,9 @@ import { CurrentProtectionLevelHook } from '../../interfaces';
 const ProtectionLevels: React.FC = () => {
 	const [ isBasicModalOpen, setBasicModalOpen ] = useState( false );
 
+	const initialProtectionLevelRef = useRef< string | null >( null );
+	const initialSettingsRef = useRef< Record< string, any > | null >( null );
+
 	const [
 		currentProtectionLevel,
 		updateProtectionLevel,
@@ -32,6 +37,19 @@ const ProtectionLevels: React.FC = () => {
 	const [
 		advancedFraudProtectionSettings,
 	] = useAdvancedFraudProtectionSettings();
+
+	const { isDirty } = useSettings();
+	const currentSettings = useGetSettings() as Record< string, any >;
+
+	useEffect( () => {
+		if ( initialProtectionLevelRef.current === null ) {
+			initialProtectionLevelRef.current = currentProtectionLevel;
+		}
+
+		if ( initialSettingsRef.current === null && currentSettings ) {
+			initialSettingsRef.current = { ...currentSettings };
+		}
+	}, [ currentProtectionLevel, currentSettings ] );
 
 	const isAdvancedSettingsConfigured =
 		Array.isArray( advancedFraudProtectionSettings ) &&
@@ -49,6 +67,62 @@ const ProtectionLevels: React.FC = () => {
 		setBasicModalOpen( true );
 	};
 
+	// Check if only the protection level setting has changed
+	const isOnlyProtectionLevelChanged = (): boolean => {
+		if ( ! initialSettingsRef.current || ! currentSettings ) {
+			return false;
+		}
+
+		const allKeys = new Set( [
+			...Object.keys( initialSettingsRef.current ),
+			...Object.keys( currentSettings ),
+		] );
+
+		// Check each key to see if anything other than protection level changed
+		for ( const key of allKeys ) {
+			if ( key === 'current_protection_level' ) {
+				continue;
+			}
+
+			const initialValue =
+				initialSettingsRef.current[ key ] !== undefined
+					? initialSettingsRef.current[ key ]
+					: null;
+			const currentValue =
+				currentSettings[ key ] !== undefined
+					? currentSettings[ key ]
+					: null;
+
+			// If values are different for any key other than protection level, more than one setting changed
+			if (
+				JSON.stringify( initialValue ) !==
+				JSON.stringify( currentValue )
+			) {
+				return false;
+			}
+		}
+
+		// If we got here, only the protection level changed
+		return true;
+	};
+
+	const handleConfigureClick = () => {
+		// Only clear the beforeunload handler if:
+		// 1. The page has unsaved changes (isDirty is true)
+		// 2. The initial protection level was Basic
+		// 3. The current protection level is Advanced
+		// 4. It's the only setting that changed on the page
+		if (
+			isDirty &&
+			initialProtectionLevelRef.current === ProtectionLevel.BASIC &&
+			currentProtectionLevel === ProtectionLevel.ADVANCED &&
+			isOnlyProtectionLevelChanged()
+		) {
+			// When the only change is from Basic to Advanced, prevent the dialog
+			window.onbeforeunload = null;
+		}
+	};
+
 	return (
 		<>
 			{ 'error' === advancedFraudProtectionSettings && (
@@ -64,7 +138,10 @@ const ProtectionLevels: React.FC = () => {
 					) }
 				</InlineNotice>
 			) }
-			<fieldset disabled={ 'error' === advancedFraudProtectionSettings }>
+			<fieldset
+				disabled={ 'error' === advancedFraudProtectionSettings }
+				id="fraud-protection-card-options"
+			>
 				<ul>
 					<li>
 						<div className="fraud-protection-radio-wrapper">
@@ -138,6 +215,7 @@ const ProtectionLevels: React.FC = () => {
 								path: '/payments/fraud-protection',
 							} ) }
 							isSecondary
+							onClick={ handleConfigureClick }
 							disabled={
 								ProtectionLevel.ADVANCED !==
 								currentProtectionLevel

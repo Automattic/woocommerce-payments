@@ -309,7 +309,7 @@ class WC_Payments_Checkout {
 	 */
 	public function get_enabled_payment_method_config() {
 		$settings                = [];
-		$enabled_payment_methods = $this->gateway->get_payment_method_ids_enabled_at_checkout();
+		$enabled_payment_methods = $this->gateway->get_upe_enabled_payment_method_ids_based_on_manual_capture();
 
 		foreach ( $enabled_payment_methods as $payment_method_id ) {
 			// Link by Stripe should be validated with available fees.
@@ -319,33 +319,65 @@ class WC_Payments_Checkout {
 				}
 			}
 
-			$payment_method                 = $this->gateway->wc_payments_get_payment_method_by_id( $payment_method_id );
-			$account_country                = $this->account->get_account_country();
-			$settings[ $payment_method_id ] = [
-				'isReusable'     => $payment_method->is_reusable(),
-				'title'          => $payment_method->get_title( $account_country ),
-				'icon'           => $payment_method->get_icon( $account_country ),
-				'darkIcon'       => $payment_method->get_dark_icon( $account_country ),
-				'showSaveOption' => $this->should_upe_payment_method_show_save_option( $payment_method ),
-				'countries'      => $payment_method->get_countries(),
-			];
-
-			$gateway_for_payment_method                            = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );
-			$settings[ $payment_method_id ]['testingInstructions'] = WC_Payments_Utils::esc_interpolated_html(
-				/* translators: link to Stripe testing page */
-				$payment_method->get_testing_instructions( $account_country ),
-				[
-					'a'      => '<a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
-					'strong' => '<strong>',
-					'number' => '<button type="button" class="js-woopayments-copy-test-number" aria-label="' . esc_attr( __( 'Click to copy the test number to clipboard', 'woocommerce-payments' ) ) . '" title="' . esc_attr( __( 'Copy to clipboard', 'woocommerce-payments' ) ) . '"><i></i><span>',
-				]
-			);
-
-			$should_enable_network_saved_cards                        = Payment_Method::CARD === $payment_method_id && WC_Payments::is_network_saved_cards_enabled();
-			$settings[ $payment_method_id ]['forceNetworkSavedCards'] = $should_enable_network_saved_cards || $gateway_for_payment_method->should_use_stripe_platform_on_checkout_page();
+			$settings[ $payment_method_id ] = $this->get_config_for_payment_method( $payment_method_id, $this->account->get_account_country() );
 		}
 
 		return $settings;
+	}
+
+	/**
+	 * Gets the config for all payment methods.
+	 *
+	 * @return array
+	 */
+	public function get_all_payment_method_config() {
+		$payment_method_configs = [];
+
+		// Get all the registered payment methods.
+		$registered_payment_methods = array_keys( $this->gateway->get_payment_methods() );
+
+		foreach ( $registered_payment_methods as $payment_method_id ) {
+			$payment_method_configs[ $payment_method_id ] = $this->get_config_for_payment_method( $payment_method_id, $this->account->get_account_country() );
+		}
+
+		return $payment_method_configs;
+	}
+
+	/**
+	 * Gets the config for a payment method.
+	 *
+	 * @param string $payment_method_id The payment method ID.
+	 * @param string $account_country The account country.
+	 * @return array
+	 */
+	private function get_config_for_payment_method( $payment_method_id, $account_country ) {
+		$payment_method = $this->gateway->wc_payments_get_payment_method_by_id( $payment_method_id );
+		$config         = [
+			'isReusable'     => $payment_method->is_reusable(),
+			'isBnpl'         => $payment_method->is_bnpl(),
+			'title'          => $payment_method->get_title( $account_country ),
+			'icon'           => $payment_method->get_icon( $account_country ),
+			'darkIcon'       => $payment_method->get_dark_icon( $account_country ),
+			'showSaveOption' => $this->should_upe_payment_method_show_save_option( $payment_method ),
+			'countries'      => $payment_method->get_countries(),
+		];
+
+		$gateway_for_payment_method    = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );
+		$config['gatewayId']           = $gateway_for_payment_method->id;
+		$config['testingInstructions'] = WC_Payments_Utils::esc_interpolated_html(
+			/* translators: link to Stripe testing page */
+			$payment_method->get_testing_instructions( $account_country ),
+			[
+				'a'      => '<a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
+				'strong' => '<strong>',
+				'number' => '<button type="button" class="js-woopayments-copy-test-number" aria-label="' . esc_attr( __( 'Click to copy the test number to clipboard', 'woocommerce-payments' ) ) . '" title="' . esc_attr( __( 'Copy to clipboard', 'woocommerce-payments' ) ) . '"><i></i><span>',
+			]
+		);
+
+		$should_enable_network_saved_cards = Payment_Method::CARD === $payment_method_id && WC_Payments::is_network_saved_cards_enabled();
+		$config['forceNetworkSavedCards']  = $should_enable_network_saved_cards || $gateway_for_payment_method->should_use_stripe_platform_on_checkout_page();
+
+		return $config;
 	}
 
 	/**

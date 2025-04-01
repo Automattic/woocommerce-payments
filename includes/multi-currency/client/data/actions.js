@@ -4,6 +4,7 @@
  * External dependencies
  */
 import { apiFetch } from '@wordpress/data-controls';
+import directApiFetch from '@wordpress/api-fetch';
 import { dispatch, select } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 
@@ -144,4 +145,16 @@ export function* submitStoreSettingsUpdate(
 			__( 'Error saving store settings.', 'woocommerce-payments' )
 		);
 	}
+}
+
+export function saveOption( optionName, value ) {
+	directApiFetch( {
+		path: `${ NAMESPACE }/settings/${ optionName }`,
+		method: 'post',
+		data: { value },
+	} ).catch( () => {
+		dispatch( 'core/notices' ).createErrorNotice(
+			__( 'Error saving option', 'woocommerce-payments' )
+		);
+	} );
 }

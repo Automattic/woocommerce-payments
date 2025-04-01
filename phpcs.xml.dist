@@ -36,7 +36,6 @@
 
 		<!-- FIXME: Remove these ignores once https://github.com/Automattic/woocommerce-payments/issues/8434 is closed. -->
 		<exclude name="WordPress.Security.EscapeOutput.ExceptionNotEscaped" />
-		<exclude name="WordPress.Security.EscapeOutput.OutputNotEscaped" />
 		<exclude name="WordPress.Security.ValidatedSanitizedInput.InputNotValidated" />
 
 		<!-- FIXME: Remove these ignores once https://github.com/Automattic/woocommerce-payments/issues/8436 is closed. -->
@@ -80,6 +79,16 @@
 			<property name="text_domain" type="array" value="woocommerce-payments" />
 		</properties>
 	</rule>
+
+	<!-- REMOVE BEFORE MERGING:Only for poc/centralized-payment-method-definitions -->
+	<rule ref="WordPress.Files.FileName.NotHyphenatedLowercase">
+		<exclude-pattern>includes/payment-methods/Configs/</exclude-pattern>
+	</rule>
+
+	<rule ref="WordPress.Files.FileName.InvalidClassFileName">
+		<exclude-pattern>includes/payment-methods/Configs/</exclude-pattern>
+	</rule>
+	<!-- END REMOVE BEFORE MERGING: poc/centralized-payment-method-definitions -->
 
 	<rule ref="WordPress.Security">
 		<exclude-pattern>./tests/*</exclude-pattern>

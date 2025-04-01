@@ -67,6 +67,13 @@ class WC_Payments_Product_Service {
 	private $payments_api_client;
 
 	/**
+	 * Account service.
+	 *
+	 * @var WC_Payments_Account
+	 */
+	private $account;
+
+	/**
 	 * The list of products we need to update at the end of each request.
 	 *
 	 * @var array
@@ -74,12 +81,21 @@ class WC_Payments_Product_Service {
 	private $products_to_update = [];
 
 	/**
+	 * The Stripe account ID.
+	 *
+	 * @var string
+	 */
+	private $stripe_account_id = null;
+
+	/**
 	 * Constructor.
 	 *
 	 * @param WC_Payments_API_Client $payments_api_client Payments API client.
+	 * @param WC_Payments_Account    $account Account service.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client ) {
+	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Account $account ) {
 		$this->payments_api_client = $payments_api_client;
+		$this->account             = $account;
 
 		/**
 		 * When a store is in staging mode, we don't want any product handling to be sent to the server.
@@ -115,40 +131,86 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
-	 * Gets the WC Pay product ID associated with a WC product.
+	 * Get or create the WC Pay product ID associated with a WC product.
 	 *
-	 * @param WC_Product $product   The product to get the WC Pay ID for.
+	 * @param WC_Product $product The product to get the WC Pay ID for.
 	 * @param bool|null  $test_mode Is WC Pay in test/dev mode.
 	 *
 	 * @return string             The WC Pay product ID or an empty string.
+	 * @throws Exception
 	 */
-	public function get_wcpay_product_id( WC_Product $product, $test_mode = null ): string {
+	public function get_or_create_wcpay_product_id( WC_Product $product, $test_mode = null ): string {
 		// If the subscription product doesn't have a WC Pay product ID, create one.
-		if ( ! self::has_wcpay_product_id( $product, $test_mode ) ) {
+		if ( ! $this->has_wcpay_product_id( $product, $test_mode ) ) {
 			$is_current_environment = null === $test_mode || WC_Payments::mode()->is_test() === $test_mode;
 
 			// Only create a new wcpay product if we're trying to fetch a wcpay product ID in the current environment.
 			if ( $is_current_environment ) {
-				WC_Payments_Subscriptions::get_product_service()->create_product( $product );
+				$this->create_product( $product );
 			}
 		}
 
-		return $product->get_meta( self::get_wcpay_product_id_option( $test_mode ), true );
+		return $product->get_meta( self::get_wcpay_product_id_meta_key( $test_mode ), true );
 	}
 
 	/**
-	 * Gets the WC Pay product ID associated with a WC product.
+	 * Get the WCPay product ID for an item type.
 	 *
-	 * @param string $type The item type to create a product for.
-	 * @return string       The item's WCPay product id.
+	 * @param string $type The item type.
+	 *
+	 * @return string The WCPay product ID.
+	 * @throws API_Exception
 	 */
 	public function get_wcpay_product_id_for_item( string $type ): string {
-		$sanitized_type  = self::sanitize_option_key( $type );
-		$option_key_name = self::get_wcpay_product_id_option() . '_' . $sanitized_type;
-		if ( ! get_option( $option_key_name ) ) {
-			$this->create_product_for_item_type( $sanitized_type );
+		$sanitized_type   = self::sanitize_option_key( $type );
+		$option_key_name  = self::get_wcpay_product_id_option( $sanitized_type );
+		$wcpay_product_id = get_option( $option_key_name );
+
+		// Case 1: No product found, create a new one.
+		if ( ! $wcpay_product_id ) {
+			return $this->create_product_for_item_type( $sanitized_type );
 		}
-		return get_option( $option_key_name );
+
+		// For existing products, check the linked account.
+		$linked_option_key = self::get_wcpay_product_id_linked_to_key( $sanitized_type );
+		$linked_account_id = get_option( $linked_option_key );
+		$stripe_account_id = $this->account->get_stripe_account_id();
+
+		// Case 2: Product exists but linked account doesn't, validate and update if needed.
+		if ( ! $linked_account_id ) {
+			try {
+				// Validate that the product exists for the current account.
+				$existing_product = $this->payments_api_client->get_product_by_id( $wcpay_product_id );
+
+				if ( $existing_product ) {
+					// Product exists, save with current account ID.
+					$this->save_wcpay_product_data( $wcpay_product_id, $stripe_account_id, $sanitized_type );
+					return $wcpay_product_id;
+				} else {
+					// Product doesn't exist, create new one.
+					return $this->create_product_for_item_type( $sanitized_type );
+				}
+			} catch ( \Exception $e ) {
+				// Error occurred, create new product.
+				Logger::log(
+					sprintf(
+						'Error occurred when fetching product : wcpay_product_id=%s, account_id=%s, error=%s',
+						$wcpay_product_id,
+						$stripe_account_id,
+						$e->getMessage()
+					)
+				);
+				return $this->create_product_for_item_type( $sanitized_type );
+			}
+		}
+
+		// Case 3: Product exists but for a different Stripe account, create new one.
+		if ( $linked_account_id !== $stripe_account_id ) {
+			return $this->create_product_for_item_type( $sanitized_type );
+		}
+
+		// Case 4: Valid product exists for current account.
+		return $wcpay_product_id;
 	}
 
 	/**
@@ -162,15 +224,78 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
-	 * Check if the WC product has a WC Pay product ID.
+	 * Save wcpay product data across two related options.
+	 *
+	 * @param string $wcpay_product_id  The WooCommerce Payments product ID.
+	 * @param string $stripe_account_id The Stripe account identifier.
+	 * @param string $type              The item type used to construct the option key.
+	 *
+	 * @return void
+	 */
+	private function save_wcpay_product_data( string $wcpay_product_id, string $stripe_account_id, string $type ) {
+		$sanitized_type  = self::sanitize_option_key( $type );
+		$option_key_name = self::get_wcpay_product_id_option( $sanitized_type );
+
+		// Store product ID.
+		update_option( $option_key_name, $wcpay_product_id );
+
+		// Store linked stripe account ID.
+		$linked_option_key = self::get_wcpay_product_id_linked_to_key( $sanitized_type );
+		update_option( $linked_option_key, $stripe_account_id );
+	}
+
+	/**
+	 * Check if the WC product has a valid WC Pay product ID linked to the current Stripe account.
 	 *
 	 * @param WC_Product $product   The product to get the WC Pay ID for.
 	 * @param bool|null  $test_mode Is WC Pay in test/dev mode.
 	 *
-	 * @return bool                 The WC Pay product ID or an empty string.
+	 * @return bool Whether the product has a valid WCPay product ID.
 	 */
-	public static function has_wcpay_product_id( WC_Product $product, $test_mode = null ): bool {
-		return (bool) $product->get_meta( self::get_wcpay_product_id_option( $test_mode ) );
+	public function has_wcpay_product_id( WC_Product $product, $test_mode = null ): bool {
+		$option_key       = self::get_wcpay_product_id_meta_key( $test_mode );
+		$wcpay_product_id = $product->get_meta( $option_key );
+
+		// No product ID exists.
+		if ( empty( $wcpay_product_id ) ) {
+			return false;
+		}
+
+		// Check if we have the linked account metadata.
+		$linked_option_key  = self::get_wcpay_product_id_linked_to_key( null, $test_mode );
+		$linked_account_id  = $product->get_meta( $linked_option_key );
+		$current_account_id = $this->account->get_stripe_account_id();
+
+		// If we have linked account metadata, just compare with current account.
+		if ( ! empty( $linked_account_id ) ) {
+			return $linked_account_id === $current_account_id;
+		}
+
+		// Legacy case: we have a product ID but no linked account.
+		// Verify if product exists for current account.
+		try {
+			$product_data = $this->payments_api_client->get_product_by_id( $wcpay_product_id );
+
+			// Product exists, update metadata with current account.
+			if ( ! empty( $product_data ) ) {
+				$product->update_meta_data( $linked_option_key, $current_account_id );
+				$product->save();
+				return true;
+			}
+
+			return false;
+		} catch ( \Exception $e ) {
+			Logger::log(
+				sprintf(
+					'Error validating WCPay product: product_id=%d, wcpay_product_id=%s, account_id=%s, error=%s',
+					$product->get_id(),
+					$wcpay_product_id,
+					$current_account_id,
+					$e->getMessage()
+				)
+			);
+			return false;
+		}
 	}
 
 	/**
@@ -222,7 +347,7 @@ class WC_Payments_Product_Service {
 				continue;
 			}
 
-			if ( ! self::has_wcpay_product_id( $product_to_update ) || $this->product_needs_update( $product_to_update ) ) {
+			if ( ! $this->has_wcpay_product_id( $product_to_update ) || $this->product_needs_update( $product_to_update ) ) {
 				$this->products_to_update[ $product_to_update->get_id() ] = $product_to_update->get_id();
 			}
 		}
@@ -254,7 +379,8 @@ class WC_Payments_Product_Service {
 	 */
 	public function create_product( WC_Product $product ) {
 		try {
-			$product_data = $this->get_product_data( $product );
+			$product_data      = $this->get_product_data( $product );
+			$stripe_account_id = $this->account->get_stripe_account_id();
 
 			// Validate that we have enough data to create the product.
 			$this->validate_product_data( $product_data );
@@ -263,7 +389,7 @@ class WC_Payments_Product_Service {
 
 			$this->remove_product_update_listeners();
 			$this->set_wcpay_product_hash( $product, $this->get_product_hash( $product ) );
-			$this->set_wcpay_product_id( $product, $wcpay_product['wcpay_product_id'] );
+			$this->set_wcpay_product_id( $product, $wcpay_product['wcpay_product_id'], $stripe_account_id );
 			$this->add_product_update_listeners();
 		} catch ( \Exception $e ) {
 			Logger::log( sprintf( 'There was a problem creating the product #%s in WC Pay: %s', $product->get_id(), $e->getMessage() ) );
@@ -274,20 +400,21 @@ class WC_Payments_Product_Service {
 	 * Create a generic item product in WC Pay.
 	 *
 	 * @param string $type The item type to create a product for.
+	 *
+	 * @return string The created WCPay product ID.
+	 * @throws API_Exception
 	 */
-	public function create_product_for_item_type( string $type ) {
-		try {
-			$wcpay_product = $this->payments_api_client->create_product(
-				[
-					'description' => 'N/A',
-					'name'        => ucfirst( $type ),
-				]
-			);
+	private function create_product_for_item_type( string $type ): string {
+		$wcpay_product     = $this->payments_api_client->create_product(
+			[
+				'description' => 'N/A',
+				'name'        => ucfirst( $type ),
+			]
+		);
+		$stripe_account_id = $this->account->get_stripe_account_id();
+		$this->save_wcpay_product_data( $wcpay_product['wcpay_product_id'], $stripe_account_id, $type );
 
-			update_option( self::get_wcpay_product_id_option() . '_' . $type, $wcpay_product['wcpay_product_id'] );
-		} catch ( API_Exception $e ) {
-			Logger::log( 'There was a problem creating the product on WCPay Server: ' . $e->getMessage() );
-		}
+		return $wcpay_product['wcpay_product_id'];
 	}
 
 	/**
@@ -312,7 +439,6 @@ class WC_Payments_Product_Service {
 		if ( empty( $wcpay_product_ids ) ) {
 			return;
 		}
-
 		if ( ! $this->product_needs_update( $product ) ) {
 			return;
 		}
@@ -623,24 +749,59 @@ class WC_Payments_Product_Service {
 	}
 
 	/**
-	 * Sets a WC Pay product ID on a WC product.
+	 * Sets a WC Pay product ID and the Stripe account it's linked to on a WC product.
 	 *
-	 * @param WC_Product $product The product to set the WC Pay ID for.
-	 * @param string     $value   The WC Pay product ID.
+	 * @param WC_Product $product           The product to set the WC Pay ID for.
+	 * @param string     $wcpay_product_id  The WC Pay product ID.
+	 * @param string     $stripe_account_id The Stripe account ID.
 	 */
-	private function set_wcpay_product_id( WC_Product $product, string $value ) {
-		$product->update_meta_data( self::get_wcpay_product_id_option(), $value );
+	private function set_wcpay_product_id( WC_Product $product, string $wcpay_product_id, string $stripe_account_id ) {
+		$option_key = self::get_wcpay_product_id_meta_key();
+		$link_key   = self::get_wcpay_product_id_linked_to_key();
+		$product->update_meta_data( $option_key, $wcpay_product_id );
+		$product->update_meta_data( $link_key, $stripe_account_id );
 		$product->save();
 	}
 
 	/**
 	 * Returns the name of the product id option meta, taking test mode into account.
 	 *
-	 * @param bool|null $test_mode Is WC Pay in test/dev mode.
+	 * @param string|null $type The item type.
+	 * @param bool|null   $test_mode Is WC Pay in test/dev mode.
 	 *
 	 * @return string The WCPay product ID meta key/option name.
 	 */
-	public static function get_wcpay_product_id_option( $test_mode = null ): string {
+	public static function get_wcpay_product_id_option( ?string $type = null, ?bool $test_mode = null ): string {
+		$test_mode = null === $test_mode ? WC_Payments::mode()->is_test() : $test_mode;
+		$key       = $test_mode ? self::TEST_PRODUCT_ID_KEY : self::LIVE_PRODUCT_ID_KEY;
+		return $type ? $key . '_' . $type : $key;
+	}
+
+	/**
+	 * Returns the name of the product id linked to account option meta, taking test mode into account.
+	 *
+	 * @param string|null $type The item type.
+	 * @param bool|null   $test_mode Is WC Pay in test/dev mode.
+	 *
+	 * @return string The WCPay product ID meta key/option name.
+	 */
+	public static function get_wcpay_product_id_linked_to_key( ?string $type = null, ?bool $test_mode = null ): string {
+		$test_mode = null === $test_mode ? WC_Payments::mode()->is_test() : $test_mode;
+		$key       = $test_mode ? self::TEST_PRODUCT_ID_KEY : self::LIVE_PRODUCT_ID_KEY;
+		return ( $type ? $key . '_' . $type : $key ) . '_linked_to';
+	}
+
+	/**
+	 * Returns the name of the wcpay product id meta key.
+	 *
+	 * @param bool|null $test_mode Is WCPay in test, prod or dev mode.
+	 *
+	 * @return string The product id meta key.
+	 * @throws Exception
+	 */
+	public static function get_wcpay_product_id_meta_key( $test_mode = null ): string {
+		// This functions looks the same as the one above.
+		// It's here to avoid potential issue when we change the above function.
 		$test_mode = null === $test_mode ? WC_Payments::mode()->is_test() : $test_mode;
 		return $test_mode ? self::TEST_PRODUCT_ID_KEY : self::LIVE_PRODUCT_ID_KEY;
 	}
@@ -666,8 +827,8 @@ class WC_Payments_Product_Service {
 	 */
 	private function get_all_wcpay_product_ids( WC_Product $product ) {
 		$environment_product_ids = [
-			'live' => self::has_wcpay_product_id( $product, false ) ? $this->get_wcpay_product_id( $product, false ) : null,
-			'test' => self::has_wcpay_product_id( $product, true ) ? $this->get_wcpay_product_id( $product, true ) : null,
+			'live' => $this->has_wcpay_product_id( $product, false ) ? $this->get_or_create_wcpay_product_id( $product, false ) : null,
+			'test' => $this->has_wcpay_product_id( $product, true ) ? $this->get_or_create_wcpay_product_id( $product, true ) : null,
 		];
 
 		return array_filter( $environment_product_ids );
@@ -724,6 +885,7 @@ class WC_Payments_Product_Service {
 
 				// Now that the price has been archived, delete the record of it.
 				$product->delete_meta_data( $price_id_meta_key );
+				$product->delete_meta_data( $price_id_meta_key . '_linked_to' );
 			}
 		}
 
@@ -803,7 +965,7 @@ class WC_Payments_Product_Service {
 
 			// Only create WCPay Price object if we're trying to getch a wcpay price ID in the current environment.
 			if ( $is_current_environment ) {
-				WC_Payments_Subscriptions::get_product_service()->create_product( $product );
+				$this->create_product( $product );
 				$price_id = $product->get_meta( self::get_wcpay_price_id_option(), true );
 			}
 		}

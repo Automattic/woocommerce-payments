@@ -15,7 +15,7 @@ import { useStripeForUPE } from 'wcpay/hooks/use-stripe-async';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { __ } from '@wordpress/i18n';
 import './style.scss';
-import { useEffect, useMemo, useState } from '@wordpress/element';
+import { useEffect, useState, useRef } from '@wordpress/element';
 import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
 
 const paymentMethods = [
@@ -43,7 +43,11 @@ const breakpointConfigs = [
 	{ breakpoint: 330, maxElements: 1 },
 ];
 
-const bnplMethods = [ 'affirm', 'afterpay_clearpay', 'klarna' ];
+const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' ) || {};
+const bnplMethods = Object.keys( paymentMethodsConfig ).filter(
+	( key ) => paymentMethodsConfig[ key ].isBnpl
+);
+
 const PaymentMethodMessageWrapper = ( {
 	upeName,
 	countries,
@@ -78,6 +82,7 @@ const PaymentMethodMessageWrapper = ( {
 };
 
 export default ( { api, title, countries, iconLight, iconDark, upeName } ) => {
+	const containerRef = useRef( null );
 	const cartData = wp.data.select( 'wc/store/cart' ).getCartData();
 	const isTestMode = getUPEConfig( 'testMode' );
 	const [ appearance, setAppearance ] = useState(
@@ -88,7 +93,7 @@ export default ( { api, title, countries, iconLight, iconDark, upeName } ) => {
 		getUPEConfig( 'wcBlocksUPEAppearanceTheme' )
 	);
 
-	const fontRules = useMemo( () => getFontRulesFromPage(), [] );
+	const [ fontRules, setFontRules ] = useState( [] );
 
 	// Stripe expects the amount to be sent as the minor unit of 2 digits.
 	const amount = parseInt(
@@ -107,8 +112,18 @@ export default ( { api, title, countries, iconLight, iconDark, upeName } ) => {
 
 	useEffect( () => {
 		async function generateUPEAppearance() {
+			if ( ! containerRef.current ) {
+				return;
+			}
+			setFontRules(
+				getFontRulesFromPage( containerRef.current.ownerDocument )
+			);
 			// Generate UPE input styles.
-			let upeAppearance = getAppearance( 'blocks_checkout', false );
+			let upeAppearance = getAppearance(
+				'blocks_checkout',
+				false,
+				containerRef.current.ownerDocument
+			);
 			upeAppearance = await api.saveUPEAppearance(
 				upeAppearance,
 				'blocks_checkout'
@@ -130,7 +145,7 @@ export default ( { api, title, countries, iconLight, iconDark, upeName } ) => {
 
 	return (
 		<>
-			<div className="payment-method-label">
+			<div ref={ containerRef } className="payment-method-label">
 				<span className="payment-method-label__label">{ title }</span>
 				{ isTestMode && (
 					<span className="test-mode badge">

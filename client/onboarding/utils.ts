@@ -11,14 +11,12 @@ import { NAMESPACE } from 'data/constants';
 import { ListItem } from 'components/grouped-select-control';
 import businessTypeDescriptionStrings from './translations/descriptions';
 import {
-	AccountKycSession,
 	Country,
 	OnboardingFields,
 	PoEligibleData,
 	PoEligibleResponse,
 	FinalizeOnboardingResponse,
 } from './types';
-import { addQueryArgs } from '@wordpress/url';
 
 export const fromDotNotation = (
 	record: Record< string, unknown >
@@ -53,27 +51,6 @@ export const getBusinessTypes = (): Country[] => {
 			} ) )
 			.sort( ( a, b ) => a.name.localeCompare( b.name ) ) || []
 	);
-};
-
-/**
- * Make an API request to create an KYC account session.
- *
- * @param data The form data.
- * @param isPoEligible Whether the user is eligible for a PO account.
- */
-export const createKycAccountSession = async (
-	data: OnboardingFields,
-	isPoEligible: boolean
-): Promise< AccountKycSession > => {
-	const urlParams = new URLSearchParams( window.location.search );
-	return await apiFetch< AccountKycSession >( {
-		path: addQueryArgs( `${ NAMESPACE }/onboarding/kyc/session`, {
-			self_assessment: fromDotNotation( data ),
-			capabilities: urlParams.get( 'capabilities' ) || '',
-			progressive: isPoEligible,
-		} ),
-		method: 'GET',
-	} );
 };
 
 /**

@@ -136,19 +136,29 @@ class WC_REST_Payments_Reader_Controller_Test extends WCPAY_UnitTestCase {
 			],
 		];
 
+		$transaction_id = uniqid( 'trx_' );
+
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'get_transaction' )
-			->willReturn( [ 'created' => 1634291278 ] );
+			->with( $transaction_id )
+			->willReturn(
+				[
+					'created' => 1634291278,
+					'id'      => $transaction_id,
+				]
+			);
 
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'get_readers_charge_summary' )
-			->with( gmdate( 'Y-m-d', 1634291278 ) )
+			->with( gmdate( 'Y-m-d', 1634291278 ), $transaction_id )
 			->willReturn( $readers );
 
 		$request = new WP_REST_Request( 'GET' );
-		$request->set_param( 'transaction_id', 1 );
+		$request->set_param( 'transaction_id', $transaction_id );
+		$request->set_param( 'charge_date', gmdate( 'Y-m-d', 1634291278 ) );
+
 		$response = $this->controller->get_summary( $request );
 		$this->assertSame( $readers, $response->get_data() );
 	}

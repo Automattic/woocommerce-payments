@@ -1,14 +1,15 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { __ } from '@wordpress/i18n';
+import classNames from 'classnames';
 
 /**
  * Internal dependencies
  */
 
 import {
-	AlipayIcon,
 	AffirmIcon,
 	AfterpayIcon,
 	ClearpayIcon,
@@ -23,24 +24,54 @@ import {
 	P24Icon,
 	SepaIcon,
 	SofortIcon,
+	MultibancoIcon,
 	GrabPayIcon,
 	WeChatPayIcon,
 } from 'wcpay/payment-methods-icons';
 
 const accountCountry = window.wcpaySettings?.accountStatus?.country || 'US';
 
-export interface PaymentMethodMapEntry {
-	id: string;
-	label: string;
-	description: string;
-	icon: ReactImgFuncComponent;
-	currencies: string[];
-	stripe_key: string;
-	allows_manual_capture: boolean;
-	allows_pay_later: boolean;
-	accepts_only_domestic_payment: boolean;
-}
+import type { PaymentMethodMapEntry } from './types/payment-methods';
 
+// Get any payment method definitions from the client.
+const PaymentMethodDefinitions =
+	typeof wooPaymentsPaymentMethodDefinitions !== 'undefined'
+		? wooPaymentsPaymentMethodDefinitions
+		: {};
+
+const convertedPaymentMethodDefinitions = Object.fromEntries<
+	PaymentMethodMapEntry
+>(
+	Object.entries( PaymentMethodDefinitions ).map( ( [ key, value ] ) => [
+		key,
+		{
+			id: value.id,
+			label: value.title,
+			description: value.description,
+			icon: ( { className } ) => (
+				<img
+					src={ value.settings_icon_url }
+					alt={ value.title }
+					className={ classNames(
+						'payment-method__icon',
+						className
+					) }
+				/>
+			),
+			currencies: value.currencies,
+			stripe_key: value.stripe_key,
+			allows_manual_capture: value.allows_manual_capture,
+			allows_pay_later: value.allows_pay_later,
+			accepts_only_domestic_payment: value.accepts_only_domestic_payment,
+		},
+	] )
+);
+
+/**
+ * FLAG: PAYMENT_METHODS_LIST
+ *
+ * As we convert payment methods to use definitions, we'll remove them from this object.
+ */
 const PaymentMethodInformationObject: Record<
 	string,
 	PaymentMethodMapEntry
@@ -56,20 +87,6 @@ const PaymentMethodInformationObject: Record<
 		currencies: [],
 		stripe_key: 'card_payments',
 		allows_manual_capture: true,
-		allows_pay_later: false,
-		accepts_only_domestic_payment: false,
-	},
-	alipay: {
-		id: 'alipay',
-		label: __( 'Alipay', 'woocommerce-payments' ),
-		description: __(
-			'Alipay is a popular wallet in China, operated by Ant Financial Services Group, a financial services provider affiliated with Alibaba.',
-			'woocommerce-payments'
-		),
-		icon: AlipayIcon,
-		currencies: [],
-		stripe_key: 'alipay_payments',
-		allows_manual_capture: false,
 		allows_pay_later: false,
 		accepts_only_domestic_payment: false,
 	},
@@ -185,6 +202,20 @@ const PaymentMethodInformationObject: Record<
 		allows_pay_later: false,
 		accepts_only_domestic_payment: false,
 	},
+	multibanco: {
+		id: 'multibanco',
+		label: __( 'Multibanco', 'woocommerce-payments' ),
+		description: __(
+			'A voucher based payment method for your customers in Portugal.',
+			'woocommerce-payments'
+		),
+		icon: MultibancoIcon,
+		currencies: [ 'EUR' ],
+		stripe_key: 'multibanco_payments',
+		allows_manual_capture: false,
+		allows_pay_later: false,
+		accepts_only_domestic_payment: false,
+	},
 	affirm: {
 		id: 'affirm',
 		label: __( 'Affirm', 'woocommerce-payments' ),
@@ -292,6 +323,7 @@ const PaymentMethodInformationObject: Record<
 		allows_pay_later: false,
 		accepts_only_domestic_payment: false,
 	},
+	...convertedPaymentMethodDefinitions,
 };
 
 export default PaymentMethodInformationObject;

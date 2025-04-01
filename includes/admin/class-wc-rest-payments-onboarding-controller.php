@@ -59,7 +59,9 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 					'progressive'     => [
 						'required'    => false,
 						'description' => 'Whether the session is for progressive onboarding.',
-						'type'        => 'string',
+						// phpcs:ignore Squiz.PHP.CommentedOutCode.Found
+						// We expect a boolean (true, false, 0, 1, '0', '1', 'true', or 'false'), but will also accept `yes`/`no`.
+						'type'        => [ 'boolean', 'string' ],
 					],
 					'self_assessment' => [
 						'required'    => false,
@@ -91,9 +93,9 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 								'description' => 'The timeframe bucket for the estimated first live transaction.',
 								'required'    => true,
 							],
-							'url'               => [
+							'site'              => [
 								'type'        => 'string',
-								'description' => 'The URL of the store.',
+								'description' => 'The URL of the site.',
 								'required'    => true,
 							],
 						],
@@ -121,6 +123,16 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 						'type'        => 'string',
 					],
 				],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/fields',
+			[
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_fields' ],
+				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
 
@@ -189,6 +201,24 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/test_drive_account/init',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'init_test_drive_account' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+				'args'                => [
+					'capabilities' => [
+						'required'    => false,
+						'description' => 'The capabilities to request and enable for the test-drive account. Leave empty to use the default capabilities.',
+						'type'        => 'array',
+						'default'     => [],
+					],
+				],
+			]
+		);
 	}
 
 	/**
@@ -200,7 +230,7 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 	 */
 	public function get_embedded_kyc_session( WP_REST_Request $request ) {
 		$self_assessment_data = ! empty( $request->get_param( 'self_assessment' ) ) ? wc_clean( wp_unslash( $request->get_param( 'self_assessment' ) ) ) : [];
-		$progressive          = ! empty( $request->get_param( 'progressive' ) ) && 'true' === $request->get_param( 'progressive' );
+		$progressive          = ! empty( $request->get_param( 'progressive' ) ) && filter_var( $request->get_param( 'progressive' ), FILTER_VALIDATE_BOOLEAN );
 
 		$account_session = $this->onboarding_service->create_embedded_kyc_session(
 			$self_assessment_data,
@@ -257,6 +287,22 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 	}
 
 	/**
+	 * Get fields data via API.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 *
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function get_fields( WP_REST_Request $request ) {
+		$fields = $this->onboarding_service->get_fields_data( get_user_locale() );
+		if ( is_null( $fields ) ) {
+			return new WP_Error( self::RESULT_BAD_REQUEST, 'Failed to retrieve the onboarding fields.', [ 'status' => 400 ] );
+		}
+
+		return rest_ensure_response( [ 'data' => $fields ] );
+	}
+
+	/**
 	 * Get business types via API.
 	 *
 	 * @param WP_REST_Request $request Request object.
@@ -282,6 +328,27 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 				'business_info'   => $request->get_param( 'business' ),
 				'store_info'      => $request->get_param( 'store' ),
 				'woo_store_stats' => $request->get_param( 'woo_store_stats' ) ?? [],
+			]
+		);
+	}
+
+	/**
+	 * Initialize a test-drive account.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 *
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function init_test_drive_account( WP_REST_Request $request ) {
+		try {
+			$success = $this->onboarding_service->init_test_drive_account( $request->get_param( 'capabilities' ) );
+		} catch ( Exception $e ) {
+			return new WP_Error( self::RESULT_BAD_REQUEST, $e->getMessage(), [ 'status' => 400 ] );
+		}
+
+		return rest_ensure_response(
+			[
+				'success' => $success,
 			]
 		);
 	}

@@ -7,7 +7,8 @@ import { Fragment } from 'react';
 import './style.scss';
 import p24BankList from '../../payment-details/payment-method/p24/bank-list';
 import { HoverTooltip } from '../tooltip';
-import { PAYMENT_METHOD_TITLES } from 'wcpay/constants/payment-method';
+import { getTransactionPaymentMethodTitle } from 'wcpay/transactions/utils/getTransactionPaymentMethodTitle';
+
 /**
  *
  * @param {Object} payment Payment charge object
@@ -15,6 +16,15 @@ import { PAYMENT_METHOD_TITLES } from 'wcpay/constants/payment-method';
  */
 const formatDetails = ( payment ) => {
 	const paymentMethod = payment[ payment.type ];
+	/**
+	 * FLAG: PAYMENT_METHODS_LIST
+	 *
+	 * When adding a payment method, if you need to display a specific detail, you can
+	 * add it here. If not, you don't need to list it here.
+	 *
+	 * If you're removing a payment method, you'll probably want to leave this section
+	 * section alone because we still need to display the details of existing transactions.
+	 */
 	switch ( payment.type ) {
 		case 'card':
 		case 'au_becs_debit':
@@ -43,11 +53,6 @@ const formatDetails = ( payment ) => {
 					{ paymentMethod.iban_last4 }
 				</Fragment>
 			);
-		case 'alipay':
-		case 'affirm':
-		case 'afterpay_clearpay':
-		case 'klarna':
-		case 'wechat_pay':
 		default:
 			return <Fragment />;
 	}
@@ -74,12 +79,12 @@ const PaymentMethodDetails = ( props ) => {
 		<span className="payment-method-details">
 			<HoverTooltip
 				isVisible={ false }
-				content={ PAYMENT_METHOD_TITLES[ brand ] }
+				content={ getTransactionPaymentMethodTitle( brand ) }
 				className="payment-method-details__brand-tooltip"
 			>
 				<span
 					className={ `payment-method__brand payment-method__brand--${ brand }` }
-					aria-label={ PAYMENT_METHOD_TITLES[ brand ] }
+					aria-label={ getTransactionPaymentMethodTitle( brand ) }
 				/>
 			</HoverTooltip>
 			{ details }

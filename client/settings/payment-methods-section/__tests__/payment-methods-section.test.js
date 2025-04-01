@@ -54,9 +54,7 @@ jest.mock( 'multi-currency/interface/data', () => ( {
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {
-	useDispatch: jest
-		.fn()
-		.mockReturnValue( { updateAvailablePaymentMethodIds: jest.fn() } ),
+	useDispatch: jest.fn().mockReturnValue( {} ),
 	select: jest.fn(),
 } ) );
 
@@ -171,15 +169,6 @@ describe( 'PaymentMethodsSection', () => {
 		render( <PaymentMethodsSection /> );
 
 		expect( screen.queryAllByText( /Pending /i ).length ).toEqual( 4 );
-	} );
-
-	it( 'renders the payment methods component', () => {
-		render( <PaymentMethodsSection /> );
-
-		expect( screen.queryByText( 'Payment methods' ) ).toBeInTheDocument();
-		expect(
-			screen.queryByText( 'Payment methods' ).parentElement
-		).toHaveTextContent( 'Payment methods' );
 	} );
 
 	it( 'renders the activation modal when requirements exist for the payment method', () => {

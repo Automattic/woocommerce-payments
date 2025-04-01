@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Removed the deprecated wcpay_exit_survey_dismissed option from the ALLOWED_OPTIONS list.
