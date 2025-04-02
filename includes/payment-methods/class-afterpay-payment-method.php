@@ -76,4 +76,39 @@ class Afterpay_Payment_Method extends UPE_Payment_Method {
 	public function get_testing_instructions( string $account_country ) {
 		return '';
 	}
+
+	/**
+	 * Returns payment method description for the settings page.
+	 *
+	 * @param string|null $account_country Country of merchants account.
+	 *
+	 * @return string
+	 */
+	public function get_description( ?string $account_country = null ) {
+		if ( Country_Code::UNITED_KINGDOM === $account_country ) {
+			return __(
+				'Allow customers to pay over time with Clearpay.',
+				'woocommerce-payments'
+			);
+		}
+
+		return __(
+			'Allow customers to pay over time with Afterpay.',
+			'woocommerce-payments'
+		);
+	}
+
+	/**
+	 * Returns payment method settings icon.
+	 *
+	 * @param string|null $account_country Country of merchants account.
+	 * @return string
+	 */
+	public function get_settings_icon_url( ?string $account_country = null ) {
+		if ( Country_Code::UNITED_KINGDOM === $account_country ) {
+			return plugins_url( 'assets/images/payment-methods/clearpay.svg', WCPAY_PLUGIN_FILE );
+		}
+
+		return plugins_url( 'assets/images/payment-methods/afterpay-logo.svg', WCPAY_PLUGIN_FILE );
+	}
 }
