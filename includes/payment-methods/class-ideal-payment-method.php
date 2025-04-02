@@ -42,4 +42,18 @@ class Ideal_Payment_Method extends UPE_Payment_Method {
 	public function get_testing_instructions( string $account_country ) {
 		return '';
 	}
+
+	/**
+	 * Returns payment method description for the settings page.
+	 *
+	 * @param string|null $account_country Country of merchants account.
+	 *
+	 * @return string
+	 */
+	public function get_description( ?string $account_country = null ) {
+		return __(
+			'Expand your business with iDEAL — Netherlands’s most popular payment method.',
+			'woocommerce-payments'
+		);
+	}
 }

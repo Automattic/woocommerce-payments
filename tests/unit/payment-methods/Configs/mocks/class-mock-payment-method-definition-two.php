@@ -34,7 +34,11 @@ class SecondMockPaymentMethodDefinition implements PaymentMethodDefinitionInterf
 		return 'Second Mock Method';
 	}
 
-	public static function get_description(): string {
+	public static function get_settings_label( ?string $account_country = null ): string {
+		return 'Second Mock Method';
+	}
+
+	public static function get_description( ?string $account_country = null ): string {
 		return 'Second mock payment method for testing';
 	}
 
@@ -74,7 +78,7 @@ class SecondMockPaymentMethodDefinition implements PaymentMethodDefinitionInterf
 		return 'https://example.com/dark-icon.png';
 	}
 
-	public static function get_settings_icon_url(): string {
+	public static function get_settings_icon_url( ?string $account_country = null ): string {
 		return 'https://example.com/settings-icon.png';
 	}
 
