@@ -363,7 +363,7 @@ exports[`Multi-Currency enabled currencies list Remove currency modal renders co
           class="woocommerce-payments__payment-method-icon"
         >
           <img
-            alt="Giropay"
+            alt="giropay"
             class="payment-method__icon"
             src="assets/images/payment-methods/giropay.svg"
           />

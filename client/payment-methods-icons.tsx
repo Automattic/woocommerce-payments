@@ -103,11 +103,11 @@ export const DiscoverIcon = iconComponent(
 );
 export const EpsIcon = iconComponent(
 	EpsAsset,
-	__( 'BECS Direct Debit', 'woocommerce-payments' )
+	__( 'EPS', 'woocommerce-payments' )
 );
 export const GiropayIcon = iconComponent(
 	GiropayAsset,
-	__( 'Giropay', 'woocommerce-payments' )
+	__( 'giropay', 'woocommerce-payments' )
 );
 export const GooglePayIcon = iconComponent(
 	GooglePayAsset,
