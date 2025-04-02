@@ -42,31 +42,49 @@ class WC_Payments_Payment_Request_Session_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_adds_tokenized_session_headers() {
-		$_SERVER['REQUEST_URI'] = '/index.php';
-		$_REQUEST['rest_route'] = '/wc/store/v1/cart';
-		$request                = new WP_REST_Request( 'GET', '/wc/store/v1/cart' );
+		$_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_SESSION_NONCE'] = wp_create_nonce( 'woopayments_tokenized_cart_session_nonce' );
+		$_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_SESSION']       = '';
+		$_SERVER['REQUEST_URI']                                     = '/index.php';
+		$_REQUEST['rest_route']                                     = '/wc/store/v1/cart';
+		$request = new WP_REST_Request( 'GET', '/wc/store/v1/cart' );
 		$request->set_header( 'X-WooPayments-Tokenized-Cart-Session-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_session_nonce' ) );
 		$request->set_header( 'Content-Type', 'application/json' );
 
 		$session = new WC_Payments_Payment_Request_Session();
+		$session->init();
 
-		$response = $session->store_api_headers( new WP_REST_Response(), null, $request );
+		// need to manually call this method, because otherwise WooCommerce hasn't instantiated the session when the request is made.
+		WC()->initialize_session();
 
+		$response = rest_do_request( $request );
+		// manually calling 'rest_post_dispatch' because it is not called within the context of unit tests.
+		$response = apply_filters( 'rest_post_dispatch', $response, rest_get_server(), $request );
+
+		$this->assertNotNull( apply_filters( 'woocommerce_session_handler', null ) );
 		$this->assertIsString( $response->get_headers()['X-WooPayments-Tokenized-Cart-Session'] );
 	}
 
 	public function test_does_not_add_tokenized_session_headers_on_invalid_nonce() {
-		$_SERVER['REQUEST_URI'] = '/index.php';
-		$_REQUEST['rest_route'] = '/wc/store/v1/cart';
-		$request                = new WP_REST_Request( 'GET', '/wc/store/v1/cart' );
+		$_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_SESSION_NONCE'] = 'invalid-nonce';
+		$_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_SESSION']       = '';
+		$_SERVER['REQUEST_URI']                                     = '/index.php';
+		$_REQUEST['rest_route']                                     = '/wc/store/v1/cart';
+		$request = new WP_REST_Request( 'GET', '/wc/store/v1/cart' );
 		$request->set_header( 'X-WooPayments-Tokenized-Cart-Session-Nonce', 'invalid-nonce' );
 		$request->set_header( 'Content-Type', 'application/json' );
 
 		$session = new WC_Payments_Payment_Request_Session();
+		$session->init();
 
-		$response = $session->store_api_headers( new WP_REST_Response(), null, $request );
+		// need to manually call this method, because otherwise WooCommerce hasn't instantiated the session when the request is made.
+		WC()->initialize_session();
 
-		$this->assertNotContains( 'X-WooPayments-Tokenized-Cart-Session', $response->get_headers() );
+		$response = rest_do_request( $request );
+		// manually calling 'rest_post_dispatch' because it is not called within the context of unit tests.
+		$response = apply_filters( 'rest_post_dispatch', $response, rest_get_server(), $request );
+
+		$this->assertNull( apply_filters( 'woocommerce_session_handler', null ) );
+		$this->assertNotContains( 'X-WooPayments-Tokenized-Cart-Session', array_keys( $response->get_headers() ) );
 	}
 
 	public function test_does_not_use_custom_session_handler_on_invalid_nonce() {
@@ -96,14 +114,50 @@ class WC_Payments_Payment_Request_Session_Test extends WCPAY_UnitTestCase {
 		$session = new WC_Payments_Payment_Request_Session();
 		$session->init();
 
+		// need to manually call this method, because otherwise WooCommerce hasn't instantiated the session when the request is made.
+		WC()->initialize_session();
+
+		WC()->cart->add_to_cart( WC_Helper_Product::create_simple_product()->get_id(), 1 );
+		WC()->cart->calculate_totals();
+
+		$this->assertCount( 1, WC()->cart->cart_contents );
+
 		rest_do_request( $request );
 
 		$this->assertNotNull( apply_filters( 'woocommerce_session_handler', null ) );
 
+		$this->assertInstanceOf( WC_Payments_Payment_Request_Session_Handler::class, WC()->session );
+		// cart contents are not cleared.
+		$this->assertCount( 1, WC()->cart->cart_contents );
+	}
+
+	public function test_clears_cart_after_response_when_header_is_provided() {
+		$_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_SESSION_NONCE'] = wp_create_nonce( 'woopayments_tokenized_cart_session_nonce' );
+		$_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_SESSION']       = '';
+		$_SERVER['REQUEST_URI']                                     = '/index.php';
+		$_REQUEST['rest_route']                                     = '/wc/store/v1/cart';
+		$request = new WP_REST_Request( 'GET', '/wc/store/v1/cart' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Session-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_session_nonce' ) );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Is-Ephemeral-Cart', '1' );
+		$request->set_header( 'Content-Type', 'application/json' );
+
+		$session = new WC_Payments_Payment_Request_Session();
+		$session->init();
+
 		// need to manually call this method, because otherwise WooCommerce hasn't instantiated the session when the request is made.
 		WC()->initialize_session();
 
-		$this->assertInstanceOf( WC_Payments_Payment_Request_Session_Handler::class, WC()->session );
+		WC()->cart->add_to_cart( WC_Helper_Product::create_simple_product()->get_id(), 1 );
+		WC()->cart->calculate_totals();
+
+		$this->assertCount( 1, WC()->cart->cart_contents );
+
+		$response = rest_do_request( $request );
+		// manually calling 'rest_post_dispatch' because it is not called within the context of unit tests.
+		apply_filters( 'rest_post_dispatch', $response, rest_get_server(), $request );
+
+		// cart contents are cleared, because the `X-WooPayments-Tokenized-Cart-Is-Ephemeral-Cart` header has been provided.
+		$this->assertCount( 0, WC()->cart->cart_contents );
 	}
 
 	public function test_restores_cart_data_on_order_received_page() {
