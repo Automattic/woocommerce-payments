@@ -70,6 +70,11 @@ class Klarna_Payment_Method extends UPE_Payment_Method {
 		if ( in_array( $account_country, $eea_countries, true ) ) {
 			$store_currency = strtoupper( get_woocommerce_currency() );
 
+			// if the store is set to an EU country, but the currency used is not set as a valid EU currency, I guess Klarna shouldn't be eligible.
+			if ( ! isset( $this->limits_per_currency[ $store_currency ] ) ) {
+				return [ 'NONE_SUPPORTED' ];
+			}
+
 			$countries_that_support_store_currency = array_keys( $this->limits_per_currency[ $store_currency ] );
 
 			return array_values( array_intersect( $eea_countries, $countries_that_support_store_currency ) );
