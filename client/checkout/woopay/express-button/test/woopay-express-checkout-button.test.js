@@ -10,7 +10,7 @@ import userEvent from '@testing-library/user-event';
 import { WoopayExpressCheckoutButton } from '../woopay-express-checkout-button';
 import { expressCheckoutIframe } from '../express-checkout-iframe';
 import WCPayAPI from 'wcpay/checkout/api';
-import checkoutRequest from 'wcpay/checkout/utils/request';
+import reqiest from 'wcpay/checkout/utils/request';
 import { getConfig } from 'utils/checkout';
 import useExpressCheckoutProductHandler from '../use-express-checkout-product-handler';
 
@@ -150,7 +150,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		);
 
 		await waitFor( () => {
-			expect( checkoutRequest ).not.toHaveBeenCalled();
+			expect( reqiest ).not.toHaveBeenCalled();
 			expect( expressCheckoutIframe ).not.toHaveBeenCalled();
 		} );
 	} );
@@ -190,7 +190,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		userEvent.click( expressButton );
 
 		await waitFor( () => {
-			expect( checkoutRequest ).toHaveBeenCalledWith( 'woopay.url', {
+			expect( reqiest ).toHaveBeenCalledWith( 'woopay.url', {
 				_ajax_nonce: 'sessionnonce',
 				order_id: 1,
 				key: 'testkey',
@@ -244,7 +244,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		userEvent.click( expressButton );
 
 		await waitFor( () => {
-			expect( checkoutRequest ).not.toHaveBeenCalled();
+			expect( reqiest ).not.toHaveBeenCalled();
 			expect( expressCheckoutIframe ).not.toHaveBeenCalled();
 		} );
 	} );
@@ -262,7 +262,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			);
 
 			await waitFor( () => {
-				expect( checkoutRequest ).not.toHaveBeenCalled();
+				expect( reqiest ).not.toHaveBeenCalled();
 			} );
 		} );
 
