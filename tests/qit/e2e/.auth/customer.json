@@ -1,0 +1,205 @@
+{
+  "cookies": [
+    {
+      "name": "wordpress_sec_9188f6f04ccf1db5e73f73464f6e39f2",
+      "value": "customer%7C1742131166%7CXw0ei3ZbFxJSvDSkBC8WN3tERYU9U7NGZNlYrkacyy4%7C5cf0751213a1d2ae95216835bce6827cb40ca27d9b78480bd592e26d3b5df156",
+      "domain": "detector-author-teaching-weather.trycloudflare.com",
+      "path": "/wp-content/plugins",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "wordpress_sec_9188f6f04ccf1db5e73f73464f6e39f2",
+      "value": "customer%7C1742131166%7CXw0ei3ZbFxJSvDSkBC8WN3tERYU9U7NGZNlYrkacyy4%7C5cf0751213a1d2ae95216835bce6827cb40ca27d9b78480bd592e26d3b5df156",
+      "domain": "detector-author-teaching-weather.trycloudflare.com",
+      "path": "/wp-admin",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "wordpress_test_cookie",
+      "value": "WP%20Cookie%20check",
+      "domain": "detector-author-teaching-weather.trycloudflare.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "wordpress_logged_in_9188f6f04ccf1db5e73f73464f6e39f2",
+      "value": "customer%7C1742131166%7CXw0ei3ZbFxJSvDSkBC8WN3tERYU9U7NGZNlYrkacyy4%7C4297dab9ad05caebe0cc238de6f830878ecb3b6ba6e7b3eadb1e9e200781b20f",
+      "domain": "detector-author-teaching-weather.trycloudflare.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "tk_ai",
+      "value": "woo%3AjWhv7Mk0Jvk7pg41hZzpAW6C",
+      "domain": "detector-author-teaching-weather.trycloudflare.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "woocommerce_items_in_cart",
+      "value": "1",
+      "domain": "detector-author-teaching-weather.trycloudflare.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "woocommerce_cart_hash",
+      "value": "da03e9a10ade8bd6beb3e7c46039a4dd",
+      "domain": "detector-author-teaching-weather.trycloudflare.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "wp_woocommerce_session_9188f6f04ccf1db5e73f73464f6e39f2",
+      "value": "3%7C%7C1742131167%7C%7C1742127567%7C%7C3832b8e7ff23600f4f9fa78127d85c98",
+      "domain": "detector-author-teaching-weather.trycloudflare.com",
+      "path": "/",
+      "expires": 1742131168.230653,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "sbjs_migrations",
+      "value": "1418474375998%3D1",
+      "domain": ".detector-author-teaching-weather.trycloudflare.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "sbjs_current_add",
+      "value": "fd%3D2025-03-14%2013%3A19%3A28%7C%7C%7Cep%3Dhttps%3A%2F%2Fdetector-author-teaching-weather.trycloudflare.com%2Fmy-account%2F%7C%7C%7Crf%3Dhttps%3A%2F%2Fdetector-author-teaching-weather.trycloudflare.com%2Fwp-login.php%3Fredirect_to%3Dhttps%253A%252F%252Fdetector-author-teaching-weather.trycloudflare.com%252Fwp-admin%252F%26reauth%3D1",
+      "domain": ".detector-author-teaching-weather.trycloudflare.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "sbjs_first_add",
+      "value": "fd%3D2025-03-14%2013%3A19%3A28%7C%7C%7Cep%3Dhttps%3A%2F%2Fdetector-author-teaching-weather.trycloudflare.com%2Fmy-account%2F%7C%7C%7Crf%3Dhttps%3A%2F%2Fdetector-author-teaching-weather.trycloudflare.com%2Fwp-login.php%3Fredirect_to%3Dhttps%253A%252F%252Fdetector-author-teaching-weather.trycloudflare.com%252Fwp-admin%252F%26reauth%3D1",
+      "domain": ".detector-author-teaching-weather.trycloudflare.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "sbjs_current",
+      "value": "typ%3Dtypein%7C%7C%7Csrc%3D%28direct%29%7C%7C%7Cmdm%3D%28none%29%7C%7C%7Ccmp%3D%28none%29%7C%7C%7Ccnt%3D%28none%29%7C%7C%7Ctrm%3D%28none%29%7C%7C%7Cid%3D%28none%29%7C%7C%7Cplt%3D%28none%29%7C%7C%7Cfmt%3D%28none%29%7C%7C%7Ctct%3D%28none%29",
+      "domain": ".detector-author-teaching-weather.trycloudflare.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "sbjs_first",
+      "value": "typ%3Dtypein%7C%7C%7Csrc%3D%28direct%29%7C%7C%7Cmdm%3D%28none%29%7C%7C%7Ccmp%3D%28none%29%7C%7C%7Ccnt%3D%28none%29%7C%7C%7Ctrm%3D%28none%29%7C%7C%7Cid%3D%28none%29%7C%7C%7Cplt%3D%28none%29%7C%7C%7Cfmt%3D%28none%29%7C%7C%7Ctct%3D%28none%29",
+      "domain": ".detector-author-teaching-weather.trycloudflare.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "sbjs_udata",
+      "value": "vst%3D1%7C%7C%7Cuip%3D%28none%29%7C%7C%7Cuag%3DMozilla%2F5.0%20%28X11%3B%20Linux%20aarch64%29%20AppleWebKit%2F537.36%20%28KHTML%2C%20like%20Gecko%29%20HeadlessChrome%2F133.0.6943.16%20Safari%2F537.36",
+      "domain": ".detector-author-teaching-weather.trycloudflare.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "sbjs_session",
+      "value": "pgs%3D2%7C%7C%7Ccpg%3Dhttps%3A%2F%2Fdetector-author-teaching-weather.trycloudflare.com%2Fmy-account%2F",
+      "domain": ".detector-author-teaching-weather.trycloudflare.com",
+      "path": "/",
+      "expires": 1741960168,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "tk_or",
+      "value": "%22%22",
+      "domain": ".detector-author-teaching-weather.trycloudflare.com",
+      "path": "/",
+      "expires": 1776518368.935983,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "tk_r3d",
+      "value": "%22%22",
+      "domain": ".detector-author-teaching-weather.trycloudflare.com",
+      "path": "/",
+      "expires": 1742217568,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "tk_lr",
+      "value": "%22%22",
+      "domain": ".detector-author-teaching-weather.trycloudflare.com",
+      "path": "/",
+      "expires": 1773494368,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "tk_qs",
+      "value": "",
+      "domain": ".detector-author-teaching-weather.trycloudflare.com",
+      "path": "/",
+      "expires": 1741960168,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "https://detector-author-teaching-weather.trycloudflare.com",
+      "localStorage": [
+        {
+          "name": "wc_cart_hash_646eabeb4b82326d83872b95d86dba7f",
+          "value": "da03e9a10ade8bd6beb3e7c46039a4dd"
+        }
+      ]
+    }
+  ]
+}

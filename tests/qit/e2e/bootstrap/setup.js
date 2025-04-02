@@ -1,4 +1,5 @@
 import { test } from '@playwright/test';
+require( '../auth.setup' );
 
 /* eslint-disable wpcalypso/import-docblock */
 

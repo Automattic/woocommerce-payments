@@ -84,8 +84,8 @@ CART_SHORTCODE="<!-- wp:shortcode -->[woocommerce_cart]<!-- /wp:shortcode -->"
 CHECKOUT_SHORTCODE="<!-- wp:shortcode -->[woocommerce_checkout]<!-- /wp:shortcode -->"
 
 # Update cart & checkout pages to use shortcode.
-wp post update $CART_PAGE_ID --post_content='$CART_SHORTCODE'
-wp post update $CHECKOUT_PAGE_ID --post_content='$CHECKOUT_SHORTCODE'
+wp post update $CART_PAGE_ID --post_content="$CART_SHORTCODE"
+wp post update $CHECKOUT_PAGE_ID --post_content="$CHECKOUT_SHORTCODE"
 
 echo "Importing some sample data..."
 wp import /var/www/html/wp-content/plugins/woocommerce/sample-data/sample_products.xml --authors=skip --quiet
@@ -114,7 +114,7 @@ wp option set wcpaydev_proxy 0
 echo "Setting Jetpack blog_id"
 wp wcpay_dev set_blog_id $BLOG_ID --blog_token=$E2E_BLOG_TOKEN --user_token=$E2E_USER_TOKEN
 
-#echo "Install and activate the latest release of WooCommerce Subscriptions"
+# echo "Install and activate the latest release of WooCommerce Subscriptions"
 
 echo "Disabling rate limiter for card declined in E2E tests"
 wp option set wcpay_session_rate_limiter_disabled_wcpay_card_declined_registry yes

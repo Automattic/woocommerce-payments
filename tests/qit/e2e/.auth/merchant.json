@@ -1,0 +1,85 @@
+{
+  "cookies": [
+    {
+      "name": "wordpress_sec_9188f6f04ccf1db5e73f73464f6e39f2",
+      "value": "admin%7C1742135218%7Ce12TQ3Oj22DkXGLQBQvNq8ZBYQn97sqa1ap0USkpOJ6%7C496e00f8a00af75e2d7eea4253d26a02b7fd00056bbaad22fc2039c5f9b1ca88",
+      "domain": "detector-author-teaching-weather.trycloudflare.com",
+      "path": "/wp-content/plugins",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "wordpress_sec_9188f6f04ccf1db5e73f73464f6e39f2",
+      "value": "admin%7C1742135218%7Ce12TQ3Oj22DkXGLQBQvNq8ZBYQn97sqa1ap0USkpOJ6%7C496e00f8a00af75e2d7eea4253d26a02b7fd00056bbaad22fc2039c5f9b1ca88",
+      "domain": "detector-author-teaching-weather.trycloudflare.com",
+      "path": "/wp-admin",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "wordpress_test_cookie",
+      "value": "WP%20Cookie%20check",
+      "domain": "detector-author-teaching-weather.trycloudflare.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "wordpress_logged_in_9188f6f04ccf1db5e73f73464f6e39f2",
+      "value": "admin%7C1742135218%7Ce12TQ3Oj22DkXGLQBQvNq8ZBYQn97sqa1ap0USkpOJ6%7C4c6e3255edc94bb6c607f76ce2647e0d721dfcda6d0950f0815d7a30c304aa11",
+      "domain": "detector-author-teaching-weather.trycloudflare.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "tk_ai",
+      "value": "woo%3A9PKgK6awoki6E19B5lUG98sd",
+      "domain": "detector-author-teaching-weather.trycloudflare.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "wp-settings-time-1",
+      "value": "1741962421",
+      "domain": "detector-author-teaching-weather.trycloudflare.com",
+      "path": "/",
+      "expires": 1773498421.594702,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "tk_qs",
+      "value": "",
+      "domain": ".detector-author-teaching-weather.trycloudflare.com",
+      "path": "/",
+      "expires": 1741964224,
+      "httpOnly": false,
+      "secure": false,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "https://detector-author-teaching-weather.trycloudflare.com",
+      "localStorage": [
+        {
+          "name": "tusSupport",
+          "value": "null"
+        }
+      ]
+    }
+  ]
+}

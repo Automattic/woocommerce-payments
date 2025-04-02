@@ -1,0 +1,65 @@
+{
+  "cookies": [
+    {
+      "name": "wordpress_sec_9188f6f04ccf1db5e73f73464f6e39f2",
+      "value": "editor%7C1742136101%7C2USQ1c6ndC8Q5OCsFI5Xc78BoUiSOmMDddTeQQBFHbx%7Ce8fbecd52a17cb73090a4beb6134ef3262aa9f013dd23421bf4122fb66014be0",
+      "domain": "detector-author-teaching-weather.trycloudflare.com",
+      "path": "/wp-content/plugins",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "wordpress_sec_9188f6f04ccf1db5e73f73464f6e39f2",
+      "value": "editor%7C1742136101%7C2USQ1c6ndC8Q5OCsFI5Xc78BoUiSOmMDddTeQQBFHbx%7Ce8fbecd52a17cb73090a4beb6134ef3262aa9f013dd23421bf4122fb66014be0",
+      "domain": "detector-author-teaching-weather.trycloudflare.com",
+      "path": "/wp-admin",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "wordpress_test_cookie",
+      "value": "WP%20Cookie%20check",
+      "domain": "detector-author-teaching-weather.trycloudflare.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "wordpress_logged_in_9188f6f04ccf1db5e73f73464f6e39f2",
+      "value": "editor%7C1742136101%7C2USQ1c6ndC8Q5OCsFI5Xc78BoUiSOmMDddTeQQBFHbx%7C270237d5eaa49d6121002c8442cf77b19bbf1b762e2fb759d367f34c4303cd5e",
+      "domain": "detector-author-teaching-weather.trycloudflare.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "wp-settings-time-4",
+      "value": "1741963302",
+      "domain": "detector-author-teaching-weather.trycloudflare.com",
+      "path": "/",
+      "expires": 1773499302.330923,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "tk_ai",
+      "value": "jetpack%3AtwCeuWYgbCFlfkkUvq1gvAgW",
+      "domain": "detector-author-teaching-weather.trycloudflare.com",
+      "path": "/",
+      "expires": -1,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": []
+}
