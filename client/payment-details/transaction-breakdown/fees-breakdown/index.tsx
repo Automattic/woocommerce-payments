@@ -67,7 +67,6 @@ const FeesBreakdown: React.FC< {
 		percentage,
 		fixed,
 		currency,
-		amount,
 		isDiscounted,
 		displayFixedPart,
 	}: {
@@ -76,7 +75,6 @@ const FeesBreakdown: React.FC< {
 		percentage: number;
 		fixed: number;
 		currency: string;
-		amount?: number;
 		isDiscounted?: boolean;
 		displayFixedPart?: boolean;
 	} ) => {
@@ -85,14 +83,6 @@ const FeesBreakdown: React.FC< {
 			additionalType,
 			isDiscounted
 		);
-		const formattedFeeAmount =
-			undefined !== amount
-				? ` - ${ formatCurrency(
-						amount,
-						storeCurrency,
-						storeCurrency
-				  ) } ${ storeCurrency }`
-				: '';
 		const feeType = type + ( additionalType ? `_${ additionalType }` : '' );
 
 		return (
@@ -112,9 +102,6 @@ const FeesBreakdown: React.FC< {
 						currency={ currency }
 						displayFixedPart={ displayFixedPart }
 					/>
-				</FlexItem>
-				<FlexItem className="wcpay-transaction-breakdown__fee_amount">
-					{ formattedFeeAmount }
 				</FlexItem>
 			</Flex>
 		);
@@ -204,7 +191,6 @@ const FeesBreakdown: React.FC< {
 			percentage={ event.fee_rates.percentage }
 			fixed={ event.fee_rates.fixed / feeExchangeRate }
 			currency={ storeCurrency }
-			amount={ event.transaction_details.store_fee }
 			displayFixedPart={ true }
 		/>
 	);

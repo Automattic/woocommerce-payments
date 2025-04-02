@@ -145,7 +145,8 @@ describe( 'PaymentTransactionBreakdown', () => {
 		).toBeInTheDocument();
 		expect(
 			screen.getByText( /- \$3.20 USD$/, {
-				selector: '.wcpay-transaction-breakdown__total_fee_info div',
+				selector:
+					'.wcpay-transaction-breakdown__total_transaction_fee_amount',
 			} )
 		).toBeInTheDocument();
 	} );
@@ -241,7 +242,8 @@ describe( 'PaymentTransactionBreakdown', () => {
 		).toBeInTheDocument();
 		expect(
 			screen.getByText( /- \$5.20 USD$/, {
-				selector: '.wcpay-transaction-breakdown__total_fee_info div',
+				selector:
+					'.wcpay-transaction-breakdown__total_transaction_fee_amount',
 			} )
 		).toBeInTheDocument();
 	} );

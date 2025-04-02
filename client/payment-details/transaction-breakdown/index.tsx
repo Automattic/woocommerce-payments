@@ -105,19 +105,35 @@ const PaymentTransactionBreakdown: React.FC< PaymentTransactionBreakdownProps > 
 								</Flex>
 							</FlexItem>
 						</Flex>
-						<Flex>
-							<FlexItem>
-								{ __(
-									'Transaction fee',
-									'woocommerce-payments'
-								) }
-							</FlexItem>
-						</Flex>
 						<Flex
 							className="wcpay-transaction-breakdown__fees"
 							direction="column"
 						>
 							<FeesBreakdown event={ captureEvent } />
+						</Flex>
+						<Flex
+							className="wcpay-transaction-breakdown__total_transaction_fee"
+							wrap={ true }
+						>
+							<FlexItem>
+								{ __(
+									'Total transaction fee',
+									'woocommerce-payments'
+								) }
+							</FlexItem>
+							<FlexItem className="wcpay-transaction-breakdown__total_transaction_fee_amount">
+								-&nbsp;
+								{ formatCurrency(
+									captureEvent.transaction_details.store_fee,
+									captureEvent.transaction_details
+										.store_currency
+								) }
+								&nbsp;
+								{
+									captureEvent.transaction_details
+										.store_currency
+								}
+							</FlexItem>
 						</Flex>
 					</Flex>
 				</LoadableBlock>
@@ -135,6 +151,8 @@ const PaymentTransactionBreakdown: React.FC< PaymentTransactionBreakdownProps > 
 									captureEvent.transaction_details.store_fee,
 								captureEvent.transaction_details.store_currency
 							) }
+							&nbsp;
+							{ captureEvent.transaction_details.store_currency }
 						</FlexItem>
 					</Flex>
 				</LoadableBlock>

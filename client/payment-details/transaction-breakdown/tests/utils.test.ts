@@ -13,15 +13,11 @@ jest.mock( '@wordpress/i18n', () => ( {
 
 describe( 'formatFeeType', () => {
 	it( 'returns total transaction fee text for total type', () => {
-		expect( formatFeeType( 'total' ) ).toBe( 'Total transaction fee' );
+		expect( formatFeeType( 'total' ) ).toBe( 'Total' );
 	} );
 
 	it( 'returns base fee text for base type', () => {
 		expect( formatFeeType( 'base' ) ).toBe( 'Base fee' );
-	} );
-
-	it( 'returns total fee text for total type', () => {
-		expect( formatFeeType( 'total' ) ).toBe( 'Total transaction fee' );
 	} );
 
 	it( 'returns international payment fee text for additional international type', () => {

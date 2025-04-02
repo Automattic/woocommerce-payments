@@ -13,7 +13,7 @@ export const formatFeeType = (
 	isDiscounted?: boolean
 ): string => {
 	const feeTypes: Record< string, string | Record< string, string > > = {
-		total: __( 'Total transaction fee', 'woocommerce-payments' ),
+		total: __( 'Total', 'woocommerce-payments' ),
 		base: __( 'Base fee', 'woocommerce-payments' ),
 		additional: {
 			international: __(

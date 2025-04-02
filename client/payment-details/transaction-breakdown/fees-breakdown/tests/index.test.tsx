@@ -86,6 +86,13 @@ describe( 'FeesBreakdown', () => {
 		expect(
 			screen.getByText( '2.9% + $0.30 USD', {
 				selector:
+					'.wcpay-transaction-breakdown__base_fee_info .wcpay-transaction-breakdown__fee_rate',
+			} )
+		).toBeInTheDocument();
+		expect( screen.getByText( 'Total' ) ).toBeInTheDocument();
+		expect(
+			screen.getByText( '2.9% + $0.30 USD', {
+				selector:
 					'.wcpay-transaction-breakdown__total_fee_info .wcpay-transaction-breakdown__fee_rate',
 			} )
 		).toBeInTheDocument();
@@ -106,8 +113,8 @@ describe( 'FeesBreakdown', () => {
 			},
 			fee_rates: {
 				...baseEvent.fee_rates,
-				percentage: 0.029,
-				fixed: 30,
+				percentage: 0.004,
+				fixed: 5,
 				fixed_currency: 'USD',
 				history: [
 					{
@@ -159,13 +166,11 @@ describe( 'FeesBreakdown', () => {
 					'.wcpay-transaction-breakdown__additional_international_fee_info .wcpay-transaction-breakdown__fee_rate',
 			} )
 		).toBeInTheDocument();
+		expect( screen.getByText( 'Total' ) ).toBeInTheDocument();
 		expect(
-			screen.getByText( 'Total transaction fee' )
-		).toBeInTheDocument();
-		expect(
-			screen.getByText( /- \$0.00 USD$/, {
+			screen.getByText( '0.4% + $0.05 USD', {
 				selector:
-					'.wcpay-transaction-breakdown__total_fee_info .wcpay-transaction-breakdown__fee_amount',
+					'.wcpay-transaction-breakdown__total_fee_info .wcpay-transaction-breakdown__fee_rate',
 			} )
 		).toBeInTheDocument();
 	} );
@@ -175,7 +180,7 @@ describe( 'FeesBreakdown', () => {
 			...baseEvent,
 			fee_rates: {
 				...baseEvent.fee_rates,
-				percentage: 0.029,
+				percentage: 0.039,
 				fixed: 30,
 				fixed_currency: 'USD',
 				history: [
@@ -216,13 +221,11 @@ describe( 'FeesBreakdown', () => {
 					'.wcpay-transaction-breakdown__additional_international_fee_info .wcpay-transaction-breakdown__fee_rate',
 			} )
 		).toBeInTheDocument();
+		expect( screen.getByText( 'Total' ) ).toBeInTheDocument();
 		expect(
-			screen.getByText( 'Total transaction fee' )
-		).toBeInTheDocument();
-		expect(
-			screen.getByText( /- \$0.10 USD$/, {
+			screen.getByText( '3.9% + $0.30 USD', {
 				selector:
-					'.wcpay-transaction-breakdown__total_fee_info .wcpay-transaction-breakdown__fee_amount',
+					'.wcpay-transaction-breakdown__total_fee_info .wcpay-transaction-breakdown__fee_rate',
 			} )
 		).toBeInTheDocument();
 	} );
@@ -242,8 +245,8 @@ describe( 'FeesBreakdown', () => {
 			},
 			fee_rates: {
 				...baseEvent.fee_rates,
-				percentage: 0.029,
-				fixed: 30,
+				percentage: 0,
+				fixed: 0,
 				fixed_currency: 'USD',
 				history: [
 					{
@@ -292,13 +295,11 @@ describe( 'FeesBreakdown', () => {
 					'.wcpay-transaction-breakdown__additional_international_fee_info .wcpay-transaction-breakdown__fee_rate',
 			} )
 		).toBeInTheDocument();
+		expect( screen.getByText( 'Total' ) ).toBeInTheDocument();
 		expect(
-			screen.getByText( 'Total transaction fee' )
-		).toBeInTheDocument();
-		expect(
-			screen.getByText( /^- \$0.00 USD$/, {
+			screen.getByText( '0% + $0.00 USD', {
 				selector:
-					'.wcpay-transaction-breakdown__total_fee_info .wcpay-transaction-breakdown__fee_amount',
+					'.wcpay-transaction-breakdown__total_fee_info .wcpay-transaction-breakdown__fee_rate',
 			} )
 		).toBeInTheDocument();
 	} );
@@ -308,7 +309,7 @@ describe( 'FeesBreakdown', () => {
 			...baseEvent,
 			fee_rates: {
 				...baseEvent.fee_rates,
-				percentage: 0.029,
+				percentage: 0.039,
 				fixed: 30,
 				fixed_currency: 'USD',
 				history: [
@@ -349,13 +350,11 @@ describe( 'FeesBreakdown', () => {
 					'.wcpay-transaction-breakdown__additional_international_fee_info .wcpay-transaction-breakdown__fee_rate',
 			} )
 		).toBeInTheDocument();
+		expect( screen.getByText( 'Total' ) ).toBeInTheDocument();
 		expect(
-			screen.getByText( 'Total transaction fee' )
-		).toBeInTheDocument();
-		expect(
-			screen.getByText( /- \$0.10 USD$/, {
+			screen.getByText( '3.9% + $0.30 USD', {
 				selector:
-					'.wcpay-transaction-breakdown__total_fee_info .wcpay-transaction-breakdown__fee_amount',
+					'.wcpay-transaction-breakdown__total_fee_info .wcpay-transaction-breakdown__fee_rate',
 			} )
 		).toBeInTheDocument();
 	} );
