@@ -232,6 +232,7 @@ jQuery( ( $ ) => {
 			} );
 
 			eceButton.on( 'click', function ( event ) {
+				addToCartErrorMessage = '';
 				// If login is required for checkout, display redirect confirmation dialog.
 				if ( getExpressCheckoutData( 'login_confirmation' ) ) {
 					displayLoginConfirmation( event.expressPaymentType );
@@ -266,6 +267,11 @@ jQuery( ( $ ) => {
 						}
 						return;
 					}
+
+					// on product pages, we need to interact with an anonymous cart to check out the product,
+					// so that we don't affect the products in the main cart.
+					// On cart, checkout, place order pages we instead use the cart itself.
+					getCartApiHandler().useSeparateCart();
 
 					// Add products to the cart if everything is right.
 					// we are storing the promise to ensure that the "add to cart" call is completed,
@@ -432,13 +438,6 @@ jQuery( ( $ ) => {
 			// once (and if) cart data has been fetched, we can safely clear product data from the backend.
 			if ( cachedCartData ) {
 				wcpayExpressCheckoutParams.product = undefined;
-			}
-
-			if ( getExpressCheckoutData( 'button_context' ) === 'product' ) {
-				// on product pages, we need to interact with an anonymous cart to check out the product,
-				// so that we don't affect the products in the main cart.
-				// On cart, checkout, place order pages we instead use the cart itself.
-				getCartApiHandler().useSeparateCart();
 			}
 
 			const total = getTotalAmount();

@@ -508,29 +508,32 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		}
 
 		// This route is used to get shipping rates.
-		// GooglePay/ApplePay might provide us with "trimmed" zip codes.
+		// Google Pay/Apple Pay might provide us with "trimmed" zip codes.
 		// If that's the case, let's temporarily allow to skip the zip code validation, in order to get some shipping rates.
 		$is_update_customer_route = $request->get_route() === '/wc/store/v1/cart/update-customer';
 		if ( $is_update_customer_route ) {
 			add_filter( 'woocommerce_validate_postcode', [ $this, 'maybe_skip_postcode_validation' ], 10, 3 );
 		}
 
-		$request_data = $request->get_json_params();
-		if ( isset( $request_data['shipping_address'] ) ) {
-			$request->set_param( 'shipping_address', $this->transform_ece_address_state_data( $request_data['shipping_address'] ) );
-			// on the "update customer" route, GooglePay/Apple pay might provide redacted postcode data.
+		if ( isset( $request['shipping_address'] ) && is_array( $request['shipping_address'] ) ) {
+			$shipping_address = $request['shipping_address'];
+			$shipping_address = $this->transform_ece_address_state_data( $shipping_address );
+			// on the "update customer" route, Google Pay/Apple Pay might provide redacted postcode data.
 			// we need to modify the zip code to ensure that shipping zone identification still works.
 			if ( $is_update_customer_route ) {
-				$request->set_param( 'shipping_address', $this->transform_ece_address_postcode_data( $request_data['shipping_address'] ) );
+				$shipping_address = $this->transform_ece_address_postcode_data( $shipping_address );
 			}
+			$request->set_param( 'shipping_address', $shipping_address );
 		}
-		if ( isset( $request_data['billing_address'] ) ) {
-			$request->set_param( 'billing_address', $this->transform_ece_address_state_data( $request_data['billing_address'] ) );
-			// on the "update customer" route, GooglePay/Apple pay might provide redacted postcode data.
+		if ( isset( $request['billing_address'] ) && is_array( $request['billing_address'] ) ) {
+			$billing_address = $request['billing_address'];
+			$billing_address = $this->transform_ece_address_state_data( $billing_address );
+			// on the "update customer" route, Google Pay/Apple Pay might provide redacted postcode data.
 			// we need to modify the zip code to ensure that shipping zone identification still works.
 			if ( $is_update_customer_route ) {
-				$request->set_param( 'billing_address', $this->transform_ece_address_postcode_data( $request_data['billing_address'] ) );
+				$billing_address = $this->transform_ece_address_postcode_data( $billing_address );
 			}
+			$request->set_param( 'billing_address', $billing_address );
 		}
 
 		return $response;
@@ -561,9 +564,9 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 	}
 
 	/**
-	 * Transform a GooglePay/ApplePay state address data fields into values that are valid for WooCommerce.
+	 * Transform a Google Pay/Apple Pay state address data fields into values that are valid for WooCommerce.
 	 *
-	 * @param array $address The address to normalize from the GooglePay/ApplePay request.
+	 * @param array $address The address to normalize from the Google Pay/Apple Pay request.
 	 *
 	 * @return array
 	 */
@@ -583,9 +586,9 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 	}
 
 	/**
-	 * Transform a GooglePay/ApplePay postcode address data fields into values that are valid for WooCommerce.
+	 * Transform a Google Pay/Apple Pay postcode address data fields into values that are valid for WooCommerce.
 	 *
-	 * @param array $address The address to normalize from the GooglePay/ApplePay request.
+	 * @param array $address The address to normalize from the Google Pay/Apple Pay request.
 	 *
 	 * @return array
 	 */
