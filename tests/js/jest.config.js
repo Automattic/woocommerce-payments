@@ -2,6 +2,7 @@ const { jsWithBabel: tsjPreset } = require( 'ts-jest/presets' );
 
 module.exports = {
 	rootDir: '../../',
+	testEnvironment: 'jest-fixed-jsdom',
 	moduleDirectories: [
 		'node_modules',
 		'<rootDir>/client',
@@ -19,6 +20,7 @@ module.exports = {
 		'^@woocommerce/blocks-registry$':
 			'<rootDir>/tests/js/woocommerce-blocks-registry',
 		'^uuid$': require.resolve( 'uuid' ),
+		'^jest-utils(.*)$': '<rootDir>/tests/js/utilities$1',
 	},
 	globalSetup: '<rootDir>/tests/js/jest-global-setup.js',
 	setupFiles: [
@@ -30,6 +32,7 @@ module.exports = {
 	setupFilesAfterEnv: [
 		'<rootDir>/node_modules/@wordpress/jest-preset-default/scripts/setup-test-framework.js',
 		'<rootDir>/tests/js/jest-extensions-setup.js',
+		'<rootDir>/tests/js/jest-msw-setup.js',
 	],
 	preset: '@wordpress/jest-preset-default',
 	testMatch: [

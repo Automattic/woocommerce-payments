@@ -9,14 +9,14 @@ import user from '@testing-library/user-event';
 import apiFetch from '@wordpress/api-fetch';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { useUserPreferences } from '@woocommerce/data';
-import { getUserTimeZone } from 'wcpay/utils/test-utils';
 import { PAYMENT_METHOD_BRANDS } from 'wcpay/constants/payment-method';
 
 /**
  * Internal dependencies
  */
-import { TransactionsList } from '../';
-import { useTransactions, useTransactionsSummary } from 'data/index';
+import { getUserTimeZone } from 'jest-utils/timezone';
+import { TransactionsList } from '..';
+import { useTransactions, useTransactionsSummary } from 'data';
 import type { Transaction } from 'data/transactions/hooks';
 
 jest.mock( '@woocommerce/data', () => {

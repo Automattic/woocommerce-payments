@@ -373,7 +373,7 @@ jQuery( ( $ ) => {
 				);
 			} );
 
-			eceButton.on( 'cancel', async () => {
+			eceButton.on( 'cancel', () => {
 				if (
 					getExpressCheckoutData( 'button_context' ) === 'product'
 				) {

@@ -10,13 +10,18 @@ import userEvent from '@testing-library/user-event';
 import { WoopayExpressCheckoutButton } from '../woopay-express-checkout-button';
 import { expressCheckoutIframe } from '../express-checkout-iframe';
 import WCPayAPI from 'wcpay/checkout/api';
-import request from 'wcpay/checkout/utils/request';
+import checkoutRequest from 'wcpay/checkout/utils/request';
 import { getConfig } from 'utils/checkout';
 import useExpressCheckoutProductHandler from '../use-express-checkout-product-handler';
 
-jest.mock( 'wcpay/checkout/utils/request', () => ( {
-	__esModule: true,
-	default: jest.fn( () => Promise.resolve( {} ) ),
+jest.mock( 'wcpay/checkout/utils/request', () =>
+	jest.fn( () => Promise.resolve( {} ) )
+);
+jest.mock( 'wcpay/checkout/woopay/express-button/utils', () => ( {
+	showErrorMessage: () => null,
+} ) );
+jest.mock( 'wcpay/checkout/woopay/connect/woopay-connect-iframe', () => ( {
+	WooPayConnectIframe: () => null,
 } ) );
 
 jest.mock( 'utils/checkout', () => ( {
@@ -24,7 +29,6 @@ jest.mock( 'utils/checkout', () => ( {
 } ) );
 
 jest.mock( '../express-checkout-iframe', () => ( {
-	__esModule: true,
 	expressCheckoutIframe: jest.fn(),
 } ) );
 
@@ -58,8 +62,6 @@ jest.mock( '../use-express-checkout-product-handler', () => jest.fn() );
 
 jest.spyOn( window, 'alert' ).mockImplementation( () => {} );
 
-global.fetch = jest.fn( () => Promise.resolve( { json: () => ( {} ) } ) );
-
 describe( 'WoopayExpressCheckoutButton', () => {
 	const buttonSettings = {
 		type: 'default',
@@ -68,7 +70,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		theme: 'dark',
 	};
 	const mockRequest = jest.fn().mockResolvedValue( true );
-	const mockAddToCart = jest.fn().mockResolvedValue( true );
+	const mockAddToCart = jest.fn().mockResolvedValue( {} );
 	const api = new WCPayAPI( {}, mockRequest );
 
 	beforeEach( () => {
@@ -148,7 +150,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		);
 
 		await waitFor( () => {
-			expect( request ).not.toHaveBeenCalled();
+			expect( checkoutRequest ).not.toHaveBeenCalled();
 			expect( expressCheckoutIframe ).not.toHaveBeenCalled();
 		} );
 	} );
@@ -188,7 +190,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		userEvent.click( expressButton );
 
 		await waitFor( () => {
-			expect( request ).toHaveBeenCalledWith( 'woopay.url', {
+			expect( checkoutRequest ).toHaveBeenCalledWith( 'woopay.url', {
 				_ajax_nonce: 'sessionnonce',
 				order_id: 1,
 				key: 'testkey',
@@ -242,7 +244,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		userEvent.click( expressButton );
 
 		await waitFor( () => {
-			expect( request ).not.toHaveBeenCalled();
+			expect( checkoutRequest ).not.toHaveBeenCalled();
 			expect( expressCheckoutIframe ).not.toHaveBeenCalled();
 		} );
 	} );
@@ -260,7 +262,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			);
 
 			await waitFor( () => {
-				expect( request ).not.toHaveBeenCalled();
+				expect( checkoutRequest ).not.toHaveBeenCalled();
 			} );
 		} );
 

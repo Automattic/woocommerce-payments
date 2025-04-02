@@ -4,7 +4,12 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import $ from 'jquery';
 import { recordUserEvent } from 'tracks';
-import apiFetch from '@wordpress/api-fetch';
+import { http, HttpResponse } from 'msw';
+
+/**
+ * Internal dependencies
+ */
+import { server } from 'jest-utils/msw-server';
 
 jest.mock( 'tracks', () => ( {
 	recordUserEvent: jest.fn(),
@@ -13,15 +18,13 @@ jest.mock( 'lodash', () => ( {
 	debounce: jest.fn( ( callback ) => callback ),
 } ) );
 
-jest.mock( '@wordpress/api-fetch', () => ( {
-	__esModule: true,
-	default: jest.fn( () => Promise.resolve() ),
-} ) );
-
 describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 	let stripeElementMock, stripeInstance;
+	const requestListener = jest.fn().mockReturnValue( null );
+
 	beforeEach( () => {
-		apiFetch.mockReset();
+		requestListener.mockClear();
+		server.events.on( 'request:start', requestListener );
 		// ensuring jQuery is available globally.
 		global.$ = global.jQuery = $;
 		// ensuring that `callback` is immediately invoked on document.ready.
@@ -220,29 +223,24 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 	} );
 
 	it( 'should unmount and show an error message if a network issue happens after clicking the button', async () => {
-		apiFetch.mockImplementation( async ( { path, method } ) => {
-			if (
-				path.includes( '/wc/store/v1/cart/add-item' ) &&
-				method === 'POST'
-			) {
-				return Promise.reject();
-			}
-
-			if ( path.includes( '/wc/store/v1/cart' ) && method === 'GET' ) {
-				return Promise.resolve( {
-					json: () => Promise.resolve( { items: [] } ),
-					headers: new Map(),
-				} );
-			}
-
-			if ( path.includes( '/wc/store/v1/cart/remove-item' ) ) {
-				return Promise.resolve( {
-					json: () => Promise.resolve( { items: [] } ),
-				} );
-			}
-
-			return Promise.reject();
-		} );
+		server.use(
+			http.post( '/wc/store/v1/cart/add-item', () => {
+				return HttpResponse.json(
+					{ error: 'Server error' },
+					{ status: 500 }
+				);
+			} )
+		);
+		server.use(
+			http.get( '/wc/store/v1/cart', () => {
+				return HttpResponse.json( { items: [] } );
+			} )
+		);
+		server.use(
+			http.post( '/wc/store/v1/cart/remove-item', () => {
+				return HttpResponse.json( { items: [] } );
+			} )
+		);
 
 		await jest.isolateModulesAsync( async () => {
 			await import( '..' );
@@ -298,12 +296,21 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 	} );
 
 	it( 'should provide fallback shipping rates on click', async () => {
-		apiFetch.mockImplementation( async () => {
-			return Promise.resolve( {
-				json: () => Promise.resolve( { items: [] } ),
-				headers: new Map(),
-			} );
-		} );
+		server.use(
+			http.post( '/wc/store/v1/cart/add-item', () => {
+				return HttpResponse.json( { items: [] } );
+			} )
+		);
+		server.use(
+			http.get( '/wc/store/v1/cart', () => {
+				return HttpResponse.json( { items: [] } );
+			} )
+		);
+		server.use(
+			http.post( '/wc/store/v1/cart/remove-item', () => {
+				return HttpResponse.json( { items: [] } );
+			} )
+		);
 
 		await jest.isolateModulesAsync( async () => {
 			await import( '..' );
@@ -340,119 +347,164 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 
 	it( 'should provide real shipping rates on click', async () => {
 		global.wcpayExpressCheckoutParams.product = undefined;
-		apiFetch.mockImplementation( async ( { path } ) => {
-			if ( path.includes( '/wc/store/v1/cart/remove-item' ) ) {
-				return Promise.resolve( {
-					json: () => Promise.resolve( { items: [] } ),
-				} );
-			}
+		let lastCartAddItemHeaders = null;
+		server.use(
+			http.post( '/wc/store/v1/cart/add-item', ( { request } ) => {
+				lastCartAddItemHeaders = Object.fromEntries( request.headers );
 
-			return Promise.resolve( {
-				json: () =>
-					Promise.resolve( {
-						needs_shipping: true,
-						totals: {
-							total_items: '2399',
-							total_items_tax: '198',
-							total_fees: '0',
-							total_fees_tax: '0',
-							total_discount: '0',
-							total_discount_tax: '0',
-							total_shipping: '1100',
-							total_shipping_tax: '0',
-							total_price: '3697',
-							total_tax: '198',
-							tax_lines: [
+				return HttpResponse.json( {
+					needs_shipping: true,
+					totals: {
+						total_items: '2399',
+						total_items_tax: '198',
+						total_fees: '0',
+						total_fees_tax: '0',
+						total_discount: '0',
+						total_discount_tax: '0',
+						total_shipping: '1100',
+						total_shipping_tax: '0',
+						total_price: '3697',
+						total_tax: '198',
+						tax_lines: [
+							{
+								name: 'US-CA Tax rate',
+								price: '198',
+								rate: '8.25%',
+							},
+						],
+						currency_code: 'USD',
+						currency_symbol: '$',
+						currency_minor_unit: 2,
+					},
+					shipping_rates: [
+						{
+							package_id: 0,
+							name: 'Shipment 1',
+							shipping_rates: [
 								{
-									name: 'US-CA Tax rate',
-									price: '198',
-									rate: '8.25%',
+									meta_data: [],
+									rate_id: 'flat_rate:1',
+									name: 'Flat rate',
+									description: '',
+									price: '1100',
+									taxes: '0',
+									instance_id: 1,
+									method_id: 'flat_rate',
+									selected: true,
+									currency_minor_unit: 2,
+								},
+								{
+									meta_data: [],
+									rate_id: 'flat_rate:5',
+									name: 'Express shipping',
+									description: '',
+									price: '2200',
+									taxes: '0',
+									instance_id: 5,
+									method_id: 'flat_rate',
+									selected: false,
+									currency_minor_unit: 2,
 								},
 							],
-							currency_code: 'USD',
-							currency_symbol: '$',
-							currency_minor_unit: 2,
 						},
-						shipping_rates: [
-							{
-								package_id: 0,
-								name: 'Shipment 1',
-								shipping_rates: [
-									{
-										meta_data: [],
-										rate_id: 'flat_rate:1',
-										name: 'Flat rate',
-										description: '',
-										price: '1100',
-										taxes: '0',
-										instance_id: 1,
-										method_id: 'flat_rate',
-										selected: true,
-										currency_minor_unit: 2,
-									},
-									{
-										meta_data: [],
-										rate_id: 'flat_rate:5',
-										name: 'Express shipping',
-										description: '',
-										price: '2200',
-										taxes: '0',
-										instance_id: 5,
-										method_id: 'flat_rate',
-										selected: false,
-										currency_minor_unit: 2,
-									},
-								],
+					],
+					items: [
+						{
+							key: 'aab3238922bcc25a6f606eb525ffdc56',
+							id: 14,
+							type: 'simple',
+							quantity: 1,
+							name: 'Beanie',
+							sku: 'woo-beanie',
+							images: [],
+							variation: [],
+							item_data: [],
+							prices: {
+								price: '2399',
+								regular_price: '2399',
+								sale_price: '2399',
+								price_range: null,
+								currency_code: 'USD',
+								currency_minor_unit: 2,
 							},
-						],
-						items: [
-							{
-								key: 'aab3238922bcc25a6f606eb525ffdc56',
-								id: 14,
-								type: 'simple',
-								quantity: 1,
-								name: 'Beanie',
-								sku: 'woo-beanie',
-								images: [],
-								variation: [],
-								item_data: [],
-								prices: {
-									price: '2399',
-									regular_price: '2399',
-									sale_price: '2399',
-									price_range: null,
-									currency_code: 'USD',
-									currency_minor_unit: 2,
-								},
-								totals: {
-									line_subtotal: '2399',
-									line_subtotal_tax: '198',
-									line_total: '2399',
-									line_total_tax: '198',
-									currency_code: 'USD',
-									currency_minor_unit: 2,
-								},
+							totals: {
+								line_subtotal: '2399',
+								line_subtotal_tax: '198',
+								line_total: '2399',
+								line_total_tax: '198',
+								currency_code: 'USD',
+								currency_minor_unit: 2,
 							},
-						],
-					} ),
-				headers: new Map(),
-			} );
-		} );
+						},
+					],
+				} );
+			} )
+		);
+		server.use(
+			http.get( '/wc/store/v1/cart', () => {
+				return HttpResponse.json( {
+					items: [
+						{
+							key: 'aab3238922bcc25a6f606eb525ffdc56',
+							id: 14,
+							type: 'simple',
+							quantity: 1,
+							name: 'Beanie',
+							sku: 'woo-beanie',
+							images: [],
+							variation: [],
+							item_data: [],
+							prices: {
+								price: '2399',
+								regular_price: '2399',
+								sale_price: '2399',
+								price_range: null,
+								currency_code: 'USD',
+								currency_minor_unit: 2,
+							},
+							totals: {
+								line_subtotal: '2399',
+								line_subtotal_tax: '198',
+								line_total: '2399',
+								line_total_tax: '198',
+								currency_code: 'USD',
+								currency_minor_unit: 2,
+							},
+						},
+					],
+				} );
+			} )
+		);
+		server.use(
+			http.post( '/wc/store/v1/cart/remove-item', () => {
+				return HttpResponse.json( { items: [] } );
+			} )
+		);
 
 		await jest.isolateModulesAsync( async () => {
 			await import( '..' );
 		} );
 
-		// waiting for the API call to be completed.
-		await waitFor( () => expect( apiFetch ).toHaveBeenCalled() );
+		// waiting for all the event handlers to have been registered.
+		await waitFor( () =>
+			expect( stripeElementMock.on ).toHaveBeenCalledWith(
+				'click',
+				expect.any( Function )
+			)
+		);
 
-		expect( apiFetch ).toHaveBeenLastCalledWith(
+		expect( requestListener ).toHaveBeenLastCalledWith(
 			expect.objectContaining( {
-				headers: expect.objectContaining( {
-					'X-WooPayments-Tokenized-Cart-Is-Ephemeral-Cart': '1',
+				request: expect.objectContaining( {
+					url: expect.stringContaining(
+						'/wc/store/v1/cart/add-item'
+					),
 				} ),
 			} )
 		);
+		expect( lastCartAddItemHeaders ).toMatchObject( {
+			'x-woopayments-tokenized-cart-is-ephemeral-cart': '1',
+		} );
 
 		// triggering the `click` event on the ECE button, to test its callback.
 		const clickEventResolveMock = jest.fn();
@@ -461,13 +513,6 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 			expressPaymentType: 'google_pay',
 		} );
 
-		expect( apiFetch ).toHaveBeenLastCalledWith(
-			expect.objectContaining( {
-				headers: expect.not.objectContaining( {
-					'X-WooPayments-Tokenized-Cart-Is-Ephemeral-Cart': '1',
-				} ),
-			} )
-		);
 		expect(
 			screen.getByTestId( 'wcpay-express-checkout-element' )
 		).toBeVisible();
@@ -495,12 +540,29 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 				],
 			} )
 		);
-		apiFetch.mock.calls.forEach( ( [ apiFetchArguments ] ) => {
+		await waitFor( () =>
+			expect( lastCartAddItemHeaders ).not.toMatchObject( {
+				'x-woopayments-tokenized-cart-is-ephemeral-cart': '1',
+			} )
+		);
+		expect( requestListener ).toHaveBeenLastCalledWith(
+			expect.objectContaining( {
+				request: expect.objectContaining( {
+					url: expect.stringContaining(
+						'/wc/store/v1/cart/add-item'
+					),
+				} ),
+			} )
+		);
+		expect( lastCartAddItemHeaders ).not.toMatchObject( {
+			'x-woopayments-tokenized-cart-is-ephemeral-cart': '1',
+		} );
+		requestListener.mock.calls.forEach( ( [ listenerArguments ] ) => {
 			// based on the sequence above, every single call should be an "add item", never "remove"
-			expect( apiFetchArguments.path ).toContain(
+			expect( listenerArguments.request.url ).toContain(
 				'/wc/store/v1/cart/add-item'
 			);
-			expect( apiFetchArguments.path ).not.toContain(
+			expect( listenerArguments.request.url ).not.toContain(
 				'/wc/store/v1/cart/remove-item'
 			);
 		} );
@@ -508,13 +570,16 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 		// at this point, if `cancel` is called, the item should be removed from the cart.
 		stripeElementMock.__getRegisteredEvent( 'cancel' )();
 
-		await waitFor( () => expect( apiFetch ).toHaveBeenCalled() );
-		expect( apiFetch ).toHaveBeenLastCalledWith(
-			expect.objectContaining( {
-				path: expect.stringContaining(
-					'/wc/store/v1/cart/remove-item'
-				),
-			} )
+		await waitFor( () =>
+			expect( requestListener ).toHaveBeenCalledWith(
+				expect.objectContaining( {
+					request: expect.objectContaining( {
+						url: expect.stringContaining(
+							'/wc/store/v1/cart/remove-item'
+						),
+					} ),
+				} )
+			)
 		);
 	} );
 
@@ -533,12 +598,13 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 			},
 		];
 
-		apiFetch.mockImplementation( async () => {
-			return Promise.resolve( {
-				json: () => Promise.resolve( { items: [] } ),
-				headers: new Map(),
-			} );
-		} );
+		server.use(
+			http.post( '/wc/store/v1/cart/add-item', () => {
+				return HttpResponse.json( {
+					items: [],
+				} );
+			} )
+		);
 
 		await jest.isolateModulesAsync( async () => {
 			await import( '..' );
