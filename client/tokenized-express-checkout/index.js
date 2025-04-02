@@ -43,7 +43,6 @@ import {
 } from './transformers/wc-to-stripe';
 
 let cachedCartData = null;
-const noop = () => null;
 const fetchNewCartData = async () => {
 	if ( getExpressCheckoutData( 'button_context' ) !== 'product' ) {
 		return await getCartApiHandler().getCart();
@@ -54,14 +53,9 @@ const fetchNewCartData = async () => {
 	// preventing other customers from purchasing.
 	const temporaryCart = new ExpressCheckoutCartApi();
 	temporaryCart.useSeparateCart();
+	temporaryCart.deleteAfterRequest();
 
-	const cartData = await temporaryCart.addProductToCart();
-
-	// no need to wait for the request to end, it can be done asynchronously.
-	// using `.finally( noop )` to avoid annoying IDE warnings.
-	temporaryCart.emptyCart().finally( noop );
-
-	return cartData;
+	return await temporaryCart.addProductToCart();
 };
 
 const getTotalAmount = () => {

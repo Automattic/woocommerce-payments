@@ -446,6 +446,14 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 		// waiting for the API call to be completed.
 		await waitFor( () => expect( apiFetch ).toHaveBeenCalled() );
 
+		expect( apiFetch ).toHaveBeenLastCalledWith(
+			expect.objectContaining( {
+				headers: expect.objectContaining( {
+					'X-WooPayments-Tokenized-Cart-Is-Ephemeral-Cart': '1',
+				} ),
+			} )
+		);
+
 		// triggering the `click` event on the ECE button, to test its callback.
 		const clickEventResolveMock = jest.fn();
 		stripeElementMock.__getRegisteredEvent( 'click' )( {
@@ -453,6 +461,13 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 			expressPaymentType: 'google_pay',
 		} );
 
+		expect( apiFetch ).toHaveBeenLastCalledWith(
+			expect.objectContaining( {
+				headers: expect.not.objectContaining( {
+					'X-WooPayments-Tokenized-Cart-Is-Ephemeral-Cart': '1',
+				} ),
+			} )
+		);
 		expect(
 			screen.getByTestId( 'wcpay-express-checkout-element' )
 		).toBeVisible();
@@ -478,6 +493,27 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 						id: 'flat_rate:5',
 					},
 				],
+			} )
+		);
+		apiFetch.mock.calls.forEach( ( [ apiFetchArguments ] ) => {
+			// based on the sequence above, every single call should be an "add item", never "remove"
+			expect( apiFetchArguments.path ).toContain(
+				'/wc/store/v1/cart/add-item'
+			);
+			expect( apiFetchArguments.path ).not.toContain(
+				'/wc/store/v1/cart/remove-item'
+			);
+		} );
+
+		// at this point, if `cancel` is called, the item should be removed from the cart.
+		stripeElementMock.__getRegisteredEvent( 'cancel' )();
+
+		await waitFor( () => expect( apiFetch ).toHaveBeenCalled() );
+		expect( apiFetch ).toHaveBeenLastCalledWith(
+			expect.objectContaining( {
+				path: expect.stringContaining(
+					'/wc/store/v1/cart/remove-item'
+				),
 			} )
 		);
 	} );
