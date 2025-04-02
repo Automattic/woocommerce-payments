@@ -25,7 +25,13 @@ import { useValidation } from './validation';
 import { trackStepCompleted } from './tracking';
 import strings from './strings';
 
-export const OnboardingForm: React.FC = ( { children } ) => {
+interface OnboardingFormProps {
+	children: React.ReactNode;
+}
+
+export const OnboardingForm: React.FC< OnboardingFormProps > = ( {
+	children,
+} ) => {
 	const { errors, touched, setTouched } = useOnboardingContext();
 	const { currentStep, nextStep } = useStepperContext();
 

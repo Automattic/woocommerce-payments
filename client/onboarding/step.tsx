@@ -17,6 +17,7 @@ import './style.scss';
 interface Props {
 	name: OnboardingSteps;
 	showHeading?: boolean;
+	children?: React.ReactNode;
 }
 
 const Step: React.FC< Props > = ( { name, children, showHeading = true } ) => {

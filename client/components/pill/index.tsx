@@ -26,7 +26,7 @@ const Pill: FC< PillProps > = ( { type = '', className = '', children } ) => {
 		className
 	);
 
-	return <WC_Pill className={ classes }>{ children }</WC_Pill>;
+	return <WC_Pill { ...( { className: classes, children } as any ) } />;
 };
 
 export default Pill;

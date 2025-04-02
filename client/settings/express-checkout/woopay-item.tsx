@@ -183,7 +183,7 @@ const WooPayExpressCheckoutItem = (): React.ReactElement => {
 							</div>
 						</div>
 					</div>
-					{ showIncompatibilityNotice && (
+					{ Boolean( showIncompatibilityNotice ) && (
 						<WooPayIncompatibilityNotice />
 					) }
 				</li>

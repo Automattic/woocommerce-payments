@@ -10,7 +10,7 @@ import { Link } from '@woocommerce/components';
  * Internal dependencies
  */
 import FraudProtectionRuleCard from '../rule-card';
-import FraudProtectionRuleDescription from '../rule-description';
+import { FraudProtectionRuleDescription } from '../rule-description';
 import FraudProtectionRuleCardNotice from '../rule-card-notice';
 
 const CVCVerificationRuleCard: React.FC = () => {

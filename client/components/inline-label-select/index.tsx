@@ -154,7 +154,7 @@ function InlineLabelSelect< ItemType extends SelectItem >( {
 	} );
 
 	const onKeyDownHandler = useCallback(
-		( e ) => {
+		( e: React.KeyboardEvent< HTMLElement > ) => {
 			e.stopPropagation();
 			menuProps?.onKeyDown?.( e );
 		},

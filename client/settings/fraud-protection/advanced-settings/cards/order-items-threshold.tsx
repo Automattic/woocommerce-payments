@@ -11,7 +11,7 @@ import { TextControl } from '@wordpress/components';
 import FraudProtectionRuleCard from '../rule-card';
 import FraudProtectionRuleToggle from '../rule-toggle';
 import FraudProtectionRuleCardNotice from '../rule-card-notice';
-import FraudProtectionRuleDescription from '../rule-description';
+import { FraudProtectionRuleDescription } from '../rule-description';
 import FraudPreventionSettingsContext from '../context';
 import {
 	FraudPreventionOrderItemsThresholdSetting,

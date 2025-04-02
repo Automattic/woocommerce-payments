@@ -19,4 +19,26 @@ export interface TaskItemProps extends React.ComponentProps< typeof TaskItem > {
 	isDismissable?: boolean;
 
 	content: string | React.ReactElement;
+
+	title: string | React.ReactElement;
+
+	level?: number;
+
+	additionalInfo?: string | React.ReactElement;
+
+	completed: boolean;
+
+	onClick?: () => void;
+
+	action?: () => void;
+
+	expandable?: boolean;
+
+	showActionButton?: boolean;
+
+	expanded?: boolean;
+
+	actionLabel?: string;
+
+	time?: string;
 }

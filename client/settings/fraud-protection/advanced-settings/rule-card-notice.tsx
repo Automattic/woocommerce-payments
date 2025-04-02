@@ -17,6 +17,7 @@ type NoticeType = typeof supportedTypes[ number ];
 
 interface FraudProtectionRuleCardNoticeProps {
 	type: NoticeType;
+	children?: React.ReactNode;
 }
 
 const FraudProtectionRuleCardNotice: React.FC< FraudProtectionRuleCardNoticeProps > = ( {

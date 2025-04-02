@@ -208,8 +208,12 @@ const getSummary = ( loans: CapitalLoan[] ) => {
 const CapitalPage = (): JSX.Element => {
 	const { loans, isLoading } = useLoans();
 
+	const pageProps: React.ComponentProps< typeof Page > = {
+		className: '',
+	};
+
 	return (
-		<Page>
+		<Page { ...pageProps }>
 			<MaybeShowMerchantFeedbackPrompt />
 			<TestModeNotice currentPage="loans" />
 

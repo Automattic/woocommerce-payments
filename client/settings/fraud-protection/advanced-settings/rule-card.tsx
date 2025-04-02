@@ -14,6 +14,7 @@ interface FraudProtectionRuleCardProps {
 	title: string;
 	description: React.ReactNode;
 	id: string;
+	children: React.ReactNode;
 }
 
 const FraudProtectionRuleCard: React.FC< FraudProtectionRuleCardProps > = ( {

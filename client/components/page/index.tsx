@@ -16,6 +16,7 @@ interface PageProps {
 	isNarrow?: boolean;
 	maxWidth?: string | number;
 	className?: string;
+	children?: React.ReactNode;
 }
 
 // The React.FunctionComponent is helpful here to make the type declaration of the props a bit

@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { render } from '@testing-library/react';
-import FraudProtectionRuleDescription from '../rule-description';
+import { FraudProtectionRuleDescription } from '../rule-description';
 /**
  * Internal dependencies
  */

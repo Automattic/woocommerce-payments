@@ -61,9 +61,15 @@ type ContextValue = ReturnType< typeof useContextValue >;
 
 const WcPayOverviewSurveyContext = createContext< ContextValue | null >( null );
 
-export const WcPayOverviewSurveyContextProvider: React.FC< {
+interface ProviderProps {
 	initialData?: OverviewSurveyFields;
-} > = ( { children, initialData } ) => {
+	children?: React.ReactNode;
+}
+
+export const WcPayOverviewSurveyContextProvider: React.FC< ProviderProps > = ( {
+	children,
+	initialData,
+} ) => {
 	return (
 		<WcPayOverviewSurveyContext.Provider
 			value={ useContextValue( initialData ) }

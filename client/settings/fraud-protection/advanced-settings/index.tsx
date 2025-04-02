@@ -94,7 +94,9 @@ const Breadcrumb = () => (
 	</>
 );
 
-const SaveFraudProtectionSettingsButton: React.FC = ( { children } ) => {
+const SaveFraudProtectionSettingsButton: React.FC< {
+	children: React.ReactNode;
+} > = ( { children } ) => {
 	const headerElement = document.querySelector(
 		'.woocommerce-layout__header-wrapper'
 	);

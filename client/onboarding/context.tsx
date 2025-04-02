@@ -31,9 +31,15 @@ type ContextValue = ReturnType< typeof useContextValue >;
 
 const OnboardingContext = createContext< ContextValue | null >( null );
 
-export const OnboardingContextProvider: React.FC< {
+interface OnboardingContextProviderProps {
 	initialData?: OnboardingFields;
-} > = ( { children, initialData } ) => {
+	children: React.ReactNode;
+}
+
+export const OnboardingContextProvider: React.FC< OnboardingContextProviderProps > = ( {
+	children,
+	initialData,
+} ) => {
 	return (
 		<OnboardingContext.Provider value={ useContextValue( initialData ) }>
 			{ children }

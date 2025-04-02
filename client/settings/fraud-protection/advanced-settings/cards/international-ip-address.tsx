@@ -10,7 +10,7 @@ import interpolateComponents from '@automattic/interpolate-components';
  * Internal dependencies
  */
 import FraudProtectionRuleCard from '../rule-card';
-import FraudProtectionRuleDescription from '../rule-description';
+import { FraudProtectionRuleDescription } from '../rule-description';
 import FraudProtectionRuleCardNotice from '../rule-card-notice';
 import FraudProtectionRuleToggle from '../rule-toggle';
 import AllowedCountriesNotice from '../allow-countries-notice';

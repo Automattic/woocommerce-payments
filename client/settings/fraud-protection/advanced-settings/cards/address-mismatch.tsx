@@ -8,7 +8,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import FraudProtectionRuleCard from '../rule-card';
-import FraudProtectionRuleDescription from '../rule-description';
+import { FraudProtectionRuleDescription } from '../rule-description';
 import FraudProtectionRuleToggle from '../rule-toggle';
 
 const AddressMismatchRuleCard: React.FC = () => (

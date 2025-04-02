@@ -18,6 +18,7 @@ interface CaptureAuthorizationButtonProps {
 	buttonIsPrimary?: boolean;
 	buttonIsSmall?: boolean;
 	onClick?: () => void;
+	children?: React.ReactNode;
 }
 
 const CaptureAuthorizationButton: React.FC< CaptureAuthorizationButtonProps > = ( {

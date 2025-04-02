@@ -18,6 +18,7 @@ interface CancelAuthorizationButtonProps {
 	isDestructive?: boolean;
 	isSmall?: boolean;
 	onClick?: () => void;
+	children?: React.ReactNode;
 }
 
 const CancelAuthorizationButton: React.FC< CancelAuthorizationButtonProps > = ( {

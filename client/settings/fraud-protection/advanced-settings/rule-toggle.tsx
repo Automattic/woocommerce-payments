@@ -15,6 +15,7 @@ import { FraudPreventionSettings } from '../interfaces';
 interface FraudProtectionRuleToggleProps {
 	setting: string;
 	label: string;
+	children?: React.ReactNode;
 }
 
 export const filterActions = {

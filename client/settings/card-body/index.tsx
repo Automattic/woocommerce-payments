@@ -12,6 +12,7 @@ import './styles.scss';
 
 interface WcpayCardBodyProps {
 	className?: string;
+	children: React.ReactNode;
 }
 
 const WcpayCardBody: React.FC< WcpayCardBodyProps > = ( {

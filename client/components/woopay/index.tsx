@@ -12,7 +12,7 @@ import interpolateComponents from '@automattic/interpolate-components';
 import { getConfig } from 'utils/checkout';
 
 interface apiResponse {
-	url: Location;
+	url: string;
 }
 
 interface wcpayApi {
@@ -46,7 +46,7 @@ const WooPay = ( { isStatic, api }: woopayButtonProps ) => {
 	const onClick = () => {
 		setIsLoading( true );
 		api.initWooPay().then( ( response ) => {
-			window.location = response.url;
+			window.location.href = response.url;
 			setIsLoading( false );
 		} );
 	};

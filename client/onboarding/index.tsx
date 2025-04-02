@@ -1,6 +1,3 @@
-/**
- * External dependencies
- */
 import React, { useEffect } from 'react';
 
 /**
@@ -11,17 +8,34 @@ import { OnboardingContextProvider } from './context';
 import { Stepper } from 'components/stepper';
 import { getMccFromIndustry } from 'onboarding/utils';
 import { OnboardingForm } from './form';
-import Step from './step';
 import BusinessDetails from './steps/business-details';
 import EmbeddedKyc from './steps/embedded-kyc';
 import { trackStarted } from './tracking';
 import { getAdminUrl } from 'wcpay/utils';
 import './style.scss';
 
-const OnboardingStepper = () => {
+interface StepProps {
+	name: string;
+	children: React.ReactNode;
+	showHeading?: boolean;
+}
+
+const Step: React.FC< StepProps > = ( {
+	name,
+	children,
+	showHeading = true,
+} ) => {
+	return (
+		<div className={ `step-${ name }` }>
+			{ showHeading && <h2>{ name }</h2> }
+			{ children }
+		</div>
+	);
+};
+
+const OnboardingStepper: React.FC = () => {
 	const handleExit = () => {
 		const urlParams = new URLSearchParams( window.location.search );
-
 		window.location.href = getAdminUrl( {
 			page: 'wc-admin',
 			path: '/payments/connect',
@@ -48,7 +62,7 @@ const OnboardingStepper = () => {
 	);
 };
 
-const getComingSoonShareKey = () => {
+const getComingSoonShareKey = (): string => {
 	const {
 		woocommerce_share_key: shareKey,
 		woocommerce_coming_soon: comingSoon,
@@ -75,7 +89,6 @@ const initialData = {
 const OnboardingPage: React.FC = () => {
 	useEffect( () => {
 		trackStarted();
-
 		// Remove loading class and add those required for full screen.
 		document.body.classList.remove( 'woocommerce-admin-is-loading' );
 		document.body.classList.add( 'woocommerce-admin-full-screen' );

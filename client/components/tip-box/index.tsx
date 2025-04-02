@@ -13,6 +13,7 @@ import './style.scss';
 interface Props {
 	color: 'purple' | 'blue' | 'gray' | 'yellow';
 	className?: string;
+	children?: React.ReactNode;
 }
 const TipBox: React.FC< Props > = ( { color, className, children } ) => {
 	return (

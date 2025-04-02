@@ -14,17 +14,19 @@ import {
 	OnboardingSelectField,
 } from '../form';
 
+// Extend the global type to include wcpaySettings
 declare const global: {
 	wcpaySettings: {
 		connect: { country: string };
 	};
 };
 
+// Mock functions and state
 let nextStep = jest.fn();
-let data = {};
-let errors = {};
-let touched = {};
-let temp = {};
+let data: Record< string, any > = {};
+let errors: Record< string, string > = {};
+let touched: Record< string, boolean > = {};
+let temp: Record< string, any > = {};
 
 let setData = jest.fn();
 let setTouched = jest.fn();
@@ -32,6 +34,7 @@ let setTemp = jest.fn();
 let validate = jest.fn();
 let error = jest.fn();
 
+// Mock context hooks
 jest.mock( '../context', () => ( {
 	useOnboardingContext: jest.fn( () => ( {
 		data,
@@ -59,6 +62,7 @@ jest.mock( '../validation', () => ( {
 
 describe( 'Onboarding Form', () => {
 	beforeEach( () => {
+		// Reset all mocks and state before each test
 		nextStep = jest.fn();
 		data = {};
 		errors = {};
@@ -76,7 +80,11 @@ describe( 'Onboarding Form', () => {
 	} );
 
 	it( 'calls nextStep when the form is submitted by click and there are no errors', () => {
-		render( <OnboardingForm /> );
+		render(
+			<OnboardingForm>
+				<div data-testid="form-content" />
+			</OnboardingForm>
+		);
 
 		const button = screen.getByRole( 'button' );
 		userEvent.click( button );
@@ -87,11 +95,11 @@ describe( 'Onboarding Form', () => {
 	it( 'calls nextStep when the form is submitted by enter and there are no errors', () => {
 		render(
 			<OnboardingForm>
-				<input />
+				<input data-testid="test-input" />
 			</OnboardingForm>
 		);
 
-		const field = screen.getByRole( 'textbox' );
+		const field = screen.getByTestId( 'test-input' );
 		fireEvent.submit( field );
 
 		expect( nextStep ).toHaveBeenCalled();
@@ -100,7 +108,11 @@ describe( 'Onboarding Form', () => {
 	it( 'calls setTouched and does not call nextStep when there are errors', () => {
 		errors = { email: 'invalid' };
 
-		render( <OnboardingForm /> );
+		render(
+			<OnboardingForm>
+				<div data-testid="form-content" />
+			</OnboardingForm>
+		);
 
 		const button = screen.getByRole( 'button', {
 			name: 'Continue',

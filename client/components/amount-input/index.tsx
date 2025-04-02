@@ -23,7 +23,7 @@ const AmountInput: React.FC< AmountInputProps > = ( {
 } ) => {
 	// Only allow digits, a single dot, and more digits (or an empty value).
 	const validateInput = useCallback(
-		( subject ) => /^(\d+\.?\d*)?$/m.test( subject ),
+		( subject: string ) => /^(\d+\.?\d*)?$/m.test( subject ),
 		[]
 	);
 

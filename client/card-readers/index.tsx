@@ -16,8 +16,12 @@ import { TabPanel } from '@wordpress/components';
 import './style.scss';
 
 export const ConnectedReaders = (): JSX.Element => {
+	const pageProps: React.ComponentProps< typeof Page > = {
+		className: '',
+	};
+
 	return (
-		<Page>
+		<Page { ...pageProps }>
 			<TabPanel
 				className="wcpay-card-readers-page"
 				activeClass="active-tab"

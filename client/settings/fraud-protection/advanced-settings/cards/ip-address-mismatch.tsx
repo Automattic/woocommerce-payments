@@ -10,7 +10,7 @@ import { Link } from '@woocommerce/components';
  * Internal dependencies
  */
 import FraudProtectionRuleCard from '../rule-card';
-import FraudProtectionRuleDescription from '../rule-description';
+import { FraudProtectionRuleDescription } from '../rule-description';
 import FraudProtectionRuleToggle from '../rule-toggle';
 
 const IPAddressMismatchRuleCard: React.FC = () => (

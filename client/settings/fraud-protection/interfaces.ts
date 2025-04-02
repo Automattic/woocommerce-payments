@@ -3,6 +3,8 @@
  */
 import { Dispatch, SetStateAction } from 'react';
 
+type EnsurePromise< T > = T extends Promise< any > ? T : Promise< T >;
+
 export interface FraudPreventionSetting {
 	block: boolean;
 	enabled: boolean;
@@ -69,7 +71,10 @@ export type AdvancedFraudPreventionSettingsHook = [
 export interface SettingsHook {
 	isSaving: boolean;
 	isLoading: boolean;
-	saveSettings: () => void;
+	saveSettings: < T = void, DoEnsurePromise extends boolean = true >(
+		...args: readonly any[]
+	) => DoEnsurePromise extends true ? EnsurePromise< T > : T;
+	isDirty?: boolean;
 }
 
 export function isFraudProtectionSettingsSingleCheck(

@@ -82,7 +82,7 @@ const PaymentMethodCheckbox: React.FC< PaymentMethodCheckboxProps > = ( {
 	);
 
 	const handleChange = useCallback(
-		( enabled ) => {
+		( enabled: boolean ) => {
 			// If the payment method checkbox is locked, reject any changes.
 			if ( locked ) {
 				return;

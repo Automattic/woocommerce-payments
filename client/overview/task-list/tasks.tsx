@@ -117,12 +117,13 @@ export const getTasks = ( {
 };
 
 export const taskSort = ( a: TaskItemProps, b: TaskItemProps ): number => {
-	if ( a.completed || b.completed ) {
-		return a.completed ? 1 : -1;
+	// Check if the completed property exists before using it
+	if ( 'completed' in a || 'completed' in b ) {
+		return 'completed' in a && a.completed ? 1 : -1;
 	}
 	// Three is the lowest level.
-	const aLevel = a.level || 3;
-	const bLevel = b.level || 3;
+	const aLevel = ( a as any ).level || 3;
+	const bLevel = ( b as any ).level || 3;
 	if ( aLevel === bLevel ) {
 		return 0;
 	}
