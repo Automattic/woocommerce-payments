@@ -25,11 +25,10 @@
 	}
 
 	.woocommerce-checkout & {
-		// ECE button
 		#wcpay-express-checkout-element.is-ready:first-child {
 			margin-top: 4px;
 		}
-		// WooPay button
+
 		#wcpay-woopay-button {
 			margin-top: 4px;
 		}
