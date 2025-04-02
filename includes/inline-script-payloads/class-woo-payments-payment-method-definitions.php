@@ -7,8 +7,6 @@
 
 namespace WCPay\Inline_Script_Payloads;
 
-use WCPay\PaymentMethods\Configs\Utils\PaymentMethodUtils;
-
 /**
  * Class Woo_Payments_Payment_Method_Definitions.
  * To be only used in the `wp-admin` area, to provide the configuration for the payment methods to the JS files.
@@ -24,10 +22,20 @@ class Woo_Payments_Payment_Method_Definitions {
 	 * @return string
 	 */
 	public function __toString() {
-		$payment_method_definitions = rawurlencode( PaymentMethodUtils::get_payment_method_definitions_json() );
+		$account                           = \WC_Payments::get_account_service()->get_cached_account_data();
+		$account_country                   = isset( $account['country'] ) ? strtoupper( $account['country'] ) : '';
+		$payment_method_map                = \WC_Payments::get_payment_method_map();
+		$payment_method_information_object = [];
+
+		foreach ( $payment_method_map as $id => $payment_method ) {
+			$payment_method_information_object[ $id ] =
+				$payment_method->get_payment_method_information_object( $account_country );
+		}
+
+		$payment_method_information_object = rawurlencode( wp_json_encode( $payment_method_information_object ) );
 
 		return "
-			window.wooPaymentsPaymentMethodDefinitions = JSON.parse( decodeURIComponent( '" . esc_js( $payment_method_definitions ) . "' ) );
+			window.wooPaymentsPaymentMethodDefinitions = JSON.parse( decodeURIComponent( '" . esc_js( $payment_method_information_object ) . "' ) );
 			";
 	}
 }
