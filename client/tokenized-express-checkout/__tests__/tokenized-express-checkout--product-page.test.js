@@ -89,7 +89,6 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 					<div
 						id="wcpay-express-checkout-element"
 						data-testid="wcpay-express-checkout-element"
-						style={ { display: 'none' } }
 					/>
 				</div>
 			</div>
@@ -132,7 +131,7 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 		expect( recordUserEvent ).not.toHaveBeenCalled();
 		expect(
 			screen.getByTestId( 'wcpay-express-checkout-element' )
-		).not.toBeVisible();
+		).not.toHaveClass( 'is-ready' );
 	} );
 
 	it( 'should not initialize Stripe if the total amount is 0', async () => {
