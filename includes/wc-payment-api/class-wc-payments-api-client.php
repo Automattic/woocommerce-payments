@@ -2295,25 +2295,6 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 				$this->check_response_for_errors( $response );
 			} catch ( Connection_Exception $e ) {
 				$last_exception = $e;
-			} catch ( API_Exception $e ) {
-				if ( isset( $params['level3'] ) && 'invalid_request_error' === $e->get_error_code() ) {
-					// phpcs:disable WordPress.PHP.DevelopmentFunctions
-
-					// Log the issue so we could debug it.
-					Logger::error(
-						'Level3 data error: ' . PHP_EOL
-						. print_r( $e->getMessage(), true ) . PHP_EOL
-						. print_r( 'Level 3 data sent: ', true ) . PHP_EOL
-						. print_r( $params['level3'], true )
-					);
-
-					// phpcs:enable WordPress.PHP.DevelopmentFunctions
-
-					// Retry without level3 data.
-					unset( $params['level3'] );
-					return $this->request( $params, $api, $method, $is_site_specific, $use_user_token, $raw_response );
-				}
-				throw $e;
 			}
 
 			if ( $response_code || time() >= $stop_trying_at || $retries_limit === $retries ) {
