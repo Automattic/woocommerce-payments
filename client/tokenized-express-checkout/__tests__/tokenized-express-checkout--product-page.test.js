@@ -474,8 +474,8 @@ describe( 'Tokenized Express Checkout Element - Product page logic', () => {
 			expect.objectContaining( {
 				lineItems: [
 					{ amount: 2399, name: 'Beanie' },
-					{ amount: 198, name: 'Tax' },
 					{ amount: 1100, name: 'Shipping' },
+					{ amount: 198, name: 'Tax' },
 				],
 				shippingAddressRequired: true,
 				shippingRates: [
