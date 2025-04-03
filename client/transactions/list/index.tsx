@@ -436,7 +436,7 @@ export const TransactionsList = (
 			? depositStatusLabels[ txn.deposit_status ]
 			: '';
 
-		const accountCountry = wcpaySettings.accountStatus.country;
+		const accountCountry = wcpaySettings?.accountStatus?.country || 'US';
 
 		// Map transaction into table row.
 		const data = {
@@ -482,7 +482,7 @@ export const TransactionsList = (
 									<span
 										className={ `payment-method__brand payment-method__brand--${
 											txn.source
-										} ${ accountCountry?.toLowerCase() }` }
+										} account-country--${ accountCountry?.toLowerCase() }` }
 										aria-label={ getTransactionPaymentMethodTitle(
 											txn.source
 										) }

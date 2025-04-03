@@ -70,6 +70,11 @@ class Klarna_Payment_Method extends UPE_Payment_Method {
 		if ( in_array( $account_country, $eea_countries, true ) ) {
 			$store_currency = strtoupper( get_woocommerce_currency() );
 
+			// if the store is set to an EU country, but the currency used is not set as a valid EU currency, I guess Klarna shouldn't be eligible.
+			if ( ! isset( $this->limits_per_currency[ $store_currency ] ) ) {
+				return [ 'NONE_SUPPORTED' ];
+			}
+
 			$countries_that_support_store_currency = array_keys( $this->limits_per_currency[ $store_currency ] );
 
 			return array_values( array_intersect( $eea_countries, $countries_that_support_store_currency ) );
@@ -86,5 +91,29 @@ class Klarna_Payment_Method extends UPE_Payment_Method {
 	 */
 	public function get_testing_instructions( string $account_country ) {
 		return '';
+	}
+
+	/**
+	 * Returns payment method description for the settings page.
+	 *
+	 * @param string|null $account_country Country of merchants account.
+	 *
+	 * @return string
+	 */
+	public function get_description( ?string $account_country = null ) {
+		return __(
+			'Allow customers to pay over time or pay now with Klarna.',
+			'woocommerce-payments'
+		);
+	}
+
+	/**
+	 * Returns payment method settings icon.
+	 *
+	 * @param string|null $account_country Country of merchants account.
+	 * @return string
+	 */
+	public function get_settings_icon_url( ?string $account_country = null ) {
+		return plugins_url( 'assets/images/payment-methods/klarna.svg', WCPAY_PLUGIN_FILE );
 	}
 }

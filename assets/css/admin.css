@@ -131,11 +131,11 @@
 	background-image: url( '../images/payment-methods/afterpay-icon.svg' );
 }
 
-.payment-method__brand--afterpay_clearpay.gb {
+.payment-method__brand--afterpay_clearpay.account-country--gb {
 	background-image: url( '../images/payment-methods/clearpay.svg' );
 }
 
-.payment-method__brand--afterpay_clearpay.us {
+.payment-method__brand--afterpay_clearpay.account-country--us {
 	background-image: url( '../images/payment-methods/afterpay-cashapp-icon.svg' );
 }
 

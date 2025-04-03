@@ -365,12 +365,12 @@ exports[`Multi-Currency enabled currencies list Remove currency modal renders co
           <img
             alt="Giropay"
             class="payment-method__icon"
-            src="assets/images/payment-methods/giropay.svg"
+            src="assets/images/icon-giropay.svg"
           />
           <span
             class="woocommerce-payments__payment-method-icon__label"
           >
-            giropay
+            Giropay
           </span>
         </span>
       </li>
@@ -381,7 +381,7 @@ exports[`Multi-Currency enabled currencies list Remove currency modal renders co
           <img
             alt="Sofort"
             class="payment-method__icon"
-            src="assets/images/payment-methods/sofort.svg"
+            src="assets/images/icon-sofort.svg"
           />
           <span
             class="woocommerce-payments__payment-method-icon__label"
@@ -397,7 +397,7 @@ exports[`Multi-Currency enabled currencies list Remove currency modal renders co
           <img
             alt="SEPA Direct Debit"
             class="payment-method__icon"
-            src="assets/images/payment-methods/sepa-debit.svg"
+            src="assets/images/icon-sepa_debit.svg"
           />
           <span
             class="woocommerce-payments__payment-method-icon__label"

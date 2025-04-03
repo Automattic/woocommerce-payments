@@ -329,7 +329,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 			return;
 		}
 		?>
-		<div id="wcpay-express-checkout-element" style="display: none;"></div>
+		<div id="wcpay-express-checkout-element"></div>
 		<?php
 	}
 
