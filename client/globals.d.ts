@@ -172,17 +172,7 @@ declare global {
 
 	const wooPaymentsPaymentMethodDefinitions: Record<
 		string,
-		{
-			id: string;
-			stripe_key: string;
-			title: string;
-			description: string;
-			settings_icon_url: string;
-			currencies: string[];
-			allows_manual_capture: boolean;
-			allows_pay_later: boolean;
-			accepts_only_domestic_payment: boolean;
-		}
+		PaymentMethodServerDefinition
 	>;
 
 	const wooPaymentsPaymentMethodsConfig: Record<

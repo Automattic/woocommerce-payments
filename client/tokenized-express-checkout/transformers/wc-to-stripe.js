@@ -40,6 +40,8 @@ export const transformPrice = ( price, priceObject ) => {
  * @return {{pending: boolean, name: string, amount: integer}} `displayItems` for Stripe.
  */
 export const transformCartDataForDisplayItems = ( rawCartData ) => {
+	const displayPriceIncludingTax = getExpressCheckoutData( 'checkout' )
+		.display_prices_with_tax;
 	// allowing extensions to manipulate the individual items returned by the backend.
 	const cartData = applyFilters(
 		'wcpay.express-checkout.map-line-items',
@@ -48,7 +50,13 @@ export const transformCartDataForDisplayItems = ( rawCartData ) => {
 
 	const displayItems = cartData.items.map( ( item ) => ( {
 		amount: transformPrice(
-			parseInt( item.totals?.line_subtotal || item.prices.price, 10 ),
+			displayPriceIncludingTax && item.totals
+				? parseInt( item.totals.line_subtotal, 10 ) +
+						parseInt( item.totals.line_subtotal_tax, 10 )
+				: parseInt(
+						item.totals?.line_subtotal || item.prices.price,
+						10
+				  ),
 			item.totals || item.prices
 		),
 		name: [
@@ -78,22 +86,68 @@ export const transformCartDataForDisplayItems = ( rawCartData ) => {
 			.join( ' ' ),
 	} ) );
 
-	const taxAmount = parseInt( cartData.totals.total_tax || '0', 10 );
-	if ( taxAmount ) {
-		displayItems.push( {
-			amount: transformPrice( taxAmount, cartData.totals ),
-			name: __( 'Tax', 'woocommerce-payments' ),
-		} );
-	}
-
 	const shippingAmount = parseInt(
 		cartData.totals.total_shipping || '0',
 		10
 	);
 	if ( shippingAmount ) {
 		displayItems.push( {
-			amount: transformPrice( shippingAmount, cartData.totals ),
+			amount: transformPrice(
+				displayPriceIncludingTax
+					? shippingAmount +
+							parseInt(
+								cartData.totals.total_shipping_tax || '0',
+								10
+							)
+					: shippingAmount,
+				cartData.totals
+			),
 			name: __( 'Shipping', 'woocommerce-payments' ),
+		} );
+	}
+
+	const discountsAmount = parseInt(
+		cartData.totals.total_discount || '0',
+		10
+	);
+	if ( discountsAmount ) {
+		displayItems.push( {
+			amount: -transformPrice(
+				displayPriceIncludingTax
+					? discountsAmount +
+							parseInt(
+								cartData.totals.total_discount_tax || '0',
+								10
+							)
+					: discountsAmount,
+				cartData.totals
+			),
+			name: __( 'Discount', 'woocommerce-payments' ),
+		} );
+	}
+
+	const feesAmount = parseInt( cartData.totals.total_fees || '0', 10 );
+	if ( feesAmount ) {
+		displayItems.push( {
+			amount: transformPrice(
+				displayPriceIncludingTax
+					? feesAmount +
+							parseInt(
+								cartData.totals.total_fees_tax || '0',
+								10
+							)
+					: feesAmount,
+				cartData.totals
+			),
+			name: __( 'Fees', 'woocommerce-payments' ),
+		} );
+	}
+
+	const taxAmount = parseInt( cartData.totals.total_tax || '0', 10 );
+	if ( taxAmount && ! displayPriceIncludingTax ) {
+		displayItems.push( {
+			amount: transformPrice( taxAmount, cartData.totals ),
+			name: __( 'Tax', 'woocommerce-payments' ),
 		} );
 	}
 
@@ -132,8 +186,11 @@ export const transformCartDataForDisplayItems = ( rawCartData ) => {
  * @param {Object} cartData Store API Cart response object.
  * @return {{id: string, label: string, amount: integer, deliveryEstimate: string}} `shippingRates` for Stripe.
  */
-export const transformCartDataForShippingRates = ( cartData ) =>
-	cartData.shipping_rates?.[ 0 ]?.shipping_rates
+export const transformCartDataForShippingRates = ( cartData ) => {
+	const displayPriceIncludingTax = getExpressCheckoutData( 'checkout' )
+		.display_prices_with_tax;
+
+	return cartData.shipping_rates?.[ 0 ]?.shipping_rates
 		.sort( ( rateA, rateB ) => {
 			if ( rateA.selected === rateB.selected ) {
 				return 0; // Keep relative order if both have the same value for 'selected'
@@ -145,7 +202,12 @@ export const transformCartDataForShippingRates = ( cartData ) =>
 		.map( ( rate ) => ( {
 			id: rate.rate_id,
 			displayName: decodeEntities( rate.name ),
-			amount: transformPrice( parseInt( rate.price, 10 ), rate ),
+			amount: transformPrice(
+				displayPriceIncludingTax
+					? parseInt( rate.price, 10 ) + parseInt( rate.taxes, 10 )
+					: parseInt( rate.price, 10 ),
+				rate
+			),
 			deliveryEstimate: [
 				rate.meta_data.find(
 					( metadata ) => metadata.key === 'pickup_address'
@@ -158,3 +220,4 @@ export const transformCartDataForShippingRates = ( cartData ) =>
 				.map( decodeEntities )
 				.join( ' - ' ),
 		} ) );
+};
