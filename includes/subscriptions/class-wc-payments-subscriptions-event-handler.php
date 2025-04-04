@@ -219,11 +219,11 @@ class WC_Payments_Subscriptions_Event_Handler {
 		 * Sending requests from staging sites can have unintended consequences for the live store. For example,
 		 * Subscriptions which renew on the staging site will lead to paused subscriptions at Stripe and result in
 		 * missed renewal payments.
-		 */
 		if ( WC_Payments_Subscriptions::is_duplicate_site() ) {
 			$this->log_skipped_webhook_due_to_staging( 'invoice.payment_failed', $wcpay_subscription_id );
 			return;
 		}
+		 */
 
 		$wcpay_invoice_id = $this->get_event_property( $event_object, 'id' );
 		$attempts         = (int) $this->get_event_property( $event_object, 'attempt_count' );
@@ -243,9 +243,11 @@ class WC_Payments_Subscriptions_Event_Handler {
 			}
 		}
 		$error_details = '';
+		$error_code    = '';
 		if ( $charge ) {
 			if ( isset( $charge['outcome'] ) && isset( $charge['outcome']['seller_message'] ) ) {
 				$error_details = $charge['outcome']['seller_message'];
+				$error_code    = $charge['failure_code'];
 			}
 		}
 
@@ -263,8 +265,31 @@ class WC_Payments_Subscriptions_Event_Handler {
 		}
 
 		if ( $error_details ) {
-			// Translators: %1$d Number of failed renewal attempts. %2$s contains failure message.
-			$subscription->add_order_note( sprintf( _n( 'WCPay subscription renewal attempt %1$d failed with the following message "%2$s".', 'WCPay subscription renewal attempt %1$d failed with the following message "%2$s".', $attempts, 'woocommerce-payments' ), $attempts, $error_details ) );
+			$subscription->add_order_note(
+				sprintf(
+					// Translators: %1$d Number of failed renewal attempts. %2$s contains failure message, %3$s contains error code.
+					_n(
+						'WCPay subscription renewal attempt %1$d failed with the following message "%2$s" and failure code <code>%3$s</code>',
+						'WCPay subscription renewal attempt %1$d failed with the following message "%2$s" and failure code <code>%3$s</code>',
+						$attempts,
+						'woocommerce-payments'
+					),
+					$attempts,
+					$error_details,
+					$error_code
+				)
+			);
+			$order->add_order_note(
+				sprintf(
+					// Translators: %1$s contains failure message. %2$s contains error code.
+					__(
+						'Payment for the order failed with the following message: "%1$s" and failure code <code>%2$s</code>',
+						'woocommerce-payments'
+					),
+					$error_details,
+					$error_code
+				)
+			);
 		} else {
 			// Translators: %d Number of failed renewal attempts.
 			$subscription->add_order_note( sprintf( _n( 'WCPay subscription renewal attempt %d failed.', 'WCPay subscription renewal attempt %d failed.', $attempts, 'woocommerce-payments' ), $attempts ) );
