@@ -508,7 +508,6 @@ jQuery( ( $ ) => {
 						} else if ( newTotal !== prevTotal && newTotal > 0 ) {
 							elements.update( { amount: newTotal } );
 						}
-						// console.log( '###', prevTotal, newTotal );
 
 						if ( newTotal === 0 ) {
 							expressCheckoutButtonUi.hideContainer();
