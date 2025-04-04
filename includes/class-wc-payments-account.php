@@ -1376,7 +1376,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 					return;
 				}
 
-				$this->cleanup_on_account_reset();
+				$this->onboarding_service->cleanup_on_account_reset();
 				delete_transient( self::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
 
 				// When we reset the account and want to go back to the settings page - redirect immediately!
@@ -1414,7 +1414,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 						Logger::error( 'Failed to delete account in test mode: ' . $e->getMessage() );
 					}
 
-					$this->cleanup_on_account_reset();
+					$this->onboarding_service->cleanup_on_account_reset();
 				}
 
 				// Since we are moving from test to live, we will only onboard in test mode if we are in dev mode.
@@ -1785,29 +1785,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 			return;
 		}
-	}
-
-	/**
-	 * Sets things up for a fresh onboarding flow.
-	 *
-	 * @return void
-	 */
-	private function cleanup_on_account_reset() {
-		$gateway = WC_Payments::get_gateway();
-		$gateway->update_option( 'enabled', 'no' );
-		$gateway->update_option( 'test_mode', 'no' );
-
-		update_option( '_wcpay_onboarding_stripe_connected', [] );
-		update_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION, 'no' );
-
-		// Discard any ongoing onboarding session.
-		delete_transient( self::ONBOARDING_STATE_TRANSIENT );
-		delete_transient( self::ONBOARDING_STARTED_TRANSIENT );
-		delete_option( self::EMBEDDED_KYC_IN_PROGRESS_OPTION );
-		delete_transient( self::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT );
-
-		// Clear the cache to avoid stale data.
-		$this->clear_cache();
 	}
 
 	/**

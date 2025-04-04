@@ -656,6 +656,29 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
+	 * Sets things up for a fresh onboarding flow.
+	 *
+	 * @return void
+	 */
+	public function cleanup_on_account_reset() {
+		$gateway = WC_Payments::get_gateway();
+		$gateway->update_option( 'enabled', 'no' );
+		$gateway->update_option( 'test_mode', 'no' );
+
+		update_option( '_wcpay_onboarding_stripe_connected', [] );
+		update_option( self::TEST_MODE_OPTION, 'no' );
+
+		// Discard any ongoing onboarding session.
+		delete_transient( WC_Payments_Account::ONBOARDING_STATE_TRANSIENT );
+		delete_transient( WC_Payments_Account::ONBOARDING_STARTED_TRANSIENT );
+		delete_option( WC_Payments_Account::EMBEDDED_KYC_IN_PROGRESS_OPTION );
+		delete_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT );
+
+		// Clear the cache to avoid stale data.
+		WC_Payments::get_account_service()->clear_cache();
+	}
+
+	/**
 	 * Determine whether an embedded KYC flow is in progress.
 	 *
 	 * @return bool True if embedded KYC is in progress, false otherwise.
