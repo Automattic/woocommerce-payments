@@ -2327,44 +2327,6 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	}
 
 	/**
-	 * Handles issues with level3 data and retries requests when necessary.
-	 *
-	 * @param array  $params           - Request parameters to send as either JSON or GET string. Defaults to test_mode=1 if either in dev or test mode, 0 otherwise.
-	 * @param string $api              - The API endpoint to call.
-	 * @param string $method           - The HTTP method to make the request with.
-	 * @param bool   $is_site_specific - If true, the site ID will be included in the request url.
-	 *
-	 * @return array
-	 * @throws API_Exception - If the account ID hasn't been set.
-	 */
-	private function request_with_level3_data( $params, $api, $method, $is_site_specific = true ) {
-		// If level3 data is not present for some reason, simply proceed normally.
-		if ( empty( $params['level3'] ) || ! is_array( $params['level3'] ) ) {
-			return $this->request( $params, $api, $method, $is_site_specific );
-		}
-
-		// If level3 data doesn't contain any items, add a zero priced fee to meet Stripe's requirement.
-		if ( ! isset( $params['level3']['line_items'] ) || ! is_array( $params['level3']['line_items'] ) || 0 === count( $params['level3']['line_items'] ) ) {
-			$params['level3']['line_items'] = [
-				[
-					'discount_amount'     => 0,
-					'product_code'        => 'empty-order',
-					'product_description' => 'The order is empty',
-					'quantity'            => 1,
-					'tax_amount'          => 0,
-					'unit_cost'           => 0,
-				],
-			];
-		}
-
-		/**
-		 * In case of invalid request errors, level3 data is now removed,
-		 * and the request is retried within `request()` instead of here.
-		 */
-		return $this->request( $params, $api, $method, $is_site_specific );
-	}
-
-	/**
 	 * From a given response extract the body.
 	 *
 	 * @param array $response That was given to us by http_client remote_request.
