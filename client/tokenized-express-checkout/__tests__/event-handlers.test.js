@@ -16,6 +16,10 @@ describe( 'Express checkout event handlers', () => {
 		cartApiPlaceOrderMock = jest.fn();
 		cartApiSelectShippingRateMock = jest.fn();
 		global.window.wcpayFraudPreventionToken = 'token123';
+		global.wcpayExpressCheckoutParams = {};
+		global.wcpayExpressCheckoutParams.checkout = {
+			display_prices_with_tax: false,
+		};
 
 		setCartApiHandler( {
 			updateCustomer: cartApiUpdateCustomerMock,
@@ -128,6 +132,94 @@ describe( 'Express checkout event handlers', () => {
 						id: 'flat_rate:14',
 						displayName: 'Standard Shipping',
 						amount: 1000,
+						deliveryEstimate: '',
+					} ),
+				],
+				lineItems: [],
+			} );
+			expect( event.reject ).not.toHaveBeenCalled();
+		} );
+
+		it( 'should handle displaying prices inclusive of tax', async () => {
+			global.wcpayExpressCheckoutParams.checkout.display_prices_with_tax = true;
+
+			cartApiUpdateCustomerMock.mockResolvedValue( {
+				items: [],
+				shipping_rates: [
+					{
+						package_id: 0,
+						name: 'Shipment 1',
+						destination: {},
+						items: [
+							{
+								key: 'aab3238922bcc25a6f606eb525ffdc56',
+								name: 'Beanie',
+								quantity: 2,
+							},
+						],
+						shipping_rates: [
+							{
+								rate_id: 'flat_rate:14',
+								name: 'Standard Shipping',
+								description: '',
+								delivery_time: '',
+								price: '1000',
+								taxes: '300',
+								instance_id: 14,
+								method_id: 'flat_rate',
+								meta_data: [
+									{
+										key: 'Items',
+										value: 'Beanie &times; 2',
+									},
+								],
+								selected: true,
+								currency_code: 'USD',
+								currency_symbol: '$',
+								currency_minor_unit: 2,
+								currency_decimal_separator: '.',
+								currency_thousand_separator: ',',
+								currency_prefix: '$',
+								currency_suffix: '',
+							},
+						],
+					},
+				],
+				totals: {
+					total_price: 1000,
+					currency_minor_unit: 2,
+					currency_code: 'USD',
+					currency_symbol: '$',
+					currency_decimal_separator: '.',
+					currency_thousand_separator: ',',
+					currency_prefix: '$',
+					currency_suffix: '',
+				},
+			} );
+
+			await shippingAddressChangeHandler( event, elements );
+
+			expect( cartApiUpdateCustomerMock ).toHaveBeenCalledWith( {
+				shipping_address: expect.objectContaining( {
+					first_name: 'John',
+					last_name: 'Doe',
+					company: '',
+					address_1: '123 Main St',
+					address_2: '',
+					city: 'New York',
+					state: 'NY',
+					postcode: '10001',
+					country: 'US',
+				} ),
+			} );
+
+			expect( elements.update ).toHaveBeenCalledWith( { amount: 1000 } );
+			expect( event.resolve ).toHaveBeenCalledWith( {
+				shippingRates: [
+					expect.objectContaining( {
+						id: 'flat_rate:14',
+						displayName: 'Standard Shipping',
+						amount: 1300,
 						deliveryEstimate: '',
 					} ),
 				],

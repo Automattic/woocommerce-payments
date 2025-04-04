@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: fatal error when Klarna is enabled on an EU account and a non-EU currency is configured on the store.

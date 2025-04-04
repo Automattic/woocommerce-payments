@@ -151,4 +151,18 @@ class Wechatpay_Payment_Method extends UPE_Payment_Method {
 				return [ 'UNSUPPORTED' ];
 		}
 	}
+
+	/**
+	 * Returns payment method description for the settings page.
+	 *
+	 * @param string|null $account_country Country of merchants account.
+	 *
+	 * @return string
+	 */
+	public function get_description( ?string $account_country = null ) {
+		return __(
+			'A digital wallet popular with customers from China.',
+			'woocommerce-payments'
+		);
+	}
 }
