@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: ensuring that Google Pay/Apple Pay buttons hide on shortcode cart & checkout when totals go to 0
