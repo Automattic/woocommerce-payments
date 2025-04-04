@@ -437,42 +437,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	}
 
 
-	/**
-	 * @dataProvider data_request_with_level3_data
-	 */
-	public function test_request_with_level3_data( $input_args, $expected_level3_args ) {
-		$this->mock_http_client
-			->expects( $this->once() )
-			->method( 'remote_request' )
-			->with(
-				$this->anything(),
-				$this->callback(
-					function ( $request_args_json ) use ( $expected_level3_args ) {
-						$request_args = json_decode( $request_args_json, true );
-
-						$this->assertSame( $expected_level3_args, $request_args['level3'] );
-
-						return true;
-					}
-				)
-			)
-			->willReturn(
-				[
-					'body'     => wp_json_encode( [ 'result' => 'success' ] ),
-					'response' => [
-						'code'    => 200,
-						'message' => 'OK',
-					],
-				]
-			);
-
-		PHPUnit_Utils::call_method(
-			$this->payments_api_client,
-			'request_with_level3_data',
-			[ $input_args, 'intentions', 'POST' ]
-		);
-	}
-
 	public function test_create_terminal_location_validation_array() {
 		$this->expectException( API_Exception::class );
 		$this->expectExceptionMessageMatches( '~address.*required~i' );
@@ -567,70 +531,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			$this->payments_api_client->delete_terminal_location( 'tml_XXXXXXX' ),
 			$delete_location_response
 		);
-	}
-
-	/**
-	 * Data provider for test_request_with_level3_data
-	 */
-	public function data_request_with_level3_data() {
-		return [
-			'australian_merchant'               => [
-				[
-					'level3' => [],
-				],
-				[],
-			],
-			'american_merchant_no_line_items'   => [
-				[
-					'level3' => [
-						'merchant_reference' => 'abc123',
-					],
-				],
-				[
-					'merchant_reference' => 'abc123',
-					'line_items'         => [
-						[
-							'discount_amount'     => 0,
-							'product_code'        => 'empty-order',
-							'product_description' => 'The order is empty',
-							'quantity'            => 1,
-							'tax_amount'          => 0,
-							'unit_cost'           => 0,
-						],
-					],
-				],
-			],
-			'american_merchant_with_line_items' => [
-				[
-					'level3' => [
-						'merchant_reference' => 'abc123',
-						'line_items'         => [
-							[
-								'discount_amount'     => 0,
-								'product_code'        => 'free-hug',
-								'product_description' => 'Free hug',
-								'quantity'            => 1,
-								'tax_amount'          => 0,
-								'unit_cost'           => 0,
-							],
-						],
-					],
-				],
-				[
-					'merchant_reference' => 'abc123',
-					'line_items'         => [
-						[
-							'discount_amount'     => 0,
-							'product_code'        => 'free-hug',
-							'product_description' => 'Free hug',
-							'quantity'            => 1,
-							'tax_amount'          => 0,
-							'unit_cost'           => 0,
-						],
-					],
-				],
-			],
-		];
 	}
 
 	/**

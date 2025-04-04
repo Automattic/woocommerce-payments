@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Remove level3 retry logic and legacy request_with_level3_data method
