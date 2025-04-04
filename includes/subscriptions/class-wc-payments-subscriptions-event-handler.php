@@ -219,11 +219,11 @@ class WC_Payments_Subscriptions_Event_Handler {
 		 * Sending requests from staging sites can have unintended consequences for the live store. For example,
 		 * Subscriptions which renew on the staging site will lead to paused subscriptions at Stripe and result in
 		 * missed renewal payments.
+		 */
 		if ( WC_Payments_Subscriptions::is_duplicate_site() ) {
 			$this->log_skipped_webhook_due_to_staging( 'invoice.payment_failed', $wcpay_subscription_id );
 			return;
 		}
-		 */
 
 		$wcpay_invoice_id = $this->get_event_property( $event_object, 'id' );
 		$attempts         = (int) $this->get_event_property( $event_object, 'attempt_count' );
