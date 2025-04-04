@@ -83,6 +83,14 @@ describe( 'CapabilityRequestNotice', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 
+	it( 'should not render the UNREQUESTED notice for JCB, if it is not part of the list', () => {
+		const { container } = render(
+			<CapabilityNotice id="jcb" label="JCB" country="JP" states={ {} } />
+		);
+
+		expect( container ).toBeEmpty();
+	} );
+
 	it( 'should render content and button - Render CapabilityNotice', () => {
 		render(
 			<CapabilityNotice
