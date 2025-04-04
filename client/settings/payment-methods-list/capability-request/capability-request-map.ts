@@ -10,15 +10,6 @@ const CapabilityRequestList: Array< CapabilityRequestMap > = [
 		label: __( 'JCB', 'woocommerce-payments' ),
 		country: 'JP',
 		states: {
-			unrequested: {
-				status: 'info',
-				content: __(
-					'Enable JCB for your customers, the only international payment brand based in Japan.',
-					'woocommerce-payments'
-				),
-				actions: 'request',
-				actionsLabel: __( 'Enable JCB', 'woocommerce-payments' ),
-			},
 			pending_verification: {
 				status: 'warning',
 				content: __(
