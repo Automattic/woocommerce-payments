@@ -747,7 +747,7 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
                         >
                           <span
                             aria-label="Visa"
-                            class="payment-method__brand payment-method__brand--visa"
+                            class="payment-method__brand payment-method__brand--visa account-country--us"
                           />
                         </div>
                       </button>

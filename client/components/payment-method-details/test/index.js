@@ -9,6 +9,12 @@ import { render } from '@testing-library/react';
  */
 import PaymentMethodDetails from '..';
 
+global.wcpaySettings = {
+	accountStatus: {
+		country: 'US',
+	},
+};
+
 describe( 'PaymentMethodDetails', () => {
 	test( 'renders a valid card brand and last 4 digits', () => {
 		const { container: paymentMethodDetails } = renderCard( {
