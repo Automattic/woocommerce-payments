@@ -2099,7 +2099,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			$this->onboarding_service->get_referral_code()
 		);
 
-		// Check if we should enable WooPay by default.
+		// Check if we should enable WooPay by default respecing the WooPay value from capabilities request list.
 		$should_enable_woopay = $this->onboarding_service->should_enable_woopay(
 			filter_var( $onboarding_data['woopay_enabled_by_default'] ?? false, FILTER_VALIDATE_BOOLEAN ),
 			$this->onboarding_service->get_capabilities_from_request()

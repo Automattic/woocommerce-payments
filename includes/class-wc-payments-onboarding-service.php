@@ -248,7 +248,7 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
-	 * Checks if the WooPay capabilities should be enabled by default.
+	 * Checks if the WooPay capabilities should be enabled by default based on the capabilities list.
 	 *
 	 * @param bool  $default_value Whether WooPay should be enabled by default.
 	 * @param array $capabilities The capabilities list.
@@ -643,7 +643,8 @@ class WC_Payments_Onboarding_Service {
 			self::get_actioned_notes(),
 		);
 
-		// Store the 'woopay_enabled_by_default' flag in a transient, to be enabled later.
+		// Store the 'woopay_enabled_by_default' flag in a transient, to be enabled later respecting
+		// the WooPay capability value from the request.
 		$should_enable_woopay = $this->should_enable_woopay(
 			filter_var( $onboarding_data['woopay_enabled_by_default'] ?? false, FILTER_VALIDATE_BOOLEAN ),
 			$this->get_capabilities_from_request()
