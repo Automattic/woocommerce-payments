@@ -260,7 +260,7 @@ class WC_Payments_Onboarding_Service {
 		$woopay_capability = 'woopay_payments';
 
 		// If the capabilities list is empty, we should return the default value.
-		if ( empty( $capabilities ) || ! isset( $capabilities[ $woopay_capability ] ) ) {
+		if ( empty( $capabilities ) ) {
 			return $default_value;
 		}
 
