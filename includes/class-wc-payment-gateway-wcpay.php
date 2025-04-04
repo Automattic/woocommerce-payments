@@ -21,6 +21,7 @@ use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Method;
 use WCPay\Constants\Refund_Status;
+use WCPay\Constants\Refund_Failure_Reason;
 use WCPay\Exceptions\{Add_Payment_Method_Exception,
 	Amount_Too_Small_Exception,
 	API_Merchant_Exception,
@@ -2309,9 +2310,22 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$currency = strtoupper( $refund['currency'] );
 			Tracker::track_admin( 'wcpay_edit_order_refund_success' );
 		} catch ( Exception $e ) {
-			if ( $e instanceof API_Exception && 'insufficient_balance_for_refund' === $e->get_error_code() ) {
-				// Handle insufficient_balance_for_refund error.
-				$this->order_service->handle_insufficient_balance_for_refund( $order, WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
+			if ( $e instanceof API_Exception ) {
+				if ( 'insufficient_balance_for_refund' === $e->get_error_code() ) {
+					// Handle insufficient_balance_for_refund error.
+					$this->order_service->handle_insufficient_balance_for_refund( $order, WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
+				} else {
+					$failure_reason  = $e->get_error_code();
+					$failure_message = Refund_Failure_Reason::get_failure_message( $failure_reason );
+					$note            = sprintf(
+						/* translators: %1: the successfully charged amount, %2: failure message */
+						__( 'A refund of %1$s failed: %2$s', 'woocommerce-payments' ),
+						WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order ),
+						$failure_message
+					);
+
+					$order->add_order_note( $note );
+				}
 			} else {
 				$note = sprintf(
 					/* translators: %1: the successfully charged amount, %2: error message */

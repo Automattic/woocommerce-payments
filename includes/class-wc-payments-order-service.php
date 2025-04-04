@@ -10,6 +10,7 @@ use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Payment_Method;
 use WCPay\Constants\Refund_Status;
+use WCPay\Constants\Refund_Failure_Reason;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Fraud_Prevention\Models\Rule;
 use WCPay\Logger;
@@ -1477,31 +1478,51 @@ class WC_Payments_Order_Service {
 	 * @param string               $currency The currency code.
 	 * @param WC_Order_Refund|null $wc_refund The WC refund object to delete if provided.
 	 * @param bool                 $is_cancelled Whether this is a cancellation rather than a failure. Default false.
+	 * @param string|null          $failure_reason The reason for the refund failure. Default null.
 	 * @return void
 	 */
-	public function handle_failed_refund( WC_Order $order, string $refund_id, int $amount, string $currency, ?WC_Order_Refund $wc_refund = null, bool $is_cancelled = false ): void {
+	public function handle_failed_refund( WC_Order $order, string $refund_id, int $amount, string $currency, ?WC_Order_Refund $wc_refund = null, bool $is_cancelled = false, ?string $failure_reason = null ): void {
 		// Delete the refund if it exists.
 		if ( $wc_refund ) {
 			$wc_refund->delete();
 		}
 
-		$note = sprintf(
-			WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the refund amount, %2: WooPayments, %3: ID of the refund */
-				__( 'A refund of %1$s was <strong>%4$s</strong> using %2$s (<code>%3$s</code>).', 'woocommerce-payments' ),
-				[
-					'strong' => '<strong>',
-					'code'   => '<code>',
-				]
-			),
-			WC_Payments_Explicit_Price_Formatter::get_explicit_price(
-				wc_price( WC_Payments_Utils::interpret_stripe_amount( $amount, $currency ), [ 'currency' => strtoupper( $currency ) ] ),
-				$order
-			),
-			'WooPayments',
-			$refund_id,
-			$is_cancelled ? __( 'cancelled', 'woocommerce-payments' ) : __( 'unsuccessful', 'woocommerce-payments' )
+		$formatted_amount = WC_Payments_Explicit_Price_Formatter::get_explicit_price(
+			wc_price( WC_Payments_Utils::interpret_stripe_amount( $amount, $currency ), [ 'currency' => strtoupper( $currency ) ] ),
+			$order
 		);
+
+		if ( $is_cancelled ) {
+			$note = sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+					/* translators: %1: the refund amount, %2: WooPayments, %3: ID of the refund */
+					__( 'A refund of %1$s was <strong>cancelled</strong> using %2$s (<code>%3$s</code>).', 'woocommerce-payments' ),
+					[
+						'strong' => '<strong>',
+						'code'   => '<code>',
+					]
+				),
+				$formatted_amount,
+				'WooPayments',
+				$refund_id
+			);
+		} else {
+			$failure_message = $failure_reason ? Refund_Failure_Reason::get_failure_message( $failure_reason ) : __( 'Unknown error occurred', 'woocommerce-payments' );
+			$note            = sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+					/* translators: %1: the refund amount, %2: WooPayments, %3: ID of the refund, %4: failure message */
+					__( 'A refund of %1$s was <strong>unsuccessful</strong> using %2$s (<code>%3$s</code>): %4$s', 'woocommerce-payments' ),
+					[
+						'strong' => '<strong>',
+						'code'   => '<code>',
+					]
+				),
+				$formatted_amount,
+				'WooPayments',
+				$refund_id,
+				$failure_message
+			);
+		}
 
 		if ( $this->order_note_exists( $order, $note ) ) {
 			return;
