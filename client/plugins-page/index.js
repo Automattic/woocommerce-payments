@@ -2,9 +2,7 @@
  * External dependencies
  */
 import React, { useState, useEffect, useCallback } from 'react';
-import { useDispatch } from '@wordpress/data';
 import { createRoot } from 'react-dom/client';
-import { OPTIONS_STORE_NAME } from '@woocommerce/data';
 
 /**
  * Internal dependencies

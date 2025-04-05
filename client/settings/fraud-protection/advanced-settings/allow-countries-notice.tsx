@@ -38,11 +38,6 @@ const getNoticeText = ( filterType: string, blocking: boolean ) => {
 	return null;
 };
 
-interface FraudProtectionRuleCardNoticeProps {
-	type: string;
-	children?: React.ReactNode;
-}
-
 interface AllowedCountriesNoticeProps {
 	setting: string;
 }
