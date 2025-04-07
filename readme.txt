@@ -87,7 +87,7 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 
 == Changelog ==
 
-= 9.2.0 - 2025-04-09 =
+= 9.2.0-test-3 - unreleased =
 * Add - Add back button for tertiary+ level pages in WooPayments settings.
 * Fix - fix: cancel GooglePay/ApplePay dialog on product page if add-to-cart product validation fails
 * Fix - fix: fatal error when Klarna is enabled on an EU account and a non-EU currency is configured on the store.
