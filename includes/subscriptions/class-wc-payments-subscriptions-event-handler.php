@@ -88,10 +88,10 @@ class WC_Payments_Subscriptions_Event_Handler {
 				$this->subscription_service->cancel_subscription( $subscription );
 			} else {
 				$this->subscription_service->suspend_subscription( $subscription );
-				$subscription->add_order_note( __( 'Suspended WCPay Subscription in invoice.upcoming webhook handler because subscription next_payment date is 0.', 'woocommerce-payments' ) );
+				$subscription->add_order_note( __( 'Suspended WooPayments Subscription in invoice.upcoming webhook handler because subscription next_payment date is 0.', 'woocommerce-payments' ) );
 				Logger::log(
 					sprintf(
-						'Suspended WCPay Subscription in invoice.upcoming webhook handler because subscription next_payment date is 0. WC ID: %d; WCPay ID: %s.',
+						'Suspended WooPayments Subscription in invoice.upcoming webhook handler because subscription next_payment date is 0. WC ID: %d; WooPayments ID: %s.',
 						$subscription->get_id(),
 						$wcpay_subscription_id
 					)
@@ -269,8 +269,8 @@ class WC_Payments_Subscriptions_Event_Handler {
 				sprintf(
 					// Translators: %1$d Number of failed renewal attempts. %2$s contains failure message, %3$s contains error code.
 					_n(
-						'WCPay subscription renewal attempt %1$d failed with the following message "%2$s" and failure code <code>%3$s</code>',
-						'WCPay subscription renewal attempt %1$d failed with the following message "%2$s" and failure code <code>%3$s</code>',
+						'WooPayments subscription renewal attempt %1$d failed with the following message "%2$s" and failure code <code>%3$s</code>',
+						'WooPayments subscription renewal attempt %1$d failed with the following message "%2$s" and failure code <code>%3$s</code>',
 						$attempts,
 						'woocommerce-payments'
 					),
@@ -292,7 +292,7 @@ class WC_Payments_Subscriptions_Event_Handler {
 			);
 		} else {
 			// Translators: %d Number of failed renewal attempts.
-			$subscription->add_order_note( sprintf( _n( 'WCPay subscription renewal attempt %d failed.', 'WCPay subscription renewal attempt %d failed.', $attempts, 'woocommerce-payments' ), $attempts ) );
+			$subscription->add_order_note( sprintf( _n( 'WooPayments subscription renewal attempt %d failed.', 'WooPayments subscription renewal attempt %d failed.', $attempts, 'woocommerce-payments' ), $attempts ) );
 		}
 
 		if ( self::MAX_RETRIES > $attempts ) {

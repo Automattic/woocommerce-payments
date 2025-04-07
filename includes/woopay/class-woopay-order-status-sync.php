@@ -62,7 +62,7 @@ class WooPay_Order_Status_Sync {
 	 * @return string
 	 */
 	private static function get_webhook_name() {
-		return __( 'WCPay woopay order status sync', 'woocommerce-payments' );
+		return __( 'WooPayments woopay order status sync', 'woocommerce-payments' );
 	}
 
 	/**
