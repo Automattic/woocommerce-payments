@@ -32,45 +32,45 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	private $webhook_processing_service;
 
 	/**
-	 * @var WC_Payments_DB|MockObject
+	 * @var WC_Payments_DB&MockObject
 	 */
 	private $mock_db_wrapper;
 
 	/**
-	 * @var WC_Payments_Remote_Note_Service|MockObject
+	 * @var WC_Payments_Remote_Note_Service&MockObject
 	 */
 	private $mock_remote_note_service;
 
 	/**
-	 * @var WC_Payments_Order_Service|MockObject
+	 * @var WC_Payments_Order_Service&MockObject
 	 */
 	private $order_service;
 
 	/**
 	 * receipt_service
 	 *
-	 * @var WC_Payments_In_Person_Payments_Receipts_Service|MockObject
+	 * @var WC_Payments_In_Person_Payments_Receipts_Service&MockObject
 	 */
 	private $mock_receipt_service;
 
 	/**
 	 * mock_wcpay_gateway
 	 *
-	 * @var WC_Payment_Gateway_WCPay|MockObject
+	 * @var WC_Payment_Gateway_WCPay&MockObject
 	 */
 	private $mock_wcpay_gateway;
 
 	/**
 	 * Mock customer service
 	 *
-	 * @var WC_Payments_Customer_Service|MockObject
+	 * @var WC_Payments_Customer_Service&MockObject
 	 */
 	private $mock_customer_service;
 
 	/**
 	 * Mock database cache
 	 *
-	 * @var Database_Cache
+	 * @var Database_Cache&MockObject
 	 */
 	private $mock_database_cache;
 
@@ -80,9 +80,14 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	private $event_body;
 
 	/**
-	 * @var WC_Order
+	 * @var WC_Order&MockObject
 	 */
 	private $mock_order;
+
+	/**
+	 * @var WC_Payments_API_Client&MockObject
+	 */
+	private $mock_api_client;
 
 	/**
 	 * Pre-test setup
@@ -97,7 +102,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->order_service = $this->getMockBuilder( 'WC_Payments_Order_Service' )
 			->setConstructorArgs( [ $this->createMock( WC_Payments_API_Client::class ) ] )
-			->setMethods(
+			->onlyMethods(
 				[
 					'get_wcpay_refund_id_for_order',
 					'add_note_and_metadata_for_created_refund',
@@ -111,7 +116,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_db_wrapper = $this->getMockBuilder( WC_Payments_DB::class )
 			->disableOriginalConstructor()
-			->setMethods( [ 'order_from_charge_id', 'order_from_intent_id', 'order_from_order_id' ] )
+			->onlyMethods( [ 'order_from_charge_id', 'order_from_intent_id', 'order_from_order_id' ] )
 			->getMock();
 
 		$this->mock_remote_note_service = $this->createMock( WC_Payments_Remote_Note_Service::class );
@@ -185,7 +190,6 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_webhook_with_test_event_and_live_gateway() {
 		$this->event_body['type']     = 'wcpay.notification';
-		$this->event_body['id']       = uniqid( 'evt_' );
 		$this->event_body['livemode'] = false;
 		$this->event_body['data']     = [
 			'title'   => 'test',
@@ -210,7 +214,6 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_webhook_with_live_event_and_test_gateway() {
 		$this->event_body['type']     = 'wcpay.notification';
-		$this->event_body['id']       = uniqid( 'evt_' );
 		$this->event_body['livemode'] = true;
 		$this->event_body['data']     = [
 			'title'   => 'test',
