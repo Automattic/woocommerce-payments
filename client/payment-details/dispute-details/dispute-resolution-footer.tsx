@@ -35,7 +35,7 @@ const DisputeUnderReviewFooter: React.FC< {
 						sprintf(
 							/* Translators: %s - formatted date, <a> - link to documentation page */
 							__(
-								'You submitted evidence for this dispute on %s. The cardholder’s bank is reviewing the case, which can take 60 days or more. You will be alerted when they make their final decision. <a>Learn more about the dispute process</a>.',
+								"You submitted evidence for this dispute on %s. The cardholder's bank is reviewing the case, which can take 60 days or more. You will be alerted when they make their final decision. <a>Learn more about the dispute process</a>.",
 								'woocommerce-payments'
 							),
 							submissionDateFormatted
@@ -170,7 +170,7 @@ const DisputeLostFooter: React.FC< {
 	let messagePrefix = sprintf(
 		/* Translators: %1$s - formatted date */
 		__(
-			'This dispute was lost on %1$s due to non-response.',
+			"The cardholder's bank decided against your case on %1$s due to non-response. This decision is final and cannot be appealed.",
 			'woocommerce-payments'
 		),
 		closedDateFormatted
@@ -180,7 +180,7 @@ const DisputeLostFooter: React.FC< {
 		messagePrefix = sprintf(
 			/* Translators: %1$s - formatted date */
 			__(
-				'This dispute was accepted and lost on %1$s.',
+				"The cardholder's bank decided against your case on %1$s. Since you accepted the dispute, this decision is final and cannot be appealed.",
 				'woocommerce-payments'
 			),
 			closedDateFormatted
@@ -190,7 +190,10 @@ const DisputeLostFooter: React.FC< {
 	if ( isSubmitted ) {
 		messagePrefix = sprintf(
 			/* Translators: %1$s - formatted date */
-			__( 'This dispute was lost on %1$s.', 'woocommerce-payments' ),
+			__(
+				"The cardholder's bank decided against your case on %1$s. This decision is final and cannot be appealed.",
+				'woocommerce-payments'
+			),
 			closedDateFormatted
 		);
 	}
@@ -273,7 +276,7 @@ const InquiryUnderReviewFooter: React.FC< {
 						sprintf(
 							/* Translators: %s - formatted date, <a> - link to documentation page */
 							__(
-								'You submitted evidence for this inquiry on %s. The cardholder’s bank is reviewing the case, which can take 120 days or more. You will be alerted when they make their final decision. <a>Learn more</a>.',
+								"You submitted evidence for this inquiry on %s. The cardholder's bank is reviewing the case, which can take 120 days or more. You will be alerted when they make their final decision. <a>Learn more</a>.",
 								'woocommerce-payments'
 							),
 							submissionDateFormatted

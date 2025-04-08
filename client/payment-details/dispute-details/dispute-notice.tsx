@@ -37,7 +37,7 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 
 	/* translators: <a> link to dispute documentation. %s is the clients claim for the dispute, eg "The cardholder claims this is an unrecognized charge." */
 	let noticeText = __(
-		'<strong>%s</strong> Challenge the dispute if you believe the claim is invalid, ' +
+		"<strong>%s</strong> The cardholder's bank is reviewing this dispute. You can challenge it if you believe the claim is invalid, " +
 			'or accept to forfeit the funds and pay the dispute fee. ' +
 			'Non-response will result in an automatic loss. <a>Learn more about responding to disputes</a>',
 		'woocommerce-payments'
@@ -48,7 +48,7 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 	if ( isInquiry( dispute.status ) ) {
 		/* translators: <a> link to dispute inquiry documentation. %s is the clients claim for the dispute, eg "The cardholder claims this is an unrecognized charge." */
 		noticeText = __(
-			'<strong>%s</strong> You can challenge their claim if you believe it’s invalid. ' +
+			"<strong>%s</strong> The cardholder's bank is reviewing this inquiry. You can challenge their claim if you believe it's invalid. " +
 				'Not responding will result in an automatic loss. <a>Learn more about payment inquiries</a>',
 			'woocommerce-payments'
 		);
