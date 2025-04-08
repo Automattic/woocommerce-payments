@@ -33,7 +33,7 @@ import ErrorBoundary from 'components/error-boundary';
 import useConfirmNavigation from 'utils/use-confirm-navigation';
 import { recordEvent } from 'tracks';
 import { getAdminUrl } from 'wcpay/utils';
-import DisputeDefenseToolkit from 'components/dispute-defense-toolkit';
+import PreFillEvidence from 'components/dispute-defense-toolkit/pre-fill-evidence';
 
 const DISPUTE_EVIDENCE_MAX_LENGTH = 150000;
 const PRODUCT_TYPE_META_KEY = '__product_type';
@@ -113,6 +113,8 @@ export const DisputeEvidenceForm = ( props ) => {
 		onFileRemove,
 		onSave,
 		readOnly,
+		dispute,
+		productType,
 	} = props;
 
 	const { createErrorNotice } = useDispatch( 'core/notices' );
@@ -142,6 +144,14 @@ export const DisputeEvidenceForm = ( props ) => {
 		}
 
 		return true;
+	};
+
+	const handlePreFill = ( preFilledEvidence ) => {
+		Object.entries( preFilledEvidence ).forEach( ( [ key, value ] ) => {
+			if ( isEvidenceWithinLengthLimit( { key }, value ) ) {
+				onChange( key, value );
+			}
+		} );
 	};
 
 	const composeDefaultControlProps = ( field ) => ( {
@@ -286,6 +296,13 @@ export const DisputeEvidenceForm = ( props ) => {
 			{ readOnly ? null : (
 				<Card size="large">
 					<CardBody>
+						{ dispute && productType && (
+							<PreFillEvidence
+								disputeReason={ dispute.reason }
+								productType={ productType }
+								onPreFill={ handlePreFill }
+							/>
+						) }
 						<p>
 							{ __(
 								// eslint-disable-next-line max-len
@@ -381,7 +398,6 @@ export const DisputeEvidencePage = ( props ) => {
 			<TestModeNotice currentPage="disputes" isDetailsView={ true } />
 			{ readOnly && readOnlyNotice }
 			<ErrorBoundary>
-				<DisputeDefenseToolkit />
 				{ ! readOnly && (
 					<ProductTypeSelector
 						value={ productType }
@@ -392,6 +408,8 @@ export const DisputeEvidencePage = ( props ) => {
 				<DisputeEvidenceForm
 					{ ...evidenceFormProps }
 					readOnly={ readOnly }
+					dispute={ dispute }
+					productType={ productType }
 				/>
 			</ErrorBoundary>
 		</Page>
