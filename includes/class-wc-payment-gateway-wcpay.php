@@ -2311,35 +2311,20 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			Tracker::track_admin( 'wcpay_edit_order_refund_success' );
 		} catch ( Exception $e ) {
 			if ( $e instanceof API_Exception ) {
-				if ( 'insufficient_balance_for_refund' === $e->get_error_code() ) {
-					// Handle insufficient_balance_for_refund error.
-					$this->order_service->handle_insufficient_balance_for_refund( $order, WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ) );
-				} else {
-					$failure_reason  = $e->get_error_code();
-					$failure_message = Refund_Failure_Reason::get_failure_message( $failure_reason );
-					$note            = sprintf(
-						/* translators: %1: the successfully charged amount, %2: failure message */
-						__( 'A refund of %1$s failed to complete: %2$s', 'woocommerce-payments' ),
-						WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order ),
-						$failure_message
-					);
-
-					$order->add_order_note( $note );
-				}
+				$failure_reason = $e->get_error_code();
+				$this->order_service->handle_failed_refund( $order, '', WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ), $order->get_currency(), null, false, $failure_reason );
 			} else {
-				$note = sprintf(
-					/* translators: %1: the successfully charged amount, %2: error message */
-					__( 'A refund of %1$s failed to complete: %2$s', 'woocommerce-payments' ),
-					WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order ),
-					$e->getMessage()
+				$this->order_service->handle_failed_refund(
+					$order,
+					'',
+					WC_Payments_Utils::prepare_amount( $amount, $order->get_currency() ),
+					$order->get_currency(),
+					null,
+					false,
+					Refund_Failure_Reason::UNKNOWN
 				);
-
-				Logger::log( $note );
-				$order->add_order_note( $note );
 			}
 
-			$this->order_service->set_wcpay_refund_status_for_order( $order, 'failed' );
-			Tracker::track_admin( 'wcpay_edit_order_refund_failure', [ 'reason' => $note ] );
 			return new WP_Error( 'wcpay_edit_order_refund_failure', $e->getMessage() );
 		}
 

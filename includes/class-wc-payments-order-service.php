@@ -1528,12 +1528,20 @@ class WC_Payments_Order_Service {
 			return;
 		}
 
-		// If order has been fully refunded.
-		if ( Order_Status::REFUNDED === $order->get_status() ) {
-			$order->update_status( Order_Status::FAILED );
+		Logger::log( $note );
+		$order->add_order_note( $note );
+
+		// Handle insufficient balance case.
+		if ( 'insufficient_balance_for_refund' === $failure_reason ) {
+			$account_country = WC_Payments::get_account_service()->get_account_country();
+
+			if ( $this->is_frod_supported( $account_country ) ) {
+				$order->add_order_note( $this->get_frod_support_note( $formatted_amount ) );
+			} else {
+				$order->add_order_note( $this->get_insufficient_balance_note( $formatted_amount ) );
+			}
 		}
 
-		$order->add_order_note( $note );
 		$this->set_wcpay_refund_status_for_order( $order, Refund_Status::FAILED );
 		$order->save();
 	}

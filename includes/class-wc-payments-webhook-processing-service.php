@@ -297,9 +297,6 @@ class WC_Payments_Webhook_Processing_Service {
 					? $this->read_webhook_property( $event_object, 'failure_reason' )
 					: null;
 				$this->order_service->handle_failed_refund( $order, $refund_id, $amount, $currency, $matched_wc_refund, false, $failure_reason );
-				if ( Refund_Failure_Reason::INSUFFICIENT_FUNDS === $failure_reason ) {
-					$this->order_service->handle_insufficient_balance_for_refund( $order, $amount );
-				}
 				break;
 			case Refund_Status::CANCELED:
 				$this->order_service->handle_failed_refund( $order, $refund_id, $amount, $currency, $matched_wc_refund, true );
