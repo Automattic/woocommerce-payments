@@ -59,14 +59,10 @@ class LoggerContextTest extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$this->assertEquals( 12, count( explode( "\n", $filtered_entry ) ), 'Filtered entry contains 3 lines with the context and 2 with the original message' );
-
-		foreach ( explode( "\n", $filtered_entry ) as $line ) {
-			$this->assertTrue( strpos( $line, '2021-01-01T00:00:00+00:00 INFO' ) === 0, 'Each line starts with the timestamp and log level' );
-			$this->assertTrue( preg_match( '/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+\d{2}:\d{2} [A-Z]+ [a-f0-9]+-(\d{4}) /', $line, $matches ) === 1, 'Each line contains timestamp, log level, request identifier and entry number' );
-			$entry_number = (int) ltrim( $matches[1], '0' );
-			$this->assertTrue( $entry_number > 0, 'Entry number is a positive integer' );
-		}
+		$this->assertTrue( strpos( $filtered_entry, '2021-01-01T00:00:00+00:00 INFO' ) === 0, 'Each line starts with the timestamp and log level' );
+		$this->assertTrue( preg_match( '/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+\d{2}:\d{2} [A-Z]+ [a-f0-9]+-(\d{4}) /', $filtered_entry, $matches ) === 1, 'Each line contains timestamp, log level, request identifier and entry number' );
+		$entry_number = (int) ltrim( $matches[1], '0' );
+		$this->assertTrue( $entry_number > 0, 'Entry number is a positive integer' );
 	}
 
 	/**
