@@ -398,7 +398,7 @@ class WC_Payments_Subscription_Service {
 		$wcpay_customer_id      = $this->customer_service->get_customer_id_for_order( $subscription );
 
 		if ( ! $wcpay_customer_id ) {
-			Logger::error( 'There was a problem creating the WCPay subscription. WCPay customer ID missing.' );
+			Logger::error( 'There was a problem creating the WooPayments subscription. WooPayments customer ID missing.' );
 			throw new Exception( $checkout_error_message );
 		}
 
@@ -421,7 +421,7 @@ class WC_Payments_Subscription_Service {
 				$this->invoice_service->set_subscription_invoice_id( $subscription, $response['latest_invoice'] );
 			}
 		} catch ( \Exception $e ) {
-			Logger::log( sprintf( 'There was a problem creating the WCPay subscription. %s', $e->getMessage() ) );
+			Logger::log( sprintf( 'There was a problem creating the WooPayments subscription. %s', $e->getMessage() ) );
 
 			if ( $e instanceof Amount_Too_Small_Exception ) {
 				throw new Exception(
@@ -490,7 +490,7 @@ class WC_Payments_Subscription_Service {
 		try {
 			$this->payments_api_client->cancel_subscription( $wcpay_subscription_id );
 		} catch ( API_Exception $e ) {
-			Logger::log( sprintf( 'There was a problem canceling the subscription on WCPay server: %s.', $e->getMessage() ) );
+			Logger::log( sprintf( 'There was a problem canceling the subscription on WooPayments server: %s.', $e->getMessage() ) );
 		}
 	}
 
@@ -512,7 +512,7 @@ class WC_Payments_Subscription_Service {
 		$this->suspend_subscription( $subscription );
 
 		// Add an order note as a visible record of suspend.
-		$subscription->add_order_note( __( 'Suspended WCPay Subscription because subscription status changed to on-hold.', 'woocommerce-payments' ) );
+		$subscription->add_order_note( __( 'Suspended WooPayments Subscription because subscription status changed to on-hold.', 'woocommerce-payments' ) );
 
 		// Log that the subscription was suspended.
 		// Include a brief stack trace to help determine where status change originated.
@@ -521,7 +521,7 @@ class WC_Payments_Subscription_Service {
 		$trace = $e->getTraceAsString();
 		Logger::log(
 			sprintf(
-				'Suspended WCPay Subscription because subscription status changed to on-hold. WC ID: %d; WCPay ID: %s; stack: %s',
+				'Suspended WooPayments Subscription because subscription status changed to on-hold. WC ID: %d; WooPayments ID: %s; stack: %s',
 				$subscription->get_id(),
 				self::get_wcpay_subscription_id( $subscription ),
 				$trace
@@ -541,7 +541,7 @@ class WC_Payments_Subscription_Service {
 		if ( ! static::is_wcpay_subscription( $subscription ) ) {
 			Logger::log(
 				sprintf(
-					'Aborting WC_Payments_Subscription_Service::suspend_subscription; subscription is a tokenised (non WCPay) subscription. WC ID: %d.',
+					'Aborting WC_Payments_Subscription_Service::suspend_subscription; subscription is a tokenised (non WooPayments) subscription. WC ID: %d.',
 					$subscription->get_id()
 				)
 			);
@@ -553,7 +553,7 @@ class WC_Payments_Subscription_Service {
 
 	/**
 	 * Reactivates the WCPay subscription when the WC subscription is activated.
-	 * This is done by making a request to server to unset the "cancellation at end of period" value for the WCPay subscription.
+	 * This is done by making a request to server to unset the "cancellation at end of period" value for the WooPayments subscription.
 	 *
 	 * @param WC_Subscription $subscription The WC subscription that was activated.
 	 *
@@ -570,7 +570,7 @@ class WC_Payments_Subscription_Service {
 	}
 
 	/**
-	 * Marks the WCPay subscription as pending-cancel by setting the "cancellation at end of period" on the WCPay subscription.
+	 * Marks the WCPay subscription as pending-cancel by setting the "cancellation at end of period" on the WooPayments subscription.
 	 *
 	 * @param WC_Subscription $subscription The subscription that was set as pending cancel.
 	 *
@@ -605,7 +605,7 @@ class WC_Payments_Subscription_Service {
 				try {
 					$this->update_subscription( $subscription, [ 'default_payment_method' => $wcpay_payment_method_id ] );
 				} catch ( API_Exception $e ) {
-					Logger::error( sprintf( 'There was a problem updating the WCPay subscription\'s default payment method on server: %s.', $e->getMessage() ) );
+					Logger::error( sprintf( 'There was a problem updating the WooPayments subscription\'s default payment method on server: %s.', $e->getMessage() ) );
 					return;
 				}
 			}
@@ -733,7 +733,7 @@ class WC_Payments_Subscription_Service {
 	}
 
 	/**
-	 * Updates a subscription's next payment date to match the WCPay subscription's payment date.
+	 * Updates a subscription's next payment date to match the WooPayments subscription's payment date.
 	 *
 	 * @param array           $wcpay_subscription The WCPay Subscription data.
 	 * @param WC_Subscription $subscription       The WC Subscription object.
@@ -741,7 +741,7 @@ class WC_Payments_Subscription_Service {
 	 * @return void
 	 */
 	public function update_dates_to_match_wcpay_subscription( array $wcpay_subscription, WC_Subscription $subscription ) {
-		// Temporarily allow date changes when we're updating dates to match the dates on the WCPay subscription.
+		// Temporarily allow date changes when we're updating dates to match the dates on the WooPayments subscription.
 		$this->set_feature_support_exception( $subscription, 'subscription_date_changes' );
 
 		$next_payment_date = gmdate( 'Y-m-d H:i:s', $wcpay_subscription['current_period_end'] );
@@ -750,7 +750,7 @@ class WC_Payments_Subscription_Service {
 		$next_payment_time_difference = absint( $wcpay_subscription['current_period_end'] - $subscription->get_time( 'next_payment' ) );
 
 		if ( $next_payment_time_difference > 0 && $next_payment_time_difference >= 12 * HOUR_IN_SECONDS ) {
-			$subscription->add_order_note( __( 'The subscription\'s next payment date has been updated to match WCPay server.', 'woocommerce-payments' ) );
+			$subscription->add_order_note( __( 'The subscription\'s next payment date has been updated to match WooPayments server.', 'woocommerce-payments' ) );
 		}
 
 		// Remove the 'subscription_date_changes' exception.
@@ -967,7 +967,7 @@ class WC_Payments_Subscription_Service {
 		try {
 			$response = $this->payments_api_client->update_subscription( $wcpay_subscription_id, $data );
 		} catch ( API_Exception $e ) {
-			Logger::log( sprintf( 'There was a problem updating the WCPay subscription on server: %s', $e->getMessage() ) );
+			Logger::log( sprintf( 'There was a problem updating the WooPayments subscription on server: %s', $e->getMessage() ) );
 		}
 
 		return $response;
@@ -1020,7 +1020,7 @@ class WC_Payments_Subscription_Service {
 				Logger::log(
 					sprintf(
 						// Translators: %s Stripe subscription item ID.
-						__( 'Unable to set subscription item ID meta for WCPay subscription item %s.', 'woocommerce-payments' ),
+						__( 'Unable to set subscription item ID meta for WooPayments subscription item %s.', 'woocommerce-payments' ),
 						$wcpay_subscription_item_id
 					)
 				);
