@@ -10,7 +10,6 @@ import React from 'react';
  * Internal dependencies.
  */
 import Detail from '../detail';
-import { PaymentMethodDetails } from 'wcpay/payment-details/types';
 import { Charge } from 'wcpay/types/charges';
 
 /**

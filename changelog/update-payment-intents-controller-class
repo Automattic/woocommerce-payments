@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Merged WC_REST_Payments_Payment_Intents_Create_Controller back into WC_REST_Payments_Payment_Intents_Controller after confirming that the issue that caused the split was solved.

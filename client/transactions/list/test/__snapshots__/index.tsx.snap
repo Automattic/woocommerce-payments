@@ -592,7 +592,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                           >
                             <span
                               aria-label="Visa"
-                              class="payment-method__brand payment-method__brand--visa"
+                              class="payment-method__brand payment-method__brand--visa account-country--us"
                             />
                           </div>
                         </button>
@@ -773,7 +773,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                           >
                             <span
                               aria-label="Mastercard"
-                              class="payment-method__brand payment-method__brand--mastercard"
+                              class="payment-method__brand payment-method__brand--mastercard account-country--us"
                             />
                           </div>
                         </button>
@@ -921,7 +921,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                           >
                             <span
                               aria-label="Visa"
-                              class="payment-method__brand payment-method__brand--visa"
+                              class="payment-method__brand payment-method__brand--visa account-country--us"
                             />
                           </div>
                         </button>
@@ -1585,7 +1585,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                           >
                             <span
                               aria-label="Visa"
-                              class="payment-method__brand payment-method__brand--visa"
+                              class="payment-method__brand payment-method__brand--visa account-country--us"
                             />
                           </div>
                         </button>
@@ -1766,7 +1766,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                           >
                             <span
                               aria-label="Mastercard"
-                              class="payment-method__brand payment-method__brand--mastercard"
+                              class="payment-method__brand payment-method__brand--mastercard account-country--us"
                             />
                           </div>
                         </button>
@@ -1914,7 +1914,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                           >
                             <span
                               aria-label="Visa"
-                              class="payment-method__brand payment-method__brand--visa"
+                              class="payment-method__brand payment-method__brand--visa account-country--us"
                             />
                           </div>
                         </button>
@@ -2582,7 +2582,7 @@ exports[`Transactions list renders correctly when filtered by payout 1`] = `
                           >
                             <span
                               aria-label="Mastercard"
-                              class="payment-method__brand payment-method__brand--mastercard"
+                              class="payment-method__brand payment-method__brand--mastercard account-country--us"
                             />
                           </div>
                         </button>
@@ -3282,7 +3282,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                           >
                             <span
                               aria-label="Visa"
-                              class="payment-method__brand payment-method__brand--visa"
+                              class="payment-method__brand payment-method__brand--visa account-country--us"
                             />
                           </div>
                         </button>
@@ -3466,7 +3466,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                           >
                             <span
                               aria-label="Mastercard"
-                              class="payment-method__brand payment-method__brand--mastercard"
+                              class="payment-method__brand payment-method__brand--mastercard account-country--us"
                             />
                           </div>
                         </button>
@@ -3617,7 +3617,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                           >
                             <span
                               aria-label="Visa"
-                              class="payment-method__brand payment-method__brand--visa"
+                              class="payment-method__brand payment-method__brand--visa account-country--us"
                             />
                           </div>
                         </button>
@@ -4323,7 +4323,7 @@ exports[`Transactions list when not filtered by payout renders correctly 1`] = `
                           >
                             <span
                               aria-label="Visa"
-                              class="payment-method__brand payment-method__brand--visa"
+                              class="payment-method__brand payment-method__brand--visa account-country--us"
                             />
                           </div>
                         </button>
@@ -4504,7 +4504,7 @@ exports[`Transactions list when not filtered by payout renders correctly 1`] = `
                           >
                             <span
                               aria-label="Mastercard"
-                              class="payment-method__brand payment-method__brand--mastercard"
+                              class="payment-method__brand payment-method__brand--mastercard account-country--us"
                             />
                           </div>
                         </button>
@@ -4652,7 +4652,7 @@ exports[`Transactions list when not filtered by payout renders correctly 1`] = `
                           >
                             <span
                               aria-label="Visa"
-                              class="payment-method__brand payment-method__brand--visa"
+                              class="payment-method__brand payment-method__brand--visa account-country--us"
                             />
                           </div>
                         </button>
@@ -5358,7 +5358,7 @@ exports[`Transactions list when not filtered by payout renders table summary onl
                           >
                             <span
                               aria-label="Visa"
-                              class="payment-method__brand payment-method__brand--visa"
+                              class="payment-method__brand payment-method__brand--visa account-country--us"
                             />
                           </div>
                         </button>
@@ -5539,7 +5539,7 @@ exports[`Transactions list when not filtered by payout renders table summary onl
                           >
                             <span
                               aria-label="Mastercard"
-                              class="payment-method__brand payment-method__brand--mastercard"
+                              class="payment-method__brand payment-method__brand--mastercard account-country--us"
                             />
                           </div>
                         </button>
@@ -5687,7 +5687,7 @@ exports[`Transactions list when not filtered by payout renders table summary onl
                           >
                             <span
                               aria-label="Visa"
-                              class="payment-method__brand payment-method__brand--visa"
+                              class="payment-method__brand payment-method__brand--visa account-country--us"
                             />
                           </div>
                         </button>

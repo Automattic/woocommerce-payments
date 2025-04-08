@@ -139,7 +139,7 @@
     "@wordpress/html-entities": "3.6.1",
     "@wordpress/i18n": "4.6.1",
     "@wordpress/icons": "10.19.0",
-    "@wordpress/jest-preset-default": "8.1.2",
+    "@wordpress/jest-preset-default": "12.21.0",
     "@wordpress/plugins": "4.4.3",
     "@wordpress/primitives": "3.30.0",
     "@wordpress/scripts": "28.3.0",

@@ -247,7 +247,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
                       >
                         <span
                           aria-label="Visa"
-                          class="payment-method__brand payment-method__brand--visa"
+                          class="payment-method__brand payment-method__brand--visa account-country--us"
                         />
                       </div>
                     </button>
@@ -603,7 +603,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
                       >
                         <span
                           aria-label="Visa"
-                          class="payment-method__brand payment-method__brand--visa"
+                          class="payment-method__brand payment-method__brand--visa account-country--us"
                         />
                       </div>
                     </button>
@@ -962,7 +962,7 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
                       >
                         <span
                           aria-label="Visa"
-                          class="payment-method__brand payment-method__brand--visa"
+                          class="payment-method__brand payment-method__brand--visa account-country--us"
                         />
                       </div>
                     </button>
@@ -1272,7 +1272,7 @@ exports[`PaymentDetailsSummary correctly renders when payment intent is missing 
                       >
                         <span
                           aria-label="Visa"
-                          class="payment-method__brand payment-method__brand--visa"
+                          class="payment-method__brand payment-method__brand--visa account-country--us"
                         />
                       </div>
                     </button>
@@ -1596,7 +1596,7 @@ exports[`PaymentDetailsSummary order missing notice does not render notice if or
                       >
                         <span
                           aria-label="Visa"
-                          class="payment-method__brand payment-method__brand--visa"
+                          class="payment-method__brand payment-method__brand--visa account-country--us"
                         />
                       </div>
                     </button>
@@ -1917,7 +1917,7 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
                       >
                         <span
                           aria-label="Visa"
-                          class="payment-method__brand payment-method__brand--visa"
+                          class="payment-method__brand payment-method__brand--visa account-country--us"
                         />
                       </div>
                     </button>
@@ -2294,7 +2294,7 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
                       >
                         <span
                           aria-label="Visa"
-                          class="payment-method__brand payment-method__brand--visa"
+                          class="payment-method__brand payment-method__brand--visa account-country--us"
                         />
                       </div>
                     </button>
@@ -2596,7 +2596,7 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
                       >
                         <span
                           aria-label="Visa"
-                          class="payment-method__brand payment-method__brand--visa"
+                          class="payment-method__brand payment-method__brand--visa account-country--us"
                         />
                       </div>
                     </button>
@@ -3167,7 +3167,7 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
                       >
                         <span
                           aria-label="Visa"
-                          class="payment-method__brand payment-method__brand--visa"
+                          class="payment-method__brand payment-method__brand--visa account-country--us"
                         />
                       </div>
                     </button>
@@ -3491,7 +3491,7 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata 1`] 
                       >
                         <span
                           aria-label="Visa"
-                          class="payment-method__brand payment-method__brand--visa"
+                          class="payment-method__brand payment-method__brand--visa account-country--us"
                         />
                       </div>
                     </button>
@@ -3815,7 +3815,7 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
                       >
                         <span
                           aria-label="Visa"
-                          class="payment-method__brand payment-method__brand--visa"
+                          class="payment-method__brand payment-method__brand--visa account-country--us"
                         />
                       </div>
                     </button>

@@ -248,6 +248,27 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
+	 * Checks if the WooPay capabilities should be enabled by default based on the capabilities list.
+	 *
+	 * @param bool  $default_value Whether WooPay should be enabled by default.
+	 * @param array $capabilities The capabilities list.
+	 *
+	 * @return bool Whether WooPay should be enabled by default.
+	 */
+	public function should_enable_woopay( bool $default_value, array $capabilities ): bool {
+		// The capabilities has `_payments` suffix.
+		$woopay_capability = 'woopay_payments';
+
+		// If the capabilities list is empty, we should return the default value.
+		if ( empty( $capabilities ) ) {
+			return $default_value;
+		}
+
+		// Return the value from the capabilities list.
+		return ! empty( $capabilities[ $woopay_capability ] );
+	}
+
+	/**
 	 * Retrieve the embedded KYC session and handle initial account creation (if necessary).
 	 *
 	 * Will return the session key used to initialise the embedded onboarding session.
@@ -622,8 +643,14 @@ class WC_Payments_Onboarding_Service {
 			self::get_actioned_notes(),
 		);
 
-		// Store the 'woopay_enabled_by_default' flag in a transient, to be enabled later.
-		if ( filter_var( $onboarding_data['woopay_enabled_by_default'] ?? false, FILTER_VALIDATE_BOOLEAN ) ) {
+		// Store the 'woopay_enabled_by_default' flag in a transient, to be enabled later respecting
+		// the WooPay capability value from the request.
+		$should_enable_woopay = $this->should_enable_woopay(
+			filter_var( $onboarding_data['woopay_enabled_by_default'] ?? false, FILTER_VALIDATE_BOOLEAN ),
+			$this->get_capabilities_from_request()
+		);
+
+		if ( $should_enable_woopay ) {
 			set_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT, true, DAY_IN_SECONDS );
 		}
 
@@ -1182,14 +1209,17 @@ class WC_Payments_Onboarding_Service {
 			}
 		}
 
-		// If WooPay is enabled, update the gateway option.
+		// Update gateway option with the WooPay capability.
 		if ( ! empty( $capabilities['woopay'] ) ) {
 			$gateway->update_is_woopay_enabled( true );
+		} else {
+			$gateway->update_is_woopay_enabled( false );
 		}
 
-		// If Apple Pay and Google Pay are disabled update the gateway option,
-		// otherwise they are enabled by default.
-		if ( empty( $capabilities['apple_google'] ) ) {
+		// Update gateway option with the Apple/Google Pay capability.
+		if ( ! empty( $capabilities['apple_google'] ) ) {
+			$gateway->update_option( 'payment_request', 'yes' );
+		} else {
 			$gateway->update_option( 'payment_request', 'no' );
 		}
 	}
