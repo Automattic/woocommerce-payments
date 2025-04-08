@@ -422,8 +422,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->order_service
 			->expects( $this->once() )
-			->method( 'handle_insufficient_balance_for_refund' )
-			->with( $this->mock_order, 999 );
+			->method( 'handle_failed_refund' )
+			->with( $this->mock_order, 'test_refund_id', 999, 'gbp', null, false, 'insufficient_funds' );
 
 		$this->webhook_processing_service->process( $this->event_body );
 	}
@@ -2019,7 +2019,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	/**
 	 * @dataProvider refund_failure_reason_data_provider
 	 */
-	public function test_process_webhook_refund_updated_handles_different_failure_reasons( string $failure_reason, string $expected_message ): void {
+	public function test_process_webhook_refund_updated_handles_different_failure_reasons( string $failure_reason ): void {
 		$this->event_body['type']           = 'charge.refund.updated';
 		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
@@ -2049,14 +2049,6 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				false,
 				$failure_reason
 			);
-
-		// For insufficient funds, we expect an additional call.
-		if ( Refund_Failure_Reason::INSUFFICIENT_FUNDS === $failure_reason ) {
-			$this->order_service
-				->expects( $this->once() )
-				->method( 'handle_insufficient_balance_for_refund' )
-				->with( $this->mock_order, 1999 );
-		}
 
 		$this->webhook_processing_service->process( $this->event_body );
 	}
