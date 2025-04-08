@@ -136,7 +136,7 @@ class WC_Payments_Webhook_Processing_Service {
 		$event_type = $this->read_webhook_property( $event_body, 'type' );
 
 		Logger::debug(
-			'WEBHOOK RECEIVED: ' . $event_type . ' ' . $event_body['id'],
+			'WEBHOOK RECEIVED: ' . $event_type . ' ' . $this->read_webhook_property( $event_body, 'id' ),
 			[
 				'body' => WC_Payments_Utils::redact_array( $event_body, WC_Payments_API_Client::API_KEYS_TO_REDACT ),
 			]
@@ -277,7 +277,7 @@ class WC_Payments_Webhook_Processing_Service {
 		/**
 		 * Get the WC_Refund from the WCPay refund ID.
 		 *
-		 * @var $wc_refunds WC_Order_Refund[]
+		 * @var WC_Order_Refund[] $wc_refunds
 		 * */
 		$wc_refunds = $order->get_refunds();
 		if ( ! empty( $wc_refunds ) ) {
