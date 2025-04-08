@@ -134,9 +134,15 @@ class WC_Payments_Webhook_Processing_Service {
 	public function process( array $event_body ) {
 		// Extract information about the webhook event.
 		$event_type = $this->read_webhook_property( $event_body, 'type' );
+		$event_id   = '';
+		try {
+			$event_id = $this->read_webhook_property( $event_body, 'id' );
+		} catch ( Invalid_Webhook_Data_Exception $e ) {
+			Logger::error( 'Webhook event ID not found' );
+		}
 
 		Logger::debug(
-			'WEBHOOK RECEIVED: ' . $event_type . ' ' . $this->read_webhook_property( $event_body, 'id' ),
+			'WEBHOOK RECEIVED: ' . $event_type . ' ' . $event_id,
 			[
 				'body' => WC_Payments_Utils::redact_array( $event_body, WC_Payments_API_Client::API_KEYS_TO_REDACT ),
 			]

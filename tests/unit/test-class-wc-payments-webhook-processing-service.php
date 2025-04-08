@@ -95,8 +95,6 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
-		$mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
-
 		$this->order_service = $this->getMockBuilder( 'WC_Payments_Order_Service' )
 			->setConstructorArgs( [ $this->createMock( WC_Payments_API_Client::class ) ] )
 			->setMethods(
@@ -144,7 +142,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$event_data           = [];
 		$event_data['object'] = $event_object;
 
-		$this->event_body         = [];
+		$this->event_body         = [ 'id' => uniqid( 'evt_' ) ];
 		$this->event_body['data'] = $event_data;
 
 		$this->mock_order = $this->createMock( WC_Order::class );
@@ -187,7 +185,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_webhook_with_test_event_and_live_gateway() {
 		$this->event_body['type']     = 'wcpay.notification';
-		$this->event_body['id']       = 'testID';
+		$this->event_body['id']       = uniqid( 'evt_' );
 		$this->event_body['livemode'] = false;
 		$this->event_body['data']     = [
 			'title'   => 'test',
@@ -212,7 +210,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_webhook_with_live_event_and_test_gateway() {
 		$this->event_body['type']     = 'wcpay.notification';
-		$this->event_body['id']       = 'testID';
+		$this->event_body['id']       = uniqid( 'evt_' );
 		$this->event_body['livemode'] = true;
 		$this->event_body['data']     = [
 			'title'   => 'test',
@@ -1969,6 +1967,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_payment_intent_failed_handles_terminal_payment() {
 		$this->event_body = [
+			'id'       => uniqid( 'evt_' ),
 			'type'     => 'payment_intent.payment_failed',
 			'livemode' => true,
 			'data'     => [
