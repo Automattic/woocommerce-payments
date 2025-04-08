@@ -136,9 +136,9 @@ class WC_Payments_Webhook_Processing_Service {
 		$event_type = $this->read_webhook_property( $event_body, 'type' );
 
 		Logger::debug(
-			'< WEBHOOK RECEIVED: ' . $event_type,
+			'WEBHOOK RECEIVED: ' . $event_type . ' ' . $event_body['id'],
 			[
-				'body' => var_export( WC_Payments_Utils::redact_array( $event_body, WC_Payments_API_Client::API_KEYS_TO_REDACT ), true ), // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+				'body' => WC_Payments_Utils::redact_array( $event_body, WC_Payments_API_Client::API_KEYS_TO_REDACT ),
 			]
 		);
 
