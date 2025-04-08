@@ -48,6 +48,15 @@ describe( 'AccountFees', () => {
 			},
 			dateFormat: 'F j, Y',
 		};
+
+		global.wooPaymentsPaymentMethodsConfig = {
+			giropay: {
+				title: 'giropay',
+			},
+			sofort: {
+				title: 'Sofort',
+			},
+		};
 	} );
 
 	test( 'renders normal base fee', () => {

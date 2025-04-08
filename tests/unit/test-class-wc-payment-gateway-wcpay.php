@@ -689,7 +689,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$this->assertSame( 'afterpay_clearpay', $afterpay_method->get_id() );
 		$this->assertSame( 'Afterpay', $afterpay_method->get_title() );
-		$this->assertSame( 'Afterpay', $afterpay_method->get_title( 'US', $mock_afterpay_details ) );
+		$this->assertSame( 'Cash App Afterpay', $afterpay_method->get_title( 'US', $mock_afterpay_details ) );
 		$this->assertTrue( $afterpay_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $afterpay_method->is_reusable() );
 
@@ -747,12 +747,23 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		WC()->session->init();
 		WC()->cart->empty_cart();
-		// Total is 100 USD, which is above both payment methods (Affirm and AfterPay) minimums.
-		WC()->cart->add_to_cart( WC_Helper_Product::create_simple_product()->get_id(), 10 );
+		// Total is 10 USD, which is below Affirm minimum but above AfterPay minimum.
+		WC()->cart->add_to_cart( WC_Helper_Product::create_simple_product()->get_id(), 1 );
 		WC()->cart->calculate_totals();
 
 		$affirm_method   = $this->payment_methods['affirm'];
 		$afterpay_method = $this->payment_methods['afterpay_clearpay'];
+
+		$this->assertFalse( $affirm_method->is_enabled_at_checkout( 'US' ) ); // Affirm minimum is 50 USD.
+		$this->assertTrue( $afterpay_method->is_enabled_at_checkout( 'US' ) ); // AfterPay minimum is 1 USD.
+
+		// Currency Limits check for affirm can be skipped by passing a second parameter (this is a workaround for the blocks editor).
+		$this->assertTrue( $affirm_method->is_enabled_at_checkout( 'US', true ) );
+
+		WC()->cart->empty_cart();
+		// Total is 100 USD, which is above both payment methods (Affirm and AfterPay) minimums.
+		WC()->cart->add_to_cart( WC_Helper_Product::create_simple_product()->get_id(), 10 );
+		WC()->cart->calculate_totals();
 
 		$this->assertTrue( $affirm_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertTrue( $afterpay_method->is_enabled_at_checkout( 'US' ) );
@@ -2430,6 +2441,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->card_gateway->output_payments_settings_screen();
 		$output = ob_get_clean();
 		$this->assertStringMatchesFormat( '%aid="wcpay-account-settings-container"%a', $output );
+		$this->assertStringMatchesFormat( '%ahref="admin.php?page=wc-settings&#038;tab=checkout"%a', $output );
 	}
 
 	public function test_outputs_express_checkout_settings_screen() {
@@ -2439,6 +2451,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$output = ob_get_clean();
 		$this->assertStringMatchesFormat( '%aid="wcpay-express-checkout-settings-container"%a', $output );
 		$this->assertStringMatchesFormat( '%adata-method-id="foo"%a', $output );
+		$this->assertStringMatchesFormat( '%ahref="admin.php?page=wc-settings&#038;tab=checkout&#038;section=woocommerce_payments"%a', $output );
 	}
 
 	/**
@@ -3757,6 +3770,92 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		remove_filter( 'woocommerce_countries_base_country', $filter_callback );
 	}
 
+	public function test_updating_subscription_for_non_3ds_cards_removes_hook() {
+		$_GET['change_payment_method'] = 10;
+		WC_Subscriptions::set_wcs_is_subscription(
+			function ( $order ) {
+				return true;
+			}
+		);
+
+		$pi = new Payment_Information( 'pm_test', WC_Helper_Order::create_order(), null, new WC_Payment_Token_CC(), null, null, null, '', 'card' );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'set_payment_methods' )
+			->with( [ 'card' ] );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'success' ] ) );
+
+		add_filter(
+			'woocommerce_subscriptions_update_payment_via_pay_shortcode',
+			[ $this->card_gateway, 'update_payment_method_for_subscriptions' ],
+			10,
+			3
+		);
+
+		$this->assertEquals(
+			10,
+			has_filter( 'woocommerce_subscriptions_update_payment_via_pay_shortcode', [ $this->card_gateway, 'update_payment_method_for_subscriptions' ] ),
+			'Hook should be registered before payment processing'
+		);
+
+		$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
+
+		$this->assertFalse(
+			has_filter( 'woocommerce_subscriptions_update_payment_via_pay_shortcode', [ $this->card_gateway, 'update_payment_method_for_subscriptions' ] ),
+			'Hook should be removed after processing payment for subscription with non-3DS card'
+		);
+	}
+
+	public function test_updating_subscription_for_3ds_cards_sets_delayed_update_payment_method_all() {
+		$_GET['change_payment_method'] = 10;
+		WC_Subscriptions::set_wcs_is_subscription(
+			function ( $order ) {
+				return true;
+			}
+		);
+
+		$order = WC_Helper_Order::create_order();
+
+		// Set up POST data including update_all_subscriptions_payment_method.
+		$_POST = [
+			'payment_method'                          => 'woocommerce_payments',
+			'update_all_subscriptions_payment_method' => '1',
+		];
+
+		$pi = new Payment_Information( 'pm_test', $order, null, new WC_Payment_Token_CC(), null, null, null, '', 'card' );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'set_payment_methods' )
+			->with( [ 'card' ] );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'status'      => 'requires_action',
+						'next_action' => [
+							'type' => 'use_stripe_sdk',
+						],
+					]
+				)
+			);
+
+		try {
+			// The test exits early so we need to handle the exception.
+			$this->card_gateway->process_payment_for_order( WC()->cart, $pi );
+		} catch ( Exception $e ) {
+			$this->assertEquals(
+				'woocommerce_payments',
+				$order->get_meta( '_delayed_update_payment_method_all' ),
+				'Order metadata for delayed payment method update was not set correctly'
+			);
+		}
+	}
+
 	/**
 	 * Sets up the expectation for a certain factor for the new payment
 	 * process to be either set or unset.
@@ -3845,6 +3944,10 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	private function init_payment_methods() {
 		$payment_methods = [];
 
+		/**
+		 * FLAG: PAYMENT_METHODS_LIST
+		 * As payment methods are converted to use definitions, they need to be removed from the list below.
+		 */
 		$payment_method_classes = [
 			CC_Payment_Method::class,
 			Bancontact_Payment_Method::class,

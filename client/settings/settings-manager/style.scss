@@ -1,0 +1,60 @@
+body {
+	/* this can be removed after all the settings sections are converted to the new layout */
+	&.woocommerce_page_wc-settings {
+		&.woocommerce-payments-checkout-section {
+			background: #fff;
+			.settings-content,
+			#wpbody-content,
+			#wpcontent,
+			#mainform {
+				background: #fff;
+			}
+
+			.woopay-settings {
+				.woopay-settings__appearance-card-settings,
+				.woopay-settings__appearance-card-preview {
+					box-shadow: none;
+				}
+			}
+			.woopay-settings__preview .preview-layout {
+				border: 0;
+			}
+		}
+
+		&.woocommerce-payments-checkout-section {
+			.components-surface {
+				&.components-card {
+					box-shadow: none;
+				}
+			}
+		}
+	}
+
+	&.woocommerce-payments-checkout-section {
+		.components-surface.components-card {
+			box-shadow: none;
+		}
+		.components-card__body {
+			&.components-card-body.wcpay-card-body {
+				padding: 0;
+			}
+		}
+		.payment-method__list-item {
+			padding-left: 0;
+			padding-right: 0;
+			&:first-child {
+				padding-top: 0;
+			}
+			&:last-child {
+				padding-bottom: 0;
+			}
+		}
+	}
+	.transactions__customer-support {
+		.settings__account-business-support-phone-input {
+			p {
+				margin-bottom: 0;
+			}
+		}
+	}
+}

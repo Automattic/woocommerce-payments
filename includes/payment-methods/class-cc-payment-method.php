@@ -79,4 +79,47 @@ class CC_Payment_Method extends UPE_Payment_Method {
 			$test_card_number
 		);
 	}
+
+	/**
+	 * Returns payment method description for the settings page.
+	 *
+	 * @param string|null $account_country Country of merchants account.
+	 *
+	 * @return string
+	 */
+	public function get_description( ?string $account_country = null ) {
+		return __(
+			'Let your customers pay with major credit and debit cards without leaving your store.',
+			'woocommerce-payments'
+		);
+	}
+
+	/**
+	 * Returns payment method settings label.
+	 *
+	 * @param string $account_country Country of merchants account.
+	 * @return string
+	 */
+	public function get_settings_label( string $account_country ) {
+		return __( 'Credit / Debit Cards', 'woocommerce-payments' );
+	}
+
+	/**
+	 * Returns payment method settings icon.
+	 *
+	 * @param string|null $account_country Country of merchants account.
+	 * @return string
+	 */
+	public function get_settings_icon_url( ?string $account_country = null ) {
+		return plugins_url( 'assets/images/payment-methods/cc.svg', WCPAY_PLUGIN_FILE );
+	}
+
+	/**
+	 * Returns boolean dependent on whether payment method allows manual capture.
+	 *
+	 * @return bool
+	 */
+	public function allows_manual_capture() {
+		return true;
+	}
 }

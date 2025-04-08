@@ -10,8 +10,8 @@ import user from '@testing-library/user-event';
  */
 import ProgressiveOnboardingEligibilityModal from '../index';
 
-jest.mock( '@wordpress/data', () => ( {
-	useDispatch: jest.fn().mockReturnValue( { updateOptions: jest.fn() } ),
+jest.mock( 'wcpay/data/settings/actions', () => ( {
+	saveOption: jest.fn(),
 } ) );
 
 declare const global: {

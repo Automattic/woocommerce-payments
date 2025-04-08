@@ -25,8 +25,13 @@ import KlarnaDetails from './klarna';
 import P24Details from './p24';
 import SepaDetails from './sepa';
 import SofortDetails from './sofort';
+import MultibancoDetails from './multibanco';
 import WeChatPayDetails from './wechat-pay';
 
+/**
+ * FLAG: PAYMENT_METHODS_LIST
+ * There is some duplicated code in these detailed components that needs to be spiked on for a refactor.
+ */
 const detailsComponentMap = {
 	affirm: AffirmDetails,
 	alipay: AlipayDetails,
@@ -43,6 +48,7 @@ const detailsComponentMap = {
 	p24: P24Details,
 	sepa_debit: SepaDetails,
 	sofort: SofortDetails,
+	multibanco: MultibancoDetails,
 	wechat_pay: WeChatPayDetails,
 };
 

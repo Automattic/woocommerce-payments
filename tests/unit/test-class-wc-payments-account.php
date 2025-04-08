@@ -428,7 +428,10 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		);
 
 		// Act.
+		// Some code paths in the onboarding output JSON, so we use output buffering to suppress it while testing.
+		ob_start();
 		$wcpay_account->maybe_handle_onboarding();
+		ob_end_clean();
 
 		remove_all_filters( 'wp_doing_ajax' );
 		remove_all_filters( 'wp_die_ajax_handler' );
@@ -933,6 +936,11 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					'woopay_enabled_by_default' => true,
 				]
 			);
+
+		$this->mock_onboarding_service
+			->expects( $this->once() )
+			->method( 'should_enable_woopay' )
+			->willReturn( true );
 
 		$original_value = get_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT );
 

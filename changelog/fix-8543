@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Renamed function parameters to avoid reserved keyword conflicts

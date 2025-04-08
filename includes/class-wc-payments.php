@@ -13,7 +13,6 @@ use WCPay\Core\Mode;
 use WCPay\Core\Server\Request;
 use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
 use WCPay\Payment_Methods\CC_Payment_Method;
-use WCPay\Payment_Methods\Alipay_Payment_Method;
 use WCPay\Payment_Methods\Bancontact_Payment_Method;
 use WCPay\Payment_Methods\Becs_Payment_Method;
 use WCPay\Payment_Methods\Giropay_Payment_Method;
@@ -25,6 +24,7 @@ use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Eps_Payment_Method;
 use WCPay\Payment_Methods\Wechatpay_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Method;
+use WCPay\Payment_Methods\Multibanco_Payment_Method;
 use WCPay\WooPay_Tracker;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\WooPay\WooPay_Order_Status_Sync;
@@ -430,7 +430,6 @@ class WC_Payments {
 		include_once __DIR__ . '/payment-methods/class-cc-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-upe-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-cc-payment-method.php';
-		include_once __DIR__ . '/payment-methods/class-alipay-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-bancontact-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-sepa-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-giropay-payment-method.php';
@@ -443,8 +442,10 @@ class WC_Payments {
 		include_once __DIR__ . '/payment-methods/class-affirm-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-afterpay-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-klarna-payment-method.php';
+		include_once __DIR__ . '/payment-methods/class-multibanco-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-grabpay-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-wechatpay-payment-method.php';
+		include_once __DIR__ . '/inline-script-payloads/class-woo-payments-payment-methods-config.php';
 		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-button-helper.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-sepa.php';
 		include_once __DIR__ . '/class-wc-payments-status.php';
@@ -471,6 +472,7 @@ class WC_Payments {
 		include_once __DIR__ . '/exceptions/class-order-id-mismatch-exception.php';
 		include_once __DIR__ . '/exceptions/class-rate-limiter-enabled-exception.php';
 		include_once __DIR__ . '/exceptions/class-invalid-address-exception.php';
+		include_once __DIR__ . '/exceptions/class-subscription-mode-mismatch-exception.php';
 		include_once __DIR__ . '/constants/class-base-constant.php';
 		include_once __DIR__ . '/constants/class-country-code.php';
 		include_once __DIR__ . '/constants/class-country-test-cards.php';
@@ -481,6 +483,7 @@ class WC_Payments {
 		include_once __DIR__ . '/constants/class-payment-type.php';
 		include_once __DIR__ . '/constants/class-payment-initiated-by.php';
 		include_once __DIR__ . '/constants/class-intent-status.php';
+		include_once __DIR__ . '/constants/class-refund-status.php';
 		include_once __DIR__ . '/constants/class-payment-intent-status.php';
 		include_once __DIR__ . '/constants/class-payment-capture-type.php';
 		include_once __DIR__ . '/constants/class-payment-method.php';
@@ -568,9 +571,12 @@ class WC_Payments {
 		self::$customer_service->init_hooks();
 		self::$token_service->init_hooks();
 
+		/**
+		 * FLAG: PAYMENT_METHODS_LIST
+		 * As payment methods are converted to use definitions, they need to be removed from the list below.
+		 */
 		$payment_method_classes = [
 			CC_Payment_Method::class,
-			Alipay_Payment_Method::class,
 			Bancontact_Payment_Method::class,
 			Sepa_Payment_Method::class,
 			Giropay_Payment_Method::class,
@@ -583,6 +589,7 @@ class WC_Payments {
 			Affirm_Payment_Method::class,
 			Afterpay_Payment_Method::class,
 			Klarna_Payment_Method::class,
+			Multibanco_Payment_Method::class,
 			Grabpay_Payment_Method::class,
 			Wechatpay_Payment_Method::class,
 		];
@@ -676,7 +683,6 @@ class WC_Payments {
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
 		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'order_woopayments_gateways' ], 2 );
 		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'order_woopayments_gateways' ], 3 );
-		add_filter( 'woocommerce_rest_api_option_permissions', [ __CLASS__, 'add_wcpay_options_to_woocommerce_permissions_list' ], 5 );
 		add_filter( 'woocommerce_admin_get_user_data_fields', [ __CLASS__, 'add_user_data_fields' ] );
 
 		// Add note query support for source.
@@ -719,6 +725,7 @@ class WC_Payments {
 
 		// Add admin screens.
 		if ( is_admin() ) {
+			include_once WCPAY_ABSPATH . 'includes/inline-script-payloads/class-woo-payments-payment-method-definitions.php';
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-payments-admin.php';
 		}
 
@@ -753,10 +760,8 @@ class WC_Payments {
 		}
 
 		// Load Stripe Billing subscription integration.
-		if ( WC_Payments_Features::is_stripe_billing_eligible() ) {
-			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions.php';
-			WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::$order_service, self::$account, self::$token_service );
-		}
+		include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions.php';
+		WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::$order_service, self::$account, self::$token_service );
 
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '7.9.0', '<' ) ) {
 			add_action( 'woocommerce_onboarding_profile_data_updated', 'WC_Payments_Features::maybe_enable_wcpay_subscriptions_after_onboarding', 10, 2 );
@@ -1119,6 +1124,10 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-settings-controller.php';
 		$settings_controller = new WC_REST_Payments_Settings_Controller( self::$api_client, self::get_gateway(), self::$account );
 		$settings_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-settings-option-controller.php';
+		$settings_option_controller = new WC_REST_Payments_Settings_Option_Controller( self::$api_client );
+		$settings_option_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-reader-controller.php';
 		$charges_controller = new WC_REST_Payments_Reader_Controller( self::$api_client, self::get_gateway(), self::$in_person_payments_receipts_service );
@@ -1953,45 +1962,6 @@ class WC_Payments {
 			wp_enqueue_script( 'WCPAY_RUNTIME', plugins_url( 'dist/runtime.js', WCPAY_PLUGIN_FILE ), [], self::get_file_version( 'dist/runtime.js' ), true );
 		}
 	}
-
-	/**
-	 * Adds WCPay options to Woo Core option allow list.
-	 *
-	 * @param   array $permissions Array containing the permissions.
-	 *
-	 * @return  array              An array containing the modified permissions.
-	 */
-	public static function add_wcpay_options_to_woocommerce_permissions_list( $permissions ) {
-		$wcpay_permissions_list = array_fill_keys(
-			[
-				'wcpay_frt_discover_banner_settings',
-				'wcpay_multi_currency_setup_completed',
-				'woocommerce_dismissed_todo_tasks',
-				'woocommerce_remind_me_later_todo_tasks',
-				'woocommerce_deleted_todo_tasks',
-				'wcpay_fraud_protection_welcome_tour_dismissed',
-				'wcpay_capability_request_dismissed_notices',
-				'wcpay_onboarding_eligibility_modal_dismissed',
-				'wcpay_connection_success_modal_dismissed',
-				'wcpay_next_deposit_notice_dismissed',
-				'wcpay_duplicate_payment_method_notices_dismissed',
-				'wcpay_exit_survey_dismissed',
-				'wcpay_instant_deposit_notice_dismissed',
-				'wcpay_date_format_notice_dismissed',
-			],
-			true
-		);
-
-		if ( is_array( $permissions ) ) {
-			return array_merge(
-				$permissions,
-				$wcpay_permissions_list
-			);
-		}
-
-		return $wcpay_permissions_list;
-	}
-
 
 	/**
 	 * Creates a new request object for a server call.
