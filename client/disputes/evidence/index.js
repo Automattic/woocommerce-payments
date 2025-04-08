@@ -292,17 +292,28 @@ export const DisputeEvidenceForm = ( props ) => {
 
 	return (
 		<>
+			{ ! readOnly && dispute && productType && (
+				<Card size="large">
+					<CardBody>
+						<PreFillEvidence
+							disputeReason={ dispute.reason }
+							productType={ productType }
+							onPreFill={ handlePreFill }
+						/>
+						<p>
+							{ __(
+								'This will pre-fill the evidence form with relevant information based on the ' +
+									'dispute reason and product type. You can edit any pre-filled fields before submitting.',
+								'woocommerce-payments'
+							) }
+						</p>
+					</CardBody>
+				</Card>
+			) }
 			{ evidenceSections }
 			{ readOnly ? null : (
 				<Card size="large">
 					<CardBody>
-						{ dispute && productType && (
-							<PreFillEvidence
-								disputeReason={ dispute.reason }
-								productType={ productType }
-								onPreFill={ handlePreFill }
-							/>
-						) }
 						<p>
 							{ __(
 								// eslint-disable-next-line max-len
