@@ -49,17 +49,17 @@ class Logger {
 	/**
 	 * Add a log entry.
 	 *
-	 * @param string                $message Log message.
-	 * @param string                $level One of the following:
-	 *                    'emergency': System is unusable.
-	 *                    'alert': Action must be taken immediately.
-	 *                    'critical': Critical conditions.
-	 *                    'error': Error conditions.
-	 *                    'warning': Warning conditions.
-	 *                    'notice': Normal but significant condition.
-	 *                    'info': Informational messages.
-	 *                    'debug': Debug-level messages.
-	 * @param array<string, string> $context Context data.
+	 * @param string               $message Log message.
+	 * @param string               $level One of the following:
+	 *                   'emergency': System is unusable.
+	 *                   'alert': Action must be taken immediately.
+	 *                   'critical': Critical conditions.
+	 *                   'error': Error conditions.
+	 *                   'warning': Warning conditions.
+	 *                   'notice': Normal but significant condition.
+	 *                   'info': Informational messages.
+	 *                   'debug': Debug-level messages.
+	 * @param array<string, mixed> $context Context data.
 	 */
 	public function log( $message, $level = 'info', $context = [] ): void {
 		if ( ! $this->can_log() ) {
@@ -93,8 +93,8 @@ class Logger {
 	/**
 	 * Creates a log entry of type emergency
 	 *
-	 * @param string                $message To send to the log file.
-	 * @param array<string, string> $context Context data.
+	 * @param string               $message To send to the log file.
+	 * @param array<string, mixed> $context Context data.
 	 */
 	public function emergency( $message, $context = [] ): void {
 		$this->log( $message, WC_Log_Levels::EMERGENCY, $context );
@@ -103,8 +103,8 @@ class Logger {
 	/**
 	 * Creates a log entry of type alert
 	 *
-	 * @param string                $message To send to the log file.
-	 * @param array<string, string> $context Context data.
+	 * @param string               $message To send to the log file.
+	 * @param array<string, mixed> $context Context data.
 	 */
 	public function alert( $message, $context = [] ): void {
 		$this->log( $message, WC_Log_Levels::ALERT, $context );
@@ -113,8 +113,8 @@ class Logger {
 	/**
 	 * Creates a log entry of type critical
 	 *
-	 * @param string                $message To send to the log file.
-	 * @param array<string, string> $context Context data.
+	 * @param string               $message To send to the log file.
+	 * @param array<string, mixed> $context Context data.
 	 */
 	public function critical( $message, $context = [] ): void {
 		$this->log( $message, WC_Log_Levels::CRITICAL, $context );
@@ -123,8 +123,8 @@ class Logger {
 	/**
 	 * Creates a log entry of type error
 	 *
-	 * @param string                $message To send to the log file.
-	 * @param array<string, string> $context Context data.
+	 * @param string               $message To send to the log file.
+	 * @param array<string, mixed> $context Context data.
 	 */
 	public function error( $message, $context = [] ): void {
 		$this->log( $message, WC_Log_Levels::ERROR, $context );
@@ -133,8 +133,8 @@ class Logger {
 	/**
 	 * Creates a log entry of type warning
 	 *
-	 * @param string                $message To send to the log file.
-	 * @param array<string, string> $context Context data.
+	 * @param string               $message To send to the log file.
+	 * @param array<string, mixed> $context Context data.
 	 */
 	public function warning( $message, $context = [] ): void {
 		$this->log( $message, WC_Log_Levels::WARNING, $context );
@@ -143,8 +143,8 @@ class Logger {
 	/**
 	 * Creates a log entry of type notice
 	 *
-	 * @param string                $message To send to the log file.
-	 * @param array<string, string> $context Context data.
+	 * @param string               $message To send to the log file.
+	 * @param array<string, mixed> $context Context data.
 	 */
 	public function notice( $message, $context = [] ): void {
 		$this->log( $message, WC_Log_Levels::NOTICE, $context );
@@ -153,8 +153,8 @@ class Logger {
 	/**
 	 * Creates a log entry of type info
 	 *
-	 * @param string                $message To send to the log file.
-	 * @param array<string, string> $context Context data.
+	 * @param string               $message To send to the log file.
+	 * @param array<string, mixed> $context Context data.
 	 */
 	public function info( $message, $context = [] ): void {
 		$this->log( $message, WC_Log_Levels::INFO, $context );
@@ -163,8 +163,8 @@ class Logger {
 	/**
 	 * Creates a log entry of type debug
 	 *
-	 * @param string                $message To send to the log file.
-	 * @param array<string, string> $context Context data.
+	 * @param string               $message To send to the log file.
+	 * @param array<string, mixed> $context Context data.
 	 */
 	public function debug( $message, $context = [] ): void {
 		$this->log( $message, WC_Log_Levels::DEBUG, $context );

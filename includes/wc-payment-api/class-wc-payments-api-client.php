@@ -2276,7 +2276,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			$log_request_id = uniqid();
 
 			Logger::info(
-				sprintf( '> REQUEST (%s): %s %s', $log_request_id, $method, $redacted_url ),
+				sprintf( '> API REQUEST (%s): %s %s', $log_request_id, $method, $redacted_url ),
 				[
 					'request' => $request_args,
 					null !== $body ? [ 'body' => $redacted_params ] : [],
@@ -2314,7 +2314,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		}
 
 		Logger::info(
-			sprintf( '> RESPONSE (%s): %s %s', $log_request_id, $method, $redacted_url ),
+			sprintf( '> API RESPONSE (%s): %s %s', $log_request_id, $method, $redacted_url ),
 			[
 				'body' => WC_Payments_Utils::redact_array( $response_body, self::API_KEYS_TO_REDACT ),
 			]
