@@ -290,13 +290,17 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$amount    = 19.99;
 		$currency  = 'eur';
 
+		// Set up WooCommerce currency format for EUR.
+		update_option( 'woocommerce_currency', 'EUR' );
+		update_option( 'woocommerce_currency_pos', 'right_space' );
+
 		$order = WC_Helper_Order::create_order();
+		$order->set_currency( 'EUR' );
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
+		WC_Payments_Utils::set_order_intent_currency( $order, 'EUR' );
+		$order->update_status( Order_Status::PROCESSING );
 		$order->save();
-
-		// Update the order currency.
-		update_post_meta( $order->get_id(), '_order_currency', strtoupper( $currency ) );
 
 		wc_create_refund(
 			[
@@ -361,11 +365,17 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$currency  = 'eur';
 		$reason    = 'some reason';
 
+		// Set up WooCommerce currency format for EUR.
+		update_option( 'woocommerce_currency', 'EUR' );
+		update_option( 'woocommerce_currency_pos', 'right_space' );
+
 		$order = WC_Helper_Order::create_order();
+		$order->set_currency( 'EUR' );
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
+		WC_Payments_Utils::set_order_intent_currency( $order, 'EUR' );
+		$order->update_status( Order_Status::PROCESSING );
 		$order->save();
-		update_post_meta( $order->get_id(), '_order_currency', strtoupper( $currency ) );
 
 		wc_create_refund(
 			[
@@ -433,10 +443,13 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$currency          = 'EUR';
 
 		$order = WC_Helper_Order::create_order( null, 30 );
+		$order->set_currency( 'EUR' );
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
 		$order->update_meta_data( '_payment_method_id', $payment_method_id );
 		$order->update_meta_data( WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, $currency );
+		WC_Payments_Utils::set_order_intent_currency( $order, 'EUR' );
+		$order->update_status( Order_Status::PROCESSING );
 		$order->save();
 
 		update_post_meta( $order->get_id(), '_order_currency', $currency );
@@ -606,6 +619,9 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$order->update_meta_data( '_charge_id', $charge_id );
 		$order->update_meta_data( '_payment_method_id', $payment_method_id );
 		$order->update_meta_data( WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'EUR' );
+		$order->set_currency( 'EUR' );
+		WC_Payments_Utils::set_order_intent_currency( $order, 'EUR' );
+		$order->update_status( Order_Status::PROCESSING );
 		$order->save();
 
 		$this->mock_order_service
@@ -662,6 +678,9 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$order->update_meta_data( '_charge_id', $charge_id );
 		$order->update_meta_data( '_payment_method_id', $payment_method_id );
 		$order->update_meta_data( WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, 'EUR' );
+		$order->set_currency( 'EUR' );
+		WC_Payments_Utils::set_order_intent_currency( $order, 'EUR' );
+		$order->update_status( Order_Status::PROCESSING );
 		$order->save();
 
 		$this->mock_order_service
@@ -735,6 +754,9 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
 		$order->update_meta_data( '_payment_method_id', $payment_method_id );
+		$order->set_currency( 'EUR' );
+		WC_Payments_Utils::set_order_intent_currency( $order, 'EUR' );
+		$order->update_status( Order_Status::PROCESSING );
 		$order->save();
 
 		update_post_meta( $order->get_id(), '_order_currency', strtoupper( $currency ) );
@@ -1022,7 +1044,12 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$intent_id = 'pi_xxxxxxxxxxxxx';
 		$charge_id = 'ch_yyyyyyyyyyyyy';
 
+		// Set up WooCommerce currency format for EUR.
+		update_option( 'woocommerce_currency', 'EUR' );
+		update_option( 'woocommerce_currency_pos', 'right_space' );
+
 		$order = WC_Helper_Order::create_order();
+		$order->set_currency( 'EUR' );
 		$order->update_meta_data( '_intent_id', $intent_id );
 		$order->update_meta_data( '_charge_id', $charge_id );
 		WC_Payments_Utils::set_order_intent_currency( $order, 'EUR' );
@@ -1073,7 +1100,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$this->assertInstanceOf( WP_Error::class, $result );
 		$this->assertEquals( 'wcpay_edit_order_refund_failure', $result->get_error_code() );
 		$this->assertEquals( 'Test message', $result->get_error_message() );
-		$this->assertStringContainsString( 'failed to complete', $latest_wcpay_note->content );
+		$this->assertStringContainsString( 'unsuccessful', $latest_wcpay_note->content );
 		$this->assertStringContainsString( 'An unknown error occurred while processing the refund', $latest_wcpay_note->content );
 		$this->assertStringContainsString( wc_price( 19.99, [ 'currency' => 'EUR' ] ), $latest_wcpay_note->content );
 	}
@@ -1184,7 +1211,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$this->assertInstanceOf( WP_Error::class, $result );
 		$this->assertEquals( 'wcpay_edit_order_refund_failure', $result->get_error_code() );
 		$this->assertEquals( 'Test message', $result->get_error_message() );
-		$this->assertStringContainsString( 'failed to complete', $latest_wcpay_note->content );
+		$this->assertStringContainsString( 'unsuccessful', $latest_wcpay_note->content );
 		$this->assertStringContainsString( $expected_message, $latest_wcpay_note->content );
 		$this->assertStringContainsString( '19.99', $latest_wcpay_note->content );
 	}
