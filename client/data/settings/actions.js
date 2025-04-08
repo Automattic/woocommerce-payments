@@ -187,8 +187,18 @@ export function* saveSettings() {
 		} );
 
 		yield updateSettingsValues( {
-			payment_method_statuses: response.data.payment_method_statuses,
-		} );
+			...response.data,
+        }  );
+
+		// Errors for Fraud advanced switched back to basic protection level when not configured.
+		if( response.data.current_protection_level === 'basic' && settings.current_protection_level === 'advanced' ) {
+			dispatch( 'core/notices' ).createErrorNotice(
+				__(
+					'Current protection level is set to "basic". At least one risk filter needs to be enabled for advanced protection.',
+					'woocommerce-payments'
+				)
+			);
+		}
 
 		yield dispatch( 'core/notices' ).createSuccessNotice(
 			__( 'Settings saved.', 'woocommerce-payments' )
@@ -252,6 +262,7 @@ export function updateProtectionLevel( level ) {
 export function updateAdvancedFraudProtectionSettings( settings ) {
 	return updateSettingsValues( {
 		advanced_fraud_protection_settings: settings,
+		is_advanced_fraud_protection_enabled: settings.length > 0,
 	} );
 }
 

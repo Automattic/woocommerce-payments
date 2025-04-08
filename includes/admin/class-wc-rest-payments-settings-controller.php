@@ -964,7 +964,13 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			return;
 		}
 
-		$protection_level = $request->get_param( 'current_protection_level' );
+		$is_advanced_fraud_protection_enabled = $request->get_param( 'is_advanced_fraud_protection_enabled' );
+		$protection_level = $is_advanced_fraud_protection_enabled ? 'advanced' : $request->get_param( 'current_protection_level' );
+
+		// Prevents enabling from payment settings page, forcing activation of a fraud protection setting first.
+		if($protection_level === 'advanced' && !$request->get_param( 'is_advanced_fraud_protection_enabled' )) {
+			$protection_level = 'basic';
+		}
 
 		// Check validity of the protection level.
 		if ( ! in_array( $protection_level, [ 'basic', 'standard', 'high', 'advanced' ], true ) ) {
@@ -983,15 +989,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				$ruleset_config = Fraud_Risk_Tools::get_high_protection_settings();
 				break;
 			case 'advanced':
-				$referer                   = $request->get_header( 'referer' );
-				$is_advanced_settings_page = 0 < strpos( $referer, 'fraud-protection' );
-				if ( ! $is_advanced_settings_page ) {
-					// When the button is clicked from the Payments > Settings page, the advanced fraud protection settings shouldn't change.
-					$ruleset_config = get_transient( 'wcpay_fraud_protection_settings' ) ?? [];
-				} else {
-					// When the button is clicked from the Advanced fraud protection settings page, it should change.
-					$ruleset_config = $request->get_param( 'advanced_fraud_protection_settings' );
-				}
+				$ruleset_config = $request->get_param( 'advanced_fraud_protection_settings' ) ?? [];
 				break;
 		}
 
