@@ -398,7 +398,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 *
 	 * @return string The wc_price with HTML wrapping, possibly with the currency code added for explicit formatting.
 	 */
-	public function maybe_get_explicit_format_for_subscription_total( $html_price, $price, $args, $unformatted_price, $original_price ): string {
+	public function maybe_get_explicit_format_for_subscription_total( $html_price, $price, $args, $unformatted_price, $original_price = '' ): string {
 		if ( ! $this->is_current_my_account_subscription_set() ) {
 			return $html_price;
 		}
