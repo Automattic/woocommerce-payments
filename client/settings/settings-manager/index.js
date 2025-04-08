@@ -22,6 +22,7 @@ import LoadableSettingsSection from '../loadable-settings-section';
 import PaymentMethodsSection from '../payment-methods-section';
 import BuyNowPayLaterSection from '../buy-now-pay-later-section';
 import ErrorBoundary from '../../components/error-boundary';
+import DisputeDefenseToolkitSettings from '../dispute-defense-toolkit';
 import {
 	useDepositDelayDays,
 	useGetDuplicatedPaymentMethodIds,
@@ -87,7 +88,7 @@ const DepositsDescription = () => {
 			<p>
 				{ sprintf(
 					__(
-						'Funds are available for payout %s business days after they’re received.',
+						"Funds are available for payout %s business days after they're received.",
 						'woocommerce-payments'
 					),
 					depositDelayDays
@@ -123,22 +124,32 @@ const FraudProtectionDescription = () => {
 	);
 };
 
-const AdvancedDescription = () => {
-	return (
-		<>
-			<h2>{ __( 'Advanced settings', 'woocommerce-payments' ) }</h2>
-			<p>
-				{ __(
-					'More options for specific payment needs.',
-					'woocommerce-payments'
-				) }
-			</p>
-			<ExternalLink href="https://woocommerce.com/document/woopayments/settings-guide/#advanced-settings">
-				{ __( 'View our documentation', 'woocommerce-payments' ) }
-			</ExternalLink>
-		</>
-	);
-};
+const AdvancedDescription = () => (
+	<>
+		<h2>{ __( 'Advanced', 'woocommerce-payments' ) }</h2>
+		<p>
+			{ __(
+				'Configure advanced settings for your WooPayments account.',
+				'woocommerce-payments'
+			) }
+		</p>
+	</>
+);
+
+const DisputeDefenseToolkitDescription = () => (
+	<>
+		<h2>{ __( 'Dispute Defense Toolkit', 'woocommerce-payments' ) }</h2>
+		<p>
+			{ __(
+				'Automatically collect and store evidence that can help defend against disputes.',
+				'woocommerce-payments'
+			) }
+		</p>
+		<ExternalLink href="https://woocommerce.com/document/woopayments/disputes/">
+			{ __( 'Learn more about disputes', 'woocommerce-payments' ) }
+		</ExternalLink>
+	</>
+);
 
 const SettingsManager = () => {
 	const [ isTransactionInputsValid, setTransactionInputsValid ] = useState(
@@ -258,6 +269,16 @@ const SettingsManager = () => {
 				<LoadableSettingsSection numLines={ 20 }>
 					<ErrorBoundary>
 						<AdvancedSettings />
+					</ErrorBoundary>
+				</LoadableSettingsSection>
+			</SettingsSection>
+			<SettingsSection
+				description={ DisputeDefenseToolkitDescription }
+				id="dispute-defense-toolkit"
+			>
+				<LoadableSettingsSection numLines={ 20 }>
+					<ErrorBoundary>
+						<DisputeDefenseToolkitSettings />
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
