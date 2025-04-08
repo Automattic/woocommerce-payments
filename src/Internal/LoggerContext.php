@@ -7,6 +7,8 @@
 
 namespace WCPay\Internal;
 
+use WC_Payments;
+use WCPay\Constants\Order_Mode;
 use WCPay\Internal\Logger;
 
 /**
@@ -143,6 +145,7 @@ class LoggerContext {
 		$this->set_value( 'DOING_AJAX', defined( 'DOING_AJAX' ) && DOING_AJAX );
 		$this->set_value( 'DOING_CRON', defined( 'DOING_CRON' ) && DOING_CRON );
 		$this->set_value( 'WP_CLI', defined( 'WP_CLI' ) && WP_CLI );
+		$this->set_value( 'WOOPAYMENTS_MODE', WC_Payments::mode()->is_test() ? Order_Mode::TEST : Order_Mode::PRODUCTION );
 
 		$this->context_initialized = true;
 	}
