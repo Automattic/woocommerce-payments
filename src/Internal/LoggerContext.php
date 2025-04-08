@@ -145,7 +145,14 @@ class LoggerContext {
 		$this->set_value( 'DOING_AJAX', defined( 'DOING_AJAX' ) && DOING_AJAX );
 		$this->set_value( 'DOING_CRON', defined( 'DOING_CRON' ) && DOING_CRON );
 		$this->set_value( 'WP_CLI', defined( 'WP_CLI' ) && WP_CLI );
-		$this->set_value( 'WOOPAYMENTS_MODE', WC_Payments::mode()->is_test() ? Order_Mode::TEST : Order_Mode::PRODUCTION );
+
+		try {
+			$woopayments_mode = WC_Payments::mode()->is_test() ? Order_Mode::TEST : Order_Mode::PRODUCTION;
+		} catch ( \Exception $e ) {
+			$woopayments_mode = 'N/A';
+		}
+
+		$this->set_value( 'WOOPAYMENTS_MODE', $woopayments_mode );
 
 		$this->context_initialized = true;
 	}
