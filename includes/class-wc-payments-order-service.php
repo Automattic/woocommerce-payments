@@ -1542,6 +1542,11 @@ class WC_Payments_Order_Service {
 			}
 		}
 
+		// If order has been fully refunded, change status to failed.
+		if ( Order_Status::REFUNDED === $order->get_status() ) {
+			$order->update_status( Order_Status::FAILED );
+		}
+
 		$this->set_wcpay_refund_status_for_order( $order, Refund_Status::FAILED );
 		$order->save();
 	}

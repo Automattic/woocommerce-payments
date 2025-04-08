@@ -1562,8 +1562,20 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		// Assert: Check order note was added.
 		$notes = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
-		$this->assertStringContainsString( 'unsuccessful', $notes[0]->content );
-		$this->assertStringContainsString( $refund_id, $notes[0]->content );
+
+		// There should be at least two notes - one for status change and one for the failed refund.
+		$this->assertGreaterThanOrEqual( 2, count( $notes ) );
+
+		// Find our custom note about the unsuccessful refund.
+		$found_unsuccessful_note = false;
+		foreach ( $notes as $note ) {
+			if ( strpos( $note->content, 'unsuccessful' ) !== false ) {
+				$found_unsuccessful_note = true;
+				$this->assertStringContainsString( $refund_id, $note->content );
+				break;
+			}
+		}
+		$this->assertTrue( $found_unsuccessful_note, 'Could not find note about unsuccessful refund' );
 
 		// Assert: If refund existed, it was deleted.
 		if ( $has_refund ) {
