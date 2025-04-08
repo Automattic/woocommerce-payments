@@ -17,6 +17,7 @@ use WCPay\Logger;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Core\Server\Request\Cancel_Intention;
 use WCPay\Core\Server\Request\Capture_Intention;
+use WCPay\Tracker;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -1530,6 +1531,9 @@ class WC_Payments_Order_Service {
 
 		Logger::log( $note );
 		$order->add_order_note( $note );
+
+		// Track the refund failure event.
+		Tracker::track_admin( 'wcpay_edit_order_refund_failure', [ 'reason' => $note ] );
 
 		// Handle insufficient balance case.
 		if ( 'insufficient_balance_for_refund' === $failure_reason ) {
