@@ -158,6 +158,8 @@ class WC_Payments_Subscriptions {
 			return WC_Subscriptions::is_duplicate_site();
 		}
 
-		return class_exists( 'WCS_Staging' ) && WCS_Staging::is_duplicate_site();
+		return class_exists( 'WCS_Staging' )
+			&& method_exists( 'WCS_Staging', 'is_duplicate_site' )
+			&& WCS_Staging::is_duplicate_site();
 	}
 }
