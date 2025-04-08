@@ -1073,7 +1073,7 @@ class WC_Payment_Gateway_WCPay_Process_Refund_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'wcpay_edit_order_refund_failure', $result->get_error_code() );
 		$this->assertEquals( 'Test message', $result->get_error_message() );
 		$this->assertStringContainsString( 'failed to complete', $latest_wcpay_note->content );
-		$this->assertStringContainsString( 'Test message', $latest_wcpay_note->content );
+		$this->assertStringContainsString( 'An unknown error occurred while processing the refund', $latest_wcpay_note->content );
 		$this->assertStringContainsString( wc_price( 19.99, [ 'currency' => 'EUR' ] ), $latest_wcpay_note->content );
 	}
 

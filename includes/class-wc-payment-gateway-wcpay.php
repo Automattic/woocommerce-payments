@@ -2319,7 +2319,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$failure_message = Refund_Failure_Reason::get_failure_message( $failure_reason );
 					$note            = sprintf(
 						/* translators: %1: the successfully charged amount, %2: failure message */
-						__( 'A refund of %1$s failed: %2$s', 'woocommerce-payments' ),
+						__( 'A refund of %1$s failed to complete: %2$s', 'woocommerce-payments' ),
 						WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $amount, [ 'currency' => $currency ] ), $order ),
 						$failure_message
 					);
