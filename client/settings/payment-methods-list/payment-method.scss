@@ -196,4 +196,20 @@
 			margin-left: 0;
 		}
 	}
+
+	&__supported-cards {
+		margin-top: 16px;
+
+		.payment-methods--logos {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+
+			img {
+				width: 32px;
+				height: 20px;
+				object-fit: contain;
+			}
+		}
+	}
 }
