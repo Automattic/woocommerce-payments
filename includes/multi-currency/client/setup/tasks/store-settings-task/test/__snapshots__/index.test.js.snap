@@ -54,23 +54,23 @@ exports[`Multi-Currency store settings store settings task renders correctly: sn
           These settings can be changed any time by visiting the Multi-Currency settings
         </p>
         <div
-          class="components-surface components-card multi-currency-settings-task__wrapper css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+          class="components-surface components-card multi-currency-settings-task__wrapper css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
           data-wp-c16t="true"
           data-wp-component="Card"
         >
           <div
-            class="css-mgwsf4-View-Content em57xhy0"
+            class="css-1gsy4w7-View-Content em57xhy0"
           >
             <div
-              class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+              class="components-card__body components-card-body css-11b3k85-View-Body-borderRadius-medium em57xhy0"
               data-wp-c16t="true"
               data-wp-component="CardBody"
             >
               <div
-                class="components-base-control components-checkbox-control css-wdf2ti-Wrapper ej5x27r4"
+                class="components-base-control components-checkbox-control css-t4f5jv-Wrapper ej5x27r4"
               >
                 <div
-                  class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+                  class="components-base-control__field css-9j34z1-StyledField-deprecatedMarginField ej5x27r3"
                 >
                   <span
                     class="components-checkbox-control__input-container"
@@ -97,10 +97,10 @@ exports[`Multi-Currency store settings store settings task renders correctly: sn
                 Customers will be notified via store alert banner.
               </div>
               <div
-                class="components-base-control components-checkbox-control css-wdf2ti-Wrapper ej5x27r4"
+                class="components-base-control components-checkbox-control css-t4f5jv-Wrapper ej5x27r4"
               >
                 <div
-                  class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+                  class="components-base-control__field css-9j34z1-StyledField-deprecatedMarginField ej5x27r3"
                 >
                   <span
                     class="components-checkbox-control__input-container"
@@ -130,13 +130,13 @@ exports[`Multi-Currency store settings store settings task renders correctly: sn
           </div>
           <div
             aria-hidden="true"
-            class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+            class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
             data-wp-c16t="true"
             data-wp-component="Elevation"
           />
           <div
             aria-hidden="true"
-            class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+            class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
             data-wp-c16t="true"
             data-wp-component="Elevation"
           />

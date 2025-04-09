@@ -3,13 +3,13 @@
 exports[`FileUploadControl renders default file upload control 1`] = `
 <div>
   <div
-    class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
+    class="components-base-control css-t4f5jv-Wrapper ej5x27r4"
   >
     <div
-      class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+      class="components-base-control__field css-9j34z1-StyledField-deprecatedMarginField ej5x27r3"
     >
       <label
-        class="components-base-control__label css-eweeby-StyledLabel-labelStyles ej5x27r2"
+        class="components-base-control__label css-uc4znj-StyledLabel-labelStyles ej5x27r2"
         for="form-file-upload-base-control-field_key"
       >
         Upload file
@@ -51,7 +51,6 @@ exports[`FileUploadControl renders default file upload control 1`] = `
             type="file"
           />
         </div>
-        
       </div>
     </div>
   </div>
@@ -61,13 +60,13 @@ exports[`FileUploadControl renders default file upload control 1`] = `
 exports[`FileUploadControl renders disabled state 1`] = `
 <div>
   <div
-    class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
+    class="components-base-control css-t4f5jv-Wrapper ej5x27r4"
   >
     <div
-      class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+      class="components-base-control__field css-9j34z1-StyledField-deprecatedMarginField ej5x27r3"
     >
       <label
-        class="components-base-control__label css-eweeby-StyledLabel-labelStyles ej5x27r2"
+        class="components-base-control__label css-uc4znj-StyledLabel-labelStyles ej5x27r2"
         for="form-file-upload-base-control-field_key"
       >
         Upload file
@@ -124,13 +123,13 @@ exports[`FileUploadControl renders disabled state 1`] = `
 exports[`FileUploadControl renders loading state 1`] = `
 <div>
   <div
-    class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
+    class="components-base-control css-t4f5jv-Wrapper ej5x27r4"
   >
     <div
-      class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+      class="components-base-control__field css-9j34z1-StyledField-deprecatedMarginField ej5x27r3"
     >
       <label
-        class="components-base-control__label css-eweeby-StyledLabel-labelStyles ej5x27r2"
+        class="components-base-control__label css-uc4znj-StyledLabel-labelStyles ej5x27r2"
         for="form-file-upload-base-control-field_key"
       >
         Upload file
@@ -173,7 +172,6 @@ exports[`FileUploadControl renders loading state 1`] = `
             type="file"
           />
         </div>
-        
       </div>
     </div>
   </div>
@@ -183,13 +181,13 @@ exports[`FileUploadControl renders loading state 1`] = `
 exports[`FileUploadControl renders upload done state 1`] = `
 <div>
   <div
-    class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
+    class="components-base-control css-t4f5jv-Wrapper ej5x27r4"
   >
     <div
-      class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+      class="components-base-control__field css-9j34z1-StyledField-deprecatedMarginField ej5x27r3"
     >
       <label
-        class="components-base-control__label css-eweeby-StyledLabel-labelStyles ej5x27r2"
+        class="components-base-control__label css-uc4znj-StyledLabel-labelStyles ej5x27r2"
         for="form-file-upload-base-control-field_key"
       >
         Upload file
@@ -264,13 +262,13 @@ exports[`FileUploadControl renders upload done state 1`] = `
 exports[`FileUploadControl renders upload failed state 1`] = `
 <div>
   <div
-    class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
+    class="components-base-control css-t4f5jv-Wrapper ej5x27r4"
   >
     <div
-      class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+      class="components-base-control__field css-9j34z1-StyledField-deprecatedMarginField ej5x27r3"
     >
       <label
-        class="components-base-control__label css-eweeby-StyledLabel-labelStyles ej5x27r2"
+        class="components-base-control__label css-uc4znj-StyledLabel-labelStyles ej5x27r2"
         for="form-file-upload-base-control-field_key"
       >
         Upload file

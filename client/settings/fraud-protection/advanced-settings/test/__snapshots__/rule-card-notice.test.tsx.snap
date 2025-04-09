@@ -37,12 +37,12 @@ exports[`Fraud protection rule card notice tests renders error box correctly 1`]
           class="components-notice__content"
         >
           <div
-            class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+            class="components-flex css-15u4x7h-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
             data-wp-c16t="true"
             data-wp-component="Flex"
           >
             <div
-              class="components-flex-item wcpay-inline-notice__icon wcpay-inline-error-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__icon wcpay-inline-error-notice__icon css-1dflyig-View-Item-sx-Base em57xhy0"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -61,7 +61,7 @@ exports[`Fraud protection rule card notice tests renders error box correctly 1`]
               </svg>
             </div>
             <div
-              class="components-flex-item wcpay-inline-notice__content wcpay-inline-error-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__content wcpay-inline-error-notice__content css-1dflyig-View-Item-sx-Base em57xhy0"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -83,12 +83,12 @@ exports[`Fraud protection rule card notice tests renders error box correctly 1`]
         class="components-notice__content"
       >
         <div
-          class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex css-15u4x7h-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
           <div
-            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-error-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-error-notice__icon css-1dflyig-View-Item-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -107,7 +107,7 @@ exports[`Fraud protection rule card notice tests renders error box correctly 1`]
             </svg>
           </div>
           <div
-            class="components-flex-item wcpay-inline-notice__content wcpay-inline-error-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__content wcpay-inline-error-notice__content css-1dflyig-View-Item-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -211,12 +211,12 @@ exports[`Fraud protection rule card notice tests renders info box correctly 1`] 
           class="components-notice__content"
         >
           <div
-            class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+            class="components-flex css-15u4x7h-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
             data-wp-c16t="true"
             data-wp-component="Flex"
           >
             <div
-              class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-1dflyig-View-Item-sx-Base em57xhy0"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -234,7 +234,7 @@ exports[`Fraud protection rule card notice tests renders info box correctly 1`] 
               </svg>
             </div>
             <div
-              class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-1dflyig-View-Item-sx-Base em57xhy0"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -256,12 +256,12 @@ exports[`Fraud protection rule card notice tests renders info box correctly 1`] 
         class="components-notice__content"
       >
         <div
-          class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex css-15u4x7h-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
           <div
-            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-1dflyig-View-Item-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -279,7 +279,7 @@ exports[`Fraud protection rule card notice tests renders info box correctly 1`] 
             </svg>
           </div>
           <div
-            class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-1dflyig-View-Item-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -383,12 +383,12 @@ exports[`Fraud protection rule card notice tests renders warning box correctly 1
           class="components-notice__content"
         >
           <div
-            class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+            class="components-flex css-15u4x7h-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
             data-wp-c16t="true"
             data-wp-component="Flex"
           >
             <div
-              class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon css-1dflyig-View-Item-sx-Base em57xhy0"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -407,7 +407,7 @@ exports[`Fraud protection rule card notice tests renders warning box correctly 1
               </svg>
             </div>
             <div
-              class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content css-1dflyig-View-Item-sx-Base em57xhy0"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -429,12 +429,12 @@ exports[`Fraud protection rule card notice tests renders warning box correctly 1
         class="components-notice__content"
       >
         <div
-          class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex css-15u4x7h-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
           <div
-            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon css-1dflyig-View-Item-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -453,7 +453,7 @@ exports[`Fraud protection rule card notice tests renders warning box correctly 1
             </svg>
           </div>
           <div
-            class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content css-1dflyig-View-Item-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >

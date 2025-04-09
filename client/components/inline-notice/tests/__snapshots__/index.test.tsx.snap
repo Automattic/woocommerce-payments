@@ -9,12 +9,12 @@ exports[`Info InlineNotices renders with dismiss 1`] = `
       class="components-notice__content"
     >
       <div
-        class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+        class="components-flex css-15u4x7h-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Flex"
       >
         <div
-          class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+          class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-1dflyig-View-Item-sx-Base em57xhy0"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
@@ -56,12 +56,12 @@ exports[`Info InlineNotices renders with dismiss and icon 1`] = `
       class="components-notice__content"
     >
       <div
-        class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+        class="components-flex css-15u4x7h-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Flex"
       >
         <div
-          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-1dflyig-View-Item-sx-Base em57xhy0"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
@@ -80,7 +80,7 @@ exports[`Info InlineNotices renders with dismiss and icon 1`] = `
           </svg>
         </div>
         <div
-          class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+          class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-1dflyig-View-Item-sx-Base em57xhy0"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
@@ -122,12 +122,12 @@ exports[`Info InlineNotices renders with dismiss and icon and actions 1`] = `
       class="components-notice__content"
     >
       <div
-        class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+        class="components-flex css-15u4x7h-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Flex"
       >
         <div
-          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-1dflyig-View-Item-sx-Base em57xhy0"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
@@ -146,13 +146,13 @@ exports[`Info InlineNotices renders with dismiss and icon and actions 1`] = `
           </svg>
         </div>
         <div
-          class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+          class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-1dflyig-View-Item-sx-Base em57xhy0"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
           Test notice content
           <div
-            class="components-flex wcpay-inline-notice__content__actions css-azptjn-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+            class="components-flex wcpay-inline-notice__content__actions css-1v92668-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
             data-wp-c16t="true"
             data-wp-component="Flex"
           >
@@ -206,12 +206,12 @@ exports[`Info InlineNotices renders with no status and custom icon 1`] = `
       class="components-notice__content"
     >
       <div
-        class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+        class="components-flex css-15u4x7h-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Flex"
       >
         <div
-          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-undefined-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-undefined-notice__icon css-1dflyig-View-Item-sx-Base em57xhy0"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
@@ -230,7 +230,7 @@ exports[`Info InlineNotices renders with no status and custom icon 1`] = `
           </svg>
         </div>
         <div
-          class="components-flex-item wcpay-inline-notice__content wcpay-inline-undefined-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+          class="components-flex-item wcpay-inline-notice__content wcpay-inline-undefined-notice__content css-1dflyig-View-Item-sx-Base em57xhy0"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
@@ -272,12 +272,12 @@ exports[`Info InlineNotices renders without dismiss and icon 1`] = `
       class="components-notice__content"
     >
       <div
-        class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+        class="components-flex css-15u4x7h-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Flex"
       >
         <div
-          class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+          class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-1dflyig-View-Item-sx-Base em57xhy0"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >

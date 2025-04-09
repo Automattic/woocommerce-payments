@@ -3,22 +3,22 @@
 exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline component) 1`] = `
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="css-1gsy4w7-View-Content em57xhy0"
     >
       <div
-        class="components-flex components-card__header components-card-header css-1e8ifbz-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-large em57xhy0"
+        class="components-flex components-card__header components-card-header css-ly3pic-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-large em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardHeader"
       >
         Timeline
       </div>
       <div
-        class="components-card__body components-card-body css-1nonx1n-View-Body-borderRadius-large em57xhy0"
+        class="components-card__body components-card-body css-fm5ppw-View-Body-borderRadius-large em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -1201,13 +1201,13 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -1218,22 +1218,22 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
 exports[`PaymentDetailsTimeline renders error 1`] = `
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="css-1gsy4w7-View-Content em57xhy0"
     >
       <div
-        class="components-flex components-card__header components-card-header css-1e8ifbz-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-large em57xhy0"
+        class="components-flex components-card__header components-card-header css-ly3pic-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-large em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardHeader"
       >
         Timeline
       </div>
       <div
-        class="components-card__body components-card-body css-1nonx1n-View-Body-borderRadius-large em57xhy0"
+        class="components-card__body components-card-body css-fm5ppw-View-Body-borderRadius-large em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -1242,13 +1242,13 @@ exports[`PaymentDetailsTimeline renders error 1`] = `
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -1259,15 +1259,15 @@ exports[`PaymentDetailsTimeline renders error 1`] = `
 exports[`PaymentDetailsTimeline renders loading 1`] = `
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="css-1gsy4w7-View-Content em57xhy0"
     >
       <div
-        class="components-flex components-card__header components-card-header css-1e8ifbz-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-large em57xhy0"
+        class="components-flex components-card__header components-card-header css-ly3pic-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-large em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardHeader"
       >
@@ -1279,7 +1279,7 @@ exports[`PaymentDetailsTimeline renders loading 1`] = `
         </span>
       </div>
       <div
-        class="components-card__body components-card-body css-1nonx1n-View-Body-borderRadius-large em57xhy0"
+        class="components-card__body components-card-body css-fm5ppw-View-Body-borderRadius-large em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -1327,13 +1327,13 @@ exports[`PaymentDetailsTimeline renders loading 1`] = `
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -1344,22 +1344,22 @@ exports[`PaymentDetailsTimeline renders loading 1`] = `
 exports[`PaymentDetailsTimeline renders subscription fee correctly 1`] = `
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="css-1gsy4w7-View-Content em57xhy0"
     >
       <div
-        class="components-flex components-card__header components-card-header css-1e8ifbz-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-large em57xhy0"
+        class="components-flex components-card__header components-card-header css-ly3pic-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-large em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardHeader"
       >
         Timeline
       </div>
       <div
-        class="components-card__body components-card-body css-1nonx1n-View-Body-borderRadius-large em57xhy0"
+        class="components-card__body components-card-body css-fm5ppw-View-Body-borderRadius-large em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -1602,13 +1602,13 @@ exports[`PaymentDetailsTimeline renders subscription fee correctly 1`] = `
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />

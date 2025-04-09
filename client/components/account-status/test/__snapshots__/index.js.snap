@@ -3,27 +3,27 @@
 exports[`AccountStatus does not render edit details when no account link 1`] = `
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="css-1gsy4w7-View-Content em57xhy0"
     >
       <div
-        class="components-flex components-card__header components-card-header woocommerce-account-status__header css-1g7xfrj-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
+        class="components-flex components-card__header components-card-header woocommerce-account-status__header css-8wu1d6-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardHeader"
       >
         <div
-          class="components-flex-item account-details css-mw3lhz-View-Item-sx-Base em57xhy0"
+          class="components-flex-item account-details css-1dflyig-View-Item-sx-Base em57xhy0"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
           Account details
         </div>
         <div
-          class="components-flex-item components-flex-block account-status css-14wzr73-View-Item-sx-Base-block em57xhy0"
+          class="components-flex-item components-flex-block account-status css-1ep522a-View-Item-sx-Base-block em57xhy0"
           data-wp-c16t="true"
           data-wp-component="FlexBlock"
         >
@@ -35,24 +35,24 @@ exports[`AccountStatus does not render edit details when no account link 1`] = `
         </div>
       </div>
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body css-11b3k85-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
         <div
-          class="components-flex woocommerce-account-status-item css-h2ogiv-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex woocommerce-account-status-item css-lcbuyp-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
           <div
-            class="components-flex-item item-label css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item item-label css-1dflyig-View-Item-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
             Payments:
           </div>
           <div
-            class="components-flex-item components-flex-block item-value css-14wzr73-View-Item-sx-Base-block em57xhy0"
+            class="components-flex-item components-flex-block item-value css-1ep522a-View-Item-sx-Base-block em57xhy0"
             data-wp-c16t="true"
             data-wp-component="FlexBlock"
           >
@@ -77,19 +77,19 @@ exports[`AccountStatus does not render edit details when no account link 1`] = `
           </div>
         </div>
         <div
-          class="components-flex woocommerce-account-status-item css-h2ogiv-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex woocommerce-account-status-item css-lcbuyp-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
           <div
-            class="components-flex-item item-label css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item item-label css-1dflyig-View-Item-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
             Payouts:
           </div>
           <div
-            class="components-flex-item components-flex-block item-value css-14wzr73-View-Item-sx-Base-block em57xhy0"
+            class="components-flex-item components-flex-block item-value css-1ep522a-View-Item-sx-Base-block em57xhy0"
             data-wp-c16t="true"
             data-wp-component="FlexBlock"
           >
@@ -118,7 +118,7 @@ exports[`AccountStatus does not render edit details when no account link 1`] = `
         >
           <hr
             aria-orientation="horizontal"
-            class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+            class="components-divider components-card__divider components-card-divider css-12teduf-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
             data-wp-c16t="true"
             data-wp-component="CardDivider"
             role="separator"
@@ -141,13 +141,13 @@ exports[`AccountStatus does not render edit details when no account link 1`] = `
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -158,27 +158,27 @@ exports[`AccountStatus does not render edit details when no account link 1`] = `
 exports[`AccountStatus renders account tools 1`] = `
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="css-1gsy4w7-View-Content em57xhy0"
     >
       <div
-        class="components-flex components-card__header components-card-header woocommerce-account-status__header css-1g7xfrj-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
+        class="components-flex components-card__header components-card-header woocommerce-account-status__header css-8wu1d6-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardHeader"
       >
         <div
-          class="components-flex-item account-details css-mw3lhz-View-Item-sx-Base em57xhy0"
+          class="components-flex-item account-details css-1dflyig-View-Item-sx-Base em57xhy0"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
           Account details
         </div>
         <div
-          class="components-flex-item components-flex-block account-status css-14wzr73-View-Item-sx-Base-block em57xhy0"
+          class="components-flex-item components-flex-block account-status css-1ep522a-View-Item-sx-Base-block em57xhy0"
           data-wp-c16t="true"
           data-wp-component="FlexBlock"
         >
@@ -189,7 +189,7 @@ exports[`AccountStatus renders account tools 1`] = `
           </span>
         </div>
         <div
-          class="components-flex-item edit-details css-mw3lhz-View-Item-sx-Base em57xhy0"
+          class="components-flex-item edit-details css-1dflyig-View-Item-sx-Base em57xhy0"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
@@ -203,24 +203,24 @@ exports[`AccountStatus renders account tools 1`] = `
         </div>
       </div>
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body css-11b3k85-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
         <div
-          class="components-flex woocommerce-account-status-item css-h2ogiv-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex woocommerce-account-status-item css-lcbuyp-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
           <div
-            class="components-flex-item item-label css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item item-label css-1dflyig-View-Item-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
             Payments:
           </div>
           <div
-            class="components-flex-item components-flex-block item-value css-14wzr73-View-Item-sx-Base-block em57xhy0"
+            class="components-flex-item components-flex-block item-value css-1ep522a-View-Item-sx-Base-block em57xhy0"
             data-wp-c16t="true"
             data-wp-component="FlexBlock"
           >
@@ -245,19 +245,19 @@ exports[`AccountStatus renders account tools 1`] = `
           </div>
         </div>
         <div
-          class="components-flex woocommerce-account-status-item css-h2ogiv-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex woocommerce-account-status-item css-lcbuyp-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
           <div
-            class="components-flex-item item-label css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item item-label css-1dflyig-View-Item-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
             Payouts:
           </div>
           <div
-            class="components-flex-item components-flex-block item-value css-14wzr73-View-Item-sx-Base-block em57xhy0"
+            class="components-flex-item components-flex-block item-value css-1ep522a-View-Item-sx-Base-block em57xhy0"
             data-wp-c16t="true"
             data-wp-component="FlexBlock"
           >
@@ -286,7 +286,7 @@ exports[`AccountStatus renders account tools 1`] = `
         >
           <hr
             aria-orientation="horizontal"
-            class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+            class="components-divider components-card__divider components-card-divider css-12teduf-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
             data-wp-c16t="true"
             data-wp-component="CardDivider"
             role="separator"
@@ -313,7 +313,7 @@ exports[`AccountStatus renders account tools 1`] = `
         >
           <hr
             aria-orientation="horizontal"
-            class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+            class="components-divider components-card__divider components-card-divider css-12teduf-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
             data-wp-c16t="true"
             data-wp-component="CardDivider"
             role="separator"
@@ -336,13 +336,13 @@ exports[`AccountStatus renders account tools 1`] = `
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -353,22 +353,22 @@ exports[`AccountStatus renders account tools 1`] = `
 exports[`AccountStatus renders error status 1`] = `
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="css-1gsy4w7-View-Content em57xhy0"
     >
       <div
-        class="components-flex components-card__header components-card-header woocommerce-account-status__header css-1g7xfrj-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
+        class="components-flex components-card__header components-card-header woocommerce-account-status__header css-8wu1d6-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardHeader"
       >
         Account details
       </div>
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body css-11b3k85-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -377,13 +377,13 @@ exports[`AccountStatus renders error status 1`] = `
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -394,27 +394,27 @@ exports[`AccountStatus renders error status 1`] = `
 exports[`AccountStatus renders normal status 1`] = `
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="css-1gsy4w7-View-Content em57xhy0"
     >
       <div
-        class="components-flex components-card__header components-card-header woocommerce-account-status__header css-1g7xfrj-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
+        class="components-flex components-card__header components-card-header woocommerce-account-status__header css-8wu1d6-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardHeader"
       >
         <div
-          class="components-flex-item account-details css-mw3lhz-View-Item-sx-Base em57xhy0"
+          class="components-flex-item account-details css-1dflyig-View-Item-sx-Base em57xhy0"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
           Account details
         </div>
         <div
-          class="components-flex-item components-flex-block account-status css-14wzr73-View-Item-sx-Base-block em57xhy0"
+          class="components-flex-item components-flex-block account-status css-1ep522a-View-Item-sx-Base-block em57xhy0"
           data-wp-c16t="true"
           data-wp-component="FlexBlock"
         >
@@ -425,7 +425,7 @@ exports[`AccountStatus renders normal status 1`] = `
           </span>
         </div>
         <div
-          class="components-flex-item edit-details css-mw3lhz-View-Item-sx-Base em57xhy0"
+          class="components-flex-item edit-details css-1dflyig-View-Item-sx-Base em57xhy0"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
@@ -439,24 +439,24 @@ exports[`AccountStatus renders normal status 1`] = `
         </div>
       </div>
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body css-11b3k85-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
         <div
-          class="components-flex woocommerce-account-status-item css-h2ogiv-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex woocommerce-account-status-item css-lcbuyp-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
           <div
-            class="components-flex-item item-label css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item item-label css-1dflyig-View-Item-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
             Payments:
           </div>
           <div
-            class="components-flex-item components-flex-block item-value css-14wzr73-View-Item-sx-Base-block em57xhy0"
+            class="components-flex-item components-flex-block item-value css-1ep522a-View-Item-sx-Base-block em57xhy0"
             data-wp-c16t="true"
             data-wp-component="FlexBlock"
           >
@@ -481,19 +481,19 @@ exports[`AccountStatus renders normal status 1`] = `
           </div>
         </div>
         <div
-          class="components-flex woocommerce-account-status-item css-h2ogiv-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex woocommerce-account-status-item css-lcbuyp-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
           <div
-            class="components-flex-item item-label css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item item-label css-1dflyig-View-Item-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
             Payouts:
           </div>
           <div
-            class="components-flex-item components-flex-block item-value css-14wzr73-View-Item-sx-Base-block em57xhy0"
+            class="components-flex-item components-flex-block item-value css-1ep522a-View-Item-sx-Base-block em57xhy0"
             data-wp-c16t="true"
             data-wp-component="FlexBlock"
           >
@@ -522,7 +522,7 @@ exports[`AccountStatus renders normal status 1`] = `
         >
           <hr
             aria-orientation="horizontal"
-            class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+            class="components-divider components-card__divider components-card-divider css-12teduf-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
             data-wp-c16t="true"
             data-wp-component="CardDivider"
             role="separator"
@@ -545,13 +545,13 @@ exports[`AccountStatus renders normal status 1`] = `
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />

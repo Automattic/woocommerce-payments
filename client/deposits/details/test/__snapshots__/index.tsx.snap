@@ -6,12 +6,12 @@ exports[`Deposit overview renders automatic payout correctly 1`] = `
     class="wcpay-deposit-overview"
   >
     <div
-      class="components-surface components-card wcpay-deposit-automatic css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      class="components-surface components-card wcpay-deposit-automatic css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
       <div
-        class="css-mgwsf4-View-Content em57xhy0"
+        class="css-1gsy4w7-View-Content em57xhy0"
       >
         <ul>
           <li
@@ -52,32 +52,32 @@ exports[`Deposit overview renders automatic payout correctly 1`] = `
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
     </div>
     <div
-      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      class="components-surface components-card css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
       <div
-        class="css-mgwsf4-View-Content em57xhy0"
+        class="css-1gsy4w7-View-Content em57xhy0"
       >
         <div
-          class="components-flex components-card__header components-card-header css-1g5oj2q-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
+          class="components-flex components-card__header components-card-header css-dzwoy0-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
           data-wp-c16t="true"
           data-wp-component="CardHeader"
         >
           <span
-            class="components-truncate components-text css-1sg6qaf-View-Text-sx-Base em57xhy0"
+            class="components-truncate components-text css-5sfrz3-View-Text-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="Text"
           >
@@ -85,7 +85,7 @@ exports[`Deposit overview renders automatic payout correctly 1`] = `
           </span>
         </div>
         <div
-          class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+          class="components-card__body components-card-body css-11b3k85-View-Body-borderRadius-medium em57xhy0"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
@@ -125,13 +125,13 @@ exports[`Deposit overview renders automatic payout correctly 1`] = `
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
@@ -146,12 +146,12 @@ exports[`Deposit overview renders automatic withdrawal correctly 1`] = `
     class="wcpay-deposit-overview"
   >
     <div
-      class="components-surface components-card wcpay-deposit-automatic css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      class="components-surface components-card wcpay-deposit-automatic css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
       <div
-        class="css-mgwsf4-View-Content em57xhy0"
+        class="css-1gsy4w7-View-Content em57xhy0"
       >
         <ul>
           <li
@@ -192,32 +192,32 @@ exports[`Deposit overview renders automatic withdrawal correctly 1`] = `
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
     </div>
     <div
-      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      class="components-surface components-card css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
       <div
-        class="css-mgwsf4-View-Content em57xhy0"
+        class="css-1gsy4w7-View-Content em57xhy0"
       >
         <div
-          class="components-flex components-card__header components-card-header css-1g5oj2q-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
+          class="components-flex components-card__header components-card-header css-dzwoy0-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
           data-wp-c16t="true"
           data-wp-component="CardHeader"
         >
           <span
-            class="components-truncate components-text css-1sg6qaf-View-Text-sx-Base em57xhy0"
+            class="components-truncate components-text css-5sfrz3-View-Text-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="Text"
           >
@@ -225,7 +225,7 @@ exports[`Deposit overview renders automatic withdrawal correctly 1`] = `
           </span>
         </div>
         <div
-          class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+          class="components-card__body components-card-body css-11b3k85-View-Body-borderRadius-medium em57xhy0"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
@@ -265,13 +265,13 @@ exports[`Deposit overview renders automatic withdrawal correctly 1`] = `
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
@@ -398,20 +398,20 @@ exports[`Deposit overview renders instant deposit correctly 1`] = `
       </ul>
     </div>
     <div
-      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      class="components-surface components-card css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
       <div
-        class="css-mgwsf4-View-Content em57xhy0"
+        class="css-1gsy4w7-View-Content em57xhy0"
       >
         <div
-          class="components-flex components-card__header components-card-header css-1g5oj2q-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
+          class="components-flex components-card__header components-card-header css-dzwoy0-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
           data-wp-c16t="true"
           data-wp-component="CardHeader"
         >
           <span
-            class="components-truncate components-text css-1sg6qaf-View-Text-sx-Base em57xhy0"
+            class="components-truncate components-text css-5sfrz3-View-Text-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="Text"
           >
@@ -419,7 +419,7 @@ exports[`Deposit overview renders instant deposit correctly 1`] = `
           </span>
         </div>
         <div
-          class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+          class="components-card__body components-card-body css-11b3k85-View-Body-borderRadius-medium em57xhy0"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
@@ -459,13 +459,13 @@ exports[`Deposit overview renders instant deposit correctly 1`] = `
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
@@ -483,12 +483,12 @@ exports[`Deposit overview renders notice when deposit data is not found 1`] = `
       class="components-notice__content"
     >
       <div
-        class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+        class="components-flex css-15u4x7h-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Flex"
       >
         <div
-          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-error-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-error-notice__icon css-1dflyig-View-Item-sx-Base em57xhy0"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
@@ -507,7 +507,7 @@ exports[`Deposit overview renders notice when deposit data is not found 1`] = `
           </svg>
         </div>
         <div
-          class="components-flex-item wcpay-inline-notice__content wcpay-inline-error-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+          class="components-flex-item wcpay-inline-notice__content wcpay-inline-error-notice__content css-1dflyig-View-Item-sx-Base em57xhy0"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >

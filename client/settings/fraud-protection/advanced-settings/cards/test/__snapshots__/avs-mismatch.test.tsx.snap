@@ -3,16 +3,16 @@
 exports[`AVS mismatch card renders correctly when AVS check is disabled 1`] = `
 <div>
   <div
-    class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card fraud-protection-rule-card css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
     data-wp-c16t="true"
     data-wp-component="Card"
     id="avs-mismatch-card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="css-1gsy4w7-View-Content em57xhy0"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-11b3k85-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -31,7 +31,7 @@ exports[`AVS mismatch card renders correctly when AVS check is disabled 1`] = `
       </div>
       <hr />
       <div
-        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body css-11b3k85-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -42,10 +42,10 @@ exports[`AVS mismatch card renders correctly when AVS check is disabled 1`] = `
             Enable filtering
           </strong>
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
+            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-t4f5jv-Wrapper ej5x27r4"
           >
             <div
-              class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+              class="components-base-control__field css-9j34z1-StyledField-deprecatedMarginField ej5x27r3"
             >
               <span
                 class="components-form-toggle"
@@ -71,7 +71,7 @@ exports[`AVS mismatch card renders correctly when AVS check is disabled 1`] = `
               </label>
             </div>
             <p
-              class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
+              class="components-base-control__help css-1y5cxf7-StyledHelp-deprecatedMarginHelp ej5x27r1"
               id="inspector-toggle-control-1__help"
             >
               When enabled, the payment will be blocked.
@@ -92,13 +92,13 @@ exports[`AVS mismatch card renders correctly when AVS check is disabled 1`] = `
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -109,16 +109,16 @@ exports[`AVS mismatch card renders correctly when AVS check is disabled 1`] = `
 exports[`AVS mismatch card renders correctly when AVS check is enabled 1`] = `
 <div>
   <div
-    class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card fraud-protection-rule-card css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
     data-wp-c16t="true"
     data-wp-component="Card"
     id="avs-mismatch-card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="css-1gsy4w7-View-Content em57xhy0"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-11b3k85-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -137,7 +137,7 @@ exports[`AVS mismatch card renders correctly when AVS check is enabled 1`] = `
       </div>
       <hr />
       <div
-        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body css-11b3k85-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -148,10 +148,10 @@ exports[`AVS mismatch card renders correctly when AVS check is enabled 1`] = `
             Enable filtering
           </strong>
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
+            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-t4f5jv-Wrapper ej5x27r4"
           >
             <div
-              class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+              class="components-base-control__field css-9j34z1-StyledField-deprecatedMarginField ej5x27r3"
             >
               <span
                 class="components-form-toggle"
@@ -177,7 +177,7 @@ exports[`AVS mismatch card renders correctly when AVS check is enabled 1`] = `
               </label>
             </div>
             <p
-              class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
+              class="components-base-control__help css-1y5cxf7-StyledHelp-deprecatedMarginHelp ej5x27r1"
               id="inspector-toggle-control-0__help"
             >
               When enabled, the payment will be blocked.
@@ -198,13 +198,13 @@ exports[`AVS mismatch card renders correctly when AVS check is enabled 1`] = `
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />

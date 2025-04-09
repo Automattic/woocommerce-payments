@@ -3,16 +3,16 @@
 exports[`Address mismatch card renders correctly 1`] = `
 <div>
   <div
-    class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card fraud-protection-rule-card css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
     data-wp-c16t="true"
     data-wp-component="Card"
     id="address-mismatch-card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="css-1gsy4w7-View-Content em57xhy0"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-11b3k85-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -31,7 +31,7 @@ exports[`Address mismatch card renders correctly 1`] = `
       </div>
       <hr />
       <div
-        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body css-11b3k85-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -42,10 +42,10 @@ exports[`Address mismatch card renders correctly 1`] = `
             Enable filtering
           </strong>
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
+            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-t4f5jv-Wrapper ej5x27r4"
           >
             <div
-              class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+              class="components-base-control__field css-9j34z1-StyledField-deprecatedMarginField ej5x27r3"
             >
               <span
                 class="components-form-toggle"
@@ -71,7 +71,7 @@ exports[`Address mismatch card renders correctly 1`] = `
               </label>
             </div>
             <p
-              class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
+              class="components-base-control__help css-1y5cxf7-StyledHelp-deprecatedMarginHelp ej5x27r1"
               id="inspector-toggle-control-0__help"
             >
               When enabled, the payment will be blocked.
@@ -92,13 +92,13 @@ exports[`Address mismatch card renders correctly 1`] = `
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -109,16 +109,16 @@ exports[`Address mismatch card renders correctly 1`] = `
 exports[`Address mismatch card renders correctly when enabled 1`] = `
 <div>
   <div
-    class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card fraud-protection-rule-card css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
     data-wp-c16t="true"
     data-wp-component="Card"
     id="address-mismatch-card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="css-1gsy4w7-View-Content em57xhy0"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-11b3k85-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -137,7 +137,7 @@ exports[`Address mismatch card renders correctly when enabled 1`] = `
       </div>
       <hr />
       <div
-        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body css-11b3k85-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -148,10 +148,10 @@ exports[`Address mismatch card renders correctly when enabled 1`] = `
             Enable filtering
           </strong>
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
+            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-t4f5jv-Wrapper ej5x27r4"
           >
             <div
-              class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+              class="components-base-control__field css-9j34z1-StyledField-deprecatedMarginField ej5x27r3"
             >
               <span
                 class="components-form-toggle is-checked"
@@ -178,7 +178,7 @@ exports[`Address mismatch card renders correctly when enabled 1`] = `
               </label>
             </div>
             <p
-              class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
+              class="components-base-control__help css-1y5cxf7-StyledHelp-deprecatedMarginHelp ej5x27r1"
               id="inspector-toggle-control-1__help"
             >
               The payment will be blocked.
@@ -200,13 +200,13 @@ exports[`Address mismatch card renders correctly when enabled 1`] = `
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -217,16 +217,16 @@ exports[`Address mismatch card renders correctly when enabled 1`] = `
 exports[`Address mismatch card renders correctly when enabled and checked 1`] = `
 <div>
   <div
-    class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card fraud-protection-rule-card css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
     data-wp-c16t="true"
     data-wp-component="Card"
     id="address-mismatch-card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="css-1gsy4w7-View-Content em57xhy0"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-11b3k85-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -245,7 +245,7 @@ exports[`Address mismatch card renders correctly when enabled and checked 1`] = 
       </div>
       <hr />
       <div
-        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body css-11b3k85-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -256,10 +256,10 @@ exports[`Address mismatch card renders correctly when enabled and checked 1`] = 
             Enable filtering
           </strong>
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
+            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-t4f5jv-Wrapper ej5x27r4"
           >
             <div
-              class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+              class="components-base-control__field css-9j34z1-StyledField-deprecatedMarginField ej5x27r3"
             >
               <span
                 class="components-form-toggle is-checked"
@@ -286,7 +286,7 @@ exports[`Address mismatch card renders correctly when enabled and checked 1`] = 
               </label>
             </div>
             <p
-              class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
+              class="components-base-control__help css-1y5cxf7-StyledHelp-deprecatedMarginHelp ej5x27r1"
               id="inspector-toggle-control-2__help"
             >
               The payment will be blocked.
@@ -308,13 +308,13 @@ exports[`Address mismatch card renders correctly when enabled and checked 1`] = 
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -325,16 +325,16 @@ exports[`Address mismatch card renders correctly when enabled and checked 1`] = 
 exports[`Address mismatch card renders like disabled when checked, but not enabled 1`] = `
 <div>
   <div
-    class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card fraud-protection-rule-card css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
     data-wp-c16t="true"
     data-wp-component="Card"
     id="address-mismatch-card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="css-1gsy4w7-View-Content em57xhy0"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-11b3k85-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -353,7 +353,7 @@ exports[`Address mismatch card renders like disabled when checked, but not enabl
       </div>
       <hr />
       <div
-        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body css-11b3k85-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -364,10 +364,10 @@ exports[`Address mismatch card renders like disabled when checked, but not enabl
             Enable filtering
           </strong>
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
+            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-t4f5jv-Wrapper ej5x27r4"
           >
             <div
-              class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+              class="components-base-control__field css-9j34z1-StyledField-deprecatedMarginField ej5x27r3"
             >
               <span
                 class="components-form-toggle"
@@ -393,7 +393,7 @@ exports[`Address mismatch card renders like disabled when checked, but not enabl
               </label>
             </div>
             <p
-              class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
+              class="components-base-control__help css-1y5cxf7-StyledHelp-deprecatedMarginHelp ej5x27r1"
               id="inspector-toggle-control-3__help"
             >
               When enabled, the payment will be blocked.
@@ -414,13 +414,13 @@ exports[`Address mismatch card renders like disabled when checked, but not enabl
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />

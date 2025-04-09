@@ -80,20 +80,20 @@ exports[`Transactions list renders correctly when can filter by several currenci
       </div>
     </div>
     <div
-      class="components-surface components-card woocommerce-table transactions-list woocommerce-report-table has-search has-actions has-menu css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      class="components-surface components-card woocommerce-table transactions-list woocommerce-report-table has-search has-actions has-menu css-jcs394-View-Surface-getBorders-primary-Card-rounded em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
       <div
-        class="css-mgwsf4-View-Content em57xhy0"
+        class="css-1gsy4w7-View-Content em57xhy0"
       >
         <div
-          class="components-flex components-card__header components-card-header css-1g5oj2q-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
+          class="components-flex components-card__header components-card-header css-1by2clc-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
           data-wp-c16t="true"
           data-wp-component="CardHeader"
         >
           <h2
-            class="components-truncate components-text css-1s1vggh-View-Text-sx-Base em57xhy0"
+            class="components-truncate components-text css-5ei2yv-View-Text-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="Text"
           >
@@ -208,7 +208,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
           </div>
         </div>
         <div
-          class="components-card__body components-card-body css-1i4jx7i-View-Body-borderRadius em57xhy0"
+          class="components-card__body components-card-body css-7gexj8-View-Body-borderRadius em57xhy0"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
@@ -979,7 +979,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
           </div>
         </div>
         <div
-          class="components-flex components-card__footer components-card-footer css-142znvl-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
+          class="components-flex components-card__footer components-card-footer css-woxgly-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
           data-wp-c16t="true"
           data-wp-component="CardFooter"
         >
@@ -1006,13 +1006,13 @@ exports[`Transactions list renders correctly when can filter by several currenci
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-s5ysen-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-s5ysen-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
@@ -1073,20 +1073,20 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
       </div>
     </div>
     <div
-      class="components-surface components-card woocommerce-table transactions-list woocommerce-report-table has-search has-actions has-menu css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      class="components-surface components-card woocommerce-table transactions-list woocommerce-report-table has-search has-actions has-menu css-jcs394-View-Surface-getBorders-primary-Card-rounded em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
       <div
-        class="css-mgwsf4-View-Content em57xhy0"
+        class="css-1gsy4w7-View-Content em57xhy0"
       >
         <div
-          class="components-flex components-card__header components-card-header css-1g5oj2q-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
+          class="components-flex components-card__header components-card-header css-1by2clc-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
           data-wp-c16t="true"
           data-wp-component="CardHeader"
         >
           <h2
-            class="components-truncate components-text css-1s1vggh-View-Text-sx-Base em57xhy0"
+            class="components-truncate components-text css-5ei2yv-View-Text-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="Text"
           >
@@ -1201,7 +1201,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
           </div>
         </div>
         <div
-          class="components-card__body components-card-body css-1i4jx7i-View-Body-borderRadius em57xhy0"
+          class="components-card__body components-card-body css-7gexj8-View-Body-borderRadius em57xhy0"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
@@ -1972,7 +1972,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
           </div>
         </div>
         <div
-          class="components-flex components-card__footer components-card-footer css-142znvl-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
+          class="components-flex components-card__footer components-card-footer css-woxgly-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
           data-wp-c16t="true"
           data-wp-component="CardFooter"
         >
@@ -2041,13 +2041,13 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-s5ysen-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-s5ysen-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
@@ -2063,20 +2063,20 @@ exports[`Transactions list renders correctly when filtered by payout 1`] = `
     id=""
   >
     <div
-      class="components-surface components-card woocommerce-table transactions-list woocommerce-report-table has-search has-actions has-menu css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      class="components-surface components-card woocommerce-table transactions-list woocommerce-report-table has-search has-actions has-menu css-jcs394-View-Surface-getBorders-primary-Card-rounded em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
       <div
-        class="css-mgwsf4-View-Content em57xhy0"
+        class="css-1gsy4w7-View-Content em57xhy0"
       >
         <div
-          class="components-flex components-card__header components-card-header css-1g5oj2q-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
+          class="components-flex components-card__header components-card-header css-1by2clc-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
           data-wp-c16t="true"
           data-wp-component="CardHeader"
         >
           <h2
-            class="components-truncate components-text css-1s1vggh-View-Text-sx-Base em57xhy0"
+            class="components-truncate components-text css-5ei2yv-View-Text-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="Text"
           >
@@ -2191,7 +2191,7 @@ exports[`Transactions list renders correctly when filtered by payout 1`] = `
           </div>
         </div>
         <div
-          class="components-card__body components-card-body css-1i4jx7i-View-Body-borderRadius em57xhy0"
+          class="components-card__body components-card-body css-7gexj8-View-Body-borderRadius em57xhy0"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
@@ -2608,7 +2608,7 @@ exports[`Transactions list renders correctly when filtered by payout 1`] = `
           </div>
         </div>
         <div
-          class="components-flex components-card__footer components-card-footer css-142znvl-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
+          class="components-flex components-card__footer components-card-footer css-woxgly-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
           data-wp-c16t="true"
           data-wp-component="CardFooter"
         >
@@ -2677,13 +2677,13 @@ exports[`Transactions list renders correctly when filtered by payout 1`] = `
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-s5ysen-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-s5ysen-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
@@ -2744,20 +2744,20 @@ exports[`Transactions list subscription column renders correctly 1`] = `
       </div>
     </div>
     <div
-      class="components-surface components-card woocommerce-table transactions-list woocommerce-report-table has-search has-actions has-menu css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      class="components-surface components-card woocommerce-table transactions-list woocommerce-report-table has-search has-actions has-menu css-jcs394-View-Surface-getBorders-primary-Card-rounded em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
       <div
-        class="css-mgwsf4-View-Content em57xhy0"
+        class="css-1gsy4w7-View-Content em57xhy0"
       >
         <div
-          class="components-flex components-card__header components-card-header css-1g5oj2q-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
+          class="components-flex components-card__header components-card-header css-1by2clc-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
           data-wp-c16t="true"
           data-wp-component="CardHeader"
         >
           <h2
-            class="components-truncate components-text css-1s1vggh-View-Text-sx-Base em57xhy0"
+            class="components-truncate components-text css-5ei2yv-View-Text-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="Text"
           >
@@ -2872,7 +2872,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
           </div>
         </div>
         <div
-          class="components-card__body components-card-body css-1i4jx7i-View-Body-borderRadius em57xhy0"
+          class="components-card__body components-card-body css-7gexj8-View-Body-borderRadius em57xhy0"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
@@ -3675,7 +3675,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
           </div>
         </div>
         <div
-          class="components-flex components-card__footer components-card-footer css-142znvl-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
+          class="components-flex components-card__footer components-card-footer css-woxgly-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
           data-wp-c16t="true"
           data-wp-component="CardFooter"
         >
@@ -3744,13 +3744,13 @@ exports[`Transactions list subscription column renders correctly 1`] = `
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-s5ysen-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-s5ysen-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
@@ -3811,20 +3811,20 @@ exports[`Transactions list when not filtered by payout renders correctly 1`] = `
       </div>
     </div>
     <div
-      class="components-surface components-card woocommerce-table transactions-list woocommerce-report-table has-search has-actions has-menu css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      class="components-surface components-card woocommerce-table transactions-list woocommerce-report-table has-search has-actions has-menu css-jcs394-View-Surface-getBorders-primary-Card-rounded em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
       <div
-        class="css-mgwsf4-View-Content em57xhy0"
+        class="css-1gsy4w7-View-Content em57xhy0"
       >
         <div
-          class="components-flex components-card__header components-card-header css-1g5oj2q-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
+          class="components-flex components-card__header components-card-header css-1by2clc-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
           data-wp-c16t="true"
           data-wp-component="CardHeader"
         >
           <h2
-            class="components-truncate components-text css-1s1vggh-View-Text-sx-Base em57xhy0"
+            class="components-truncate components-text css-5ei2yv-View-Text-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="Text"
           >
@@ -3939,7 +3939,7 @@ exports[`Transactions list when not filtered by payout renders correctly 1`] = `
           </div>
         </div>
         <div
-          class="components-card__body components-card-body css-1i4jx7i-View-Body-borderRadius em57xhy0"
+          class="components-card__body components-card-body css-7gexj8-View-Body-borderRadius em57xhy0"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
@@ -4710,7 +4710,7 @@ exports[`Transactions list when not filtered by payout renders correctly 1`] = `
           </div>
         </div>
         <div
-          class="components-flex components-card__footer components-card-footer css-142znvl-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
+          class="components-flex components-card__footer components-card-footer css-woxgly-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
           data-wp-c16t="true"
           data-wp-component="CardFooter"
         >
@@ -4779,13 +4779,13 @@ exports[`Transactions list when not filtered by payout renders correctly 1`] = `
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-s5ysen-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-s5ysen-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
@@ -4846,20 +4846,20 @@ exports[`Transactions list when not filtered by payout renders table summary onl
       </div>
     </div>
     <div
-      class="components-surface components-card woocommerce-table transactions-list woocommerce-report-table has-search has-actions has-menu css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      class="components-surface components-card woocommerce-table transactions-list woocommerce-report-table has-search has-actions has-menu css-jcs394-View-Surface-getBorders-primary-Card-rounded em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
       <div
-        class="css-mgwsf4-View-Content em57xhy0"
+        class="css-1gsy4w7-View-Content em57xhy0"
       >
         <div
-          class="components-flex components-card__header components-card-header css-1g5oj2q-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
+          class="components-flex components-card__header components-card-header css-1by2clc-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
           data-wp-c16t="true"
           data-wp-component="CardHeader"
         >
           <h2
-            class="components-truncate components-text css-1s1vggh-View-Text-sx-Base em57xhy0"
+            class="components-truncate components-text css-5ei2yv-View-Text-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="Text"
           >
@@ -4974,7 +4974,7 @@ exports[`Transactions list when not filtered by payout renders table summary onl
           </div>
         </div>
         <div
-          class="components-card__body components-card-body css-1i4jx7i-View-Body-borderRadius em57xhy0"
+          class="components-card__body components-card-body css-7gexj8-View-Body-borderRadius em57xhy0"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
@@ -5745,7 +5745,7 @@ exports[`Transactions list when not filtered by payout renders table summary onl
           </div>
         </div>
         <div
-          class="components-flex components-card__footer components-card-footer css-142znvl-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
+          class="components-flex components-card__footer components-card-footer css-woxgly-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
           data-wp-c16t="true"
           data-wp-component="CardFooter"
         >
@@ -5814,13 +5814,13 @@ exports[`Transactions list when not filtered by payout renders table summary onl
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-s5ysen-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-s5ysen-View-Elevation-sx-Base-elevationClassName em57xhy0"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />

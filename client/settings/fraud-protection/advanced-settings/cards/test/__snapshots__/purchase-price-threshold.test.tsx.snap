@@ -3,16 +3,16 @@
 exports[`Purchase price threshold card renders correctly 1`] = `
 <div>
   <div
-    class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card fraud-protection-rule-card css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
     data-wp-c16t="true"
     data-wp-component="Card"
     id="purchase-price-threshold-card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="css-1gsy4w7-View-Content em57xhy0"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-11b3k85-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -31,7 +31,7 @@ exports[`Purchase price threshold card renders correctly 1`] = `
       </div>
       <hr />
       <div
-        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body css-11b3k85-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -42,10 +42,10 @@ exports[`Purchase price threshold card renders correctly 1`] = `
             Enable filtering
           </strong>
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
+            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-t4f5jv-Wrapper ej5x27r4"
           >
             <div
-              class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+              class="components-base-control__field css-9j34z1-StyledField-deprecatedMarginField ej5x27r3"
             >
               <span
                 class="components-form-toggle"
@@ -71,7 +71,7 @@ exports[`Purchase price threshold card renders correctly 1`] = `
               </label>
             </div>
             <p
-              class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
+              class="components-base-control__help css-1y5cxf7-StyledHelp-deprecatedMarginHelp ej5x27r1"
               id="inspector-toggle-control-0__help"
             >
               When enabled, the payment will be blocked.
@@ -92,13 +92,13 @@ exports[`Purchase price threshold card renders correctly 1`] = `
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -109,16 +109,16 @@ exports[`Purchase price threshold card renders correctly 1`] = `
 exports[`Purchase price threshold card renders correctly when enabled 1`] = `
 <div>
   <div
-    class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card fraud-protection-rule-card css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
     data-wp-c16t="true"
     data-wp-component="Card"
     id="purchase-price-threshold-card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="css-1gsy4w7-View-Content em57xhy0"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-11b3k85-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -137,7 +137,7 @@ exports[`Purchase price threshold card renders correctly when enabled 1`] = `
       </div>
       <hr />
       <div
-        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body css-11b3k85-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -148,10 +148,10 @@ exports[`Purchase price threshold card renders correctly when enabled 1`] = `
             Enable filtering
           </strong>
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
+            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-t4f5jv-Wrapper ej5x27r4"
           >
             <div
-              class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+              class="components-base-control__field css-9j34z1-StyledField-deprecatedMarginField ej5x27r3"
             >
               <span
                 class="components-form-toggle is-checked"
@@ -178,7 +178,7 @@ exports[`Purchase price threshold card renders correctly when enabled 1`] = `
               </label>
             </div>
             <p
-              class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
+              class="components-base-control__help css-1y5cxf7-StyledHelp-deprecatedMarginHelp ej5x27r1"
               id="inspector-toggle-control-1__help"
             >
               The payment will be blocked.
@@ -272,12 +272,12 @@ exports[`Purchase price threshold card renders correctly when enabled 1`] = `
                     class="components-notice__content"
                   >
                     <div
-                      class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+                      class="components-flex css-15u4x7h-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
                       data-wp-c16t="true"
                       data-wp-component="Flex"
                     >
                       <div
-                        class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+                        class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon css-1dflyig-View-Item-sx-Base em57xhy0"
                         data-wp-c16t="true"
                         data-wp-component="FlexItem"
                       >
@@ -296,7 +296,7 @@ exports[`Purchase price threshold card renders correctly when enabled 1`] = `
                         </svg>
                       </div>
                       <div
-                        class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+                        class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content css-1dflyig-View-Item-sx-Base em57xhy0"
                         data-wp-c16t="true"
                         data-wp-component="FlexItem"
                       >
@@ -326,13 +326,13 @@ exports[`Purchase price threshold card renders correctly when enabled 1`] = `
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -343,16 +343,16 @@ exports[`Purchase price threshold card renders correctly when enabled 1`] = `
 exports[`Purchase price threshold card renders correctly when enabled and checked 1`] = `
 <div>
   <div
-    class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card fraud-protection-rule-card css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
     data-wp-c16t="true"
     data-wp-component="Card"
     id="purchase-price-threshold-card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="css-1gsy4w7-View-Content em57xhy0"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-11b3k85-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -371,7 +371,7 @@ exports[`Purchase price threshold card renders correctly when enabled and checke
       </div>
       <hr />
       <div
-        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body css-11b3k85-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -382,10 +382,10 @@ exports[`Purchase price threshold card renders correctly when enabled and checke
             Enable filtering
           </strong>
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
+            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-t4f5jv-Wrapper ej5x27r4"
           >
             <div
-              class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+              class="components-base-control__field css-9j34z1-StyledField-deprecatedMarginField ej5x27r3"
             >
               <span
                 class="components-form-toggle is-checked"
@@ -412,7 +412,7 @@ exports[`Purchase price threshold card renders correctly when enabled and checke
               </label>
             </div>
             <p
-              class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
+              class="components-base-control__help css-1y5cxf7-StyledHelp-deprecatedMarginHelp ej5x27r1"
               id="inspector-toggle-control-2__help"
             >
               The payment will be blocked.
@@ -506,12 +506,12 @@ exports[`Purchase price threshold card renders correctly when enabled and checke
                     class="components-notice__content"
                   >
                     <div
-                      class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+                      class="components-flex css-15u4x7h-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
                       data-wp-c16t="true"
                       data-wp-component="Flex"
                     >
                       <div
-                        class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+                        class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon css-1dflyig-View-Item-sx-Base em57xhy0"
                         data-wp-c16t="true"
                         data-wp-component="FlexItem"
                       >
@@ -530,7 +530,7 @@ exports[`Purchase price threshold card renders correctly when enabled and checke
                         </svg>
                       </div>
                       <div
-                        class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+                        class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content css-1dflyig-View-Item-sx-Base em57xhy0"
                         data-wp-c16t="true"
                         data-wp-component="FlexItem"
                       >
@@ -560,13 +560,13 @@ exports[`Purchase price threshold card renders correctly when enabled and checke
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -577,16 +577,16 @@ exports[`Purchase price threshold card renders correctly when enabled and checke
 exports[`Purchase price threshold card renders like disabled when checked, but not enabled 1`] = `
 <div>
   <div
-    class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card fraud-protection-rule-card css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
     data-wp-c16t="true"
     data-wp-component="Card"
     id="purchase-price-threshold-card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="css-1gsy4w7-View-Content em57xhy0"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-11b3k85-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -605,7 +605,7 @@ exports[`Purchase price threshold card renders like disabled when checked, but n
       </div>
       <hr />
       <div
-        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body css-11b3k85-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -616,10 +616,10 @@ exports[`Purchase price threshold card renders like disabled when checked, but n
             Enable filtering
           </strong>
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
+            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-t4f5jv-Wrapper ej5x27r4"
           >
             <div
-              class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+              class="components-base-control__field css-9j34z1-StyledField-deprecatedMarginField ej5x27r3"
             >
               <span
                 class="components-form-toggle"
@@ -645,7 +645,7 @@ exports[`Purchase price threshold card renders like disabled when checked, but n
               </label>
             </div>
             <p
-              class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
+              class="components-base-control__help css-1y5cxf7-StyledHelp-deprecatedMarginHelp ej5x27r1"
               id="inspector-toggle-control-3__help"
             >
               When enabled, the payment will be blocked.
@@ -666,13 +666,13 @@ exports[`Purchase price threshold card renders like disabled when checked, but n
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />

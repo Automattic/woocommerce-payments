@@ -37,12 +37,12 @@ exports[`Allowed countries rule card notice tests renders correctly when countri
           class="components-notice__content"
         >
           <div
-            class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+            class="components-flex css-15u4x7h-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
             data-wp-c16t="true"
             data-wp-component="Flex"
           >
             <div
-              class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-1dflyig-View-Item-sx-Base em57xhy0"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -60,7 +60,7 @@ exports[`Allowed countries rule card notice tests renders correctly when countri
               </svg>
             </div>
             <div
-              class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-1dflyig-View-Item-sx-Base em57xhy0"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -85,12 +85,12 @@ exports[`Allowed countries rule card notice tests renders correctly when countri
         class="components-notice__content"
       >
         <div
-          class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex css-15u4x7h-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
           <div
-            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-1dflyig-View-Item-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -108,7 +108,7 @@ exports[`Allowed countries rule card notice tests renders correctly when countri
             </svg>
           </div>
           <div
-            class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-1dflyig-View-Item-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -215,12 +215,12 @@ exports[`Allowed countries rule card notice tests renders correctly when countri
           class="components-notice__content"
         >
           <div
-            class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+            class="components-flex css-15u4x7h-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
             data-wp-c16t="true"
             data-wp-component="Flex"
           >
             <div
-              class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-1dflyig-View-Item-sx-Base em57xhy0"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -238,7 +238,7 @@ exports[`Allowed countries rule card notice tests renders correctly when countri
               </svg>
             </div>
             <div
-              class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-1dflyig-View-Item-sx-Base em57xhy0"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -263,12 +263,12 @@ exports[`Allowed countries rule card notice tests renders correctly when countri
         class="components-notice__content"
       >
         <div
-          class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex css-15u4x7h-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
           <div
-            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-1dflyig-View-Item-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -286,7 +286,7 @@ exports[`Allowed countries rule card notice tests renders correctly when countri
             </svg>
           </div>
           <div
-            class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-1dflyig-View-Item-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -393,12 +393,12 @@ exports[`Allowed countries rule card notice tests renders correctly when specifi
           class="components-notice__content"
         >
           <div
-            class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+            class="components-flex css-15u4x7h-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
             data-wp-c16t="true"
             data-wp-component="Flex"
           >
             <div
-              class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-1dflyig-View-Item-sx-Base em57xhy0"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -416,7 +416,7 @@ exports[`Allowed countries rule card notice tests renders correctly when specifi
               </svg>
             </div>
             <div
-              class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-1dflyig-View-Item-sx-Base em57xhy0"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -441,12 +441,12 @@ exports[`Allowed countries rule card notice tests renders correctly when specifi
         class="components-notice__content"
       >
         <div
-          class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex css-15u4x7h-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
           <div
-            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-1dflyig-View-Item-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -464,7 +464,7 @@ exports[`Allowed countries rule card notice tests renders correctly when specifi
             </svg>
           </div>
           <div
-            class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-1dflyig-View-Item-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -571,12 +571,12 @@ exports[`Allowed countries rule card notice tests renders correctly when specifi
           class="components-notice__content"
         >
           <div
-            class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+            class="components-flex css-15u4x7h-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
             data-wp-c16t="true"
             data-wp-component="Flex"
           >
             <div
-              class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-1dflyig-View-Item-sx-Base em57xhy0"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -594,7 +594,7 @@ exports[`Allowed countries rule card notice tests renders correctly when specifi
               </svg>
             </div>
             <div
-              class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-1dflyig-View-Item-sx-Base em57xhy0"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -619,12 +619,12 @@ exports[`Allowed countries rule card notice tests renders correctly when specifi
         class="components-notice__content"
       >
         <div
-          class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex css-15u4x7h-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
           <div
-            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-1dflyig-View-Item-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -642,7 +642,7 @@ exports[`Allowed countries rule card notice tests renders correctly when specifi
             </svg>
           </div>
           <div
-            class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-1dflyig-View-Item-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -749,12 +749,12 @@ exports[`Allowed countries rule card notice tests renders html entities correctl
           class="components-notice__content"
         >
           <div
-            class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+            class="components-flex css-15u4x7h-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
             data-wp-c16t="true"
             data-wp-component="Flex"
           >
             <div
-              class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-1dflyig-View-Item-sx-Base em57xhy0"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -772,7 +772,7 @@ exports[`Allowed countries rule card notice tests renders html entities correctl
               </svg>
             </div>
             <div
-              class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-1dflyig-View-Item-sx-Base em57xhy0"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -797,12 +797,12 @@ exports[`Allowed countries rule card notice tests renders html entities correctl
         class="components-notice__content"
       >
         <div
-          class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex css-15u4x7h-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
           <div
-            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-1dflyig-View-Item-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -820,7 +820,7 @@ exports[`Allowed countries rule card notice tests renders html entities correctl
             </svg>
           </div>
           <div
-            class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-1dflyig-View-Item-sx-Base em57xhy0"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >

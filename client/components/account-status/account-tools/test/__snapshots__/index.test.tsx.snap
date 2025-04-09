@@ -9,7 +9,7 @@ exports[`AccountTools should render in test/sandbox mode onboarding 1`] = `
   >
     <hr
       aria-orientation="horizontal"
-      class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+      class="components-divider components-card__divider components-card-divider css-12teduf-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
       data-wp-c16t="true"
       data-wp-component="CardDivider"
       role="separator"
