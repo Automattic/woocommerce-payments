@@ -337,8 +337,8 @@ const PaymentMethod = ( {
 										paymentMethods={ cardBrands }
 										maxElements={ 8 }
 										breakpointConfigs={ [
-											{ breakpoint: 480, maxElements: 4 },
-											{ breakpoint: 768, maxElements: 6 },
+											{ breakpoint: 480, maxElements: 8 },
+											{ breakpoint: 768, maxElements: 8 },
 										] }
 									/>
 								</div>
