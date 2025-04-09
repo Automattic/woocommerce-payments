@@ -1,5 +1,43 @@
 *** WooPayments Changelog ***
 
+= 9.2.0 - 2025-04-09 =
+* Add - Add back button for tertiary+ level pages in WooPayments settings.
+* Fix - fix: cancel GooglePay/ApplePay dialog on product page if add-to-cart product validation fails
+* Fix - fix: fatal error when Klarna is enabled on an EU account and a non-EU currency is configured on the store.
+* Fix - fix: Google Pay/Apple Pay display on pay-for-order pages.
+* Fix - Fix deprecated hook woocommerce_rest_api_option_permissions
+* Fix - Fix errors in WooCommerce email settings preview
+* Fix - Fix Multi-currency conversion for WooCommerce Bookings range type cost adjustments
+* Fix - Fix PMME display on shortcode cart with block-based themes.
+* Fix - Fix WooPay enabled during NOX onboarding despite being disabled in recommended payment methods.
+* Fix - Handle pending refunds properly
+* Fix - Linked account ID to product ID to maintain consistency and prevent issues when the account ID changes.
+* Fix - Prevent unsaved changes dialog when changes have been saved.
+* Fix - Removed hard-coded lists of payment methods where possible.
+* Fix - Remove unused wcpay_date_format_notice_dismissed option from the permission list
+* Fix - Set background color to white for the Payments settings page
+* Fix - update: ensure Google Pay/Apple Pay honor 'Display prices during cart and checkout' setting
+* Fix - Update WooPay icon on order page.
+* Update - Added _wcpay_net to the metadata.
+* Update - Chore: check the array type in dismissed noticeces component.
+* Update - chore: disable request of JCB capability
+* Update - fix: Google Pay/Apple Pay HK test address override.
+* Update - fix: parsing of error message for GooglePay/ApplePay buttons to be displayed to customer, instead of displaying generic error message on failure.
+* Update - Improve the ECE container loading experience.
+* Update - Move payment method map definition to the backend
+* Update - Prevent creation of the renewal orders if original order was created in the different WooPayments mode.
+* Update - refactor: delete temporary Google Pay/Apple Pay cart contents right after making the request, to improve performance and avoiding bots sending wrong session data in subsequent requests.
+* Update - Remove fraud protection discoverability and update tour
+* Update - Stripe Billing and Manual Capture incompatibility notice on the Settings page.
+* Update - Update Settings page as per the new design
+* Update - Update to Cash App Afterpay branding.
+* Dev - Bump WC tested up to version to 9.7.1.
+* Dev - Fix unneeded double square brackets in the post-merge script
+* Dev - Removed the deprecated wcpay_exit_survey_dismissed option from the ALLOWED_OPTIONS list.
+* Dev - Remove level3 retry logic and legacy request_with_level3_data method
+* Dev - Updated the progressive parameter in the KYC session creation API to use a boolean type.
+* Dev - We switch to using site instead of url as the key in the self assessment data to avoid XSS firewall false-positives.
+
 = 9.1.0 - 2025-03-19 =
 * Add - Add a prompt to encourage merchants to provide feedback or leave a WordPress.org review for WooPayments
 * Add - Add order failure message on Order Received page.

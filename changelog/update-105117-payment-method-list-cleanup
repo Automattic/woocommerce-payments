@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Removed hard-coded lists of payment methods where possible.
