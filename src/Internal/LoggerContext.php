@@ -146,11 +146,22 @@ class LoggerContext {
 		$this->set_value( 'DOING_CRON', defined( 'DOING_CRON' ) && DOING_CRON );
 		$this->set_value( 'WP_CLI', defined( 'WP_CLI' ) && WP_CLI );
 
+		/**
+		 * Retrieving the WooPayments mode can only throw an exception if the
+		 * plugin is not initialised yet. It is not a testable scenario.
+		 *
+		 * @codeCoverageIgnoreStart
+		 */
 		try {
 			$woopayments_mode = WC_Payments::mode()->is_test() ? Order_Mode::TEST : Order_Mode::PRODUCTION;
 		} catch ( \Exception $e ) {
 			$woopayments_mode = 'N/A';
 		}
+		/**
+		 * Further code should be fully testable.
+		 *
+		 * @codeCoverageIgnoreEnd
+		 */
 
 		$this->set_value( 'WOOPAYMENTS_MODE', $woopayments_mode );
 
