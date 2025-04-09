@@ -138,7 +138,7 @@ class LoggerContext {
 	 * @return void
 	 */
 	private function init_context() {
-		$this->set_value( 'WP_User', is_user_logged_in() ? wp_get_current_user()->user_login : 'Guest (non logged-in user)' );
+		$this->set_value( 'WP_USER', is_user_logged_in() ? wp_get_current_user()->user_login : 'Guest (non logged-in user)' );
 		$this->set_value( 'HTTP_REFERER', sanitize_text_field( wp_unslash( $_SERVER['HTTP_REFERER'] ?? '--' ) ) );
 		$this->set_value( 'HTTP_USER_AGENT', sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ?? '--' ) ) );
 		$this->set_value( 'REQUEST_URI', sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ?? '--' ) ) );
@@ -149,19 +149,14 @@ class LoggerContext {
 		/**
 		 * Retrieving the WooPayments mode can only throw an exception if the
 		 * plugin is not initialised yet. It is not a testable scenario.
-		 *
-		 * @codeCoverageIgnoreStart
 		 */
+		// @codeCoverageIgnoreStart
 		try {
 			$woopayments_mode = WC_Payments::mode()->is_test() ? Order_Mode::TEST : Order_Mode::PRODUCTION;
 		} catch ( \Exception $e ) {
 			$woopayments_mode = 'N/A';
 		}
-		/**
-		 * Further code should be fully testable.
-		 *
-		 * @codeCoverageIgnoreEnd
-		 */
+		// @codeCoverageIgnoreEnd
 
 		$this->set_value( 'WOOPAYMENTS_MODE', $woopayments_mode );
 

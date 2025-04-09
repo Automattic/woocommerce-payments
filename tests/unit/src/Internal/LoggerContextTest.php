@@ -7,14 +7,13 @@
 
 namespace WCPay\Tests;
 
-use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPAY_UnitTestCase;
-use WCPay\Core\Mode;
 use WCPay\Internal\LoggerContext;
 use WCPay\Internal\Logger;
 use WC_Log_Levels;
 use WCPay\Logger_Context;
+use WC_Payments;
 
 /**
  * Internal Logger Context tests.
@@ -142,5 +141,25 @@ class LoggerContextTest extends WCPAY_UnitTestCase {
 		);
 
 		$this->assertSame( $message, $filtered_entry, 'Filtered entry is the same as the original message' );
+	}
+
+	/**
+	 * Test that the logger context is initialized correctly.
+	 *
+	 * @return void
+	 */
+	public function test_logger_context_init() {
+		WC_Payments::mode()->test();
+
+		$context = $this->sut->get_context();
+
+		$this->assertSame( 'test', $context['WOOPAYMENTS_MODE'] );
+		$this->assertTrue( isset( $context['WP_USER'] ) );
+		$this->assertTrue( isset( $context['HTTP_REFERER'] ) );
+		$this->assertTrue( isset( $context['HTTP_USER_AGENT'] ) );
+		$this->assertTrue( isset( $context['REQUEST_URI'] ) );
+		$this->assertTrue( isset( $context['DOING_AJAX'] ) );
+		$this->assertTrue( isset( $context['DOING_CRON'] ) );
+		$this->assertTrue( isset( $context['WP_CLI'] ) );
 	}
 }
