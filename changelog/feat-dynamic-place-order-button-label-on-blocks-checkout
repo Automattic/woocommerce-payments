@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+feat: the "place order" button label on the block-based checkout will become "Pay with {x}", where {x} is the WooPayments payment method name.

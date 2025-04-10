@@ -1,12 +1,18 @@
 /**
  * External dependencies
  */
+import { __, sprintf } from '@wordpress/i18n';
 // Handled as an external dependency: see '/webpack.config.js:83'
 import {
 	registerPaymentMethod,
 	registerExpressPaymentMethod,
 	// eslint-disable-next-line import/no-unresolved
 } from '@woocommerce/blocks-registry';
+import { subscribe, select } from '@wordpress/data';
+// eslint-disable-next-line import/no-unresolved
+import { paymentStore } from '@woocommerce/block-data';
+// eslint-disable-next-line import/no-unresolved
+import { registerCheckoutFilters } from '@woocommerce/blocks-checkout';
 
 /**
  * Internal dependencies
@@ -151,8 +157,6 @@ window.addEventListener( 'load', () => {
 
 // If multi-currency is enabled, add currency code to total amount in cart and checkout blocks.
 if ( getConfig( 'isMultiCurrencyEnabled' ) ) {
-	const { registerCheckoutFilters } = window.wc.blocksCheckout;
-
 	const modifyTotalsPrice = ( defaultValue, extensions, args ) => {
 		const { cart } = args;
 
@@ -167,3 +171,71 @@ if ( getConfig( 'isMultiCurrencyEnabled' ) ) {
 		totalValue: modifyTotalsPrice,
 	} );
 }
+
+document.addEventListener( 'DOMContentLoaded', () => {
+	let lastActivePaymentMethod = null;
+	let lastActiveSavedToken = null;
+
+	// this operation registers a new filter to the same namespace each time the active payment method changes.
+	// as a consequence, the "place order" button re-renders.
+	const overridePlaceOrderButtonLabelFilter = ( newLabel ) => {
+		registerCheckoutFilters(
+			'woocommerce-payments/place-order-button-label',
+			{
+				placeOrderButtonLabel: ( defaultLabel ) => {
+					return newLabel || defaultLabel;
+				},
+			}
+		);
+	};
+
+	subscribe( () => {
+		const method = select( paymentStore ).getActivePaymentMethod();
+		const token = select( paymentStore ).getActiveSavedToken();
+
+		// slight optimization to ensure that we don't execute the logic below too often.
+		if (
+			method === lastActivePaymentMethod &&
+			token === lastActiveSavedToken
+		) {
+			return;
+		}
+
+		lastActivePaymentMethod = method;
+		lastActiveSavedToken = token;
+
+		// if a saved token is selected it could be a WooPayments token - don't override the "Place order" button label, in that case.
+		if ( lastActiveSavedToken ) {
+			overridePlaceOrderButtonLabelFilter();
+			return;
+		}
+
+		// if there is no method or the selected method is not a WooPayments one, don't override the "Place order" button label..
+		if ( ! method || ! method.includes( 'woocommerce_payments' ) ) {
+			overridePlaceOrderButtonLabelFilter();
+			return;
+		}
+
+		// 'woocommerce_payments_affirm' => 'affirm'
+		// 'woocommerce_payments_p24' -> 'p24'
+		// 'woocommerce_payments' -> ''
+		let paymentMethodId = method
+			// non-card elements are prefixed with `woocommerce_payments_*`
+			.replace( 'woocommerce_payments_', '' )
+			// the card element is just called `woocommerce_payments` - we need to account for variation in the name
+			.replace( 'woocommerce_payments', '' );
+		paymentMethodId = paymentMethodId || 'card';
+
+		const paymentMethodTitle =
+			enabledPaymentMethodsConfig[ paymentMethodId ]?.title;
+
+		overridePlaceOrderButtonLabelFilter(
+			paymentMethodTitle
+				? sprintf(
+						__( 'Pay with %s', 'woocommerce-payments' ),
+						paymentMethodTitle
+				  )
+				: undefined
+		);
+	} );
+} );
