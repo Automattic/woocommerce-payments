@@ -1,4 +1,0 @@
-Significance: patch
-Type: update
-
-refactor: delete temporary Google Pay/Apple Pay cart contents right after making the request, to improve performance and avoiding bots sending wrong session data in subsequent requests.
