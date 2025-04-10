@@ -134,11 +134,18 @@ class WC_Payments_Webhook_Processing_Service {
 	public function process( array $event_body ) {
 		// Extract information about the webhook event.
 		$event_type = $this->read_webhook_property( $event_body, 'type' );
+		$event_id   = '';
+		try {
+			$event_id = $this->read_webhook_property( $event_body, 'id' );
+		} catch ( Invalid_Webhook_Data_Exception $e ) {
+			Logger::error( 'Webhook event ID not found' );
+		}
 
-		Logger::debug( 'Webhook received: ' . $event_type );
 		Logger::debug(
-			'Webhook body: '
-			. var_export( WC_Payments_Utils::redact_array( $event_body, WC_Payments_API_Client::API_KEYS_TO_REDACT ), true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+			'WEBHOOK RECEIVED: ' . $event_type . ' ' . $event_id,
+			[
+				'body' => WC_Payments_Utils::redact_array( $event_body, WC_Payments_API_Client::API_KEYS_TO_REDACT ),
+			]
 		);
 
 		if ( $this->is_webhook_mode_mismatch( $event_body ) ) {
@@ -276,7 +283,7 @@ class WC_Payments_Webhook_Processing_Service {
 		/**
 		 * Get the WC_Refund from the WCPay refund ID.
 		 *
-		 * @var $wc_refunds WC_Order_Refund[]
+		 * @var WC_Order_Refund[] $wc_refunds
 		 * */
 		$wc_refunds = $order->get_refunds();
 		if ( ! empty( $wc_refunds ) ) {

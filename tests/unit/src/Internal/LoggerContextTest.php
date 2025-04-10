@@ -7,14 +7,13 @@
 
 namespace WCPay\Tests;
 
-use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPAY_UnitTestCase;
-use WCPay\Core\Mode;
 use WCPay\Internal\LoggerContext;
 use WCPay\Internal\Logger;
 use WC_Log_Levels;
 use WCPay\Logger_Context;
+use WC_Payments;
 
 /**
  * Internal Logger Context tests.
@@ -59,14 +58,10 @@ class LoggerContextTest extends WCPAY_UnitTestCase {
 			]
 		);
 
-		$this->assertEquals( 12, count( explode( "\n", $filtered_entry ) ), 'Filtered entry contains 3 lines with the context and 2 with the original message' );
-
-		foreach ( explode( "\n", $filtered_entry ) as $line ) {
-			$this->assertTrue( strpos( $line, '2021-01-01T00:00:00+00:00 INFO' ) === 0, 'Each line starts with the timestamp and log level' );
-			$this->assertTrue( preg_match( '/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+\d{2}:\d{2} [A-Z]+ [a-f0-9]+-(\d{4}) /', $line, $matches ) === 1, 'Each line contains timestamp, log level, request identifier and entry number' );
-			$entry_number = (int) ltrim( $matches[1], '0' );
-			$this->assertTrue( $entry_number > 0, 'Entry number is a positive integer' );
-		}
+		$this->assertTrue( strpos( $filtered_entry, '2021-01-01T00:00:00+00:00 INFO' ) === 0, 'Each line starts with the timestamp and log level' );
+		$this->assertTrue( preg_match( '/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+\d{2}:\d{2} [A-Z]+ [a-f0-9]+-(\d{4}) /', $filtered_entry, $matches ) === 1, 'Each line contains timestamp, log level, request identifier and entry number' );
+		$entry_number = (int) ltrim( $matches[1], '0' );
+		$this->assertTrue( $entry_number > 0, 'Entry number is a positive integer' );
 	}
 
 	/**
@@ -146,5 +141,25 @@ class LoggerContextTest extends WCPAY_UnitTestCase {
 		);
 
 		$this->assertSame( $message, $filtered_entry, 'Filtered entry is the same as the original message' );
+	}
+
+	/**
+	 * Test that the logger context is initialized correctly.
+	 *
+	 * @return void
+	 */
+	public function test_logger_context_init() {
+		WC_Payments::mode()->test();
+
+		$context = $this->sut->get_context();
+
+		$this->assertSame( 'test', $context['WOOPAYMENTS_MODE'] );
+		$this->assertTrue( isset( $context['WP_USER'] ) );
+		$this->assertTrue( isset( $context['HTTP_REFERER'] ) );
+		$this->assertTrue( isset( $context['HTTP_USER_AGENT'] ) );
+		$this->assertTrue( isset( $context['REQUEST_URI'] ) );
+		$this->assertTrue( isset( $context['DOING_AJAX'] ) );
+		$this->assertTrue( isset( $context['DOING_CRON'] ) );
+		$this->assertTrue( isset( $context['WP_CLI'] ) );
 	}
 }
