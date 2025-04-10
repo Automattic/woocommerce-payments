@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixes a styling issue when the payment method has a tooltip next to it, it was shifting the logo to the right.

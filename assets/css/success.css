@@ -25,7 +25,7 @@
 	--woopayments-multibanco-bg-color: rgba( 109, 109, 109, 0.06 );
 	--woopayments-multibanco-border-color: rgba( 109, 109, 109, 0.16 );
 	--woopayments-multibanco-card-bg-color: rgb( 255, 255, 255 );
-
+	font-size: initial;
 	display: flex;
 	justify-content: center;
 	margin: 2em 0;
