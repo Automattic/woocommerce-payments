@@ -17,7 +17,6 @@ use WCPay\Logger;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Core\Server\Request\Cancel_Intention;
 use WCPay\Core\Server\Request\Capture_Intention;
-use WCPay\Tracker;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -1493,57 +1492,36 @@ class WC_Payments_Order_Service {
 			$order
 		);
 
-		if ( $is_cancelled ) {
+		// Handle insufficient balance case first to avoid duplicate notes.
+		if ( Refund_Failure_Reason::INSUFFICIENT_FUNDS === $failure_reason ) {
+			$this->handle_insufficient_balance_for_refund( $order, $amount );
+		} else {
+			$note_data = [
+				'status'  => $is_cancelled ? __( 'cancelled', 'woocommerce-payments' ) : __( 'unsuccessful', 'woocommerce-payments' ),
+				'message' => $is_cancelled ? '' : ( $failure_reason ? Refund_Failure_Reason::get_failure_message( $failure_reason ) : __( 'Unknown error occurred', 'woocommerce-payments' ) ),
+			];
+
 			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
-					/* translators: %1: the refund amount, %2: WooPayments, %3: ID of the refund */
-					__( 'A refund of %1$s was <strong>cancelled</strong> using %2$s (<code>%3$s</code>).', 'woocommerce-payments' ),
+					/* translators: %1$s: the refund amount, %2$s: status (cancelled/unsuccessful), %3$s: WooPayments, %4$s: ID of the refund, %5$s: failure message or period */
+					__( 'A refund of %1$s was <strong>%2$s</strong> using %3$s (<code>%4$s</code>)%5$s', 'woocommerce-payments' ),
 					[
 						'strong' => '<strong>',
 						'code'   => '<code>',
 					]
 				),
 				$formatted_amount,
-				'WooPayments',
-				$refund_id
-			);
-		} else {
-			$failure_message = $failure_reason ? Refund_Failure_Reason::get_failure_message( $failure_reason ) : __( 'Unknown error occurred', 'woocommerce-payments' );
-			$note            = sprintf(
-				WC_Payments_Utils::esc_interpolated_html(
-					/* translators: %1: the refund amount, %2: WooPayments, %3: ID of the refund, %4: failure message */
-					__( 'A refund of %1$s was <strong>unsuccessful</strong> using %2$s (<code>%3$s</code>): %4$s', 'woocommerce-payments' ),
-					[
-						'strong' => '<strong>',
-						'code'   => '<code>',
-					]
-				),
-				$formatted_amount,
+				$note_data['status'],
 				'WooPayments',
 				$refund_id,
-				$failure_message
+				$note_data['message'] ? ': ' . $note_data['message'] : '.'
 			);
-		}
 
-		if ( $this->order_note_exists( $order, $note ) ) {
-			return;
-		}
-
-		Logger::log( $note );
-		$order->add_order_note( $note );
-
-		// Track the refund failure event.
-		Tracker::track_admin( 'wcpay_edit_order_refund_failure', [ 'reason' => $note ] );
-
-		// Handle insufficient balance case.
-		if ( 'insufficient_balance_for_refund' === $failure_reason ) {
-			$account_country = WC_Payments::get_account_service()->get_account_country();
-
-			if ( $this->is_frod_supported( $account_country ) ) {
-				$order->add_order_note( $this->get_frod_support_note( $formatted_amount ) );
-			} else {
-				$order->add_order_note( $this->get_insufficient_balance_note( $formatted_amount ) );
+			if ( $this->order_note_exists( $order, $note ) ) {
+				return;
 			}
+
+			$order->add_order_note( $note );
 		}
 
 		// If order has been fully refunded, change status to failed.
