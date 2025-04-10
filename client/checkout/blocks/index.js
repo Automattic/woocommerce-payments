@@ -204,14 +204,14 @@ document.addEventListener( 'DOMContentLoaded', () => {
 		lastActivePaymentMethod = method;
 		lastActiveSavedToken = token;
 
-		// if a saved token is selected it could be a WooPayments token - don't override the "Place order" button label, in that case.
-		if ( lastActiveSavedToken ) {
+		// if there is no method or the selected method is not a WooPayments one, don't override the "Place order" button label..
+		if ( ! method || ! method.includes( 'woocommerce_payments' ) ) {
 			overridePlaceOrderButtonLabelFilter();
 			return;
 		}
 
-		// if there is no method or the selected method is not a WooPayments one, don't override the "Place order" button label..
-		if ( ! method || ! method.includes( 'woocommerce_payments' ) ) {
+		// if a saved token is selected it could be a WooPayments token - don't override the "Place order" button label, in that case.
+		if ( lastActiveSavedToken ) {
 			overridePlaceOrderButtonLabelFilter();
 			return;
 		}
