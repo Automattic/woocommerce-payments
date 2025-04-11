@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix a bug when the notice after downloading CSV that was mispositioned.
