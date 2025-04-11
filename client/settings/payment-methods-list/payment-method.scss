@@ -106,7 +106,7 @@
 		color: $studio-gray-50;
 		font-size: 13px;
 		line-height: 16px;
-		margin-bottom: 14px;
+		margin-bottom: 10px;
 
 		@include breakpoint( '>660px' ) {
 			margin-bottom: 0;
@@ -193,7 +193,33 @@
 		padding: 2px $gap-smaller;
 
 		@include breakpoint( '<660px' ) {
-			margin-left: 0;
+			margin-left: 2;
+		}
+	}
+
+	&__supported-cards {
+		margin-top: 16px;
+
+		@include breakpoint( '<660px' ) {
+			margin-top: 10px;
+			margin-bottom: 10px;
+		}
+
+		.payment-methods--logos {
+			// Target the inner div that contains all the images
+			> div {
+				display: flex;
+				flex-wrap: wrap;
+				align-items: center;
+				gap: 8px;
+
+				img {
+					width: 32px;
+					height: 20px;
+					object-fit: contain;
+					margin-right: 0;
+				}
+			}
 		}
 	}
 }

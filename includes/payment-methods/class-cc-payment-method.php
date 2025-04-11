@@ -111,7 +111,7 @@ class CC_Payment_Method extends UPE_Payment_Method {
 	 * @return string
 	 */
 	public function get_settings_icon_url( ?string $account_country = null ) {
-		return plugins_url( 'assets/images/payment-methods/cc.svg', WCPAY_PLUGIN_FILE );
+		return plugins_url( 'assets/images/payment-methods/generic-card-black.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**
