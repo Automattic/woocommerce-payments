@@ -1496,10 +1496,6 @@ class WC_Payments_Order_Service {
 		if ( Refund_Failure_Reason::INSUFFICIENT_FUNDS === $failure_reason ) {
 			$this->handle_insufficient_balance_for_refund( $order, $amount );
 		} else {
-			$note_data = [
-				'status'  => $is_cancelled ? __( 'cancelled', 'woocommerce-payments' ) : __( 'unsuccessful', 'woocommerce-payments' ),
-				'message' => $is_cancelled ? '' : ( $failure_reason ? Refund_Failure_Reason::get_failure_message( $failure_reason ) : __( 'Unknown error occurred', 'woocommerce-payments' ) ),
-			];
 
 			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
@@ -1511,10 +1507,10 @@ class WC_Payments_Order_Service {
 					]
 				),
 				$formatted_amount,
-				$note_data['status'],
+				$is_cancelled ? __( 'cancelled', 'woocommerce-payments' ) : __( 'unsuccessful', 'woocommerce-payments' ),
 				'WooPayments',
 				$refund_id,
-				$note_data['message'] ? ': ' . $note_data['message'] : '.'
+				$is_cancelled ? '.' : ': ' . Refund_Failure_Reason::get_failure_message( $failure_reason ?? Refund_Failure_Reason::UNKNOWN ),
 			);
 
 			if ( $this->order_note_exists( $order, $note ) ) {
