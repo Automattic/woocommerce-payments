@@ -8,20 +8,20 @@ exports[`Payment details page should match the snapshot - Charge query param 1`]
     style="max-width: 1032px;"
   >
     <div
-      class="components-surface components-card css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded e19lxcc00"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
       <div
-        class="css-1gsy4w7-View-Content em57xhy0"
+        class="css-mgwsf4-View-Content e19lxcc00"
       >
         <div
-          class="components-card__body components-card-body css-11b3k85-View-Body-borderRadius-medium em57xhy0"
+          class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium e19lxcc00"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
           <div
-            class="components-flex css-1jt5f3j-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+            class="components-flex css-4ornta-View-Flex-base-ItemsRow e19lxcc00"
             data-wp-c16t="true"
             data-wp-component="Flex"
           >
@@ -109,13 +109,13 @@ exports[`Payment details page should match the snapshot - Charge query param 1`]
         </div>
         <hr
           aria-orientation="horizontal"
-          class="components-divider components-card__divider components-card-divider css-12teduf-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+          class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
           data-wp-c16t="true"
           data-wp-component="CardDivider"
           role="separator"
         />
         <div
-          class="components-card__body components-card-body css-11b3k85-View-Body-borderRadius-medium em57xhy0"
+          class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium e19lxcc00"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
@@ -133,27 +133,27 @@ exports[`Payment details page should match the snapshot - Charge query param 1`]
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName e19lxcc00"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName e19lxcc00"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
     </div>
     <div
-      class="components-surface components-card css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded e19lxcc00"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
       <div
-        class="css-1gsy4w7-View-Content em57xhy0"
+        class="css-mgwsf4-View-Content e19lxcc00"
       >
         <div
-          class="components-flex components-card__header components-card-header css-ly3pic-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-large em57xhy0"
+          class="components-flex components-card__header components-card-header css-2feznw-View-Flex-base-ItemsRow-Header-borderRadius-borderColor-large e19lxcc00"
           data-wp-c16t="true"
           data-wp-component="CardHeader"
         >
@@ -165,7 +165,7 @@ exports[`Payment details page should match the snapshot - Charge query param 1`]
           </span>
         </div>
         <div
-          class="components-card__body components-card-body css-fm5ppw-View-Body-borderRadius-large em57xhy0"
+          class="components-card__body components-card-body css-1nonx1n-View-Body-borderRadius-large e19lxcc00"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
@@ -456,13 +456,13 @@ exports[`Payment details page should match the snapshot - Charge query param 1`]
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName e19lxcc00"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName e19lxcc00"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
@@ -479,20 +479,20 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
     style="max-width: 1032px;"
   >
     <div
-      class="components-surface components-card css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded e19lxcc00"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
       <div
-        class="css-1gsy4w7-View-Content em57xhy0"
+        class="css-mgwsf4-View-Content e19lxcc00"
       >
         <div
-          class="components-card__body components-card-body css-11b3k85-View-Body-borderRadius-medium em57xhy0"
+          class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium e19lxcc00"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
           <div
-            class="components-flex css-1jt5f3j-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+            class="components-flex css-4ornta-View-Flex-base-ItemsRow e19lxcc00"
             data-wp-c16t="true"
             data-wp-component="Flex"
           >
@@ -603,13 +603,13 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
         </div>
         <hr
           aria-orientation="horizontal"
-          class="components-divider components-card__divider components-card-divider css-12teduf-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+          class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
           data-wp-c16t="true"
           data-wp-component="CardDivider"
           role="separator"
         />
         <div
-          class="components-card__body components-card-body css-11b3k85-View-Body-borderRadius-medium em57xhy0"
+          class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium e19lxcc00"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
@@ -779,7 +779,7 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
           </ul>
         </div>
         <div
-          class="components-flex components-card__footer components-card-footer card-notice css-1oi4nej-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
+          class="components-flex components-card__footer components-card-footer card-notice css-120suhd-View-Flex-base-ItemsRow-Footer-borderRadius-borderColor-medium e19lxcc00"
           data-wp-c16t="true"
           data-wp-component="CardFooter"
         >
@@ -807,34 +807,34 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName e19lxcc00"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName e19lxcc00"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
     </div>
     <div
-      class="components-surface components-card css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded e19lxcc00"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
       <div
-        class="css-1gsy4w7-View-Content em57xhy0"
+        class="css-mgwsf4-View-Content e19lxcc00"
       >
         <div
-          class="components-flex components-card__header components-card-header css-ly3pic-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-large em57xhy0"
+          class="components-flex components-card__header components-card-header css-2feznw-View-Flex-base-ItemsRow-Header-borderRadius-borderColor-large e19lxcc00"
           data-wp-c16t="true"
           data-wp-component="CardHeader"
         >
           Timeline
         </div>
         <div
-          class="components-card__body components-card-body css-fm5ppw-View-Body-borderRadius-large em57xhy0"
+          class="components-card__body components-card-body css-1nonx1n-View-Body-borderRadius-large e19lxcc00"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
@@ -851,34 +851,34 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName e19lxcc00"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName e19lxcc00"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
     </div>
     <div
-      class="components-surface components-card css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded e19lxcc00"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
       <div
-        class="css-1gsy4w7-View-Content em57xhy0"
+        class="css-mgwsf4-View-Content e19lxcc00"
       >
         <div
-          class="components-flex components-card__header components-card-header css-ly3pic-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-large em57xhy0"
+          class="components-flex components-card__header components-card-header css-2feznw-View-Flex-base-ItemsRow-Header-borderRadius-borderColor-large e19lxcc00"
           data-wp-c16t="true"
           data-wp-component="CardHeader"
         >
           Payment method
         </div>
         <div
-          class="components-card__body components-card-body css-fm5ppw-View-Body-borderRadius-large em57xhy0"
+          class="components-card__body components-card-body css-1nonx1n-View-Body-borderRadius-large e19lxcc00"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
@@ -1059,13 +1059,13 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName e19lxcc00"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName e19lxcc00"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />

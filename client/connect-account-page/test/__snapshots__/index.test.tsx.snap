@@ -7,12 +7,12 @@ exports[`ConnectAccountPage should render correctly 1`] = `
     id="connect-account-page"
   >
     <div
-      class="components-surface components-card css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded e19lxcc00"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
       <div
-        class="css-1gsy4w7-View-Content em57xhy0"
+        class="css-mgwsf4-View-Content e19lxcc00"
       >
         <div
           class="connect-account-page__heading"
@@ -179,13 +179,13 @@ exports[`ConnectAccountPage should render correctly 1`] = `
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName e19lxcc00"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName e19lxcc00"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
@@ -237,15 +237,15 @@ exports[`ConnectAccountPage should render correctly when on-boarding disabled 1`
     id="connect-account-page"
   >
     <div
-      class="components-surface components-card css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded e19lxcc00"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
       <div
-        class="css-1gsy4w7-View-Content em57xhy0"
+        class="css-mgwsf4-View-Content e19lxcc00"
       >
         <div
-          class="components-card__body components-card-body css-11b3k85-View-Body-borderRadius-medium em57xhy0"
+          class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium e19lxcc00"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
@@ -254,13 +254,13 @@ exports[`ConnectAccountPage should render correctly when on-boarding disabled 1`
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName e19lxcc00"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName e19lxcc00"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
@@ -276,12 +276,12 @@ exports[`ConnectAccountPage should render correctly with WooPay eligible 1`] = `
     id="connect-account-page"
   >
     <div
-      class="components-surface components-card css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded e19lxcc00"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
       <div
-        class="css-1gsy4w7-View-Content em57xhy0"
+        class="css-mgwsf4-View-Content e19lxcc00"
       >
         <div
           class="connect-account-page__heading"
@@ -448,13 +448,13 @@ exports[`ConnectAccountPage should render correctly with WooPay eligible 1`] = `
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName e19lxcc00"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName e19lxcc00"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
@@ -506,12 +506,12 @@ exports[`ConnectAccountPage should render correctly with an incentive 1`] = `
     id="connect-account-page"
   >
     <div
-      class="components-surface components-card css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded e19lxcc00"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
       <div
-        class="css-1gsy4w7-View-Content em57xhy0"
+        class="css-mgwsf4-View-Content e19lxcc00"
       >
         <div
           class="connect-account-page__heading"
@@ -678,13 +678,13 @@ exports[`ConnectAccountPage should render correctly with an incentive 1`] = `
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName e19lxcc00"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName e19lxcc00"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />

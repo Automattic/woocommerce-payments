@@ -3,52 +3,52 @@
 exports[`Dispute evidence form needing response, renders correctly 1`] = `
 <div>
   <div
-    class="components-surface components-card css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded e19lxcc00"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-1gsy4w7-View-Content em57xhy0"
+      class="css-mgwsf4-View-Content e19lxcc00"
     >
       <div
-        class="components-flex components-card__header components-card-header css-ly3pic-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-large em57xhy0"
+        class="components-flex components-card__header components-card-header css-2feznw-View-Flex-base-ItemsRow-Header-borderRadius-borderColor-large e19lxcc00"
         data-wp-c16t="true"
         data-wp-component="CardHeader"
       >
         General evidence
       </div>
       <div
-        class="components-card__body components-card-body css-fm5ppw-View-Body-borderRadius-large em57xhy0"
+        class="components-card__body components-card-body css-1nonx1n-View-Body-borderRadius-large e19lxcc00"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
         <div
-          class="components-base-control css-t4f5jv-Wrapper ej5x27r4"
+          class="components-base-control css-ij2po-Wrapper-boxSizingReset ej5x27r4"
         >
           <div
-            class="components-base-control__field css-9j34z1-StyledField-deprecatedMarginField ej5x27r3"
+            class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
           >
             <label
-              class="components-base-control__label css-uc4znj-StyledLabel-labelStyles ej5x27r2"
+              class="components-base-control__label css-227y7a-StyledLabel-baseLabelTypography-labelStyles ej5x27r2"
               for="inspector-textarea-control-0"
             >
               Product description
             </label>
             <textarea
-              class="components-textarea-control__input css-wssvpr-StyledTextarea-inputStyleNeutral-inputStyleFocus-inputControl ebk7yr50"
+              class="components-textarea-control__input css-m0dqg1-StyledTextarea-inputStyleNeutral-inputStyleFocus-inputControl e1w5nnrk0"
               id="inspector-textarea-control-0"
               rows="4"
             />
           </div>
         </div>
         <div
-          class="components-base-control css-t4f5jv-Wrapper ej5x27r4"
+          class="components-base-control css-ij2po-Wrapper-boxSizingReset ej5x27r4"
         >
           <div
-            class="components-base-control__field css-9j34z1-StyledField-deprecatedMarginField ej5x27r3"
+            class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
           >
             <label
-              class="components-base-control__label css-uc4znj-StyledLabel-labelStyles ej5x27r2"
+              class="components-base-control__label css-227y7a-StyledLabel-baseLabelTypography-labelStyles ej5x27r2"
               for="inspector-text-control-0"
             >
               Customer name
@@ -62,13 +62,13 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
           </div>
         </div>
         <div
-          class="components-base-control css-t4f5jv-Wrapper ej5x27r4"
+          class="components-base-control css-ij2po-Wrapper-boxSizingReset ej5x27r4"
         >
           <div
-            class="components-base-control__field css-9j34z1-StyledField-deprecatedMarginField ej5x27r3"
+            class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
           >
             <label
-              class="components-base-control__label css-uc4znj-StyledLabel-labelStyles ej5x27r2"
+              class="components-base-control__label css-227y7a-StyledLabel-baseLabelTypography-labelStyles ej5x27r2"
               for="form-file-upload-base-control-customer_signature"
             >
               Customer signature
@@ -114,13 +114,13 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
           </div>
         </div>
         <div
-          class="components-base-control css-t4f5jv-Wrapper ej5x27r4"
+          class="components-base-control css-ij2po-Wrapper-boxSizingReset ej5x27r4"
         >
           <div
-            class="components-base-control__field css-9j34z1-StyledField-deprecatedMarginField ej5x27r3"
+            class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
           >
             <label
-              class="components-base-control__label css-uc4znj-StyledLabel-labelStyles ej5x27r2"
+              class="components-base-control__label css-227y7a-StyledLabel-baseLabelTypography-labelStyles ej5x27r2"
               for="inspector-text-control-1"
             >
               Service date
@@ -137,27 +137,27 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName e19lxcc00"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName e19lxcc00"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
   </div>
   <div
-    class="components-surface components-card css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded e19lxcc00"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-1gsy4w7-View-Content em57xhy0"
+      class="css-mgwsf4-View-Content e19lxcc00"
     >
       <div
-        class="components-card__body components-card-body css-fm5ppw-View-Body-borderRadius-large em57xhy0"
+        class="components-card__body components-card-body css-1nonx1n-View-Body-borderRadius-large e19lxcc00"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -177,7 +177,7 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
         </p>
       </div>
       <div
-        class="components-flex components-card__footer components-card-footer css-7sbnwo-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-large em57xhy0"
+        class="components-flex components-card__footer components-card-footer css-pff9e5-View-Flex-base-ItemsRow-Footer-borderRadius-borderColor-large e19lxcc00"
         data-wp-c16t="true"
         data-wp-component="CardFooter"
       >
@@ -199,13 +199,13 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName e19lxcc00"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName e19lxcc00"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -216,33 +216,33 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
 exports[`Dispute evidence form not needing response, renders correctly 1`] = `
 <div>
   <div
-    class="components-surface components-card css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded e19lxcc00"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-1gsy4w7-View-Content em57xhy0"
+      class="css-mgwsf4-View-Content e19lxcc00"
     >
       <div
-        class="components-flex components-card__header components-card-header css-ly3pic-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-large em57xhy0"
+        class="components-flex components-card__header components-card-header css-2feznw-View-Flex-base-ItemsRow-Header-borderRadius-borderColor-large e19lxcc00"
         data-wp-c16t="true"
         data-wp-component="CardHeader"
       >
         General evidence
       </div>
       <div
-        class="components-card__body components-card-body css-fm5ppw-View-Body-borderRadius-large em57xhy0"
+        class="components-card__body components-card-body css-1nonx1n-View-Body-borderRadius-large e19lxcc00"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
         <div
-          class="components-base-control css-t4f5jv-Wrapper ej5x27r4"
+          class="components-base-control css-ij2po-Wrapper-boxSizingReset ej5x27r4"
         >
           <div
-            class="components-base-control__field css-9j34z1-StyledField-deprecatedMarginField ej5x27r3"
+            class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
           >
             <label
-              class="components-base-control__label css-uc4znj-StyledLabel-labelStyles ej5x27r2"
+              class="components-base-control__label css-227y7a-StyledLabel-baseLabelTypography-labelStyles ej5x27r2"
               for="inspector-text-control-2"
             >
               Customer name
@@ -257,13 +257,13 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
           </div>
         </div>
         <div
-          class="components-base-control css-t4f5jv-Wrapper ej5x27r4"
+          class="components-base-control css-ij2po-Wrapper-boxSizingReset ej5x27r4"
         >
           <div
-            class="components-base-control__field css-9j34z1-StyledField-deprecatedMarginField ej5x27r3"
+            class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
           >
             <label
-              class="components-base-control__label css-uc4znj-StyledLabel-labelStyles ej5x27r2"
+              class="components-base-control__label css-227y7a-StyledLabel-baseLabelTypography-labelStyles ej5x27r2"
               for="form-file-upload-base-control-customer_signature"
             >
               Customer signature
@@ -276,13 +276,13 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
           </div>
         </div>
         <div
-          class="components-base-control css-t4f5jv-Wrapper ej5x27r4"
+          class="components-base-control css-ij2po-Wrapper-boxSizingReset ej5x27r4"
         >
           <div
-            class="components-base-control__field css-9j34z1-StyledField-deprecatedMarginField ej5x27r3"
+            class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
           >
             <label
-              class="components-base-control__label css-uc4znj-StyledLabel-labelStyles ej5x27r2"
+              class="components-base-control__label css-227y7a-StyledLabel-baseLabelTypography-labelStyles ej5x27r2"
               for="inspector-text-control-3"
             >
               Service date
@@ -300,13 +300,13 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName e19lxcc00"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName e19lxcc00"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -321,22 +321,22 @@ exports[`Dispute evidence page renders correctly 1`] = `
     id=""
   >
     <div
-      class="components-surface components-card css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded e19lxcc00"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
       <div
-        class="css-1gsy4w7-View-Content em57xhy0"
+        class="css-mgwsf4-View-Content e19lxcc00"
       >
         <div
-          class="components-flex components-card__header components-card-header css-ly3pic-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-large em57xhy0"
+          class="components-flex components-card__header components-card-header css-2feznw-View-Flex-base-ItemsRow-Header-borderRadius-borderColor-large e19lxcc00"
           data-wp-c16t="true"
           data-wp-component="CardHeader"
         >
           Challenge dispute
         </div>
         <div
-          class="components-card__body components-card-body css-fm5ppw-View-Body-borderRadius-large em57xhy0"
+          class="components-card__body components-card-body css-1nonx1n-View-Body-borderRadius-large e19lxcc00"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
@@ -421,58 +421,53 @@ exports[`Dispute evidence page renders correctly 1`] = `
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName e19lxcc00"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName e19lxcc00"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
     </div>
     <div
-      class="components-surface components-card css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded e19lxcc00"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
       <div
-        class="css-1gsy4w7-View-Content em57xhy0"
+        class="css-mgwsf4-View-Content e19lxcc00"
       >
         <div
-          class="components-flex components-card__header components-card-header css-ly3pic-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-large em57xhy0"
+          class="components-flex components-card__header components-card-header css-2feznw-View-Flex-base-ItemsRow-Header-borderRadius-borderColor-large e19lxcc00"
           data-wp-c16t="true"
           data-wp-component="CardHeader"
         >
           Product type
         </div>
         <div
-          class="components-card__body components-card-body css-fm5ppw-View-Body-borderRadius-large em57xhy0"
+          class="components-card__body components-card-body css-1nonx1n-View-Body-borderRadius-large e19lxcc00"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
           <div
-            class="components-base-control css-t4f5jv-Wrapper ej5x27r4"
+            class="components-base-control css-ij2po-Wrapper-boxSizingReset ej5x27r4"
           >
             <div
-              class="components-base-control__field css-9j34z1-StyledField-deprecatedMarginField ej5x27r3"
+              class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
             >
               <div
-                class="components-flex components-select-control em5sgkm7 css-115bvk5-View-Flex-sx-Base-sx-Items-ItemsColumn-Root-rootLabelPositionStyles em57xhy0"
+                class="components-flex components-select-control em5sgkm7 css-k1cy2d-View-Flex-base-ItemsColumn-Root e19lxcc00"
                 data-wp-c16t="true"
                 data-wp-component="Flex"
               >
                 <div
-                  class="components-flex-item em5sgkm3 css-19q75q3-View-Item-sx-Base-LabelWrapper em57xhy0"
-                  data-wp-c16t="true"
-                  data-wp-component="FlexItem"
-                />
-                <div
-                  class="components-input-control__container css-1hiu9az-Container-containerDisabledStyles-containerMarginStyles-containerWidthStyles em5sgkm6"
+                  class="components-input-control__container css-1o1a8cj-Container-containerDisabledStyles-containerWidthStyles em5sgkm6"
                 >
                   <select
-                    class="components-select-control__input css-11kv2g9-Select-fontSizeStyles-sizeStyles e1mv6sxx1"
+                    class="components-select-control__input css-1i7frpj-Select-fontSizeStyles-sizeStyles e1mv6sxx2"
                     data-testid="dispute-challenge-product-type-selector"
                     id="inspector-select-control-0"
                   >
@@ -507,25 +502,31 @@ exports[`Dispute evidence page renders correctly 1`] = `
                     class="components-input-control__suffix css-oobb1x-Suffix em5sgkm0"
                   >
                     <div
-                      class="css-1umnyqn-DownArrowWrapper e1mv6sxx0"
+                      class="components-spacer components-input-control-suffix-wrapper e1mv6sxx0 css-pbf063-View-classes-InputControlSuffixWrapperWithClickThrough e19lxcc00"
+                      data-wp-c16t="true"
+                      data-wp-component="InputControlSuffixWrapper"
                     >
-                      <svg
-                        aria-hidden="true"
-                        focusable="false"
-                        height="18"
-                        viewBox="0 0 24 24"
-                        width="18"
-                        xmlns="http://www.w3.org/2000/svg"
+                      <div
+                        class="css-1j80ye7-DownArrowWrapper e1mv6sxx1"
                       >
-                        <path
-                          d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
-                        />
-                      </svg>
+                        <svg
+                          aria-hidden="true"
+                          focusable="false"
+                          height="18"
+                          viewBox="0 0 24 24"
+                          width="18"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                          />
+                        </svg>
+                      </div>
                     </div>
                   </span>
                   <div
                     aria-hidden="true"
-                    class="components-input-control__backdrop css-1mpyinm-BackdropUI-backdropFocusedStyles em5sgkm2"
+                    class="components-input-control__backdrop css-1gb9p1j-BackdropUI-backdropFocusedStyles em5sgkm2"
                   />
                 </div>
               </div>
@@ -535,13 +536,13 @@ exports[`Dispute evidence page renders correctly 1`] = `
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName e19lxcc00"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName e19lxcc00"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />

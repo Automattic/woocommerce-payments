@@ -43,15 +43,15 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
           class="settings-section__controls"
         >
           <div
-            class="components-surface components-card single-currency-settings-currency-settings css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+            class="components-surface components-card single-currency-settings-currency-settings css-nsno0f-View-Surface-getBorders-primary-Card-rounded e19lxcc00"
             data-wp-c16t="true"
             data-wp-component="Card"
           >
             <div
-              class="css-1gsy4w7-View-Content em57xhy0"
+              class="css-mgwsf4-View-Content e19lxcc00"
             >
               <div
-                class="components-card__body components-card-body css-11b3k85-View-Body-borderRadius-medium em57xhy0"
+                class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium e19lxcc00"
                 data-wp-c16t="true"
                 data-wp-component="CardBody"
               >
@@ -209,13 +209,13 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
             </div>
             <div
               aria-hidden="true"
-              class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
+              class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName e19lxcc00"
               data-wp-c16t="true"
               data-wp-component="Elevation"
             />
             <div
               aria-hidden="true"
-              class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
+              class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName e19lxcc00"
               data-wp-c16t="true"
               data-wp-component="Elevation"
             />
@@ -242,15 +242,15 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
             class="single-currency-settings-preview-wrapper"
           >
             <div
-              class="components-surface components-card css-1qmf3np-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+              class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded e19lxcc00"
               data-wp-c16t="true"
               data-wp-component="Card"
             >
               <div
-                class="css-1gsy4w7-View-Content em57xhy0"
+                class="css-mgwsf4-View-Content e19lxcc00"
               >
                 <div
-                  class="components-card__body components-card-body css-11b3k85-View-Body-borderRadius-medium em57xhy0"
+                  class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium e19lxcc00"
                   data-wp-c16t="true"
                   data-wp-component="CardBody"
                 >
@@ -260,10 +260,10 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
                     </h4>
                     <div>
                       <div
-                        class="components-base-control with-value css-pkqqnt-Wrapper-boxSizingReset ej5x27r4"
+                        class="components-base-control with-value css-ij2po-Wrapper-boxSizingReset ej5x27r4"
                       >
                         <div
-                          class="components-base-control__field css-h0qn1s-StyledField-deprecatedMarginField ej5x27r3"
+                          class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
                         >
                           <div
                             class="text-control-with-affixes text-control-with-suffix"
@@ -303,13 +303,13 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
               </div>
               <div
                 aria-hidden="true"
-                class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
+                class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName e19lxcc00"
                 data-wp-c16t="true"
                 data-wp-component="Elevation"
               />
               <div
                 aria-hidden="true"
-                class="components-elevation css-q1dmop-View-Elevation-sx-Base-elevationClassName em57xhy0"
+                class="components-elevation css-15t1t3g-View-Elevation-sx-Base-elevationClassName e19lxcc00"
                 data-wp-c16t="true"
                 data-wp-component="Elevation"
               />

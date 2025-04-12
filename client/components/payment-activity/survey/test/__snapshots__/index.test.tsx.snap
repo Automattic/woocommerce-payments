@@ -3,7 +3,7 @@
 exports[`WcPayOverviewSurveyContextProvider test survey initial display 1`] = `
 <div>
   <div
-    class="components-flex components-card__footer components-card-footer css-eaigsq-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-small em57xhy0"
+    class="components-flex components-card__footer components-card-footer css-1ih54yp-View-Flex-base-ItemsRow-Footer-borderRadius-borderColor-small e19lxcc00"
     data-wp-c16t="true"
     data-wp-component="CardFooter"
   >
@@ -82,7 +82,7 @@ exports[`WcPayOverviewSurveyContextProvider test survey initial display 1`] = `
 exports[`WcPayOverviewSurveyContextProvider test survey with comments textbox 1`] = `
 <div>
   <div
-    class="components-flex components-card__footer components-card-footer css-eaigsq-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-small em57xhy0"
+    class="components-flex components-card__footer components-card-footer css-1ih54yp-View-Flex-base-ItemsRow-Footer-borderRadius-borderColor-small e19lxcc00"
     data-wp-c16t="true"
     data-wp-component="CardFooter"
   >
@@ -180,19 +180,19 @@ exports[`WcPayOverviewSurveyContextProvider test survey with comments textbox 1`
         class="comment_container"
       >
         <div
-          class="components-base-control css-t4f5jv-Wrapper ej5x27r4"
+          class="components-base-control css-ij2po-Wrapper-boxSizingReset ej5x27r4"
         >
           <div
-            class="components-base-control__field css-9j34z1-StyledField-deprecatedMarginField ej5x27r3"
+            class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
           >
             <label
-              class="components-base-control__label css-uc4znj-StyledLabel-labelStyles ej5x27r2"
+              class="components-base-control__label css-227y7a-StyledLabel-baseLabelTypography-labelStyles ej5x27r2"
               for="inspector-textarea-control-1"
             >
               Why do you feel that way? (optional)
             </label>
             <textarea
-              class="components-textarea-control__input css-wssvpr-StyledTextarea-inputStyleNeutral-inputStyleFocus-inputControl ebk7yr50"
+              class="components-textarea-control__input css-m0dqg1-StyledTextarea-inputStyleNeutral-inputStyleFocus-inputControl e1w5nnrk0"
               id="inspector-textarea-control-1"
               rows="4"
             />
