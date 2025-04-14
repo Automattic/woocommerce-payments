@@ -2656,6 +2656,10 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	 * @return void
 	 */
 	private function tracks_event( string $name, array $properties = [] ) {
+		if ( ! function_exists( 'wc_admin_record_tracks_event' ) ) {
+			return;
+		}
+
 		// Add default properties to every event.
 		$properties = array_merge(
 			$properties,
@@ -2667,10 +2671,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			],
 			$this->get_tracking_info() ?? []
 		);
-
-		if ( ! function_exists( 'wc_admin_record_tracks_event' ) ) {
-			return;
-		}
 
 		// We're not using Tracker::track_admin() here because
 		// WC_Pay\record_tracker_events() is never triggered due to the redirects.
