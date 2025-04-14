@@ -1270,4 +1270,39 @@ class WC_Payments_Onboarding_Service {
 			}
 		);
 	}
+
+	/**
+	 * Send a Tracks event.
+	 *
+	 * By default Woo adds `url`, `blog_lang`, `blog_id`, `store_id`, `products_count`, and `wc_version`
+	 * properties to every event.
+	 *
+	 * @todo This is a duplicate of the one in the WC_Payments_Account class. When we refactor the onboarding logic out of the WC_Payments_Account class we should consider a proper place for this method.
+	 *
+	 * @param string $name       The event name.
+	 * @param array  $properties Optional. The event custom properties.
+	 *
+	 * @return void
+	 */
+	private function tracks_event( string $name, array $properties = [] ) {
+		if ( ! function_exists( 'wc_admin_record_tracks_event' ) ) {
+			return;
+		}
+
+		// Add default properties to every event.
+		$properties = array_merge(
+			$properties,
+			[
+				'is_test_mode'      => WC_Payments::mode()->is_test(),
+				'jetpack_connected' => $this->payments_api_client->is_server_connected(),
+				'wcpay_version'     => WCPAY_VERSION_NUMBER,
+				'woo_country_code'  => WC()->countries->get_base_country(),
+			],
+			WC_Payments::get_account_service()->get_tracking_info() ?? []
+		);
+
+		wc_admin_record_tracks_event( $name, $properties );
+
+		Logger::info( 'Tracks event: ' . $name . ' with data: ' . wp_json_encode( WC_Payments_Utils::redact_array( $properties, [ 'woo_country_code' ] ) ) );
+	}
 }
