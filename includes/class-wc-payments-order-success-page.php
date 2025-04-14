@@ -87,23 +87,30 @@ class WC_Payments_Order_Success_Page {
 						<div class="payment-header">
 							<?php
 							/* translators: %s: order number */
-							printf( esc_html__( 'Order #%s', 'woocommerce-payments' ), $order->get_order_number() );
+							echo esc_html( sprintf( __( 'Order #%s', 'woocommerce-payments' ), $order->get_order_number() ) );
 							?>
 						</div>
 						<div class="payment-expiry">
 						<?php
-							printf(
-								/* translators: %s: expiry date */
-								esc_html__( 'Expires %s', 'woocommerce-payments' ),
-								'<strong>' . $expiry_date . '</strong>'
-							);
+						printf(
+							WC_Payments_Utils::esc_interpolated_html( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+							/* translators: %s: expiry date */
+								__( 'Expires <strong>%s</strong>', 'woocommerce-payments' ),
+								[
+									'strong' => '<strong>',
+								]
+							),
+							esc_html( $expiry_date )
+						);
 						?>
 							<span class="badge">
 							<?php
-							printf(
-							/* translators: %d: number of days */
-								_n( '%d day', '%d days', $days_remaining, 'woocommerce-payments' ),
-								$days_remaining
+							echo esc_html(
+								sprintf(
+									/* translators: %d: number of days */
+									_n( '%d day', '%d days', $days_remaining, 'woocommerce-payments' ),
+									$days_remaining
+								)
 							);
 							?>
 							</span>
@@ -131,7 +138,7 @@ class WC_Payments_Order_Success_Page {
 					</div>
 					<div class="payment-box-row">
 						<span class="payment-box-label"><?php esc_html_e( 'Amount', 'woocommerce-payments' ); ?></span>
-						<button type="button" class="payment-box-value copy-btn" data-copy-value="<?php echo esc_attr( wp_strip_all_tags( $formatted_order_total ) ); ?>"><?php echo wp_strip_all_tags( $formatted_order_total ); ?><i class="copy-icon"></i></button>
+						<button type="button" class="payment-box-value copy-btn" data-copy-value="<?php echo esc_attr( wp_strip_all_tags( $formatted_order_total ) ); ?>"><?php echo esc_html( wp_strip_all_tags( $formatted_order_total ) ); ?><i class="copy-icon"></i></button>
 					</div>
 				</div>
 
@@ -246,7 +253,7 @@ class WC_Payments_Order_Success_Page {
 		ob_start();
 		?>
 		<div class="wc-payment-gateway-method-logo-wrapper woopay">
-			<img alt="WooPay" src="<?php echo esc_url_raw( plugins_url( 'assets/images/woopay.svg', WCPAY_PLUGIN_FILE ) ); ?>">
+			<img alt="WooPay" src="<?php echo esc_url_raw( plugins_url( 'assets/images/payment-methods/woo-short.svg', WCPAY_PLUGIN_FILE ) ); ?>">
 			<?php
 			if ( $order->get_meta( 'last4' ) ) {
 				echo esc_html_e( 'Card ending in', 'woocommerce-payments' ) . ' ';
@@ -510,18 +517,18 @@ class WC_Payments_Order_Success_Page {
 
 		if ( $plain_text ) {
 			echo "----------------------------------------\n";
-			echo __( 'Multibanco Payment instructions', 'woocommerce-payments' ) . "\n\n";
+			echo esc_html__( 'Multibanco Payment instructions', 'woocommerce-payments' ) . "\n\n";
 			printf(
 			/* translators: %s: expiry date */
-				__( 'Expires %s', 'woocommerce-payments' ) . "\n\n",
-				$expiry_date
+				esc_html__( 'Expires %s', 'woocommerce-payments' ) . "\n\n",
+				esc_html( $expiry_date )
 			);
-			echo '1. ' . __( 'In your online bank account or from an ATM, choose "Payment and other services".', 'woocommerce-payments' ) . "\n";
-			echo '2. ' . __( 'Click "Payments of services/shopping".', 'woocommerce-payments' ) . "\n";
-			echo '3. ' . __( 'Enter the entity number, reference number, and amount.', 'woocommerce-payments' ) . "\n\n";
-			echo __( 'Entity', 'woocommerce-payments' ) . ': ' . $multibanco_info['entity'] . "\n";
-			echo __( 'Reference', 'woocommerce-payments' ) . ': ' . $multibanco_info['reference'] . "\n";
-			echo __( 'Amount', 'woocommerce-payments' ) . ': ' . wp_strip_all_tags( $formatted_order_total ) . "\n";
+			echo '1. ' . esc_html__( 'In your online bank account or from an ATM, choose "Payment and other services".', 'woocommerce-payments' ) . "\n";
+			echo '2. ' . esc_html__( 'Click "Payments of services/shopping".', 'woocommerce-payments' ) . "\n";
+			echo '3. ' . esc_html__( 'Enter the entity number, reference number, and amount.', 'woocommerce-payments' ) . "\n\n";
+			echo esc_html__( 'Entity', 'woocommerce-payments' ) . ': ' . esc_html( $multibanco_info['entity'] ) . "\n";
+			echo esc_html__( 'Reference', 'woocommerce-payments' ) . ': ' . esc_html( $multibanco_info['reference'] ) . "\n";
+			echo esc_html__( 'Amount', 'woocommerce-payments' ) . ': ' . esc_html( wp_strip_all_tags( $formatted_order_total ) ) . "\n";
 			echo "----------------------------------------\n\n";
 		} else {
 			?>
@@ -542,7 +549,7 @@ class WC_Payments_Order_Success_Page {
 								<td style="font-size: 20px; padding: 0;">
 									<?php
 									/* translators: %s: order number */
-									printf( esc_html__( 'Order #%s', 'woocommerce-payments' ), $order->get_order_number() );
+									echo esc_html( sprintf( __( 'Order #%s', 'woocommerce-payments' ), $order->get_order_number() ) );
 									?>
 								</td>
 							</tr>
@@ -550,14 +557,14 @@ class WC_Payments_Order_Success_Page {
 								<td style="padding: 0;">
 									<?php
 									printf(
-										WC_Payments_Utils::esc_interpolated_html(
+										WC_Payments_Utils::esc_interpolated_html( // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 											/* translators: %s: expiry date */
 											__( 'Expires <strong>%s</strong>', 'woocommerce-payments' ),
 											[
 												'strong' => '<strong>',
 											]
 										),
-										$expiry_date
+										esc_html( $expiry_date )
 									);
 									?>
 								</td>
@@ -584,7 +591,7 @@ class WC_Payments_Order_Success_Page {
 							</tr>
 							<tr>
 								<th class="td"><?php esc_html_e( 'Amount', 'woocommerce-payments' ); ?></th>
-								<td class="td"><?php echo wp_strip_all_tags( $formatted_order_total ); ?></td>
+								<td class="td"><?php echo esc_html( wp_strip_all_tags( $formatted_order_total ) ); ?></td>
 							</tr>
 							</tbody>
 						</table>

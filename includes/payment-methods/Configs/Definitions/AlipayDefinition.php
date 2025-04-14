@@ -28,7 +28,7 @@ class AlipayDefinition implements PaymentMethodDefinitionInterface {
 	}
 
 	/**
-	 * Get the keywords for the payment method
+	 * Get the keywords for the payment method. These are used by the duplicates detection service.
 	 *
 	 * @return string[]
 	 */
@@ -57,11 +57,23 @@ class AlipayDefinition implements PaymentMethodDefinitionInterface {
 	}
 
 	/**
-	 * Get the customer-facing description of the payment method
+	 * Get the title of the payment method for the settings page.
+	 *
+	 * @param string|null $account_country Optional. The merchant's account country.
 	 *
 	 * @return string
 	 */
-	public static function get_description(): string {
+	public static function get_settings_label( ?string $account_country = null ): string {
+		return self::get_title( $account_country );
+	}
+
+	/**
+	 * Get the customer-facing description of the payment method
+	 *
+	 * @param string|null $account_country Optional. The merchant's account country.
+	 * @return string
+	 */
+	public static function get_description( ?string $account_country = null ): string {
 		return __( 'Alipay is a popular wallet in China, operated by Ant Financial Services Group, a financial services provider affiliated with Alibaba.', 'woocommerce-payments' );
 	}
 
@@ -232,10 +244,12 @@ class AlipayDefinition implements PaymentMethodDefinitionInterface {
 	/**
 	 * Get the URL for the payment method's settings icon
 	 *
+	 * @param string|null $account_country Optional. The merchant's account country.
+	 *
 	 * @return string
 	 */
-	public static function get_settings_icon_url(): string {
-		return self::get_icon_url();
+	public static function get_settings_icon_url( ?string $account_country = null ): string {
+		return self::get_icon_url( $account_country );
 	}
 
 	/**

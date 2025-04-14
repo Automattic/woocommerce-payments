@@ -124,7 +124,7 @@ class UPE_Payment_Method {
 
 		if ( null !== $this->definition ) {
 			// Cache values that don't require context.
-			$this->stripe_id                    = $this->definition::get_stripe_id();
+			$this->stripe_id                    = $this->definition::get_id();
 			$this->is_reusable                  = $this->definition::is_reusable();
 			$this->currencies                   = $this->definition::get_supported_currencies();
 			$this->accept_only_domestic_payment = $this->definition::accepts_only_domestic_payments();
@@ -365,6 +365,91 @@ class UPE_Payment_Method {
 		$account_country = isset( $account['country'] ) ? strtoupper( $account['country'] ) : '';
 
 		return $this->has_domestic_transactions_restrictions() ? [ $account_country ] : $this->countries;
+	}
+
+	/**
+	 * Returns payment method description for the settings page.
+	 *
+	 * @param string|null $account_country Country of merchants account.
+	 *
+	 * @return string
+	 */
+	public function get_description( ?string $account_country = null ) {
+		if ( null !== $this->definition ) {
+			return $this->definition::get_description( $account_country );
+		}
+		return '';
+	}
+
+	/**
+	 * Returns payment method settings label.
+	 *
+	 * @param string $account_country Country of merchants account.
+	 * @return string
+	 */
+	public function get_settings_label( string $account_country ) {
+		if ( null !== $this->definition ) {
+			return $this->definition::get_settings_label( $account_country );
+		}
+		return $this->get_title( $account_country );
+	}
+
+	/**
+	 * Returns payment method settings icon.
+	 *
+	 * @param string|null $account_country Country of merchants account.
+	 * @return string
+	 */
+	public function get_settings_icon_url( ?string $account_country = null ) {
+		if ( null !== $this->definition ) {
+			return $this->definition::get_settings_icon_url( $account_country );
+		}
+		return $this->get_icon( $account_country );
+	}
+
+	/**
+	 * Returns boolean dependent on whether payment method allows manual capture.
+	 *
+	 * @return bool
+	 */
+	public function allows_manual_capture() {
+		if ( null !== $this->definition ) {
+			return $this->definition::allows_manual_capture();
+		}
+
+		return false;
+	}
+
+	/**
+	 * Returns the Stripe key for the payment method.
+	 *
+	 * @return string
+	 */
+	public function get_stripe_key() {
+		if ( null !== $this->definition ) {
+			return $this->definition::get_stripe_id();
+		}
+		return \WC_Payments::get_gateway()->get_payment_method_capability_key_map()[ $this->stripe_id ];
+	}
+
+	/**
+	 * Returns payment method settings definition.
+	 *
+	 * @param string $account_country Country of merchants account.
+	 * @return array
+	 */
+	public function get_payment_method_information_object( string $account_country ) {
+		return [
+			'id'                            => $this->get_id(),
+			'label'                         => $this->get_settings_label( $account_country ),
+			'description'                   => $this->get_description( $account_country ),
+			'settings_icon_url'             => $this->get_settings_icon_url( $account_country ),
+			'currencies'                    => $this->get_currencies(),
+			'stripe_key'                    => $this->get_stripe_key(),
+			'allows_manual_capture'         => $this->allows_manual_capture(),
+			'allows_pay_later'              => $this->is_bnpl(),
+			'accepts_only_domestic_payment' => $this->has_domestic_transactions_restrictions(),
+		];
 	}
 
 	/**

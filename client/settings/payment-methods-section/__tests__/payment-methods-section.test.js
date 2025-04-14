@@ -86,7 +86,6 @@ describe( 'PaymentMethodsSection', () => {
 			isMultiCurrencyEnabled: true,
 			storeCurrency: 'USD',
 			accountEmail: 'admin@example.com',
-			capabilityRequestNotices: {},
 		};
 		select.mockImplementation( () => ( {
 			getSettings: jest.fn().mockReturnValue( {
@@ -169,15 +168,6 @@ describe( 'PaymentMethodsSection', () => {
 		render( <PaymentMethodsSection /> );
 
 		expect( screen.queryAllByText( /Pending /i ).length ).toEqual( 4 );
-	} );
-
-	it( 'renders the payment methods component', () => {
-		render( <PaymentMethodsSection /> );
-
-		expect( screen.queryByText( 'Payment methods' ) ).toBeInTheDocument();
-		expect(
-			screen.queryByText( 'Payment methods' ).parentElement
-		).toHaveTextContent( 'Payment methods' );
 	} );
 
 	it( 'renders the activation modal when requirements exist for the payment method', () => {

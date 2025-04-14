@@ -77,9 +77,9 @@ test.describe( 'Multi-currency checkout', () => {
 							currenciesOrders[ currency ]
 						);
 						await expect(
-							shopperPage.locator(
-								'.woocommerce-table--order-details tfoot tr:last-child td'
-							)
+							shopperPage.getByRole( 'cell', {
+								name: /\$?\d\d[\.,]\d\d\s€?\s?[A-Z]{3}/,
+							} )
 						).toHaveText( new RegExp( currency ) );
 					}
 				);

@@ -718,6 +718,9 @@ class WC_Payments_Utils {
 	/**
 	 * Get the BNPL limits per currency for a specific payment method.
 	 *
+	 * FLAG: PAYMENT_METHODS_LIST
+	 * This can be replaced once all BNPL methods are converted to use definitions.
+	 *
 	 * @param string $payment_method The payment method name ('affirm', 'afterpay_clearpay', or 'klarna').
 	 * @return array The BNPL limits per currency for the specified payment method.
 	 */
@@ -1350,15 +1353,14 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Block based themes display the cart block even when the cart shortcode is used. has_block() isn't effective
-	 * in this case because it checks the page content for the block, which isn't present.
+	 * Determine if the current page is a cart block.
 	 *
-	 * @return bool
+	 * @return bool True if the current page is a cart block, false otherwise.
 	 *
 	 * @psalm-suppress UndefinedFunction
 	 */
 	public static function is_cart_block(): bool {
-		return has_block( 'woocommerce/cart' ) || ( wp_is_block_theme() && is_cart() );
+		return has_block( 'woocommerce/cart' );
 	}
 
 	/**

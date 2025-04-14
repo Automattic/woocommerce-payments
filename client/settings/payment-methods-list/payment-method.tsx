@@ -27,6 +27,16 @@ import InlineNotice from 'wcpay/components/inline-notice';
 import './payment-method.scss';
 import DuplicateNotice from 'wcpay/components/duplicate-notice';
 import DuplicatedPaymentMethodsContext from '../settings-manager/duplicated-payment-methods-context';
+import { PaymentMethodsLogos } from 'wcpay/checkout/blocks/payment-methods-logos/payment-methods-logos';
+import Visa from 'assets/images/payment-method-icons/visa.svg?asset';
+import Mastercard from 'assets/images/payment-method-icons/mastercard.svg?asset';
+import Amex from 'assets/images/payment-method-icons/amex.svg?asset';
+import Discover from 'assets/images/payment-method-icons/discover.svg?asset';
+import Diners from 'assets/images/cards/diners.svg?asset';
+import Jcb from 'assets/images/payment-method-icons/jcb.svg?asset';
+import Cartebancaire from 'assets/images/cards/cartes_bancaires.svg?asset';
+import UnionPay from 'assets/images/cards/unionpay.svg?asset';
+import PAYMENT_METHOD_IDS from 'wcpay/constants/payment-method';
 
 interface PaymentMethodProps {
 	id: string;
@@ -100,6 +110,18 @@ const PaymentMethodLabel = ( {
 		</>
 	);
 };
+
+// Define the supported card brands
+const cardBrands = [
+	{ name: 'visa', component: Visa },
+	{ name: 'mastercard', component: Mastercard },
+	{ name: 'amex', component: Amex },
+	{ name: 'discover', component: Discover },
+	{ name: 'diners', component: Diners },
+	{ name: 'jcb', component: Jcb },
+	{ name: 'cartes_bancaires', component: Cartebancaire },
+	{ name: 'unionpay', component: UnionPay },
+];
 
 const PaymentMethod = ( {
 	id,
@@ -309,6 +331,18 @@ const PaymentMethod = ( {
 							<div className="payment-method__description">
 								{ description }
 							</div>
+							{ id === PAYMENT_METHOD_IDS.CARD && (
+								<div className="payment-method__supported-cards">
+									<PaymentMethodsLogos
+										paymentMethods={ cardBrands }
+										maxElements={ 8 }
+										breakpointConfigs={ [
+											{ breakpoint: 480, maxElements: 8 },
+											{ breakpoint: 768, maxElements: 8 },
+										] }
+									/>
+								</div>
+							) }
 						</div>
 						{ accountFees && accountFees[ id ] && (
 							<div className="payment-method__fees">

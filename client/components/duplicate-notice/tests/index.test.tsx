@@ -3,25 +3,20 @@
  */
 import React from 'react';
 import { render, fireEvent, screen, cleanup } from '@testing-library/react';
-import { useDispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
 import DuplicateNotice from '..';
+import { saveOption } from 'wcpay/data/settings/actions';
 
-jest.mock( '@wordpress/data', () => ( {
-	useDispatch: jest.fn(),
+jest.mock( 'wcpay/data/settings/actions', () => ( {
+	saveOption: jest.fn(),
 } ) );
 
-const mockUseDispatch = useDispatch as jest.MockedFunction< any >;
+const mockSaveOption = saveOption as jest.MockedFunction< any >;
 
 describe( 'DuplicateNotice', () => {
-	const mockDispatch = jest.fn();
-	mockUseDispatch.mockReturnValue( {
-		updateOptions: mockDispatch,
-	} );
-
 	afterEach( () => {
 		cleanup();
 	} );
@@ -108,11 +103,12 @@ describe( 'DuplicateNotice', () => {
 		expect( props.setDismissedDuplicateNotices ).toHaveBeenCalledWith( {
 			[ paymentMethod ]: [ 'woocommerce_payments' ],
 		} );
-		expect( mockDispatch ).toHaveBeenCalledWith( {
-			wcpay_duplicate_payment_method_notices_dismissed: {
-				[ paymentMethod ]: [ 'woocommerce_payments' ],
-			},
-		} );
+		expect(
+			mockSaveOption
+		).toHaveBeenCalledWith(
+			'wcpay_duplicate_payment_method_notices_dismissed',
+			{ [ paymentMethod ]: [ 'woocommerce_payments' ] }
+		);
 	} );
 
 	test( 'clicking on the Review extensions link navigates correctly', () => {

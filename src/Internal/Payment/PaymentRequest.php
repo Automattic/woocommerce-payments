@@ -14,6 +14,7 @@ use WCPay\Internal\Payment\PaymentMethod\NewPaymentMethod;
 use WCPay\Internal\Payment\PaymentMethod\PaymentMethodInterface;
 use WCPay\Internal\Payment\PaymentMethod\SavedPaymentMethod;
 use WCPay\Internal\Proxy\LegacyProxy;
+use WCPay\WooPay\WooPay_Utilities;
 
 /**
  * Class for loading, sanitizing, and escaping data from payment requests.
@@ -72,7 +73,7 @@ class PaymentRequest {
 	 */
 	public function get_woopay_intent_id(): ?string {
 		return isset( $this->request['platform-checkout-intent'] )
-			? sanitize_text_field( wp_unslash( ( $this->request['platform-checkout-intent'] ) ) )
+			? WooPay_Utilities::sanitize_intent_id( wp_unslash( ( $this->request['platform-checkout-intent'] ) ) )
 			: null;
 	}
 

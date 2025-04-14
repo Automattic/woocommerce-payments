@@ -141,11 +141,10 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 			} else {
 				$this->add_order_attribution_inputs();
 			}
-
+			$this->display_express_checkout_separator_if_necessary( $separator_starts_hidden );
 			?>
 			</div >
 			<?php
-			$this->display_express_checkout_separator_if_necessary( $separator_starts_hidden );
 		}
 	}
 

@@ -133,3 +133,56 @@ jest.mock( 'tracks', () => ( {
 	isEnabled: jest.fn(),
 	events: {},
 } ) );
+
+function buildMockDefinition( id, label, currencies = [], overrides = {} ) {
+	return {
+		id,
+		label,
+		description: `Mock ${ label } Description`,
+		settings_icon_url: `assets/images/icon-${ id }.svg`,
+		currencies,
+		stripe_key: `${ id }_payments`,
+		allows_manual_capture: false,
+		allows_pay_later: false,
+		accepts_only_domestic_payment: false,
+		...overrides,
+	};
+}
+
+// This doesn't include all the payment methods, only the ones relevant for tests.
+global.wooPaymentsPaymentMethodDefinitions = {
+	card: buildMockDefinition( 'card', 'Credit / Debit Cards', [], {
+		allows_manual_capture: true,
+	} ),
+	bancontact: buildMockDefinition( 'bancontact', 'Bancontact', [ 'EUR' ] ),
+	ideal: buildMockDefinition( 'ideal', 'iDEAL', [ 'EUR' ] ),
+	eps: buildMockDefinition( 'eps', 'EPS', [ 'EUR' ] ),
+	giropay: buildMockDefinition( 'giropay', 'Giropay', [ 'EUR' ] ),
+	sofort: buildMockDefinition( 'sofort', 'Sofort', [ 'EUR' ] ),
+	sepa_debit: buildMockDefinition( 'sepa_debit', 'SEPA Direct Debit', [
+		'EUR',
+	] ),
+	p24: buildMockDefinition( 'p24', 'Przelewy24 (P24)', [ 'EUR', 'PLN' ] ),
+	au_becs_debit: buildMockDefinition( 'au_becs_debit', 'BECS Direct Debit', [
+		'AUD',
+	] ),
+	affirm: buildMockDefinition( 'affirm', 'Affirm', [ 'USD', 'CAD' ], {
+		allows_pay_later: true,
+		accepts_only_domestic_payment: true,
+	} ),
+	afterpay_clearpay: buildMockDefinition(
+		'afterpay_clearpay',
+		'Afterpay',
+		[ 'USD', 'AUD', 'CAD', 'NZD', 'GBP' ],
+		{ allows_pay_later: true, accepts_only_domestic_payment: true }
+	),
+	klarna: buildMockDefinition(
+		'klarna',
+		'Klarna',
+		[ 'EUR', 'GBP', 'USD', 'DKK', 'NOK', 'SEK' ],
+		{
+			allows_pay_later: true,
+			accepts_only_domestic_payment: true,
+		}
+	),
+};

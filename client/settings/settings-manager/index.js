@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React, { useState, useLayoutEffect } from 'react';
+import React, { useState, useLayoutEffect, useEffect } from 'react';
 import { ExternalLink } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { getQuery } from '@woocommerce/navigation';
@@ -30,6 +30,7 @@ import {
 } from '../../data';
 import FraudProtection from '../fraud-protection';
 import DuplicatedPaymentMethodsContext from './duplicated-payment-methods-context';
+import './style.scss';
 
 const ExpressCheckoutDescription = () => (
 	<>
@@ -158,7 +159,14 @@ const SettingsManager = () => {
 	const [ isTransactionInputsValid, setTransactionInputsValid ] = useState(
 		true
 	);
-	const { isLoading } = useSettings();
+
+	const { isLoading, isDirty } = useSettings();
+
+	useEffect( () => {
+		if ( ! isDirty ) {
+			window.onbeforeunload = null;
+		}
+	}, [ isDirty ] );
 
 	useLayoutEffect( () => {
 		const { anchor } = getQuery();

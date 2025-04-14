@@ -7,7 +7,8 @@ import { Fragment } from 'react';
 import './style.scss';
 import p24BankList from '../../payment-details/payment-method/p24/bank-list';
 import { HoverTooltip } from '../tooltip';
-import { PAYMENT_METHOD_TITLES } from 'wcpay/constants/payment-method';
+import { getTransactionPaymentMethodTitle } from 'wcpay/transactions/utils/getTransactionPaymentMethodTitle';
+
 /**
  *
  * @param {Object} payment Payment charge object
@@ -74,16 +75,22 @@ const PaymentMethodDetails = ( props ) => {
 	}
 
 	const details = formatDetails( payment );
+
+	const accountCountry = wcpaySettings?.accountStatus?.country || 'US';
+
 	return (
 		<span className="payment-method-details">
 			<HoverTooltip
 				isVisible={ false }
-				content={ PAYMENT_METHOD_TITLES[ brand ] }
+				content={ getTransactionPaymentMethodTitle( brand ) }
 				className="payment-method-details__brand-tooltip"
 			>
 				<span
-					className={ `payment-method__brand payment-method__brand--${ brand }` }
-					aria-label={ PAYMENT_METHOD_TITLES[ brand ] }
+					className={
+						`payment-method__brand payment-method__brand--${ brand } ` +
+						`account-country--${ accountCountry.toLowerCase() }`
+					}
+					aria-label={ getTransactionPaymentMethodTitle( brand ) }
 				/>
 			</HoverTooltip>
 			{ details }

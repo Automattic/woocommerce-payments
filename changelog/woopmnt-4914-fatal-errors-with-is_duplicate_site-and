@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Improve subscriptions code compatibility to avoid causing fatal errors.
