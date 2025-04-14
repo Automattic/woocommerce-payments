@@ -534,11 +534,15 @@ jQuery( ( $ ) => {
 
 	// We need to refresh ECE data when total is updated.
 	$( document.body ).on( 'updated_cart_totals', () => {
+		// we can't rely on the previous cart data, need to get fresh one.
+		cachedCartData = null;
 		wcpayECE.init();
 	} );
 
 	// We need to refresh ECE data when total is updated.
 	$( document.body ).on( 'updated_checkout', () => {
+		// we can't rely on the previous cart data, need to get fresh one.
+		cachedCartData = null;
 		wcpayECE.init();
 	} );
 } );

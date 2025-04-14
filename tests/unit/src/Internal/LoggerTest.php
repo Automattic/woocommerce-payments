@@ -193,16 +193,4 @@ class LoggerTest extends WCPAY_UnitTestCase {
 		update_option( 'woocommerce_woocommerce_payments_settings', [ 'enable_logging' => 'yes' ] );
 		$this->assertTrue( $this->sut->can_log() );
 	}
-
-	/**
-	 * Test that format_object method can handle failures.
-	 */
-	public function test_format_object_failure() {
-		$recursive_array        = [];
-		$recursive_array['foo'] = &$recursive_array;
-
-		$formatted_object = LoggerWrapper::format_object( 'TEST', $recursive_array );
-
-		$this->assertStringContainsString( 'Recursion detected', $formatted_object );
-	}
 }

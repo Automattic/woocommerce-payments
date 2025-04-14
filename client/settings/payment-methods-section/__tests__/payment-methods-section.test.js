@@ -86,7 +86,6 @@ describe( 'PaymentMethodsSection', () => {
 			isMultiCurrencyEnabled: true,
 			storeCurrency: 'USD',
 			accountEmail: 'admin@example.com',
-			capabilityRequestNotices: {},
 		};
 		select.mockImplementation( () => ( {
 			getSettings: jest.fn().mockReturnValue( {

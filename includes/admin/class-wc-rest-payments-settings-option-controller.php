@@ -23,7 +23,6 @@ class WC_REST_Payments_Settings_Option_Controller extends WC_Payments_REST_Contr
 		'woocommerce_remind_me_later_todo_tasks',
 		'woocommerce_deleted_todo_tasks',
 		'wcpay_fraud_protection_welcome_tour_dismissed',
-		'wcpay_capability_request_dismissed_notices',
 		'wcpay_onboarding_eligibility_modal_dismissed',
 		'wcpay_connection_success_modal_dismissed',
 		'wcpay_next_deposit_notice_dismissed',

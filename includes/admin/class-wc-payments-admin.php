@@ -1025,7 +1025,6 @@ class WC_Payments_Admin {
 			'woopayLastDisableDate'              => $this->wcpay_gateway->get_option( 'platform_checkout_last_disable_date' ),
 			'isStripeBillingEnabled'             => WC_Payments_Features::is_stripe_billing_enabled(),
 			'isStripeBillingEligible'            => WC_Payments_Features::is_stripe_billing_eligible(),
-			'capabilityRequestNotices'           => get_option( 'wcpay_capability_request_dismissed_notices ', [] ),
 			'storeName'                          => get_bloginfo( 'name' ),
 			'isNextDepositNoticeDismissed'       => WC_Payments_Features::is_next_deposit_notice_dismissed(),
 			'isInstantDepositNoticeDismissed'    => get_option( 'wcpay_instant_deposit_notice_dismissed', false ),

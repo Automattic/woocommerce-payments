@@ -76,6 +76,9 @@ const mockUseUserPreferences = useUserPreferences as jest.MockedFunction<
 
 declare const global: {
 	wcpaySettings: {
+		accountStatus: {
+			country: string;
+		};
 		isSubscriptionsActive: boolean;
 		featureFlags: {
 			customSearch: boolean;
@@ -215,6 +218,9 @@ describe( 'Transactions list', () => {
 		} as any );
 
 		global.wcpaySettings = {
+			accountStatus: {
+				country: 'US',
+			},
 			featureFlags: {
 				customSearch: true,
 			},

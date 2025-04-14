@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+chore: removed notices about the JCB capability request. JCB will be automatically requested for every new and existing merchant, regardless of the merchant country.

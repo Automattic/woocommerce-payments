@@ -91,7 +91,7 @@ const LoadableCheckboxControl = ( {
 			needsAttention ? (
 				<div
 					className="loadable-checkbox__icon"
-					style={ { marginRight: '16px' } }
+					style={ { marginRight: '8px' } }
 				>
 					<HoverTooltip
 						content={ setupTooltip }

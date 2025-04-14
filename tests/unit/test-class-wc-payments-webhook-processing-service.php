@@ -10,6 +10,7 @@ use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Payment_Method;
 use WCPay\Constants\Refund_Status;
+use WCPay\Constants\Refund_Failure_Reason;
 use WCPay\Database_Cache;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
@@ -32,45 +33,45 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	private $webhook_processing_service;
 
 	/**
-	 * @var WC_Payments_DB|MockObject
+	 * @var WC_Payments_DB&MockObject
 	 */
 	private $mock_db_wrapper;
 
 	/**
-	 * @var WC_Payments_Remote_Note_Service|MockObject
+	 * @var WC_Payments_Remote_Note_Service&MockObject
 	 */
 	private $mock_remote_note_service;
 
 	/**
-	 * @var WC_Payments_Order_Service|MockObject
+	 * @var WC_Payments_Order_Service&MockObject
 	 */
 	private $order_service;
 
 	/**
 	 * receipt_service
 	 *
-	 * @var WC_Payments_In_Person_Payments_Receipts_Service|MockObject
+	 * @var WC_Payments_In_Person_Payments_Receipts_Service&MockObject
 	 */
 	private $mock_receipt_service;
 
 	/**
 	 * mock_wcpay_gateway
 	 *
-	 * @var WC_Payment_Gateway_WCPay|MockObject
+	 * @var WC_Payment_Gateway_WCPay&MockObject
 	 */
 	private $mock_wcpay_gateway;
 
 	/**
 	 * Mock customer service
 	 *
-	 * @var WC_Payments_Customer_Service|MockObject
+	 * @var WC_Payments_Customer_Service&MockObject
 	 */
 	private $mock_customer_service;
 
 	/**
 	 * Mock database cache
 	 *
-	 * @var Database_Cache
+	 * @var Database_Cache&MockObject
 	 */
 	private $mock_database_cache;
 
@@ -80,9 +81,14 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	private $event_body;
 
 	/**
-	 * @var WC_Order
+	 * @var WC_Order&MockObject
 	 */
 	private $mock_order;
+
+	/**
+	 * @var WC_Payments_API_Client&MockObject
+	 */
+	private $mock_api_client;
 
 	/**
 	 * Pre-test setup
@@ -95,11 +101,9 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
-		$mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
-
 		$this->order_service = $this->getMockBuilder( 'WC_Payments_Order_Service' )
 			->setConstructorArgs( [ $this->createMock( WC_Payments_API_Client::class ) ] )
-			->setMethods(
+			->onlyMethods(
 				[
 					'get_wcpay_refund_id_for_order',
 					'add_note_and_metadata_for_created_refund',
@@ -113,7 +117,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_db_wrapper = $this->getMockBuilder( WC_Payments_DB::class )
 			->disableOriginalConstructor()
-			->setMethods( [ 'order_from_charge_id', 'order_from_intent_id', 'order_from_order_id' ] )
+			->onlyMethods( [ 'order_from_charge_id', 'order_from_intent_id', 'order_from_order_id' ] )
 			->getMock();
 
 		$this->mock_remote_note_service = $this->createMock( WC_Payments_Remote_Note_Service::class );
@@ -144,7 +148,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$event_data           = [];
 		$event_data['object'] = $event_object;
 
-		$this->event_body         = [];
+		$this->event_body         = [ 'id' => uniqid( 'evt_' ) ];
 		$this->event_body['data'] = $event_data;
 
 		$this->mock_order = $this->createMock( WC_Order::class );
@@ -187,7 +191,6 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_webhook_with_test_event_and_live_gateway() {
 		$this->event_body['type']     = 'wcpay.notification';
-		$this->event_body['id']       = 'testID';
 		$this->event_body['livemode'] = false;
 		$this->event_body['data']     = [
 			'title'   => 'test',
@@ -212,7 +215,6 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_webhook_with_live_event_and_test_gateway() {
 		$this->event_body['type']     = 'wcpay.notification';
-		$this->event_body['id']       = 'testID';
 		$this->event_body['livemode'] = true;
 		$this->event_body['data']     = [
 			'title'   => 'test',
@@ -421,8 +423,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->order_service
 			->expects( $this->once() )
-			->method( 'handle_insufficient_balance_for_refund' )
-			->with( $this->mock_order, 999 );
+			->method( 'handle_failed_refund' )
+			->with( $this->mock_order, 'test_refund_id', 999, 'gbp', null, false, 'insufficient_funds' );
 
 		$this->webhook_processing_service->process( $this->event_body );
 	}
@@ -1969,6 +1971,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_payment_intent_failed_handles_terminal_payment() {
 		$this->event_body = [
+			'id'       => uniqid( 'evt_' ),
 			'type'     => 'payment_intent.payment_failed',
 			'livemode' => true,
 			'data'     => [
@@ -2013,5 +2016,76 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			);
 
 		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * @dataProvider refund_failure_reason_data_provider
+	 */
+	public function test_process_webhook_refund_updated_handles_different_failure_reasons( string $failure_reason ): void {
+		$this->event_body['type']           = 'charge.refund.updated';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'status'         => 'failed',
+			'charge'         => 'test_charge_id',
+			'id'             => 'test_refund_id',
+			'amount'         => 1999,
+			'currency'       => 'usd',
+			'failure_reason' => $failure_reason,
+		];
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $this->mock_order );
+
+		$this->order_service
+			->expects( $this->once() )
+			->method( 'handle_failed_refund' )
+			->with(
+				$this->mock_order,
+				'test_refund_id',
+				1999,
+				'usd',
+				null,
+				false,
+				$failure_reason
+			);
+
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Data provider for refund failure reason tests.
+	 *
+	 * @return array
+	 */
+	public function refund_failure_reason_data_provider(): array {
+		return [
+			'insufficient_funds'  => [
+				Refund_Failure_Reason::INSUFFICIENT_FUNDS,
+				'Insufficient funds to process the refund',
+			],
+			'declined'            => [
+				Refund_Failure_Reason::DECLINED,
+				'The refund was declined',
+			],
+			'expired_card'        => [
+				Refund_Failure_Reason::EXPIRED_OR_CANCELED_CARD,
+				'The card used for the original payment has expired or been canceled',
+			],
+			'lost_or_stolen_card' => [
+				Refund_Failure_Reason::LOST_OR_STOLEN_CARD,
+				'The card used for the original payment was reported as lost or stolen',
+			],
+			'merchant_request'    => [
+				Refund_Failure_Reason::MERCHANT_REQUEST,
+				'The refund was canceled at your request',
+			],
+			'unknown'             => [
+				Refund_Failure_Reason::UNKNOWN,
+				'An unknown error occurred while processing the refund',
+			],
+		];
 	}
 }

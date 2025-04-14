@@ -157,6 +157,9 @@ describe( 'PaymentDetailsSummary', () => {
 		jest.clearAllMocks();
 
 		global.wcpaySettings = {
+			accountStatus: {
+				country: 'US',
+			},
 			isSubscriptionsActive: false,
 			shouldUseExplicitPrice: false,
 			zeroDecimalCurrencies: [ 'jpy' ],

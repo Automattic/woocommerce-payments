@@ -65,9 +65,9 @@ class Erase_Deprecated_Flags_And_Options_Test extends WCPAY_UnitTestCase {
 
 	public function versions_not_applying_migration_provider() {
 		return [
-			'newer major version' => [ '8.2.0' ],
-			'newer minor version' => [ '8.1.1' ],
-			'same version'        => [ '8.1.0' ],
+			'newer major version' => [ '9.3.0' ],
+			'newer minor version' => [ '9.2.1' ],
+			'same version'        => [ '9.2.0' ],
 		];
 	}
 }

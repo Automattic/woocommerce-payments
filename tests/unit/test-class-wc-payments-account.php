@@ -937,6 +937,11 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				]
 			);
 
+		$this->mock_onboarding_service
+			->expects( $this->once() )
+			->method( 'should_enable_woopay' )
+			->willReturn( true );
+
 		$original_value = get_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT );
 
 		// Act.

@@ -21,7 +21,6 @@ import methodsConfiguration from '../../payment-methods-map';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 import ConfirmPaymentMethodActivationModal from './activation-modal';
 import ConfirmPaymentMethodDeleteModal from './delete-modal';
-import CapabilityRequestNotice from './capability-request';
 import { getMissingCurrenciesTooltipMessage } from 'multi-currency/interface/functions';
 
 const PaymentMethodsList = ( { methodIds } ) => {
@@ -103,8 +102,6 @@ const PaymentMethodsList = ( { methodIds } ) => {
 
 	return (
 		<>
-			<CapabilityRequestNotice />
-
 			<ul className="payment-methods-list payment-methods__available-methods">
 				{ availableMethods.map(
 					( {

@@ -33,7 +33,6 @@ const PaymentMethodInformationObject: Record<
 					alt={ wooPaymentsPaymentMethodDefinitions[ key ].label }
 					className={ classNames(
 						'payment-method__icon',
-						key === 'card' ? 'no-border' : '',
 						className
 					) }
 				/>
