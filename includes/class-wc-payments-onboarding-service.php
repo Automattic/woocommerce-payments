@@ -72,6 +72,8 @@ class WC_Payments_Onboarding_Service {
 	const FROM_STRIPE_EMBEDDED  = 'STRIPE_EMBEDDED';
 	const FROM_REFERRAL         = 'REFERRAL';
 
+	const TRACKS_EVENT_ONBOARDING_RESET = 'wcpay_onboarding_reset';
+
 	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
@@ -653,6 +655,51 @@ class WC_Payments_Onboarding_Service {
 		WC_Payments::get_account_service()->clear_cache();
 
 		return $account_created;
+	}
+
+	/**
+	 * Reset the current onboarding state.
+	 *
+	 * This means:
+	 * - delete the currently connected Stripe account - if possible!
+	 * - reset the onboarding flags, options, and caches.
+	 *
+	 * @param array $context Context for the reset onboarding request.
+	 *              - 'from' (string) The source of the request.
+	 *              - 'source' (string) The source of the onboarding flow.
+	 *
+	 * @return bool Whether the onboarding was reset successfully.
+	 *
+	 * @throws API_Exception When the platform API request fails or is not successful.
+	 */
+	public function reset_onboarding( array $context ): bool {
+		if ( ! $this->payments_api_client->is_server_connected() ) {
+			return false;
+		}
+
+		// Delete the currently connected Stripe account, in the onboarding mode we are currently in.
+		$test_mode_onboarding = self::is_test_mode_enabled();
+		$result               = $this->payments_api_client->delete_account( $test_mode_onboarding );
+		if ( ! isset( $result['result'] ) || 'success' !== $result['result'] ) {
+			throw new API_Exception( __( 'Failed to delete account.', 'woocommerce-payments' ), 'wcpay-onboarding-account-error', 400 );
+		}
+
+		$this->cleanup_on_account_reset();
+		delete_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
+
+		// Track onboarding reset.
+		$event_properties = [
+			'mode'   => $test_mode_onboarding ? 'test' : 'live',
+			'from'   => ! empty( $context['from'] ) ? sanitize_text_field( $context['from'] ) : '',
+			'source' => ! empty( $context['source'] ) ? sanitize_text_field( $context['source'] ) : '',
+		];
+
+		$this->tracks_event(
+			self::TRACKS_EVENT_ONBOARDING_RESET,
+			$event_properties
+		);
+
+		return true;
 	}
 
 	/**
