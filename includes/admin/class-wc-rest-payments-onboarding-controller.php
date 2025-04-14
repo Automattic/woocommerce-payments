@@ -128,6 +128,28 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 
 		register_rest_route(
 			$this->namespace,
+			'/' . $this->rest_base . '/reset',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'reset_onboarding' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+				'args'                => [
+					'source' => [
+						'required'    => false,
+						'description' => 'The very first entry point the merchant entered our onboarding flow.',
+						'type'        => 'string',
+					],
+					'from'   => [
+						'required'    => false,
+						'description' => 'The previous step in the onboarding flow leading the merchant to arrive at the current step.',
+						'type'        => 'string',
+					],
+				],
+			]
+		);
+
+		register_rest_route(
+			$this->namespace,
 			'/' . $this->rest_base . '/fields',
 			[
 				'methods'             => WP_REST_Server::READABLE,
@@ -284,6 +306,28 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 				$finalize
 			)
 		);
+	}
+
+	/**
+	 * Reset the onboarding via the API.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 *
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function reset_onboarding( WP_REST_Request $request ) {
+		$context = [
+			'from'   => $request->get_param( 'from' ) ?? '',
+			'source' => $request->get_param( 'source' ) ?? '',
+		];
+
+		try {
+			$result = $this->onboarding_service->reset_onboarding( $context );
+		} catch ( Exception $e ) {
+			return new WP_Error( self::RESULT_BAD_REQUEST, $e->getMessage(), [ 'status' => 400 ] );
+		}
+
+		return rest_ensure_response( [ 'success' => $result ] );
 	}
 
 	/**
