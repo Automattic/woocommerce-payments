@@ -10,6 +10,7 @@ use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Payment_Method;
 use WCPay\Constants\Refund_Status;
+use WCPay\Constants\Refund_Failure_Reason;
 use WCPay\Database_Cache;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
@@ -422,8 +423,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->order_service
 			->expects( $this->once() )
-			->method( 'handle_insufficient_balance_for_refund' )
-			->with( $this->mock_order, 999 );
+			->method( 'handle_failed_refund' )
+			->with( $this->mock_order, 'test_refund_id', 999, 'gbp', null, false, 'insufficient_funds' );
 
 		$this->webhook_processing_service->process( $this->event_body );
 	}
@@ -2015,5 +2016,76 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			);
 
 		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * @dataProvider refund_failure_reason_data_provider
+	 */
+	public function test_process_webhook_refund_updated_handles_different_failure_reasons( string $failure_reason ): void {
+		$this->event_body['type']           = 'charge.refund.updated';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'status'         => 'failed',
+			'charge'         => 'test_charge_id',
+			'id'             => 'test_refund_id',
+			'amount'         => 1999,
+			'currency'       => 'usd',
+			'failure_reason' => $failure_reason,
+		];
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $this->mock_order );
+
+		$this->order_service
+			->expects( $this->once() )
+			->method( 'handle_failed_refund' )
+			->with(
+				$this->mock_order,
+				'test_refund_id',
+				1999,
+				'usd',
+				null,
+				false,
+				$failure_reason
+			);
+
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Data provider for refund failure reason tests.
+	 *
+	 * @return array
+	 */
+	public function refund_failure_reason_data_provider(): array {
+		return [
+			'insufficient_funds'  => [
+				Refund_Failure_Reason::INSUFFICIENT_FUNDS,
+				'Insufficient funds to process the refund',
+			],
+			'declined'            => [
+				Refund_Failure_Reason::DECLINED,
+				'The refund was declined',
+			],
+			'expired_card'        => [
+				Refund_Failure_Reason::EXPIRED_OR_CANCELED_CARD,
+				'The card used for the original payment has expired or been canceled',
+			],
+			'lost_or_stolen_card' => [
+				Refund_Failure_Reason::LOST_OR_STOLEN_CARD,
+				'The card used for the original payment was reported as lost or stolen',
+			],
+			'merchant_request'    => [
+				Refund_Failure_Reason::MERCHANT_REQUEST,
+				'The refund was canceled at your request',
+			],
+			'unknown'             => [
+				Refund_Failure_Reason::UNKNOWN,
+				'An unknown error occurred while processing the refund',
+			],
+		];
 	}
 }

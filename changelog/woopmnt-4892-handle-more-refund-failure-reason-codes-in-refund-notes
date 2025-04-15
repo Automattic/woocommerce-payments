@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Simplified refund handling with clear errors and standard reasons to aid resolution.

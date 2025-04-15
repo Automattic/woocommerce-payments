@@ -11,6 +11,7 @@ use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Payment_Method;
 use WCPay\Fraud_Prevention\Models\Rule;
 use WCPay\Constants\Refund_Status;
+use WCPay\Constants\Refund_Failure_Reason;
 
 /**
  * WC_Payments_Order_Service unit tests.
@@ -1562,8 +1563,20 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		// Assert: Check order note was added.
 		$notes = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
-		$this->assertStringContainsString( 'unsuccessful', $notes[0]->content );
-		$this->assertStringContainsString( $refund_id, $notes[0]->content );
+
+		// There should be at least two notes - one for status change and one for the failed refund.
+		$this->assertGreaterThanOrEqual( 2, count( $notes ) );
+
+		// Find our custom note about the unsuccessful refund.
+		$found_unsuccessful_note = false;
+		foreach ( $notes as $note ) {
+			if ( strpos( $note->content, 'unsuccessful' ) !== false ) {
+				$found_unsuccessful_note = true;
+				$this->assertStringContainsString( $refund_id, $note->content );
+				break;
+			}
+		}
+		$this->assertTrue( $found_unsuccessful_note, 'Could not find note about unsuccessful refund' );
 
 		// Assert: If refund existed, it was deleted.
 		if ( $has_refund ) {
@@ -1686,6 +1699,67 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Assert: Order status was updated to failed.
 		$this->assertTrue( $order->has_status( Order_Status::FAILED ) );
 
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	public function test_handle_insufficient_balance_for_refund() {
+		// Create a test order and refund.
+		$order = WC_Helper_Order::create_order();
+		$order->save();
+
+		$refund_amount = 10;
+		$refund        = wc_create_refund(
+			[
+				'amount'   => $refund_amount,
+				'reason'   => 'Testing refund',
+				'order_id' => $order->get_id(),
+			]
+		);
+
+		// Test handling insufficient balance.
+		$this->order_service->handle_insufficient_balance_for_refund( $order, $refund_amount );
+
+		// Check that only one note was added for insufficient funds.
+		$notes = array_filter(
+			wc_get_order_notes( [ 'order_id' => $order->get_id() ] ),
+			function ( $note ) {
+				return strpos( $note->content, 'insufficient funds' ) !== false;
+			}
+		);
+		$this->assertCount( 1, $notes );
+
+		// Clean up.
+		WC_Helper_Order::delete_order( $order->get_id() );
+	}
+
+	/**
+	 * Tests that handle_failed_refund correctly handles the insufficient funds case.
+	 */
+	public function test_handle_failed_refund_with_insufficient_funds() {
+		// Create a test order.
+		$order = WC_Helper_Order::create_order();
+		$order->save();
+
+		$refund_id = 're_123456789';
+		$amount    = 1000; // $10.00
+		$currency  = 'usd';
+
+		// Test handling failed refund with insufficient funds.
+		$this->order_service->handle_failed_refund( $order, $refund_id, $amount, $currency, null, false, Refund_Failure_Reason::INSUFFICIENT_FUNDS );
+
+		// Check that only one note was added for insufficient funds.
+		$notes = array_filter(
+			wc_get_order_notes( [ 'order_id' => $order->get_id() ] ),
+			function ( $note ) {
+				return strpos( $note->content, 'insufficient funds' ) !== false;
+			}
+		);
+		$this->assertCount( 1, $notes );
+
+		// Check that the refund status was set to failed.
+		$this->assertSame( Refund_Status::FAILED, $this->order_service->get_wcpay_refund_status_for_order( $order ) );
+
+		// Clean up.
 		WC_Helper_Order::delete_order( $order->get_id() );
 	}
 }
