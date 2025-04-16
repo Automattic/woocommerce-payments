@@ -35,8 +35,6 @@ const getTestMatch = ( group: string, branch: string ) => {
 };
 
 const getBaseUrl = () => {
-	// return 'https://hummingbird-of-corals.jurassic.ninja/';
-
 	if ( NODE_ENV === 'atomic' ) {
 		return 'https://wcpaytestecomm.wpcomstaging.com/';
 	}
