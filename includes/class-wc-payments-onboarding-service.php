@@ -72,7 +72,7 @@ class WC_Payments_Onboarding_Service {
 	const FROM_STRIPE_EMBEDDED  = 'STRIPE_EMBEDDED';
 	const FROM_REFERRAL         = 'REFERRAL';
 
-	const TRACKS_EVENT_ONBOARDING_RESET = 'wcpay_onboarding_reset';
+	const TRACKS_EVENT_ONBOARDING_RESET = 'wcpay_onboarding_flow_reset';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
