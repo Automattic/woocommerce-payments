@@ -64,7 +64,7 @@ describeif( shouldRunWCBlocksTests )(
 				shopperPage,
 				config.addresses.customer.billing
 			);
-			await fillCardDetailsWCB( shopperPage, config.cards.basic );
+			await fillCardDetailsWCB( shopperPage, card );
 			await setSavePaymentMethod( shopperPage, true );
 			await placeOrderWCB( shopperPage );
 
