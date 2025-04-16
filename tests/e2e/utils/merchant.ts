@@ -79,7 +79,7 @@ export const saveWooPaymentsSettings = async ( page: Page ) => {
 		page.on( 'dialog', async ( dialog ) => {
 			/* eslint-disable no-console */
 			console.log(
-				`Received dialog with message: ${ dialog.message() }`
+				`Received dialog of type ${ dialog.type() } with message: ${ dialog.message() }`
 			);
 			try {
 				await dialog.accept();
