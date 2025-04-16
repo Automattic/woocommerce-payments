@@ -1,29 +1,10 @@
+/**
+ * Internal dependencies
+ */
+import { users } from './users.json';
+
 export const config = {
-	users: {
-		admin: {
-			username: 'admin',
-			password: 'password',
-			email: 'e2e-wcpay-admin@woocommerce.com',
-		},
-		customer: {
-			username: 'customer',
-			password: 'password',
-			email: 'e2e-wcpay-customer@woocommerce.com',
-		},
-		'subscriptions-customer': {
-			username: 'subscriptions-customer',
-			password: 'password',
-			email: 'e2e-wcpay-customer@woocommerce.com',
-		},
-		guest: {
-			email: 'e2e-wcpay-guest@woocommerce.com',
-		},
-		editor: {
-			username: 'editor',
-			password: 'password',
-			email: 'e2e-wcpay-editor@woocommerce.com',
-		},
-	},
+	users,
 	products: {
 		cap: {
 			name: 'Cap',
