@@ -141,7 +141,7 @@ class WC_REST_Payments_Onboarding_Controller_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
-	public function test_get_embedded_kyc_session() {
+	public function test_create_embedded_kyc_session() {
 		$kyc_session = [
 			'clientSecret'   => 'accs_secret__XXX',
 			'expiresAt'      => time() + 120,
@@ -158,15 +158,15 @@ class WC_REST_Payments_Onboarding_Controller_Test extends WCPAY_UnitTestCase {
 				$kyc_session
 			);
 
-		$request = new WP_REST_Request( 'GET' );
-		$request->set_query_params(
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
 			[
 				'progressive'         => true,
 				'create_live_account' => true,
 			]
 		);
 
-		$response = $this->controller->get_embedded_kyc_session( $request );
+		$response = $this->controller->create_embedded_kyc_session( $request );
 		$this->assertSame( 200, $response->status );
 		$this->assertSame(
 			array_merge(
