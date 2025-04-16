@@ -61,12 +61,12 @@ export const fillBillingAddressWCB = async (
 	page: Page,
 	billingAddress: CustomerAddress
 ) => {
-	const editBillingAddressButton = page.getByLabel( 'Edit billing address' );
+	const editBillingAddressButton = page.getByLabel( 'Edit shipping address' );
 	if ( await editBillingAddressButton.isVisible() ) {
 		await editBillingAddressButton.click();
 	}
 	const billingAddressForm = page.getByRole( 'group', {
-		name: 'Billing address',
+		name: 'Shipping address',
 	} );
 
 	const countryField = billingAddressForm.getByLabel( 'Country/Region' );
