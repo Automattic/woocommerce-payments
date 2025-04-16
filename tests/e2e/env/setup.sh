@@ -260,7 +260,7 @@ if [[ "$IS_WORKAROUND_REQUIRED" = "1" ]]; then
 	CHECKOUT_SHORTCODE="<!-- wp:shortcode -->[woocommerce_checkout]<!-- /wp:shortcode -->"
 
 	# Ensuring that a "checkout-wcb" page exists, which is the one that will contain the "WooCommerce Blocks" checkout
-	cli wp post create --from-post="$CART_PAGE_ID" --post_type="page" --post_title="Checkout WCB" --post_status="publish"
+	cli wp post create --from-post="$CHECKOUT_PAGE_ID" --post_type="page" --post_title="Checkout WCB" --post_status="publish" --post_name="checkout-wcb"
 
 	# Update cart & checkout pages to use shortcode.
 	cli wp post update "$CART_PAGE_ID" --post_content="$CART_SHORTCODE"
