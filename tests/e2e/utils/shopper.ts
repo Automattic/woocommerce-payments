@@ -91,9 +91,6 @@ export const fillBillingAddressWCB = async (
 		.getByLabel( 'Last Name' )
 		.fill( billingAddress.firstname );
 	await billingAddressForm
-		.getByLabel( 'Company (optional)' )
-		.fill( billingAddress.company );
-	await billingAddressForm
 		.getByLabel( 'Address', { exact: true } )
 		.fill( billingAddress.addressfirstline );
 	const addSecondLineButton = page.getByRole( 'button', {
