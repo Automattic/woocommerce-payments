@@ -37,7 +37,7 @@ describeif( shouldRunWCBlocksTests )(
 
 		test.beforeAll( async ( { browser }, { project } ) => {
 			shopperPage = (
-				await getShopper( browser, true, project.use.baseURL )
+				await getShopper( browser, false, project.use.baseURL )
 			 ).shopperPage;
 
 			await ensureCustomerIsLoggedIn( shopperPage, project );

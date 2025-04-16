@@ -335,7 +335,7 @@ export const selectPaymentMethod = async (
 	page: Page,
 	paymentMethod = 'Cards'
 ) => {
-	await page.getByText( paymentMethod ).click();
+	await page.getByText( paymentMethod, { exact: true } ).click();
 };
 
 /**
