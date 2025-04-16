@@ -109,7 +109,10 @@ describeif( shouldRunWCBlocksTests )(
 				await shopper.placeOrderWCB( shopperPage, false );
 
 				if ( auth ) {
-					await shopper.confirmCardAuthenticationWCB( shopperPage );
+					await shopper.confirmCardAuthenticationWCB(
+						shopperPage,
+						false
+					);
 				}
 
 				if ( errorsInsideStripeFrame.includes( card ) ) {
