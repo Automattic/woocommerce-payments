@@ -512,7 +512,7 @@ export const emptyCart = async ( page: Page ) => {
 	}
 
 	await expect(
-		page.getByText( 'Your cart is currently empty.' )
+		page.getByText( /Your cart is currently empty/ )
 	).toBeVisible();
 };
 
