@@ -492,13 +492,17 @@ export const emptyCart = async ( page: Page ) => {
 	await navigation.goToCart( page );
 
 	// Remove products if they exist.
-	let products = await page.locator( '.remove' ).all();
+	let products = await page
+		.locator( '.remove,.wc-block-cart-item__remove-link' )
+		.all();
 
 	while ( products.length ) {
 		await products[ 0 ].click();
 		await isUIUnblocked( page );
 
-		products = await page.locator( '.remove' ).all();
+		products = await page
+			.locator( '.remove,.wc-block-cart-item__remove-link' )
+			.all();
 	}
 
 	// Remove coupons if they exist.

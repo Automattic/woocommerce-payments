@@ -7,10 +7,8 @@ import test, { Page, expect } from '@playwright/test';
  * Internal dependencies
  */
 import {
-	checkPageExists,
 	describeif,
 	ensureCustomerIsLoggedIn,
-	getMerchant,
 	getShopper,
 } from '../../../utils/helpers';
 import { shouldRunWCBlocksTests } from '../../../utils/constants';
@@ -28,7 +26,6 @@ import {
 	selectSavedCardOnCheckout,
 	setSavePaymentMethod,
 } from '../../../utils/shopper';
-import { addWCBCheckoutPage } from '../../../utils/merchant';
 import { config } from '../../../config/default';
 
 describeif( shouldRunWCBlocksTests )(
@@ -42,16 +39,6 @@ describeif( shouldRunWCBlocksTests )(
 			shopperPage = (
 				await getShopper( browser, true, project.use.baseURL )
 			 ).shopperPage;
-
-			if (
-				! ( await checkPageExists(
-					shopperPage,
-					project.use.baseURL + '/checkout-wcb'
-				) )
-			) {
-				const { merchantPage } = await getMerchant( browser );
-				await addWCBCheckoutPage( merchantPage );
-			}
 
 			await ensureCustomerIsLoggedIn( shopperPage, project );
 		} );
