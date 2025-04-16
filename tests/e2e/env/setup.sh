@@ -193,6 +193,10 @@ if [[ "$DEBUG" != true ]]; then
 	cli wp config set WP_DEBUG_LOG true --raw
 fi
 
+# Ensuring that the jetpack "account protection" feature is disabled,
+# since the passwords for the locally run e2e tests can be allowed to be weak.
+cli wp config set DISABLE_JETPACK_ACCOUNT_PROTECTION true --raw
+
 echo "Updating permalink structure"
 cli wp rewrite structure '/%postname%/'
 

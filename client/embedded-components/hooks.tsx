@@ -34,11 +34,12 @@ export const createKycAccountSession = async (
 ): Promise< AccountSession > => {
 	const urlParams = new URLSearchParams( window.location.search );
 	return await apiFetch< AccountSession >( {
-		path: addQueryArgs( `${ NAMESPACE }/onboarding/kyc/session`, {
+		path: `${ NAMESPACE }/onboarding/kyc/session`,
+		method: 'POST',
+		data: {
 			self_assessment: fromDotNotation( data ),
 			capabilities: urlParams.get( 'capabilities' ) || '',
 			progressive: isPoEligible,
-		} ),
-		method: 'GET',
+		},
 	} );
 };
