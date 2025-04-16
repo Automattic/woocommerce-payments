@@ -1365,9 +1365,10 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			// Make changes to account data as instructed by action GET params.
 			// This needs to happen early because we need to make things "not OK" for the rest of the logic.
 			if ( ! empty( $_GET['wcpay-reset-account'] ) && 'true' === $_GET['wcpay-reset-account'] ) {
+				$test_mode_onboarding = WC_Payments_Onboarding_Service::is_test_mode_enabled();
 				try {
 					// Delete the currently Stripe connected account, in the onboarding mode we are currently in.
-					$this->payments_api_client->delete_account( WC_Payments_Onboarding_Service::is_test_mode_enabled() );
+					$this->payments_api_client->delete_account( $test_mode_onboarding );
 				} catch ( API_Exception $e ) {
 					// In case we fail to delete the account, log and redirect to the Overview page.
 					Logger::error( 'Failed to delete account: ' . $e->getMessage() );
@@ -1378,6 +1379,12 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 				$this->onboarding_service->cleanup_on_account_reset();
 				delete_transient( self::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
+
+				// Track the onboarding (not account) reset.
+				$this->tracks_event(
+					WC_Payments_Onboarding_Service::TRACKS_EVENT_ONBOARDING_RESET,
+					array_merge( $tracks_props, [ 'mode' => $test_mode_onboarding ? 'test' : 'live' ] )
+				);
 
 				// When we reset the account and want to go back to the settings page - redirect immediately!
 				if ( $redirect_to_settings_page ) {
