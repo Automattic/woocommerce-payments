@@ -63,6 +63,7 @@ describe( 'Fraud protection rule toggle tests', () => {
 				<FraudProtectionRuleToggle
 					setting={ 'test_rule' }
 					label={ 'Test rule toggle' }
+					description={ 'Test rule toggle description' }
 				>
 					test content
 				</FraudProtectionRuleToggle>
@@ -91,6 +92,7 @@ describe( 'Fraud protection rule toggle tests', () => {
 				<FraudProtectionRuleToggle
 					setting={ 'test_rule' }
 					label={ 'Test rule toggle' }
+					description={ 'Test rule toggle description' }
 				>
 					test content
 				</FraudProtectionRuleToggle>
@@ -114,6 +116,7 @@ describe( 'Fraud protection rule toggle tests', () => {
 				<FraudProtectionRuleToggle
 					setting={ 'test_rule' }
 					label={ 'Test rule toggle' }
+					description={ 'Test rule toggle description' }
 				>
 					test content
 				</FraudProtectionRuleToggle>
@@ -137,6 +140,7 @@ describe( 'Fraud protection rule toggle tests', () => {
 				<FraudProtectionRuleToggle
 					setting={ 'test_rule' }
 					label={ 'Test rule toggle' }
+					description={ 'Test rule toggle description' }
 				>
 					test content
 				</FraudProtectionRuleToggle>

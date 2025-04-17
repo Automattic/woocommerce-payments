@@ -10,11 +10,7 @@ import FraudProtectionRuleCard from '../rule-card';
 describe( 'Fraud protection rule card tests', () => {
 	test( 'renders correctly', () => {
 		const container = render(
-			<FraudProtectionRuleCard
-				title="test title"
-				description="test description"
-				id="test-id"
-			>
+			<FraudProtectionRuleCard title="test title" id="test-id">
 				test content
 			</FraudProtectionRuleCard>
 		);

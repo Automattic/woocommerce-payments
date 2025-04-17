@@ -154,16 +154,17 @@ const PurchasePriceThresholdCustomForm: React.FC< PurchasePriceThresholdCustomFo
 const PurchasePriceThresholdRuleCard: React.FC = () => (
 	<FraudProtectionRuleCard
 		title={ __( 'Purchase Price Threshold', 'woocommerce-payments' ) }
-		description={ __(
-			'This filter compares the purchase price of an order to the minimum and maximum purchase amounts that you specify.',
-			'woocommerce-payments'
-		) }
 		id="purchase-price-threshold-card"
 	>
 		<FraudProtectionRuleToggle
 			setting={ 'purchase_price_threshold' }
 			label={ __(
-				'Block transactions for abnormal purchase prices',
+				'Enable Purchase Price Threshold filter',
+				'woocommerce-payments'
+			) }
+			description={ __(
+				'This filter compares the purchase price of an order to the minimum and maximum purchase amounts that you specify. ' +
+					'When enabled the payment will be blocked.',
 				'woocommerce-payments'
 			) }
 		>

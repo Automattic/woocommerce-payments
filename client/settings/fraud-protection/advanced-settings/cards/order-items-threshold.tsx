@@ -144,16 +144,17 @@ const OrderItemsThresholdCustomForm: React.FC< OrderItemsThresholdCustomFormProp
 const OrderItemsThresholdRuleCard: React.FC = () => (
 	<FraudProtectionRuleCard
 		title={ __( 'Order Items Threshold', 'woocommerce-payments' ) }
-		description={ __(
-			'This filter compares the amount of items in an order to the minimum and maximum counts that you specify.',
-			'woocommerce-payments'
-		) }
 		id="order-items-threshold-card"
 	>
 		<FraudProtectionRuleToggle
 			setting={ 'order_items_threshold' }
 			label={ __(
-				'Block transactions for abnormal item counts',
+				'Enable Order Items Threshold filter',
+				'woocommerce-payments'
+			) }
+			description={ __(
+				'This filter compares the amount of items in an order to the minimum and maximum counts that you specify. ' +
+					'When enabled the payment will be blocked.',
 				'woocommerce-payments'
 			) }
 		>
