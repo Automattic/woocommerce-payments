@@ -8,7 +8,6 @@ import { Page, expect } from 'playwright/test';
  */
 import * as navigation from './merchant-navigation';
 import RestAPI from './rest-api';
-import { isAtomicSite } from './constants';
 
 /**
  * Checks if the data has loaded on the page.
@@ -74,18 +73,6 @@ const expectSnackbarWithText = async (
 
 export const saveWooPaymentsSettings = async ( page: Page ) => {
 	await ensureSupportPhoneIsFilled( page );
-
-	if ( isAtomicSite ) {
-		page.on( 'dialog', async ( dialog ) => {
-			try {
-				await dialog.accept();
-			} catch ( error ) {
-				/* eslint-disable no-console */
-				console.log( 'Error while accepting dialog', error );
-			}
-		} );
-	}
-
 	await page.getByRole( 'button', { name: 'Save changes' } ).click();
 	await expectSnackbarWithText( page, 'Settings saved.' );
 };
