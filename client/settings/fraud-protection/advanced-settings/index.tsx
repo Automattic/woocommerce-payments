@@ -18,7 +18,7 @@ import {
 	useSettings,
 } from '../../../data';
 import ErrorBoundary from '../../../components/error-boundary';
-import { getAdminUrl } from '../../../utils';
+import { getAdminUrl, isVersionGreater } from '../../../utils';
 import SettingsLayout from 'wcpay/settings/settings-layout';
 import AVSMismatchRuleCard from './cards/avs-mismatch';
 import CVCVerificationRuleCard from './cards/cvc-verification';
@@ -75,24 +75,48 @@ const AdvancedFraudSettingsDescription = () => (
 	</>
 );
 
+const showNewBackLink = isVersionGreater(
+	window.wcSettings.wcVersion,
+	'9.9.0'
+);
+
 // Temporary solution until we have wider header redesign.
 const Breadcrumb = () => (
 	<>
-		<h2 className="fraud-protection-header-breadcrumb">
-			<small>
-				<Link
-					type="wp-admin"
-					href={ getAdminUrl( {
-						page: 'wc-settings',
-						tab: 'checkout',
-						section: 'woocommerce_payments',
-					} ) }
-				>
-					<span className="dashicons dashicons-arrow-left-alt2"></span>
-				</Link>
-			</small>
-			{ __( 'Advanced fraud protection', 'woocommerce-payments' ) }
-		</h2>
+		{ showNewBackLink && (
+			<h2 className="fraud-protection-header-breadcrumb">
+				<small>
+					<Link
+						type="wp-admin"
+						href={ getAdminUrl( {
+							page: 'wc-settings',
+							tab: 'checkout',
+							section: 'woocommerce_payments',
+						} ) }
+					>
+						<span className="dashicons dashicons-arrow-left-alt2"></span>
+					</Link>
+				</small>
+				{ __( 'Advanced fraud protection', 'woocommerce-payments' ) }
+			</h2>
+		) }
+		{ ! showNewBackLink && (
+			<h2 className="fraud-protection-header-breadcrumb-old">
+				{ __( 'Advanced fraud protection', 'woocommerce-payments' ) }
+				<small>
+					<Link
+						type="wp-admin"
+						href={ getAdminUrl( {
+							page: 'wc-settings',
+							tab: 'checkout',
+							section: 'woocommerce_payments',
+						} ) }
+					>
+						&#x2934;&#xfe0e;
+					</Link>
+				</small>
+			</h2>
+		) }
 	</>
 );
 

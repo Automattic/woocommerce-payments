@@ -247,3 +247,21 @@ export const objectRemoveEmptyProperties = ( obj ) => {
 		.filter( ( k ) => obj[ k ] !== null && obj[ k ] !== undefined )
 		.reduce( ( a, k ) => ( { ...a, [ k ]: obj[ k ] } ), {} );
 };
+
+/**
+ * Checks if the passed version is greater than base.
+ *
+ * @param {string} version Version that is compared.
+ * @param {string} base Version to compare with.
+ * @return {boolean} Whether version is greater than base.
+ */
+export const isVersionGreater = ( version, base ) => {
+	const parse = ( v ) => v.split( '.' ).map( Number );
+	const [ v1, v2, v3 ] = parse( version );
+	const [ b1, b2, b3 ] = parse( base );
+	return (
+		v1 > b1 ||
+		( v1 === b1 && v2 > b2 ) ||
+		( v1 === b1 && v2 === b2 && v3 >= b3 )
+	);
+};

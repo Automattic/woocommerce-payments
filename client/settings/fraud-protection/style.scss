@@ -67,7 +67,11 @@ body {
 	}
 	// Have this until further redesign of the breadcrumbs.
 	&-header-breadcrumb {
-		margin: 0;
+		&-old {
+			small {
+				margin-left: 0.5em;
+			}
+		}
 		small {
 			margin-right: 0.5em;
 		}
