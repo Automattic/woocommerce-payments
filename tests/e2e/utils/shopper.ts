@@ -91,6 +91,9 @@ export const fillBillingAddressWCB = async (
 		.getByLabel( 'Last Name' )
 		.fill( billingAddress.firstname );
 	await billingAddressForm
+		.getByLabel( 'Company (optional)' )
+		.fill( billingAddress.company );
+	await billingAddressForm
 		.getByLabel( 'Address', { exact: true } )
 		.fill( billingAddress.addressfirstline );
 	const addSecondLineButton = page.getByRole( 'button', {
@@ -492,17 +495,13 @@ export const emptyCart = async ( page: Page ) => {
 	await navigation.goToCart( page );
 
 	// Remove products if they exist.
-	let products = await page
-		.locator( '.remove,.wc-block-cart-item__remove-link' )
-		.all();
+	let products = await page.locator( '.remove' ).all();
 
 	while ( products.length ) {
 		await products[ 0 ].click();
 		await isUIUnblocked( page );
 
-		products = await page
-			.locator( '.remove,.wc-block-cart-item__remove-link' )
-			.all();
+		products = await page.locator( '.remove' ).all();
 	}
 
 	// Remove coupons if they exist.
@@ -516,7 +515,7 @@ export const emptyCart = async ( page: Page ) => {
 	}
 
 	await expect(
-		page.getByText( /Your cart is currently empty/ )
+		page.getByText( 'Your cart is currently empty.' )
 	).toBeVisible();
 };
 
