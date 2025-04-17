@@ -364,6 +364,8 @@ else
 	echo "Skipping install of Action Scheduler"
 fi
 
+echo "Removing some WooCommerce Core 'tour' options so they don't interfere with tests"
+cli wp option set woocommerce_orders_report_date_tour_shown yes
 
 echo "Creating screenshots directory"
 mkdir -p $WCP_ROOT/screenshots
