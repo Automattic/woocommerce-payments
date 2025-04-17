@@ -864,9 +864,22 @@ class WC_Payments_Webhook_Processing_Service {
 			);
 		}
 
-		$wc_refund = $this->order_service->create_refund_for_order( $order, $refunded_amount, $refund_reason, ( ! $is_partial_refund ? $order->get_items() : [] ) );
-		// Process the refund in the order service.
-		$this->order_service->add_note_and_metadata_for_created_refund( $order, $wc_refund, $refund_id, $refund_balance_transaction_id, Refund_Status::PENDING === $refund['status'] );
+		if ( $this->is_order_locked_for_refund( $order ) ) {
+			// This order is already being refunded.
+			return;
+		}
+
+		$this->lock_order_refund( $order );
+
+		try {
+			$wc_refund = $this->order_service->create_refund_for_order( $order, $refunded_amount, $refund_reason, ( ! $is_partial_refund ? $order->get_items() : [] ) );
+			// Process the refund in the order service.
+			$this->order_service->add_note_and_metadata_for_created_refund( $order, $wc_refund, $refund_id, $refund_balance_transaction_id, Refund_Status::PENDING === $refund['status'] );
+			$this->unlock_order_refund( $order );
+		} catch ( Exception $e ) {
+			$this->unlock_order_refund( $order );
+			throw $e;
+		}
 	}
 
 	/**
@@ -895,5 +908,47 @@ class WC_Payments_Webhook_Processing_Service {
 				WC_Payments_Subscriptions::get_event_handler()->handle_invoice_payment_failed( $event_body );
 				break;
 		}
+	}
+
+	/**
+	 * Check if order is locked for refund processing
+	 *
+	 * @param WC_Order $order  The order that is being paid.
+	 *
+	 * @return bool    A flag that indicates whether the order is already locked.
+	 */
+	private function is_order_locked_for_refund( WC_Order $order ): bool {
+		$order_id       = $order->get_id();
+		$transient_name = 'wcpay_processing_refund_' . $order_id;
+		$processing     = get_transient( $transient_name );
+
+		// Block the process if the order is already being refunded.
+		return '-1' === $processing;
+	}
+
+	/**
+	 * Lock an order for refund processing for 30 seconds.
+	 *
+	 * @param WC_Order $order     The order that is being paid.
+	 *
+	 * @return void
+	 */
+	private function lock_order_refund( WC_Order $order ): void {
+		$order_id       = $order->get_id();
+		$transient_name = 'wcpay_processing_refund_' . $order_id;
+
+		set_transient( $transient_name, '-1', 0.5 * MINUTE_IN_SECONDS );
+	}
+
+	/**
+	 * Unlocks an order for processing refunds.
+	 *
+	 * @param WC_Order $order The order that is being unlocked.
+	 *
+	 * @return void
+	 */
+	private function unlock_order_refund( WC_Order $order ): void {
+		$order_id = $order->get_id();
+		delete_transient( 'wcpay_processing_refund_' . $order_id );
 	}
 }
