@@ -244,6 +244,21 @@ export const composeNetString = ( event ) => {
 	);
 };
 
+export const composeTaxString = ( event ) => {
+	if ( ! event.fee_rates.tax ) {
+		return '';
+	}
+
+	const taxAmount = event.fee_rates.tax.amount;
+	const taxCurrency = event.fee_rates.tax.currency;
+
+	return sprintf(
+		/* translators: %s is a monetary amount */
+		__( 'Tax: %s', 'woocommerce-payments' ),
+		formatCurrency( taxAmount, taxCurrency )
+	);
+};
+
 export const composeFeeString = ( event ) => {
 	if ( ! event.fee_rates ) {
 		return sprintf(
@@ -262,7 +277,10 @@ export const composeFeeString = ( event ) => {
 	let feeAmount = event.fee;
 	let feeCurrency = event.currency;
 
-	if ( isFXEvent( event ) ) {
+	if ( event.fee_rates.before_tax ) {
+		feeAmount = event.fee_rates.before_tax.amount;
+		feeCurrency = event.fee_rates.before_tax.currency;
+	} else if ( isFXEvent( event ) ) {
 		feeAmount = event.transaction_details.store_fee;
 		feeCurrency = event.transaction_details.store_currency;
 	}
@@ -716,6 +734,7 @@ const mapEventToTimelineItems = ( event ) => {
 					[
 						composeFXString( event ),
 						composeFeeString( event ),
+						composeTaxString( event ),
 						composeFeeBreakdown( event ),
 						composeNetString( event ),
 					]

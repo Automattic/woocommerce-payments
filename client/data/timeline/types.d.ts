@@ -15,12 +15,21 @@ export interface TimelineFeeExchangeRate {
 	rate: number;
 }
 
+export interface TimelineFeeTax {
+	amount: number;
+	currency: string;
+	description?: string;
+	percentage_rate?: number;
+}
+
 export interface TimelineFeeRates {
 	percentage: number;
 	fixed: number;
 	fixed_currency: string;
 	history?: Array< TimelineFeeRate >;
 	fee_exchange_rate?: TimelineFeeExchangeRate;
+	tax?: TimelineFeeTax;
+	before_tax?: TimelineFeeTax;
 }
 
 export interface TimelineTransactionDetails {

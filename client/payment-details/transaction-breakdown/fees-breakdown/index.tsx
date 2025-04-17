@@ -39,26 +39,22 @@ const FeesBreakdown: React.FC< {
 		currency,
 		displayFixedPart,
 	}: {
-		percentage: number;
+		percentage?: number;
 		fixed: number;
 		currency: string;
 		displayFixedPart?: boolean;
 	} ) => {
 		const formattedPercentage = percentage
 			? `${ Number.parseFloat( ( percentage * 100 ).toFixed( 2 ) ) }%`
-			: '0%';
+			: '';
 		const formattedFixed = formatCurrency( fixed, currency, storeCurrency );
 
-		return (
-			<>
-				{ formattedPercentage }
-				{ ( displayFixedPart || fixed > 0 ) && (
-					<>
-						{ ' + ' + formattedFixed }&nbsp;{ storeCurrency }
-					</>
-				) }
-			</>
-		);
+		const result = [ formattedPercentage ];
+		if ( displayFixedPart || fixed > 0 ) {
+			result.push( formattedFixed );
+		}
+
+		return <>{ result.filter( ( s ) => s !== '' ).join( ' + ' ) }</>;
 	};
 
 	const FeeRow = ( {
@@ -72,7 +68,7 @@ const FeesBreakdown: React.FC< {
 	}: {
 		type: string;
 		additionalType?: string;
-		percentage: number;
+		percentage?: number;
 		fixed: number;
 		currency: string;
 		isDiscounted?: boolean;
@@ -184,16 +180,44 @@ const FeesBreakdown: React.FC< {
 		} );
 	}
 
-	fees.push(
-		<FeeRow
-			key="total"
-			type="total"
-			percentage={ event.fee_rates.percentage }
-			fixed={ event.fee_rates.fixed / feeExchangeRate }
-			currency={ storeCurrency }
-			displayFixedPart={ true }
-		/>
-	);
+	// Total "before tax" row, or just a total row.
+	if ( event.fee_rates.before_tax ) {
+		fees.push(
+			<FeeRow
+				key="total"
+				type="total"
+				percentage={ 0 }
+				fixed={ event.fee_rates.before_tax.amount }
+				currency={ event.fee_rates.before_tax.currency }
+				displayFixedPart={ true }
+			/>
+		);
+	} else {
+		fees.push(
+			<FeeRow
+				key="total"
+				type="total"
+				percentage={ event.fee_rates.percentage }
+				fixed={ event.fee_rates.fixed / feeExchangeRate }
+				currency={ storeCurrency }
+				displayFixedPart={ true }
+			/>
+		);
+	}
+
+	// Tax row.
+	if ( event.fee_rates.tax ) {
+		fees.push(
+			<FeeRow
+				key="fee_tax"
+				type="tax"
+				percentage={ event.fee_rates.tax.percentage_rate ?? 0 }
+				fixed={ 0 }
+				currency={ event.fee_rates.tax.currency }
+				displayFixedPart={ false }
+			/>
+		);
+	}
 
 	return (
 		<div

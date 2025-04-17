@@ -15,6 +15,7 @@ export const formatFeeType = (
 	const feeTypes: Record< string, string | Record< string, string > > = {
 		total: __( 'Total', 'woocommerce-payments' ),
 		base: __( 'Base fee', 'woocommerce-payments' ),
+		tax: __( 'Tax on fee', 'woocommerce-payments' ),
 		additional: {
 			international: __(
 				'International payment fee',
