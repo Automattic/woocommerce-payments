@@ -917,7 +917,7 @@ class WC_Payments_Webhook_Processing_Service {
 	 *
 	 * @return bool    A flag that indicates whether the order is already locked.
 	 */
-	private function is_order_locked_for_refund( WC_Order $order ): bool {
+	final public function is_order_locked_for_refund( WC_Order $order ): bool {
 		$order_id       = $order->get_id();
 		$transient_name = 'wcpay_processing_refund_' . $order_id;
 		$processing     = get_transient( $transient_name );
@@ -933,7 +933,7 @@ class WC_Payments_Webhook_Processing_Service {
 	 *
 	 * @return void
 	 */
-	private function lock_order_refund( WC_Order $order ): void {
+	final public function lock_order_refund( WC_Order $order ): void {
 		$order_id       = $order->get_id();
 		$transient_name = 'wcpay_processing_refund_' . $order_id;
 

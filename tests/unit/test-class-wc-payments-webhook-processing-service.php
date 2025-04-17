@@ -1636,6 +1636,60 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$this->webhook_processing_service->process( $this->event_body );
 	}
 
+	final public function test_process_full_refund_succeeded_should_leave_order_unlocked(): void {
+		$this->test_process_full_refund_succeeded();
+		$this->assertFalse( $this->webhook_processing_service->is_order_locked_for_refund( $this->mock_order ) );
+	}
+
+	final public function test_process_full_refund_succeeded_should_not_process_if_order_is_locked(): void {
+		$this->assertFalse( $this->webhook_processing_service->is_order_locked_for_refund( $this->mock_order ) );
+		$this->webhook_processing_service->lock_order_refund( $this->mock_order );
+		$this->assertTrue( $this->webhook_processing_service->is_order_locked_for_refund( $this->mock_order ) );
+
+		$this->event_body['type']           = 'charge.refunded';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'       => 'test_charge_id',
+			'refunds'  => [
+				'data' => [
+					[
+						'id'                  => 'test_refund_id',
+						'status'              => Refund_Status::SUCCEEDED,
+						'amount'              => 1800,
+						'currency'            => 'usd',
+						'reason'              => 'requested_by_customer',
+						'balance_transaction' => 'txn_123',
+					],
+				],
+			],
+			'status'   => 'succeeded',
+			'amount'   => 1800,
+			'currency' => 'usd',
+		];
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'get_total' )
+			->willReturn( 18 );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $this->mock_order );
+
+		$this->order_service
+			->expects( $this->never() )
+			->method( 'get_wcpay_refund_id_for_order' );
+
+		// This should not be called as the refund is locked.
+		$this->order_service
+			->expects( $this->never() )
+			->method( 'create_refund_for_order' );
+
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
 	public function test_process_partial_refund_succeeded(): void {
 		$this->event_body['type']           = 'charge.refunded';
 		$this->event_body['livemode']       = true;
