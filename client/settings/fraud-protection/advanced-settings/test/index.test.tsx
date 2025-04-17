@@ -211,13 +211,9 @@ describe( 'Advanced fraud protection settings', () => {
 			/There was an error retrieving your fraud protection settings/i
 		);
 
-		const [
-			firstSaveButton,
-			secondSaveButton,
-		] = await container.findAllByText( 'Save Changes' );
+		const saveButton = await container.findByText( 'Save Changes' );
 
-		expect( firstSaveButton ).toBeDisabled();
-		expect( secondSaveButton ).toBeDisabled();
+		expect( saveButton ).toBeDisabled();
 	} );
 	test( "doesn't save when there's a validation error", async () => {
 		defaultSettings.push( {
@@ -260,7 +256,7 @@ describe( 'Advanced fraud protection settings', () => {
 		);
 
 		const avsThresholdToggle = await container.findByLabelText(
-			'Block transactions for mismatched AVS'
+			'Enable AVS Mismatch filter'
 		);
 		avsThresholdToggle.click();
 		avsThresholdToggle.click();
@@ -313,7 +309,7 @@ describe( 'Advanced fraud protection settings', () => {
 		);
 
 		const avsThresholdToggle = await container.findByLabelText(
-			'Block transactions for mismatched AVS'
+			'Enable AVS Mismatch filter'
 		);
 		avsThresholdToggle.click();
 		avsThresholdToggle.click();
@@ -380,7 +376,7 @@ describe( 'Advanced fraud protection settings', () => {
 		);
 
 		const avsThresholdToggle = await container.findByLabelText(
-			'Block transactions for mismatched AVS'
+			'Enable AVS Mismatch filter'
 		);
 		avsThresholdToggle.click();
 		avsThresholdToggle.click();
@@ -451,7 +447,7 @@ describe( 'Advanced fraud protection settings', () => {
 		);
 
 		const avsThresholdToggle = await container.findByLabelText(
-			'Block transactions for mismatched AVS'
+			'Enable AVS Mismatch filter'
 		);
 		avsThresholdToggle.click();
 		avsThresholdToggle.click();
@@ -504,7 +500,7 @@ describe( 'Advanced fraud protection settings', () => {
 			</div>
 		);
 		const avsThresholdToggle = await container.findByLabelText(
-			'Block transactions for mismatched AVS'
+			'Enable AVS Mismatch filter'
 		);
 		avsThresholdToggle.click();
 		avsThresholdToggle.click();

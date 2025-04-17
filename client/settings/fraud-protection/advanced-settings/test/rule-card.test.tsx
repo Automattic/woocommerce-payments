@@ -16,9 +16,6 @@ describe( 'Fraud protection rule card tests', () => {
 		);
 		expect( container ).toMatchSnapshot();
 		expect( container.queryByText( 'test title' ) ).toBeInTheDocument();
-		expect(
-			container.queryByText( 'test description' )
-		).toBeInTheDocument();
 		expect( container.queryByText( 'test content' ) ).toBeInTheDocument();
 	} );
 } );

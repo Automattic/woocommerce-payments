@@ -39,7 +39,7 @@ exports[`Fraud protection rule card tests renders correctly 1`] = `
           class="css-mgwsf4-View-Content em57xhy0"
         >
           <div
-            class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+            class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
             data-wp-c16t="true"
             data-wp-component="CardBody"
           >
@@ -49,19 +49,7 @@ exports[`Fraud protection rule card tests renders correctly 1`] = `
               >
                 test title
               </p>
-              <p
-                class="fraud-protection-rule-card-description"
-              >
-                test description
-              </p>
             </div>
-          </div>
-          <hr />
-          <div
-            class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
-            data-wp-c16t="true"
-            data-wp-component="CardBody"
-          >
             test content
           </div>
         </div>
@@ -91,7 +79,7 @@ exports[`Fraud protection rule card tests renders correctly 1`] = `
         class="css-mgwsf4-View-Content em57xhy0"
       >
         <div
-          class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+          class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
@@ -101,19 +89,7 @@ exports[`Fraud protection rule card tests renders correctly 1`] = `
             >
               test title
             </p>
-            <p
-              class="fraud-protection-rule-card-description"
-            >
-              test description
-            </p>
           </div>
-        </div>
-        <hr />
-        <div
-          class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
-          data-wp-c16t="true"
-          data-wp-component="CardBody"
-        >
           test content
         </div>
       </div>
