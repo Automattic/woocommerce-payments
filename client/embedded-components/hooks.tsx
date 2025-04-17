@@ -33,13 +33,21 @@ export const createKycAccountSession = async (
 	isPoEligible: boolean
 ): Promise< AccountSession > => {
 	const urlParams = new URLSearchParams( window.location.search );
+	const selfAssessmentData = fromDotNotation( data );
+
+	const requestData: Record< string, unknown > = {
+		capabilities: urlParams.get( 'capabilities' ) || '',
+		progressive: isPoEligible,
+	};
+
+	// Only pass the self assessment data if at least one field is set.
+	if ( Object.keys( selfAssessmentData ).length > 0 ) {
+		requestData.self_assessment = selfAssessmentData;
+	}
+
 	return await apiFetch< AccountSession >( {
 		path: `${ NAMESPACE }/onboarding/kyc/session`,
 		method: 'POST',
-		data: {
-			self_assessment: fromDotNotation( data ),
-			capabilities: urlParams.get( 'capabilities' ) || '',
-			progressive: isPoEligible,
-		},
+		data: requestData,
 	} );
 };
