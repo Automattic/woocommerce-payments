@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Prevent external refund webhooks to duplicate refunds
