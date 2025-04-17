@@ -39,19 +39,17 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
           />
         </div>
         <h2
-          class="fraud-protection-header-breadcrumb"
+          class="fraud-protection-header-breadcrumb-old"
         >
+          Advanced fraud protection
           <small>
             <a
               data-link-type="wp-admin"
               href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
             >
-              <span
-                class="dashicons dashicons-arrow-left-alt2"
-              />
+              ⤴︎
             </a>
           </small>
-          Advanced fraud protection
         </h2>
         <div
           class="wcpay-settings-layout"
@@ -927,19 +925,17 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
         />
       </div>
       <h2
-        class="fraud-protection-header-breadcrumb"
+        class="fraud-protection-header-breadcrumb-old"
       >
+        Advanced fraud protection
         <small>
           <a
             data-link-type="wp-admin"
             href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
           >
-            <span
-              class="dashicons dashicons-arrow-left-alt2"
-            />
+            ⤴︎
           </a>
         </small>
-        Advanced fraud protection
       </h2>
       <div
         class="wcpay-settings-layout"
@@ -1897,19 +1893,17 @@ exports[`Advanced fraud protection settings renders an error message when settin
           />
         </div>
         <h2
-          class="fraud-protection-header-breadcrumb"
+          class="fraud-protection-header-breadcrumb-old"
         >
+          Advanced fraud protection
           <small>
             <a
               data-link-type="wp-admin"
               href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
             >
-              <span
-                class="dashicons dashicons-arrow-left-alt2"
-              />
+              ⤴︎
             </a>
           </small>
-          Advanced fraud protection
         </h2>
         <div
           class="wcpay-settings-layout"
@@ -2641,19 +2635,17 @@ exports[`Advanced fraud protection settings renders an error message when settin
         />
       </div>
       <h2
-        class="fraud-protection-header-breadcrumb"
+        class="fraud-protection-header-breadcrumb-old"
       >
+        Advanced fraud protection
         <small>
           <a
             data-link-type="wp-admin"
             href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
           >
-            <span
-              class="dashicons dashicons-arrow-left-alt2"
-            />
+            ⤴︎
           </a>
         </small>
-        Advanced fraud protection
       </h2>
       <div
         class="wcpay-settings-layout"
@@ -3459,19 +3451,17 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
     </div>
     <div>
       <h2
-        class="fraud-protection-header-breadcrumb"
+        class="fraud-protection-header-breadcrumb-old"
       >
+        Advanced fraud protection
         <small>
           <a
             data-link-type="wp-admin"
             href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
           >
-            <span
-              class="dashicons dashicons-arrow-left-alt2"
-            />
+            ⤴︎
           </a>
         </small>
-        Advanced fraud protection
       </h2>
       <div
         class="wcpay-settings-layout"
@@ -4178,19 +4168,17 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
   </body>,
   "container": <div>
     <h2
-      class="fraud-protection-header-breadcrumb"
+      class="fraud-protection-header-breadcrumb-old"
     >
+      Advanced fraud protection
       <small>
         <a
           data-link-type="wp-admin"
           href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
         >
-          <span
-            class="dashicons dashicons-arrow-left-alt2"
-          />
+          ⤴︎
         </a>
       </small>
-      Advanced fraud protection
     </h2>
     <div
       class="wcpay-settings-layout"
@@ -4987,19 +4975,17 @@ exports[`Advanced fraud protection settings saves settings when there are no val
           />
         </div>
         <h2
-          class="fraud-protection-header-breadcrumb"
+          class="fraud-protection-header-breadcrumb-old"
         >
+          Advanced fraud protection
           <small>
             <a
               data-link-type="wp-admin"
               href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
             >
-              <span
-                class="dashicons dashicons-arrow-left-alt2"
-              />
+              ⤴︎
             </a>
           </small>
-          Advanced fraud protection
         </h2>
         <div
           class="wcpay-settings-layout"
@@ -5795,19 +5781,17 @@ exports[`Advanced fraud protection settings saves settings when there are no val
         />
       </div>
       <h2
-        class="fraud-protection-header-breadcrumb"
+        class="fraud-protection-header-breadcrumb-old"
       >
+        Advanced fraud protection
         <small>
           <a
             data-link-type="wp-admin"
             href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments"
           >
-            <span
-              class="dashicons dashicons-arrow-left-alt2"
-            />
+            ⤴︎
           </a>
         </small>
-        Advanced fraud protection
       </h2>
       <div
         class="wcpay-settings-layout"

@@ -75,50 +75,57 @@ const AdvancedFraudSettingsDescription = () => (
 	</>
 );
 
-const showNewBackLink = isVersionGreater(
-	window.wcSettings.wcVersion,
-	'9.9.0'
-);
+interface BreadcrumbProps {
+	showNewBackLink: boolean;
+}
 
 // Temporary solution until we have wider header redesign.
-const Breadcrumb = () => (
-	<>
-		{ showNewBackLink && (
-			<h2 className="fraud-protection-header-breadcrumb">
-				<small>
-					<Link
-						type="wp-admin"
-						href={ getAdminUrl( {
-							page: 'wc-settings',
-							tab: 'checkout',
-							section: 'woocommerce_payments',
-						} ) }
-					>
-						<span className="dashicons dashicons-arrow-left-alt2"></span>
-					</Link>
-				</small>
-				{ __( 'Advanced fraud protection', 'woocommerce-payments' ) }
-			</h2>
-		) }
-		{ ! showNewBackLink && (
-			<h2 className="fraud-protection-header-breadcrumb-old">
-				{ __( 'Advanced fraud protection', 'woocommerce-payments' ) }
-				<small>
-					<Link
-						type="wp-admin"
-						href={ getAdminUrl( {
-							page: 'wc-settings',
-							tab: 'checkout',
-							section: 'woocommerce_payments',
-						} ) }
-					>
-						&#x2934;&#xfe0e;
-					</Link>
-				</small>
-			</h2>
-		) }
-	</>
-);
+const Breadcrumb = ( props: BreadcrumbProps ): JSX.Element => {
+	return (
+		<>
+			{ props.showNewBackLink && (
+				<h2 className="fraud-protection-header-breadcrumb">
+					<small>
+						<Link
+							type="wp-admin"
+							href={ getAdminUrl( {
+								page: 'wc-settings',
+								tab: 'checkout',
+								section: 'woocommerce_payments',
+							} ) }
+						>
+							<span className="dashicons dashicons-arrow-left-alt2"></span>
+						</Link>
+					</small>
+					{ __(
+						'Advanced fraud protection',
+						'woocommerce-payments'
+					) }
+				</h2>
+			) }
+			{ ! props.showNewBackLink && (
+				<h2 className="fraud-protection-header-breadcrumb-old">
+					{ __(
+						'Advanced fraud protection',
+						'woocommerce-payments'
+					) }
+					<small>
+						<Link
+							type="wp-admin"
+							href={ getAdminUrl( {
+								page: 'wc-settings',
+								tab: 'checkout',
+								section: 'woocommerce_payments',
+							} ) }
+						>
+							&#x2934;&#xfe0e;
+						</Link>
+					</small>
+				</h2>
+			) }
+		</>
+	);
+};
 
 const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 	const [ isDirty, setIsDirty ] = useState( false );
@@ -329,6 +336,11 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 		</Button>
 	);
 
+	const showNewBackLink = isVersionGreater(
+		window.wcSettings.wcVersion,
+		'9.9.0'
+	);
+
 	return (
 		<FraudPreventionSettingsContext.Provider
 			value={ {
@@ -337,7 +349,7 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 				setIsDirty,
 			} }
 		>
-			<Breadcrumb />
+			<Breadcrumb showNewBackLink={ showNewBackLink } />
 			<SettingsLayout>
 				<SettingsSection
 					description={ AdvancedFraudSettingsDescription }

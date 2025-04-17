@@ -55,6 +55,7 @@ declare const global: {
 		countries: {
 			[ key: string ]: string;
 		};
+		wcVersion: string;
 	};
 	wcpaySettings: {
 		storeCurrency: string;
@@ -126,6 +127,7 @@ describe( 'Advanced fraud protection settings', () => {
 				CA: 'Canada',
 				US: 'United States',
 			},
+			wcVersion: '9.8.1',
 		};
 
 		global.wcpaySettings = {
