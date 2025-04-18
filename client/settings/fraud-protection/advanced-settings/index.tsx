@@ -18,7 +18,7 @@ import {
 	useSettings,
 } from '../../../data';
 import ErrorBoundary from '../../../components/error-boundary';
-import { getAdminUrl, isVersionGreater } from '../../../utils';
+import { getAdminUrl, isVersionGreaterOrEqual } from '../../../utils';
 import SettingsLayout from 'wcpay/settings/settings-layout';
 import AVSMismatchRuleCard from './cards/avs-mismatch';
 import CVCVerificationRuleCard from './cards/cvc-verification';
@@ -336,7 +336,7 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 		</Button>
 	);
 
-	const showNewBackLink = isVersionGreater(
+	const showNewBackLink = isVersionGreaterOrEqual(
 		window.wcSettings.wcVersion,
 		'9.9.0'
 	);

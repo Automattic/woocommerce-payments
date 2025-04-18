@@ -249,16 +249,18 @@ export const objectRemoveEmptyProperties = ( obj ) => {
 };
 
 /**
- * Checks if the passed version is greater than base.
+ * Checks if the passed version is greater than or equal to the base version.
+ *
+ * Supports semantic version strings like "1.2.3-beta" by ignoring pre-release tags.
  *
  * @param {string} version Version that is compared.
  * @param {string} base Version to compare with.
- * @return {boolean} Whether version is greater than base.
+ * @return {boolean} Whether version is greater than or equal to base.
  */
-export const isVersionGreater = ( version, base ) => {
-	const parse = ( v ) => v.split( '.' ).map( Number );
-	const [ v1, v2, v3 ] = parse( version );
-	const [ b1, b2, b3 ] = parse( base );
+export const isVersionGreaterOrEqual = ( version, base ) => {
+	const parse = ( v ) => v.split( '-' )[ 0 ].split( '.' ).map( Number );
+	const [ v1 = 0, v2 = 0, v3 = 0 ] = parse( version );
+	const [ b1 = 0, b2 = 0, b3 = 0 ] = parse( base );
 	return (
 		v1 > b1 ||
 		( v1 === b1 && v2 > b2 ) ||
