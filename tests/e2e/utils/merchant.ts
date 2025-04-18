@@ -86,9 +86,7 @@ export const isMulticurrencyEnabled = async ( page: Page ) => {
 	await navigation.goToWooPaymentsSettings( page );
 
 	const checkboxTestId = 'multi-currency-toggle';
-	const isEnabled = await page.getByTestId( checkboxTestId ).isChecked();
-
-	return isEnabled;
+	return await page.getByTestId( checkboxTestId ).isChecked();
 };
 
 export const activateMulticurrency = async ( page: Page ) => {
