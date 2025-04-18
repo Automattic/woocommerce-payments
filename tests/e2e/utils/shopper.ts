@@ -85,10 +85,10 @@ export const fillBillingAddressWCB = async (
 	}
 
 	await billingAddressForm
-		.getByLabel( 'First name' )
+		.getByLabel( 'First Name' )
 		.fill( billingAddress.firstname );
 	await billingAddressForm
-		.getByLabel( 'Last name' )
+		.getByLabel( 'Last Name' )
 		.fill( billingAddress.firstname );
 	await billingAddressForm
 		.getByLabel( 'Company (optional)' )
