@@ -6,7 +6,7 @@
 import React, { useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
-import { ExternalLink } from '@wordpress/components';
+import { ExternalLink, Icon } from '@wordpress/components';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import { chevronDown, chevronUp } from '@wordpress/icons';
 
@@ -96,7 +96,10 @@ export const DisputeSteps: React.FC< Props > = ( {
 					</div>
 				</div>
 				<div className="dispute-steps__header-icon">
-					{ isExpanded ? chevronUp : chevronDown }
+					<Icon
+						icon={ isExpanded ? chevronUp : chevronDown }
+						className="dispute-steps__header-icon-svg"
+					/>
 				</div>
 			</div>
 			<div
@@ -355,7 +358,10 @@ export const InquirySteps: React.FC< Props > = ( {
 					</div>
 				</div>
 				<div className="dispute-steps__header-icon">
-					{ isExpanded ? chevronUp : chevronDown }
+					<Icon
+						icon={ isExpanded ? chevronUp : chevronDown }
+						className="dispute-steps__header-icon-svg"
+					/>
 				</div>
 			</div>
 			<div
