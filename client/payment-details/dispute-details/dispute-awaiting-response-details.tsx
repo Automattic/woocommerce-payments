@@ -32,7 +32,10 @@ import { getAdminUrl } from 'wcpay/utils';
 import DisputeNotice from './dispute-notice';
 import IssuerEvidenceList from './evidence-list';
 import DisputeSummaryRow from './dispute-summary-row';
-import { DisputeSteps, InquirySteps } from './dispute-steps';
+import {
+	DisputeStepsExpandable,
+	InquiryStepsExpandable,
+} from './dispute-steps-expandable';
 import InlineNotice from 'components/inline-notice';
 import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
 import './style.scss';
@@ -238,14 +241,14 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 				<DisputeSummaryRow dispute={ dispute } />
 
 				{ isInquiry( dispute.status ) ? (
-					<InquirySteps
+					<InquiryStepsExpandable
 						dispute={ dispute }
 						customer={ customer }
 						chargeCreated={ chargeCreated }
 						isDefendable={ isDefendable }
 					/>
 				) : (
-					<DisputeSteps
+					<DisputeStepsExpandable
 						dispute={ dispute }
 						customer={ customer }
 						chargeCreated={ chargeCreated }

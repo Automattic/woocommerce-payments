@@ -196,3 +196,29 @@
 		white-space: normal;
 	}
 }
+
+.dispute-steps-expandable {
+	margin-top: 16px;
+	margin-bottom: 16px;
+
+	&__panel {
+		border: 1px solid #e2e4e7;
+		border-radius: 4px;
+		box-shadow: 0 1px 3px rgba( 0, 0, 0, 0.05 );
+	}
+
+	&__steps {
+		margin: 0;
+		padding-left: 24px;
+		list-style-type: decimal;
+
+		li {
+			margin-bottom: 8px;
+			line-height: 1.5;
+
+			&:last-child {
+				margin-bottom: 0;
+			}
+		}
+	}
+}
