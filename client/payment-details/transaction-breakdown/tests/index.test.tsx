@@ -136,7 +136,7 @@ describe( 'PaymentTransactionBreakdown', () => {
 
 		expect( screen.getByText( 'Base fee' ) ).toBeInTheDocument();
 		expect(
-			screen.getByText( '2.9% + $0.30 USD', {
+			screen.getByText( '2.9% + $0.30', {
 				selector: '.wcpay-transaction-breakdown__base_fee_info div',
 			} )
 		).toBeInTheDocument();
@@ -215,7 +215,7 @@ describe( 'PaymentTransactionBreakdown', () => {
 
 		expect( screen.getByText( 'Base fee' ) ).toBeInTheDocument();
 		expect(
-			screen.getByText( '2.9% + $0.30 USD', {
+			screen.getByText( '2.9% + $0.30', {
 				selector: '.wcpay-transaction-breakdown__base_fee_info div',
 			} )
 		).toBeInTheDocument();
@@ -305,5 +305,74 @@ describe( 'PaymentTransactionBreakdown', () => {
 			exact: false,
 		} );
 		expect( conversionRateText ).toHaveTextContent( '@ 1 USD → 0.85 EUR' );
+	} );
+
+	it( 'renders transaction breakdown with tax', () => {
+		const mockTransactionDetails: TransactionDetails = {
+			store_amount: 10000,
+			store_amount_captured: 10000,
+			store_currency: 'USD',
+			customer_amount: 10000,
+			customer_currency: 'USD',
+			customer_amount_captured: 10000,
+			customer_fee: 370,
+			store_fee: 370,
+		};
+
+		const mockCaptureEvent: TimelineItem = {
+			type: 'captured',
+			datetime: 1717334400,
+			transaction_details: mockTransactionDetails,
+			fee_rates: {
+				percentage: 0.029,
+				fixed: 30,
+				fixed_currency: 'USD',
+				before_tax: {
+					amount: 320,
+					currency: 'USD',
+				},
+				tax: {
+					amount: 50,
+					currency: 'USD',
+					percentage_rate: 0.15,
+				},
+			},
+		};
+
+		( useTimeline as jest.Mock ).mockReturnValue( {
+			timeline: [ mockCaptureEvent ],
+			isLoading: false,
+		} );
+
+		( useTransactionAmounts as jest.Mock ).mockReturnValue( {
+			formattedAmount: '$100.00 USD',
+			formattedStoreAmount: '$100.00 USD',
+			formattedCustomerAmount: '$100.00 USD',
+			isMultiCurrency: false,
+		} );
+
+		render( <PaymentTransactionBreakdown paymentIntentId="pi_123" /> );
+
+		expect( screen.getByText( 'Base fee' ) ).toBeInTheDocument();
+		expect(
+			screen.getByText( '2.9% + $0.30', {
+				selector: '.wcpay-transaction-breakdown__base_fee_info div',
+			} )
+		).toBeInTheDocument();
+		expect( screen.getByText( 'Tax on fee' ) ).toBeInTheDocument();
+		expect(
+			screen.getByText( '15%', {
+				selector: '.wcpay-transaction-breakdown__tax_fee_info div',
+			} )
+		).toBeInTheDocument();
+		expect(
+			screen.getByText( 'Total transaction fee' )
+		).toBeInTheDocument();
+		expect(
+			screen.getByText( /- \$3.70 USD$/, {
+				selector:
+					'.wcpay-transaction-breakdown__total_transaction_fee_amount',
+			} )
+		).toBeInTheDocument();
 	} );
 } );

@@ -245,18 +245,47 @@ export const composeNetString = ( event ) => {
 };
 
 export const composeTaxString = ( event ) => {
-	if ( ! event.fee_rates.tax ) {
+	if ( ! event.fee_rates || ! event.fee_rates.tax ) {
 		return '';
 	}
 
 	const taxAmount = event.fee_rates.tax.amount;
 	const taxCurrency = event.fee_rates.tax.currency;
+	const taxPercentage = event.fee_rates.tax.percentage_rate;
+	const taxDescription = event.fee_rates.tax.description;
 
-	return sprintf(
-		/* translators: %s is a monetary amount */
-		__( 'Tax: %s', 'woocommerce-payments' ),
-		formatCurrency( taxAmount, taxCurrency )
-	);
+	const label =
+		taxPercentage !== null
+			? sprintf(
+					/* translators: 1: tax description 2: tax percentage 3: tax amount */
+					taxDescription
+						? __( '%1$s (%2$s): %3$s', 'woocommerce-payments' )
+						: __( 'Tax (%s): %s', 'woocommerce-payments' ),
+					...( taxDescription
+						? [
+								taxDescription,
+								( taxPercentage * 100 ).toFixed( 2 ) + '%',
+								formatCurrency( -taxAmount, taxCurrency ),
+						  ]
+						: [
+								( taxPercentage * 100 ).toFixed( 2 ) + '%',
+								formatCurrency( -taxAmount, taxCurrency ),
+						  ] )
+			  )
+			: sprintf(
+					/* translators: 1: tax description 2: tax amount */
+					taxDescription
+						? __( '%1$s: %2$s', 'woocommerce-payments' )
+						: __( 'Tax: %s', 'woocommerce-payments' ),
+					...( taxDescription
+						? [
+								taxDescription,
+								formatCurrency( -taxAmount, taxCurrency ),
+						  ]
+						: [ formatCurrency( -taxAmount, taxCurrency ) ] )
+			  );
+
+	return label;
 };
 
 export const composeFeeString = ( event ) => {
@@ -713,6 +742,16 @@ const mapEventToTimelineItems = ( event ) => {
 			];
 		case 'captured':
 			const formattedNet = formatNetString( event );
+			const taxString = composeTaxString( event );
+			const body = [
+				composeFXString( event ),
+				composeFeeString( event ),
+				composeFeeBreakdown( event ),
+			];
+			if ( taxString ) {
+				body.push( taxString );
+			}
+			body.push( composeNetString( event ) );
 			return [
 				getStatusChangeTimelineItem(
 					event,
@@ -731,13 +770,7 @@ const mapEventToTimelineItems = ( event ) => {
 						true
 					),
 					<CheckmarkIcon className="is-success" />,
-					[
-						composeFXString( event ),
-						composeFeeString( event ),
-						composeTaxString( event ),
-						composeFeeBreakdown( event ),
-						composeNetString( event ),
-					]
+					body
 				),
 			];
 		case 'partial_refund':
