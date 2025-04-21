@@ -3,11 +3,12 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 import { ExternalLink } from '@wordpress/components';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
+import { chevronDown, chevronUp } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -32,6 +33,8 @@ export const DisputeSteps: React.FC< Props > = ( {
 	customer,
 	chargeCreated,
 } ) => {
+	const [ isExpanded, setIsExpanded ] = useState( false );
+
 	let emailLink;
 	if ( customer?.email ) {
 		const chargeDate = formatDateTimeFromTimestamp( chargeCreated );
@@ -64,98 +67,133 @@ export const DisputeSteps: React.FC< Props > = ( {
 		) }&body=${ encodeURIComponent( emailBody ) }`;
 	}
 
+	const toggleExpand = () => {
+		setIsExpanded( ! isExpanded );
+	};
+
 	return (
 		<div className="dispute-steps">
-			<div className="dispute-steps__header">
-				{ __( 'Steps to resolve:', 'woocommerce-payments' ) }
+			<div
+				className="dispute-steps__header"
+				onClick={ toggleExpand }
+				role="button"
+				tabIndex={ 0 }
+				onKeyDown={ ( e ) => {
+					if ( e.key === 'Enter' || e.key === ' ' ) {
+						toggleExpand();
+					}
+				} }
+			>
+				<div className="dispute-steps__header-content">
+					<div className="dispute-steps__header-title">
+						{ __( 'Steps you can take', 'woocommerce-payments' ) }
+					</div>
+					<div className="dispute-steps__header-subtitle">
+						{ __(
+							'Review these steps you can take to respond to disputes effectively',
+							'woocommerce-payments'
+						) }
+					</div>
+				</div>
+				<div className="dispute-steps__header-icon">
+					{ isExpanded ? chevronUp : chevronDown }
+				</div>
 			</div>
-			<ol className="dispute-steps__steps">
-				<li>
-					{ customer?.email
-						? createInterpolateElement(
-								__(
-									'<a>Email the customer</a> to identify the issue and work towards a resolution where possible.',
-									'woocommerce-payments'
-								),
-								{
-									a: (
-										// eslint-disable-next-line jsx-a11y/anchor-has-content
-										<a
-											target="_blank"
-											rel="noopener noreferrer"
-											href={ emailLink }
-										/>
+			<div
+				className={ `dispute-steps__content ${
+					isExpanded ? 'dispute-steps__content--expanded' : ''
+				}` }
+			>
+				<ol className="dispute-steps__steps">
+					<li>
+						{ customer?.email
+							? createInterpolateElement(
+									__(
+										'<a>Email the customer</a> to identify the issue and work towards a resolution where possible.',
+										'woocommerce-payments'
 									),
-								}
-						  )
-						: __(
-								'Email the customer to identify the issue and work towards a resolution where possible.',
-								'woocommerce-payments'
-						  ) }
-				</li>
-				<li>
-					{ createInterpolateElement(
-						__(
-							'Assist the customer <a>in withdrawing their dispute</a> if they agree to do so.',
-							'woocommerce-payments'
-						),
-						{
-							a: (
-								<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#withdrawals" />
-							),
-						}
-					) }
-				</li>
-				<li>
-					{ createInterpolateElement(
-						__(
-							'Challenge <challengeIcon/> or accept <acceptIcon/> the dispute by <dueByDate/>',
-							'woocommerce-payments'
-						),
-						{
-							challengeIcon: (
-								<ClickTooltip
-									buttonIcon={ <HelpOutlineIcon /> }
-									buttonLabel={ __(
-										'Challenge the dispute tooltip',
-										'woocommerce-payments'
-									) }
-									content={ __(
-										"Challenge the dispute if you consider the claim invalid. You'll need to provide evidence to back your claim. Keep in mind that challenging doesn't ensure a resolution in your favor.",
-										'woocommerce-payments'
-									) }
-								/>
-							),
-							acceptIcon: (
-								<ClickTooltip
-									buttonIcon={ <HelpOutlineIcon /> }
-									buttonLabel={ __(
-										'Accept the dispute tooltip',
-										'woocommerce-payments'
-									) }
-									content={ sprintf(
-										// Translators: %s is a formatted currency amount, eg $10.00.
-										__(
-											`Accepting this dispute will automatically close it. The disputed amount and the %s dispute fee will not be returned to you.`,
-											'woocommerce-payments'
+									{
+										a: (
+											// eslint-disable-next-line jsx-a11y/anchor-has-content
+											<a
+												target="_blank"
+												rel="noopener noreferrer"
+												href={ emailLink }
+											/>
 										),
-										getDisputeFeeFormatted(
-											dispute,
-											true
-										) || '-'
-									) }
-								/>
+									}
+							  )
+							: __(
+									'Email the customer to identify the issue and work towards a resolution where possible.',
+									'woocommerce-payments'
+							  ) }
+					</li>
+					<li>
+						{ createInterpolateElement(
+							__(
+								'Assist the customer <a>in withdrawing their dispute</a> if they agree to do so.',
+								'woocommerce-payments'
 							),
-							dueByDate: (
-								<DisputeDueByDate
-									dueBy={ dispute.evidence_details.due_by }
-									showRemainingDays={ false }
-								/>
+							{
+								a: (
+									<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#withdrawals" />
+								),
+							}
+						) }
+					</li>
+					<li>
+						{ createInterpolateElement(
+							__(
+								'Challenge <challengeIcon/> or accept <acceptIcon/> the dispute by <dueByDate/>',
+								'woocommerce-payments'
 							),
-						}
-					) }
-				</li>
-			</ol>
+							{
+								challengeIcon: (
+									<ClickTooltip
+										buttonIcon={ <HelpOutlineIcon /> }
+										buttonLabel={ __(
+											'Challenge the dispute tooltip',
+											'woocommerce-payments'
+										) }
+										content={ __(
+											"Challenge the dispute if you consider the claim invalid. You'll need to provide evidence to back your claim. Keep in mind that challenging doesn't ensure a resolution in your favor.",
+											'woocommerce-payments'
+										) }
+									/>
+								),
+								acceptIcon: (
+									<ClickTooltip
+										buttonIcon={ <HelpOutlineIcon /> }
+										buttonLabel={ __(
+											'Accept the dispute tooltip',
+											'woocommerce-payments'
+										) }
+										content={ sprintf(
+											// Translators: %s is a formatted currency amount, eg $10.00.
+											__(
+												`Accepting this dispute will automatically close it. The disputed amount and the %s dispute fee will not be returned to you.`,
+												'woocommerce-payments'
+											),
+											getDisputeFeeFormatted(
+												dispute,
+												true
+											) || '-'
+										) }
+									/>
+								),
+								dueByDate: (
+									<DisputeDueByDate
+										dueBy={
+											dispute.evidence_details.due_by
+										}
+										showRemainingDays={ false }
+									/>
+								),
+							}
+						) }
+					</li>
+				</ol>
+			</div>
 		</div>
 	);
 };
@@ -166,6 +204,8 @@ export const InquirySteps: React.FC< Props > = ( {
 	chargeCreated,
 	isDefendable,
 } ) => {
+	const [ isExpanded, setIsExpanded ] = useState( false );
+
 	let emailLink;
 	if ( customer?.email ) {
 		const chargeDate = formatDateTimeFromTimestamp( chargeCreated, {
@@ -188,7 +228,7 @@ export const InquirySteps: React.FC< Props > = ( {
 			// Translators: %1$s is the customer name, %2$s is the dispute date, %3$s is the dispute amount with currency-code e.g. $15 USD, %4$s is the charge date.
 			__(
 				`Hello %1$s,\n\n` +
-					`We noticed that on %2$s, you raised a question with your payment provider about a %3$s charge made on %4$s. We wanted to reach out to ensure everything is all right with your purchase and to see if there’s anything we can do to resolve any problems you might have had.\n\n` +
+					`We noticed that on %2$s, you raised a question with your payment provider about a %3$s charge made on %4$s. We wanted to reach out to ensure everything is all right with your purchase and to see if there's anything we can do to resolve any problems you might have had.\n\n` +
 					`Alternatively, if this was a mistake, please contact your payment provider to resolve it. Thank you so much - we appreciate your business and look forward to working with you.`,
 				'woocommerce-payments'
 			),
@@ -201,6 +241,10 @@ export const InquirySteps: React.FC< Props > = ( {
 			emailSubject
 		) }&body=${ encodeURIComponent( emailBody ) }`;
 	}
+
+	const toggleExpand = () => {
+		setIsExpanded( ! isExpanded );
+	};
 
 	const steps = [];
 	steps.push(
@@ -288,10 +332,39 @@ export const InquirySteps: React.FC< Props > = ( {
 
 	return (
 		<div className="dispute-steps">
-			<div className="dispute-steps__header">
-				{ __( 'Steps to resolve:', 'woocommerce-payments' ) }
+			<div
+				className="dispute-steps__header"
+				onClick={ toggleExpand }
+				role="button"
+				tabIndex={ 0 }
+				onKeyDown={ ( e ) => {
+					if ( e.key === 'Enter' || e.key === ' ' ) {
+						toggleExpand();
+					}
+				} }
+			>
+				<div className="dispute-steps__header-content">
+					<div className="dispute-steps__header-title">
+						{ __( 'Steps you can take', 'woocommerce-payments' ) }
+					</div>
+					<div className="dispute-steps__header-subtitle">
+						{ __(
+							'Review these steps you can take to respond to disputes effectively',
+							'woocommerce-payments'
+						) }
+					</div>
+				</div>
+				<div className="dispute-steps__header-icon">
+					{ isExpanded ? chevronUp : chevronDown }
+				</div>
 			</div>
-			<ol className="dispute-steps__steps">{ steps }</ol>
+			<div
+				className={ `dispute-steps__content ${
+					isExpanded ? 'dispute-steps__content--expanded' : ''
+				}` }
+			>
+				<ol className="dispute-steps__steps">{ steps }</ol>
+			</div>
 		</div>
 	);
 };
