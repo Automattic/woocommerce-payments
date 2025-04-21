@@ -13,6 +13,7 @@ import { Link } from '@woocommerce/components';
 import {
 	Button,
 	CardBody,
+	ExternalLink,
 	Flex,
 	FlexItem,
 	Icon,
@@ -257,6 +258,24 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 						issuerEvidence={ dispute.issuer_evidence }
 					/>
 				) }
+
+				{ /* Help link to documentation */ }
+				<div className="transaction-details-dispute-details-body__help-link">
+					<ExternalLink
+						href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#section-3"
+						onClick={ () => {
+							recordEvent( 'wcpay_dispute_help_link_clicked', {
+								dispute_status: dispute.status,
+								on_page: 'transaction_details',
+							} );
+						} }
+					>
+						{ __(
+							'Learn more about responding to disputes',
+							'woocommerce-payments'
+						) }
+					</ExternalLink>
+				</div>
 
 				{ /* Dispute Actions */ }
 				{

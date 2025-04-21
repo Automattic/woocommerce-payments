@@ -50,6 +50,20 @@
 				}
 			}
 		}
+
+		&__help-link {
+			margin: 24px 0;
+			text-align: left;
+
+			.components-external-link {
+				color: var( --wp-admin-theme-color, #007cba );
+				text-decoration: none;
+
+				&:hover {
+					text-decoration: underline;
+				}
+			}
+		}
 	}
 }
 .dispute-reason-tooltip {

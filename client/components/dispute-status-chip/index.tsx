@@ -12,7 +12,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import Chip from '../chip';
 import displayStatus from './mappings';
 import { formatStringValue } from 'utils';
-import { isAwaitingResponse, isDueWithin } from 'wcpay/disputes/utils';
+import { isAwaitingResponse } from 'wcpay/disputes/utils';
 import type {
 	CachedDispute,
 	DisputeStatus,
