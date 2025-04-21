@@ -12,12 +12,12 @@ import { createInterpolateElement } from '@wordpress/element';
 import { Link } from '@woocommerce/components';
 import {
 	Button,
-	Card,
 	CardBody,
 	Flex,
 	FlexItem,
 	Icon,
 	Modal,
+	CardDivider,
 } from '@wordpress/components';
 
 /**
@@ -216,71 +216,162 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 
 	return (
 		<div className="transaction-details-dispute-details-wrapper">
-			<Card>
-				<CardBody className="transaction-details-dispute-details-body">
-					<DisputeNotice
+			<CardDivider />
+			<h2 className="transaction-details-dispute-details-title">
+				{ __( 'Dispute details', 'woocommerce-payments' ) }
+			</h2>
+			<CardBody className="transaction-details-dispute-details-body">
+				<DisputeNotice
+					dispute={ dispute }
+					isUrgent={ countdownDays <= 2 }
+					paymentMethod={ paymentMethod }
+				/>
+				{ hasStagedEvidence && (
+					<InlineNotice icon={ edit } isDismissible={ false }>
+						{ __(
+							`You initiated a challenge to this dispute. Click 'Continue with challenge' to proceed with your draft response.`,
+							'woocommerce-payments'
+						) }
+					</InlineNotice>
+				) }
+
+				<DisputeSummaryRow dispute={ dispute } />
+
+				{ isInquiry( dispute.status ) ? (
+					<InquirySteps
 						dispute={ dispute }
-						isUrgent={ countdownDays <= 2 }
-						paymentMethod={ paymentMethod }
+						customer={ customer }
+						chargeCreated={ chargeCreated }
+						isDefendable={ isDefendable }
 					/>
-					{ hasStagedEvidence && (
-						<InlineNotice icon={ edit } isDismissible={ false }>
-							{ __(
-								`You initiated a challenge to this dispute. Click 'Continue with challenge' to proceed with your draft response.`,
-								'woocommerce-payments'
-							) }
-						</InlineNotice>
-					) }
+				) : (
+					<DisputeSteps
+						dispute={ dispute }
+						customer={ customer }
+						chargeCreated={ chargeCreated }
+					/>
+				) }
 
-					<DisputeSummaryRow dispute={ dispute } />
+				{ isDisputeIssuerEvidenceEnabled && (
+					<IssuerEvidenceList
+						issuerEvidence={ dispute.issuer_evidence }
+					/>
+				) }
 
-					{ isInquiry( dispute.status ) ? (
-						<InquirySteps
-							dispute={ dispute }
-							customer={ customer }
-							chargeCreated={ chargeCreated }
-							isDefendable={ isDefendable }
-						/>
-					) : (
-						<DisputeSteps
-							dispute={ dispute }
-							customer={ customer }
-							chargeCreated={ chargeCreated }
-						/>
-					) }
+				{ /* Dispute Actions */ }
+				{
+					<div className="transaction-details-dispute-details-body__actions">
+						{ isDefendable && (
+							<Link
+								href={
+									// Prevent the user navigating to the challenge screen if the accept request is in progress.
+									isDisputeAcceptRequestPending
+										? ''
+										: getAdminUrl( {
+												page: 'wc-admin',
+												path:
+													'/payments/disputes/challenge',
+												id: dispute.id,
+										  } )
+								}
+							>
+								<Button
+									variant="primary"
+									data-testid="challenge-dispute-button"
+									disabled={ isDisputeAcceptRequestPending }
+									onClick={ () => {
+										recordEvent(
+											'wcpay_dispute_challenge_clicked',
+											{
+												dispute_status: dispute.status,
+												on_page: 'transaction_details',
+											}
+										);
+									} }
+								>
+									{ hasStagedEvidence
+										? __(
+												'Continue with challenge',
+												'woocommerce-payments'
+										  )
+										: challengeButtonDefaultText }
+								</Button>
+							</Link>
+						) }
 
-					{ isDisputeIssuerEvidenceEnabled && (
-						<IssuerEvidenceList
-							issuerEvidence={ dispute.issuer_evidence }
-						/>
-					) }
-
-					{ /* Dispute Actions */ }
-					{
-						<div className="transaction-details-dispute-details-body__actions">
-							{ isDefendable && (
-								<Link
-									href={
-										// Prevent the user navigating to the challenge screen if the accept request is in progress.
-										isDisputeAcceptRequestPending
-											? ''
-											: getAdminUrl( {
-													page: 'wc-admin',
-													path:
-														'/payments/disputes/challenge',
-													id: dispute.id,
-											  } )
+						<Button
+							variant={ isDefendable ? 'tertiary' : 'primary' }
+							disabled={ isDisputeAcceptRequestPending }
+							data-testid="open-accept-dispute-modal-button"
+							onClick={ () => {
+								recordEvent(
+									disputeAcceptAction.acceptButtonTracksEvent,
+									{
+										dispute_status: dispute.status,
+										on_page: 'transaction_details',
 									}
+								);
+								setModalOpen( true );
+							} }
+						>
+							{ disputeAcceptAction.acceptButtonLabel }
+						</Button>
+
+						{ /** Accept dispute modal */ }
+						{ isModalOpen && (
+							<Modal
+								title={ disputeAcceptAction.modalTitle }
+								onRequestClose={ handleModalClose }
+								className="transaction-details-dispute-accept-modal"
+							>
+								<p>
+									<strong>
+										{ __(
+											'Before proceeding, please take note of the following:',
+											'woocommerce-payments'
+										) }
+									</strong>
+								</p>
+
+								{ disputeAcceptAction.modalLines.map(
+									( line, key ) => (
+										<Flex justify="start" key={ key }>
+											<FlexItem className="transaction-details-dispute-accept-modal__icon">
+												{ line.icon }
+											</FlexItem>
+											<FlexItem>
+												{ line.description }
+											</FlexItem>
+										</Flex>
+									)
+								) }
+
+								<Flex
+									className="transaction-details-dispute-accept-modal__actions"
+									justify="end"
 								>
 									<Button
-										variant="primary"
-										data-testid="challenge-dispute-button"
+										variant="tertiary"
 										disabled={
 											isDisputeAcceptRequestPending
 										}
+										onClick={ handleModalClose }
+									>
+										{ __(
+											'Cancel',
+											'woocommerce-payments'
+										) }
+									</Button>
+									<Button
+										variant="primary"
+										isBusy={ isDisputeAcceptRequestPending }
+										disabled={
+											isDisputeAcceptRequestPending
+										}
+										data-testid="accept-dispute-button"
 										onClick={ () => {
 											recordEvent(
-												'wcpay_dispute_challenge_clicked',
+												disputeAcceptAction.modalButtonTracksEvent,
 												{
 													dispute_status:
 														dispute.status,
@@ -288,127 +379,26 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 														'transaction_details',
 												}
 											);
+
+											/**
+											 * Handle the primary modal action.
+											 * If it's an inquiry, redirect to the order page; otherwise, continue with the default dispute acceptance.
+											 */
+											if ( isInquiry( dispute.status ) ) {
+												viewOrder();
+											} else {
+												doAccept();
+											}
 										} }
 									>
-										{ hasStagedEvidence
-											? __(
-													'Continue with challenge',
-													'woocommerce-payments'
-											  )
-											: challengeButtonDefaultText }
+										{ disputeAcceptAction.modalButtonLabel }
 									</Button>
-								</Link>
-							) }
-
-							<Button
-								variant={
-									isDefendable ? 'tertiary' : 'primary'
-								}
-								disabled={ isDisputeAcceptRequestPending }
-								data-testid="open-accept-dispute-modal-button"
-								onClick={ () => {
-									recordEvent(
-										disputeAcceptAction.acceptButtonTracksEvent,
-										{
-											dispute_status: dispute.status,
-											on_page: 'transaction_details',
-										}
-									);
-									setModalOpen( true );
-								} }
-							>
-								{ disputeAcceptAction.acceptButtonLabel }
-							</Button>
-
-							{ /** Accept dispute modal */ }
-							{ isModalOpen && (
-								<Modal
-									title={ disputeAcceptAction.modalTitle }
-									onRequestClose={ handleModalClose }
-									className="transaction-details-dispute-accept-modal"
-								>
-									<p>
-										<strong>
-											{ __(
-												'Before proceeding, please take note of the following:',
-												'woocommerce-payments'
-											) }
-										</strong>
-									</p>
-
-									{ disputeAcceptAction.modalLines.map(
-										( line, key ) => (
-											<Flex justify="start" key={ key }>
-												<FlexItem className="transaction-details-dispute-accept-modal__icon">
-													{ line.icon }
-												</FlexItem>
-												<FlexItem>
-													{ line.description }
-												</FlexItem>
-											</Flex>
-										)
-									) }
-
-									<Flex
-										className="transaction-details-dispute-accept-modal__actions"
-										justify="end"
-									>
-										<Button
-											variant="tertiary"
-											disabled={
-												isDisputeAcceptRequestPending
-											}
-											onClick={ handleModalClose }
-										>
-											{ __(
-												'Cancel',
-												'woocommerce-payments'
-											) }
-										</Button>
-										<Button
-											variant="primary"
-											isBusy={
-												isDisputeAcceptRequestPending
-											}
-											disabled={
-												isDisputeAcceptRequestPending
-											}
-											data-testid="accept-dispute-button"
-											onClick={ () => {
-												recordEvent(
-													disputeAcceptAction.modalButtonTracksEvent,
-													{
-														dispute_status:
-															dispute.status,
-														on_page:
-															'transaction_details',
-													}
-												);
-
-												/**
-												 * Handle the primary modal action.
-												 * If it's an inquiry, redirect to the order page; otherwise, continue with the default dispute acceptance.
-												 */
-												if (
-													isInquiry( dispute.status )
-												) {
-													viewOrder();
-												} else {
-													doAccept();
-												}
-											} }
-										>
-											{
-												disputeAcceptAction.modalButtonLabel
-											}
-										</Button>
-									</Flex>
-								</Modal>
-							) }
-						</div>
-					}
-				</CardBody>
-			</Card>
+								</Flex>
+							</Modal>
+						) }
+					</div>
+				}
+			</CardBody>
 		</div>
 	);
 };
