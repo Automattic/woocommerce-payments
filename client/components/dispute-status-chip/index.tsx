@@ -43,9 +43,8 @@ const DisputeStatusChip: React.FC< Props > = ( {
 		);
 	}
 
-	const needsResponse = isAwaitingResponse( status );
-	const isUrgent =
-		needsResponse && dueBy && isDueWithin( { dueBy, days: 3 } );
+	// All the "Needs response" states make red, regardless of the time left
+	const isUrgent = isAwaitingResponse( status );
 
 	let type = mapping.type || 'light';
 	if ( isUrgent ) {
