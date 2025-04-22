@@ -280,10 +280,6 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 									<DisputeStatusChip
 										className="payment-details-summary__status"
 										status={ charge.dispute.status }
-										dueBy={
-											charge.dispute.evidence_details
-												?.due_by
-										}
 										prefixDisputeType={ true }
 									/>
 								) : (

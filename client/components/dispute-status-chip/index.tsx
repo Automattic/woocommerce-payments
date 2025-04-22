@@ -13,21 +13,15 @@ import Chip from '../chip';
 import displayStatus from './mappings';
 import { formatStringValue } from 'utils';
 import { isAwaitingResponse } from 'wcpay/disputes/utils';
-import type {
-	CachedDispute,
-	DisputeStatus,
-	EvidenceDetails,
-} from 'wcpay/types/disputes';
+import type { DisputeStatus } from 'wcpay/types/disputes';
 
 interface Props {
 	status: DisputeStatus | string;
-	dueBy?: CachedDispute[ 'due_by' ] | EvidenceDetails[ 'due_by' ];
 	prefixDisputeType?: boolean;
 	className?: string;
 }
 const DisputeStatusChip: React.FC< Props > = ( {
 	status,
-	dueBy,
 	prefixDisputeType,
 	className,
 } ) => {

@@ -12,13 +12,11 @@ import { createInterpolateElement } from '@wordpress/element';
 import { Link } from '@woocommerce/components';
 import {
 	Button,
-	CardBody,
 	ExternalLink,
 	Flex,
 	FlexItem,
 	Icon,
 	Modal,
-	CardDivider,
 	HorizontalRule,
 } from '@wordpress/components';
 

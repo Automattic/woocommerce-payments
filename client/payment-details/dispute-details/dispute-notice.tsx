@@ -5,7 +5,6 @@
  */
 import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-import { ExternalLink } from '@wordpress/components';
 import { createInterpolateElement } from '@wordpress/element';
 import moment from 'moment';
 
@@ -17,6 +16,7 @@ import InlineNotice from 'components/inline-notice';
 import { reasons } from 'wcpay/disputes/strings';
 import { Dispute } from 'wcpay/types/disputes';
 import { isInquiry } from 'wcpay/disputes/utils';
+import { PAYMENT_METHOD_BRANDS } from 'wcpay/constants/payment-method';
 
 interface DisputeNoticeProps {
 	dispute: Dispute;
@@ -41,25 +41,70 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 		.unix( dispute.evidence_details?.due_by ?? 0 )
 		.format( 'MMM D, YYYY h:mm A' );
 
-	// Get the bank name - this is a placeholder since we don't have direct access to the bank name
-	// In a real implementation, you would extract this from the dispute or charge object
-	const bankName = 'Chase Bank'; // Placeholder - replace with actual bank name if available
+	// Get the bank name from payment method details
+	const getBankName = () => {
+		// If the charge is a string, it means it's a charge ID, so we can't get the bank name
+		if ( typeof dispute.charge === 'string' ) {
+			return null;
+		}
+
+		const { payment_method_details: paymentMethodDetails } = dispute.charge;
+		const methodType = paymentMethod?.toLowerCase();
+
+		if ( methodType === 'giropay' && 'giropay' in paymentMethodDetails ) {
+			return paymentMethodDetails.giropay.bank_name;
+		}
+		if (
+			methodType === 'bancontact' &&
+			'bancontact' in paymentMethodDetails
+		) {
+			return paymentMethodDetails.bancontact.bank_name;
+		}
+		if ( methodType === 'sofort' && 'sofort' in paymentMethodDetails ) {
+			return paymentMethodDetails.sofort.bank_name;
+		}
+		if ( methodType === 'card' && 'card' in paymentMethodDetails ) {
+			const { brand } = paymentMethodDetails.card;
+			return brand && typeof brand === 'string'
+				? PAYMENT_METHOD_BRANDS[
+						brand.toUpperCase() as keyof typeof PAYMENT_METHOD_BRANDS
+				  ]
+				: null;
+		}
+
+		return null;
+	};
+
+	const bankName = getBankName();
 
 	/* translators: %1$s is the clients claim for the dispute, eg "The cardholder claims this is an unrecognized charge." %2$s is the bank name, eg "Chase Bank". %3$s is the deadline date, eg "Aug 18, 2023 11:59 PM". */
-	let noticeText = __(
-		"<strong>%1$s</strong> Challenge the dispute with the cardholder's bank – <strong>%2$s</strong> by <strong>%3$s</strong> if you believe the claim is invalid, " +
-			'or accept to forfeit the funds and pay the dispute fee. ' +
-			'Non-response will result in an automatic loss.',
-		'woocommerce-payments'
-	);
+	let noticeText = bankName
+		? __(
+				"<strong>%1$s</strong> Challenge the dispute with the cardholder's bank – <strong>%2$s</strong> by <strong>%3$s</strong> if you believe the claim is invalid, " +
+					'or accept to forfeit the funds and pay the dispute fee. ' +
+					'Non-response will result in an automatic loss.',
+				'woocommerce-payments'
+		  )
+		: __(
+				"<strong>%1$s</strong> Challenge the dispute with the cardholder's bank by <strong>%2$s</strong> if you believe the claim is invalid, " +
+					'or accept to forfeit the funds and pay the dispute fee. ' +
+					'Non-response will result in an automatic loss.',
+				'woocommerce-payments'
+		  );
 
 	if ( isInquiry( dispute.status ) ) {
 		/* translators: %1$s is the clients claim for the dispute, eg "The cardholder claims this is an unrecognized charge." %2$s is the bank name, eg "Chase Bank". %3$s is the deadline date, eg "Aug 18, 2023 11:59 PM". */
-		noticeText = __(
-			"<strong>%1$s</strong> You can challenge their claim with <strong>%2$s</strong> by <strong>%3$s</strong> if you believe it's invalid. " +
-				'Not responding will result in an automatic loss.',
-			'woocommerce-payments'
-		);
+		noticeText = bankName
+			? __(
+					"<strong>%1$s</strong> You can challenge their claim with <strong>%2$s</strong> by <strong>%3$s</strong> if you believe it's invalid. " +
+						'Not responding will result in an automatic loss.',
+					'woocommerce-payments'
+			  )
+			: __(
+					"<strong>%1$s</strong> You can challenge their claim by <strong>%2$s</strong> if you believe it's invalid. " +
+						'Not responding will result in an automatic loss.',
+					'woocommerce-payments'
+			  );
 
 		if ( paymentMethod === 'klarna' ) {
 			noticeText = __(
@@ -80,7 +125,7 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 				sprintf(
 					noticeText,
 					shopperDisputeReason,
-					bankName,
+					bankName || dueByDate,
 					dueByDate
 				),
 				{
