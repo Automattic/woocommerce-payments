@@ -11,7 +11,7 @@
  * WC tested up to: 9.7.1
  * Requires at least: 6.0
  * Requires PHP: 7.3
- * Version: 9.2.0
+ * Version: 9.2.1
  * Requires Plugins: woocommerce
  *
  * @package WooCommerce\Payments
