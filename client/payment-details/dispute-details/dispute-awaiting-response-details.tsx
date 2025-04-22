@@ -190,6 +190,26 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 		return 'https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#responding';
 	};
 
+	// Get the appropriate help link text based on dispute type and payment method
+	const getHelpLinkText = () => {
+		if ( isInquiry( dispute.status ) ) {
+			if ( paymentMethod === 'klarna' ) {
+				return __(
+					'Please see this document for more information',
+					'woocommerce-payments'
+				);
+			}
+			return __(
+				'Learn more about payment inquiries',
+				'woocommerce-payments'
+			);
+		}
+		return __(
+			'Learn more about responding to disputes',
+			'woocommerce-payments'
+		);
+	};
+
 	const handleModalClose = () => {
 		// Don't allow the user to close the modal if the accept request is in progress.
 		if ( isDisputeAcceptRequestPending ) {
@@ -280,10 +300,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 							} );
 						} }
 					>
-						{ __(
-							'Learn more about responding to disputes',
-							'woocommerce-payments'
-						) }
+						{ getHelpLinkText() }
 					</ExternalLink>
 				</div>
 
