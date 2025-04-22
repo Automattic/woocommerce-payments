@@ -72,6 +72,8 @@ class WC_Payments_Onboarding_Service {
 	const FROM_STRIPE_EMBEDDED  = 'STRIPE_EMBEDDED';
 	const FROM_REFERRAL         = 'REFERRAL';
 
+	const TRACKS_EVENT_ONBOARDING_RESET = 'wcpay_onboarding_flow_reset';
+
 	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
@@ -683,6 +685,74 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
+	 * Reset the current onboarding state.
+	 *
+	 * This means:
+	 * - delete the currently connected Stripe account - if possible!
+	 * - reset the onboarding flags, options, and caches.
+	 *
+	 * @param array $context Context for the reset onboarding request.
+	 *              - 'from' (string) The source of the request.
+	 *              - 'source' (string) The source of the onboarding flow.
+	 *
+	 * @return bool Whether the onboarding was reset successfully.
+	 *
+	 * @throws API_Exception When the platform API request fails or is not successful.
+	 */
+	public function reset_onboarding( array $context ): bool {
+		if ( ! $this->payments_api_client->is_server_connected() ) {
+			return false;
+		}
+
+		// Delete the currently connected Stripe account, in the onboarding mode we are currently in.
+		$test_mode_onboarding = self::is_test_mode_enabled();
+		$result               = $this->payments_api_client->delete_account( $test_mode_onboarding );
+		if ( ! isset( $result['result'] ) || 'success' !== $result['result'] ) {
+			throw new API_Exception( __( 'Failed to delete account.', 'woocommerce-payments' ), 'wcpay-onboarding-account-error', 400 );
+		}
+
+		$this->cleanup_on_account_reset();
+		delete_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
+
+		// Track onboarding reset.
+		$event_properties = [
+			'mode'   => $test_mode_onboarding ? 'test' : 'live',
+			'from'   => ! empty( $context['from'] ) ? sanitize_text_field( $context['from'] ) : '',
+			'source' => ! empty( $context['source'] ) ? sanitize_text_field( $context['source'] ) : '',
+		];
+
+		$this->tracks_event(
+			self::TRACKS_EVENT_ONBOARDING_RESET,
+			$event_properties
+		);
+
+		return true;
+	}
+
+	/**
+	 * Sets things up for a fresh onboarding flow.
+	 *
+	 * @return void
+	 */
+	public function cleanup_on_account_reset() {
+		$gateway = WC_Payments::get_gateway();
+		$gateway->update_option( 'enabled', 'no' );
+		$gateway->update_option( 'test_mode', 'no' );
+
+		update_option( '_wcpay_onboarding_stripe_connected', [] );
+		update_option( self::TEST_MODE_OPTION, 'no' );
+
+		// Discard any ongoing onboarding session.
+		delete_transient( WC_Payments_Account::ONBOARDING_STATE_TRANSIENT );
+		delete_transient( WC_Payments_Account::ONBOARDING_STARTED_TRANSIENT );
+		delete_option( WC_Payments_Account::EMBEDDED_KYC_IN_PROGRESS_OPTION );
+		delete_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT );
+
+		// Clear the cache to avoid stale data.
+		WC_Payments::get_account_service()->clear_cache();
+	}
+
+	/**
 	 * Determine whether an embedded KYC flow is in progress.
 	 *
 	 * @return bool True if embedded KYC is in progress, false otherwise.
@@ -1276,5 +1346,40 @@ class WC_Payments_Onboarding_Service {
 				return ! in_array( $payment_method, $excluded_methods, true );
 			}
 		);
+	}
+
+	/**
+	 * Send a Tracks event.
+	 *
+	 * By default Woo adds `url`, `blog_lang`, `blog_id`, `store_id`, `products_count`, and `wc_version`
+	 * properties to every event.
+	 *
+	 * @todo This is a duplicate of the one in the WC_Payments_Account class. When we refactor the onboarding logic out of the WC_Payments_Account class we should consider a proper place for this method.
+	 *
+	 * @param string $name       The event name.
+	 * @param array  $properties Optional. The event custom properties.
+	 *
+	 * @return void
+	 */
+	private function tracks_event( string $name, array $properties = [] ) {
+		if ( ! function_exists( 'wc_admin_record_tracks_event' ) ) {
+			return;
+		}
+
+		// Add default properties to every event.
+		$properties = array_merge(
+			$properties,
+			[
+				'is_test_mode'      => WC_Payments::mode()->is_test(),
+				'jetpack_connected' => $this->payments_api_client->is_server_connected(),
+				'wcpay_version'     => WCPAY_VERSION_NUMBER,
+				'woo_country_code'  => WC()->countries->get_base_country(),
+			],
+			WC_Payments::get_account_service()->get_tracking_info() ?? []
+		);
+
+		wc_admin_record_tracks_event( $name, $properties );
+
+		Logger::info( 'Tracks event: ' . $name . ' with data: ' . wp_json_encode( WC_Payments_Utils::redact_array( $properties, [ 'woo_country_code' ] ) ) );
 	}
 }

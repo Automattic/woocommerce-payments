@@ -11,7 +11,6 @@ import { addQueryArgs } from '@wordpress/url';
 import strings from './strings';
 import './styles.scss';
 import ResetAccountModal from 'wcpay/overview/modal/reset-account';
-import { trackAccountReset } from 'wcpay/onboarding/tracking';
 import { isInTestModeOnboarding } from 'wcpay/utils';
 
 interface Props {
@@ -19,8 +18,6 @@ interface Props {
 }
 
 const handleReset = () => {
-	trackAccountReset();
-
 	window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
 		'wcpay-reset-account': 'true',
 		source: 'wcpay-reset-account', // Overwrite any existing source because we are starting over.
