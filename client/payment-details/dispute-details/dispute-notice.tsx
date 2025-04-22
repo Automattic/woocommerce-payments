@@ -45,34 +45,27 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 	// In a real implementation, you would extract this from the dispute or charge object
 	const bankName = 'Chase Bank'; // Placeholder - replace with actual bank name if available
 
-	/* translators: <a> link to dispute documentation. %1$s is the clients claim for the dispute, eg "The cardholder claims this is an unrecognized charge." %2$s is the bank name, eg "Chase Bank". %3$s is the deadline date, eg "Aug 18, 2023 11:59 PM". */
+	/* translators: %1$s is the clients claim for the dispute, eg "The cardholder claims this is an unrecognized charge." %2$s is the bank name, eg "Chase Bank". %3$s is the deadline date, eg "Aug 18, 2023 11:59 PM". */
 	let noticeText = __(
 		"<strong>%1$s</strong> Challenge the dispute with the cardholder's bank – <strong>%2$s</strong> by <strong>%3$s</strong> if you believe the claim is invalid, " +
 			'or accept to forfeit the funds and pay the dispute fee. ' +
-			'Non-response will result in an automatic loss. <a>Learn more about responding to disputes</a>',
+			'Non-response will result in an automatic loss.',
 		'woocommerce-payments'
 	);
-	let learnMoreDocsUrl =
-		'https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#responding';
 
 	if ( isInquiry( dispute.status ) ) {
-		/* translators: <a> link to dispute inquiry documentation. %1$s is the clients claim for the dispute, eg "The cardholder claims this is an unrecognized charge." %2$s is the bank name, eg "Chase Bank". %3$s is the deadline date, eg "Aug 18, 2023 11:59 PM". */
+		/* translators: %1$s is the clients claim for the dispute, eg "The cardholder claims this is an unrecognized charge." %2$s is the bank name, eg "Chase Bank". %3$s is the deadline date, eg "Aug 18, 2023 11:59 PM". */
 		noticeText = __(
 			"<strong>%1$s</strong> You can challenge their claim with <strong>%2$s</strong> by <strong>%3$s</strong> if you believe it's invalid. " +
-				'Not responding will result in an automatic loss. <a>Learn more about payment inquiries</a>',
+				'Not responding will result in an automatic loss.',
 			'woocommerce-payments'
 		);
-		learnMoreDocsUrl =
-			'https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries';
 
 		if ( paymentMethod === 'klarna' ) {
 			noticeText = __(
-				'Klarna inquiries may mean that the customer is trying to return their item(s). ' +
-					'<a>Please see this document for more information</a>',
+				'Klarna inquiries may mean that the customer is trying to return their item(s).',
 				'woocommerce-payments'
 			);
-			learnMoreDocsUrl =
-				'https://woocommerce.com/document/woopayments/payment-methods/buy-now-pay-later/#klarna-inquiries-returns';
 		}
 	}
 
@@ -91,12 +84,6 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 					dueByDate
 				),
 				{
-					a: (
-						<ExternalLink
-							className="dispute-notice__link"
-							href={ learnMoreDocsUrl }
-						/>
-					),
 					strong: <strong />,
 				}
 			) }

@@ -19,6 +19,7 @@ import {
 	Icon,
 	Modal,
 	CardDivider,
+	HorizontalRule,
 } from '@wordpress/components';
 
 /**
@@ -180,6 +181,17 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 		featureFlags: { isDisputeIssuerEvidenceEnabled },
 	} = useContext( WCPaySettingsContext );
 
+	// Get the appropriate documentation URL based on dispute type
+	const getLearnMoreDocsUrl = () => {
+		if ( isInquiry( dispute.status ) ) {
+			if ( paymentMethod === 'klarna' ) {
+				return 'https://woocommerce.com/document/woopayments/payment-methods/buy-now-pay-later/#klarna-inquiries-returns';
+			}
+			return 'https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries';
+		}
+		return 'https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#responding';
+	};
+
 	const handleModalClose = () => {
 		// Don't allow the user to close the modal if the accept request is in progress.
 		if ( isDisputeAcceptRequestPending ) {
@@ -217,11 +229,11 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 
 	return (
 		<div className="transaction-details-dispute-details-wrapper">
-			<CardDivider />
+			<HorizontalRule />
 			<h2 className="transaction-details-dispute-details-title">
 				{ __( 'Dispute details', 'woocommerce-payments' ) }
 			</h2>
-			<CardBody className="transaction-details-dispute-details-body">
+			<div className="transaction-details-dispute-details-body">
 				<DisputeNotice
 					dispute={ dispute }
 					isUrgent={ countdownDays <= 2 }
@@ -262,7 +274,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 				{ /* Help link to documentation */ }
 				<div className="transaction-details-dispute-details-body__help-link">
 					<ExternalLink
-						href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#section-3"
+						href={ getLearnMoreDocsUrl() }
 						onClick={ () => {
 							recordEvent( 'wcpay_dispute_help_link_clicked', {
 								dispute_status: dispute.status,
@@ -417,7 +429,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 						) }
 					</div>
 				}
-			</CardBody>
+			</div>
 		</div>
 	);
 };
