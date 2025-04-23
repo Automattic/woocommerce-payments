@@ -227,7 +227,9 @@ exports[`Order items threshold card renders correctly when enabled 1`] = `
                   </div>
                 </div>
               </div>
-              <div>
+              <div
+                class="fraud-protection-rule-toggle-children-notice"
+              >
                 <br />
                 <div
                   class="wcpay-inline-notice wcpay-inline-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
@@ -442,7 +444,9 @@ exports[`Order items threshold card renders correctly when enabled and checked 1
                   </div>
                 </div>
               </div>
-              <div>
+              <div
+                class="fraud-protection-rule-toggle-children-notice"
+              >
                 <br />
                 <div
                   class="wcpay-inline-notice wcpay-inline-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"

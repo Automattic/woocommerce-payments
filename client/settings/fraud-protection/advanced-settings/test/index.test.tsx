@@ -213,7 +213,7 @@ describe( 'Advanced fraud protection settings', () => {
 			/There was an error retrieving your fraud protection settings/i
 		);
 
-		const saveButton = await container.findByText( 'Save Changes' );
+		const saveButton = await container.findByText( 'Save changes' );
 
 		expect( saveButton ).toBeDisabled();
 	} );
@@ -262,7 +262,7 @@ describe( 'Advanced fraud protection settings', () => {
 		);
 		avsThresholdToggle.click();
 		avsThresholdToggle.click();
-		const [ saveButton ] = await container.findAllByText( 'Save Changes' );
+		const [ saveButton ] = await container.findAllByText( 'Save changes' );
 		saveButton.click();
 		expect( mockUseSettings().saveSettings.mock.calls.length ).toBe( 0 );
 		expect( container ).toMatchSnapshot();
@@ -315,7 +315,7 @@ describe( 'Advanced fraud protection settings', () => {
 		);
 		avsThresholdToggle.click();
 		avsThresholdToggle.click();
-		const [ saveButton ] = await container.findAllByText( 'Save Changes' );
+		const [ saveButton ] = await container.findAllByText( 'Save changes' );
 		saveButton.click();
 		await waitFor( () => {
 			expect( mockUseSettings().saveSettings.mock.calls.length ).toBe(
@@ -382,7 +382,7 @@ describe( 'Advanced fraud protection settings', () => {
 		);
 		avsThresholdToggle.click();
 		avsThresholdToggle.click();
-		const [ saveButton ] = await container.findAllByText( 'Save Changes' );
+		const [ saveButton ] = await container.findAllByText( 'Save changes' );
 		saveButton.click();
 		await waitFor( () => {
 			expect( mockUseSettings().saveSettings.mock.calls.length ).toBe(
@@ -453,7 +453,7 @@ describe( 'Advanced fraud protection settings', () => {
 		);
 		avsThresholdToggle.click();
 		avsThresholdToggle.click();
-		const [ saveButton ] = await container.findAllByText( 'Save Changes' );
+		const [ saveButton ] = await container.findAllByText( 'Save changes' );
 		saveButton.click();
 		await waitFor( () => {
 			expect( mockUseSettings().saveSettings.mock.calls.length ).toBe(
@@ -506,7 +506,7 @@ describe( 'Advanced fraud protection settings', () => {
 		);
 		avsThresholdToggle.click();
 		avsThresholdToggle.click();
-		const [ saveButton ] = await container.findAllByText( 'Save Changes' );
+		const [ saveButton ] = await container.findAllByText( 'Save changes' );
 
 		saveButton.click();
 		await waitFor( () => {

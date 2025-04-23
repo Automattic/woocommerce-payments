@@ -229,7 +229,9 @@ exports[`Purchase price threshold card renders correctly when enabled 1`] = `
                   </div>
                 </div>
               </div>
-              <div>
+              <div
+                class="fraud-protection-rule-toggle-children-notice"
+              >
                 <br />
                 <div
                   class="wcpay-inline-notice wcpay-inline-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
@@ -446,7 +448,9 @@ exports[`Purchase price threshold card renders correctly when enabled and checke
                   </div>
                 </div>
               </div>
-              <div>
+              <div
+                class="fraud-protection-rule-toggle-children-notice"
+              >
                 <br />
                 <div
                   class="wcpay-inline-notice wcpay-inline-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"

@@ -645,7 +645,9 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                               </div>
                             </div>
                           </div>
-                          <div>
+                          <div
+                            class="fraud-protection-rule-toggle-children-notice"
+                          >
                             <br />
                             <div
                               class="wcpay-inline-notice wcpay-inline-error-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-error components-notice is-error"
@@ -906,7 +908,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                   class="components-button is-primary"
                   type="button"
                 >
-                  Save Changes
+                  Save changes
                 </button>
               </footer>
             </div>
@@ -1531,7 +1533,9 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                             </div>
                           </div>
                         </div>
-                        <div>
+                        <div
+                          class="fraud-protection-rule-toggle-children-notice"
+                        >
                           <br />
                           <div
                             class="wcpay-inline-notice wcpay-inline-error-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-error components-notice is-error"
@@ -1792,7 +1796,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                 class="components-button is-primary"
                 type="button"
               >
-                Save Changes
+                Save changes
               </button>
             </footer>
           </div>
@@ -2616,7 +2620,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                   disabled=""
                   type="button"
                 >
-                  Save Changes
+                  Save changes
                 </button>
               </footer>
             </div>
@@ -3358,7 +3362,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                 disabled=""
                 type="button"
               >
-                Save Changes
+                Save changes
               </button>
             </footer>
           </div>
@@ -4158,7 +4162,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                 disabled=""
                 type="button"
               >
-                Save Changes
+                Save changes
               </button>
             </footer>
           </div>
@@ -4875,7 +4879,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
               disabled=""
               type="button"
             >
-              Save Changes
+              Save changes
             </button>
           </footer>
         </div>
@@ -5760,9 +5764,10 @@ exports[`Advanced fraud protection settings saves settings when there are no val
               >
                 <button
                   class="components-button is-primary"
+                  disabled=""
                   type="button"
                 >
-                  Save Changes
+                  Save changes
                 </button>
               </footer>
             </div>
@@ -6566,9 +6571,10 @@ exports[`Advanced fraud protection settings saves settings when there are no val
             >
               <button
                 class="components-button is-primary"
+                disabled=""
                 type="button"
               >
-                Save Changes
+                Save changes
               </button>
             </footer>
           </div>
