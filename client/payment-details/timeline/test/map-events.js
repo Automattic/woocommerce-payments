@@ -2,7 +2,7 @@
 /**
  * Internal dependencies
  */
-import mapTimelineEvents from '../map-events';
+import mapTimelineEvents, { composeTaxString } from '../map-events';
 
 jest.mock( 'gridicons/dist/sync', () => 'SyncIcon' );
 jest.mock( 'gridicons/dist/plus', () => 'PlusIcon' );
@@ -716,6 +716,106 @@ describe( 'mapTimelineEvents', () => {
 
 		expect( events[ 1 ].headline ).toBe(
 			'A payment of €77.00 EUR failed: The card was declined by the bank.'
+		);
+	} );
+} );
+
+describe( 'composeTaxString', () => {
+	it( 'should return empty string when no tax data is present', () => {
+		const event = {};
+		expect( composeTaxString( event ) ).toBe( '' );
+	} );
+
+	it( 'should return empty string when fee_rates is present but no tax data', () => {
+		const event = {
+			fee_rates: {},
+		};
+		expect( composeTaxString( event ) ).toBe( '' );
+	} );
+
+	it( 'should format tax with description and percentage', () => {
+		const event = {
+			fee_rates: {
+				tax: {
+					amount: 10,
+					currency: 'EUR',
+					percentage_rate: 0.21,
+					description: 'ES VAT',
+				},
+			},
+		};
+		expect( composeTaxString( event ) ).toBe(
+			'Tax ES VAT (21.00%): -€0.10'
+		);
+	} );
+
+	it( 'should format tax with just percentage', () => {
+		const event = {
+			fee_rates: {
+				tax: {
+					amount: 10,
+					currency: 'EUR',
+					percentage_rate: 0.21,
+				},
+			},
+		};
+		expect( composeTaxString( event ) ).toBe( 'Tax (21.00%): -€0.10' );
+	} );
+
+	it( 'should format tax with just description', () => {
+		const event = {
+			fee_rates: {
+				tax: {
+					amount: 10,
+					currency: 'EUR',
+					description: 'ES VAT',
+				},
+			},
+		};
+		expect( composeTaxString( event ) ).toBe( 'Tax ES VAT: -€0.10' );
+	} );
+
+	it( 'should format tax with neither description nor percentage', () => {
+		const event = {
+			fee_rates: {
+				tax: {
+					amount: 10,
+					currency: 'EUR',
+				},
+			},
+		};
+		expect( composeTaxString( event ) ).toBe( 'Tax: -€0.10' );
+	} );
+
+	it( 'should handle different currencies', () => {
+		const event = {
+			fee_rates: {
+				tax: {
+					amount: 100,
+					currency: 'USD',
+					percentage_rate: 0.15,
+					description: 'US Sales Tax',
+				},
+			},
+		};
+		expect( composeTaxString( event ) ).toBe(
+			'Tax US Sales Tax (15.00%): -$1.00'
+		);
+	} );
+
+	it( 'should handle zero amount', () => {
+		const event = {
+			fee_rates: {
+				tax: {
+					amount: 0,
+					currency: 'eur',
+					percentage_rate: 0.21,
+					description: 'ES VAT',
+				},
+			},
+		};
+		expect( composeTaxString( event ) ).toBe(
+			'Tax ES VAT (21.00%): €0.00'
 		);
 	} );
 } );

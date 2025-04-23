@@ -254,38 +254,44 @@ export const composeTaxString = ( event ) => {
 	const taxPercentage = event.fee_rates.tax.percentage_rate;
 	const taxDescription = event.fee_rates.tax.description;
 
-	const label =
-		taxPercentage !== null
-			? sprintf(
-					/* translators: 1: tax description 2: tax percentage 3: tax amount */
-					taxDescription
-						? __( '%1$s (%2$s): %3$s', 'woocommerce-payments' )
-						: __( 'Tax (%s): %s', 'woocommerce-payments' ),
-					...( taxDescription
-						? [
-								taxDescription,
-								( taxPercentage * 100 ).toFixed( 2 ) + '%',
-								formatCurrency( -taxAmount, taxCurrency ),
-						  ]
-						: [
-								( taxPercentage * 100 ).toFixed( 2 ) + '%',
-								formatCurrency( -taxAmount, taxCurrency ),
-						  ] )
-			  )
-			: sprintf(
-					/* translators: 1: tax description 2: tax amount */
-					taxDescription
-						? __( '%1$s: %2$s', 'woocommerce-payments' )
-						: __( 'Tax: %s', 'woocommerce-payments' ),
-					...( taxDescription
-						? [
-								taxDescription,
-								formatCurrency( -taxAmount, taxCurrency ),
-						  ]
-						: [ formatCurrency( -taxAmount, taxCurrency ) ] )
-			  );
+	// Always format the amount as negative
+	const formattedAmount = formatCurrency(
+		-Math.abs( taxAmount ),
+		taxCurrency
+	);
 
-	return label;
+	if ( taxDescription ) {
+		if ( taxPercentage !== null && ! isNaN( taxPercentage ) ) {
+			return sprintf(
+				/* translators: 1: tax description 2: tax percentage 3: tax amount */
+				__( 'Tax %1$s (%2$s): %3$s', 'woocommerce-payments' ),
+				taxDescription,
+				( taxPercentage * 100 ).toFixed( 2 ) + '%',
+				formattedAmount
+			);
+		}
+		return sprintf(
+			/* translators: 1: tax description 2: tax amount */
+			__( 'Tax %1$s: %2$s', 'woocommerce-payments' ),
+			taxDescription,
+			formattedAmount
+		);
+	}
+
+	if ( taxPercentage !== null && ! isNaN( taxPercentage ) ) {
+		return sprintf(
+			/* translators: 1: tax percentage 2: tax amount */
+			__( 'Tax (%1$s): %2$s', 'woocommerce-payments' ),
+			( taxPercentage * 100 ).toFixed( 2 ) + '%',
+			formattedAmount
+		);
+	}
+
+	return sprintf(
+		/* translators: %s: tax amount */
+		__( 'Tax: %s', 'woocommerce-payments' ),
+		formattedAmount
+	);
 };
 
 export const composeFeeString = ( event ) => {
