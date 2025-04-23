@@ -71,32 +71,26 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 							'country'           => [
 								'type'        => 'string',
 								'description' => 'The country code where the company is legally registered.',
-								'required'    => true,
 							],
 							'business_type'     => [
 								'type'        => 'string',
 								'description' => 'The company incorporation type.',
-								'required'    => true,
 							],
 							'mcc'               => [
 								'type'        => 'string',
 								'description' => 'The merchant category code. This can either be a true MCC or an MCCs tree item id from the onboarding form.',
-								'required'    => true,
 							],
 							'annual_revenue'    => [
 								'type'        => 'string',
 								'description' => 'The estimated annual revenue bucket id.',
-								'required'    => true,
 							],
 							'go_live_timeframe' => [
 								'type'        => 'string',
 								'description' => 'The timeframe bucket for the estimated first live transaction.',
-								'required'    => true,
 							],
 							'site'              => [
 								'type'        => 'string',
 								'description' => 'The URL of the site.',
-								'required'    => true,
 							],
 						],
 					],

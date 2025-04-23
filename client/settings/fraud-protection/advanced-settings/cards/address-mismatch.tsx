@@ -14,17 +14,17 @@ import FraudProtectionRuleToggle from '../rule-toggle';
 const AddressMismatchRuleCard: React.FC = () => (
 	<FraudProtectionRuleCard
 		title={ __( 'Address Mismatch', 'woocommerce-payments' ) }
-		description={ __(
-			'This filter screens for differences between the shipping information and the ' +
-				'billing information (country).',
-			'woocommerce-payments'
-		) }
 		id="address-mismatch-card"
 	>
 		<FraudProtectionRuleToggle
 			setting={ 'address_mismatch' }
 			label={ __(
-				'Block transactions for mismatched addresses',
+				'Enable Address Mismatch filter',
+				'woocommerce-payments'
+			) }
+			description={ __(
+				'This filter screens for differences between the shipping information and the ' +
+					'billing information (country). When enabled the payment will be blocked.',
 				'woocommerce-payments'
 			) }
 		/>
