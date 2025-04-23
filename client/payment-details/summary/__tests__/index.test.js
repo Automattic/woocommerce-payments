@@ -404,13 +404,34 @@ describe( 'PaymentDetailsSummary', () => {
 		).toHaveTextContent( /Sep 9, 2023/ );
 
 		// Steps to resolve
-		screen.getByText( /Steps to resolve/i );
-		screen.getByRole( 'link', {
-			name: /Email the customer/i,
+		screen.getByText( /Steps you can take/i, {
+			selector: '.dispute-steps__header-title',
 		} );
-		screen.getByRole( 'link', {
-			name: /in withdrawing their dispute/i,
+
+		screen.getByText( /Reach out to your customer/i, {
+			selector: '.dispute-steps__item-name',
 		} );
+		screen.getByText( /Provide guidance for inquiry withdrawal/i, {
+			selector: '.dispute-steps__item-name',
+		} );
+		screen.getByText( /Challenge or accept the dispute/i, {
+			selector: '.dispute-steps__item-name',
+		} );
+
+		expect(
+			screen.getAllByText(
+				/Identify the issue and work towards a resolution where possible\./i,
+				{ selector: '.dispute-steps__item-description' }
+			).length
+		).toBe( 2 );
+		screen.getAllByText(
+			/Provide guidance and understand the issue and maybe they will change their mind\./i,
+			{ selector: '.dispute-steps__item-description' }
+		);
+		screen.getByRole( 'link', { name: /Email customer/i } );
+		expect(
+			screen.getAllByRole( 'link', { name: /Learn how/i } ).length
+		).toBe( 2 );
 
 		// Actions
 		screen.getByRole( 'button', {
@@ -819,9 +840,11 @@ describe( 'PaymentDetailsSummary', () => {
 		);
 
 		// Steps to resolve
-		screen.getByText( /Steps to resolve/i );
+		screen.getByText( /Steps you can take/i, {
+			selector: '.dispute-steps__header-title',
+		} );
 		screen.getByRole( 'link', {
-			name: /Email the customer/i,
+			name: /Email customer/i,
 		} );
 		screen.getByText( /Submit evidence /i );
 
