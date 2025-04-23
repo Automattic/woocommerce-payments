@@ -34,8 +34,9 @@
 		}
 	}
 
-	// Add specific spacing for product pages
-	.single-product & {
+	// Add specific spacing for product pages in both traditional and block-based layouts
+	.woocommerce .type-product &,
+	.wp-block-add-to-cart-form & {
 		margin-top: 1em;
 		margin-bottom: 1em;
 	}
