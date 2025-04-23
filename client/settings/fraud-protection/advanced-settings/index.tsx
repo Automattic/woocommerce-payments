@@ -328,7 +328,7 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 
 	const showNewBackLink = isVersionGreaterOrEqual(
 		window.wcSettings.wcVersion,
-		'9.9.0'
+		'9.8.3'
 	);
 
 	return (
