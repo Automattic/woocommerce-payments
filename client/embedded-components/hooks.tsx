@@ -33,6 +33,7 @@ export const createKycAccountSession = async (
 	isPoEligible: boolean
 ): Promise< AccountSession > => {
 	const urlParams = new URLSearchParams( window.location.search );
+
 	return await apiFetch< AccountSession >( {
 		path: `${ NAMESPACE }/onboarding/kyc/session`,
 		method: 'POST',

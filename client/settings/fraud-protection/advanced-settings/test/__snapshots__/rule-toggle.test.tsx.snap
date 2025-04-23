@@ -32,9 +32,6 @@ exports[`Fraud protection rule toggle tests renders correctly when disabled 1`] 
       <div
         class="fraud-protection-rule-toggle"
       >
-        <strong>
-          Enable filtering
-        </strong>
         <div
           class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
         >
@@ -45,7 +42,6 @@ exports[`Fraud protection rule toggle tests renders correctly when disabled 1`] 
               class="components-form-toggle"
             >
               <input
-                aria-describedby="inspector-toggle-control-0__help"
                 class="components-form-toggle__input"
                 id="inspector-toggle-control-0"
                 type="checkbox"
@@ -64,12 +60,11 @@ exports[`Fraud protection rule toggle tests renders correctly when disabled 1`] 
               Test rule toggle
             </label>
           </div>
-          <p
-            class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
-            id="inspector-toggle-control-0__help"
-          >
-            When enabled, the payment will be blocked.
-          </p>
+        </div>
+        <div
+          class="fraud-protection-rule-toggle-description"
+        >
+          Test rule toggle description
         </div>
       </div>
     </div>
@@ -78,9 +73,6 @@ exports[`Fraud protection rule toggle tests renders correctly when disabled 1`] 
     <div
       class="fraud-protection-rule-toggle"
     >
-      <strong>
-        Enable filtering
-      </strong>
       <div
         class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
       >
@@ -91,7 +83,6 @@ exports[`Fraud protection rule toggle tests renders correctly when disabled 1`] 
             class="components-form-toggle"
           >
             <input
-              aria-describedby="inspector-toggle-control-0__help"
               class="components-form-toggle__input"
               id="inspector-toggle-control-0"
               type="checkbox"
@@ -110,12 +101,11 @@ exports[`Fraud protection rule toggle tests renders correctly when disabled 1`] 
             Test rule toggle
           </label>
         </div>
-        <p
-          class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
-          id="inspector-toggle-control-0__help"
-        >
-          When enabled, the payment will be blocked.
-        </p>
+      </div>
+      <div
+        class="fraud-protection-rule-toggle-description"
+      >
+        Test rule toggle description
       </div>
     </div>
   </div>,
@@ -205,9 +195,6 @@ exports[`Fraud protection rule toggle tests renders correctly when enabled 1`] =
       <div
         class="fraud-protection-rule-toggle"
       >
-        <strong>
-          Enable filtering
-        </strong>
         <div
           class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
         >
@@ -218,7 +205,6 @@ exports[`Fraud protection rule toggle tests renders correctly when enabled 1`] =
               class="components-form-toggle is-checked"
             >
               <input
-                aria-describedby="inspector-toggle-control-1__help"
                 checked=""
                 class="components-form-toggle__input"
                 id="inspector-toggle-control-1"
@@ -238,12 +224,11 @@ exports[`Fraud protection rule toggle tests renders correctly when enabled 1`] =
               Test rule toggle
             </label>
           </div>
-          <p
-            class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
-            id="inspector-toggle-control-1__help"
-          >
-            The payment will be blocked.
-          </p>
+        </div>
+        <div
+          class="fraud-protection-rule-toggle-description"
+        >
+          Test rule toggle description
         </div>
         <div>
           test content
@@ -255,9 +240,6 @@ exports[`Fraud protection rule toggle tests renders correctly when enabled 1`] =
     <div
       class="fraud-protection-rule-toggle"
     >
-      <strong>
-        Enable filtering
-      </strong>
       <div
         class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
       >
@@ -268,7 +250,6 @@ exports[`Fraud protection rule toggle tests renders correctly when enabled 1`] =
             class="components-form-toggle is-checked"
           >
             <input
-              aria-describedby="inspector-toggle-control-1__help"
               checked=""
               class="components-form-toggle__input"
               id="inspector-toggle-control-1"
@@ -288,12 +269,11 @@ exports[`Fraud protection rule toggle tests renders correctly when enabled 1`] =
             Test rule toggle
           </label>
         </div>
-        <p
-          class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
-          id="inspector-toggle-control-1__help"
-        >
-          The payment will be blocked.
-        </p>
+      </div>
+      <div
+        class="fraud-protection-rule-toggle-description"
+      >
+        Test rule toggle description
       </div>
       <div>
         test content
@@ -386,9 +366,6 @@ exports[`Fraud protection rule toggle tests renders correctly when enabled and b
       <div
         class="fraud-protection-rule-toggle"
       >
-        <strong>
-          Enable filtering
-        </strong>
         <div
           class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
         >
@@ -399,7 +376,6 @@ exports[`Fraud protection rule toggle tests renders correctly when enabled and b
               class="components-form-toggle is-checked"
             >
               <input
-                aria-describedby="inspector-toggle-control-2__help"
                 checked=""
                 class="components-form-toggle__input"
                 id="inspector-toggle-control-2"
@@ -419,12 +395,11 @@ exports[`Fraud protection rule toggle tests renders correctly when enabled and b
               Test rule toggle
             </label>
           </div>
-          <p
-            class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
-            id="inspector-toggle-control-2__help"
-          >
-            The payment will be blocked.
-          </p>
+        </div>
+        <div
+          class="fraud-protection-rule-toggle-description"
+        >
+          Test rule toggle description
         </div>
         <div>
           test content
@@ -436,9 +411,6 @@ exports[`Fraud protection rule toggle tests renders correctly when enabled and b
     <div
       class="fraud-protection-rule-toggle"
     >
-      <strong>
-        Enable filtering
-      </strong>
       <div
         class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
       >
@@ -449,7 +421,6 @@ exports[`Fraud protection rule toggle tests renders correctly when enabled and b
             class="components-form-toggle is-checked"
           >
             <input
-              aria-describedby="inspector-toggle-control-2__help"
               checked=""
               class="components-form-toggle__input"
               id="inspector-toggle-control-2"
@@ -469,12 +440,11 @@ exports[`Fraud protection rule toggle tests renders correctly when enabled and b
             Test rule toggle
           </label>
         </div>
-        <p
-          class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
-          id="inspector-toggle-control-2__help"
-        >
-          The payment will be blocked.
-        </p>
+      </div>
+      <div
+        class="fraud-protection-rule-toggle-description"
+      >
+        Test rule toggle description
       </div>
       <div>
         test content

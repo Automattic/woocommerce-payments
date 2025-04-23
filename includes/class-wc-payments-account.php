@@ -1365,9 +1365,10 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			// Make changes to account data as instructed by action GET params.
 			// This needs to happen early because we need to make things "not OK" for the rest of the logic.
 			if ( ! empty( $_GET['wcpay-reset-account'] ) && 'true' === $_GET['wcpay-reset-account'] ) {
+				$test_mode_onboarding = WC_Payments_Onboarding_Service::is_test_mode_enabled();
 				try {
 					// Delete the currently Stripe connected account, in the onboarding mode we are currently in.
-					$this->payments_api_client->delete_account( WC_Payments_Onboarding_Service::is_test_mode_enabled() );
+					$this->payments_api_client->delete_account( $test_mode_onboarding );
 				} catch ( API_Exception $e ) {
 					// In case we fail to delete the account, log and redirect to the Overview page.
 					Logger::error( 'Failed to delete account: ' . $e->getMessage() );
@@ -1376,8 +1377,14 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 					return;
 				}
 
-				$this->cleanup_on_account_reset();
+				$this->onboarding_service->cleanup_on_account_reset();
 				delete_transient( self::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
+
+				// Track the onboarding (not account) reset.
+				$this->tracks_event(
+					WC_Payments_Onboarding_Service::TRACKS_EVENT_ONBOARDING_RESET,
+					array_merge( $tracks_props, [ 'mode' => $test_mode_onboarding ? 'test' : 'live' ] )
+				);
 
 				// When we reset the account and want to go back to the settings page - redirect immediately!
 				if ( $redirect_to_settings_page ) {
@@ -1414,7 +1421,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 						Logger::error( 'Failed to delete account in test mode: ' . $e->getMessage() );
 					}
 
-					$this->cleanup_on_account_reset();
+					$this->onboarding_service->cleanup_on_account_reset();
 				}
 
 				// Since we are moving from test to live, we will only onboard in test mode if we are in dev mode.
@@ -1785,29 +1792,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 			return;
 		}
-	}
-
-	/**
-	 * Sets things up for a fresh onboarding flow.
-	 *
-	 * @return void
-	 */
-	private function cleanup_on_account_reset() {
-		$gateway = WC_Payments::get_gateway();
-		$gateway->update_option( 'enabled', 'no' );
-		$gateway->update_option( 'test_mode', 'no' );
-
-		update_option( '_wcpay_onboarding_stripe_connected', [] );
-		update_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION, 'no' );
-
-		// Discard any ongoing onboarding session.
-		delete_transient( self::ONBOARDING_STATE_TRANSIENT );
-		delete_transient( self::ONBOARDING_STARTED_TRANSIENT );
-		delete_option( self::EMBEDDED_KYC_IN_PROGRESS_OPTION );
-		delete_transient( self::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT );
-
-		// Clear the cache to avoid stale data.
-		$this->clear_cache();
 	}
 
 	/**
@@ -2684,6 +2668,10 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	 * @return void
 	 */
 	private function tracks_event( string $name, array $properties = [] ) {
+		if ( ! function_exists( 'wc_admin_record_tracks_event' ) ) {
+			return;
+		}
+
 		// Add default properties to every event.
 		$properties = array_merge(
 			$properties,
@@ -2695,10 +2683,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			],
 			$this->get_tracking_info() ?? []
 		);
-
-		if ( ! function_exists( 'wc_admin_record_tracks_event' ) ) {
-			return;
-		}
 
 		// We're not using Tracker::track_admin() here because
 		// WC_Pay\record_tracker_events() is never triggered due to the redirects.

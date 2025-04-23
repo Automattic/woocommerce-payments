@@ -268,7 +268,7 @@ addFilter(
 				container: FraudProtectionAdvancedSettingsPage,
 				path: '/payments/fraud-protection',
 				wpOpenMenu: menuID,
-				breadcrumbs: [ 'WooPayments' ],
+				breadcrumbs: [ rootLink, 'Settings' ], // to align with the WooPayments settings pages.
 				capability: 'manage_woocommerce',
 			} );
 		}
