@@ -3,8 +3,13 @@ body {
 	&.woocommerce-admin-page__payments_fraud-protection {
 		background: #fff;
 		.wcpay-settings-layout {
-			margin: 24px 0 0;
+			margin: 40px 0 0;
 			max-width: 1184px;
+		}
+		@media screen and ( max-width: 782px ) {
+			.woocommerce-layout .woocommerce-layout__main {
+				padding-top: 0; // reduce the padding in mobile view (it's too big)
+			}
 		}
 		.woocommerce-layout__header {
 			&-heading {
@@ -18,6 +23,11 @@ body {
 		}
 		#woocommerce-activity-panel {
 			display: none;
+		}
+		.settings-section__details {
+			h2 {
+				margin-top: 0; // align section header and details by reducing h2 margin
+			}
 		}
 	}
 }
@@ -202,7 +212,7 @@ body {
 
 		strong,
 		&-toggle > div {
-			margin: 0 0 12px;
+			margin: 0 0 8px;
 		}
 
 		&-block {
@@ -223,7 +233,7 @@ body {
 
 		&-children {
 			&-container {
-				margin-bottom: 24px;
+				margin: 24px 0;
 
 				.components-base-control__help {
 					margin-bottom: 0;
@@ -240,6 +250,9 @@ body {
 				flex: 1;
 				flex-direction: column;
 				gap: $gap-smaller;
+			}
+			&-notice {
+				margin-top: -24px; // to override default notice margin
 			}
 		}
 	}

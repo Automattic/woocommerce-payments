@@ -117,7 +117,7 @@ const OrderItemsThresholdCustomForm: React.FC< OrderItemsThresholdCustomFormProp
 				</div>
 			</div>
 			{ isItemRangeEmpty && (
-				<div>
+				<div className="fraud-protection-rule-toggle-children-notice">
 					<br />
 					<FraudProtectionRuleCardNotice type={ 'warning' }>
 						{ __(
@@ -128,7 +128,7 @@ const OrderItemsThresholdCustomForm: React.FC< OrderItemsThresholdCustomFormProp
 				</div>
 			) }
 			{ isMinGreaterThanMax ? (
-				<div>
+				<div className="fraud-protection-rule-toggle-children-notice">
 					<br />
 					<FraudProtectionRuleCardNotice type={ 'error' }>
 						{ __(

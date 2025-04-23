@@ -201,20 +201,8 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 			}
 
 			updateProtectionLevel( ProtectionLevel.BASIC );
-			dispatch( 'core/notices' ).createErrorNotice(
-				__(
-					'Current protection level is set to "basic". At least one risk filter needs to be enabled for advanced protection.',
-					'woocommerce-payments'
-				)
-			);
 		} else if ( ProtectionLevel.ADVANCED !== currentProtectionLevel ) {
 			updateProtectionLevel( ProtectionLevel.ADVANCED );
-			dispatch( 'core/notices' ).createSuccessNotice(
-				__(
-					'Current protection level is set to "advanced".',
-					'woocommerce-payments'
-				)
-			);
 		}
 
 		const settings = writeRuleset( protectionSettingsUI );
@@ -231,6 +219,8 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 		updateAdvancedFraudProtectionSettings( settings );
 
 		saveSettings();
+
+		setIsDirty( false );
 
 		recordEvent( 'wcpay_fraud_protection_advanced_settings_saved', {
 			settings: JSON.stringify( settings ),
@@ -332,7 +322,7 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 				! isDirty
 			}
 		>
-			{ __( 'Save Changes', 'woocommerce-payments' ) }
+			{ __( 'Save changes', 'woocommerce-payments' ) }
 		</Button>
 	);
 

@@ -126,7 +126,7 @@ const PurchasePriceThresholdCustomForm: React.FC< PurchasePriceThresholdCustomFo
 				</div>
 			</div>
 			{ areInputsEmpty && (
-				<div>
+				<div className="fraud-protection-rule-toggle-children-notice">
 					<br />
 					<FraudProtectionRuleCardNotice type={ 'warning' }>
 						{ __(
@@ -137,7 +137,7 @@ const PurchasePriceThresholdCustomForm: React.FC< PurchasePriceThresholdCustomFo
 				</div>
 			) }
 			{ isMinGreaterThanMax ? (
-				<div>
+				<div className="fraud-protection-rule-toggle-children-notice">
 					<br />
 					<FraudProtectionRuleCardNotice type={ 'error' }>
 						{ __(
