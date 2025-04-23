@@ -251,6 +251,7 @@ declare global {
 			userLocale: string;
 		};
 		siteTitle: string;
+		wcVersion: string;
 	};
 
 	const wcpayPluginSettings: {

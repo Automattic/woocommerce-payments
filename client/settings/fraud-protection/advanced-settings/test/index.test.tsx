@@ -55,6 +55,7 @@ declare const global: {
 		countries: {
 			[ key: string ]: string;
 		};
+		wcVersion: string;
 	};
 	wcpaySettings: {
 		storeCurrency: string;
@@ -126,6 +127,7 @@ describe( 'Advanced fraud protection settings', () => {
 				CA: 'Canada',
 				US: 'United States',
 			},
+			wcVersion: '9.8.1',
 		};
 
 		global.wcpaySettings = {
@@ -211,13 +213,9 @@ describe( 'Advanced fraud protection settings', () => {
 			/There was an error retrieving your fraud protection settings/i
 		);
 
-		const [
-			firstSaveButton,
-			secondSaveButton,
-		] = await container.findAllByText( 'Save Changes' );
+		const saveButton = await container.findByText( 'Save changes' );
 
-		expect( firstSaveButton ).toBeDisabled();
-		expect( secondSaveButton ).toBeDisabled();
+		expect( saveButton ).toBeDisabled();
 	} );
 	test( "doesn't save when there's a validation error", async () => {
 		defaultSettings.push( {
@@ -260,11 +258,11 @@ describe( 'Advanced fraud protection settings', () => {
 		);
 
 		const avsThresholdToggle = await container.findByLabelText(
-			'Block transactions for mismatched AVS'
+			'Enable AVS Mismatch filter'
 		);
 		avsThresholdToggle.click();
 		avsThresholdToggle.click();
-		const [ saveButton ] = await container.findAllByText( 'Save Changes' );
+		const [ saveButton ] = await container.findAllByText( 'Save changes' );
 		saveButton.click();
 		expect( mockUseSettings().saveSettings.mock.calls.length ).toBe( 0 );
 		expect( container ).toMatchSnapshot();
@@ -313,11 +311,11 @@ describe( 'Advanced fraud protection settings', () => {
 		);
 
 		const avsThresholdToggle = await container.findByLabelText(
-			'Block transactions for mismatched AVS'
+			'Enable AVS Mismatch filter'
 		);
 		avsThresholdToggle.click();
 		avsThresholdToggle.click();
-		const [ saveButton ] = await container.findAllByText( 'Save Changes' );
+		const [ saveButton ] = await container.findAllByText( 'Save changes' );
 		saveButton.click();
 		await waitFor( () => {
 			expect( mockUseSettings().saveSettings.mock.calls.length ).toBe(
@@ -380,11 +378,11 @@ describe( 'Advanced fraud protection settings', () => {
 		);
 
 		const avsThresholdToggle = await container.findByLabelText(
-			'Block transactions for mismatched AVS'
+			'Enable AVS Mismatch filter'
 		);
 		avsThresholdToggle.click();
 		avsThresholdToggle.click();
-		const [ saveButton ] = await container.findAllByText( 'Save Changes' );
+		const [ saveButton ] = await container.findAllByText( 'Save changes' );
 		saveButton.click();
 		await waitFor( () => {
 			expect( mockUseSettings().saveSettings.mock.calls.length ).toBe(
@@ -451,11 +449,11 @@ describe( 'Advanced fraud protection settings', () => {
 		);
 
 		const avsThresholdToggle = await container.findByLabelText(
-			'Block transactions for mismatched AVS'
+			'Enable AVS Mismatch filter'
 		);
 		avsThresholdToggle.click();
 		avsThresholdToggle.click();
-		const [ saveButton ] = await container.findAllByText( 'Save Changes' );
+		const [ saveButton ] = await container.findAllByText( 'Save changes' );
 		saveButton.click();
 		await waitFor( () => {
 			expect( mockUseSettings().saveSettings.mock.calls.length ).toBe(
@@ -504,11 +502,11 @@ describe( 'Advanced fraud protection settings', () => {
 			</div>
 		);
 		const avsThresholdToggle = await container.findByLabelText(
-			'Block transactions for mismatched AVS'
+			'Enable AVS Mismatch filter'
 		);
 		avsThresholdToggle.click();
 		avsThresholdToggle.click();
-		const [ saveButton ] = await container.findAllByText( 'Save Changes' );
+		const [ saveButton ] = await container.findAllByText( 'Save changes' );
 
 		saveButton.click();
 		await waitFor( () => {

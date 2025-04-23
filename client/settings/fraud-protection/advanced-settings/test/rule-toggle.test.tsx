@@ -63,6 +63,7 @@ describe( 'Fraud protection rule toggle tests', () => {
 				<FraudProtectionRuleToggle
 					setting={ 'test_rule' }
 					label={ 'Test rule toggle' }
+					description={ 'Test rule toggle description' }
 				>
 					test content
 				</FraudProtectionRuleToggle>
@@ -72,11 +73,6 @@ describe( 'Fraud protection rule toggle tests', () => {
 		expect(
 			container.getByLabelText( 'Test rule toggle' )
 		).not.toBeChecked();
-		expect(
-			container.queryByText(
-				'When enabled, the payment will be blocked.'
-			)
-		).toBeInTheDocument();
 		expect(
 			container.queryByText( 'Test rule toggle' )
 		).toBeInTheDocument();
@@ -91,15 +87,13 @@ describe( 'Fraud protection rule toggle tests', () => {
 				<FraudProtectionRuleToggle
 					setting={ 'test_rule' }
 					label={ 'Test rule toggle' }
+					description={ 'Test rule toggle description' }
 				>
 					test content
 				</FraudProtectionRuleToggle>
 			</FraudPreventionSettingsContext.Provider>
 		);
 		expect( container ).toMatchSnapshot();
-		expect(
-			container.queryByText( 'The payment will be blocked.' )
-		).toBeInTheDocument();
 		expect(
 			container.queryByText( 'Test rule toggle' )
 		).toBeInTheDocument();
@@ -114,15 +108,13 @@ describe( 'Fraud protection rule toggle tests', () => {
 				<FraudProtectionRuleToggle
 					setting={ 'test_rule' }
 					label={ 'Test rule toggle' }
+					description={ 'Test rule toggle description' }
 				>
 					test content
 				</FraudProtectionRuleToggle>
 			</FraudPreventionSettingsContext.Provider>
 		);
 		expect( container ).toMatchSnapshot();
-		expect(
-			container.queryByText( 'The payment will be blocked.' )
-		).toBeInTheDocument();
 		expect(
 			container.queryByText( 'Test rule toggle' )
 		).toBeInTheDocument();
@@ -137,6 +129,7 @@ describe( 'Fraud protection rule toggle tests', () => {
 				<FraudProtectionRuleToggle
 					setting={ 'test_rule' }
 					label={ 'Test rule toggle' }
+					description={ 'Test rule toggle description' }
 				>
 					test content
 				</FraudProtectionRuleToggle>

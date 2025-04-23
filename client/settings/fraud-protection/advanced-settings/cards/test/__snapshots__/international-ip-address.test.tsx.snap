@@ -12,7 +12,7 @@ exports[`International IP address card renders correctly when enabled 1`] = `
       class="css-mgwsf4-View-Content em57xhy0"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -22,39 +22,10 @@ exports[`International IP address card renders correctly when enabled 1`] = `
           >
             International IP Address
           </p>
-          <p
-            class="fraud-protection-rule-card-description"
-          >
-            This filter screens for 
-            <a
-              data-link-type="external"
-              href="https://simple.wikipedia.org/wiki/IP_address"
-              target="_blank"
-            >
-              IP addresses
-            </a>
-             outside of your 
-            <a
-              href="admin.php?page=wc-settings&tab=general"
-            >
-              supported countries
-            </a>
-            .
-          </p>
         </div>
-      </div>
-      <hr />
-      <div
-        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
-        data-wp-c16t="true"
-        data-wp-component="CardBody"
-      >
         <div
           class="fraud-protection-rule-toggle"
         >
-          <strong>
-            Enable filtering
-          </strong>
           <div
             class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
           >
@@ -65,7 +36,6 @@ exports[`International IP address card renders correctly when enabled 1`] = `
                 class="components-form-toggle is-checked"
               >
                 <input
-                  aria-describedby="inspector-toggle-control-2__help"
                   checked=""
                   class="components-form-toggle__input"
                   id="inspector-toggle-control-2"
@@ -82,15 +52,28 @@ exports[`International IP address card renders correctly when enabled 1`] = `
                 class="components-toggle-control__label"
                 for="inspector-toggle-control-2"
               >
-                Block transactions for international IP addresses
+                Enable International IP Address filter
               </label>
             </div>
-            <p
-              class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
-              id="inspector-toggle-control-2__help"
+          </div>
+          <div
+            class="fraud-protection-rule-toggle-description"
+          >
+            This filter screens for 
+            <a
+              data-link-type="external"
+              href="https://simple.wikipedia.org/wiki/IP_address"
+              target="_blank"
             >
-              The payment will be blocked.
-            </p>
+              IP addresses
+            </a>
+             outside of your 
+            <a
+              href="admin.php?page=wc-settings&tab=general"
+            >
+              supported countries
+            </a>
+            . When enabled the payment will be blocked.
           </div>
           <div />
         </div>
@@ -179,7 +162,7 @@ exports[`International IP address card renders correctly when enabled and checke
       class="css-mgwsf4-View-Content em57xhy0"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -189,39 +172,10 @@ exports[`International IP address card renders correctly when enabled and checke
           >
             International IP Address
           </p>
-          <p
-            class="fraud-protection-rule-card-description"
-          >
-            This filter screens for 
-            <a
-              data-link-type="external"
-              href="https://simple.wikipedia.org/wiki/IP_address"
-              target="_blank"
-            >
-              IP addresses
-            </a>
-             outside of your 
-            <a
-              href="admin.php?page=wc-settings&tab=general"
-            >
-              supported countries
-            </a>
-            .
-          </p>
         </div>
-      </div>
-      <hr />
-      <div
-        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
-        data-wp-c16t="true"
-        data-wp-component="CardBody"
-      >
         <div
           class="fraud-protection-rule-toggle"
         >
-          <strong>
-            Enable filtering
-          </strong>
           <div
             class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
           >
@@ -232,7 +186,6 @@ exports[`International IP address card renders correctly when enabled and checke
                 class="components-form-toggle is-checked"
               >
                 <input
-                  aria-describedby="inspector-toggle-control-3__help"
                   checked=""
                   class="components-form-toggle__input"
                   id="inspector-toggle-control-3"
@@ -249,15 +202,28 @@ exports[`International IP address card renders correctly when enabled and checke
                 class="components-toggle-control__label"
                 for="inspector-toggle-control-3"
               >
-                Block transactions for international IP addresses
+                Enable International IP Address filter
               </label>
             </div>
-            <p
-              class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
-              id="inspector-toggle-control-3__help"
+          </div>
+          <div
+            class="fraud-protection-rule-toggle-description"
+          >
+            This filter screens for 
+            <a
+              data-link-type="external"
+              href="https://simple.wikipedia.org/wiki/IP_address"
+              target="_blank"
             >
-              The payment will be blocked.
-            </p>
+              IP addresses
+            </a>
+             outside of your 
+            <a
+              href="admin.php?page=wc-settings&tab=general"
+            >
+              supported countries
+            </a>
+            . When enabled the payment will be blocked.
           </div>
           <div />
         </div>
@@ -346,7 +312,7 @@ exports[`International IP address card renders correctly when woocommerce_allowe
       class="css-mgwsf4-View-Content em57xhy0"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -356,33 +322,7 @@ exports[`International IP address card renders correctly when woocommerce_allowe
           >
             International IP Address
           </p>
-          <p
-            class="fraud-protection-rule-card-description"
-          >
-            This filter screens for 
-            <a
-              data-link-type="external"
-              href="https://simple.wikipedia.org/wiki/IP_address"
-              target="_blank"
-            >
-              IP addresses
-            </a>
-             outside of your 
-            <a
-              href="admin.php?page=wc-settings&tab=general"
-            >
-              supported countries
-            </a>
-            .
-          </p>
         </div>
-      </div>
-      <hr />
-      <div
-        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
-        data-wp-c16t="true"
-        data-wp-component="CardBody"
-      >
         <div
           class="wcpay-inline-notice wcpay-inline-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
         >
@@ -466,7 +406,7 @@ exports[`International IP address card renders correctly when woocommerce_allowe
       class="css-mgwsf4-View-Content em57xhy0"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -476,39 +416,10 @@ exports[`International IP address card renders correctly when woocommerce_allowe
           >
             International IP Address
           </p>
-          <p
-            class="fraud-protection-rule-card-description"
-          >
-            This filter screens for 
-            <a
-              data-link-type="external"
-              href="https://simple.wikipedia.org/wiki/IP_address"
-              target="_blank"
-            >
-              IP addresses
-            </a>
-             outside of your 
-            <a
-              href="admin.php?page=wc-settings&tab=general"
-            >
-              supported countries
-            </a>
-            .
-          </p>
         </div>
-      </div>
-      <hr />
-      <div
-        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
-        data-wp-c16t="true"
-        data-wp-component="CardBody"
-      >
         <div
           class="fraud-protection-rule-toggle"
         >
-          <strong>
-            Enable filtering
-          </strong>
           <div
             class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
           >
@@ -519,7 +430,6 @@ exports[`International IP address card renders correctly when woocommerce_allowe
                 class="components-form-toggle"
               >
                 <input
-                  aria-describedby="inspector-toggle-control-1__help"
                   class="components-form-toggle__input"
                   id="inspector-toggle-control-1"
                   type="checkbox"
@@ -535,15 +445,28 @@ exports[`International IP address card renders correctly when woocommerce_allowe
                 class="components-toggle-control__label"
                 for="inspector-toggle-control-1"
               >
-                Block transactions for international IP addresses
+                Enable International IP Address filter
               </label>
             </div>
-            <p
-              class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
-              id="inspector-toggle-control-1__help"
+          </div>
+          <div
+            class="fraud-protection-rule-toggle-description"
+          >
+            This filter screens for 
+            <a
+              data-link-type="external"
+              href="https://simple.wikipedia.org/wiki/IP_address"
+              target="_blank"
             >
-              When enabled, the payment will be blocked.
-            </p>
+              IP addresses
+            </a>
+             outside of your 
+            <a
+              href="admin.php?page=wc-settings&tab=general"
+            >
+              supported countries
+            </a>
+            . When enabled the payment will be blocked.
           </div>
         </div>
         <div
@@ -631,7 +554,7 @@ exports[`International IP address card renders correctly when woocommerce_allowe
       class="css-mgwsf4-View-Content em57xhy0"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -641,39 +564,10 @@ exports[`International IP address card renders correctly when woocommerce_allowe
           >
             International IP Address
           </p>
-          <p
-            class="fraud-protection-rule-card-description"
-          >
-            This filter screens for 
-            <a
-              data-link-type="external"
-              href="https://simple.wikipedia.org/wiki/IP_address"
-              target="_blank"
-            >
-              IP addresses
-            </a>
-             outside of your 
-            <a
-              href="admin.php?page=wc-settings&tab=general"
-            >
-              supported countries
-            </a>
-            .
-          </p>
         </div>
-      </div>
-      <hr />
-      <div
-        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
-        data-wp-c16t="true"
-        data-wp-component="CardBody"
-      >
         <div
           class="fraud-protection-rule-toggle"
         >
-          <strong>
-            Enable filtering
-          </strong>
           <div
             class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
           >
@@ -684,7 +578,6 @@ exports[`International IP address card renders correctly when woocommerce_allowe
                 class="components-form-toggle"
               >
                 <input
-                  aria-describedby="inspector-toggle-control-0__help"
                   class="components-form-toggle__input"
                   id="inspector-toggle-control-0"
                   type="checkbox"
@@ -700,15 +593,28 @@ exports[`International IP address card renders correctly when woocommerce_allowe
                 class="components-toggle-control__label"
                 for="inspector-toggle-control-0"
               >
-                Block transactions for international IP addresses
+                Enable International IP Address filter
               </label>
             </div>
-            <p
-              class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
-              id="inspector-toggle-control-0__help"
+          </div>
+          <div
+            class="fraud-protection-rule-toggle-description"
+          >
+            This filter screens for 
+            <a
+              data-link-type="external"
+              href="https://simple.wikipedia.org/wiki/IP_address"
+              target="_blank"
             >
-              When enabled, the payment will be blocked.
-            </p>
+              IP addresses
+            </a>
+             outside of your 
+            <a
+              href="admin.php?page=wc-settings&tab=general"
+            >
+              supported countries
+            </a>
+            . When enabled the payment will be blocked.
           </div>
         </div>
         <div
@@ -796,7 +702,7 @@ exports[`International IP address card renders like disabled when checked, but n
       class="css-mgwsf4-View-Content em57xhy0"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -806,39 +712,10 @@ exports[`International IP address card renders like disabled when checked, but n
           >
             International IP Address
           </p>
-          <p
-            class="fraud-protection-rule-card-description"
-          >
-            This filter screens for 
-            <a
-              data-link-type="external"
-              href="https://simple.wikipedia.org/wiki/IP_address"
-              target="_blank"
-            >
-              IP addresses
-            </a>
-             outside of your 
-            <a
-              href="admin.php?page=wc-settings&tab=general"
-            >
-              supported countries
-            </a>
-            .
-          </p>
         </div>
-      </div>
-      <hr />
-      <div
-        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
-        data-wp-c16t="true"
-        data-wp-component="CardBody"
-      >
         <div
           class="fraud-protection-rule-toggle"
         >
-          <strong>
-            Enable filtering
-          </strong>
           <div
             class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
           >
@@ -849,7 +726,6 @@ exports[`International IP address card renders like disabled when checked, but n
                 class="components-form-toggle"
               >
                 <input
-                  aria-describedby="inspector-toggle-control-4__help"
                   class="components-form-toggle__input"
                   id="inspector-toggle-control-4"
                   type="checkbox"
@@ -865,15 +741,28 @@ exports[`International IP address card renders like disabled when checked, but n
                 class="components-toggle-control__label"
                 for="inspector-toggle-control-4"
               >
-                Block transactions for international IP addresses
+                Enable International IP Address filter
               </label>
             </div>
-            <p
-              class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
-              id="inspector-toggle-control-4__help"
+          </div>
+          <div
+            class="fraud-protection-rule-toggle-description"
+          >
+            This filter screens for 
+            <a
+              data-link-type="external"
+              href="https://simple.wikipedia.org/wiki/IP_address"
+              target="_blank"
             >
-              When enabled, the payment will be blocked.
-            </p>
+              IP addresses
+            </a>
+             outside of your 
+            <a
+              href="admin.php?page=wc-settings&tab=general"
+            >
+              supported countries
+            </a>
+            . When enabled the payment will be blocked.
           </div>
         </div>
         <div
