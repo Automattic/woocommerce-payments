@@ -10,6 +10,9 @@
 
 		.wcpay-inline-notice.components-notice {
 			margin: 0 0 10px 0;
+			.components-notice__content {
+				margin: 8px 24px 8px 0;
+			}
 
 			&:last-child {
 				margin-bottom: 24px;
@@ -66,6 +69,7 @@
 		}
 	}
 }
+
 .dispute-reason-tooltip {
 	p {
 		&:first-child {
@@ -78,6 +82,7 @@
 		margin-bottom: 8px;
 	}
 }
+
 .dispute-steps {
 	margin-top: 24px;
 	border-radius: var( --radius-l, 8px );
@@ -144,7 +149,7 @@
 	&__item {
 		display: flex;
 		align-items: flex-start;
-		padding: 16px 0;
+		padding: 24px 0 16px;
 		border-bottom: 1px solid var( --Scales-Grays-gray-200, #e0e0e0 );
 
 		&:last-child {
@@ -194,19 +199,10 @@
 	}
 
 	&__notice {
-		margin: 16px var( --Scales-grid-unit-30, 24px );
-
+		margin: 0 var( --Scales-grid-unit-30, 24px );
 		.dispute-steps__notice-content {
-			margin: 0;
-			background-color: var( --Scales-Grays-gray-50, #f5f5f5 );
-			border: none;
-			border-radius: 4px;
-			font-size: 13px;
-			color: var( --Scales-Grays-gray-700, #505050 );
-			line-height: 1.4;
-
 			.components-notice__content {
-				margin: 0;
+				margin: 8px 24px 8px 0;
 			}
 		}
 	}
@@ -244,6 +240,7 @@
 		}
 	}
 }
+
 .transaction-details-dispute-accept-modal {
 	&.components-modal__frame {
 		max-width: 600px;
