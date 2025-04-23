@@ -46,12 +46,12 @@ const FeesBreakdown: React.FC< {
 	} ) => {
 		const formattedPercentage = percentage
 			? `${ Number.parseFloat( ( percentage * 100 ).toFixed( 2 ) ) }%`
-			: '';
+			: '0%';
 		const formattedFixed = formatCurrency( fixed, currency, storeCurrency );
 
 		const result = [ formattedPercentage ];
 		if ( displayFixedPart || fixed > 0 ) {
-			result.push( formattedFixed );
+			result.push( `${ formattedFixed } ${ storeCurrency }` );
 		}
 
 		return <>{ result.filter( ( s ) => s !== '' ).join( ' + ' ) }</>;
