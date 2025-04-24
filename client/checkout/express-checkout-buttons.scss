@@ -40,6 +40,12 @@
 		margin-top: 1em;
 		margin-bottom: 1em;
 	}
+
+	// Add spacing for shortcode cart
+	.wc-proceed-to-checkout & {
+		margin-top: 1em;
+		margin-bottom: 1em;
+	}
 }
 
 // This fixes width calculation issues inside the iframe for blocks and shortcode pages.
