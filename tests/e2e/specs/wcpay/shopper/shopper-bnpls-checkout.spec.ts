@@ -11,11 +11,10 @@ import { getMerchant, getShopper } from '../../../utils/helpers';
 import * as merchant from '../../../utils/merchant';
 import * as shopper from '../../../utils/shopper';
 import * as devtools from '../../../utils/devtools';
-import { config } from '../../../config/default';
+import * as navigation from '../../../utils/shopper-navigation';
 
 const cardTestingProtectionStates = [ false, true ];
 const bnplProviders = [ 'Affirm', 'Cash App Afterpay' ];
-const products = [ config.products.belt, config.products.sunglasses ];
 
 test.describe( 'BNPL checkout', { tag: '@critical' }, () => {
 	let merchantPage: Page;
@@ -60,10 +59,14 @@ test.describe( 'BNPL checkout', { tag: '@critical' }, () => {
 				const provider = bnplProviders[ i ];
 
 				test( `Checkout with ${ provider }`, async () => {
-					await shopper.addToCartFromShopPage(
+					await navigation.goToProductPageBySlug(
 						shopperPage,
-						products[ i % 2 ]
+						'sunglasses'
 					);
+
+					await shopperPage
+						.getByRole( 'button', { name: 'Add to cart' } )
+						.click();
 
 					await shopper.setupCheckout( shopperPage );
 					await shopper.selectPaymentMethod( shopperPage, provider );
