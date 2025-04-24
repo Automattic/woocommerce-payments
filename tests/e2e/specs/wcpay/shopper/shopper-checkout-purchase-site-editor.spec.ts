@@ -27,71 +27,85 @@ import {
  * Tests for successful purchases with both card testing prevention enabled
  * and disabled states using a site builder enabled theme.
  */
-[ true, false ].forEach( ( cardTestingPreventionEnabled ) => {
-	test.describe( 'Successful purchase, site builder theme', () => {
-		let merchantPage: Page = null,
-			shopperPage: Page = null;
-		test.beforeAll( async ( { browser } ) => {
-			merchantPage = ( await getMerchant( browser ) ).merchantPage;
-			shopperPage = ( await getShopper( browser ) ).shopperPage;
-			await activateTheme( merchantPage, 'twentytwentyfour' );
-			if ( cardTestingPreventionEnabled ) {
-				await enableCardTestingProtection( merchantPage );
+test.describe( 'Successful purchase, site builder theme', () => {
+	let merchantPage: Page;
+	let shopperPage: Page;
+
+	test.beforeAll( async ( { browser } ) => {
+		const merchant = await getMerchant( browser );
+		const shopper = await getShopper( browser );
+		merchantPage = merchant.merchantPage;
+		shopperPage = shopper.shopperPage;
+
+		await activateTheme( merchantPage, 'twentytwentyfour' );
+	} );
+
+	test.afterAll( async () => {
+		await emptyCart( shopperPage );
+		await activateTheme( merchantPage, 'storefront' );
+		await disableCardTestingProtection( merchantPage );
+	} );
+
+	[ true, false ].forEach( ( cardTestingPreventionEnabled ) => {
+		test.describe(
+			`card prevention: ${ cardTestingPreventionEnabled }`,
+			() => {
+				test.beforeAll( async () => {
+					if ( cardTestingPreventionEnabled ) {
+						await enableCardTestingProtection( merchantPage );
+					} else {
+						await disableCardTestingProtection( merchantPage );
+					}
+				} );
+
+				test.beforeEach( async () => {
+					// Reset cart & checkout setup
+					await emptyCart( shopperPage );
+					await addToCartFromShopPage( shopperPage );
+					await setupCheckout(
+						shopperPage,
+						config.addresses.customer.billing
+					);
+				} );
+
+				const runPurchaseFlow = async (
+					page: Page,
+					card: typeof config.cards.basic,
+					is3dsCard: boolean
+				) => {
+					await expectFraudPreventionToken(
+						page,
+						cardTestingPreventionEnabled
+					);
+					await fillCardDetails( page, card );
+					await placeOrder( page );
+					if ( is3dsCard ) {
+						await confirmCardAuthentication( page );
+					}
+					await page.waitForURL( /\/order-received\//, {
+						waitUntil: 'load',
+					} );
+					expect( page.url() ).toMatch(
+						/checkout\/order-received\/\d+\//
+					);
+				};
+
+				test( `basic card`, async () => {
+					await runPurchaseFlow(
+						shopperPage,
+						config.cards.basic,
+						false
+					);
+				} );
+
+				test( `3DS card`, async () => {
+					await runPurchaseFlow(
+						shopperPage,
+						config.cards[ '3ds' ],
+						true
+					);
+				} );
 			}
-		} );
-
-		test.afterAll( async () => {
-			await emptyCart( shopperPage );
-			await activateTheme( merchantPage, 'storefront' );
-			if ( cardTestingPreventionEnabled ) {
-				await disableCardTestingProtection( merchantPage );
-			}
-		} );
-
-		test.beforeEach( async () => {
-			await emptyCart( shopperPage );
-			await addToCartFromShopPage( shopperPage );
-			await setupCheckout(
-				shopperPage,
-				config.addresses.customer.billing
-			);
-		} );
-
-		const sharedTestMethod = async (
-			page: Page,
-			card: typeof config.cards.basic,
-			threeDSenabled: boolean,
-			cardTestingFlag: boolean
-		) => {
-			await expectFraudPreventionToken( page, cardTestingFlag );
-			await fillCardDetails( page, card );
-			await placeOrder( page );
-			if ( threeDSenabled ) {
-				await confirmCardAuthentication( page );
-			}
-			// This is required because different themes have different strings than "Order received".
-			await page.waitForURL( /\/order-received\//, {
-				waitUntil: 'load',
-			} );
-			expect( page.url() ).toMatch( /checkout\/order-received\/\d+\// );
-		};
-
-		test( `using a basic card, carding prevention ${ cardTestingPreventionEnabled }`, async () => {
-			await sharedTestMethod(
-				shopperPage,
-				config.cards.basic,
-				false,
-				cardTestingPreventionEnabled
-			);
-		} );
-
-		test( `using a 3DS card, carding prevention ${ cardTestingPreventionEnabled }`, async () => {
-			await sharedTestMethod(
-				shopperPage,
-				config.cards[ '3ds' ],
-				true,
-				cardTestingPreventionEnabled
-			);
-		} );
+		);
 	} );
 } );
