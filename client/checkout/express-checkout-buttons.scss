@@ -34,14 +34,9 @@
 		}
 	}
 
-	// Add specific spacing for product pages in both traditional and block-based layouts
+	// Add spacing for product pages and shortcode cart
 	.woocommerce .type-product &,
-	.wp-block-add-to-cart-form & {
-		margin-top: 1em;
-		margin-bottom: 1em;
-	}
-
-	// Add spacing for shortcode cart
+	.wp-block-add-to-cart-form &,
 	.wc-proceed-to-checkout & {
 		margin-top: 1em;
 		margin-bottom: 1em;
