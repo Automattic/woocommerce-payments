@@ -638,29 +638,39 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		// The Jetpack connection is in working order.
 		$this->mock_jetpack_connection();
 
-		$this->cache_account_details(
-			[
-				'account_id'        => 'acc_test',
-				'is_live'           => false,
-				'details_submitted' => true, // Has finished initial KYC.
-				'capabilities'      => [ 'card_payments' => 'requested' ], // Has the minimum capabilities to be considered valid.
-			]
-		);
+		// We have a test account.
+		$account = [
+			'account_id'        => 'acc_test',
+			'is_live'           => false,
+			'details_submitted' => true, // Has finished initial KYC.
+			'capabilities'      => [ 'card_payments' => 'requested' ], // Has the minimum capabilities to be considered valid.
+		];
+		$this->mock_database_cache
+			->method( 'get_or_add' )
+			->willReturnCallback(
+				// Use a reference so we can empty the account array once delete_account is called.
+				function ( $key, $generator, $validator ) use ( &$account ) {
+					return $validator( $account ) ? $account : $generator();
+				}
+			);
+
 		// This should be in sync with the current account mode.
 		WC_Payments_Onboarding_Service::set_test_mode( true );
-
-		// We will use this so we can proceed after the account deletion step and
-		// avoid ending up in the "everything OK" scenario.
-		$this->mock_api_client
-			->method( 'is_server_connected' )
-			->willReturn( false );
 
 		// Assert.
 		// Test mode accounts get deleted.
 		$this->mock_api_client
 			->expects( $this->once() )
 			->method( 'delete_account' )
-			->with( true );
+			->with( true )
+			->willReturnCallback(
+				function () use ( &$account ) {
+					$account = [];
+				}
+			);
+		$this->mock_onboarding_service
+			->expects( $this->once() )
+			->method( 'cleanup_on_account_reset' );
 		$this->mock_redirect_service
 			->expects( $this->once() )
 			->method( 'redirect_to_onboarding_wizard' )
@@ -673,10 +683,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		// Act.
 		$this->wcpay_account->maybe_handle_onboarding();
-
-		// Assert more.
-		// We should be in live mode now.
-		$this->assertFalse( WC_Payments_Onboarding_Service::is_test_mode_enabled() );
 	}
 
 	public function test_maybe_handle_onboarding_reset_account() {

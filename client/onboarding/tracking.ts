@@ -87,9 +87,6 @@ export const trackKycExit = (): void => {
 	} );
 };
 
-export const trackAccountReset = (): void =>
-	recordEvent( 'wcpay_onboarding_flow_reset' );
-
 export const trackEligibilityModalClosed = (
 	action: 'dismiss' | 'setup_deposits' | 'enable_payments_only',
 	source: string

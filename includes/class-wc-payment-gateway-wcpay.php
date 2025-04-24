@@ -982,6 +982,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		global $hide_save_button;
 		$hide_save_button = true;
 
+		// to ensure the WC Core script that prompts the "unsaved changes" dialog appears.
+		// that script interferes with merchant actions.
+		wp_dequeue_script( 'woocommerce_settings' );
+
 		$method_title = $this->get_method_title();
 		$return_url   = 'admin.php?page=wc-settings&tab=checkout';
 		if ( ! empty( $_GET['method'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended

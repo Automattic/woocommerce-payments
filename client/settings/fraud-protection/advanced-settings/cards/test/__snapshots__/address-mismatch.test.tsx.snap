@@ -12,7 +12,7 @@ exports[`Address mismatch card renders correctly 1`] = `
       class="css-mgwsf4-View-Content em57xhy0"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -22,25 +22,10 @@ exports[`Address mismatch card renders correctly 1`] = `
           >
             Address Mismatch
           </p>
-          <p
-            class="fraud-protection-rule-card-description"
-          >
-            This filter screens for differences between the shipping information and the billing information (country).
-          </p>
         </div>
-      </div>
-      <hr />
-      <div
-        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
-        data-wp-c16t="true"
-        data-wp-component="CardBody"
-      >
         <div
           class="fraud-protection-rule-toggle"
         >
-          <strong>
-            Enable filtering
-          </strong>
           <div
             class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
           >
@@ -51,7 +36,6 @@ exports[`Address mismatch card renders correctly 1`] = `
                 class="components-form-toggle"
               >
                 <input
-                  aria-describedby="inspector-toggle-control-0__help"
                   class="components-form-toggle__input"
                   id="inspector-toggle-control-0"
                   type="checkbox"
@@ -67,15 +51,14 @@ exports[`Address mismatch card renders correctly 1`] = `
                 class="components-toggle-control__label"
                 for="inspector-toggle-control-0"
               >
-                Block transactions for mismatched addresses
+                Enable Address Mismatch filter
               </label>
             </div>
-            <p
-              class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
-              id="inspector-toggle-control-0__help"
-            >
-              When enabled, the payment will be blocked.
-            </p>
+          </div>
+          <div
+            class="fraud-protection-rule-toggle-description"
+          >
+            This filter screens for differences between the shipping information and the billing information (country). When enabled the payment will be blocked.
           </div>
         </div>
         <div
@@ -118,7 +101,7 @@ exports[`Address mismatch card renders correctly when enabled 1`] = `
       class="css-mgwsf4-View-Content em57xhy0"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -128,25 +111,10 @@ exports[`Address mismatch card renders correctly when enabled 1`] = `
           >
             Address Mismatch
           </p>
-          <p
-            class="fraud-protection-rule-card-description"
-          >
-            This filter screens for differences between the shipping information and the billing information (country).
-          </p>
         </div>
-      </div>
-      <hr />
-      <div
-        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
-        data-wp-c16t="true"
-        data-wp-component="CardBody"
-      >
         <div
           class="fraud-protection-rule-toggle"
         >
-          <strong>
-            Enable filtering
-          </strong>
           <div
             class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
           >
@@ -157,7 +125,6 @@ exports[`Address mismatch card renders correctly when enabled 1`] = `
                 class="components-form-toggle is-checked"
               >
                 <input
-                  aria-describedby="inspector-toggle-control-1__help"
                   checked=""
                   class="components-form-toggle__input"
                   id="inspector-toggle-control-1"
@@ -174,15 +141,14 @@ exports[`Address mismatch card renders correctly when enabled 1`] = `
                 class="components-toggle-control__label"
                 for="inspector-toggle-control-1"
               >
-                Block transactions for mismatched addresses
+                Enable Address Mismatch filter
               </label>
             </div>
-            <p
-              class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
-              id="inspector-toggle-control-1__help"
-            >
-              The payment will be blocked.
-            </p>
+          </div>
+          <div
+            class="fraud-protection-rule-toggle-description"
+          >
+            This filter screens for differences between the shipping information and the billing information (country). When enabled the payment will be blocked.
           </div>
           <div />
         </div>
@@ -226,7 +192,7 @@ exports[`Address mismatch card renders correctly when enabled and checked 1`] = 
       class="css-mgwsf4-View-Content em57xhy0"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -236,25 +202,10 @@ exports[`Address mismatch card renders correctly when enabled and checked 1`] = 
           >
             Address Mismatch
           </p>
-          <p
-            class="fraud-protection-rule-card-description"
-          >
-            This filter screens for differences between the shipping information and the billing information (country).
-          </p>
         </div>
-      </div>
-      <hr />
-      <div
-        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
-        data-wp-c16t="true"
-        data-wp-component="CardBody"
-      >
         <div
           class="fraud-protection-rule-toggle"
         >
-          <strong>
-            Enable filtering
-          </strong>
           <div
             class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
           >
@@ -265,7 +216,6 @@ exports[`Address mismatch card renders correctly when enabled and checked 1`] = 
                 class="components-form-toggle is-checked"
               >
                 <input
-                  aria-describedby="inspector-toggle-control-2__help"
                   checked=""
                   class="components-form-toggle__input"
                   id="inspector-toggle-control-2"
@@ -282,15 +232,14 @@ exports[`Address mismatch card renders correctly when enabled and checked 1`] = 
                 class="components-toggle-control__label"
                 for="inspector-toggle-control-2"
               >
-                Block transactions for mismatched addresses
+                Enable Address Mismatch filter
               </label>
             </div>
-            <p
-              class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
-              id="inspector-toggle-control-2__help"
-            >
-              The payment will be blocked.
-            </p>
+          </div>
+          <div
+            class="fraud-protection-rule-toggle-description"
+          >
+            This filter screens for differences between the shipping information and the billing information (country). When enabled the payment will be blocked.
           </div>
           <div />
         </div>
@@ -334,7 +283,7 @@ exports[`Address mismatch card renders like disabled when checked, but not enabl
       class="css-mgwsf4-View-Content em57xhy0"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -344,25 +293,10 @@ exports[`Address mismatch card renders like disabled when checked, but not enabl
           >
             Address Mismatch
           </p>
-          <p
-            class="fraud-protection-rule-card-description"
-          >
-            This filter screens for differences between the shipping information and the billing information (country).
-          </p>
         </div>
-      </div>
-      <hr />
-      <div
-        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
-        data-wp-c16t="true"
-        data-wp-component="CardBody"
-      >
         <div
           class="fraud-protection-rule-toggle"
         >
-          <strong>
-            Enable filtering
-          </strong>
           <div
             class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
           >
@@ -373,7 +307,6 @@ exports[`Address mismatch card renders like disabled when checked, but not enabl
                 class="components-form-toggle"
               >
                 <input
-                  aria-describedby="inspector-toggle-control-3__help"
                   class="components-form-toggle__input"
                   id="inspector-toggle-control-3"
                   type="checkbox"
@@ -389,15 +322,14 @@ exports[`Address mismatch card renders like disabled when checked, but not enabl
                 class="components-toggle-control__label"
                 for="inspector-toggle-control-3"
               >
-                Block transactions for mismatched addresses
+                Enable Address Mismatch filter
               </label>
             </div>
-            <p
-              class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
-              id="inspector-toggle-control-3__help"
-            >
-              When enabled, the payment will be blocked.
-            </p>
+          </div>
+          <div
+            class="fraud-protection-rule-toggle-description"
+          >
+            This filter screens for differences between the shipping information and the billing information (country). When enabled the payment will be blocked.
           </div>
         </div>
         <div

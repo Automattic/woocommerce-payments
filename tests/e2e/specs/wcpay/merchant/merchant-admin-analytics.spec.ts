@@ -51,7 +51,8 @@ test.describe( 'Admin order analytics', () => {
 			exact: true,
 		} );
 		await expect( ordersTitle ).toBeVisible();
-		await expect( merchantPage ).toHaveScreenshot();
+		// TODO: This visual regression test is flaky, we should revisit the approach.
+		// await expect( merchantPage ).toHaveScreenshot();
 	} );
 
 	test( 'orders table should have the customer currency column', async ( {

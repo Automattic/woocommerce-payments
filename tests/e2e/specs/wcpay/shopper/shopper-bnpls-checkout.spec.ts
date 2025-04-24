@@ -14,7 +14,7 @@ import * as devtools from '../../../utils/devtools';
 import { config } from '../../../config/default';
 
 const cardTestingProtectionStates = [ false, true ];
-const bnplProviders = [ 'Affirm', 'Afterpay' ];
+const bnplProviders = [ 'Affirm', 'Cash App Afterpay' ];
 const products = [ config.products.belt, config.products.sunglasses ];
 
 test.describe( 'BNPL checkout', { tag: '@critical' }, () => {
