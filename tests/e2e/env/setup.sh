@@ -35,7 +35,7 @@ handle_permissions() {
 }
 
 # Variables
-BLOG_ID=${E2E_BLOG_ID-111}
+BLOG_ID=${E2E_JP_SITE_ID-111}
 WC_GUEST_EMAIL=$(<"$USERS_CONFIG_JSON_PATH" jq -r '.users.guest.email')
 WC_CUSTOMER_EMAIL=$(<"$USERS_CONFIG_JSON_PATH" jq -r '.users.customer.email')
 WC_CUSTOMER_USERNAME=$(<"$USERS_CONFIG_JSON_PATH" jq -r '.users.customer.username')
@@ -326,7 +326,7 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	cli wp wcpay_dev refresh_account_data
 else
 	echo "Setting Jetpack blog_id"
-	cli wp wcpay_dev set_blog_id "$BLOG_ID" --blog_token="$E2E_BLOG_TOKEN" --user_token="$E2E_USER_TOKEN"
+	cli wp wcpay_dev set_blog_id "$BLOG_ID" --blog_token="$E2E_JP_BLOG_TOKEN" --user_token="$E2E_JP_USER_TOKEN"
 fi
 
 if [[ ! ${SKIP_WC_SUBSCRIPTIONS_TESTS} ]]; then
