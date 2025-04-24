@@ -76,10 +76,12 @@ test.describe( 'BNPL checkout', { tag: '@critical' }, () => {
 					);
 					await shopper.placeOrder( shopperPage );
 					await expect(
-						shopperPage.getByText( 'test payment page' )
+						shopperPage.getByText( /test payment page/ )
 					).toBeVisible();
 					await shopperPage
-						.getByText( 'Authorize Test Payment' )
+						.getByRole( 'button', {
+							name: 'Authorize Test Payment',
+						} )
 						.click();
 					await expect(
 						shopperPage.getByRole( 'heading', {
