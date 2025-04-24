@@ -17,6 +17,7 @@ import { reasons } from 'wcpay/disputes/strings';
 import { Dispute } from 'wcpay/types/disputes';
 import { isInquiry } from 'wcpay/disputes/utils';
 import { PAYMENT_METHOD_BRANDS } from 'wcpay/constants/payment-method';
+import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 
 interface DisputeNoticeProps {
 	dispute: Dispute;
@@ -37,9 +38,9 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 		);
 
 	// Format the deadline date
-	const dueByDate = moment
-		.unix( dispute.evidence_details?.due_by ?? 0 )
-		.format( 'MMM D, YYYY h:mm A' );
+	const dueByDate = formatDateTimeFromTimestamp(
+		dispute.evidence_details?.due_by ?? 0
+	);
 
 	// Get the bank name from payment method details
 	const getBankName = () => {
