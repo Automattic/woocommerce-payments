@@ -747,6 +747,7 @@ class WC_Payments_Onboarding_Service {
 	 * This means:
 	 * - preserve the currently connected Stripe test drive account settings.
 	 * - delete the currently connected Stripe test drive account.
+	 * - cleanup the gateway state for a fresh onboarding flow.
 	 *
 	 * @param array $context Context for the disable test drive account request.
 	 *              - 'from' (string) The source of the request.
