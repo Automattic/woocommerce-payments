@@ -127,7 +127,6 @@ const useInitializeStripe = (
  * @param onLoadError - Callback function when the onboarding load error occurs.
  * @param [onStepChange] - Callback function when the onboarding step changes.
  * @param [collectPayoutRequirements=false] - Whether to collect payout requirements.
- * @param [isPoEligible=false] - Whether the user is eligible for progressive onboarding.
  *
  * @return Rendered Account Onboarding component.
  */
