@@ -606,14 +606,16 @@ class WC_Payments_Onboarding_Service {
 	 *
 	 * Note: This is a subset of the WC_Payments_Account::maybe_handle_onboarding method.
 	 *
-	 * @param array $capabilities Optional. List keyed by capabilities IDs (payment methods) with boolean values
-	 *                            indicating whether the capability should be requested when the account is created
-	 *                            and enabled in the settings.
+	 * @param string $country      The country code to use for the account.
+	 *                             This is a ISO 3166-1 alpha-2 country code.
+	 * @param array  $capabilities Optional. List keyed by capabilities IDs (payment methods) with boolean values
+	 *                             indicating whether the capability should be requested when the account is created
+	 *                             and enabled in the settings.
 	 *
 	 * @return bool Whether the account was created.
 	 * @throws API_Exception When the API request fails.
 	 */
-	public function init_test_drive_account( array $capabilities = [] ): bool {
+	public function init_test_drive_account( string $country, array $capabilities = [] ): bool {
 		// Since there should be no Stripe KYC needed, make sure we start with a clean state.
 		delete_transient( WC_Payments_Account::ONBOARDING_STATE_TRANSIENT );
 		delete_option( WC_Payments_Account::EMBEDDED_KYC_IN_PROGRESS_OPTION );
@@ -624,6 +626,8 @@ class WC_Payments_Onboarding_Service {
 		// because we delete it after we initiate the onboarding.
 		set_transient( WC_Payments_Account::ONBOARDING_STARTED_TRANSIENT, true, MINUTE_IN_SECONDS );
 
+		$current_user = get_userdata( get_current_user_id() );
+
 		$site_data    = [
 			'site_username' => wp_get_current_user()->user_login,
 			'site_locale'   => get_locale(),
@@ -631,7 +635,14 @@ class WC_Payments_Onboarding_Service {
 		$user_data    = $this->get_onboarding_user_data();
 		$account_data = $this->get_account_data(
 			'test_drive',
-			[],
+			[
+				'business_type' => 'individual',
+				'country'       => $country,
+				'individual'    => [
+					'first_name' => $current_user->first_name ?? null,
+					'last_name'  => $current_user->last_name ?? null,
+				],
+			],
 			$capabilities
 		);
 

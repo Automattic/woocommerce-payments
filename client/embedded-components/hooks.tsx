@@ -26,11 +26,9 @@ export const createAccountSession = async (): Promise< AccountSession > => {
  * Make an API request to create an KYC account session.
  *
  * @param data The form data.
- * @param isPoEligible Whether the user is eligible for a PO account.
  */
 export const createKycAccountSession = async (
-	data: OnboardingFields,
-	isPoEligible: boolean
+	data: OnboardingFields
 ): Promise< AccountSession > => {
 	const urlParams = new URLSearchParams( window.location.search );
 
@@ -40,7 +38,6 @@ export const createKycAccountSession = async (
 		data: {
 			self_assessment: fromDotNotation( data ),
 			capabilities: urlParams.get( 'capabilities' ) || '',
-			progressive: isPoEligible,
 		},
 	} );
 };
