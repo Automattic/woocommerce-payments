@@ -54,14 +54,12 @@ interface EmbeddedAccountNotificationBannerProps
  *
  * @param isOnboarding - Whether this is an onboarding flow.
  * @param onboardingData - Data required for onboarding.
- * @param isPoEligible - Whether the user is eligible for progressive onboarding.
  *
  * @return Returns stripeConnectInstance, error, and loading state.
  */
 const useInitializeStripe = (
 	isOnboarding: boolean,
-	onboardingData: OnboardingFields | null,
-	isPoEligible: boolean
+	onboardingData: OnboardingFields | null
 ) => {
 	const [
 		stripeConnectInstance,
@@ -78,13 +76,10 @@ const useInitializeStripe = (
 				let session: AccountSession;
 
 				if ( isOnboarding && onboardingData ) {
-					session = await createKycAccountSession(
-						onboardingData,
-						isPoEligible
-					);
+					session = await createKycAccountSession( onboardingData );
 
 					// Track the embedded component redirection event.
-					trackRedirected( isPoEligible, true );
+					trackRedirected( true );
 				} else {
 					session = await createAccountSession();
 				}
@@ -118,7 +113,7 @@ const useInitializeStripe = (
 		};
 
 		initializeStripe();
-	}, [ isOnboarding, onboardingData, isPoEligible ] );
+	}, [ isOnboarding, onboardingData ] );
 
 	return { stripeConnectInstance, initializationError, loading };
 };
@@ -132,7 +127,6 @@ const useInitializeStripe = (
  * @param onLoadError - Callback function when the onboarding load error occurs.
  * @param [onStepChange] - Callback function when the onboarding step changes.
  * @param [collectPayoutRequirements=false] - Whether to collect payout requirements.
- * @param [isPoEligible=false] - Whether the user is eligible for progressive onboarding.
  *
  * @return Rendered Account Onboarding component.
  */
@@ -142,13 +136,11 @@ export const EmbeddedAccountOnboarding: React.FC< EmbeddedAccountOnboardingProps
 	onLoaderStart,
 	onLoadError,
 	onStepChange,
-	isPoEligible = false,
 	collectPayoutRequirements = false,
 } ) => {
 	const { stripeConnectInstance, initializationError } = useInitializeStripe(
 		true,
-		onboardingData,
-		isPoEligible
+		onboardingData
 	);
 
 	return (
@@ -200,7 +192,7 @@ export const EmbeddedConnectNotificationBanner: React.FC< EmbeddedAccountNotific
 		stripeConnectInstance,
 		initializationError,
 		loading,
-	} = useInitializeStripe( false, null, false );
+	} = useInitializeStripe( false, null );
 
 	return (
 		<>

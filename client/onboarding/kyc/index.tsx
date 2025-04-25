@@ -68,7 +68,6 @@ const OnboardingKycPage: React.FC = () => {
 				<div className="stepper__wrapper">
 					<div className="stepper__content">
 						<EmbeddedKyc
-							continueKyc={ true }
 							collectPayoutRequirements={
 								collectPayoutRequirements
 							}

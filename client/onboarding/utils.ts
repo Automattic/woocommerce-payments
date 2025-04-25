@@ -10,13 +10,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { NAMESPACE } from 'data/constants';
 import { ListItem } from 'components/grouped-select-control';
 import businessTypeDescriptionStrings from './translations/descriptions';
-import {
-	Country,
-	OnboardingFields,
-	PoEligibleData,
-	PoEligibleResponse,
-	FinalizeOnboardingResponse,
-} from './types';
+import { Country, FinalizeOnboardingResponse } from './types';
 
 export const fromDotNotation = (
 	record: Record< string, unknown >
@@ -67,48 +61,6 @@ export const finalizeOnboarding = async ( urlSource: string ) => {
 			from: 'WCPAY_ONBOARDING_WIZARD',
 		},
 	} );
-};
-
-/**
- * Make an API request to determine if the user is eligible for a PO account.
- *
- * @param onboardingFields The form data, used to determine eligibility.
- */
-export const isPoEligible = async (
-	onboardingFields: OnboardingFields
-): Promise< boolean > => {
-	// Check if any required property is undefined
-	if (
-		hasUndefinedValues( {
-			country: onboardingFields.country,
-			business_type: onboardingFields.business_type,
-			mcc: onboardingFields.mcc,
-			annual_revenue: onboardingFields.annual_revenue,
-			go_live_timeframe: onboardingFields.go_live_timeframe,
-		} )
-	) {
-		return false;
-	}
-
-	const eligibilityData: PoEligibleData = {
-		business: {
-			country: onboardingFields.country as string,
-			type: onboardingFields.business_type as string,
-			mcc: onboardingFields.mcc as string,
-		},
-		store: {
-			annual_revenue: onboardingFields.annual_revenue as string,
-			go_live_timeframe: onboardingFields.go_live_timeframe as string,
-		},
-	};
-
-	const response: PoEligibleResponse = await apiFetch( {
-		path: `${ NAMESPACE }/onboarding/router/po_eligible`,
-		method: 'POST',
-		data: eligibilityData,
-	} );
-
-	return response.result === 'eligible';
 };
 
 /**
