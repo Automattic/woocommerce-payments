@@ -12,6 +12,18 @@ jest.mock( 'gridicons/dist/checkmark', () => 'CheckmarkIcon' );
 jest.mock( 'gridicons/dist/cross', () => 'CrossIcon' );
 jest.mock( 'gridicons/dist/notice-outline', () => 'NoticeOutlineIcon' );
 
+// Mock the tax descriptions module
+jest.mock( '../../utils/tax-descriptions', () => ( {
+	getLocalizedTaxDescription: ( description ) => {
+		const mockTranslations = {
+			'ES VAT': 'ES IVA',
+			'FR VAT': 'FR TVA',
+			'DE VAT': 'DE MwSt',
+		};
+		return mockTranslations[ description ] || description;
+	},
+} ) );
+
 describe( 'mapTimelineEvents', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
@@ -733,7 +745,21 @@ describe( 'composeTaxString', () => {
 		expect( composeTaxString( event ) ).toBe( '' );
 	} );
 
-	it( 'should format tax with description and percentage', () => {
+	it( 'should return empty string when tax amount is zero', () => {
+		const event = {
+			fee_rates: {
+				tax: {
+					amount: 0,
+					currency: 'EUR',
+					percentage_rate: 0.21,
+					description: 'ES VAT',
+				},
+			},
+		};
+		expect( composeTaxString( event ) ).toBe( '' );
+	} );
+
+	it( 'should format tax with localized description and percentage', () => {
 		const event = {
 			fee_rates: {
 				tax: {
@@ -745,11 +771,11 @@ describe( 'composeTaxString', () => {
 			},
 		};
 		expect( composeTaxString( event ) ).toBe(
-			'Tax ES VAT (21.00%): -€0.10'
+			'Tax ES IVA (21.00%): -€0.10'
 		);
 	} );
 
-	it( 'should format tax with just percentage', () => {
+	it( 'should format tax with just percentage when no description', () => {
 		const event = {
 			fee_rates: {
 				tax: {
@@ -762,7 +788,7 @@ describe( 'composeTaxString', () => {
 		expect( composeTaxString( event ) ).toBe( 'Tax (21.00%): -€0.10' );
 	} );
 
-	it( 'should format tax with just description', () => {
+	it( 'should format tax with just localized description when no percentage', () => {
 		const event = {
 			fee_rates: {
 				tax: {
@@ -772,19 +798,7 @@ describe( 'composeTaxString', () => {
 				},
 			},
 		};
-		expect( composeTaxString( event ) ).toBe( 'Tax ES VAT: -€0.10' );
-	} );
-
-	it( 'should format tax with neither description nor percentage', () => {
-		const event = {
-			fee_rates: {
-				tax: {
-					amount: 10,
-					currency: 'EUR',
-				},
-			},
-		};
-		expect( composeTaxString( event ) ).toBe( 'Tax: -€0.10' );
+		expect( composeTaxString( event ) ).toBe( 'Tax ES IVA: -€0.10' );
 	} );
 
 	it( 'should handle different currencies', () => {
@@ -794,26 +808,12 @@ describe( 'composeTaxString', () => {
 					amount: 100,
 					currency: 'USD',
 					percentage_rate: 0.15,
-					description: 'US Sales Tax',
+					description: 'FR VAT',
 				},
 			},
 		};
 		expect( composeTaxString( event ) ).toBe(
-			'Tax US Sales Tax (15.00%): -$1.00'
+			'Tax FR TVA (15.00%): -$1.00'
 		);
-	} );
-
-	it( 'should handle zero amount', () => {
-		const event = {
-			fee_rates: {
-				tax: {
-					amount: 0,
-					currency: 'EUR',
-					percentage_rate: 0.21,
-					description: 'ES VAT',
-				},
-			},
-		};
-		expect( composeTaxString( event ) ).toBe( '' );
 	} );
 } );

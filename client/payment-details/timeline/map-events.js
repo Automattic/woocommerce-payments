@@ -31,6 +31,7 @@ import { ShieldIcon } from 'wcpay/icons';
 import { fraudOutcomeRulesetMapping, paymentFailureMapping } from './mappings';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 import { hasSameSymbol } from 'multi-currency/utils/currency';
+import { getLocalizedTaxDescription } from '../utils/tax-descriptions';
 
 /**
  * Creates a timeline item about a payment status change
@@ -245,7 +246,7 @@ export const composeNetString = ( event ) => {
 };
 
 export const composeTaxString = ( event ) => {
-	if ( ! event.fee_rates || ! event.fee_rates.tax ) {
+	if ( ! event.fee_rates?.tax ) {
 		return '';
 	}
 
@@ -264,25 +265,12 @@ export const composeTaxString = ( event ) => {
 		taxCurrency
 	);
 
-	if ( taxDescription ) {
-		if ( taxPercentage !== null && ! isNaN( taxPercentage ) ) {
-			return sprintf(
-				/* translators: 1: tax description 2: tax percentage 3: tax amount */
-				__( 'Tax %1$s (%2$s): %3$s', 'woocommerce-payments' ),
-				taxDescription,
-				( taxPercentage * 100 ).toFixed( 2 ) + '%',
-				formattedAmount
-			);
-		}
-		return sprintf(
-			/* translators: 1: tax description 2: tax amount */
-			__( 'Tax %1$s: %2$s', 'woocommerce-payments' ),
-			taxDescription,
-			formattedAmount
-		);
-	}
-
-	if ( taxPercentage !== null && ! isNaN( taxPercentage ) ) {
+	// If there's no description, just show the percentage
+	if (
+		! taxDescription &&
+		taxPercentage !== null &&
+		! isNaN( taxPercentage )
+	) {
 		return sprintf(
 			/* translators: 1: tax percentage 2: tax amount */
 			__( 'Tax (%1$s): %2$s', 'woocommerce-payments' ),
@@ -291,9 +279,25 @@ export const composeTaxString = ( event ) => {
 		);
 	}
 
+	// Use the localized description if available
+	const localizedDescription = taxDescription
+		? getLocalizedTaxDescription( taxDescription )
+		: '';
+
+	if ( taxPercentage !== null && ! isNaN( taxPercentage ) ) {
+		return sprintf(
+			/* translators: 1: tax description 2: tax percentage 3: tax amount */
+			__( 'Tax %1$s (%2$s): %3$s', 'woocommerce-payments' ),
+			localizedDescription,
+			( taxPercentage * 100 ).toFixed( 2 ) + '%',
+			formattedAmount
+		);
+	}
+
 	return sprintf(
-		/* translators: %s: tax amount */
-		__( 'Tax: %s', 'woocommerce-payments' ),
+		/* translators: 1: tax description 2: tax amount */
+		__( 'Tax %1$s: %2$s', 'woocommerce-payments' ),
+		localizedDescription,
 		formattedAmount
 	);
 };
