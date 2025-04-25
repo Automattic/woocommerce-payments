@@ -593,13 +593,16 @@ class WC_Payments_Utils {
 			'es-419', // Spanish (Latin America).
 			'et',     // Estonian (Estonia).
 			'fi',     // Finnish (Finland).
+			'fil',    // Filipino (Philippines).
 			'fr',     // French (France).
 			'fr-CA',  // French (Canada).
 			'he',     // Hebrew (Israel).
+			'hr',     // Croatian (Croatia).
 			'hu',     // Hungarian (Hungary).
 			'id',     // Indonesian (Indonesia).
 			'it',     // Italian (Italy).
-			'ja',     // Japanese.
+			'ja',     // Japanese (Japan).
+			'ko',     // Korean (Korea).
 			'lt',     // Lithuanian (Lithuania).
 			'lv',     // Latvian (Latvia).
 			'ms',     // Malay (Malaysia).
@@ -614,8 +617,9 @@ class WC_Payments_Utils {
 			'sk',     // Slovak (Slovakia).
 			'sl',     // Slovenian (Slovenia).
 			'sv',     // Swedish (Sweden).
-			'th',     // Thai.
+			'th',     // Thai (Thailand).
 			'tr',     // Turkish (Turkey).
+			'vi',     // Vietnamese (Vietnam).
 			'zh',     // Chinese Simplified (China).
 			'zh-HK',  // Chinese Traditional (Hong Kong).
 			'zh-TW',  // Chinese Traditional (Taiwan).
