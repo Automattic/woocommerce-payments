@@ -792,7 +792,7 @@ class WC_Payments_Onboarding_Service {
 		];
 
 		$this->tracks_event(
-			self::TRACKS_EVENT_DISABLE_TEST_DRIVE,
+			self::TRACKS_EVENT_TEST_DRIVE_ACCOUNT_DISABLE,
 			$event_properties
 		);
 
