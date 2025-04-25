@@ -501,6 +501,128 @@ describe( 'mapTimelineEvents', () => {
 				] )
 			).toMatchSnapshot();
 		} );
+
+		test( 'formats captured events with fee details and tax', () => {
+			expect(
+				mapTimelineEvents( [
+					{
+						amount: 6300,
+						amount_captured: 6300,
+						currency: 'USD',
+						datetime: 1585751874,
+						deposit: {
+							arrival_date: 1585838274,
+							id: 'dummy_po_5eaada696b281',
+						},
+						fee: 350,
+						fee_rates: {
+							percentage: 0.0195,
+							fixed: 15,
+							fixed_currency: 'USD',
+							tax: {
+								amount: 10,
+								currency: 'EUR',
+								percentage_rate: 0.21,
+								description: 'ES VAT',
+							},
+							history: [
+								{
+									type: 'base',
+									percentage_rate: 0.014,
+									fixed_rate: 20,
+									currency: 'gbp',
+								},
+								{
+									type: 'additional',
+									additional_type: 'international',
+									percentage_rate: 0.014999999999999998,
+									fixed_rate: 0,
+									currency: 'gbp',
+								},
+								{
+									type: 'additional',
+									additional_type: 'fx',
+									percentage_rate: 0.020000000000000004,
+									fixed_rate: 0,
+									currency: 'gbp',
+								},
+								{
+									type: 'discount',
+									percentage_rate: -0.049,
+									fixed_rate: -20,
+									currency: 'gbp',
+								},
+							],
+						},
+						type: 'captured',
+						transaction_details: {
+							customer_currency: 'USD',
+							customer_amount: 6300,
+							customer_amount_captured: 6300,
+							customer_fee: 350,
+							store_currency: 'USD',
+							store_amount: 6300,
+							store_amount_captured: 6300,
+							store_fee: 350,
+						},
+					},
+				] )
+			).toMatchSnapshot();
+		} );
+
+		test( 'formats captured events with fee details and zero tax', () => {
+			expect(
+				mapTimelineEvents( [
+					{
+						amount: 6300,
+						amount_captured: 6300,
+						currency: 'USD',
+						datetime: 1585751874,
+						deposit: {
+							arrival_date: 1585838274,
+							id: 'dummy_po_5eaada696b281',
+						},
+						fee: 350,
+						fee_rates: {
+							percentage: 0.0195,
+							fixed: 15,
+							fixed_currency: 'USD',
+							tax: {
+								amount: 0,
+								currency: 'EUR',
+								percentage_rate: 0.21,
+								description: 'ES VAT',
+							},
+							history: [
+								{
+									type: 'base',
+									percentage_rate: 0.014,
+									fixed_rate: 20,
+									currency: 'gbp',
+								},
+								{
+									type: 'discount',
+									percentage_rate: -0.049,
+									fixed_rate: -20,
+									currency: 'gbp',
+								},
+							],
+						},
+						type: 'captured',
+						transaction_details: {
+							customer_currency: 'USD',
+							customer_amount: 6300,
+							customer_amount_captured: 6300,
+							customer_fee: 350,
+							store_currency: 'USD',
+							store_amount: 6300,
+							store_amount_captured: 6300,
+							store_fee: 350,
+						},
+					},
+				] )
+			).toMatchSnapshot();
+		} );
 	} );
 
 	describe( 'Multi-Currency events', () => {

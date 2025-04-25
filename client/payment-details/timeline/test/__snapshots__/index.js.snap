@@ -846,11 +846,9 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   <div
                     class="woocommerce-timeline-item__body"
                   >
-                    <span />
                     <span>
                       Fee: $3.50
                     </span>
-                    <span />
                     <span>
                       Net payout: $59.50
                     </span>
@@ -1492,7 +1490,6 @@ exports[`PaymentDetailsTimeline renders subscription fee correctly 1`] = `
                   <div
                     class="woocommerce-timeline-item__body"
                   >
-                    <span />
                     <span>
                       Fee (3.9% + $0.30): -$0.34
                     </span>

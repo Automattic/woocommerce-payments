@@ -587,14 +587,6 @@ export const composeFeeBreakdown = ( event ) => {
 		);
 	} );
 
-	// Add tax information as part of the fee breakdown if it exists
-	if ( event.fee_rates?.tax ) {
-		const taxString = composeTaxString( event );
-		if ( taxString ) {
-			list.push( <li key="tax">{ taxString }</li> );
-		}
-	}
-
 	return <ul className="fee-breakdown-list"> { list } </ul>;
 };
 
@@ -768,8 +760,9 @@ const mapEventToTimelineItems = ( event ) => {
 				composeFXString( event ),
 				composeFeeString( event ),
 				composeFeeBreakdown( event ),
+				composeTaxString( event ),
 				composeNetString( event ),
-			];
+			].filter( Boolean );
 			return [
 				getStatusChangeTimelineItem(
 					event,
