@@ -2672,7 +2672,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			$test_drive_account_data = $this->get_test_drive_settings_for_live_account();
 
 			// Store the test drive settings for the live account in a transient,
-			// We don't passing the data around, as the merchant might cancel and start
+			// We don't pass the data around, as the merchant might cancel and start
 			// the onboarding from scratch. In this case, we won't have the test drive
 			// account anymore to collect the settings.
 			set_transient( self::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT, $test_drive_account_data, HOUR_IN_SECONDS );
