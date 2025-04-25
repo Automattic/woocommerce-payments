@@ -67,6 +67,10 @@ test.describe( 'BNPL checkout', { tag: '@critical' }, () => {
 					await shopperPage
 						.getByRole( 'button', { name: 'Add to cart' } )
 						.click();
+					await shopperPage.waitForLoadState( 'networkidle' );
+					await expect(
+						shopperPage.getByText( /has been added to your cart\./ )
+					).toBeVisible();
 
 					await shopper.setupCheckout( shopperPage );
 					await shopper.selectPaymentMethod( shopperPage, provider );
