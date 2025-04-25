@@ -78,10 +78,9 @@ test.describe( 'BNPL checkout', { tag: '@critical' }, () => {
 					await expect(
 						shopperPage.getByText( /test payment page/ )
 					).toBeVisible();
+					// sometimes it's a button, other times it's a link.
 					await shopperPage
-						.getByRole( 'button', {
-							name: 'Authorize Test Payment',
-						} )
+						.getByText( 'Authorize Test Payment' )
 						.click();
 					await expect(
 						shopperPage.getByRole( 'heading', {
