@@ -16,6 +16,8 @@ import * as navigation from '../../../utils/shopper-navigation';
 const cardTestingProtectionStates = [ false, true ];
 const bnplProviders = [ 'Affirm', 'Cash App Afterpay' ];
 
+// using multiple products to prevent the "order duplication service" to be triggered.
+const products = [ 'belt', 'sunglasses' ];
 test.describe( 'BNPL checkout', { tag: '@critical' }, () => {
 	let merchantPage: Page;
 	let shopperPage: Page;
@@ -61,7 +63,7 @@ test.describe( 'BNPL checkout', { tag: '@critical' }, () => {
 				test( `Checkout with ${ provider }`, async () => {
 					await navigation.goToProductPageBySlug(
 						shopperPage,
-						'sunglasses'
+						products[ 1 % products.length ]
 					);
 
 					await shopperPage
