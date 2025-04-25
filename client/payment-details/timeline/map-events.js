@@ -250,6 +250,10 @@ export const composeTaxString = ( event ) => {
 	}
 
 	const taxAmount = event.fee_rates.tax.amount;
+	if ( taxAmount === 0 ) {
+		return '';
+	}
+
 	const taxCurrency = event.fee_rates.tax.currency;
 	const taxPercentage = event.fee_rates.tax.percentage_rate;
 	const taxDescription = event.fee_rates.tax.description;

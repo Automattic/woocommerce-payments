@@ -206,7 +206,7 @@ const FeesBreakdown: React.FC< {
 	}
 
 	// Tax row.
-	if ( event.fee_rates.tax ) {
+	if ( event.fee_rates?.tax && event.fee_rates.tax.amount !== 0 ) {
 		fees.push(
 			<FeeRow
 				key="fee_tax"

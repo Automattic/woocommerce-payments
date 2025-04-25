@@ -808,14 +808,12 @@ describe( 'composeTaxString', () => {
 			fee_rates: {
 				tax: {
 					amount: 0,
-					currency: 'eur',
+					currency: 'EUR',
 					percentage_rate: 0.21,
 					description: 'ES VAT',
 				},
 			},
 		};
-		expect( composeTaxString( event ) ).toBe(
-			'Tax ES VAT (21.00%): €0.00'
-		);
+		expect( composeTaxString( event ) ).toBe( '' );
 	} );
 } );
