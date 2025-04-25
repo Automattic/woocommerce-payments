@@ -12,6 +12,20 @@ import { formatFeeType } from '../utils';
 import { TimelineItem, TimelineFeeRate } from 'wcpay/data/timeline/types';
 import { Flex, FlexItem } from '@wordpress/components';
 
+interface FeeRowProps {
+	type: string;
+	additionalType?: string;
+	percentage?: number;
+	fixed: number;
+	currency: string;
+	isDiscounted?: boolean;
+	displayFixedPart?: boolean;
+	taxInfo?: {
+		description?: string;
+		percentage_rate?: number;
+	};
+}
+
 const FeesBreakdown: React.FC< {
 	event: TimelineItem;
 } > = ( { event } ) => {
@@ -38,12 +52,27 @@ const FeesBreakdown: React.FC< {
 		fixed,
 		currency,
 		displayFixedPart,
+		isTaxRow,
 	}: {
 		percentage?: number;
 		fixed: number;
 		currency: string;
 		displayFixedPart?: boolean;
+		isTaxRow?: boolean;
 	} ) => {
+		if ( isTaxRow ) {
+			const formattedFixed = formatCurrency(
+				fixed,
+				currency,
+				storeCurrency
+			);
+			return (
+				<>
+					{ formattedFixed } { storeCurrency }
+				</>
+			);
+		}
+
 		const formattedPercentage = percentage
 			? `${ Number.parseFloat( ( percentage * 100 ).toFixed( 2 ) ) }%`
 			: '0%';
@@ -65,19 +94,14 @@ const FeesBreakdown: React.FC< {
 		currency,
 		isDiscounted,
 		displayFixedPart,
-	}: {
-		type: string;
-		additionalType?: string;
-		percentage?: number;
-		fixed: number;
-		currency: string;
-		isDiscounted?: boolean;
-		displayFixedPart?: boolean;
-	} ) => {
+		taxInfo,
+		isTaxRow,
+	}: FeeRowProps & { isTaxRow?: boolean } ) => {
 		const formattedFeeType = formatFeeType(
 			type,
 			additionalType,
-			isDiscounted
+			isDiscounted,
+			taxInfo
 		);
 		const feeType = type + ( additionalType ? `_${ additionalType }` : '' );
 
@@ -97,6 +121,7 @@ const FeesBreakdown: React.FC< {
 						fixed={ fixed }
 						currency={ currency }
 						displayFixedPart={ displayFixedPart }
+						isTaxRow={ isTaxRow }
 					/>
 				</FlexItem>
 			</Flex>
@@ -211,10 +236,17 @@ const FeesBreakdown: React.FC< {
 			<FeeRow
 				key="fee_tax"
 				type="tax"
-				percentage={ event.fee_rates.tax.percentage_rate ?? 0 }
-				fixed={ 0 }
+				percentage={ 0 }
+				fixed={ Math.abs( event.fee_rates.tax.amount ) }
 				currency={ event.fee_rates.tax.currency }
-				displayFixedPart={ false }
+				displayFixedPart={ true }
+				isDiscounted={ false }
+				additionalType=""
+				taxInfo={ {
+					description: event.fee_rates.tax.description,
+					percentage_rate: event.fee_rates.tax.percentage_rate,
+				} }
+				isTaxRow={ true }
 			/>
 		);
 	}
