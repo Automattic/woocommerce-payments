@@ -72,8 +72,8 @@ class WC_Payments_Onboarding_Service {
 	const FROM_STRIPE_EMBEDDED  = 'STRIPE_EMBEDDED';
 	const FROM_REFERRAL         = 'REFERRAL';
 
-	const TRACKS_EVENT_ONBOARDING_RESET   = 'wcpay_onboarding_flow_reset';
-	const TRACKS_EVENT_DISABLE_TEST_DRIVE = 'wcpay_test_drive_account_disabled';
+	const TRACKS_EVENT_ONBOARDING_RESET           = 'wcpay_onboarding_flow_reset';
+	const TRACKS_EVENT_TEST_DRIVE_ACCOUNT_DISABLE = 'wcpay_onboarding_test_account_disable';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -772,7 +772,7 @@ class WC_Payments_Onboarding_Service {
 
 		$this->cleanup_on_account_reset();
 
-		// Track onboarding reset.
+		// Track disabling test drive account.
 		$event_properties = [
 			'mode'   => self::is_test_mode_enabled() ? 'test' : 'live',
 			'from'   => ! empty( $context['from'] ) ? sanitize_text_field( $context['from'] ) : '',
