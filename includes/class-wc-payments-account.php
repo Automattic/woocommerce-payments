@@ -2657,7 +2657,9 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	}
 
 	/**
-	 * If we're in test mode and dealing with a test-drive account,
+	 * Temporarily store the test drive account settings.
+	 *
+	 * If the current account is a test-drive account,
 	 * we need to collect the test drive settings before we delete the test-drive account,
 	 * and apply those settings to the live account.
 	 *
