@@ -115,7 +115,7 @@ test.describe( 'Shopper can save and delete cards', () => {
 		} catch ( error ) {
 			await expect(
 				shopperPage.getByText(
-					'You cannot add a new payment method so soon after the previous one. Please wait for 20 seconds.'
+					'You cannot add a new payment method so soon after the previous one.'
 				)
 			).toBeVisible();
 		}
@@ -168,7 +168,7 @@ test.describe( 'Shopper can save and delete cards', () => {
 						// Verify that the card was added
 						await expect(
 							shopperPage.getByText(
-								'You cannot add a new payment method so soon after the previous one. Please wait for 20 seconds.'
+								'You cannot add a new payment method so soon after the previous one.'
 							)
 						).not.toBeVisible();
 						await expect(
