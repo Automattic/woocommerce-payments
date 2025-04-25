@@ -33,6 +33,14 @@
 			margin-top: 4px;
 		}
 	}
+
+	// Add spacing for product pages and shortcode cart
+	.woocommerce .type-product &,
+	.wp-block-add-to-cart-form &,
+	.wc-proceed-to-checkout & {
+		margin-top: 1em;
+		margin-bottom: 1em;
+	}
 }
 
 // This fixes width calculation issues inside the iframe for blocks and shortcode pages.

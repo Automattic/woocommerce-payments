@@ -259,6 +259,9 @@ if [[ "$IS_WORKAROUND_REQUIRED" = "1" ]]; then
 	CART_SHORTCODE="<!-- wp:shortcode -->[woocommerce_cart]<!-- /wp:shortcode -->"
 	CHECKOUT_SHORTCODE="<!-- wp:shortcode -->[woocommerce_checkout]<!-- /wp:shortcode -->"
 
+	# Ensuring that a "checkout-wcb" page exists, which is the one that will contain the "WooCommerce Blocks" checkout
+	cli wp post create --from-post="$CHECKOUT_PAGE_ID" --post_type="page" --post_title="Checkout WCB" --post_status="publish" --post_name="checkout-wcb"
+
 	# Update cart & checkout pages to use shortcode.
 	cli wp post update "$CART_PAGE_ID" --post_content="$CART_SHORTCODE"
 	cli wp post update "$CHECKOUT_PAGE_ID" --post_content="$CHECKOUT_SHORTCODE"
@@ -361,6 +364,8 @@ else
 	echo "Skipping install of Action Scheduler"
 fi
 
+echo "Removing some WooCommerce Core 'tour' options so they don't interfere with tests"
+cli wp option set woocommerce_orders_report_date_tour_shown yes
 
 echo "Creating screenshots directory"
 mkdir -p $WCP_ROOT/screenshots

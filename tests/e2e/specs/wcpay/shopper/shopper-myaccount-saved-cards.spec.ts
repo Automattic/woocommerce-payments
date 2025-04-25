@@ -30,7 +30,7 @@ type TestVariablesType = {
 	};
 };
 
-const cards = {
+const cards: TestVariablesType = {
 	basic: {
 		card: config.cards.basic,
 		address: {
@@ -55,13 +55,13 @@ const cards = {
 		},
 		products: [ [ config.products.cap, 1 ] ],
 	},
-} as TestVariablesType;
+};
 
 test.describe( 'Shopper can save and delete cards', () => {
 	let timeAdded: number;
 	// Use cards different than other tests to prevent conflicts.
 	const card2 = config.cards.basic2;
-	let shopperPage: Page = null;
+	let shopperPage: Page;
 
 	test.beforeAll( async ( { browser }, { project } ) => {
 		shopperPage = ( await getShopper( browser, true, project.use.baseURL ) )
