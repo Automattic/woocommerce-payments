@@ -63,13 +63,13 @@ test.describe( 'BNPL checkout', { tag: '@critical' }, () => {
 				test( `Checkout with ${ provider }`, async () => {
 					await navigation.goToProductPageBySlug(
 						shopperPage,
-						products[ 1 % products.length ]
+						products[ i % products.length ]
 					);
 
 					await shopperPage
 						.getByRole( 'button', { name: 'Add to cart' } )
 						.click();
-					await shopperPage.waitForLoadState( 'networkidle' );
+					await shopperPage.waitForLoadState( 'domcontentloaded' );
 					await expect(
 						shopperPage.getByText( /has been added to your cart\./ )
 					).toBeVisible();
