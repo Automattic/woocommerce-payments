@@ -579,6 +579,14 @@ export const composeFeeBreakdown = ( event ) => {
 		);
 	} );
 
+	// Add tax information as part of the fee breakdown if it exists
+	if ( event.fee_rates?.tax ) {
+		const taxString = composeTaxString( event );
+		if ( taxString ) {
+			list.push( <li key="tax">{ taxString }</li> );
+		}
+	}
+
 	return <ul className="fee-breakdown-list"> { list } </ul>;
 };
 
@@ -748,16 +756,12 @@ const mapEventToTimelineItems = ( event ) => {
 			];
 		case 'captured':
 			const formattedNet = formatNetString( event );
-			const taxString = composeTaxString( event );
 			const body = [
 				composeFXString( event ),
 				composeFeeString( event ),
 				composeFeeBreakdown( event ),
+				composeNetString( event ),
 			];
-			if ( taxString ) {
-				body.push( taxString );
-			}
-			body.push( composeNetString( event ) );
 			return [
 				getStatusChangeTimelineItem(
 					event,
@@ -767,8 +771,8 @@ const mapEventToTimelineItems = ( event ) => {
 				getMainTimelineItem(
 					event,
 					stringWithAmount(
+						/* translators: %s is a monetary amount */
 						__(
-							/* translators: %s is a monetary amount */
 							'A payment of %s was successfully charged.',
 							'woocommerce-payments'
 						),
