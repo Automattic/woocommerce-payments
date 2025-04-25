@@ -226,11 +226,16 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 				'callback'            => [ $this, 'init_test_drive_account' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 				'args'                => [
-					'capabilities' => [
+					'country'      => [
+						'type'        => 'string',
+						'description' => 'The country code for which to create the test-drive account.',
 						'required'    => false,
+					],
+					'capabilities' => [
 						'description' => 'The capabilities to request and enable for the test-drive account. Leave empty to use the default capabilities.',
 						'type'        => 'array',
 						'default'     => [],
+						'required'    => false,
 					],
 				],
 			]
@@ -378,8 +383,14 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function init_test_drive_account( WP_REST_Request $request ) {
+		$country = $request->get_param( 'country' );
+		if ( empty( $country ) ) {
+			// Fall back to the store's base country if no country is provided.
+			$country = WC()->countries->get_base_country() ?? 'US';
+		}
+
 		try {
-			$success = $this->onboarding_service->init_test_drive_account( $request->get_param( 'capabilities' ) );
+			$success = $this->onboarding_service->init_test_drive_account( $country, $request->get_param( 'capabilities' ) );
 		} catch ( Exception $e ) {
 			return new WP_Error( self::RESULT_BAD_REQUEST, $e->getMessage(), [ 'status' => 400 ] );
 		}
