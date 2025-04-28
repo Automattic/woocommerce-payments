@@ -4,7 +4,6 @@
  * External dependencies
  */
 import React, { useState, useContext } from 'react';
-import moment from 'moment';
 import { __, sprintf } from '@wordpress/i18n';
 import { backup, edit, lock, arrowRight } from '@wordpress/icons';
 import { useDispatch } from '@wordpress/data';
@@ -169,9 +168,6 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 	} = useDisputeAccept( dispute );
 	const [ isModalOpen, setModalOpen ] = useState( false );
 
-	const now = moment();
-	const dueBy = moment.unix( dispute.evidence_details?.due_by ?? 0 );
-	const countdownDays = Math.floor( dueBy.diff( now, 'days', true ) );
 	const hasStagedEvidence = dispute.evidence_details?.has_evidence;
 	const { createErrorNotice } = useDispatch( 'core/notices' );
 
@@ -252,7 +248,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 				{ __( 'Dispute details', 'woocommerce-payments' ) }
 			</h2>
 			<div className="transaction-details-dispute-details-body">
-				{ /* TODO: not matter what the countdownDays is, we should show the urgent the urgent notice */ }
+				{ /* TODO: not matter what the countdown days is, we should show the urgent the urgent notice */ }
 				<DisputeNotice
 					dispute={ dispute }
 					isUrgent={ true }
