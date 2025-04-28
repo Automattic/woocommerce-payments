@@ -2657,6 +2657,29 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	}
 
 	/**
+	 * Temporarily store the test drive account settings.
+	 *
+	 * If the current account is a test-drive account,
+	 * we need to collect the test drive settings before we delete the test-drive account,
+	 * and apply those settings to the live account.
+	 *
+	 * @return void
+	 */
+	public function save_test_drive_settings(): void {
+		$account = $this->get_cached_account_data();
+
+		if ( ! empty( $account['is_test_drive'] ) && true === $account['is_test_drive'] ) {
+			$test_drive_account_data = $this->get_test_drive_settings_for_live_account();
+
+			// Store the test drive settings for the live account in a transient,
+			// We don't pass the data around, as the merchant might cancel and start
+			// the onboarding from scratch. In this case, we won't have the test drive
+			// account anymore to collect the settings.
+			set_transient( self::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT, $test_drive_account_data, HOUR_IN_SECONDS );
+		}
+	}
+
+	/**
 	 * Send a Tracks event.
 	 *
 	 * By default Woo adds `url`, `blog_lang`, `blog_id`, `store_id`, `products_count`, and `wc_version`
@@ -2748,26 +2771,5 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		}
 
 		return [ 'capabilities' => $capabilities ];
-	}
-
-	/**
-	 * If we're in test mode and dealing with a test-drive account,
-	 * we need to collect the test drive settings before we delete the test-drive account,
-	 * and apply those settings to the live account.
-	 *
-	 * @return void
-	 */
-	private function save_test_drive_settings(): void {
-		$account = $this->get_cached_account_data();
-
-		if ( ! empty( $account['is_test_drive'] ) && true === $account['is_test_drive'] ) {
-			$test_drive_account_data = $this->get_test_drive_settings_for_live_account();
-
-			// Store the test drive settings for the live account in a transient,
-			// We don't passing the data around, as the merchant might cancel and start
-			// the onboarding from scratch. In this case, we won't have the test drive
-			// account anymore to collect the settings.
-			set_transient( self::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT, $test_drive_account_data, HOUR_IN_SECONDS );
-		}
 	}
 }

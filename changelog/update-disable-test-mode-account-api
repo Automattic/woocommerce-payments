@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Add dedicated onboarding REST API endpoint for disabling test drive account, when possible.
