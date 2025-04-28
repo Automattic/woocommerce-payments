@@ -43,7 +43,7 @@
 				gap: var( --grid-unit-05, 4px );
 				flex-wrap: wrap;
 				&--warning {
-					color: $wp-yellow-30;
+					color: $alert-red;
 					font-weight: 700;
 				}
 				&--urgent {
@@ -294,7 +294,7 @@
 			font-weight: 600;
 
 			&--warning {
-				color: $wp-yellow-30;
+				color: $alert-red;
 				font-weight: 700;
 			}
 			&--urgent {
