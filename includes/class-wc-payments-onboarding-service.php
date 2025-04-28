@@ -72,7 +72,8 @@ class WC_Payments_Onboarding_Service {
 	const FROM_STRIPE_EMBEDDED  = 'STRIPE_EMBEDDED';
 	const FROM_REFERRAL         = 'REFERRAL';
 
-	const TRACKS_EVENT_ONBOARDING_RESET = 'wcpay_onboarding_flow_reset';
+	const TRACKS_EVENT_ONBOARDING_RESET           = 'wcpay_onboarding_flow_reset';
+	const TRACKS_EVENT_TEST_DRIVE_ACCOUNT_DISABLE = 'wcpay_onboarding_test_account_disable';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -734,6 +735,64 @@ class WC_Payments_Onboarding_Service {
 
 		$this->tracks_event(
 			self::TRACKS_EVENT_ONBOARDING_RESET,
+			$event_properties
+		);
+
+		return true;
+	}
+
+	/**
+	 * Disable the Test Drive account.
+	 *
+	 * This means:
+	 * - preserve the currently connected Stripe test drive account settings.
+	 * - delete the currently connected Stripe test drive account.
+	 * - cleanup the gateway state for a fresh onboarding flow.
+	 *
+	 * @param array $context Context for the disable test drive account request.
+	 *              - 'from' (string) The source of the request.
+	 *              - 'source' (string) The source of the onboarding flow.
+	 *
+	 * @return bool Whether the test drive account was disabled successfully.
+	 *
+	 * @throws API_Exception When the platform API request fails or is not successful.
+	 */
+	public function disable_test_drive_account( array $context ): bool {
+		if ( ! $this->payments_api_client->is_server_connected() ) {
+			return false;
+		}
+
+		// If the test mode onboarding is not enabled, we don't need to do anything.
+		if ( ! self::is_test_mode_enabled() ) {
+			return false;
+		}
+
+		// If the test mode onboarding is enabled:
+		// - Delete the current account;
+		// - Cleanup the gateway state for a fresh onboarding flow.
+		try {
+			// If we're in test mode and dealing with a test-drive account,
+			// we need to collect the test drive settings before we delete the test-drive account,
+			// and apply those settings to the live account.
+			WC_Payments::get_account_service()->save_test_drive_settings();
+
+			// Delete the currently connected Stripe account.
+			$this->payments_api_client->delete_account( true );
+		} catch ( API_Exception $e ) {
+			throw new API_Exception( __( 'Failed to disable test drive account.', 'woocommerce-payments' ), 'wcpay-onboarding-account-error', 400 );
+		}
+
+		$this->cleanup_on_account_reset();
+
+		// Track disabling test drive account.
+		$event_properties = [
+			'mode'   => self::is_test_mode_enabled() ? 'test' : 'live',
+			'from'   => ! empty( $context['from'] ) ? sanitize_text_field( $context['from'] ) : '',
+			'source' => ! empty( $context['source'] ) ? sanitize_text_field( $context['source'] ) : '',
+		];
+
+		$this->tracks_event(
+			self::TRACKS_EVENT_TEST_DRIVE_ACCOUNT_DISABLE,
 			$event_properties
 		);
 

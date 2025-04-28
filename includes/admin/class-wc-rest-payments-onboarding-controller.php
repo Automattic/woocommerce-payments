@@ -184,6 +184,28 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 				],
 			]
 		);
+
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/test_drive_account/disable',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'disable_test_drive_account' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+				'args'                => [
+					'source' => [
+						'required'    => false,
+						'description' => 'The very first entry point the merchant entered our onboarding flow.',
+						'type'        => 'string',
+					],
+					'from'   => [
+						'required'    => false,
+						'description' => 'The previous step in the onboarding flow leading the merchant to arrive at the current step.',
+						'type'        => 'string',
+					],
+				],
+			]
+		);
 	}
 
 	/**
@@ -326,5 +348,27 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 				'success' => $success,
 			]
 		);
+	}
+
+	/**
+	 * Disable Test Drive account API.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 *
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function disable_test_drive_account( WP_REST_Request $request ) {
+		$context = [
+			'from'   => $request->get_param( 'from' ) ?? '',
+			'source' => $request->get_param( 'source' ) ?? '',
+		];
+
+		try {
+			$result = $this->onboarding_service->disable_test_drive_account( $context );
+		} catch ( Exception $e ) {
+			return new WP_Error( self::RESULT_BAD_REQUEST, $e->getMessage(), [ 'status' => 400 ] );
+		}
+
+		return rest_ensure_response( [ 'success' => $result ] );
 	}
 }
