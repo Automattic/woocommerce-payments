@@ -87,7 +87,7 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 
 == Changelog ==
 
-= 9.3.0 - 2025-05-05 =
+= 9.3.0-test-3 - unreleased =
 * Add - Add dedicated onboarding REST API endpoint for disabling test drive account, when possible.
 * Add - Transaction Fees breakdown component in the Payment details.
 * Fix - fix: ensuring that Google Pay/Apple Pay buttons hide on shortcode cart & checkout when totals go to 0
