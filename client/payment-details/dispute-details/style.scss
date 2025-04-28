@@ -198,8 +198,7 @@
 			flex-shrink: 0;
 
 			@media screen and ( max-width: $break-small ) {
-				margin-right: 0;
-				margin-bottom: 8px;
+				display: none;
 			}
 
 			svg {
