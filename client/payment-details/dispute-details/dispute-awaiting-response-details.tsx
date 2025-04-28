@@ -252,9 +252,10 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 				{ __( 'Dispute details', 'woocommerce-payments' ) }
 			</h2>
 			<div className="transaction-details-dispute-details-body">
+				{ /* TODO: not matter what the countdownDays is, we should show the urgent the urgent notice */ }
 				<DisputeNotice
 					dispute={ dispute }
-					isUrgent={ countdownDays <= 2 }
+					isUrgent={ true }
 					paymentMethod={ paymentMethod }
 				/>
 				{ hasStagedEvidence && (
