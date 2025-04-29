@@ -7,6 +7,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  QIT_USER:     ${{ secrets.QIT_CI_USER }}
+  QIT_PASSWORD: ${{ secrets.QIT_CI_SECRET }}
+
 jobs:
   qit-tests:
     runs-on: ubuntu-latest
@@ -28,9 +32,6 @@ jobs:
 
       - name: Install QIT CLI
         run: composer global require woocommerce/qit-cli
-
-      - name: Authenticate QIT
-        run: qit partner:add --user='${{ secrets.QIT_CI_USER }}' --application_password='${{ secrets.QIT_CI_SECRET }}'
 
       - name: Run Security Test
         run: ./tests/qit/security.sh
