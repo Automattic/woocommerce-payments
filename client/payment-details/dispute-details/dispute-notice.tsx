@@ -77,40 +77,187 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 
 	const bankName = getBankName();
 
-	/* translators: %1$s is the clients claim for the dispute, eg "The cardholder claims this is an unrecognized charge." %2$s is the bank name, eg "Chase Bank". %3$s is the deadline date, eg "Aug 18, 2023 11:59 PM". */
-	let noticeText = bankName
-		? __(
-				"<strong>%1$s</strong> Challenge the dispute with the cardholder's bank – <strong>%2$s</strong> by <strong>%3$s</strong> if you believe the claim is invalid, " +
-					'or accept to forfeit the funds and pay the dispute fee. ' +
-					'Non-response will result in an automatic loss.',
-				'woocommerce-payments'
-		  )
-		: __(
-				"<strong>%1$s</strong> Challenge the dispute with the cardholder's bank by <strong>%2$s</strong> if you believe the claim is invalid, " +
-					'or accept to forfeit the funds and pay the dispute fee. ' +
-					'Non-response will result in an automatic loss.',
-				'woocommerce-payments'
-		  );
+	// Determine the appropriate notice text based on dispute type and reason
+	let noticeText = '';
 
-	if ( isInquiry( dispute.status ) ) {
+	// Handle Klarna inquiries specifically
+	if ( paymentMethod === 'klarna' && isInquiry( dispute.status ) ) {
+		noticeText = __(
+			'Klarna inquiries may mean that the customer is trying to return their item(s).',
+			'woocommerce-payments'
+		);
+	}
+	// Handle regular inquiries
+	else if ( isInquiry( dispute.status ) ) {
 		/* translators: %1$s is the clients claim for the dispute, eg "The cardholder claims this is an unrecognized charge." %2$s is the bank name, eg "Chase Bank". %3$s is the deadline date, eg "Aug 18, 2023 11:59 PM". */
 		noticeText = bankName
-			? __(
-					"<strong>%1$s</strong> You can challenge their claim with <strong>%2$s</strong> by <strong>%3$s</strong> if you believe it's invalid. " +
-						'Not responding will result in an automatic loss.',
-					'woocommerce-payments'
+			? sprintf(
+					__(
+						'<strong>%1$s</strong> Submit the evidence with the cardholder’s bank – <strong>%2$s</strong> <strong>(You have %3$s to respond)</strong>. ' +
+							'Not responding will result in an automatic loss.',
+						'woocommerce-payments'
+					),
+					shopperDisputeReason,
+					bankName,
+					dueByDate
 			  )
-			: __(
-					"<strong>%1$s</strong> You can challenge their claim by <strong>%2$s</strong> if you believe it's invalid. " +
-						'Not responding will result in an automatic loss.',
-					'woocommerce-payments'
+			: sprintf(
+					__(
+						'<strong>%1$s</strong> Submit the evidence with the cardholder’s bank <strong>(You have %2$s to respond)</strong>. ' +
+							'Not responding will result in an automatic loss.',
+						'woocommerce-payments'
+					),
+					shopperDisputeReason,
+					dueByDate
 			  );
-
-		if ( paymentMethod === 'klarna' ) {
-			noticeText = __(
-				'Klarna inquiries may mean that the customer is trying to return their item(s).',
-				'woocommerce-payments'
-			);
+	}
+	// Handle specific dispute reasons
+	else {
+		switch ( dispute.reason ) {
+			case 'product_not_received':
+				noticeText = bankName
+					? sprintf(
+							__(
+								'<strong>%1$s</strong> Challenge the dispute with <strong>%2$s</strong> by <strong>%3$s</strong> if you can prove delivery. ' +
+									'Otherwise, accept the dispute and refund the customer. ' +
+									'Non-response will result in an automatic loss.',
+								'woocommerce-payments'
+							),
+							shopperDisputeReason,
+							bankName,
+							dueByDate
+					  )
+					: sprintf(
+							__(
+								'<strong>%1$s</strong> Challenge the dispute by <strong>%3$s</strong> if you can prove delivery. ' +
+									'Otherwise, accept the dispute and refund the customer. ' +
+									'Non-response will result in an automatic loss.',
+								'woocommerce-payments'
+							),
+							shopperDisputeReason,
+							dueByDate
+					  );
+				break;
+			case 'product_unacceptable':
+				noticeText = bankName
+					? sprintf(
+							__(
+								'<strong>%1$s</strong> Challenge the dispute with <strong>%2$s</strong> by <strong>%3$s</strong> if you can prove the product was as described. ' +
+									'Otherwise, accept the dispute and refund the customer. ' +
+									'Non-response will result in an automatic loss.',
+								'woocommerce-payments'
+							),
+							shopperDisputeReason,
+							bankName,
+							dueByDate
+					  )
+					: sprintf(
+							__(
+								'<strong>%1$s</strong> Challenge the dispute by <strong>%3$s</strong> if you can prove the product was as described. ' +
+									'Otherwise, accept the dispute and refund the customer. ' +
+									'Non-response will result in an automatic loss.',
+								'woocommerce-payments'
+							),
+							shopperDisputeReason,
+							dueByDate
+					  );
+				break;
+			case 'fraudulent':
+				noticeText = bankName
+					? sprintf(
+							__(
+								'<strong>%1$s</strong> Challenge the dispute with <strong>%2$s</strong> by <strong>%3$s</strong> if you can prove the transaction was authorized. ' +
+									'Otherwise, accept the dispute and refund the customer. ' +
+									'Non-response will result in an automatic loss.',
+								'woocommerce-payments'
+							),
+							shopperDisputeReason,
+							bankName,
+							dueByDate
+					  )
+					: sprintf(
+							__(
+								'<strong>%1$s</strong> Challenge the dispute by <strong>%3$s</strong> if you can prove the transaction was authorized. ' +
+									'Otherwise, accept the dispute and refund the customer. ' +
+									'Non-response will result in an automatic loss.',
+								'woocommerce-payments'
+							),
+							shopperDisputeReason,
+							dueByDate
+					  );
+				break;
+			case 'duplicate':
+				noticeText = bankName
+					? sprintf(
+							__(
+								'<strong>%1$s</strong> Challenge the dispute with <strong>%2$s</strong> by <strong>%3$s</strong> if you can prove this is not a duplicate charge. ' +
+									'Otherwise, accept the dispute and refund the customer. ' +
+									'Non-response will result in an automatic loss.',
+								'woocommerce-payments'
+							),
+							shopperDisputeReason,
+							bankName,
+							dueByDate
+					  )
+					: sprintf(
+							__(
+								'<strong>%1$s</strong> Challenge the dispute by <strong>%3$s</strong> if you can prove this is not a duplicate charge. ' +
+									'Otherwise, accept the dispute and refund the customer. ' +
+									'Non-response will result in an automatic loss.',
+								'woocommerce-payments'
+							),
+							shopperDisputeReason,
+							dueByDate
+					  );
+				break;
+			case 'subscription_canceled':
+				noticeText = bankName
+					? sprintf(
+							__(
+								'<strong>%1$s</strong> Challenge the dispute with <strong>%2$s</strong> by <strong>%3$s</strong> if you can prove the subscription was not canceled. ' +
+									'Otherwise, accept the dispute and refund the customer. ' +
+									'Non-response will result in an automatic loss.',
+								'woocommerce-payments'
+							),
+							shopperDisputeReason,
+							bankName,
+							dueByDate
+					  )
+					: sprintf(
+							__(
+								'<strong>%1$s</strong> Challenge the dispute by <strong>%3$s</strong> if you can prove the subscription was not canceled. ' +
+									'Otherwise, accept the dispute and refund the customer. ' +
+									'Non-response will result in an automatic loss.',
+								'woocommerce-payments'
+							),
+							shopperDisputeReason,
+							dueByDate
+					  );
+				break;
+			default:
+				/* translators: %1$s is the clients claim for the dispute, eg "The cardholder claims this is an unrecognized charge." %2$s is the bank name, eg "Chase Bank". %3$s is the deadline date, eg "Aug 18, 2023 11:59 PM". */
+				noticeText = bankName
+					? sprintf(
+							__(
+								"<strong>%1$s</strong> Challenge the dispute with the cardholder's bank – <strong>%2$s</strong> by <strong>%3$s</strong> if you believe the claim is invalid, " +
+									'or accept to forfeit the funds and pay the dispute fee. ' +
+									'Non-response will result in an automatic loss.',
+								'woocommerce-payments'
+							),
+							shopperDisputeReason,
+							bankName,
+							dueByDate
+					  )
+					: sprintf(
+							__(
+								"<strong>%1$s</strong> Challenge the dispute with the cardholder's bank by <strong>%3$s</strong> if you believe the claim is invalid, " +
+									'or accept to forfeit the funds and pay the dispute fee. ' +
+									'Non-response will result in an automatic loss.',
+								'woocommerce-payments'
+							),
+							shopperDisputeReason,
+							dueByDate
+					  );
 		}
 	}
 
@@ -121,17 +268,9 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 			className="dispute-notice"
 			isDismissible={ false }
 		>
-			{ createInterpolateElement(
-				sprintf(
-					noticeText,
-					shopperDisputeReason,
-					bankName || dueByDate,
-					dueByDate
-				),
-				{
-					strong: <strong />,
-				}
-			) }
+			{ createInterpolateElement( noticeText, {
+				strong: <strong />,
+			} ) }
 		</InlineNotice>
 	);
 };
