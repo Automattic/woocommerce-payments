@@ -166,7 +166,7 @@ const PaymentMethodCheckbox: React.FC< PaymentMethodCheckboxProps > = ( {
 									'woocommerce-payments'
 								),
 								paymentMethod.label,
-								wcpaySettings?.accountEmail ?? ''
+								'cheese@toast.com'
 							) }
 						>
 							<Pill

@@ -12,6 +12,10 @@ env:
   E2E_WC_VERSION: 'latest'
   E2E_RESULT_FILEPATH: 'tests/e2e/results.json'
   NODE_ENV: 'atomic'
+  E2E_ADMIN_USER_PASSWORD: ${{ secrets.E2E_ADMIN_USER_PASSWORD }}
+  E2E_CUSTOMER_USER_PASSWORD: ${{ secrets.E2E_CUSTOMER_USER_PASSWORD }}
+  E2E_SUBSCRIPTIONS_CUSTOMER_USER_PASSWORD: ${{ secrets.E2E_SUBSCRIPTIONS_CUSTOMER_USER_PASSWORD }}
+  E2E_EDITOR_USER_PASSWORD: ${{ secrets.E2E_EDITOR_USER_PASSWORD }}
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
