@@ -30,6 +30,13 @@ interface PaymentTransactionBreakdownProps {
 	paymentIntentId: string;
 }
 
+/**
+ * Temporary flag to disable transaction breakdown.
+ *
+ * Switch to `false` while testing.
+ */
+const disableTransactionBreakdown = true;
+
 const PaymentTransactionBreakdown: React.FC< PaymentTransactionBreakdownProps > = ( {
 	paymentIntentId,
 } ) => {
@@ -46,6 +53,10 @@ const PaymentTransactionBreakdown: React.FC< PaymentTransactionBreakdownProps > 
 	);
 
 	const transactionAmounts = useTransactionAmounts( captureEvent );
+
+	if ( disableTransactionBreakdown ) {
+		return null;
+	}
 
 	if (
 		! captureEvent?.transaction_details ||
