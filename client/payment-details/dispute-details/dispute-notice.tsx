@@ -15,8 +15,9 @@ import InlineNotice from 'components/inline-notice';
 import { reasons } from 'wcpay/disputes/strings';
 import { Dispute } from 'wcpay/types/disputes';
 import { isInquiry } from 'wcpay/disputes/utils';
-import { PAYMENT_METHOD_BRANDS } from 'wcpay/constants/payment-method';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
+import { useCharge } from 'wcpay/data';
+import { getTransactionPaymentMethodTitle } from 'wcpay/transactions/utils/getTransactionPaymentMethodTitle';
 
 interface DisputeNoticeProps {
 	dispute: Dispute;
@@ -41,35 +42,32 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 		dispute.evidence_details?.due_by ?? 0
 	);
 
+	// Fetch charge data if needed
+	const chargeId = typeof dispute.charge === 'string' ? dispute.charge : null;
+	const { data: chargeData } = useCharge( chargeId || '' );
+
+	// Use the fetched charge data or the existing charge object
+	const charge =
+		typeof dispute.charge === 'string' ? chargeData : dispute.charge;
+
 	// Get the bank name from payment method details
 	const getBankName = () => {
-		// If the charge is a string, it means it's a charge ID, so we can't get the bank name
-		if ( typeof dispute.charge === 'string' ) {
+		// If charge is an empty object or not available yet, we can't get the bank name
+		if ( ! charge || Object.keys( charge ).length === 0 ) {
 			return null;
 		}
 
-		const { payment_method_details: paymentMethodDetails } = dispute.charge;
+		const { payment_method_details: paymentMethodDetails } = charge;
 		const methodType = paymentMethod?.toLowerCase();
 
-		if ( methodType === 'giropay' && 'giropay' in paymentMethodDetails ) {
-			return paymentMethodDetails.giropay.bank_name;
+		// For non-card payment methods, return the payment method title
+		if ( methodType && methodType !== 'card' ) {
+			return getTransactionPaymentMethodTitle( methodType );
 		}
-		if (
-			methodType === 'bancontact' &&
-			'bancontact' in paymentMethodDetails
-		) {
-			return paymentMethodDetails.bancontact.bank_name;
-		}
-		if ( methodType === 'sofort' && 'sofort' in paymentMethodDetails ) {
-			return paymentMethodDetails.sofort.bank_name;
-		}
+
 		if ( methodType === 'card' && 'card' in paymentMethodDetails ) {
-			const { brand } = paymentMethodDetails.card;
-			return brand && typeof brand === 'string'
-				? PAYMENT_METHOD_BRANDS[
-						brand.toUpperCase() as keyof typeof PAYMENT_METHOD_BRANDS
-				  ]
-				: null;
+			const { issuer } = paymentMethodDetails.card;
+			return issuer && typeof issuer === 'string' ? issuer : null;
 		}
 
 		return null;
@@ -93,7 +91,7 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 		noticeText = bankName
 			? sprintf(
 					__(
-						'<strong>%1$s</strong> Submit the evidence with the cardholder’s bank – <strong>%2$s</strong> <strong>(You have %3$s to respond)</strong>. ' +
+						"<strong>%1$s</strong> Submit the evidence with the cardholder's bank – <strong>%2$s</strong> <strong>(You have %3$s to respond)</strong>. " +
 							'Not responding will result in an automatic loss.',
 						'woocommerce-payments'
 					),
@@ -103,7 +101,7 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 			  )
 			: sprintf(
 					__(
-						'<strong>%1$s</strong> Submit the evidence with the cardholder’s bank <strong>(You have %2$s to respond)</strong>. ' +
+						"<strong>%1$s</strong> Submit the evidence with the cardholder's bank <strong>(You have %2$s to respond)</strong>. " +
 							'Not responding will result in an automatic loss.',
 						'woocommerce-payments'
 					),
