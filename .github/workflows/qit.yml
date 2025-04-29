@@ -1,0 +1,92 @@
+name: QIT Security and Malware Tests
+
+on:
+  pull_request:
+  merge_group:
+
+env:
+  QIT_USER: ${{ secrets.QIT_USER }}
+  QIT_PASSWORD: ${{ secrets.QIT_PASSWORD }}
+  QIT_DISABLE_ONBOARDING: "yes"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-zip:
+    name: "Build the zip file"
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: "Set up repository"
+        uses: ./.github/actions/setup-repo
+
+      - name: "Build the plugin"
+        id: build_plugin
+        uses: ./.github/actions/build
+
+      - name: "Upload the zip file as an artifact"
+        uses: actions/upload-artifact@v4
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          name: "woocommerce-payments"
+          path: woocommerce-payments.zip
+          retention-days: 1
+
+  security-test:
+    name: "QIT Security Test"
+    needs: build-zip
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v4
+
+      - name: "Download plugin zip"
+        uses: actions/download-artifact@v4
+        with:
+          name: "woocommerce-payments"
+          path: .
+
+      - name: "Setup PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 7.4
+          tools: composer
+
+      - name: "Install QIT"
+        run: composer require woocommerce/qit-cli --dev
+
+      - name: "Run QIT Security Test"
+        run: ./tests/qit/security.sh
+
+  malware-test:
+    name: "QIT Malware Test"
+    needs: build-zip
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v4
+
+      - name: "Download plugin zip"
+        uses: actions/download-artifact@v4
+        with:
+          name: "woocommerce-payments"
+          path: .
+
+      - name: "Setup PHP"
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 7.4
+          tools: composer
+
+      - name: "Install QIT"
+        run: composer require woocommerce/qit-cli --dev
+
+      - name: "Run QIT Malware Test"
+        run: ./tests/qit/malware.sh
