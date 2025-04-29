@@ -147,9 +147,7 @@ const PaymentMethodCheckbox: React.FC< PaymentMethodCheckboxProps > = ( {
 								'woocommerce-payments'
 							) }
 						>
-							<Pill
-								className={ 'payment-status-pending-approval' }
-							>
+							<Pill className="payment-status-pending-approval">
 								{ __(
 									'Pending approval',
 									'woocommerce-payments'
@@ -169,11 +167,7 @@ const PaymentMethodCheckbox: React.FC< PaymentMethodCheckboxProps > = ( {
 								wcpaySettings?.accountEmail ?? ''
 							) }
 						>
-							<Pill
-								className={
-									'payment-status-pending-verification'
-								}
-							>
+							<Pill className="payment-status-pending-verification">
 								{ __(
 									'Pending activation',
 									'woocommerce-payments'
@@ -192,7 +186,7 @@ const PaymentMethodCheckbox: React.FC< PaymentMethodCheckboxProps > = ( {
 						</PaymentMethodDisabledTooltip>
 					) }
 				</div>
-				<div className={ 'payment-method-checkbox__pills-right' }>
+				<div className="payment-method-checkbox__pills-right">
 					<HoverTooltip
 						content={ formatMethodFeesTooltip(
 							accountFees[ name ]

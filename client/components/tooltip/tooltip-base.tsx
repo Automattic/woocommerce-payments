@@ -163,7 +163,7 @@ const TooltipPortal: React.FC< TooltipPortalProps > = memo(
 export type TooltipBaseProps = {
 	className?: string;
 	children?: React.ReactNode;
-	content: React.ReactNode;
+	content: React.ReactNode | Element;
 	parentElement?: HTMLElement;
 	hideDelayMs?: number;
 	isVisible?: boolean;

@@ -21,7 +21,6 @@ import methodsConfiguration from '../../payment-methods-map';
 import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
 import ConfirmPaymentMethodActivationModal from './activation-modal';
 import ConfirmPaymentMethodDeleteModal from './delete-modal';
-import { getMissingCurrenciesTooltipMessage } from 'multi-currency/interface/functions';
 
 const PaymentMethodsList = ( { methodIds } ) => {
 	const [ enabledMethodIds ] = useEnabledPaymentMethodIds();
@@ -110,23 +109,7 @@ const PaymentMethodsList = ( { methodIds } ) => {
 						icon: Icon,
 						description,
 						allows_manual_capture: isAllowingManualCapture,
-						setup_required: isSetupRequired,
-						setup_tooltip: setupTooltip,
-						currencies,
 					} ) => {
-						if (
-							! wcpaySettings.isMultiCurrencyEnabled &&
-							id !== PAYMENT_METHOD_IDS.CARD
-						) {
-							const currency = wcpaySettings.storeCurrency;
-							if ( currencies.indexOf( currency ) < 0 ) {
-								isSetupRequired = true;
-								setupTooltip = getMissingCurrenciesTooltipMessage(
-									label,
-									currencies
-								);
-							}
-						}
 						return (
 							<PaymentMethod
 								id={ id }
@@ -146,8 +129,6 @@ const PaymentMethodsList = ( { methodIds } ) => {
 								}
 								Icon={ Icon }
 								status={ getStatusAndRequirements( id ).status }
-								isSetupRequired={ isSetupRequired }
-								setupTooltip={ setupTooltip }
 								isAllowingManualCapture={
 									isAllowingManualCapture
 								}

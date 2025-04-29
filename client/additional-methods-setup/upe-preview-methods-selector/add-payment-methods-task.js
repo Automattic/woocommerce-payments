@@ -8,7 +8,7 @@ import React, {
 	useMemo,
 	useState,
 } from 'react';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import {
 	Button,
 	Card,
@@ -29,6 +29,7 @@ import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
 	useGetPaymentMethodStatuses,
+	useManualCapture,
 	useSettings,
 } from '../../data';
 import PaymentMethodCheckboxes from '../../components/payment-methods-checkboxes';
@@ -214,15 +215,31 @@ const AddPaymentMethodsTask = () => {
 		}
 	};
 
+	const [ isManualCaptureEnabled ] = useManualCapture();
+
 	const prepareUpePaymentMethods = ( upeMethodIds ) => {
 		return upeMethodIds.map( ( key ) => {
-			const { label, currencies } = paymentMethodsMap[ key ];
+			const {
+				label,
+				currencies,
+				allows_manual_capture: isAllowingManualCapture,
+			} = paymentMethodsMap[ key ];
 
 			if ( availablePaymentMethods.includes( key ) ) {
 				let isSetupRequired = false;
 				let setupTooltip = '';
 
-				if (
+				if ( isManualCaptureEnabled && ! isAllowingManualCapture ) {
+					isSetupRequired = true;
+					setupTooltip = sprintf(
+						/* translators: %s: a payment method name. */
+						__(
+							'%s is not available to your customers when the "manual capture" setting is enabled.',
+							'woocommerce-payments'
+						),
+						label
+					);
+				} else if (
 					! wcpaySettings.isMultiCurrencyEnabled &&
 					key !== PAYMENT_METHOD_IDS.CARD
 				) {

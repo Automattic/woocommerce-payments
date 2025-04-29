@@ -167,7 +167,6 @@ const PaymentMethod = ( {
 		needsMoreInformation ||
 		isPoInProgress ||
 		upeCapabilityStatuses.REJECTED === status;
-	const shouldDisplayNotice = id === 'sofort';
 	const {
 		duplicates,
 		dismissedDuplicateNotices,
@@ -285,14 +284,12 @@ const PaymentMethod = ( {
 	};
 
 	return (
-		<li
-			className={ classNames(
-				'payment-method__list-item',
-				{ 'has-icon-border': id !== 'card', overlay: needsOverlay },
-				className
-			) }
-		>
-			<div className="payment-method">
+		<li className={ classNames( 'payment-method__list-item', className ) }>
+			<div
+				className={ classNames( 'payment-method', {
+					overlay: needsOverlay,
+				} ) }
+			>
 				<div className="payment-method__checkbox">
 					<LoadableCheckboxControl
 						label={ label }
@@ -302,7 +299,7 @@ const PaymentMethod = ( {
 						hideLabel
 						isAllowingManualCapture={ isAllowingManualCapture }
 						isSetupRequired={ isSetupRequired }
-						setupTooltip={ getTooltipContent( id ) as any }
+						setupTooltip={ getTooltipContent( id ) }
 						needsAttention={ needsAttention }
 					/>
 				</div>
@@ -375,7 +372,7 @@ const PaymentMethod = ( {
 					</div>
 				</div>
 			</div>
-			{ shouldDisplayNotice && (
+			{ id === 'sofort' && (
 				<InlineNotice
 					status="warning"
 					icon={ true }
