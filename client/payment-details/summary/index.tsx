@@ -255,6 +255,36 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	);
 
 	const [ isRefundModalOpen, setIsRefundModalOpen ] = useState( false );
+
+	// Get the bank name from payment method details
+	const getBankName = () => {
+		const { payment_method_details: paymentMethodDetails } = charge;
+		const methodType = paymentMethodDetails?.type?.toLowerCase();
+
+		// For card payments, get the issuer from card details
+		if ( methodType === 'card' && paymentMethodDetails?.type === 'card' ) {
+			// Type assertion is safe here because we've checked the type
+			const cardDetails = paymentMethodDetails.card as {
+				issuer?: string;
+			};
+			return cardDetails.issuer || null;
+		}
+
+		// For BNPL (affirm, afterpay_clearpay, klarna) disputes are all handled directly through the BNPL provider.
+		// For example, with an Affirm dispute, the `issuer` is actually Affirm
+		switch ( methodType ) {
+			case 'affirm':
+				return 'Affirm';
+			case 'afterpay_clearpay':
+				return 'Afterpay / Clearpay';
+			case 'klarna':
+				return 'Klarna';
+			default:
+				return null;
+		}
+	};
+
+	const bankName = getBankName();
 	return (
 		<Card>
 			<CardBody>
@@ -639,9 +669,13 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 							paymentMethod={
 								charge.payment_method_details?.type
 							}
+							bankName={ bankName }
 						/>
 					) : (
-						<DisputeResolutionFooter dispute={ charge.dispute } />
+						<DisputeResolutionFooter
+							dispute={ charge.dispute }
+							bankName={ bankName }
+						/>
 					) }
 				</ErrorBoundary>
 			) }
