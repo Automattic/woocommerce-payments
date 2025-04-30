@@ -25,7 +25,7 @@ import {
 import type { Dispute } from 'wcpay/types/disputes';
 import type { ChargeBillingDetails } from 'wcpay/types/charges';
 import { recordEvent } from 'tracks';
-import { useDisputeAccept } from 'wcpay/data';
+import { useCharge, useDisputeAccept } from 'wcpay/data';
 import { getDisputeFeeFormatted, isInquiry } from 'wcpay/disputes/utils';
 import { getAdminUrl } from 'wcpay/utils';
 import DisputeNotice from './dispute-notice';
@@ -175,6 +175,13 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 		featureFlags: { isDisputeIssuerEvidenceEnabled },
 	} = useContext( WCPaySettingsContext );
 
+	// Fetch charge data if needed
+	const chargeId = typeof dispute.charge === 'string' ? dispute.charge : null;
+	const { data: chargeData } = useCharge( chargeId || '' );
+	// Use the fetched charge data or the existing charge object
+	const charge =
+		typeof dispute.charge === 'string' ? chargeData : dispute.charge;
+
 	// Get the appropriate documentation URL based on dispute type
 	const getLearnMoreDocsUrl = () => {
 		if ( isInquiry( dispute.status ) ) {
@@ -228,6 +235,40 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 		);
 	};
 
+	// Get the bank name from payment method details
+	const getBankName = () => {
+		// If charge is an empty object or not available yet, we can't get the bank name
+		if ( ! charge || Object.keys( charge ).length === 0 ) {
+			return null;
+		}
+
+		const { payment_method_details: paymentMethodDetails } = charge;
+		const methodType = paymentMethod?.toLowerCase();
+
+		// For card payments, get the issuer from card details
+		if ( methodType === 'card' && paymentMethodDetails?.type === 'card' ) {
+			// Type assertion is safe here because we've checked the type
+			const cardDetails = paymentMethodDetails.card as {
+				issuer?: string;
+			};
+			return cardDetails.issuer || null;
+		}
+
+		// For BNPL (affirm, afterpay_clearpay, klarna) disputes are all handled directly through the BNPL provider. For example, with an Affirm dispute, the `issuer` is actually Affirm
+		switch ( methodType ) {
+			case 'affirm':
+				return 'Affirm';
+			case 'afterpay_clearpay':
+				return 'Afterpay / Clearpay';
+			case 'klarna':
+				return 'Klarna';
+			default:
+				return null;
+		}
+	};
+
+	const bankName = getBankName();
+
 	const disputeAcceptAction = getAcceptDisputeProps( {
 		dispute,
 		isDisputeAcceptRequestPending,
@@ -253,6 +294,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 					dispute={ dispute }
 					isUrgent={ true }
 					paymentMethod={ paymentMethod }
+					bankName={ bankName }
 				/>
 				{ hasStagedEvidence && (
 					<InlineNotice icon={ edit } isDismissible={ false }>
@@ -270,13 +312,14 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 						dispute={ dispute }
 						customer={ customer }
 						chargeCreated={ chargeCreated }
-						isDefendable={ isDefendable }
+						bankName={ bankName }
 					/>
 				) : (
 					<DisputeSteps
 						dispute={ dispute }
 						customer={ customer }
 						chargeCreated={ chargeCreated }
+						bankName={ bankName }
 					/>
 				) }
 

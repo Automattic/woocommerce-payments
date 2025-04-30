@@ -16,18 +16,19 @@ import { reasons } from 'wcpay/disputes/strings';
 import { Dispute } from 'wcpay/types/disputes';
 import { isInquiry } from 'wcpay/disputes/utils';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
-import { useCharge } from 'wcpay/data';
 
 interface DisputeNoticeProps {
 	dispute: Dispute;
 	isUrgent: boolean;
 	paymentMethod: string | null;
+	bankName: string | null;
 }
 
 const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 	dispute,
 	isUrgent,
 	paymentMethod,
+	bankName,
 } ) => {
 	const shopperDisputeReason =
 		reasons[ dispute.reason ]?.claim ??
@@ -44,48 +45,6 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 			includeTime: true,
 		}
 	);
-
-	// Fetch charge data if needed
-	const chargeId = typeof dispute.charge === 'string' ? dispute.charge : null;
-	const { data: chargeData } = useCharge( chargeId || '' );
-
-	// Use the fetched charge data or the existing charge object
-	const charge =
-		typeof dispute.charge === 'string' ? chargeData : dispute.charge;
-
-	// Get the bank name from payment method details
-	const getBankName = () => {
-		// If charge is an empty object or not available yet, we can't get the bank name
-		if ( ! charge || Object.keys( charge ).length === 0 ) {
-			return null;
-		}
-
-		const { payment_method_details: paymentMethodDetails } = charge;
-		const methodType = paymentMethod?.toLowerCase();
-
-		// For card payments, get the issuer from card details
-		if ( methodType === 'card' && paymentMethodDetails?.type === 'card' ) {
-			// Type assertion is safe here because we've checked the type
-			const cardDetails = paymentMethodDetails.card as {
-				issuer?: string;
-			};
-			return cardDetails.issuer || null;
-		}
-
-		// For BNPL (affirm, afterpay_clearpay, klarna) disputes are all handled directly through the BNPL provider. For example, with an Affirm dispute, the `issuer` is actually Affirm
-		switch ( methodType ) {
-			case 'affirm':
-				return 'Affirm';
-			case 'afterpay_clearpay':
-				return 'Afterpay / Clearpay';
-			case 'klarna':
-				return 'Klarna';
-			default:
-				return null;
-		}
-	};
-
-	const bankName = getBankName();
 
 	// Determine the appropriate notice text based on dispute type and reason
 	let noticeText = '';

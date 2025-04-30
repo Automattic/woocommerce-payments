@@ -283,6 +283,7 @@ describe( 'DisputeNotice bank name logic', () => {
 				dispute={ dispute }
 				isUrgent={ false }
 				paymentMethod={ 'card' }
+				bankName={ null }
 			/>
 		);
 
@@ -303,6 +304,7 @@ describe( 'DisputeNotice bank name logic', () => {
 				dispute={ dispute }
 				isUrgent={ false }
 				paymentMethod={ 'giropay' }
+				bankName={ 'Deutsche Bank' }
 			/>
 		);
 
@@ -322,6 +324,7 @@ describe( 'DisputeNotice bank name logic', () => {
 				dispute={ dispute }
 				isUrgent={ false }
 				paymentMethod={ 'bancontact' }
+				bankName={ 'ING Bank' }
 			/>
 		);
 
@@ -341,6 +344,7 @@ describe( 'DisputeNotice bank name logic', () => {
 				dispute={ dispute }
 				isUrgent={ false }
 				paymentMethod={ 'sofort' }
+				bankName={ 'Commerzbank' }
 			/>
 		);
 
@@ -360,6 +364,7 @@ describe( 'DisputeNotice bank name logic', () => {
 				dispute={ dispute }
 				isUrgent={ false }
 				paymentMethod={ 'card' }
+				bankName={ 'Chase Bank' }
 			/>
 		);
 
@@ -379,6 +384,7 @@ describe( 'DisputeNotice bank name logic', () => {
 				dispute={ dispute }
 				isUrgent={ false }
 				paymentMethod={ 'card' }
+				bankName={ null }
 			/>
 		);
 
@@ -399,6 +405,7 @@ describe( 'DisputeNotice bank name logic', () => {
 				dispute={ dispute }
 				isUrgent={ false }
 				paymentMethod={ 'unknown' }
+				bankName={ null }
 			/>
 		);
 
@@ -419,6 +426,7 @@ describe( 'DisputeNotice bank name logic', () => {
 				dispute={ dispute }
 				isUrgent={ false }
 				paymentMethod={ null }
+				bankName={ null }
 			/>
 		);
 

@@ -228,9 +228,11 @@
 			font-size: 13px;
 			color: var( --Scales-Grays-gray-700, #505050 );
 			line-height: 1.4;
+			width: 80%;
 
 			@media screen and ( max-width: $break-small ) {
 				margin-bottom: 8px;
+				width: 100%;
 			}
 		}
 

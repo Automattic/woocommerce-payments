@@ -6,8 +6,7 @@
 import React, { useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
-import { ExternalLink, Icon, Button } from '@wordpress/components';
-import HelpOutlineIcon from 'gridicons/dist/help-outline';
+import { Icon, Button } from '@wordpress/components';
 import {
 	chevronDown,
 	chevronUp,
@@ -22,8 +21,6 @@ import {
 import type { Dispute } from 'wcpay/types/disputes';
 import { ChargeBillingDetails } from 'wcpay/types/charges';
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
-import { ClickTooltip } from 'wcpay/components/tooltip';
-import DisputeDueByDate from './dispute-due-by-date';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 import InlineNotice from 'components/inline-notice';
 
@@ -31,13 +28,14 @@ interface Props {
 	dispute: Dispute;
 	customer: ChargeBillingDetails | null;
 	chargeCreated: number;
-	isDefendable?: boolean;
+	bankName: string | null;
 }
 
 export const DisputeSteps: React.FC< Props > = ( {
 	dispute,
 	customer,
 	chargeCreated,
+	bankName,
 } ) => {
 	const [ isExpanded, setIsExpanded ] = useState( false );
 
@@ -202,20 +200,10 @@ export const DisputeSteps: React.FC< Props > = ( {
 							</div>
 							<div className="dispute-steps__item-description">
 								{ __(
-									'Identify the issue and work towards a resolution where possible.',
+									'Challenge the dispute if you consider the claim is invalid. Accepting the dispute will automatically close it and the order amount and the dispute fee will not be returned to you.',
 									'woocommerce-payments'
 								) }
 							</div>
-						</div>
-						<div className="dispute-steps__item-action">
-							<Button
-								variant="secondary"
-								href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#responding"
-								target="_blank"
-								rel="noopener noreferrer"
-							>
-								{ __( 'Learn how', 'woocommerce-payments' ) }
-							</Button>
 						</div>
 					</div>
 				</div>
@@ -229,9 +217,12 @@ export const DisputeSteps: React.FC< Props > = ( {
 						className="dispute-steps__notice-content"
 					>
 						{ createInterpolateElement(
-							__(
-								'<strong>WooPayments does not determine or have any influence over the resolution of the dispute process</strong> and is not liable for any chargebacks that occur when using WooPayments. The cardholder’s bank makes the decision in this process.',
-								'woocommerce-payments'
+							sprintf(
+								__(
+									'<strong>WooPayments does not determine the outcome of the dispute process</strong> and is not liable for any chargebacks <strong>%1$s</strong>.',
+									'woocommerce-payments'
+								),
+								bankName
 							),
 							{
 								strong: <strong />,
@@ -248,7 +239,7 @@ export const InquirySteps: React.FC< Props > = ( {
 	dispute,
 	customer,
 	chargeCreated,
-	isDefendable,
+	bankName,
 } ) => {
 	const [ isExpanded, setIsExpanded ] = useState( false );
 
@@ -361,14 +352,7 @@ export const InquirySteps: React.FC< Props > = ( {
 										'woocommerce-payments'
 									) }
 								</Button>
-							) : (
-								<Button variant="secondary" disabled>
-									{ __(
-										'Email customer',
-										'woocommerce-payments'
-									) }
-								</Button>
-							) }
+							) : null }
 						</div>
 					</div>
 
@@ -380,99 +364,15 @@ export const InquirySteps: React.FC< Props > = ( {
 						<div className="dispute-steps__item-content">
 							<div className="dispute-steps__item-name">
 								{ __(
-									'Provide guidance for inquiry withdrawal',
+									'Submit evidence or issue a refund',
 									'woocommerce-payments'
 								) }
 							</div>
 							<div className="dispute-steps__item-description">
 								{ __(
-									'Provide guidance and understand the issue and maybe they will change their mind.',
+									'Submit the evidence by providing the requested information.',
 									'woocommerce-payments'
 								) }
-							</div>
-						</div>
-						<div className="dispute-steps__item-action">
-							<Button
-								variant="secondary"
-								href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries"
-								target="_blank"
-								rel="noopener noreferrer"
-							>
-								{ __( 'Learn how', 'woocommerce-payments' ) }
-							</Button>
-						</div>
-					</div>
-
-					{ /* Step 3: Challenge or accept the dispute */ }
-					<div className="dispute-steps__item">
-						<div className="dispute-steps__item-icon">
-							<Icon icon={ page } />
-						</div>
-						<div className="dispute-steps__item-content">
-							<div className="dispute-steps__item-name">
-								{ __(
-									'Challenge or accept the dispute',
-									'woocommerce-payments'
-								) }
-							</div>
-							<div className="dispute-steps__item-description">
-								{ isDefendable
-									? createInterpolateElement(
-											__(
-												'Submit evidence <submitEvidenceIcon/> or issue a refund by <dueByDate/>.',
-												'woocommerce-payments'
-											),
-											{
-												submitEvidenceIcon: (
-													<ClickTooltip
-														buttonIcon={
-															<HelpOutlineIcon />
-														}
-														buttonLabel={ __(
-															'Submit evidence tooltip',
-															'woocommerce-payments'
-														) }
-														content={ createInterpolateElement(
-															__(
-																"To submit evidence, provide documentation that supports your case. Keep in mind that submitting evidence doesn't ensure a favorable outcome. If the cardholder agrees to withdraw the inquiry, you'll still need to officially submit your evidence to prevent bank escalation. <learnMoreLink>Learn more</learnMoreLink>",
-																'woocommerce-payments'
-															),
-															{
-																learnMoreLink: (
-																	<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries" />
-																),
-															}
-														) }
-													/>
-												),
-												dueByDate: (
-													<DisputeDueByDate
-														dueBy={
-															dispute
-																.evidence_details
-																.due_by
-														}
-													/>
-												),
-											}
-									  )
-									: createInterpolateElement(
-											__(
-												'Issue a refund by <dueByDate/>.',
-												'woocommerce-payments'
-											),
-											{
-												dueByDate: (
-													<DisputeDueByDate
-														dueBy={
-															dispute
-																.evidence_details
-																.due_by
-														}
-													/>
-												),
-											}
-									  ) }
 							</div>
 						</div>
 						<div className="dispute-steps__item-action">
@@ -497,10 +397,18 @@ export const InquirySteps: React.FC< Props > = ( {
 						className="dispute-steps__notice-content"
 					>
 						{ createInterpolateElement(
-							__(
-								"<strong>WooPayments has no influence over the outcome of inquiries</strong>. The cardholder's bank will review the evidence and make a final decision.",
-								'woocommerce-payments'
-							),
+							bankName
+								? sprintf(
+										__(
+											'<strong>WooPayments does not determine the outcome of the dispute process</strong> and is not liable for any chargebacks. <strong>%1$s</strong> makes the decision in this process.',
+											'woocommerce-payments'
+										),
+										bankName
+								  )
+								: __(
+										"<strong>WooPayments does not determine the outcome of the dispute process</strong> and is not liable for any chargebacks. The cardholder's bank makes the decision in this process.",
+										'woocommerce-payments'
+								  ),
 							{
 								strong: <strong />,
 							}
