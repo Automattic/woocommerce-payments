@@ -38,7 +38,11 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 
 	// Format the deadline date
 	const dueByDate = formatDateTimeFromTimestamp(
-		dispute.evidence_details?.due_by ?? 0
+		dispute.evidence_details?.due_by ?? 0,
+		{
+			separator: ' ',
+			includeTime: true,
+		}
 	);
 
 	// Fetch charge data if needed
