@@ -57,46 +57,60 @@ const cards: TestVariablesType = {
 	},
 };
 
-test.describe( 'Shopper can save and delete cards', () => {
-	let timeAdded: number;
-	// Use cards different than other tests to prevent conflicts.
-	const card2 = config.cards.basic2;
-	let shopperPage: Page;
+const makeCardTimingHelper = () => {
+	let lastCardAddedAt: number | null = null;
 
-	test.beforeAll( async ( { browser }, { project } ) => {
-		shopperPage = ( await getShopper( browser, true, project.use.baseURL ) )
-			.shopperPage;
-
-		await ensureCustomerIsLoggedIn( shopperPage, project );
-	} );
-
-	async function waitTwentySecondsSinceLastCardAdded( page: Page ) {
+	return {
 		// Make sure that at least 20s had already elapsed since the last card was added.
 		// Otherwise, you will get the error message,
 		// "You cannot add a new payment method so soon after the previous one."
 		// Source: /docker/wordpress/wp-content/plugins/woocommerce/includes/class-wc-form-handler.php#L509-L521
 
 		// Be careful that this is only needed for a successful card addition, so call it only where it's needed the most, to prevent unnecessary delays.
-		const timeTestFinished = Date.now();
-		const elapsedWaitTime = timeTestFinished - timeAdded;
-		const remainingWaitTime =
-			20000 > elapsedWaitTime ? 20000 - elapsedWaitTime : 0;
+		async waitIfNeededBeforeAddingCard( page: Page ) {
+			if ( ! lastCardAddedAt ) return;
 
-		if ( remainingWaitTime > 0 ) {
-			await page.waitForTimeout( remainingWaitTime );
-		}
-	}
+			const elapsed = Date.now() - lastCardAddedAt;
+			const waitTime = 20000 - elapsed;
+
+			if ( waitTime > 0 ) {
+				await page.waitForTimeout( waitTime );
+			}
+		},
+
+		markCardAdded() {
+			lastCardAddedAt = Date.now();
+		},
+	};
+};
+
+test.describe( 'Shopper can save and delete cards', () => {
+	// Use cards different from other tests to prevent conflicts.
+	const card2 = config.cards.basic2;
+	let shopperPage: Page;
+
+	const cardTimingHelper = makeCardTimingHelper();
+
+	test.beforeAll( async ( { browser }, { project } ) => {
+		shopperPage = ( await getShopper( browser, true, project.use.baseURL ) )
+			.shopperPage;
+
+		await ensureCustomerIsLoggedIn( shopperPage, project );
+
+		// calling it first here, just in case a card was added in a previous test.
+		cardTimingHelper.markCardAdded();
+	} );
 
 	// No need to run this test for all card types.
 	test( 'prevents adding another card for 20 seconds after a card is added', async () => {
 		await goToMyAccount( shopperPage, 'payment-methods' );
 
 		// Make sure that at least 20s had already elapsed since the last card was added.
-		await waitTwentySecondsSinceLastCardAdded( shopperPage );
+		await cardTimingHelper.waitIfNeededBeforeAddingCard( shopperPage );
 
 		await addSavedCard( shopperPage, config.cards.basic, 'US', '94110' );
 		// Take note of the time when we added this card
-		timeAdded = +Date.now();
+		cardTimingHelper.markCardAdded();
 
 		await expect(
 			shopperPage.getByText( 'Payment method successfully added.' )
@@ -115,7 +129,7 @@ test.describe( 'Shopper can save and delete cards', () => {
 		} catch ( error ) {
 			await expect(
 				shopperPage.getByText(
-					'You cannot add a new payment method so soon after the previous one. Please wait for 20 seconds.'
+					'You cannot add a new payment method so soon after the previous one.'
 				)
 			).toBeVisible();
 		}
@@ -142,7 +156,7 @@ test.describe( 'Shopper can save and delete cards', () => {
 					async () => {
 						await goToMyAccount( shopperPage, 'payment-methods' );
 						// Make sure that at least 20s had already elapsed since the last card was added.
-						await waitTwentySecondsSinceLastCardAdded(
+						await cardTimingHelper.waitIfNeededBeforeAddingCard(
 							shopperPage
 						);
 
@@ -152,12 +166,16 @@ test.describe( 'Shopper can save and delete cards', () => {
 							address.country,
 							address.postalCode
 						);
-						// Take note of the time when we added this card
-						timeAdded = +Date.now();
 
 						if ( cardName === '3ds' || cardName === '3ds2' ) {
 							await confirmCardAuthentication( shopperPage );
 						}
+
+						// Take note of the time when we added this card
+						cardTimingHelper.markCardAdded();
+
+						// waiting for the new page to be loaded, since there is a redirect happening after the submission..
+						await shopperPage.waitForLoadState( 'networkidle' );
 
 						await expect(
 							shopperPage.getByText(
@@ -168,7 +186,7 @@ test.describe( 'Shopper can save and delete cards', () => {
 						// Verify that the card was added
 						await expect(
 							shopperPage.getByText(
-								'You cannot add a new payment method so soon after the previous one. Please wait for 20 seconds.'
+								'You cannot add a new payment method so soon after the previous one.'
 							)
 						).not.toBeVisible();
 						await expect(
@@ -209,13 +227,13 @@ test.describe( 'Shopper can save and delete cards', () => {
 					async () => {
 						await goToMyAccount( shopperPage, 'payment-methods' );
 						// Make sure that at least 20s had already elapsed since the last card was added.
-						await waitTwentySecondsSinceLastCardAdded(
+						await cardTimingHelper.waitIfNeededBeforeAddingCard(
 							shopperPage
 						);
 
 						await addSavedCard( shopperPage, card2, 'US', '94110' );
 						// Take note of the time when we added this card
-						timeAdded = +Date.now();
+						cardTimingHelper.markCardAdded();
 
 						await expect(
 							shopperPage.getByText(
