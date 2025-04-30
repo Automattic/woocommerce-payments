@@ -17,7 +17,6 @@ import { Dispute } from 'wcpay/types/disputes';
 import { isInquiry } from 'wcpay/disputes/utils';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 import { useCharge } from 'wcpay/data';
-import { getTransactionPaymentMethodTitle } from 'wcpay/transactions/utils/getTransactionPaymentMethodTitle';
 
 interface DisputeNoticeProps {
 	dispute: Dispute;
@@ -60,17 +59,26 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 		const { payment_method_details: paymentMethodDetails } = charge;
 		const methodType = paymentMethod?.toLowerCase();
 
-		// For non-card payment methods, return the payment method title
-		if ( methodType && methodType !== 'card' ) {
-			return getTransactionPaymentMethodTitle( methodType );
+		// For card payments, get the issuer from card details
+		if ( methodType === 'card' && paymentMethodDetails?.type === 'card' ) {
+			// Type assertion is safe here because we've checked the type
+			const cardDetails = paymentMethodDetails.card as {
+				issuer?: string;
+			};
+			return cardDetails.issuer || null;
 		}
 
-		if ( methodType === 'card' && 'card' in paymentMethodDetails ) {
-			const { issuer } = paymentMethodDetails.card;
-			return issuer && typeof issuer === 'string' ? issuer : null;
+		// For BNPL (affirm, afterpay_clearpay, klarna) disputes are all handled directly through the BNPL provider. For example, with an Affirm dispute, the `issuer` is actually Affirm
+		switch ( methodType ) {
+			case 'affirm':
+				return 'Affirm';
+			case 'afterpay_clearpay':
+				return 'Afterpay / Clearpay';
+			case 'klarna':
+				return 'Klarna';
+			default:
+				return null;
 		}
-
-		return null;
 	};
 
 	const bankName = getBankName();
@@ -127,7 +135,7 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 					  )
 					: sprintf(
 							__(
-								'<strong>%1$s</strong> Challenge the dispute by <strong>%3$s</strong> if you can prove delivery. ' +
+								'<strong>%1$s</strong> Challenge the dispute by <strong>%2$s</strong> if you can prove delivery. ' +
 									'Otherwise, accept the dispute and refund the customer. ' +
 									'Non-response will result in an automatic loss.',
 								'woocommerce-payments'
@@ -151,7 +159,7 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 					  )
 					: sprintf(
 							__(
-								'<strong>%1$s</strong> Challenge the dispute by <strong>%3$s</strong> if you can prove the product was as described. ' +
+								'<strong>%1$s</strong> Challenge the dispute by <strong>%2$s</strong> if you can prove the product was as described. ' +
 									'Otherwise, accept the dispute and refund the customer. ' +
 									'Non-response will result in an automatic loss.',
 								'woocommerce-payments'
@@ -175,7 +183,7 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 					  )
 					: sprintf(
 							__(
-								'<strong>%1$s</strong> Challenge the dispute by <strong>%3$s</strong> if you can prove the transaction was authorized. ' +
+								'<strong>%1$s</strong> Challenge the dispute by <strong>%2$s</strong> if you can prove the transaction was authorized. ' +
 									'Otherwise, accept the dispute and refund the customer. ' +
 									'Non-response will result in an automatic loss.',
 								'woocommerce-payments'
@@ -199,7 +207,7 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 					  )
 					: sprintf(
 							__(
-								'<strong>%1$s</strong> Challenge the dispute by <strong>%3$s</strong> if you can prove this is not a duplicate charge. ' +
+								'<strong>%1$s</strong> Challenge the dispute by <strong>%2$s</strong> if you can prove this is not a duplicate charge. ' +
 									'Otherwise, accept the dispute and refund the customer. ' +
 									'Non-response will result in an automatic loss.',
 								'woocommerce-payments'
@@ -223,7 +231,7 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 					  )
 					: sprintf(
 							__(
-								'<strong>%1$s</strong> Challenge the dispute by <strong>%3$s</strong> if you can prove the subscription was not canceled. ' +
+								'<strong>%1$s</strong> Challenge the dispute by <strong>%2$s</strong> if you can prove the subscription was not canceled. ' +
 									'Otherwise, accept the dispute and refund the customer. ' +
 									'Non-response will result in an automatic loss.',
 								'woocommerce-payments'
@@ -248,7 +256,7 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 					  )
 					: sprintf(
 							__(
-								"<strong>%1$s</strong> Challenge the dispute with the cardholder's bank by <strong>%3$s</strong> if you believe the claim is invalid, " +
+								"<strong>%1$s</strong> Challenge the dispute with the cardholder's bank by <strong>%2$s</strong> if you believe the claim is invalid, " +
 									'or accept to forfeit the funds and pay the dispute fee. ' +
 									'Non-response will result in an automatic loss.',
 								'woocommerce-payments'
