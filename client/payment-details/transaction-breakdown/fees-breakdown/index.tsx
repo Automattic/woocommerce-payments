@@ -232,13 +232,30 @@ const FeesBreakdown: React.FC< {
 
 	// Tax row.
 	if ( event.fee_rates?.tax && event.fee_rates.tax.amount !== 0 ) {
+		let taxAmount = Math.abs( event.fee_rates.tax.amount );
+		let taxCurrency = event.fee_rates.tax.currency;
+
+		// Handle currency conversion if there's a fee exchange rate
+		if ( event.fee_rates.fee_exchange_rate ) {
+			const {
+				rate,
+				from_currency: fromCurrency,
+			} = event.fee_rates.fee_exchange_rate;
+			// Convert based on the direction of the exchange rate
+			taxAmount =
+				taxCurrency === fromCurrency
+					? taxAmount * rate // Converting from store currency to customer currency
+					: taxAmount / rate; // Converting from customer currency to store currency
+			taxCurrency = storeCurrency;
+		}
+
 		fees.push(
 			<FeeRow
 				key="fee_tax"
 				type="tax"
 				percentage={ 0 }
-				fixed={ Math.abs( event.fee_rates.tax.amount ) }
-				currency={ event.fee_rates.tax.currency }
+				fixed={ taxAmount }
+				currency={ taxCurrency }
 				displayFixedPart={ true }
 				isDiscounted={ false }
 				additionalType=""
