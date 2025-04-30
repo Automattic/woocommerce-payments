@@ -33,7 +33,7 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 	const shopperDisputeReason =
 		reasons[ dispute.reason ]?.claim ??
 		__(
-			'The cardholder claims this is an unrecognized charge.',
+			'The cardholder claims this is an unauthorized charge.',
 			'woocommerce-payments'
 		);
 
@@ -58,7 +58,7 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 	}
 	// Handle regular inquiries
 	else if ( isInquiry( dispute.status ) ) {
-		/* translators: %1$s is the clients claim for the dispute, eg "The cardholder claims this is an unrecognized charge." %2$s is the bank name, eg "Chase Bank". %3$s is the deadline date, eg "Aug 18, 2023 11:59 PM". */
+		/* translators: %1$s is the clients claim for the dispute, eg "The cardholder claims this is an unauthorized charge." %2$s is the bank name, eg "Chase Bank". %3$s is the deadline date, eg "Aug 18, 2023 11:59 PM". */
 		noticeText = bankName
 			? sprintf(
 					__(
@@ -80,7 +80,7 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 	}
 	// Handle specific dispute reasons
 	else {
-		/* translators: %1$s is the clients claim for the dispute, eg "The cardholder claims this is an unrecognized charge." %2$s is the bank name, eg "Chase Bank". %3$s is the deadline date, eg "Aug 18, 2023 11:59 PM". */
+		/* translators: %1$s is the clients claim for the dispute, eg "The cardholder claims this is an unauthorized charge." %2$s is the bank name, eg "Chase Bank". %3$s is the deadline date, eg "Aug 18, 2023 11:59 PM". */
 		noticeText = bankName
 			? sprintf(
 					__(
