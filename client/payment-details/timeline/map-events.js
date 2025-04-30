@@ -246,59 +246,46 @@ export const composeNetString = ( event ) => {
 };
 
 export const composeTaxString = ( event ) => {
-	if ( ! event.fee_rates?.tax ) {
+	const tax = event.fee_rates?.tax;
+	if ( ! tax || tax.amount === 0 ) {
 		return '';
 	}
 
-	const taxAmount = event.fee_rates.tax.amount;
-	if ( taxAmount === 0 ) {
-		return '';
-	}
-
-	const taxCurrency = event.fee_rates.tax.currency;
-	const taxPercentage = event.fee_rates.tax.percentage_rate;
-	const taxDescription = event.fee_rates.tax.description;
-
-	// Always format the amount as negative
-	const formattedAmount = formatCurrency(
-		-Math.abs( taxAmount ),
-		taxCurrency
-	);
-
-	// If there's no description, just show the percentage
-	if (
-		! taxDescription &&
-		taxPercentage !== null &&
-		! isNaN( taxPercentage )
-	) {
-		return sprintf(
-			/* translators: 1: tax percentage 2: tax amount */
-			__( 'Tax (%1$s): %2$s', 'woocommerce-payments' ),
-			( taxPercentage * 100 ).toFixed( 2 ) + '%',
-			formattedAmount
-		);
-	}
-
-	// Use the localized description if available
-	const localizedDescription = taxDescription
-		? getLocalizedTaxDescription( taxDescription )
+	const taxPercentage = tax.percentage_rate
+		? ` (${ ( tax.percentage_rate * 100 ).toFixed( 2 ) }%)`
+		: '';
+	const taxDescription = tax.description
+		? ` ${ getLocalizedTaxDescription( tax.description ) }`
 		: '';
 
-	if ( taxPercentage !== null && ! isNaN( taxPercentage ) ) {
-		return sprintf(
-			/* translators: 1: tax description 2: tax percentage 3: tax amount */
-			__( 'Tax %1$s (%2$s): %3$s', 'woocommerce-payments' ),
-			localizedDescription,
-			( taxPercentage * 100 ).toFixed( 2 ) + '%',
-			formattedAmount
+	let formattedTaxAmount;
+	if ( isFXEvent( event ) && event.fee_rates.fee_exchange_rate ) {
+		const { rate, fromCurrency } = event.fee_rates.fee_exchange_rate;
+		const storeCurrency = event.transaction_details.store_currency;
+
+		// Convert based on the direction of the exchange rate
+		const convertedTaxAmount =
+			tax.currency === fromCurrency
+				? tax.amount * rate // Converting from store currency to customer currency
+				: tax.amount / rate; // Converting from customer currency to store currency
+
+		formattedTaxAmount = formatCurrency(
+			-Math.abs( convertedTaxAmount ),
+			storeCurrency
+		);
+	} else {
+		formattedTaxAmount = formatCurrency(
+			-Math.abs( tax.amount ),
+			tax.currency
 		);
 	}
 
 	return sprintf(
-		/* translators: 1: tax description 2: tax amount */
-		__( 'Tax %1$s: %2$s', 'woocommerce-payments' ),
-		localizedDescription,
-		formattedAmount
+		/* translators: 1: tax description 2: tax percentage 3: tax amount */
+		__( 'Tax%1$s%2$s: %3$s', 'woocommerce-payments' ),
+		taxDescription,
+		taxPercentage,
+		formattedTaxAmount
 	);
 };
 
@@ -317,26 +304,34 @@ export const composeFeeString = ( event ) => {
 		fixed_currency: fixedCurrency,
 		history,
 	} = event.fee_rates;
-	let feeAmount = event.fee;
-	let feeCurrency = event.currency;
-
-	if ( event.fee_rates.before_tax ) {
-		feeAmount = event.fee_rates.before_tax.amount;
-		feeCurrency = event.fee_rates.before_tax.currency;
-	} else if ( isFXEvent( event ) ) {
-		feeAmount = event.transaction_details.store_fee;
-		feeCurrency = event.transaction_details.store_currency;
-	}
 
 	const baseFeeLabel = isBaseFeeOnly( event )
 		? __( 'Base fee', 'woocommerce-payments' )
 		: __( 'Fee', 'woocommerce-payments' );
 
+	// Get the appropriate fee amounts and currencies
+	let feeAmount, feeCurrency, baseFee, baseFeeCurrency;
+	if ( isFXEvent( event ) ) {
+		feeAmount = event.transaction_details.store_fee;
+		feeCurrency = event.transaction_details.store_currency;
+		baseFee = fixed || 0;
+		baseFeeCurrency = fixedCurrency || feeCurrency;
+	} else {
+		feeAmount = event.fee_rates.before_tax
+			? event.fee_rates.before_tax.amount
+			: event.fee;
+		feeCurrency = event.fee_rates.before_tax
+			? event.fee_rates.before_tax.currency
+			: event.currency;
+		baseFee = fixed;
+		baseFeeCurrency = fixedCurrency;
+	}
+
 	if ( isBaseFeeOnly( event ) && history[ 0 ]?.capped ) {
 		return sprintf(
 			'%1$s (capped at %2$s): %3$s',
 			baseFeeLabel,
-			formatCurrency( fixed, fixedCurrency ),
+			formatCurrency( baseFee, baseFeeCurrency ),
 			formatCurrency( -feeAmount, feeCurrency )
 		);
 	}
@@ -350,8 +345,8 @@ export const composeFeeString = ( event ) => {
 		'%1$s (%2$f%% + %3$s%4$s): %5$s%6$s',
 		baseFeeLabel,
 		formatFee( percentage ),
-		formatCurrency( fixed, fixedCurrency ),
-		hasIdenticalSymbol ? ` ${ fixedCurrency }` : '',
+		formatCurrency( baseFee, baseFeeCurrency ),
+		hasIdenticalSymbol ? ` ${ baseFeeCurrency }` : '',
 		formatCurrency( -feeAmount, feeCurrency ),
 		hasIdenticalSymbol ? ` ${ feeCurrency }` : ''
 	);
@@ -437,7 +432,7 @@ export const feeBreakdown = ( event ) => {
 	}
 
 	const {
-		fee_rates: { history },
+		fee_rates: { history, tax },
 	} = event;
 
 	const feeLabelMapping = ( fixedRate, isCapped ) => ( {
@@ -556,6 +551,11 @@ export const feeBreakdown = ( event ) => {
 			feeHistoryStrings[ labelType ] = label;
 		}
 	} );
+
+	// Add tax information to the breakdown if available
+	if ( tax && tax.amount !== 0 ) {
+		feeHistoryStrings.tax = composeTaxString( event );
+	}
 
 	return feeHistoryStrings;
 };
@@ -760,7 +760,6 @@ const mapEventToTimelineItems = ( event ) => {
 				composeFXString( event ),
 				composeFeeString( event ),
 				composeFeeBreakdown( event ),
-				composeTaxString( event ),
 				composeNetString( event ),
 			].filter( Boolean );
 			return [
