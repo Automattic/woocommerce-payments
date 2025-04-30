@@ -589,7 +589,7 @@ export const NotDefendableInquirySteps: React.FC< Props > = ( {
 						<div className="dispute-steps__item-action">
 							<Button
 								variant="secondary"
-								href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries"
+								href="https://woocommerce.com/document/woopayments/payment-methods/buy-now-pay-later/#klarna-inquiries-returns"
 								target="_blank"
 								rel="noopener noreferrer"
 							>
