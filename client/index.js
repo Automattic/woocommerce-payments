@@ -22,7 +22,6 @@ import PaymentDetailsPage from 'payment-details';
 import DisputesPage from 'disputes';
 import RedirectToTransactionDetails from 'disputes/redirect-to-transaction-details';
 import DisputeEvidencePage from 'disputes/evidence';
-import AdditionalMethodsPage from 'wcpay/additional-methods-setup';
 import { MultiCurrencySetupPage } from 'multi-currency/interface/components';
 import CardReadersPage from 'card-readers';
 import CapitalPage from 'capital';
@@ -200,16 +199,6 @@ addFilter(
 				id: 'wc-payments-disputes-challenge',
 				parentPath: '/payments/disputes',
 			},
-			capability: 'manage_woocommerce',
-		} );
-		pages.push( {
-			container: AdditionalMethodsPage,
-			path: '/payments/additional-payment-methods',
-			wpOpenMenu: menuID,
-			breadcrumbs: [
-				rootLink,
-				__( 'Add additional payment methods', 'woocommerce-payments' ),
-			],
 			capability: 'manage_woocommerce',
 		} );
 		pages.push( {

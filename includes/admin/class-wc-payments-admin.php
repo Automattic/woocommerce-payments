@@ -1017,7 +1017,6 @@ class WC_Payments_Admin {
 			'fraudProtection'                    => [
 				'isWelcomeTourDismissed' => WC_Payments_Features::is_fraud_protection_welcome_tour_dismissed(),
 			],
-			'enabledPaymentMethods'              => $this->get_enabled_payment_method_ids(),
 			'progressiveOnboarding'              => $this->account->get_progressive_onboarding_details(),
 			'accountDefaultCurrency'             => $this->account->get_account_default_currency(),
 			'storeCurrency'                      => get_option( 'woocommerce_currency' ),
@@ -1064,31 +1063,6 @@ class WC_Payments_Admin {
 		 * @since 7.8.0
 		 */
 		return apply_filters( 'wcpay_plugins_page_js_settings', $plugins_page_settings );
-	}
-
-	/**
-	 * Helper function to retrieve enabled UPE payment methods.
-	 *
-	 * TODO: This is duplicating code located in the settings container, we should refactor so that
-	 * this is stored in a centralised place and can be retrieved from there.
-	 *
-	 * @return array
-	 */
-	private function get_enabled_payment_method_ids(): array {
-		$available_upe_payment_methods = $this->wcpay_gateway->get_upe_available_payment_methods();
-		/**
-		 * It might be possible that enabled payment methods settings have an invalid state. As an example,
-		 * if an account is switched to a new country and earlier country had PM's that are no longer valid; or if the PM is not available anymore.
-		 * To keep saving settings working, we are ensuring the enabled payment methods are yet available.
-		 */
-		$enabled_payment_methods = array_values(
-			array_intersect(
-				$this->wcpay_gateway->get_upe_enabled_payment_method_ids(),
-				$available_upe_payment_methods
-			)
-		);
-
-		return $enabled_payment_methods;
 	}
 
 	/**

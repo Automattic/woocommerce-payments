@@ -21,7 +21,7 @@ import {
 	useUnselectedPaymentMethod,
 	useGetDuplicatedPaymentMethodIds,
 } from 'wcpay/data';
-import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
+import { upeCapabilityStatuses } from 'wcpay/settings/constants';
 import DuplicatedPaymentMethodsContext from 'wcpay/settings/settings-manager/duplicated-payment-methods-context';
 
 jest.mock( '@woocommerce/components', () => {
