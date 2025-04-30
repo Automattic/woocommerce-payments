@@ -26,6 +26,13 @@ interface FeeRowProps {
 	};
 }
 
+interface TaxFeeRowProps {
+	taxAmount: number;
+	taxCurrency: string;
+	description?: string;
+	percentageRate?: number;
+}
+
 const FeesBreakdown: React.FC< {
 	event: TimelineItem;
 } > = ( { event } ) => {
@@ -128,6 +135,40 @@ const FeesBreakdown: React.FC< {
 		);
 	};
 
+	const TaxFeeRow: React.FC< TaxFeeRowProps > = ( {
+		taxAmount,
+		taxCurrency,
+		description,
+		percentageRate,
+	} ) => {
+		const formattedFeeType = formatFeeType( 'tax', '', false, {
+			description,
+			percentage_rate: percentageRate,
+		} );
+
+		const formattedFixed = formatCurrency(
+			taxAmount,
+			taxCurrency,
+			storeCurrency
+		);
+
+		return (
+			<Flex
+				className="wcpay-transaction-breakdown__fee_info wcpay-transaction-breakdown__tax_fee_info"
+				wrap={ true }
+				justify="space-between"
+				align="end"
+			>
+				<FlexItem className="wcpay-transaction-breakdown__fee_name">
+					{ formattedFeeType }
+				</FlexItem>
+				<FlexItem className="wcpay-transaction-breakdown__fee_rate">
+					{ formattedFixed } { storeCurrency }
+				</FlexItem>
+			</Flex>
+		);
+	};
+
 	const fees = [];
 
 	if ( ! event.fee_rates.history ) {
@@ -211,7 +252,6 @@ const FeesBreakdown: React.FC< {
 			<FeeRow
 				key="total"
 				type="total"
-				percentage={ 0 }
 				fixed={ event.fee_rates.before_tax.amount }
 				currency={ event.fee_rates.before_tax.currency }
 				displayFixedPart={ true }
@@ -250,20 +290,12 @@ const FeesBreakdown: React.FC< {
 		}
 
 		fees.push(
-			<FeeRow
+			<TaxFeeRow
 				key="fee_tax"
-				type="tax"
-				percentage={ 0 }
-				fixed={ taxAmount }
-				currency={ taxCurrency }
-				displayFixedPart={ true }
-				isDiscounted={ false }
-				additionalType=""
-				taxInfo={ {
-					description: event.fee_rates.tax.description,
-					percentage_rate: event.fee_rates.tax.percentage_rate,
-				} }
-				isTaxRow={ true }
+				taxAmount={ taxAmount }
+				taxCurrency={ taxCurrency }
+				description={ event.fee_rates.tax.description }
+				percentageRate={ event.fee_rates.tax.percentage_rate }
 			/>
 		);
 	}
