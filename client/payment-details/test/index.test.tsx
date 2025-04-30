@@ -355,6 +355,7 @@ describe( 'DisputeNotice bank name logic', () => {
 		const dispute = createDisputeWithPaymentMethod( 'card', {
 			card: {
 				brand: 'visa',
+				issuer: 'Chase Bank',
 			},
 			type: PAYMENT_METHOD_IDS.CARD,
 		} ) as Dispute;
@@ -368,7 +369,7 @@ describe( 'DisputeNotice bank name logic', () => {
 			/>
 		);
 
-		expect( container.textContent ).toContain( PAYMENT_METHOD_BRANDS.VISA );
+		expect( container.textContent ).toContain( 'Chase Bank' );
 	} );
 
 	it( 'should return null for card payment method with invalid brand', () => {

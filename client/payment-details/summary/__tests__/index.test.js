@@ -411,27 +411,27 @@ describe( 'PaymentDetailsSummary', () => {
 		screen.getByText( /Reach out to your customer/i, {
 			selector: '.dispute-steps__item-name',
 		} );
-		screen.getByText( /Provide guidance for inquiry withdrawal/i, {
+		screen.getByText( /Pursue a dispute withdrawal/i, {
 			selector: '.dispute-steps__item-name',
 		} );
 		screen.getByText( /Challenge or accept the dispute/i, {
 			selector: '.dispute-steps__item-name',
 		} );
 
-		expect(
-			screen.getAllByText(
-				/Identify the issue and work towards a resolution where possible\./i,
-				{ selector: '.dispute-steps__item-description' }
-			).length
-		).toBe( 2 );
-		screen.getAllByText(
-			/Provide guidance and understand the issue and maybe they will change their mind\./i,
+		screen.getByText(
+			/Identify the issue and work towards a resolution where possible\./i,
+			{ selector: '.dispute-steps__item-description' }
+		);
+		screen.getByText(
+			/See if the customer will withdraw their dispute\./i,
+			{ selector: '.dispute-steps__item-description' }
+		);
+		screen.getByText(
+			/Challenge the dispute if you consider the claim is invalid\./i,
 			{ selector: '.dispute-steps__item-description' }
 		);
 		screen.getByRole( 'link', { name: /Email customer/i } );
-		expect(
-			screen.getAllByRole( 'link', { name: /Learn how/i } ).length
-		).toBe( 2 );
+		screen.getByRole( 'link', { name: /Learn how/i } );
 
 		// Actions
 		screen.getByRole( 'button', {
@@ -687,7 +687,7 @@ describe( 'PaymentDetailsSummary', () => {
 		charge.dispute.metadata.__evidence_submitted_at = '1693400000';
 		renderCharge( charge );
 
-		screen.getByText( /You won this dispute on/i, {
+		screen.getByText( /decided that you won the dispute/i, {
 			ignore: '.a11y-speak-region',
 		} );
 		screen.getByRole( 'button', { name: /View dispute details/i } );
@@ -795,7 +795,7 @@ describe( 'PaymentDetailsSummary', () => {
 
 		renderCharge( charge );
 
-		screen.getByText( /This dispute was lost/i, {
+		screen.getByText( /decided that you lost the dispute/i, {
 			ignore: '.a11y-speak-region',
 		} );
 		// Check for the correct fee amount
