@@ -432,7 +432,7 @@ export const feeBreakdown = ( event ) => {
 	}
 
 	const {
-		fee_rates: { history, tax },
+		fee_rates: { history },
 	} = event;
 
 	const feeLabelMapping = ( fixedRate, isCapped ) => ( {
@@ -551,11 +551,6 @@ export const feeBreakdown = ( event ) => {
 			feeHistoryStrings[ labelType ] = label;
 		}
 	} );
-
-	// Add tax information to the breakdown if available
-	if ( tax && tax.amount !== 0 ) {
-		feeHistoryStrings.tax = composeTaxString( event );
-	}
 
 	return feeHistoryStrings;
 };
@@ -760,6 +755,9 @@ const mapEventToTimelineItems = ( event ) => {
 				composeFXString( event ),
 				composeFeeString( event ),
 				composeFeeBreakdown( event ),
+				event?.fee_rates?.tax?.amount !== 0
+					? composeTaxString( event )
+					: null,
 				composeNetString( event ),
 			].filter( Boolean );
 			return [
