@@ -496,19 +496,21 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 *
 	 * @param string $country_code The account's business location country code. Provide a 2-letter ISO country code.
 	 * @param string $locale       Optional. The locale to instruct the platform to use for i18n.
+	 * @param bool   $is_coming_soon Optional. Whether the site is reachable for verification. Defaults to false.
 	 *
 	 * @return array The recommended payment methods data.
 	 * @throws API_Exception Exception thrown on request failure.
 	 */
-	public function get_recommended_payment_methods( string $country_code, string $locale = '' ): array {
+	public function get_recommended_payment_methods( string $country_code, string $locale = '', bool $is_coming_soon = false ): array {
 		// We can't use the request method here because this route doesn't require a connected store
 		// and we request this data pre-onboarding.
 		// By this point, we have an expired transient or the store context has changed.
 		// Query for incentives by calling the WooPayments API.
 		$url = add_query_arg(
 			[
-				'country_code' => $country_code,
-				'locale'       => $locale,
+				'country_code'   => $country_code,
+				'locale'         => $locale,
+				'is_coming_soon' => $is_coming_soon,
 			],
 			self::ENDPOINT_BASE . '/' . self::ENDPOINT_REST_BASE . '/' . self::RECOMMENDED_PAYMENT_METHODS,
 		);

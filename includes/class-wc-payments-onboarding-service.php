@@ -163,21 +163,22 @@ class WC_Payments_Onboarding_Service {
 	 *
 	 * @param string $country_code The account's business location country code. Provide a 2-letter ISO country code.
 	 * @param string $locale       Optional. The locale to use to i18n the data.
+	 * @param bool   $is_coming_soon Optional. Whether the site is reachable for verification. Defaults to false.
 	 *
 	 * @return ?array The recommended payment methods list.
 	 *                NULL on retrieval or validation error.
 	 */
-	public function get_recommended_payment_methods( string $country_code, string $locale = '' ): ?array {
-		$cache_key = Database_Cache::RECOMMENDED_PAYMENT_METHODS . '__' . $country_code;
+	public function get_recommended_payment_methods( string $country_code, string $locale = '', bool $is_coming_soon = false ): ?array {
+		$cache_key = Database_Cache::RECOMMENDED_PAYMENT_METHODS . ':' . $country_code . ':' . ( $is_coming_soon ? 'unreachable' : 'live' );
 		if ( ! empty( $locale ) ) {
-			$cache_key .= '__' . $locale;
+			$cache_key .= ':' . $locale;
 		}
 
 		return \WC_Payments::get_database_cache()->get_or_add(
 			$cache_key,
-			function () use ( $country_code, $locale ) {
+			function () use ( $country_code, $locale, $is_coming_soon ) {
 				try {
-					return $this->payments_api_client->get_recommended_payment_methods( $country_code, $locale );
+					return $this->payments_api_client->get_recommended_payment_methods( $country_code, $locale, $is_coming_soon );
 				} catch ( API_Exception $e ) {
 					// Return NULL to signal retrieval error.
 					return null;

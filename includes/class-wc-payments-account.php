@@ -689,8 +689,17 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			return [];
 		}
 
+		// assuming that the site is accessible.
+		// if the helper is present, we can use it to check the feature flag from the settings.
+		// if the helper is not present, we'll just assume that the site is live.
+		$is_site_live = true;
+		if ( class_exists( 'Automattic\WooCommerce\Internal\ComingSoon\ComingSoonHelper' ) ) {
+			$coming_soon_helper = new \Automattic\WooCommerce\Internal\ComingSoon\ComingSoonHelper();
+			$is_site_live       = $coming_soon_helper->is_site_live();
+		}
+
 		// We use the locale for the current user (defaults to the site locale).
-		$recommended_pms = $this->onboarding_service->get_recommended_payment_methods( $country_code, get_user_locale() );
+		$recommended_pms = $this->onboarding_service->get_recommended_payment_methods( $country_code, get_user_locale(), ! $is_site_live );
 		$recommended_pms = is_array( $recommended_pms ) ? array_values( $recommended_pms ) : [];
 
 		// Validate the recommended payment methods.

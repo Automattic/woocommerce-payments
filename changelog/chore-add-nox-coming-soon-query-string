@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+update: adding whether the store is "coming soon" to better determine alipay/wechat pay eligibility
