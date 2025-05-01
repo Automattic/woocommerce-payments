@@ -762,7 +762,7 @@ class WC_Payments_Onboarding_Service {
 	 */
 	public function reset_onboarding( array $context ): bool {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
-			return false;
+			throw new Exception( __( 'Your store is not connected to WordPress.com. Please connect it first.', 'woocommerce-payments' ) );
 		}
 
 		// Delete the currently connected Stripe account, in the onboarding mode we are currently in.
@@ -808,7 +808,7 @@ class WC_Payments_Onboarding_Service {
 	 */
 	public function disable_test_drive_account( array $context ): bool {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
-			return false;
+			throw new Exception( __( 'Your store is not connected to WordPress.com. Please connect it first.', 'woocommerce-payments' ) );
 		}
 
 		// If the test mode onboarding is not enabled, we don't need to do anything.
