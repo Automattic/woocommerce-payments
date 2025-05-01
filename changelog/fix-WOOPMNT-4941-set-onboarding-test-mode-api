@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Set the onboarding test mode while creating test drive account with API
