@@ -629,6 +629,9 @@ class WC_Payments_Onboarding_Service {
 
 		$current_user = get_userdata( get_current_user_id() );
 
+		// Make sure the onboarding test mode DB flag is set.
+		self::set_test_mode( true );
+
 		$site_data    = [
 			'site_username' => wp_get_current_user()->user_login,
 			'site_locale'   => get_locale(),
