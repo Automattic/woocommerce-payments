@@ -659,8 +659,18 @@ class WC_Payments_Onboarding_Service {
 	 *
 	 * @return bool Whether the account was created.
 	 * @throws API_Exception When the API request fails.
+	 * @throws Exception When an onboarding initialization is already in progress.
 	 */
 	public function init_test_drive_account( string $country, array $capabilities = [] ): bool {
+		if ( ! $this->payments_api_client->is_server_connected() ) {
+			throw new Exception( __( 'Your store is not connected to WordPress.com. Please connect it first.', 'woocommerce-payments' ) );
+		}
+
+		if ( $this->is_onboarding_init_in_progress() ) {
+			// We can't allow multiple onboarding initializations to happen at the same time.
+			throw new Exception( __( 'Onboarding initialization is already in progress. Please wait for it to finish.', 'woocommerce-payments' ) );
+		}
+
 		// Since there should be no Stripe KYC needed, make sure we start with a clean state.
 		delete_transient( WC_Payments_Account::ONBOARDING_STATE_TRANSIENT );
 		delete_option( WC_Payments_Account::EMBEDDED_KYC_IN_PROGRESS_OPTION );
