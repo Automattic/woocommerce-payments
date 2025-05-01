@@ -431,7 +431,7 @@ describe( 'PaymentDetailsSummary', () => {
 			{ selector: '.dispute-steps__item-description' }
 		);
 		screen.getByRole( 'link', { name: /Email customer/i } );
-		screen.getByRole( 'link', { name: /Learn how/i } );
+		screen.getByRole( 'link', { name: /Learn more/i } );
 
 		// Actions
 		screen.getByRole( 'button', {

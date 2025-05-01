@@ -181,7 +181,7 @@ export const DisputeSteps: React.FC< Props > = ( {
 								target="_blank"
 								rel="noopener noreferrer"
 							>
-								{ __( 'Learn how', 'woocommerce-payments' ) }
+								{ __( 'Learn more', 'woocommerce-payments' ) }
 							</Button>
 						</div>
 					</div>
@@ -387,7 +387,7 @@ export const InquirySteps: React.FC< Props > = ( {
 								target="_blank"
 								rel="noopener noreferrer"
 							>
-								{ __( 'Learn how', 'woocommerce-payments' ) }
+								{ __( 'Learn more', 'woocommerce-payments' ) }
 							</Button>
 						</div>
 					</div>
@@ -593,7 +593,7 @@ export const NotDefendableInquirySteps: React.FC< Props > = ( {
 								target="_blank"
 								rel="noopener noreferrer"
 							>
-								{ __( 'Learn how', 'woocommerce-payments' ) }
+								{ __( 'Learn more', 'woocommerce-payments' ) }
 							</Button>
 						</div>
 					</div>
