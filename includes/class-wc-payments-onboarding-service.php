@@ -289,6 +289,14 @@ class WC_Payments_Onboarding_Service {
 			return [];
 		}
 
+		if ( $this->is_onboarding_init_in_progress() ) {
+			Logger::warning( 'Duplicate onboarding attempt detected.' );
+			// We can't allow multiple onboarding initializations to happen at the same time.
+			throw new Exception( __( 'Onboarding initialization is already in progress. Please wait for it to finish.', 'woocommerce-payments' ) );
+		}
+
+		$this->set_onboarding_init_in_progress();
+
 		$setup_mode = WC_Payments::mode()->is_live() ? 'live' : 'test';
 
 		// Make sure the onboarding test mode DB flag is set.
@@ -333,9 +341,13 @@ class WC_Payments_Onboarding_Service {
 				$this->get_referral_code()
 			);
 		} catch ( API_Exception $e ) {
+			$this->clear_onboarding_init_in_progress();
+
 			// If we fail to create the session, return an empty array.
 			return [];
 		}
+
+		$this->clear_onboarding_init_in_progress();
 
 		// Set the embedded KYC in progress flag.
 		$this->set_embedded_kyc_in_progress();
