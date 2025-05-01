@@ -23,6 +23,7 @@ class WC_Payments_Onboarding_Service {
 	const TEST_MODE_OPTION                           = 'wcpay_onboarding_test_mode';
 	const ONBOARDING_ELIGIBILITY_MODAL_OPTION        = 'wcpay_onboarding_eligibility_modal_dismissed';
 	const ONBOARDING_CONNECTION_SUCCESS_MODAL_OPTION = 'wcpay_connection_success_modal_dismissed';
+	const ONBOARDING_INIT_IN_PROGRESS_TRANSIENT      = 'wcpay_onboarding_init_in_progress';
 
 	// Onboarding flow sources.
 	// We use these to identify the originating place for the current onboarding flow.
@@ -438,6 +439,37 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
+	 * Check whether an onboarding initialization is in progress.
+	 *
+	 * This only relates to the initial account creation, not the full KYC flow.
+	 *
+	 * @return bool Whether an onboarding flow is in progress.
+	 */
+	public function is_onboarding_init_in_progress(): bool {
+		return filter_var( get_transient( self::ONBOARDING_INIT_IN_PROGRESS_TRANSIENT ), FILTER_VALIDATE_BOOLEAN );
+	}
+
+	/**
+	 * Mark the onboarding initialization as in progress.
+	 *
+	 * This only relates to the initial account creation, not the full KYC flow.
+	 *
+	 * @return void
+	 */
+	public function set_onboarding_init_in_progress(): void {
+		set_transient( self::ONBOARDING_INIT_IN_PROGRESS_TRANSIENT, 'yes', 3 * MINUTE_IN_SECONDS );
+	}
+
+	/**
+	 * Clear the onboarding initialization in progress transient.
+	 *
+	 * @return void
+	 */
+	public function clear_onboarding_init_in_progress(): void {
+		delete_transient( self::ONBOARDING_INIT_IN_PROGRESS_TRANSIENT );
+	}
+
+	/**
 	 * Check whether the business types fetched from the cache are valid.
 	 *
 	 * @param array|bool|string $business_types The business types returned from the cache.
@@ -621,11 +653,7 @@ class WC_Payments_Onboarding_Service {
 		delete_transient( WC_Payments_Account::ONBOARDING_STATE_TRANSIENT );
 		delete_option( WC_Payments_Account::EMBEDDED_KYC_IN_PROGRESS_OPTION );
 
-		// Set a quickly expiring transient to avoid duplicate requests.
-		// The duration should be sufficient for our platform to respond.
-		// There is no danger in having this transient expire too late
-		// because we delete it after we initiate the onboarding.
-		set_transient( WC_Payments_Account::ONBOARDING_STARTED_TRANSIENT, true, MINUTE_IN_SECONDS );
+		$this->set_onboarding_init_in_progress();
 
 		$current_user = get_userdata( get_current_user_id() );
 
@@ -687,8 +715,7 @@ class WC_Payments_Onboarding_Service {
 			update_option( '_wcpay_onboarding_stripe_connected', [ 'is_existing_stripe_account' => true ] );
 		}
 
-		// Clear the transient that is used to avoid duplicate requests.
-		delete_transient( WC_Payments_Account::ONBOARDING_STARTED_TRANSIENT );
+		$this->clear_onboarding_init_in_progress();
 
 		// Clear the account cache to force a refresh.
 		WC_Payments::get_account_service()->clear_cache();
@@ -814,9 +841,9 @@ class WC_Payments_Onboarding_Service {
 
 		// Discard any ongoing onboarding session.
 		delete_transient( WC_Payments_Account::ONBOARDING_STATE_TRANSIENT );
-		delete_transient( WC_Payments_Account::ONBOARDING_STARTED_TRANSIENT );
 		delete_option( WC_Payments_Account::EMBEDDED_KYC_IN_PROGRESS_OPTION );
 		delete_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT );
+		$this->clear_onboarding_init_in_progress();
 
 		// Clear the cache to avoid stale data.
 		WC_Payments::get_account_service()->clear_cache();
