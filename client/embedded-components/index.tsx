@@ -35,7 +35,6 @@ interface EmbeddedAccountOnboardingProps extends EmbeddedComponentProps {
 	onExit: () => void;
 	onStepChange?: ( step: string ) => void;
 	collectPayoutRequirements?: boolean;
-	isPoEligible?: boolean;
 }
 
 interface EmbeddedAccountNotificationBannerProps

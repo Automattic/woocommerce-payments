@@ -64,7 +64,6 @@ describe( 'EmbeddedAccountOnboarding', () => {
 			<EmbeddedAccountOnboarding
 				onboardingData={ mockOnboardingData }
 				onExit={ mockOnExit }
-				isPoEligible={ true }
 				collectPayoutRequirements={ false }
 				onStepChange={ mockOnStepChange }
 			/>
@@ -85,7 +84,6 @@ describe( 'EmbeddedAccountOnboarding', () => {
 			<EmbeddedAccountOnboarding
 				onboardingData={ mockOnboardingData }
 				onExit={ mockOnExit }
-				isPoEligible={ true }
 				collectPayoutRequirements={ true }
 				onStepChange={ mockOnStepChange }
 			/>
