@@ -8,6 +8,12 @@
 	.transaction-details-dispute-details-title {
 		margin-top: 24px;
 		margin-bottom: 24px;
+		// Heading LG
+		font-size: var( --l, 15px );
+		font-style: normal;
+		font-weight: var( --Medium, 500 );
+		line-height: var( --s, 20px ); /* 133.333% */
+		color: var( --Scales-Grays-gray-900, #1e1e1e );
 
 		@media screen and ( max-width: $break-small ) {
 			margin-top: 16px;
@@ -84,6 +90,11 @@
 				&:hover {
 					text-decoration: underline;
 				}
+
+				.components-external-link__icon {
+					margin-bottom: 1.5px;
+					margin-left: 2.5px;
+				}
 			}
 		}
 	}
@@ -113,7 +124,7 @@
 	&__header {
 		display: flex;
 		width: 100%;
-		padding: var( --Scales-grid-unit-20, 16px )
+		padding: var( --Scales-grid-unit-20, 24px )
 			var( --Scales-grid-unit-30, 24px );
 		flex-direction: row;
 		justify-content: space-between;
@@ -132,13 +143,21 @@
 		}
 
 		&-title {
-			font-weight: 600;
-			font-size: 14px;
+			// Heading LG
+			font-size: var( --l, 15px );
+			font-style: normal;
+			font-weight: var( --Medium, 500 );
+			line-height: var( --s, 20px ); /* 133.333% */
+			color: var( --Scales-Grays-gray-900, #1e1e1e );
 		}
 
 		&-subtitle {
-			font-size: 12px;
-			color: var( --Scales-Grays-gray-500, #757575 );
+			color: var( --Scales-Grays-gray-700, #757575 );
+			/* Body MD */
+			font-size: var( --m, 13px );
+			font-style: normal;
+			font-weight: var( --Regular, 400 );
+			line-height: var( --s, 20px ); /* 153.846% */
 		}
 
 		&-icon {
@@ -175,6 +194,10 @@
 		align-items: flex-start;
 		padding: 24px 0 16px;
 		border-bottom: 1px solid var( --Scales-Grays-gray-200, #e0e0e0 );
+
+		&:first-child {
+			padding: 8px 0 16px;
+		}
 
 		&:last-child {
 			border-bottom: none;
@@ -218,16 +241,25 @@
 		}
 
 		&-name {
-			font-weight: 600;
-			font-size: 14px;
-			color: var( --Scales-Grays-gray-900, #1e1e1e );
 			margin-bottom: 4px;
+			color: var( --Scales-Grays-gray-900, #1e1e1e );
+
+			/* Heading MD */
+			font-size: var( --m, 13px );
+			font-style: normal;
+			font-weight: var( --Medium, 500 );
+			line-height: var( --s, 20px ); /* 153.846% */
 		}
 
 		&-description {
-			font-size: 13px;
-			color: var( --Scales-Grays-gray-700, #505050 );
-			line-height: 1.4;
+			color: var( --Scales-Grays-gray-700, #757575 );
+
+			/* Body MD */
+			font-size: var( --m, 13px );
+			font-style: normal;
+			font-weight: var( --Regular, 400 );
+			line-height: var( --s, 20px ); /* 153.846% */
+
 			width: 80%;
 
 			@media screen and ( max-width: $break-small ) {
