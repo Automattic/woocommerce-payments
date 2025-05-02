@@ -25,10 +25,16 @@
 		padding-bottom: $grid-unit-20;
 		margin-bottom: 3px;
 
+		.wcpay-inline-notice {
+			padding: 0;
+		}
 		.wcpay-inline-notice.components-notice {
 			margin: 0 0 10px 0;
 			.components-notice__content {
-				margin: 8px 24px 8px 0;
+				letter-spacing: 0.02em;
+				font-size: 14px;
+				line-height: 1.5em;
+				margin: 16px;
 			}
 
 			&:last-child {
@@ -206,7 +212,6 @@
 
 		&:last-child {
 			border-bottom: none;
-			padding-bottom: 12px;
 		}
 
 		@media screen and ( max-width: $break-small ) {
@@ -308,6 +313,7 @@
 				letter-spacing: 0.02em;
 				margin: 8px 24px 8px 0;
 				font-size: 14px;
+				line-height: 1.5em;
 
 				@media screen and ( max-width: $break-small ) {
 					margin: 8px 16px 8px 0;
