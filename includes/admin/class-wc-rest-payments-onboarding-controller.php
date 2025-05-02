@@ -177,9 +177,14 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 					],
 					'capabilities' => [
 						'description' => 'The capabilities to request and enable for the test-drive account. Leave empty to use the default capabilities.',
-						'type'        => 'array',
+						'type'        => 'object',
 						'default'     => [],
 						'required'    => false,
+						'properties'  => [
+							'*' => [
+								'type' => 'boolean',
+							],
+						],
 					],
 				],
 			]
