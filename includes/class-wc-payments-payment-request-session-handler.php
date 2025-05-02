@@ -43,29 +43,70 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 	}
 
 	/**
+	 * Check if session initialization is needed.
+	 * Only initialize session when:
+	 * 1. User is logged in
+	 * 2. There's an active cart
+	 * 3. We're processing a payment request
+	 * 4. We're on the checkout page
+	 *
+	 * @return bool
+	 */
+	private function should_init_session() {
+		// Always initialize session for logged in users.
+		if ( is_user_logged_in() ) {
+			return true;
+		}
+
+		// Initialize if we have a cart with items.
+		if ( WC()->cart && ! WC()->cart->is_empty() ) {
+			return true;
+		}
+
+		// Initialize if we're processing a payment request.
+		if ( ! empty( $this->token ) ) {
+			return true;
+		}
+
+		// Initialize if we're on checkout page.
+		if ( is_checkout() ) {
+			return true;
+		}
+
+		// Initialize if we're on the cart page.
+		if ( is_cart() ) {
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
 	 * Init hooks and session data.
 	 *
 	 * @throws Exception On possible token mismatch.
 	 */
 	public function init() {
-		$this->init_session_cookie();
+		if ( $this->should_init_session() ) {
+			$this->init_session_cookie();
 
-		if ( $this->_customer_id !== $this->_data['token_customer_id'] ) {
-			\WCPay\Logger::error(
-				sprintf(
-					'Tokenized ECE cookie and session customer mismatch - customer: %s (%s) , session: %s (%s)',
-					var_export( $this->_customer_id, true ), // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export -- should only be triggered when logging is enabled.
-					gettype( $this->_customer_id ),
-					var_export( $this->_data['token_customer_id'], true ), // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export -- should only be triggered when logging is enabled.
-					gettype( $this->_data['token_customer_id'] )
-				)
-			);
+			if ( $this->_customer_id !== $this->_data['token_customer_id'] ) {
+				\WCPay\Logger::error(
+					sprintf(
+						'Tokenized ECE cookie and session customer mismatch - customer: %s (%s) , session: %s (%s)',
+						var_export( $this->_customer_id, true ), // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export -- should only be triggered when logging is enabled.
+						gettype( $this->_customer_id ),
+						var_export( $this->_data['token_customer_id'], true ), // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export -- should only be triggered when logging is enabled.
+						gettype( $this->_data['token_customer_id'] )
+					)
+				);
 
-			// throwing an exception here to prevent further processing of the request.
-			throw new Exception( __( 'Invalid token: cookie and session customer mismatch', 'woocommerce-payments' ) );
+				// throwing an exception here to prevent further processing of the request.
+				throw new Exception( __( 'Invalid token: cookie and session customer mismatch', 'woocommerce-payments' ) );
+			}
+
+			add_action( 'shutdown', [ $this, 'save_data' ], 20 );
 		}
-
-		add_action( 'shutdown', [ $this, 'save_data' ], 20 );
 	}
 
 	/**
