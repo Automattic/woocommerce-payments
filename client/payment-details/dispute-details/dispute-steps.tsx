@@ -144,14 +144,7 @@ export const DisputeSteps: React.FC< Props > = ( {
 										'woocommerce-payments'
 									) }
 								</Button>
-							) : (
-								<Button variant="secondary" disabled>
-									{ __(
-										'Email customer',
-										'woocommerce-payments'
-									) }
-								</Button>
-							) }
+							) : null }
 						</div>
 					</div>
 
