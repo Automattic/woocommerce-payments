@@ -1409,7 +1409,7 @@ class WC_Payments_Onboarding_Service {
 		}
 
 		// Update gateway option with the Apple/Google Pay capability.
-		if ( ! empty( $capabilities['apple_google'] ) ) {
+		if ( ! empty( $capabilities['apple_google'] ) || ( ! empty( $capabilities['apple_pay'] ) || ! empty( $capabilities['google_pay'] ) ) ) {
 			$gateway->update_option( 'payment_request', 'yes' );
 		} else {
 			$gateway->update_option( 'payment_request', 'no' );

@@ -40,6 +40,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	const TRACKS_EVENT_ACCOUNT_CONNECT_FINISHED                 = 'wcpay_account_connect_finished';
 	const TRACKS_EVENT_KYC_REMINDER_MERCHANT_RETURNED           = 'wcpay_kyc_reminder_merchant_returned';
 	const TRACKS_EVENT_ACCOUNT_REFERRAL                         = 'wcpay_account_referral';
+	const NOX_PROFILE_OPTION_KEY                                = 'woocommerce_woopayments_nox_profile';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -1378,6 +1379,10 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 				$this->onboarding_service->cleanup_on_account_reset();
 				delete_transient( self::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
+
+				// Delete the NOX profile option on account reset.
+				// This is needed to ensure merchants are not stuck with account reset and profile option set.
+				delete_option( self::NOX_PROFILE_OPTION_KEY );
 
 				// Track the onboarding (not account) reset.
 				$this->tracks_event(
