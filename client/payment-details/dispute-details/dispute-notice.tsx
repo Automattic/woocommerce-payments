@@ -62,7 +62,7 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 		noticeText = bankName
 			? sprintf(
 					__(
-						'<strong>%1$s</strong> Submit the evidence to <strong>%2$s</strong> by <strong>%3$s</strong> if you believe the claim is invalid, or issue a refund.',
+						'<strong>%1$s</strong> Submit the evidence to <strong>%2$s</strong> by <strong>%3$s</strong> if you believe the claim to be invalid, or issue a refund.',
 						'woocommerce-payments'
 					),
 					shopperDisputeReason,
@@ -71,7 +71,7 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 			  )
 			: sprintf(
 					__(
-						"<strong>%1$s</strong> Submit the evidence to <strong>Cardholder's bank</strong> by <strong>%2$s</strong> if you believe the claim is invalid, or issue a refund.",
+						"<strong>%1$s</strong> Submit the evidence to <strong>Cardholder's bank</strong> by <strong>%2$s</strong> if you believe the claim to be invalid, or issue a refund.",
 						'woocommerce-payments'
 					),
 					shopperDisputeReason,
@@ -84,7 +84,7 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 		noticeText = bankName
 			? sprintf(
 					__(
-						'<strong>%1$s</strong> Challenge the dispute with <strong>%2$s</strong> by <strong>%3$s</strong> if you believe the claim is invalid, or accept to forfeit the funds and pay the dispute fee.',
+						'<strong>%1$s</strong> Challenge the dispute with <strong>%2$s</strong> by <strong>%3$s</strong> if you believe the claim to be invalid, or accept to forfeit the funds and pay the dispute fee.',
 						'woocommerce-payments'
 					),
 					shopperDisputeReason,
@@ -93,7 +93,7 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 			  )
 			: sprintf(
 					__(
-						"<strong>%1$s</strong> Challenge the dispute with <strong>Cardholder's bank</strong> by <strong>%2$s</strong> if you believe the claim is invalid, or accept to forfeit the funds and pay the dispute fee.",
+						"<strong>%1$s</strong> Challenge the dispute with <strong>Cardholder's bank</strong> by <strong>%2$s</strong> if you believe the claim to be invalid, or accept to forfeit the funds and pay the dispute fee.",
 						'woocommerce-payments'
 					),
 					shopperDisputeReason,

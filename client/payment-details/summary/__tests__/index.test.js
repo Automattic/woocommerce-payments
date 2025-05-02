@@ -427,7 +427,7 @@ describe( 'PaymentDetailsSummary', () => {
 			{ selector: '.dispute-steps__item-description' }
 		);
 		screen.getByText(
-			/Challenge the dispute if you consider the claim is invalid\./i,
+			/Challenge the dispute if you consider the claim to be invalid\./i,
 			{ selector: '.dispute-steps__item-description' }
 		);
 		screen.getByRole( 'link', { name: /Email customer/i } );

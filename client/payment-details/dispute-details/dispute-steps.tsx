@@ -200,7 +200,7 @@ export const DisputeSteps: React.FC< Props > = ( {
 							</div>
 							<div className="dispute-steps__item-description">
 								{ __(
-									'Challenge the dispute if you consider the claim is invalid. Accepting the dispute will automatically close it and the order amount and the dispute fee will not be returned to you.',
+									'Challenge the dispute if you consider the claim to be invalid. Accepting the dispute will automatically close it and the order amount and the dispute fee will not be returned to you.',
 									'woocommerce-payments'
 								) }
 							</div>
