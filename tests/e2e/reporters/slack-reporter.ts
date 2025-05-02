@@ -8,6 +8,14 @@ import type { Reporter, TestCase, TestResult } from '@playwright/test/reporter';
  */
 import * as Slack from '../utils/slack';
 
+function slugifyForFileName( input: string ): string {
+	return input
+		.toLowerCase()
+		.replace( /[^\w\d-]+/g, '-' ) // Replace non-alphanumeric chars with dashes
+		.replace( /-+/g, '-' ) // Collapse multiple dashes
+		.replace( /^-|-$/g, '' ); // Trim leading/trailing dashes
+}
+
 class SlackReporter implements Reporter {
 	onTestEnd( test: TestCase, result: TestResult ) {
 		// If the test has already failed, we don't want to send a duplicate message.
@@ -15,17 +23,25 @@ class SlackReporter implements Reporter {
 			return;
 		}
 
-		if ( test.outcome() === 'unexpected' ) {
-			Slack.sendFailedTestMessageToSlack( test.title );
+		if ( test.outcome() !== 'unexpected' ) {
+			return;
+		}
 
-			const screenshots = result.attachments.filter(
-				( { name, path } ) => name === 'screenshot' && path
-			);
+		Slack.sendFailedTestMessageToSlack( test.titlePath().join( ' › ' ) );
 
-			if ( screenshots.length > 0 ) {
-				const [ screenshot ] = screenshots;
-				Slack.sendFailedTestScreenshotToSlack( screenshot.path );
+		const screenshots = result.attachments.filter(
+			( { name, path } ) => name === 'screenshot' && path
+		);
+		if ( screenshots.length > 0 ) {
+			const [ screenshot ] = screenshots;
+			if ( ! screenshot.path ) {
+				return;
 			}
+
+			Slack.sendFailedTestScreenshotToSlack(
+				screenshot.path,
+				slugifyForFileName( test.title )
+			);
 		}
 	}
 }

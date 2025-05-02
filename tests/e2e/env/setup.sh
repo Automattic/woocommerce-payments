@@ -35,7 +35,7 @@ handle_permissions() {
 }
 
 # Variables
-BLOG_ID=${E2E_BLOG_ID-111}
+BLOG_ID=${E2E_JP_SITE_ID-111}
 WC_GUEST_EMAIL=$(<"$USERS_CONFIG_JSON_PATH" jq -r '.users.guest.email')
 WC_CUSTOMER_EMAIL=$(<"$USERS_CONFIG_JSON_PATH" jq -r '.users.customer.email')
 WC_CUSTOMER_USERNAME=$(<"$USERS_CONFIG_JSON_PATH" jq -r '.users.customer.username')
@@ -261,10 +261,15 @@ if [[ "$IS_WORKAROUND_REQUIRED" = "1" ]]; then
 
 	# Ensuring that a "checkout-wcb" page exists, which is the one that will contain the "WooCommerce Blocks" checkout
 	cli wp post create --from-post="$CHECKOUT_PAGE_ID" --post_type="page" --post_title="Checkout WCB" --post_status="publish" --post_name="checkout-wcb"
+	CHECKOUT_WCB_PAGE_ID=$(cli_debug wp post url-to-id checkout-wcb)
 
 	# Update cart & checkout pages to use shortcode.
 	cli wp post update "$CART_PAGE_ID" --post_content="$CART_SHORTCODE"
 	cli wp post update "$CHECKOUT_PAGE_ID" --post_content="$CHECKOUT_SHORTCODE"
+
+	# making the checkout pages full width, so that the sidebar doesn't take too much room in the UI.
+	cli wp post meta update "$CHECKOUT_PAGE_ID" _wp_page_template "template-fullwidth.php"
+	cli wp post meta update "$CHECKOUT_WCB_PAGE_ID" _wp_page_template "template-fullwidth.php"
 fi
 # End - Workaround for > WC 8.3 compatibility by updating cart & checkout pages to use shortcode.
 
@@ -326,7 +331,7 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	cli wp wcpay_dev refresh_account_data
 else
 	echo "Setting Jetpack blog_id"
-	cli wp wcpay_dev set_blog_id "$BLOG_ID" --blog_token="$E2E_BLOG_TOKEN" --user_token="$E2E_USER_TOKEN"
+	cli wp wcpay_dev set_blog_id "$BLOG_ID" --blog_token="$E2E_JP_BLOG_TOKEN" --user_token="$E2E_JP_USER_TOKEN"
 fi
 
 if [[ ! ${SKIP_WC_SUBSCRIPTIONS_TESTS} ]]; then

@@ -11,12 +11,13 @@ import { getMerchant, getShopper } from '../../../utils/helpers';
 import * as merchant from '../../../utils/merchant';
 import * as shopper from '../../../utils/shopper';
 import * as devtools from '../../../utils/devtools';
-import { config } from '../../../config/default';
+import * as navigation from '../../../utils/shopper-navigation';
 
 const cardTestingProtectionStates = [ false, true ];
 const bnplProviders = [ 'Affirm', 'Cash App Afterpay' ];
-const products = [ config.products.belt, config.products.sunglasses ];
 
+// using multiple products to prevent the "order duplication service" to be triggered.
+const products = [ 'belt', 'sunglasses' ];
 test.describe( 'BNPL checkout', { tag: '@critical' }, () => {
 	let merchantPage: Page;
 	let shopperPage: Page;
@@ -60,10 +61,18 @@ test.describe( 'BNPL checkout', { tag: '@critical' }, () => {
 				const provider = bnplProviders[ i ];
 
 				test( `Checkout with ${ provider }`, async () => {
-					await shopper.addToCartFromShopPage(
+					await navigation.goToProductPageBySlug(
 						shopperPage,
-						products[ i % 2 ]
+						products[ i % products.length ]
 					);
+
+					await shopperPage
+						.getByRole( 'button', { name: 'Add to cart' } )
+						.click();
+					await shopperPage.waitForLoadState( 'domcontentloaded' );
+					await expect(
+						shopperPage.getByText( /has been added to your cart\./ )
+					).toBeVisible();
 
 					await shopper.setupCheckout( shopperPage );
 					await shopper.selectPaymentMethod( shopperPage, provider );
@@ -73,8 +82,9 @@ test.describe( 'BNPL checkout', { tag: '@critical' }, () => {
 					);
 					await shopper.placeOrder( shopperPage );
 					await expect(
-						shopperPage.getByText( 'test payment page' )
+						shopperPage.getByText( /test payment page/ )
 					).toBeVisible();
+					// sometimes it's a button, other times it's a link.
 					await shopperPage
 						.getByText( 'Authorize Test Payment' )
 						.click();
