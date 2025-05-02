@@ -44,10 +44,18 @@ const getStatusChangeTimelineItem = ( event, status ) => {
 	return {
 		date: new Date( event.datetime * 1000 ),
 		icon: <SyncIcon />,
-		headline: sprintf(
-			// translators: %s new status, for example Authorized, Refunded, etc
-			__( 'Payment status changed to %s.', 'woocommerce-payments' ),
-			status
+		headline: createInterpolateElement(
+			sprintf(
+				// translators: %s new status, for example Authorized, Refunded, etc
+				__(
+					'Payment status changed to <strong>%s</strong>.',
+					'woocommerce-payments'
+				),
+				status
+			),
+			{
+				strong: <strong />,
+			}
 		),
 		body: [],
 	};
