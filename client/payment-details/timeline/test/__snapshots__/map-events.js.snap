@@ -512,7 +512,16 @@ exports[`mapTimelineEvents single currency events formats dispute_lost events 1`
   {
     "body": [],
     "date": 2020-04-05T02:56:10.000Z,
-    "headline": "Dispute lost. The bank ruled in favor of your customer.",
+    "headline": <React.Fragment>
+      <strong>
+        Dispute lost.
+      </strong>
+       
+      <strong>
+        The bank
+      </strong>
+       decided that you lost the dispute.
+    </React.Fragment>,
     "icon": <CrossIcon
       className="is-error"
     />,

@@ -100,7 +100,14 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         </g>
                       </svg>
                       <span>
-                        Dispute lost. The bank ruled in favor of your customer.
+                        <strong>
+                          Dispute lost.
+                        </strong>
+                         
+                        <strong>
+                          The bank
+                        </strong>
+                         decided that you lost the dispute.
                       </span>
                     </div>
                     <span
