@@ -611,10 +611,11 @@ const getAutomaticFraudOutcomeTimelineItem = ( event, status ) => {
  * Formats an event into one or more payment timeline items
  *
  * @param {Object} event An event data
+ * @param {string | null} bankName The name of the bank
  *
  * @return {Array} Payment timeline items
  */
-const mapEventToTimelineItems = ( event ) => {
+const mapEventToTimelineItems = ( event, bankName = null ) => {
 	const { type } = event;
 
 	const stringWithAmount = ( headline, amount, explicit = false ) =>
@@ -930,9 +931,22 @@ const mapEventToTimelineItems = ( event ) => {
 				),
 				getMainTimelineItem(
 					event,
-					__(
-						'Dispute lost. The bank ruled in favor of your customer.',
-						'woocommerce-payments'
+					createInterpolateElement(
+						bankName
+							? sprintf(
+									__(
+										'<strong>Dispute lost.</strong> <strong>%s</strong> decided that you lost the dispute.',
+										'woocommerce-payments'
+									),
+									bankName
+							  )
+							: __(
+									'<strong>Dispute lost.</strong> <strong>The bank</strong> decided that you lost the dispute.',
+									'woocommerce-payments'
+							  ),
+						{
+							strong: <strong />,
+						}
 					),
 					<CrossIcon className="is-error" />
 				),
@@ -1007,13 +1021,16 @@ const mapEventToTimelineItems = ( event ) => {
  * Maps the timeline events coming from the server to items that can be used in Timeline component
  *
  * @param {Array} timelineEvents array of events
+ * @param {string | null} bankName The name of the bank
  *
  * @return {Array} Array of view items
  */
-export default ( timelineEvents ) => {
+export default ( timelineEvents, bankName = null ) => {
 	if ( ! timelineEvents ) {
 		return [];
 	}
 
-	return flatMap( timelineEvents, mapEventToTimelineItems );
+	return flatMap( timelineEvents, ( event ) =>
+		mapEventToTimelineItems( event, bankName )
+	);
 };

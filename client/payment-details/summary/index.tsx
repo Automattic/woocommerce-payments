@@ -28,6 +28,7 @@ import {
 	getChargeStatus,
 	getChargeChannel,
 	isOnHoldByFraudTools,
+	getBankName,
 } from 'utils/charge';
 import isValueTruthy from 'utils/is-value-truthy';
 import PaymentStatusChip from 'components/payment-status-chip';
@@ -256,35 +257,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 
 	const [ isRefundModalOpen, setIsRefundModalOpen ] = useState( false );
 
-	// Get the bank name from payment method details
-	const getBankName = () => {
-		const { payment_method_details: paymentMethodDetails } = charge;
-		const methodType = paymentMethodDetails?.type?.toLowerCase();
-
-		// For card payments, get the issuer from card details
-		if ( methodType === 'card' && paymentMethodDetails?.type === 'card' ) {
-			// Type assertion is safe here because we've checked the type
-			const cardDetails = paymentMethodDetails.card as {
-				issuer?: string;
-			};
-			return cardDetails.issuer || null;
-		}
-
-		// For BNPL (affirm, afterpay_clearpay, klarna) disputes are all handled directly through the BNPL provider.
-		// For example, with an Affirm dispute, the `issuer` is actually Affirm
-		switch ( methodType ) {
-			case 'affirm':
-				return 'Affirm';
-			case 'afterpay_clearpay':
-				return 'Afterpay / Clearpay';
-			case 'klarna':
-				return 'Klarna';
-			default:
-				return null;
-		}
-	};
-
-	const bankName = getBankName();
+	const bankName = getBankName( charge );
 	return (
 		<Card>
 			<CardBody>
