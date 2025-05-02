@@ -954,15 +954,59 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		$checkout_fields = $wc_checkout->get_checkout_fields();
 		$countries       = WC()->countries->get_countries();
 
-		$is_supported = true;
-		// Checks if billing state is missing and is required.
-		if ( ! empty( $checkout_fields['billing']['billing_state']['required'] ) && '' === $posted_data['billing_state'] ) {
-			$is_supported = false;
+		// List of countries where Apple Pay does not provide a state field, using Country_Code constants.
+		$no_state_countries = [
+			Country_Code::ALGERIA,
+			Country_Code::ANGOLA,
+			Country_Code::BANGLADESH,
+			Country_Code::BENIN,
+			Country_Code::BOLIVIA,
+			Country_Code::BULGARIA,
+			Country_Code::DOMINICAN_REPUBLIC,
+			Country_Code::GHANA,
+			Country_Code::GUATEMALA,
+			Country_Code::HUNGARY,
+			Country_Code::KENYA,
+			Country_Code::LAOS,
+			Country_Code::LIBERIA,
+			Country_Code::MOLDOVA,
+			Country_Code::NAMIBIA,
+			Country_Code::NEPAL,
+			Country_Code::PAKISTAN,
+			Country_Code::PARAGUAY,
+			Country_Code::ROMANIA,
+			Country_Code::SOUTH_AFRICA,
+			Country_Code::TANZANIA,
+			Country_Code::UGANDA,
+			Country_Code::ZAMBIA,
+		];
+
+		$is_supported     = true;
+		$billing_country  = $posted_data['billing_country'] ?? '';
+		$shipping_country = $posted_data['shipping_country'] ?? '';
+		// phpcs:ignore WordPress.Security.NonceVerification.Missing -- express_payment_type is used for read-only logic, not security-sensitive.
+		$express_payment_type = isset( $_POST['express_payment_type'] ) ? wc_clean( wp_unslash( $_POST['express_payment_type'] ) ) : '';
+
+		// Only skip state validation for Apple Pay and countries in the exception list.
+		$skip_billing_state  = (
+			'apple_pay' === $express_payment_type &&
+			in_array( $billing_country, $no_state_countries, true )
+		);
+		$skip_shipping_state = (
+			'apple_pay' === $express_payment_type &&
+			in_array( $shipping_country, $no_state_countries, true )
+		);
+
+		if ( ! $skip_billing_state ) {
+			if ( ! empty( $checkout_fields['billing']['billing_state']['required'] ) && '' === $posted_data['billing_state'] ) {
+				$is_supported = false;
+			}
 		}
 
-		// Checks if shipping state is missing and is required.
-		if ( WC()->cart->needs_shipping_address() && ! empty( $checkout_fields['shipping']['shipping_state']['required'] ) && '' === $posted_data['shipping_state'] ) {
-			$is_supported = false;
+		if ( WC()->cart->needs_shipping_address() && ! $skip_shipping_state ) {
+			if ( ! empty( $checkout_fields['shipping']['shipping_state']['required'] ) && '' === $posted_data['shipping_state'] ) {
+				$is_supported = false;
+			}
 		}
 
 		if ( ! $is_supported ) {
@@ -995,7 +1039,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		// with both English and Mandarin spelling.
 		//
 		// @reykjalin: The check here is quite elaborate in an attempt to make sure this doesn't break once
-		// Apple Pay fixes the bug that causes address values to be in the wrong place. Because of that the
+		// Apple Pay fixes the bug. Because of that the
 		// algorithm becomes:
 		// 1. Use the supplied state if it's valid (in case Apple Pay bug is fixed)
 		// 2. Use the value supplied in the postcode if it's a valid HK region (equivalent to a WC state).
