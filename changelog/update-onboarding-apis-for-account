@@ -1,4 +1,0 @@
-Significance: patch
-Type: update
-
-Add dedicated onboarding REST API endpoint for resetting onboarding, when possible.
