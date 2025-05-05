@@ -87,6 +87,9 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 
 == Changelog ==
 
+= 9.4.0-test-1 - unreleased =
+* Update - chore: update "Tested up to" WordPress 6.8
+
 = 9.3.0 - 2025-05-05 =
 * Add - Add dedicated onboarding REST API endpoint for disabling test drive account, when possible.
 * Add - Transaction Fees breakdown component in the Payment details.

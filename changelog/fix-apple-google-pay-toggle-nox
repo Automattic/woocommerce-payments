@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Fix Apple Pay and Google Pay not requested from NOX In-context flow.
