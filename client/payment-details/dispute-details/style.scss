@@ -203,7 +203,7 @@
 	&__item {
 		display: flex;
 		align-items: center;
-		padding: 24px 0 16px;
+		padding: 16px 0 16px;
 		border-bottom: 1px solid var( --Scales-Grays-gray-200, #e0e0e0 );
 
 		&:first-child {
@@ -238,7 +238,7 @@
 			svg {
 				width: 24px;
 				height: 24px;
-				color: var( --Scales-Grays-gray-700, #505050 );
+				color: var( --Scales-Grays-gray-700, #757575 );
 			}
 		}
 
