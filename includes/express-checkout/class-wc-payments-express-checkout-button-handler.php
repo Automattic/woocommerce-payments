@@ -400,10 +400,9 @@ class WC_Payments_Express_Checkout_Button_Handler {
 	 * @return void
 	 */
 	public function set_session() {
-		// Don't set session cookies on product pages to allow for caching when express checkout
-		// buttons are disabled. But keep cookies if there is already an active WC session in place.
+		// Only set session cookies on checkout and cart pages, but skip if there's already an active WC session.
 		if (
-			! ( $this->express_checkout_helper->is_product() && $this->express_checkout_helper->should_show_express_checkout_button() )
+			! ( $this->express_checkout_helper->is_checkout() || $this->express_checkout_helper->is_cart() )
 			|| ( isset( WC()->session ) && WC()->session->has_session() )
 		) {
 			return;
