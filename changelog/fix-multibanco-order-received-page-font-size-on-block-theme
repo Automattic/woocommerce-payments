@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-fix: Multibanco payment instructions font size adjustment on some block-based themes (e.g.: Twenty-Twenty-Four, Twenty-Twenty-Three)
