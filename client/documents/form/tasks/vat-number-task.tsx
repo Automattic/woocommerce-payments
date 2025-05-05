@@ -19,7 +19,7 @@ import apiFetch from '@wordpress/api-fetch';
 import CollapsibleBody from 'wcpay/additional-methods-setup/wizard/collapsible-body';
 import WizardTaskItem from 'wcpay/additional-methods-setup/wizard/task-item';
 import WizardTaskContext from 'wcpay/additional-methods-setup/wizard/task/context';
-import { VatError, VatFormOnCompleted, VatValidationResult } from '../../types';
+import { VatError, VatFormOnCompleted } from '../../types';
 import '../style.scss';
 
 /**
@@ -123,13 +123,17 @@ export const VatNumberTask = ( {
 			if ( null !== normalizedVatNumber ) {
 				setLoading( true );
 
-				const validationResult = await apiFetch< VatValidationResult >(
-					{
-						path: `/wc/v3/payments/vat/${ encodeURI(
-							normalizedVatNumber
-						) }`,
-					}
-				);
+				const validationResult = await apiFetch< {
+					address: string | null;
+					country_code: string;
+					name: string | null;
+					valid: boolean;
+					vat_number: string;
+				} >( {
+					path: `/wc/v3/payments/vat/${ encodeURI(
+						normalizedVatNumber
+					) }`,
+				} );
 
 				setLoading( false );
 

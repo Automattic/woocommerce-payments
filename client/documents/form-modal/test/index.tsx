@@ -11,13 +11,13 @@ import React from 'react';
  * Internal dependencies
  */
 import VatFormModal from '..';
-import VatForm from '../../form';
+import TaxDetailsForm from '../../form';
 
 jest.mock( '../../form', () => jest.fn() );
 
 describe( 'Tax details modal', () => {
 	beforeEach( () => {
-		jest.mocked( VatForm ).mockReturnValue( <p>VAT Form</p> );
+		jest.mocked( TaxDetailsForm ).mockReturnValue( <p>VAT Form</p> );
 	} );
 
 	it( 'should render when isModalOpen is true', () => {

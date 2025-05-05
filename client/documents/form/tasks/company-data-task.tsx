@@ -19,12 +19,7 @@ import apiFetch from '@wordpress/api-fetch';
 import CollapsibleBody from 'wcpay/additional-methods-setup/wizard/collapsible-body';
 import WizardTaskItem from 'wcpay/additional-methods-setup/wizard/task-item';
 import WizardTaskContext from 'wcpay/additional-methods-setup/wizard/task/context';
-import {
-	VatError,
-	VatFormOnCompleted,
-	VatSaveDetails,
-	VatSaveDetailsResult,
-} from '../../types';
+import { VatError, VatFormOnCompleted } from '../../types';
 
 export const CompanyDataTask = ( {
 	onCompleted,
@@ -60,16 +55,17 @@ export const CompanyDataTask = ( {
 		try {
 			setLoading( true );
 
-			const details: VatSaveDetails = {
+			const details = {
 				name: companyName,
 				address: companyAddress,
+				vat_number: vatNumber ?? undefined,
 			};
 
-			if ( vatNumber !== null ) {
-				details.vat_number = vatNumber;
-			}
-
-			const savedDetails = await apiFetch< VatSaveDetailsResult >( {
+			const savedDetails = await apiFetch< {
+				vat_number: string | null;
+				name: string;
+				address: string;
+			} >( {
 				path: '/wc/v3/payments/vat',
 				method: 'POST',
 				data: details,

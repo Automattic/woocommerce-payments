@@ -15,14 +15,14 @@ import { useUserPreferences } from '@woocommerce/data';
 import { DocumentsList } from '../';
 import { useDocuments, useDocumentsSummary } from 'data/index';
 import type { Document } from 'data/documents/hooks';
-import VatForm from 'wcpay/vat/form';
+import TaxDetailsForm from 'wcpay/documents/form';
 
 jest.mock( 'data/index', () => ( {
 	useDocuments: jest.fn(),
 	useDocumentsSummary: jest.fn(),
 } ) );
 
-jest.mock( 'wcpay/vat/form', () => jest.fn() );
+jest.mock( 'wcpay/documents/vat/form', () => jest.fn() );
 
 jest.mock( '@woocommerce/data', () => {
 	const actualModule = jest.requireActual( '@woocommerce/data' );
@@ -207,7 +207,9 @@ describe( 'Document download button', () => {
 				documentsError: undefined,
 			} );
 
-			jest.mocked( VatForm ).mockImplementation( ( { onCompleted } ) => (
+			jest.mocked(
+				TaxDetailsForm
+			).mockImplementation( ( { onCompleted } ) => (
 				<button
 					onClick={ () =>
 						onCompleted(
