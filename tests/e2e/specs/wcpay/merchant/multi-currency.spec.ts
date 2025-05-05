@@ -62,12 +62,14 @@ test.describe( 'Multi-currency', { tag: '@critical' }, () => {
 			await page.getByRole( 'button', { name: 'Close' } ).click();
 		}
 
-		await page.getByRole( 'button', { name: 'Add block' } ).click();
-		await page
+		const editor = page.frameLocator( '[name="editor-canvas"]' );
+
+		await editor.getByRole( 'button', { name: 'Add block' } ).click();
+		await editor
 			.locator( 'input[placeholder="Search"]' )
 			.pressSequentially( 'switcher', { delay: 20 } );
 		await expect(
-			page.getByRole( 'option', { name: 'Currency Switcher Block' } )
+			editor.getByRole( 'option', { name: 'Currency Switcher Block' } )
 		).toBeVisible();
 	} );
 } );
