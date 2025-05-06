@@ -27,7 +27,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	// ACCOUNT_OPTION is only used in the supporting dev tools plugin, it can be removed once everyone has upgraded.
 	const ACCOUNT_OPTION                                        = 'wcpay_account_data';
 	const ONBOARDING_DISABLED_TRANSIENT                         = 'wcpay_on_boarding_disabled';
-	const ONBOARDING_STARTED_TRANSIENT                          = 'wcpay_on_boarding_started';
 	const ONBOARDING_STATE_TRANSIENT                            = 'wcpay_stripe_onboarding_state';
 	const WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT                   = 'woopay_enabled_by_default';
 	const ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT       = 'test_drive_account_settings_for_live_account';
@@ -41,6 +40,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	const TRACKS_EVENT_ACCOUNT_CONNECT_FINISHED                 = 'wcpay_account_connect_finished';
 	const TRACKS_EVENT_KYC_REMINDER_MERCHANT_RETURNED           = 'wcpay_kyc_reminder_merchant_returned';
 	const TRACKS_EVENT_ACCOUNT_REFERRAL                         = 'wcpay_account_referral';
+	const NOX_PROFILE_OPTION_KEY                                = 'woocommerce_woopayments_nox_profile';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -1389,6 +1389,10 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				$this->onboarding_service->cleanup_on_account_reset();
 				delete_transient( self::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
 
+				// Delete the NOX profile option on account reset.
+				// This is needed to ensure merchants are not stuck with account reset and profile option set.
+				delete_option( self::NOX_PROFILE_OPTION_KEY );
+
 				// Track the onboarding (not account) reset.
 				$this->tracks_event(
 					WC_Payments_Onboarding_Service::TRACKS_EVENT_ONBOARDING_RESET,
@@ -1637,7 +1641,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			// the merchant will get redirected to the Payments > Overview page.
 			try {
 				// Prevent duplicate requests to start the onboarding flow.
-				if ( get_transient( self::ONBOARDING_STARTED_TRANSIENT ) ) {
+				if ( $this->onboarding_service->is_onboarding_init_in_progress() ) {
 					Logger::warning( 'Duplicate onboarding attempt detected.' );
 					$this->redirect_service->redirect_to_connect_page(
 						__( 'There was a duplicate attempt to initiate account setup. Please wait a few seconds and try again.', 'woocommerce-payments' )
@@ -1705,11 +1709,8 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 					return;
 				}
 
-				// Set a quickly expiring transient to avoid duplicate requests.
-				// The duration should be sufficient for our platform to respond.
-				// There is no danger in having this transient expire too late
-				// because we delete it after we initiate the onboarding.
-				set_transient( self::ONBOARDING_STARTED_TRANSIENT, true, MINUTE_IN_SECONDS );
+				// Mark the onboarding initialization as in progress.
+				$this->onboarding_service->set_onboarding_init_in_progress();
 
 				$redirect_to = $this->init_stripe_onboarding(
 					$create_test_drive_account ? 'test_drive' : ( $should_onboard_in_test_mode ? 'test' : 'live' ),
@@ -1723,7 +1724,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 					]
 				);
 
-				delete_transient( self::ONBOARDING_STARTED_TRANSIENT );
+				$this->onboarding_service->clear_onboarding_init_in_progress();
 
 				// Always clear the account cache after a Stripe onboarding init attempt.
 				// This allows the merchant to use connect links to refresh its account cache, in case something is wrong.
@@ -1742,7 +1743,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 					$this->redirect_service->redirect_to( $redirect_to );
 				}
 			} catch ( API_Exception $e ) {
-				delete_transient( self::ONBOARDING_STARTED_TRANSIENT );
+				$this->onboarding_service->clear_onboarding_init_in_progress();
 
 				// Always clear the account cache in case of errors.
 				$this->clear_cache();
