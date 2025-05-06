@@ -3,41 +3,51 @@
  */
 import { __ } from '@wordpress/i18n';
 
+/**
+ * Supported tax description codes for different countries and tax types.
+ * These codes are used to identify and localize tax descriptions in the UI.
+ *
+ * Format: [Country Code] [Tax Type]
+ * Examples:
+ * - "US VAT" for United States Value Added Tax
+ * - "JP JCT" for Japan Consumption Tax
+ * - "AU GST" for Australian Goods and Services Tax
+ */
 type TaxDescriptionKey =
-	| 'AT VAT'
-	| 'BE VAT'
-	| 'BG VAT'
-	| 'CY VAT'
-	| 'CZ VAT'
-	| 'DE VAT'
-	| 'DK VAT'
-	| 'EE VAT'
-	| 'ES VAT'
-	| 'FI VAT'
-	| 'FR VAT'
-	| 'GB VAT'
-	| 'GR VAT'
-	| 'HR VAT'
-	| 'HU VAT'
-	| 'IE VAT'
-	| 'IT VAT'
-	| 'LT VAT'
-	| 'LU VAT'
-	| 'LV VAT'
-	| 'MT VAT'
-	| 'NL VAT'
-	| 'PL VAT'
-	| 'PT VAT'
-	| 'RO VAT'
-	| 'SE VAT'
-	| 'SI VAT'
-	| 'SK VAT'
-	| 'AU GST'
-	| 'NZ GST'
-	| 'SG GST'
-	| 'CH VAT'
-	| 'JP JCT'
-	| 'default';
+	| 'AT VAT' // Austria VAT
+	| 'BE VAT' // Belgium VAT
+	| 'BG VAT' // Bulgaria VAT
+	| 'CY VAT' // Cyprus VAT
+	| 'CZ VAT' // Czech Republic VAT
+	| 'DE VAT' // Germany VAT
+	| 'DK VAT' // Denmark VAT
+	| 'EE VAT' // Estonia VAT
+	| 'ES VAT' // Spain VAT
+	| 'FI VAT' // Finland VAT
+	| 'FR VAT' // France VAT
+	| 'GB VAT' // Great Britain VAT
+	| 'GR VAT' // Greece VAT
+	| 'HR VAT' // Croatia VAT
+	| 'HU VAT' // Hungary VAT
+	| 'IE VAT' // Ireland VAT
+	| 'IT VAT' // Italy VAT
+	| 'LT VAT' // Lithuania VAT
+	| 'LU VAT' // Luxembourg VAT
+	| 'LV VAT' // Latvia VAT
+	| 'MT VAT' // Malta VAT
+	| 'NL VAT' // Netherlands VAT
+	| 'PL VAT' // Poland VAT
+	| 'PT VAT' // Portugal VAT
+	| 'RO VAT' // Romania VAT
+	| 'SE VAT' // Sweden VAT
+	| 'SI VAT' // Slovenia VAT
+	| 'SK VAT' // Slovakia VAT
+	| 'AU GST' // Australia GST
+	| 'NZ GST' // New Zealand GST
+	| 'SG GST' // Singapore GST
+	| 'CH VAT' // Switzerland VAT
+	| 'JP JCT' // Japan Consumption Tax
+	| 'default'; // Default tax description when no specific code matches
 
 /**
  * Tax description mapping for localization.
