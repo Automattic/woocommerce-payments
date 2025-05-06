@@ -11,6 +11,7 @@ import { formatCurrency } from 'multi-currency/interface/functions';
 import { formatFeeType } from '../utils';
 import { TimelineItem, TimelineFeeRate } from 'wcpay/data/timeline/types';
 import { Flex, FlexItem } from '@wordpress/components';
+import { getLocalizedTaxDescription } from '../../utils/tax-descriptions';
 
 interface FeeRowProps {
 	type: string;
@@ -27,8 +28,6 @@ interface FeeRowProps {
 }
 
 interface TaxFeeRowProps {
-	taxAmount: number;
-	taxCurrency: string;
 	description?: string;
 	percentageRate?: number;
 }
@@ -80,9 +79,10 @@ const FeesBreakdown: React.FC< {
 			);
 		}
 
-		const formattedPercentage = percentage
-			? `${ Number.parseFloat( ( percentage * 100 ).toFixed( 2 ) ) }%`
-			: '0%';
+		const formattedPercentage =
+			percentage !== undefined
+				? `${ Number.parseFloat( ( percentage * 100 ).toFixed( 2 ) ) }%`
+				: '0%';
 		const formattedFixed = formatCurrency( fixed, currency, storeCurrency );
 
 		const result = [ formattedPercentage ];
@@ -136,21 +136,13 @@ const FeesBreakdown: React.FC< {
 	};
 
 	const TaxFeeRow: React.FC< TaxFeeRowProps > = ( {
-		taxAmount,
-		taxCurrency,
 		description,
 		percentageRate,
 	} ) => {
-		const formattedFeeType = formatFeeType( 'tax', '', false, {
-			description,
-			percentage_rate: percentageRate,
-		} );
-
-		const formattedFixed = formatCurrency(
-			taxAmount,
-			taxCurrency,
-			storeCurrency
-		);
+		const formattedFeeType = formatFeeType( 'tax', '', false );
+		const localizedDescription = description
+			? getLocalizedTaxDescription( description )
+			: '';
 
 		return (
 			<Flex
@@ -163,7 +155,10 @@ const FeesBreakdown: React.FC< {
 					{ formattedFeeType }
 				</FlexItem>
 				<FlexItem className="wcpay-transaction-breakdown__fee_rate">
-					{ formattedFixed } { storeCurrency }
+					{ localizedDescription }
+					{ percentageRate
+						? ` ${ ( percentageRate * 100 ).toFixed( 2 ) }%`
+						: '' }
 				</FlexItem>
 			</Flex>
 		);
@@ -246,54 +241,26 @@ const FeesBreakdown: React.FC< {
 		} );
 	}
 
-	// Total "before tax" row, or just a total row.
-	if ( event.fee_rates.before_tax ) {
-		fees.push(
-			<FeeRow
-				key="total"
-				type="total"
-				fixed={ event.fee_rates.before_tax.amount }
-				currency={ event.fee_rates.before_tax.currency }
-				displayFixedPart={ true }
-			/>
-		);
-	} else {
-		fees.push(
-			<FeeRow
-				key="total"
-				type="total"
-				percentage={ event.fee_rates.percentage }
-				fixed={ event.fee_rates.fixed / feeExchangeRate }
-				currency={ storeCurrency }
-				displayFixedPart={ true }
-			/>
-		);
-	}
+	// Calculate total percentage by summing up all non-discount fees
+	const totalPercentage = event.fee_rates.percentage;
+
+	// // Total row
+	fees.push(
+		<FeeRow
+			key="total"
+			type="total"
+			percentage={ totalPercentage }
+			fixed={ event.fee_rates.fixed / feeExchangeRate }
+			currency={ storeCurrency }
+			displayFixedPart={ true }
+		/>
+	);
 
 	// Tax row.
 	if ( event.fee_rates?.tax && event.fee_rates.tax.amount !== 0 ) {
-		let taxAmount = Math.abs( event.fee_rates.tax.amount );
-		let taxCurrency = event.fee_rates.tax.currency;
-
-		// Handle currency conversion if there's a fee exchange rate
-		if ( event.fee_rates.fee_exchange_rate ) {
-			const {
-				rate,
-				from_currency: fromCurrency,
-			} = event.fee_rates.fee_exchange_rate;
-			// Convert based on the direction of the exchange rate
-			taxAmount =
-				taxCurrency === fromCurrency
-					? taxAmount * rate // Converting from store currency to customer currency
-					: taxAmount / rate; // Converting from customer currency to store currency
-			taxCurrency = storeCurrency;
-		}
-
 		fees.push(
 			<TaxFeeRow
 				key="fee_tax"
-				taxAmount={ taxAmount }
-				taxCurrency={ taxCurrency }
 				description={ event.fee_rates.tax.description }
 				percentageRate={ event.fee_rates.tax.percentage_rate }
 			/>
