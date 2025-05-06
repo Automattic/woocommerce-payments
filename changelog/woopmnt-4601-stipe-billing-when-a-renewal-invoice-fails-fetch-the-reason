@@ -1,4 +1,0 @@
-Significance: minor
-Type: update
-
-Include a failure message in the order notes when Stripe Billing subscription renewal has failed.

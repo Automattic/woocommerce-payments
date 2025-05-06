@@ -1,4 +1,0 @@
-Significance: minor
-Type: update
-
-Update account session creation route definition to use POST rather than GET.
