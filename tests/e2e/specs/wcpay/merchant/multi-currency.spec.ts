@@ -62,6 +62,8 @@ test.describe( 'Multi-currency', { tag: '@critical' }, () => {
 			await page.getByRole( 'button', { name: 'Close' } ).click();
 		}
 
+		await expect( page.locator( '[name="editor-canvas"]' ) ).toBeAttached();
+
 		const editor = page.frameLocator( '[name="editor-canvas"]' );
 
 		await editor.getByRole( 'button', { name: 'Add block' } ).click();
