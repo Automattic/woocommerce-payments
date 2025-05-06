@@ -24,6 +24,7 @@ import StripeSpinner from 'wcpay/components/stripe-spinner';
 import BannerNotice from 'wcpay/components/banner-notice';
 import { AccountSession } from 'wcpay/embedded-components/types';
 import { trackRedirected } from 'wcpay/onboarding/tracking';
+import { __ } from '@wordpress/i18n';
 
 interface EmbeddedComponentProps {
 	onLoaderStart?: ( { elementTagName }: LoaderStart ) => void;
@@ -87,7 +88,10 @@ const useInitializeStripe = (
 
 				if ( ! publishableKey ) {
 					throw new Error(
-						'Missing publishable key in session response'
+						__(
+							'Unable to start onboarding. If this problem persists, please contact support.',
+							'woocommerce-payments'
+						)
 					);
 				}
 
@@ -104,7 +108,12 @@ const useInitializeStripe = (
 				setStripeConnectInstance( instance );
 			} catch ( err ) {
 				setInitializationError(
-					err instanceof Error ? err.message : 'Unknown error'
+					err instanceof Error
+						? err.message
+						: __(
+								'Unable to start onboarding. If this problem persists, please contact support.',
+								'woocommerce-payments'
+						  )
 				);
 			} finally {
 				setLoading( false );
