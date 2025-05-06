@@ -592,10 +592,6 @@ class WC_Payments_Onboarding_Service {
 						'last_name'  => $self_assessment_data['individual']['last_name'] ?? null,
 						'phone'      => $self_assessment_data['phone'] ?? null,
 					],
-					'store'         => [
-						'annual_revenue'    => $self_assessment_data['annual_revenue'] ?? null,
-						'go_live_timeframe' => $self_assessment_data['go_live_timeframe'] ?? null,
-					],
 				]
 			);
 		} elseif ( 'test_drive' === $setup_mode ) {
