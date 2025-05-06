@@ -1094,8 +1094,11 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$_GET['promo']       = 'incentive_id';
 		$_GET['progressive'] = 'true';
 
-		// There isn't another onboarding started.
-		set_transient( WC_Payments_Account::ONBOARDING_STARTED_TRANSIENT, true, 10 );
+		// There is another onboarding started.
+		$this->mock_onboarding_service
+			->expects( $this->once() )
+			->method( 'is_onboarding_init_in_progress' )
+			->willReturn( true );
 
 		// The Jetpack connection is in working order.
 		$this->mock_jetpack_connection();
