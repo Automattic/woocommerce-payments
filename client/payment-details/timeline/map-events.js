@@ -251,11 +251,25 @@ export const composeTaxString = ( event ) => {
 		return '';
 	}
 
-	const taxPercentage = tax.percentage_rate
-		? ` (${ ( tax.percentage_rate * 100 ).toFixed( 2 ) }%)`
-		: '';
 	const taxDescription = tax.description
 		? ` ${ getLocalizedTaxDescription( tax.description ) }`
+		: '';
+
+	// Validate tax percentage rate is within reasonable bounds (0-100%)
+	if (
+		tax.percentage_rate !== undefined &&
+		( tax.percentage_rate < 0 || tax.percentage_rate > 1 )
+	) {
+		return sprintf(
+			/* translators: 1: tax description 2: tax amount */
+			__( 'Tax%1$s: %2$s', 'woocommerce-payments' ),
+			taxDescription,
+			formatCurrency( -Math.abs( tax.amount ), tax.currency )
+		);
+	}
+
+	const taxPercentage = tax.percentage_rate
+		? ` (${ ( tax.percentage_rate * 100 ).toFixed( 2 ) }%)`
 		: '';
 
 	let formattedTaxAmount;
