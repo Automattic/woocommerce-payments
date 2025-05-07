@@ -32,19 +32,19 @@ const formatPaymentMethodDetails = ( charge: Charge ): PaymentMethodDetails => {
 /**
  * Placeholders to display while loading.
  */
-const paymentMethodPlaceholders: PaymentMethodDetails = {
-	id: 'id placeholder',
-	name: 'name placeholder',
-	email: 'email placeholder',
-	formattedAddress: 'address placeholder',
+const paymentMethodPlaceholders = {
+	id: __( 'id placeholder', 'woocommerce-payments' ),
+	name: __( 'name placeholder', 'woocommerce-payments' ),
+	email: __( 'email placeholder', 'woocommerce-payments' ),
+	formattedAddress: __( 'address placeholder', 'woocommerce-payments' ),
 };
 
-interface WeChatPayDetailsProps {
+interface Props {
 	charge?: Charge;
 	isLoading: boolean;
 }
 
-const WeChatPayDetails: React.FC< WeChatPayDetailsProps > = ( {
+const BasePaymentMethodDetails: React.FC< Props > = ( {
 	charge,
 	isLoading,
 } ) => {
@@ -95,4 +95,4 @@ const WeChatPayDetails: React.FC< WeChatPayDetailsProps > = ( {
 	);
 };
 
-export default WeChatPayDetails;
+export default BasePaymentMethodDetails;
