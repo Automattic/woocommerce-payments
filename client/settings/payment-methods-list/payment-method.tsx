@@ -22,7 +22,6 @@ import WCPaySettingsContext from '../wcpay-settings-context';
 import Chip from 'wcpay/components/chip';
 import LoadableCheckboxControl from 'wcpay/components/loadable-checkbox';
 import Pill from 'wcpay/components/pill';
-import InlineNotice from 'wcpay/components/inline-notice';
 import './payment-method.scss';
 import DuplicateNotice from 'wcpay/components/duplicate-notice';
 import DuplicatedPaymentMethodsContext from '../settings-manager/duplicated-payment-methods-context';
