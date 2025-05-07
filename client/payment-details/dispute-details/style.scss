@@ -5,11 +5,37 @@
 	padding-right: 24px;
 	padding-bottom: 5px;
 
-	.transaction-details-dispute-details-body {
-		padding: $grid-unit-20;
+	.transaction-details-dispute-details-title {
+		margin-top: 24px;
+		margin-bottom: 24px;
+		// Heading LG
+		font-size: var( --l, 15px );
+		font-style: normal;
+		font-weight: var( --Medium, 500 );
+		line-height: var( --s, 20px ); /* 133.333% */
+		color: var( --Scales-Grays-gray-900, #1e1e1e );
 
+		@media screen and ( max-width: $break-small ) {
+			margin-top: 16px;
+			margin-bottom: 16px;
+		}
+	}
+
+	.transaction-details-dispute-details-body {
+		padding-bottom: $grid-unit-20;
+		margin-bottom: 3px;
+
+		.wcpay-inline-notice {
+			padding: 0;
+		}
 		.wcpay-inline-notice.components-notice {
 			margin: 0 0 10px 0;
+			.components-notice__content {
+				letter-spacing: 0.02em;
+				font-size: 14px;
+				line-height: 1.5em;
+				margin: 16px;
+			}
 
 			&:last-child {
 				margin-bottom: 24px;
@@ -17,7 +43,11 @@
 		}
 
 		.dispute-summary-row {
-			margin-top: 24px;
+			margin-top: 40px;
+
+			@media screen and ( max-width: $break-small ) {
+				margin-top: 24px;
+			}
 
 			&__response-date {
 				display: flex;
@@ -25,7 +55,7 @@
 				gap: var( --grid-unit-05, 4px );
 				flex-wrap: wrap;
 				&--warning {
-					color: $wp-yellow-30;
+					color: $alert-red;
 					font-weight: 700;
 				}
 				&--urgent {
@@ -50,8 +80,32 @@
 				}
 			}
 		}
+
+		&__help-link {
+			margin: 24px 0 40px;
+			text-align: left;
+
+			@media screen and ( max-width: $break-small ) {
+				margin-top: 24px 0;
+			}
+
+			.components-external-link {
+				color: var( --wp-admin-theme-color, #007cba );
+				text-decoration: none;
+
+				&:hover {
+					text-decoration: underline;
+				}
+
+				.components-external-link__icon {
+					margin-bottom: 1.5px;
+					margin-left: 2.5px;
+				}
+			}
+		}
 	}
 }
+
 .dispute-reason-tooltip {
 	p {
 		&:first-child {
@@ -64,16 +118,216 @@
 		margin-bottom: 8px;
 	}
 }
+
 .dispute-steps {
-	margin-top: 24px;
+	margin-top: 40px;
+	border-radius: var( --radius-l, 8px );
+	border: 1px solid var( --Scales-Grays-gray-200, #e0e0e0 );
+	background: var( --scales-black-white-white, #fff );
+	overflow: hidden;
+	transition: all 0.3s ease;
 
 	&__header {
-		font-weight: 600;
-		font-size: 14px;
+		display: flex;
+		width: 100%;
+		padding: var( --Scales-grid-unit-20, 24px )
+			var( --Scales-grid-unit-30, 24px );
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
+		cursor: pointer;
+		user-select: none;
+
+		&:hover {
+			// Make the text blue
+			.dispute-steps__header-title {
+				color: var( --wp-admin-theme-color, #007cba );
+			}
+		}
+
+		&-content {
+			display: flex;
+			flex-direction: column;
+			gap: 4px;
+		}
+
+		&-title {
+			letter-spacing: 0.01em;
+
+			// Heading LG
+			font-size: var( --l, 15px );
+			font-style: normal;
+			font-weight: var( --Medium, 500 );
+			line-height: var( --s, 20px ); /* 133.333% */
+			color: var( --Scales-Grays-gray-900, #1e1e1e );
+		}
+
+		&-subtitle {
+			color: var( --Scales-Grays-gray-700, #757575 );
+			/* Body MD */
+			font-size: var( --m, 13px );
+			font-style: normal;
+			font-weight: var( --Regular, 400 );
+			line-height: var( --s, 20px ); /* 153.846% */
+		}
+
+		&-icon {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			color: var( --Scales-Grays-gray-500, #757575 );
+		}
 	}
+
+	&__content {
+		max-height: 0;
+		overflow: hidden;
+		transition: max-height 0.3s ease-out;
+
+		&--expanded {
+			max-height: 2000px; // Increased to accommodate all content
+			transition: max-height 0.5s ease-in;
+		}
+	}
+
+	&__items {
+		padding: 0 var( --Scales-grid-unit-30, 24px )
+			var( --Scales-grid-unit-20, 12px );
+
+		@media screen and ( max-width: $break-small ) {
+			padding: 0 var( --Scales-grid-unit-20, 16px )
+				var( --Scales-grid-unit-20, 12px );
+		}
+	}
+
+	&__item {
+		display: flex;
+		align-items: center;
+		padding: 16px 0 16px;
+		border-bottom: 1px solid var( --Scales-Grays-gray-200, #e0e0e0 );
+
+		&:first-child {
+			padding: 4px 0 16px;
+		}
+
+		&:last-child {
+			border-bottom: none;
+		}
+
+		@media screen and ( max-width: $break-small ) {
+			flex-direction: column;
+			padding: 16px 0;
+			gap: 12px;
+		}
+
+		&-icon {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			width: 44px;
+			height: 44px;
+			border-radius: var( --radius-s, 2px );
+			padding: 10px;
+			border: 1px solid rgba( 0, 0, 0, 0.1 );
+			margin-right: 12px;
+
+			@media screen and ( max-width: $break-small ) {
+				display: none;
+			}
+
+			svg {
+				width: 24px;
+				height: 24px;
+				color: var( --Scales-Grays-gray-700, #757575 );
+			}
+		}
+
+		&-content {
+			flex: 1;
+			min-width: 0; // Prevents flex item from overflowing
+
+			@media screen and ( max-width: $break-small ) {
+				width: 100%;
+			}
+		}
+
+		&-name {
+			margin-bottom: 4px;
+			color: var( --Scales-Grays-gray-900, #1e1e1e );
+			letter-spacing: 0.01em;
+
+			/* Heading MD */
+			font-size: var( --m, 13px );
+			font-style: normal;
+			font-weight: var( --Medium, 500 );
+			line-height: var( --s, 20px ); /* 153.846% */
+		}
+
+		&-description {
+			color: var( --Scales-Grays-gray-700, #757575 );
+
+			/* Body MD */
+			font-size: var( --m, 13px );
+			font-style: normal;
+			font-weight: var( --Regular, 400 );
+			line-height: var( --s, 20px ); /* 153.846% */
+
+			width: 80%;
+
+			@media screen and ( max-width: $break-small ) {
+				margin-bottom: 8px;
+				width: 100%;
+			}
+		}
+
+		&-action {
+			margin-left: 16px;
+			flex-shrink: 0;
+
+			a {
+				padding: 4px 10px;
+				max-height: 32px;
+			}
+
+			@media screen and ( max-width: $break-small ) {
+				margin-left: 0;
+				width: 100%;
+
+				.components-button {
+					width: 100%;
+					justify-content: center;
+				}
+			}
+		}
+	}
+
+	&__notice {
+		margin: 0 var( --Scales-grid-unit-30, 24px );
+
+		@media screen and ( max-width: $break-small ) {
+			margin: 0 var( --Scales-grid-unit-20, 16px );
+		}
+
+		.dispute-steps__notice-content {
+			.components-notice__content {
+				letter-spacing: 0.02em;
+				margin: 8px 24px 8px 0;
+				font-size: 14px;
+				line-height: 1.5em;
+
+				@media screen and ( max-width: $break-small ) {
+					margin: 8px 16px 8px 0;
+					line-height: 1.4;
+				}
+			}
+		}
+	}
+
 	&__steps {
 		list-style-position: inside;
 		margin: 0;
+		padding: 0 var( --Scales-grid-unit-30, 24px )
+			var( --Scales-grid-unit-20, 16px );
 
 		> li {
 			margin: 0;
@@ -93,16 +347,16 @@
 			font-weight: 600;
 
 			&--warning {
-				color: $wp-yellow-30;
+				color: $alert-red;
 				font-weight: 700;
 			}
 			&--urgent {
 				color: $alert-red;
-				font-weight: 700;
 			}
 		}
 	}
 }
+
 .transaction-details-dispute-accept-modal {
 	&.components-modal__frame {
 		max-width: 600px;

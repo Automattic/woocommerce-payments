@@ -61,6 +61,7 @@ export type DisputeReason =
 	| 'product_not_received'
 	| 'product_unacceptable'
 	| 'subscription_canceled'
+	| 'noncompliant'
 	| 'unrecognized';
 
 export type DisputeStatus =

@@ -22,13 +22,11 @@ const DisputeDueByDate: React.FC< {
 		<span className="dispute-steps__steps__response-date">
 			{ respondByDate }
 			{ showRemainingDays && (
+				// Make it red regardless how many days are left
 				<span
-					className={ classNames( {
-						'dispute-steps__steps__response-date--urgent':
-							daysRemaining < 3,
-						'dispute-steps__steps__response-date--warning':
-							daysRemaining < 7 && daysRemaining > 2,
-					} ) }
+					className={ classNames(
+						'dispute-steps__steps__response-date--urgent'
+					) }
 				>
 					{ daysRemaining > 0 &&
 						sprintf(
