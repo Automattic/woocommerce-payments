@@ -11,7 +11,7 @@ import React, { useContext } from 'react';
 import interpolateComponents from '@automattic/interpolate-components';
 import { __, sprintf } from '@wordpress/i18n';
 import { HoverTooltip } from 'components/tooltip';
-import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
+import { upeCapabilityStatuses } from 'wcpay/settings/constants';
 import { useManualCapture } from 'wcpay/data';
 import { FeeStructure } from 'wcpay/types/fees';
 import {
@@ -21,7 +21,6 @@ import {
 import WCPaySettingsContext from '../wcpay-settings-context';
 import Chip from 'wcpay/components/chip';
 import LoadableCheckboxControl from 'wcpay/components/loadable-checkbox';
-import { getDocumentationUrlForDisabledPaymentMethod } from 'wcpay/components/payment-method-disabled-tooltip';
 import Pill from 'wcpay/components/pill';
 import InlineNotice from 'wcpay/components/inline-notice';
 import './payment-method.scss';
@@ -57,6 +56,26 @@ interface PaymentMethodProps {
 	isPoEnabled: boolean;
 	isPoComplete: boolean;
 }
+
+const documentationTypeMap = {
+	DEFAULT:
+		'https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/#method-cant-be-enabled',
+	BNPLS:
+		'https://woocommerce.com/document/woopayments/payment-methods/buy-now-pay-later/#contact-support',
+};
+
+const getDocumentationUrlForDisabledPaymentMethod = (
+	paymentMethodId: string
+): string => {
+	const paymentMethodConfig =
+		window.wooPaymentsPaymentMethodsConfig?.[ paymentMethodId ];
+
+	if ( paymentMethodConfig?.isBnpl ) {
+		return documentationTypeMap.BNPLS;
+	}
+
+	return documentationTypeMap.DEFAULT;
+};
 
 const PaymentMethodLabel = ( {
 	label,
