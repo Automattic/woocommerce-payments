@@ -615,16 +615,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		);
 
 		$this->request_unrequested_payment_methods( $payment_method_ids_to_enable );
-		$capability_key_map      = $this->wcpay_gateway->get_payment_method_capability_key_map();
-		$payment_method_statuses = $this->wcpay_gateway->get_upe_enabled_payment_method_statuses();
-
-		$payment_method_ids_to_enable = array_filter(
-			$payment_method_ids_to_enable,
-			function ( $payment_method_id_to_enable ) use ( $capability_key_map, $payment_method_statuses ) {
-				$stripe_key = $capability_key_map[ $payment_method_id_to_enable ] ?? null;
-				return array_key_exists( $stripe_key, $payment_method_statuses ) && 'active' === $payment_method_statuses[ $stripe_key ]['status'];
-			}
-		);
 
 		$active_payment_methods   = $this->wcpay_gateway->get_upe_enabled_payment_method_ids();
 		$disabled_payment_methods = array_diff( $active_payment_methods, $payment_method_ids_to_enable );
