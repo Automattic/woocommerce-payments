@@ -13,6 +13,7 @@ import {
 	ConnectComponentsProvider,
 	ConnectNotificationBanner,
 } from '@stripe/react-connect-js';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -87,7 +88,10 @@ const useInitializeStripe = (
 
 				if ( ! publishableKey ) {
 					throw new Error(
-						'Missing publishable key in session response'
+						__(
+							'Unable to start onboarding. If this problem persists, please contact support.',
+							'woocommerce-payments'
+						)
 					);
 				}
 
@@ -104,7 +108,12 @@ const useInitializeStripe = (
 				setStripeConnectInstance( instance );
 			} catch ( err ) {
 				setInitializationError(
-					err instanceof Error ? err.message : 'Unknown error'
+					err instanceof Error
+						? err.message
+						: __(
+								'Unable to start onboarding. If this problem persists, please contact support.',
+								'woocommerce-payments'
+						  )
 				);
 			} finally {
 				setLoading( false );
