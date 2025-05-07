@@ -12,18 +12,6 @@ jest.mock( 'gridicons/dist/checkmark', () => 'CheckmarkIcon' );
 jest.mock( 'gridicons/dist/cross', () => 'CrossIcon' );
 jest.mock( 'gridicons/dist/notice-outline', () => 'NoticeOutlineIcon' );
 
-// Mock the tax descriptions module
-jest.mock( '../../utils/tax-descriptions', () => ( {
-	getLocalizedTaxDescription: ( description ) => {
-		const mockTranslations = {
-			'ES VAT': 'ES IVA',
-			'FR VAT': 'FR TVA',
-			'DE VAT': 'DE MwSt',
-		};
-		return mockTranslations[ description ] || description;
-	},
-} ) );
-
 describe( 'mapTimelineEvents', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
@@ -893,7 +881,7 @@ describe( 'composeTaxString', () => {
 			},
 		};
 		expect( composeTaxString( event ) ).toBe(
-			'Tax ES IVA (21.00%): -€0.10'
+			'Tax ES VAT (21.00%): -€0.10'
 		);
 	} );
 
@@ -920,7 +908,7 @@ describe( 'composeTaxString', () => {
 				},
 			},
 		};
-		expect( composeTaxString( event ) ).toBe( 'Tax ES IVA: -€0.10' );
+		expect( composeTaxString( event ) ).toBe( 'Tax ES VAT: -€0.10' );
 	} );
 
 	it( 'should handle different currencies', () => {
@@ -935,7 +923,7 @@ describe( 'composeTaxString', () => {
 			},
 		};
 		expect( composeTaxString( event ) ).toBe(
-			'Tax FR TVA (15.00%): -$1.00'
+			'Tax FR VAT (15.00%): -$1.00'
 		);
 	} );
 
@@ -951,7 +939,7 @@ describe( 'composeTaxString', () => {
 				},
 			},
 		};
-		expect( composeTaxString( event ) ).toBe( 'Tax ES IVA: -€0.10' );
+		expect( composeTaxString( event ) ).toBe( 'Tax ES VAT: -€0.10' );
 	} );
 
 	it( 'should handle tax percentage rate over 100%', () => {
@@ -965,7 +953,7 @@ describe( 'composeTaxString', () => {
 				},
 			},
 		};
-		expect( composeTaxString( event ) ).toBe( 'Tax ES IVA: -€0.10' );
+		expect( composeTaxString( event ) ).toBe( 'Tax ES VAT: -€0.10' );
 	} );
 
 	it( 'should handle tax percentage rate at boundary (0%)', () => {
@@ -979,7 +967,7 @@ describe( 'composeTaxString', () => {
 				},
 			},
 		};
-		expect( composeTaxString( event ) ).toBe( 'Tax ES IVA: -€0.10' );
+		expect( composeTaxString( event ) ).toBe( 'Tax ES VAT: -€0.10' );
 	} );
 
 	it( 'should handle tax percentage rate at boundary (100%)', () => {
@@ -994,7 +982,7 @@ describe( 'composeTaxString', () => {
 			},
 		};
 		expect( composeTaxString( event ) ).toBe(
-			'Tax ES IVA (100.00%): -€0.10'
+			'Tax ES VAT (100.00%): -€0.10'
 		);
 	} );
 
