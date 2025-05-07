@@ -18,7 +18,7 @@ import {
 import PAYMENT_METHOD_IDS from 'wcpay/constants/payment-method';
 import PaymentMethod from './payment-method';
 import methodsConfiguration from '../../payment-methods-map';
-import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
+import { upeCapabilityStatuses } from 'wcpay/settings/constants';
 import ConfirmPaymentMethodActivationModal from './activation-modal';
 import ConfirmPaymentMethodDeleteModal from './delete-modal';
 import { getMissingCurrenciesTooltipMessage } from 'multi-currency/interface/functions';

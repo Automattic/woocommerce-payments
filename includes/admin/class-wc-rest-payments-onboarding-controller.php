@@ -68,27 +68,19 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 						'description' => 'The self-assessment data.',
 						'type'        => 'object',
 						'properties'  => [
-							'country'           => [
+							'country'       => [
 								'type'        => 'string',
 								'description' => 'The country code where the company is legally registered.',
 							],
-							'business_type'     => [
+							'business_type' => [
 								'type'        => 'string',
 								'description' => 'The company incorporation type.',
 							],
-							'mcc'               => [
+							'mcc'           => [
 								'type'        => 'string',
 								'description' => 'The merchant category code. This can either be a true MCC or an MCCs tree item id from the onboarding form.',
 							],
-							'annual_revenue'    => [
-								'type'        => 'string',
-								'description' => 'The estimated annual revenue bucket id.',
-							],
-							'go_live_timeframe' => [
-								'type'        => 'string',
-								'description' => 'The timeframe bucket for the estimated first live transaction.',
-							],
-							'site'              => [
+							'site'          => [
 								'type'        => 'string',
 								'description' => 'The URL of the site.',
 							],

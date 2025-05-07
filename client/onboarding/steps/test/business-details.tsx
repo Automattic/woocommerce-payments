@@ -15,7 +15,6 @@ import {
 	getBusinessTypes,
 	getMccsFlatList,
 } from 'onboarding/utils';
-import strings from '../../strings';
 
 jest.mock( 'onboarding/utils', () => ( {
 	getAvailableCountries: jest.fn(),
@@ -231,29 +230,5 @@ describe( 'BusinessDetails', () => {
 			'Single member LLC'
 		);
 		expect( mccField ).toHaveTextContent( 'Popular Software' );
-
-		const annualRevenueField = screen.getByText(
-			strings.placeholders.annual_revenue
-		);
-		const goLiveTimeframeField = screen.getByText(
-			strings.placeholders.go_live_timeframe
-		);
-
-		user.click( annualRevenueField );
-		user.click(
-			screen.getByText( strings.annualRevenues.from_250k_to_1m )
-		);
-
-		user.click( goLiveTimeframeField );
-		user.click(
-			screen.getByText( strings.goLiveTimeframes.within_1month )
-		);
-
-		expect( annualRevenueField ).toHaveTextContent(
-			strings.annualRevenues.from_250k_to_1m
-		);
-		expect( goLiveTimeframeField ).toHaveTextContent(
-			strings.goLiveTimeframes.within_1month
-		);
 	} );
 } );
