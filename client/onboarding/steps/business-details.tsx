@@ -51,20 +51,6 @@ const BusinessDetails: React.FC = () => {
 		selectedBusinessType?.structures.find(
 			( structure ) => structure.key === data[ 'company.structure' ]
 		);
-	const selectedMcc = mccsFlatList.find( ( mcc ) => mcc.key === data.mcc );
-
-	const annualRevenues = Object.entries( strings.annualRevenues ).map(
-		( [ key, name ] ) => ( {
-			key,
-			name,
-		} )
-	);
-	const goLiveTimeframes = Object.entries( strings.goLiveTimeframes ).map(
-		( [ key, name ] ) => ( {
-			key,
-			name,
-		} )
-	);
 
 	const handleTiedChange = (
 		name: keyof OnboardingFields,
@@ -121,28 +107,14 @@ const BusinessDetails: React.FC = () => {
 			{ selectedCountry &&
 				selectedBusinessType &&
 				selectedBusinessStructure && (
-					<span data-testid={ 'mcc-select' }>
-						<OnboardingGroupedSelectField
-							name="mcc"
-							options={ mccsFlatList }
-							searchable
-						/>
-					</span>
-				) }
-
-			{ selectedCountry &&
-				selectedBusinessType &&
-				selectedBusinessStructure &&
-				selectedMcc && (
 					<>
-						<OnboardingSelectField
-							name="annual_revenue"
-							options={ annualRevenues }
-						/>
-						<OnboardingSelectField
-							name="go_live_timeframe"
-							options={ goLiveTimeframes }
-						/>
+						<span data-testid={ 'mcc-select' }>
+							<OnboardingGroupedSelectField
+								name="mcc"
+								options={ mccsFlatList }
+								searchable
+							/>
+						</span>
 						<span className={ 'wcpay-onboarding__tos' }>
 							{ strings.tos }
 						</span>

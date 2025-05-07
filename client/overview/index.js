@@ -66,7 +66,6 @@ const OverviewPage = () => {
 		accountStatus,
 		accountStatus: { progressiveOnboarding },
 		accountLoans: { has_active_loan: hasActiveLoan },
-		enabledPaymentMethods,
 		featureFlags: { isPaymentOverviewWidgetEnabled },
 		overviewTasksVisibility,
 		wpcomReconnectUrl,
@@ -119,7 +118,6 @@ const OverviewPage = () => {
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
 		activeDisputes,
-		enabledPaymentMethods,
 		showGetVerifyBankAccountTask,
 	} );
 	const tasks =

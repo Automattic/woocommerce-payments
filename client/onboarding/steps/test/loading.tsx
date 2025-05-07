@@ -39,9 +39,7 @@ const checkLinkToContainNecessaryParams = ( link: string ) => {
 	expect( link ).toContain( 'self_assessment' );
 	expect( link ).toContain( 'country' );
 	expect( link ).toContain( 'mcc' );
-	expect( link ).toContain( 'annual_revenue' );
 	expect( link ).toContain( 'business_type' );
-	expect( link ).toContain( 'go_live_timeframe' );
 };
 
 describe( 'Loading', () => {
@@ -73,8 +71,6 @@ describe( 'Loading', () => {
 			country: 'US',
 			business_type: 'individual',
 			mcc: 'most_popular__software_services',
-			annual_revenue: 'less_than_250k',
-			go_live_timeframe: 'within_1month',
 		};
 
 		render( <Loading name="loading" /> );
