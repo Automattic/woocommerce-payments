@@ -186,7 +186,6 @@ const PaymentMethod = ( {
 		needsMoreInformation ||
 		isPoInProgress ||
 		upeCapabilityStatuses.REJECTED === status;
-	const shouldDisplayNotice = id === 'sofort';
 	const {
 		duplicates,
 		dismissedDuplicateNotices,
@@ -394,29 +393,6 @@ const PaymentMethod = ( {
 					</div>
 				</div>
 			</div>
-			{ shouldDisplayNotice && (
-				<InlineNotice
-					status="warning"
-					icon={ true }
-					isDismissible={ false }
-					className="sofort__notice"
-				>
-					<span>
-						{ __(
-							'Support for Sofort is ending soon. ',
-							'woocommerce-payments'
-						) }
-						<a
-							// eslint-disable-next-line max-len
-							href="https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/#sofort-migration"
-							target="_blank"
-							rel="external noreferrer noopener"
-						>
-							{ __( 'Learn more', 'woocommerce-payments' ) }
-						</a>
-					</span>
-				</InlineNotice>
-			) }
 			{ isDuplicate && (
 				<DuplicateNotice
 					paymentMethod={ id }
