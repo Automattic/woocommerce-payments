@@ -12,7 +12,6 @@ import interpolateComponents from '@automattic/interpolate-components';
  */
 import PaymentDeleteIllustration from 'wcpay/components/payment-delete-illustration';
 import ConfirmationModal from 'wcpay/components/confirmation-modal';
-import InlineNotice from 'wcpay/components/inline-notice';
 
 const ConfirmPaymentMethodDeleteModal: React.FunctionComponent< {
 	id: string;
