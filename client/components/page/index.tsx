@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { useEffect } from '@wordpress/element';
-import * as React from 'react';
+import React from 'react';
 
 /**
  * Internal dependencies

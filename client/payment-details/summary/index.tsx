@@ -5,7 +5,6 @@
  */
 import { __ } from '@wordpress/i18n';
 import {
-	Card,
 	CardBody,
 	CardDivider,
 	Flex,
@@ -68,6 +67,7 @@ import {
 	formatDateTimeFromString,
 	formatDateTimeFromTimestamp,
 } from 'wcpay/utils/date-time';
+import Card from 'wcpay/components/card';
 
 declare const window: any;
 
