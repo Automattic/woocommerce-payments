@@ -11,11 +11,9 @@ use Automattic\WooCommerce\Utilities\PluginUtil;
 use WC_Payments_Customer_Service;
 use WCPay\Container;
 use WCPay\Core\Mode;
-use WCPay\Database_Cache;
 use WCPay\Internal\Logger;
 use WCPay\Internal\DependencyManagement\AbstractServiceProvider;
 use WCPay\Internal\Payment\FailedTransactionRateLimiter;
-use WCPay\Internal\Payment\Router;
 use WCPay\Internal\Payment\State\AuthenticationRequiredState;
 use WCPay\Internal\Payment\State\CompletedState;
 use WCPay\Internal\Payment\State\InitialState;
@@ -49,7 +47,6 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 	 */
 	protected $provides = [
 		PaymentProcessingService::class,
-		Router::class,
 
 		StateFactory::class,
 		InitialState::class,
@@ -135,9 +132,6 @@ class PaymentsServiceProvider extends AbstractServiceProvider {
 
 		$container->add( DuplicateOrderDetectedState::class )
 			->addArgument( StateFactory::class );
-
-		$container->addShared( Router::class )
-			->addArgument( Database_Cache::class );
 
 		$container->addShared( PaymentContextLoggerService::class )
 			->addArgument( Logger::class );

@@ -24,7 +24,6 @@ use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Invalid_Address_Exception;
 use WCPay\Exceptions\Process_Payment_Exception;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
-use WCPay\Internal\Payment\Factor;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
 use WCPay\Payment_Information;
@@ -3902,27 +3901,6 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				'Order metadata for delayed payment method update was not set correctly'
 			);
 		}
-	}
-
-	/**
-	 * Sets up the expectation for a certain factor for the new payment
-	 * process to be either set or unset.
-	 *
-	 * @param Factor $factor_name Factor constant.
-	 * @param bool   $value       Expected value.
-	 */
-	private function expect_router_factor( $factor_name, $value ) {
-		$mock_router = $this->createMock( Router::class );
-		wcpay_get_test_container()->replace( Router::class, $mock_router );
-
-		$checker = function ( $factors ) use ( $factor_name, $value ) {
-			$is_in_array = in_array( $factor_name, $factors, true );
-			return $value ? $is_in_array : ! $is_in_array;
-		};
-
-		$mock_router->expects( $this->once() )
-			->method( 'should_use_new_payment_process' )
-			->with( $this->callback( $checker ) );
 	}
 
 	/**
