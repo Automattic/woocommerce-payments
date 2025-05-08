@@ -2946,6 +2946,54 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $afterpay->is_available() );
 	}
 
+	public function test_gateway_disabled_when_payment_method_capability_not_active() {
+		$this->card_gateway->update_option( 'enabled', 'yes' );
+		$afterpay = $this->get_gateway( Payment_Method::AFTERPAY );
+		$afterpay->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::AFTERPAY, Payment_Method::CARD, Payment_Method::P24, Payment_Method::BANCONTACT ] );
+
+		// Simulate capability status is not 'active'.
+		$this->mock_wcpay_account
+			->expects( $this->any() )
+			->method( 'get_cached_account_data' )
+			->willReturn(
+				[
+					'capabilities'            => [
+						'afterpay_clearpay_payments' => 'inactive',
+						'card_payments'              => 'active',
+					],
+					'capability_requirements' => [
+						'afterpay_clearpay_payments' => [],
+						'card_payments'              => [],
+					],
+				]
+			);
+
+		$this->assertFalse( $afterpay->is_available() );
+	}
+
+	public function test_gateway_disabled_when_payment_method_capability_missing() {
+		$this->card_gateway->update_option( 'enabled', 'yes' );
+		$afterpay = $this->get_gateway( Payment_Method::AFTERPAY );
+		$afterpay->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::AFTERPAY, Payment_Method::CARD, Payment_Method::P24, Payment_Method::BANCONTACT ] );
+
+		// Simulate capability key is missing.
+		$this->mock_wcpay_account
+			->expects( $this->any() )
+			->method( 'get_cached_account_data' )
+			->willReturn(
+				[
+					'capabilities'            => [
+						'card_payments' => 'active',
+					],
+					'capability_requirements' => [
+						'card_payments' => [],
+					],
+				]
+			);
+
+		$this->assertFalse( $afterpay->is_available() );
+	}
+
 	public function test_process_payment_for_order_cc_payment_method() {
 		$payment_method                              = 'woocommerce_payments';
 		$expected_upe_payment_method_for_pi_creation = 'card';
@@ -4007,7 +4055,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
-	private function get_gateway( $payment_method_id ) {
+	private function get_gateway( $payment_method_id ): ?WC_Payment_Gateway_WCPay {
 		return ( array_values(
 			array_filter(
 				$this->gateways,
