@@ -5,7 +5,11 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Timeline } from '@woocommerce/components';
-import { Card, CardBody, CardHeader } from '@wordpress/components';
+import {
+	Card,
+	CardBody,
+	CardHeader,
+} from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies
