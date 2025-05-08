@@ -17,11 +17,12 @@ import ExpressCheckoutButtonPreview, {
 
 const getPaymentMethodsOverride = ( enabledPaymentMethod ) => {
 	const allDisabled = {
-		amazonPay: 'never',
 		applePay: 'never',
 		googlePay: 'never',
+		amazonPay: 'never',
 		link: 'never',
 		paypal: 'never',
+		klarna: 'never',
 	};
 
 	const enabledParam = [ 'applePay', 'googlePay' ].includes(
