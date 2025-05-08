@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React, { ComponentProps, useContext } from 'react';
-import { Card as WordPressComponentsCard } from '@wordpress/components';
+import { Card as BundledWordPressComponentsCard } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -10,9 +10,15 @@ import { Card as WordPressComponentsCard } from '@wordpress/components';
 import { WordPressComponentsContext } from 'wcpay/wordpress-components-context/context';
 
 const WcpayCard = (
-	props: ComponentProps< typeof WordPressComponentsCard >
+	props: ComponentProps< typeof BundledWordPressComponentsCard >
 ) => {
-	const { Card } = useContext( WordPressComponentsContext );
+	const context = useContext( WordPressComponentsContext );
+
+	if ( ! context ) {
+		return <BundledWordPressComponentsCard { ...props } />;
+	}
+
+	const { Card } = context;
 
 	return <Card { ...props } />;
 };
