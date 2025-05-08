@@ -505,7 +505,13 @@ exports[`mapTimelineEvents single currency events formats captured events with f
   {
     "body": [],
     "date": 2020-04-01T14:37:54.000Z,
-    "headline": "Payment status changed to Paid.",
+    "headline": <React.Fragment>
+      Payment status changed to 
+      <strong>
+        Paid
+      </strong>
+      .
+    </React.Fragment>,
     "icon": <SyncIcon />,
   },
   {
@@ -570,7 +576,13 @@ exports[`mapTimelineEvents single currency events formats captured events with f
   {
     "body": [],
     "date": 2020-04-01T14:37:54.000Z,
-    "headline": "Payment status changed to Paid.",
+    "headline": <React.Fragment>
+      Payment status changed to 
+      <strong>
+        Paid
+      </strong>
+      .
+    </React.Fragment>,
     "icon": <SyncIcon />,
   },
   {
