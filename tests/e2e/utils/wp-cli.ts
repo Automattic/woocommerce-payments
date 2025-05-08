@@ -31,7 +31,7 @@ export async function runWpCli(
 ): Promise< { stdout: string; stderr: string } > {
 	const container = options.container ?? 'wcp_e2e_wordpress';
 	// Build the base docker exec command
-	let cmd = `docker exec -T ${ container } ${ cliCmd }`;
+	let cmd = `docker exec ${ container } ${ cliCmd }`;
 
 	// Append user flag if provided
 	if ( options.user ) {
@@ -42,7 +42,7 @@ export async function runWpCli(
 	if ( options.cwd ) {
 		// Rebuild command to change directory first
 		const userFlag = options.user ? ` --user=${ options.user }` : '';
-		cmd = `docker exec -T ${ container } sh -c "cd ${ options.cwd } && ${ cliCmd }${ userFlag }"`;
+		cmd = `docker exec ${ container } sh -c "cd ${ options.cwd } && ${ cliCmd }${ userFlag }"`;
 	}
 
 	// Execute and return the result
