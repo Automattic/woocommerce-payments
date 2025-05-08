@@ -4,63 +4,14 @@
 import { __ } from '@wordpress/i18n';
 
 /**
- * Supported tax description codes for different countries and tax types.
- * These codes are used to identify and localize tax descriptions in the UI.
- * The codes follow the format [Country Code] [Tax Type].
- *
- * Format: [Country Code] [Tax Type]
- * Examples:
- * - "US VAT" for United States Value Added Tax
- * - "JP JCT" for Japan Consumption Tax
- * - "AU GST" for Australian Goods and Services Tax
- *
- * @see Transaction_Fee_Tax_Service::format_tax_name_from_fee_detail()
- * for the server-side implementation of these tax codes.
- */
-type TaxDescriptionKey =
-	| 'AT VAT' // Austria VAT
-	| 'BE VAT' // Belgium VAT
-	| 'BG VAT' // Bulgaria VAT
-	| 'CY VAT' // Cyprus VAT
-	| 'CZ VAT' // Czech Republic VAT
-	| 'DE VAT' // Germany VAT
-	| 'DK VAT' // Denmark VAT
-	| 'EE VAT' // Estonia VAT
-	| 'ES VAT' // Spain VAT
-	| 'FI VAT' // Finland VAT
-	| 'FR VAT' // France VAT
-	| 'GB VAT' // United Kingdom VAT
-	| 'GR VAT' // Greece VAT
-	| 'HR VAT' // Croatia VAT
-	| 'HU VAT' // Hungary VAT
-	| 'IE VAT' // Ireland VAT
-	| 'IT VAT' // Italy VAT
-	| 'LT VAT' // Lithuania VAT
-	| 'LU VAT' // Luxembourg VAT
-	| 'LV VAT' // Latvia VAT
-	| 'MT VAT' // Malta VAT
-	| 'NL VAT' // Netherlands VAT
-	| 'PL VAT' // Poland VAT
-	| 'PT VAT' // Portugal VAT
-	| 'RO VAT' // Romania VAT
-	| 'SE VAT' // Sweden VAT
-	| 'SI VAT' // Slovenia VAT
-	| 'SK VAT' // Slovakia VAT
-	| 'AU GST' // Australia GST
-	| 'NZ GST' // New Zealand GST
-	| 'SG GST' // Singapore GST
-	| 'CH VAT' // Switzerland VAT
-	| 'JP JCT' // Japan Consumption Tax
-	| 'default';
-
-/**
  * Tax description mapping for localization.
  * Keys are the tax descriptions from the API response.
  * Values are the translatable strings.
  *
- * Note: Country codes are intentionally left untranslated as they are standardized ISO codes.
+ * @see Transaction_Fee_Tax_Service::format_tax_name_from_fee_detail()
+ * for the server-side implementation of the tax descriptions.
  */
-const taxDescriptions: Record< TaxDescriptionKey, string > = {
+const taxDescriptions: Record< string, string > = {
 	// European Union VAT
 	'AT VAT': __( 'AT VAT', 'woocommerce-payments' ), // Austria
 	'BE VAT': __( 'BE VAT', 'woocommerce-payments' ), // Belgium
@@ -114,6 +65,6 @@ export const getLocalizedTaxDescription = (
 	taxDescription: string
 ): string => {
 	return taxDescription in taxDescriptions
-		? taxDescriptions[ taxDescription as TaxDescriptionKey ]
+		? taxDescriptions[ taxDescription ]
 		: taxDescriptions.default;
 };
