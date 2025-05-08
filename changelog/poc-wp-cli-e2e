@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+update: e2e tests to use wp cli.
