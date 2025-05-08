@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { CardBody } from '@wordpress/components';
-import classNames from 'classnames';
+import clsx from 'clsx';
 
 /**
  * Internal dependencies
@@ -18,10 +18,7 @@ const WcpayCardBody: React.FC< WcpayCardBodyProps > = ( {
 	className,
 	...props
 } ): JSX.Element => (
-	<CardBody
-		className={ classNames( 'wcpay-card-body', className ) }
-		{ ...props }
-	/>
+	<CardBody className={ clsx( 'wcpay-card-body', className ) } { ...props } />
 );
 
 export default WcpayCardBody;
