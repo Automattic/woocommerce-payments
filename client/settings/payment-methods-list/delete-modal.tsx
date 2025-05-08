@@ -12,7 +12,6 @@ import interpolateComponents from '@automattic/interpolate-components';
  */
 import PaymentDeleteIllustration from 'wcpay/components/payment-delete-illustration';
 import ConfirmationModal from 'wcpay/components/confirmation-modal';
-import InlineNotice from 'wcpay/components/inline-notice';
 
 const ConfirmPaymentMethodDeleteModal: React.FunctionComponent< {
 	id: string;
@@ -21,8 +20,6 @@ const ConfirmPaymentMethodDeleteModal: React.FunctionComponent< {
 	onConfirm: () => void;
 	onCancel: () => void;
 } > = ( { id, label, icon: Icon, onConfirm, onCancel } ): JSX.Element => {
-	const shouldDisplayNotice = id === 'sofort';
-
 	return (
 		<ConfirmationModal
 			title={ sprintf(
@@ -80,29 +77,6 @@ const ConfirmPaymentMethodDeleteModal: React.FunctionComponent< {
 					},
 				} ) }
 			</p>
-			{ shouldDisplayNotice && (
-				<InlineNotice
-					status="warning"
-					icon={ true }
-					isDismissible={ false }
-					className="sofort__notice"
-				>
-					<span>
-						{ __(
-							'As of October 20th 2023, Sofort is no longer supported for merchants who are not already using it. This means that if you disable Sofort, you will not be able to re-enable it later. ',
-							'woocommerce-payments'
-						) }
-						<a
-							// eslint-disable-next-line max-len
-							href="https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/#sofort-migration"
-							target="_blank"
-							rel="external noreferrer noopener"
-						>
-							{ __( 'Learn more', 'woocommerce-payments' ) }
-						</a>
-					</span>
-				</InlineNotice>
-			) }
 		</ConfirmationModal>
 	);
 };
