@@ -271,7 +271,7 @@ const WooPaySettings = ( { section } ) => {
 								mixedString: __(
 									'Override the default {{privacyLink}}privacy policy{{/privacyLink}}' +
 										' and {{termsLink}}terms of service{{/termsLink}},' +
-										' or add custom text to WooPay checkout. {{learnMoreLink}}Learn more{{/learnMoreLink}}.',
+										' or add custom text to WooPay checkout. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 									'woocommerce-payments'
 								),
 								// prettier-ignore
