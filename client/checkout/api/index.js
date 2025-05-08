@@ -140,7 +140,7 @@ export default class WCPayAPI {
 	 * @param {boolean} shouldSavePaymentMethod Whether the payment method should be saved.
 	 * @return {Promise<string>|boolean} A redirect URL on success, or `true` if no confirmation is needed.
 	 */
-	confirmIntent( redirectUrl, shouldSavePaymentMethod = false ) {
+	async confirmIntent( redirectUrl, shouldSavePaymentMethod = false ) {
 		const partials = redirectUrl.match(
 			/#wcpay-confirm-(pi|si):(.+):(.+):(.+)$/
 		);
@@ -206,81 +206,73 @@ export default class WCPayAPI {
 			} );
 		};
 
-		return (
-			confirmPaymentOrSetup()
-				// ToDo: Switch to an async function once it works with webpack.
-				.then( ( result ) => {
-					let paymentError = null;
-					if ( result.paymentIntent?.last_payment_error ) {
-						paymentError = {
-							message:
-								result.paymentIntent.last_payment_error.message,
-						};
-					}
-					// If a wallet iframe is closed, Stripe doesn't throw an error, but the intent status will be requires_action.
-					if ( result.paymentIntent?.status === 'requires_action' ) {
-						paymentError = {
-							message: 'Payment requires additional action.',
-						};
-					}
+		try {
+			const result = await confirmPaymentOrSetup();
 
-					const intentId =
-						( result.paymentIntent && result.paymentIntent.id ) ||
-						( result.setupIntent && result.setupIntent.id ) ||
-						( result.error &&
-							result.error.payment_intent &&
-							result.error.payment_intent.id ) ||
-						( result.error.setup_intent &&
-							result.error.setup_intent.id );
+			let paymentError = null;
+			if ( result.paymentIntent?.last_payment_error ) {
+				paymentError = {
+					message: result.paymentIntent.last_payment_error.message,
+				};
+			}
+			// If a wallet iframe is closed, Stripe doesn't throw an error, but the intent status will be requires_action.
+			if ( result.paymentIntent?.status === 'requires_action' ) {
+				paymentError = {
+					message: 'Payment requires additional action.',
+				};
+			}
 
-					// In case this is being called via payment request button from a product page,
-					// the getConfig function won't work, so fallback to getExpressCheckoutConfig.
-					const ajaxUrl =
-						getExpressCheckoutConfig( 'ajax_url' ) ??
-						getConfig( 'ajaxUrl' );
+			const intentId =
+				( result.paymentIntent && result.paymentIntent.id ) ||
+				( result.setupIntent && result.setupIntent.id ) ||
+				( result.error &&
+					result.error.payment_intent &&
+					result.error.payment_intent.id ) ||
+				( result.error.setup_intent && result.error.setup_intent.id );
 
-					const isChangingPayment = getConfig( 'isChangingPayment' );
+			// In case this is being called via payment request button from a product page,
+			// the getConfig function won't work, so fallback to getExpressCheckoutConfig.
+			const ajaxUrl =
+				getExpressCheckoutConfig( 'ajax_url' ) ??
+				getConfig( 'ajaxUrl' );
 
-					const ajaxCall = this.request( ajaxUrl, {
-						action: 'update_order_status',
-						order_id: orderId,
-						// Update the current order status nonce with the new one to ensure that the update
-						// order status call works when a guest user creates an account during checkout.
-						_ajax_nonce: nonce,
-						intent_id: intentId,
-						should_save_payment_method: shouldSavePaymentMethod
-							? 'true'
-							: 'false',
-						is_changing_payment: isChangingPayment
-							? 'true'
-							: 'false',
-					} );
+			const isChangingPayment = getConfig( 'isChangingPayment' );
 
-					return [ ajaxCall, paymentError, result.error ];
-				} )
-				.then( ( [ verificationCall, paymentError, resultError ] ) => {
-					if ( resultError ) {
-						throw resultError;
-					}
+			const ajaxCallPromise = this.request( ajaxUrl, {
+				action: 'update_order_status',
+				order_id: orderId,
+				// Update the current order status nonce with the new one to ensure that the update
+				// order status call works when a guest user creates an account during checkout.
+				_ajax_nonce: nonce,
+				intent_id: intentId,
+				should_save_payment_method: shouldSavePaymentMethod
+					? 'true'
+					: 'false',
+				is_changing_payment: isChangingPayment ? 'true' : 'false',
+			} );
 
-					return verificationCall.then( ( response ) => {
-						const result =
-							typeof response === 'string'
-								? JSON.parse( response )
-								: response;
+			if ( result.error ) {
+				throw result.error;
+			}
 
-						if ( result.error ) {
-							throw result.error;
-						}
+			const response = await ajaxCallPromise;
+			const ajaxResult =
+				typeof response === 'string'
+					? JSON.parse( response )
+					: response;
 
-						if ( paymentError ) {
-							throw paymentError;
-						}
+			if ( ajaxResult.error ) {
+				throw ajaxResult.error;
+			}
 
-						return result.return_url;
-					} );
-				} )
-		);
+			if ( paymentError ) {
+				throw paymentError;
+			}
+
+			return ajaxResult.return_url;
+		} catch ( error ) {
+			throw error;
+		}
 	}
 
 	/**
