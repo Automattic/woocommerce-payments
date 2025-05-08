@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+refactor: created a "common" component for the payment method details on the transactions view, made for Affirm, Afterpay, Alipay, WeChat Pay, Grabpay, Multibanco
