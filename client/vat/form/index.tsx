@@ -4,9 +4,9 @@
  * External dependencies
  */
 import React, { useState } from 'react';
-import Wizard from 'wcpay/additional-methods-setup/wizard/wrapper';
-import WizardTask from 'wcpay/additional-methods-setup/wizard/task';
-import WizardTaskList from 'wcpay/additional-methods-setup/wizard/task-list';
+import Wizard from 'wcpay/components/wizard/wrapper';
+import WizardTask from 'wcpay/components/wizard/task';
+import WizardTaskList from 'wcpay/components/wizard/task-list';
 
 /**
  * Internal dependencies

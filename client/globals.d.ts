@@ -110,7 +110,6 @@ declare global {
 			isComplete: boolean;
 			isEligibilityModalDismissed: boolean;
 		};
-		enabledPaymentMethods: string[];
 		dismissedDuplicateNotices: PaymentMethodToPluginsMap;
 		accountDefaultCurrency: string;
 		isFRTReviewFeatureActive: boolean;
