@@ -6,7 +6,6 @@
 import { __ } from '@wordpress/i18n';
 import {
 	CardDivider,
-	Flex,
 	DropdownMenu,
 	MenuGroup,
 	MenuItem,
@@ -66,7 +65,7 @@ import {
 	formatDateTimeFromString,
 	formatDateTimeFromTimestamp,
 } from 'wcpay/utils/date-time';
-import { Card, CardBody } from 'wcpay/components/wp-components-wrapped';
+import { Card, CardBody, Flex } from 'wcpay/components/wp-components-wrapped';
 
 declare const window: any;
 
@@ -256,11 +255,17 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 
 	const [ isRefundModalOpen, setIsRefundModalOpen ] = useState( false );
 
+	const shouldUseBundledComponents = ! charge.dispute;
+
 	const bankName = getBankName( charge );
 	return (
-		<Card>
-			<CardBody>
-				<Flex direction="row" align="start">
+		<Card forceUseBundledComponent={ shouldUseBundledComponents }>
+			<CardBody forceUseBundledComponent={ shouldUseBundledComponents }>
+				<Flex
+					direction="row"
+					align="start"
+					forceUseBundledComponent={ shouldUseBundledComponents }
+				>
 					<div className="payment-details-summary">
 						<div className="payment-details-summary__section">
 							<div className="payment-details-summary__amount-wrapper">

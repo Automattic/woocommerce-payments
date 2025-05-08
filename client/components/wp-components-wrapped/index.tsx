@@ -23,11 +23,13 @@ import {
 import { WordPressComponentsContext } from 'wcpay/wordpress-components-context/context';
 
 const WrappedCard = (
-	props: ComponentProps< typeof BundledWordPressComponentsCard >
+	props: ComponentProps< typeof BundledWordPressComponentsCard > & {
+		forceUseBundledComponent?: boolean;
+	}
 ) => {
 	const context = useContext( WordPressComponentsContext );
 
-	if ( ! context ) {
+	if ( ! context || props.forceUseBundledComponent ) {
 		return <BundledWordPressComponentsCard { ...props } />;
 	}
 
@@ -37,11 +39,13 @@ const WrappedCard = (
 };
 
 const WrappedCardBody = (
-	props: ComponentProps< typeof BundledWordPressComponentsCardBody >
+	props: ComponentProps< typeof BundledWordPressComponentsCardBody > & {
+		forceUseBundledComponent?: boolean;
+	}
 ) => {
 	const context = useContext( WordPressComponentsContext );
 
-	if ( ! context ) {
+	if ( ! context || props.forceUseBundledComponent ) {
 		return <BundledWordPressComponentsCardBody { ...props } />;
 	}
 
@@ -51,11 +55,13 @@ const WrappedCardBody = (
 };
 
 const WrappedButton = (
-	props: ComponentProps< typeof BundledWordPressComponentsButton >
+	props: ComponentProps< typeof BundledWordPressComponentsButton > & {
+		forceUseBundledComponent?: boolean;
+	}
 ) => {
 	const context = useContext( WordPressComponentsContext );
 
-	if ( ! context ) {
+	if ( ! context || props.forceUseBundledComponent ) {
 		return <BundledWordPressComponentsButton { ...props } />;
 	}
 
@@ -65,11 +71,13 @@ const WrappedButton = (
 };
 
 const WrappedPanelBody = (
-	props: ComponentProps< typeof BundledWordPressComponentsPanelBody >
+	props: ComponentProps< typeof BundledWordPressComponentsPanelBody > & {
+		forceUseBundledComponent?: boolean;
+	}
 ) => {
 	const context = useContext( WordPressComponentsContext );
 
-	if ( ! context ) {
+	if ( ! context || props.forceUseBundledComponent ) {
 		return <BundledWordPressComponentsPanelBody { ...props } />;
 	}
 
@@ -79,11 +87,13 @@ const WrappedPanelBody = (
 };
 
 const WrappedExternalLink = (
-	props: ComponentProps< typeof BundledWordPressComponentsExternalLink >
+	props: ComponentProps< typeof BundledWordPressComponentsExternalLink > & {
+		forceUseBundledComponent?: boolean;
+	}
 ) => {
 	const context = useContext( WordPressComponentsContext );
 
-	if ( ! context ) {
+	if ( ! context || props.forceUseBundledComponent ) {
 		return <BundledWordPressComponentsExternalLink { ...props } />;
 	}
 
@@ -93,11 +103,13 @@ const WrappedExternalLink = (
 };
 
 const WrappedFlex = (
-	props: ComponentProps< typeof BundledWordPressComponentsFlex >
+	props: ComponentProps< typeof BundledWordPressComponentsFlex > & {
+		forceUseBundledComponent?: boolean;
+	}
 ) => {
 	const context = useContext( WordPressComponentsContext );
 
-	if ( ! context ) {
+	if ( ! context || props.forceUseBundledComponent ) {
 		return <BundledWordPressComponentsFlex { ...props } />;
 	}
 
@@ -107,11 +119,13 @@ const WrappedFlex = (
 };
 
 const WrappedFlexItem = (
-	props: ComponentProps< typeof BundledWordPressComponentsFlexItem >
+	props: ComponentProps< typeof BundledWordPressComponentsFlexItem > & {
+		forceUseBundledComponent?: boolean;
+	}
 ) => {
 	const context = useContext( WordPressComponentsContext );
 
-	if ( ! context ) {
+	if ( ! context || props.forceUseBundledComponent ) {
 		return <BundledWordPressComponentsFlexItem { ...props } />;
 	}
 
@@ -121,11 +135,13 @@ const WrappedFlexItem = (
 };
 
 const WrappedIcon = (
-	props: ComponentProps< typeof BundledWordPressComponentsIcon >
+	props: ComponentProps< typeof BundledWordPressComponentsIcon > & {
+		forceUseBundledComponent?: boolean;
+	}
 ) => {
 	const context = useContext( WordPressComponentsContext );
 
-	if ( ! context ) {
+	if ( ! context || props.forceUseBundledComponent ) {
 		return <BundledWordPressComponentsIcon { ...props } />;
 	}
 
@@ -135,11 +151,13 @@ const WrappedIcon = (
 };
 
 const WrappedModal = (
-	props: ComponentProps< typeof BundledWordPressComponentsModal >
+	props: ComponentProps< typeof BundledWordPressComponentsModal > & {
+		forceUseBundledComponent?: boolean;
+	}
 ) => {
 	const context = useContext( WordPressComponentsContext );
 
-	if ( ! context ) {
+	if ( ! context || props.forceUseBundledComponent ) {
 		return <BundledWordPressComponentsModal { ...props } />;
 	}
 
@@ -149,11 +167,13 @@ const WrappedModal = (
 };
 
 const WrappedHorizontalRule = (
-	props: ComponentProps< typeof BundledWordPressComponentsHorizontalRule >
+	props: ComponentProps< typeof BundledWordPressComponentsHorizontalRule > & {
+		forceUseBundledComponent?: boolean;
+	}
 ) => {
 	const context = useContext( WordPressComponentsContext );
 
-	if ( ! context ) {
+	if ( ! context || props.forceUseBundledComponent ) {
 		return <BundledWordPressComponentsHorizontalRule { ...props } />;
 	}
 
@@ -163,11 +183,13 @@ const WrappedHorizontalRule = (
 };
 
 const WrappedCardFooter = (
-	props: ComponentProps< typeof BundledWordPressComponentsCardFooter >
+	props: ComponentProps< typeof BundledWordPressComponentsCardFooter > & {
+		forceUseBundledComponent?: boolean;
+	}
 ) => {
 	const context = useContext( WordPressComponentsContext );
 
-	if ( ! context ) {
+	if ( ! context || props.forceUseBundledComponent ) {
 		return <BundledWordPressComponentsCardFooter { ...props } />;
 	}
 
@@ -177,11 +199,13 @@ const WrappedCardFooter = (
 };
 
 const WrappedCardHeader = (
-	props: ComponentProps< typeof BundledWordPressComponentsCardHeader >
+	props: ComponentProps< typeof BundledWordPressComponentsCardHeader > & {
+		forceUseBundledComponent?: boolean;
+	}
 ) => {
 	const context = useContext( WordPressComponentsContext );
 
-	if ( ! context ) {
+	if ( ! context || props.forceUseBundledComponent ) {
 		return <BundledWordPressComponentsCardHeader { ...props } />;
 	}
 
