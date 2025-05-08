@@ -21,7 +21,8 @@ const WcpayCardBody: React.FC< WcpayCardBodyProps > = ( {
 } ): JSX.Element => {
 	const context = useContext( WordPressComponentsContext );
 
-	// including the woopayments-specific styles only for the card body. leaving the `CardBody` bundled within the WP installation as "pristine" as possible, instead.
+	// including the woopayments-specific styles only for the "bundled" CardBody component.
+	// leaving the `CardBody` bundled within the WP installation as "pristine" as possible, instead.
 	if ( ! context ) {
 		return (
 			<BundledWordPressComponentsCardBody
