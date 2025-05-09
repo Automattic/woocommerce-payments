@@ -66,7 +66,8 @@ test.describe( 'Multi-currency', { tag: '@critical' }, () => {
 
 		const editor = page.frameLocator( '[name="editor-canvas"]' );
 
-		await editor.getByRole( 'button', { name: 'Add block' } ).click();
+		await page.getByRole( 'button', { name: 'Add block' } ).click();
+
 		await page
 			.locator( 'input[placeholder="Search"]' )
 			.pressSequentially( 'switcher', { delay: 20 } );
