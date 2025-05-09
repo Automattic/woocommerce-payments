@@ -4,7 +4,7 @@
  */
 import React from 'react';
 import HelpIcon from 'gridicons/dist/help';
-import classNames from 'classnames';
+import clsx from 'clsx';
 
 /**
  * Internal dependencies
@@ -19,7 +19,7 @@ const PaymentConfirmIllustration: React.FunctionComponent< {
 		<div className="payment-confirm-illustration__wrapper">
 			<div className="payment-confirm-illustration__illustrations">
 				<Icon
-					className={ classNames(
+					className={ clsx(
 						'payment-confirm-illustration__payment-icon',
 						{
 							'has-border': hasBorder,

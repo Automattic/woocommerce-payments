@@ -3,7 +3,7 @@
  */
 import React, { useEffect, useRef, useState, memo } from 'react';
 import { createPortal } from 'react-dom';
-import classNames from 'classnames';
+import clsx from 'clsx';
 import { debounce, noop } from 'lodash';
 
 /**
@@ -264,14 +264,13 @@ const TooltipBase: React.FC< TooltipBaseProps > = ( {
 				<TooltipPortal parentElement={ parentElement }>
 					<div
 						ref={ tooltipWrapperRef }
-						className={ classNames(
-							'wcpay-tooltip__tooltip-wrapper',
-							{ 'is-hiding': ! isVisible }
-						) }
+						className={ clsx( 'wcpay-tooltip__tooltip-wrapper', {
+							'is-hiding': ! isVisible,
+						} ) }
 						role="tooltip"
 					>
 						<div
-							className={ classNames(
+							className={ clsx(
 								'wcpay-tooltip__tooltip',
 								className
 							) }

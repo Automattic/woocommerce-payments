@@ -13,7 +13,7 @@ import moment from 'moment';
 import CurrencyPreview from './currency-preview';
 import './style.scss';
 import { Button, Card, CardBody } from '@wordpress/components';
-import classNames from 'classnames';
+import clsx from 'clsx';
 import {
 	decimalCurrencyCharmOptions,
 	decimalCurrencyRoundingOptions,
@@ -236,7 +236,7 @@ const SingleCurrencySettings = () => {
 													</h4>
 												</div>
 												<p
-													className={ classNames(
+													className={ clsx(
 														'single-currency-settings-description',
 														'single-currency-settings-description-inset'
 													) }
@@ -305,7 +305,7 @@ const SingleCurrencySettings = () => {
 													</h4>
 												</div>
 												<p
-													className={ classNames(
+													className={ clsx(
 														'single-currency-settings-description',
 														'single-currency-settings-description-inset'
 													) }

@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React, { useContext } from 'react';
-import classNames from 'classnames';
+import clsx from 'clsx';
 
 /**
  * Internal dependencies
@@ -18,7 +18,7 @@ const CollapsibleBody: React.FC< React.HTMLAttributes< HTMLDivElement > > = ( {
 
 	return (
 		<div
-			className={ classNames( 'task-collapsible-body', className, {
+			className={ clsx( 'task-collapsible-body', className, {
 				'is-active': isActive,
 			} ) }
 			{ ...restProps }

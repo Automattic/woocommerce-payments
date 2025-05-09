@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import classNames from 'classnames';
+import clsx from 'clsx';
 
 /**
  * Internal dependencies
@@ -29,7 +29,7 @@ const iconComponent = (
 	border = true
 ): ReactImgFuncComponent => ( { className, ...props } ) => (
 	<img
-		className={ classNames(
+		className={ clsx(
 			'payment-method__icon',
 			border ? '' : 'no-border',
 			className

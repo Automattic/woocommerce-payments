@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React, { useContext } from 'react';
-import classNames from 'classnames';
+import clsx from 'clsx';
 import { Icon, check } from '@wordpress/icons';
 
 /**
@@ -30,7 +30,7 @@ const WizardTaskItem: React.FC< WizardTaskItemProps > = ( {
 
 	return (
 		<li
-			className={ classNames( 'wcpay-wizard-task', className, {
+			className={ clsx( 'wcpay-wizard-task', className, {
 				'is-completed': isCompleted,
 				'is-active': isActive,
 			} ) }
@@ -55,7 +55,7 @@ const WizardTaskItem: React.FC< WizardTaskItemProps > = ( {
 			</div>
 			{ visibleDescription && ! isActive && (
 				<span
-					className={ classNames(
+					className={ clsx(
 						'wcpay-wizard-task__visible-description-element',
 						'is-muted-color'
 					) }

@@ -6,7 +6,7 @@
 import { __, sprintf } from '@wordpress/i18n';
 import React, { useEffect, useState } from 'react';
 import { CheckboxControl, VisuallyHidden } from '@wordpress/components';
-import classNames from 'classnames';
+import clsx from 'clsx';
 
 /**
  * Internal dependencies
@@ -53,7 +53,7 @@ const LoadableCheckboxControl = ( {
 
 	return (
 		<div
-			className={ classNames( 'loadable-checkbox', {
+			className={ clsx( 'loadable-checkbox', {
 				'label-hidden': hideLabel,
 			} ) }
 		>

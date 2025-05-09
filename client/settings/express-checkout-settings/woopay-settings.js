@@ -3,7 +3,7 @@
  * External dependencies
  */
 import React from 'react';
-import classNames from 'classnames';
+import clsx from 'clsx';
 import { __ } from '@wordpress/i18n';
 import {
 	Card,
@@ -65,7 +65,7 @@ const WooPaySettings = ( { section } ) => {
 
 	return (
 		<Card
-			className={ classNames( {
+			className={ clsx( {
 				'woopay-settings': true,
 				'woopay-settings--appearance': section === 'appearance',
 			} ) }
