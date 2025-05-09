@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { Modal } from '@wordpress/components';
-import classNames from 'classnames';
+import clsx from 'clsx';
 import { HorizontalRule } from '@wordpress/primitives';
 
 /**
@@ -22,7 +22,7 @@ const ConfirmationModal: React.FunctionComponent< ConfirmationModalProps > = ( {
 	...props
 } ) => (
 	<Modal
-		className={ classNames( 'wcpay-confirmation-modal', className ) }
+		className={ clsx( 'wcpay-confirmation-modal', className ) }
 		{ ...props }
 	>
 		{ children }
