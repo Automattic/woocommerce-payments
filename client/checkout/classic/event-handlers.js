@@ -17,7 +17,6 @@ import {
 import {
 	processPayment,
 	mountStripePaymentElement,
-	mountStripePaymentMethodMessagingElement,
 	renderTerms,
 	createAndConfirmSetupIntent,
 	maybeEnableStripeLink,
@@ -76,7 +75,6 @@ jQuery( function ( $ ) {
 
 	$( document.body ).on( 'updated_checkout', () => {
 		maybeMountStripePaymentElement( 'shortcode_checkout' );
-		injectStripePMMEContainers();
 		injectPaymentMethodLogos();
 	} );
 
@@ -160,93 +158,6 @@ jQuery( function ( $ ) {
 		! isPreviewing()
 	) {
 		handleWooPayEmailInput( '#billing_email', api );
-	}
-
-	async function injectStripePMMEContainers() {
-		const paymentMethodsConfig =
-			getUPEConfig( 'paymentMethodsConfig' ) || {};
-		const bnplMethods = Object.keys( paymentMethodsConfig ).filter(
-			( key ) => paymentMethodsConfig[ key ]?.isBnpl
-		);
-
-		const labelBase = 'payment_method_woocommerce_payments_';
-		const paymentMethods = getUPEConfig( 'paymentMethodsConfig' );
-		const paymentMethodsKeys = Object.keys( paymentMethods );
-		const cartData = await api.pmmeGetCartData();
-
-		for ( const method of paymentMethodsKeys ) {
-			if ( bnplMethods.includes( method ) ) {
-				const targetLabel = document.querySelector(
-					`label[for="${ labelBase }${ method }"]`
-				);
-				const containerID = `stripe-pmme-container-${ method }`;
-
-				if ( document.getElementById( containerID ) ) {
-					document.getElementById( containerID ).innerHTML = '';
-				}
-
-				if ( targetLabel ) {
-					// wrapInner target label in a span.woopayments-inner-label if it's not already
-					let targetLabelInnerSpan = targetLabel.querySelector(
-						'span.woopayments-inner-label'
-					);
-					if ( ! targetLabelInnerSpan ) {
-						const targetLabelInner = targetLabel.innerHTML;
-						targetLabel.innerHTML = '';
-						targetLabelInnerSpan = document.createElement( 'span' );
-						targetLabelInnerSpan.classList.add(
-							'woopayments-inner-label'
-						);
-						targetLabelInnerSpan.innerHTML = targetLabelInner;
-						targetLabel.appendChild( targetLabelInnerSpan );
-					}
-
-					let spacer = targetLabel.querySelector( 'span.spacer' );
-					if ( ! spacer ) {
-						spacer = document.createElement( 'span' );
-						spacer.classList.add( 'spacer' );
-						spacer.innerHTML = '&nbsp;';
-						targetLabel.insertBefore(
-							spacer,
-							targetLabelInnerSpan
-						);
-					}
-
-					let container = document.getElementById( containerID );
-					if ( ! container ) {
-						container = document.createElement( 'span' );
-						container.id = containerID;
-						container.dataset.paymentMethodType = method;
-						container.classList.add( 'stripe-pmme-container' );
-						targetLabelInnerSpan.appendChild( container );
-					}
-
-					const currentCountry =
-						cartData?.billing_address?.country ||
-						getUPEConfig( 'storeCountry' );
-
-					if (
-						paymentMethods[ method ]?.countries.length === 0 ||
-						paymentMethods[ method ]?.countries?.includes(
-							currentCountry
-						)
-					) {
-						await mountStripePaymentMethodMessagingElement(
-							api,
-							container,
-							{
-								amount: cartData?.totals?.total_price,
-								currency: cartData?.totals?.currency_code,
-								decimalPlaces:
-									cartData?.totals?.currency_minor_unit,
-								country: currentCountry,
-							},
-							'shortcode_checkout'
-						);
-					}
-				}
-			}
-		}
 	}
 
 	async function injectPaymentMethodLogos() {

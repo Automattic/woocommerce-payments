@@ -8,7 +8,6 @@ import { __ } from '@wordpress/i18n';
  */
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { getAppearance, getFontRulesFromPage } from '../upe-styles';
-import { normalizeCurrencyToMinorUnit } from 'wcpay/checkout/utils';
 import showErrorCheckout from 'wcpay/checkout/utils/show-error-checkout';
 import {
 	appendFingerprintInputToForm,
@@ -494,40 +493,6 @@ export async function mountStripePaymentElement(
 			savePaymentMethodWrapper.style.display = 'none';
 		}
 	} );
-}
-
-export async function mountStripePaymentMethodMessagingElement(
-	api,
-	domElement,
-	cartData,
-	location
-) {
-	const paymentMethodType = domElement.dataset.paymentMethodType;
-	const appearance = await initializeAppearance( api, location );
-
-	try {
-		const stripe = await api.getStripe();
-		const paymentMethodMessagingElement = stripe
-			.elements( {
-				appearance: appearance,
-				fonts: getFontRulesFromPage(),
-			} )
-			.create( 'paymentMethodMessaging', {
-				currency: cartData.currency,
-				amount: normalizeCurrencyToMinorUnit(
-					cartData.amount,
-					cartData.decimalPlaces
-				),
-				countryCode: cartData.country, // Customer's country or base country of the store.
-				paymentMethodTypes: [ paymentMethodType ],
-				displayType: 'promotional_text',
-			} );
-
-		return paymentMethodMessagingElement.mount( domElement );
-	} finally {
-		// Resolve the promise even if the element mounting fails.
-		return Promise.resolve();
-	}
 }
 
 /**
