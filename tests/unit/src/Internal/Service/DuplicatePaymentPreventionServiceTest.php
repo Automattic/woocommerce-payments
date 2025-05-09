@@ -7,14 +7,9 @@
 
 namespace WCPay\Tests\Internal\Service;
 
-use WC_Helper_Intention;
-use WCPay\Constants\Intent_Status;
-use WCPay\Core\Server\Request\Get_Intention;
-use WCPay\Internal\Logger;
 use WCPay\Internal\Proxy\HooksProxy;
 use WCPay\Internal\Proxy\LegacyProxy;
 use WCPay\Internal\Service\DuplicatePaymentPreventionService;
-use WCPay\Internal\Service\OrderService;
 use WCPay\Internal\Service\SessionService;
 use WCPAY_UnitTestCase;
 use PHPUnit\Framework\MockObject\MockObject;
@@ -31,11 +26,6 @@ class DuplicatePaymentPreventionServiceTest extends WCPAY_UnitTestCase {
 	private $sut;
 
 	/**
-	 * @var OrderService|MockObject
-	 */
-	private $mock_order_service;
-
-	/**
 	 * @var SessionService|MockObject
 	 */
 	private $mock_session_service;
@@ -44,11 +34,6 @@ class DuplicatePaymentPreventionServiceTest extends WCPAY_UnitTestCase {
 	 * @var HooksProxy|MockObject
 	 */
 	private $mock_hooks_proxy;
-
-	/**
-	 * @var LegacyProxy|MockObject
-	 */
-	private $mock_legacy_proxy;
 
 	/**
 	 * Dependencies for the service under test.
@@ -63,14 +48,14 @@ class DuplicatePaymentPreventionServiceTest extends WCPAY_UnitTestCase {
 	protected function setUp(): void {
 		parent::setUp();
 
-		$this->mock_order_service   = $this->createMock( OrderService::class );
+		$this->mock_hooks_proxy     = $this->createMock( HooksProxy::class );
 		$this->mock_session_service = $this->createMock( SessionService::class );
-		$this->mock_legacy_proxy    = $this->createMock( LegacyProxy::class );
+		$mock_legacy_proxy          = $this->createMock( LegacyProxy::class );
 
 		$this->deps = [
 			$this->mock_session_service,
 			$this->mock_hooks_proxy,
-			$this->mock_legacy_proxy,
+			$mock_legacy_proxy,
 		];
 
 		$this->sut = new DuplicatePaymentPreventionService( ...$this->deps );
@@ -82,14 +67,6 @@ class DuplicatePaymentPreventionServiceTest extends WCPAY_UnitTestCase {
 			->with( 'template_redirect', [ $this->sut, 'clear_session_processing_order_after_landing_order_received_page' ], 21 );
 
 		$this->sut->init_hooks();
-	}
-	public function test_update_session_processing_order() {
-		$this->mock_session_service->expects( $this->once() )
-			->method( 'set' )
-			->with( $this->sut::SESSION_KEY_PROCESSING_ORDER, 123 );
-
-		// Act.
-		$this->sut->update_session_processing_order( 123 );
 	}
 
 	public function provider_remove_session_processing_order() {
