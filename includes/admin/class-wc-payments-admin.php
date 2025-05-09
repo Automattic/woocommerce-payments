@@ -1035,6 +1035,7 @@ class WC_Payments_Admin {
 			'lifetimeTPV'                        => $this->account->get_lifetime_total_payment_volume(),
 			'defaultExpressCheckoutBorderRadius' => WC_Payments_Express_Checkout_Button_Handler::DEFAULT_BORDER_RADIUS_IN_PX,
 			'isWooPayGlobalThemeSupportEligible' => WC_Payments_Features::is_woopay_global_theme_support_eligible(),
+			'isWCReactifySettingsFeatureEnabled' => $this->is_reactify_settings_payments_feature_enabled(),
 			'dateFormat'                         => wc_date_format(),
 			'timeFormat'                         => get_option( 'time_format' ),
 		];
@@ -1078,6 +1079,21 @@ class WC_Payments_Admin {
 			],
 			WC_Payments_Features::to_array()
 		);
+	}
+
+	/**
+	 * Check if the WooCommerce Reactify Payments Settings feature is enabled.
+	 *
+	 * @return bool True if the feature is enabled, false otherwise.
+	 */
+	private function is_reactify_settings_payments_feature_enabled(): bool {
+		// Check if the WooCommerce Reactify Payments Settings feature is enabled.
+		if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
+			return \Automattic\WooCommerce\Utilities\FeaturesUtil::feature_is_enabled( 'reactify-classic-payments-settings' );
+		}
+
+		// If the class does not exist, the feature is not enabled.
+		return false;
 	}
 
 	/**
