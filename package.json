@@ -1,6 +1,6 @@
 {
   "name": "woocommerce-payments",
-  "version": "9.2.0",
+  "version": "9.3.0",
   "main": "webpack.config.js",
   "author": "Automattic",
   "license": "GPL-3.0-or-later",
@@ -47,6 +47,7 @@
     "test:qit-security": "npm run build:release && ./tests/qit/security.sh",
     "test:qit-phpstan": "npm run build:release && ./tests/qit/phpstan.sh",
     "test:qit-phpstan-local": "npm run build:release && ./tests/qit/phpstan.sh --local",
+    "test:qit-malware": "npm run build:release && ./tests/qit/malware.sh --local",
     "watch": "webpack --watch",
     "hmr": "webpack server",
     "start": "npm run watch",
@@ -94,7 +95,7 @@
   "devDependencies": {
     "@automattic/color-studio": "4.0.0",
     "@jest/test-sequencer": "29.5.0",
-    "@playwright/test": "1.50.1",
+    "@playwright/test": "1.51.1",
     "@pmmmwh/react-refresh-webpack-plugin": "0.5.7",
     "@slack/web-api": "7.8.0",
     "@testing-library/jest-dom": "5.14.1",
@@ -148,7 +149,7 @@
     "babel-eslint": "10.1.0",
     "babel-loader": "8.2.2",
     "chalk": "4.1.2",
-    "classnames": "2.3.1",
+    "clsx": "2.1.1",
     "config": "3.3.6",
     "core-js": "3.9.0",
     "crypto-browserify": "3.12.0",

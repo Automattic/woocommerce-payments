@@ -3,7 +3,6 @@
  */
 import EmbeddedKyc from '../embedded-kyc';
 import { useOnboardingContext } from 'wcpay/onboarding/context';
-import { isPoEligible } from 'wcpay/onboarding/utils';
 
 /**
  * External dependencies
@@ -24,7 +23,6 @@ jest.mock( 'wcpay/onboarding/context', () => ( {
 } ) );
 
 jest.mock( 'wcpay/onboarding/utils', () => ( {
-	isPoEligible: jest.fn(),
 	finalizeOnboarding: jest.fn(),
 } ) );
 
@@ -42,7 +40,6 @@ describe( 'EmbeddedKyc Component', () => {
 			touched: {},
 			setTouched: jest.fn(),
 		} );
-		( isPoEligible as jest.Mock ).mockResolvedValueOnce( true );
 
 		await act( async () => {
 			render( <EmbeddedKyc /> );

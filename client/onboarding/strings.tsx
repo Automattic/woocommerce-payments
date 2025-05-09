@@ -76,14 +76,6 @@ export default {
 			'What type of goods or services does your business sell? ',
 			'woocommerce-payments'
 		),
-		annual_revenue: __(
-			'What is your estimated annual Ecommerce revenue (USD)?',
-			'woocommerce-payments'
-		),
-		go_live_timeframe: __(
-			'What is the estimated timeline for taking your store live?',
-			'woocommerce-payments'
-		),
 	},
 	errors: {
 		generic: __( 'Please provide a response', 'woocommerce-payments' ),
@@ -100,11 +92,6 @@ export default {
 	placeholders: {
 		generic: __( 'Select an option', 'woocommerce-payments' ),
 		country: __( 'Select a country', 'woocommerce-payments' ),
-		annual_revenue: __(
-			'Select your annual revenue',
-			'woocommerce-payments'
-		),
-		go_live_timeframe: __( 'Select a timeline', 'woocommerce-payments' ),
 	},
 	annualRevenues: {
 		less_than_250k: __( 'Less than $250k', 'woocommerce-payments' ),

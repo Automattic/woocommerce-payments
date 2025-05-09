@@ -1017,7 +1017,6 @@ class WC_Payments_Admin {
 			'fraudProtection'                    => [
 				'isWelcomeTourDismissed' => WC_Payments_Features::is_fraud_protection_welcome_tour_dismissed(),
 			],
-			'enabledPaymentMethods'              => $this->get_enabled_payment_method_ids(),
 			'progressiveOnboarding'              => $this->account->get_progressive_onboarding_details(),
 			'accountDefaultCurrency'             => $this->account->get_account_default_currency(),
 			'storeCurrency'                      => get_option( 'woocommerce_currency' ),
@@ -1036,6 +1035,7 @@ class WC_Payments_Admin {
 			'lifetimeTPV'                        => $this->account->get_lifetime_total_payment_volume(),
 			'defaultExpressCheckoutBorderRadius' => WC_Payments_Express_Checkout_Button_Handler::DEFAULT_BORDER_RADIUS_IN_PX,
 			'isWooPayGlobalThemeSupportEligible' => WC_Payments_Features::is_woopay_global_theme_support_eligible(),
+			'isWCReactifySettingsFeatureEnabled' => $this->is_reactify_settings_payments_feature_enabled(),
 			'dateFormat'                         => wc_date_format(),
 			'timeFormat'                         => get_option( 'time_format' ),
 		];
@@ -1067,31 +1067,6 @@ class WC_Payments_Admin {
 	}
 
 	/**
-	 * Helper function to retrieve enabled UPE payment methods.
-	 *
-	 * TODO: This is duplicating code located in the settings container, we should refactor so that
-	 * this is stored in a centralised place and can be retrieved from there.
-	 *
-	 * @return array
-	 */
-	private function get_enabled_payment_method_ids(): array {
-		$available_upe_payment_methods = $this->wcpay_gateway->get_upe_available_payment_methods();
-		/**
-		 * It might be possible that enabled payment methods settings have an invalid state. As an example,
-		 * if an account is switched to a new country and earlier country had PM's that are no longer valid; or if the PM is not available anymore.
-		 * To keep saving settings working, we are ensuring the enabled payment methods are yet available.
-		 */
-		$enabled_payment_methods = array_values(
-			array_intersect(
-				$this->wcpay_gateway->get_upe_enabled_payment_method_ids(),
-				$available_upe_payment_methods
-			)
-		);
-
-		return $enabled_payment_methods;
-	}
-
-	/**
 	 * Creates an array of features enabled only when external dependencies are of certain versions.
 	 *
 	 * @return array An associative array containing the flags as booleans.
@@ -1104,6 +1079,21 @@ class WC_Payments_Admin {
 			],
 			WC_Payments_Features::to_array()
 		);
+	}
+
+	/**
+	 * Check if the WooCommerce Reactify Payments Settings feature is enabled.
+	 *
+	 * @return bool True if the feature is enabled, false otherwise.
+	 */
+	private function is_reactify_settings_payments_feature_enabled(): bool {
+		// Check if the WooCommerce Reactify Payments Settings feature is enabled.
+		if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
+			return \Automattic\WooCommerce\Utilities\FeaturesUtil::feature_is_enabled( 'reactify-classic-payments-settings' );
+		}
+
+		// If the class does not exist, the feature is not enabled.
+		return false;
 	}
 
 	/**

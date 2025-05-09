@@ -28,6 +28,7 @@ import {
 	getChargeStatus,
 	getChargeChannel,
 	isOnHoldByFraudTools,
+	getBankName,
 } from 'utils/charge';
 import isValueTruthy from 'utils/is-value-truthy';
 import PaymentStatusChip from 'components/payment-status-chip';
@@ -255,6 +256,8 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	);
 
 	const [ isRefundModalOpen, setIsRefundModalOpen ] = useState( false );
+
+	const bankName = getBankName( charge );
 	return (
 		<Card>
 			<CardBody>
@@ -280,10 +283,6 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 									<DisputeStatusChip
 										className="payment-details-summary__status"
 										status={ charge.dispute.status }
-										dueBy={
-											charge.dispute.evidence_details
-												?.due_by
-										}
 										prefixDisputeType={ true }
 									/>
 								) : (
@@ -643,9 +642,13 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 							paymentMethod={
 								charge.payment_method_details?.type
 							}
+							bankName={ bankName }
 						/>
 					) : (
-						<DisputeResolutionFooter dispute={ charge.dispute } />
+						<DisputeResolutionFooter
+							dispute={ charge.dispute }
+							bankName={ bankName }
+						/>
 					) }
 				</ErrorBoundary>
 			) }

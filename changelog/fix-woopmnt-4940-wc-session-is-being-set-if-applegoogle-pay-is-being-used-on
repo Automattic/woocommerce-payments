@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Optimize session handling by only setting cookies on cart and checkout pages, improving product page caching performance.

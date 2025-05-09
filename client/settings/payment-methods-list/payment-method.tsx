@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import classNames from 'classnames';
+import clsx from 'clsx';
 import React, { useContext } from 'react';
 
 /**
@@ -11,7 +11,7 @@ import React, { useContext } from 'react';
 import interpolateComponents from '@automattic/interpolate-components';
 import { __, sprintf } from '@wordpress/i18n';
 import { HoverTooltip } from 'components/tooltip';
-import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
+import { upeCapabilityStatuses } from 'wcpay/settings/constants';
 import { useManualCapture } from 'wcpay/data';
 import { FeeStructure } from 'wcpay/types/fees';
 import {
@@ -21,9 +21,7 @@ import {
 import WCPaySettingsContext from '../wcpay-settings-context';
 import Chip from 'wcpay/components/chip';
 import LoadableCheckboxControl from 'wcpay/components/loadable-checkbox';
-import { getDocumentationUrlForDisabledPaymentMethod } from 'wcpay/components/payment-method-disabled-tooltip';
 import Pill from 'wcpay/components/pill';
-import InlineNotice from 'wcpay/components/inline-notice';
 import './payment-method.scss';
 import DuplicateNotice from 'wcpay/components/duplicate-notice';
 import DuplicatedPaymentMethodsContext from '../settings-manager/duplicated-payment-methods-context';
@@ -57,6 +55,26 @@ interface PaymentMethodProps {
 	isPoEnabled: boolean;
 	isPoComplete: boolean;
 }
+
+const documentationTypeMap = {
+	DEFAULT:
+		'https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/#method-cant-be-enabled',
+	BNPLS:
+		'https://woocommerce.com/document/woopayments/payment-methods/buy-now-pay-later/#contact-support',
+};
+
+const getDocumentationUrlForDisabledPaymentMethod = (
+	paymentMethodId: string
+): string => {
+	const paymentMethodConfig =
+		window.wooPaymentsPaymentMethodsConfig?.[ paymentMethodId ];
+
+	if ( paymentMethodConfig?.isBnpl ) {
+		return documentationTypeMap.BNPLS;
+	}
+
+	return documentationTypeMap.DEFAULT;
+};
 
 const PaymentMethodLabel = ( {
 	label,
@@ -167,7 +185,6 @@ const PaymentMethod = ( {
 		needsMoreInformation ||
 		isPoInProgress ||
 		upeCapabilityStatuses.REJECTED === status;
-	const shouldDisplayNotice = id === 'sofort';
 	const {
 		duplicates,
 		dismissedDuplicateNotices,
@@ -286,7 +303,7 @@ const PaymentMethod = ( {
 
 	return (
 		<li
-			className={ classNames(
+			className={ clsx(
 				'payment-method__list-item',
 				{ 'has-icon-border': id !== 'card', overlay: needsOverlay },
 				className
@@ -375,29 +392,6 @@ const PaymentMethod = ( {
 					</div>
 				</div>
 			</div>
-			{ shouldDisplayNotice && (
-				<InlineNotice
-					status="warning"
-					icon={ true }
-					isDismissible={ false }
-					className="sofort__notice"
-				>
-					<span>
-						{ __(
-							'Support for Sofort is ending soon. ',
-							'woocommerce-payments'
-						) }
-						<a
-							// eslint-disable-next-line max-len
-							href="https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/#sofort-migration"
-							target="_blank"
-							rel="external noreferrer noopener"
-						>
-							{ __( 'Learn more', 'woocommerce-payments' ) }
-						</a>
-					</span>
-				</InlineNotice>
-			) }
 			{ isDuplicate && (
 				<DuplicateNotice
 					paymentMethod={ id }

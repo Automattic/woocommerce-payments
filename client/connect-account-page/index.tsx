@@ -36,7 +36,6 @@ import WooLogo from 'assets/images/woo-logo.svg?asset';
 import { sanitizeHTML } from 'wcpay/utils/sanitize';
 import { isInTestModeOnboarding } from 'wcpay/utils';
 import ResetAccountModal from 'wcpay/overview/modal/reset-account';
-import { trackAccountReset } from 'wcpay/onboarding/tracking';
 import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
 
 interface AccountData {
@@ -414,8 +413,6 @@ const ConnectAccountPage: React.FC = () => {
 	};
 
 	const handleReset = () => {
-		trackAccountReset();
-
 		window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
 			'wcpay-reset-account': 'true',
 			from: 'WCPAY_CONNECT',

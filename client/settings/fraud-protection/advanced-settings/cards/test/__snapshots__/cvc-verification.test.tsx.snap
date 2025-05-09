@@ -12,7 +12,7 @@ exports[`CVC verification card renders correctly when CVC check is disabled 1`] 
       class="css-mgwsf4-View-Content em57xhy0"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -21,28 +21,6 @@ exports[`CVC verification card renders correctly when CVC check is disabled 1`] 
             class="fraud-protection-rule-card-header"
           >
             CVC Verification
-          </p>
-          <p
-            class="fraud-protection-rule-card-description"
-          >
-            This filter checks the security code submitted by the customer against the data on file with the card issuer.
-          </p>
-        </div>
-      </div>
-      <hr />
-      <div
-        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
-        data-wp-c16t="true"
-        data-wp-component="CardBody"
-      >
-        <div
-          class="fraud-protection-rule-description"
-        >
-          <strong>
-            How does this filter protect me?
-          </strong>
-          <p>
-            Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
           </p>
         </div>
         <div
@@ -88,6 +66,16 @@ exports[`CVC verification card renders correctly when CVC check is disabled 1`] 
             />
           </div>
         </div>
+        <div
+          class="fraud-protection-rule-description"
+        >
+          <strong>
+            How does this filter protect me?
+          </strong>
+          <p>
+            Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
+          </p>
+        </div>
       </div>
     </div>
     <div
@@ -118,7 +106,7 @@ exports[`CVC verification card renders correctly when CVC check is enabled 1`] =
       class="css-mgwsf4-View-Content em57xhy0"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -127,28 +115,6 @@ exports[`CVC verification card renders correctly when CVC check is enabled 1`] =
             class="fraud-protection-rule-card-header"
           >
             CVC Verification
-          </p>
-          <p
-            class="fraud-protection-rule-card-description"
-          >
-            This filter checks the security code submitted by the customer against the data on file with the card issuer.
-          </p>
-        </div>
-      </div>
-      <hr />
-      <div
-        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
-        data-wp-c16t="true"
-        data-wp-component="CardBody"
-      >
-        <div
-          class="fraud-protection-rule-description"
-        >
-          <strong>
-            How does this filter protect me?
-          </strong>
-          <p>
-            Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
           </p>
         </div>
         <div
@@ -200,6 +166,16 @@ exports[`CVC verification card renders correctly when CVC check is enabled 1`] =
               class="components-notice__actions"
             />
           </div>
+        </div>
+        <div
+          class="fraud-protection-rule-description"
+        >
+          <strong>
+            How does this filter protect me?
+          </strong>
+          <p>
+            Because the card security code appears only on the card and not on receipts or statements, the card security code provides some assurance that the physical card is in the possession of the buyer.
+          </p>
         </div>
       </div>
     </div>

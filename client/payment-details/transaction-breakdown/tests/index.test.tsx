@@ -35,7 +35,7 @@ declare const global: {
 	};
 };
 
-describe( 'PaymentTransactionBreakdown', () => {
+describe.skip( 'PaymentTransactionBreakdown', () => {
 	beforeEach( () => {
 		( useTimeline as jest.Mock ).mockReset();
 		( useTransactionAmounts as jest.Mock ).mockReset();

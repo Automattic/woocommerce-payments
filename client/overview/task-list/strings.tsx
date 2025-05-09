@@ -412,16 +412,6 @@ export default {
 			},
 			action_label: __( 'Verify bank details', 'woocommerce-payments' ),
 		},
-		add_apms: {
-			title: __(
-				'Add more ways for buyers to pay',
-				'woocommerce-payments'
-			),
-			description: __(
-				'Enable payment methods that work seamlessly with WooPayments.',
-				'woocommerce-payments'
-			),
-		},
 		go_live: {
 			title: __( 'Activate payments', 'woocommerce-payments' ),
 			time: __( '10 minutes', 'woocommerce-payments' ),

@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import classNames from 'classnames';
+import clsx from 'clsx';
 
 /**
  * Internal dependencies
@@ -31,10 +31,7 @@ const PaymentMethodInformationObject: Record<
 							.settings_icon_url
 					}
 					alt={ wooPaymentsPaymentMethodDefinitions[ key ].label }
-					className={ classNames(
-						'payment-method__icon',
-						className
-					) }
+					className={ clsx( 'payment-method__icon', className ) }
 				/>
 			),
 		};

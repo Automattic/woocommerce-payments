@@ -15,9 +15,9 @@ env:
   WCP_DEV_TOOLS_BRANCH:          'trunk'
   TRANSACT_PLATFORM_SERVER_REPO: ${{ secrets.TRANSACT_PLATFORM_SERVER_REPO }}
   WC_SUBSCRIPTIONS_REPO:         ${{ secrets.WC_SUBSCRIPTIONS_REPO }}
-  E2E_BLOG_ID:                   ${{ secrets.E2E_BLOG_ID }}
-  E2E_BLOG_TOKEN:                ${{ secrets.E2E_BLOG_TOKEN }}
-  E2E_USER_TOKEN:                ${{ secrets.E2E_USER_TOKEN }}
+  E2E_JP_SITE_ID:                ${{ secrets.E2E_JP_SITE_ID }}
+  E2E_JP_BLOG_TOKEN:             ${{ secrets.E2E_JP_BLOG_TOKEN }}
+  E2E_JP_USER_TOKEN:             ${{ secrets.E2E_JP_USER_TOKEN }}
   WC_E2E_SCREENSHOTS:            1
   E2E_SLACK_CHANNEL_ID:          ${{ secrets.E2E_SLACK_CHANNEL_ID }}
   E2E_SLACK_TOKEN:               ${{ secrets.E2E_SLACK_TOKEN }}
