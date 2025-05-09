@@ -8,9 +8,50 @@
 namespace WCPay\Tests\Internal\Payment;
 
 use WC_Helper_Intention;
+use WCPay\Internal\Payment\PaymentMethod\PaymentMethodInterface;
 use WCPAY_UnitTestCase;
 use WCPay\Internal\Payment\PaymentContext;
-use WCPay\Internal\Payment\PaymentMethod\NewPaymentMethod;
+
+// phpcs:disable Squiz.Commenting.ClassComment.Missing
+// phpcs:disable Generic.Files.OneObjectStructurePerFile.MultipleFound
+class NewPaymentMethod implements PaymentMethodInterface {
+	/**
+	 * External ID of the payment method.
+	 *
+	 * @var string
+	 */
+	private $id;
+
+	/**
+	 * Class constructor.
+	 *
+	 * @param string $id External ID of the payment method.
+	 */
+	public function __construct( string $id ) {
+		$this->id = $id;
+	}
+
+	/**
+	 * Retrieves the data of the payment method for storage.
+	 *
+	 * @return array
+	 */
+	public function get_data(): array {
+		return [
+			'type' => 'new',
+			'id'   => $this->id,
+		];
+	}
+
+	/**
+	 * Returns the ID of the payment method.
+	 *
+	 * @return string
+	 */
+	public function get_id(): string {
+		return $this->id;
+	}
+}
 
 /**
  * Tests for class PaymentContextUtilTest
@@ -50,11 +91,32 @@ class PaymentContextTest extends WCPAY_UnitTestCase {
 		$this->assertSame( $amount, $this->sut->get_amount() );
 	}
 
+	public function test_payment_method() {
+		$payment_method = new NewPaymentMethod( 'pm_XYZ' );
+
+		$this->sut->set_payment_method( $payment_method );
+		$this->assertSame( $payment_method, $this->sut->get_payment_method() );
+	}
+
 	public function test_currency() {
 		$currency = 'eur';
 
 		$this->sut->set_currency( $currency );
 		$this->assertSame( $currency, $this->sut->get_currency() );
+	}
+
+	public function test_automatic_capture_disabled() {
+		$toggle_automatic_capture = false;
+
+		$this->sut->toggle_automatic_capture( $toggle_automatic_capture );
+		$this->assertSame( $toggle_automatic_capture, $this->sut->should_capture_automatically() );
+	}
+
+	public function test_automatic_capture_enabled() {
+		$toggle_automatic_capture = true;
+
+		$this->sut->toggle_automatic_capture( $toggle_automatic_capture );
+		$this->assertSame( $toggle_automatic_capture, $this->sut->should_capture_automatically() );
 	}
 
 	public function test_metadata() {
