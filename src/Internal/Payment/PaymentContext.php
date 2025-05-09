@@ -9,8 +9,6 @@ namespace WCPay\Internal\Payment;
 
 use WC_Payments_API_Abstract_Intention;
 use WCPay\Internal\Payment\PaymentMethod\PaymentMethodInterface;
-use WCPay\Internal\Payment\Change;
-use WCPay\Internal\Payment\Transition;
 
 /**
  * A context object, which is shared between payment states.
