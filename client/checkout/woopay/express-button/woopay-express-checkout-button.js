@@ -3,7 +3,7 @@
  */
 import { __ } from '@wordpress/i18n';
 import React, { useCallback, useEffect, useState, useRef } from 'react';
-import classNames from 'classnames';
+import clsx from 'clsx';
 
 /**
  * Internal dependencies
@@ -370,7 +370,7 @@ export const WoopayExpressCheckoutButton = ( {
 				key={ `${ buttonType }-${ theme }-${ buttonSize }` }
 				aria-label={ buttonText }
 				onClick={ ( e ) => onClickCallbackRef.current( e ) }
-				className={ classNames( 'woopay-express-button', {
+				className={ clsx( 'woopay-express-button', {
 					'is-loading': isLoading,
 				} ) }
 				data-type={ buttonType }

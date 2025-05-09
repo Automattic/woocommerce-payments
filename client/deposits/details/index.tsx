@@ -20,7 +20,7 @@ import {
 	OrderStatus,
 } from '@woocommerce/components';
 import interpolateComponents from '@automattic/interpolate-components';
-import classNames from 'classnames';
+import clsx from 'clsx';
 
 /**
  * Internal dependencies.
@@ -88,7 +88,7 @@ const SummaryItem: React.FC< SummaryItemProps > = ( {
 			<div className="woocommerce-summary__item-label">{ label }</div>
 			<div className="woocommerce-summary__item-data">
 				<div
-					className={ classNames(
+					className={ clsx(
 						'woocommerce-summary__item-value',
 						valueClass
 					) }

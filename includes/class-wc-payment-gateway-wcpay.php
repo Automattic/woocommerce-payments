@@ -1975,8 +1975,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				if ( Intent_Status::SUCCEEDED === $status ) {
 					$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
 				}
-				$this->order_service->update_order_status_from_intent( $order, $intent );
 				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
+				$this->order_service->update_order_status_from_intent( $order, $intent );
 				$this->order_service->attach_transaction_fee_to_order( $order, $charge );
 
 				if ( Intent_Status::REQUIRES_ACTION === $status ) {

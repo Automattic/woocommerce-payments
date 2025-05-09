@@ -3,7 +3,7 @@
  */
 import React, { FC, ReactNode } from 'react';
 import { Pill as WC_Pill } from '@woocommerce/components';
-import classNames from 'classnames';
+import clsx from 'clsx';
 
 /**
  * Internal dependencies
@@ -21,7 +21,7 @@ type PillProps = {
 const Pill: FC< PillProps > = ( { type = '', className = '', children } ) => {
 	const types = [ 'primary', 'success', 'alert', 'danger', 'light' ];
 
-	const classes = classNames(
+	const classes = clsx(
 		`wcpay-pill${ types.includes( type ) ? '__' + type : '' }`,
 		className
 	);
