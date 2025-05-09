@@ -7,6 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use WCPay\Constants\Express_Checkout_Element_States;
 use WCPay\Constants\Country_Code;
 use WCPay\Exceptions\Invalid_Price_Exception;
 use WCPay\Logger;
@@ -1059,8 +1060,6 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * @return string Normalized state or original state input value.
 	 */
 	public function get_normalized_state_from_ece_states( $state, $country ) {
-		// Include Express Checkout Element API State list for compatibility with WC countries/states.
-		include_once WCPAY_ABSPATH . 'includes/constants/class-express-checkout-element-states.php';
 		$pr_states = \WCPay\Constants\Express_Checkout_Element_States::STATES;
 
 		if ( ! isset( $pr_states[ $country ] ) ) {
@@ -1249,5 +1248,110 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		$packages = apply_filters( 'woocommerce_cart_shipping_packages', $packages );
 
 		WC()->shipping->calculate_shipping( $packages );
+	}
+
+	/**
+	 * Check if we're in an express checkout context.
+	 *
+	 * @return bool True if we're in an express checkout context, false otherwise.
+	 */
+	public function is_express_checkout_context() {
+		// Only proceed if this is a Store API request.
+		if ( ! $this->is_store_api_request() ) {
+			return false;
+		}
+
+		// Check the payment data in the request.
+		$request_body = file_get_contents( 'php://input' );
+		$request_data = json_decode( $request_body, true );
+
+		if ( ! isset( $request_data['payment_data'] ) ) {
+			return false;
+		}
+
+		return $this->is_express_payment_type( $request_data['payment_data'] );
+	}
+
+	/**
+	 * Check if the current request is an express checkout API request.
+	 *
+	 * @return bool True if this is an express checkout API request, false otherwise.
+	 */
+	private function is_store_api_request() {
+		if ( ! isset( $_SERVER['REQUEST_URI'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			return false;
+		}
+
+		$request_uri = sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		return strpos( $request_uri, '/wp-json/wc/store/v1/checkout' ) !== false;
+	}
+
+	/**
+	 * Check if the payment data indicates an express payment type.
+	 *
+	 * @param array $payment_data The payment data to check.
+	 * @return bool True if this is an express payment, false otherwise.
+	 */
+	private function is_express_payment_type( $payment_data ) {
+		if ( ! is_array( $payment_data ) ) {
+			return false;
+		}
+
+		foreach ( $payment_data as $payment_data_item ) {
+			if ( ! is_array( $payment_data_item ) || ! isset( $payment_data_item['key'] ) || ! isset( $payment_data_item['value'] ) ) {
+				continue;
+			}
+
+			if ( 'payment_request_type' === $payment_data_item['key'] || 'express_payment_type' === $payment_data_item['key'] ) {
+				return in_array( $payment_data_item['value'], [ 'apple_pay', 'google_pay' ], true );
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Modify country locale settings to handle express checkout address requirements.
+	 *
+	 * @param array $locales Array of country locale settings.
+	 * @return array Modified locales array.
+	 */
+	public function modify_country_locale( $locales ) {
+		// Only modify locale settings if we're in an express checkout context.
+		if ( ! $this->is_express_checkout_context() ) {
+			return $locales;
+		}
+
+		// Apply country locale overrides from Express Checkout Element States.
+		$overrides = $this->get_locale_overrides();
+		foreach ( $overrides as $country_code => $override ) {
+			$locales[ $country_code ] = $override;
+		}
+
+		return $locales;
+	}
+
+	/**
+	 * Gets locale overrides for countries that need special handling in Express Checkout.
+	 * For countries where the Express Checkout Element API does not provide a state/region field,
+	 * we make the state field optional and hidden to avoid validation errors.
+	 *
+	 * @return array Array of locale overrides indexed by country code.
+	 */
+	private function get_locale_overrides() {
+		$overrides = [];
+
+		// For all countries that don't have state fields in the Payment Request API,
+		// make the state field optional and hidden.
+		foreach ( Express_Checkout_Element_States::COUNTRIES_WITHOUT_STATES as $country_code ) {
+			$overrides[ $country_code ] = [
+				'state' => [
+					'required' => false,
+					'hidden'   => true,
+				],
+			];
+		}
+
+		return $overrides;
 	}
 }

@@ -1159,4 +1159,35 @@ class Express_Checkout_Element_States {
 		Country_Code::ZAMBIA => [],
 	];
 	// phpcs:enable
+
+	/**
+	 * List of countries where WooCommerce provides a state/region field but the Express Checkout
+	 * Element API does not. For these countries, we need to make the
+	 * state field optional and hidden to avoid validation errors.
+	 */
+	const COUNTRIES_WITHOUT_STATES = [
+		Country_Code::ANGOLA,
+		Country_Code::BANGLADESH,
+		Country_Code::BULGARIA,
+		Country_Code::BENIN,
+		Country_Code::BOLIVIA,
+		Country_Code::DOMINICAN_REPUBLIC,
+		Country_Code::ALGERIA,
+		Country_Code::GHANA,
+		Country_Code::GUATEMALA,
+		Country_Code::HUNGARY,
+		Country_Code::KENYA,
+		Country_Code::LAOS,
+		Country_Code::LIBERIA,
+		Country_Code::MOLDOVA,
+		Country_Code::NAMIBIA,
+		Country_Code::NEPAL,
+		Country_Code::PAKISTAN,
+		Country_Code::PARAGUAY,
+		Country_Code::ROMANIA,
+		Country_Code::TANZANIA,
+		Country_Code::UGANDA,
+		Country_Code::SOUTH_AFRICA,
+		Country_Code::ZAMBIA,
+	];
 }
