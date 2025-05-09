@@ -57,7 +57,7 @@ class OrderServiceTest extends WCPAY_UnitTestCase {
 
 		// Service under test, but with mockable methods.
 		$this->sut = $this->getMockBuilder( OrderService::class )
-			->onlyMethods( [ 'get_order', 'attach_exchange_info_to_order' ] )
+			->onlyMethods( [ 'get_order' ] )
 			->setConstructorArgs(
 				[
 					$this->mock_legacy_proxy,
