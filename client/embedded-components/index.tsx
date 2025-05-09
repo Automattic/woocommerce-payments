@@ -244,8 +244,7 @@ export const EmbeddedAccountManagement: React.FC< EmbeddedComponentProps > = ( {
 } ) => {
 	const { stripeConnectInstance, initializationError } = useInitializeStripe(
 		false,
-		null,
-		false
+		null
 	);
 
 	return (
