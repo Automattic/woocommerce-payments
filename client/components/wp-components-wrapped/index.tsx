@@ -15,7 +15,12 @@ import {
 	HorizontalRule as BundledWordPressComponentsHorizontalRule,
 	CardFooter as BundledWordPressComponentsCardFooter,
 	CardHeader as BundledWordPressComponentsCardHeader,
+	CardDivider as BundledWordPressComponentsCardDivider,
+	DropdownMenu as BundledWordPressComponentsDropdownMenu,
+	MenuGroup as BundledWordPressComponentsMenuGroup,
+	MenuItem as BundledWordPressComponentsMenuItem,
 } from '@wordpress/components';
+import BundledWordPressComponentsCardNotice from 'wcpay/components/card-notice';
 
 /**
  * Internal dependencies
@@ -137,6 +142,7 @@ const WrappedFlexItem = (
 const WrappedIcon = (
 	props: ComponentProps< typeof BundledWordPressComponentsIcon > & {
 		forceUseBundledComponent?: boolean;
+		className?: string;
 	}
 ) => {
 	const context = useContext( WordPressComponentsContext );
@@ -214,6 +220,86 @@ const WrappedCardHeader = (
 	return <CardHeader { ...props } />;
 };
 
+const WrappedCardDivider = (
+	props: ComponentProps< typeof BundledWordPressComponentsCardDivider > & {
+		forceUseBundledComponent?: boolean;
+	}
+) => {
+	const context = useContext( WordPressComponentsContext );
+
+	if ( ! context || props.forceUseBundledComponent ) {
+		return <BundledWordPressComponentsCardDivider { ...props } />;
+	}
+
+	const { CardDivider } = context;
+
+	return <CardDivider { ...props } />;
+};
+
+const WrappedDropdownMenu = (
+	props: ComponentProps< typeof BundledWordPressComponentsDropdownMenu > & {
+		forceUseBundledComponent?: boolean;
+	}
+) => {
+	const context = useContext( WordPressComponentsContext );
+
+	if ( ! context || props.forceUseBundledComponent ) {
+		return <BundledWordPressComponentsDropdownMenu { ...props } />;
+	}
+
+	const { DropdownMenu } = context;
+
+	return <DropdownMenu { ...props } />;
+};
+
+const WrappedMenuGroup = (
+	props: ComponentProps< typeof BundledWordPressComponentsMenuGroup > & {
+		forceUseBundledComponent?: boolean;
+	}
+) => {
+	const context = useContext( WordPressComponentsContext );
+
+	if ( ! context || props.forceUseBundledComponent ) {
+		return <BundledWordPressComponentsMenuGroup { ...props } />;
+	}
+
+	const { MenuGroup } = context;
+
+	return <MenuGroup { ...props } />;
+};
+
+const WrappedMenuItem = (
+	props: ComponentProps< typeof BundledWordPressComponentsMenuItem > & {
+		forceUseBundledComponent?: boolean;
+	}
+) => {
+	const context = useContext( WordPressComponentsContext );
+
+	if ( ! context || props.forceUseBundledComponent ) {
+		return <BundledWordPressComponentsMenuItem { ...props } />;
+	}
+
+	const { MenuItem } = context;
+
+	return <MenuItem { ...props } />;
+};
+
+const WrappedCardNotice = (
+	props: ComponentProps< typeof BundledWordPressComponentsCardNotice > & {
+		forceUseBundledComponent?: boolean;
+	}
+) => {
+	const context = useContext( WordPressComponentsContext );
+
+	if ( ! context || props.forceUseBundledComponent ) {
+		return <BundledWordPressComponentsCardNotice { ...props } />;
+	}
+
+	const { CardNotice } = context;
+
+	return <CardNotice { ...props } />;
+};
+
 export {
 	WrappedCard as Card,
 	WrappedCardBody as CardBody,
@@ -227,4 +313,9 @@ export {
 	WrappedHorizontalRule as HorizontalRule,
 	WrappedCardFooter as CardFooter,
 	WrappedCardHeader as CardHeader,
+	WrappedCardDivider as CardDivider,
+	WrappedDropdownMenu as DropdownMenu,
+	WrappedMenuGroup as MenuGroup,
+	WrappedMenuItem as MenuItem,
+	WrappedCardNotice as CardNotice,
 };
