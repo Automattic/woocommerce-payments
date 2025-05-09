@@ -2,7 +2,17 @@
  * External dependencies
  */
 import * as React from 'react';
-import { Flex, FlexItem, Icon, Notice, Button } from '@wordpress/components';
+import {
+	Button as ButtonType,
+	Notice as NoticeType,
+} from '@wordpress/components';
+import {
+	Flex,
+	FlexItem,
+	Icon,
+	Notice,
+	Button,
+} from 'wcpay/components/wp-components-wrapped';
 import classNames from 'classnames';
 import CheckmarkIcon from 'gridicons/dist/checkmark';
 import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
@@ -13,9 +23,9 @@ import { Action } from 'wcpay/types/notices';
  * Internal dependencies.
  */
 import './styles.scss';
-import ButtonVariant = Button.ButtonVariant;
+import ButtonVariant = ButtonType.ButtonVariant;
 
-interface InlineNoticeProps extends Notice.Props {
+interface InlineNoticeProps extends NoticeType.Props {
 	/**
 	 * Whether to display the default icon based on status prop or the icon to display.
 	 * Supported values are: boolean, JSX.Element and `undefined`.
@@ -32,13 +42,27 @@ interface InlineNoticeProps extends Notice.Props {
 	 * @default undefined
 	 */
 	buttonVariant?: ButtonVariant;
+
+	/**
+	 * Whether to use the bundled WordPress components.
+	 *
+	 * @default false
+	 */
+	forceUseBundledComponent?: boolean;
 }
 
 /**
  * Renders a banner notice.
  */
 function InlineNotice( props: InlineNoticeProps ): JSX.Element {
-	const { icon, actions, children, buttonVariant, ...noticeProps } = props;
+	const {
+		icon,
+		actions,
+		children,
+		buttonVariant,
+		forceUseBundledComponent = true,
+		...noticeProps
+	} = props;
 
 	// Add the default class name to the notice.
 	noticeProps.className = classNames(
@@ -93,21 +117,33 @@ function InlineNotice( props: InlineNoticeProps ): JSX.Element {
 	} );
 
 	return (
-		<Notice { ...noticeProps }>
-			<Flex align="center" justify="flex-start">
+		<Notice
+			forceUseBundledComponent={ forceUseBundledComponent }
+			{ ...noticeProps }
+		>
+			<Flex
+				forceUseBundledComponent={ forceUseBundledComponent }
+				align="center"
+				justify="flex-start"
+			>
 				{ iconToDisplay && (
 					<FlexItem
+						forceUseBundledComponent={ forceUseBundledComponent }
 						className={ `wcpay-inline-notice__icon wcpay-inline-${ noticeProps.status }-notice__icon` }
 					>
 						<Icon icon={ iconToDisplay } size={ 24 } />
 					</FlexItem>
 				) }
 				<FlexItem
+					forceUseBundledComponent={ forceUseBundledComponent }
 					className={ `wcpay-inline-notice__content wcpay-inline-${ noticeProps.status }-notice__content` }
 				>
 					{ children }
 					{ mappedActions && (
 						<Flex
+							forceUseBundledComponent={
+								forceUseBundledComponent
+							}
 							className="wcpay-inline-notice__content__actions"
 							align="baseline"
 							justify="flex-start"

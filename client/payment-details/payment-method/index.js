@@ -3,7 +3,11 @@
 /**
  * External dependencies
  */
-import { Card, CardBody, CardHeader } from '@wordpress/components';
+import {
+	Card,
+	CardBody,
+	CardHeader,
+} from 'wcpay/components/wp-components-wrapped';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -69,15 +73,21 @@ const PaymentDetailsPaymentMethod = ( { charge = {}, isLoading } ) => {
 
 	const PaymentMethodDetails = detailsComponentMap[ type ];
 
+	// whether is a dispute
+	const shouldUseBundledComponents = ! charge?.dispute;
+
 	return (
-		<Card size="large">
-			<CardHeader>
+		<Card
+			size="large"
+			forceUseBundledComponent={ shouldUseBundledComponents }
+		>
+			<CardHeader forceUseBundledComponent={ shouldUseBundledComponents }>
 				<Loadable
 					isLoading={ isLoading }
 					value={ __( 'Payment method', 'woocommerce-payments' ) }
 				/>
 			</CardHeader>
-			<CardBody>
+			<CardBody forceUseBundledComponent={ shouldUseBundledComponents }>
 				<PaymentMethodDetails
 					isLoading={ isLoading }
 					charge={ charge }

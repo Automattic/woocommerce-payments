@@ -107,6 +107,7 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 			status={ isUrgent ? 'error' : 'warning' }
 			className="dispute-notice"
 			isDismissible={ false }
+			forceUseBundledComponent={ false }
 		>
 			{ createInterpolateElement( noticeText, {
 				strong: <strong />,

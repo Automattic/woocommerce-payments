@@ -19,6 +19,7 @@ import {
 	DropdownMenu as BundledWordPressComponentsDropdownMenu,
 	MenuGroup as BundledWordPressComponentsMenuGroup,
 	MenuItem as BundledWordPressComponentsMenuItem,
+	Notice as BundledWordPressComponentsNotice,
 } from '@wordpress/components';
 import BundledWordPressComponentsCardNotice from 'wcpay/components/card-notice';
 
@@ -300,6 +301,22 @@ const WrappedCardNotice = (
 	return <CardNotice { ...props } />;
 };
 
+const WrappedNotice = (
+	props: ComponentProps< typeof BundledWordPressComponentsNotice > & {
+		forceUseBundledComponent?: boolean;
+	}
+) => {
+	const context = useContext( WordPressComponentsContext );
+
+	if ( ! context || props.forceUseBundledComponent ) {
+		return <BundledWordPressComponentsNotice { ...props } />;
+	}
+
+	const { Notice } = context;
+
+	return <Notice { ...props } />;
+};
+
 export {
 	WrappedCard as Card,
 	WrappedCardBody as CardBody,
@@ -318,4 +335,5 @@ export {
 	WrappedMenuGroup as MenuGroup,
 	WrappedMenuItem as MenuItem,
 	WrappedCardNotice as CardNotice,
+	WrappedNotice as Notice,
 };

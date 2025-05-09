@@ -30,7 +30,6 @@ const PaymentDetailsTimeline = ( {
 	);
 
 	const items = mapTimelineEvents( timeline, bankName );
-	console.log( 'items', items );
 
 	return (
 		<Card

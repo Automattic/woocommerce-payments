@@ -204,6 +204,7 @@ export const DisputeSteps: React.FC< Props > = ( {
 				{ /* Dispute notice */ }
 				<div className="dispute-steps__notice">
 					<InlineNotice
+						forceUseBundledComponent={ false }
 						icon
 						isDismissible={ false }
 						status="info"
@@ -389,6 +390,7 @@ export const InquirySteps: React.FC< Props > = ( {
 				{ /* Dispute notice */ }
 				<div className="dispute-steps__notice">
 					<InlineNotice
+						forceUseBundledComponent={ false }
 						icon
 						isDismissible={ false }
 						status="info"
@@ -595,6 +597,7 @@ export const NotDefendableInquirySteps: React.FC< Props > = ( {
 				{ /* Dispute notice */ }
 				<div className="dispute-steps__notice">
 					<InlineNotice
+						forceUseBundledComponent={ false }
 						icon
 						isDismissible={ false }
 						status="info"

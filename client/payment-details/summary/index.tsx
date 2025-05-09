@@ -257,7 +257,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 
 	const [ isRefundModalOpen, setIsRefundModalOpen ] = useState( false );
 
-	const shouldUseBundledComponents = ! charge.dispute;
+	const shouldUseBundledComponents = ! charge?.dispute;
 
 	const bankName = getBankName( charge );
 	return (

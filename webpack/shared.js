@@ -176,15 +176,20 @@ module.exports = {
 		 * imported from client/payment-details/dispute-details/**
 		 */
 		function ( { context, request }, callback ) {
-			if (
-				request === '@wordpress/components' &&
-				context &&
-				context.includes(
-					path.join( 'client', 'payment-details', 'dispute-details' )
-				)
-			) {
-				// Use the global `wp.components`
-				return callback( null, 'wp.components' );
+			if ( request === '@wordpress/components' && context ) {
+				switch ( true ) {
+					case context.includes(
+						path.join(
+							'client',
+							'payment-details',
+							'dispute-details'
+						)
+					):
+					case context.includes( path.join( 'client', 'disputes' ) ):
+						return callback( null, 'wp.components' );
+					default:
+						return callback();
+				}
 			}
 			// Otherwise bundle normally
 			callback();
