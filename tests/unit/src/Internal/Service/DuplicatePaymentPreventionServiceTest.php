@@ -36,6 +36,11 @@ class DuplicatePaymentPreventionServiceTest extends WCPAY_UnitTestCase {
 	private $mock_hooks_proxy;
 
 	/**
+	 * @var LegacyProxy|MockObject
+	 */
+	private $mock_legacy_proxy;
+
+	/**
 	 * Dependencies for the service under test.
 	 *
 	 * @var MockObject[]
@@ -50,12 +55,12 @@ class DuplicatePaymentPreventionServiceTest extends WCPAY_UnitTestCase {
 
 		$this->mock_hooks_proxy     = $this->createMock( HooksProxy::class );
 		$this->mock_session_service = $this->createMock( SessionService::class );
-		$mock_legacy_proxy          = $this->createMock( LegacyProxy::class );
+		$this->mock_legacy_proxy    = $this->createMock( LegacyProxy::class );
 
 		$this->deps = [
 			$this->mock_session_service,
 			$this->mock_hooks_proxy,
-			$mock_legacy_proxy,
+			$this->mock_legacy_proxy,
 		];
 
 		$this->sut = new DuplicatePaymentPreventionService( ...$this->deps );
@@ -120,5 +125,50 @@ class DuplicatePaymentPreventionServiceTest extends WCPAY_UnitTestCase {
 		$result = $this->sut->get_session_processing_order();
 
 		$this->assertSame( $expected, $result );
+	}
+
+	public function provider_clear_session_processing_order_after_landing_order_received_page() {
+		return [
+			'not order received page'                 => [ false, null, 0 ],
+			'is order received page without order ID' => [ true, null, 0 ],
+			'is order received page with order ID'    => [ true, 999, 1 ],
+		];
+	}
+
+	/**
+	 * @dataProvider provider_clear_session_processing_order_after_landing_order_received_page
+	 */
+	public function test_clear_session_processing_order_after_landing_order_received_page(
+		bool $is_order_received_page,
+		$order_received_var,
+		int $call_remove_session_processing_order
+	) {
+		/** @var $mock_sut DuplicatePaymentPreventionService|MockObject  */
+		$mock_sut = $this->getMockBuilder( DuplicatePaymentPreventionService::class )
+			->setConstructorArgs( $this->deps )
+			->onlyMethods( [ 'remove_session_processing_order' ] )
+			->getMock();
+
+		$this->mock_legacy_proxy
+			->expects( $this->once() )
+			->method( 'get_global' )
+			->with( 'wp' )
+			->willReturn(
+				(object) [
+					'query_vars' => [ 'order-received' => $order_received_var ],
+				]
+			);
+
+		$this->mock_legacy_proxy
+			->expects( $this->once() )
+			->method( 'call_function' )
+			->with( 'is_order_received_page' )
+			->willReturn( $is_order_received_page );
+
+		$mock_sut->expects( $this->exactly( $call_remove_session_processing_order ) )
+			->method( 'remove_session_processing_order' )
+			->with( $order_received_var );
+
+		$mock_sut->clear_session_processing_order_after_landing_order_received_page();
 	}
 }
