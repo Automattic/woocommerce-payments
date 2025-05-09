@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React, { useState, useRef } from 'react';
-import classNames from 'classnames';
+import clsx from 'clsx';
 import { noop } from 'lodash';
 import { Icon } from '@wordpress/components';
 
@@ -148,10 +148,7 @@ export const ClickTooltip: React.FC< TooltipProps > = ( {
 				onHide={ handleHide }
 				maxWidth={ maxWidth }
 				isVisible={ isVisible || isClicked }
-				className={ classNames(
-					'wcpay-tooltip--click__tooltip',
-					className
-				) }
+				className={ clsx( 'wcpay-tooltip--click__tooltip', className ) }
 			>
 				{ buttonIcon ? (
 					<div

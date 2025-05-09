@@ -11,7 +11,7 @@ import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { useEffect, renderToString } from '@wordpress/element';
 import { speak } from '@wordpress/a11y';
-import classNames from 'classnames';
+import clsx from 'clsx';
 import { Icon, Button } from '@wordpress/components';
 import { check, info } from '@wordpress/icons';
 import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
@@ -127,11 +127,7 @@ const BannerNotice: React.FC< Props > = ( {
 
 	const iconToDisplay = icon === true ? statusIconMap[ status ] : icon;
 
-	const classes = classNames(
-		className,
-		'wcpay-banner-notice',
-		'is-' + status
-	);
+	const classes = clsx( className, 'wcpay-banner-notice', 'is-' + status );
 
 	const handleRemove = () => onRemove?.();
 

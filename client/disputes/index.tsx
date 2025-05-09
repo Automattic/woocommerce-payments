@@ -10,7 +10,7 @@ import moment from 'moment';
 import { Button } from '@wordpress/components';
 import { TableCard, Link } from '@woocommerce/components';
 import { onQueryChange, getQuery, getHistory } from '@woocommerce/navigation';
-import classNames from 'classnames';
+import clsx from 'clsx';
 import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 
 /**
@@ -51,7 +51,7 @@ const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 		key: 'details',
 		label: '',
 		required: true,
-		cellClassName: classNames( 'info-button', {
+		cellClassName: clsx( 'info-button', {
 			'is-sorted': sortColumn === 'amount',
 		} ),
 		isLeftAligned: true,

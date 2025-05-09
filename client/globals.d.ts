@@ -136,6 +136,7 @@ declare global {
 		isNextDepositNoticeDismissed: boolean;
 		isInstantDepositNoticeDismissed: boolean;
 		isConnectionSuccessModalDismissed: boolean;
+		isWCReactifySettingsFeatureEnabled: boolean;
 		userLocale: {
 			/**
 			 * The locale of the current user profile, represented as a locale code supported by transact-platform-server.
