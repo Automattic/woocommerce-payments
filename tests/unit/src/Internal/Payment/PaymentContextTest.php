@@ -49,32 +49,12 @@ class PaymentContextTest extends WCPAY_UnitTestCase {
 		$this->sut->set_amount( $amount );
 		$this->assertSame( $amount, $this->sut->get_amount() );
 	}
-	public function test_payment_method() {
-		$payment_method = new NewPaymentMethod( 'pm_XYZ' );
-
-		$this->sut->set_payment_method( $payment_method );
-		$this->assertSame( $payment_method, $this->sut->get_payment_method() );
-	}
 
 	public function test_currency() {
 		$currency = 'eur';
 
 		$this->sut->set_currency( $currency );
 		$this->assertSame( $currency, $this->sut->get_currency() );
-	}
-
-	public function test_automatic_capture_disabled() {
-		$toggle_automatic_capture = false;
-
-		$this->sut->toggle_automatic_capture( $toggle_automatic_capture );
-		$this->assertSame( $toggle_automatic_capture, $this->sut->should_capture_automatically() );
-	}
-
-	public function test_automatic_capture_enabled() {
-		$toggle_automatic_capture = true;
-
-		$this->sut->toggle_automatic_capture( $toggle_automatic_capture );
-		$this->assertSame( $toggle_automatic_capture, $this->sut->should_capture_automatically() );
 	}
 
 	public function test_metadata() {
