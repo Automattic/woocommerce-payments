@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React, { HTMLAttributes } from 'react';
-import classNames from 'classnames';
+import clsx from 'clsx';
 
 /**
  * Internal dependencies
@@ -15,7 +15,7 @@ export const LoadBar: React.FC< HTMLAttributes< HTMLDivElement > > = ( {
 } ) => {
 	return (
 		<div
-			className={ classNames( 'wcpay-component-load-bar', className ) }
+			className={ clsx( 'wcpay-component-load-bar', className ) }
 			{ ...rest }
 		/>
 	);

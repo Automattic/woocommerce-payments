@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import classNames from 'classnames';
+import clsx from 'clsx';
 import React, { useContext } from 'react';
 
 /**
@@ -303,7 +303,7 @@ const PaymentMethod = ( {
 
 	return (
 		<li
-			className={ classNames(
+			className={ clsx(
 				'payment-method__list-item',
 				{ 'has-icon-border': id !== 'card', overlay: needsOverlay },
 				className

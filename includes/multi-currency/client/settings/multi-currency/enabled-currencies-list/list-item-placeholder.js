@@ -2,13 +2,13 @@
 /**
  * External dependencies
  */
-import classNames from 'classnames';
+import clsx from 'clsx';
 import { LoadableBlock } from 'multi-currency/interface/components';
 
 const EnabledCurrenciesListItemPlaceholder = ( { isLoading } ) => {
 	return (
 		<li
-			className={ classNames(
+			className={ clsx(
 				'enabled-currency-placeholder',
 				'enabled-currency'
 			) }
