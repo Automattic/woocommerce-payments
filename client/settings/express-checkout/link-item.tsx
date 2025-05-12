@@ -17,20 +17,17 @@ import {
 import './style.scss';
 import { HoverTooltip } from 'components/tooltip';
 import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
-import { EnabledMethodIdsHook } from './interfaces';
 import { LinkIcon } from 'wcpay/payment-methods-icons';
 
 const LinkExpressCheckoutItem = (): React.ReactElement => {
-	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds() as Array<
-		string
-	>;
+	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
 
 	const [ isWooPayEnabled ] = useWooPayEnabledSettings();
 
 	const [
 		enabledMethodIds,
 		updateEnabledMethodIds,
-	] = useEnabledPaymentMethodIds() as EnabledMethodIdsHook;
+	] = useEnabledPaymentMethodIds();
 
 	const updateStripeLinkCheckout = ( isEnabled: boolean ) => {
 		//this handles the link payment method checkbox. If it's enable we should add link to the rest of the

@@ -17,16 +17,15 @@ import {
 import './style.scss';
 import ConfirmationModal from 'wcpay/components/confirmation-modal';
 import interpolateComponents from '@automattic/interpolate-components';
-import { StripeBillingHook } from '../advanced-settings/interfaces';
 import InlineNotice from 'components/inline-notice';
 
 const ManualCaptureControl = (): JSX.Element => {
 	const [
 		isManualCaptureEnabled,
 		setIsManualCaptureEnabled,
-	] = useManualCapture() as [ boolean, ( value: boolean ) => void ];
-	const [ isStripeBillingEnabled ] = useStripeBilling() as StripeBillingHook;
-	const [ isCardPresentEligible ] = useCardPresentEligible() as [ boolean ];
+	] = useManualCapture();
+	const [ isStripeBillingEnabled ] = useStripeBilling();
+	const [ isCardPresentEligible ] = useCardPresentEligible();
 
 	const [
 		isManualDepositConfirmationModalOpen,
