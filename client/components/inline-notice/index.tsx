@@ -46,9 +46,9 @@ interface InlineNoticeProps extends NoticeType.Props {
 	/**
 	 * Whether to use the bundled WordPress components.
 	 *
-	 * @default false
+	 * @default true
 	 */
-	forceUseBundledComponent?: boolean;
+	useBundledComponent?: boolean;
 }
 
 /**
@@ -60,7 +60,7 @@ function InlineNotice( props: InlineNoticeProps ): JSX.Element {
 		actions,
 		children,
 		buttonVariant,
-		forceUseBundledComponent = true,
+		useBundledComponent: useBundledComponent = true,
 		...noticeProps
 	} = props;
 
@@ -117,33 +117,28 @@ function InlineNotice( props: InlineNoticeProps ): JSX.Element {
 	} );
 
 	return (
-		<Notice
-			forceUseBundledComponent={ forceUseBundledComponent }
-			{ ...noticeProps }
-		>
+		<Notice useBundledComponent={ useBundledComponent } { ...noticeProps }>
 			<Flex
-				forceUseBundledComponent={ forceUseBundledComponent }
+				useBundledComponent={ useBundledComponent }
 				align="center"
 				justify="flex-start"
 			>
 				{ iconToDisplay && (
 					<FlexItem
-						forceUseBundledComponent={ forceUseBundledComponent }
+						useBundledComponent={ useBundledComponent }
 						className={ `wcpay-inline-notice__icon wcpay-inline-${ noticeProps.status }-notice__icon` }
 					>
 						<Icon icon={ iconToDisplay } size={ 24 } />
 					</FlexItem>
 				) }
 				<FlexItem
-					forceUseBundledComponent={ forceUseBundledComponent }
+					useBundledComponent={ useBundledComponent }
 					className={ `wcpay-inline-notice__content wcpay-inline-${ noticeProps.status }-notice__content` }
 				>
 					{ children }
 					{ mappedActions && (
 						<Flex
-							forceUseBundledComponent={
-								forceUseBundledComponent
-							}
+							useBundledComponent={ useBundledComponent }
 							className="wcpay-inline-notice__content__actions"
 							align="baseline"
 							justify="flex-start"

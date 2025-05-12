@@ -77,17 +77,14 @@ const PaymentDetailsPaymentMethod = ( { charge = {}, isLoading } ) => {
 	const shouldUseBundledComponents = ! charge?.dispute;
 
 	return (
-		<Card
-			size="large"
-			forceUseBundledComponent={ shouldUseBundledComponents }
-		>
-			<CardHeader forceUseBundledComponent={ shouldUseBundledComponents }>
+		<Card size="large" useBundledComponent={ shouldUseBundledComponents }>
+			<CardHeader useBundledComponent={ shouldUseBundledComponents }>
 				<Loadable
 					isLoading={ isLoading }
 					value={ __( 'Payment method', 'woocommerce-payments' ) }
 				/>
 			</CardHeader>
-			<CardBody forceUseBundledComponent={ shouldUseBundledComponents }>
+			<CardBody useBundledComponent={ shouldUseBundledComponents }>
 				<PaymentMethodDetails
 					isLoading={ isLoading }
 					charge={ charge }

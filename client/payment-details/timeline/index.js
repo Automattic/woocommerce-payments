@@ -32,17 +32,14 @@ const PaymentDetailsTimeline = ( {
 	const items = mapTimelineEvents( timeline, bankName );
 
 	return (
-		<Card
-			forceUseBundledComponent={ shouldUseBundledComponents }
-			size="large"
-		>
-			<CardHeader forceUseBundledComponent={ shouldUseBundledComponents }>
+		<Card useBundledComponent={ shouldUseBundledComponents } size="large">
+			<CardHeader useBundledComponent={ shouldUseBundledComponents }>
 				<Loadable
 					isLoading={ isLoading }
 					value={ __( 'Timeline', 'woocommerce-payments' ) }
 				/>
 			</CardHeader>
-			<CardBody forceUseBundledComponent={ shouldUseBundledComponents }>
+			<CardBody useBundledComponent={ shouldUseBundledComponents }>
 				<LoadableBlock isLoading={ isLoading } numLines={ 3 }>
 					{ timelineError instanceof Error ? (
 						__(

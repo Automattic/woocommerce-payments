@@ -261,12 +261,12 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 
 	const bankName = getBankName( charge );
 	return (
-		<Card forceUseBundledComponent={ shouldUseBundledComponents }>
-			<CardBody forceUseBundledComponent={ shouldUseBundledComponents }>
+		<Card useBundledComponent={ shouldUseBundledComponents }>
+			<CardBody useBundledComponent={ shouldUseBundledComponents }>
 				<Flex
 					direction="row"
 					align="start"
-					forceUseBundledComponent={ shouldUseBundledComponents }
+					useBundledComponent={ shouldUseBundledComponents }
 				>
 					<div className="payment-details-summary">
 						<div className="payment-details-summary__section">
@@ -560,7 +560,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								placeholder={ moreVertical }
 							>
 								<DropdownMenu
-									forceUseBundledComponent={
+									useBundledComponent={
 										shouldUseBundledComponents
 									}
 									icon={ moreVertical }
@@ -575,13 +575,13 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								>
 									{ ( { onClose } ) => (
 										<MenuGroup
-											forceUseBundledComponent={
+											useBundledComponent={
 												shouldUseBundledComponents
 											}
 										>
 											{ ! isPartiallyRefunded && (
 												<MenuItem
-													forceUseBundledComponent={
+													useBundledComponent={
 														shouldUseBundledComponents
 													}
 													onClick={ () => {
@@ -606,7 +606,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 											) }
 											{ isPartiallyRefundable && (
 												<MenuItem
-													forceUseBundledComponent={
+													useBundledComponent={
 														shouldUseBundledComponents
 													}
 													onClick={ () => {
@@ -638,10 +638,8 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 					</div>
 				</Flex>
 			</CardBody>
-			<CardDivider
-				forceUseBundledComponent={ shouldUseBundledComponents }
-			/>
-			<CardBody forceUseBundledComponent={ shouldUseBundledComponents }>
+			<CardDivider useBundledComponent={ shouldUseBundledComponents } />
+			<CardBody useBundledComponent={ shouldUseBundledComponents }>
 				<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
 					<HorizontalList
 						items={ composePaymentSummaryItems( {
@@ -700,9 +698,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 				! authorization.captured && (
 					<Loadable isLoading={ isLoading } placeholder="">
 						<CardNotice
-							forceUseBundledComponent={
-								shouldUseBundledComponents
-							}
+							useBundledComponent={ shouldUseBundledComponents }
 							actions={
 								! isFraudOutcomeReview ? (
 									<CaptureAuthorizationButton

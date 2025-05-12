@@ -293,7 +293,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 					<InlineNotice
 						icon={ edit }
 						isDismissible={ false }
-						forceUseBundledComponent={ false }
+						useBundledComponent={ false }
 					>
 						{ __(
 							`You initiated a challenge to this dispute. Click 'Continue with challenge' to proceed with your draft response.`,
