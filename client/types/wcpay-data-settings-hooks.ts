@@ -1,7 +1,7 @@
 /**
- * Using this module as a centralized way to type the settings-related hooks in `wcpay/data`.
+ * Using this module as a centralized way to type the settings-related hooks in `wcpay/data/settings/hooks`.
  * Those hooks are all written in JS. To gradually type them all, we can start typing them here as needed.
- * Once we have sufficient coverage, we should be able to convert the whole file.
+ * Once we have sufficient coverage and fixes, we should be able to convert the whole file.
  */
 export type GenericSettingsHook< T > = [ T, ( value: T ) => void ];
 
