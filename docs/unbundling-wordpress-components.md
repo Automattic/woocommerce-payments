@@ -61,12 +61,13 @@ This document describes our strategy for progressively migrating from bundled `@
    const context = useContext(WordPressComponentsContext);
    
    // Components can use either bundled or core versions
-   if (!context) {
-       return <BundledComponent {...props} />;
+   const { useBundledComponent, ...rest } = props;
+   if (!context || useBundledComponent) {
+       return <BundledComponent {...rest} />;
    }
    
    const { Component } = context;
-   return <Component {...props} />;
+   return <Component {...rest} />;
    ```
    This system:
    - Provides runtime flexibility
@@ -200,12 +201,13 @@ This document describes our strategy for progressively migrating from bundled `@
    - Implement the wrapping strategy:
    ```typescript
    const MyComponent = (props) => {
+     const { useBundledComponent, ...rest } = props;
      const context = useContext(WordPressComponentsContext);
-     if (!context) {
-       return <BundledComponent {...props} />;
+     if (!context || useBundledComponent) {
+       return <BundledComponent {...rest} />;
      }
      const { Component } = context;
-     return <Component {...props} />;
+     return <Component {...rest} />;
    };
    ```
 
@@ -213,7 +215,8 @@ This document describes our strategy for progressively migrating from bundled `@
    - For components that share context (like `client/payment-details/timeline/index.js`)
    - Use fine-grained control with `useBundledComponent`:
    ```typescript
-   const SharedComponent = () => {
+   const SharedComponent = (props) => {
+     const { useBundledComponent, ...rest } = props;
      const shouldUseBundled = useMemo(() => {
        // Add logic to determine which version to use
        return someCondition;
@@ -222,7 +225,7 @@ This document describes our strategy for progressively migrating from bundled `@
      return (
        <Component
          useBundledComponent={shouldUseBundled}
-         {...props}
+         {...rest}
        />
      );
    };
