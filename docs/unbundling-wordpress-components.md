@@ -330,42 +330,6 @@ However, it's important to note that while it appears self-contained, it actuall
    - Used `useBundledComponent` for components that need to work in both contexts
    - Example: Timeline components that appear in both payment and dispute views
 
-4. **Test Updates**
-   ```diff
-   // dispute-notice.test.tsx
-   describe('DisputeNotice', () => {
-   -     it('should render notice', () => {
-   -         const { container } = render(<DisputeNotice />);
-   -         expect(container).toMatchSnapshot();
-   -     });
-   +     it('should render WordPress notice when context available', () => {
-   +         const { container } = render(
-   +             <WordPressComponentsContext.Provider value={{ Notice: WordPressNotice }}>
-   +                 <DisputeNotice />
-   +             </WordPressComponentsContext.Provider>
-   +         );
-   +         expect(container).toMatchSnapshot();
-   +     });
-   +     
-   +     it('should fallback to bundled notice when context not available', () => {
-   +         const { container } = render(<DisputeNotice />);
-   +         expect(container).toMatchSnapshot();
-   +     });
-   });
-   ```
-   Tests now verify:
-   - WordPress component rendering
-   - Fallback behavior
-   - Visual consistency
-   - Context sharing behavior
-
-This example shows that even seemingly self-contained features might need a mixed approach when they share context with other parts of the application. The key is to:
-- Use path-based migration where possible
-- Apply fine-grained control where needed
-- Consider context sharing implications
-- Test both WordPress and bundled versions
-- Ensure consistent behavior across contexts
-
 ## Migration Checklist
 
 ✅ Completed Migrations:
