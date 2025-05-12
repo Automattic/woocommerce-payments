@@ -3,7 +3,7 @@
  */
 import React, { forwardRef } from 'react';
 import { TextControl } from '@wordpress/components';
-import classNames from 'classnames';
+import clsx from 'clsx';
 
 /**
  * Internal dependencies
@@ -50,7 +50,7 @@ const makeField = (
 			<Control
 				{ ...rest }
 				ref={ ref }
-				className={ classNames( rest.className, 'has-error' ) }
+				className={ clsx( rest.className, 'has-error' ) }
 			/>
 			{ <div className="components-form-field__error">{ error }</div> }
 		</>

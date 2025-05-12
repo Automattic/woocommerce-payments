@@ -9,6 +9,7 @@ import {
 	Notice as BundledWordPressComponentsNotice,
 	Button as BundledWordPressComponentsButton,
 } from '@wordpress/components';
+
 import clsx from 'clsx';
 import CheckmarkIcon from 'gridicons/dist/checkmark';
 import NoticeOutlineIcon from 'gridicons/dist/notice-outline';

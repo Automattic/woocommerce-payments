@@ -862,8 +862,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( ! WC_Payments::get_gateway()->is_enabled() ) {
 			return false;
 		}
-		$processing_payment_method = $this->payment_methods[ $this->payment_method->get_id() ];
+
+		$payment_method_id         = $this->payment_method->get_id();
+		$processing_payment_method = $this->payment_methods[ $payment_method_id ];
 		if ( ! $processing_payment_method->is_enabled_at_checkout( $this->get_account_country() ) ) {
+			return false;
+		}
+
+		$payment_method_statuses  = $this->get_upe_enabled_payment_method_statuses();
+		$stripe_key               = $this->get_payment_method_capability_key_map()[ $payment_method_id ] ?? null;
+		$is_payment_method_active = array_key_exists( $stripe_key, $payment_method_statuses ) && 'active' === $payment_method_statuses[ $stripe_key ]['status'];
+		if ( false === $is_payment_method_active ) {
 			return false;
 		}
 
@@ -1966,8 +1975,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				if ( Intent_Status::SUCCEEDED === $status ) {
 					$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
 				}
-				$this->order_service->update_order_status_from_intent( $order, $intent );
 				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
+				$this->order_service->update_order_status_from_intent( $order, $intent );
 				$this->order_service->attach_transaction_fee_to_order( $order, $charge );
 
 				if ( Intent_Status::REQUIRES_ACTION === $status ) {

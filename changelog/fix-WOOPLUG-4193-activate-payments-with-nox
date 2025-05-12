@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Update ‘Activate payments’ task to use NOX flow when the reactify-settings-payments feature is enabled.

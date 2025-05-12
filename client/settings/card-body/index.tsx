@@ -3,7 +3,7 @@
  */
 import React, { useContext } from 'react';
 import { CardBody as BundledWordPressComponentsCardBody } from '@wordpress/components';
-import classNames from 'classnames';
+import clsx from 'clsx';
 
 /**
  * Internal dependencies
@@ -26,7 +26,7 @@ const WcpayCardBody: React.FC< WcpayCardBodyProps > = ( {
 	if ( ! context ) {
 		return (
 			<BundledWordPressComponentsCardBody
-				className={ classNames( 'wcpay-card-body', className ) }
+				className={ clsx( 'wcpay-card-body', className ) }
 				{ ...props }
 			/>
 		);

@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { __, _n, sprintf } from '@wordpress/i18n';
-import classNames from 'classnames';
+import clsx from 'clsx';
 import moment from 'moment';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 
@@ -24,7 +24,7 @@ const DisputeDueByDate: React.FC< {
 			{ showRemainingDays && (
 				// Make it red regardless how many days are left
 				<span
-					className={ classNames(
+					className={ clsx(
 						'dispute-steps__steps__response-date--urgent'
 					) }
 				>

@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+update: remove BNPL payment method messaging element/offering from checkout labels

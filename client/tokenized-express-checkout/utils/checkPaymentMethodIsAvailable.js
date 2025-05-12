@@ -55,7 +55,6 @@ export const checkPaymentMethodIsAvailable = memoize(
 						onLoadError={ () => resolve( false ) }
 						options={ {
 							paymentMethods: {
-								amazonPay: 'never',
 								applePay:
 									paymentMethod === 'applePay'
 										? 'always'
@@ -64,8 +63,10 @@ export const checkPaymentMethodIsAvailable = memoize(
 									paymentMethod === 'googlePay'
 										? 'always'
 										: 'never',
+								amazonPay: 'never',
 								link: 'never',
 								paypal: 'never',
+								klarna: 'never',
 							},
 						} }
 						onReady={ ( event ) => {

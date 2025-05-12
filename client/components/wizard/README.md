@@ -88,7 +88,7 @@ const Consumer = () => {
 
 	return (
 		<div
-			className={ classNames( {
+			className={ clsx( {
 				'id-active': isActive,
 				'is-completed': isCompleted,
 			} ) }
