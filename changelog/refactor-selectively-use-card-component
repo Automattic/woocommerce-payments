@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-refactor: start using @wordpress/components from the WP installation on a few select locations

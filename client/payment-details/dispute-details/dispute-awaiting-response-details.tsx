@@ -290,11 +290,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 					bankName={ bankName }
 				/>
 				{ hasStagedEvidence && (
-					<InlineNotice
-						icon={ edit }
-						isDismissible={ false }
-						useBundledComponent={ false }
-					>
+					<InlineNotice icon={ edit } isDismissible={ false }>
 						{ __(
 							`You initiated a challenge to this dispute. Click 'Continue with challenge' to proceed with your draft response.`,
 							'woocommerce-payments'
