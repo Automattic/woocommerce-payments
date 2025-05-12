@@ -83,7 +83,6 @@ Object.entries( enabledPaymentMethodsConfig )
 				<PaymentMethodLabel
 					api={ api }
 					title={ upeConfig.title }
-					countries={ upeConfig.countries }
 					iconLight={ upeConfig.icon }
 					iconDark={ upeConfig.darkIcon }
 					upeName={ upeName }
