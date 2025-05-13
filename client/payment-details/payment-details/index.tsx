@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useContext } from 'react';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -20,6 +20,7 @@ import { Charge } from '../../types/charges';
 import { PaymentIntent } from '../../types/payment-intents';
 import { MaybeShowMerchantFeedbackPrompt } from '../../merchant-feedback-prompt';
 import { getBankName } from 'wcpay/utils/charge';
+import { WordPressComponentsContext } from 'wcpay/wordpress-components-context/context';
 
 interface PaymentDetailsProps {
 	id: string;
@@ -40,6 +41,8 @@ const PaymentDetails: React.FC< PaymentDetailsProps > = ( {
 	showTimeline = true,
 	paymentIntent,
 } ) => {
+	const inheritedWpComponents = useContext( WordPressComponentsContext );
+
 	// Check instance of error because its default value is empty object
 	if ( ! isLoading && error instanceof Error ) {
 		return (
@@ -59,8 +62,6 @@ const PaymentDetails: React.FC< PaymentDetailsProps > = ( {
 
 	const bankName = charge ? getBankName( charge ) : null;
 
-	const shouldUseBundledComponents = ! charge?.dispute;
-
 	return (
 		<Page maxWidth={ 1032 } className="wcpay-payment-details">
 			<MaybeShowMerchantFeedbackPrompt />
@@ -76,13 +77,16 @@ const PaymentDetails: React.FC< PaymentDetailsProps > = ( {
 
 			{ showTimeline && wcpaySettings.featureFlags.paymentTimeline && (
 				<ErrorBoundary>
-					<PaymentDetailsTimeline
-						shouldUseBundledComponents={
-							shouldUseBundledComponents
+					<WordPressComponentsContext.Provider
+						value={
+							charge?.dispute ? inheritedWpComponents : undefined
 						}
-						paymentIntentId={ id }
-						bankName={ bankName }
-					/>
+					>
+						<PaymentDetailsTimeline
+							paymentIntentId={ id }
+							bankName={ bankName }
+						/>
+					</WordPressComponentsContext.Provider>
 				</ErrorBoundary>
 			) }
 

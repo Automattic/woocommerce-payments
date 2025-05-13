@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import * as React from 'react';
+import React, { useContext } from 'react';
 import {
 	Flex as BundledWordPressComponentsFlex,
 	FlexItem as BundledWordPressComponentsFlexItem,
@@ -47,7 +47,7 @@ interface InlineNoticeProps extends BundledWordPressComponentsNotice.Props {
  */
 function InlineNotice( props: InlineNoticeProps ): JSX.Element {
 	const { icon, actions, children, buttonVariant, ...noticeProps } = props;
-	const context = React.useContext( WordPressComponentsContext );
+	const context = useContext( WordPressComponentsContext );
 
 	// Add the default class name to the notice.
 	noticeProps.className = clsx(

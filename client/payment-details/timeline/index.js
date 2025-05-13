@@ -20,11 +20,7 @@ import Loadable, { LoadableBlock } from 'components/loadable';
 
 import './style.scss';
 
-const PaymentDetailsTimeline = ( {
-	paymentIntentId,
-	bankName,
-	shouldUseBundledComponents,
-} ) => {
+const PaymentDetailsTimeline = ( { paymentIntentId, bankName } ) => {
 	const { timeline, timelineError, isLoading } = useTimeline(
 		paymentIntentId
 	);
@@ -32,14 +28,14 @@ const PaymentDetailsTimeline = ( {
 	const items = mapTimelineEvents( timeline, bankName );
 
 	return (
-		<Card useBundledComponent={ shouldUseBundledComponents } size="large">
-			<CardHeader useBundledComponent={ shouldUseBundledComponents }>
+		<Card size="large">
+			<CardHeader>
 				<Loadable
 					isLoading={ isLoading }
 					value={ __( 'Timeline', 'woocommerce-payments' ) }
 				/>
 			</CardHeader>
-			<CardBody useBundledComponent={ shouldUseBundledComponents }>
+			<CardBody>
 				<LoadableBlock isLoading={ isLoading } numLines={ 3 }>
 					{ timelineError instanceof Error ? (
 						__(

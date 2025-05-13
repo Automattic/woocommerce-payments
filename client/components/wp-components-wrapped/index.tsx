@@ -29,310 +29,257 @@ import BundledWordPressComponentsCardNotice from 'wcpay/components/card-notice';
 import { WordPressComponentsContext } from 'wcpay/wordpress-components-context/context';
 
 const WrappedCard = (
-	props: ComponentProps< typeof BundledWordPressComponentsCard > & {
-		useBundledComponent?: boolean;
-	}
+	props: ComponentProps< typeof BundledWordPressComponentsCard >
 ) => {
-	const { useBundledComponent, ...rest } = props;
 	const context = useContext( WordPressComponentsContext );
 
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsCard { ...rest } />;
+	if ( ! context ) {
+		return <BundledWordPressComponentsCard { ...props } />;
 	}
 
 	const { Card } = context;
 
-	return <Card { ...rest } />;
+	return <Card { ...props } />;
 };
 
 const WrappedCardBody = (
-	props: ComponentProps< typeof BundledWordPressComponentsCardBody > & {
-		useBundledComponent?: boolean;
-	}
+	props: ComponentProps< typeof BundledWordPressComponentsCardBody >
 ) => {
-	const { useBundledComponent, ...rest } = props;
 	const context = useContext( WordPressComponentsContext );
 
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsCardBody { ...rest } />;
+	if ( ! context ) {
+		return <BundledWordPressComponentsCardBody { ...props } />;
 	}
 
 	const { CardBody } = context;
 
-	return <CardBody { ...rest } />;
+	return <CardBody { ...props } />;
 };
 
 const WrappedButton = (
-	props: ComponentProps< typeof BundledWordPressComponentsButton > & {
-		useBundledComponent?: boolean;
-	}
+	props: ComponentProps< typeof BundledWordPressComponentsButton >
 ) => {
-	const { useBundledComponent, ...rest } = props;
 	const context = useContext( WordPressComponentsContext );
 
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsButton { ...rest } />;
+	if ( ! context ) {
+		return <BundledWordPressComponentsButton { ...props } />;
 	}
 
 	const { Button } = context;
 
-	return <Button { ...rest } />;
+	return <Button { ...props } />;
 };
 
 const WrappedPanelBody = (
-	props: ComponentProps< typeof BundledWordPressComponentsPanelBody > & {
-		useBundledComponent?: boolean;
-	}
+	props: ComponentProps< typeof BundledWordPressComponentsPanelBody >
 ) => {
-	const { useBundledComponent, ...rest } = props;
 	const context = useContext( WordPressComponentsContext );
 
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsPanelBody { ...rest } />;
+	if ( ! context ) {
+		return <BundledWordPressComponentsPanelBody { ...props } />;
 	}
 
 	const { PanelBody } = context;
 
-	return <PanelBody { ...rest } />;
+	return <PanelBody { ...props } />;
 };
 
 const WrappedExternalLink = (
-	props: ComponentProps< typeof BundledWordPressComponentsExternalLink > & {
-		useBundledComponent?: boolean;
-	}
+	props: ComponentProps< typeof BundledWordPressComponentsExternalLink >
 ) => {
-	const { useBundledComponent, ...rest } = props;
 	const context = useContext( WordPressComponentsContext );
 
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsExternalLink { ...rest } />;
+	if ( ! context ) {
+		return <BundledWordPressComponentsExternalLink { ...props } />;
 	}
 
 	const { ExternalLink } = context;
 
-	return <ExternalLink { ...rest } />;
+	return <ExternalLink { ...props } />;
 };
 
 const WrappedFlex = (
-	props: ComponentProps< typeof BundledWordPressComponentsFlex > & {
-		useBundledComponent?: boolean;
-	}
+	props: ComponentProps< typeof BundledWordPressComponentsFlex >
 ) => {
-	const { useBundledComponent, ...rest } = props;
 	const context = useContext( WordPressComponentsContext );
 
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsFlex { ...rest } />;
+	if ( ! context ) {
+		return <BundledWordPressComponentsFlex { ...props } />;
 	}
 
 	const { Flex } = context;
 
-	return <Flex { ...rest } />;
+	return <Flex { ...props } />;
 };
 
 const WrappedFlexItem = (
-	props: ComponentProps< typeof BundledWordPressComponentsFlexItem > & {
-		useBundledComponent?: boolean;
-	}
+	props: ComponentProps< typeof BundledWordPressComponentsFlexItem >
 ) => {
-	const { useBundledComponent, ...rest } = props;
 	const context = useContext( WordPressComponentsContext );
 
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsFlexItem { ...rest } />;
+	if ( ! context ) {
+		return <BundledWordPressComponentsFlexItem { ...props } />;
 	}
 
 	const { FlexItem } = context;
 
-	return <FlexItem { ...rest } />;
+	return <FlexItem { ...props } />;
 };
 
 const WrappedIcon = (
 	props: ComponentProps< typeof BundledWordPressComponentsIcon > & {
-		useBundledComponent?: boolean;
 		className?: string;
 	}
 ) => {
-	const { useBundledComponent, ...rest } = props;
 	const context = useContext( WordPressComponentsContext );
 
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsIcon { ...rest } />;
+	if ( ! context ) {
+		return <BundledWordPressComponentsIcon { ...props } />;
 	}
 
 	const { Icon } = context;
 
-	return <Icon { ...rest } />;
+	return <Icon { ...props } />;
 };
 
 const WrappedModal = (
-	props: ComponentProps< typeof BundledWordPressComponentsModal > & {
-		useBundledComponent?: boolean;
-	}
+	props: ComponentProps< typeof BundledWordPressComponentsModal >
 ) => {
-	const { useBundledComponent, ...rest } = props;
 	const context = useContext( WordPressComponentsContext );
 
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsModal { ...rest } />;
+	if ( ! context ) {
+		return <BundledWordPressComponentsModal { ...props } />;
 	}
 
 	const { Modal } = context;
 
-	return <Modal { ...rest } />;
+	return <Modal { ...props } />;
 };
 
 const WrappedHorizontalRule = (
-	props: ComponentProps< typeof BundledWordPressComponentsHorizontalRule > & {
-		useBundledComponent?: boolean;
-	}
+	props: ComponentProps< typeof BundledWordPressComponentsHorizontalRule >
 ) => {
-	const { useBundledComponent, ...rest } = props;
 	const context = useContext( WordPressComponentsContext );
 
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsHorizontalRule { ...rest } />;
+	if ( ! context ) {
+		return <BundledWordPressComponentsHorizontalRule { ...props } />;
 	}
 
 	const { HorizontalRule } = context;
 
-	return <HorizontalRule { ...rest } />;
+	return <HorizontalRule { ...props } />;
 };
 
 const WrappedCardFooter = (
-	props: ComponentProps< typeof BundledWordPressComponentsCardFooter > & {
-		useBundledComponent?: boolean;
-	}
+	props: ComponentProps< typeof BundledWordPressComponentsCardFooter >
 ) => {
-	const { useBundledComponent, ...rest } = props;
 	const context = useContext( WordPressComponentsContext );
 
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsCardFooter { ...rest } />;
+	if ( ! context ) {
+		return <BundledWordPressComponentsCardFooter { ...props } />;
 	}
 
 	const { CardFooter } = context;
 
-	return <CardFooter { ...rest } />;
+	return <CardFooter { ...props } />;
 };
 
 const WrappedCardHeader = (
-	props: ComponentProps< typeof BundledWordPressComponentsCardHeader > & {
-		useBundledComponent?: boolean;
-	}
+	props: ComponentProps< typeof BundledWordPressComponentsCardHeader >
 ) => {
-	const { useBundledComponent, ...rest } = props;
 	const context = useContext( WordPressComponentsContext );
 
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsCardHeader { ...rest } />;
+	if ( ! context ) {
+		return <BundledWordPressComponentsCardHeader { ...props } />;
 	}
 
 	const { CardHeader } = context;
 
-	return <CardHeader { ...rest } />;
+	return <CardHeader { ...props } />;
 };
 
 const WrappedCardDivider = (
-	props: ComponentProps< typeof BundledWordPressComponentsCardDivider > & {
-		useBundledComponent?: boolean;
-	}
+	props: ComponentProps< typeof BundledWordPressComponentsCardDivider >
 ) => {
-	const { useBundledComponent, ...rest } = props;
 	const context = useContext( WordPressComponentsContext );
 
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsCardDivider { ...rest } />;
+	if ( ! context ) {
+		return <BundledWordPressComponentsCardDivider { ...props } />;
 	}
 
 	const { CardDivider } = context;
 
-	return <CardDivider { ...rest } />;
+	return <CardDivider { ...props } />;
 };
 
 const WrappedDropdownMenu = (
-	props: ComponentProps< typeof BundledWordPressComponentsDropdownMenu > & {
-		useBundledComponent?: boolean;
-	}
+	props: ComponentProps< typeof BundledWordPressComponentsDropdownMenu >
 ) => {
-	const { useBundledComponent, ...rest } = props;
 	const context = useContext( WordPressComponentsContext );
 
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsDropdownMenu { ...rest } />;
+	if ( ! context ) {
+		return <BundledWordPressComponentsDropdownMenu { ...props } />;
 	}
 
 	const { DropdownMenu } = context;
 
-	return <DropdownMenu { ...rest } />;
+	return <DropdownMenu { ...props } />;
 };
 
 const WrappedMenuGroup = (
-	props: ComponentProps< typeof BundledWordPressComponentsMenuGroup > & {
-		useBundledComponent?: boolean;
-	}
+	props: ComponentProps< typeof BundledWordPressComponentsMenuGroup >
 ) => {
-	const { useBundledComponent, ...rest } = props;
 	const context = useContext( WordPressComponentsContext );
 
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsMenuGroup { ...rest } />;
+	if ( ! context ) {
+		return <BundledWordPressComponentsMenuGroup { ...props } />;
 	}
 
 	const { MenuGroup } = context;
 
-	return <MenuGroup { ...rest } />;
+	return <MenuGroup { ...props } />;
 };
 
 const WrappedMenuItem = (
-	props: ComponentProps< typeof BundledWordPressComponentsMenuItem > & {
-		useBundledComponent?: boolean;
-	}
+	props: ComponentProps< typeof BundledWordPressComponentsMenuItem >
 ) => {
-	const { useBundledComponent, ...rest } = props;
 	const context = useContext( WordPressComponentsContext );
 
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsMenuItem { ...rest } />;
+	if ( ! context ) {
+		return <BundledWordPressComponentsMenuItem { ...props } />;
 	}
 
 	const { MenuItem } = context;
 
-	return <MenuItem { ...rest } />;
+	return <MenuItem { ...props } />;
 };
 
 const WrappedCardNotice = (
-	props: ComponentProps< typeof BundledWordPressComponentsCardNotice > & {
-		useBundledComponent?: boolean;
-	}
+	props: ComponentProps< typeof BundledWordPressComponentsCardNotice >
 ) => {
-	const { useBundledComponent, ...rest } = props;
 	const context = useContext( WordPressComponentsContext );
 
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsCardNotice { ...rest } />;
+	if ( ! context ) {
+		return <BundledWordPressComponentsCardNotice { ...props } />;
 	}
 
 	const { CardNotice } = context;
 
-	return <CardNotice { ...rest } />;
+	return <CardNotice { ...props } />;
 };
 
 const WrappedNotice = (
-	props: ComponentProps< typeof BundledWordPressComponentsNotice > & {
-		useBundledComponent?: boolean;
-	}
+	props: ComponentProps< typeof BundledWordPressComponentsNotice >
 ) => {
-	const { useBundledComponent, ...rest } = props;
 	const context = useContext( WordPressComponentsContext );
 
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsNotice { ...rest } />;
+	if ( ! context ) {
+		return <BundledWordPressComponentsNotice { ...props } />;
 	}
 
 	const { Notice } = context;
 
-	return <Notice { ...rest } />;
+	return <Notice { ...props } />;
 };
 
 export {
