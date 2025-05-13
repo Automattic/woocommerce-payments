@@ -38,13 +38,10 @@ describe( 'PaymentMethod', () => {
 				onCheckClick={ handleOnCheckClickMock }
 				onUncheckClick={ handleOnUnCheckClickMock }
 				description="Bar"
-				Icon={ (): null => null }
+				Icon={ () => null }
 				status={ '' }
-				isAllowingManualCapture={ false }
 				required={ required }
 				locked={ false }
-				isPoEnabled={ false }
-				isPoComplete={ false }
 			/>
 		);
 	};
@@ -97,7 +94,7 @@ describe( 'PaymentMethod', () => {
 				onUncheckClick={ handleOnUnCheckClickMock }
 				description="Locked payment method"
 				locked={ true }
-				Icon={ (): null => null }
+				Icon={ () => null }
 				status={ '' }
 				isAllowingManualCapture={ false }
 				required={ false }
@@ -130,7 +127,7 @@ describe( 'PaymentMethod', () => {
 		jest.useRealTimers();
 	} );
 
-	const getDuplicateComponent = ( id: string ) => (
+	const getDuplicateComponent = ( id ) => (
 		<PaymentMethod
 			label="Test Method"
 			id={ id }

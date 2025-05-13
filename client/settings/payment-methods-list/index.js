@@ -21,7 +21,6 @@ import methodsConfiguration from '../../payment-methods-map';
 import { upeCapabilityStatuses } from 'wcpay/settings/constants';
 import ConfirmPaymentMethodActivationModal from './activation-modal';
 import ConfirmPaymentMethodDeleteModal from './delete-modal';
-import { getMissingCurrenciesTooltipMessage } from 'multi-currency/interface/functions';
 
 const PaymentMethodsList = ( { methodIds } ) => {
 	const [ enabledMethodIds ] = useEnabledPaymentMethodIds();
@@ -30,10 +29,6 @@ const PaymentMethodsList = ( { methodIds } ) => {
 
 	const availableMethods = methodIds.map(
 		( methodId ) => methodsConfiguration[ methodId ]
-	);
-
-	const isCreditCardEnabled = enabledMethodIds.includes(
-		PAYMENT_METHOD_IDS.CARD
 	);
 
 	const [ activationModalParams, handleActivationModalOpen ] = useState(
@@ -104,53 +99,24 @@ const PaymentMethodsList = ( { methodIds } ) => {
 		<>
 			<ul className="payment-methods-list payment-methods__available-methods">
 				{ availableMethods.map(
-					( {
-						id,
-						label,
-						icon: Icon,
-						description,
-						allows_manual_capture: isAllowingManualCapture,
-						setup_required: isSetupRequired,
-						setup_tooltip: setupTooltip,
-						currencies,
-					} ) => {
-						if (
-							! wcpaySettings.isMultiCurrencyEnabled &&
-							id !== PAYMENT_METHOD_IDS.CARD
-						) {
-							const currency = wcpaySettings.storeCurrency;
-							if ( currencies.indexOf( currency ) < 0 ) {
-								isSetupRequired = true;
-								setupTooltip = getMissingCurrenciesTooltipMessage(
-									label,
-									currencies
-								);
-							}
-						}
+					( { id, label, icon: Icon, description } ) => {
 						return (
 							<PaymentMethod
 								id={ id }
 								key={ id }
 								label={ label }
 								description={ description }
-								checked={
-									enabledMethodIds.includes( id ) &&
-									upeCapabilityStatuses.INACTIVE !==
-										getStatusAndRequirements( id ).status
-								}
+								checked={ enabledMethodIds.includes( id ) }
 								// The card payment method is required when UPE is active, and it can't be disabled/unchecked.
 								required={ PAYMENT_METHOD_IDS.CARD === id }
 								locked={
 									PAYMENT_METHOD_IDS.CARD === id &&
-									isCreditCardEnabled
+									enabledMethodIds.includes(
+										PAYMENT_METHOD_IDS.CARD
+									)
 								}
 								Icon={ Icon }
 								status={ getStatusAndRequirements( id ).status }
-								isSetupRequired={ isSetupRequired }
-								setupTooltip={ setupTooltip }
-								isAllowingManualCapture={
-									isAllowingManualCapture
-								}
 								onUncheckClick={ () => {
 									handleUncheckClick( id );
 								} }
