@@ -811,7 +811,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Add a url to the admin order page that links directly to the transactions detail view.
+	 * Add a url to the admin order page that links directly to the transactions detail view for authorized intent statuses.
+	 *
 	 * Called directly by WooCommerce Core.
 	 *
 	 * @since 1.4.0
@@ -820,6 +821,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string
 	 */
 	public function get_transaction_url( $order ) {
+		$intent_status = $this->order_service->get_intention_status_for_order( $order );
+		if ( ! in_array( $intent_status, Intent_Status::AUTHORIZED_STATUSES, true ) ) {
+			return '';
+		}
+
 		$intent_id = $this->order_service->get_intent_id_for_order( $order );
 		$charge_id = $this->order_service->get_charge_id_for_order( $order );
 
