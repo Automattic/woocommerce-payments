@@ -11,6 +11,12 @@ import React from 'react';
  * Internal dependencies
  */
 import PaymentDetailsPage from '..';
+import DisputeNotice from '../dispute-details/dispute-notice';
+import PAYMENT_METHOD_IDS, {
+	PAYMENT_METHOD_BRANDS,
+} from 'wcpay/constants/payment-method';
+import { Dispute } from 'wcpay/types/disputes';
+import { Charge, PaymentMethodDetails } from 'wcpay/types/charges';
 
 declare const global: {
 	wcSettings: { countries: Record< string, string > };
@@ -214,5 +220,220 @@ describe( 'Payment details page', () => {
 		render( <PaymentDetailsPage query={ paymentIntentQuery } /> );
 
 		expect( mockHistoryReplace ).not.toHaveBeenCalled();
+	} );
+} );
+
+describe( 'DisputeNotice bank name logic', () => {
+	// Mock dispute object with different payment methods
+	const createDisputeWithPaymentMethod = (
+		paymentMethodType: string,
+		paymentMethodDetails: Partial< PaymentMethodDetails >
+	): Partial< Dispute > => {
+		return {
+			id: 'dp_mock',
+			charge: {
+				id: 'ch_mock',
+				payment_method_details: paymentMethodDetails as PaymentMethodDetails,
+			} as Charge,
+			reason: 'fraudulent',
+			status: 'needs_response',
+			evidence_details: {
+				due_by: 1655921807,
+				has_evidence: false,
+				past_due: false,
+				submission_count: 0,
+			},
+			amount: 1000,
+			currency: 'usd',
+			created: 1655921807,
+			balance_transactions: [],
+			payment_intent: 'pi_mock',
+			metadata: {},
+			order: null,
+			evidence: {},
+			issuer_evidence: null,
+		};
+	};
+
+	it( 'should return null when charge is a string ID', () => {
+		const dispute = {
+			id: 'dp_mock',
+			charge: 'ch_mock',
+			reason: 'fraudulent',
+			status: 'needs_response',
+			evidence_details: {
+				due_by: 1655921807,
+				has_evidence: false,
+				past_due: false,
+				submission_count: 0,
+			},
+			amount: 1000,
+			currency: 'usd',
+			created: 1655921807,
+			balance_transactions: [],
+			payment_intent: 'pi_mock',
+			metadata: {},
+			order: null,
+			evidence: {},
+			issuer_evidence: null,
+		} as Dispute;
+
+		const { container } = render(
+			<DisputeNotice
+				dispute={ dispute }
+				isUrgent={ false }
+				paymentMethod={ 'card' }
+				bankName={ null }
+			/>
+		);
+
+		// The notice should not contain a bank name
+		expect( container.textContent ).not.toContain( 'Chase Bank' );
+	} );
+
+	it( 'should return bank name for giropay payment method', () => {
+		const dispute = createDisputeWithPaymentMethod( 'giropay', {
+			giropay: {
+				bank_name: 'Deutsche Bank',
+			},
+			type: PAYMENT_METHOD_IDS.GIROPAY,
+		} ) as Dispute;
+
+		const { container } = render(
+			<DisputeNotice
+				dispute={ dispute }
+				isUrgent={ false }
+				paymentMethod={ 'giropay' }
+				bankName={ 'Deutsche Bank' }
+			/>
+		);
+
+		expect( container.textContent ).toContain( 'Deutsche Bank' );
+	} );
+
+	it( 'should return bank name for bancontact payment method', () => {
+		const dispute = createDisputeWithPaymentMethod( 'bancontact', {
+			bancontact: {
+				bank_name: 'ING Bank',
+			},
+			type: PAYMENT_METHOD_IDS.BANCONTACT,
+		} ) as Dispute;
+
+		const { container } = render(
+			<DisputeNotice
+				dispute={ dispute }
+				isUrgent={ false }
+				paymentMethod={ 'bancontact' }
+				bankName={ 'ING Bank' }
+			/>
+		);
+
+		expect( container.textContent ).toContain( 'ING Bank' );
+	} );
+
+	it( 'should return bank name for sofort payment method', () => {
+		const dispute = createDisputeWithPaymentMethod( 'sofort', {
+			sofort: {
+				bank_name: 'Commerzbank',
+			},
+			type: PAYMENT_METHOD_IDS.SOFORT,
+		} ) as Dispute;
+
+		const { container } = render(
+			<DisputeNotice
+				dispute={ dispute }
+				isUrgent={ false }
+				paymentMethod={ 'sofort' }
+				bankName={ 'Commerzbank' }
+			/>
+		);
+
+		expect( container.textContent ).toContain( 'Commerzbank' );
+	} );
+
+	it( 'should return brand name for card payment method', () => {
+		const dispute = createDisputeWithPaymentMethod( 'card', {
+			card: {
+				brand: 'visa',
+				issuer: 'Chase Bank',
+			},
+			type: PAYMENT_METHOD_IDS.CARD,
+		} ) as Dispute;
+
+		const { container } = render(
+			<DisputeNotice
+				dispute={ dispute }
+				isUrgent={ false }
+				paymentMethod={ 'card' }
+				bankName={ 'Chase Bank' }
+			/>
+		);
+
+		expect( container.textContent ).toContain( 'Chase Bank' );
+	} );
+
+	it( 'should return null for card payment method with invalid brand', () => {
+		const dispute = createDisputeWithPaymentMethod( 'card', {
+			card: {
+				brand: 'invalid_brand',
+			},
+			type: PAYMENT_METHOD_IDS.CARD,
+		} ) as Dispute;
+
+		const { container } = render(
+			<DisputeNotice
+				dispute={ dispute }
+				isUrgent={ false }
+				paymentMethod={ 'card' }
+				bankName={ null }
+			/>
+		);
+
+		// The notice should not contain a bank name
+		expect( container.textContent ).not.toContain( 'invalid_brand' );
+	} );
+
+	it( 'should return null for unknown payment method', () => {
+		const dispute = createDisputeWithPaymentMethod( 'card', {
+			card: {
+				brand: 'invalid_brand',
+			},
+			type: PAYMENT_METHOD_IDS.CARD,
+		} ) as Dispute;
+
+		const { container } = render(
+			<DisputeNotice
+				dispute={ dispute }
+				isUrgent={ false }
+				paymentMethod={ 'unknown' }
+				bankName={ null }
+			/>
+		);
+
+		// The notice should not contain a bank name
+		expect( container.textContent ).not.toContain( 'invalid_brand' );
+	} );
+
+	it( 'should return null when payment method is null', () => {
+		const dispute = createDisputeWithPaymentMethod( 'card', {
+			card: {
+				brand: 'visa',
+			},
+			type: PAYMENT_METHOD_IDS.CARD,
+		} ) as Dispute;
+
+		const { container } = render(
+			<DisputeNotice
+				dispute={ dispute }
+				isUrgent={ false }
+				paymentMethod={ null }
+				bankName={ null }
+			/>
+		);
+
+		// The notice should not contain a bank name
+		expect( container.textContent ).not.toContain(
+			PAYMENT_METHOD_BRANDS.VISA
+		);
 	} );
 } );

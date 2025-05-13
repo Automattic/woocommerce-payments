@@ -8,7 +8,7 @@ import {
 } from '@woocommerce/blocks-registry';
 import { __ } from '@wordpress/i18n';
 import { useEffect, useRef } from 'react';
-import classNames from 'classnames';
+import clsx from 'clsx';
 
 /**
  * Internal dependencies
@@ -276,7 +276,7 @@ const PaymentProcessor = ( {
 		<>
 			{ isTestMode && (
 				<p
-					className={ classNames( 'content', {
+					className={ clsx( 'content', {
 						[ `theme--${ theme }` ]: theme,
 					} ) }
 					dangerouslySetInnerHTML={ {

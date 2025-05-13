@@ -3,7 +3,7 @@
  */
 import React, { useRef, useState } from 'react';
 import { check, chevronDown, chevronUp, Icon } from '@wordpress/icons';
-import classNames from 'classnames';
+import clsx from 'clsx';
 import { __ } from '@wordpress/i18n';
 import { useSelect, UseSelectState } from 'downshift';
 
@@ -159,7 +159,7 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 
 	return (
 		<div
-			className={ classNames(
+			className={ clsx(
 				'wcpay-component-grouped-select-control',
 				className
 			) }
@@ -174,7 +174,7 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 			<button
 				{ ...getToggleButtonProps( {
 					type: 'button',
-					className: classNames(
+					className: clsx(
 						'components-text-control__input wcpay-component-grouped-select-control__button',
 						{ placeholder }
 					),
@@ -217,7 +217,7 @@ const GroupedSelectControl = < ItemType extends ListItem >( {
 											item,
 											index,
 											key: item.key,
-											className: classNames(
+											className: clsx(
 												'wcpay-component-grouped-select-control__item',
 												item.className,
 												{

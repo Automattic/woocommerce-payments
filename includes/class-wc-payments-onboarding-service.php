@@ -41,7 +41,6 @@ class WC_Payments_Onboarding_Service {
 	const SOURCE_WCPAY_UPDATE_BUSINESS_DETAILS_TASK = 'wcpay-update-business-details-task';
 	const SOURCE_WCPAY_PO_BANK_ACCOUNT_TASK         = 'wcpay-po-bank-account-task';
 	const SOURCE_WCPAY_RECONNECT_WPCOM_TASK         = 'wcpay-reconnect-wpcom-task';
-	const SOURCE_WCPAY_ADD_APMS_TASK                = 'wcpay-add-apms-task';
 	const SOURCE_WCPAY_GO_LIVE_TASK                 = 'wcpay-go-live-task';
 	const SOURCE_WCPAY_FINISH_SETUP_TOOL            = 'wcpay-finish-setup-tool';
 	const SOURCE_WCPAY_PAYOUT_FAILURE_NOTICE        = 'wcpay-payout-failure-notice';
@@ -592,10 +591,6 @@ class WC_Payments_Onboarding_Service {
 						'first_name' => $self_assessment_data['individual']['first_name'] ?? null,
 						'last_name'  => $self_assessment_data['individual']['last_name'] ?? null,
 						'phone'      => $self_assessment_data['phone'] ?? null,
-					],
-					'store'         => [
-						'annual_revenue'    => $self_assessment_data['annual_revenue'] ?? null,
-						'go_live_timeframe' => $self_assessment_data['go_live_timeframe'] ?? null,
 					],
 				]
 			);
@@ -1153,7 +1148,6 @@ class WC_Payments_Onboarding_Service {
 			self::SOURCE_WCPAY_UPDATE_BUSINESS_DETAILS_TASK,
 			self::SOURCE_WCPAY_PO_BANK_ACCOUNT_TASK,
 			self::SOURCE_WCPAY_RECONNECT_WPCOM_TASK,
-			self::SOURCE_WCPAY_ADD_APMS_TASK,
 			self::SOURCE_WCPAY_GO_LIVE_TASK,
 			self::SOURCE_WCPAY_FINISH_SETUP_TOOL,
 			self::SOURCE_WCPAY_PAYOUT_FAILURE_NOTICE,

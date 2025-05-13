@@ -3865,7 +3865,11 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
-            Good news! You won this dispute on -. The disputed amount and the dispute fee have been credited back to your account. 
+            Good news! The 
+            <strong>
+              cardholder’s bank
+            </strong>
+             decided that you won the dispute on -. The disputed amount and the dispute fee have been credited back to your account. 
             <a
               href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
               rel="noopener noreferrer"

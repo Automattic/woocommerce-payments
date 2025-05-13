@@ -404,13 +404,36 @@ describe( 'PaymentDetailsSummary', () => {
 		).toHaveTextContent( /Sep 9, 2023/ );
 
 		// Steps to resolve
-		screen.getByText( /Steps to resolve/i );
-		screen.getByRole( 'link', {
-			name: /Email the customer/i,
+		screen.getByText( /Steps you can take/i, {
+			selector: '.dispute-steps__header-title',
 		} );
-		screen.getByRole( 'link', {
-			name: /in withdrawing their dispute/i,
+
+		screen.getByText( /Reach out to your customer/i, {
+			selector: '.dispute-steps__item-name',
 		} );
+		screen.getByText( /Pursue a dispute withdrawal/i, {
+			selector: '.dispute-steps__item-name',
+		} );
+		screen.getByText( /Challenge or accept the dispute/i, {
+			selector: '.dispute-steps__item-name',
+		} );
+
+		screen.getByText(
+			/Identify the issue and work towards a resolution where possible\./i,
+			{ selector: '.dispute-steps__item-description' }
+		);
+		screen.getByText(
+			/See if the customer will withdraw their dispute\./i,
+			{ selector: '.dispute-steps__item-description' }
+		);
+		screen.getByText(
+			/Challenge the dispute if you consider the claim to be invalid\./i,
+			{ selector: '.dispute-steps__item-description' }
+		);
+		screen.getByRole( 'link', { name: /Email customer/i } );
+		expect(
+			screen.getAllByRole( 'link', { name: /Learn more/i } ).length
+		).toBe( 2 );
 
 		// Actions
 		screen.getByRole( 'button', {
@@ -666,7 +689,7 @@ describe( 'PaymentDetailsSummary', () => {
 		charge.dispute.metadata.__evidence_submitted_at = '1693400000';
 		renderCharge( charge );
 
-		screen.getByText( /You won this dispute on/i, {
+		screen.getByText( /decided that you won the dispute/i, {
 			ignore: '.a11y-speak-region',
 		} );
 		screen.getByRole( 'button', { name: /View dispute details/i } );
@@ -774,7 +797,7 @@ describe( 'PaymentDetailsSummary', () => {
 
 		renderCharge( charge );
 
-		screen.getByText( /This dispute was lost/i, {
+		screen.getByText( /decided that you lost the dispute/i, {
 			ignore: '.a11y-speak-region',
 		} );
 		// Check for the correct fee amount
@@ -819,9 +842,11 @@ describe( 'PaymentDetailsSummary', () => {
 		);
 
 		// Steps to resolve
-		screen.getByText( /Steps to resolve/i );
+		screen.getByText( /Steps you can take/i, {
+			selector: '.dispute-steps__header-title',
+		} );
 		screen.getByRole( 'link', {
-			name: /Email the customer/i,
+			name: /Email customer/i,
 		} );
 		screen.getByText( /Submit evidence /i );
 

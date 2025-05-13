@@ -3,7 +3,7 @@
  */
 import * as React from 'react';
 import { Flex, FlexItem, Icon, Notice, Button } from '@wordpress/components';
-import classNames from 'classnames';
+import clsx from 'clsx';
 import CheckmarkIcon from 'gridicons/dist/checkmark';
 import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 import InfoOutlineIcon from 'gridicons/dist/info-outline';
@@ -41,7 +41,7 @@ function InlineNotice( props: InlineNoticeProps ): JSX.Element {
 	const { icon, actions, children, buttonVariant, ...noticeProps } = props;
 
 	// Add the default class name to the notice.
-	noticeProps.className = classNames(
+	noticeProps.className = clsx(
 		'wcpay-inline-notice',
 		`wcpay-inline-${ noticeProps.status }-notice`,
 		noticeProps.className

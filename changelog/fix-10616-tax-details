@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Add support for rendering fee tax details in the transaction timeline where available

@@ -61,7 +61,11 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         </g>
                       </svg>
                       <span>
-                        Payment status changed to Disputed: Lost.
+                        Payment status changed to 
+                        <strong>
+                          Disputed: Lost
+                        </strong>
+                        .
                       </span>
                     </div>
                     <span
@@ -100,7 +104,14 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         </g>
                       </svg>
                       <span>
-                        Dispute lost. The bank ruled in favor of your customer.
+                        <strong>
+                          Dispute lost.
+                        </strong>
+                         
+                        <strong>
+                          The bank
+                        </strong>
+                         decided that you lost the dispute.
                       </span>
                     </div>
                     <span
@@ -139,7 +150,11 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         </g>
                       </svg>
                       <span>
-                        Payment status changed to Disputed: Won.
+                        Payment status changed to 
+                        <strong>
+                          Disputed: Won
+                        </strong>
+                        .
                       </span>
                     </div>
                     <span
@@ -270,7 +285,11 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         </g>
                       </svg>
                       <span>
-                        Payment status changed to Refunded.
+                        Payment status changed to 
+                        <strong>
+                          Refunded
+                        </strong>
+                        .
                       </span>
                     </div>
                     <span
@@ -402,7 +421,11 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         </g>
                       </svg>
                       <span>
-                        Payment status changed to Partial refund.
+                        Payment status changed to 
+                        <strong>
+                          Partial refund
+                        </strong>
+                        .
                       </span>
                     </div>
                     <span
@@ -534,7 +557,11 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         </g>
                       </svg>
                       <span>
-                        Payment status changed to Disputed: In review.
+                        Payment status changed to 
+                        <strong>
+                          Disputed: In review
+                        </strong>
+                        .
                       </span>
                     </div>
                     <span
@@ -624,7 +651,11 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         </g>
                       </svg>
                       <span>
-                        Payment status changed to Disputed: Needs response.
+                        Payment status changed to 
+                        <strong>
+                          Disputed: Needs response
+                        </strong>
+                        .
                       </span>
                     </div>
                     <span
@@ -749,7 +780,11 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         </g>
                       </svg>
                       <span>
-                        Payment status changed to Paid.
+                        Payment status changed to 
+                        <strong>
+                          Paid
+                        </strong>
+                        .
                       </span>
                     </div>
                     <span
@@ -846,11 +881,9 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   <div
                     class="woocommerce-timeline-item__body"
                   >
-                    <span />
                     <span>
                       Fee: $3.50
                     </span>
-                    <span />
                     <span>
                       Net payout: $59.50
                     </span>
@@ -894,7 +927,11 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         </g>
                       </svg>
                       <span>
-                        Payment status changed to Failed.
+                        Payment status changed to 
+                        <strong>
+                          Failed
+                        </strong>
+                        .
                       </span>
                     </div>
                     <span
@@ -972,7 +1009,11 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         </g>
                       </svg>
                       <span>
-                        Payment status changed to Authorization expired.
+                        Payment status changed to 
+                        <strong>
+                          Authorization expired
+                        </strong>
+                        .
                       </span>
                     </div>
                     <span
@@ -1050,7 +1091,11 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         </g>
                       </svg>
                       <span>
-                        Payment status changed to Authorization voided.
+                        Payment status changed to 
+                        <strong>
+                          Authorization voided
+                        </strong>
+                        .
                       </span>
                     </div>
                     <span
@@ -1140,7 +1185,11 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         </g>
                       </svg>
                       <span>
-                        Payment status changed to Authorized.
+                        Payment status changed to 
+                        <strong>
+                          Authorized
+                        </strong>
+                        .
                       </span>
                     </div>
                     <span
@@ -1402,7 +1451,11 @@ exports[`PaymentDetailsTimeline renders subscription fee correctly 1`] = `
                         </g>
                       </svg>
                       <span>
-                        Payment status changed to Paid.
+                        Payment status changed to 
+                        <strong>
+                          Paid
+                        </strong>
+                        .
                       </span>
                     </div>
                     <span
@@ -1492,7 +1545,6 @@ exports[`PaymentDetailsTimeline renders subscription fee correctly 1`] = `
                   <div
                     class="woocommerce-timeline-item__body"
                   >
-                    <span />
                     <span>
                       Fee (3.9% + $0.30): -$0.34
                     </span>
@@ -1541,7 +1593,11 @@ exports[`PaymentDetailsTimeline renders subscription fee correctly 1`] = `
                         </g>
                       </svg>
                       <span>
-                        Payment status changed to Authorized.
+                        Payment status changed to 
+                        <strong>
+                          Authorized
+                        </strong>
+                        .
                       </span>
                     </div>
                     <span
