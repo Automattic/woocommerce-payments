@@ -309,7 +309,7 @@ export const useGetAvailablePaymentMethodIds = () =>
 	);
 
 /**
- * @return {Record<string, {status: string}>}
+ * @return {Record<string, {status: string, requirements: string[]}>}
  */
 export const useGetPaymentMethodStatuses = () =>
 	useSelect( ( select ) => select( STORE_NAME ).getPaymentMethodStatuses() );
