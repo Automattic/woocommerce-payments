@@ -32,7 +32,6 @@ exports[`mapTimelineEvents Multi-Currency events formats captured events with fe
     "body": [
       "1.00 EUR → 1.19944 USD: $21.59 USD",
       "Fee (2.9% + $0.30): -$0.62",
-      undefined,
       "Net payout: $20.97 USD",
     ],
     "date": 2020-04-01T14:37:54.000Z,
@@ -76,7 +75,6 @@ exports[`mapTimelineEvents Multi-Currency events formats captured events without
     "body": [
       "1.00 EUR → 1.19944 USD: $21.59 USD",
       "Fee: €0.52",
-      undefined,
       "Net payout: $20.97 USD",
     ],
     "date": 2020-04-01T14:37:54.000Z,
@@ -462,7 +460,6 @@ exports[`mapTimelineEvents single currency events formats captured events with f
   },
   {
     "body": [
-      undefined,
       "Fee (1.95% + $0.15): -$3.50",
       <ul
         className="fee-breakdown-list"
@@ -476,6 +473,141 @@ exports[`mapTimelineEvents single currency events formats captured events with f
         </li>
         <li>
           Currency conversion fee: 2%
+        </li>
+        <li>
+          Discount
+          <ul
+            className="discount-split-list"
+          >
+            <li>
+              Variable fee: -4.9%
+            </li>
+            <li>
+              Fixed fee: -£0.20
+            </li>
+          </ul>
+        </li>
+         
+      </ul>,
+      "Net payout: $59.50 USD",
+    ],
+    "date": 2020-04-01T14:37:54.000Z,
+    "headline": "A payment of $63.00 USD was successfully charged.",
+    "icon": <CheckmarkIcon
+      className="is-success"
+    />,
+  },
+]
+`;
+
+exports[`mapTimelineEvents single currency events formats captured events with fee details and tax 1`] = `
+[
+  {
+    "body": [],
+    "date": 2020-04-01T14:37:54.000Z,
+    "headline": <React.Fragment>
+      Payment status changed to 
+      <strong>
+        Paid
+      </strong>
+      .
+    </React.Fragment>,
+    "icon": <SyncIcon />,
+  },
+  {
+    "body": [],
+    "date": 2020-04-01T14:37:54.000Z,
+    "headline": <React.Fragment>
+      $59.50 USD was added to your 
+      <Link
+        href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b281"
+      >
+        Apr 2, 2020 payout
+      </Link>
+      .
+    </React.Fragment>,
+    "icon": <PlusIcon />,
+  },
+  {
+    "body": [
+      "Fee (1.95% + $0.15): -$3.50",
+      <ul
+        className="fee-breakdown-list"
+      >
+         
+        <li>
+          Base fee: 1.4% + £0.20
+        </li>
+        <li>
+          International card fee: 1.5%
+        </li>
+        <li>
+          Currency conversion fee: 2%
+        </li>
+        <li>
+          Discount
+          <ul
+            className="discount-split-list"
+          >
+            <li>
+              Variable fee: -4.9%
+            </li>
+            <li>
+              Fixed fee: -£0.20
+            </li>
+          </ul>
+        </li>
+         
+      </ul>,
+      "Tax ES VAT (21.00%): -€0.10",
+      "Net payout: $59.50 USD",
+    ],
+    "date": 2020-04-01T14:37:54.000Z,
+    "headline": "A payment of $63.00 USD was successfully charged.",
+    "icon": <CheckmarkIcon
+      className="is-success"
+    />,
+  },
+]
+`;
+
+exports[`mapTimelineEvents single currency events formats captured events with fee details and zero tax 1`] = `
+[
+  {
+    "body": [],
+    "date": 2020-04-01T14:37:54.000Z,
+    "headline": <React.Fragment>
+      Payment status changed to 
+      <strong>
+        Paid
+      </strong>
+      .
+    </React.Fragment>,
+    "icon": <SyncIcon />,
+  },
+  {
+    "body": [],
+    "date": 2020-04-01T14:37:54.000Z,
+    "headline": <React.Fragment>
+      $59.50 USD was added to your 
+      <Link
+        href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b281"
+      >
+        Apr 2, 2020 payout
+      </Link>
+      .
+    </React.Fragment>,
+    "icon": <PlusIcon />,
+  },
+  {
+    "body": [
+      "Fee (1.95% + $0.15): -$3.50",
+      <ul
+        className="fee-breakdown-list"
+      >
+         
+        <li>
+          Base fee: 1.4% + £0.20
         </li>
         <li>
           Discount
@@ -533,9 +665,7 @@ exports[`mapTimelineEvents single currency events formats captured events with j
   },
   {
     "body": [
-      undefined,
       "Base fee (1.95% + $0.15): -$3.50",
-      undefined,
       "Net payout: $59.50 USD",
     ],
     "date": 2020-04-01T14:37:54.000Z,
@@ -577,9 +707,7 @@ exports[`mapTimelineEvents single currency events formats captured events withou
   },
   {
     "body": [
-      undefined,
       "Fee: $3.50",
-      undefined,
       "Net payout: $59.50 USD",
     ],
     "date": 2020-04-01T14:37:54.000Z,
@@ -820,7 +948,6 @@ exports[`mapTimelineEvents single currency events in person payments - tap to pa
   },
   {
     "body": [
-      undefined,
       "Fee (2.6% + $0.20): -$0.61",
       <ul
         className="fee-breakdown-list"
@@ -875,9 +1002,7 @@ exports[`mapTimelineEvents single currency events should not render fee breakup 
   },
   {
     "body": [
-      undefined,
       "Fee (1.95% + $0.15): -$3.50",
-      undefined,
       "Net payout: $59.50 USD",
     ],
     "date": 2020-04-01T14:37:54.000Z,

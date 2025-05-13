@@ -7,10 +7,8 @@ import React from 'react';
 import { find } from 'lodash';
 
 /** Internal dependencies */
-import { formatCurrency } from 'multi-currency/interface/functions';
-import { formatFeeType } from '../utils';
 import { TimelineItem, TimelineFeeRate } from 'wcpay/data/timeline/types';
-import { Flex, FlexItem } from '@wordpress/components';
+import { FeeRow, TaxFeeRow } from './fee-breakdown-components';
 
 const FeesBreakdown: React.FC< {
 	event: TimelineItem;
@@ -33,80 +31,6 @@ const FeesBreakdown: React.FC< {
 	);
 	let remainingFixedDiscount = Math.abs( discountFee?.fixed_rate || 0 );
 
-	const BreakdownFeeRate = ( {
-		percentage,
-		fixed,
-		currency,
-		displayFixedPart,
-	}: {
-		percentage: number;
-		fixed: number;
-		currency: string;
-		displayFixedPart?: boolean;
-	} ) => {
-		const formattedPercentage = percentage
-			? `${ Number.parseFloat( ( percentage * 100 ).toFixed( 2 ) ) }%`
-			: '0%';
-		const formattedFixed = formatCurrency( fixed, currency, storeCurrency );
-
-		return (
-			<>
-				{ formattedPercentage }
-				{ ( displayFixedPart || fixed > 0 ) && (
-					<>
-						{ ' + ' + formattedFixed }&nbsp;{ storeCurrency }
-					</>
-				) }
-			</>
-		);
-	};
-
-	const FeeRow = ( {
-		type,
-		additionalType,
-		percentage,
-		fixed,
-		currency,
-		isDiscounted,
-		displayFixedPart,
-	}: {
-		type: string;
-		additionalType?: string;
-		percentage: number;
-		fixed: number;
-		currency: string;
-		isDiscounted?: boolean;
-		displayFixedPart?: boolean;
-	} ) => {
-		const formattedFeeType = formatFeeType(
-			type,
-			additionalType,
-			isDiscounted
-		);
-		const feeType = type + ( additionalType ? `_${ additionalType }` : '' );
-
-		return (
-			<Flex
-				className={ `wcpay-transaction-breakdown__fee_info wcpay-transaction-breakdown__${ feeType }_fee_info` }
-				wrap={ true }
-				justify="space-between"
-				align="end"
-			>
-				<FlexItem className="wcpay-transaction-breakdown__fee_name">
-					{ formattedFeeType }
-				</FlexItem>
-				<FlexItem className="wcpay-transaction-breakdown__fee_rate">
-					<BreakdownFeeRate
-						percentage={ percentage }
-						fixed={ fixed }
-						currency={ currency }
-						displayFixedPart={ displayFixedPart }
-					/>
-				</FlexItem>
-			</Flex>
-		);
-	};
-
 	const fees = [];
 
 	if ( ! event.fee_rates.history ) {
@@ -117,6 +41,7 @@ const FeesBreakdown: React.FC< {
 				percentage={ event.fee_rates.percentage }
 				fixed={ event.fee_rates.fixed }
 				currency={ event.fee_rates.fixed_currency }
+				storeCurrency={ storeCurrency }
 			/>
 		);
 	} else {
@@ -178,22 +103,39 @@ const FeesBreakdown: React.FC< {
 					currency={ fee.currency }
 					isDiscounted={ isDiscounted }
 					displayFixedPart={ displayFixedPart }
+					storeCurrency={ storeCurrency }
 				/>
 			);
 			return null;
 		} );
 	}
 
+	// Calculate total percentage by summing up all non-discount fees
+	const totalPercentage = event.fee_rates.percentage;
+
+	// Total row
 	fees.push(
 		<FeeRow
 			key="total"
 			type="total"
-			percentage={ event.fee_rates.percentage }
+			percentage={ totalPercentage }
 			fixed={ event.fee_rates.fixed / feeExchangeRate }
 			currency={ storeCurrency }
 			displayFixedPart={ true }
+			storeCurrency={ storeCurrency }
 		/>
 	);
+
+	// Tax row.
+	if ( event.fee_rates?.tax && event.fee_rates.tax.amount !== 0 ) {
+		fees.push(
+			<TaxFeeRow
+				key="fee_tax"
+				description={ event.fee_rates.tax.description }
+				percentageRate={ event.fee_rates.tax.percentage_rate }
+			/>
+		);
+	}
 
 	return (
 		<div
