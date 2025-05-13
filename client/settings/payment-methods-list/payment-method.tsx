@@ -213,7 +213,9 @@ const PaymentMethod = ( {
 				</div>
 			</div>
 			{ notice && (
-				<InlineNotice status={ noticeType }>{ notice }</InlineNotice>
+				<InlineNotice status={ noticeType } isDismissible={ false }>
+					{ notice }
+				</InlineNotice>
 			) }
 			{ isDuplicate && ! notice && (
 				<DuplicateNotice
