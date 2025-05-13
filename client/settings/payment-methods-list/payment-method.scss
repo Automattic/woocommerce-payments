@@ -162,28 +162,6 @@
 		}
 	}
 
-	&.has-icon-border &__icon {
-		box-shadow: 0 0 0 1px #ddd;
-	}
-
-	&.overlay {
-		position: relative;
-
-		&::after {
-			content: '';
-			position: absolute;
-			// adds some spacing for the borders, so that they're not part of the opacity
-			top: 1px;
-			bottom: 1px;
-			// ensures that the info icon isn't part of the opacity
-			left: 55px;
-			right: 0;
-			background: #fff;
-			opacity: 0.5;
-			pointer-events: none;
-		}
-	}
-
 	.chip {
 		margin-left: $gap-smaller;
 		padding: 2px $gap-smaller;
