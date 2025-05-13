@@ -13,6 +13,8 @@ import PAYMENT_METHOD_IDS from 'wcpay/constants/payment-method';
 import { getMissingCurrenciesTooltipMessage } from 'multi-currency/utils/missing-currencies-message';
 import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
+import { ExternalLink } from '@wordpress/components';
+import { ChipType } from 'wcpay/components/chip';
 
 const documentationTypeMap = {
 	DEFAULT:
@@ -54,21 +56,66 @@ const usePaymentMethodAvailability = ( id: string ) => {
 		requirements: [],
 	};
 
+	// We want to show a tooltip if PO is enabled and not yet complete. (We make an exception to not show this for card payments).
+	const isPoInProgress =
+		isPoEnabled &&
+		! isPoComplete &&
+		status !== upeCapabilityStatuses.ACTIVE;
+	if ( isPoInProgress || upeCapabilityStatuses.INACTIVE === status ) {
+		return {
+			disabled: true,
+			chip: __( 'More information needed', 'woocommerce-payments' ),
+			notice: interpolateComponents( {
+				// translators: {{learnMoreLink}}: placeholders are opening and closing anchor tags.
+				mixedString: __(
+					'We need more information from you to enable this method. ' +
+						'{{learnMoreLink}}Learn more{{/learnMoreLink}}',
+					'woocommerce-payments'
+				),
+				components: {
+					learnMoreLink: (
+						// eslint-disable-next-line jsx-a11y/anchor-has-content
+						<ExternalLink
+							title={ __(
+								'Learn more about enabling payment methods',
+								'woocommerce-payments'
+							) }
+							href={ getDocumentationUrlForDisabledPaymentMethod(
+								id,
+								isPoInProgress
+							) }
+						/>
+					),
+				},
+			} ),
+		};
+	}
+
 	if ( upeCapabilityStatuses.PENDING_APPROVAL === status ) {
 		return {
 			disabled: true,
-			chip: __( 'Pending approval', 'woocommerce-payments' ),
-			notice: __(
-				'This payment method is pending approval. Once approved, you will be able to use it.',
-				'woocommerce-payments'
-			),
+			chip: __( 'Approval pending', 'woocommerce-payments' ),
+			notice:
+				id === PAYMENT_METHOD_IDS.ALIPAY ||
+				id === PAYMENT_METHOD_IDS.WECHAT_PAY
+					? sprintf(
+							__(
+								'%s requires your store to be live and fully functional before it can be reviewed for use with their service. This approval process usually takes 2-3 days. Learn more',
+								'woocommerce-payments'
+							),
+							label
+					  )
+					: __(
+							'This payment method is pending approval. Once approved, you will be able to use it.',
+							'woocommerce-payments'
+					  ),
 		};
 	}
 
 	if ( upeCapabilityStatuses.PENDING_VERIFICATION === status ) {
 		return {
 			disabled: true,
-			chip: __( 'Pending activation', 'woocommerce-payments' ),
+			chip: __( 'Pending verification', 'woocommerce-payments' ),
 			notice: sprintf(
 				__(
 					"%s won't be visible to your customers until you provide the required " +
@@ -85,18 +132,20 @@ const usePaymentMethodAvailability = ( id: string ) => {
 		return {
 			disabled: true,
 			chip: __( 'Rejected', 'woocommerce-payments' ),
+			chipType: 'alert' as ChipType,
 			notice: interpolateComponents( {
 				// translators: {{contactSupportLink}}: placeholders are opening and closing anchor tags.
-				mixedString: __(
-					'Please {{contactSupportLink}}contact support{{/contactSupportLink}} for more details.',
-					'woocommerce-payments'
+				mixedString: sprintf(
+					__(
+						'Your application to use %s has been rejected, please check your email for more information. Need help? {{contactSupportLink}}Contact support{{/contactSupportLink}}',
+						'woocommerce-payments'
+					),
+					label
 				),
 				components: {
 					contactSupportLink: (
 						// eslint-disable-next-line jsx-a11y/anchor-has-content
-						<a
-							target="_blank"
-							rel="noreferrer"
+						<ExternalLink
 							title={ __(
 								'Contact Support',
 								'woocommerce-payments'
@@ -108,50 +157,13 @@ const usePaymentMethodAvailability = ( id: string ) => {
 					),
 				},
 			} ),
-		};
-	}
-
-	// We want to show a tooltip if PO is enabled and not yet complete. (We make an exception to not show this for card payments).
-	const isPoInProgress =
-		isPoEnabled &&
-		! isPoComplete &&
-		status !== upeCapabilityStatuses.ACTIVE;
-	if ( isPoInProgress || upeCapabilityStatuses.INACTIVE === status ) {
-		return {
-			disabled: true,
-			chip: __( 'More information needed', 'woocommerce-payments' ),
-			notice: interpolateComponents( {
-				// translators: {{learnMoreLink}}: placeholders are opening and closing anchor tags.
-				mixedString: __(
-					'We need more information from you to enable this method. ' +
-						'{{learnMoreLink}}Learn more.{{/learnMoreLink}}',
-					'woocommerce-payments'
-				),
-				components: {
-					learnMoreLink: (
-						// eslint-disable-next-line jsx-a11y/anchor-has-content
-						<a
-							target="_blank"
-							rel="noreferrer"
-							title={ __(
-								'Learn more about enabling payment methods',
-								'woocommerce-payments'
-							) }
-							href={ getDocumentationUrlForDisabledPaymentMethod(
-								id,
-								isPoInProgress
-							) }
-						/>
-					),
-				},
-			} ),
+			noticeType: 'error',
 		};
 	}
 
 	if ( isManualCaptureEnabled && ! isAllowingManualCapture ) {
 		return {
 			disabled: true,
-			chip: '',
 			notice: sprintf(
 				/* translators: %s: a payment method name. */
 				__(
@@ -171,7 +183,6 @@ const usePaymentMethodAvailability = ( id: string ) => {
 		if ( currencies.indexOf( currency ) < 0 ) {
 			return {
 				disabled: false,
-				chip: '',
 				notice: getMissingCurrenciesTooltipMessage( label, currencies ),
 			};
 		}
@@ -179,8 +190,6 @@ const usePaymentMethodAvailability = ( id: string ) => {
 
 	return {
 		disabled: false,
-		chip: '',
-		notice: '',
 	};
 };
 

@@ -11,14 +11,13 @@ import { CheckboxControl } from '@wordpress/components';
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { HoverTooltip } from 'components/tooltip';
-import { upeCapabilityStatuses } from 'wcpay/settings/constants';
 import { FeeStructure } from 'wcpay/types/fees';
 import {
 	formatMethodFeesDescription,
 	formatMethodFeesTooltip,
 } from 'wcpay/utils/account-fees';
 import WCPaySettingsContext from '../wcpay-settings-context';
-import Chip from 'wcpay/components/chip';
+import Chip, { ChipType } from 'wcpay/components/chip';
 import Pill from 'wcpay/components/pill';
 import './payment-method.scss';
 import DuplicateNotice from 'wcpay/components/duplicate-notice';
@@ -42,7 +41,6 @@ interface PaymentMethodProps {
 	// eslint-disable-next-line @typescript-eslint/naming-convention
 	Icon: () => JSX.Element | null;
 	description: string;
-	status: string;
 	checked: boolean;
 	onCheckClick: ( id: string ) => void;
 	onUncheckClick: ( id: string ) => void;
@@ -54,13 +52,13 @@ interface PaymentMethodProps {
 const PaymentMethodLabel = ( {
 	label,
 	required,
-	status,
-	disabled,
+	chip,
+	chipType,
 }: {
 	label: string;
 	required: boolean;
-	status: string;
-	disabled: boolean;
+	chip?: string;
+	chipType: ChipType;
 } ): React.ReactElement => {
 	return (
 		<>
@@ -70,36 +68,7 @@ const PaymentMethodLabel = ( {
 					{ '(' + __( 'Required', 'woocommerce-payments' ) + ')' }
 				</span>
 			) }
-			{ upeCapabilityStatuses.PENDING_APPROVAL === status && (
-				<Chip
-					message={ __( 'Pending approval', 'woocommerce-payments' ) }
-					type="warning"
-				/>
-			) }
-			{ upeCapabilityStatuses.REJECTED === status && (
-				<Chip
-					message={ __( 'Rejected', 'woocommerce-payments' ) }
-					type="alert"
-				/>
-			) }
-			{ upeCapabilityStatuses.PENDING_VERIFICATION === status && (
-				<Chip
-					message={ __(
-						'Pending activation',
-						'woocommerce-payments'
-					) }
-					type="warning"
-				/>
-			) }
-			{ disabled && (
-				<Chip
-					message={ __(
-						'More information needed',
-						'woocommerce-payments'
-					) }
-					type="warning"
-				/>
-			) }
+			{ chip && <Chip message={ chip } type={ chipType } /> }
 		</>
 	);
 };
@@ -121,7 +90,6 @@ const PaymentMethod = ( {
 	label,
 	Icon = () => null,
 	description,
-	status,
 	checked,
 	onCheckClick,
 	onUncheckClick,
@@ -130,7 +98,13 @@ const PaymentMethod = ( {
 	locked,
 }: PaymentMethodProps ): React.ReactElement => {
 	// APMs are disabled if they are inactive or if Progressive Onboarding is enabled and not yet complete.
-	const { disabled, notice, chip } = usePaymentMethodAvailability( id );
+	const {
+		disabled,
+		notice,
+		noticeType = 'warning',
+		chip,
+		chipType = 'warning',
+	} = usePaymentMethodAvailability( id );
 
 	const {
 		accountFees,
@@ -177,8 +151,8 @@ const PaymentMethod = ( {
 						<PaymentMethodLabel
 							label={ label }
 							required={ required }
-							status={ status }
-							disabled={ disabled }
+							chip={ chip }
+							chipType={ chipType }
 						/>
 					</div>
 					<div className="payment-method__text">
@@ -187,8 +161,8 @@ const PaymentMethod = ( {
 								<PaymentMethodLabel
 									label={ label }
 									required={ required }
-									status={ status }
-									disabled={ disabled }
+									chip={ chip }
+									chipType={ chipType }
 								/>
 							</div>
 							<div className="payment-method__description">
@@ -238,7 +212,9 @@ const PaymentMethod = ( {
 					</div>
 				</div>
 			</div>
-			{ notice && <InlineNotice>{ notice }</InlineNotice> }
+			{ notice && (
+				<InlineNotice status={ noticeType }>{ notice }</InlineNotice>
+			) }
 			{ isDuplicate && ! notice && (
 				<DuplicateNotice
 					paymentMethod={ id }

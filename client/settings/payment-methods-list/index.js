@@ -116,7 +116,6 @@ const PaymentMethodsList = ( { methodIds } ) => {
 									)
 								}
 								Icon={ Icon }
-								status={ getStatusAndRequirements( id ).status }
 								onUncheckClick={ () => {
 									handleUncheckClick( id );
 								} }
