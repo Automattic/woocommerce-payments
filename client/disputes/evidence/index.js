@@ -19,7 +19,7 @@ import {
 	Notice,
 } from '@wordpress/components';
 import { merge, some, flatten, isMatchWith } from 'lodash';
-import Accordion from 'components/accordion';
+
 /**
  * Internal dependencies.
  */
@@ -30,7 +30,6 @@ import { FileUploadControl, UploadedReadOnly } from 'components/file-upload';
 import { TestModeNotice } from 'components/test-mode-notice';
 import Page from 'components/page';
 import ErrorBoundary from 'components/error-boundary';
-import Loadable from 'components/loadable';
 import useConfirmNavigation from 'utils/use-confirm-navigation';
 import { recordEvent } from 'tracks';
 import { getAdminUrl } from 'wcpay/utils';
@@ -40,6 +39,9 @@ import { HorizontalList } from 'components/horizontal-list';
 import { formatCurrency } from 'multi-currency/interface/functions';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 import { getBankName } from 'utils/charge';
+import Accordion from 'components/accordion';
+import AccordionBody from 'components/accordion/body';
+import AccordionRow from 'components/accordion/row';
 
 const DISPUTE_EVIDENCE_MAX_LENGTH = 150000;
 const PRODUCT_TYPE_META_KEY = '__product_type';
@@ -627,45 +629,32 @@ export const DisputeEvidencePage = ( props ) => {
 
 	return (
 		<Page maxWidth={ 1032 } className="wcpay-dispute-evidence">
-			<Accordion title="Evidence">
-				<div>Any content here</div>
-			</Accordion>
 			<TestModeNotice currentPage="disputes" isDetailsView={ true } />
 			{ readOnly && ! isLoading && readOnlyNotice }
 			<ErrorBoundary>
-				<div className="evidence-summary">
-					<div className="evidence-summary__header">
-						<Loadable
-							isLoading={ isLoading }
-							value={ __(
-								'Challenge dispute',
-								'woocommerce-payments'
-							) }
-						/>
-						<p className="evidence-subtitle">
-							{ __(
-								'Provide key details about the order as part of your evidence',
-								'woocommerce-payments'
-							) }
-						</p>
-					</div>
-					<div className="evidence-summary__body">
-						{ dispute.status && (
-							<DisputeNotice
-								dispute={ dispute }
-								isUrgent={
-									dispute.evidence_details?.due_by <
-									Date.now() / 1000
-								}
-								paymentMethod={
-									dispute.payment_method_details?.type || null
-								}
-								bankName={ getBankName( dispute ) }
-							/>
-						) }
-						<HorizontalList items={ summaryItems } />
-					</div>
-				</div>
+				<Accordion>
+					<AccordionBody highDensity title="Challenge dispute">
+						<AccordionRow>
+							<div className="evidence-summary__body">
+								{ dispute.status && (
+									<DisputeNotice
+										dispute={ dispute }
+										isUrgent={
+											dispute.evidence_details?.due_by <
+											Date.now() / 1000
+										}
+										paymentMethod={
+											dispute.payment_method_details
+												?.type || null
+										}
+										bankName={ getBankName( dispute ) }
+									/>
+								) }
+								<HorizontalList items={ summaryItems } />
+							</div>
+						</AccordionRow>
+					</AccordionBody>
+				</Accordion>
 			</ErrorBoundary>
 			{ ! isLoading && (
 				<ErrorBoundary>

@@ -1,94 +1,138 @@
-.accordion-container {
-	width: 100%;
-	height: 100%;
-	padding: 20px;
-	overflow: hidden;
-	border-radius: 5px;
-	border: 1px solid #9747ff;
-	display: flex;
-	flex-direction: column;
-	gap: 20px;
+.wcpay-accordion {
+	background: $white;
+	border: $border-width solid $gray-200;
+
+	> .wcpay-accordion__body:first-child {
+		margin-top: -1px;
+	}
+
+	> .wcpay-accordion__body:last-child {
+		border-bottom-width: 0;
+	}
 }
 
-.accordion-item {
-	border: 1px solid #9747ff;
-	border-radius: 5px;
-	background: #fff;
-	margin-bottom: 16px;
-	transition: box-shadow 0.2s;
-	box-shadow: 0 1px 2px rgba( 30, 30, 30, 0.03 );
+.wcpay-accordion + .wcpay-accordion {
+	margin-top: -1px;
 }
 
-.accordion-header {
-	display: flex;
-	align-items: center;
-	width: 100%;
-	padding: 16px 20px;
-	cursor: pointer;
-	background: #fff;
-	border-radius: 5px;
-	transition: background 0.2s;
-	outline: none;
+.wcpay-accordion__body {
+	border-top: $border-width solid $gray-200;
+	border-bottom: $border-width solid $gray-200;
+
+	h3 {
+		margin: 0 0 0.5em;
+	}
+
+	&.is-opened {
+		padding: $grid-unit-20;
+	}
+}
+
+.wcpay-accordion__body + .wcpay-accordion__body {
+	margin-top: -$border-width;
+}
+
+.wcpay-accordion__body > .wcpay-accordion__body-title {
+	display: block;
+	padding: 0;
+	font-size: inherit;
+	margin-top: 0;
+	margin-bottom: 0;
+	transition: 0.2s background ease-in-out;
+}
+
+.wcpay-accordion__body.is-opened > .wcpay-accordion__body-title {
+	margin: -1 * $grid-unit-20;
+	margin-bottom: 5px;
+}
+
+// Hover States
+.wcpay-accordion__body > .wcpay-accordion__body-title:hover {
+	// Override the default button hover style
 	border: none;
 }
 
-.accordion-header:hover .accordion-title,
-.accordion-header:focus .accordion-title {
-	color: var( --wp-admin-theme-color, #007cba );
-}
-
-.accordion-header:focus {
-	outline: 2px solid #3858e9;
-	outline-offset: 2px;
-}
-
-.accordion-title {
-	color: #1e1e1e;
-	font-size: 15px;
-	font-family: 'SF Pro', sans-serif;
+.wcpay-accordion__body-toggle.components-button {
+	position: relative;
+	padding: $grid-unit-20 $grid-unit-60 $grid-unit-20 $grid-unit-20;
+	outline: none;
+	width: 100%;
 	font-weight: 500;
-	line-height: 20px;
-	flex: 1;
+	text-align: left;
+	color: $gray-900;
+	border: none;
+	box-shadow: none;
+
+	transition: 0.2s background ease-in-out;
+
+	height: auto;
+
+	&:focus {
+		box-shadow: inset 0 0 0 var( --wp-admin-border-width-focus )
+			$components-color-accent;
+		border-radius: 0;
+	}
+
+	.wcpay-accordion__arrow {
+		position: absolute;
+		right: $grid-unit-20;
+		top: 50%;
+		transform: translateY( -50% );
+		color: $gray-900;
+		fill: currentColor;
+
+		transition: 0.2s color ease-in-out;
+	}
+
+	// mirror the arrow horizontally in RTL languages
+	/* rtl:begin:ignore */
+	body.rtl & .dashicons-arrow-right {
+		transform: scaleX( -1 );
+		-ms-filter: fliph;
+		filter: FlipH;
+		margin-top: -10px;
+	}
+	/* rtl:end:ignore */
 }
 
-.accordion-description {
-	color: #757575;
-	font-size: 13px;
-	font-family: 'SF Pro', sans-serif;
-	font-weight: 400;
-	line-height: 20px;
+.wcpay-accordion__icon {
+	color: $gray-700;
+	margin: -2px 0 -2px 6px;
 }
 
-.arrow-container {
-	width: 24px;
-	height: 24px;
+.wcpay-accordion__body-toggle-icon {
+	margin-right: -5px;
+}
+
+.wcpay-accordion__color-title {
+	float: left;
+	height: 19px;
+}
+
+.wcpay-accordion__row {
 	display: flex;
+	justify-content: space-between;
 	align-items: center;
-	justify-content: center;
-	transition: transform 0.3s;
+	margin-top: $grid-unit-10;
+	min-height: $button-size;
+
+	select {
+		// Necessary for select to respond to flexbox
+		min-width: 0;
+	}
+
+	label {
+		margin-right: $grid-unit-15;
+		flex-shrink: 0;
+		max-width: 75%;
+	}
+
+	&:empty,
+	&:first-of-type {
+		margin-top: 0;
+	}
 }
 
-.accordion-item.active .arrow-container {
-	/* Rotate chevron when expanded */
-	transform: rotate( 180deg );
-}
-
-.accordion-content {
-	overflow: hidden;
-	max-height: 0;
-	opacity: 0;
-	transition: max-height 0.35s cubic-bezier( 0.4, 0, 0.2, 1 ), opacity 0.2s;
-	padding: 0 20px;
-	background: #fff;
-}
-
-.accordion-item.active .accordion-content {
-	padding: 16px 20px 20px 20px;
-	max-height: 500px; /* Large enough for most content */
-	opacity: 1;
-}
-
-// Optional: Remove bottom margin for last item
-.accordion-item:last-child {
-	margin-bottom: 0;
+.wcpay-accordion .circle-picker {
+	padding-bottom: 20px;
 }
