@@ -110,10 +110,10 @@ const PaymentMethodsList = ( { methodIds } ) => {
 						icon: Icon,
 						description,
 						allows_manual_capture: isAllowingManualCapture,
-						setup_required: isSetupRequired,
-						setup_tooltip: setupTooltip,
 						currencies,
 					} ) => {
+						let isSetupRequired = false;
+						let setupTooltip = '';
 						if (
 							! wcpaySettings.isMultiCurrencyEnabled &&
 							id !== PAYMENT_METHOD_IDS.CARD

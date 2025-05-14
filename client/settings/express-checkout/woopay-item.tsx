@@ -22,18 +22,15 @@ import WCPaySettingsContext from '../wcpay-settings-context';
 import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 import { WooPayIncompatibilityNotice } from '../settings-warnings/incompatibility-notice';
 
-import { WooPayEnabledSettingsHook } from './interfaces';
 import { WooIcon } from 'wcpay/payment-methods-icons';
 
 const WooPayExpressCheckoutItem = (): React.ReactElement => {
-	const [ enabledMethodIds ] = useEnabledPaymentMethodIds() as Array<
-		string
-	>;
+	const [ enabledMethodIds ] = useEnabledPaymentMethodIds();
 
 	const [
 		isWooPayEnabled,
 		updateIsWooPayEnabled,
-	] = useWooPayEnabledSettings() as WooPayEnabledSettingsHook;
+	] = useWooPayEnabledSettings();
 
 	const showIncompatibilityNotice = useWooPayShowIncompatibilityNotice();
 

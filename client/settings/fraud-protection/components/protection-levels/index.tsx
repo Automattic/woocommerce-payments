@@ -21,7 +21,6 @@ import { getAdminUrl } from 'wcpay/utils';
 import { ProtectionLevel } from '../../advanced-settings/constants';
 import InlineNotice from 'components/inline-notice';
 import { recordEvent } from 'tracks';
-import { CurrentProtectionLevelHook } from '../../interfaces';
 
 const ProtectionLevels: React.FC = () => {
 	const [ isBasicModalOpen, setBasicModalOpen ] = useState( false );
@@ -32,14 +31,14 @@ const ProtectionLevels: React.FC = () => {
 	const [
 		currentProtectionLevel,
 		updateProtectionLevel,
-	] = useCurrentProtectionLevel() as CurrentProtectionLevelHook;
+	] = useCurrentProtectionLevel();
 
 	const [
 		advancedFraudProtectionSettings,
 	] = useAdvancedFraudProtectionSettings();
 
 	const { isDirty } = useSettings();
-	const currentSettings = useGetSettings() as Record< string, any >;
+	const currentSettings = useGetSettings();
 
 	useEffect( () => {
 		if ( initialProtectionLevelRef.current === null ) {
@@ -47,6 +46,8 @@ const ProtectionLevels: React.FC = () => {
 		}
 
 		if ( initialSettingsRef.current === null && currentSettings ) {
+			// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+			// @ts-ignore
 			initialSettingsRef.current = { ...currentSettings };
 		}
 	}, [ currentProtectionLevel, currentSettings ] );

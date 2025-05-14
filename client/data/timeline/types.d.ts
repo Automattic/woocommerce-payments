@@ -15,12 +15,25 @@ export interface TimelineFeeExchangeRate {
 	rate: number;
 }
 
+export interface TimelineFeeTax {
+	/** The tax amount in the minimum unit of the currency (e.g. cents) */
+	amount: number;
+	/** The currency code for the tax amount (e.g. "USD") */
+	currency: string;
+	/** The tax description code (e.g. "US VAT", "JP JCT") that will be localized */
+	description?: string;
+	/** The tax percentage rate as a decimal (e.g. 0.21 for 21%). Must be between 0 and 1 */
+	percentage_rate?: number;
+}
+
 export interface TimelineFeeRates {
 	percentage: number;
 	fixed: number;
 	fixed_currency: string;
 	history?: Array< TimelineFeeRate >;
 	fee_exchange_rate?: TimelineFeeExchangeRate;
+	tax?: TimelineFeeTax;
+	before_tax?: TimelineFeeTax;
 }
 
 export interface TimelineTransactionDetails {

@@ -12,7 +12,6 @@ import interpolateComponents from '@automattic/interpolate-components';
 import { __, sprintf } from '@wordpress/i18n';
 import { HoverTooltip } from 'components/tooltip';
 import { upeCapabilityStatuses } from 'wcpay/settings/constants';
-import { useManualCapture } from 'wcpay/data';
 import { FeeStructure } from 'wcpay/types/fees';
 import {
 	formatMethodFeesDescription,
@@ -173,7 +172,6 @@ const PaymentMethod = ( {
 	}: { accountFees?: Record< string, FeeStructure > } = useContext(
 		WCPaySettingsContext
 	);
-	const [ isManualCaptureEnabled ] = useManualCapture();
 
 	const needsMoreInformation = [
 		upeCapabilityStatuses.INACTIVE,
@@ -191,11 +189,6 @@ const PaymentMethod = ( {
 		setDismissedDuplicateNotices,
 	} = useContext( DuplicatedPaymentMethodsContext );
 	const isDuplicate = Object.keys( duplicates ).includes( id );
-
-	const needsOverlay =
-		( isManualCaptureEnabled && ! isAllowingManualCapture ) ||
-		isSetupRequired ||
-		needsAttention;
 
 	const handleChange = ( newStatus: string ) => {
 		// If the payment method control is locked, reject any changes.
@@ -302,13 +295,7 @@ const PaymentMethod = ( {
 	};
 
 	return (
-		<li
-			className={ clsx(
-				'payment-method__list-item',
-				{ 'has-icon-border': id !== 'card', overlay: needsOverlay },
-				className
-			) }
-		>
+		<li className={ clsx( 'payment-method__list-item', className ) }>
 			<div className="payment-method">
 				<div className="payment-method__checkbox">
 					<LoadableCheckboxControl
