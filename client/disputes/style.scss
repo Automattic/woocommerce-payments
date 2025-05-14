@@ -27,7 +27,11 @@
 	$horizontal-card-padding: 24px;
 
 	.components-card__header {
-		font-size: 20px;
+		/* Heading LG */
+		font-size: var( --l, 15px );
+		font-style: normal;
+		font-weight: var( --Medium, 500 );
+		line-height: var( --s, 20px ); /* 133.333% */
 	}
 
 	.components-card {
@@ -37,82 +41,105 @@
 	.components-button + .components-button {
 		margin-left: 10px;
 	}
+}
 
-	// Evidence form
+.multi-step-evidence-form {
+	margin: 1em 0;
 
-	.components-textarea-control__input {
-		display: block;
-		margin-top: 4px;
-		width: 100%;
+	.evidence-progress {
+		margin-bottom: 2em;
 	}
 
-	.components-text-control__input {
-		margin-top: 4px;
+	.evidence-navigation {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-top: 1em;
+	}
+
+	.evidence-preview {
+		margin-top: 2em;
+		padding: 1em;
+		background: #f8f9fa;
+		border-radius: 4px;
+
+		.evidence-preview-item {
+			margin-bottom: 1em;
+			padding-bottom: 1em;
+			border-bottom: 1px solid #e2e4e7;
+
+			&:last-child {
+				margin-bottom: 0;
+				padding-bottom: 0;
+				border-bottom: none;
+			}
+
+			strong {
+				display: block;
+				margin-bottom: 0.5em;
+				color: #1e1e1e;
+			}
+		}
+	}
+
+	.components-card {
+		margin-bottom: 2em;
+	}
+
+	.components-card__header {
+		font-size: 1.2em;
+		font-weight: 600;
+	}
+
+	.components-card__body {
+		p {
+			margin-bottom: 1.5em;
+			color: #1e1e1e;
+		}
 	}
 
 	.components-base-control {
-		position: relative;
-	}
-	.components-base-control .components-base-control__label {
-		margin-bottom: 4px;
-	}
-	.components-base-control + .components-base-control {
-		margin: 16px 0 0;
-	}
+		margin-bottom: 1.5em;
 
-	.components-base-control > .components-base-control__help {
-		font-style: normal;
-		font-weight: 400;
-		font-size: 12px;
-		line-height: 16px;
-		color: $studio-gray-40;
-		margin-top: 8px;
-	}
-
-	// Fix broken wc-admin style for file upload buttons specifically.
-	.file-upload {
-		display: flex;
-		flex-direction: row;
-		align-items: center;
-
-		// Selector here is super specific to ensure styles are overwritten.
-		.components-button.is-secondary:not( :disabled ):not( [aria-disabled='true'] ) {
-			&.is-success {
-				box-shadow: inset 0 0 0 1px $studio-green;
-				color: $studio-green;
-
-				&:hover {
-					box-shadow: inset 0 0 0 1px $studio-green-60;
-					color: $studio-green-60;
-				}
-			}
-
-			&.is-destructive {
-				box-shadow: inset 0 0 0 1px $studio-red;
-				color: $studio-red;
-
-				&:hover {
-					box-shadow: inset 0 0 0 1px $studio-red-60;
-					color: $studio-red-60;
-				}
-			}
+		&:last-child {
+			margin-bottom: 0;
 		}
+	}
 
-		.components-button.delete-uploaded-file-button:not( :disabled ):not( [aria-disabled='true'] ) {
-			&:hover {
-				color: $studio-red-60;
-				box-shadow: none;
-			}
+	.components-base-control__help {
+		margin-top: 0.5em;
+		color: #50575e;
+		font-style: italic;
+	}
+}
+
+.pdf-preview {
+	margin-top: 2em;
+
+	&-frame {
+		width: 100%;
+		height: 600px;
+		border: 1px solid #e2e4e7;
+		border-radius: 4px;
+		margin-bottom: 1em;
+	}
+
+	&-loading,
+	&-error {
+		text-align: center;
+		padding: 2em;
+		background: #f8f9fa;
+		border-radius: 4px;
+		margin-bottom: 1em;
+
+		p {
+			margin: 1em 0 0;
+			color: #1e1e1e;
 		}
+	}
 
-		// Set styles for file name text and icon.
-		.upload-message {
-			padding-left: 24px;
-			color: $studio-gray-40;
-
-			&.is-destructive {
-				color: $studio-red;
-			}
-		}
+	&-refresh {
+		display: block;
+		margin: 0 auto;
 	}
 }

@@ -1,0 +1,94 @@
+.accordion-container {
+	width: 100%;
+	height: 100%;
+	padding: 20px;
+	overflow: hidden;
+	border-radius: 5px;
+	border: 1px solid #9747ff;
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+
+.accordion-item {
+	border: 1px solid #9747ff;
+	border-radius: 5px;
+	background: #fff;
+	margin-bottom: 16px;
+	transition: box-shadow 0.2s;
+	box-shadow: 0 1px 2px rgba( 30, 30, 30, 0.03 );
+}
+
+.accordion-header {
+	display: flex;
+	align-items: center;
+	width: 100%;
+	padding: 16px 20px;
+	cursor: pointer;
+	background: #fff;
+	border-radius: 5px;
+	transition: background 0.2s;
+	outline: none;
+	border: none;
+}
+
+.accordion-header:hover .accordion-title,
+.accordion-header:focus .accordion-title {
+	color: var( --wp-admin-theme-color, #007cba );
+}
+
+.accordion-header:focus {
+	outline: 2px solid #3858e9;
+	outline-offset: 2px;
+}
+
+.accordion-title {
+	color: #1e1e1e;
+	font-size: 15px;
+	font-family: 'SF Pro', sans-serif;
+	font-weight: 500;
+	line-height: 20px;
+	flex: 1;
+}
+
+.accordion-description {
+	color: #757575;
+	font-size: 13px;
+	font-family: 'SF Pro', sans-serif;
+	font-weight: 400;
+	line-height: 20px;
+}
+
+.arrow-container {
+	width: 24px;
+	height: 24px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: transform 0.3s;
+}
+
+.accordion-item.active .arrow-container {
+	/* Rotate chevron when expanded */
+	transform: rotate( 180deg );
+}
+
+.accordion-content {
+	overflow: hidden;
+	max-height: 0;
+	opacity: 0;
+	transition: max-height 0.35s cubic-bezier( 0.4, 0, 0.2, 1 ), opacity 0.2s;
+	padding: 0 20px;
+	background: #fff;
+}
+
+.accordion-item.active .accordion-content {
+	padding: 16px 20px 20px 20px;
+	max-height: 500px; /* Large enough for most content */
+	opacity: 1;
+}
+
+// Optional: Remove bottom margin for last item
+.accordion-item:last-child {
+	margin-bottom: 0;
+}

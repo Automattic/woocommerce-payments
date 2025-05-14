@@ -19,7 +19,7 @@ import {
 	Notice,
 } from '@wordpress/components';
 import { merge, some, flatten, isMatchWith } from 'lodash';
-
+import Accordion from 'components/accordion';
 /**
  * Internal dependencies.
  */
@@ -28,16 +28,293 @@ import { useDisputeEvidence } from 'wcpay/data';
 import evidenceFields from './fields';
 import { FileUploadControl, UploadedReadOnly } from 'components/file-upload';
 import { TestModeNotice } from 'components/test-mode-notice';
-import Info from '../info';
 import Page from 'components/page';
 import ErrorBoundary from 'components/error-boundary';
-import Loadable, { LoadableBlock } from 'components/loadable';
+import Loadable from 'components/loadable';
 import useConfirmNavigation from 'utils/use-confirm-navigation';
 import { recordEvent } from 'tracks';
 import { getAdminUrl } from 'wcpay/utils';
+import PdfPreview from './pdf-preview';
+import DisputeNotice from 'wcpay/payment-details/dispute-details/dispute-notice';
+import { HorizontalList } from 'components/horizontal-list';
+import { formatCurrency } from 'multi-currency/interface/functions';
+import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
+import { getBankName } from 'utils/charge';
 
 const DISPUTE_EVIDENCE_MAX_LENGTH = 150000;
 const PRODUCT_TYPE_META_KEY = '__product_type';
+
+const MultiStepEvidenceForm = ( {
+	fields,
+	evidence,
+	onChange,
+	onFileChange,
+	onFileRemove,
+	onSave,
+	readOnly,
+	productType,
+	onChangeProductType,
+} ) => {
+	const [ currentStep, setCurrentStep ] = useState( 0 );
+	const [ formData, setFormData ] = useState( evidence );
+
+	const steps = [
+		{
+			title: __( 'General Evidence', 'woocommerce-payments' ),
+			description: __(
+				'Provide general information about the customer and order.',
+				'woocommerce-payments'
+			),
+			fields: fields.filter( ( field ) => field.key === 'general' ),
+		},
+		{
+			title: __( 'Shipping Information', 'woocommerce-payments' ),
+			description: __(
+				'Add shipping details and tracking information.',
+				'woocommerce-payments'
+			),
+			fields: fields.filter(
+				( field ) => field.key === 'shipping_information'
+			),
+		},
+		{
+			title: __( 'Additional Details', 'woocommerce-payments' ),
+			description: __(
+				'Include any extra evidence or statements.',
+				'woocommerce-payments'
+			),
+			fields: fields.filter( ( field ) => field.key === 'uncategorized' ),
+		},
+		{
+			title: __( 'Review & Submit', 'woocommerce-payments' ),
+			description: __(
+				'Review all evidence and submit.',
+				'woocommerce-payments'
+			),
+			fields: [],
+		},
+	];
+
+	const handleNext = () => {
+		if ( currentStep < steps.length - 1 ) {
+			setCurrentStep( currentStep + 1 );
+		}
+	};
+
+	const handleBack = () => {
+		if ( currentStep > 0 ) {
+			setCurrentStep( currentStep - 1 );
+		}
+	};
+
+	const handleSubmit = () => {
+		const confirmMessage = __(
+			"Are you sure you're ready to submit this evidence? Evidence submissions are final.",
+			'woocommerce-payments'
+		);
+		if ( window.confirm( confirmMessage ) ) {
+			onSave( true );
+		}
+	};
+
+	const updateFormData = ( key, value ) => {
+		setFormData( ( prev ) => ( { ...prev, [ key ]: value } ) );
+		onChange( key, value );
+	};
+
+	const renderStepContent = () => {
+		const currentStepData = steps[ currentStep ];
+
+		if ( currentStep === steps.length - 1 ) {
+			return (
+				<Card size="large">
+					<CardHeader>{ currentStepData.title }</CardHeader>
+					<CardBody>
+						<p>{ currentStepData.description }</p>
+						<PdfPreview formData={ formData } />
+						<div className="evidence-preview">
+							{ Object.entries( formData ).map(
+								( [ key, value ] ) => {
+									if ( ! value || typeof value === 'object' )
+										return null;
+									return (
+										<div
+											key={ key }
+											className="evidence-preview-item"
+										>
+											<strong>{ key }:</strong> { value }
+										</div>
+									);
+								}
+							) }
+						</div>
+					</CardBody>
+				</Card>
+			);
+		}
+
+		return (
+			<Card size="large">
+				<CardHeader>{ currentStepData.title }</CardHeader>
+				<CardBody>
+					<p>{ currentStepData.description }</p>
+					{ currentStep === 0 && (
+						<div className="evidence-product-type">
+							<SelectControl
+								label={ __(
+									'Product type',
+									'woocommerce-payments'
+								) }
+								value={ productType }
+								onChange={ onChangeProductType }
+								data-testid={
+									'dispute-challenge-product-type-selector'
+								}
+								options={ [
+									{
+										label: __(
+											'Select one…',
+											'woocommerce-payments'
+										),
+										disabled: true,
+										value: '',
+									},
+									{
+										label: __(
+											'Physical product',
+											'woocommerce-payments'
+										),
+										value: 'physical_product',
+									},
+									{
+										label: __(
+											'Digital product or service',
+											'woocommerce-payments'
+										),
+										value: 'digital_product_or_service',
+									},
+									{
+										label: __(
+											'Offline service',
+											'woocommerce-payments'
+										),
+										value: 'offline_service',
+									},
+									{
+										label: __(
+											'Multiple product types',
+											'woocommerce-payments'
+										),
+										value: 'multiple',
+									},
+								] }
+								disabled={ readOnly }
+							/>
+						</div>
+					) }
+					{ currentStepData.fields.map( ( section ) => (
+						<div key={ section.key }>
+							{ section.fields.map( ( field ) => {
+								const props = {
+									key: field.key,
+									label: field.label,
+									value: formData[ field.key ] || '',
+									onChange: ( value ) =>
+										updateFormData( field.key, value ),
+									disabled: readOnly,
+									help: field.description,
+								};
+
+								switch ( field.type ) {
+									case 'file':
+										return readOnly ? (
+											<UploadedReadOnly
+												{ ...props }
+												field={ field }
+												fileName={
+													formData.metadata?.[
+														field.key
+													]
+												}
+												onFileChange={ onFileChange }
+												onFileRemove={ onFileRemove }
+											/>
+										) : (
+											<FileUploadControl
+												{ ...props }
+												field={ field }
+												fileName={
+													formData.metadata?.[
+														field.key
+													]
+												}
+												onFileChange={ onFileChange }
+												onFileRemove={ onFileRemove }
+											/>
+										);
+									case 'text':
+										return <TextControl { ...props } />;
+									case 'date':
+										return (
+											<TextControl
+												{ ...props }
+												type="date"
+											/>
+										);
+									default:
+										return (
+											<TextareaControl
+												{ ...props }
+												maxLength={ field.maxLength }
+											/>
+										);
+								}
+							} ) }
+						</div>
+					) ) }
+				</CardBody>
+			</Card>
+		);
+	};
+
+	return (
+		<div className="multi-step-evidence-form">
+			{ renderStepContent() }
+			<CardFooter>
+				<div className="evidence-navigation">
+					{ currentStep > 0 && (
+						<Button isSecondary onClick={ handleBack }>
+							{ __( 'Back', 'woocommerce-payments' ) }
+						</Button>
+					) }
+					{ currentStep < steps.length - 1 ? (
+						<Button isPrimary onClick={ handleNext }>
+							{ __( 'Next', 'woocommerce-payments' ) }
+						</Button>
+					) : (
+						<>
+							<Button isPrimary onClick={ handleSubmit }>
+								{ __(
+									'Submit Evidence',
+									'woocommerce-payments'
+								) }
+							</Button>
+							<Button
+								isSecondary
+								onClick={ () => onSave( false ) }
+							>
+								{ __(
+									'Save for Later',
+									'woocommerce-payments'
+								) }
+							</Button>
+						</>
+					) }
+				</div>
+			</CardFooter>
+		</div>
+	);
+};
 
 /* If description is an array, separate with newline elements. */
 const expandHelp = ( description ) => {
@@ -320,105 +597,86 @@ export const DisputeEvidencePage = ( props ) => {
 		);
 	}
 
+	const summaryItems = [
+		{
+			title: __( 'Disputed amount', 'woocommerce-payments' ),
+			content: formatCurrency( dispute.amount, dispute.currency ),
+		},
+		{
+			title: __( 'Disputed on', 'woocommerce-payments' ),
+			content: formatDateTimeFromTimestamp( dispute.created, {
+				separator: ' ',
+				includeTime: true,
+			} ),
+		},
+		{
+			title: __( 'Reason', 'woocommerce-payments' ),
+			content: dispute.reason,
+		},
+		{
+			title: __( 'Responded by', 'woocommerce-payments' ),
+			content: formatDateTimeFromTimestamp(
+				dispute.evidence_details?.due_by ?? 0,
+				{
+					separator: ' ',
+					includeTime: true,
+				}
+			),
+		},
+	];
+
 	return (
-		<Page isNarrow className="wcpay-dispute-evidence">
+		<Page maxWidth={ 1032 } className="wcpay-dispute-evidence">
+			<Accordion title="Evidence">
+				<div>Any content here</div>
+			</Accordion>
 			<TestModeNotice currentPage="disputes" isDetailsView={ true } />
 			{ readOnly && ! isLoading && readOnlyNotice }
 			<ErrorBoundary>
-				<Card size="large">
-					<CardHeader>
-						{
-							<Loadable
-								isLoading={ isLoading }
-								value={ __(
-									'Challenge dispute',
-									'woocommerce-payments'
-								) }
-							/>
-						}
-					</CardHeader>
-					<CardBody>
-						<Info dispute={ dispute } isLoading={ isLoading } />
-					</CardBody>
-				</Card>
-			</ErrorBoundary>
-			<ErrorBoundary>
-				<Card size="large">
-					<CardHeader>
-						{
-							<Loadable
-								isLoading={ isLoading }
-								value={ __(
-									'Product type',
-									'woocommerce-payments'
-								) }
-							/>
-						}
-					</CardHeader>
-					<CardBody>
-						<LoadableBlock isLoading={ isLoading } numLines={ 2 }>
-							<SelectControl
-								value={ productType }
-								onChange={ onChangeProductType }
-								data-testid={
-									'dispute-challenge-product-type-selector'
-								}
-								options={ [
-									{
-										label: __(
-											'Select one…',
-											'woocommerce-payments'
-										),
-										disabled: true,
-										value: '',
-									},
-									{
-										label: __(
-											'Physical product',
-											'woocommerce-payments'
-										),
-										value: 'physical_product',
-									},
-									{
-										label: __(
-											'Digital product or service',
-											'woocommerce-payments'
-										),
-										value: 'digital_product_or_service',
-									},
-									{
-										label: __(
-											'Offline service',
-											'woocommerce-payments'
-										),
-										value: 'offline_service',
-									},
-									{
-										label: __(
-											'Multiple product types',
-											'woocommerce-payments'
-										),
-										value: 'multiple',
-									},
-								] }
-								disabled={ readOnly }
-							/>
-						</LoadableBlock>
-					</CardBody>
-				</Card>
-			</ErrorBoundary>
-			{
-				// Don't render the form placeholder while the dispute is being loaded.
-				// The form content depends on the selected product type, hence placeholder might disappear after loading.
-				! isLoading && (
-					<ErrorBoundary>
-						<DisputeEvidenceForm
-							{ ...evidenceFormProps }
-							readOnly={ readOnly }
+				<div className="evidence-summary">
+					<div className="evidence-summary__header">
+						<Loadable
+							isLoading={ isLoading }
+							value={ __(
+								'Challenge dispute',
+								'woocommerce-payments'
+							) }
 						/>
-					</ErrorBoundary>
-				)
-			}
+						<p className="evidence-subtitle">
+							{ __(
+								'Provide key details about the order as part of your evidence',
+								'woocommerce-payments'
+							) }
+						</p>
+					</div>
+					<div className="evidence-summary__body">
+						{ dispute.status && (
+							<DisputeNotice
+								dispute={ dispute }
+								isUrgent={
+									dispute.evidence_details?.due_by <
+									Date.now() / 1000
+								}
+								paymentMethod={
+									dispute.payment_method_details?.type || null
+								}
+								bankName={ getBankName( dispute ) }
+							/>
+						) }
+						<HorizontalList items={ summaryItems } />
+					</div>
+				</div>
+			</ErrorBoundary>
+			{ ! isLoading && (
+				<ErrorBoundary>
+					<MultiStepEvidenceForm
+						{ ...evidenceFormProps }
+						readOnly={ readOnly }
+						productType={ productType }
+						onChangeProductType={ onChangeProductType }
+					/>
+				</ErrorBoundary>
+			) }
 		</Page>
 	);
 };
