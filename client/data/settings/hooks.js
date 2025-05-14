@@ -12,7 +12,7 @@ import { useSelect, useDispatch } from '@wordpress/data';
 import { STORE_NAME } from '../constants';
 
 /**
- * @return {import('../../types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
  */
 export const useSavedCards = () => {
 	const { updateIsSavedCardsEnabled } = useDispatch( STORE_NAME );
@@ -25,7 +25,7 @@ export const useSavedCards = () => {
 };
 
 /**
- * @return {import('../../types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
  */
 export const useCardPresentEligible = () => {
 	const { updateIsCardPresentEligible } = useDispatch( STORE_NAME );
@@ -38,7 +38,7 @@ export const useCardPresentEligible = () => {
 };
 
 /**
- * @return {import('../../types/wcpay-data-settings-hooks').GenericSettingsHook<string[]>}
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string[]>}
  */
 export const useEnabledPaymentMethodIds = () => {
 	const { updateEnabledPaymentMethodIds } = useDispatch( STORE_NAME );
@@ -85,7 +85,7 @@ export const useUnselectedPaymentMethod = () => {
 };
 
 /**
- * @return {import('../../types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
  */
 export const useDebugLog = () => {
 	const { updateIsDebugLogEnabled } = useDispatch( STORE_NAME );
@@ -98,7 +98,7 @@ export const useDebugLog = () => {
 };
 
 /**
- * @return {import('../../types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
  */
 export const useTestMode = () => {
 	const { updateIsTestModeEnabled } = useDispatch( STORE_NAME );
@@ -126,7 +126,7 @@ export const useDevMode = () =>
 	useSelect( ( select ) => select( STORE_NAME ).getIsDevModeEnabled(), [] );
 
 /**
- * @return {import('../../types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
  */
 export const useMultiCurrency = () => {
 	const { updateIsMultiCurrencyEnabled } = useDispatch( STORE_NAME );
@@ -156,7 +156,7 @@ export const useWCPaySubscriptions = () => {
 };
 
 /**
- * @return {import('../../types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
  */
 export const useAccountStatementDescriptor = () => {
 	const { updateAccountStatementDescriptor } = useDispatch( STORE_NAME );
@@ -169,7 +169,7 @@ export const useAccountStatementDescriptor = () => {
 };
 
 /**
- * @return {import('../../types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
  */
 export const useAccountStatementDescriptorKanji = () => {
 	const { updateAccountStatementDescriptorKanji } = useDispatch( STORE_NAME );
@@ -185,7 +185,7 @@ export const useAccountStatementDescriptorKanji = () => {
 };
 
 /**
- * @return {import('../../types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
  */
 export const useAccountStatementDescriptorKana = () => {
 	const { updateAccountStatementDescriptorKana } = useDispatch( STORE_NAME );
@@ -201,7 +201,7 @@ export const useAccountStatementDescriptorKana = () => {
 };
 
 /**
- * @return {import('../../types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
  */
 export const useAccountBusinessSupportEmail = () => {
 	const { updateAccountBusinessSupportEmail } = useDispatch( STORE_NAME );
@@ -214,7 +214,7 @@ export const useAccountBusinessSupportEmail = () => {
 };
 
 /**
- * @return {import('../../types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
  */
 export const useAccountBusinessSupportPhone = () => {
 	const { updateAccountBusinessSupportPhone } = useDispatch( STORE_NAME );
@@ -275,7 +275,7 @@ export const useDepositRestrictions = () =>
 	useSelect( ( select ) => select( STORE_NAME ).getDepositRestrictions() );
 
 /**
- * @return {import('../../types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
  */
 export const useManualCapture = () => {
 	const { updateIsManualCaptureEnabled } = useDispatch( STORE_NAME );
@@ -288,7 +288,7 @@ export const useManualCapture = () => {
 };
 
 /**
- * @return {import('../../types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
  */
 export const useIsWCPayEnabled = () => {
 	const { updateIsWCPayEnabled } = useDispatch( STORE_NAME );
@@ -329,7 +329,7 @@ export const useGetSettings = () =>
 	useSelect( ( select ) => select( STORE_NAME ).getSettings() );
 
 /**
- * @return {import('../../types/wcpay-data-settings-hooks').SettingsState}
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').SettingsState}
  */
 export const useSettings = () => {
 	const { saveSettings } = useDispatch( STORE_NAME );
@@ -356,7 +356,7 @@ export const useSettings = () => {
 };
 
 /**
- * @return {import('../../types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
  */
 export const usePaymentRequestEnabledSettings = () => {
 	const { updateIsPaymentRequestEnabled } = useDispatch( STORE_NAME );
@@ -369,7 +369,7 @@ export const usePaymentRequestEnabledSettings = () => {
 };
 
 /**
- * @return {import('../../types/wcpay-data-settings-hooks').GenericSettingsHook<string[]>}
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string[]>}
  */
 export const usePaymentRequestLocations = () => {
 	const { updatePaymentRequestLocations } = useDispatch( STORE_NAME );
@@ -382,7 +382,7 @@ export const usePaymentRequestLocations = () => {
 };
 
 /**
- * @return {import('../../types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
  */
 export const usePaymentRequestButtonType = () => {
 	const { updatePaymentRequestButtonType } = useDispatch( STORE_NAME );
@@ -395,7 +395,7 @@ export const usePaymentRequestButtonType = () => {
 };
 
 /**
- * @return {import('../../types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
  */
 export const usePaymentRequestButtonSize = () => {
 	const { updatePaymentRequestButtonSize } = useDispatch( STORE_NAME );
@@ -408,7 +408,7 @@ export const usePaymentRequestButtonSize = () => {
 };
 
 /**
- * @return {import('../../types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
  */
 export const usePaymentRequestButtonTheme = () => {
 	const { updatePaymentRequestButtonTheme } = useDispatch( STORE_NAME );
@@ -440,7 +440,7 @@ export const useGetSavingError = () => {
 };
 
 /**
- * @return {import('../../types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
  */
 export const useWooPayEnabledSettings = () => {
 	const { updateIsWooPayEnabled } = useDispatch( STORE_NAME );
@@ -453,7 +453,7 @@ export const useWooPayEnabledSettings = () => {
 };
 
 /**
- * @return {import('../../types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
  */
 export const useWooPayGlobalThemeSupportEnabledSettings = () => {
 	const { updateIsWooPayGlobalThemeSupportEnabled } = useDispatch(
@@ -471,7 +471,7 @@ export const useWooPayGlobalThemeSupportEnabledSettings = () => {
 };
 
 /**
- * @return {import('../../types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
  */
 export const useWooPayCustomMessage = () => {
 	const { updateWooPayCustomMessage } = useDispatch( STORE_NAME );
@@ -484,7 +484,7 @@ export const useWooPayCustomMessage = () => {
 };
 
 /**
- * @return {import('../../types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
  */
 export const useWooPayStoreLogo = () => {
 	const { updateWooPayStoreLogo } = useDispatch( STORE_NAME );
@@ -497,7 +497,7 @@ export const useWooPayStoreLogo = () => {
 };
 
 /**
- * @return {import('../../types/wcpay-data-settings-hooks').GenericSettingsHook<string[]>}
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string[]>}
  */
 export const useWooPayLocations = () => {
 	const { updateWooPayLocations } = useDispatch( STORE_NAME );
@@ -510,7 +510,7 @@ export const useWooPayLocations = () => {
 };
 
 /**
- * @return {import('../../types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
  */
 export const useCurrentProtectionLevel = () => {
 	const { updateProtectionLevel } = useDispatch( STORE_NAME );
@@ -523,7 +523,7 @@ export const useCurrentProtectionLevel = () => {
 };
 
 /**
- * @return {import('../../types/wcpay-data-settings-hooks').AdvancedFraudPreventionSettingsState}
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').AdvancedFraudPreventionSettingsState}
  */
 export const useAdvancedFraudProtectionSettings = () => {
 	const { updateAdvancedFraudProtectionSettings } = useDispatch( STORE_NAME );
@@ -547,7 +547,7 @@ export const useWooPayShowIncompatibilityNotice = () =>
 	);
 
 /**
- * @return {import('../../types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
  */
 export const useStripeBilling = () => {
 	const { updateIsStripeBillingEnabled } = useDispatch( STORE_NAME );
@@ -560,7 +560,7 @@ export const useStripeBilling = () => {
 };
 
 /**
- * @return {import('../../types/wcpay-data-settings-hooks').StripeBillingMigrationState}
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').StripeBillingMigrationState}
  */
 export const useStripeBillingMigration = () => {
 	const { submitStripeBillingSubscriptionMigration } = useDispatch(
