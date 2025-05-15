@@ -57,11 +57,8 @@ const usePaymentMethodAvailability = ( id: string ) => {
 	};
 
 	// We want to show a tooltip if PO is enabled and not yet complete. (We make an exception to not show this for card payments).
-	const isPoInProgress =
-		isPoEnabled &&
-		! isPoComplete &&
-		status !== upeCapabilityStatuses.ACTIVE;
-	if ( isPoInProgress || upeCapabilityStatuses.INACTIVE === status ) {
+	const isPoInProgress = isPoEnabled && ! isPoComplete;
+	if ( isPoInProgress && upeCapabilityStatuses.PENDING_APPROVAL === status ) {
 		return {
 			isActionable: true,
 			chip: __( 'More information needed', 'woocommerce-payments' ),
