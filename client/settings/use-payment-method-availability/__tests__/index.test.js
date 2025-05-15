@@ -9,9 +9,14 @@ import { render } from '@testing-library/react';
  * Internal dependencies
  */
 import usePaymentMethodAvailability from '..';
-import { useGetPaymentMethodStatuses, useManualCapture } from 'wcpay/data';
+import {
+	useEnabledPaymentMethodIds,
+	useGetPaymentMethodStatuses,
+	useManualCapture,
+} from 'wcpay/data';
 
 jest.mock( 'wcpay/data', () => ( {
+	useEnabledPaymentMethodIds: jest.fn(),
 	useGetPaymentMethodStatuses: jest.fn(),
 	useManualCapture: jest.fn(),
 } ) );
@@ -58,6 +63,19 @@ describe( 'usePaymentMethodAvailability', () => {
 			},
 		} );
 		useManualCapture.mockReturnValue( [ false ] );
+		useEnabledPaymentMethodIds.mockReturnValue( [
+			[
+				'card',
+				'bancontact',
+				'eps',
+				'ideal',
+				'p24',
+				'sepa_debit',
+				'klarna',
+				'affirm',
+				'alipay',
+			],
+		] );
 	} );
 
 	it( 'returns "More information needed" for the "inactive" status', () => {
@@ -162,6 +180,17 @@ describe( 'usePaymentMethodAvailability', () => {
 		expect( result.current.notice ).toMatch(
 			/Bancontact requires the EUR currency./
 		);
+	} );
+
+	it( 'does not return missing currencies notice when multi-currency disabled and the payment method is not active', () => {
+		global.wcpaySettings.isMultiCurrencyEnabled = false;
+		global.wcpaySettings.storeCurrency = 'USD';
+		useEnabledPaymentMethodIds.mockReturnValue( [ 'card' ] );
+		const { result } = renderHook( () =>
+			usePaymentMethodAvailability( 'bancontact' )
+		);
+		expect( result.current.isActionable ).toBe( true );
+		expect( result.current.notice ).toBeUndefined();
 	} );
 
 	it( 'returns "isActionable: true" if all is good', () => {

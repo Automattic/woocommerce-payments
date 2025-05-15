@@ -8,7 +8,11 @@ import React from 'react';
  */
 import methodsConfiguration from 'wcpay/payment-methods-map';
 import { upeCapabilityStatuses } from 'wcpay/settings/constants';
-import { useGetPaymentMethodStatuses, useManualCapture } from 'wcpay/data';
+import {
+	useEnabledPaymentMethodIds,
+	useGetPaymentMethodStatuses,
+	useManualCapture,
+} from 'wcpay/data';
 import PAYMENT_METHOD_IDS from 'wcpay/constants/payment-method';
 import { getMissingCurrenciesTooltipMessage } from 'multi-currency/utils/missing-currencies-message';
 import { __, sprintf } from '@wordpress/i18n';
@@ -39,6 +43,7 @@ const getDocumentationUrlForDisabledPaymentMethod = (
 
 const usePaymentMethodAvailability = ( id: string ) => {
 	const paymentMethodStatuses = useGetPaymentMethodStatuses();
+	const [ enabledPaymentMethods ] = useEnabledPaymentMethodIds();
 	const [ isManualCaptureEnabled ] = useManualCapture();
 
 	const isPoEnabled = wcpaySettings?.progressiveOnboarding?.isEnabled;
@@ -197,7 +202,8 @@ const usePaymentMethodAvailability = ( id: string ) => {
 
 	if (
 		! wcpaySettings.isMultiCurrencyEnabled &&
-		id !== PAYMENT_METHOD_IDS.CARD
+		id !== PAYMENT_METHOD_IDS.CARD &&
+		enabledPaymentMethods.includes( id )
 	) {
 		const currency = wcpaySettings.storeCurrency;
 		if ( currencies.indexOf( currency ) < 0 ) {
