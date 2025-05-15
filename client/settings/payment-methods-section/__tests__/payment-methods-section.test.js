@@ -168,6 +168,11 @@ describe( 'PaymentMethodsSection', () => {
 				ignore: '.a11y-speak-region,.components-flex-item',
 			} ).length
 		).toEqual( 4 );
+		expect(
+			screen.queryAllByText( /more information needed/i, {
+				ignore: '.a11y-speak-region,.components-flex-item',
+			} ).length
+		).toEqual( 6 );
 	} );
 
 	it( 'renders the activation modal when requirements exist for the payment method', () => {
