@@ -133,7 +133,7 @@ const PaymentMethod = ( {
 						label={ label }
 						hideLabelFromVision
 						checked={ enabledMethodIds.includes( id ) }
-						disabled={ isActionable || locked }
+						disabled={ ! isActionable || locked }
 						onChange={ handleChange }
 					/>
 				</div>

@@ -58,9 +58,13 @@ const usePaymentMethodAvailability = ( id: string ) => {
 
 	// We want to show a tooltip if PO is enabled and not yet complete. (We make an exception to not show this for card payments).
 	const isPoInProgress = isPoEnabled && ! isPoComplete;
-	if ( isPoInProgress && upeCapabilityStatuses.PENDING_APPROVAL === status ) {
+	if (
+		isPoInProgress &&
+		( upeCapabilityStatuses.INACTIVE === status ||
+			upeCapabilityStatuses.UNREQUESTED === status )
+	) {
 		return {
-			isActionable: true,
+			isActionable: false,
 			chip: __( 'More information needed', 'woocommerce-payments' ),
 			notice: interpolateComponents( {
 				// translators: {{learnMoreLink}}: placeholders are opening and closing anchor tags.
@@ -95,7 +99,7 @@ const usePaymentMethodAvailability = ( id: string ) => {
 		];
 
 		return {
-			isActionable: true,
+			isActionable: false,
 			chip: __( 'Approval pending', 'woocommerce-payments' ),
 			notice: paymentMethodsWithDelayedApproval.includes( id )
 				? interpolateComponents( {
@@ -131,7 +135,7 @@ const usePaymentMethodAvailability = ( id: string ) => {
 
 	if ( upeCapabilityStatuses.PENDING_VERIFICATION === status ) {
 		return {
-			isActionable: true,
+			isActionable: false,
 			chip: __( 'Pending verification', 'woocommerce-payments' ),
 			notice: sprintf(
 				__(
@@ -147,7 +151,7 @@ const usePaymentMethodAvailability = ( id: string ) => {
 
 	if ( upeCapabilityStatuses.REJECTED === status ) {
 		return {
-			isActionable: true,
+			isActionable: false,
 			chip: __( 'Rejected', 'woocommerce-payments' ),
 			chipType: 'alert' as ChipType,
 			notice: interpolateComponents( {
@@ -180,7 +184,7 @@ const usePaymentMethodAvailability = ( id: string ) => {
 
 	if ( isManualCaptureEnabled && ! isAllowingManualCapture ) {
 		return {
-			isActionable: true,
+			isActionable: false,
 			notice: sprintf(
 				/* translators: %s: a payment method name. */
 				__(
@@ -199,14 +203,14 @@ const usePaymentMethodAvailability = ( id: string ) => {
 		const currency = wcpaySettings.storeCurrency;
 		if ( currencies.indexOf( currency ) < 0 ) {
 			return {
-				isActionable: false,
+				isActionable: true,
 				notice: getMissingCurrenciesTooltipMessage( label, currencies ),
 			};
 		}
 	}
 
 	return {
-		isActionable: false,
+		isActionable: true,
 	};
 };
 
