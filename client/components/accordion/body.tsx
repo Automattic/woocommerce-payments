@@ -2,7 +2,7 @@
  * External dependencies
  */
 import clsx from 'clsx';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, forwardRef } from 'react';
 /**
  * WordPress dependencies
  */
@@ -30,78 +30,81 @@ const useUpdateEffect = (
 	}, deps );
 };
 
-const AccordionBody = ( {
-	buttonProps = {},
-	children,
-	className,
-	icon,
-	initialOpen,
-	// eslint-disable-next-line @typescript-eslint/no-empty-function
-	onToggle = () => {},
-	opened,
-	title,
-	scrollAfterOpen = true,
-	ref,
-}: AccordionBodyProps ) => {
-	const defaultOpenState = initialOpen !== undefined ? initialOpen : true;
-	const [ internalOpened, setInternalOpened ] = useState(
-		opened !== undefined ? opened : defaultOpenState
-	);
-	const isControlled = opened !== undefined;
-	const isOpened = isControlled ? opened : internalOpened;
-	const setIsOpened = isControlled ? onToggle : setInternalOpened;
-	const nodeRef = useRef< HTMLElement >( null );
+const AccordionBody = forwardRef< HTMLDivElement, AccordionBodyProps >(
+	(
+		{
+			buttonProps = {},
+			children,
+			className,
+			icon,
+			initialOpen,
+			// eslint-disable-next-line @typescript-eslint/no-empty-function
+			onToggle = () => {},
+			opened,
+			title,
+			scrollAfterOpen = true,
+		},
+		ref
+	) => {
+		const defaultOpenState = initialOpen !== undefined ? initialOpen : true;
+		const [ internalOpened, setInternalOpened ] = useState(
+			opened !== undefined ? opened : defaultOpenState
+		);
+		const isControlled = opened !== undefined;
+		const isOpened = isControlled ? opened : internalOpened;
+		const setIsOpened = isControlled ? onToggle : setInternalOpened;
+		const nodeRef = useRef< HTMLElement >( null );
 
-	const handleOnToggle = ( event: React.MouseEvent ) => {
-		event.preventDefault();
-		const next = ! isOpened;
-		setIsOpened( next );
-	};
+		const handleOnToggle = ( event: React.MouseEvent ) => {
+			event.preventDefault();
+			const next = ! isOpened;
+			setIsOpened( next );
+		};
 
-	// Ref is used so that the effect does not re-run upon scrollAfterOpen changing value.
-	const scrollAfterOpenRef = useRef< boolean | undefined >();
-	scrollAfterOpenRef.current = scrollAfterOpen;
-	// Runs after initial render.
-	useUpdateEffect( () => {
-		if (
-			isOpened &&
-			scrollAfterOpenRef.current &&
-			nodeRef.current?.scrollIntoView
-		) {
-			/*
-			 * Scrolls the content into view when visible.
-			 * This improves the UX when there are multiple stacking <AccordionBody />
-			 * components in a scrollable container.
-			 */
-			nodeRef.current.scrollIntoView( {
-				inline: 'nearest',
-				block: 'nearest',
-				behavior: 'smooth',
-			} );
-		}
-	}, [ isOpened, 'smooth' ] );
+		// Ref is used so that the effect does not re-run upon scrollAfterOpen changing value.
+		const scrollAfterOpenRef = useRef< boolean | undefined >();
+		scrollAfterOpenRef.current = scrollAfterOpen;
+		// Runs after initial render.
+		useUpdateEffect( () => {
+			if (
+				isOpened &&
+				scrollAfterOpenRef.current &&
+				nodeRef.current?.scrollIntoView
+			) {
+				/*
+				 * Scrolls the content into view when visible.
+				 * This improves the UX when there are multiple stacking <AccordionBody />
+				 * components in a scrollable container.
+				 */
+				nodeRef.current.scrollIntoView( {
+					inline: 'nearest',
+					block: 'nearest',
+					behavior: 'smooth',
+				} );
+			}
+		}, [ isOpened, 'smooth' ] );
 
-	const classes = clsx( 'wcpay-accordion__body', className, {
-		'is-opened': isOpened,
-	} );
+		const classes = clsx( 'wcpay-accordion__body', className, {
+			'is-opened': isOpened,
+		} );
 
-	return (
-		<div
-			className={ classes }
-			ref={ useMergeRefs( [ nodeRef, ref || null ] ) }
-		>
-			<AccordionBodyTitle
-				icon={ icon }
-				isOpened={ Boolean( isOpened ) }
-				onClick={ handleOnToggle }
-				title={ title }
-				{ ...buttonProps }
-			/>
-			{ typeof children === 'function'
-				? children( { opened: Boolean( isOpened ) } )
-				: isOpened && children }
-		</div>
-	);
-};
+		return (
+			<div className={ classes } ref={ useMergeRefs( [ nodeRef, ref ] ) }>
+				<AccordionBodyTitle
+					icon={ icon }
+					isOpened={ Boolean( isOpened ) }
+					onClick={ handleOnToggle }
+					title={ title }
+					{ ...( buttonProps && { ...buttonProps, ref: undefined } ) }
+				/>
+				{ typeof children === 'function'
+					? children( { opened: Boolean( isOpened ) } )
+					: isOpened && children }
+			</div>
+		);
+	}
+);
+
+AccordionBody.displayName = 'AccordionBody';
 
 export default AccordionBody;

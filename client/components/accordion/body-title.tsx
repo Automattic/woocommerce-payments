@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { forwardRef } from 'react';
 /**
  * WordPress dependencies
  */
@@ -15,13 +15,10 @@ import type { WordPressComponentProps } from '@wordpress/components/ui/context/w
 import { Button, Icon } from '@wordpress/components';
 import './style.scss';
 
-const AccordionBodyTitle = ( {
-	isOpened,
-	icon,
-	title,
-	ref,
-	...props
-}: WordPressComponentProps< AccordionBodyTitleProps, 'button' > ) => {
+const AccordionBodyTitle = forwardRef<
+	HTMLButtonElement,
+	WordPressComponentProps< AccordionBodyTitleProps, 'button' >
+>( ( { isOpened, icon, title, ...props }, ref ) => {
 	if ( ! title ) {
 		return null;
 	}
@@ -57,6 +54,8 @@ const AccordionBodyTitle = ( {
 			</Button>
 		</h2>
 	);
-};
+} );
+
+AccordionBodyTitle.displayName = 'AccordionBodyTitle';
 
 export default AccordionBodyTitle;

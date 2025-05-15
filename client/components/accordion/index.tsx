@@ -2,7 +2,7 @@
  * External dependencies
  */
 import clsx from 'clsx';
-import React from 'react';
+import React, { forwardRef } from 'react';
 
 /**
  * Internal dependencies
@@ -26,13 +26,17 @@ import './style.scss';
  * );
  * ```
  */
-const Accordion = ( { className, children, ref }: AccordionProps ) => {
-	const classNames = clsx( className, 'wcpay-accordion' );
-	return (
-		<div className={ classNames } ref={ ref }>
-			{ children }
-		</div>
-	);
-};
+const Accordion = forwardRef< HTMLDivElement, AccordionProps >(
+	( { className, children }, ref ) => {
+		const classNames = clsx( className, 'wcpay-accordion' );
+		return (
+			<div className={ classNames } ref={ ref }>
+				{ children }
+			</div>
+		);
+	}
+);
+
+Accordion.displayName = 'Accordion';
 
 export default Accordion;
