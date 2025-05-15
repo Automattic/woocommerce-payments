@@ -185,4 +185,5 @@ global.wooPaymentsPaymentMethodDefinitions = {
 			accepts_only_domestic_payment: true,
 		}
 	),
+	alipay: buildMockDefinition( 'alipay', 'Alipay', [ 'USD' ] ),
 };
