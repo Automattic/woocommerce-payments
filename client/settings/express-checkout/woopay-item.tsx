@@ -31,9 +31,10 @@ const WooPayExpressCheckoutItem = (): React.ReactElement | null => {
 		updateIsWooPayEnabled,
 	] = useWooPayEnabledSettings();
 
-	const showIncompatibilityNotice = useWooPayShowIncompatibilityNotice();
-
 	const isStripeLinkEnabled = enabledMethodIds.includes( 'link' );
+
+	const showIncompatibilityNotice =
+		useWooPayShowIncompatibilityNotice() && ! isStripeLinkEnabled;
 
 	const {
 		featureFlags: { woopay: isWooPayFeatureFlagEnabled },
@@ -146,9 +147,7 @@ const WooPayExpressCheckoutItem = (): React.ReactElement | null => {
 					) }
 				</InlineNotice>
 			) }
-			{ ! isStripeLinkEnabled && showIncompatibilityNotice && (
-				<WooPayIncompatibilityNotice />
-			) }
+			{ showIncompatibilityNotice && <WooPayIncompatibilityNotice /> }
 		</li>
 	);
 };
