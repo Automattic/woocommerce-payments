@@ -106,30 +106,13 @@ const usePaymentMethodAvailability = ( id: string ) => {
 			isActionable: false,
 			chip: __( 'Approval pending', 'woocommerce-payments' ),
 			notice: paymentMethodsWithDelayedApproval.includes( id )
-				? interpolateComponents( {
-						// translators: {{learnMoreLink}}: placeholders are opening and closing anchor tags.
-						mixedString: sprintf(
-							__(
-								'%s requires your store to be live and fully functional before it can be reviewed for use with their service. This approval process usually takes 2-3 days. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
-								'woocommerce-payments'
-							),
-							label
+				? sprintf(
+						__(
+							'%s requires your store to be live and fully functional before it can be reviewed for use with their service. This approval process usually takes 2-3 days.',
+							'woocommerce-payments'
 						),
-						components: {
-							learnMoreLink: (
-								// eslint-disable-next-line jsx-a11y/anchor-has-content
-								<ExternalLink
-									title={ __(
-										'Learn more',
-										'woocommerce-payments'
-									) }
-									href={
-										'https://woocommerce.com/my-account/contact-support/'
-									}
-								/>
-							),
-						},
-				  } )
+						label
+				  )
 				: __(
 						'This payment method is pending approval. Once approved, you will be able to use it.',
 						'woocommerce-payments'
