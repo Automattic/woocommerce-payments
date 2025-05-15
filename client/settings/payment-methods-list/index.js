@@ -99,38 +99,13 @@ const PaymentMethodsList = ( { methodIds } ) => {
 		<>
 			<ul className="payment-methods-list payment-methods__available-methods">
 				{ availableMethods.map(
-					( {
-						id,
-						label,
-						icon: Icon,
-						description,
-						allows_manual_capture: isAllowingManualCapture,
-						currencies,
-					} ) => {
-						let isSetupRequired = false;
-						let setupTooltip = '';
-						if (
-							! wcpaySettings.isMultiCurrencyEnabled &&
-							id !== PAYMENT_METHOD_IDS.CARD
-						) {
-							const currency = wcpaySettings.storeCurrency;
-							if ( currencies.indexOf( currency ) < 0 ) {
-								isSetupRequired = true;
-								setupTooltip = getMissingCurrenciesTooltipMessage(
-									label,
-									currencies
-								);
-							}
-						}
+					( { id, label, icon: Icon, description } ) => {
 						return (
 							<PaymentMethod
 								id={ id }
 								key={ id }
 								label={ label }
 								description={ description }
-								checked={ enabledMethodIds.includes( id ) }
-								// The card payment method is required when UPE is active, and it can't be disabled/unchecked.
-								required={ PAYMENT_METHOD_IDS.CARD === id }
 								locked={
 									PAYMENT_METHOD_IDS.CARD === id &&
 									enabledMethodIds.includes(

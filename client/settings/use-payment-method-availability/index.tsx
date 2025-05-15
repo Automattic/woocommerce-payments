@@ -63,7 +63,7 @@ const usePaymentMethodAvailability = ( id: string ) => {
 		status !== upeCapabilityStatuses.ACTIVE;
 	if ( isPoInProgress || upeCapabilityStatuses.INACTIVE === status ) {
 		return {
-			disabled: true,
+			isActionable: true,
 			chip: __( 'More information needed', 'woocommerce-payments' ),
 			notice: interpolateComponents( {
 				// translators: {{learnMoreLink}}: placeholders are opening and closing anchor tags.
@@ -92,29 +92,49 @@ const usePaymentMethodAvailability = ( id: string ) => {
 	}
 
 	if ( upeCapabilityStatuses.PENDING_APPROVAL === status ) {
+		const paymentMethodsWithDelayedApproval: string[] = [
+			PAYMENT_METHOD_IDS.ALIPAY,
+			PAYMENT_METHOD_IDS.WECHAT_PAY,
+		];
+
 		return {
-			disabled: true,
+			isActionable: true,
 			chip: __( 'Approval pending', 'woocommerce-payments' ),
-			notice:
-				id === PAYMENT_METHOD_IDS.ALIPAY ||
-				id === PAYMENT_METHOD_IDS.WECHAT_PAY
-					? sprintf(
+			notice: paymentMethodsWithDelayedApproval.includes( id )
+				? interpolateComponents( {
+						// translators: {{learnMoreLink}}: placeholders are opening and closing anchor tags.
+						mixedString: sprintf(
 							__(
-								'%s requires your store to be live and fully functional before it can be reviewed for use with their service. This approval process usually takes 2-3 days. Learn more',
+								'%s requires your store to be live and fully functional before it can be reviewed for use with their service. This approval process usually takes 2-3 days. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 								'woocommerce-payments'
 							),
 							label
-					  )
-					: __(
-							'This payment method is pending approval. Once approved, you will be able to use it.',
-							'woocommerce-payments'
-					  ),
+						),
+						components: {
+							learnMoreLink: (
+								// eslint-disable-next-line jsx-a11y/anchor-has-content
+								<ExternalLink
+									title={ __(
+										'Learn more',
+										'woocommerce-payments'
+									) }
+									href={
+										'https://woocommerce.com/my-account/contact-support/'
+									}
+								/>
+							),
+						},
+				  } )
+				: __(
+						'This payment method is pending approval. Once approved, you will be able to use it.',
+						'woocommerce-payments'
+				  ),
 		};
 	}
 
 	if ( upeCapabilityStatuses.PENDING_VERIFICATION === status ) {
 		return {
-			disabled: true,
+			isActionable: true,
 			chip: __( 'Pending verification', 'woocommerce-payments' ),
 			notice: sprintf(
 				__(
@@ -130,11 +150,11 @@ const usePaymentMethodAvailability = ( id: string ) => {
 
 	if ( upeCapabilityStatuses.REJECTED === status ) {
 		return {
-			disabled: true,
+			isActionable: true,
 			chip: __( 'Rejected', 'woocommerce-payments' ),
 			chipType: 'alert' as ChipType,
 			notice: interpolateComponents( {
-				// translators: {{contactSupportLink}}: placeholders are opening and closing anchor tags.
+				// translators: {{learnMoreLink}}: placeholders are opening and closing anchor tags.
 				mixedString: sprintf(
 					__(
 						'Your application to use %s has been rejected, please check your email for more information. Need help? {{contactSupportLink}}Contact support{{/contactSupportLink}}',
@@ -163,7 +183,7 @@ const usePaymentMethodAvailability = ( id: string ) => {
 
 	if ( isManualCaptureEnabled && ! isAllowingManualCapture ) {
 		return {
-			disabled: true,
+			isActionable: true,
 			notice: sprintf(
 				/* translators: %s: a payment method name. */
 				__(
@@ -182,14 +202,14 @@ const usePaymentMethodAvailability = ( id: string ) => {
 		const currency = wcpaySettings.storeCurrency;
 		if ( currencies.indexOf( currency ) < 0 ) {
 			return {
-				disabled: false,
+				isActionable: false,
 				notice: getMissingCurrenciesTooltipMessage( label, currencies ),
 			};
 		}
 	}
 
 	return {
-		disabled: false,
+		isActionable: false,
 	};
 };
 

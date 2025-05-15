@@ -17,7 +17,7 @@ import {
 	formatMethodFeesTooltip,
 } from 'wcpay/utils/account-fees';
 import WCPaySettingsContext from '../wcpay-settings-context';
-import Chip, { ChipType } from 'wcpay/components/chip';
+import Chip from 'wcpay/components/chip';
 import Pill from 'wcpay/components/pill';
 import './payment-method.scss';
 import DuplicateNotice from 'wcpay/components/duplicate-notice';
@@ -34,6 +34,7 @@ import UnionPay from 'assets/images/cards/unionpay.svg?asset';
 import PAYMENT_METHOD_IDS from 'wcpay/constants/payment-method';
 import usePaymentMethodAvailability from 'wcpay/settings/use-payment-method-availability';
 import InlineNotice from 'wcpay/components/inline-notice';
+import { useEnabledPaymentMethodIds } from 'wcpay/data';
 
 interface PaymentMethodProps {
 	id: string;
@@ -41,29 +42,25 @@ interface PaymentMethodProps {
 	// eslint-disable-next-line @typescript-eslint/naming-convention
 	Icon: () => JSX.Element | null;
 	description: string;
-	checked: boolean;
 	onCheckClick: ( id: string ) => void;
 	onUncheckClick: ( id: string ) => void;
 	className?: string;
-	required: boolean;
 	locked: boolean;
 }
 
 const PaymentMethodLabel = ( {
+	id,
 	label,
-	required,
-	chip,
-	chipType,
 }: {
+	id: string;
 	label: string;
-	required: boolean;
-	chip?: string;
-	chipType: ChipType;
 } ): React.ReactElement => {
+	const { chip, chipType = 'warning' } = usePaymentMethodAvailability( id );
+
 	return (
 		<>
 			{ label }
-			{ required && (
+			{ PAYMENT_METHOD_IDS.CARD === id && (
 				<span className="payment-method__required-label">
 					{ '(' + __( 'Required', 'woocommerce-payments' ) + ')' }
 				</span>
@@ -90,21 +87,18 @@ const PaymentMethod = ( {
 	label,
 	Icon = () => null,
 	description,
-	checked,
 	onCheckClick,
 	onUncheckClick,
 	className,
-	required,
 	locked,
 }: PaymentMethodProps ): React.ReactElement => {
-	// APMs are disabled if they are inactive or if Progressive Onboarding is enabled and not yet complete.
+	// APMs are not actionable if they are inactive or if Progressive Onboarding is enabled and not yet complete.
 	const {
-		disabled,
+		isActionable,
 		notice,
 		noticeType = 'warning',
-		chip,
-		chipType = 'warning',
 	} = usePaymentMethodAvailability( id );
+	const [ enabledMethodIds ] = useEnabledPaymentMethodIds();
 
 	const {
 		accountFees,
@@ -138,8 +132,8 @@ const PaymentMethod = ( {
 					<CheckboxControl
 						label={ label }
 						hideLabelFromVision
-						checked={ checked }
-						disabled={ disabled || locked }
+						checked={ enabledMethodIds.includes( id ) }
+						disabled={ isActionable || locked }
 						onChange={ handleChange }
 					/>
 				</div>
@@ -148,22 +142,12 @@ const PaymentMethod = ( {
 						<Icon />
 					</div>
 					<div className="payment-method__label payment-method__label-mobile">
-						<PaymentMethodLabel
-							label={ label }
-							required={ required }
-							chip={ chip }
-							chipType={ chipType }
-						/>
+						<PaymentMethodLabel label={ label } id={ id } />
 					</div>
 					<div className="payment-method__text">
 						<div className="payment-method__label-container">
 							<div className="payment-method__label payment-method__label-desktop">
-								<PaymentMethodLabel
-									label={ label }
-									required={ required }
-									chip={ chip }
-									chipType={ chipType }
-								/>
+								<PaymentMethodLabel label={ label } id={ id } />
 							</div>
 							<div className="payment-method__description">
 								{ description }
