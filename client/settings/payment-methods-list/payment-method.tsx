@@ -131,7 +131,6 @@ const PaymentMethod = ( {
 				<div className="payment-method__checkbox">
 					<CheckboxControl
 						label={ label }
-						hideLabelFromVision
 						checked={ enabledMethodIds.includes( id ) }
 						disabled={ ! isActionable || locked }
 						onChange={ handleChange }

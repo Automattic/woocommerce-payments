@@ -99,37 +99,33 @@ const PaymentMethodsList = ( { methodIds } ) => {
 		<>
 			<ul className="payment-methods-list payment-methods__available-methods">
 				{ availableMethods.map(
-					( { id, label, icon: Icon, description } ) => {
-						return (
-							<PaymentMethod
-								id={ id }
-								key={ id }
-								label={ label }
-								description={ description }
-								locked={
-									PAYMENT_METHOD_IDS.CARD === id &&
-									enabledMethodIds.includes(
-										PAYMENT_METHOD_IDS.CARD
-									)
-								}
-								Icon={ Icon }
-								onUncheckClick={ () => {
-									handleUncheckClick( id );
-								} }
-								onCheckClick={ () => {
-									handleCheckClick( id );
-								} }
-								isPoEnabled={
-									wcpaySettings?.progressiveOnboarding
-										?.isEnabled
-								}
-								isPoComplete={
-									wcpaySettings?.progressiveOnboarding
-										?.isComplete
-								}
-							/>
-						);
-					}
+					( { id, label, icon: Icon, description } ) => (
+						<PaymentMethod
+							id={ id }
+							key={ id }
+							label={ label }
+							description={ description }
+							locked={
+								PAYMENT_METHOD_IDS.CARD === id &&
+								enabledMethodIds.includes(
+									PAYMENT_METHOD_IDS.CARD
+								)
+							}
+							Icon={ Icon }
+							onUncheckClick={ () => {
+								handleUncheckClick( id );
+							} }
+							onCheckClick={ () => {
+								handleCheckClick( id );
+							} }
+							isPoEnabled={
+								wcpaySettings?.progressiveOnboarding?.isEnabled
+							}
+							isPoComplete={
+								wcpaySettings?.progressiveOnboarding?.isComplete
+							}
+						/>
+					)
 				) }
 			</ul>
 

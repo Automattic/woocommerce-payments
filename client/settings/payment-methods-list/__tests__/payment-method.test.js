@@ -6,155 +6,142 @@
 import React from 'react';
 import { render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
-import { act } from 'react-dom/test-utils';
 
 /**
  * Internal dependencies
  */
 import PaymentMethod from '../payment-method';
 import DuplicatedPaymentMethodsContext from '../../settings-manager/duplicated-payment-methods-context';
+import {
+	useEnabledPaymentMethodIds,
+	useGetPaymentMethodStatuses,
+	useManualCapture,
+} from 'wcpay/data';
+
+jest.mock( 'wcpay/data', () => ( {
+	useEnabledPaymentMethodIds: jest.fn(),
+	useGetPaymentMethodStatuses: jest.fn(),
+	useManualCapture: jest.fn(),
+} ) );
 
 describe( 'PaymentMethod', () => {
-	let checked = false;
-	const handleOnCheckClickMock = jest.fn( () => {
-		checked = true;
+	beforeEach( () => {
+		useEnabledPaymentMethodIds.mockReturnValue( [
+			[ 'card', 'bancontact' ],
+		] );
+		useGetPaymentMethodStatuses.mockReturnValue( {} );
+		useManualCapture.mockReturnValue( [ false ] );
 	} );
-	const handleOnUnCheckClickMock = jest.fn( () => {
-		checked = false;
-	} );
-	const setDismissedDuplicateNoticesMock = jest.fn();
 
 	// Clear the mocks (including the mock call count) after each test.
 	afterEach( () => {
 		jest.clearAllMocks();
 	} );
 
-	const getComponent = ( required = false ) => {
-		return (
+	it( 'renders label and description', () => {
+		render(
 			<PaymentMethod
-				label="Foo"
-				id="foo"
-				checked={ checked }
-				onCheckClick={ handleOnCheckClickMock }
-				onUncheckClick={ handleOnUnCheckClickMock }
+				id="bancontact"
 				description="Bar"
-				Icon={ () => null }
-				status={ '' }
-				required={ required }
-				locked={ false }
+				label="Bancontact"
 			/>
 		);
-	};
 
-	test( 'renders label and description', () => {
-		render( getComponent() );
-
-		expect( screen.queryByLabelText( 'Foo' ) ).toBeInTheDocument();
+		expect( screen.queryByLabelText( 'Bancontact' ) ).toBeInTheDocument();
 		expect( screen.queryByText( 'Bar' ) ).toBeInTheDocument();
 	} );
 
-	test( 'clicking a checkbox calls onCheckClick and onUnCheckClick', () => {
-		const component = render( getComponent() );
+	it( 'calls onCheckClick when clicking its checkbox', () => {
+		const handleCheckClickMock = jest.fn();
+		const handleUnCheckClickMock = jest.fn();
+		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card' ] ] );
 
-		act( () => {
-			user.click( screen.getByLabelText( 'Foo' ) );
-			jest.runOnlyPendingTimers();
-			// Since we are using a variable instead of a state, we need to re-render the component on each variable change.
-			component.rerender( getComponent() );
-		} );
+		render(
+			<PaymentMethod
+				id="bancontact"
+				description="Bar"
+				label="Bancontact"
+				onCheckClick={ handleCheckClickMock }
+				onUncheckClick={ handleUnCheckClickMock }
+			/>
+		);
 
-		expect( handleOnCheckClickMock ).toHaveBeenCalledTimes( 1 );
-		expect( handleOnCheckClickMock ).toHaveBeenCalledWith( 'foo' );
+		user.click( screen.getByLabelText( 'Bancontact' ) );
 
-		act( () => {
-			user.click( screen.getByLabelText( 'Foo' ) );
-			jest.runOnlyPendingTimers();
-			component.rerender( getComponent() );
-		} );
+		expect( handleCheckClickMock ).toHaveBeenCalledTimes( 1 );
+		expect( handleCheckClickMock ).toHaveBeenCalledWith( 'bancontact' );
+		expect( handleUnCheckClickMock ).not.toHaveBeenCalled();
+	} );
 
-		expect( handleOnUnCheckClickMock ).toHaveBeenCalledTimes( 1 );
-		expect( handleOnUnCheckClickMock ).toHaveBeenCalledWith( 'foo' );
-		jest.useRealTimers();
+	test( 'calls onUnCheckClick when clicking its checkbox', () => {
+		const handleCheckClickMock = jest.fn();
+		const handleUnCheckClickMock = jest.fn();
+
+		render(
+			<PaymentMethod
+				id="bancontact"
+				description="Bar"
+				label="Bancontact"
+				onCheckClick={ handleCheckClickMock }
+				onUncheckClick={ handleUnCheckClickMock }
+			/>
+		);
+
+		user.click( screen.getByLabelText( 'Bancontact' ) );
+
+		expect( handleUnCheckClickMock ).toHaveBeenCalledTimes( 1 );
+		expect( handleUnCheckClickMock ).toHaveBeenCalledWith( 'bancontact' );
+		expect( handleCheckClickMock ).not.toHaveBeenCalled();
 	} );
 
 	it( 'shows the required label on payment methods which are required', () => {
-		const component = render( getComponent( true ) );
-		expect( component.container ).toContainHTML(
-			'<span class="payment-method__required-label">(Required)</span>'
-		);
-	} );
-
-	const getLockedComponent = () => {
-		return (
+		render(
 			<PaymentMethod
-				label="Locked"
-				id="locked"
-				checked={ checked }
-				onCheckClick={ handleOnCheckClickMock }
-				onUncheckClick={ handleOnUnCheckClickMock }
-				description="Locked payment method"
-				locked={ true }
-				Icon={ () => null }
-				status={ '' }
-				isAllowingManualCapture={ false }
-				required={ false }
-				isPoEnabled={ false }
-				isPoComplete={ false }
+				id="card"
+				label="Card"
+				description="Bar"
+				required={ true }
+				locked={ false }
 			/>
 		);
-	};
 
-	test( 'clicking a locked checkbox does not call onCheckClick or onUnCheckClick', () => {
-		const component = render( getLockedComponent() );
-
-		jest.useFakeTimers();
-		act( () => {
-			user.click( screen.getByLabelText( 'Locked' ) );
-			jest.runOnlyPendingTimers();
-			// Since we are using a variable instead of a state, we need to re-render the component on each variable change.
-			component.rerender( getLockedComponent() );
-		} );
-
-		expect( handleOnCheckClickMock ).not.toHaveBeenCalled();
-
-		act( () => {
-			user.click( screen.getByLabelText( 'Locked' ) );
-			jest.runOnlyPendingTimers();
-			component.rerender( getLockedComponent() );
-		} );
-
-		expect( handleOnUnCheckClickMock ).not.toHaveBeenCalled();
-		jest.useRealTimers();
+		expect( screen.getAllByText( '(Required)' ) ).toHaveLength( 2 );
 	} );
 
-	const getDuplicateComponent = ( id ) => (
-		<PaymentMethod
-			label="Test Method"
-			id={ id }
-			checked={ false }
-			onCheckClick={ handleOnCheckClickMock }
-			onUncheckClick={ handleOnUnCheckClickMock }
-			description="Test Description"
-			Icon={ () => null }
-			status=""
-			isAllowingManualCapture={ false }
-			required={ false }
-			locked={ false }
-			isPoEnabled={ false }
-			isPoComplete={ false }
-		/>
-	);
+	it( 'does not call onCheckClick or onUnCheckClick when clicking a locked checkbox', () => {
+		const handleCheckClickMock = jest.fn();
+		const handleUnCheckClickMock = jest.fn();
+		render(
+			<PaymentMethod
+				label="Bancontact"
+				id="bancontact"
+				onCheckClick={ handleCheckClickMock }
+				onUncheckClick={ handleUnCheckClickMock }
+				description="Locked payment method"
+				locked={ true }
+			/>
+		);
 
-	test( 'does not render DuplicateNotice if payment method is not in duplicates', () => {
+		user.click( screen.getByLabelText( 'Bancontact' ) );
+
+		expect( handleCheckClickMock ).not.toHaveBeenCalled();
+		expect( handleUnCheckClickMock ).not.toHaveBeenCalled();
+	} );
+
+	it( 'does not render DuplicateNotice if the payment method is not in duplicated', () => {
 		render(
 			<DuplicatedPaymentMethodsContext.Provider
 				value={ {
 					duplicates: { ideal: [ 'woocommerce_payments' ] },
 					dismissedDuplicateNotices: {},
-					setDismissedDuplicateNotices: setDismissedDuplicateNoticesMock,
+					setDismissedDuplicateNotices: () => null,
 				} }
 			>
-				{ getDuplicateComponent( 'card' ) }
+				<PaymentMethod
+					label="Test Method"
+					id="card"
+					description="Test Description"
+				/>
 			</DuplicatedPaymentMethodsContext.Provider>
 		);
 
@@ -165,16 +152,20 @@ describe( 'PaymentMethod', () => {
 		).not.toBeInTheDocument();
 	} );
 
-	test( 'render DuplicateNotice if payment method is in duplicates', () => {
+	it( 'render DuplicateNotice if payment method is in duplicates', () => {
 		render(
 			<DuplicatedPaymentMethodsContext.Provider
 				value={ {
 					duplicates: { card: [ 'woocommerce_payments' ] },
 					dismissedDuplicateNotices: {},
-					setDismissedDuplicateNotices: setDismissedDuplicateNoticesMock,
+					setDismissedDuplicateNotices: () => null,
 				} }
 			>
-				{ getDuplicateComponent( 'card' ) }
+				<PaymentMethod
+					label="Test Method"
+					id="card"
+					description="Test Description"
+				/>
 			</DuplicatedPaymentMethodsContext.Provider>
 		);
 
