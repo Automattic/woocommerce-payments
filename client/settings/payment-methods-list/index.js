@@ -99,7 +99,29 @@ const PaymentMethodsList = ( { methodIds } ) => {
 		<>
 			<ul className="payment-methods-list payment-methods__available-methods">
 				{ availableMethods.map(
-					( { id, label, icon: Icon, description } ) => {
+					( {
+						id,
+						label,
+						icon: Icon,
+						description,
+						allows_manual_capture: isAllowingManualCapture,
+						currencies,
+					} ) => {
+						let isSetupRequired = false;
+						let setupTooltip = '';
+						if (
+							! wcpaySettings.isMultiCurrencyEnabled &&
+							id !== PAYMENT_METHOD_IDS.CARD
+						) {
+							const currency = wcpaySettings.storeCurrency;
+							if ( currencies.indexOf( currency ) < 0 ) {
+								isSetupRequired = true;
+								setupTooltip = getMissingCurrenciesTooltipMessage(
+									label,
+									currencies
+								);
+							}
+						}
 						return (
 							<PaymentMethod
 								id={ id }

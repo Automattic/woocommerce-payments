@@ -169,10 +169,6 @@
 		}
 	}
 
-	&.has-icon-border &__icon {
-		box-shadow: 0 0 0 1px #ddd;
-	}
-
 	.chip {
 		margin-left: $gap-smaller;
 		padding: 2px $gap-smaller;
