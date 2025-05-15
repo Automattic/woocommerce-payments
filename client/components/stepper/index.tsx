@@ -2,6 +2,8 @@
  * External dependencies
  */
 import React, { createContext, useContext, useState } from 'react';
+import CheckmarkIcon from 'gridicons/dist/checkmark';
+import './style.scss';
 
 /**
  * Internal dependencies
@@ -110,3 +112,56 @@ export const useStepperContext = (): ContextValue => {
 	}
 	return context;
 };
+
+interface StepperIndicatorProps {
+	steps: string[];
+	currentStep: number;
+}
+
+export const StepperIndicator: React.FC< StepperIndicatorProps > = ( {
+	steps,
+	currentStep,
+} ) => (
+	<div className="stepper-indicator">
+		{ steps.map( ( label, idx ) => {
+			const isComplete = idx < currentStep;
+			const isActive = idx === currentStep;
+			return (
+				<div
+					key={ label }
+					className={ `stepper-step${ isActive ? ' active' : '' }${
+						isComplete ? ' complete' : ''
+					}` }
+				>
+					<div className="stepper-circle">
+						{ isComplete ? <CheckmarkIcon /> : idx + 1 }
+					</div>
+					<div className="stepper-label">{ label }</div>
+					{ idx < steps.length - 1 && (
+						<div className="stepper-line" />
+					) }
+				</div>
+			);
+		} ) }
+	</div>
+);
+
+/*
+Usage Example:
+
+import { Stepper, StepperIndicator } from './stepper';
+
+const steps = ['General evidence', 'Shipping information', 'Review'];
+const [currentStep, setCurrentStep] = useState(0);
+
+return (
+  <>
+    <StepperIndicator steps={steps} currentStep={currentStep} />
+    <Stepper initialStep={steps[currentStep]} onStepChange={step => setCurrentStep(steps.indexOf(step))}>
+      <Step name="General evidence">...</Step>
+      <Step name="Shipping information">...</Step>
+      <Step name="Review">...</Step>
+    </Stepper>
+  </>
+);
+*/

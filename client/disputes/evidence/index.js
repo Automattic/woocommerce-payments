@@ -5,6 +5,7 @@
  */
 import { __, sprintf } from '@wordpress/i18n';
 import { useState, useEffect, useMemo } from '@wordpress/element';
+import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import { useDispatch, useSelect } from '@wordpress/data';
 import apiFetch from '@wordpress/api-fetch';
 import {
@@ -32,19 +33,41 @@ import Page from 'components/page';
 import ErrorBoundary from 'components/error-boundary';
 import useConfirmNavigation from 'utils/use-confirm-navigation';
 import { recordEvent } from 'tracks';
-import { getAdminUrl } from 'wcpay/utils';
-import PdfPreview from './pdf-preview';
+import { getAdminUrl, formatStringValue } from 'wcpay/utils';
+import Paragraphs from 'wcpay/components/paragraphs';
+import { reasons } from 'wcpay/disputes/strings';
+import OrderLink from 'components/order-link';
 import DisputeNotice from 'wcpay/payment-details/dispute-details/dispute-notice';
+import DisputeDueByDate from 'wcpay/payment-details/dispute-details/dispute-due-by-date';
+import { ClickTooltip } from 'wcpay/components/tooltip';
 import { HorizontalList } from 'components/horizontal-list';
-import { formatCurrency } from 'multi-currency/interface/functions';
+import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 import { getBankName } from 'utils/charge';
 import Accordion from 'components/accordion';
 import AccordionBody from 'components/accordion/body';
 import AccordionRow from 'components/accordion/row';
+import { StepperIndicator } from 'components/stepper';
 
 const DISPUTE_EVIDENCE_MAX_LENGTH = 150000;
 const PRODUCT_TYPE_META_KEY = '__product_type';
+
+// Utility: Determine if shipping is required for a given reason
+const REASONS_NEED_SHIPPING = [
+	'product_unacceptable',
+	'product_not_received',
+	'fraudulent',
+];
+const REASONS_NO_SHIPPING = [
+	'duplicate',
+	'subscription_canceled',
+	'credit_not_processed',
+];
+function needsShipping( reason ) {
+	if ( REASONS_NO_SHIPPING.includes( reason ) ) return false;
+	if ( REASONS_NEED_SHIPPING.includes( reason ) ) return true;
+	return true; // default: needs shipping
+}
 
 const MultiStepEvidenceForm = ( {
 	fields,
@@ -56,46 +79,39 @@ const MultiStepEvidenceForm = ( {
 	readOnly,
 	productType,
 	onChangeProductType,
+	disputeReason,
 } ) => {
 	const [ currentStep, setCurrentStep ] = useState( 0 );
-	const [ formData, setFormData ] = useState( evidence );
+	const [ steps, setSteps ] = useState( () => {
+		return needsShipping( disputeReason )
+			? [
+					__( 'General evidence', 'woocommerce-payments' ),
+					__( 'Shipping Information', 'woocommerce-payments' ),
+					__( 'Review', 'woocommerce-payments' ),
+			  ]
+			: [
+					__( 'General evidence', 'woocommerce-payments' ),
+					__( 'Review', 'woocommerce-payments' ),
+			  ];
+	} );
 
-	const steps = [
-		{
-			title: __( 'General Evidence', 'woocommerce-payments' ),
-			description: __(
-				'Provide general information about the customer and order.',
-				'woocommerce-payments'
-			),
-			fields: fields.filter( ( field ) => field.key === 'general' ),
-		},
-		{
-			title: __( 'Shipping Information', 'woocommerce-payments' ),
-			description: __(
-				'Add shipping details and tracking information.',
-				'woocommerce-payments'
-			),
-			fields: fields.filter(
-				( field ) => field.key === 'shipping_information'
-			),
-		},
-		{
-			title: __( 'Additional Details', 'woocommerce-payments' ),
-			description: __(
-				'Include any extra evidence or statements.',
-				'woocommerce-payments'
-			),
-			fields: fields.filter( ( field ) => field.key === 'uncategorized' ),
-		},
-		{
-			title: __( 'Review & Submit', 'woocommerce-payments' ),
-			description: __(
-				'Review all evidence and submit.',
-				'woocommerce-payments'
-			),
-			fields: [],
-		},
-	];
+	// Update steps if disputeReason or productType changes
+	useEffect( () => {
+		const newSteps = needsShipping( disputeReason )
+			? [
+					__( 'General evidence', 'woocommerce-payments' ),
+					__( 'Shipping Information', 'woocommerce-payments' ),
+					__( 'Review', 'woocommerce-payments' ),
+			  ]
+			: [
+					__( 'General evidence', 'woocommerce-payments' ),
+					__( 'Review', 'woocommerce-payments' ),
+			  ];
+		setSteps( newSteps );
+		if ( currentStep > newSteps.length - 1 ) {
+			setCurrentStep( newSteps.length - 1 );
+		}
+	}, [ disputeReason, productType, currentStep ] );
 
 	const handleNext = () => {
 		if ( currentStep < steps.length - 1 ) {
@@ -120,168 +136,247 @@ const MultiStepEvidenceForm = ( {
 	};
 
 	const updateFormData = ( key, value ) => {
-		setFormData( ( prev ) => ( { ...prev, [ key ]: value } ) );
 		onChange( key, value );
 	};
 
-	const renderStepContent = () => {
-		const currentStepData = steps[ currentStep ];
-
+	const renderStepBody = () => {
 		if ( currentStep === steps.length - 1 ) {
+			// Review step: show cover letter in plain text using Additional details
 			return (
-				<Card size="large">
-					<CardHeader>{ currentStepData.title }</CardHeader>
-					<CardBody>
-						<p>{ currentStepData.description }</p>
-						<PdfPreview formData={ formData } />
-						<div className="evidence-preview">
-							{ Object.entries( formData ).map(
-								( [ key, value ] ) => {
-									if ( ! value || typeof value === 'object' )
-										return null;
-									return (
-										<div
-											key={ key }
-											className="evidence-preview-item"
-										>
-											<strong>{ key }:</strong> { value }
-										</div>
-									);
-								}
+				<>
+					<p>
+						{ __(
+							'Please review the cover letter that will be submitted to the bank based on the information you provided.',
+							'woocommerce-payments'
+						) }
+					</p>
+					<div className="cover-letter-preview">
+						{ evidence.uncategorized_text ||
+							__(
+								'No additional details provided.',
+								'woocommerce-payments'
 							) }
-						</div>
-					</CardBody>
-				</Card>
+					</div>
+				</>
 			);
 		}
-
-		return (
-			<Card size="large">
-				<CardHeader>{ currentStepData.title }</CardHeader>
-				<CardBody>
-					<p>{ currentStepData.description }</p>
-					{ currentStep === 0 && (
-						<div className="evidence-product-type">
-							<SelectControl
-								label={ __(
-									'Product type',
-									'woocommerce-payments'
-								) }
-								value={ productType }
-								onChange={ onChangeProductType }
-								data-testid={
-									'dispute-challenge-product-type-selector'
-								}
-								options={ [
-									{
-										label: __(
-											'Select one…',
-											'woocommerce-payments'
-										),
-										disabled: true,
-										value: '',
-									},
-									{
-										label: __(
-											'Physical product',
-											'woocommerce-payments'
-										),
-										value: 'physical_product',
-									},
-									{
-										label: __(
-											'Digital product or service',
-											'woocommerce-payments'
-										),
-										value: 'digital_product_or_service',
-									},
-									{
-										label: __(
-											'Offline service',
-											'woocommerce-payments'
-										),
-										value: 'offline_service',
-									},
-									{
-										label: __(
-											'Multiple product types',
-											'woocommerce-payments'
-										),
-										value: 'multiple',
-									},
-								] }
-								disabled={ readOnly }
-							/>
-						</div>
-					) }
-					{ currentStepData.fields.map( ( section ) => (
-						<div key={ section.key }>
-							{ section.fields.map( ( field ) => {
-								const props = {
-									key: field.key,
-									label: field.label,
-									value: formData[ field.key ] || '',
-									onChange: ( value ) =>
-										updateFormData( field.key, value ),
-									disabled: readOnly,
-									help: field.description,
-								};
-
-								switch ( field.type ) {
-									case 'file':
-										return readOnly ? (
-											<UploadedReadOnly
-												{ ...props }
-												field={ field }
-												fileName={
-													formData.metadata?.[
-														field.key
-													]
-												}
-												onFileChange={ onFileChange }
-												onFileRemove={ onFileRemove }
-											/>
-										) : (
-											<FileUploadControl
-												{ ...props }
-												field={ field }
-												fileName={
-													formData.metadata?.[
-														field.key
-													]
-												}
-												onFileChange={ onFileChange }
-												onFileRemove={ onFileRemove }
-											/>
-										);
-									case 'text':
-										return <TextControl { ...props } />;
-									case 'date':
-										return (
-											<TextControl
-												{ ...props }
-												type="date"
-											/>
-										);
-									default:
-										return (
-											<TextareaControl
-												{ ...props }
-												maxLength={ field.maxLength }
-											/>
-										);
-								}
-							} ) }
-						</div>
-					) ) }
-				</CardBody>
-			</Card>
-		);
+		if ( currentStep === 0 ) {
+			return (
+				<>
+					<div className="evidence-product-type">
+						<SelectControl
+							label={ __(
+								'Product type',
+								'woocommerce-payments'
+							) }
+							value={ productType }
+							onChange={ onChangeProductType }
+							data-testid={
+								'dispute-challenge-product-type-selector'
+							}
+							options={ [
+								{
+									label: __(
+										'Select one…',
+										'woocommerce-payments'
+									),
+									disabled: true,
+									value: '',
+								},
+								{
+									label: __(
+										'Physical product',
+										'woocommerce-payments'
+									),
+									value: 'physical_product',
+								},
+								{
+									label: __(
+										'Digital product or service',
+										'woocommerce-payments'
+									),
+									value: 'digital_product_or_service',
+								},
+								{
+									label: __(
+										'Offline service',
+										'woocommerce-payments'
+									),
+									value: 'offline_service',
+								},
+								{
+									label: __(
+										'Multiple product types',
+										'woocommerce-payments'
+									),
+									value: 'multiple',
+								},
+							] }
+							disabled={ readOnly }
+						/>
+					</div>
+					{ fields
+						.filter( ( field ) => field.key === 'general' )
+						.map( ( section ) => (
+							<div key={ section.key }>
+								{ section.fields.map( ( field ) => {
+									const props = {
+										key: field.key,
+										label: field.label,
+										value: evidence[ field.key ] || '',
+										onChange: ( value ) =>
+											updateFormData( field.key, value ),
+										disabled: readOnly,
+										help: field.description,
+									};
+									switch ( field.type ) {
+										case 'file':
+											return readOnly ? (
+												<UploadedReadOnly
+													{ ...props }
+													field={ field }
+													fileName={
+														evidence.metadata?.[
+															field.key
+														]
+													}
+													onFileChange={
+														onFileChange
+													}
+													onFileRemove={
+														onFileRemove
+													}
+												/>
+											) : (
+												<FileUploadControl
+													{ ...props }
+													field={ field }
+													fileName={
+														evidence.metadata?.[
+															field.key
+														]
+													}
+													onFileChange={
+														onFileChange
+													}
+													onFileRemove={
+														onFileRemove
+													}
+												/>
+											);
+										case 'text':
+											return <TextControl { ...props } />;
+										case 'date':
+											return (
+												<TextControl
+													{ ...props }
+													type="date"
+												/>
+											);
+										default:
+											return (
+												<TextareaControl
+													{ ...props }
+													maxLength={
+														field.maxLength
+													}
+												/>
+											);
+									}
+								} ) }
+							</div>
+						) ) }
+				</>
+			);
+		}
+		if ( currentStep === 1 && steps.length === 3 ) {
+			return (
+				<>
+					{ fields
+						.filter(
+							( field ) => field.key === 'shipping_information'
+						)
+						.map( ( section ) => (
+							<div key={ section.key }>
+								{ section.fields.map( ( field ) => {
+									const props = {
+										key: field.key,
+										label: field.label,
+										value: evidence[ field.key ] || '',
+										onChange: ( value ) =>
+											updateFormData( field.key, value ),
+										disabled: readOnly,
+										help: field.description,
+									};
+									switch ( field.type ) {
+										case 'file':
+											return readOnly ? (
+												<UploadedReadOnly
+													{ ...props }
+													field={ field }
+													fileName={
+														evidence.metadata?.[
+															field.key
+														]
+													}
+													onFileChange={
+														onFileChange
+													}
+													onFileRemove={
+														onFileRemove
+													}
+												/>
+											) : (
+												<FileUploadControl
+													{ ...props }
+													field={ field }
+													fileName={
+														evidence.metadata?.[
+															field.key
+														]
+													}
+													onFileChange={
+														onFileChange
+													}
+													onFileRemove={
+														onFileRemove
+													}
+												/>
+											);
+										case 'text':
+											return <TextControl { ...props } />;
+										case 'date':
+											return (
+												<TextControl
+													{ ...props }
+													type="date"
+												/>
+											);
+										default:
+											return (
+												<TextareaControl
+													{ ...props }
+													maxLength={
+														field.maxLength
+													}
+												/>
+											);
+									}
+								} ) }
+							</div>
+						) ) }
+				</>
+			);
+		}
+		return null;
 	};
 
 	return (
-		<div className="multi-step-evidence-form">
-			{ renderStepContent() }
+		<Card size="large">
+			<CardHeader>
+				<StepperIndicator steps={ steps } currentStep={ currentStep } />
+			</CardHeader>
+			<CardBody>{ renderStepBody() }</CardBody>
 			<CardFooter>
 				<div className="evidence-navigation">
 					{ currentStep > 0 && (
@@ -314,7 +409,7 @@ const MultiStepEvidenceForm = ( {
 					) }
 				</div>
 			</CardFooter>
-		</div>
+		</Card>
 	);
 };
 
@@ -599,31 +694,71 @@ export const DisputeEvidencePage = ( props ) => {
 		);
 	}
 
+	const disputeReason = formatStringValue(
+		reasons[ dispute.reason ]?.display || dispute.reason
+	);
+	const disputeReasonSummary = reasons[ dispute.reason ]?.summary || [];
+
 	const summaryItems = [
 		{
-			title: __( 'Disputed amount', 'woocommerce-payments' ),
-			content: formatCurrency( dispute.amount, dispute.currency ),
+			title: __( 'Dispute Amount', 'woocommerce-payments' ),
+			content: formatExplicitCurrency( dispute.amount, dispute.currency ),
 		},
 		{
-			title: __( 'Disputed on', 'woocommerce-payments' ),
-			content: formatDateTimeFromTimestamp( dispute.created, {
-				separator: ' ',
-				includeTime: true,
-			} ),
+			title: __( 'Disputed On', 'woocommerce-payments' ),
+			content: dispute.created
+				? formatDateTimeFromTimestamp( dispute.created, {
+						separator: ', ',
+						includeTime: true,
+				  } )
+				: '–',
 		},
 		{
 			title: __( 'Reason', 'woocommerce-payments' ),
-			content: dispute.reason,
+			content: (
+				<>
+					{ disputeReason }
+					{ disputeReasonSummary.length > 0 && (
+						<ClickTooltip
+							buttonIcon={ <HelpOutlineIcon /> }
+							buttonLabel={ __(
+								'Learn more',
+								'woocommerce-payments'
+							) }
+							content={
+								<div className="dispute-reason-tooltip">
+									<p>{ disputeReason }</p>
+									<Paragraphs>
+										{ disputeReasonSummary }
+									</Paragraphs>
+									<p>
+										<a
+											href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/"
+											target="_blank"
+											rel="noopener noreferrer"
+										>
+											{ __(
+												'Learn more',
+												'woocommerce-payments'
+											) }
+										</a>
+									</p>
+								</div>
+							}
+						/>
+					) }
+				</>
+			),
 		},
 		{
-			title: __( 'Responded by', 'woocommerce-payments' ),
-			content: formatDateTimeFromTimestamp(
-				dispute.evidence_details?.due_by ?? 0,
-				{
-					separator: ' ',
-					includeTime: true,
-				}
+			title: __( 'Respond By', 'woocommerce-payments' ),
+			content: (
+				<DisputeDueByDate dueBy={ dispute.evidence_details?.due_by } />
 			),
+		},
+		{
+			title: __( 'Order', 'woocommerce-payments' ),
+			content: <OrderLink order={ dispute.order } />,
 		},
 	];
 
@@ -658,12 +793,15 @@ export const DisputeEvidencePage = ( props ) => {
 			</ErrorBoundary>
 			{ ! isLoading && (
 				<ErrorBoundary>
-					<MultiStepEvidenceForm
-						{ ...evidenceFormProps }
-						readOnly={ readOnly }
-						productType={ productType }
-						onChangeProductType={ onChangeProductType }
-					/>
+					<div style={ { marginTop: 24 } }>
+						<MultiStepEvidenceForm
+							{ ...evidenceFormProps }
+							readOnly={ readOnly }
+							productType={ productType }
+							onChangeProductType={ onChangeProductType }
+							disputeReason={ dispute.reason }
+						/>
+					</div>
 				</ErrorBoundary>
 			) }
 		</Page>
