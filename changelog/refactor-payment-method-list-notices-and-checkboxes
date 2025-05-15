@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+refactor: adjust payment method settings UI to show inline notices and disabled checkboxes instead of `(!)` icon
