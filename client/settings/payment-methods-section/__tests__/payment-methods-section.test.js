@@ -135,7 +135,7 @@ describe( 'PaymentMethodsSection', () => {
 				status: upeCapabilityStatuses.ACTIVE,
 				requirements: [],
 			},
-			au_becs_debit_payments: {
+			au_becs_debit: {
 				status: upeCapabilityStatuses.INACTIVE,
 				requirements: [],
 			},
