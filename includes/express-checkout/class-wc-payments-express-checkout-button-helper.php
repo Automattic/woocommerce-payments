@@ -1257,7 +1257,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 */
 	public function is_express_checkout_context() {
 		// Only proceed if this is a Store API request.
-		if ( ! $this->is_store_api_request() ) {
+		if ( ! WC_Payments_Utils::is_store_api_request() ) {
 			return false;
 		}
 
@@ -1270,20 +1270,6 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		}
 
 		return $this->is_express_payment_type( $request_data['payment_data'] );
-	}
-
-	/**
-	 * Check if the current request is an express checkout API request.
-	 *
-	 * @return bool True if this is an express checkout API request, false otherwise.
-	 */
-	private function is_store_api_request() {
-		if ( ! isset( $_SERVER['REQUEST_URI'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			return false;
-		}
-
-		$request_uri = sanitize_text_field( wp_unslash( $_SERVER['REQUEST_URI'] ) ); // phpcs:ignore WordPress.Security.NonceVerification
-		return strpos( $request_uri, '/wp-json/wc/store/v1/checkout' ) !== false;
 	}
 
 	/**
