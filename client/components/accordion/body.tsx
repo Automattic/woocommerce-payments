@@ -13,7 +13,7 @@ import { useMergeRefs } from '@wordpress/compose';
  */
 import type { AccordionBodyProps } from './types';
 import './style.scss';
-import AccordionBodyTitle from './body-title';
+import AccordionTitle from './title';
 
 const useUpdateEffect = (
 	effect: () => void | ( () => void ),
@@ -42,6 +42,7 @@ const AccordionBody = forwardRef< HTMLDivElement, AccordionBodyProps >(
 			onToggle = () => {},
 			opened,
 			title,
+			subtitle,
 			scrollAfterOpen = true,
 		},
 		ref
@@ -90,11 +91,12 @@ const AccordionBody = forwardRef< HTMLDivElement, AccordionBodyProps >(
 
 		return (
 			<div className={ classes } ref={ useMergeRefs( [ nodeRef, ref ] ) }>
-				<AccordionBodyTitle
+				<AccordionTitle
 					icon={ icon }
 					isOpened={ Boolean( isOpened ) }
 					onClick={ handleOnToggle }
 					title={ title }
+					subtitle={ subtitle }
 					{ ...( buttonProps && { ...buttonProps, ref: undefined } ) }
 				/>
 				{ typeof children === 'function'

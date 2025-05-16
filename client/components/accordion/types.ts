@@ -97,12 +97,16 @@ export type AccordionBodyProps = {
 	 */
 	scrollAfterOpen?: boolean;
 	/**
+	 * Optional subtitle text that appears below the title.
+	 */
+	subtitle?: string;
+	/**
 	 * Ref to be forwarded to the body element
 	 */
 	ref?: React.Ref< HTMLDivElement >;
 };
 
-export type AccordionBodyTitleProps = Omit< Button.ButtonProps, 'icon' > & {
+export type AccordionTitleProps = Omit< Button.ButtonProps, 'icon' > & {
 	/**
 	 * An icon to be shown next to the title.
 	 */
@@ -116,7 +120,22 @@ export type AccordionBodyTitleProps = Omit< Button.ButtonProps, 'icon' > & {
 	 */
 	title?: string;
 	/**
+	 * Optional subtitle text that appears below the title.
+	 */
+	subtitle?: string;
+	/**
 	 * Ref to be forwarded to the title button element
 	 */
 	ref?: React.LegacyRef< HTMLButtonElement >;
+};
+
+export type AccordionSubtitleProps = {
+	/**
+	 * The content to display within the subtitle.
+	 */
+	children?: React.ReactNode;
+	/**
+	 * Ref to be forwarded to the subtitle element
+	 */
+	ref?: React.Ref< HTMLDivElement >;
 };

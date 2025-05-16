@@ -10,15 +10,16 @@ import { chevronUp, chevronDown } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
-import type { AccordionBodyTitleProps } from './types';
+import type { AccordionTitleProps } from './types';
 import type { WordPressComponentProps } from '@wordpress/components/ui/context/wordpress-component';
 import { Button, Icon } from 'wcpay/components/wp-components-wrapped';
+import AccordionSubtitle from './subtitle';
 import './style.scss';
 
-const AccordionBodyTitle = forwardRef<
+const AccordionTitle = forwardRef<
 	HTMLButtonElement,
-	WordPressComponentProps< AccordionBodyTitleProps, 'button' >
->( ( { isOpened, icon, title, ...props }, ref ) => {
+	WordPressComponentProps< AccordionTitleProps, 'button' >
+>( ( { isOpened, icon, title, subtitle, ...props }, ref ) => {
 	if ( ! title ) {
 		return null;
 	}
@@ -40,7 +41,12 @@ const AccordionBodyTitle = forwardRef<
 						icon={ isOpened ? chevronUp : chevronDown }
 					/>
 				</span>
-				{ title }
+				<div className="wcpay-accordion__title-content">
+					{ title }
+					{ subtitle && (
+						<AccordionSubtitle>{ subtitle }</AccordionSubtitle>
+					) }
+				</div>
 				{ icon && (
 					<Icon
 						icon={ icon }
@@ -53,6 +59,6 @@ const AccordionBodyTitle = forwardRef<
 	);
 } );
 
-AccordionBodyTitle.displayName = 'AccordionBodyTitle';
+AccordionTitle.displayName = 'AccordionTitle';
 
-export default AccordionBodyTitle;
+export default AccordionTitle;
