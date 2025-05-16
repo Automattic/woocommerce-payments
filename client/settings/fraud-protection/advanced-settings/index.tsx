@@ -16,9 +16,9 @@ import {
 	useCurrentProtectionLevel,
 	useAdvancedFraudProtectionSettings,
 	useSettings,
-} from '../../../data';
+} from 'wcpay/data';
 import ErrorBoundary from '../../../components/error-boundary';
-import { getAdminUrl, isVersionGreaterOrEqual } from '../../../utils';
+import { getAdminUrl, isVersionGreaterOrEqual } from 'wcpay/utils';
 import SettingsLayout from 'wcpay/settings/settings-layout';
 import AVSMismatchRuleCard from './cards/avs-mismatch';
 import CVCVerificationRuleCard from './cards/cvc-verification';
@@ -37,12 +37,7 @@ import './../style.scss';
 import { ProtectionLevel } from './constants';
 import { readRuleset, writeRuleset } from './utils';
 import { recordEvent } from 'tracks';
-import {
-	CurrentProtectionLevelHook,
-	AdvancedFraudPreventionSettingsHook,
-	ProtectionSettingsUI,
-	SettingsHook,
-} from '../interfaces';
+import { ProtectionSettingsUI } from '../interfaces';
 import useConfirmNavigation from 'wcpay/utils/use-confirm-navigation';
 import SettingsSection from 'wcpay/settings/settings-section';
 
@@ -130,18 +125,18 @@ const Breadcrumb = ( props: BreadcrumbProps ): JSX.Element => {
 const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 	const [ isDirty, setIsDirty ] = useState( false );
 
-	const { saveSettings, isLoading, isSaving } = useSettings() as SettingsHook;
+	const { saveSettings, isLoading, isSaving } = useSettings();
 
 	const cardObserver = useRef< IntersectionObserver >();
 
 	const [
 		currentProtectionLevel,
 		updateProtectionLevel,
-	] = useCurrentProtectionLevel() as CurrentProtectionLevelHook;
+	] = useCurrentProtectionLevel();
 	const [
 		advancedFraudProtectionSettings,
 		updateAdvancedFraudProtectionSettings,
-	] = useAdvancedFraudProtectionSettings() as AdvancedFraudPreventionSettingsHook;
+	] = useAdvancedFraudProtectionSettings();
 	const [ validationError, setValidationError ] = useState< string | null >(
 		null
 	);

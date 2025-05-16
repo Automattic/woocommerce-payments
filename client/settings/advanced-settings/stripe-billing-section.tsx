@@ -19,7 +19,6 @@ import ConfirmationModal from 'wcpay/components/confirmation-modal';
 import Notices from './stripe-billing-notices/notices';
 import StripeBillingMigrationNoticeContext from './stripe-billing-notices/context';
 import StripeBillingToggle from './stripe-billing-toggle';
-import { StripeBillingHook, StripeBillingMigrationHook } from './interfaces';
 
 /**
  * Renders a WooPayments Subscriptions Advanced Settings Section.
@@ -30,8 +29,8 @@ const StripeBillingSection: React.FC = () => {
 	const [
 		isStripeBillingEnabled,
 		updateIsStripeBillingEnabled,
-	] = useStripeBilling() as StripeBillingHook;
-	const [ isManualCaptureEnabled ] = useManualCapture() as [ boolean ];
+	] = useStripeBilling();
+	const [ isManualCaptureEnabled ] = useManualCapture();
 	const [
 		isMigrationInProgress,
 		migratedCount,
@@ -39,7 +38,7 @@ const StripeBillingSection: React.FC = () => {
 		startMigration,
 		isResolving,
 		hasResolved,
-	] = useStripeBillingMigration() as StripeBillingMigrationHook;
+	] = useStripeBillingMigration();
 
 	/**
 	 * Notices are shown and hidden based on whether the settings have been saved.
