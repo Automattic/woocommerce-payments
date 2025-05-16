@@ -6,6 +6,7 @@ import { Card, CardBody, CardHeader, Flex } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 import { Link } from '@woocommerce/components';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies
@@ -204,12 +205,7 @@ const AccountBalances: React.FC = () => {
 											components: {
 												strong: <strong />,
 												learnMoreLink: (
-													<Link
-														href="https://woocommerce.com/document/woopayments/payouts/instant-payouts/"
-														target="_blank"
-														rel="noreferrer"
-														type="external"
-													/>
+													<ExternalLink href="https://woocommerce.com/document/woopayments/payouts/instant-payouts/" />
 												),
 											},
 										} )

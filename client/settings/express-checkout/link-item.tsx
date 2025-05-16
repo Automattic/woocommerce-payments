@@ -17,6 +17,7 @@ import {
 import './style.scss';
 import { LinkIcon } from 'wcpay/payment-methods-icons';
 import InlineNotice from 'wcpay/components/inline-notice';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
 
 const LinkExpressCheckoutItem = (): React.ReactElement | null => {
 	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
@@ -102,18 +103,10 @@ const LinkExpressCheckoutItem = (): React.ReactElement | null => {
 													),
 													components: {
 														stripeLinkTerms: (
-															<a
-																target="_blank"
-																rel="noreferrer"
-																href="https://link.com/terms"
-															/>
+															<ExternalLink href="https://link.com/terms" />
 														),
 														privacyPolicy: (
-															<a
-																target="_blank"
-																rel="noreferrer"
-																href="https://link.com/privacy"
-															/>
+															<ExternalLink href="https://link.com/privacy" />
 														),
 													},
 											  } )

@@ -7,6 +7,7 @@ import GridiconCheckmarkCircle from 'gridicons/dist/checkmark-circle';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import GridiconNotice from 'gridicons/dist/notice';
 import { __, sprintf } from '@wordpress/i18n';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
 import interpolateComponents from '@automattic/interpolate-components';
 import React from 'react';
 
@@ -92,14 +93,11 @@ const DepositsStatusSuspended: React.FC< DepositsStatusProps > = ( props ) => {
 					components: {
 						learnMoreLink: (
 							// eslint-disable-next-line jsx-a11y/anchor-has-content
-							<a
+							<ExternalLink
 								href={
 									// eslint-disable-next-line max-len
 									'https://woocommerce.com/document/woopayments/payouts/why-payouts-suspended/'
 								}
-								target="_blank"
-								rel="noreferrer"
-								type="external"
 							/>
 						),
 					},

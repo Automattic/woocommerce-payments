@@ -6,6 +6,7 @@
 import React from 'react';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import { __ } from '@wordpress/i18n';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies
@@ -63,16 +64,12 @@ const DisputeSummaryRow: React.FC< Props > = ( { dispute } ) => {
 										{ disputeReasonSummary }
 									</Paragraphs>
 									<p>
-										<a
-											href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/"
-											target="_blank"
-											rel="noopener noreferrer"
-										>
+										<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/">
 											{ __(
 												'Learn more',
 												'woocommerce-payments'
 											) }
-										</a>
+										</ExternalLink>
 									</p>
 								</div>
 							}

@@ -5,6 +5,7 @@ import React from 'react';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import interpolateComponents from '@automattic/interpolate-components';
 import { __ } from '@wordpress/i18n';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies
@@ -42,10 +43,7 @@ export const TotalBalanceTooltip: React.FC< TotalBalanceTooltipProps > = ( {
 							components: {
 								bold: <b />,
 								learnMoreLink: (
-									// eslint-disable-next-line jsx-a11y/anchor-has-content
-									<a
-										rel="external noopener noreferrer"
-										target="_blank"
+									<ExternalLink
 										href={
 											documentationUrls.depositSchedule
 										}
@@ -72,10 +70,7 @@ export const TotalBalanceTooltip: React.FC< TotalBalanceTooltipProps > = ( {
 								),
 								components: {
 									discoverWhyLink: (
-										// eslint-disable-next-line jsx-a11y/anchor-has-content
-										<a
-											rel="external noopener noreferrer"
-											target="_blank"
+										<ExternalLink
 											href={
 												documentationUrls.negativeBalance
 											}
@@ -111,10 +106,7 @@ export const AvailableBalanceTooltip: React.FC< AvailableBalanceTooltipProps > =
 							components: {
 								bold: <b />,
 								learnMoreLink: (
-									// eslint-disable-next-line jsx-a11y/anchor-has-content
-									<a
-										rel="external noopener noreferrer"
-										target="_blank"
+									<ExternalLink
 										href={
 											documentationUrls.depositSchedule
 										}
@@ -132,10 +124,7 @@ export const AvailableBalanceTooltip: React.FC< AvailableBalanceTooltipProps > =
 								),
 								components: {
 									discoverWhyLink: (
-										// eslint-disable-next-line jsx-a11y/anchor-has-content
-										<a
-											rel="external noopener noreferrer"
-											target="_blank"
+										<ExternalLink
 											href={
 												documentationUrls.negativeBalance
 											}

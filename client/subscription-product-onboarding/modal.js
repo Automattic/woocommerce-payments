@@ -3,6 +3,7 @@
  */
 import React from 'react';
 
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
 import { Button, Icon, Modal } from '@wordpress/components';
 import {
 	createInterpolateElement,
@@ -85,14 +86,7 @@ const SubscriptionProductOnboardingModalContent = ( {
 						'woocommerce-payments'
 					),
 					{
-						a: (
-							// eslint-disable-next-line jsx-a11y/anchor-has-content
-							<a
-								href="https://wordpress.com/tos/"
-								target="_blank"
-								rel="noreferrer"
-							/>
-						),
+						a: <ExternalLink href="https://wordpress.com/tos/" />,
 					}
 				) }
 			</p>

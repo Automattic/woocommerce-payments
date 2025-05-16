@@ -8,6 +8,7 @@ import { createInterpolateElement } from '@wordpress/element';
 import {
 	Button,
 	CardFooter,
+	ExternalLink,
 	Flex,
 	FlexItem,
 } from 'wcpay/components/wp-components-wrapped';
@@ -57,12 +58,7 @@ const DisputeUnderReviewFooter: React.FC< {
 							  ),
 						{
 							a: (
-								// eslint-disable-next-line jsx-a11y/anchor-has-content -- Link content is provided by createInterpolateElement
-								<a
-									target="_blank"
-									rel="noopener noreferrer"
-									href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
-								/>
+								<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/" />
 							),
 							strong: <strong />,
 						}
@@ -136,11 +132,7 @@ const DisputeWonFooter: React.FC< {
 						{
 							a: (
 								// eslint-disable-next-line jsx-a11y/anchor-has-content -- Link content is provided by createInterpolateElement
-								<a
-									target="_blank"
-									rel="noopener noreferrer"
-									href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
-								/>
+								<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/" />
 							),
 							strong: <strong />,
 						}
@@ -265,11 +257,7 @@ const DisputeLostFooter: React.FC< {
 						{
 							a: (
 								// eslint-disable-next-line jsx-a11y/anchor-has-content -- Link content is provided by createInterpolateElement
-								<a
-									target="_blank"
-									rel="noopener noreferrer"
-									href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
-								/>
+								<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/" />
 							),
 						}
 					) }
@@ -345,11 +333,7 @@ const InquiryUnderReviewFooter: React.FC< {
 						{
 							a: (
 								// eslint-disable-next-line jsx-a11y/anchor-has-content -- Link content is provided by createInterpolateElement
-								<a
-									target="_blank"
-									rel="noopener noreferrer"
-									href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries"
-								/>
+								<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries" />
 							),
 							strong: <strong />,
 						}
@@ -412,12 +396,7 @@ const InquiryClosedFooter: React.FC< {
 						),
 						{
 							a: (
-								// eslint-disable-next-line jsx-a11y/anchor-has-content -- Link content is provided by createInterpolateElement
-								<a
-									target="_blank"
-									rel="noopener noreferrer"
-									href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
-								/>
+								<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/" />
 							),
 						}
 					) }

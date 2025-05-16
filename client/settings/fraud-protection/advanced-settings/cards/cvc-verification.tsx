@@ -4,7 +4,7 @@
 import React from 'react';
 import { __ } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
-import { Link } from '@woocommerce/components';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies
@@ -32,9 +32,7 @@ const CVCVerificationRuleCard: React.FC = () => {
 							),
 							components: {
 								learnMoreLink: (
-									<Link
-										target="_blank"
-										type="external"
+									<ExternalLink
 										// eslint-disable-next-line max-len
 										href="https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/#advanced-configuration"
 									/>

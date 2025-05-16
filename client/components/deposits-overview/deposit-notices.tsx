@@ -5,7 +5,7 @@ import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 import { Link } from '@woocommerce/components';
-import { ExternalLink } from '@wordpress/components';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
 import { addQueryArgs } from '@wordpress/url';
 
 /**
@@ -63,13 +63,7 @@ export const NewAccountWaitingPeriodNotice: React.FC = () => (
 			),
 			components: {
 				whyLink: (
-					// Link content is in the format string above. Consider disabling jsx-a11y/anchor-has-content.
-					// eslint-disable-next-line jsx-a11y/anchor-has-content
-					<a
-						target="_blank"
-						rel="noopener noreferrer"
-						href="https://woocommerce.com/document/woopayments/payouts/payout-schedule/#new-accounts"
-					/>
+					<ExternalLink href="https://woocommerce.com/document/woopayments/payouts/payout-schedule/#new-accounts" />
 				),
 			},
 		} ) }
@@ -97,13 +91,7 @@ export const NegativeBalanceDepositsPausedNotice: React.FC = () => (
 			),
 			components: {
 				whyLink: (
-					// Link content is in the format string above. Consider disabling jsx-a11y/anchor-has-content.
-					// eslint-disable-next-line jsx-a11y/anchor-has-content
-					<a
-						target="_blank"
-						rel="noopener noreferrer"
-						href="https://woocommerce.com/document/woopayments/fees-and-debits/account-showing-negative-balance/"
-					/>
+					<ExternalLink href="https://woocommerce.com/document/woopayments/fees-and-debits/account-showing-negative-balance/" />
 				),
 			},
 		} ) }
@@ -132,13 +120,7 @@ export const DepositMinimumBalanceNotice: React.FC< {
 				),
 				components: {
 					learnMoreLink: (
-						// Link content is in the format string above.
-						// eslint-disable-next-line jsx-a11y/anchor-has-content
-						<a
-							target="_blank"
-							rel="noopener noreferrer"
-							href="https://woocommerce.com/document/woopayments/payouts/payout-schedule/#minimum-payout-amounts"
-						/>
+						<ExternalLink href="https://woocommerce.com/document/woopayments/payouts/payout-schedule/#minimum-payout-amounts" />
 					),
 				},
 			} ) }
@@ -158,13 +140,7 @@ export const NoFundsAvailableForDepositNotice: React.FC = () => (
 			),
 			components: {
 				whyLink: (
-					// Link content is in the format string above. Consider disabling jsx-a11y/anchor-has-content.
-					// eslint-disable-next-line jsx-a11y/anchor-has-content
-					<a
-						target="_blank"
-						rel="noopener noreferrer"
-						href="https://woocommerce.com/document/woopayments/payouts/payout-schedule/#pending-funds"
-					/>
+					<ExternalLink href="https://woocommerce.com/document/woopayments/payouts/payout-schedule/#pending-funds" />
 				),
 			},
 		} ) }

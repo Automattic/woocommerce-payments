@@ -5,6 +5,7 @@ import { __ } from '@wordpress/i18n';
 import { Button, CheckboxControl } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
 import React, { useContext } from 'react';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies
@@ -82,16 +83,10 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 													),
 													components: {
 														stripeLink: (
-															<a
-																target="_blank"
-																rel="noreferrer"
-																href="https://stripe.com/apple-pay/legal"
-															/>
+															<ExternalLink href="https://stripe.com/apple-pay/legal" />
 														),
 														appleLink: (
-															<a
-																target="_blank"
-																rel="noreferrer"
+															<ExternalLink
 																/* eslint-disable-next-line max-len */
 																href="https://developer.apple.com/apple-pay/acceptable-use-guidelines-for-websites/"
 															/>
@@ -137,18 +132,10 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 													),
 													components: {
 														stripeLink: (
-															<a
-																target="_blank"
-																rel="noreferrer"
-																href="https://stripe.com/apple-pay/legal"
-															/>
+															<ExternalLink href="https://stripe.com/apple-pay/legal" />
 														),
 														googleLink: (
-															<a
-																target="_blank"
-																rel="noreferrer"
-																href="https://androidpay.developers.google.com/terms/sellertos"
-															/>
+															<ExternalLink href="https://androidpay.developers.google.com/terms/sellertos" />
 														),
 														br: <br />,
 													},

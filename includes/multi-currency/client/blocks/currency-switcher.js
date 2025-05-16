@@ -23,6 +23,7 @@ import {
 	InspectorControls,
 	useBlockProps,
 } from '@wordpress/block-editor';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
 
 registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 	apiVersion: 3,
@@ -211,18 +212,16 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 							'woocommerce-payments'
 						) }
 					>
-						<a
+						<ExternalLink
 							href={
 								'/wp-admin/admin.php?page=wc-settings&tab=wcpay_multi_currency'
 							}
-							target="_blank"
-							rel="noreferrer"
 						>
 							{ __(
 								'Adjust and edit your Multi-Currency settings',
 								'woocommerce-payments'
 							) }
-						</a>
+						</ExternalLink>
 					</PanelBody>
 					<PanelBody title={ __( 'Layout', 'woocommerce-payments' ) }>
 						<CheckboxControl

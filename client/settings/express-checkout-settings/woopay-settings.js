@@ -5,12 +5,8 @@
 import React from 'react';
 import clsx from 'clsx';
 import { __ } from '@wordpress/i18n';
-import {
-	Card,
-	CheckboxControl,
-	TextareaControl,
-	ExternalLink,
-} from '@wordpress/components';
+import { Card, CheckboxControl, TextareaControl } from '@wordpress/components';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
 import interpolateComponents from '@automattic/interpolate-components';
 import { Link } from '@woocommerce/components';
 
@@ -99,32 +95,16 @@ const WooPaySettings = ( { section } ) => {
 										),
 										components: {
 											wooPayLink: (
-												<a
-													target="_blank"
-													rel="noreferrer"
-													href="https://woocommerce.com/document/woopay-merchant-documentation/"
-												/>
+												<ExternalLink href="https://woocommerce.com/document/woopay-merchant-documentation/" />
 											),
 											tosLink: (
-												<a
-													target="_blank"
-													rel="noreferrer"
-													href="https://wordpress.com/tos/"
-												/>
+												<ExternalLink href="https://wordpress.com/tos/" />
 											),
 											privacyLink: (
-												<a
-													target="_blank"
-													rel="noreferrer"
-													href="https://automattic.com/privacy/"
-												/>
+												<ExternalLink href="https://automattic.com/privacy/" />
 											),
 											trackingLink: (
-												<a
-													target="_blank"
-													rel="noreferrer"
-													href="https://woocommerce.com/usage-tracking/"
-												/>
+												<ExternalLink href="https://woocommerce.com/usage-tracking/" />
 											),
 										},
 								  } )
@@ -245,10 +225,7 @@ const WooPaySettings = ( { section } ) => {
 										),
 										components: {
 											docs: (
-												/* eslint-disable-next-line jsx-a11y/anchor-has-content */
-												<a
-													target="_blank"
-													rel="noreferrer"
+												<ExternalLink
 													// eslint-disable-next-line max-len
 													href="https://woocommerce.com/document/woopay-merchant-documentation/#checkout-appearance"
 												/>

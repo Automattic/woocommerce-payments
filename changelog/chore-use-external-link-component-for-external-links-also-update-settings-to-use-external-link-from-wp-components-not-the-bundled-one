@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+update: merchant-facing pages to more easily show an external link (instead of a generic link), when it opens in a new tab; ensure that the ExternalLink component from the WP installation is used, instead of the bundled one

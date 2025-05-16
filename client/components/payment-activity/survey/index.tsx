@@ -9,6 +9,7 @@ import { Button, CardFooter, TextareaControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { createInterpolateElement, useState } from '@wordpress/element';
 import { Icon, closeSmall } from '@wordpress/icons';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies.
@@ -157,12 +158,7 @@ const Survey: React.FC = () => {
 									),
 									{
 										a: (
-											// eslint-disable-next-line jsx-a11y/anchor-has-content
-											<a
-												href="https://automattic.com/privacy/"
-												target="_blank"
-												rel="noreferrer"
-											/>
+											<ExternalLink href="https://automattic.com/privacy/" />
 										),
 									}
 								) }

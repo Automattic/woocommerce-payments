@@ -17,6 +17,7 @@ import { ClickTooltip } from 'wcpay/components/tooltip';
 import ErrorBoundary from 'wcpay/components/error-boundary';
 import SetupLivePaymentsModal from './modal';
 import './style.scss';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
 
 interface Props {
 	from: string;
@@ -82,15 +83,11 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 											),
 											components: {
 												learnMoreLink: (
-													// eslint-disable-next-line jsx-a11y/anchor-has-content
-													<Link
+													<ExternalLink
 														href={
 															// eslint-disable-next-line max-len
 															'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/'
 														}
-														target="_blank"
-														rel="noreferrer"
-														type="external"
 														onClick={ () =>
 															recordEvent(
 																'wcpay_overview_sandbox_mode_learn_more_clicked'

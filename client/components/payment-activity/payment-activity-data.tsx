@@ -6,6 +6,7 @@ import moment from 'moment';
 import { __ } from '@wordpress/i18n';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import interpolateComponents from '@automattic/interpolate-components';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies.
@@ -224,11 +225,7 @@ const PaymentActivityDataComponent: React.FC< Props > = ( {
 									strong: <strong />,
 									learnMoreLink: (
 										// eslint-disable-next-line jsx-a11y/anchor-has-content
-										<a
-											target="_blank"
-											rel="noopener noreferrer"
-											href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
-										/>
+										<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/" />
 									),
 								},
 							} ) }
@@ -277,12 +274,7 @@ const PaymentActivityDataComponent: React.FC< Props > = ( {
 								components: {
 									strong: <strong />,
 									learnMoreLink: (
-										// eslint-disable-next-line jsx-a11y/anchor-has-content
-										<a
-											target="_blank"
-											rel="noopener noreferrer"
-											href="https://woocommerce.com/document/woopayments/fees-and-debits/fees/"
-										/>
+										<ExternalLink href="https://woocommerce.com/document/woopayments/fees-and-debits/fees/" />
 									),
 								},
 							} ) }

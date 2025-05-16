@@ -22,6 +22,7 @@ import EnabledCurrenciesListItem from './list-item';
 import EnabledCurrenciesListItemPlaceholder from './list-item-placeholder';
 import EnabledCurrenciesModal from './modal';
 import { SettingsSection } from 'multi-currency/interface/components';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
 
 const EnabledCurrenciesSettingsDescription = () => {
 	const LEARN_MORE_URL =
@@ -42,14 +43,7 @@ const EnabledCurrenciesSettingsDescription = () => {
 						LEARN_MORE_URL
 					),
 					{
-						learnMoreLink: (
-							// eslint-disable-next-line jsx-a11y/anchor-has-content
-							<a
-								href={ LEARN_MORE_URL }
-								target={ '_blank' }
-								rel={ 'noreferrer' }
-							/>
-						),
+						learnMoreLink: <ExternalLink href={ LEARN_MORE_URL } />,
 					}
 				) }
 			</p>

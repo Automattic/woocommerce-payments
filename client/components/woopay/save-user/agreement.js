@@ -5,6 +5,7 @@
 import { __ } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 import { recordUserEvent } from 'tracks';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
 
 const Agreement = () => {
 	return (
@@ -16,10 +17,8 @@ const Agreement = () => {
 				),
 				components: {
 					termsOfService: (
-						<a
-							target="_blank"
+						<ExternalLink
 							href="https://wordpress.com/tos/"
-							rel="noopener noreferrer"
 							onClick={ () => {
 								recordUserEvent(
 									'checkout_save_my_info_tos_click'
@@ -27,13 +26,11 @@ const Agreement = () => {
 							} }
 						>
 							{ __( 'Terms of Service', 'woocommerce-payments' ) }
-						</a>
+						</ExternalLink>
 					),
 					privacyPolicy: (
-						<a
-							target="_blank"
+						<ExternalLink
 							href="https://automattic.com/privacy/"
-							rel="noopener noreferrer"
 							onClick={ () => {
 								recordUserEvent(
 									'checkout_save_my_info_privacy_policy_click'
@@ -41,7 +38,7 @@ const Agreement = () => {
 							} }
 						>
 							{ __( 'Privacy Policy', 'woocommerce-payments' ) }
-						</a>
+						</ExternalLink>
 					),
 				},
 			} ) }

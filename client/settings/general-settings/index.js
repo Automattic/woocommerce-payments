@@ -5,6 +5,7 @@ import React, { useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { Card, CheckboxControl } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies
@@ -61,21 +62,12 @@ const GeneralSettings = () => {
 									),
 									components: {
 										testCardHelpLink: (
-											// eslint-disable-next-line jsx-a11y/anchor-has-content
-											<a
-												target="_blank"
-												rel="noreferrer"
-												/* eslint-disable-next-line max-len */
-												href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards"
-											/>
+											/* eslint-disable-next-line max-len */
+											<ExternalLink href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" />
 										),
 										learnMoreLink: (
-											// eslint-disable-next-line jsx-a11y/anchor-has-content
-											<a
-												target="_blank"
-												rel="noreferrer"
-												href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/"
-											/>
+											/* eslint-disable-next-line max-len */
+											<ExternalLink href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/" />
 										),
 									},
 								} ) }
@@ -121,13 +113,8 @@ const GeneralSettings = () => {
 									components: {
 										b: <b />,
 										learnMoreLink: (
-											// eslint-disable-next-line jsx-a11y/anchor-has-content
-											<a
-												target="_blank"
-												rel="noreferrer"
-												// eslint-disable-next-line max-len
-												href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/"
-											/>
+											// eslint-disable-next-line max-len
+											<ExternalLink href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/" />
 										),
 									},
 								} ) }

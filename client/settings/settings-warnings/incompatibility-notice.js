@@ -8,6 +8,7 @@ import interpolateComponents from '@automattic/interpolate-components';
  * Internal dependencies
  */
 import InlineNotice from 'wcpay/components/inline-notice';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
 
 const IncompatibilityNotice = ( { message, learnMoreLinkHref } ) => (
 	<InlineNotice status="warning" icon={ true } isDismissible={ false }>
@@ -18,14 +19,7 @@ const IncompatibilityNotice = ( { message, learnMoreLinkHref } ) => (
 				'woocommerce-payments'
 			),
 			components: {
-				learnMoreLink: (
-					// eslint-disable-next-line jsx-a11y/anchor-has-content
-					<a
-						target="_blank"
-						rel="noreferrer"
-						href={ learnMoreLinkHref }
-					/>
-				),
+				learnMoreLink: <ExternalLink href={ learnMoreLinkHref } />,
 			},
 		} ) }
 	</InlineNotice>

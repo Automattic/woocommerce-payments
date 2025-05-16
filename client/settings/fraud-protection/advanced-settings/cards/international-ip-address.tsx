@@ -3,7 +3,6 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { Link } from '@woocommerce/components';
 import interpolateComponents from '@automattic/interpolate-components';
 
 /**
@@ -16,6 +15,7 @@ import FraudProtectionRuleToggle from '../rule-toggle';
 import AllowedCountriesNotice from '../allow-countries-notice';
 import { getAdminUrl } from 'wcpay/utils';
 import { getSupportedCountriesType } from '../utils';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
 
 const InternationalIPAddressRuleCard: React.FC = () => {
 	const supportsAllCountries = 'all' === getSupportedCountriesType();
@@ -48,11 +48,7 @@ const InternationalIPAddressRuleCard: React.FC = () => {
 						),
 						components: {
 							ipAddressLink: (
-								<Link
-									target="_blank"
-									type="external"
-									href="https://simple.wikipedia.org/wiki/IP_address"
-								/>
+								<ExternalLink href="https://simple.wikipedia.org/wiki/IP_address" />
 							),
 							supportedCountriesLink: (
 								// eslint-disable-next-line jsx-a11y/anchor-has-content

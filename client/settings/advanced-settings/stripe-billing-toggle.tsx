@@ -3,7 +3,8 @@
  */
 import React, { useContext } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-import { CheckboxControl, ExternalLink } from '@wordpress/components';
+import { CheckboxControl } from '@wordpress/components';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
 import interpolateComponents from '@automattic/interpolate-components';
 
 /**

@@ -247,11 +247,33 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                       >
                         This filter screens for 
                         <a
-                          data-link-type="external"
+                          class="components-external-link"
                           href="https://simple.wikipedia.org/wiki/IP_address"
+                          rel="external noreferrer noopener"
                           target="_blank"
                         >
                           IP addresses
+                          <span
+                            class="components-visually-hidden css-1mm2cvy-View em57xhy0"
+                            data-wp-c16t="true"
+                            data-wp-component="VisuallyHidden"
+                            style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+                          >
+                            (opens in a new tab)
+                          </span>
+                          <svg
+                            aria-hidden="true"
+                            class="components-external-link__icon css-16iaek2-StyledIcon etxm6pv0"
+                            focusable="false"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            width="24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
+                            />
+                          </svg>
                         </a>
                          outside of your 
                         <a
@@ -390,11 +412,33 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                       >
                         This filter screens for customer's 
                         <a
-                          data-link-type="external"
+                          class="components-external-link"
                           href="https://simple.wikipedia.org/wiki/IP_address"
+                          rel="external noreferrer noopener"
                           target="_blank"
                         >
                           IP address
+                          <span
+                            class="components-visually-hidden css-1mm2cvy-View em57xhy0"
+                            data-wp-c16t="true"
+                            data-wp-component="VisuallyHidden"
+                            style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+                          >
+                            (opens in a new tab)
+                          </span>
+                          <svg
+                            aria-hidden="true"
+                            class="components-external-link__icon css-16iaek2-StyledIcon etxm6pv0"
+                            focusable="false"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            width="24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
+                            />
+                          </svg>
                         </a>
                          to see if it is in a different country than indicated in their billing address. When enabled the payment will be blocked.
                       </div>
@@ -863,11 +907,33 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                           >
                             For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                             <a
-                              data-link-type="external"
+                              class="components-external-link"
                               href="https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                              rel="external noreferrer noopener"
                               target="_blank"
                             >
                               Learn more
+                              <span
+                                class="components-visually-hidden css-1mm2cvy-View em57xhy0"
+                                data-wp-c16t="true"
+                                data-wp-component="VisuallyHidden"
+                                style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+                              >
+                                (opens in a new tab)
+                              </span>
+                              <svg
+                                aria-hidden="true"
+                                class="components-external-link__icon css-16iaek2-StyledIcon etxm6pv0"
+                                focusable="false"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                width="24"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
+                                />
+                              </svg>
                             </a>
                           </div>
                         </div>
@@ -1135,11 +1201,33 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                     >
                       This filter screens for 
                       <a
-                        data-link-type="external"
+                        class="components-external-link"
                         href="https://simple.wikipedia.org/wiki/IP_address"
+                        rel="external noreferrer noopener"
                         target="_blank"
                       >
                         IP addresses
+                        <span
+                          class="components-visually-hidden css-1mm2cvy-View em57xhy0"
+                          data-wp-c16t="true"
+                          data-wp-component="VisuallyHidden"
+                          style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+                        >
+                          (opens in a new tab)
+                        </span>
+                        <svg
+                          aria-hidden="true"
+                          class="components-external-link__icon css-16iaek2-StyledIcon etxm6pv0"
+                          focusable="false"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
+                          />
+                        </svg>
                       </a>
                        outside of your 
                       <a
@@ -1278,11 +1366,33 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                     >
                       This filter screens for customer's 
                       <a
-                        data-link-type="external"
+                        class="components-external-link"
                         href="https://simple.wikipedia.org/wiki/IP_address"
+                        rel="external noreferrer noopener"
                         target="_blank"
                       >
                         IP address
+                        <span
+                          class="components-visually-hidden css-1mm2cvy-View em57xhy0"
+                          data-wp-c16t="true"
+                          data-wp-component="VisuallyHidden"
+                          style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+                        >
+                          (opens in a new tab)
+                        </span>
+                        <svg
+                          aria-hidden="true"
+                          class="components-external-link__icon css-16iaek2-StyledIcon etxm6pv0"
+                          focusable="false"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
+                          />
+                        </svg>
                       </a>
                        to see if it is in a different country than indicated in their billing address. When enabled the payment will be blocked.
                     </div>
@@ -1751,11 +1861,33 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                         >
                           For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                           <a
-                            data-link-type="external"
+                            class="components-external-link"
                             href="https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                            rel="external noreferrer noopener"
                             target="_blank"
                           >
                             Learn more
+                            <span
+                              class="components-visually-hidden css-1mm2cvy-View em57xhy0"
+                              data-wp-c16t="true"
+                              data-wp-component="VisuallyHidden"
+                              style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+                            >
+                              (opens in a new tab)
+                            </span>
+                            <svg
+                              aria-hidden="true"
+                              class="components-external-link__icon css-16iaek2-StyledIcon etxm6pv0"
+                              focusable="false"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              width="24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
+                              />
+                            </svg>
                           </a>
                         </div>
                       </div>
@@ -2087,11 +2219,33 @@ exports[`Advanced fraud protection settings renders an error message when settin
                       >
                         This filter screens for 
                         <a
-                          data-link-type="external"
+                          class="components-external-link"
                           href="https://simple.wikipedia.org/wiki/IP_address"
+                          rel="external noreferrer noopener"
                           target="_blank"
                         >
                           IP addresses
+                          <span
+                            class="components-visually-hidden css-1mm2cvy-View em57xhy0"
+                            data-wp-c16t="true"
+                            data-wp-component="VisuallyHidden"
+                            style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+                          >
+                            (opens in a new tab)
+                          </span>
+                          <svg
+                            aria-hidden="true"
+                            class="components-external-link__icon css-16iaek2-StyledIcon etxm6pv0"
+                            focusable="false"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            width="24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
+                            />
+                          </svg>
                         </a>
                          outside of your 
                         <a
@@ -2230,11 +2384,33 @@ exports[`Advanced fraud protection settings renders an error message when settin
                       >
                         This filter screens for customer's 
                         <a
-                          data-link-type="external"
+                          class="components-external-link"
                           href="https://simple.wikipedia.org/wiki/IP_address"
+                          rel="external noreferrer noopener"
                           target="_blank"
                         >
                           IP address
+                          <span
+                            class="components-visually-hidden css-1mm2cvy-View em57xhy0"
+                            data-wp-c16t="true"
+                            data-wp-component="VisuallyHidden"
+                            style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+                          >
+                            (opens in a new tab)
+                          </span>
+                          <svg
+                            aria-hidden="true"
+                            class="components-external-link__icon css-16iaek2-StyledIcon etxm6pv0"
+                            focusable="false"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            width="24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
+                            />
+                          </svg>
                         </a>
                          to see if it is in a different country than indicated in their billing address. When enabled the payment will be blocked.
                       </div>
@@ -2574,11 +2750,33 @@ exports[`Advanced fraud protection settings renders an error message when settin
                           >
                             For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                             <a
-                              data-link-type="external"
+                              class="components-external-link"
                               href="https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                              rel="external noreferrer noopener"
                               target="_blank"
                             >
                               Learn more
+                              <span
+                                class="components-visually-hidden css-1mm2cvy-View em57xhy0"
+                                data-wp-c16t="true"
+                                data-wp-component="VisuallyHidden"
+                                style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+                              >
+                                (opens in a new tab)
+                              </span>
+                              <svg
+                                aria-hidden="true"
+                                class="components-external-link__icon css-16iaek2-StyledIcon etxm6pv0"
+                                focusable="false"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                width="24"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
+                                />
+                              </svg>
                             </a>
                           </div>
                         </div>
@@ -2829,11 +3027,33 @@ exports[`Advanced fraud protection settings renders an error message when settin
                     >
                       This filter screens for 
                       <a
-                        data-link-type="external"
+                        class="components-external-link"
                         href="https://simple.wikipedia.org/wiki/IP_address"
+                        rel="external noreferrer noopener"
                         target="_blank"
                       >
                         IP addresses
+                        <span
+                          class="components-visually-hidden css-1mm2cvy-View em57xhy0"
+                          data-wp-c16t="true"
+                          data-wp-component="VisuallyHidden"
+                          style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+                        >
+                          (opens in a new tab)
+                        </span>
+                        <svg
+                          aria-hidden="true"
+                          class="components-external-link__icon css-16iaek2-StyledIcon etxm6pv0"
+                          focusable="false"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
+                          />
+                        </svg>
                       </a>
                        outside of your 
                       <a
@@ -2972,11 +3192,33 @@ exports[`Advanced fraud protection settings renders an error message when settin
                     >
                       This filter screens for customer's 
                       <a
-                        data-link-type="external"
+                        class="components-external-link"
                         href="https://simple.wikipedia.org/wiki/IP_address"
+                        rel="external noreferrer noopener"
                         target="_blank"
                       >
                         IP address
+                        <span
+                          class="components-visually-hidden css-1mm2cvy-View em57xhy0"
+                          data-wp-c16t="true"
+                          data-wp-component="VisuallyHidden"
+                          style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+                        >
+                          (opens in a new tab)
+                        </span>
+                        <svg
+                          aria-hidden="true"
+                          class="components-external-link__icon css-16iaek2-StyledIcon etxm6pv0"
+                          focusable="false"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
+                          />
+                        </svg>
                       </a>
                        to see if it is in a different country than indicated in their billing address. When enabled the payment will be blocked.
                     </div>
@@ -3316,11 +3558,33 @@ exports[`Advanced fraud protection settings renders an error message when settin
                         >
                           For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                           <a
-                            data-link-type="external"
+                            class="components-external-link"
                             href="https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                            rel="external noreferrer noopener"
                             target="_blank"
                           >
                             Learn more
+                            <span
+                              class="components-visually-hidden css-1mm2cvy-View em57xhy0"
+                              data-wp-c16t="true"
+                              data-wp-component="VisuallyHidden"
+                              style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+                            >
+                              (opens in a new tab)
+                            </span>
+                            <svg
+                              aria-hidden="true"
+                              class="components-external-link__icon css-16iaek2-StyledIcon etxm6pv0"
+                              focusable="false"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              width="24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
+                              />
+                            </svg>
                           </a>
                         </div>
                       </div>
@@ -3629,11 +3893,33 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                     >
                       This filter screens for 
                       <a
-                        data-link-type="external"
+                        class="components-external-link"
                         href="https://simple.wikipedia.org/wiki/IP_address"
+                        rel="external noreferrer noopener"
                         target="_blank"
                       >
                         IP addresses
+                        <span
+                          class="components-visually-hidden css-1mm2cvy-View em57xhy0"
+                          data-wp-c16t="true"
+                          data-wp-component="VisuallyHidden"
+                          style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+                        >
+                          (opens in a new tab)
+                        </span>
+                        <svg
+                          aria-hidden="true"
+                          class="components-external-link__icon css-16iaek2-StyledIcon etxm6pv0"
+                          focusable="false"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
+                          />
+                        </svg>
                       </a>
                        outside of your 
                       <a
@@ -3772,11 +4058,33 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                     >
                       This filter screens for customer's 
                       <a
-                        data-link-type="external"
+                        class="components-external-link"
                         href="https://simple.wikipedia.org/wiki/IP_address"
+                        rel="external noreferrer noopener"
                         target="_blank"
                       >
                         IP address
+                        <span
+                          class="components-visually-hidden css-1mm2cvy-View em57xhy0"
+                          data-wp-c16t="true"
+                          data-wp-component="VisuallyHidden"
+                          style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+                        >
+                          (opens in a new tab)
+                        </span>
+                        <svg
+                          aria-hidden="true"
+                          class="components-external-link__icon css-16iaek2-StyledIcon etxm6pv0"
+                          focusable="false"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
+                          />
+                        </svg>
                       </a>
                        to see if it is in a different country than indicated in their billing address. When enabled the payment will be blocked.
                     </div>
@@ -4116,11 +4424,33 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                         >
                           For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                           <a
-                            data-link-type="external"
+                            class="components-external-link"
                             href="https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                            rel="external noreferrer noopener"
                             target="_blank"
                           >
                             Learn more
+                            <span
+                              class="components-visually-hidden css-1mm2cvy-View em57xhy0"
+                              data-wp-c16t="true"
+                              data-wp-component="VisuallyHidden"
+                              style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+                            >
+                              (opens in a new tab)
+                            </span>
+                            <svg
+                              aria-hidden="true"
+                              class="components-external-link__icon css-16iaek2-StyledIcon etxm6pv0"
+                              focusable="false"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              width="24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
+                              />
+                            </svg>
                           </a>
                         </div>
                       </div>
@@ -4346,11 +4676,33 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                   >
                     This filter screens for 
                     <a
-                      data-link-type="external"
+                      class="components-external-link"
                       href="https://simple.wikipedia.org/wiki/IP_address"
+                      rel="external noreferrer noopener"
                       target="_blank"
                     >
                       IP addresses
+                      <span
+                        class="components-visually-hidden css-1mm2cvy-View em57xhy0"
+                        data-wp-c16t="true"
+                        data-wp-component="VisuallyHidden"
+                        style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+                      >
+                        (opens in a new tab)
+                      </span>
+                      <svg
+                        aria-hidden="true"
+                        class="components-external-link__icon css-16iaek2-StyledIcon etxm6pv0"
+                        focusable="false"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
+                        />
+                      </svg>
                     </a>
                      outside of your 
                     <a
@@ -4489,11 +4841,33 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                   >
                     This filter screens for customer's 
                     <a
-                      data-link-type="external"
+                      class="components-external-link"
                       href="https://simple.wikipedia.org/wiki/IP_address"
+                      rel="external noreferrer noopener"
                       target="_blank"
                     >
                       IP address
+                      <span
+                        class="components-visually-hidden css-1mm2cvy-View em57xhy0"
+                        data-wp-c16t="true"
+                        data-wp-component="VisuallyHidden"
+                        style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+                      >
+                        (opens in a new tab)
+                      </span>
+                      <svg
+                        aria-hidden="true"
+                        class="components-external-link__icon css-16iaek2-StyledIcon etxm6pv0"
+                        focusable="false"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
+                        />
+                      </svg>
                     </a>
                      to see if it is in a different country than indicated in their billing address. When enabled the payment will be blocked.
                   </div>
@@ -4833,11 +5207,33 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                       >
                         For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                         <a
-                          data-link-type="external"
+                          class="components-external-link"
                           href="https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                          rel="external noreferrer noopener"
                           target="_blank"
                         >
                           Learn more
+                          <span
+                            class="components-visually-hidden css-1mm2cvy-View em57xhy0"
+                            data-wp-c16t="true"
+                            data-wp-component="VisuallyHidden"
+                            style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+                          >
+                            (opens in a new tab)
+                          </span>
+                          <svg
+                            aria-hidden="true"
+                            class="components-external-link__icon css-16iaek2-StyledIcon etxm6pv0"
+                            focusable="false"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            width="24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
+                            />
+                          </svg>
                         </a>
                       </div>
                     </div>
@@ -5153,11 +5549,33 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                       >
                         This filter screens for 
                         <a
-                          data-link-type="external"
+                          class="components-external-link"
                           href="https://simple.wikipedia.org/wiki/IP_address"
+                          rel="external noreferrer noopener"
                           target="_blank"
                         >
                           IP addresses
+                          <span
+                            class="components-visually-hidden css-1mm2cvy-View em57xhy0"
+                            data-wp-c16t="true"
+                            data-wp-component="VisuallyHidden"
+                            style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+                          >
+                            (opens in a new tab)
+                          </span>
+                          <svg
+                            aria-hidden="true"
+                            class="components-external-link__icon css-16iaek2-StyledIcon etxm6pv0"
+                            focusable="false"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            width="24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
+                            />
+                          </svg>
                         </a>
                          outside of your 
                         <a
@@ -5296,11 +5714,33 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                       >
                         This filter screens for customer's 
                         <a
-                          data-link-type="external"
+                          class="components-external-link"
                           href="https://simple.wikipedia.org/wiki/IP_address"
+                          rel="external noreferrer noopener"
                           target="_blank"
                         >
                           IP address
+                          <span
+                            class="components-visually-hidden css-1mm2cvy-View em57xhy0"
+                            data-wp-c16t="true"
+                            data-wp-component="VisuallyHidden"
+                            style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+                          >
+                            (opens in a new tab)
+                          </span>
+                          <svg
+                            aria-hidden="true"
+                            class="components-external-link__icon css-16iaek2-StyledIcon etxm6pv0"
+                            focusable="false"
+                            height="24"
+                            viewBox="0 0 24 24"
+                            width="24"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
+                            />
+                          </svg>
                         </a>
                          to see if it is in a different country than indicated in their billing address. When enabled the payment will be blocked.
                       </div>
@@ -5721,11 +6161,33 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                           >
                             For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                             <a
-                              data-link-type="external"
+                              class="components-external-link"
                               href="https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                              rel="external noreferrer noopener"
                               target="_blank"
                             >
                               Learn more
+                              <span
+                                class="components-visually-hidden css-1mm2cvy-View em57xhy0"
+                                data-wp-c16t="true"
+                                data-wp-component="VisuallyHidden"
+                                style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+                              >
+                                (opens in a new tab)
+                              </span>
+                              <svg
+                                aria-hidden="true"
+                                class="components-external-link__icon css-16iaek2-StyledIcon etxm6pv0"
+                                focusable="false"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                width="24"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
+                                />
+                              </svg>
                             </a>
                           </div>
                         </div>
@@ -5960,11 +6422,33 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                     >
                       This filter screens for 
                       <a
-                        data-link-type="external"
+                        class="components-external-link"
                         href="https://simple.wikipedia.org/wiki/IP_address"
+                        rel="external noreferrer noopener"
                         target="_blank"
                       >
                         IP addresses
+                        <span
+                          class="components-visually-hidden css-1mm2cvy-View em57xhy0"
+                          data-wp-c16t="true"
+                          data-wp-component="VisuallyHidden"
+                          style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+                        >
+                          (opens in a new tab)
+                        </span>
+                        <svg
+                          aria-hidden="true"
+                          class="components-external-link__icon css-16iaek2-StyledIcon etxm6pv0"
+                          focusable="false"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
+                          />
+                        </svg>
                       </a>
                        outside of your 
                       <a
@@ -6103,11 +6587,33 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                     >
                       This filter screens for customer's 
                       <a
-                        data-link-type="external"
+                        class="components-external-link"
                         href="https://simple.wikipedia.org/wiki/IP_address"
+                        rel="external noreferrer noopener"
                         target="_blank"
                       >
                         IP address
+                        <span
+                          class="components-visually-hidden css-1mm2cvy-View em57xhy0"
+                          data-wp-c16t="true"
+                          data-wp-component="VisuallyHidden"
+                          style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+                        >
+                          (opens in a new tab)
+                        </span>
+                        <svg
+                          aria-hidden="true"
+                          class="components-external-link__icon css-16iaek2-StyledIcon etxm6pv0"
+                          focusable="false"
+                          height="24"
+                          viewBox="0 0 24 24"
+                          width="24"
+                          xmlns="http://www.w3.org/2000/svg"
+                        >
+                          <path
+                            d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
+                          />
+                        </svg>
                       </a>
                        to see if it is in a different country than indicated in their billing address. When enabled the payment will be blocked.
                     </div>
@@ -6528,11 +7034,33 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                         >
                           For security, this filter is enabled and cannot be modified. Payments failing CVC verification will be blocked. 
                           <a
-                            data-link-type="external"
+                            class="components-external-link"
                             href="https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/#advanced-configuration"
+                            rel="external noreferrer noopener"
                             target="_blank"
                           >
                             Learn more
+                            <span
+                              class="components-visually-hidden css-1mm2cvy-View em57xhy0"
+                              data-wp-c16t="true"
+                              data-wp-component="VisuallyHidden"
+                              style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+                            >
+                              (opens in a new tab)
+                            </span>
+                            <svg
+                              aria-hidden="true"
+                              class="components-external-link__icon css-16iaek2-StyledIcon etxm6pv0"
+                              focusable="false"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              width="24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
+                              />
+                            </svg>
                           </a>
                         </div>
                       </div>

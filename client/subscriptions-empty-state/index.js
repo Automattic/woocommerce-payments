@@ -5,6 +5,7 @@ import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement, render, useState } from '@wordpress/element';
 import { Button } from '@wordpress/components';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
 
 import { recordEvent } from '../tracks';
 import UnconnectedImage from 'assets/images/subscriptions-empty-state-unconnected.svg?asset';
@@ -39,14 +40,7 @@ const TOS = () => (
 				'woocommerce-payments'
 			),
 			{
-				a: (
-					// eslint-disable-next-line jsx-a11y/anchor-has-content
-					<a
-						href="https://wordpress.com/tos/"
-						target="_blank"
-						rel="noreferrer"
-					/>
-				),
+				a: <ExternalLink href="https://wordpress.com/tos/" />,
 			}
 		) }
 	</p>

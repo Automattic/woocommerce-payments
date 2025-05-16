@@ -6,6 +6,7 @@ import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 import moment from 'moment';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies
@@ -125,10 +126,7 @@ const DepositSchedule: React.FC< DepositScheduleProps > = ( {
 				),
 				components: {
 					link: (
-						// eslint-disable-next-line jsx-a11y/anchor-has-content
-						<a
-							rel="external noopener noreferrer"
-							target="_blank"
+						<ExternalLink
 							href={
 								'https://woocommerce.com/document/woopayments/payouts/payout-schedule/'
 							}

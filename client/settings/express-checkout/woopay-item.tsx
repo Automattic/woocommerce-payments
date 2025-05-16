@@ -8,6 +8,7 @@ import { Button, CheckboxControl } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
 import { getPaymentMethodSettingsUrl } from '../../utils';
 import { useContext } from '@wordpress/element';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies
@@ -92,33 +93,16 @@ const WooPayExpressCheckoutItem = (): React.ReactElement | null => {
 													),
 													components: {
 														wooPayLink: (
-															<a
-																target="_blank"
-																rel="noreferrer"
-																// eslint-disable-next-line max-len
-																href="https://woocommerce.com/document/woopay-merchant-documentation/"
-															/>
+															<ExternalLink href="https://woocommerce.com/document/woopay-merchant-documentation/" />
 														),
 														tosLink: (
-															<a
-																target="_blank"
-																rel="noreferrer"
-																href="https://wordpress.com/tos/"
-															/>
+															<ExternalLink href="https://wordpress.com/tos/" />
 														),
 														privacyLink: (
-															<a
-																target="_blank"
-																rel="noreferrer"
-																href="https://automattic.com/privacy/"
-															/>
+															<ExternalLink href="https://automattic.com/privacy/" />
 														),
 														trackingLink: (
-															<a
-																target="_blank"
-																rel="noreferrer"
-																href="https://woocommerce.com/usage-tracking/"
-															/>
+															<ExternalLink href="https://woocommerce.com/usage-tracking/" />
 														),
 													},
 											  } )

@@ -5,6 +5,7 @@ import React from 'react';
 import { Button } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies
@@ -153,12 +154,10 @@ const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 					components: {
 						strong: <strong />,
 						wooCommercePaymentsLink: (
-							// eslint-disable-next-line jsx-a11y/anchor-has-content
-							<a href="https://woocommerce.com/document/woopayments/" />
+							<ExternalLink href="https://woocommerce.com/document/woopayments/" />
 						),
 						contactSupportLink: (
-							// eslint-disable-next-line jsx-a11y/anchor-has-content
-							<a href="https://woocommerce.com/my-account/create-a-ticket/?select=5278104" />
+							<ExternalLink href="https://woocommerce.com/my-account/create-a-ticket/?select=5278104" />
 						),
 					},
 				} ) }

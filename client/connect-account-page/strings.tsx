@@ -6,6 +6,7 @@ import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 import interpolateComponents from '@automattic/interpolate-components';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
 
 export default {
 	button: {
@@ -82,13 +83,7 @@ export default {
 		),
 		components: {
 			learnMoreLink: (
-				// Link content is in the format string above. Consider disabling jsx-a11y/anchor-has-content.
-				// eslint-disable-next-line jsx-a11y/anchor-has-content
-				<a
-					href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/"
-					target="_blank"
-					rel="noreferrer"
-				/>
+				<ExternalLink href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/" />
 			),
 		},
 	} ),
@@ -284,14 +279,7 @@ export default {
 					'woocommerce-payments'
 				),
 				{
-					a: (
-						// eslint-disable-next-line jsx-a11y/anchor-has-content
-						<a
-							href={ url }
-							target="_blank"
-							rel="noopener noreferrer"
-						/>
-					),
+					a: <ExternalLink href={ url } />,
 				}
 			),
 		error: __(
@@ -311,12 +299,7 @@ export default {
 		{
 			b: <b />,
 			a: (
-				// eslint-disable-next-line jsx-a11y/anchor-has-content
-				<a
-					href="https://woocommerce.com/document/woopayments/compatibility/countries/"
-					target="_blank"
-					rel="noopener noreferrer"
-				/>
+				<ExternalLink href="https://woocommerce.com/document/woopayments/compatibility/countries/" />
 			),
 		}
 	),

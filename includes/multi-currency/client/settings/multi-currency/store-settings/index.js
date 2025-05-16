@@ -17,6 +17,7 @@ import {
 	SettingsSection,
 } from 'multi-currency/interface/components';
 import PreviewModal from 'multi-currency/components/preview-modal';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
 
 const StoreSettingsDescription = () => {
 	const LEARN_MORE_URL =
@@ -37,14 +38,7 @@ const StoreSettingsDescription = () => {
 						LEARN_MORE_URL
 					),
 					{
-						learnMoreLink: (
-							// eslint-disable-next-line jsx-a11y/anchor-has-content
-							<a
-								href={ LEARN_MORE_URL }
-								target={ '_blank' }
-								rel={ 'noreferrer' }
-							/>
-						),
+						learnMoreLink: <ExternalLink href={ LEARN_MORE_URL } />,
 					}
 				) }
 			</p>
