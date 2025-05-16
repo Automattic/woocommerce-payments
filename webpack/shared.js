@@ -170,29 +170,4 @@ module.exports = {
 			path.resolve( process.cwd(), 'webpack/loaders' ),
 		],
 	},
-	externals: [
-		/**
-		 * Only externalize `@wordpress/components` when it's
-		 * imported from client/payment-details/dispute-details/**
-		 */
-		function ( { context, request }, callback ) {
-			if ( request === '@wordpress/components' && context ) {
-				switch ( true ) {
-					case context.includes(
-						path.join(
-							'client',
-							'payment-details',
-							'dispute-details'
-						)
-					):
-					case context.includes( path.join( 'client', 'disputes' ) ):
-						return callback( null, 'wp.components' );
-					default:
-						return callback();
-				}
-			}
-			// Otherwise bundle normally
-			callback();
-		},
-	],
 };

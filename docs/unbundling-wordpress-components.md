@@ -22,38 +22,47 @@ This document describes our strategy for progressively migrating from bundled `@
 ## How It Works
 
 1. **Webpack Configuration**
-   ```diff
-   externals: [
-       function ( { context, request }, callback ) {
-           if ( request === '@wordpress/components' && context ) {
-               switch ( true ) {
-                   // Add new path to externalize
-                   case context.includes(
-                       path.join( 'client', 'new-feature-path' )
-                   ):
-                   // Existing paths
-                   case context.includes(
-                       path.join( 'client', 'payment-details', 'dispute-details' )
-                   ):
-                       return callback( null, 'wp.components' );
-                   default:
-                       return callback();
-               }
-           }
-           callback();
-       },
-   ]
+   ```json
+   ...
+	externals: [
+		/**
+		 * Only externalize `@wordpress/components` when it's
+		 * imported from client/payment-details/dispute-details/**
+		 */
+		function ( { context, request }, callback ) {
+			if ( request === '@wordpress/components' && context ) {
+				switch ( true ) {
+					case context.includes(
+						path.join(
+							'client',
+							'payment-details',
+							'dispute-details'
+						)
+					):
+					case context.includes( path.join( 'client', 'disputes' ) ):
+						return callback( null, 'wp.components' );
+					default:
+						return callback();
+				}
+			}
+			// Otherwise bundle normally
+			callback();
+		},
+	],
+    ...
    ```
    This configuration tells webpack to:
-   - Use WordPress core components for specific paths
-   - Bundle components for other paths
-   - Allows gradual migration path by path
+     - Use WordPress core components for specific paths
+     - Bundle components for other paths
+     - Allows gradual migration path by path
 
    **Important**: This path-based approach means:
-   - Only components used within the specified path will use WordPress core components
-   - Components created in the path but used elsewhere will still use bundled versions
-   - The entire feature/page should be migrated together to ensure consistent behavior
-   - Choose paths that represent complete, isolated features (e.g., entire pages or self-contained features)
+     - Only components used within the specified path will use WordPress core components
+     - Components created in the path but used elsewhere will still use bundled versions
+     - The entire feature/page should be migrated together to ensure consistent behavior
+     - Choose paths that represent complete, isolated features (e.g., entire pages or self-contained features)
+
+    **Note**: For Disputes, this configuration was redundant since we are already passing the context per page. But for other cases where we need to externalize components to specific paths, this configuration is useful.
 
 2. **Component Context System**
    ```typescript
