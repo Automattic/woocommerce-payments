@@ -105,6 +105,7 @@ const PaymentMethodsList = ( { methodIds } ) => {
 							key={ id }
 							label={ label }
 							description={ description }
+							// The card payment method is required and it can't be disabled/unchecked.
 							locked={
 								PAYMENT_METHOD_IDS.CARD === id &&
 								enabledMethodIds.includes(

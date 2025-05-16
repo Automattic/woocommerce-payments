@@ -124,15 +124,24 @@ const usePaymentMethodAvailability = ( id: string ) => {
 		return {
 			isActionable: false,
 			chip: __( 'Pending verification', 'woocommerce-payments' ),
-			notice: sprintf(
-				__(
-					"%s won't be visible to your customers until you provide the required " +
-						'information. Follow the instructions sent by our partner Stripe to %s.',
-					'woocommerce-payments'
-				),
-				label,
-				wcpaySettings?.accountEmail ?? ''
-			),
+			notice: wcpaySettings?.accountEmail
+				? sprintf(
+						__(
+							"%s won't be visible to your customers until you provide the required " +
+								'information. Follow the instructions sent by our partner Stripe to %s.',
+							'woocommerce-payments'
+						),
+						label,
+						wcpaySettings?.accountEmail
+				  )
+				: sprintf(
+						__(
+							"%s won't be visible to your customers until you provide the required " +
+								'information. Follow the instructions sent by our partner Stripe to your email.',
+							'woocommerce-payments'
+						),
+						label
+				  ),
 		};
 	}
 
