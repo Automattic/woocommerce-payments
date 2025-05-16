@@ -8,7 +8,7 @@ import { render } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import usePaymentMethodAvailability from '..';
+import usePaymentMethodAvailability from '../use-payment-method-availability';
 import {
 	useEnabledPaymentMethodIds,
 	useGetPaymentMethodStatuses,
