@@ -213,6 +213,7 @@ const MultiStepEvidenceForm = ( {
 								},
 							] }
 							disabled={ readOnly }
+							__nextHasNoMarginBottom
 						/>
 					</div>
 					{ fields
@@ -265,12 +266,18 @@ const MultiStepEvidenceForm = ( {
 												/>
 											);
 										case 'text':
-											return <TextControl { ...props } />;
+											return (
+												<TextControl
+													{ ...props }
+													__nextHasNoMarginBottom
+												/>
+											);
 										case 'date':
 											return (
 												<TextControl
 													{ ...props }
 													type="date"
+													__nextHasNoMarginBottom
 												/>
 											);
 										default:
@@ -280,6 +287,7 @@ const MultiStepEvidenceForm = ( {
 													maxLength={
 														field.maxLength
 													}
+													__nextHasNoMarginBottom
 												/>
 											);
 									}
@@ -344,12 +352,18 @@ const MultiStepEvidenceForm = ( {
 												/>
 											);
 										case 'text':
-											return <TextControl { ...props } />;
+											return (
+												<TextControl
+													{ ...props }
+													__nextHasNoMarginBottom
+												/>
+											);
 										case 'date':
 											return (
 												<TextControl
 													{ ...props }
 													type="date"
+													__nextHasNoMarginBottom
 												/>
 											);
 										default:
@@ -359,6 +373,7 @@ const MultiStepEvidenceForm = ( {
 													maxLength={
 														field.maxLength
 													}
+													__nextHasNoMarginBottom
 												/>
 											);
 									}
@@ -819,9 +834,31 @@ const getDisputeProductType = ( dispute ) => {
 		return '';
 	}
 
+	// First check if product type is already set in metadata
 	let productType = dispute.metadata[ PRODUCT_TYPE_META_KEY ] || '';
 
-	// Fallback to `multiple` when evidence submitted but no product type meta.
+	// If no product type is set, try to infer it from the dispute reason
+	if ( ! productType ) {
+		switch ( dispute.reason ) {
+			case 'product_not_received':
+			case 'product_unacceptable':
+				productType = 'physical_product';
+				break;
+			case 'subscription_canceled':
+				productType = 'digital_product_or_service';
+				break;
+			case 'duplicate':
+			case 'credit_not_processed':
+				// These could be any type, so we'll default to multiple
+				productType = 'multiple';
+				break;
+			default:
+				// For other reasons, default to multiple
+				productType = 'multiple';
+		}
+	}
+
+	// Fallback to `multiple` when evidence submitted but no product type meta
 	if (
 		! productType &&
 		dispute.evidence_details &&

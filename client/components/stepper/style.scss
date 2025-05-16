@@ -24,7 +24,7 @@
 	align-items: center;
 	justify-content: center;
 
-	border: 1px solid var( --Gutenberg-Gray-200, #e0e0e0 );
+	border: 1px solid $gray-200;
 	z-index: 1;
 	transition: background 0.2s, border 0.2s, color 0.2s;
 
@@ -32,11 +32,11 @@
 	font-size: 13px;
 	font-style: normal;
 	font-weight: 600;
-	color: var( --Gutenberg-Gray-700, #757575 );
+	color: $gray-700;
 	line-height: 16px; /* 123.077% */
 
 	padding: 4px 8px;
-	border-radius: 50%;
+	border-radius: $radius-round;
 }
 
 .stepper-step.active .stepper-circle {
@@ -45,13 +45,13 @@
 }
 
 .stepper-step.complete .stepper-circle {
-	background: #3858e9;
-	color: #fff;
-	border-color: #3858e9;
+	background: var( --wp-admin-theme-color );
+	color: $white;
+	border-color: var( --wp-admin-theme-color );
 }
 
 .stepper-label {
-	color: var( --Gutenberg-Gray-700, #757575 );
+	color: $gray-700;
 
 	// regular state
 	font-size: 13px;
@@ -68,10 +68,10 @@
 	left: 100%;
 	width: 48px;
 	height: 2px;
-	background: #e0e0e0;
+	background: $gray-200;
 	z-index: 0;
 }
 
 .stepper-step.complete ~ .stepper-step .stepper-line {
-	background: #3858e9;
+	background: var( --wp-admin-theme-color );
 }

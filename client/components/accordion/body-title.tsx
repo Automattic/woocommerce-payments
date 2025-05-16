@@ -26,10 +26,7 @@ const AccordionBodyTitle = forwardRef<
 	return (
 		<h2 className="wcpay-accordion__body-title">
 			<Button
-				// @ts-expect-error: Suppressing Module '"@wordpress/components"' has no exported member '__next40pxDefaultSize'.
-				__next40pxDefaultSize
 				className="wcpay-accordion__body-toggle"
-				aria-expanded={ isOpened }
 				ref={ ref }
 				{ ...props }
 			>
