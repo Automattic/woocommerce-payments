@@ -277,18 +277,22 @@ class FrontendPrices {
 	public function convert_shipping_method_rate_cost( $args ) {
 		if ( isset( $args['cost'] ) ) {
 			/**
-			 * We need to keep `cost` structure intact when applying
-			 * multi-currency, because downstream it is important for
-			 * WooCommerce to keep the taxes flow consistent.
+			 * We need to keep the `cost` structure intact when applying
+			 * multi-currency conversions, because downstream it is important
+			 * for WooCommerce to keep the taxes flow consistent.
 			 */
-			$args['cost'] = is_array( $args['cost'] )
-				? array_map(
+			if ( is_array( $args['cost'] ) ) {
+				$args['cost'] = array_map(
 					function ( $cost ) {
-						return $this->multi_currency->get_price( $cost, 'shipping' ); },
+						return $this->multi_currency->get_price( $cost, 'shipping' );
+					},
 					$args['cost']
-				)
-				: $this->multi_currency->get_price( $args['cost'], 'shipping' );
+				);
+			} else {
+				$args['cost'] = $this->multi_currency->get_price( $args['cost'], 'shipping' );
+			}
 		}
+
 		return $args;
 	}
 
