@@ -782,7 +782,7 @@ export const DisputeEvidencePage = ( props ) => {
 			<TestModeNotice currentPage="disputes" isDetailsView={ true } />
 			{ readOnly && ! isLoading && readOnlyNotice }
 			<ErrorBoundary>
-				<Accordion>
+				<Accordion highDensity>
 					<AccordionBody title="Challenge dispute">
 						<AccordionRow>
 							<div className="evidence-summary__body">

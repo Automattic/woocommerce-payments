@@ -40,7 +40,7 @@
 	font-size: inherit;
 	margin-top: 0;
 	margin-bottom: 0;
-	transition: 0.2s background ease-in-out;
+	transition: 0.3s background ease-in-out;
 }
 
 .wcpay-accordion__body.is-opened > .wcpay-accordion__body-title {
@@ -73,6 +73,14 @@
 		display: flex;
 		flex-direction: column;
 		gap: 4px;
+	}
+
+	&.is-md {
+		font-size: 13px;
+	}
+
+	&.is-lg {
+		font-size: 15px;
 	}
 
 	&:focus {

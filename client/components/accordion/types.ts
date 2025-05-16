@@ -48,10 +48,13 @@ export type AccordionBodyProps = {
 	 *
 	 * @default {}
 	 */
-	buttonProps?: WordPressComponentProps<
-		Omit< Button.ButtonProps, 'icon' >,
-		'button',
-		false
+	buttonProps?: Omit<
+		WordPressComponentProps<
+			Omit< Button.ButtonProps, 'icon' >,
+			'button',
+			false
+		>,
+		'size'
 	>;
 	/**
 	 * The content to display in the `AccordionBody`.If a function is provided for
@@ -104,6 +107,18 @@ export type AccordionBodyProps = {
 	 * Ref to be forwarded to the body element
 	 */
 	ref?: React.Ref< HTMLDivElement >;
+	/**
+	 * Whether to use large title size (15px).
+	 *
+	 * @default false
+	 */
+	lg?: boolean;
+	/**
+	 * Whether to use medium title size (13px).
+	 *
+	 * @default true
+	 */
+	md?: boolean;
 };
 
 export type AccordionTitleProps = Omit< Button.ButtonProps, 'icon' > & {
@@ -123,6 +138,18 @@ export type AccordionTitleProps = Omit< Button.ButtonProps, 'icon' > & {
 	 * Optional subtitle text that appears below the title.
 	 */
 	subtitle?: string;
+	/**
+	 * Whether to use large title size (15px).
+	 *
+	 * @default false
+	 */
+	lg?: boolean;
+	/**
+	 * Whether to use medium title size (13px).
+	 *
+	 * @default true
+	 */
+	md?: boolean;
 	/**
 	 * Ref to be forwarded to the title button element
 	 */

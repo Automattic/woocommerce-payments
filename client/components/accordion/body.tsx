@@ -43,6 +43,8 @@ const AccordionBody = forwardRef< HTMLDivElement, AccordionBodyProps >(
 			opened,
 			title,
 			subtitle,
+			md = true,
+			lg = false,
 			scrollAfterOpen = true,
 		},
 		ref
@@ -97,6 +99,8 @@ const AccordionBody = forwardRef< HTMLDivElement, AccordionBodyProps >(
 					onClick={ handleOnToggle }
 					title={ title }
 					subtitle={ subtitle }
+					md={ md }
+					lg={ lg }
 					{ ...( buttonProps && { ...buttonProps, ref: undefined } ) }
 				/>
 				{ typeof children === 'function'
