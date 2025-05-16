@@ -12,7 +12,7 @@ import { chevronUp, chevronDown } from '@wordpress/icons';
  */
 import type { AccordionBodyTitleProps } from './types';
 import type { WordPressComponentProps } from '@wordpress/components/ui/context/wordpress-component';
-import { Button, Icon } from '@wordpress/components';
+import { Button, Icon } from 'wcpay/components/wp-components-wrapped';
 import './style.scss';
 
 const AccordionBodyTitle = forwardRef<

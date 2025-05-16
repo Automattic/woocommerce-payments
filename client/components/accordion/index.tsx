@@ -27,8 +27,10 @@ import './style.scss';
  * ```
  */
 const Accordion = forwardRef< HTMLDivElement, AccordionProps >(
-	( { className, children }, ref ) => {
-		const classNames = clsx( className, 'wcpay-accordion' );
+	( { className, children, highDensity = false }, ref ) => {
+		const classNames = clsx( className, 'wcpay-accordion', {
+			'is-high-density': highDensity,
+		} );
 		return (
 			<div className={ classNames } ref={ ref }>
 				{ children }

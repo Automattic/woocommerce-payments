@@ -3,36 +3,6 @@
 	border: 1px solid #ddd;
 	border-radius: 4px;
 	margin-bottom: 24px;
-
-	&__header {
-		padding: 24px 24px 0;
-		color: var( --Scales-Grays-gray-900, #1e1e1e );
-		/* Heading LG */
-		font-size: var( --l, 15px );
-		font-style: normal;
-		font-weight: var( --Medium, 500 );
-		line-height: var( --s, 20px ); /* 133.333% */
-
-		.evidence-subtitle {
-			/* WooCommerce/Body/Regular */
-			color: var( --Gutenberg-Gray-700, #757575 );
-			font-size: 13px;
-			font-style: normal;
-			font-weight: 400;
-			line-height: 16px;
-			margin: 8px 0 0;
-		}
-	}
-}
-
-.evidence-subtitle {
-	/* WooCommerce/Body/Regular */
-	color: var( --Gutenberg-Gray-700, #757575 );
-	font-size: 13px;
-	font-style: normal;
-	font-weight: 400;
-	line-height: 16px;
-	margin: 8px 0 0;
 }
 
 .multi-step-evidence-form {

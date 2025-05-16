@@ -18,6 +18,12 @@ export type AccordionProps = {
 	 * Ref to be forwarded to the root element
 	 */
 	ref?: React.Ref< HTMLDivElement >;
+	/**
+	 * Whether to use high density styling (smaller padding, no border radius).
+	 *
+	 * @default false
+	 */
+	highDensity?: boolean;
 };
 
 export type AccordionRowProps = {

@@ -1,6 +1,13 @@
 .wcpay-accordion {
 	background: $white;
 	border: $border-width solid $gray-200;
+	border-radius: 8px;
+	padding: $grid-unit-10;
+
+	&.is-high-density {
+		border-radius: 0;
+		padding: 0;
+	}
 
 	> .wcpay-accordion__body:first-child {
 		margin-top: -1px;
@@ -16,12 +23,7 @@
 }
 
 .wcpay-accordion__body {
-	border-top: $border-width solid $gray-200;
 	border-bottom: $border-width solid $gray-200;
-
-	h3 {
-		margin: 0 0 0.5em;
-	}
 
 	&.is-opened {
 		padding: $grid-unit-20;
@@ -42,8 +44,8 @@
 }
 
 .wcpay-accordion__body.is-opened > .wcpay-accordion__body-title {
-	margin: -1 * $grid-unit-20;
-	margin-bottom: 5px;
+	$value: -1 * $grid-unit-20;
+	margin: $value $value 0 $value;
 }
 
 // Hover States

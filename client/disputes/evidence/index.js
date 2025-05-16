@@ -783,7 +783,7 @@ export const DisputeEvidencePage = ( props ) => {
 			{ readOnly && ! isLoading && readOnlyNotice }
 			<ErrorBoundary>
 				<Accordion>
-					<AccordionBody highDensity title="Challenge dispute">
+					<AccordionBody title="Challenge dispute">
 						<AccordionRow>
 							<div className="evidence-summary__body">
 								{ dispute.status && (
