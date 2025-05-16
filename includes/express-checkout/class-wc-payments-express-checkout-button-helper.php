@@ -1284,12 +1284,18 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		}
 
 		foreach ( $payment_data as $payment_data_item ) {
-			if ( ! is_array( $payment_data_item ) || ! isset( $payment_data_item['key'] ) || ! isset( $payment_data_item['value'] ) ) {
+			if ( ! is_array( $payment_data_item ) ) {
 				continue;
 			}
 
-			if ( 'payment_request_type' === $payment_data_item['key'] || 'express_payment_type' === $payment_data_item['key'] ) {
-				return in_array( $payment_data_item['value'], [ 'apple_pay', 'google_pay' ], true );
+			$key   = $payment_data_item['key'] ?? null;
+			$value = $payment_data_item['value'] ?? null;
+
+			if (
+				in_array( $key, [ 'payment_request_type', 'express_payment_type' ], true )
+				&& in_array( $value, [ 'apple_pay', 'google_pay' ], true )
+			) {
+				return true;
 			}
 		}
 
