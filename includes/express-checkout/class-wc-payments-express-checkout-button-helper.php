@@ -1314,36 +1314,11 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return $locales;
 		}
 
-		// Apply country locale overrides from Express Checkout Element States.
-		$overrides = $this->get_locale_overrides();
-		foreach ( $overrides as $country_code => $override ) {
-			$locales[ $country_code ] = $override;
+		// For countries that don't have state fields, make the state field optional.
+		foreach ( Express_Checkout_Element_States::COUNTRIES_WITHOUT_STATES as $country_code ) {
+			$locales[ $country_code ]['state']['required'] = false;
 		}
 
 		return $locales;
-	}
-
-	/**
-	 * Gets locale overrides for countries that need special handling in Express Checkout.
-	 * For countries where the Express Checkout Element API does not provide a state/region field,
-	 * we make the state field optional and hidden to avoid validation errors.
-	 *
-	 * @return array Array of locale overrides indexed by country code.
-	 */
-	private function get_locale_overrides() {
-		$overrides = [];
-
-		// For all countries that don't have state fields in the Payment Request API,
-		// make the state field optional and hidden.
-		foreach ( Express_Checkout_Element_States::COUNTRIES_WITHOUT_STATES as $country_code ) {
-			$overrides[ $country_code ] = [
-				'state' => [
-					'required' => false,
-					'hidden'   => true,
-				],
-			];
-		}
-
-		return $overrides;
 	}
 }
