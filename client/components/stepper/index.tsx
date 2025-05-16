@@ -2,7 +2,8 @@
  * External dependencies
  */
 import React, { createContext, useContext, useState } from 'react';
-import CheckmarkIcon from 'gridicons/dist/checkmark';
+import { Icon } from 'wcpay/components/wp-components-wrapped';
+import { check } from '@wordpress/icons';
 import './style.scss';
 
 /**
@@ -134,7 +135,11 @@ export const StepperIndicator: React.FC< StepperIndicatorProps > = ( {
 					}` }
 				>
 					<div className="stepper-circle">
-						{ isComplete ? <CheckmarkIcon /> : idx + 1 }
+						{ isComplete ? (
+							<Icon icon={ check } size={ 36 } />
+						) : (
+							idx + 1
+						) }
 					</div>
 					<div className="stepper-label">{ label }</div>
 					{ idx < steps.length - 1 && (

@@ -48,6 +48,10 @@
 	background: var( --wp-admin-theme-color );
 	color: $white;
 	border-color: var( --wp-admin-theme-color );
+	padding: 0;
+	svg {
+		fill: $white;
+	}
 }
 
 .stepper-label {
@@ -70,8 +74,4 @@
 	height: 2px;
 	background: $gray-200;
 	z-index: 0;
-}
-
-.stepper-step.complete ~ .stepper-step .stepper-line {
-	background: var( --wp-admin-theme-color );
 }
