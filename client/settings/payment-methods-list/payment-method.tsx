@@ -32,7 +32,7 @@ import Jcb from 'assets/images/payment-method-icons/jcb.svg?asset';
 import Cartebancaire from 'assets/images/cards/cartes_bancaires.svg?asset';
 import UnionPay from 'assets/images/cards/unionpay.svg?asset';
 import PAYMENT_METHOD_IDS from 'wcpay/constants/payment-method';
-import usePaymentMethodAvailability from 'wcpay/settings/use-payment-method-availability';
+import usePaymentMethodAvailability from 'wcpay/settings/hooks/use-payment-method-availability';
 import InlineNotice from 'wcpay/components/inline-notice';
 import { useEnabledPaymentMethodIds } from 'wcpay/data';
 

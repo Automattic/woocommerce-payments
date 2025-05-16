@@ -41,6 +41,16 @@ const getDocumentationUrlForDisabledPaymentMethod = (
 	return documentationTypeMap.DEFAULT;
 };
 
+/**
+ * Used to determine the UI state of a payment method, based on a few factors:
+ * - whether the payment method is enabled
+ * - the payment method's capability status
+ *
+ * The returned object contains the message that needs to be displayed to the merchant,
+ * and whether the payment method is actionable (i.e. can be enabled or disabled for checkout).
+ *
+ * @param id
+ */
 const usePaymentMethodAvailability = ( id: string ) => {
 	const paymentMethodStatuses = useGetPaymentMethodStatuses();
 	const [ enabledPaymentMethods ] = useEnabledPaymentMethodIds();
