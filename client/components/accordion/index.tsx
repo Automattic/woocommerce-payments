@@ -7,7 +7,8 @@ import React, { forwardRef } from 'react';
 /**
  * Internal dependencies
  */
-import type { AccordionProps } from './types';
+import type { AccordionProps, AccordionBodyProps } from './types';
+import AccordionBody from './body';
 import './style.scss';
 
 /**
@@ -27,13 +28,29 @@ import './style.scss';
  * ```
  */
 const Accordion = forwardRef< HTMLDivElement, AccordionProps >(
-	( { className, children, highDensity = false }, ref ) => {
+	(
+		{ className, children, highDensity = false, defaultExpanded = false },
+		ref
+	) => {
 		const classNames = clsx( className, 'wcpay-accordion', {
 			'is-high-density': highDensity,
 		} );
+
+		const childrenWithProps = React.Children.map( children, ( child ) => {
+			if (
+				React.isValidElement< AccordionBodyProps >( child ) &&
+				child.type === AccordionBody
+			) {
+				return React.cloneElement( child, {
+					initialOpen: defaultExpanded,
+				} );
+			}
+			return child;
+		} );
+
 		return (
 			<div className={ classNames } ref={ ref }>
-				{ children }
+				{ childrenWithProps }
 			</div>
 		);
 	}

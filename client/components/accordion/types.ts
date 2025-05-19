@@ -24,6 +24,12 @@ export type AccordionProps = {
 	 * @default false
 	 */
 	highDensity?: boolean;
+	/**
+	 * Whether all accordion sections should be expanded by default.
+	 *
+	 * @default false
+	 */
+	defaultExpanded?: boolean;
 };
 
 export type AccordionRowProps = {
