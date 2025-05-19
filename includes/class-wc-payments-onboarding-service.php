@@ -23,6 +23,7 @@ class WC_Payments_Onboarding_Service {
 	const TEST_MODE_OPTION                           = 'wcpay_onboarding_test_mode';
 	const ONBOARDING_ELIGIBILITY_MODAL_OPTION        = 'wcpay_onboarding_eligibility_modal_dismissed';
 	const ONBOARDING_CONNECTION_SUCCESS_MODAL_OPTION = 'wcpay_connection_success_modal_dismissed';
+	const ONBOARDING_INIT_IN_PROGRESS_TRANSIENT      = 'wcpay_onboarding_init_in_progress';
 
 	// Onboarding flow sources.
 	// We use these to identify the originating place for the current onboarding flow.
@@ -40,7 +41,6 @@ class WC_Payments_Onboarding_Service {
 	const SOURCE_WCPAY_UPDATE_BUSINESS_DETAILS_TASK = 'wcpay-update-business-details-task';
 	const SOURCE_WCPAY_PO_BANK_ACCOUNT_TASK         = 'wcpay-po-bank-account-task';
 	const SOURCE_WCPAY_RECONNECT_WPCOM_TASK         = 'wcpay-reconnect-wpcom-task';
-	const SOURCE_WCPAY_ADD_APMS_TASK                = 'wcpay-add-apms-task';
 	const SOURCE_WCPAY_GO_LIVE_TASK                 = 'wcpay-go-live-task';
 	const SOURCE_WCPAY_FINISH_SETUP_TOOL            = 'wcpay-finish-setup-tool';
 	const SOURCE_WCPAY_PAYOUT_FAILURE_NOTICE        = 'wcpay-payout-failure-notice';
@@ -288,6 +288,14 @@ class WC_Payments_Onboarding_Service {
 			return [];
 		}
 
+		if ( $this->is_onboarding_init_in_progress() ) {
+			Logger::warning( 'Duplicate onboarding attempt detected.' );
+			// We can't allow multiple onboarding initializations to happen at the same time.
+			throw new Exception( __( 'Onboarding initialization is already in progress. Please wait for it to finish.', 'woocommerce-payments' ) );
+		}
+
+		$this->set_onboarding_init_in_progress();
+
 		$setup_mode = WC_Payments::mode()->is_live() ? 'live' : 'test';
 
 		// Make sure the onboarding test mode DB flag is set.
@@ -332,9 +340,13 @@ class WC_Payments_Onboarding_Service {
 				$this->get_referral_code()
 			);
 		} catch ( API_Exception $e ) {
+			$this->clear_onboarding_init_in_progress();
+
 			// If we fail to create the session, return an empty array.
 			return [];
 		}
+
+		$this->clear_onboarding_init_in_progress();
 
 		// Set the embedded KYC in progress flag.
 		$this->set_embedded_kyc_in_progress();
@@ -435,6 +447,37 @@ class WC_Payments_Onboarding_Service {
 		}
 
 		return $business_types;
+	}
+
+	/**
+	 * Check whether an onboarding initialization is in progress.
+	 *
+	 * This only relates to the initial account creation, not the full KYC flow.
+	 *
+	 * @return bool Whether an onboarding flow is in progress.
+	 */
+	public function is_onboarding_init_in_progress(): bool {
+		return filter_var( get_transient( self::ONBOARDING_INIT_IN_PROGRESS_TRANSIENT ), FILTER_VALIDATE_BOOLEAN );
+	}
+
+	/**
+	 * Mark the onboarding initialization as in progress.
+	 *
+	 * This only relates to the initial account creation, not the full KYC flow.
+	 *
+	 * @return void
+	 */
+	public function set_onboarding_init_in_progress(): void {
+		set_transient( self::ONBOARDING_INIT_IN_PROGRESS_TRANSIENT, 'yes', 3 * MINUTE_IN_SECONDS );
+	}
+
+	/**
+	 * Clear the onboarding initialization in progress transient.
+	 *
+	 * @return void
+	 */
+	public function clear_onboarding_init_in_progress(): void {
+		delete_transient( self::ONBOARDING_INIT_IN_PROGRESS_TRANSIENT );
 	}
 
 	/**
@@ -549,10 +592,6 @@ class WC_Payments_Onboarding_Service {
 						'last_name'  => $self_assessment_data['individual']['last_name'] ?? null,
 						'phone'      => $self_assessment_data['phone'] ?? null,
 					],
-					'store'         => [
-						'annual_revenue'    => $self_assessment_data['annual_revenue'] ?? null,
-						'go_live_timeframe' => $self_assessment_data['go_live_timeframe'] ?? null,
-					],
 				]
 			);
 		} elseif ( 'test_drive' === $setup_mode ) {
@@ -615,19 +654,28 @@ class WC_Payments_Onboarding_Service {
 	 *
 	 * @return bool Whether the account was created.
 	 * @throws API_Exception When the API request fails.
+	 * @throws Exception When an onboarding initialization is already in progress.
 	 */
 	public function init_test_drive_account( string $country, array $capabilities = [] ): bool {
+		if ( ! $this->payments_api_client->is_server_connected() ) {
+			throw new Exception( __( 'Your store is not connected to WordPress.com. Please connect it first.', 'woocommerce-payments' ) );
+		}
+
+		if ( $this->is_onboarding_init_in_progress() ) {
+			// We can't allow multiple onboarding initializations to happen at the same time.
+			throw new Exception( __( 'Onboarding initialization is already in progress. Please wait for it to finish.', 'woocommerce-payments' ) );
+		}
+
 		// Since there should be no Stripe KYC needed, make sure we start with a clean state.
 		delete_transient( WC_Payments_Account::ONBOARDING_STATE_TRANSIENT );
 		delete_option( WC_Payments_Account::EMBEDDED_KYC_IN_PROGRESS_OPTION );
 
-		// Set a quickly expiring transient to avoid duplicate requests.
-		// The duration should be sufficient for our platform to respond.
-		// There is no danger in having this transient expire too late
-		// because we delete it after we initiate the onboarding.
-		set_transient( WC_Payments_Account::ONBOARDING_STARTED_TRANSIENT, true, MINUTE_IN_SECONDS );
+		$this->set_onboarding_init_in_progress();
 
 		$current_user = get_userdata( get_current_user_id() );
+
+		// Make sure the onboarding test mode DB flag is set.
+		self::set_test_mode( true );
 
 		$site_data    = [
 			'site_username' => wp_get_current_user()->user_login,
@@ -687,8 +735,7 @@ class WC_Payments_Onboarding_Service {
 			update_option( '_wcpay_onboarding_stripe_connected', [ 'is_existing_stripe_account' => true ] );
 		}
 
-		// Clear the transient that is used to avoid duplicate requests.
-		delete_transient( WC_Payments_Account::ONBOARDING_STARTED_TRANSIENT );
+		$this->clear_onboarding_init_in_progress();
 
 		// Clear the account cache to force a refresh.
 		WC_Payments::get_account_service()->clear_cache();
@@ -713,7 +760,7 @@ class WC_Payments_Onboarding_Service {
 	 */
 	public function reset_onboarding( array $context ): bool {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
-			return false;
+			throw new Exception( __( 'Your store is not connected to WordPress.com. Please connect it first.', 'woocommerce-payments' ) );
 		}
 
 		// Delete the currently connected Stripe account, in the onboarding mode we are currently in.
@@ -759,7 +806,7 @@ class WC_Payments_Onboarding_Service {
 	 */
 	public function disable_test_drive_account( array $context ): bool {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
-			return false;
+			throw new Exception( __( 'Your store is not connected to WordPress.com. Please connect it first.', 'woocommerce-payments' ) );
 		}
 
 		// If the test mode onboarding is not enabled, we don't need to do anything.
@@ -814,9 +861,9 @@ class WC_Payments_Onboarding_Service {
 
 		// Discard any ongoing onboarding session.
 		delete_transient( WC_Payments_Account::ONBOARDING_STATE_TRANSIENT );
-		delete_transient( WC_Payments_Account::ONBOARDING_STARTED_TRANSIENT );
 		delete_option( WC_Payments_Account::EMBEDDED_KYC_IN_PROGRESS_OPTION );
 		delete_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT );
+		$this->clear_onboarding_init_in_progress();
 
 		// Clear the cache to avoid stale data.
 		WC_Payments::get_account_service()->clear_cache();
@@ -1101,7 +1148,6 @@ class WC_Payments_Onboarding_Service {
 			self::SOURCE_WCPAY_UPDATE_BUSINESS_DETAILS_TASK,
 			self::SOURCE_WCPAY_PO_BANK_ACCOUNT_TASK,
 			self::SOURCE_WCPAY_RECONNECT_WPCOM_TASK,
-			self::SOURCE_WCPAY_ADD_APMS_TASK,
 			self::SOURCE_WCPAY_GO_LIVE_TASK,
 			self::SOURCE_WCPAY_FINISH_SETUP_TOOL,
 			self::SOURCE_WCPAY_PAYOUT_FAILURE_NOTICE,
@@ -1357,7 +1403,7 @@ class WC_Payments_Onboarding_Service {
 		}
 
 		// Update gateway option with the Apple/Google Pay capability.
-		if ( ! empty( $capabilities['apple_google'] ) ) {
+		if ( ! empty( $capabilities['apple_google'] ) || ( ! empty( $capabilities['apple_pay'] ) || ! empty( $capabilities['google_pay'] ) ) ) {
 			$gateway->update_option( 'payment_request', 'yes' );
 		} else {
 			$gateway->update_option( 'payment_request', 'no' );

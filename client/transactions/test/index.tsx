@@ -112,7 +112,7 @@ describe( 'TransactionsPage', () => {
 			isLoading: false,
 			isSaving: false,
 			isDirty: false,
-			saveSettings: ( a ) => a,
+			saveSettings: () => null,
 		} );
 
 		mockUseTransactions.mockReturnValue( {
@@ -165,7 +165,7 @@ describe( 'TransactionsPage', () => {
 	};
 
 	test( 'renders uncaptured tab if auth&capture is DISABLED but authorizations are present', async () => {
-		mockUseManualCapture.mockReturnValue( [ false ] );
+		mockUseManualCapture.mockReturnValue( [ false, () => null ] );
 		mockUseAuthorizationsSummary.mockReturnValue( {
 			authorizationsSummary: {
 				total: 5,
@@ -178,7 +178,7 @@ describe( 'TransactionsPage', () => {
 	} );
 
 	test( 'renders uncaptured tab if auth&capture is ENABLED and authorizations are present', async () => {
-		mockUseManualCapture.mockReturnValue( [ true ] );
+		mockUseManualCapture.mockReturnValue( [ true, () => null ] );
 		mockUseAuthorizationsSummary.mockReturnValue( {
 			authorizationsSummary: {
 				total: 5,
@@ -191,7 +191,7 @@ describe( 'TransactionsPage', () => {
 	} );
 
 	test( 'renders uncaptured tab if auth&capture is ENABLED and no authorizations are present', async () => {
-		mockUseManualCapture.mockReturnValue( [ true ] );
+		mockUseManualCapture.mockReturnValue( [ true, () => null ] );
 		mockUseAuthorizationsSummary.mockReturnValue( {
 			authorizationsSummary: {
 				total: 0,
@@ -204,7 +204,7 @@ describe( 'TransactionsPage', () => {
 	} );
 
 	test( 'do not render uncaptured tab if auth&capture is DISABLED and no authorizations are present', async () => {
-		mockUseManualCapture.mockReturnValue( [ false ] );
+		mockUseManualCapture.mockReturnValue( [ false, () => null ] );
 		mockUseAuthorizationsSummary.mockReturnValue( {
 			authorizationsSummary: {
 				total: 0,
@@ -217,7 +217,7 @@ describe( 'TransactionsPage', () => {
 	} );
 
 	test( 'renders fraud outcome tabs', async () => {
-		mockUseManualCapture.mockReturnValue( [ false ] );
+		mockUseManualCapture.mockReturnValue( [ false, () => null ] );
 		mockUseAuthorizationsSummary.mockReturnValue( {
 			authorizationsSummary: {
 				total: 0,

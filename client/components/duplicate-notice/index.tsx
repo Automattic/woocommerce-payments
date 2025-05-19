@@ -68,7 +68,7 @@ function DuplicateNotice( {
 	return (
 		<InlineNotice
 			status="warning"
-			icon={ true }
+			icon={ false }
 			isDismissible={ true }
 			onRemove={ handleDismiss }
 		>

@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React from 'react';
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { act, render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
 import { select } from '@wordpress/data';
 
@@ -21,7 +21,7 @@ import {
 	useUnselectedPaymentMethod,
 	useGetDuplicatedPaymentMethodIds,
 } from 'wcpay/data';
-import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
+import { upeCapabilityStatuses } from 'wcpay/settings/constants';
 import DuplicatedPaymentMethodsContext from 'wcpay/settings/settings-manager/duplicated-payment-methods-context';
 
 jest.mock( '@woocommerce/components', () => {
@@ -61,8 +61,8 @@ jest.mock( '@wordpress/data', () => ( {
 describe( 'PaymentMethodsSection', () => {
 	beforeEach( () => {
 		useEnabledPaymentMethodIds.mockReturnValue( [ [], jest.fn() ] );
-		useSelectedPaymentMethod.mockReturnValue( [ null, jest.fn() ] );
-		useUnselectedPaymentMethod.mockReturnValue( [ null, jest.fn() ] );
+		useSelectedPaymentMethod.mockReturnValue( [ [], jest.fn() ] );
+		useUnselectedPaymentMethod.mockReturnValue( [ [], jest.fn() ] );
 		useGetAvailablePaymentMethodIds.mockReturnValue( [
 			'card',
 			'au_becs_debit',
@@ -121,18 +121,14 @@ describe( 'PaymentMethodsSection', () => {
 	} );
 
 	it( 'renders notice pills on inactive and pending payment methods', () => {
-		const updateEnabledMethodsMock = jest.fn( () => {} );
-		useSelectedPaymentMethod.mockReturnValue( [
-			[
-				'Credit / Debit card',
-				'BECS Direct Debit',
-				'Bancontact',
-				'EPS',
-				'iDEAL',
-				'Przelewy24 (P24)',
-				'SEPA Direct Debit',
-			],
-			updateEnabledMethodsMock,
+		useGetAvailablePaymentMethodIds.mockReturnValue( [
+			'card',
+			'au_becs_debit',
+			'bancontact',
+			'eps',
+			'ideal',
+			'p24',
+			'sepa_debit',
 		] );
 		useGetPaymentMethodStatuses.mockReturnValue( {
 			card_payments: {
@@ -167,7 +163,16 @@ describe( 'PaymentMethodsSection', () => {
 
 		render( <PaymentMethodsSection /> );
 
-		expect( screen.queryAllByText( /Pending /i ).length ).toEqual( 4 );
+		expect(
+			screen.queryAllByText( /pending/i, {
+				ignore: '.a11y-speak-region,.components-flex-item',
+			} ).length
+		).toEqual( 4 );
+		expect(
+			screen.queryAllByText( /more information needed/i, {
+				ignore: '.a11y-speak-region,.components-flex-item',
+			} ).length
+		).toEqual( 6 );
 	} );
 
 	it( 'renders the activation modal when requirements exist for the payment method', () => {
@@ -262,34 +267,17 @@ describe( 'PaymentMethodsSection', () => {
 			},
 		} );
 
-		const { container } = render( <PaymentMethodsSection /> );
+		render( <PaymentMethodsSection /> );
 
-		// Checkbox shouldn't be rendered.
-		expect(
-			screen.queryByLabelText( 'Bancontact' )
-		).not.toBeInTheDocument();
-
-		const svgIcon = container.querySelectorAll(
-			'.gridicons-notice-outline'
-		)[ 0 ];
-
-		expect( svgIcon ).toBeInTheDocument();
-
-		jest.useFakeTimers();
-
-		act( () => {
-			fireEvent.mouseOver( svgIcon, {
-				view: window,
-				bubbles: true,
-				cancelable: true,
-			} );
-			jest.runAllTimers();
-		} );
+		// Checkbox should be rendered.
+		expect( screen.queryByLabelText( 'Bancontact' ) ).toBeInTheDocument();
+		expect( screen.queryByLabelText( 'Bancontact' ) ).toBeEnabled();
 
 		expect(
-			screen.queryByText( /Bancontact requires the EUR currency\./ )
+			screen.queryByText( /Bancontact requires the EUR currency\./, {
+				ignore: '.a11y-speak-region',
+			} )
 		).toBeInTheDocument();
-		jest.useRealTimers();
 	} );
 
 	it( 'should not render duplicate notices when they have been dismissed', () => {

@@ -22,7 +22,6 @@ import PaymentDetailsPage from 'payment-details';
 import DisputesPage from 'disputes';
 import RedirectToTransactionDetails from 'disputes/redirect-to-transaction-details';
 import DisputeEvidencePage from 'disputes/evidence';
-import AdditionalMethodsPage from 'wcpay/additional-methods-setup';
 import { MultiCurrencySetupPage } from 'multi-currency/interface/components';
 import CardReadersPage from 'card-readers';
 import CapitalPage from 'capital';
@@ -32,6 +31,7 @@ import OnboardingPage from 'onboarding';
 import OnboardingKycPage from 'onboarding/kyc';
 import FraudProtectionAdvancedSettingsPage from './settings/fraud-protection/advanced-settings';
 import { getTasks } from 'overview/task-list/tasks';
+import { WordPressComponentsContext } from 'wcpay/wordpress-components-context/context';
 
 addFilter(
 	'woocommerce_admin_pages_list',
@@ -137,7 +137,11 @@ addFilter(
 			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
-			container: PaymentDetailsPage,
+			container: ( { query } ) => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<PaymentDetailsPage query={ query } />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/transactions/details',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
@@ -155,7 +159,11 @@ addFilter(
 			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
-			container: DisputesPage,
+			container: ( { query } ) => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<DisputesPage query={ query } />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/disputes',
 			wpOpenMenu: menuID,
 			breadcrumbs: [ rootLink, __( 'Disputes', 'woocommerce-payments' ) ],
@@ -200,16 +208,6 @@ addFilter(
 				id: 'wc-payments-disputes-challenge',
 				parentPath: '/payments/disputes',
 			},
-			capability: 'manage_woocommerce',
-		} );
-		pages.push( {
-			container: AdditionalMethodsPage,
-			path: '/payments/additional-payment-methods',
-			wpOpenMenu: menuID,
-			breadcrumbs: [
-				rootLink,
-				__( 'Add additional payment methods', 'woocommerce-payments' ),
-			],
 			capability: 'manage_woocommerce',
 		} );
 		pages.push( {

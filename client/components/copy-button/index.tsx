@@ -3,7 +3,7 @@
  */
 import React, { useState } from 'react';
 import { __ } from '@wordpress/i18n';
-import classNames from 'classnames';
+import clsx from 'clsx';
 
 /**
  * Internal dependencies
@@ -36,7 +36,7 @@ export const CopyButton: React.FC< CopyButtonProps > = ( {
 	return (
 		<button
 			type="button"
-			className={ classNames( 'woopayments-copy-button', {
+			className={ clsx( 'woopayments-copy-button', {
 				'state--copied': copied,
 			} ) }
 			aria-label={ label }

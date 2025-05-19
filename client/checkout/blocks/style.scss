@@ -50,10 +50,6 @@ button.wcpay-stripelink-modal-trigger:hover {
 					// hiding the badge when the payment method is not selected
 					display: inline-block;
 				}
-
-				&__pmme-container {
-					display: none;
-				}
 			}
 		}
 	}
@@ -93,15 +89,6 @@ button.wcpay-stripelink-modal-trigger:hover {
 				justify-self: start;
 				width: max-content;
 				display: none;
-			}
-
-			&__pmme-container {
-				width: 100%;
-				pointer-events: none;
-
-				@include breakpoint( '<480px' ) {
-					margin-top: 8px;
-				}
 			}
 		}
 	}

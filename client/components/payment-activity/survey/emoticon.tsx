@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import classNames from 'classnames';
+import clsx from 'clsx';
 
 /**
  * Internal dependencies
@@ -35,7 +35,7 @@ const Emoticon: React.FC< Props > = ( {
 			disabled={ disabled }
 			type="button"
 			onClick={ onClick }
-			className={ classNames( 'components-button', 'has-icon', {
+			className={ clsx( 'components-button', 'has-icon', {
 				selected: isSelected,
 			} ) }
 		>

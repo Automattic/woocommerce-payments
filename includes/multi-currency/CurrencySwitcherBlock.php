@@ -63,7 +63,7 @@ class CurrencySwitcherBlock {
 		register_block_type(
 			'woocommerce-payments/multi-currency-switcher',
 			[
-				'api_version'     => '2',
+				'api_version'     => '3',
 				'editor_script'   => 'woocommerce-payments/multi-currency-switcher',
 				'render_callback' => [ $this, 'render_block_widget' ],
 				'attributes'      => [
