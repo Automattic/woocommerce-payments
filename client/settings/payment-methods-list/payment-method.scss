@@ -44,9 +44,16 @@
 			margin: 0 4px 0 0;
 		}
 
+		.components-checkbox-control__label {
+			display: none;
+		}
+
 		input[type='checkbox'] {
 			&:disabled {
 				cursor: not-allowed;
+			}
+			&:checked:disabled {
+				opacity: 0.3;
 			}
 		}
 

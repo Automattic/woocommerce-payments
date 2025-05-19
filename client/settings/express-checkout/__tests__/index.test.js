@@ -185,12 +185,18 @@ describe( 'ExpressCheckout', () => {
 
 		expect(
 			screen.queryByText(
-				'WooPay cannot be enabled at checkout. Click to expand.'
+				'To enable WooPay, you must first disable Link by Stripe.',
+				{
+					ignore: '.a11y-speak-region',
+				}
 			)
 		).toBeInTheDocument();
 		expect(
 			screen.queryByText(
-				'Link by Stripe cannot be enabled at checkout. Click to expand.'
+				'To enable Link by Stripe, you must first disable WooPay.',
+				{
+					ignore: '.a11y-speak-region',
+				}
 			)
 		).not.toBeInTheDocument();
 		expect( screen.getByLabelText( 'Link by Stripe' ) ).toBeChecked();
@@ -199,11 +205,11 @@ describe( 'ExpressCheckout', () => {
 	it( 'should show WooPay incompatibility warning', async () => {
 		const updateIsWooPayEnabledHandler = jest.fn();
 		useWooPayEnabledSettings.mockReturnValue(
-			getMockWooPayEnabledSettings( false, updateIsWooPayEnabledHandler )
+			getMockWooPayEnabledSettings( true, updateIsWooPayEnabledHandler )
 		);
 		const context = { accountStatus: {}, featureFlags: { woopay: true } };
 		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
-		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card', 'link' ] ] );
+		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card' ] ] );
 
 		useWooPayShowIncompatibilityNotice.mockReturnValue( true );
 

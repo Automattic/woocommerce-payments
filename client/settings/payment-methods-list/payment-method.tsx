@@ -4,14 +4,13 @@
  */
 import clsx from 'clsx';
 import React, { useContext } from 'react';
+import { CheckboxControl } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import interpolateComponents from '@automattic/interpolate-components';
 import { __, sprintf } from '@wordpress/i18n';
 import { HoverTooltip } from 'components/tooltip';
-import { upeCapabilityStatuses } from 'wcpay/settings/constants';
 import { FeeStructure } from 'wcpay/types/fees';
 import {
 	formatMethodFeesDescription,
@@ -19,7 +18,6 @@ import {
 } from 'wcpay/utils/account-fees';
 import WCPaySettingsContext from '../wcpay-settings-context';
 import Chip from 'wcpay/components/chip';
-import LoadableCheckboxControl from 'wcpay/components/loadable-checkbox';
 import Pill from 'wcpay/components/pill';
 import './payment-method.scss';
 import DuplicateNotice from 'wcpay/components/duplicate-notice';
@@ -34,6 +32,9 @@ import Jcb from 'assets/images/payment-method-icons/jcb.svg?asset';
 import Cartebancaire from 'assets/images/cards/cartes_bancaires.svg?asset';
 import UnionPay from 'assets/images/cards/unionpay.svg?asset';
 import PAYMENT_METHOD_IDS from 'wcpay/constants/payment-method';
+import usePaymentMethodAvailability from './use-payment-method-availability';
+import InlineNotice from 'wcpay/components/inline-notice';
+import { useEnabledPaymentMethodIds } from 'wcpay/data';
 
 interface PaymentMethodProps {
 	id: string;
@@ -41,89 +42,30 @@ interface PaymentMethodProps {
 	// eslint-disable-next-line @typescript-eslint/naming-convention
 	Icon: () => JSX.Element | null;
 	description: string;
-	status: string;
-	checked: boolean;
 	onCheckClick: ( id: string ) => void;
 	onUncheckClick: ( id: string ) => void;
 	className?: string;
-	isAllowingManualCapture: boolean;
-	isSetupRequired?: boolean;
-	setupTooltip?: string;
-	required: boolean;
 	locked: boolean;
-	isPoEnabled: boolean;
-	isPoComplete: boolean;
 }
 
-const documentationTypeMap = {
-	DEFAULT:
-		'https://woocommerce.com/document/woopayments/payment-methods/additional-payment-methods/#method-cant-be-enabled',
-	BNPLS:
-		'https://woocommerce.com/document/woopayments/payment-methods/buy-now-pay-later/#contact-support',
-};
-
-const getDocumentationUrlForDisabledPaymentMethod = (
-	paymentMethodId: string
-): string => {
-	const paymentMethodConfig =
-		window.wooPaymentsPaymentMethodsConfig?.[ paymentMethodId ];
-
-	if ( paymentMethodConfig?.isBnpl ) {
-		return documentationTypeMap.BNPLS;
-	}
-
-	return documentationTypeMap.DEFAULT;
-};
-
 const PaymentMethodLabel = ( {
+	id,
 	label,
-	required,
-	status,
-	disabled,
 }: {
+	id: string;
 	label: string;
-	required: boolean;
-	status: string;
-	disabled: boolean;
 } ): React.ReactElement => {
+	const { chip, chipType = 'warning' } = usePaymentMethodAvailability( id );
+
 	return (
 		<>
 			{ label }
-			{ required && (
+			{ PAYMENT_METHOD_IDS.CARD === id && (
 				<span className="payment-method__required-label">
 					{ '(' + __( 'Required', 'woocommerce-payments' ) + ')' }
 				</span>
 			) }
-			{ upeCapabilityStatuses.PENDING_APPROVAL === status && (
-				<Chip
-					message={ __( 'Pending approval', 'woocommerce-payments' ) }
-					type="warning"
-				/>
-			) }
-			{ upeCapabilityStatuses.REJECTED === status && (
-				<Chip
-					message={ __( 'Rejected', 'woocommerce-payments' ) }
-					type="alert"
-				/>
-			) }
-			{ upeCapabilityStatuses.PENDING_VERIFICATION === status && (
-				<Chip
-					message={ __(
-						'Pending activation',
-						'woocommerce-payments'
-					) }
-					type="warning"
-				/>
-			) }
-			{ disabled && (
-				<Chip
-					message={ __(
-						'More information needed',
-						'woocommerce-payments'
-					) }
-					type="warning"
-				/>
-			) }
+			{ chip && <Chip message={ chip } type={ chipType } /> }
 		</>
 	);
 };
@@ -145,44 +87,25 @@ const PaymentMethod = ( {
 	label,
 	Icon = () => null,
 	description,
-	status,
-	checked,
 	onCheckClick,
 	onUncheckClick,
 	className,
-	isAllowingManualCapture,
-	isSetupRequired,
-	setupTooltip,
-	required,
 	locked,
-	isPoEnabled,
-	isPoComplete,
 }: PaymentMethodProps ): React.ReactElement => {
-	// We want to show a tooltip if PO is enabled and not yet complete. (We make an exception to not show this for card payments).
-	const isPoInProgress =
-		isPoEnabled &&
-		! isPoComplete &&
-		status !== upeCapabilityStatuses.ACTIVE;
+	// APMs are not actionable if they are inactive or if Progressive Onboarding is enabled and not yet complete.
+	const {
+		isActionable,
+		notice,
+		noticeType = 'warning',
+	} = usePaymentMethodAvailability( id );
+	const [ enabledMethodIds ] = useEnabledPaymentMethodIds();
 
-	// APMs are disabled if they are inactive or if Progressive Onboarding is enabled and not yet complete.
-	const disabled =
-		upeCapabilityStatuses.INACTIVE === status || isPoInProgress;
 	const {
 		accountFees,
 	}: { accountFees?: Record< string, FeeStructure > } = useContext(
 		WCPaySettingsContext
 	);
 
-	const needsMoreInformation = [
-		upeCapabilityStatuses.INACTIVE,
-		upeCapabilityStatuses.PENDING_APPROVAL,
-		upeCapabilityStatuses.PENDING_VERIFICATION,
-	].includes( status );
-
-	const needsAttention =
-		needsMoreInformation ||
-		isPoInProgress ||
-		upeCapabilityStatuses.REJECTED === status;
 	const {
 		duplicates,
 		dismissedDuplicateNotices,
@@ -190,7 +113,7 @@ const PaymentMethod = ( {
 	} = useContext( DuplicatedPaymentMethodsContext );
 	const isDuplicate = Object.keys( duplicates ).includes( id );
 
-	const handleChange = ( newStatus: string ) => {
+	const handleChange = ( newStatus: boolean ) => {
 		// If the payment method control is locked, reject any changes.
 		if ( locked ) {
 			return;
@@ -202,112 +125,15 @@ const PaymentMethod = ( {
 		return onUncheckClick( id );
 	};
 
-	const getTooltipContent = ( paymentMethodId: string ) => {
-		if ( upeCapabilityStatuses.PENDING_APPROVAL === status ) {
-			return __(
-				'This payment method is pending approval. Once approved, you will be able to use it.',
-				'woocommerce-payments'
-			);
-		}
-
-		if ( upeCapabilityStatuses.PENDING_VERIFICATION === status ) {
-			return sprintf(
-				__(
-					"%s won't be visible to your customers until you provide the required " +
-						'information. Follow the instructions sent by our partner Stripe to %s.',
-					'woocommerce-payments'
-				),
-				label,
-				wcpaySettings?.accountEmail ?? ''
-			);
-		}
-
-		if ( upeCapabilityStatuses.REJECTED === status ) {
-			return interpolateComponents( {
-				// translators: {{contactSupportLink}}: placeholders are opening and closing anchor tags.
-				mixedString: __(
-					'Please {{contactSupportLink}}contact support{{/contactSupportLink}} for more details.',
-					'woocommerce-payments'
-				),
-				components: {
-					contactSupportLink: (
-						// eslint-disable-next-line jsx-a11y/anchor-has-content
-						<a
-							target="_blank"
-							rel="noreferrer"
-							title={ __(
-								'Contact Support',
-								'woocommerce-payments'
-							) }
-							href={
-								'https://woocommerce.com/my-account/contact-support/'
-							}
-						/>
-					),
-				},
-			} );
-		}
-
-		if ( isSetupRequired ) {
-			return setupTooltip;
-		}
-
-		if ( needsAttention ) {
-			return interpolateComponents( {
-				// translators: {{learnMoreLink}}: placeholders are opening and closing anchor tags.
-				mixedString: __(
-					'We need more information from you to enable this method. ' +
-						'{{learnMoreLink}}Learn more.{{/learnMoreLink}}',
-					'woocommerce-payments'
-				),
-				components: {
-					learnMoreLink: (
-						// eslint-disable-next-line jsx-a11y/anchor-has-content
-						<a
-							target="_blank"
-							rel="noreferrer"
-							title={ __(
-								'Learn more about enabling payment methods',
-								'woocommerce-payments'
-							) }
-							/* eslint-disable-next-line max-len */
-							href={
-								isPoInProgress
-									? 'https://woocommerce.com/document/woopayments/startup-guide/gradual-signup/#additional-payment-methods'
-									: getDocumentationUrlForDisabledPaymentMethod(
-											paymentMethodId
-									  )
-							}
-						/>
-					),
-				},
-			} );
-		}
-
-		return sprintf(
-			/* translators: %s: a payment method name. */
-			__(
-				'%s is not available to your customers when the "manual capture" setting is enabled.',
-				'woocommerce-payments'
-			),
-			label
-		);
-	};
-
 	return (
 		<li className={ clsx( 'payment-method__list-item', className ) }>
 			<div className="payment-method">
 				<div className="payment-method__checkbox">
-					<LoadableCheckboxControl
+					<CheckboxControl
 						label={ label }
-						checked={ checked }
-						disabled={ disabled || locked }
+						checked={ enabledMethodIds.includes( id ) }
+						disabled={ ! isActionable || locked }
 						onChange={ handleChange }
-						hideLabel
-						isAllowingManualCapture={ isAllowingManualCapture }
-						isSetupRequired={ isSetupRequired }
-						setupTooltip={ getTooltipContent( id ) as any }
-						needsAttention={ needsAttention }
 					/>
 				</div>
 				<div className="payment-method__text-container">
@@ -315,22 +141,12 @@ const PaymentMethod = ( {
 						<Icon />
 					</div>
 					<div className="payment-method__label payment-method__label-mobile">
-						<PaymentMethodLabel
-							label={ label }
-							required={ required }
-							status={ status }
-							disabled={ disabled }
-						/>
+						<PaymentMethodLabel label={ label } id={ id } />
 					</div>
 					<div className="payment-method__text">
 						<div className="payment-method__label-container">
 							<div className="payment-method__label payment-method__label-desktop">
-								<PaymentMethodLabel
-									label={ label }
-									required={ required }
-									status={ status }
-									disabled={ disabled }
-								/>
+								<PaymentMethodLabel label={ label } id={ id } />
 							</div>
 							<div className="payment-method__description">
 								{ description }
@@ -379,7 +195,12 @@ const PaymentMethod = ( {
 					</div>
 				</div>
 			</div>
-			{ isDuplicate && (
+			{ notice && (
+				<InlineNotice status={ noticeType } isDismissible={ false }>
+					{ notice }
+				</InlineNotice>
+			) }
+			{ isDuplicate && ! notice && (
 				<DuplicateNotice
 					paymentMethod={ id }
 					gatewaysEnablingPaymentMethod={ duplicates[ id ] }

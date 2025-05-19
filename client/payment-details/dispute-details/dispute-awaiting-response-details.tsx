@@ -17,7 +17,7 @@ import {
 	Icon,
 	Modal,
 	HorizontalRule,
-} from '@wordpress/components';
+} from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies
