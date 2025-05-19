@@ -542,123 +542,6 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
-	 * Gets shipping options available for specified shipping address
-	 *
-	 * @param array   $shipping_address Shipping address.
-	 * @param boolean $itemized_display_items Indicates whether to show subtotals or itemized views.
-	 *
-	 * @return array Shipping options data.
-	 *
-	 * phpcs:ignore Squiz.Commenting.FunctionCommentThrowTag
-	 */
-	public function get_shipping_options( $shipping_address, $itemized_display_items = false ) {
-		try {
-			// Set the shipping options.
-			$data = [];
-
-			// Remember current shipping method before resetting.
-			$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods', [] );
-			$this->calculate_shipping( apply_filters( 'wcpay_payment_request_shipping_posted_values', $shipping_address ) );
-
-			$packages = WC()->shipping->get_packages();
-
-			if ( ! empty( $packages ) && WC()->customer->has_calculated_shipping() ) {
-				foreach ( $packages as $package ) {
-					if ( empty( $package['rates'] ) ) {
-						throw new Exception( __( 'Unable to find shipping method for address.', 'woocommerce-payments' ) );
-					}
-
-					foreach ( $package['rates'] as $rate ) {
-						$data['shipping_options'][] = [
-							'id'          => $rate->id,
-							'displayName' => $rate->label,
-							'amount'      => WC_Payments_Utils::prepare_amount( $rate->cost, get_woocommerce_currency() ),
-						];
-					}
-				}
-			} else {
-				throw new Exception( __( 'Unable to find shipping method for address.', 'woocommerce-payments' ) );
-			}
-
-			// The first shipping option is automatically applied on the client.
-			// Keep chosen shipping method by sorting shipping options if the method still available for new address.
-			// Fallback to the first available shipping method.
-			if ( isset( $data['shipping_options'][0] ) ) {
-				if ( isset( $chosen_shipping_methods[0] ) ) {
-					$chosen_method_id         = $chosen_shipping_methods[0];
-					$compare_shipping_options = function ( $a, $b ) use ( $chosen_method_id ) {
-						if ( $a['id'] === $chosen_method_id ) {
-							return -1;
-						}
-
-						if ( $b['id'] === $chosen_method_id ) {
-							return 1;
-						}
-
-						return 0;
-					};
-					usort( $data['shipping_options'], $compare_shipping_options );
-				}
-
-				$first_shipping_method_id = $data['shipping_options'][0]['id'];
-				$this->update_shipping_method( [ $first_shipping_method_id ] );
-			}
-
-			WC()->cart->calculate_totals();
-
-			$this->maybe_restore_recurring_chosen_shipping_methods( $chosen_shipping_methods );
-
-			$data          += $this->build_display_items( $itemized_display_items );
-			$data['result'] = 'success';
-		} catch ( Exception $e ) {
-			$data          += $this->build_display_items( $itemized_display_items );
-			$data['result'] = 'invalid_shipping_address';
-		}
-
-		return $data;
-	}
-
-	/**
-	 * Restores the shipping methods previously chosen for each recurring cart after shipping was reset and recalculated
-	 * during the Express Checkout get_shipping_options flow.
-	 *
-	 * When the cart contains multiple subscriptions with different billing periods, customers are able to select different shipping
-	 * methods for each subscription, however, this is not supported when purchasing with Apple Pay and Google Pay as it's
-	 * only concerned about handling the initial purchase.
-	 *
-	 * In order to avoid Woo Subscriptions's `WC_Subscriptions_Cart::validate_recurring_shipping_methods` throwing an error, we need to restore
-	 * the previously chosen shipping methods for each recurring cart.
-	 *
-	 * This function needs to be called after `WC()->cart->calculate_totals()` is run, otherwise `WC()->cart->recurring_carts` won't exist yet.
-	 *
-	 * @param array $previous_chosen_methods The previously chosen shipping methods.
-	 */
-	private function maybe_restore_recurring_chosen_shipping_methods( $previous_chosen_methods = [] ) {
-		if ( empty( WC()->cart->recurring_carts ) || ! method_exists( 'WC_Subscriptions_Cart', 'get_recurring_shipping_package_key' ) ) {
-			return;
-		}
-
-		$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods', [] );
-
-		foreach ( WC()->cart->recurring_carts as $recurring_cart_key => $recurring_cart ) {
-			foreach ( $recurring_cart->get_shipping_packages() as $recurring_cart_package_index => $recurring_cart_package ) {
-				// phpcs:ignore
-				/**
-				 * @psalm-suppress UndefinedClass
-				 */
-				$package_key = WC_Subscriptions_Cart::get_recurring_shipping_package_key( $recurring_cart_key, $recurring_cart_package_index );
-
-				// If the recurring cart package key is found in the previous chosen methods, but not in the current chosen methods, restore it.
-				if ( isset( $previous_chosen_methods[ $package_key ] ) && ! isset( $chosen_shipping_methods[ $package_key ] ) ) {
-					$chosen_shipping_methods[ $package_key ] = $previous_chosen_methods[ $package_key ];
-				}
-			}
-		}
-
-		WC()->session->set( 'chosen_shipping_methods', $chosen_shipping_methods );
-	}
-
-	/**
 	 * Gets the product data for the currently viewed page.
 	 *
 	 * @return mixed Returns false if not on a product page, the product information otherwise.
@@ -756,10 +639,6 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * @return bool
 	 */
 	private function is_pay_for_order_supported() {
-		if ( ! WC_Payments_Features::is_tokenized_cart_ece_enabled() ) {
-			return true;
-		}
-
 		$order_id = absint( get_query_var( 'order-pay' ) );
 		if ( 0 === $order_id ) {
 			return false;
@@ -941,40 +820,6 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		// If the above doesn't work, fallback to matching against the list of translated
 		// states from WooCommerce.
 		return $this->get_normalized_state_from_wc_states( $state, $country );
-	}
-
-	/**
-	 * The Express Checkout Element API provides its own validation for the address form.
-	 * For some countries, it might not provide a state field, so we need to return a more descriptive
-	 * error message, indicating that the Express Checkout Element button is not supported for that country.
-	 */
-	public function validate_state() {
-		$wc_checkout     = WC_Checkout::instance();
-		$posted_data     = $wc_checkout->get_posted_data();
-		$checkout_fields = $wc_checkout->get_checkout_fields();
-		$countries       = WC()->countries->get_countries();
-
-		$is_supported = true;
-		// Checks if billing state is missing and is required.
-		if ( ! empty( $checkout_fields['billing']['billing_state']['required'] ) && '' === $posted_data['billing_state'] ) {
-			$is_supported = false;
-		}
-
-		// Checks if shipping state is missing and is required.
-		if ( WC()->cart->needs_shipping_address() && ! empty( $checkout_fields['shipping']['shipping_state']['required'] ) && '' === $posted_data['shipping_state'] ) {
-			$is_supported = false;
-		}
-
-		if ( ! $is_supported ) {
-			wc_add_notice(
-				sprintf(
-					/* translators: %s: country. */
-					__( 'The express checkout is not supported in %s because some required fields couldn\'t be verified. Please proceed to the checkout page and try again.', 'woocommerce-payments' ),
-					$countries[ $posted_data['billing_country'] ] ?? $posted_data['billing_country']
-				),
-				'error'
-			);
-		}
 	}
 
 	/**

@@ -104,7 +104,6 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		remove_filter( 'wc_tax_enabled', '__return_false' );
 		remove_filter( 'pre_option_woocommerce_tax_display_cart', [ $this, '__return_excl' ] );
 		remove_filter( 'pre_option_woocommerce_tax_display_cart', [ $this, '__return_incl' ] );
-		delete_option( '_wcpay_feature_tokenized_cart_ece' );
 
 		parent::tear_down();
 	}
@@ -225,7 +224,6 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$wp->query_vars       = [ 'order-pay' => strval( $order_id ) ];
 		$wp_query->query_vars = [ 'order-pay' => strval( $order_id ) ];
 
-		update_option( '_wcpay_feature_tokenized_cart_ece', '1' );
 		add_filter( 'woocommerce_is_checkout', '__return_true' );
 
 		$this->assertTrue( $this->system_under_test->should_show_express_checkout_button() );

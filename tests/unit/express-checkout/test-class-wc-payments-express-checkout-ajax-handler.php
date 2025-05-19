@@ -34,22 +34,10 @@ class WC_Payments_Express_Checkout_Ajax_Handler_Test extends WCPAY_UnitTestCase 
 			->disableOriginalConstructor()
 			->getMock();
 
-		update_option( '_wcpay_feature_tokenized_cart_ece', '1' );
 		$this->ajax_handler = new WC_Payments_Express_Checkout_Ajax_Handler(
 			$express_checkout_button_helper_mock
 		);
 		$this->ajax_handler->init();
-	}
-
-	/**
-	 * Clean up after each test.
-	 *
-	 * @return void
-	 */
-	public function tear_down() {
-		delete_option( '_wcpay_feature_tokenized_cart_ece' );
-
-		parent::tear_down();
 	}
 
 	public function test_tokenized_cart_address_avoid_normalization_when_missing_header() {

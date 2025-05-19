@@ -11,7 +11,7 @@ import { getConfig } from 'wcpay/utils/checkout';
 import ExpressCheckoutContainer from './components/express-checkout-container';
 import { checkPaymentMethodIsAvailable } from '../utils/checkPaymentMethodIsAvailable';
 
-const expressCheckoutElementApplePay = ( api ) => ( {
+export const tokenizedExpressCheckoutElementApplePay = ( api ) => ( {
 	paymentMethodId: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
 	name: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT + '_applePay',
 	title: 'WooPayments - Apple Pay',
@@ -43,7 +43,7 @@ const expressCheckoutElementApplePay = ( api ) => ( {
 	},
 } );
 
-const expressCheckoutElementGooglePay = ( api ) => {
+export const tokenizedExpressCheckoutElementGooglePay = ( api ) => {
 	return {
 		paymentMethodId: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
 		name: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT + '_googlePay',
@@ -79,5 +79,3 @@ const expressCheckoutElementGooglePay = ( api ) => {
 		},
 	};
 };
-
-export { expressCheckoutElementApplePay, expressCheckoutElementGooglePay };
