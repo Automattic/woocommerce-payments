@@ -87,7 +87,7 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 
 == Changelog ==
 
-= 9.4.0 - 2025-05-21 =
+= 9.4.0-test-3 - unreleased =
 * Add - Add support for rendering fee tax details in the transaction timeline where available
 * Fix - Keep the shipping costs structure intact when applying multi-currency adjustments.
 * Fix - Only display the transaction URL for authorized intent statuses in WP Admin order page
