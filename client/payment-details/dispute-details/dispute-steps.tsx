@@ -23,6 +23,9 @@ import { ChargeBillingDetails } from 'wcpay/types/charges';
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 import InlineNotice from 'components/inline-notice';
+import AccordionRow from 'wcpay/components/accordion/row';
+import AccordionBody from 'wcpay/components/accordion/body';
+import Accordion from 'wcpay/components/accordion';
 
 interface Props {
 	dispute: Dispute;
@@ -37,8 +40,6 @@ export const DisputeSteps: React.FC< Props > = ( {
 	chargeCreated,
 	bankName,
 } ) => {
-	const [ isExpanded, setIsExpanded ] = useState( false );
-
 	let emailLink;
 	if ( customer?.email ) {
 		const chargeDate = formatDateTimeFromTimestamp( chargeCreated );
@@ -71,164 +72,140 @@ export const DisputeSteps: React.FC< Props > = ( {
 		) }&body=${ encodeURIComponent( emailBody ) }`;
 	}
 
-	const toggleExpand = () => {
-		setIsExpanded( ! isExpanded );
-	};
-
 	return (
 		<div className="dispute-steps">
-			<div
-				className="dispute-steps__header"
-				onClick={ toggleExpand }
-				role="button"
-				tabIndex={ 0 }
-				onKeyDown={ ( e ) => {
-					if ( e.key === 'Enter' || e.key === ' ' ) {
-						toggleExpand();
-					}
-				} }
-			>
-				<div className="dispute-steps__header-content">
-					<div className="dispute-steps__header-title">
-						{ __( 'Steps you can take', 'woocommerce-payments' ) }
-					</div>
-					<div className="dispute-steps__header-subtitle">
-						{ __(
-							'Review these steps you can take to respond to disputes effectively',
-							'woocommerce-payments'
-						) }
-					</div>
-				</div>
-				<div className="dispute-steps__header-icon">
-					<Icon
-						icon={ isExpanded ? chevronUp : chevronDown }
-						className="dispute-steps__header-icon-svg"
-					/>
-				</div>
-			</div>
-			<div
-				className={ `dispute-steps__content ${
-					isExpanded ? 'dispute-steps__content--expanded' : ''
-				}` }
-			>
-				<div className="dispute-steps__items">
-					{ /* Step 1: Reach out to your customer */ }
-					<div className="dispute-steps__item">
-						<div className="dispute-steps__item-icon">
-							<Icon icon={ envelope } />
-						</div>
-						<div className="dispute-steps__item-content">
-							<div className="dispute-steps__item-name">
-								{ __(
-									'Reach out to your customer',
-									'woocommerce-payments'
-								) }
+			<Accordion>
+				<AccordionBody
+					lg
+					title="Steps you can take"
+					subtitle="Review these steps you can take to respond to disputes effectively"
+				>
+					<AccordionRow>
+						<div className="dispute-steps__content">
+							<div className="dispute-steps__items">
+								{ /* Step 1: Reach out to your customer */ }
+								<div className="dispute-steps__item">
+									<div className="dispute-steps__item-icon">
+										<Icon icon={ envelope } />
+									</div>
+									<div className="dispute-steps__item-content">
+										<div className="dispute-steps__item-name">
+											{ __(
+												'Reach out to your customer',
+												'woocommerce-payments'
+											) }
+										</div>
+										<div className="dispute-steps__item-description">
+											{ __(
+												'Identify the issue and work towards a resolution where possible.',
+												'woocommerce-payments'
+											) }
+										</div>
+									</div>
+									<div className="dispute-steps__item-action">
+										{ customer?.email ? (
+											<Button
+												variant="secondary"
+												href={ emailLink }
+												target="_blank"
+												rel="noopener noreferrer"
+											>
+												{ __(
+													'Email customer',
+													'woocommerce-payments'
+												) }
+											</Button>
+										) : null }
+									</div>
+								</div>
+
+								{ /* Step 2: Pursue a dispute withdrawal */ }
+								<div className="dispute-steps__item">
+									<div className="dispute-steps__item-icon">
+										<Icon icon={ comment } />
+									</div>
+									<div className="dispute-steps__item-content">
+										<div className="dispute-steps__item-name">
+											{ __(
+												'Pursue a dispute withdrawal',
+												'woocommerce-payments'
+											) }
+										</div>
+										<div className="dispute-steps__item-description">
+											{ __(
+												'See if the customer will withdraw their dispute.',
+												'woocommerce-payments'
+											) }
+										</div>
+									</div>
+									<div className="dispute-steps__item-action">
+										<Button
+											variant="secondary"
+											href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#withdrawals"
+											target="_blank"
+											rel="noopener noreferrer"
+										>
+											{ __(
+												'Learn more',
+												'woocommerce-payments'
+											) }
+										</Button>
+									</div>
+								</div>
+
+								{ /* Step 3: Challenge or accept the dispute */ }
+								<div className="dispute-steps__item">
+									<div className="dispute-steps__item-icon">
+										<Icon icon={ page } />
+									</div>
+									<div className="dispute-steps__item-content">
+										<div className="dispute-steps__item-name">
+											{ __(
+												'Challenge or accept the dispute',
+												'woocommerce-payments'
+											) }
+										</div>
+										<div className="dispute-steps__item-description">
+											{ __(
+												'Challenge the dispute if you consider the claim to be invalid. Accepting the dispute will automatically close it and the order amount and the dispute fee will not be returned to you.',
+												'woocommerce-payments'
+											) }
+										</div>
+									</div>
+								</div>
 							</div>
-							<div className="dispute-steps__item-description">
-								{ __(
-									'Identify the issue and work towards a resolution where possible.',
-									'woocommerce-payments'
-								) }
-							</div>
-						</div>
-						<div className="dispute-steps__item-action">
-							{ customer?.email ? (
-								<Button
-									variant="secondary"
-									href={ emailLink }
-									target="_blank"
-									rel="noopener noreferrer"
+
+							{ /* Dispute notice */ }
+							<div className="dispute-steps__notice">
+								<InlineNotice
+									icon
+									isDismissible={ false }
+									status="info"
+									className="dispute-steps__notice-content"
 								>
-									{ __(
-										'Email customer',
-										'woocommerce-payments'
-									) }
-								</Button>
-							) : null }
-						</div>
-					</div>
-
-					{ /* Step 2: Pursue a dispute withdrawal */ }
-					<div className="dispute-steps__item">
-						<div className="dispute-steps__item-icon">
-							<Icon icon={ comment } />
-						</div>
-						<div className="dispute-steps__item-content">
-							<div className="dispute-steps__item-name">
-								{ __(
-									'Pursue a dispute withdrawal',
-									'woocommerce-payments'
-								) }
-							</div>
-							<div className="dispute-steps__item-description">
-								{ __(
-									'See if the customer will withdraw their dispute.',
-									'woocommerce-payments'
-								) }
-							</div>
-						</div>
-						<div className="dispute-steps__item-action">
-							<Button
-								variant="secondary"
-								href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#withdrawals"
-								target="_blank"
-								rel="noopener noreferrer"
-							>
-								{ __( 'Learn more', 'woocommerce-payments' ) }
-							</Button>
-						</div>
-					</div>
-
-					{ /* Step 3: Challenge or accept the dispute */ }
-					<div className="dispute-steps__item">
-						<div className="dispute-steps__item-icon">
-							<Icon icon={ page } />
-						</div>
-						<div className="dispute-steps__item-content">
-							<div className="dispute-steps__item-name">
-								{ __(
-									'Challenge or accept the dispute',
-									'woocommerce-payments'
-								) }
-							</div>
-							<div className="dispute-steps__item-description">
-								{ __(
-									'Challenge the dispute if you consider the claim to be invalid. Accepting the dispute will automatically close it and the order amount and the dispute fee will not be returned to you.',
-									'woocommerce-payments'
-								) }
-							</div>
-						</div>
-					</div>
-				</div>
-
-				{ /* Dispute notice */ }
-				<div className="dispute-steps__notice">
-					<InlineNotice
-						icon
-						isDismissible={ false }
-						status="info"
-						className="dispute-steps__notice-content"
-					>
-						{ createInterpolateElement(
-							bankName
-								? sprintf(
-										__(
-											'<strong>WooPayments does not determine the outcome of the dispute process</strong> and is not liable for any chargebacks. <strong>%1$s</strong> makes the decision in this process.',
-											'woocommerce-payments'
-										),
+									{ createInterpolateElement(
 										bankName
-								  )
-								: __(
-										"<strong>WooPayments does not determine the outcome of the dispute process</strong> and is not liable for any chargebacks. The cardholder's bank makes the decision in this process.",
-										'woocommerce-payments'
-								  ),
-							{
-								strong: <strong />,
-							}
-						) }
-					</InlineNotice>
-				</div>
-			</div>
+											? sprintf(
+													__(
+														'<strong>WooPayments does not determine the outcome of the dispute process</strong> and is not liable for any chargebacks. <strong>%1$s</strong> makes the decision in this process.',
+														'woocommerce-payments'
+													),
+													bankName
+											  )
+											: __(
+													"<strong>WooPayments does not determine the outcome of the dispute process</strong> and is not liable for any chargebacks. The cardholder's bank makes the decision in this process.",
+													'woocommerce-payments'
+											  ),
+										{
+											strong: <strong />,
+										}
+									) }
+								</InlineNotice>
+							</div>
+						</div>
+					</AccordionRow>
+				</AccordionBody>
+			</Accordion>
 		</div>
 	);
 };
