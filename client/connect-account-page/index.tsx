@@ -37,6 +37,7 @@ import { sanitizeHTML } from 'wcpay/utils/sanitize';
 import { isInTestModeOnboarding } from 'wcpay/utils';
 import ResetAccountModal from 'wcpay/overview/modal/reset-account';
 import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
+import { decodeEntities } from '@wordpress/html-entities';
 
 interface AccountData {
 	status: string;
@@ -478,7 +479,9 @@ const ConnectAccountPage: React.FC = () => {
 				>
 					<div
 						// eslint-disable-next-line react/no-danger
-						dangerouslySetInnerHTML={ sanitizeHTML( errorMessage ) }
+						dangerouslySetInnerHTML={ sanitizeHTML(
+							decodeEntities( errorMessage )
+						) }
 					></div>
 				</BannerNotice>
 			) }
