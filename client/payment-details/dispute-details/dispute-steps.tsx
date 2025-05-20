@@ -17,9 +17,11 @@ import { ChargeBillingDetails } from 'wcpay/types/charges';
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 import InlineNotice from 'components/inline-notice';
-import AccordionRow from 'wcpay/components/accordion/row';
-import AccordionBody from 'wcpay/components/accordion/body';
-import Accordion from 'wcpay/components/accordion';
+import {
+	Accordion,
+	AccordionBody,
+	AccordionRow,
+} from 'wcpay/components/accordion';
 
 interface Props {
 	dispute: Dispute;
