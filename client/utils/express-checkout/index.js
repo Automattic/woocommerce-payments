@@ -1,4 +1,4 @@
-/* global wcpayPaymentRequestParams, wcpayExpressCheckoutParams */
+/* global wcpayExpressCheckoutParams */
 
 /**
  * Retrieves express checkout config from global variable.
@@ -12,12 +12,6 @@ export const getExpressCheckoutConfig = ( key ) => {
 		wcpayExpressCheckoutParams.hasOwnProperty( key )
 	) {
 		return wcpayExpressCheckoutParams[ key ];
-	}
-	if (
-		typeof wcpayPaymentRequestParams === 'object' &&
-		wcpayPaymentRequestParams.hasOwnProperty( key )
-	) {
-		return wcpayPaymentRequestParams[ key ];
 	}
 	return null;
 };
