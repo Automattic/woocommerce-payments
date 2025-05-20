@@ -29,16 +29,11 @@
 			padding: 0;
 		}
 		.wcpay-inline-notice.components-notice {
-			margin: 0 0 10px 0;
 			.components-notice__content {
 				letter-spacing: 0.02em;
 				font-size: 14px;
 				line-height: 1.5em;
 				margin: 16px;
-			}
-
-			&:last-child {
-				margin-bottom: 24px;
 			}
 		}
 
@@ -121,84 +116,6 @@
 
 .dispute-steps {
 	margin-top: 40px;
-	border-radius: var( --radius-l, 8px );
-	border: 1px solid var( --Scales-Grays-gray-200, #e0e0e0 );
-	background: var( --scales-black-white-white, #fff );
-	overflow: hidden;
-	transition: all 0.3s ease;
-
-	&__header {
-		display: flex;
-		width: 100%;
-		padding: var( --Scales-grid-unit-20, 24px )
-			var( --Scales-grid-unit-30, 24px );
-		flex-direction: row;
-		justify-content: space-between;
-		align-items: center;
-		cursor: pointer;
-		user-select: none;
-
-		&:hover {
-			// Make the text blue
-			.dispute-steps__header-title {
-				color: var( --wp-admin-theme-color, #007cba );
-			}
-		}
-
-		&-content {
-			display: flex;
-			flex-direction: column;
-			gap: 4px;
-		}
-
-		&-title {
-			letter-spacing: 0.01em;
-
-			// Heading LG
-			font-size: var( --l, 15px );
-			font-style: normal;
-			font-weight: var( --Medium, 500 );
-			line-height: var( --s, 20px ); /* 133.333% */
-			color: var( --Scales-Grays-gray-900, #1e1e1e );
-		}
-
-		&-subtitle {
-			color: var( --Scales-Grays-gray-700, #757575 );
-			/* Body MD */
-			font-size: var( --m, 13px );
-			font-style: normal;
-			font-weight: var( --Regular, 400 );
-			line-height: var( --s, 20px ); /* 153.846% */
-		}
-
-		&-icon {
-			display: flex;
-			align-items: center;
-			justify-content: center;
-			color: var( --Scales-Grays-gray-500, #757575 );
-		}
-	}
-
-	&__content {
-		max-height: 0;
-		overflow: hidden;
-		transition: max-height 0.3s ease-out;
-
-		&--expanded {
-			max-height: 2000px; // Increased to accommodate all content
-			transition: max-height 0.5s ease-in;
-		}
-	}
-
-	&__items {
-		padding: 0 var( --Scales-grid-unit-30, 24px )
-			var( --Scales-grid-unit-20, 12px );
-
-		@media screen and ( max-width: $break-small ) {
-			padding: 0 var( --Scales-grid-unit-20, 16px )
-				var( --Scales-grid-unit-20, 12px );
-		}
-	}
 
 	&__item {
 		display: flex;
@@ -302,12 +219,6 @@
 	}
 
 	&__notice {
-		margin: 0 var( --Scales-grid-unit-30, 24px );
-
-		@media screen and ( max-width: $break-small ) {
-			margin: 0 var( --Scales-grid-unit-20, 16px );
-		}
-
 		.dispute-steps__notice-content {
 			.components-notice__content {
 				letter-spacing: 0.02em;
@@ -319,39 +230,6 @@
 					margin: 8px 16px 8px 0;
 					line-height: 1.4;
 				}
-			}
-		}
-	}
-
-	&__steps {
-		list-style-position: inside;
-		margin: 0;
-		padding: 0 var( --Scales-grid-unit-30, 24px )
-			var( --Scales-grid-unit-20, 16px );
-
-		> li {
-			margin: 0;
-			padding: 16px 10px 16px 4px;
-			border-bottom: 1px solid $wp-gray-5;
-		}
-
-		.wcpay-tooltip__content-wrapper > [role='button'] {
-			margin: 0;
-		}
-
-		&__response-date {
-			display: inline-flex;
-			align-items: center;
-			gap: var( --grid-unit-05, 4px );
-			flex-wrap: wrap;
-			font-weight: 600;
-
-			&--warning {
-				color: $alert-red;
-				font-weight: 700;
-			}
-			&--urgent {
-				color: $alert-red;
 			}
 		}
 	}
