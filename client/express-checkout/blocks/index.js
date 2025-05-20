@@ -43,39 +43,37 @@ export const expressCheckoutElementApplePay = ( api ) => ( {
 	},
 } );
 
-export const expressCheckoutElementGooglePay = ( api ) => {
-	return {
-		paymentMethodId: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
-		name: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT + '_googlePay',
-		title: 'WooPayments - Google Pay',
-		description: __(
-			'Simplify checkout with fewer steps to pay.',
-			'woocommerce-payments'
-		),
-		gatewayId: 'woocommerce_payments',
-		content: (
-			<ExpressCheckoutContainer
-				api={ api }
-				expressPaymentMethod="googlePay"
-			/>
-		),
-		edit: (
-			<ExpressCheckoutContainer
-				api={ api }
-				expressPaymentMethod="googlePay"
-				isPreview
-			/>
-		),
-		supports: {
-			features: getConfig( 'features' ),
-			style: [ 'height', 'borderRadius' ],
-		},
-		canMakePayment: ( { cart } ) => {
-			if ( typeof wcpayExpressCheckoutParams === 'undefined' ) {
-				return false;
-			}
+export const expressCheckoutElementGooglePay = ( api ) => ( {
+	paymentMethodId: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
+	name: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT + '_googlePay',
+	title: 'WooPayments - Google Pay',
+	description: __(
+		'Simplify checkout with fewer steps to pay.',
+		'woocommerce-payments'
+	),
+	gatewayId: 'woocommerce_payments',
+	content: (
+		<ExpressCheckoutContainer
+			api={ api }
+			expressPaymentMethod="googlePay"
+		/>
+	),
+	edit: (
+		<ExpressCheckoutContainer
+			api={ api }
+			expressPaymentMethod="googlePay"
+			isPreview
+		/>
+	),
+	supports: {
+		features: getConfig( 'features' ),
+		style: [ 'height', 'borderRadius' ],
+	},
+	canMakePayment: ( { cart } ) => {
+		if ( typeof wcpayExpressCheckoutParams === 'undefined' ) {
+			return false;
+		}
 
-			return checkPaymentMethodIsAvailable( 'googlePay', cart );
-		},
-	};
-};
+		return checkPaymentMethodIsAvailable( 'googlePay', cart );
+	},
+} );
