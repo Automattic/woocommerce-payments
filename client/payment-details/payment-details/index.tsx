@@ -59,6 +59,8 @@ const PaymentDetails: React.FC< PaymentDetailsProps > = ( {
 
 	const bankName = charge ? getBankName( charge ) : null;
 
+	const shouldUseBundledComponents = ! charge?.dispute;
+
 	return (
 		<Page maxWidth={ 1032 } className="wcpay-payment-details">
 			<MaybeShowMerchantFeedbackPrompt />
@@ -75,6 +77,9 @@ const PaymentDetails: React.FC< PaymentDetailsProps > = ( {
 			{ showTimeline && wcpaySettings.featureFlags.paymentTimeline && (
 				<ErrorBoundary>
 					<PaymentDetailsTimeline
+						shouldUseBundledComponents={
+							shouldUseBundledComponents
+						}
 						paymentIntentId={ id }
 						bankName={ bankName }
 					/>

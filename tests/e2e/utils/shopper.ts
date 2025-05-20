@@ -604,9 +604,7 @@ export const setDefaultPaymentMethod = async (
 };
 
 export const removeCoupon = async ( page: Page ) => {
-	const couponRemovalLink = page.getByRole( 'link', {
-		name: '[Remove]',
-	} );
+	const couponRemovalLink = page.locator( '.woocommerce-remove-coupon' );
 
 	if ( await couponRemovalLink.isVisible() ) {
 		await couponRemovalLink.click();
