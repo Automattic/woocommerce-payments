@@ -851,7 +851,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		//
 		// @reykjalin: This HK specific sanitazation *should be removed* once Apple Pay fix
 		// the address bug. More info on that in pc4etw-bY-p2.
-		if ( 'HK' === $billing_country ) {
+		if ( Country_Code::HONG_KONG === $billing_country ) {
 			include_once WCPAY_ABSPATH . 'includes/constants/class-express-checkout-hong-kong-states.php';
 
 			if ( ! \WCPay\Constants\Express_Checkout_Hong_Kong_States::is_valid_state( strtolower( $billing_state ) ) ) {
@@ -861,7 +861,7 @@ class WC_Payments_Express_Checkout_Button_Helper {
 				}
 			}
 		}
-		if ( 'HK' === $shipping_country ) {
+		if ( Country_Code::HONG_KONG === $shipping_country ) {
 			include_once WCPAY_ABSPATH . 'includes/constants/class-express-checkout-hong-kong-states.php';
 
 			if ( ! \WCPay\Constants\Express_Checkout_Hong_Kong_States::is_valid_state( strtolower( $shipping_state ) ) ) {
