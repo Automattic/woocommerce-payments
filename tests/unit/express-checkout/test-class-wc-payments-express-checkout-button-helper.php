@@ -91,7 +91,6 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 
 		WC()->session->init();
 		WC()->cart->add_to_cart( $this->simple_product->get_id(), 1 );
-		$this->system_under_test->update_shipping_method( [ self::get_shipping_option_rate_id( $this->flat_rate_id ) ] );
 		WC()->cart->calculate_totals();
 	}
 
