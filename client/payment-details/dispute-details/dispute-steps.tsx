@@ -3,17 +3,11 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 import { Icon, Button } from 'wcpay/components/wp-components-wrapped';
-import {
-	chevronDown,
-	chevronUp,
-	envelope,
-	comment,
-	page,
-} from '@wordpress/icons';
+import { envelope, comment, page } from '@wordpress/icons';
 
 /**
  * Internal dependencies
