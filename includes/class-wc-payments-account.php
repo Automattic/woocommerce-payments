@@ -2336,7 +2336,13 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		}
 
 		if ( $refreshed ) {
-			// Allow us to tie in functionality to an account refresh.
+			/**
+			 * Allow us to tie in functionality to an account refresh.
+			 *
+			 * @param array|bool $account Account data or false if failed to retrieve account data.
+			 *
+			 * @since 4.3.0
+			 */
 			do_action( 'woocommerce_payments_account_refreshed', $account );
 		}
 
