@@ -870,6 +870,24 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
+	 * Cleanup onboarding flow data after the account is onboarded.
+	 *
+	 * This is to avoid keeping unnecessary data in the database.
+	 * We focus on data stores in DB options. Transients have a limited lifetime and will be cleaned up automatically.
+	 *
+	 * @return void
+	 */
+	public function cleanup_on_account_onboarded() {
+		// Delete the onboarding fields data since it is used only during the initial onboarding.
+		// Delete it by prefix since it can have entries suffixed with the user locale.
+		$this->database_cache->delete_by_prefix( Database_Cache::ONBOARDING_FIELDS_DATA_KEY );
+
+		$this->database_cache->delete( Database_Cache::BUSINESS_TYPES_KEY );
+		// Delete it by prefix since it can have entries suffixed with the user locale.
+		$this->database_cache->delete_by_prefix( Database_Cache::RECOMMENDED_PAYMENT_METHODS );
+	}
+
+	/**
 	 * Determine whether an embedded KYC flow is in progress.
 	 *
 	 * @return bool True if embedded KYC is in progress, false otherwise.
