@@ -7,6 +7,7 @@
 
 namespace WCPay\PaymentMethods\Configs\Registry;
 
+use WCPay\PaymentMethods\Configs\Definitions\AffirmDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\AlipayDefinition;
 use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface;
 
@@ -30,6 +31,7 @@ class PaymentMethodDefinitionRegistry {
 	private $available_definitions = [
 		// Add new payment method definitions here.
 		AlipayDefinition::class,
+		AffirmDefinition::class,
 	];
 
 	/**

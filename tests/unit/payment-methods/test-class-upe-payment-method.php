@@ -81,7 +81,6 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 			Sepa_Payment_Method::class,
 			Becs_Payment_Method::class,
 			Link_Payment_Method::class,
-			Affirm_Payment_Method::class,
 			Afterpay_Payment_Method::class,
 			Klarna_Payment_Method::class,
 		];

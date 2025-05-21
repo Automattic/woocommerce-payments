@@ -12,7 +12,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WC_Payments;
-use WCPay\Payment_Methods\Affirm_Payment_Method;
 use WCPay\Payment_Methods\Afterpay_Payment_Method;
 use WCPay\Payment_Methods\Bancontact_Payment_Method;
 use WCPay\Payment_Methods\Becs_Payment_Method;
@@ -106,7 +105,6 @@ class Duplicates_Detection_Service {
 			'ideal'      => Ideal_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'becs'       => Becs_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'eps'        => Eps_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-			'affirm'     => Affirm_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'afterpay'   => Afterpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'clearpay'   => Afterpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'klarna'     => Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
