@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Refactor: Remove unused Props interface from AccountTools component
