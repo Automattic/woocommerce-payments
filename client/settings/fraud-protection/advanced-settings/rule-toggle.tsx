@@ -43,12 +43,9 @@ const getFilterAction = (
 	return settingUI.block ? filterActions.BLOCK : filterActions.REVIEW;
 };
 
-const FraudProtectionRuleToggle: React.FC< FraudProtectionRuleToggleProps > = ( {
-	setting,
-	label,
-	description,
-	children,
-} ) => {
+const FraudProtectionRuleToggle: React.FC< React.PropsWithChildren<
+	FraudProtectionRuleToggleProps
+> > = ( { setting, label, description, children } ) => {
 	const {
 		protectionSettingsUI,
 		setProtectionSettingsUI,

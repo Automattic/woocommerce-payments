@@ -15,10 +15,9 @@ interface WcpayCardBodyProps {
 	className?: string;
 }
 
-const WcpayCardBody: React.FC< WcpayCardBodyProps > = ( {
-	className,
-	...props
-} ): JSX.Element => {
+const WcpayCardBody: React.FC< React.PropsWithChildren<
+	WcpayCardBodyProps
+> > = ( { className, ...props } ): JSX.Element => {
 	const context = useContext( WordPressComponentsContext );
 
 	// including the woopayments-specific styles only for the "bundled" CardBody component.
