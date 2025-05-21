@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { render, screen } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 /**
@@ -133,7 +133,9 @@ describe( 'WooPaySettings', () => {
 
 		expect( updateIsWooPayEnabledHandler ).not.toHaveBeenCalled();
 
-		userEvent.click( screen.getByLabelText( /Enable WooPay/ ) );
+		act( () => {
+			userEvent.click( screen.getByLabelText( /Enable WooPay/ ) );
+		} );
 		expect( updateIsWooPayEnabledHandler ).toHaveBeenCalledWith( false );
 	} );
 
@@ -160,7 +162,9 @@ describe( 'WooPaySettings', () => {
 
 		expect( updateWooPayCustomMessageHandler ).not.toHaveBeenCalled();
 
-		userEvent.type( screen.getByRole( 'textbox' ), 'test' );
+		act( () => {
+			userEvent.type( screen.getByRole( 'textbox' ), 'test' );
+		} );
 		expect( updateWooPayCustomMessageHandler ).toHaveBeenLastCalledWith(
 			'test'
 		);

@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { render, screen } from '@testing-library/react';
+import { render, screen, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
 /**
@@ -127,7 +127,9 @@ describe( 'PaymentRequestSettings', () => {
 		expect( screen.getByLabelText( 'Product Page' ) ).toBeChecked();
 		expect( screen.getByLabelText( 'Cart Page' ) ).toBeChecked();
 
-		userEvent.click( screen.getByLabelText( /Enable Apple Pay/ ) );
+		act( () => {
+			userEvent.click( screen.getByLabelText( /Enable Apple Pay/ ) );
+		} );
 		expect( updateIsPaymentRequestEnabledHandler ).toHaveBeenCalledWith(
 			false
 		);
@@ -186,17 +188,23 @@ describe( 'PaymentRequestSettings', () => {
 
 		expect( updatePaymentRequestLocationsHandler ).not.toHaveBeenCalled();
 
-		userEvent.click( screen.getByLabelText( /Checkout/ ) );
+		act( () => {
+			userEvent.click( screen.getByLabelText( /Checkout/ ) );
+		} );
 		expect(
 			updatePaymentRequestLocationsHandler
 		).toHaveBeenLastCalledWith( [ 'checkout' ] );
 
-		userEvent.click( screen.getByLabelText( /Product Page/ ) );
+		act( () => {
+			userEvent.click( screen.getByLabelText( /Product Page/ ) );
+		} );
 		expect(
 			updatePaymentRequestLocationsHandler
 		).toHaveBeenLastCalledWith( [ 'product' ] );
 
-		userEvent.click( screen.getByLabelText( /Cart/ ) );
+		act( () => {
+			userEvent.click( screen.getByLabelText( /Cart/ ) );
+		} );
 		expect(
 			updatePaymentRequestLocationsHandler
 		).toHaveBeenLastCalledWith( [ 'cart' ] );
@@ -228,21 +236,27 @@ describe( 'PaymentRequestSettings', () => {
 		expect( setButtonSizeMock ).not.toHaveBeenCalled();
 		expect( setButtonThemeMock ).not.toHaveBeenCalled();
 
-		userEvent.click( screen.getByLabelText( /Light/ ) );
+		act( () => {
+			userEvent.click( screen.getByLabelText( /Light/ ) );
+		} );
 		expect( setButtonThemeMock ).toHaveBeenCalledWith( 'light' );
 
-		userEvent.selectOptions(
-			screen.getByRole( 'combobox', {
-				name: 'Call to action',
-			} ),
-			'book'
-		);
+		act( () => {
+			userEvent.selectOptions(
+				screen.getByRole( 'combobox', {
+					name: 'Call to action',
+				} ),
+				'book'
+			);
+		} );
 		expect( setButtonTypeMock ).toHaveBeenCalledWith(
 			'book',
 			expect.anything()
 		);
 
-		userEvent.click( screen.getByLabelText( 'Large (55 px)' ) );
+		act( () => {
+			userEvent.click( screen.getByLabelText( 'Large (55 px)' ) );
+		} );
 		expect( setButtonSizeMock ).toHaveBeenCalledWith( 'large' );
 	} );
 
@@ -263,17 +277,23 @@ describe( 'PaymentRequestSettings', () => {
 		);
 
 		// Uncheck each checkbox, and verify them what kind of action should have been called
-		userEvent.click( screen.getByText( 'Product Page' ) );
+		act( () => {
+			userEvent.click( screen.getByText( 'Product Page' ) );
+		} );
 		expect(
 			updatePaymentRequestLocationsHandler
 		).toHaveBeenLastCalledWith( [ 'checkout', 'cart' ] );
 
-		userEvent.click( screen.getByText( 'Checkout Page' ) );
+		act( () => {
+			userEvent.click( screen.getByText( 'Checkout Page' ) );
+		} );
 		expect(
 			updatePaymentRequestLocationsHandler
 		).toHaveBeenLastCalledWith( [ 'product', 'cart' ] );
 
-		userEvent.click( screen.getByText( 'Cart Page' ) );
+		act( () => {
+			userEvent.click( screen.getByText( 'Cart Page' ) );
+		} );
 		expect(
 			updatePaymentRequestLocationsHandler
 		).toHaveBeenLastCalledWith( [ 'checkout', 'product' ] );

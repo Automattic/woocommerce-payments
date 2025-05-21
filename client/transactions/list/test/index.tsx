@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React from 'react';
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import user from '@testing-library/user-event';
 import apiFetch from '@wordpress/api-fetch';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
@@ -317,7 +317,9 @@ describe( 'Transactions list', () => {
 		}
 
 		function sortBy( field: string ) {
-			user.click( screen.getByRole( 'button', { name: field } ) );
+			act( () => {
+				user.click( screen.getByRole( 'button', { name: field } ) );
+			} );
 			rerender( <TransactionsList /> );
 		}
 
@@ -592,7 +594,9 @@ describe( 'Transactions list', () => {
 
 			const { getByRole } = render( <TransactionsList /> );
 
-			getByRole( 'button', { name: 'Export' } ).click();
+			act( () => {
+				getByRole( 'button', { name: 'Export' } ).click();
+			} );
 
 			expect( window.confirm ).toHaveBeenCalledTimes( 1 );
 			expect( window.confirm ).toHaveBeenCalledWith(
@@ -615,7 +619,9 @@ describe( 'Transactions list', () => {
 
 			const { getByRole } = render( <TransactionsList /> );
 
-			getByRole( 'button', { name: 'Export' } ).click();
+			act( () => {
+				getByRole( 'button', { name: 'Export' } ).click();
+			} );
 
 			expect( window.confirm ).toHaveBeenCalledTimes( 1 );
 			expect( window.confirm ).toHaveBeenCalledWith(
@@ -647,7 +653,9 @@ describe( 'Transactions list', () => {
 				<TransactionsList depositId="po_mock" />
 			);
 
-			getByRole( 'button', { name: 'Export' } ).click();
+			act( () => {
+				getByRole( 'button', { name: 'Export' } ).click();
+			} );
 
 			await waitFor( () => {
 				expect( mockApiFetch ).toHaveBeenCalledTimes( 1 );
