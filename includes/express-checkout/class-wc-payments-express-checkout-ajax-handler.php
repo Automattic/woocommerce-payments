@@ -66,6 +66,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 				2
 			);
 			add_filter( 'rest_pre_dispatch', [ $this, 'tokenized_cart_store_api_address_normalization' ], 10, 3 );
+			add_filter( 'woocommerce_get_country_locale', [ $this, 'modify_country_locale_for_express_checkout' ], 20 );
 		}
 	}
 
