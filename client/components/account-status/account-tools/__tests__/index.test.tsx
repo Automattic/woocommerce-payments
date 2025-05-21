@@ -10,8 +10,6 @@ import { render } from '@testing-library/react';
  */
 import { AccountTools } from '..';
 
-const openModal = jest.fn();
-
 declare const global: {
 	wcpaySettings: {
 		testModeOnboarding: boolean;
@@ -24,9 +22,7 @@ describe( 'AccountTools', () => {
 			testModeOnboarding: false,
 		};
 
-		const { container } = render(
-			<AccountTools openModal={ openModal } />
-		);
+		const { container } = render( <AccountTools /> );
 
 		expect( container ).toMatchSnapshot();
 	} );
@@ -36,9 +32,7 @@ describe( 'AccountTools', () => {
 			testModeOnboarding: true,
 		};
 
-		const { container } = render(
-			<AccountTools openModal={ openModal } />
-		);
+		const { container } = render( <AccountTools /> );
 
 		expect( container ).toMatchSnapshot();
 	} );
