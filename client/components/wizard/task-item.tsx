@@ -19,13 +19,9 @@ interface WizardTaskItemProps {
 	visibleDescription?: string;
 }
 
-const WizardTaskItem: React.FC< WizardTaskItemProps > = ( {
-	children,
-	title,
-	index,
-	className,
-	visibleDescription,
-} ) => {
+const WizardTaskItem: React.FC< React.PropsWithChildren<
+	WizardTaskItemProps
+> > = ( { children, title, index, className, visibleDescription } ) => {
 	const { isCompleted, isActive } = useContext( WizardTaskContext );
 
 	return (

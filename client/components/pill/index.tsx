@@ -18,7 +18,11 @@ type PillProps = {
 	children?: ReactNode;
 };
 
-const Pill: FC< PillProps > = ( { type = '', className = '', children } ) => {
+const Pill: FC< React.PropsWithChildren< PillProps > > = ( {
+	type = '',
+	className = '',
+	children,
+} ) => {
 	const types = [ 'primary', 'success', 'alert', 'danger', 'light' ];
 
 	const classes = clsx(

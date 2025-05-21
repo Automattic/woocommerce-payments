@@ -19,10 +19,9 @@ interface FraudProtectionRuleCardNoticeProps {
 	type: NoticeType;
 }
 
-const FraudProtectionRuleCardNotice: React.FC< FraudProtectionRuleCardNoticeProps > = ( {
-	type,
-	children,
-} ) => {
+const FraudProtectionRuleCardNotice: React.FC< React.PropsWithChildren<
+	FraudProtectionRuleCardNoticeProps
+> > = ( { type, children } ) => {
 	if ( ! supportedTypes.includes( type ) ) {
 		return null;
 	}

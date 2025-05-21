@@ -933,6 +933,7 @@ class WC_Payments_Admin {
 		}
 
 		$account_status_data = $this->account->get_account_status_data();
+		$account_is_valid    = $this->account->is_stripe_account_valid();
 
 		$test_mode = false;
 		try {
@@ -981,7 +982,7 @@ class WC_Payments_Admin {
 			'testMode'                           => $test_mode,
 			// Set this flag for use in the front-end to alter messages and notices if on-boarding has been disabled.
 			'onBoardingDisabled'                 => WC_Payments_Account::is_on_boarding_disabled(),
-			'onboardingFieldsData'               => $this->onboarding_service->get_fields_data( get_user_locale() ),
+			'onboardingFieldsData'               => $account_is_valid ? null : $this->onboarding_service->get_fields_data( get_user_locale() ),
 			'onboardingEmbeddedKycInProgress'    => $this->onboarding_service->is_embedded_kyc_in_progress(),
 			'errorMessage'                       => $error_message,
 			'featureFlags'                       => $this->get_frontend_feature_flags(),
@@ -992,7 +993,7 @@ class WC_Payments_Admin {
 			'isJetpackConnected'                 => $this->account->has_working_jetpack_connection(),
 			'isJetpackIdcActive'                 => Jetpack_Identity_Crisis::has_identity_crisis(),
 			'isAccountConnected'                 => $this->account->has_account_data(),
-			'isAccountValid'                     => $this->account->is_stripe_account_valid(),
+			'isAccountValid'                     => $account_is_valid,
 			'accountStatus'                      => $account_status_data,
 			'accountFees'                        => $this->account->get_fees(),
 			'accountLoans'                       => $this->account->get_capital(),

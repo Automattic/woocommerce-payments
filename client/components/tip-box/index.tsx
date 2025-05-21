@@ -14,7 +14,11 @@ interface Props {
 	color: 'purple' | 'blue' | 'gray' | 'yellow';
 	className?: string;
 }
-const TipBox: React.FC< Props > = ( { color, className, children } ) => {
+const TipBox: React.FC< React.PropsWithChildren< Props > > = ( {
+	color,
+	className,
+	children,
+} ) => {
 	return (
 		<div className={ clsx( 'wcpay-component-tip-box', color, className ) }>
 			<LightbulbIcon />
