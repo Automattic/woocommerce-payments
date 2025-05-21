@@ -160,7 +160,7 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 
 		if ( $with_negative_price_product ) {
 			$mock_items[] = $this->create_mock_item( 'Negative Product Price', $quantity, -18.99, 2.7, 42 );
-			$mock_items[] = $this->create_mock_item( 'Negative Product Price and Tax', $quantity, -18.99, -2.7, 42 );
+			$mock_items[] = $this->create_mock_item( 'Negative Product Price+Tax', $quantity, -18.99, -2.7, 42 );
 		}
 
 		if ( $basket_size > 1 ) {
@@ -343,7 +343,7 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 				],
 				(object) [
 					'product_code'        => 42,
-					'product_description' => 'Negative Product Price and Tax',
+					'product_description' => 'Negative Product Price+Tax',
 					'unit_cost'           => 0,
 					'quantity'            => 1,
 					'tax_amount'          => 0,
