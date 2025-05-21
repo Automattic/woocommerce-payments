@@ -3,7 +3,62 @@
 exports[`Fraud protection rule card tests renders correctly 1`] = `
 {
   "asFragment": [Function],
-  "baseElement": <body>
+  "baseElement": .emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-6 {
+    transition-duration: 0ms;
+  }
+}
+
+<body>
     <p
       class="a11y-speak-intro-text"
       hidden="hidden"
@@ -30,16 +85,16 @@ exports[`Fraud protection rule card tests renders correctly 1`] = `
     />
     <div>
       <div
-        class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+        class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
         data-wp-c16t="true"
         data-wp-component="Card"
         id="test-id"
       >
         <div
-          class="css-mgwsf4-View-Content em57xhy0"
+          class="emotion-2 emotion-1"
         >
           <div
-            class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+            class="components-card__body components-card-body wcpay-card-body emotion-4 emotion-1"
             data-wp-c16t="true"
             data-wp-component="CardBody"
           >
@@ -55,31 +110,86 @@ exports[`Fraud protection rule card tests renders correctly 1`] = `
         </div>
         <div
           aria-hidden="true"
-          class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+          class="components-elevation emotion-6 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Elevation"
         />
         <div
           aria-hidden="true"
-          class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+          class="components-elevation emotion-6 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Elevation"
         />
       </div>
     </div>
   </body>,
-  "container": <div>
+  "container": .emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-6 {
+    transition-duration: 0ms;
+  }
+}
+
+<div>
     <div
-      class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Card"
       id="test-id"
     >
       <div
-        class="css-mgwsf4-View-Content em57xhy0"
+        class="emotion-2 emotion-1"
       >
         <div
-          class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+          class="components-card__body components-card-body wcpay-card-body emotion-4 emotion-1"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
@@ -95,13 +205,13 @@ exports[`Fraud protection rule card tests renders correctly 1`] = `
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation emotion-6 emotion-1"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation emotion-6 emotion-1"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />

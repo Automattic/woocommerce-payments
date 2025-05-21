@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { render, waitFor } from '@testing-library/react';
+import { render, waitFor, fireEvent } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -260,10 +260,17 @@ describe( 'Advanced fraud protection settings', () => {
 		const avsThresholdToggle = await container.findByLabelText(
 			'Enable AVS Mismatch filter'
 		);
-		avsThresholdToggle.click();
-		avsThresholdToggle.click();
+		fireEvent.click( avsThresholdToggle );
+		fireEvent.click( avsThresholdToggle );
 		const [ saveButton ] = await container.findAllByText( 'Save changes' );
-		saveButton.click();
+		fireEvent.click( saveButton );
+
+		await waitFor( () => {
+			expect( container.baseElement ).toHaveTextContent(
+				/Maximum purchase price must be greater than the minimum purchase price/i
+			);
+		} );
+
 		expect( mockUseSettings().saveSettings.mock.calls.length ).toBe( 0 );
 		expect( container ).toMatchSnapshot();
 		expect(
@@ -313,10 +320,10 @@ describe( 'Advanced fraud protection settings', () => {
 		const avsThresholdToggle = await container.findByLabelText(
 			'Enable AVS Mismatch filter'
 		);
-		avsThresholdToggle.click();
-		avsThresholdToggle.click();
+		fireEvent.click( avsThresholdToggle );
+		fireEvent.click( avsThresholdToggle );
 		const [ saveButton ] = await container.findAllByText( 'Save changes' );
-		saveButton.click();
+		fireEvent.click( saveButton );
 		await waitFor( () => {
 			expect( mockUseSettings().saveSettings.mock.calls.length ).toBe(
 				1
@@ -380,10 +387,10 @@ describe( 'Advanced fraud protection settings', () => {
 		const avsThresholdToggle = await container.findByLabelText(
 			'Enable AVS Mismatch filter'
 		);
-		avsThresholdToggle.click();
-		avsThresholdToggle.click();
+		fireEvent.click( avsThresholdToggle );
+		fireEvent.click( avsThresholdToggle );
 		const [ saveButton ] = await container.findAllByText( 'Save changes' );
-		saveButton.click();
+		fireEvent.click( saveButton );
 		await waitFor( () => {
 			expect( mockUseSettings().saveSettings.mock.calls.length ).toBe(
 				1
@@ -451,10 +458,10 @@ describe( 'Advanced fraud protection settings', () => {
 		const avsThresholdToggle = await container.findByLabelText(
 			'Enable AVS Mismatch filter'
 		);
-		avsThresholdToggle.click();
-		avsThresholdToggle.click();
+		fireEvent.click( avsThresholdToggle );
+		fireEvent.click( avsThresholdToggle );
 		const [ saveButton ] = await container.findAllByText( 'Save changes' );
-		saveButton.click();
+		fireEvent.click( saveButton );
 		await waitFor( () => {
 			expect( mockUseSettings().saveSettings.mock.calls.length ).toBe(
 				1
@@ -504,8 +511,8 @@ describe( 'Advanced fraud protection settings', () => {
 		const avsThresholdToggle = await container.findByLabelText(
 			'Enable AVS Mismatch filter'
 		);
-		avsThresholdToggle.click();
-		avsThresholdToggle.click();
+		fireEvent.click( avsThresholdToggle );
+		fireEvent.click( avsThresholdToggle );
 		const [ saveButton ] = await container.findAllByText( 'Save changes' );
 
 		saveButton.click();

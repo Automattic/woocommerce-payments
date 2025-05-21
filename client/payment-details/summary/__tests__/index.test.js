@@ -6,7 +6,6 @@ import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import moment from 'moment';
-import '@wordpress/jest-console';
 
 /**
  * Internal dependencies
