@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Only display the transaction URL for authorized intent statuses in WP Admin order page

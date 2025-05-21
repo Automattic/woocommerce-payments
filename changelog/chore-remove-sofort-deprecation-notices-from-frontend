@@ -1,5 +1,0 @@
-Significance: patch
-Type: dev
-Comment: chore: remove sofort deprecation notices from the settings UI, since Sofort can no longer be displayed there.
-
-
