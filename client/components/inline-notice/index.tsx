@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import * as React from 'react';
+import React, { ComponentProps } from 'react';
 import {
 	Flex as BundledWordPressComponentsFlex,
 	FlexItem as BundledWordPressComponentsFlexItem,
@@ -23,7 +23,7 @@ import './styles.scss';
 import ButtonVariant = BundledWordPressComponentsButton.ButtonVariant;
 import { WordPressComponentsContext } from 'wcpay/wordpress-components-context/context';
 
-interface InlineNoticeProps extends BundledWordPressComponentsNotice.Props {
+interface InlineNoticeProps {
 	/**
 	 * Whether to display the default icon based on status prop or the icon to display.
 	 * Supported values are: boolean, JSX.Element and `undefined`.
@@ -45,7 +45,10 @@ interface InlineNoticeProps extends BundledWordPressComponentsNotice.Props {
 /**
  * Renders a banner notice.
  */
-function InlineNotice( props: InlineNoticeProps ): JSX.Element {
+function InlineNotice(
+	props: InlineNoticeProps &
+		ComponentProps< typeof BundledWordPressComponentsNotice >
+): JSX.Element {
 	const { icon, actions, children, buttonVariant, ...noticeProps } = props;
 	const context = React.useContext( WordPressComponentsContext );
 

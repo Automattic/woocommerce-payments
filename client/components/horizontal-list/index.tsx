@@ -29,7 +29,8 @@ interface Props {
 	items: HorizontalListItem[];
 }
 
-export const HorizontalList: React.FunctionComponent< Props > = ( props ) => {
-	const { items } = props;
+export const HorizontalList: React.FunctionComponent< Props > = ( {
+	items,
+} ) => {
 	return <List className="woocommerce-list--horizontal" items={ items } />;
 };

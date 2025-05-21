@@ -325,7 +325,6 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 					<DepositOverview deposit={ deposit } />
 				) }
 			</ErrorBoundary>
-
 			{ deposit && (
 				<ErrorBoundary>
 					{ isInstantDeposit ? (
