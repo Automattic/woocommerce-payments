@@ -73,7 +73,7 @@ describe( 'Loading', () => {
 			mcc: 'most_popular__software_services',
 		};
 
-		render( <Loading name="loading" /> );
+		render( <Loading /> );
 
 		checkLinkToContainNecessaryParams( window.location.href );
 	} );

@@ -14,7 +14,10 @@ interface CardNoticeProps {
 	actions?: JSX.Element;
 }
 
-const CardNotice: React.FC< CardNoticeProps > = ( { children, actions } ) => {
+const CardNotice: React.FC< React.PropsWithChildren< CardNoticeProps > > = ( {
+	children,
+	actions,
+} ) => {
 	return (
 		<CardFooter className="card-notice">
 			<div className="card-notice__section">

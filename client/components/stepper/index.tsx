@@ -88,7 +88,10 @@ const childrenToSteps = ( children: StepperProps[ 'children' ] ) => {
 	);
 };
 
-export const Stepper: React.FC< StepperProps > = ( { children, ...rest } ) => {
+export const Stepper: React.FC< React.PropsWithChildren< StepperProps > > = ( {
+	children,
+	...rest
+} ) => {
 	const steps = childrenToSteps( children );
 	const value = useContextValue( {
 		steps,
