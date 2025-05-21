@@ -18,11 +18,9 @@ interface DownloadButtonProps {
 	onClick: ( event: any ) => void;
 }
 
-const DownloadButton: React.FunctionComponent< DownloadButtonProps > = ( {
-	isDisabled,
-	isBusy,
-	onClick,
-} ) => (
+const DownloadButton: React.FunctionComponent< React.PropsWithChildren<
+	DownloadButtonProps
+> > = ( { isDisabled, isBusy, onClick } ) => (
 	<Button
 		className="woocommerce-table__download-button"
 		disabled={ isDisabled }

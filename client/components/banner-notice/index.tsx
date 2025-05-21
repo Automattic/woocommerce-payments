@@ -6,7 +6,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { ComponentProps } from 'react';
 
 import { __ } from '@wordpress/i18n';
 import { useEffect, renderToString } from '@wordpress/element';
@@ -101,7 +101,7 @@ interface Props {
 	actions?: ReadonlyArray< {
 		label: string;
 		className?: string;
-		variant?: Button.Props[ 'variant' ];
+		variant?: ComponentProps< typeof Button >[ 'variant' ];
 		url?: string;
 		urlTarget?: string;
 		onClick?: React.MouseEventHandler< HTMLAnchorElement >;
@@ -114,7 +114,7 @@ interface Props {
 	onRemove?: () => void;
 }
 
-const BannerNotice: React.FC< Props > = ( {
+const BannerNotice: React.FC< React.PropsWithChildren< Props > > = ( {
 	icon,
 	children,
 	actions = [],
