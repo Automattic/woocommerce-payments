@@ -13,11 +13,7 @@ import { trackRedirected, useTrackAbandoned } from '../tracking';
 import LoadBar from 'components/load-bar';
 import strings from '../strings';
 
-interface Props {
-	name: string;
-}
-
-const LoadingStep: React.FC< Props > = () => {
+const LoadingStep: React.FC = () => {
 	const { data } = useOnboardingContext();
 
 	const { removeTrackListener } = useTrackAbandoned();

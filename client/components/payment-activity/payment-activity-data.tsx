@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import * as React from 'react';
+import React from 'react';
 import moment from 'moment';
 import { __ } from '@wordpress/i18n';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
