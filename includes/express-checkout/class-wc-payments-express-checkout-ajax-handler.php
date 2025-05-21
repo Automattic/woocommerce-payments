@@ -619,6 +619,8 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			return $locales;
 		}
 
+		include_once WCPAY_ABSPATH . 'includes/constants/class-express-checkout-element-states.php';
+
 		// For countries that don't have state fields, make the state field optional.
 		foreach ( \WCPay\Constants\Express_Checkout_Element_States::COUNTRIES_WITHOUT_STATES as $country_code ) {
 			$locales[ $country_code ]['state']['required'] = false;

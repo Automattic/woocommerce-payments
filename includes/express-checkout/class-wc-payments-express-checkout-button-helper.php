@@ -7,7 +7,6 @@
 
 defined( 'ABSPATH' ) || exit;
 
-use WCPay\Constants\Express_Checkout_Element_States;
 use WCPay\Constants\Country_Code;
 use WCPay\Exceptions\Invalid_Price_Exception;
 use WCPay\Logger;
@@ -1060,6 +1059,8 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * @return string Normalized state or original state input value.
 	 */
 	public function get_normalized_state_from_ece_states( $state, $country ) {
+		// Include Express Checkout Element API State list for compatibility with WC countries/states.
+		include_once WCPAY_ABSPATH . 'includes/constants/class-express-checkout-element-states.php';
 		$pr_states = \WCPay\Constants\Express_Checkout_Element_States::STATES;
 
 		if ( ! isset( $pr_states[ $country ] ) ) {
