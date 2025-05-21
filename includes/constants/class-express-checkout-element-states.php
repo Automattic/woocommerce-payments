@@ -1161,9 +1161,16 @@ class Express_Checkout_Element_States {
 	// phpcs:enable
 
 	/**
-	 * List of countries where WooCommerce provides a state/region field but the Express Checkout
-	 * Element API does not. For these countries, we need to make the
-	 * state field optional and hidden to avoid validation errors.
+	 * List of countries where WooCommerce provides a state/region field,
+	 * but the Apple Pay and Google Pay address forms do not include a state/region field.
+	 * For these countries, we need to make the state field optional and hidden to avoid validation errors,
+	 * since the wallet-based checkout may not supply this information.
+	 *
+	 * We could not find an official list of countries that have this characteristic,
+	 * so we are basing this list on libaddressinput: https://github.com/google/libaddressinput, as a proxy.
+	 * The libaddressinput project is used by Chromium based browsers in the native address dialog.
+	 *
+	 * @see https://github.com/google/libaddressinput/wiki/AddressValidationMetadata
 	 */
 	const COUNTRIES_WITHOUT_STATES = [
 		Country_Code::ANGOLA,
