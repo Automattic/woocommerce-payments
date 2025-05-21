@@ -1,6 +1,160 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Order details page should match the snapshot - Charge without payment intent 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: start;
+  -webkit-box-align: start;
+  -ms-flex-align: start;
+  align-items: start;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.emotion-6>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-6>* {
+  min-width: 0;
+}
+
+.emotion-8 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.emotion-12 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-12 {
+    transition-duration: 0ms;
+  }
+}
+
+.emotion-20 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+  border-bottom: 1px solid;
+  box-sizing: border-box;
+  border-color: rgba(0, 0, 0, 0.1);
+  padding: calc(4px * 6) calc(4px * 8);
+}
+
+.emotion-20>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-20>* {
+  min-width: 0;
+}
+
+.emotion-20:last-child {
+  border-bottom: none;
+}
+
+.emotion-20:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-20:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-22 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 6) calc(4px * 8);
+}
+
+.emotion-22:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-22:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
 <div>
   <div
     class="wcpay-payment-details woocommerce-payments-page"
@@ -8,20 +162,20 @@ exports[`Order details page should match the snapshot - Charge without payment i
     style="max-width: 1032px;"
   >
     <div
-      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      class="components-surface components-card emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
       <div
-        class="css-mgwsf4-View-Content em57xhy0"
+        class="emotion-2 emotion-1"
       >
         <div
-          class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+          class="components-card__body components-card-body emotion-4 emotion-1"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
           <div
-            class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+            class="components-flex emotion-6 emotion-1"
             data-wp-c16t="true"
             data-wp-component="Flex"
           >
@@ -95,13 +249,13 @@ exports[`Order details page should match the snapshot - Charge without payment i
         </div>
         <hr
           aria-orientation="horizontal"
-          class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+          class="components-divider components-card__divider components-card-divider emotion-8 emotion-9"
           data-wp-c16t="true"
           data-wp-component="CardDivider"
           role="separator"
         />
         <div
-          class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+          class="components-card__body components-card-body emotion-4 emotion-1"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
@@ -275,34 +429,34 @@ exports[`Order details page should match the snapshot - Charge without payment i
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation emotion-12 emotion-1"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation emotion-12 emotion-1"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
     </div>
     <div
-      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      class="components-surface components-card emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
       <div
-        class="css-mgwsf4-View-Content em57xhy0"
+        class="emotion-2 emotion-1"
       >
         <div
-          class="components-flex components-card__header components-card-header css-1e8ifbz-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-large em57xhy0"
+          class="components-flex components-card__header components-card-header emotion-20 emotion-1"
           data-wp-c16t="true"
           data-wp-component="CardHeader"
         >
           Timeline
         </div>
         <div
-          class="components-card__body components-card-body css-1nonx1n-View-Body-borderRadius-large em57xhy0"
+          class="components-card__body components-card-body emotion-22 emotion-1"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
@@ -375,34 +529,34 @@ exports[`Order details page should match the snapshot - Charge without payment i
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation emotion-12 emotion-1"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation emotion-12 emotion-1"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
     </div>
     <div
-      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      class="components-surface components-card emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
       <div
-        class="css-mgwsf4-View-Content em57xhy0"
+        class="emotion-2 emotion-1"
       >
         <div
-          class="components-flex components-card__header components-card-header css-1e8ifbz-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-large em57xhy0"
+          class="components-flex components-card__header components-card-header emotion-20 emotion-1"
           data-wp-c16t="true"
           data-wp-component="CardHeader"
         >
           Payment method
         </div>
         <div
-          class="components-card__body components-card-body css-1nonx1n-View-Body-borderRadius-large em57xhy0"
+          class="components-card__body components-card-body emotion-22 emotion-1"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
@@ -580,13 +734,13 @@ exports[`Order details page should match the snapshot - Charge without payment i
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation emotion-12 emotion-1"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation emotion-12 emotion-1"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />

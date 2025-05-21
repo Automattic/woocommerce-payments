@@ -1,6 +1,89 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Multi-Currency enabled currencies list Enabled currencies list renders correctly 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.emotion-8 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+}
+
+.emotion-8:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-8:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-14 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-14 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <div
     class="settings-section multi-currency-settings-enabled-currencies-section"
@@ -26,15 +109,15 @@ exports[`Multi-Currency enabled currencies list Enabled currencies list renders 
       class="settings-section__controls"
     >
       <div
-        class="components-surface components-card wcpay-multi-currency__enabled-currencies css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+        class="components-surface components-card wcpay-multi-currency__enabled-currencies emotion-0 emotion-1"
         data-wp-c16t="true"
         data-wp-component="Card"
       >
         <div
-          class="css-mgwsf4-View-Content em57xhy0"
+          class="emotion-2 emotion-1"
         >
           <div
-            class="components-card__body components-card-body wcpay-multi-currency__enabled-currencies-header css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+            class="components-card__body components-card-body wcpay-multi-currency__enabled-currencies-header emotion-4 emotion-1"
             data-wp-c16t="true"
             data-wp-component="CardBody"
           >
@@ -48,13 +131,13 @@ exports[`Multi-Currency enabled currencies list Enabled currencies list renders 
           </div>
           <hr
             aria-orientation="horizontal"
-            class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+            class="components-divider components-card__divider components-card-divider emotion-6 emotion-7"
             data-wp-c16t="true"
             data-wp-component="CardDivider"
             role="separator"
           />
           <div
-            class="components-card__body components-card-body css-1i4jx7i-View-Body-borderRadius em57xhy0"
+            class="components-card__body components-card-body emotion-8 emotion-1"
             data-wp-c16t="true"
             data-wp-component="CardBody"
           >
@@ -248,13 +331,13 @@ exports[`Multi-Currency enabled currencies list Enabled currencies list renders 
           </div>
           <hr
             aria-orientation="horizontal"
-            class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+            class="components-divider components-card__divider components-card-divider emotion-6 emotion-7"
             data-wp-c16t="true"
             data-wp-component="CardDivider"
             role="separator"
           />
           <div
-            class="components-card__body components-card-body wcpay-multi-currency__available-currencies-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+            class="components-card__body components-card-body wcpay-multi-currency__available-currencies-container emotion-4 emotion-1"
             data-wp-c16t="true"
             data-wp-component="CardBody"
           >
@@ -269,13 +352,13 @@ exports[`Multi-Currency enabled currencies list Enabled currencies list renders 
         </div>
         <div
           aria-hidden="true"
-          class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+          class="components-elevation emotion-14 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Elevation"
         />
         <div
           aria-hidden="true"
-          class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+          class="components-elevation emotion-14 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Elevation"
         />

@@ -1,18 +1,86 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Order items threshold card renders correctly 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  font-size: 13px;
+}
+
+.emotion-8 {
+  margin-bottom: calc(4px * 2);
+}
+
+.components-panel__row .emotion-8 {
+  margin-bottom: inherit;
+}
+
+.emotion-10 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-10 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
     id="order-items-threshold-card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -27,10 +95,10 @@ exports[`Order items threshold card renders correctly 1`] = `
           class="fraud-protection-rule-toggle"
         >
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
+            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
           >
             <div
-              class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+              class="components-base-control__field emotion-8 emotion-9"
             >
               <span
                 class="components-form-toggle"
@@ -75,13 +143,13 @@ exports[`Order items threshold card renders correctly 1`] = `
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-10 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-10 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -90,18 +158,130 @@ exports[`Order items threshold card renders correctly 1`] = `
 `;
 
 exports[`Order items threshold card renders correctly when enabled 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  font-size: 13px;
+}
+
+.emotion-8 {
+  margin-bottom: calc(4px * 2);
+}
+
+.components-panel__row .emotion-8 {
+  margin-bottom: inherit;
+}
+
+.emotion-14 {
+  margin-top: calc(4px * 2);
+  margin-bottom: 0;
+  font-size: 12px;
+  font-style: normal;
+  color: #757575;
+  margin-bottom: revert;
+}
+
+.emotion-22 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-22>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-22>* {
+  min-width: 0;
+}
+
+.emotion-24 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+.emotion-28 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-28 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
     id="order-items-threshold-card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -116,10 +296,10 @@ exports[`Order items threshold card renders correctly when enabled 1`] = `
           class="fraud-protection-rule-toggle"
         >
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
+            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
           >
             <div
-              class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+              class="components-base-control__field emotion-8 emotion-9"
             >
               <span
                 class="components-form-toggle is-checked"
@@ -169,10 +349,10 @@ exports[`Order items threshold card renders correctly when enabled 1`] = `
                     Minimum items per order
                   </label>
                   <div
-                    class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
+                    class="components-base-control emotion-6 emotion-7"
                   >
                     <div
-                      class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+                      class="components-base-control__field emotion-8 emotion-9"
                     >
                       <input
                         aria-describedby="inspector-text-control-0__help"
@@ -186,7 +366,7 @@ exports[`Order items threshold card renders correctly when enabled 1`] = `
                       />
                     </div>
                     <p
-                      class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
+                      class="components-base-control__help emotion-14 emotion-15"
                       id="inspector-text-control-0__help"
                     >
                       Leave blank for no limit
@@ -202,10 +382,10 @@ exports[`Order items threshold card renders correctly when enabled 1`] = `
                     Maximum items per order
                   </label>
                   <div
-                    class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
+                    class="components-base-control emotion-6 emotion-7"
                   >
                     <div
-                      class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+                      class="components-base-control__field emotion-8 emotion-9"
                     >
                       <input
                         aria-describedby="inspector-text-control-1__help"
@@ -219,7 +399,7 @@ exports[`Order items threshold card renders correctly when enabled 1`] = `
                       />
                     </div>
                     <p
-                      class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
+                      class="components-base-control__help emotion-14 emotion-15"
                       id="inspector-text-control-1__help"
                     >
                       Leave blank for no limit
@@ -238,12 +418,12 @@ exports[`Order items threshold card renders correctly when enabled 1`] = `
                     class="components-notice__content"
                   >
                     <div
-                      class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+                      class="components-flex emotion-22 emotion-1"
                       data-wp-c16t="true"
                       data-wp-component="Flex"
                     >
                       <div
-                        class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+                        class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon emotion-24 emotion-1"
                         data-wp-c16t="true"
                         data-wp-component="FlexItem"
                       >
@@ -262,7 +442,7 @@ exports[`Order items threshold card renders correctly when enabled 1`] = `
                         </svg>
                       </div>
                       <div
-                        class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+                        class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content emotion-24 emotion-1"
                         data-wp-c16t="true"
                         data-wp-component="FlexItem"
                       >
@@ -292,13 +472,13 @@ exports[`Order items threshold card renders correctly when enabled 1`] = `
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-28 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-28 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -307,18 +487,130 @@ exports[`Order items threshold card renders correctly when enabled 1`] = `
 `;
 
 exports[`Order items threshold card renders correctly when enabled and checked 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  font-size: 13px;
+}
+
+.emotion-8 {
+  margin-bottom: calc(4px * 2);
+}
+
+.components-panel__row .emotion-8 {
+  margin-bottom: inherit;
+}
+
+.emotion-14 {
+  margin-top: calc(4px * 2);
+  margin-bottom: 0;
+  font-size: 12px;
+  font-style: normal;
+  color: #757575;
+  margin-bottom: revert;
+}
+
+.emotion-22 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-22>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-22>* {
+  min-width: 0;
+}
+
+.emotion-24 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+.emotion-28 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-28 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
     id="order-items-threshold-card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -333,10 +625,10 @@ exports[`Order items threshold card renders correctly when enabled and checked 1
           class="fraud-protection-rule-toggle"
         >
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
+            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
           >
             <div
-              class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+              class="components-base-control__field emotion-8 emotion-9"
             >
               <span
                 class="components-form-toggle is-checked"
@@ -386,10 +678,10 @@ exports[`Order items threshold card renders correctly when enabled and checked 1
                     Minimum items per order
                   </label>
                   <div
-                    class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
+                    class="components-base-control emotion-6 emotion-7"
                   >
                     <div
-                      class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+                      class="components-base-control__field emotion-8 emotion-9"
                     >
                       <input
                         aria-describedby="inspector-text-control-2__help"
@@ -403,7 +695,7 @@ exports[`Order items threshold card renders correctly when enabled and checked 1
                       />
                     </div>
                     <p
-                      class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
+                      class="components-base-control__help emotion-14 emotion-15"
                       id="inspector-text-control-2__help"
                     >
                       Leave blank for no limit
@@ -419,10 +711,10 @@ exports[`Order items threshold card renders correctly when enabled and checked 1
                     Maximum items per order
                   </label>
                   <div
-                    class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
+                    class="components-base-control emotion-6 emotion-7"
                   >
                     <div
-                      class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+                      class="components-base-control__field emotion-8 emotion-9"
                     >
                       <input
                         aria-describedby="inspector-text-control-3__help"
@@ -436,7 +728,7 @@ exports[`Order items threshold card renders correctly when enabled and checked 1
                       />
                     </div>
                     <p
-                      class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
+                      class="components-base-control__help emotion-14 emotion-15"
                       id="inspector-text-control-3__help"
                     >
                       Leave blank for no limit
@@ -455,12 +747,12 @@ exports[`Order items threshold card renders correctly when enabled and checked 1
                     class="components-notice__content"
                   >
                     <div
-                      class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+                      class="components-flex emotion-22 emotion-1"
                       data-wp-c16t="true"
                       data-wp-component="Flex"
                     >
                       <div
-                        class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+                        class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon emotion-24 emotion-1"
                         data-wp-c16t="true"
                         data-wp-component="FlexItem"
                       >
@@ -479,7 +771,7 @@ exports[`Order items threshold card renders correctly when enabled and checked 1
                         </svg>
                       </div>
                       <div
-                        class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+                        class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content emotion-24 emotion-1"
                         data-wp-c16t="true"
                         data-wp-component="FlexItem"
                       >
@@ -509,13 +801,13 @@ exports[`Order items threshold card renders correctly when enabled and checked 1
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-28 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-28 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -524,18 +816,86 @@ exports[`Order items threshold card renders correctly when enabled and checked 1
 `;
 
 exports[`Order items threshold card renders like disabled when checked, but not enabled 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  font-size: 13px;
+}
+
+.emotion-8 {
+  margin-bottom: calc(4px * 2);
+}
+
+.components-panel__row .emotion-8 {
+  margin-bottom: inherit;
+}
+
+.emotion-10 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-10 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
     id="order-items-threshold-card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -550,10 +910,10 @@ exports[`Order items threshold card renders like disabled when checked, but not 
           class="fraud-protection-rule-toggle"
         >
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
+            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
           >
             <div
-              class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+              class="components-base-control__field emotion-8 emotion-9"
             >
               <span
                 class="components-form-toggle"
@@ -598,13 +958,13 @@ exports[`Order items threshold card renders like disabled when checked, but not 
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-10 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-10 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />

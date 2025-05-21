@@ -3,13 +3,25 @@
 exports[`AccountTools should NOT render in live mode 1`] = `<div />`;
 
 exports[`AccountTools should render in test/sandbox mode onboarding 1`] = `
+.emotion-0 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
 <div>
   <div
     class="account-tools"
   >
     <hr
       aria-orientation="horizontal"
-      class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+      class="components-divider components-card__divider components-card-divider emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="CardDivider"
       role="separator"

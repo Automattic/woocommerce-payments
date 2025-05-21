@@ -94,6 +94,7 @@
   },
   "devDependencies": {
     "@automattic/color-studio": "4.0.0",
+    "@emotion/jest": "11.13.0",
     "@jest/test-sequencer": "29.5.0",
     "@playwright/test": "1.51.1",
     "@pmmmwh/react-refresh-webpack-plugin": "0.5.7",
@@ -140,7 +141,7 @@
     "@wordpress/html-entities": "3.6.1",
     "@wordpress/i18n": "4.6.1",
     "@wordpress/icons": "10.19.0",
-    "@wordpress/jest-preset-default": "12.21.0",
+    "@wordpress/jest-preset-default": "12.23.0",
     "@wordpress/plugins": "4.4.3",
     "@wordpress/primitives": "3.30.0",
     "@wordpress/scripts": "28.3.0",
