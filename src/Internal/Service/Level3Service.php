@@ -160,12 +160,12 @@ class Level3Service {
 			// It's possible to create products with negative price - represent it as free one with discount.
 			$discount_amount = abs( $this->prepare_amount( $subtotal / $quantity, $currency ) );
 			$unit_cost       = 0;
+		}
 
-			// Tax also shouldn't be negative so add it to the discount amount.
-			if ( $tax_amount < 0 ) {
-				$discount_amount += abs( $tax_amount );
-				$tax_amount       = 0;
-			}
+		// Tax also shouldn't be negative so represent it as a discount.
+		if ( $tax_amount < 0 ) {
+			$discount_amount += abs( $tax_amount );
+			$tax_amount       = 0;
 		}
 
 		$line_item  = (object) [
