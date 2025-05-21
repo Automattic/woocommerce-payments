@@ -21,7 +21,7 @@ const settingsContainer = document.getElementById(
 	'wcpay-account-settings-container'
 );
 if ( settingsContainer ) {
-	const root = createRoot(settingsContainer);
+	const root = createRoot( settingsContainer );
 	root.render(
 		<WCPaySettingsContext.Provider value={ wcpaySettings }>
 			<ErrorBoundary>
@@ -37,7 +37,7 @@ const expressCheckoutSettingsContainer = document.getElementById(
 if ( expressCheckoutSettingsContainer ) {
 	const methodId = expressCheckoutSettingsContainer.dataset.methodId;
 
-	const root = createRoot(expressCheckoutSettingsContainer);
+	const root = createRoot( expressCheckoutSettingsContainer );
 	root.render(
 		<WCPaySettingsContext.Provider value={ wcpaySettings }>
 			<ErrorBoundary>

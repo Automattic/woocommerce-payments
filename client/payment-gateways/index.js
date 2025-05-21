@@ -13,6 +13,6 @@ const paymentGatewaysContainer = document.getElementById(
 	'wcpay-payment-gateways-container'
 );
 if ( paymentGatewaysContainer ) {
-	const root = createRoot(paymentGatewaysContainer);
+	const root = createRoot( paymentGatewaysContainer );
 	root.render( <PaymentGatewaysConfirmation /> );
 }

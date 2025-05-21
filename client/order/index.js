@@ -110,7 +110,7 @@ jQuery( function ( $ ) {
 			return;
 		}
 
-		const root = createRoot(container);
+		const root = createRoot( container );
 		root.render(
 			<>
 				{ testMode && <TestModeNotice /> }

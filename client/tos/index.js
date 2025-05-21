@@ -34,6 +34,6 @@ function renderTosModal() {
 	const container = document.createElement( 'div' );
 	container.id = 'wcpay-tos-container';
 	document.body.appendChild( container );
-	const root = createRoot(container);
+	const root = createRoot( container );
 	root.render( <TosModal /> );
 }

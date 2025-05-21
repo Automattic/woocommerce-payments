@@ -26,13 +26,13 @@ const api = new WCPayAPI(
 );
 
 const WooPayExpressCheckoutButtonContainer = ( { buttonAttributes } ) => {
-	const rootRef = useRef(null);
-	
+	const rootRef = useRef( null );
+
 	const onRefChange = useCallback(
 		( node ) => {
 			if ( node ) {
 				rootRef.current = createRoot( node );
-				
+
 				rootRef.current.render(
 					<WoopayExpressCheckoutButton
 						buttonSettings={ getConfig( 'woopayButton' ) }
@@ -45,14 +45,14 @@ const WooPayExpressCheckoutButtonContainer = ( { buttonAttributes } ) => {
 		},
 		[ buttonAttributes ]
 	);
-	
-	useEffect(() => {
+
+	useEffect( () => {
 		return () => {
-			if (rootRef.current) {
+			if ( rootRef.current ) {
 				rootRef.current.unmount();
 			}
 		};
-	}, []);
+	}, [] );
 
 	return <span ref={ onRefChange } />;
 };

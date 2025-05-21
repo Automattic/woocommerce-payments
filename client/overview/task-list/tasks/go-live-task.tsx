@@ -50,7 +50,7 @@ export const getGoLiveTask = (): TaskItemProps | null => {
 			const container = document.createElement( 'div' );
 			container.id = 'wcpay-golivemodal-container';
 			document.body.appendChild( container );
-			const root = createRoot(container);
+			const root = createRoot( container );
 			root.render( <SetupLivePaymentsModalWrapper /> );
 		}
 	};

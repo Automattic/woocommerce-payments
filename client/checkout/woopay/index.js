@@ -49,10 +49,8 @@ const renderSaveUserSection = () => {
 			}
 		}
 
-		const root = createRoot(checkoutPageSaveUserContainer);
-		root.render(
-			<CheckoutPageSaveUser isBlocksCheckout={ true } />
-		);
+		const root = createRoot( checkoutPageSaveUserContainer );
+		root.render( <CheckoutPageSaveUser isBlocksCheckout={ true } /> );
 	} else {
 		const checkoutPageSaveUserContainer = document.createElement( 'div' );
 		checkoutPageSaveUserContainer.className =
@@ -69,10 +67,8 @@ const renderSaveUserSection = () => {
 				placeOrderButton
 			);
 
-			const root = createRoot(checkoutPageSaveUserContainer);
-			root.render(
-				<CheckoutPageSaveUser isBlocksCheckout={ false } />
-			);
+			const root = createRoot( checkoutPageSaveUserContainer );
+			root.render( <CheckoutPageSaveUser isBlocksCheckout={ false } /> );
 		}
 	}
 };

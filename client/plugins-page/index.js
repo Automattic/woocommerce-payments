@@ -99,7 +99,7 @@ const PluginsPage = () => {
 };
 
 const container = document.querySelector( '#woopayments-plugins-page-app' );
-if (container) {
-	const root = createRoot(container);
+if ( container ) {
+	const root = createRoot( container );
 	root.render( <PluginsPage /> );
 }
