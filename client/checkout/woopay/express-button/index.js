@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 
 /**
  * Internal dependencies
@@ -31,13 +31,13 @@ const renderWooPayExpressCheckoutButton = ( listenForCartChanges = {} ) => {
 	if ( woopayContainer ) {
 		while ( oldWoopayContainers.length > 0 ) {
 			// Ensure previous buttons are unmounted and cleaned up.
-			const oldWoopayContainer = oldWoopayContainers.pop();
-			ReactDOM.unmountComponentAtNode( oldWoopayContainer );
+			oldWoopayContainers.pop();
 		}
 
 		oldWoopayContainers.push( woopayContainer );
 
-		ReactDOM.render(
+		const root = createRoot( woopayContainer );
+		root.render(
 			<WoopayExpressCheckoutButton
 				listenForCartChanges={ listenForCartChanges }
 				buttonSettings={ getConfig( 'woopayButton' ) }
@@ -46,8 +46,7 @@ const renderWooPayExpressCheckoutButton = ( listenForCartChanges = {} ) => {
 					!! woopayContainer.getAttribute( 'data-product_page' )
 				}
 				emailSelector="#billing_email"
-			/>,
-			woopayContainer
+			/>
 		);
 	}
 };
