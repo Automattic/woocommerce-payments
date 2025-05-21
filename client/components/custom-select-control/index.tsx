@@ -130,7 +130,7 @@ function CustomSelectControl< ItemType extends Item >( {
 	} );
 
 	const onKeyDownHandler = useCallback(
-		( e ) => {
+		( e: any ) => {
 			e.stopPropagation();
 			menuProps?.onKeyDown?.( e );
 		},

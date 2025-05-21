@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import * as React from 'react';
+import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import user from '@testing-library/user-event';
 import apiFetch from '@wordpress/api-fetch';

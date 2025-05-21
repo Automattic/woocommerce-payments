@@ -10,10 +10,9 @@ import clsx from 'clsx';
 import WizardTaskContext from './task/context';
 import './collapsible-body.scss';
 
-const CollapsibleBody: React.FC< React.HTMLAttributes< HTMLDivElement > > = ( {
-	className,
-	...restProps
-} ) => {
+const CollapsibleBody: React.FC< React.PropsWithChildren<
+	React.HTMLAttributes< HTMLDivElement >
+> > = ( { className, ...restProps } ) => {
 	const { isActive } = useContext( WizardTaskContext );
 
 	return (

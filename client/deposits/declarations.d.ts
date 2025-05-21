@@ -59,7 +59,7 @@ declare module '@woocommerce/components' {
 		className: string;
 	}
 
-	const Pill: React.FC< PillProps >;
+	const Pill: React.FC< React.PropsWithChildren< PillProps > >;
 
 	interface TourKitOptions {
 		classNames?: string | string[];
@@ -99,5 +99,5 @@ declare module '@woocommerce/components' {
 		items: any[];
 	}
 
-	const List: React.FC< ListProps >;
+	const List: React.FC< React.PropsWithChildren< ListProps > >;
 }

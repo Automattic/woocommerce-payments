@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import * as React from 'react';
+import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { Card, CardBody } from '@wordpress/components';
 import { getQuery } from '@woocommerce/navigation';

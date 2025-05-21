@@ -28,20 +28,16 @@ interface WooPayFileUploadProps {
 	updateFileID: ( id: string ) => void;
 }
 
-const WooPayFileUpload: React.FunctionComponent< WooPayFileUploadProps > = (
-	props
-) => {
-	const {
-		fieldKey,
-		label,
-		accept,
-		disabled,
-		help,
-		purpose,
-		fileID,
-		updateFileID,
-	} = props;
-
+const WooPayFileUpload: React.FunctionComponent< WooPayFileUploadProps > = ( {
+	fieldKey,
+	label,
+	accept,
+	disabled,
+	help,
+	purpose,
+	fileID,
+	updateFileID,
+} ) => {
 	const [ isLoading, setLoading ] = useState( false );
 	const [ uploadError, setUploadError ] = useState< boolean | string >(
 		false

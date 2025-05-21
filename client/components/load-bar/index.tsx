@@ -9,10 +9,9 @@ import clsx from 'clsx';
  */
 import './style.scss';
 
-export const LoadBar: React.FC< HTMLAttributes< HTMLDivElement > > = ( {
-	className,
-	...rest
-} ) => {
+export const LoadBar: React.FC< React.PropsWithChildren<
+	HTMLAttributes< HTMLDivElement >
+> > = ( { className, ...rest } ) => {
 	return (
 		<div
 			className={ clsx( 'wcpay-component-load-bar', className ) }

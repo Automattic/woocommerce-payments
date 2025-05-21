@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import * as React from 'react';
+import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { updateQueryString } from '@woocommerce/navigation';
 import { useUserPreferences } from '@woocommerce/data';
