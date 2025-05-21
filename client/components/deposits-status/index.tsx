@@ -38,9 +38,10 @@ const getIntervalType = ( interval: DepositsIntervals ): string => {
 	}
 };
 
-const DepositsStatusEnabled: React.FC< DepositsStatusProps > = ( props ) => {
-	const { iconSize, interval } = props;
-
+const DepositsStatusEnabled: React.FC< DepositsStatusProps > = ( {
+	iconSize,
+	interval,
+} ) => {
 	const description = getIntervalType( interval );
 	return (
 		<span className={ 'account-status__info__green' }>
@@ -50,9 +51,9 @@ const DepositsStatusEnabled: React.FC< DepositsStatusProps > = ( props ) => {
 	);
 };
 
-const DepositsStatusDisabled: React.FC< DepositsStatusProps > = ( props ) => {
-	const { iconSize } = props;
-
+const DepositsStatusDisabled: React.FC< DepositsStatusProps > = ( {
+	iconSize,
+} ) => {
 	return (
 		<span className={ 'account-status__info__red' }>
 			<GridiconNotice size={ iconSize } />
@@ -61,9 +62,9 @@ const DepositsStatusDisabled: React.FC< DepositsStatusProps > = ( props ) => {
 	);
 };
 
-const DepositsStatusSuspended: React.FC< DepositsStatusProps > = ( props ) => {
-	const { iconSize } = props;
-
+const DepositsStatusSuspended: React.FC< DepositsStatusProps > = ( {
+	iconSize,
+} ) => {
 	const description =
 		/* translators: <a> - suspended accounts FAQ URL */
 		__( 'Temporarily suspended', 'woocommerce-payments' );
@@ -109,9 +110,9 @@ const DepositsStatusSuspended: React.FC< DepositsStatusProps > = ( props ) => {
 	);
 };
 
-const DepositsStatusPending: React.FC< DepositsStatusProps > = ( props ) => {
-	const { iconSize } = props;
-
+const DepositsStatusPending: React.FC< DepositsStatusProps > = ( {
+	iconSize,
+} ) => {
 	return (
 		<span className={ 'account-status__info__gray' }>
 			<GridiconNotice size={ iconSize } />

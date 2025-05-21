@@ -20,7 +20,9 @@ interface CancelAuthorizationButtonProps {
 	onClick?: () => void;
 }
 
-const CancelAuthorizationButton: React.FC< CancelAuthorizationButtonProps > = ( {
+const CancelAuthorizationButton: React.FC< React.PropsWithChildren<
+	CancelAuthorizationButtonProps
+> > = ( {
 	orderId,
 	children,
 	paymentIntentId,

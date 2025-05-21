@@ -19,7 +19,7 @@ interface Props {
 	className?: string;
 	tooltip?: string;
 }
-const Chip: React.FC< Props > = ( {
+const Chip: React.FC< React.PropsWithChildren< Props > > = ( {
 	message,
 	type = 'primary',
 	className,

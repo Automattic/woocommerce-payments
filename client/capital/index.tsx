@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import * as React from 'react';
+import React from 'react';
 import { __, _n } from '@wordpress/i18n';
 import { TableCard } from '@woocommerce/components';
 

@@ -19,7 +19,11 @@ interface Props {
 	showHeading?: boolean;
 }
 
-const Step: React.FC< Props > = ( { name, children, showHeading = true } ) => {
+const Step: React.FC< React.PropsWithChildren< Props > > = ( {
+	name,
+	children,
+	showHeading = true,
+} ) => {
 	const { trackAbandoned } = useTrackAbandoned();
 	const { exit } = useStepperContext();
 	const handleExit = () => {

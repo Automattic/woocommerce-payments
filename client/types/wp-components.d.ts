@@ -14,9 +14,11 @@ declare module '@wordpress/components' {
 	 * Any component that lives on wp.components but isn’t in the package’s types.
 	 * You can declare as many as you need here.
 	 */
-	export const Line: ComponentType< any >;
-	export const ProgressBar: ComponentType< any >;
-	export const GradientPicker: ComponentType< any >;
+	export const Line: ComponentType< React.PropsWithChildren< any > >;
+	export const ProgressBar: ComponentType< React.PropsWithChildren< any > >;
+	export const GradientPicker: ComponentType< React.PropsWithChildren<
+		any
+	> >;
 	// …etc…
 }
 

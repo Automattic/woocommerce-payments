@@ -37,7 +37,9 @@ type TooltipProps = TooltipBaseProps & {
  * @param {TooltipProps} props Component props.
  * @return {JSX.Element} Tooltip component.
  */
-export const HoverTooltip: React.FC< TooltipProps > = ( {
+export const HoverTooltip: React.FC< React.PropsWithChildren<
+	TooltipProps
+> > = ( {
 	isVisible,
 	onHide = noop,
 	children,
@@ -106,7 +108,9 @@ export const HoverTooltip: React.FC< TooltipProps > = ( {
  * @param {TooltipProps} props Component props.
  * @return {JSX.Element} Tooltip component.
  */
-export const ClickTooltip: React.FC< TooltipProps > = ( {
+export const ClickTooltip: React.FC< React.PropsWithChildren<
+	TooltipProps
+> > = ( {
 	isVisible,
 	onHide = noop,
 	buttonIcon,
