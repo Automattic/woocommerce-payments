@@ -2194,9 +2194,12 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			$event_properties
 		);
 
-		$params = $additional_args;
+		// Clean up data used only during the onboarding process.
+		$this->onboarding_service->cleanup_on_account_onboarded();
 
+		$params                             = $additional_args;
 		$params['wcpay-connection-success'] = '1';
+
 		return [
 			'success' => true,
 			'params'  => $params,
@@ -2273,6 +2276,9 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			$this->redirect_service->redirect_to_connect_page( '', WC_Payments_Onboarding_Service::FROM_STRIPE, $params );
 			return;
 		}
+
+		// Clean up data used only during the onboarding process.
+		$this->onboarding_service->cleanup_on_account_onboarded();
 
 		$params['wcpay-connection-success'] = '1';
 		$this->redirect_service->redirect_to_overview_page( WC_Payments_Onboarding_Service::FROM_STRIPE, $params );
