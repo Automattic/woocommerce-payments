@@ -640,44 +640,17 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			return false;
 		}
 
-		// Check the payment data in the request.
-		$request_body = file_get_contents( 'php://input' );
-		$request_data = json_decode( $request_body, true );
-
-		if ( ! isset( $request_data['payment_data'] ) ) {
+		// Check for the 'X-WooPayments-Tokenized-Cart' header using superglobals.
+		if ( 'true' !== sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART'] ?? '' ) ) ) {
 			return false;
 		}
 
-		return $this->is_express_payment_type( $request_data['payment_data'] );
-	}
-
-	/**
-	 * Check if the payment data indicates an express payment type.
-	 *
-	 * @param array $payment_data The payment data to check.
-	 * @return bool True if this is an express payment, false otherwise.
-	 */
-	private function is_express_payment_type( $payment_data ) {
-		if ( ! is_array( $payment_data ) ) {
+		// Verify the nonce from the 'X-WooPayments-Tokenized-Cart-Nonce' header using superglobals.
+		$nonce = sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_NONCE'] ?? '' ) );
+		if ( ! wp_verify_nonce( $nonce, 'woopayments_tokenized_cart_nonce' ) ) {
 			return false;
 		}
 
-		foreach ( $payment_data as $payment_data_item ) {
-			if ( ! is_array( $payment_data_item ) ) {
-				continue;
-			}
-
-			$key   = $payment_data_item['key'] ?? null;
-			$value = $payment_data_item['value'] ?? null;
-
-			if (
-				in_array( $key, [ 'payment_request_type', 'express_payment_type' ], true )
-				&& in_array( $value, [ 'apple_pay', 'google_pay' ], true )
-			) {
-				return true;
-			}
-		}
-
-		return false;
+		return true;
 	}
 }
