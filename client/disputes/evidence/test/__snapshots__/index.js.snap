@@ -110,7 +110,6 @@ exports[`Dispute evidence form needing response, renders correctly 1`] = `
                   type="file"
                 />
               </div>
-              
             </div>
           </div>
         </div>
@@ -236,7 +235,6 @@ exports[`Dispute evidence form not needing response, renders correctly 1`] = `
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
-        
         <div
           class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
         >

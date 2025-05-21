@@ -111,7 +111,6 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
                         </p>
                       </label>
                     </li>
-                    
                   </ul>
                 </fieldset>
                 <h3>

@@ -1,8 +1,8 @@
 /**
  * External dependencies
  */
-import { useCallback } from 'react';
-import ReactDOM from 'react-dom';
+import { useCallback, useEffect, useRef } from 'react';
+import { createRoot } from 'react-dom/client';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -26,12 +26,14 @@ const api = new WCPayAPI(
 );
 
 const WooPayExpressCheckoutButtonContainer = ( { buttonAttributes } ) => {
+	const rootRef = useRef(null);
+	
 	const onRefChange = useCallback(
 		( node ) => {
 			if ( node ) {
-				const root = ReactDOM.createRoot( node );
-
-				root.render(
+				rootRef.current = createRoot( node );
+				
+				rootRef.current.render(
 					<WoopayExpressCheckoutButton
 						buttonSettings={ getConfig( 'woopayButton' ) }
 						api={ api }
@@ -43,6 +45,14 @@ const WooPayExpressCheckoutButtonContainer = ( { buttonAttributes } ) => {
 		},
 		[ buttonAttributes ]
 	);
+	
+	useEffect(() => {
+		return () => {
+			if (rootRef.current) {
+				rootRef.current.unmount();
+			}
+		};
+	}, []);
 
 	return <span ref={ onRefChange } />;
 };

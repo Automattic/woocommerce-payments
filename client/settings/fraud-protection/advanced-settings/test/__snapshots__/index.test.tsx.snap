@@ -18,7 +18,9 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
       class="a11y-speak-region"
       id="a11y-speak-assertive"
       style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
-    />
+    >
+      Settings were not saved. Maximum purchase price must be greater than the minimum purchase price.
+    </div>
     <div
       aria-atomic="true"
       aria-live="polite"
@@ -26,9 +28,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
       class="a11y-speak-region"
       id="a11y-speak-polite"
       style="position: absolute;margin: -1px;padding: 0;height: 1px;width: 1px;overflow: hidden;clip: rect(1px, 1px, 1px, 1px);-webkit-clip-path: inset(50%);clip-path: inset(50%);border: 0;word-wrap: normal !important;"
-    >
-              Orders from outside of the following countries will be blocked by the filter:  Canada, United States   
-    </div>
+    />
     <div>
       <div>
         <div

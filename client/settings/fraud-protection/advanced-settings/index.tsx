@@ -305,22 +305,6 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 		advancedFraudProtectionSettings,
 	] );
 
-	const renderSaveButton = () => (
-		<Button
-			variant="primary"
-			isBusy={ isSaving }
-			onClick={ handleSaveSettings }
-			disabled={
-				isSaving ||
-				isLoading ||
-				'error' === advancedFraudProtectionSettings ||
-				! isDirty
-			}
-		>
-			{ __( 'Save changes', 'woocommerce-payments' ) }
-		</Button>
-	);
-
 	const showNewBackLink = isVersionGreaterOrEqual(
 		window.wcSettings.wcVersion,
 		'9.8.3'
@@ -395,7 +379,20 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 						</LoadableBlock>
 
 						<footer className="fraud-protection-advanced-settings__footer">
-							{ renderSaveButton() }
+							<Button
+								variant="primary"
+								isBusy={ isSaving }
+								onClick={ handleSaveSettings }
+								disabled={
+									isSaving ||
+									isLoading ||
+									'error' ===
+										advancedFraudProtectionSettings ||
+									! isDirty
+								}
+							>
+								{ __( 'Save changes', 'woocommerce-payments' ) }
+							</Button>
 						</footer>
 					</ErrorBoundary>
 				</SettingsSection>
