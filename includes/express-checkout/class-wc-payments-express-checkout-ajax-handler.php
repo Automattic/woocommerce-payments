@@ -66,6 +66,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 				2
 			);
 			add_filter( 'rest_pre_dispatch', [ $this, 'tokenized_cart_store_api_address_normalization' ], 10, 3 );
+			add_filter( 'woocommerce_get_country_locale', [ $this, 'modify_country_locale_for_express_checkout' ], 20 );
 		}
 	}
 
@@ -605,5 +606,52 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		}
 
 		return $address;
+	}
+
+	/**
+	 * Modify country locale settings to handle express checkout address requirements.
+	 *
+	 * @param array $locales Array of country locale settings.
+	 * @return array Modified locales array.
+	 */
+	public function modify_country_locale_for_express_checkout( $locales ) {
+		// Only modify locale settings if this is an express checkout AJAX request.
+		if ( ! $this->is_express_checkout_context() ) {
+			return $locales;
+		}
+
+		include_once WCPAY_ABSPATH . 'includes/constants/class-express-checkout-element-states.php';
+
+		// For countries that don't have state fields, make the state field optional.
+		foreach ( \WCPay\Constants\Express_Checkout_Element_States::COUNTRIES_WITHOUT_STATES as $country_code ) {
+			$locales[ $country_code ]['state']['required'] = false;
+		}
+
+		return $locales;
+	}
+
+	/**
+	 * Check if we're in an express checkout context.
+	 *
+	 * @return bool True if we're in an express checkout context, false otherwise.
+	 */
+	private function is_express_checkout_context() {
+		// Only proceed if this is a Store API request.
+		if ( ! WC_Payments_Utils::is_store_api_request() ) {
+			return false;
+		}
+
+		// Check for the 'X-WooPayments-Tokenized-Cart' header using superglobals.
+		if ( 'true' !== sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART'] ?? '' ) ) ) {
+			return false;
+		}
+
+		// Verify the nonce from the 'X-WooPayments-Tokenized-Cart-Nonce' header using superglobals.
+		$nonce = sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_NONCE'] ?? '' ) );
+		if ( ! wp_verify_nonce( $nonce, 'woopayments_tokenized_cart_nonce' ) ) {
+			return false;
+		}
+
+		return true;
 	}
 }
