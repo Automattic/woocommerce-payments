@@ -1391,10 +1391,14 @@ class WC_Payments_Onboarding_Service {
 	public function update_enabled_payment_methods_ids( $gateway, $capabilities = [] ): void {
 		$enabled_gateways = $gateway->get_upe_enabled_payment_method_ids();
 
+		/*
+		 * The capabilities array contains the payment method IDs as keys and their enabled status as values.
+		 * We need to filter out the payment methods that are not enabled (i.e., false,null,0).
+		 */
 		$enabled_payment_methods = array_unique(
 			array_merge(
 				$enabled_gateways,
-				$this->exclude_placeholder_payment_methods( $capabilities )
+				$this->exclude_placeholder_payment_methods( array_filter( $capabilities ) )
 			)
 		);
 
@@ -1470,7 +1474,7 @@ class WC_Payments_Onboarding_Service {
 	 */
 	private function exclude_placeholder_payment_methods( array $payment_methods ): array {
 		// Placeholder payment methods.
-		$excluded_methods = [ 'woopay', 'apple_google' ];
+		$excluded_methods = [ 'woopay', 'apple_google', 'apple_pay', 'google_pay' ];
 
 		return array_filter(
 			array_unique(
