@@ -1,0 +1,5 @@
+Significance: patch
+Type: update
+Comment: update: ensure we're calling the script on the server to update the DB capabilities
+
+

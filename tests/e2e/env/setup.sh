@@ -106,6 +106,9 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	step "Configuring server with stripe account"
 	"$SERVER_PATH"/local/bin/link-account.sh "$BLOG_ID" "$E2E_WCPAY_STRIPE_ACCOUNT_ID" test 1 1
 
+	step "Ensuring the site has the required flags for the e2e tests running against the local server"
+	"$SERVER_PATH"/local/bin/setup-account-metas.sh "$BLOG_ID"
+
 	if [[ -n $CI ]]; then
 		step "Disable Xdebug on server container"
 		docker exec "$SERVER_CONTAINER" \
