@@ -1474,7 +1474,7 @@ class WC_Payments_Onboarding_Service {
 	 */
 	private function exclude_placeholder_payment_methods( array $payment_methods ): array {
 		// Placeholder payment methods.
-		$excluded_methods = [ 'woopay', 'apple_google', 'apple_pay', 'google_pay' ];
+		$excluded_methods = [ 'woopay', 'apple_google' ];
 
 		return array_filter(
 			array_unique(
