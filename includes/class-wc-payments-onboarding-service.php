@@ -1469,8 +1469,13 @@ class WC_Payments_Onboarding_Service {
 	 * @return array Filtered array of unique payment methods.
 	 */
 	private function exclude_placeholder_payment_methods( array $payment_methods ): array {
-		// Placeholder payment methods.
-		$excluded_methods = [ 'woopay', 'apple_google' ];
+		/**
+		 * Placeholder payment methods for NOX.
+		 *
+		 * - 'apple_google' is used as a placeholder for Apple Pay and Google Pay prior to the WooCommerce 9.9 release.
+		 * - 'apple_pay' and 'google_pay' are used as individual placeholders for Apple Pay and Google Pay starting from the WooCommerce 9.9 release.
+		 */
+		$excluded_methods = [ 'woopay', 'apple_google', 'apple_pay', 'google_pay' ];
 
 		return array_filter(
 			array_unique(
