@@ -781,6 +781,24 @@ class WC_Payments {
 		self::$duplicate_payment_prevention_service->init( self::$card_gateway, self::$order_service );
 
 		wcpay_get_container()->get( \WCPay\Internal\PluginManagement\TranslationsLoader::class )->init_hooks();
+
+		if ( defined( 'WP_CLI' ) && WP_CLI
+			&& function_exists( 'wp_get_environment_type' )
+			&& in_array( wp_get_environment_type(), [ 'development', 'local' ], true )
+			) {
+
+			require_once WCPAY_ABSPATH . 'includes/wp-cli/class-wp-cli-init-test-drive-account-command.php';
+			$wp_cli_init_test_drive_account_command = new WP_CLI_Init_Test_Drive_Account_Command( self::$onboarding_service );
+			WP_CLI::add_command( 'woopayments init-test-drive-account', $wp_cli_init_test_drive_account_command );
+
+			require_once WCPAY_ABSPATH . 'includes/wp-cli/class-wp-cli-disable-test-drive-account-command.php';
+			$wp_cli_init_test_drive_account_command = new WP_CLI_Disable_Test_Drive_Account_Command( self::$onboarding_service );
+			WP_CLI::add_command( 'woopayments disable-test-drive-account', $wp_cli_init_test_drive_account_command );
+
+			require_once WCPAY_ABSPATH . 'includes/wp-cli/class-wp-cli-set-blog-id-command.php';
+			$wp_cli_set_blog_id_command = new WP_CLI_Set_Blog_Id_Command();
+			WP_CLI::add_command( 'woopayments set_blog_id', $wp_cli_set_blog_id_command );
+		}
 	}
 
 	/**

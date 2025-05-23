@@ -59,6 +59,8 @@ Jetpack_Options::get_option( 'blog_token' );
 Jetpack_Options::get_option( 'user_tokens' );
 ```
 
+Another option is to install Jetpack Beta Tester plugin, and enable Jetpack Debug. In the Jetpack Debug menu check the Broken Token and save. The Broken Token submenu will appear and will contain the aforementioned data.
+
 Set the value of `E2E_USE_LOCAL_SERVER` to `false` to enable live server.
 
 Once you have the blog id & tokens, add the following env variables to your `local.env`.
