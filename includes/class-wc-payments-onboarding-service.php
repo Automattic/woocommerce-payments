@@ -358,6 +358,11 @@ class WC_Payments_Onboarding_Service {
 			DAY_IN_SECONDS
 		);
 
+		// If we have a new account, clear the account cache to force a refresh.
+		if ( ! empty( $account_session['account_created'] ) ) {
+			WC_Payments::get_account_service()->clear_cache();
+		}
+
 		return [
 			'clientSecret'   => $account_session['client_secret'] ?? '',
 			'expiresAt'      => $account_session['expires_at'] ?? 0,
