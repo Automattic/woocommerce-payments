@@ -4,7 +4,7 @@ Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.3
-Stable tag: 9.3.0
+Stable tag: 9.4.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -86,6 +86,26 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 4. Manage Disputes
 
 == Changelog ==
+
+= 9.4.0 - 2025-05-21 =
+* Add - Add support for rendering fee tax details in the transaction timeline where available
+* Fix - Keep the shipping costs structure intact when applying multi-currency adjustments.
+* Fix - Only display the transaction URL for authorized intent statuses in WP Admin order page
+* Fix - Optimize session handling by only setting cookies on cart and checkout pages, improving product page caching performance.
+* Update - chore: remove "add payment methods" wizard task in favor of NOX flow.
+* Update - chore: update "Tested up to" WordPress 6.8
+* Update - Improve error message for embedded onboarding.
+* Update - Improve the user experience of the WooCommerce Payments dispute management interface, focusing on visual clarity of the dispute steps component that guides merchants through the process of handling payment disputes and inquiries.
+* Update - Perist payment method checkbox after capability request
+* Update - refactor: adjust payment method settings UI to show inline notices and disabled checkboxes instead of `(!)` icon
+* Update - Remove self-assessment fields from the onboarding flow
+* Update - update: ensure Klarna is never part of ECE buttons
+* Update - update: remove BNPL payment method messaging element/offering from checkout labels
+* Update - Update ‘Activate payments’ task to use NOX flow when the reactify-settings-payments feature is enabled.
+* Dev - refactor: created a "common" component for the payment method details on the transactions view, made for Affirm, Afterpay, Alipay, WeChat Pay, Grabpay, Multibanco
+* Dev - Set payment method title for order before order status change to make it visible for status change actions.
+* Dev - Unbundles wordpress/components for Dispute screens
+* Dev - upgrade currency-switcher block to apiVersion 3
 
 = 9.3.0 - 2025-05-05 =
 * Add - Add dedicated onboarding REST API endpoint for disabling test drive account, when possible.

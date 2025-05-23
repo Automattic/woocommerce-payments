@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fixed handling of orders containing items with negative tax

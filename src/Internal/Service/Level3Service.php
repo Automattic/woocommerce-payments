@@ -162,6 +162,12 @@ class Level3Service {
 			$unit_cost       = 0;
 		}
 
+		// Tax also shouldn't be negative so represent it as a discount.
+		if ( $tax_amount < 0 ) {
+			$discount_amount += abs( $tax_amount );
+			$tax_amount       = 0;
+		}
+
 		$line_item  = (object) [
 			'product_code'        => (string) $product_code, // Up to 12 characters that uniquely identify the product.
 			'product_description' => $description, // Up to 26 characters long describing the product.

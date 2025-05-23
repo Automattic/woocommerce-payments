@@ -3,7 +3,42 @@
 exports[`Fraud protection rule card notice tests renders error box correctly 1`] = `
 {
   "asFragment": [Function],
-  "baseElement": <body>
+  "baseElement": .emotion-0 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-0>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-0>* {
+  min-width: 0;
+}
+
+.emotion-2 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+<body>
     <p
       class="a11y-speak-intro-text"
       id="a11y-speak-intro-text"
@@ -37,12 +72,12 @@ exports[`Fraud protection rule card notice tests renders error box correctly 1`]
           class="components-notice__content"
         >
           <div
-            class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+            class="components-flex emotion-0 emotion-1"
             data-wp-c16t="true"
             data-wp-component="Flex"
           >
             <div
-              class="components-flex-item wcpay-inline-notice__icon wcpay-inline-error-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__icon wcpay-inline-error-notice__icon emotion-2 emotion-1"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -61,7 +96,7 @@ exports[`Fraud protection rule card notice tests renders error box correctly 1`]
               </svg>
             </div>
             <div
-              class="components-flex-item wcpay-inline-notice__content wcpay-inline-error-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__content wcpay-inline-error-notice__content emotion-2 emotion-1"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -75,7 +110,42 @@ exports[`Fraud protection rule card notice tests renders error box correctly 1`]
       </div>
     </div>
   </body>,
-  "container": <div>
+  "container": .emotion-0 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-0>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-0>* {
+  min-width: 0;
+}
+
+.emotion-2 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+<div>
     <div
       class="wcpay-inline-notice wcpay-inline-error-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-error components-notice is-error"
     >
@@ -83,12 +153,12 @@ exports[`Fraud protection rule card notice tests renders error box correctly 1`]
         class="components-notice__content"
       >
         <div
-          class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex emotion-0 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
           <div
-            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-error-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-error-notice__icon emotion-2 emotion-1"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -107,7 +177,7 @@ exports[`Fraud protection rule card notice tests renders error box correctly 1`]
             </svg>
           </div>
           <div
-            class="components-flex-item wcpay-inline-notice__content wcpay-inline-error-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__content wcpay-inline-error-notice__content emotion-2 emotion-1"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -177,7 +247,42 @@ exports[`Fraud protection rule card notice tests renders error box correctly 1`]
 exports[`Fraud protection rule card notice tests renders info box correctly 1`] = `
 {
   "asFragment": [Function],
-  "baseElement": <body>
+  "baseElement": .emotion-0 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-0>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-0>* {
+  min-width: 0;
+}
+
+.emotion-2 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+<body>
     <p
       class="a11y-speak-intro-text"
       id="a11y-speak-intro-text"
@@ -211,12 +316,12 @@ exports[`Fraud protection rule card notice tests renders info box correctly 1`] 
           class="components-notice__content"
         >
           <div
-            class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+            class="components-flex emotion-0 emotion-1"
             data-wp-c16t="true"
             data-wp-component="Flex"
           >
             <div
-              class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon emotion-2 emotion-1"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -234,7 +339,7 @@ exports[`Fraud protection rule card notice tests renders info box correctly 1`] 
               </svg>
             </div>
             <div
-              class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-2 emotion-1"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -248,7 +353,42 @@ exports[`Fraud protection rule card notice tests renders info box correctly 1`] 
       </div>
     </div>
   </body>,
-  "container": <div>
+  "container": .emotion-0 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-0>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-0>* {
+  min-width: 0;
+}
+
+.emotion-2 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+<div>
     <div
       class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
     >
@@ -256,12 +396,12 @@ exports[`Fraud protection rule card notice tests renders info box correctly 1`] 
         class="components-notice__content"
       >
         <div
-          class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex emotion-0 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
           <div
-            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon emotion-2 emotion-1"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -279,7 +419,7 @@ exports[`Fraud protection rule card notice tests renders info box correctly 1`] 
             </svg>
           </div>
           <div
-            class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-2 emotion-1"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -349,7 +489,42 @@ exports[`Fraud protection rule card notice tests renders info box correctly 1`] 
 exports[`Fraud protection rule card notice tests renders warning box correctly 1`] = `
 {
   "asFragment": [Function],
-  "baseElement": <body>
+  "baseElement": .emotion-0 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-0>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-0>* {
+  min-width: 0;
+}
+
+.emotion-2 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+<body>
     <p
       class="a11y-speak-intro-text"
       id="a11y-speak-intro-text"
@@ -383,12 +558,12 @@ exports[`Fraud protection rule card notice tests renders warning box correctly 1
           class="components-notice__content"
         >
           <div
-            class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+            class="components-flex emotion-0 emotion-1"
             data-wp-c16t="true"
             data-wp-component="Flex"
           >
             <div
-              class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon emotion-2 emotion-1"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -407,7 +582,7 @@ exports[`Fraud protection rule card notice tests renders warning box correctly 1
               </svg>
             </div>
             <div
-              class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content emotion-2 emotion-1"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -421,7 +596,42 @@ exports[`Fraud protection rule card notice tests renders warning box correctly 1
       </div>
     </div>
   </body>,
-  "container": <div>
+  "container": .emotion-0 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-0>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-0>* {
+  min-width: 0;
+}
+
+.emotion-2 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+<div>
     <div
       class="wcpay-inline-notice wcpay-inline-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
     >
@@ -429,12 +639,12 @@ exports[`Fraud protection rule card notice tests renders warning box correctly 1
         class="components-notice__content"
       >
         <div
-          class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex emotion-0 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
           <div
-            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon emotion-2 emotion-1"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -453,7 +663,7 @@ exports[`Fraud protection rule card notice tests renders warning box correctly 1
             </svg>
           </div>
           <div
-            class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content emotion-2 emotion-1"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >

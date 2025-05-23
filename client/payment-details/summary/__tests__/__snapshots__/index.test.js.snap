@@ -1,22 +1,159 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`PaymentDetailsSummary capture notification and fraud buttons renders capture section correctly 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: start;
+  -webkit-box-align: start;
+  -ms-flex-align: start;
+  align-items: start;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.emotion-6>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-6>* {
+  min-width: 0;
+}
+
+.emotion-8 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.emotion-12 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+  border-top: 1px solid;
+  box-sizing: border-box;
+  border-color: rgba(0, 0, 0, 0.1);
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-12>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-12>* {
+  min-width: 0;
+}
+
+.emotion-12:first-of-type {
+  border-top: none;
+}
+
+.emotion-12:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-12:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-14 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-14 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
         <div
-          class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex emotion-6 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
@@ -104,13 +241,13 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
       </div>
       <hr
         aria-orientation="horizontal"
-        class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+        class="components-divider components-card__divider components-card-divider emotion-8 emotion-9"
         data-wp-c16t="true"
         data-wp-component="CardDivider"
         role="separator"
       />
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -283,7 +420,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
         </ul>
       </div>
       <div
-        class="components-flex components-card__footer components-card-footer card-notice css-p1v47q-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
+        class="components-flex components-card__footer components-card-footer card-notice emotion-12 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardFooter"
       >
@@ -326,13 +463,13 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-14 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-14 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -341,22 +478,159 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
 `;
 
 exports[`PaymentDetailsSummary capture notification and fraud buttons renders the fraud outcome buttons 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: start;
+  -webkit-box-align: start;
+  -ms-flex-align: start;
+  align-items: start;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.emotion-6>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-6>* {
+  min-width: 0;
+}
+
+.emotion-8 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.emotion-12 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+  border-top: 1px solid;
+  box-sizing: border-box;
+  border-color: rgba(0, 0, 0, 0.1);
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-12>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-12>* {
+  min-width: 0;
+}
+
+.emotion-12:first-of-type {
+  border-top: none;
+}
+
+.emotion-12:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-12:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-14 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-14 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
         <div
-          class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex emotion-6 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
@@ -460,13 +734,13 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
       </div>
       <hr
         aria-orientation="horizontal"
-        class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+        class="components-divider components-card__divider components-card-divider emotion-8 emotion-9"
         data-wp-c16t="true"
         data-wp-component="CardDivider"
         role="separator"
       />
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -639,7 +913,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
         </ul>
       </div>
       <div
-        class="components-flex components-card__footer components-card-footer card-notice css-p1v47q-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
+        class="components-flex components-card__footer components-card-footer card-notice emotion-12 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardFooter"
       >
@@ -676,13 +950,13 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-14 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-14 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -691,22 +965,115 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
 `;
 
 exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: start;
+  -webkit-box-align: start;
+  -ms-flex-align: start;
+  align-items: start;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.emotion-6>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-6>* {
+  min-width: 0;
+}
+
+.emotion-8 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.emotion-12 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-12 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
         <div
-          class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex emotion-6 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
@@ -819,13 +1186,13 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
       </div>
       <hr
         aria-orientation="horizontal"
-        class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+        class="components-divider components-card__divider components-card-divider emotion-8 emotion-9"
         data-wp-c16t="true"
         data-wp-component="CardDivider"
         role="separator"
       />
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -1000,13 +1367,13 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-12 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-12 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -1015,22 +1382,115 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
 `;
 
 exports[`PaymentDetailsSummary correctly renders when payment intent is missing 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: start;
+  -webkit-box-align: start;
+  -ms-flex-align: start;
+  align-items: start;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.emotion-6>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-6>* {
+  min-width: 0;
+}
+
+.emotion-8 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.emotion-12 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-12 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
         <div
-          class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex emotion-6 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
@@ -1129,13 +1589,13 @@ exports[`PaymentDetailsSummary correctly renders when payment intent is missing 
       </div>
       <hr
         aria-orientation="horizontal"
-        class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+        class="components-divider components-card__divider components-card-divider emotion-8 emotion-9"
         data-wp-c16t="true"
         data-wp-component="CardDivider"
         role="separator"
       />
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -1310,13 +1770,13 @@ exports[`PaymentDetailsSummary correctly renders when payment intent is missing 
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-12 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-12 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -1325,22 +1785,115 @@ exports[`PaymentDetailsSummary correctly renders when payment intent is missing 
 `;
 
 exports[`PaymentDetailsSummary order missing notice does not render notice if order present 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: start;
+  -webkit-box-align: start;
+  -ms-flex-align: start;
+  align-items: start;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.emotion-6>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-6>* {
+  min-width: 0;
+}
+
+.emotion-8 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.emotion-12 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-12 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
         <div
-          class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex emotion-6 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
@@ -1453,13 +2006,13 @@ exports[`PaymentDetailsSummary order missing notice does not render notice if or
       </div>
       <hr
         aria-orientation="horizontal"
-        class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+        class="components-divider components-card__divider components-card-divider emotion-8 emotion-9"
         data-wp-c16t="true"
         data-wp-component="CardDivider"
         role="separator"
       />
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -1634,13 +2187,13 @@ exports[`PaymentDetailsSummary order missing notice does not render notice if or
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-12 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-12 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -1649,22 +2202,159 @@ exports[`PaymentDetailsSummary order missing notice does not render notice if or
 `;
 
 exports[`PaymentDetailsSummary order missing notice renders notice if order missing 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: start;
+  -webkit-box-align: start;
+  -ms-flex-align: start;
+  align-items: start;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.emotion-6>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-6>* {
+  min-width: 0;
+}
+
+.emotion-8 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.emotion-12 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+  border-top: 1px solid;
+  box-sizing: border-box;
+  border-color: rgba(0, 0, 0, 0.1);
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-12>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-12>* {
+  min-width: 0;
+}
+
+.emotion-12:first-of-type {
+  border-top: none;
+}
+
+.emotion-12:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-12:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-14 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-14 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
         <div
-          class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex emotion-6 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
@@ -1777,13 +2467,13 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
       </div>
       <hr
         aria-orientation="horizontal"
-        class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+        class="components-divider components-card__divider components-card-divider emotion-8 emotion-9"
         data-wp-c16t="true"
         data-wp-component="CardDivider"
         role="separator"
       />
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -1953,7 +2643,7 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
         </ul>
       </div>
       <div
-        class="components-flex components-card__footer components-card-footer card-notice css-p1v47q-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
+        class="components-flex components-card__footer components-card-footer card-notice emotion-12 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardFooter"
       >
@@ -1981,13 +2671,13 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-14 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-14 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -1996,22 +2686,115 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
 `;
 
 exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: start;
+  -webkit-box-align: start;
+  -ms-flex-align: start;
+  align-items: start;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.emotion-6>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-6>* {
+  min-width: 0;
+}
+
+.emotion-8 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.emotion-12 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-12 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
         <div
-          class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex emotion-6 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
@@ -2124,13 +2907,13 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
       </div>
       <hr
         aria-orientation="horizontal"
-        class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+        class="components-divider components-card__divider components-card-divider emotion-8 emotion-9"
         data-wp-c16t="true"
         data-wp-component="CardDivider"
         role="separator"
       />
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -2332,13 +3115,13 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-12 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-12 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -2347,22 +3130,115 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
 `;
 
 exports[`PaymentDetailsSummary renders fully refunded information for a charge 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: start;
+  -webkit-box-align: start;
+  -ms-flex-align: start;
+  align-items: start;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.emotion-6>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-6>* {
+  min-width: 0;
+}
+
+.emotion-8 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.emotion-12 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-12 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
         <div
-          class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex emotion-6 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
@@ -2453,13 +3329,13 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
       </div>
       <hr
         aria-orientation="horizontal"
-        class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+        class="components-divider components-card__divider components-card-divider emotion-8 emotion-9"
         data-wp-c16t="true"
         data-wp-component="CardDivider"
         role="separator"
       />
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -2634,13 +3510,13 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-12 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-12 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -2649,22 +3525,115 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
 `;
 
 exports[`PaymentDetailsSummary renders loading state 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: start;
+  -webkit-box-align: start;
+  -ms-flex-align: start;
+  align-items: start;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.emotion-6>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-6>* {
+  min-width: 0;
+}
+
+.emotion-8 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.emotion-12 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-12 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
         <div
-          class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex emotion-6 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
@@ -2721,13 +3690,13 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
       </div>
       <hr
         aria-orientation="horizontal"
-        class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+        class="components-divider components-card__divider components-card-divider emotion-8 emotion-9"
         data-wp-c16t="true"
         data-wp-component="CardDivider"
         role="separator"
       />
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -2878,13 +3847,13 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-12 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-12 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -2893,22 +3862,115 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
 `;
 
 exports[`PaymentDetailsSummary renders partially refunded information for a charge 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: start;
+  -webkit-box-align: start;
+  -ms-flex-align: start;
+  align-items: start;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.emotion-6>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-6>* {
+  min-width: 0;
+}
+
+.emotion-8 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.emotion-12 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-12 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
         <div
-          class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex emotion-6 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
@@ -3024,13 +4086,13 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
       </div>
       <hr
         aria-orientation="horizontal"
-        class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+        class="components-divider components-card__divider components-card-divider emotion-8 emotion-9"
         data-wp-c16t="true"
         data-wp-component="CardDivider"
         role="separator"
       />
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -3205,13 +4267,13 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-12 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-12 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -3220,22 +4282,115 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
 `;
 
 exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: start;
+  -webkit-box-align: start;
+  -ms-flex-align: start;
+  align-items: start;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.emotion-6>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-6>* {
+  min-width: 0;
+}
+
+.emotion-8 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.emotion-12 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-12 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
         <div
-          class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex emotion-6 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
@@ -3348,13 +4503,13 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata 1`] 
       </div>
       <hr
         aria-orientation="horizontal"
-        class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+        class="components-divider components-card__divider components-card-divider emotion-8 emotion-9"
         data-wp-c16t="true"
         data-wp-component="CardDivider"
         role="separator"
       />
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -3529,13 +4684,13 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata 1`] 
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-12 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-12 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -3544,22 +4699,193 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata 1`] 
 `;
 
 exports[`PaymentDetailsSummary renders the information of a dispute-reversal charge 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: start;
+  -webkit-box-align: start;
+  -ms-flex-align: start;
+  align-items: start;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.emotion-6>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-6>* {
+  min-width: 0;
+}
+
+.emotion-8 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.emotion-12 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+  border-top: 1px solid;
+  box-sizing: border-box;
+  border-color: rgba(0, 0, 0, 0.1);
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-12>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-12>* {
+  min-width: 0;
+}
+
+.emotion-12:first-of-type {
+  border-top: none;
+}
+
+.emotion-12:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-12:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-14 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.emotion-14>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-14>* {
+  min-width: 0;
+}
+
+.emotion-16 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+.emotion-20 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-20 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
         <div
-          class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex emotion-6 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
@@ -3672,13 +4998,13 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
       </div>
       <hr
         aria-orientation="horizontal"
-        class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+        class="components-divider components-card__divider components-card-divider emotion-8 emotion-9"
         data-wp-c16t="true"
         data-wp-component="CardDivider"
         role="separator"
       />
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -3851,17 +5177,17 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
         </ul>
       </div>
       <div
-        class="components-flex components-card__footer components-card-footer transaction-details-dispute-footer css-p1v47q-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
+        class="components-flex components-card__footer components-card-footer transaction-details-dispute-footer emotion-12 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardFooter"
       >
         <div
-          class="components-flex css-1giw1wa-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex emotion-14 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
           <div
-            class="components-flex-item css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item emotion-16 emotion-1"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -3880,7 +5206,7 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
             .
           </div>
           <div
-            class="components-flex-item transaction-details-dispute-footer__actions css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item transaction-details-dispute-footer__actions emotion-16 emotion-1"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -3901,13 +5227,13 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-20 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-20 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />

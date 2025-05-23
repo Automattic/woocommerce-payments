@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Disabled the Transactions Breakdown section to avoid misleading data in certain scenarios.
