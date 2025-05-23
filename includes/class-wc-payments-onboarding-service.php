@@ -403,6 +403,10 @@ class WC_Payments_Onboarding_Service {
 		// Clear the embedded KYC in progress option, since the onboarding flow is now complete.
 		$this->clear_embedded_kyc_in_progress();
 
+		// Clear the account cache to make sure the account data is fresh
+		// and not depend on webhooks that might not have been received yet.
+		WC_Payments::get_account_service()->clear_cache();
+
 		return [
 			'success'           => $success,
 			'details_submitted' => $details_submitted,
