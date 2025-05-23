@@ -1,0 +1,5 @@
+Significance: patch
+Type: fix
+Comment: Clear the account cache on embedded KYC session creation and finish.
+
+
