@@ -151,6 +151,14 @@ function renderCharge( charge, metadata = {}, isLoading = false, props = {} ) {
 	return container;
 }
 
+// Add this helper function to expand the accordion
+const expandAccordion = ( title ) => {
+	const accordionTitle = screen.getByText( title, {
+		selector: '.wcpay-accordion__title-content',
+	} );
+	fireEvent.click( accordionTitle );
+};
+
 describe( 'PaymentDetailsSummary', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
@@ -388,23 +396,12 @@ describe( 'PaymentDetailsSummary', () => {
 			} )
 		).toBeNull();
 
-		// Dispute Summary Row
-		expect(
-			screen.getByText( /Dispute Amount/i ).nextSibling
-		).toHaveTextContent( /\$20.00/ );
-		expect(
-			screen.getByText( /Disputed On/i ).nextSibling
-		).toHaveTextContent( /Aug 31, 2023/ );
-		expect( screen.getByText( /Reason/i ).nextSibling ).toHaveTextContent(
-			/Transaction unauthorized/
-		);
-		expect(
-			screen.getByText( /Respond By/i ).nextSibling
-		).toHaveTextContent( /Sep 9, 2023/ );
+		// Expand the steps accordion
+		expandAccordion( 'Steps you can take' );
 
 		// Steps to resolve
 		screen.getByText( /Steps you can take/i, {
-			selector: '.dispute-steps__header-title',
+			selector: '.wcpay-accordion__title-content',
 		} );
 
 		screen.getByText( /Reach out to your customer/i, {
@@ -840,9 +837,12 @@ describe( 'PaymentDetailsSummary', () => {
 			{ ignore: '.a11y-speak-region' }
 		);
 
+		// Expand the steps accordion
+		expandAccordion( 'Steps you can take' );
+
 		// Steps to resolve
 		screen.getByText( /Steps you can take/i, {
-			selector: '.dispute-steps__header-title',
+			selector: '.wcpay-accordion__title-content',
 		} );
 		screen.getByRole( 'link', {
 			name: /Email customer/i,

@@ -25,7 +25,6 @@ const filesToCopy = [
 	'changelog.txt',
 	'readme.txt',
 	'SECURITY.md',
-	'apple-developer-merchantid-domain-association',
 ];
 
 // run npm dist
