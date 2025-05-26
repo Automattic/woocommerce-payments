@@ -31,6 +31,7 @@ class WC_Payments_Features {
 	const TOKENIZED_CART_ECE_FLAG_NAME          = '_wcpay_feature_tokenized_cart_ece';
 	const PAYMENT_OVERVIEW_WIDGET_FLAG_NAME     = '_wcpay_feature_payment_overview_widget';
 	const WOOPAY_GLOBAL_THEME_SUPPORT_FLAG_NAME = '_wcpay_feature_woopay_global_theme_support';
+	const NEW_EVIDENCE_SUBMISSION_FORM_FLAG_NAME = '_wcpay_feature_new_evidence_submission_form';
 
 	/**
 	 * Indicates whether card payments are enabled for this (Stripe) account.
@@ -364,6 +365,15 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether the new evidence submission form feature is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_new_evidence_submission_form_enabled(): bool {
+		return '1' === get_option( self::NEW_EVIDENCE_SUBMISSION_FORM_FLAG_NAME, '0' );
+	}
+
+	/**
 	 * Returns feature flags as an array suitable for display on the front-end.
 	 *
 	 * @return bool[]
@@ -378,6 +388,7 @@ class WC_Payments_Features {
 				'isAuthAndCaptureEnabled'        => self::is_auth_and_capture_enabled(),
 				'isDisputeIssuerEvidenceEnabled' => self::is_dispute_issuer_evidence_enabled(),
 				'isPaymentOverviewWidgetEnabled' => self::is_payment_overview_widget_ui_enabled(),
+				'isNewEvidenceSubmissionFormEnabled' => self::is_new_evidence_submission_form_enabled(),
 			]
 		);
 	}
