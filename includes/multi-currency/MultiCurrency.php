@@ -430,8 +430,9 @@ class MultiCurrency {
 
 	/**
 	 * Gets and caches the data for the currency rates from the server.
-	 * Will be returned as an array with three keys, 'currencies' (the currencies), 'expires' (the expiry time)
-	 * and 'updated' (when this data was fetched from the API).
+	 * Will be returned as an array with two keys:
+	 * - 'currencies' (the currencies)
+	 * - 'updated' (when this data was fetched from the API).
 	 *
 	 * @return ?array
 	 */
