@@ -1,5 +1,13 @@
 *** WooPayments Changelog ***
 
+= 9.5.0-test-1 - 2025-xx-xx =
+* Fix - Fixed handling of orders containing items with negative tax
+* Fix - Handle state field requirements for Express Checkout in countries without states
+* Update - Refactor: Remove unused Props interface from AccountTools component
+* Update - update: Apple Pay domain verification file is no longer needed
+* Dev - Clean up database options after completing onboarding.
+* Dev - Decouple the accordion component from the dispute details screen.
+
 = 9.4.0 - 2025-05-21 =
 * Add - Add support for rendering fee tax details in the transaction timeline where available
 * Fix - Keep the shipping costs structure intact when applying multi-currency adjustments.
