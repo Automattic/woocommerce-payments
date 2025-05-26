@@ -1381,7 +1381,18 @@ class WC_Payments_Utils {
 			$url_parts    = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 			$request_path = ! empty( $url_parts['path'] ) ? rtrim( $url_parts['path'], '/' ) : '';
 			// Remove the REST API prefix from the request path to end up with the route.
-			$rest_route = str_replace( trailingslashit( rest_get_url_prefix() ), '', $request_path );
+			// For multisite subdirectory setups, we need to handle the subdirectory prefix.
+			$rest_prefix = trailingslashit( rest_get_url_prefix() );
+			$rest_route  = str_replace( $rest_prefix, '', $request_path );
+
+			// If we still have a leading slash followed by path segments before our expected route,
+			// it's likely a multisite subdirectory. Extract everything after wp-json.
+			if ( strpos( $rest_route, '/' ) === 0 && strpos( $request_path, '/' . $rest_prefix ) !== false ) {
+				$wp_json_pos = strpos( $request_path, '/' . rtrim( $rest_prefix, '/' ) );
+				if ( false !== $wp_json_pos ) {
+					$rest_route = substr( $request_path, $wp_json_pos + strlen( $rest_prefix ) );
+				}
+			}
 		}
 
 		// Bail early if the rest route is empty.

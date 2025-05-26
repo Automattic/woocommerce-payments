@@ -1122,6 +1122,20 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( WC_Payments_Utils::is_store_api_request() );
 	}
 
+	public function test_is_store_api_request_with_multisite_subdirectory() {
+		// Test multisite subdirectory setup where the path includes the site subdirectory.
+		$_SERVER['REQUEST_URI'] = '/child-1/wp-json/wc/store/v1/cart/add-item';
+		$this->assertTrue( WC_Payments_Utils::is_store_api_request() );
+
+		// Test multisite subdirectory with non-store API endpoint.
+		$_SERVER['REQUEST_URI'] = '/child-1/wp-json/wp/v2/posts';
+		$this->assertFalse( WC_Payments_Utils::is_store_api_request() );
+
+		// Test deeply nested subdirectory.
+		$_SERVER['REQUEST_URI'] = '/network/child-site/wp-json/wc/store/v1/cart';
+		$this->assertTrue( WC_Payments_Utils::is_store_api_request() );
+	}
+
 	public function test_is_any_bnpl_supporting_country() {
 		// Test supported country and currency combination (US with USD).
 		$this->assertTrue(
