@@ -2198,7 +2198,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 
 		$params = apply_filters( 'wcpay_api_request_params', $params, $api, $method );
 
-		// Build the URL we want to send the URL to.
+		// Build the URL we want to send the request to.
 		$url = self::ENDPOINT_BASE;
 		if ( $is_site_specific ) {
 			$url .= '/' . self::ENDPOINT_SITE_FRAGMENT;
