@@ -397,11 +397,11 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 						// Attempt to refresh the data quickly if the last fetch was an error.
 						$ttl = 2 * MINUTE_IN_SECONDS;
 					} else {
-						// If the data was fetched successfully, fetch it every 2h.
+						// If the data was fetched successfully, cache it for 2h.
 						$ttl = 2 * HOUR_IN_SECONDS;
 					}
 				} else {
-					// Non-admin requests should always refresh only after 24h since the last fetch.
+					// For performance reasons, non-admin requests should use cached data for longer (24h).
 					$ttl = DAY_IN_SECONDS;
 				}
 				break;
@@ -418,7 +418,7 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 				$ttl = $cache_contents['data']['ttl'] ?? HOUR_IN_SECONDS * 6;
 				break;
 			case self::CONNECT_INCENTIVE_KEY . '_has_orders':
-				// If has orders, cache for 90 days since it won't change.
+				// If the store has orders, cache for 90 days since it won't change.
 				// If no orders, cache for an hour to check again soon.
 				$ttl = $cache_contents['data'] ? DAY_IN_SECONDS * 90 : HOUR_IN_SECONDS;
 				break;
