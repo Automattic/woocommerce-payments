@@ -72,7 +72,7 @@ describe( 'VAT form', () => {
 
 			user.click(
 				screen.getByLabelText(
-					`I'm registered for a ${ expectedTaxIdName }`
+					`I have registration for ${ expectedTaxIdName }`
 				)
 			);
 
@@ -223,7 +223,7 @@ describe( 'VAT form', () => {
 	describe( 'when registered for VAT', () => {
 		beforeEach( () => {
 			user.click(
-				screen.getByLabelText( "I'm registered for a VAT Number" )
+				screen.getByLabelText( 'I have registration for VAT Number' )
 			);
 		} );
 
