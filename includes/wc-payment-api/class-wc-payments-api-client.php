@@ -2199,21 +2199,21 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		$params = apply_filters( 'wcpay_api_request_params', $params, $api, $method );
 
 		// Build the URL we want to send the request to.
-		$url = self::ENDPOINT_BASE;
+		$url = static::ENDPOINT_BASE;
 		if ( $is_site_specific ) {
-			$url .= '/' . self::ENDPOINT_SITE_FRAGMENT;
+			$url .= '/' . static::ENDPOINT_SITE_FRAGMENT;
 		}
-		$url .= '/' . self::ENDPOINT_REST_BASE . '/' . $api;
+		$url .= '/' . static::ENDPOINT_REST_BASE . '/' . $api;
 
 		$headers                 = [];
 		$headers['Content-Type'] = 'application/json; charset=utf-8';
 		$headers['User-Agent']   = $this->user_agent;
 		$body                    = null;
 
-		$redacted_params = WC_Payments_Utils::redact_array( $params, self::API_KEYS_TO_REDACT );
+		$redacted_params = WC_Payments_Utils::redact_array( $params, static::API_KEYS_TO_REDACT );
 		$redacted_url    = $url;
 
-		if ( in_array( $method, [ self::GET, self::DELETE ], true ) ) {
+		if ( in_array( $method, [ static::GET, static::DELETE ], true ) ) {
 			$url          .= '?' . http_build_query( $params );
 			$redacted_url .= '?' . http_build_query( $redacted_params );
 		} else {
@@ -2229,9 +2229,9 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		}
 
 		$headers        = apply_filters( 'wcpay_api_request_headers', $headers );
-		$stop_trying_at = time() + self::API_TIMEOUT_SECONDS;
+		$stop_trying_at = time() + static::API_TIMEOUT_SECONDS;
 		$retries        = 0;
-		$retries_limit  = array_key_exists( 'Idempotency-Key', $headers ) ? self::API_RETRIES_LIMIT : 0;
+		$retries_limit  = array_key_exists( 'Idempotency-Key', $headers ) ? static::API_RETRIES_LIMIT : 0;
 
 		while ( true ) {
 			$response_code  = null;
@@ -2244,8 +2244,8 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 				'url'             => $url,
 				'method'          => $method,
 				'headers'         => $headers,
-				'timeout'         => self::API_TIMEOUT_SECONDS,
-				'connect_timeout' => self::API_TIMEOUT_SECONDS,
+				'timeout'         => static::API_TIMEOUT_SECONDS,
+				'connect_timeout' => static::API_TIMEOUT_SECONDS,
 			];
 
 			$log_request_id = uniqid();
@@ -2277,7 +2277,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			}
 
 			// Use exponential backoff to not overload backend.
-			usleep( self::API_RETRIES_BACKOFF_MSEC * ( 2 ** $retries ) );
+			usleep( static::API_RETRIES_BACKOFF_MSEC * ( 2 ** $retries ) );
 			++$retries;
 		}
 
@@ -2291,7 +2291,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		Logger::info(
 			sprintf( 'API RESPONSE (%s): %s %s', $log_request_id, $method, $redacted_url ),
 			[
-				'body' => WC_Payments_Utils::redact_array( $response_body, self::API_KEYS_TO_REDACT ),
+				'body' => WC_Payments_Utils::redact_array( $response_body, static::API_KEYS_TO_REDACT ),
 			]
 		);
 
