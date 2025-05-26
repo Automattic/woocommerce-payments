@@ -83,7 +83,7 @@ const getVatTaxIDValidationHint = () => {
 		case 'AU':
 			// https://abr.business.gov.au/Help/AbnFormat
 			return __(
-				'11-digit number, for example 51 824 753 556.',
+				'11-digit number, for example 12 345 678 901.',
 				'woocommerce-payments'
 			);
 		case 'JP':
