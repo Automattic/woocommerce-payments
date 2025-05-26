@@ -6,7 +6,6 @@ import { fireEvent, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import moment from 'moment';
-import '@wordpress/jest-console';
 
 /**
  * Internal dependencies
@@ -152,11 +151,22 @@ function renderCharge( charge, metadata = {}, isLoading = false, props = {} ) {
 	return container;
 }
 
+// Add this helper function to expand the accordion
+const expandAccordion = ( title ) => {
+	const accordionTitle = screen.getByText( title, {
+		selector: '.wcpay-accordion__title-content',
+	} );
+	fireEvent.click( accordionTitle );
+};
+
 describe( 'PaymentDetailsSummary', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
 
 		global.wcpaySettings = {
+			accountStatus: {
+				country: 'US',
+			},
 			isSubscriptionsActive: false,
 			shouldUseExplicitPrice: false,
 			zeroDecimalCurrencies: [ 'jpy' ],
@@ -386,28 +396,40 @@ describe( 'PaymentDetailsSummary', () => {
 			} )
 		).toBeNull();
 
-		// Dispute Summary Row
-		expect(
-			screen.getByText( /Dispute Amount/i ).nextSibling
-		).toHaveTextContent( /\$20.00/ );
-		expect(
-			screen.getByText( /Disputed On/i ).nextSibling
-		).toHaveTextContent( /Aug 31, 2023/ );
-		expect( screen.getByText( /Reason/i ).nextSibling ).toHaveTextContent(
-			/Transaction unauthorized/
-		);
-		expect(
-			screen.getByText( /Respond By/i ).nextSibling
-		).toHaveTextContent( /Sep 9, 2023/ );
+		// Expand the steps accordion
+		expandAccordion( 'Steps you can take' );
 
 		// Steps to resolve
-		screen.getByText( /Steps to resolve/i );
-		screen.getByRole( 'link', {
-			name: /Email the customer/i,
+		screen.getByText( /Steps you can take/i, {
+			selector: '.wcpay-accordion__title-content',
 		} );
-		screen.getByRole( 'link', {
-			name: /in withdrawing their dispute/i,
+
+		screen.getByText( /Reach out to your customer/i, {
+			selector: '.dispute-steps__item-name',
 		} );
+		screen.getByText( /Pursue a dispute withdrawal/i, {
+			selector: '.dispute-steps__item-name',
+		} );
+		screen.getByText( /Challenge or accept the dispute/i, {
+			selector: '.dispute-steps__item-name',
+		} );
+
+		screen.getByText(
+			/Identify the issue and work towards a resolution where possible\./i,
+			{ selector: '.dispute-steps__item-description' }
+		);
+		screen.getByText(
+			/See if the customer will withdraw their dispute\./i,
+			{ selector: '.dispute-steps__item-description' }
+		);
+		screen.getByText(
+			/Challenge the dispute if you consider the claim to be invalid\./i,
+			{ selector: '.dispute-steps__item-description' }
+		);
+		screen.getByRole( 'link', { name: /Email customer/i } );
+		expect(
+			screen.getAllByRole( 'link', { name: /Learn more/i } ).length
+		).toBe( 2 );
 
 		// Actions
 		screen.getByRole( 'button', {
@@ -663,7 +685,7 @@ describe( 'PaymentDetailsSummary', () => {
 		charge.dispute.metadata.__evidence_submitted_at = '1693400000';
 		renderCharge( charge );
 
-		screen.getByText( /You won this dispute on/i, {
+		screen.getByText( /decided that you won the dispute/i, {
 			ignore: '.a11y-speak-region',
 		} );
 		screen.getByRole( 'button', { name: /View dispute details/i } );
@@ -771,7 +793,7 @@ describe( 'PaymentDetailsSummary', () => {
 
 		renderCharge( charge );
 
-		screen.getByText( /This dispute was lost/i, {
+		screen.getByText( /decided that you lost the dispute/i, {
 			ignore: '.a11y-speak-region',
 		} );
 		// Check for the correct fee amount
@@ -815,10 +837,15 @@ describe( 'PaymentDetailsSummary', () => {
 			{ ignore: '.a11y-speak-region' }
 		);
 
+		// Expand the steps accordion
+		expandAccordion( 'Steps you can take' );
+
 		// Steps to resolve
-		screen.getByText( /Steps to resolve/i );
+		screen.getByText( /Steps you can take/i, {
+			selector: '.wcpay-accordion__title-content',
+		} );
 		screen.getByRole( 'link', {
-			name: /Email the customer/i,
+			name: /Email customer/i,
 		} );
 		screen.getByText( /Submit evidence /i );
 

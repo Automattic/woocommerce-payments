@@ -62,7 +62,19 @@ test.describe( 'Multi-currency', { tag: '@critical' }, () => {
 			await page.getByRole( 'button', { name: 'Close' } ).click();
 		}
 
-		await page.getByRole( 'button', { name: 'Add block' } ).click();
+		if ( await page.locator( '[name="editor-canvas"]' ).isVisible() ) {
+			await expect(
+				page.locator( '[name="editor-canvas"]' )
+			).toBeAttached();
+			const editor = page
+				.locator( '[name="editor-canvas"]' )
+				.contentFrame();
+			await editor.getByRole( 'button', { name: 'Add block' } ).click();
+		} else {
+			// Fallback for WC 7.7.0.
+			await page.getByRole( 'button', { name: 'Add block' } ).click();
+		}
+
 		await page
 			.locator( 'input[placeholder="Search"]' )
 			.pressSequentially( 'switcher', { delay: 20 } );

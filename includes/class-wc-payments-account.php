@@ -27,7 +27,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	// ACCOUNT_OPTION is only used in the supporting dev tools plugin, it can be removed once everyone has upgraded.
 	const ACCOUNT_OPTION                                        = 'wcpay_account_data';
 	const ONBOARDING_DISABLED_TRANSIENT                         = 'wcpay_on_boarding_disabled';
-	const ONBOARDING_STARTED_TRANSIENT                          = 'wcpay_on_boarding_started';
 	const ONBOARDING_STATE_TRANSIENT                            = 'wcpay_stripe_onboarding_state';
 	const WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT                   = 'woopay_enabled_by_default';
 	const ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT       = 'test_drive_account_settings_for_live_account';
@@ -41,6 +40,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	const TRACKS_EVENT_ACCOUNT_CONNECT_FINISHED                 = 'wcpay_account_connect_finished';
 	const TRACKS_EVENT_KYC_REMINDER_MERCHANT_RETURNED           = 'wcpay_kyc_reminder_merchant_returned';
 	const TRACKS_EVENT_ACCOUNT_REFERRAL                         = 'wcpay_account_referral';
+	const NOX_PROFILE_OPTION_KEY                                = 'woocommerce_woopayments_nox_profile';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -1365,9 +1365,10 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			// Make changes to account data as instructed by action GET params.
 			// This needs to happen early because we need to make things "not OK" for the rest of the logic.
 			if ( ! empty( $_GET['wcpay-reset-account'] ) && 'true' === $_GET['wcpay-reset-account'] ) {
+				$test_mode_onboarding = WC_Payments_Onboarding_Service::is_test_mode_enabled();
 				try {
 					// Delete the currently Stripe connected account, in the onboarding mode we are currently in.
-					$this->payments_api_client->delete_account( WC_Payments_Onboarding_Service::is_test_mode_enabled() );
+					$this->payments_api_client->delete_account( $test_mode_onboarding );
 				} catch ( API_Exception $e ) {
 					// In case we fail to delete the account, log and redirect to the Overview page.
 					Logger::error( 'Failed to delete account: ' . $e->getMessage() );
@@ -1376,8 +1377,18 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 					return;
 				}
 
-				$this->cleanup_on_account_reset();
+				$this->onboarding_service->cleanup_on_account_reset();
 				delete_transient( self::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
+
+				// Delete the NOX profile option on account reset.
+				// This is needed to ensure merchants are not stuck with account reset and profile option set.
+				delete_option( self::NOX_PROFILE_OPTION_KEY );
+
+				// Track the onboarding (not account) reset.
+				$this->tracks_event(
+					WC_Payments_Onboarding_Service::TRACKS_EVENT_ONBOARDING_RESET,
+					array_merge( $tracks_props, [ 'mode' => $test_mode_onboarding ? 'test' : 'live' ] )
+				);
 
 				// When we reset the account and want to go back to the settings page - redirect immediately!
 				if ( $redirect_to_settings_page ) {
@@ -1414,7 +1425,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 						Logger::error( 'Failed to delete account in test mode: ' . $e->getMessage() );
 					}
 
-					$this->cleanup_on_account_reset();
+					$this->onboarding_service->cleanup_on_account_reset();
 				}
 
 				// Since we are moving from test to live, we will only onboard in test mode if we are in dev mode.
@@ -1621,7 +1632,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			// the merchant will get redirected to the Payments > Overview page.
 			try {
 				// Prevent duplicate requests to start the onboarding flow.
-				if ( get_transient( self::ONBOARDING_STARTED_TRANSIENT ) ) {
+				if ( $this->onboarding_service->is_onboarding_init_in_progress() ) {
 					Logger::warning( 'Duplicate onboarding attempt detected.' );
 					$this->redirect_service->redirect_to_connect_page(
 						__( 'There was a duplicate attempt to initiate account setup. Please wait a few seconds and try again.', 'woocommerce-payments' )
@@ -1689,11 +1700,8 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 					return;
 				}
 
-				// Set a quickly expiring transient to avoid duplicate requests.
-				// The duration should be sufficient for our platform to respond.
-				// There is no danger in having this transient expire too late
-				// because we delete it after we initiate the onboarding.
-				set_transient( self::ONBOARDING_STARTED_TRANSIENT, true, MINUTE_IN_SECONDS );
+				// Mark the onboarding initialization as in progress.
+				$this->onboarding_service->set_onboarding_init_in_progress();
 
 				$redirect_to = $this->init_stripe_onboarding(
 					$create_test_drive_account ? 'test_drive' : ( $should_onboard_in_test_mode ? 'test' : 'live' ),
@@ -1707,7 +1715,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 					]
 				);
 
-				delete_transient( self::ONBOARDING_STARTED_TRANSIENT );
+				$this->onboarding_service->clear_onboarding_init_in_progress();
 
 				// Always clear the account cache after a Stripe onboarding init attempt.
 				// This allows the merchant to use connect links to refresh its account cache, in case something is wrong.
@@ -1726,7 +1734,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 					$this->redirect_service->redirect_to( $redirect_to );
 				}
 			} catch ( API_Exception $e ) {
-				delete_transient( self::ONBOARDING_STARTED_TRANSIENT );
+				$this->onboarding_service->clear_onboarding_init_in_progress();
 
 				// Always clear the account cache in case of errors.
 				$this->clear_cache();
@@ -1785,29 +1793,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 			return;
 		}
-	}
-
-	/**
-	 * Sets things up for a fresh onboarding flow.
-	 *
-	 * @return void
-	 */
-	private function cleanup_on_account_reset() {
-		$gateway = WC_Payments::get_gateway();
-		$gateway->update_option( 'enabled', 'no' );
-		$gateway->update_option( 'test_mode', 'no' );
-
-		update_option( '_wcpay_onboarding_stripe_connected', [] );
-		update_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION, 'no' );
-
-		// Discard any ongoing onboarding session.
-		delete_transient( self::ONBOARDING_STATE_TRANSIENT );
-		delete_transient( self::ONBOARDING_STARTED_TRANSIENT );
-		delete_option( self::EMBEDDED_KYC_IN_PROGRESS_OPTION );
-		delete_transient( self::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT );
-
-		// Clear the cache to avoid stale data.
-		$this->clear_cache();
 	}
 
 	/**
@@ -2099,7 +2084,12 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			$this->onboarding_service->get_referral_code()
 		);
 
-		$should_enable_woopay   = filter_var( $onboarding_data['woopay_enabled_by_default'] ?? false, FILTER_VALIDATE_BOOLEAN );
+		// Check if we should enable WooPay by default respecing the WooPay value from capabilities request list.
+		$should_enable_woopay = $this->onboarding_service->should_enable_woopay(
+			filter_var( $onboarding_data['woopay_enabled_by_default'] ?? false, FILTER_VALIDATE_BOOLEAN ),
+			$this->onboarding_service->get_capabilities_from_request()
+		);
+
 		$is_test_mode           = in_array( $setup_mode, [ 'test', 'test_drive' ], true );
 		$account_already_exists = isset( $onboarding_data['url'] ) && false === $onboarding_data['url'];
 
@@ -2204,9 +2194,12 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			$event_properties
 		);
 
-		$params = $additional_args;
+		// Clean up data used only during the onboarding process.
+		$this->onboarding_service->cleanup_on_account_onboarded();
 
+		$params                             = $additional_args;
 		$params['wcpay-connection-success'] = '1';
+
 		return [
 			'success' => true,
 			'params'  => $params,
@@ -2284,6 +2277,9 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			return;
 		}
 
+		// Clean up data used only during the onboarding process.
+		$this->onboarding_service->cleanup_on_account_onboarded();
+
 		$params['wcpay-connection-success'] = '1';
 		$this->redirect_service->redirect_to_overview_page( WC_Payments_Onboarding_Service::FROM_STRIPE, $params );
 	}
@@ -2346,7 +2342,13 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		}
 
 		if ( $refreshed ) {
-			// Allow us to tie in functionality to an account refresh.
+			/**
+			 * Allow us to tie in functionality to an account refresh.
+			 *
+			 * @param array|bool $account Account data or false if failed to retrieve account data.
+			 *
+			 * @since 4.3.0
+			 */
 			do_action( 'woocommerce_payments_account_refreshed', $account );
 		}
 
@@ -2668,6 +2670,29 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	}
 
 	/**
+	 * Temporarily store the test drive account settings.
+	 *
+	 * If the current account is a test-drive account,
+	 * we need to collect the test drive settings before we delete the test-drive account,
+	 * and apply those settings to the live account.
+	 *
+	 * @return void
+	 */
+	public function save_test_drive_settings(): void {
+		$account = $this->get_cached_account_data();
+
+		if ( ! empty( $account['is_test_drive'] ) && true === $account['is_test_drive'] ) {
+			$test_drive_account_data = $this->get_test_drive_settings_for_live_account();
+
+			// Store the test drive settings for the live account in a transient,
+			// We don't pass the data around, as the merchant might cancel and start
+			// the onboarding from scratch. In this case, we won't have the test drive
+			// account anymore to collect the settings.
+			set_transient( self::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT, $test_drive_account_data, HOUR_IN_SECONDS );
+		}
+	}
+
+	/**
 	 * Send a Tracks event.
 	 *
 	 * By default Woo adds `url`, `blog_lang`, `blog_id`, `store_id`, `products_count`, and `wc_version`
@@ -2679,6 +2704,10 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	 * @return void
 	 */
 	private function tracks_event( string $name, array $properties = [] ) {
+		if ( ! function_exists( 'wc_admin_record_tracks_event' ) ) {
+			return;
+		}
+
 		// Add default properties to every event.
 		$properties = array_merge(
 			$properties,
@@ -2690,10 +2719,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			],
 			$this->get_tracking_info() ?? []
 		);
-
-		if ( ! function_exists( 'wc_admin_record_tracks_event' ) ) {
-			return;
-		}
 
 		// We're not using Tracker::track_admin() here because
 		// WC_Pay\record_tracker_events() is never triggered due to the redirects.
@@ -2759,26 +2784,5 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		}
 
 		return [ 'capabilities' => $capabilities ];
-	}
-
-	/**
-	 * If we're in test mode and dealing with a test-drive account,
-	 * we need to collect the test drive settings before we delete the test-drive account,
-	 * and apply those settings to the live account.
-	 *
-	 * @return void
-	 */
-	private function save_test_drive_settings(): void {
-		$account = $this->get_cached_account_data();
-
-		if ( ! empty( $account['is_test_drive'] ) && true === $account['is_test_drive'] ) {
-			$test_drive_account_data = $this->get_test_drive_settings_for_live_account();
-
-			// Store the test drive settings for the live account in a transient,
-			// We don't passing the data around, as the merchant might cancel and start
-			// the onboarding from scratch. In this case, we won't have the test drive
-			// account anymore to collect the settings.
-			set_transient( self::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT, $test_drive_account_data, HOUR_IN_SECONDS );
-		}
 	}
 }

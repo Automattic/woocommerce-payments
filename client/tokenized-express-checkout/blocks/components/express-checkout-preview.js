@@ -62,7 +62,10 @@ export const ExpressCheckoutPreviewComponent = ( {
 			applePay: type,
 		},
 		paymentMethods: {
+			amazonPay: 'never',
 			link: 'never',
+			paypal: 'never',
+			klarna: 'never',
 			googlePay: 'always',
 			applePay: 'always',
 		},

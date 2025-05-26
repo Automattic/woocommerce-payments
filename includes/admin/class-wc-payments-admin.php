@@ -933,6 +933,7 @@ class WC_Payments_Admin {
 		}
 
 		$account_status_data = $this->account->get_account_status_data();
+		$account_is_valid    = $this->account->is_stripe_account_valid();
 
 		$test_mode = false;
 		try {
@@ -981,7 +982,7 @@ class WC_Payments_Admin {
 			'testMode'                           => $test_mode,
 			// Set this flag for use in the front-end to alter messages and notices if on-boarding has been disabled.
 			'onBoardingDisabled'                 => WC_Payments_Account::is_on_boarding_disabled(),
-			'onboardingFieldsData'               => $this->onboarding_service->get_fields_data( get_user_locale() ),
+			'onboardingFieldsData'               => $account_is_valid ? null : $this->onboarding_service->get_fields_data( get_user_locale() ),
 			'onboardingEmbeddedKycInProgress'    => $this->onboarding_service->is_embedded_kyc_in_progress(),
 			'errorMessage'                       => $error_message,
 			'featureFlags'                       => $this->get_frontend_feature_flags(),
@@ -992,7 +993,7 @@ class WC_Payments_Admin {
 			'isJetpackConnected'                 => $this->account->has_working_jetpack_connection(),
 			'isJetpackIdcActive'                 => Jetpack_Identity_Crisis::has_identity_crisis(),
 			'isAccountConnected'                 => $this->account->has_account_data(),
-			'isAccountValid'                     => $this->account->is_stripe_account_valid(),
+			'isAccountValid'                     => $account_is_valid,
 			'accountStatus'                      => $account_status_data,
 			'accountFees'                        => $this->account->get_fees(),
 			'accountLoans'                       => $this->account->get_capital(),
@@ -1017,7 +1018,6 @@ class WC_Payments_Admin {
 			'fraudProtection'                    => [
 				'isWelcomeTourDismissed' => WC_Payments_Features::is_fraud_protection_welcome_tour_dismissed(),
 			],
-			'enabledPaymentMethods'              => $this->get_enabled_payment_method_ids(),
 			'progressiveOnboarding'              => $this->account->get_progressive_onboarding_details(),
 			'accountDefaultCurrency'             => $this->account->get_account_default_currency(),
 			'storeCurrency'                      => get_option( 'woocommerce_currency' ),
@@ -1025,7 +1025,6 @@ class WC_Payments_Admin {
 			'woopayLastDisableDate'              => $this->wcpay_gateway->get_option( 'platform_checkout_last_disable_date' ),
 			'isStripeBillingEnabled'             => WC_Payments_Features::is_stripe_billing_enabled(),
 			'isStripeBillingEligible'            => WC_Payments_Features::is_stripe_billing_eligible(),
-			'capabilityRequestNotices'           => get_option( 'wcpay_capability_request_dismissed_notices ', [] ),
 			'storeName'                          => get_bloginfo( 'name' ),
 			'isNextDepositNoticeDismissed'       => WC_Payments_Features::is_next_deposit_notice_dismissed(),
 			'isInstantDepositNoticeDismissed'    => get_option( 'wcpay_instant_deposit_notice_dismissed', false ),
@@ -1037,6 +1036,7 @@ class WC_Payments_Admin {
 			'lifetimeTPV'                        => $this->account->get_lifetime_total_payment_volume(),
 			'defaultExpressCheckoutBorderRadius' => WC_Payments_Express_Checkout_Button_Handler::DEFAULT_BORDER_RADIUS_IN_PX,
 			'isWooPayGlobalThemeSupportEligible' => WC_Payments_Features::is_woopay_global_theme_support_eligible(),
+			'isWCReactifySettingsFeatureEnabled' => $this->is_reactify_settings_payments_feature_enabled(),
 			'dateFormat'                         => wc_date_format(),
 			'timeFormat'                         => get_option( 'time_format' ),
 		];
@@ -1068,31 +1068,6 @@ class WC_Payments_Admin {
 	}
 
 	/**
-	 * Helper function to retrieve enabled UPE payment methods.
-	 *
-	 * TODO: This is duplicating code located in the settings container, we should refactor so that
-	 * this is stored in a centralised place and can be retrieved from there.
-	 *
-	 * @return array
-	 */
-	private function get_enabled_payment_method_ids(): array {
-		$available_upe_payment_methods = $this->wcpay_gateway->get_upe_available_payment_methods();
-		/**
-		 * It might be possible that enabled payment methods settings have an invalid state. As an example,
-		 * if an account is switched to a new country and earlier country had PM's that are no longer valid; or if the PM is not available anymore.
-		 * To keep saving settings working, we are ensuring the enabled payment methods are yet available.
-		 */
-		$enabled_payment_methods = array_values(
-			array_intersect(
-				$this->wcpay_gateway->get_upe_enabled_payment_method_ids(),
-				$available_upe_payment_methods
-			)
-		);
-
-		return $enabled_payment_methods;
-	}
-
-	/**
 	 * Creates an array of features enabled only when external dependencies are of certain versions.
 	 *
 	 * @return array An associative array containing the flags as booleans.
@@ -1105,6 +1080,21 @@ class WC_Payments_Admin {
 			],
 			WC_Payments_Features::to_array()
 		);
+	}
+
+	/**
+	 * Check if the WooCommerce Reactify Payments Settings feature is enabled.
+	 *
+	 * @return bool True if the feature is enabled, false otherwise.
+	 */
+	private function is_reactify_settings_payments_feature_enabled(): bool {
+		// Check if the WooCommerce Reactify Payments Settings feature is enabled.
+		if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
+			return \Automattic\WooCommerce\Utilities\FeaturesUtil::feature_is_enabled( 'reactify-classic-payments-settings' );
+		}
+
+		// If the class does not exist, the feature is not enabled.
+		return false;
 	}
 
 	/**
@@ -1301,7 +1291,7 @@ class WC_Payments_Admin {
 		?>
 		<div class="wc-payment-gateway-method-name-woopay-wrapper">
 			<?php echo esc_html_e( 'Paid with', 'woocommerce-payments' ) . ' '; ?>
-			<img alt="WooPay" src="<?php echo esc_url_raw( plugins_url( 'assets/images/woopay.svg', WCPAY_PLUGIN_FILE ) ); ?>">
+			<img alt="WooPay" src="<?php echo esc_url_raw( plugins_url( 'assets/images/payment-methods/woo-short.svg', WCPAY_PLUGIN_FILE ) ); ?>">
 			<?php
 			if ( $order->get_meta( 'last4' ) ) {
 				echo esc_html_e( 'Card ending in', 'woocommerce-payments' ) . ' ';

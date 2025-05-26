@@ -1,6 +1,14 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Account fees utility functions formatMethodFeesTooltip() displays base fee, when only promo discount without percentage or fixed 1`] = `
+.emotion-2 {
+  width: 1em;
+  height: 1em;
+  margin: 0;
+  vertical-align: middle;
+  fill: currentColor;
+}
+
 <div>
   <div
     class="wcpay-fees-tooltip"
@@ -51,7 +59,7 @@ exports[`Account fees utility functions formatMethodFeesTooltip() displays base 
         >
           Learn more
           <span
-            class="components-visually-hidden css-1mm2cvy-View em57xhy0"
+            class="components-visually-hidden emotion-0 emotion-1"
             data-wp-c16t="true"
             data-wp-component="VisuallyHidden"
             style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
@@ -60,7 +68,7 @@ exports[`Account fees utility functions formatMethodFeesTooltip() displays base 
           </span>
           <svg
             aria-hidden="true"
-            class="components-external-link__icon css-16iaek2-StyledIcon etxm6pv0"
+            class="components-external-link__icon emotion-2 emotion-3"
             focusable="false"
             height="24"
             viewBox="0 0 24 24"
@@ -80,6 +88,14 @@ exports[`Account fees utility functions formatMethodFeesTooltip() displays base 
 `;
 
 exports[`Account fees utility functions formatMethodFeesTooltip() displays base percentage and fixed fee - no custom fee nor discount 1`] = `
+.emotion-2 {
+  width: 1em;
+  height: 1em;
+  margin: 0;
+  vertical-align: middle;
+  fill: currentColor;
+}
+
 <div>
   <div
     class="wcpay-fees-tooltip"
@@ -130,7 +146,7 @@ exports[`Account fees utility functions formatMethodFeesTooltip() displays base 
         >
           Learn more
           <span
-            class="components-visually-hidden css-1mm2cvy-View em57xhy0"
+            class="components-visually-hidden emotion-0 emotion-1"
             data-wp-c16t="true"
             data-wp-component="VisuallyHidden"
             style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
@@ -139,7 +155,7 @@ exports[`Account fees utility functions formatMethodFeesTooltip() displays base 
           </span>
           <svg
             aria-hidden="true"
-            class="components-external-link__icon css-16iaek2-StyledIcon etxm6pv0"
+            class="components-external-link__icon emotion-2 emotion-3"
             focusable="false"
             height="24"
             viewBox="0 0 24 24"

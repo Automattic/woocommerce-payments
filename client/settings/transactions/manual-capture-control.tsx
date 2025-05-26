@@ -9,17 +9,23 @@ import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { useManualCapture, useCardPresentEligible } from '../../data';
+import {
+	useManualCapture,
+	useCardPresentEligible,
+	useStripeBilling,
+} from 'wcpay/data';
 import './style.scss';
 import ConfirmationModal from 'wcpay/components/confirmation-modal';
 import interpolateComponents from '@automattic/interpolate-components';
+import InlineNotice from 'components/inline-notice';
 
 const ManualCaptureControl = (): JSX.Element => {
 	const [
 		isManualCaptureEnabled,
 		setIsManualCaptureEnabled,
-	] = useManualCapture() as [ boolean, ( value: boolean ) => void ];
-	const [ isCardPresentEligible ] = useCardPresentEligible() as [ boolean ];
+	] = useManualCapture();
+	const [ isStripeBillingEnabled ] = useStripeBilling();
+	const [ isCardPresentEligible ] = useCardPresentEligible();
 
 	const [
 		isManualDepositConfirmationModalOpen,
@@ -48,12 +54,10 @@ const ManualCaptureControl = (): JSX.Element => {
 		<>
 			<CheckboxControl
 				checked={ isManualCaptureEnabled }
+				disabled={ isStripeBillingEnabled }
 				onChange={ handleCheckboxToggle }
 				data-testid={ 'capture-later-checkbox' }
-				label={ __(
-					'Issue an authorization on checkout, and capture later',
-					'woocommerce-payments'
-				) }
+				label={ __( 'Enable manual capture', 'woocommerce-payments' ) }
 				help={
 					<span>
 						{ __(
@@ -78,6 +82,14 @@ const ManualCaptureControl = (): JSX.Element => {
 					</span>
 				}
 			/>
+			{ isStripeBillingEnabled && (
+				<InlineNotice status="warning" isDismissible={ false } icon>
+					{ __(
+						'Manual capture is not available when Stripe Billing is active.',
+						'woocommerce-payments'
+					) }
+				</InlineNotice>
+			) }
 			{ isManualDepositConfirmationModalOpen && (
 				<ConfirmationModal
 					title={ __(

@@ -219,7 +219,19 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	public function delete_by_prefix( string $key_prefix ) {
 		// Protection against accidentally deleting all options or options that are not related to WCPay caching.
 		// Feel free to update this statement as more prefix cache keys are used.
-		if ( strncmp( $key_prefix, self::PAYMENT_METHODS_KEY_PREFIX, strlen( self::PAYMENT_METHODS_KEY_PREFIX ) ) !== 0 ) {
+		$allowed_base_prefixes = [
+			self::PAYMENT_METHODS_KEY_PREFIX,
+			self::ONBOARDING_FIELDS_DATA_KEY,
+			self::RECOMMENDED_PAYMENT_METHODS,
+		];
+		$is_allowed            = false;
+		foreach ( $allowed_base_prefixes as $allowed_base_prefix ) {
+			if ( strncmp( $key_prefix, $allowed_base_prefix, strlen( $allowed_base_prefix ) ) === 0 ) {
+				$is_allowed = true;
+				break;
+			}
+		}
+		if ( ! $is_allowed ) {
 			return; // Maybe throw exception here...
 		}
 

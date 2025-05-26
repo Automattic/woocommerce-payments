@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Fix deprecated hook woocommerce_rest_api_option_permissions

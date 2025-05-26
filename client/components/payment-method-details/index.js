@@ -75,6 +75,9 @@ const PaymentMethodDetails = ( props ) => {
 	}
 
 	const details = formatDetails( payment );
+
+	const accountCountry = wcpaySettings?.accountStatus?.country || 'US';
+
 	return (
 		<span className="payment-method-details">
 			<HoverTooltip
@@ -83,7 +86,10 @@ const PaymentMethodDetails = ( props ) => {
 				className="payment-method-details__brand-tooltip"
 			>
 				<span
-					className={ `payment-method__brand payment-method__brand--${ brand }` }
+					className={
+						`payment-method__brand payment-method__brand--${ brand } ` +
+						`account-country--${ accountCountry.toLowerCase() }`
+					}
 					aria-label={ getTransactionPaymentMethodTitle( brand ) }
 				/>
 			</HoverTooltip>

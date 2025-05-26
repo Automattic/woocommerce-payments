@@ -382,8 +382,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string
 	 */
 	public function get_title() {
-		$this->title        = $this->payment_method->get_title();
-		$this->method_title = "WooPayments ($this->title)";
+		if ( ! $this->title ) {
+			$this->title        = $this->payment_method->get_title();
+			$this->method_title = "WooPayments ($this->title)";
+		}
 		return parent::get_title();
 	}
 
@@ -809,7 +811,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Add a url to the admin order page that links directly to the transactions detail view.
+	 * Add a url to the admin order page that links directly to the transactions detail view for authorized intent statuses.
+	 *
 	 * Called directly by WooCommerce Core.
 	 *
 	 * @since 1.4.0
@@ -818,6 +821,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string
 	 */
 	public function get_transaction_url( $order ) {
+		$intent_status = $this->order_service->get_intention_status_for_order( $order );
+		if ( ! in_array( $intent_status, Intent_Status::AUTHORIZED_STATUSES, true ) ) {
+			return '';
+		}
+
 		$intent_id = $this->order_service->get_intent_id_for_order( $order );
 		$charge_id = $this->order_service->get_charge_id_for_order( $order );
 
@@ -860,8 +868,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		if ( ! WC_Payments::get_gateway()->is_enabled() ) {
 			return false;
 		}
-		$processing_payment_method = $this->payment_methods[ $this->payment_method->get_id() ];
+
+		$payment_method_id         = $this->payment_method->get_id();
+		$processing_payment_method = $this->payment_methods[ $payment_method_id ];
 		if ( ! $processing_payment_method->is_enabled_at_checkout( $this->get_account_country() ) ) {
+			return false;
+		}
+
+		$payment_method_statuses  = $this->get_upe_enabled_payment_method_statuses();
+		$stripe_key               = $this->get_payment_method_capability_key_map()[ $payment_method_id ] ?? null;
+		$is_payment_method_active = array_key_exists( $stripe_key, $payment_method_statuses ) && 'active' === $payment_method_statuses[ $stripe_key ]['status'];
+		if ( false === $is_payment_method_active ) {
 			return false;
 		}
 
@@ -979,6 +996,29 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// hiding the save button because the react container has its own.
 		global $hide_save_button;
 		$hide_save_button = true;
+
+		// to ensure the WC Core script that prompts the "unsaved changes" dialog appears.
+		// that script interferes with merchant actions.
+		wp_dequeue_script( 'woocommerce_settings' );
+
+		$method_title = $this->get_method_title();
+		$return_url   = 'admin.php?page=wc-settings&tab=checkout';
+		if ( ! empty( $_GET['method'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			// Override the title and return url for method-specific pages in WooPayments settings.
+			$method       = sanitize_text_field( wp_unslash( $_GET['method'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$method_title = 'payment_request' === $method ? 'Apple Pay / Google Pay' : ( 'woopay' === $method ? 'WooPay' : $this->get_method_title() );
+			$return_url   = 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments';
+		}
+
+		if ( function_exists( 'wc_back_header' ) ) {
+			wc_back_header( $method_title, __( 'Return to payments', 'woocommerce-payments' ), $return_url );
+		} else {
+			// Until the wc_back_header function is available (WC Core 9.9) use the current available version.
+			echo '<h2>';
+			echo esc_html( $method_title );
+			wc_back_link( __( 'Return to payments', 'woocommerce-payments' ), $return_url );
+			echo '</h2>';
+		}
 
 		if ( ! empty( $_GET['method'] ) ) : // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			?>
@@ -1941,8 +1981,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				if ( Intent_Status::SUCCEEDED === $status ) {
 					$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
 				}
-				$this->order_service->update_order_status_from_intent( $order, $intent );
 				$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
+				$this->order_service->update_order_status_from_intent( $order, $intent );
 				$this->order_service->attach_transaction_fee_to_order( $order, $charge );
 
 				if ( Intent_Status::REQUIRES_ACTION === $status ) {
@@ -3792,11 +3832,17 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function create_setup_intent_ajax() {
 		try {
-			$wc_add_payment_method_rate_limit_id = 'add_payment_method_' . get_current_user_id();
-			if ( ! check_ajax_referer( 'wcpay_create_setup_intent_nonce', false, false ) || WC_Rate_Limiter::retried_too_soon( $wc_add_payment_method_rate_limit_id ) ) {
+			if ( ! check_ajax_referer( 'wcpay_create_setup_intent_nonce', false, false ) ) {
 				throw new Add_Payment_Method_Exception(
 					__( "We're not able to add this payment method. Please refresh the page and try again.", 'woocommerce-payments' ),
 					'invalid_referrer'
+				);
+			}
+
+			if ( WC_Rate_Limiter::retried_too_soon( 'add_payment_method_' . get_current_user_id() ) ) {
+				throw new Add_Payment_Method_Exception(
+					__( 'You cannot add a new payment method so soon after the previous one. Please try again later.', 'woocommerce-payments' ),
+					'retried_too_soon'
 				);
 			}
 

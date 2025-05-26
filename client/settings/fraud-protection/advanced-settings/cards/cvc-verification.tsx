@@ -20,19 +20,8 @@ const CVCVerificationRuleCard: React.FC = () => {
 	return (
 		<FraudProtectionRuleCard
 			title={ __( 'CVC Verification', 'woocommerce-payments' ) }
-			description={ __(
-				'This filter checks the security code submitted by the customer against the data on file with the card issuer.',
-				'woocommerce-payments'
-			) }
 			id="cvc-verification-card"
 		>
-			<FraudProtectionRuleDescription>
-				{ __(
-					'Because the card security code appears only on the card and not on receipts or statements, the card security code ' +
-						'provides some assurance that the physical card is in the possession of the buyer.',
-					'woocommerce-payments'
-				) }
-			</FraudProtectionRuleDescription>
 			<FraudProtectionRuleCardNotice type="warning">
 				{ declineOnCVCFailure
 					? interpolateComponents( {
@@ -57,6 +46,13 @@ const CVCVerificationRuleCard: React.FC = () => {
 							'woocommerce-payments'
 					  ) }
 			</FraudProtectionRuleCardNotice>
+			<FraudProtectionRuleDescription>
+				{ __(
+					'Because the card security code appears only on the card and not on receipts or statements, the card security code ' +
+						'provides some assurance that the physical card is in the possession of the buyer.',
+					'woocommerce-payments'
+				) }
+			</FraudProtectionRuleDescription>
 		</FraudProtectionRuleCard>
 	);
 };

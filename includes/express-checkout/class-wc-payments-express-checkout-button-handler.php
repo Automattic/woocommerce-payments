@@ -250,6 +250,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 				// Defaults to 'required' to match how core initializes this option.
 				'needs_payer_phone'          => 'required' === get_option( 'woocommerce_checkout_phone_field', 'required' ),
 				'allowed_shipping_countries' => array_keys( WC()->countries->get_shipping_countries() ?? [] ),
+				'display_prices_with_tax'    => 'incl' === get_option( 'woocommerce_tax_display_cart' ),
 			],
 			'button'             => $this->get_button_settings(),
 			'login_confirmation' => $this->get_login_confirmation_settings(),
@@ -329,7 +330,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 			return;
 		}
 		?>
-		<div id="wcpay-express-checkout-element" style="display: none;"></div>
+		<div id="wcpay-express-checkout-element"></div>
 		<?php
 	}
 
@@ -399,12 +400,15 @@ class WC_Payments_Express_Checkout_Button_Handler {
 	 * @return void
 	 */
 	public function set_session() {
-		// Don't set session cookies on product pages to allow for caching when express checkout
-		// buttons are disabled. But keep cookies if there is already an active WC session in place.
-		if (
-			! ( $this->express_checkout_helper->is_product() && $this->express_checkout_helper->should_show_express_checkout_button() )
-			|| ( isset( WC()->session ) && WC()->session->has_session() )
-		) {
+		// Skip if there's already an active WC session. Otherwise, only set session cookies on checkout and cart pages.
+		// This helps with caching as product pages can be cached when no cookies are present.
+		$has_active_session = isset( WC()->session ) && WC()->session->has_session();
+		if ( $has_active_session ) {
+			return;
+		}
+
+		$is_checkout_or_cart = $this->express_checkout_helper->is_checkout() || $this->express_checkout_helper->is_cart();
+		if ( ! $is_checkout_or_cart ) {
 			return;
 		}
 

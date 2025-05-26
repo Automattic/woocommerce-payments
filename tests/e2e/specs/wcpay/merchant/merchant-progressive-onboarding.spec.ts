@@ -47,25 +47,6 @@ test.describe(
 			await page.getByText( 'Software' ).click();
 			// Accept terms and conditions
 			await page.getByRole( 'button', { name: 'Continue' } ).click();
-			// Pick annual revenue
-			await page
-				.getByRole( 'button', {
-					name: 'What is your estimated annual',
-				} )
-				.click();
-			await page
-				.getByRole( 'option', { name: 'Less than $250k' } )
-				.click();
-			// Pick estimated time to launch
-			await page
-				.getByRole( 'button', {
-					name: 'What is the estimated timeline',
-				} )
-				.click();
-			await page
-				.getByRole( 'option', { name: 'Within 1 month' } )
-				.click();
-			await page.getByRole( 'button', { name: 'Continue' } ).click();
 
 			// Check that Stripe Embedded KYC iframe is loaded.
 			await expect(

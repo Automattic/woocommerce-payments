@@ -287,7 +287,7 @@ class WC_Payments_Product_Service {
 		} catch ( \Exception $e ) {
 			Logger::log(
 				sprintf(
-					'Error validating WCPay product: product_id=%d, wcpay_product_id=%s, account_id=%s, error=%s',
+					'Error validating WooPayments product: product_id=%d, wcpay_product_id=%s, account_id=%s, error=%s',
 					$product->get_id(),
 					$wcpay_product_id,
 					$current_account_id,

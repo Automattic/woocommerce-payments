@@ -21,7 +21,7 @@ import {
 	useUnselectedPaymentMethod,
 	useGetDuplicatedPaymentMethodIds,
 } from 'wcpay/data';
-import { upeCapabilityStatuses } from 'wcpay/additional-methods-setup/constants';
+import { upeCapabilityStatuses } from 'wcpay/settings/constants';
 
 jest.mock( '@woocommerce/components', () => {
 	return {
@@ -75,7 +75,6 @@ describe( 'BuyNowPayLaterSection', () => {
 			isMultiCurrencyEnabled: true,
 			storeCurrency: 'USD',
 			accountEmail: 'admin@example.com',
-			capabilityRequestNotices: {},
 		};
 		select.mockImplementation( () => ( {
 			getSettings: jest.fn().mockReturnValue( {

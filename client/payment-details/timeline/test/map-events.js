@@ -2,7 +2,7 @@
 /**
  * Internal dependencies
  */
-import mapTimelineEvents from '../map-events';
+import mapTimelineEvents, { composeTaxString } from '../map-events';
 
 jest.mock( 'gridicons/dist/sync', () => 'SyncIcon' );
 jest.mock( 'gridicons/dist/plus', () => 'PlusIcon' );
@@ -489,6 +489,128 @@ describe( 'mapTimelineEvents', () => {
 				] )
 			).toMatchSnapshot();
 		} );
+
+		test( 'formats captured events with fee details and tax', () => {
+			expect(
+				mapTimelineEvents( [
+					{
+						amount: 6300,
+						amount_captured: 6300,
+						currency: 'USD',
+						datetime: 1585751874,
+						deposit: {
+							arrival_date: 1585838274,
+							id: 'dummy_po_5eaada696b281',
+						},
+						fee: 350,
+						fee_rates: {
+							percentage: 0.0195,
+							fixed: 15,
+							fixed_currency: 'USD',
+							tax: {
+								amount: 10,
+								currency: 'EUR',
+								percentage_rate: 0.21,
+								description: 'ES VAT',
+							},
+							history: [
+								{
+									type: 'base',
+									percentage_rate: 0.014,
+									fixed_rate: 20,
+									currency: 'gbp',
+								},
+								{
+									type: 'additional',
+									additional_type: 'international',
+									percentage_rate: 0.014999999999999998,
+									fixed_rate: 0,
+									currency: 'gbp',
+								},
+								{
+									type: 'additional',
+									additional_type: 'fx',
+									percentage_rate: 0.020000000000000004,
+									fixed_rate: 0,
+									currency: 'gbp',
+								},
+								{
+									type: 'discount',
+									percentage_rate: -0.049,
+									fixed_rate: -20,
+									currency: 'gbp',
+								},
+							],
+						},
+						type: 'captured',
+						transaction_details: {
+							customer_currency: 'USD',
+							customer_amount: 6300,
+							customer_amount_captured: 6300,
+							customer_fee: 350,
+							store_currency: 'USD',
+							store_amount: 6300,
+							store_amount_captured: 6300,
+							store_fee: 350,
+						},
+					},
+				] )
+			).toMatchSnapshot();
+		} );
+
+		test( 'formats captured events with fee details and zero tax', () => {
+			expect(
+				mapTimelineEvents( [
+					{
+						amount: 6300,
+						amount_captured: 6300,
+						currency: 'USD',
+						datetime: 1585751874,
+						deposit: {
+							arrival_date: 1585838274,
+							id: 'dummy_po_5eaada696b281',
+						},
+						fee: 350,
+						fee_rates: {
+							percentage: 0.0195,
+							fixed: 15,
+							fixed_currency: 'USD',
+							tax: {
+								amount: 0,
+								currency: 'EUR',
+								percentage_rate: 0.21,
+								description: 'ES VAT',
+							},
+							history: [
+								{
+									type: 'base',
+									percentage_rate: 0.014,
+									fixed_rate: 20,
+									currency: 'gbp',
+								},
+								{
+									type: 'discount',
+									percentage_rate: -0.049,
+									fixed_rate: -20,
+									currency: 'gbp',
+								},
+							],
+						},
+						type: 'captured',
+						transaction_details: {
+							customer_currency: 'USD',
+							customer_amount: 6300,
+							customer_amount_captured: 6300,
+							customer_fee: 350,
+							store_currency: 'USD',
+							store_amount: 6300,
+							store_amount_captured: 6300,
+							store_fee: 350,
+						},
+					},
+				] )
+			).toMatchSnapshot();
+		} );
 	} );
 
 	describe( 'Multi-Currency events', () => {
@@ -717,5 +839,177 @@ describe( 'mapTimelineEvents', () => {
 		expect( events[ 1 ].headline ).toBe(
 			'A payment of €77.00 EUR failed: The card was declined by the bank.'
 		);
+	} );
+} );
+
+describe( 'composeTaxString', () => {
+	it( 'should return empty string when no tax data is present', () => {
+		const event = {};
+		expect( composeTaxString( event ) ).toBe( '' );
+	} );
+
+	it( 'should return empty string when fee_rates is present but no tax data', () => {
+		const event = {
+			fee_rates: {},
+		};
+		expect( composeTaxString( event ) ).toBe( '' );
+	} );
+
+	it( 'should return empty string when tax amount is zero', () => {
+		const event = {
+			fee_rates: {
+				tax: {
+					amount: 0,
+					currency: 'EUR',
+					percentage_rate: 0.21,
+					description: 'ES VAT',
+				},
+			},
+		};
+		expect( composeTaxString( event ) ).toBe( '' );
+	} );
+
+	it( 'should format tax with localized description and percentage', () => {
+		const event = {
+			fee_rates: {
+				tax: {
+					amount: 10,
+					currency: 'EUR',
+					percentage_rate: 0.21,
+					description: 'ES VAT',
+				},
+			},
+		};
+		expect( composeTaxString( event ) ).toBe(
+			'Tax ES VAT (21.00%): -€0.10'
+		);
+	} );
+
+	it( 'should format tax with just percentage when no description', () => {
+		const event = {
+			fee_rates: {
+				tax: {
+					amount: 10,
+					currency: 'EUR',
+					percentage_rate: 0.21,
+				},
+			},
+		};
+		expect( composeTaxString( event ) ).toBe( 'Tax (21.00%): -€0.10' );
+	} );
+
+	it( 'should format tax with just localized description when no percentage', () => {
+		const event = {
+			fee_rates: {
+				tax: {
+					amount: 10,
+					currency: 'EUR',
+					description: 'ES VAT',
+				},
+			},
+		};
+		expect( composeTaxString( event ) ).toBe( 'Tax ES VAT: -€0.10' );
+	} );
+
+	it( 'should handle different currencies', () => {
+		const event = {
+			fee_rates: {
+				tax: {
+					amount: 100,
+					currency: 'USD',
+					percentage_rate: 0.15,
+					description: 'FR VAT',
+				},
+			},
+		};
+		expect( composeTaxString( event ) ).toBe(
+			'Tax FR VAT (15.00%): -$1.00'
+		);
+	} );
+
+	// New test cases for tax percentage rate validation
+	it( 'should handle negative tax percentage rate', () => {
+		const event = {
+			fee_rates: {
+				tax: {
+					amount: 10,
+					currency: 'EUR',
+					percentage_rate: -0.21,
+					description: 'ES VAT',
+				},
+			},
+		};
+		expect( composeTaxString( event ) ).toBe( 'Tax ES VAT: -€0.10' );
+	} );
+
+	it( 'should handle tax percentage rate over 100%', () => {
+		const event = {
+			fee_rates: {
+				tax: {
+					amount: 10,
+					currency: 'EUR',
+					percentage_rate: 1.5,
+					description: 'ES VAT',
+				},
+			},
+		};
+		expect( composeTaxString( event ) ).toBe( 'Tax ES VAT: -€0.10' );
+	} );
+
+	it( 'should handle tax percentage rate at boundary (0%)', () => {
+		const event = {
+			fee_rates: {
+				tax: {
+					amount: 10,
+					currency: 'EUR',
+					percentage_rate: 0,
+					description: 'ES VAT',
+				},
+			},
+		};
+		expect( composeTaxString( event ) ).toBe( 'Tax ES VAT: -€0.10' );
+	} );
+
+	it( 'should handle tax percentage rate at boundary (100%)', () => {
+		const event = {
+			fee_rates: {
+				tax: {
+					amount: 10,
+					currency: 'EUR',
+					percentage_rate: 1,
+					description: 'ES VAT',
+				},
+			},
+		};
+		expect( composeTaxString( event ) ).toBe(
+			'Tax ES VAT (100.00%): -€0.10'
+		);
+	} );
+
+	it( 'should handle invalid tax percentage rate with different currency', () => {
+		const event = {
+			fee_rates: {
+				tax: {
+					amount: 100,
+					currency: 'JPY',
+					percentage_rate: -0.15,
+					description: 'JP JCT',
+				},
+			},
+		};
+		expect( composeTaxString( event ) ).toBe( 'Tax JP JCT: -¥1' );
+	} );
+
+	it( 'should handle invalid tax percentage rate with no description', () => {
+		const event = {
+			fee_rates: {
+				tax: {
+					amount: 10,
+					currency: 'EUR',
+					percentage_rate: 1.5,
+				},
+			},
+		};
+		expect( composeTaxString( event ) ).toBe( 'Tax: -€0.10' );
 	} );
 } );

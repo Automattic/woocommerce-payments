@@ -60,5 +60,6 @@ module.exports = {
 	transformIgnorePatterns: [
 		'node_modules/(?!(@woocommerce/.+)|gridicons|@automattic/components/|@automattic/material-design-icons/)',
 	],
+	snapshotSerializers: [ '@emotion/jest/serializer' ],
 	verbose: true,
 };

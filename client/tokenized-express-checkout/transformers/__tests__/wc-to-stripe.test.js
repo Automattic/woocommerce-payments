@@ -8,9 +8,14 @@ import {
 } from '../wc-to-stripe';
 
 global.wcpayExpressCheckoutParams = {};
-global.wcpayExpressCheckoutParams.checkout = {};
 
 describe( 'wc-to-stripe transformers', () => {
+	beforeEach( () => {
+		global.wcpayExpressCheckoutParams.checkout = {
+			display_prices_with_tax: false,
+		};
+	} );
+
 	describe( 'transformCartDataForDisplayItems', () => {
 		it( 'transforms the cart items and their names, if they contain special characters', () => {
 			expect(
@@ -283,6 +288,176 @@ describe( 'wc-to-stripe transformers', () => {
 					},
 				} )
 			).toStrictEqual( [ { amount: 545, name: 'Tax' } ] );
+		} );
+
+		it( 'transforms the cart line items when the prices should be displayed with tax', () => {
+			global.wcpayExpressCheckoutParams.checkout.display_prices_with_tax = true;
+
+			expect(
+				transformCartDataForDisplayItems( {
+					items: [
+						{
+							key: 'aaaa',
+							id: 14,
+							type: 'simple',
+							quantity: 2,
+							name: 'Beanie',
+							sku: 'woo-beanie',
+							prices: {
+								price: '2382',
+								regular_price: '2382',
+								sale_price: '2382',
+								price_range: null,
+								currency_code: 'EUR',
+								currency_symbol: '\u20ac',
+								currency_minor_unit: 2,
+								currency_decimal_separator: ',',
+								currency_thousand_separator: '.',
+								currency_prefix: '\u20ac',
+								currency_suffix: '',
+								raw_prices: {
+									precision: 6,
+									price: '23820000',
+									regular_price: '23820000',
+									sale_price: '23820000',
+								},
+							},
+							totals: {
+								line_subtotal: '4400',
+								line_subtotal_tax: '363',
+								line_total: '3960',
+								line_total_tax: '327',
+								currency_code: 'EUR',
+								currency_symbol: '\u20ac',
+								currency_minor_unit: 2,
+								currency_decimal_separator: ',',
+								currency_thousand_separator: '.',
+								currency_prefix: '\u20ac',
+								currency_suffix: '',
+							},
+						},
+					],
+					totals: {
+						total_items: '4400',
+						total_items_tax: '363',
+						total_fees: '0',
+						total_fees_tax: '0',
+						total_discount: '440',
+						total_discount_tax: '36',
+						total_shipping: '1100',
+						total_shipping_tax: '91',
+						total_price: '5478',
+						total_tax: '418',
+						tax_lines: [],
+						currency_code: 'EUR',
+						currency_symbol: '\u20ac',
+						currency_minor_unit: 2,
+						currency_decimal_separator: ',',
+						currency_thousand_separator: '.',
+						currency_prefix: '\u20ac',
+						currency_suffix: '',
+					},
+				} )
+			).toStrictEqual( [
+				{
+					amount: 4763,
+					name: 'Beanie (x2)',
+				},
+				{
+					amount: 1191,
+					name: 'Shipping',
+				},
+				{
+					amount: -476,
+					name: 'Discount',
+				},
+			] );
+		} );
+
+		it( 'transforms the cart line items when the prices should not be displayed with tax', () => {
+			expect(
+				transformCartDataForDisplayItems( {
+					items: [
+						{
+							key: 'aaaa',
+							id: 14,
+							type: 'simple',
+							quantity: 2,
+							name: 'Beanie',
+							sku: 'woo-beanie',
+							prices: {
+								price: '2382',
+								regular_price: '2382',
+								sale_price: '2382',
+								price_range: null,
+								currency_code: 'EUR',
+								currency_symbol: '\u20ac',
+								currency_minor_unit: 2,
+								currency_decimal_separator: ',',
+								currency_thousand_separator: '.',
+								currency_prefix: '\u20ac',
+								currency_suffix: '',
+								raw_prices: {
+									precision: 6,
+									price: '23820000',
+									regular_price: '23820000',
+									sale_price: '23820000',
+								},
+							},
+							totals: {
+								line_subtotal: '4400',
+								line_subtotal_tax: '363',
+								line_total: '3960',
+								line_total_tax: '327',
+								currency_code: 'EUR',
+								currency_symbol: '\u20ac',
+								currency_minor_unit: 2,
+								currency_decimal_separator: ',',
+								currency_thousand_separator: '.',
+								currency_prefix: '\u20ac',
+								currency_suffix: '',
+							},
+						},
+					],
+					totals: {
+						total_items: '4400',
+						total_items_tax: '363',
+						total_fees: '0',
+						total_fees_tax: '0',
+						total_discount: '440',
+						total_discount_tax: '36',
+						total_shipping: '1100',
+						total_shipping_tax: '91',
+						total_price: '5478',
+						total_tax: '418',
+						tax_lines: [],
+						currency_code: 'EUR',
+						currency_symbol: '\u20ac',
+						currency_minor_unit: 2,
+						currency_decimal_separator: ',',
+						currency_thousand_separator: '.',
+						currency_prefix: '\u20ac',
+						currency_suffix: '',
+					},
+				} )
+			).toStrictEqual( [
+				{
+					amount: 4400,
+					name: 'Beanie (x2)',
+				},
+				{
+					amount: 1100,
+					name: 'Shipping',
+				},
+				{
+					amount: -440,
+					name: 'Discount',
+				},
+				{
+					amount: 418,
+					name: 'Tax',
+				},
+			] );
 		} );
 
 		it( 'transforms the tax amount when not present', () => {
@@ -569,6 +744,122 @@ describe( 'wc-to-stripe transformers', () => {
 				},
 				{
 					amount: 1000,
+					deliveryEstimate: '',
+					id: 'flat_rate:14',
+					displayName: 'CA Flat rate',
+				},
+				{
+					amount: 0,
+					deliveryEstimate: '',
+					id: 'free_shipping:13',
+					displayName: 'Free shipping',
+				},
+			] );
+		} );
+
+		it( 'transforms shipping rates when price should include totals', () => {
+			global.wcpayExpressCheckoutParams.checkout.display_prices_with_tax = true;
+
+			expect(
+				transformCartDataForShippingRates( {
+					shipping_rates: [
+						{
+							package_id: 0,
+							name: 'Shipment 1',
+							destination: {},
+							items: [
+								{
+									key: 'aab3238922bcc25a6f606eb525ffdc56',
+									name: 'Beanie',
+									quantity: 1,
+								},
+							],
+							shipping_rates: [
+								{
+									rate_id: 'flat_rate:14',
+									name: 'CA Flat rate',
+									description: '',
+									delivery_time: '',
+									price: '1000',
+									taxes: '300',
+									instance_id: 14,
+									method_id: 'flat_rate',
+									meta_data: [
+										{
+											key: 'Items',
+											value: 'Beanie &times; 1',
+										},
+									],
+									selected: false,
+									currency_code: 'USD',
+									currency_symbol: '$',
+									currency_minor_unit: 2,
+									currency_decimal_separator: '.',
+									currency_thousand_separator: ',',
+									currency_prefix: '$',
+									currency_suffix: '',
+								},
+								{
+									rate_id: 'local_pickup:15',
+									name: 'Local pickup',
+									description: '',
+									delivery_time: '',
+									price: '350',
+									taxes: '105',
+									instance_id: 15,
+									method_id: 'local_pickup',
+									meta_data: [
+										{
+											key: 'Items',
+											value: 'Beanie &times; 1',
+										},
+									],
+									selected: true,
+									currency_code: 'USD',
+									currency_symbol: '$',
+									currency_minor_unit: 2,
+									currency_decimal_separator: '.',
+									currency_thousand_separator: ',',
+									currency_prefix: '$',
+									currency_suffix: '',
+								},
+								{
+									rate_id: 'free_shipping:13',
+									name: 'Free shipping',
+									description: '',
+									delivery_time: '',
+									price: '0',
+									taxes: '0',
+									instance_id: 13,
+									method_id: 'free_shipping',
+									meta_data: [
+										{
+											key: 'Items',
+											value: 'Beanie &times; 1',
+										},
+									],
+									selected: false,
+									currency_code: 'USD',
+									currency_symbol: '$',
+									currency_minor_unit: 2,
+									currency_decimal_separator: '.',
+									currency_thousand_separator: ',',
+									currency_prefix: '$',
+									currency_suffix: '',
+								},
+							],
+						},
+					],
+				} )
+			).toEqual( [
+				{
+					amount: 455,
+					deliveryEstimate: '',
+					id: 'local_pickup:15',
+					displayName: 'Local pickup',
+				},
+				{
+					amount: 1300,
 					deliveryEstimate: '',
 					id: 'flat_rate:14',
 					displayName: 'CA Flat rate',

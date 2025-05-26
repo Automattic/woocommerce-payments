@@ -11,23 +11,16 @@ import { addQueryArgs } from '@wordpress/url';
 import strings from './strings';
 import './styles.scss';
 import ResetAccountModal from 'wcpay/overview/modal/reset-account';
-import { trackAccountReset } from 'wcpay/onboarding/tracking';
 import { isInTestModeOnboarding } from 'wcpay/utils';
 
-interface Props {
-	openModal: () => void;
-}
-
 const handleReset = () => {
-	trackAccountReset();
-
 	window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
 		'wcpay-reset-account': 'true',
 		source: 'wcpay-reset-account', // Overwrite any existing source because we are starting over.
 	} );
 };
 
-export const AccountTools: React.FC< Props > = () => {
+export const AccountTools = () => {
 	const [ modalVisible, setModalVisible ] = useState( false );
 
 	// Only render when in test/sandbox mode onboarding.

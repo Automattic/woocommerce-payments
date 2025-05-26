@@ -4,7 +4,7 @@
  */
 import React from 'react';
 import CrossCircleIcon from 'gridicons/dist/cross-circle';
-import classNames from 'classnames';
+import clsx from 'clsx';
 
 /**
  * Internal dependencies
@@ -19,7 +19,7 @@ const PaymentDeleteIllustration: React.FunctionComponent< {
 		<div className="payment-delete-illustration__wrapper">
 			<div className="payment-delete-illustration__illustrations">
 				<Icon
-					className={ classNames(
+					className={ clsx(
 						'payment-delete-illustration__payment-icon',
 						{
 							'has-border': hasBorder,
