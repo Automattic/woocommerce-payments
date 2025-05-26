@@ -297,7 +297,7 @@ class MultiCurrency {
 		$this->backend_currencies  = new BackendCurrencies( $this, $this->localization_service );
 		$this->tracking            = new Tracking( $this );
 
-		// Init all of the hooks.
+		// Init all the hooks.
 		$admin_notices->init_hooks();
 		$user_settings->init_hooks();
 		$this->frontend_prices->init_hooks();
