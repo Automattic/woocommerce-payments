@@ -194,7 +194,7 @@ export const VatNumberTask = ( {
 					label={ sprintf(
 						__(
 							/* translators: %$1$s: tax ID name, e.g. VAT Number, GST Number, Corporate Number */
-							'I have registration for %1$s',
+							'I have a valid %1$s',
 							'woocommerce-payments'
 						),
 						getVatTaxIDName()

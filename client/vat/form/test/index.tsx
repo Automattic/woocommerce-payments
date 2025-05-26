@@ -71,9 +71,7 @@ describe( 'VAT form', () => {
 			render( <VatForm onCompleted={ mockOnCompleted } /> );
 
 			user.click(
-				screen.getByLabelText(
-					`I have registration for ${ expectedTaxIdName }`
-				)
+				screen.getByLabelText( `I have a valid ${ expectedTaxIdName }` )
 			);
 
 			if ( expectedPrefix ) {
@@ -222,9 +220,7 @@ describe( 'VAT form', () => {
 
 	describe( 'when registered for VAT', () => {
 		beforeEach( () => {
-			user.click(
-				screen.getByLabelText( 'I have registration for VAT Number' )
-			);
+			user.click( screen.getByLabelText( 'I have a valid VAT Number' ) );
 		} );
 
 		it( 'should disable the Continue button', () => {
