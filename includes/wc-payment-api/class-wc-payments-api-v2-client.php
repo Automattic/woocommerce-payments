@@ -15,4 +15,7 @@ class WC_Payments_API_V2_Client extends WC_Payments_API_Client {
 	const ENDPOINT_BASE          = 'https://public-api.wordpress.com/wpcom/v2';
 	const ENDPOINT_SITE_FRAGMENT = 'sites/%s';
 	const ENDPOINT_REST_BASE     = 'transact';
+
+	// Note: If we will use v2 endpoints that don't match 1:1 with v1 ones further refactoring is needed.
+	// At the moment, we use this only for MultiCurrency rates.
 }
