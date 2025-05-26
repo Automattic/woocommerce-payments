@@ -8,7 +8,7 @@
  * Text Domain: woocommerce-payments
  * Domain Path: /languages
  * WC requires at least: 7.6
- * WC tested up to: 9.8.2
+ * WC tested up to: 9.8.5
  * Requires at least: 6.0
  * Requires PHP: 7.3
  * Version: 9.4.0
