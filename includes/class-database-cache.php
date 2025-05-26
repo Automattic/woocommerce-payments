@@ -8,6 +8,7 @@
 namespace WCPay;
 
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyCacheInterface;
+use WCPay\MultiCurrency\Utils;
 
 defined( 'ABSPATH' ) || exit; // block direct access.
 
@@ -406,8 +407,19 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 				}
 				break;
 			case self::CURRENCIES_KEY:
-				// Refresh the errored currencies quickly, otherwise cache for 6h.
-				$ttl = $cache_contents['errored'] ? 2 * MINUTE_IN_SECONDS : 6 * HOUR_IN_SECONDS;
+				if ( defined( 'DOING_CRON' ) || is_admin() || Utils::is_admin_api_request() ) {
+					// Fetches triggered from the admin panel should be more frequent.
+					if ( $cache_contents['errored'] ) {
+						// Attempt to refresh the data quickly if the last fetch was an error.
+						$ttl = 2 * MINUTE_IN_SECONDS;
+					} else {
+						// If the data was fetched successfully, cache it for 3h.
+						$ttl = 3 * HOUR_IN_SECONDS;
+					}
+				} else {
+					// For performance reasons, non-admin requests should use cached data for longer (12h).
+					$ttl = 12 * HOUR_IN_SECONDS;
+				}
 				break;
 			case self::BUSINESS_TYPES_KEY:
 			case self::ONBOARDING_FIELDS_DATA_KEY:
