@@ -437,9 +437,10 @@ class MultiCurrency {
 	 * @return ?array
 	 */
 	public function get_cached_currencies() {
-		$cached_data = $this->cache->get( MultiCurrencyCacheInterface::CURRENCIES_KEY );
-		// If connection to server cannot be established, or if payment provider is not connected, or if the account is rejected, return expired data or null.
+		// If connection to server cannot be established, payment provider is not connected, or the account is rejected,
+		// return any data we have cached (expired or not) or null.
 		if ( ! $this->payments_api_client->is_server_connected() || ! $this->payments_account->is_provider_connected() || $this->payments_account->is_account_rejected() ) {
+			$cached_data = $this->cache->get( MultiCurrencyCacheInterface::CURRENCIES_KEY, true );
 			return $cached_data ?? null;
 		}
 
@@ -1455,15 +1456,17 @@ class MultiCurrency {
 		$available_currencies = [];
 
 		$currencies = $this->get_account_available_currencies();
-		$cache_data = $this->get_cached_currencies();
+		if ( ! empty( $currencies ) ) {
+			$cache_data = $this->get_cached_currencies();
 
-		foreach ( $currencies as $currency_code ) {
-			$currency_rate = $cache_data['currencies'][ $currency_code ] ?? 1.0;
-			$update_time   = $cache_data['updated'] ?? null;
-			$new_currency  = new Currency( $this->localization_service, $currency_code, $currency_rate, $update_time );
+			foreach ( $currencies as $currency_code ) {
+				$currency_rate = $cache_data['currencies'][ $currency_code ] ?? 1.0;
+				$update_time   = $cache_data['updated'] ?? null;
+				$new_currency  = new Currency( $this->localization_service, $currency_code, $currency_rate, $update_time );
 
-			// Add this to our list of available currencies.
-			$available_currencies[ $new_currency->get_name() ] = $new_currency;
+				// Add this to our list of available currencies.
+				$available_currencies[ $new_currency->get_name() ] = $new_currency;
+			}
 		}
 
 		ksort( $available_currencies );
