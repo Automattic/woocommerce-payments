@@ -1,27 +1,35 @@
+/**
+ * Internal dependencies
+ */
+import { users } from './users.json';
+
 export const config = {
 	users: {
+		...users,
+		// the Atomic site is a live environment, and we're storing the user passwords as secrets
+		// this is the only environment that is technically publicly accessible (for the GH action runners),
+		// so it's semi-important that we don't use plaintext passwords.
 		admin: {
-			username: 'admin',
-			password: 'password',
-			email: 'e2e-wcpay-admin@woocommerce.com',
+			...users.admin,
+			password:
+				process.env.E2E_ADMIN_USER_PASSWORD || users.admin.password,
 		},
 		customer: {
-			username: 'customer',
-			password: 'password',
-			email: 'e2e-wcpay-customer@woocommerce.com',
+			...users.customer,
+			password:
+				process.env.E2E_CUSTOMER_USER_PASSWORD ||
+				users.customer.password,
 		},
 		'subscriptions-customer': {
-			username: 'subscriptions-customer',
-			password: 'password',
-			email: 'e2e-wcpay-customer@woocommerce.com',
-		},
-		guest: {
-			email: 'e2e-wcpay-guest@woocommerce.com',
+			...users[ 'subscriptions-customer' ],
+			password:
+				process.env.E2E_SUBSCRIPTIONS_CUSTOMER_USER_PASSWORD ||
+				users[ 'subscriptions-customer' ].password,
 		},
 		editor: {
-			username: 'editor',
-			password: 'password',
-			email: 'e2e-wcpay-editor@woocommerce.com',
+			...users.editor,
+			password:
+				process.env.E2E_EDITOR_USER_PASSWORD || users.editor.password,
 		},
 	},
 	products: {

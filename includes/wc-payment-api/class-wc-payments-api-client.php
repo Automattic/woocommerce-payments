@@ -2122,31 +2122,6 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	}
 
 	/**
-	 * Check if the merchant is eligible for Progressive Onboarding based on self-assessment information.
-	 *
-	 * @param array $business_info   Business information.
-	 * @param array $store_info      Store information.
-	 * @param array $woo_store_stats Optional. Stats about the WooCommerce store to given more context to the PO eligibility decision.
-	 *
-	 * @return array HTTP response on success.
-	 *
-	 * @throws API_Exception - If not connected to server or request failed.
-	 */
-	public function get_onboarding_po_eligible( array $business_info, array $store_info, array $woo_store_stats = [] ): array {
-		return $this->request(
-			[
-				'business'        => $business_info,
-				'store'           => $store_info,
-				'woo_store_stats' => $woo_store_stats,
-			],
-			self::ONBOARDING_API . '/router/po_eligible',
-			self::POST,
-			true,
-			true
-		);
-	}
-
-	/**
 	 * Sends the compatibility data to the server to be saved to the account.
 	 *
 	 * @param array $compatibility_data The array containing the data.
@@ -2275,15 +2250,12 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 
 			$log_request_id = uniqid();
 
-			Logger::log(
-				Logger::format_object(
-					'REQUEST_' . $log_request_id,
-					array_merge(
-						$request_args,
-						[ 'url' => $redacted_url ],
-						null !== $body ? [ 'body' => $redacted_params ] : []
-					)
-				)
+			Logger::info(
+				sprintf( 'API REQUEST (%s): %s %s', $log_request_id, $method, $redacted_url ),
+				[
+					'request' => $request_args,
+					null !== $body ? [ 'body' => $redacted_params ] : [],
+				]
 			);
 
 			try {
@@ -2295,25 +2267,6 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 				$this->check_response_for_errors( $response );
 			} catch ( Connection_Exception $e ) {
 				$last_exception = $e;
-			} catch ( API_Exception $e ) {
-				if ( isset( $params['level3'] ) && 'invalid_request_error' === $e->get_error_code() ) {
-					// phpcs:disable WordPress.PHP.DevelopmentFunctions
-
-					// Log the issue so we could debug it.
-					Logger::error(
-						'Level3 data error: ' . PHP_EOL
-						. print_r( $e->getMessage(), true ) . PHP_EOL
-						. print_r( 'Level 3 data sent: ', true ) . PHP_EOL
-						. print_r( $params['level3'], true )
-					);
-
-					// phpcs:enable WordPress.PHP.DevelopmentFunctions
-
-					// Retry without level3 data.
-					unset( $params['level3'] );
-					return $this->request( $params, $api, $method, $is_site_specific, $use_user_token, $raw_response );
-				}
-				throw $e;
 			}
 
 			if ( $response_code || time() >= $stop_trying_at || $retries_limit === $retries ) {
@@ -2335,52 +2288,14 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			$response_body = $response;
 		}
 
-		Logger::log(
-			Logger::format_object(
-				'RESPONSE_' . $log_request_id,
-				WC_Payments_Utils::redact_array( $response_body, self::API_KEYS_TO_REDACT )
-			)
+		Logger::info(
+			sprintf( 'API RESPONSE (%s): %s %s', $log_request_id, $method, $redacted_url ),
+			[
+				'body' => WC_Payments_Utils::redact_array( $response_body, self::API_KEYS_TO_REDACT ),
+			]
 		);
 
 		return $response_body;
-	}
-
-	/**
-	 * Handles issues with level3 data and retries requests when necessary.
-	 *
-	 * @param array  $params           - Request parameters to send as either JSON or GET string. Defaults to test_mode=1 if either in dev or test mode, 0 otherwise.
-	 * @param string $api              - The API endpoint to call.
-	 * @param string $method           - The HTTP method to make the request with.
-	 * @param bool   $is_site_specific - If true, the site ID will be included in the request url.
-	 *
-	 * @return array
-	 * @throws API_Exception - If the account ID hasn't been set.
-	 */
-	private function request_with_level3_data( $params, $api, $method, $is_site_specific = true ) {
-		// If level3 data is not present for some reason, simply proceed normally.
-		if ( empty( $params['level3'] ) || ! is_array( $params['level3'] ) ) {
-			return $this->request( $params, $api, $method, $is_site_specific );
-		}
-
-		// If level3 data doesn't contain any items, add a zero priced fee to meet Stripe's requirement.
-		if ( ! isset( $params['level3']['line_items'] ) || ! is_array( $params['level3']['line_items'] ) || 0 === count( $params['level3']['line_items'] ) ) {
-			$params['level3']['line_items'] = [
-				[
-					'discount_amount'     => 0,
-					'product_code'        => 'empty-order',
-					'product_description' => 'The order is empty',
-					'quantity'            => 1,
-					'tax_amount'          => 0,
-					'unit_cost'           => 0,
-				],
-			];
-		}
-
-		/**
-		 * In case of invalid request errors, level3 data is now removed,
-		 * and the request is retried within `request()` instead of here.
-		 */
-		return $this->request( $params, $api, $method, $is_site_specific );
 	}
 
 	/**

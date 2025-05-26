@@ -14,10 +14,12 @@ import ErrorBoundary from '../../components/error-boundary';
 import PaymentDetailsSummary from '../summary';
 import PaymentDetailsTimeline from '../timeline';
 import PaymentDetailsPaymentMethod from '../payment-method';
+import PaymentTransactionBreakdown from '../transaction-breakdown';
 import { ApiError } from '../../types/errors';
 import { Charge } from '../../types/charges';
 import { PaymentIntent } from '../../types/payment-intents';
 import { MaybeShowMerchantFeedbackPrompt } from '../../merchant-feedback-prompt';
+import { getBankName } from 'wcpay/utils/charge';
 
 interface PaymentDetailsProps {
 	id: string;
@@ -55,6 +57,10 @@ const PaymentDetails: React.FC< PaymentDetailsProps > = ( {
 		);
 	}
 
+	const bankName = charge ? getBankName( charge ) : null;
+
+	const shouldUseBundledComponents = ! charge?.dispute;
+
 	return (
 		<Page maxWidth={ 1032 } className="wcpay-payment-details">
 			<MaybeShowMerchantFeedbackPrompt />
@@ -70,9 +76,19 @@ const PaymentDetails: React.FC< PaymentDetailsProps > = ( {
 
 			{ showTimeline && wcpaySettings.featureFlags.paymentTimeline && (
 				<ErrorBoundary>
-					<PaymentDetailsTimeline paymentIntentId={ id } />
+					<PaymentDetailsTimeline
+						shouldUseBundledComponents={
+							shouldUseBundledComponents
+						}
+						paymentIntentId={ id }
+						bankName={ bankName }
+					/>
 				</ErrorBoundary>
 			) }
+
+			<ErrorBoundary>
+				<PaymentTransactionBreakdown paymentIntentId={ id } />
+			</ErrorBoundary>
 
 			<ErrorBoundary>
 				<PaymentDetailsPaymentMethod

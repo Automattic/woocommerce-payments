@@ -15,6 +15,7 @@ use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Exceptions\Rest_Request_Exception;
 use WCPay\Logger;
 use WCPay\Constants\Refund_Status;
+use WCPay\Constants\Refund_Failure_Reason;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -134,11 +135,18 @@ class WC_Payments_Webhook_Processing_Service {
 	public function process( array $event_body ) {
 		// Extract information about the webhook event.
 		$event_type = $this->read_webhook_property( $event_body, 'type' );
+		$event_id   = '';
+		try {
+			$event_id = $this->read_webhook_property( $event_body, 'id' );
+		} catch ( Invalid_Webhook_Data_Exception $e ) {
+			Logger::error( 'Webhook event ID not found' );
+		}
 
-		Logger::debug( 'Webhook received: ' . $event_type );
 		Logger::debug(
-			'Webhook body: '
-			. var_export( WC_Payments_Utils::redact_array( $event_body, WC_Payments_API_Client::API_KEYS_TO_REDACT ), true ) // phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_var_export
+			'WEBHOOK RECEIVED: ' . $event_type . ' ' . $event_id,
+			[
+				'body' => WC_Payments_Utils::redact_array( $event_body, WC_Payments_API_Client::API_KEYS_TO_REDACT ),
+			]
 		);
 
 		if ( $this->is_webhook_mode_mismatch( $event_body ) ) {
@@ -276,7 +284,7 @@ class WC_Payments_Webhook_Processing_Service {
 		/**
 		 * Get the WC_Refund from the WCPay refund ID.
 		 *
-		 * @var $wc_refunds WC_Order_Refund[]
+		 * @var WC_Order_Refund[] $wc_refunds
 		 * */
 		$wc_refunds = $order->get_refunds();
 		if ( ! empty( $wc_refunds ) ) {
@@ -292,13 +300,10 @@ class WC_Payments_Webhook_Processing_Service {
 		// Refund update webhook events can be either failed, cancelled (basically it's also a failure but triggered by the merchant), succeeded only.
 		switch ( $status ) {
 			case Refund_Status::FAILED:
-				$this->order_service->handle_failed_refund( $order, $refund_id, $amount, $currency, $matched_wc_refund );
-				if (
-					$this->has_webhook_property( $event_object, 'failure_reason' )
-					&& 'insufficient_funds' === $this->read_webhook_property( $event_object, 'failure_reason' )
-				) {
-					$this->order_service->handle_insufficient_balance_for_refund( $order, $amount );
-				}
+				$failure_reason = $this->has_webhook_property( $event_object, 'failure_reason' )
+					? $this->read_webhook_property( $event_object, 'failure_reason' )
+					: null;
+				$this->order_service->handle_failed_refund( $order, $refund_id, $amount, $currency, $matched_wc_refund, false, $failure_reason );
 				break;
 			case Refund_Status::CANCELED:
 				$this->order_service->handle_failed_refund( $order, $refund_id, $amount, $currency, $matched_wc_refund, true );

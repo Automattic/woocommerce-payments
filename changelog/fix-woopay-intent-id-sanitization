@@ -1,5 +1,0 @@
-Significance: patch
-Type: fix
-Comment: Changed WooPay intent ID sanitizaiton to allow WooPay to work on multisites.
-
-

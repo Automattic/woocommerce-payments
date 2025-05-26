@@ -70,64 +70,6 @@
 	}
 }
 
-// Payment methods with PMME styles.
-li.wc_payment_method:has( label .stripe-pmme-container ) {
-	display: grid;
-	grid-template-columns: max-content 1fr;
-	grid-template-areas: 'li-input li-label'; // List Item grid.
-	align-items: baseline;
-
-	.input-radio {
-		grid-area: li-input;
-	}
-
-	> label {
-		grid-area: li-label;
-
-		display: grid !important;
-		grid-template-columns: max-content 1fr;
-		grid-template-areas: 'label-spacer label-inner'; // Label grid.
-
-		> span.spacer {
-			grid-area: label-spacer;
-		}
-
-		> .woopayments-inner-label {
-			grid-area: label-inner;
-			display: grid;
-			grid-template-columns: 1fr max-content;
-			grid-template-areas:
-				'inner-text inner-logo'
-				'inner-pmme inner-logo'; // Inner label grid.
-			align-items: center;
-
-			> img {
-				grid-area: inner-logo;
-				justify-self: right;
-			}
-
-			> .stripe-pmme-container {
-				width: 100%;
-				grid-area: inner-pmme;
-				pointer-events: none;
-			}
-		}
-	}
-}
-
-// Hide the PMMe container when the payment method is checked.
-li.wc_payment_method:has( .input-radio:checked
-		+ label
-		.stripe-pmme-container ) {
-	.input-radio:checked {
-		+ label {
-			.stripe-pmme-container {
-				display: none;
-			}
-		}
-	}
-}
-
 // Pseudo-element radio button compatibility.
 // Unfortunately, there is no direct way to detect the existence of pseudo-elements like ::before using CSS selectors,
 // so we use the theme class to add the necessary styles.

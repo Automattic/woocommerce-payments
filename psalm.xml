@@ -37,6 +37,7 @@
 				<referencedClass name="Automattic\WooCommerce\StoreApi\Utilities\JsonWebToken" />
 				<referencedClass name="Automattic\WooCommerce\StoreApi\SessionHandler" />
 				<referencedClass name="Automattic\WooCommerce\Utilities\PluginUtil" />
+				<referencedClass name="Automattic\WooCommerce\Utilities\FeaturesUtil" />
 			</errorLevel>
 		</UndefinedClass>
 		<UndefinedDocblockClass>

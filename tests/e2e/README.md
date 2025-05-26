@@ -66,9 +66,9 @@ Once you have the blog id & tokens, add the following env variables to your `loc
 # Set local server to false for using live server. Default: true.
 E2E_USE_LOCAL_SERVER=false
 
-E2E_BLOG_TOKEN='<jetpack_blog_token>'
-E2E_USER_TOKEN='<jetpack_user_token>'
-E2E_BLOG_ID='<blog_id>'
+E2E_JP_BLOG_TOKEN='<jetpack_blog_token>'
+E2E_JP_USER_TOKEN='<jetpack_user_token>'
+E2E_JP_SITE_ID='<blog_id>'
 ```
 
 </p>

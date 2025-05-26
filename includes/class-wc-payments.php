@@ -381,7 +381,6 @@ class WC_Payments {
 		include_once __DIR__ . '/core/server/request/class-generic.php';
 		include_once __DIR__ . '/core/server/request/class-get-intention.php';
 		include_once __DIR__ . '/core/server/request/class-get-reporting-payment-activity.php';
-		include_once __DIR__ . '/core/server/request/class-get-payment-process-factors.php';
 		include_once __DIR__ . '/core/server/request/class-create-intention.php';
 		include_once __DIR__ . '/core/server/request/class-update-intention.php';
 		include_once __DIR__ . '/core/server/request/class-capture-intention.php';
@@ -484,6 +483,7 @@ class WC_Payments {
 		include_once __DIR__ . '/constants/class-payment-initiated-by.php';
 		include_once __DIR__ . '/constants/class-intent-status.php';
 		include_once __DIR__ . '/constants/class-refund-status.php';
+		include_once __DIR__ . '/constants/class-refund-failure-reason.php';
 		include_once __DIR__ . '/constants/class-payment-intent-status.php';
 		include_once __DIR__ . '/constants/class-payment-capture-type.php';
 		include_once __DIR__ . '/constants/class-payment-method.php';
@@ -1168,17 +1168,13 @@ class WC_Payments {
 		}
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-payment-intents-controller.php';
-		$payment_intents_controller = new WC_REST_Payments_Payment_Intents_Controller( self::$api_client );
-		$payment_intents_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-payment-intents-create-controller.php';
-		$payment_intents_create_controller = new WC_REST_Payments_Payment_Intents_Create_Controller(
+		$payment_intents_controller = new WC_REST_Payments_Payment_Intents_Controller(
 			self::$api_client,
 			self::get_gateway(),
 			wcpay_get_container()->get( OrderService::class ),
 			wcpay_get_container()->get( Level3Service::class )
 		);
-		$payment_intents_create_controller->register_routes();
+		$payment_intents_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-authorizations-controller.php';
 		$authorizations_controller = new WC_REST_Payments_Authorizations_Controller( self::$api_client );

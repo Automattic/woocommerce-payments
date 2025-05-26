@@ -93,7 +93,6 @@ export type MerchantEvent =
 	| 'wcpay_onboarding_flow_hidden'
 	| 'wcpay_onboarding_flow_exited'
 	| 'wcpay_onboarding_flow_redirected'
-	| 'wcpay_onboarding_flow_reset'
 	| 'wcpay_onboarding_flow_eligibility_modal_closed'
 	| 'wcpay_onboarding_flow_setup_live_payments'
 	| 'wcpay_onboarding_flow_embedded_step_change'

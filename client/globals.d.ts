@@ -110,7 +110,6 @@ declare global {
 			isComplete: boolean;
 			isEligibilityModalDismissed: boolean;
 		};
-		enabledPaymentMethods: string[];
 		dismissedDuplicateNotices: PaymentMethodToPluginsMap;
 		accountDefaultCurrency: string;
 		isFRTReviewFeatureActive: boolean;
@@ -133,11 +132,11 @@ declare global {
 		isWooPayStoreCountryAvailable: boolean;
 		isSubscriptionsPluginActive: boolean;
 		isStripeBillingEligible: boolean;
-		capabilityRequestNotices: Record< string, boolean >;
 		storeName: string;
 		isNextDepositNoticeDismissed: boolean;
 		isInstantDepositNoticeDismissed: boolean;
 		isConnectionSuccessModalDismissed: boolean;
+		isWCReactifySettingsFeatureEnabled: boolean;
 		userLocale: {
 			/**
 			 * The locale of the current user profile, represented as a locale code supported by transact-platform-server.
@@ -172,17 +171,7 @@ declare global {
 
 	const wooPaymentsPaymentMethodDefinitions: Record<
 		string,
-		{
-			id: string;
-			stripe_key: string;
-			title: string;
-			description: string;
-			settings_icon_url: string;
-			currencies: string[];
-			allows_manual_capture: boolean;
-			allows_pay_later: boolean;
-			accepts_only_domestic_payment: boolean;
-		}
+		PaymentMethodServerDefinition
 	>;
 
 	const wooPaymentsPaymentMethodsConfig: Record<
@@ -262,6 +251,7 @@ declare global {
 			userLocale: string;
 		};
 		siteTitle: string;
+		wcVersion: string;
 	};
 
 	const wcpayPluginSettings: {

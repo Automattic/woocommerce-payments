@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import * as React from 'react';
+import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { updateQueryString } from '@woocommerce/navigation';
 import os from 'os';

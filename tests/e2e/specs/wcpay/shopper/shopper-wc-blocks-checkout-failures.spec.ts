@@ -6,15 +6,9 @@ import test, { Page, expect } from '@playwright/test';
 /**
  * Internal dependencies
  */
-import {
-	checkPageExists,
-	describeif,
-	getMerchant,
-	getShopper,
-} from '../../../utils/helpers';
+import { describeif, getShopper } from '../../../utils/helpers';
 import * as navigation from '../../../utils/shopper-navigation';
 import * as shopper from '../../../utils/shopper';
-import { addWCBCheckoutPage } from '../../../utils/merchant';
 import { shouldRunWCBlocksTests } from '../../../utils/constants';
 import { config } from '../../../config/default';
 
@@ -70,18 +64,8 @@ describeif( shouldRunWCBlocksTests )(
 	() => {
 		let shopperPage: Page;
 
-		test.beforeAll( async ( { browser }, { project } ) => {
+		test.beforeAll( async ( { browser } ) => {
 			shopperPage = ( await getShopper( browser ) ).shopperPage;
-
-			if (
-				! ( await checkPageExists(
-					shopperPage,
-					project.use.baseURL + '/checkout-wcb'
-				) )
-			) {
-				const { merchantPage } = await getMerchant( browser );
-				await addWCBCheckoutPage( merchantPage );
-			}
 
 			await shopper.addToCartFromShopPage( shopperPage );
 			await navigation.goToCheckoutWCB( shopperPage );
@@ -109,7 +93,10 @@ describeif( shouldRunWCBlocksTests )(
 				await shopper.placeOrderWCB( shopperPage, false );
 
 				if ( auth ) {
-					await shopper.confirmCardAuthenticationWCB( shopperPage );
+					await shopper.confirmCardAuthenticationWCB(
+						shopperPage,
+						true
+					);
 				}
 
 				if ( errorsInsideStripeFrame.includes( card ) ) {

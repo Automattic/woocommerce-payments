@@ -446,7 +446,7 @@ class WC_Payments_Invoice_Service {
 			$wcpay_item_id = $this->get_wcpay_item_id( $item );
 
 			if ( ! isset( $wcpay_items[ $wcpay_item_id ] ) ) {
-				$message = __( 'The WCPay invoice items do not match WC subscription items.', 'woocommerce-payments' );
+				$message = __( 'The WooPayments invoice items do not match WC subscription items.', 'woocommerce-payments' );
 				Logger::error( $message );
 				throw new Rest_Request_Exception( $message );
 			}

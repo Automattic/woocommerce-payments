@@ -253,7 +253,7 @@ class WC_Payments_Order_Success_Page {
 		ob_start();
 		?>
 		<div class="wc-payment-gateway-method-logo-wrapper woopay">
-			<img alt="WooPay" src="<?php echo esc_url_raw( plugins_url( 'assets/images/woopay.svg', WCPAY_PLUGIN_FILE ) ); ?>">
+			<img alt="WooPay" src="<?php echo esc_url_raw( plugins_url( 'assets/images/payment-methods/woo-short.svg', WCPAY_PLUGIN_FILE ) ); ?>">
 			<?php
 			if ( $order->get_meta( 'last4' ) ) {
 				echo esc_html_e( 'Card ending in', 'woocommerce-payments' ) . ' ';

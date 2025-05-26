@@ -2,9 +2,9 @@
 Contributors: woocommerce, automattic
 Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment gateway
 Requires at least: 6.0
-Tested up to: 6.7
+Tested up to: 6.8
 Requires PHP: 7.3
-Stable tag: 9.1.0
+Stable tag: 9.4.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -86,6 +86,100 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 4. Manage Disputes
 
 == Changelog ==
+
+= 9.4.0 - 2025-05-21 =
+* Add - Add support for rendering fee tax details in the transaction timeline where available
+* Fix - Keep the shipping costs structure intact when applying multi-currency adjustments.
+* Fix - Only display the transaction URL for authorized intent statuses in WP Admin order page
+* Fix - Optimize session handling by only setting cookies on cart and checkout pages, improving product page caching performance.
+* Update - chore: remove "add payment methods" wizard task in favor of NOX flow.
+* Update - chore: update "Tested up to" WordPress 6.8
+* Update - Improve error message for embedded onboarding.
+* Update - Improve the user experience of the WooCommerce Payments dispute management interface, focusing on visual clarity of the dispute steps component that guides merchants through the process of handling payment disputes and inquiries.
+* Update - Perist payment method checkbox after capability request
+* Update - refactor: adjust payment method settings UI to show inline notices and disabled checkboxes instead of `(!)` icon
+* Update - Remove self-assessment fields from the onboarding flow
+* Update - update: ensure Klarna is never part of ECE buttons
+* Update - update: remove BNPL payment method messaging element/offering from checkout labels
+* Update - Update ‘Activate payments’ task to use NOX flow when the reactify-settings-payments feature is enabled.
+* Dev - refactor: created a "common" component for the payment method details on the transactions view, made for Affirm, Afterpay, Alipay, WeChat Pay, Grabpay, Multibanco
+* Dev - Set payment method title for order before order status change to make it visible for status change actions.
+* Dev - Unbundles wordpress/components for Dispute screens
+* Dev - upgrade currency-switcher block to apiVersion 3
+
+= 9.3.0 - 2025-05-05 =
+* Add - Add dedicated onboarding REST API endpoint for disabling test drive account, when possible.
+* Add - Transaction Fees breakdown component in the Payment details.
+* Fix - Disabled the Transactions Breakdown section to avoid misleading data in certain scenarios.
+* Fix - fix: ensuring that Google Pay/Apple Pay buttons hide on shortcode cart & checkout when totals go to 0
+* Fix - fix: Multibanco payment instructions font size adjustment on some block-based themes (e.g.: Twenty-Twenty-Four, Twenty-Twenty-Three)
+* Fix - Fix a bug when the notice after downloading CSV that was mispositioned.
+* Fix - Fix capabilities query param type
+* Fix - Fixed inconsistent spacing between "Add to Cart" button and express checkout buttons on product pages.
+* Fix - Fixes a styling issue when the payment method has a tooltip next to it, it was shifting the logo to the right.
+* Fix - Fix for validation issue with POST params in some cases generating account session.
+* Fix - Improve styling of the Embedded components to be closer to WPDS.
+* Fix - Improve subscriptions code compatibility to avoid causing fatal errors.
+* Fix - Remove the referrer check to update the fraud protection settings
+* Fix - Set the onboarding test mode while creating test drive account with API
+* Update - Add dedicated onboarding REST API endpoint for resetting onboarding, when possible.
+* Update - Advanced fraud protection settings redesign.
+* Update - chore: removed notices about the JCB capability request. JCB will be automatically requested for every new and existing merchant, regardless of the merchant country.
+* Update - Include a failure message in the order notes when Stripe Billing subscription renewal has failed.
+* Update - On the payment settings page, change the "Credit/Debit Cards" icon to a more generic icon and add a static list of card brands below the "Credit/Debit Cards" element.
+* Update - Remove progressive onboarding eligibility check during embedded KYC session creation
+* Update - Simplified refund handling with clear errors and standard reasons to aid resolution.
+* Update - Updated the Stripe locales list.
+* Update - Update log file format for better compatibility with the WooCommerce log viewer.
+* Dev - Add Cursor config folder to .gitignore
+* Dev - Bump WC tested up to version to 9.8.1
+* Dev - Bump WC tested up to version to 9.8.2
+* Dev - Delete NOX profile during account reset from Overview or Connect page.
+* Dev - Fix Apple Pay and Google Pay not requested from NOX In-context flow.
+* Dev - Merged WC_REST_Payments_Payment_Intents_Create_Controller back into WC_REST_Payments_Payment_Intents_Controller after confirming that the issue that caused the split was solved.
+* Dev - Replace WCPay in messages with WooPayments
+
+= 9.2.1 - 2025-04-23 =
+* Update - Update account session creation route definition to use POST rather than GET.
+
+
+= 9.2.0 - 2025-04-09 =
+* Add - Add back button for tertiary+ level pages in WooPayments settings.
+* Fix - fix: cancel GooglePay/ApplePay dialog on product page if add-to-cart product validation fails
+* Fix - fix: fatal error when Klarna is enabled on an EU account and a non-EU currency is configured on the store.
+* Fix - fix: Google Pay/Apple Pay display on pay-for-order pages.
+* Fix - Fix deprecated hook woocommerce_rest_api_option_permissions
+* Fix - Fix errors in WooCommerce email settings preview
+* Fix - Fix Multi-currency conversion for WooCommerce Bookings range type cost adjustments
+* Fix - Fix PMME display on shortcode cart with block-based themes.
+* Fix - Fix WooPay enabled during NOX onboarding despite being disabled in recommended payment methods.
+* Fix - Handle pending refunds properly
+* Fix - Linked account ID to product ID to maintain consistency and prevent issues when the account ID changes.
+* Fix - Prevent unsaved changes dialog when changes have been saved.
+* Fix - Removed hard-coded lists of payment methods where possible.
+* Fix - Remove unused wcpay_date_format_notice_dismissed option from the permission list
+* Fix - Set background color to white for the Payments settings page
+* Fix - update: ensure Google Pay/Apple Pay honor 'Display prices during cart and checkout' setting
+* Fix - Update WooPay icon on order page.
+* Update - Added _wcpay_net to the metadata.
+* Update - Chore: check the array type in dismissed noticeces component.
+* Update - chore: disable request of JCB capability
+* Update - fix: Google Pay/Apple Pay HK test address override.
+* Update - fix: parsing of error message for GooglePay/ApplePay buttons to be displayed to customer, instead of displaying generic error message on failure.
+* Update - Improve the ECE container loading experience.
+* Update - Move payment method map definition to the backend
+* Update - Prevent creation of the renewal orders if original order was created in the different WooPayments mode.
+* Update - refactor: delete temporary Google Pay/Apple Pay cart contents right after making the request, to improve performance and avoiding bots sending wrong session data in subsequent requests.
+* Update - Remove fraud protection discoverability and update tour
+* Update - Stripe Billing and Manual Capture incompatibility notice on the Settings page.
+* Update - Update Settings page as per the new design
+* Update - Update to Cash App Afterpay branding.
+* Dev - Bump WC tested up to version to 9.7.1.
+* Dev - Fix unneeded double square brackets in the post-merge script
+* Dev - Removed the deprecated wcpay_exit_survey_dismissed option from the ALLOWED_OPTIONS list.
+* Dev - Remove level3 retry logic and legacy request_with_level3_data method
+* Dev - Updated the progressive parameter in the KYC session creation API to use a boolean type.
+* Dev - We switch to using site instead of url as the key in the self assessment data to avoid XSS firewall false-positives.
 
 = 9.1.0 - 2025-03-19 =
 * Add - Add a prompt to encourage merchants to provide feedback or leave a WordPress.org review for WooPayments

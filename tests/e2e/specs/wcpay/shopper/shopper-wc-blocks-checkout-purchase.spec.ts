@@ -6,14 +6,8 @@ import { test, expect, Page } from '@playwright/test';
 /**
  * Internal dependencies
  */
-import {
-	checkPageExists,
-	describeif,
-	getMerchant,
-	getShopper,
-} from '../../../utils/helpers';
+import { describeif, getShopper } from '../../../utils/helpers';
 import { shouldRunWCBlocksTests } from '../../../utils/constants';
-import { addWCBCheckoutPage } from '../../../utils/merchant';
 import { goToCheckoutWCB } from '../../../utils/shopper-navigation';
 import {
 	addToCartFromShopPage,
@@ -30,17 +24,8 @@ describeif( shouldRunWCBlocksTests )(
 	() => {
 		let shopperPage: Page;
 
-		test.beforeAll( async ( { browser }, { project } ) => {
+		test.beforeAll( async ( { browser } ) => {
 			shopperPage = ( await getShopper( browser ) ).shopperPage;
-			if (
-				! ( await checkPageExists(
-					shopperPage,
-					project.use.baseURL + '/checkout-wcb'
-				) )
-			) {
-				const { merchantPage } = await getMerchant( browser );
-				await addWCBCheckoutPage( merchantPage );
-			}
 		} );
 
 		test( 'using a basic card', async () => {

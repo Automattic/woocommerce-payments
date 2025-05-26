@@ -19,6 +19,9 @@ import { ApiError } from 'wcpay/types/errors';
 declare const global: {
 	wcSettings: { countries: Record< string, string > };
 	wcpaySettings: {
+		accountStatus: {
+			country: string;
+		};
 		zeroDecimalCurrencies: string[];
 		featureFlags: Record< string, boolean >;
 		connect: {
@@ -148,6 +151,9 @@ describe( 'Order details page', () => {
 		};
 
 		global.wcpaySettings = {
+			accountStatus: {
+				country: 'US',
+			},
 			featureFlags: { paymentTimeline: true },
 			zeroDecimalCurrencies: [],
 			connect: { country: 'US' },
