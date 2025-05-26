@@ -2364,7 +2364,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	 * @return void
 	 */
 	public function update_account_data( $property, $data ) {
-		$account_data = $this->database_cache->get( Database_Cache::ACCOUNT_KEY );
+		$account_data = $this->database_cache->get( Database_Cache::ACCOUNT_KEY, true );
 		if ( ! is_array( $account_data ) ) {
 			// Bail if we don't have any cached account data.
 			return;
