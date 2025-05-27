@@ -27,6 +27,10 @@ import '../style.scss';
  */
 const getVatPrefix = () => {
 	switch ( wcpaySettings.accountStatus.country ) {
+		case 'AU':
+			// AU ABN numbers are not prefixed.
+			// Based on a test lookup at https://abr.business.gov.au/
+			return '';
 		case 'JP':
 			// Corporate numbers are not prefixed.
 			return '';
@@ -41,6 +45,11 @@ const getVatPrefix = () => {
 
 const getVatTaxIDName = () => {
 	switch ( wcpaySettings.accountStatus.country ) {
+		case 'AU':
+			// Note – AU GST numbers are actually an ABN.
+			// https://vatstack.com/articles/australian-business-number-abn-validation
+			// https://business.gov.au/registrations/register-for-taxes/tax-registration-for-your-business
+			return __( 'ABN', 'woocommerce-payments' );
 		case 'JP':
 			return __( 'Corporate Number', 'woocommerce-payments' );
 		default:
@@ -50,6 +59,11 @@ const getVatTaxIDName = () => {
 
 const getVatTaxIDRequirementHint = () => {
 	switch ( wcpaySettings.accountStatus.country ) {
+		case 'AU':
+			return __(
+				'By inputting your ABN number you confirm that you are going to account for the GST.',
+				'woocommerce-payments'
+			);
 		case 'JP':
 			// Leaving this blank intentionally, as I don't know what the requirements are in JP.
 			// Better to add this info later than clutter the dialog with vague/assumed legal requirements.
@@ -66,6 +80,12 @@ const getVatTaxIDRequirementHint = () => {
 
 const getVatTaxIDValidationHint = () => {
 	switch ( wcpaySettings.accountStatus.country ) {
+		case 'AU':
+			// https://abr.business.gov.au/Help/AbnFormat
+			return __(
+				'11-digit number, for example 12 345 678 901.',
+				'woocommerce-payments'
+			);
 		case 'JP':
 			return __(
 				'A 13 digit number, for example 1234567890123.',
@@ -174,7 +194,7 @@ export const VatNumberTask = ( {
 					label={ sprintf(
 						__(
 							/* translators: %$1$s: tax ID name, e.g. VAT Number, GST Number, Corporate Number */
-							"I'm registered for a %1$s",
+							'I have a valid %1$s',
 							'woocommerce-payments'
 						),
 						getVatTaxIDName()
