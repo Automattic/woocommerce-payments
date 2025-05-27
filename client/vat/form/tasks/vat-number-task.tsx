@@ -76,7 +76,7 @@ const getVatTaxIDRequirementHint = () => {
 			return __( '', 'woocommerce-payments' );
 		case 'NO':
 			return __(
-				'By inputting your VAT number you confirm you are a Norway VAT registered business and that you are going to account for the VAT',
+				'By inputting your VAT number you confirm you are a Norway VAT registered business and that you are going to account for the VAT.',
 				'woocommerce-payments'
 			);
 		case 'NZ':
@@ -119,7 +119,7 @@ const getVatTaxIDValidationHint = () => {
 			);
 		case 'SG':
 			return __(
-				'Enter your UEN (e.g., 200312345A) or GST Registration Number (e.g., M91234567X)',
+				'Enter your UEN (e.g., 200312345A) or GST Registration Number (e.g., M91234567X).',
 				'woocommerce-payments'
 			);
 		default:
