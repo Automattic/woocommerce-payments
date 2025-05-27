@@ -31,7 +31,6 @@ class Wechatpay_Payment_Method extends UPE_Payment_Method {
 		$this->icon_url                     = plugins_url( 'assets/images/payment-methods/wechat-pay.svg', WCPAY_PLUGIN_FILE );
 		$this->currencies                   = [
 			Currency_Code::UNITED_STATES_DOLLAR,
-			Currency_Code::CHINESE_YUAN,
 			Currency_Code::AUSTRALIAN_DOLLAR,
 			Currency_Code::CANADIAN_DOLLAR,
 			Currency_Code::EURO,
@@ -47,7 +46,6 @@ class Wechatpay_Payment_Method extends UPE_Payment_Method {
 		$this->accept_only_domestic_payment = false;
 		$this->countries                    = [
 			Country_Code::UNITED_STATES,
-			Country_Code::CHINA,
 			Country_Code::AUSTRALIA,
 			Country_Code::CANADA,
 			Country_Code::AUSTRIA,
@@ -106,31 +104,29 @@ class Wechatpay_Payment_Method extends UPE_Payment_Method {
 		// Map countries to their primary currencies.
 		switch ( $account_country ) {
 			case Country_Code::AUSTRALIA:
-				return [ Currency_Code::AUSTRALIAN_DOLLAR, Currency_Code::CHINESE_YUAN ];
+				return [ Currency_Code::AUSTRALIAN_DOLLAR ];
 			case Country_Code::CANADA:
-				return [ Currency_Code::CANADIAN_DOLLAR, Currency_Code::CHINESE_YUAN ];
-			case Country_Code::CHINA:
-				return [ Currency_Code::CHINESE_YUAN ];
+				return [ Currency_Code::CANADIAN_DOLLAR ];
 			case Country_Code::DENMARK:
-				return [ Currency_Code::DANISH_KRONE, Currency_Code::EURO, Currency_Code::CHINESE_YUAN ];
+				return [ Currency_Code::DANISH_KRONE ];
 			case Country_Code::HONG_KONG:
-				return [ Currency_Code::HONG_KONG_DOLLAR, Currency_Code::CHINESE_YUAN ];
+				return [ Currency_Code::HONG_KONG_DOLLAR ];
 			case Country_Code::JAPAN:
-				return [ Currency_Code::JAPANESE_YEN, Currency_Code::CHINESE_YUAN ];
+				return [ Currency_Code::JAPANESE_YEN ];
 			case Country_Code::NORWAY:
-				return [ Currency_Code::NORWEGIAN_KRONE, Currency_Code::EURO, Currency_Code::CHINESE_YUAN ];
+				return [ Currency_Code::NORWEGIAN_KRONE ];
 			case Country_Code::SINGAPORE:
-				return [ Currency_Code::SINGAPORE_DOLLAR, Currency_Code::CHINESE_YUAN ];
+				return [ Currency_Code::SINGAPORE_DOLLAR ];
 			case Country_Code::SWEDEN:
-				return [ Currency_Code::SWEDISH_KRONA, Currency_Code::EURO, Currency_Code::CHINESE_YUAN ];
+				return [ Currency_Code::SWEDISH_KRONA ];
 			case Country_Code::SWITZERLAND:
-				return [ Currency_Code::SWISS_FRANC, Currency_Code::EURO, Currency_Code::CHINESE_YUAN ];
+				return [ Currency_Code::SWISS_FRANC ];
 			case Country_Code::UNITED_KINGDOM:
-				return [ Currency_Code::POUND_STERLING, Currency_Code::CHINESE_YUAN ];
+				return [ Currency_Code::POUND_STERLING ];
 			case Country_Code::UNITED_STATES:
-				return [ Currency_Code::UNITED_STATES_DOLLAR, Currency_Code::CHINESE_YUAN ];
+				return [ Currency_Code::UNITED_STATES_DOLLAR ];
 			default:
-				// For all European countries in the supported list, return EUR and CNY.
+				// For all European countries in the supported list, return EUR.
 				if ( in_array(
 					$account_country,
 					[
@@ -148,11 +144,25 @@ class Wechatpay_Payment_Method extends UPE_Payment_Method {
 					],
 					true
 				) ) {
-					return [ Currency_Code::EURO, Currency_Code::CHINESE_YUAN ];
+					return [ Currency_Code::EURO ];
 				}
 
-				// Default to Chinese Yuan.
-				return [ Currency_Code::CHINESE_YUAN ];
+				// Defaulted to unsupported currency.
+				return [ 'UNSUPPORTED' ];
 		}
+	}
+
+	/**
+	 * Returns payment method description for the settings page.
+	 *
+	 * @param string|null $account_country Country of merchants account.
+	 *
+	 * @return string
+	 */
+	public function get_description( ?string $account_country = null ) {
+		return __(
+			'A digital wallet popular with customers from China.',
+			'woocommerce-payments'
+		);
 	}
 }

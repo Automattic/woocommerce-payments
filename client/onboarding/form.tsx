@@ -25,7 +25,9 @@ import { useValidation } from './validation';
 import { trackStepCompleted } from './tracking';
 import strings from './strings';
 
-export const OnboardingForm: React.FC = ( { children } ) => {
+export const OnboardingForm: React.FC< { children?: React.ReactNode } > = ( {
+	children,
+} ) => {
 	const { errors, touched, setTouched } = useOnboardingContext();
 	const { currentStep, nextStep } = useStepperContext();
 
@@ -56,13 +58,13 @@ export const OnboardingForm: React.FC = ( { children } ) => {
 	);
 };
 
-interface OnboardingTextFieldProps extends Partial< TextFieldProps > {
+interface OnboardingTextFieldProps {
 	name: keyof OnboardingFields;
 }
 
-export const OnboardingTextField: React.FC< OnboardingTextFieldProps > = (
-	props
-) => {
+export const OnboardingTextField: React.FC<
+	OnboardingTextFieldProps & Partial< TextFieldProps >
+> = ( props ) => {
 	const { name } = props;
 	const { data, setData, touched } = useOnboardingContext();
 	const { validate, error } = useValidation( name );

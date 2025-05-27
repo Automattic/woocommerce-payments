@@ -8,6 +8,9 @@
 use WCPay\Constants\Fraud_Meta_Box_Type;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
+use WCPay\Constants\Payment_Method;
+use WCPay\Constants\Refund_Status;
+use WCPay\Constants\Refund_Failure_Reason;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Fraud_Prevention\Models\Rule;
 use WCPay\Logger;
@@ -131,6 +134,34 @@ class WC_Payments_Order_Service {
 	const WCPAY_PAYMENT_TRANSACTION_ID_META_KEY = '_wcpay_payment_transaction_id';
 
 	/**
+	 * Meta key used to store the Multibanco entity.
+	 *
+	 * @const string
+	 */
+	const WCPAY_MULTIBANCO_ENTITY_META_KEY = '_wcpay_multibanco_entity';
+
+	/**
+	 * Meta key used to store the Multibanco reference.
+	 *
+	 * @const string
+	 */
+	const WCPAY_MULTIBANCO_REFERENCE_META_KEY = '_wcpay_multibanco_reference';
+
+	/**
+	 * Meta key used to store the Multibanco expiry.
+	 *
+	 * @const string
+	 */
+	const WCPAY_MULTIBANCO_EXPIRY_META_KEY = '_wcpay_multibanco_expiry';
+
+	/**
+	 * Meta key used to store the Multibanco URL.
+	 *
+	 * @const string
+	 */
+	const WCPAY_MULTIBANCO_URL_META_KEY = '_wcpay_multibanco_url';
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
 	 * @var WC_Payments_API_Client
@@ -180,7 +211,14 @@ class WC_Payments_Order_Service {
 				break;
 			case Intent_Status::REQUIRES_ACTION:
 			case Intent_Status::REQUIRES_PAYMENT_METHOD:
-				$this->mark_payment_started( $order, $intent_data );
+				if ( ! empty( $intent_data['error'] ) ) {
+					$this->unlock_order_payment( $order );
+					$this->mark_payment_failed( $order, $intent_data['intent_id'], $intent_data['intent_status'], $intent_data['charge_id'], $intent_data['error']['message'] );
+				} elseif ( in_array( $intent->get_payment_method_type(), Payment_Method::OFFLINE_PAYMENT_METHODS, true ) ) {
+						$this->mark_payment_on_hold( $order, $intent_data );
+				} else {
+					$this->mark_payment_started( $order, $intent_data );
+				}
 				break;
 			default:
 				Logger::error( 'Uncaught payment intent status of ' . $intent_data['intent_status'] . ' passed for order id: ' . $order->get_id() );
@@ -901,12 +939,13 @@ class WC_Payments_Order_Service {
 	 *
 	 * @param WC_Order                                                          $order The order.
 	 * @param WC_Payments_API_Payment_Intention|WC_Payments_API_Setup_Intention $intent The payment or setup intention object.
+	 * @param bool                                                              $allow_update_on_success Whether the payment is being changed for a subscription.
 	 *
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function attach_intent_info_to_order( WC_Order $order, $intent ) {
-		// We don't want to allow metadata for a successful payment to be disrupted.
-		if ( Intent_Status::SUCCEEDED === $this->get_intention_status_for_order( $order ) ) {
+	public function attach_intent_info_to_order( WC_Order $order, $intent, $allow_update_on_success = false ) {
+		// We don't want to allow metadata for a successful payment to be disrupted (except for when changing payment method for subscription or renewing subscription).
+		if ( Intent_Status::SUCCEEDED === $this->get_intention_status_for_order( $order ) && ! $allow_update_on_success ) {
 			return;
 		}
 		// first, let's prepare all the metadata needed for refunds, required for status change etc.
@@ -1143,6 +1182,28 @@ class WC_Payments_Order_Service {
 			$this->set_fraud_outcome_status_for_order( $order, Rule::FRAUD_OUTCOME_ALLOW );
 			$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::ALLOW );
 		}
+
+		$this->update_order_status( $order, Order_Status::ON_HOLD );
+		$order->add_order_note( $note );
+		$this->set_intention_status_for_order( $order, $intent_data['intent_status'] );
+	}
+
+	/**
+	 * Updates an order to on-hold status, while adding a note with a link to the transaction.
+	 *
+	 * @param WC_Order $order         Order object.
+	 * @param array    $intent_data   The intent data associated with this order.
+	 *
+	 * @return void
+	 */
+	private function mark_payment_on_hold( $order, $intent_data ) {
+		$note = $this->generate_payment_started_note( $order, $intent_data['intent_id'] );
+		if ( $this->order_note_exists( $order, $note ) ) {
+			return;
+		}
+
+		$fraud_meta_box_type = $this->intent_has_card_payment_type( $intent_data ) ? Fraud_Meta_Box_Type::PAYMENT_STARTED : Fraud_Meta_Box_Type::NOT_CARD;
+		$this->set_fraud_meta_box_type_for_order( $order, $fraud_meta_box_type );
 
 		$this->update_order_status( $order, Order_Status::ON_HOLD );
 		$order->add_order_note( $note );
@@ -1387,23 +1448,84 @@ class WC_Payments_Order_Service {
 	 * @param WC_Order_Refund $wc_refund The WC refund object.
 	 * @param string          $refund_id The refund ID.
 	 * @param string|null     $refund_balance_transaction_id The balance transaction ID of the refund.
+	 * @param bool            $is_pending Created refund status can be either pending or succeeded. Default false, i.e. succeeded.
 	 * @throws Order_Not_Found_Exception
 	 * @throws Exception
 	 */
-	public function add_note_and_metadata_for_refund( WC_Order $order, WC_Order_Refund $wc_refund, string $refund_id, ?string $refund_balance_transaction_id ): void {
-		$note = $this->generate_payment_refunded_note( $wc_refund->get_amount(), $wc_refund->get_currency(), $refund_id, $wc_refund->get_reason(), $order );
+	public function add_note_and_metadata_for_created_refund( WC_Order $order, WC_Order_Refund $wc_refund, string $refund_id, ?string $refund_balance_transaction_id, bool $is_pending = false ): void {
+		$note = $this->generate_payment_created_refund_note( $wc_refund->get_amount(), $wc_refund->get_currency(), $refund_id, $wc_refund->get_reason(), $order, $is_pending );
 
 		if ( ! $this->order_note_exists( $order, $note ) ) {
 			$order->add_order_note( $note );
 		}
 
-		// Set refund metadata.
-		$this->set_wcpay_refund_status_for_order( $order, 'successful' );
+		// Use `successful` to maintain the backward compatibility with the previous WooPayments versions.
+		$this->set_wcpay_refund_status_for_order( $order, $is_pending ? Refund_Status::PENDING : 'successful' );
 		$this->set_wcpay_refund_id_for_refund( $wc_refund, $refund_id );
 		if ( isset( $refund_balance_transaction_id ) ) {
 			$this->set_wcpay_refund_transaction_id_for_order( $wc_refund, $refund_balance_transaction_id );
 		}
 
+		$order->save();
+	}
+
+	/**
+	 * Handle a failed refund by adding a note, updating metadata, and optionally deleting the refund.
+	 *
+	 * @param WC_Order             $order The order to add the note to.
+	 * @param string               $refund_id The ID of the failed refund.
+	 * @param int                  $amount The refund amount in cents.
+	 * @param string               $currency The currency code.
+	 * @param WC_Order_Refund|null $wc_refund The WC refund object to delete if provided.
+	 * @param bool                 $is_cancelled Whether this is a cancellation rather than a failure. Default false.
+	 * @param string|null          $failure_reason The reason for the refund failure. Default null.
+	 * @return void
+	 */
+	public function handle_failed_refund( WC_Order $order, string $refund_id, int $amount, string $currency, ?WC_Order_Refund $wc_refund = null, bool $is_cancelled = false, ?string $failure_reason = null ): void {
+		// Delete the refund if it exists.
+		if ( $wc_refund ) {
+			$wc_refund->delete();
+		}
+
+		$formatted_amount = WC_Payments_Explicit_Price_Formatter::get_explicit_price(
+			wc_price( WC_Payments_Utils::interpret_stripe_amount( $amount, $currency ), [ 'currency' => strtoupper( $currency ) ] ),
+			$order
+		);
+
+		// Handle insufficient balance case first to avoid duplicate notes.
+		if ( Refund_Failure_Reason::INSUFFICIENT_FUNDS === $failure_reason ) {
+			$this->handle_insufficient_balance_for_refund( $order, $amount );
+		} else {
+
+			$note = sprintf(
+				WC_Payments_Utils::esc_interpolated_html(
+					/* translators: %1$s: the refund amount, %2$s: status (cancelled/unsuccessful), %3$s: WooPayments, %4$s: ID of the refund, %5$s: failure message or period */
+					__( 'A refund of %1$s was <strong>%2$s</strong> using %3$s (<code>%4$s</code>)%5$s', 'woocommerce-payments' ),
+					[
+						'strong' => '<strong>',
+						'code'   => '<code>',
+					]
+				),
+				$formatted_amount,
+				$is_cancelled ? __( 'cancelled', 'woocommerce-payments' ) : __( 'unsuccessful', 'woocommerce-payments' ),
+				'WooPayments',
+				$refund_id,
+				$is_cancelled ? '.' : ': ' . Refund_Failure_Reason::get_failure_message( $failure_reason ?? Refund_Failure_Reason::UNKNOWN ),
+			);
+
+			if ( $this->order_note_exists( $order, $note ) ) {
+				return;
+			}
+
+			$order->add_order_note( $note );
+		}
+
+		// If order has been fully refunded, change status to failed.
+		if ( Order_Status::REFUNDED === $order->get_status() ) {
+			$order->update_status( Order_Status::FAILED );
+		}
+
+		$this->set_wcpay_refund_status_for_order( $order, Refund_Status::FAILED );
 		$order->save();
 	}
 
@@ -1813,35 +1935,45 @@ class WC_Payments_Order_Service {
 	/**
 	 * Generates the HTML note for a refunded payment.
 	 *
-	 * @param float    $refunded_amount Amount refunded.
-	 * @param string   $refunded_currency Refund currency.
-	 * @param string   $wcpay_refund_id WCPay Refund ID.
-	 * @param string   $refund_reason Refund reason.
-	 * @param WC_Order $order Order object.
+	 * @param float    $refunded_amount  Amount refunded.
+	 * @param string   $refunded_currency  Refund currency.
+	 * @param string   $wcpay_refund_id  WCPay Refund ID.
+	 * @param string   $refund_reason  Refund reason.
+	 * @param WC_Order $order  Order object.
+	 * @param bool     $is_pending  Created refund status can be either pending or succeeded. Default false, i.e. succeeded.
+	 *
 	 * @return string HTML note.
 	 */
-	private function generate_payment_refunded_note( float $refunded_amount, string $refunded_currency, string $wcpay_refund_id, string $refund_reason, WC_Order $order ): string {
+	private function generate_payment_created_refund_note( float $refunded_amount, string $refunded_currency, string $wcpay_refund_id, string $refund_reason, WC_Order $order, bool $is_pending ): string {
 		$multi_currency_instance = WC_Payments_Multi_Currency();
 		$formatted_price         = WC_Payments_Explicit_Price_Formatter::get_explicit_price( $multi_currency_instance->get_backend_formatted_wc_price( $refunded_amount, [ 'currency' => strtoupper( $refunded_currency ) ] ), $order );
+
+		$status_text = $is_pending ?
+			sprintf(
+				'<a href="https://woocommerce.com/document/woopayments/managing-money/#pending-refunds" target="_blank" rel="noopener noreferrer">%1$s</a>',
+				__( 'is pending', 'woocommerce-payments' )
+			)
+			: __( 'was successfully processed', 'woocommerce-payments' );
 
 		if ( empty( $refund_reason ) ) {
 			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the refund amount, %2: WooPayments, %3: ID of the refund */
-					__( 'A refund of %1$s was successfully processed using %2$s (<code>%3$s</code>).', 'woocommerce-payments' ),
+				/* translators: %1: the refund amount, %2: WooPayments, %3: ID of the refund, %4: status text */
+					__( 'A refund of %1$s %4$s using %2$s (<code>%3$s</code>).', 'woocommerce-payments' ),
 					[
 						'code' => '<code>',
 					]
 				),
 				$formatted_price,
 				'WooPayments',
-				$wcpay_refund_id
+				$wcpay_refund_id,
+				$status_text
 			);
 		} else {
 			$note = sprintf(
 				WC_Payments_Utils::esc_interpolated_html(
-				/* translators: %1: the successfully charged amount, %2: WooPayments, %3: reason, %4: refund id */
-					__( 'A refund of %1$s was successfully processed using %2$s. Reason: %3$s. (<code>%4$s</code>)', 'woocommerce-payments' ),
+				/* translators: %1: the refund amount, %2: WooPayments, %3: reason, %4: refund id, %5: status text */
+					__( 'A refund of %1$s %5$s using %2$s. Reason: %3$s. (<code>%4$s</code>)', 'woocommerce-payments' ),
 					[
 						'code' => '<code>',
 					]
@@ -1849,7 +1981,8 @@ class WC_Payments_Order_Service {
 				$formatted_price,
 				'WooPayments',
 				$refund_reason,
-				$wcpay_refund_id
+				$wcpay_refund_id,
+				$status_text
 			);
 		}
 
@@ -2056,6 +2189,7 @@ class WC_Payments_Order_Service {
 		if ( $intent instanceof WC_Payments_API_Payment_Intention ) {
 			$charge                   = $intent->get_charge();
 			$intent_data['charge_id'] = $charge ? $charge->get_id() : null;
+			$intent_data['error']     = $intent->get_last_payment_error();
 		}
 
 		return $intent_data;
@@ -2139,13 +2273,13 @@ class WC_Payments_Order_Service {
 	 * Handle insufficient balance for refund.
 	 *
 	 * @param WC_Order $order  The order being refunded.
-	 * @param int      $amount The refund amount.
+	 * @param int      $stripe_amount The refund amount.
 	 */
-	public function handle_insufficient_balance_for_refund( WC_Order $order, $amount ) {
+	public function handle_insufficient_balance_for_refund( WC_Order $order, int $stripe_amount ) {
 		$account_country = WC_Payments::get_account_service()->get_account_country();
 
 		$formatted_amount = wc_price(
-			WC_Payments_Utils::interpret_stripe_amount( $amount, $order->get_currency() ),
+			WC_Payments_Utils::interpret_stripe_amount( $stripe_amount, $order->get_currency() ),
 			[ 'currency' => $order->get_currency() ]
 		);
 
@@ -2154,6 +2288,37 @@ class WC_Payments_Order_Service {
 		} else {
 			$order->add_order_note( $this->get_insufficient_balance_note( $formatted_amount ) );
 		}
+	}
+
+	/**
+	 * Attach Multibanco information to the order.
+	 *
+	 * @param WC_Order $order     The order being paid.
+	 * @param string   $reference The Multibanco reference.
+	 * @param string   $entity    The Multibanco entity.
+	 * @param string   $url       The Multibanco URL.
+	 * @param int      $expiry    The Multibanco expiry.
+	 */
+	public function attach_multibanco_info_to_order( WC_Order $order, string $reference, string $entity, string $url, int $expiry ): void {
+		$order->update_meta_data( self::WCPAY_MULTIBANCO_REFERENCE_META_KEY, $reference );
+		$order->update_meta_data( self::WCPAY_MULTIBANCO_ENTITY_META_KEY, $entity );
+		$order->update_meta_data( self::WCPAY_MULTIBANCO_URL_META_KEY, $url );
+		$order->update_meta_data( self::WCPAY_MULTIBANCO_EXPIRY_META_KEY, $expiry );
+	}
+
+	/**
+	 * Get Multibanco information from the order.
+	 *
+	 * @param WC_Order $order The order.
+	 * @return array
+	 */
+	public function get_multibanco_info_from_order( WC_Order $order ): array {
+		return [
+			'reference' => $order->get_meta( self::WCPAY_MULTIBANCO_REFERENCE_META_KEY ),
+			'entity'    => $order->get_meta( self::WCPAY_MULTIBANCO_ENTITY_META_KEY ),
+			'url'       => $order->get_meta( self::WCPAY_MULTIBANCO_URL_META_KEY ),
+			'expiry'    => $order->get_meta( self::WCPAY_MULTIBANCO_EXPIRY_META_KEY ),
+		];
 	}
 
 	/**

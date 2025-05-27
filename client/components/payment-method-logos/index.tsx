@@ -31,6 +31,11 @@ import Przelewy24 from 'assets/images/payment-methods/przelewy24.svg?asset';
 import WeChatPay from 'assets/images/payment-method-icons/wechat-pay.svg?asset';
 import './style.scss';
 
+/**
+ * FLAG: PAYMENT_METHODS_LIST
+ * If you're adding a new payment method that needs to be displayed on the
+ * connect account page, you'll need to add it here.
+ */
 const PaymentMethods = [
 	{
 		name: 'visa',

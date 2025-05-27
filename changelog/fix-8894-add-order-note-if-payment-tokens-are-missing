@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Add an order note when a recurring payment fails or when updating the payment method fails due to a missing or invalid payment token.

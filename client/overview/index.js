@@ -6,8 +6,10 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Notice } from '@wordpress/components';
 import { getQuery } from '@woocommerce/navigation';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { dispatch } from '@wordpress/data';
+import interpolateComponents from '@automattic/interpolate-components';
+import { Link } from '@woocommerce/components';
 
 /**
  * Internal dependencies.
@@ -18,7 +20,6 @@ import ActiveLoanSummary from 'components/active-loan-summary';
 import ConnectionSuccessModal from './modal/connection-success';
 import DepositsOverview from 'components/deposits-overview';
 import ErrorBoundary from 'components/error-boundary';
-import FRTDiscoverabilityBanner from 'components/fraud-risk-tools-banner';
 import JetpackIdcNotice from 'components/jetpack-idc-notice';
 import Page from 'components/page';
 import PaymentActivity from 'wcpay/components/payment-activity';
@@ -32,15 +33,11 @@ import { useDisputes, useGetSettings, useSettings } from 'data';
 import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
 import './style.scss';
 import BannerNotice from 'wcpay/components/banner-notice';
-import useAccountSession from 'wcpay/utils/embedded-components/account-session';
-import appearance from 'wcpay/utils/embedded-components/appearance';
-import {
-	ConnectComponentsProvider,
-	ConnectNotificationBanner,
-} from '@stripe/react-connect-js';
+import { MaybeShowMerchantFeedbackPrompt } from 'wcpay/merchant-feedback-prompt';
 import { recordEvent } from 'wcpay/tracks';
 import StripeSpinner from 'wcpay/components/stripe-spinner';
 import { getAdminUrl } from 'wcpay/utils';
+import { EmbeddedConnectNotificationBanner } from 'wcpay/embedded-components';
 
 const OverviewPageError = () => {
 	const queryParams = getQuery();
@@ -69,7 +66,6 @@ const OverviewPage = () => {
 		accountStatus,
 		accountStatus: { progressiveOnboarding },
 		accountLoans: { has_active_loan: hasActiveLoan },
-		enabledPaymentMethods,
 		featureFlags: { isPaymentOverviewWidgetEnabled },
 		overviewTasksVisibility,
 		wpcomReconnectUrl,
@@ -89,13 +85,13 @@ const OverviewPage = () => {
 		setStripeNotificationsBannerErrorMessage,
 	] = useState( '' );
 	const [
+		stripeNotificationsBannerErrorType,
+		setStripeNotificationsBannerErrorType,
+	] = useState( '' );
+	const [
 		notificationsBannerMessage,
 		setNotificationsBannerMessage,
 	] = React.useState( '' );
-	const stripeConnectInstance = useAccountSession( {
-		setLoadErrorMessage: setStripeNotificationsBannerErrorMessage,
-		appearance,
-	} );
 	const [ stripeComponentLoading, setStripeComponentLoading ] = useState(
 		true
 	);
@@ -122,7 +118,6 @@ const OverviewPage = () => {
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
 		activeDisputes,
-		enabledPaymentMethods,
 		showGetVerifyBankAccountTask,
 	} );
 	const tasks =
@@ -243,6 +238,10 @@ const OverviewPage = () => {
 						explicitDismiss: true,
 					}
 				);
+				// No need to add extra params, we are interested in the total amount of actions here.
+				recordEvent(
+					'wcpay_overview_stripe_notifications_banner_action_completed'
+				);
 			}
 			setNotificationsBannerMessage( '' );
 		}
@@ -262,6 +261,7 @@ const OverviewPage = () => {
 
 	return (
 		<Page isNarrow className="wcpay-overview">
+			<MaybeShowMerchantFeedbackPrompt />
 			<OverviewPageError />
 			<JetpackIdcNotice />
 			{ showLoanOfferError && (
@@ -300,10 +300,39 @@ const OverviewPage = () => {
 					actions={ [] }
 				/>
 			) }
-			<ErrorBoundary>
-				<FRTDiscoverabilityBanner />
-			</ErrorBoundary>
-
+			{ stripeNotificationsBannerErrorMessage &&
+				stripeNotificationsBannerErrorType ===
+					'invalid_request_error' && (
+					<BannerNotice
+						status="warning"
+						icon={ true }
+						isDismissible={ false }
+					>
+						{ interpolateComponents( {
+							mixedString: sprintf(
+								__(
+									// eslint-disable-next-line max-len
+									'Some account related notifications require HTTPS and cannot be displayed. View them on our financial partner’s website. {{seeDetailsLink}}See details{{/seeDetailsLink}}',
+									'woocommerce-payments'
+								)
+							),
+							components: {
+								seeDetailsLink: (
+									// eslint-disable-next-line jsx-a11y/anchor-has-content
+									<Link
+										href={
+											// eslint-disable-next-line max-len
+											'https://woocommerce.com/document/woopayments/startup-guide/#requirements'
+										}
+										target="_blank"
+										rel="noreferrer"
+										type="external"
+									/>
+								),
+							},
+						} ) }
+					</BannerNotice>
+				) }
 			{ ! accountRejected && ! accountUnderReview && (
 				<ErrorBoundary>
 					<Welcome />
@@ -316,39 +345,32 @@ const OverviewPage = () => {
 								</div>
 							</Card>
 						) }
-					{ stripeConnectInstance && (
-						<div
-							className="stripe-notifications-banner-wrapper"
-							style={ {
-								display: notificationsBannerMessage
-									? 'block'
-									: 'none',
-							} }
-						>
-							<ErrorBoundary>
-								<ConnectComponentsProvider
-									connectInstance={ stripeConnectInstance }
-								>
-									<ConnectNotificationBanner
-										onLoadError={ ( loadError ) => {
-											setStripeNotificationsBannerErrorMessage(
-												loadError.error.message ||
-													'Unknown error'
-											);
-											setStripeComponentLoading( false );
-										} }
-										collectionOptions={ {
-											fields: 'eventually_due',
-											futureRequirements: 'omit',
-										} }
-										onNotificationsChange={
-											handleNotificationsChange
-										}
-									/>
-								</ConnectComponentsProvider>
-							</ErrorBoundary>
-						</div>
-					) }
+					<div
+						className="stripe-notifications-banner-wrapper"
+						style={ {
+							display: notificationsBannerMessage
+								? 'block'
+								: 'none',
+						} }
+					>
+						<ErrorBoundary>
+							<EmbeddedConnectNotificationBanner
+								onLoadError={ ( loadError ) => {
+									setStripeNotificationsBannerErrorMessage(
+										loadError.error.message ||
+											'Unknown error'
+									);
+									setStripeNotificationsBannerErrorType(
+										loadError.error.type
+									);
+									setStripeComponentLoading( false );
+								} }
+								onNotificationsChange={
+									handleNotificationsChange
+								}
+							/>
+						</ErrorBoundary>
+					</div>
 
 					{ showTaskList && (
 						<Card>

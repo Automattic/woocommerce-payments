@@ -1,0 +1,39 @@
+name: QIT Security and Malware Tests
+
+on:
+  pull_request
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qit-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+      
+      - name: "Set up repository"
+        uses: ./.github/actions/setup-repo
+      
+      - name: "Build the plugin"
+        id: build_plugin
+        uses: ./.github/actions/build
+
+      - name: Install PHP & Composer
+        run: sudo apt-get update && sudo apt-get install -y php-cli php-zip unzip
+
+      - name: Install QIT CLI
+        run: composer global require woocommerce/qit-cli
+
+      - name: Authenticate QIT
+        run: qit partner:add --user='${{ secrets.QIT_CI_USER }}' --application_password='${{ secrets.QIT_CI_SECRET }}'
+
+      - name: Run Security Test
+        run: qit run:security woocommerce-payments --zip=woocommerce-payments.zip --wait
+
+      - name: Run Malware Test
+        run: qit run:malware woocommerce-payments --zip=woocommerce-payments.zip --wait

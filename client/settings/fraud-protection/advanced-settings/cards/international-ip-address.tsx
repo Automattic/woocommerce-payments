@@ -23,31 +23,6 @@ const InternationalIPAddressRuleCard: React.FC = () => {
 	return (
 		<FraudProtectionRuleCard
 			title={ __( 'International IP Address', 'woocommerce-payments' ) }
-			description={ interpolateComponents( {
-				mixedString: __(
-					'This filter screens for {{ipAddressLink}}IP addresses{{/ipAddressLink}} outside of your ' +
-						'{{supportedCountriesLink}}supported countries{{/supportedCountriesLink}}.',
-					'woocommerce-payments'
-				),
-				components: {
-					ipAddressLink: (
-						<Link
-							target="_blank"
-							type="external"
-							href="https://simple.wikipedia.org/wiki/IP_address"
-						/>
-					),
-					supportedCountriesLink: (
-						// eslint-disable-next-line jsx-a11y/anchor-has-content
-						<a
-							href={ getAdminUrl( {
-								page: 'wc-settings',
-								tab: 'general',
-							} ) }
-						/>
-					),
-				},
-			} ) }
 			id="international-ip-address-card"
 		>
 			{ supportsAllCountries && (
@@ -62,9 +37,34 @@ const InternationalIPAddressRuleCard: React.FC = () => {
 				<FraudProtectionRuleToggle
 					setting={ 'international_ip_address' }
 					label={ __(
-						'Block transactions for international IP addresses',
+						'Enable International IP Address filter',
 						'woocommerce-payments'
 					) }
+					description={ interpolateComponents( {
+						mixedString: __(
+							'This filter screens for {{ipAddressLink}}IP addresses{{/ipAddressLink}} outside of your ' +
+								'{{supportedCountriesLink}}supported countries{{/supportedCountriesLink}}. When enabled the payment will be blocked.',
+							'woocommerce-payments'
+						),
+						components: {
+							ipAddressLink: (
+								<Link
+									target="_blank"
+									type="external"
+									href="https://simple.wikipedia.org/wiki/IP_address"
+								/>
+							),
+							supportedCountriesLink: (
+								// eslint-disable-next-line jsx-a11y/anchor-has-content
+								<a
+									href={ getAdminUrl( {
+										page: 'wc-settings',
+										tab: 'general',
+									} ) }
+								/>
+							),
+						},
+					} ) }
 				></FraudProtectionRuleToggle>
 			) }
 			<FraudProtectionRuleDescription>

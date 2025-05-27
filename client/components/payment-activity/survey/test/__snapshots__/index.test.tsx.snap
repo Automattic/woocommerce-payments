@@ -1,9 +1,53 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`WcPayOverviewSurveyContextProvider test survey initial display 1`] = `
+.emotion-0 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+  border-top: 1px solid;
+  box-sizing: border-box;
+  border-color: rgba(0, 0, 0, 0.1);
+  padding: calc(4px * 4);
+}
+
+.emotion-0>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-0>* {
+  min-width: 0;
+}
+
+.emotion-0:first-of-type {
+  border-top: none;
+}
+
+.emotion-0:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-0:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
 <div>
   <div
-    class="components-flex components-card__footer components-card-footer css-oc4v7j-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-small em57xhy0"
+    class="components-flex components-card__footer components-card-footer emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="CardFooter"
   >
@@ -80,9 +124,123 @@ exports[`WcPayOverviewSurveyContextProvider test survey initial display 1`] = `
 `;
 
 exports[`WcPayOverviewSurveyContextProvider test survey with comments textbox 1`] = `
+.emotion-0 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+  border-top: 1px solid;
+  box-sizing: border-box;
+  border-color: rgba(0, 0, 0, 0.1);
+  padding: calc(4px * 4);
+}
+
+.emotion-0>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-0>* {
+  min-width: 0;
+}
+
+.emotion-0:first-of-type {
+  border-top: none;
+}
+
+.emotion-0:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-0:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  font-size: 13px;
+}
+
+.emotion-4 {
+  margin-bottom: calc(4px * 2);
+}
+
+.components-panel__row .emotion-4 {
+  margin-bottom: inherit;
+}
+
+.emotion-6 {
+  display: inline-block;
+  margin-bottom: calc(4px * 2);
+}
+
+.emotion-8 {
+  width: 100%;
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  padding: 6px 8px;
+  box-shadow: 0 0 0 transparent;
+  -webkit-transition: box-shadow 0.1s linear;
+  transition: box-shadow 0.1s linear;
+  border-radius: 2px;
+  border: 1px solid #757575;
+  font-size: 16px;
+  line-height: normal;
+}
+
+@media (min-width: 600px) {
+  .emotion-8 {
+    font-size: 13px;
+    line-height: normal;
+  }
+}
+
+.emotion-8:focus {
+  border-color: var( --wp-admin-theme-color );
+  box-shadow: 0 0 0 calc( 1.5px - 1px ) var( --wp-admin-theme-color );
+  outline: 2px solid transparent;
+}
+
+.emotion-8::-webkit-input-placeholder {
+  color: rgba(30, 30, 30, 0.62);
+}
+
+.emotion-8::-moz-placeholder {
+  opacity: 1;
+  color: rgba(30, 30, 30, 0.62);
+}
+
+.emotion-8:-ms-input-placeholder {
+  color: rgba(30, 30, 30, 0.62);
+}
+
+.is-dark-theme .emotion-8::-webkit-input-placeholder {
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.is-dark-theme .emotion-8::-moz-placeholder {
+  opacity: 1;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.is-dark-theme .emotion-8:-ms-input-placeholder {
+  color: rgba(255, 255, 255, 0.65);
+}
+
 <div>
   <div
-    class="components-flex components-card__footer components-card-footer css-oc4v7j-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-small em57xhy0"
+    class="components-flex components-card__footer components-card-footer emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="CardFooter"
   >
@@ -180,19 +338,19 @@ exports[`WcPayOverviewSurveyContextProvider test survey with comments textbox 1`
         class="comment_container"
       >
         <div
-          class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
+          class="components-base-control emotion-2 emotion-3"
         >
           <div
-            class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+            class="components-base-control__field emotion-4 emotion-5"
           >
             <label
-              class="components-base-control__label css-eweeby-StyledLabel-labelStyles ej5x27r2"
+              class="components-base-control__label emotion-6 emotion-7"
               for="inspector-textarea-control-1"
             >
               Why do you feel that way? (optional)
             </label>
             <textarea
-              class="components-textarea-control__input css-zika3g-StyledTextarea-inputStyleNeutral-inputStyleFocus-inputControl ebk7yr50"
+              class="components-textarea-control__input emotion-8 emotion-9"
               id="inspector-textarea-control-1"
               rows="4"
             />

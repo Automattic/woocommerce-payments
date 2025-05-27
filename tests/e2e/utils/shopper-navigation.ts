@@ -55,6 +55,10 @@ export const goToCheckoutWCB = async ( page: Page ) => {
 	await page.goto( '/checkout-wcb', {
 		waitUntil: 'load',
 	} );
+	// since the block-based checkout page has a few async things, we need to wait for the UI to be fully rendered.
+	await page
+		.getByRole( 'heading', { name: 'Contact information' } )
+		.waitFor( { state: 'visible' } );
 };
 
 export const goToOrders = async ( page: Page ) => {

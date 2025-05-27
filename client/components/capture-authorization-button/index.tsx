@@ -20,7 +20,9 @@ interface CaptureAuthorizationButtonProps {
 	onClick?: () => void;
 }
 
-const CaptureAuthorizationButton: React.FC< CaptureAuthorizationButtonProps > = ( {
+const CaptureAuthorizationButton: React.FC< React.PropsWithChildren<
+	CaptureAuthorizationButtonProps
+> > = ( {
 	orderId,
 	children,
 	paymentIntentId,

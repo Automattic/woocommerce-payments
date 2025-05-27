@@ -1038,19 +1038,30 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	/**
 	 * Get data needed to initialize the onboarding flow
 	 *
-	 * @param bool   $live_account                Whether to get the onboarding data for a live mode or test mode account.
-	 * @param string $return_url                  URL to redirect to at the end of the flow.
-	 * @param array  $site_data                   Data to track ToS agreement.
-	 * @param array  $user_data                   Data about the user doing the onboarding (location and device).
-	 * @param array  $account_data                Data to prefill the onboarding.
-	 * @param array  $actioned_notes              Actioned WCPay note names to be sent to the onboarding flow.
-	 * @param bool   $progressive                 Whether we need to enable progressive onboarding prefill.
-	 * @param bool   $collect_payout_requirements Whether we need to redirect user to Stripe KYC to complete their payouts data.
+	 * @param bool    $live_account                Whether to get the onboarding data for a live mode or test mode account.
+	 * @param string  $return_url                  URL to redirect to at the end of the flow.
+	 * @param array   $site_data                   Data to track ToS agreement.
+	 * @param array   $user_data                   Data about the user doing the onboarding (location and device).
+	 * @param array   $account_data                Data to prefill the onboarding.
+	 * @param array   $actioned_notes              Actioned WCPay note names to be sent to the onboarding flow.
+	 * @param bool    $progressive                 Whether we need to enable progressive onboarding prefill.
+	 * @param bool    $collect_payout_requirements Whether we need to redirect user to Stripe KYC to complete their payouts data.
+	 * @param ?string $referral_code              Referral code to be used for onboarding.
 	 *
 	 * @return array An array containing the url and state fields.
 	 * @throws API_Exception Exception thrown on request failure.
 	 */
-	public function get_onboarding_data( bool $live_account, string $return_url, array $site_data = [], array $user_data = [], array $account_data = [], array $actioned_notes = [], bool $progressive = false, bool $collect_payout_requirements = false ): array {
+	public function get_onboarding_data(
+		bool $live_account,
+		string $return_url,
+		array $site_data = [],
+		array $user_data = [],
+		array $account_data = [],
+		array $actioned_notes = [],
+		bool $progressive = false,
+		bool $collect_payout_requirements = false,
+		?string $referral_code = null
+	): array {
 		$request_args = apply_filters(
 			'wc_payments_get_onboarding_data_args',
 			[
@@ -1065,24 +1076,35 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			]
 		);
 
+		$request_args['referral_code'] = $referral_code;
+
 		return $this->request( $request_args, self::ONBOARDING_API . '/init', self::POST, true, true );
 	}
 
 	/**
 	 * Initialize the onboarding embedded KYC flow, returning a session object which is used by the frontend.
 	 *
-	 * @param bool  $live_account Whether to create live account.
-	 * @param array $site_data Site data.
-	 * @param array $user_data User data.
-	 * @param array $account_data Account data to be prefilled.
-	 * @param array $actioned_notes Actioned notes to be sent.
-	 * @param bool  $progressive Whether progressive onboarding should be enabled for this onboarding.
+	 * @param bool    $live_account Whether to create live account.
+	 * @param array   $site_data Site data.
+	 * @param array   $user_data User data.
+	 * @param array   $account_data Account data to be prefilled.
+	 * @param array   $actioned_notes Actioned notes to be sent.
+	 * @param bool    $progressive Whether progressive onboarding should be enabled for this onboarding.
+	 * @param ?string $referral_code Referral code to be used for onboarding.
 	 *
 	 * @return array
 	 *
 	 * @throws API_Exception
 	 */
-	public function initialize_onboarding_embedded_kyc( bool $live_account, array $site_data = [], array $user_data = [], array $account_data = [], array $actioned_notes = [], bool $progressive = false ): array {
+	public function initialize_onboarding_embedded_kyc(
+		bool $live_account,
+		array $site_data = [],
+		array $user_data = [],
+		array $account_data = [],
+		array $actioned_notes = [],
+		bool $progressive = false,
+		?string $referral_code = null
+	): array {
 		$request_args = apply_filters(
 			'wc_payments_get_onboarding_data_args',
 			[
@@ -1094,6 +1116,8 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 				'progressive'         => $progressive,
 			]
 		);
+
+		$request_args['referral_code'] = $referral_code;
 
 		$session = $this->request( $request_args, self::ONBOARDING_API . '/embedded', self::POST, true, true );
 
@@ -1270,6 +1294,23 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			$customer_data,
 			self::CUSTOMERS_API . '/' . $customer_id,
 			self::POST
+		);
+	}
+
+	/**
+	 * Fetch a product.
+	 *
+	 * @param string $product_id ID of the product to get.
+	 *
+	 * @return array The product.
+	 *
+	 * @throws API_Exception If fetching the product fails.
+	 */
+	public function get_product_by_id( string $product_id ): array {
+		return $this->request(
+			[],
+			self::PRODUCTS_API . '/' . $product_id,
+			self::GET
 		);
 	}
 
@@ -2081,31 +2122,6 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	}
 
 	/**
-	 * Check if the merchant is eligible for Progressive Onboarding based on self-assessment information.
-	 *
-	 * @param array $business_info   Business information.
-	 * @param array $store_info      Store information.
-	 * @param array $woo_store_stats Optional. Stats about the WooCommerce store to given more context to the PO eligibility decision.
-	 *
-	 * @return array HTTP response on success.
-	 *
-	 * @throws API_Exception - If not connected to server or request failed.
-	 */
-	public function get_onboarding_po_eligible( array $business_info, array $store_info, array $woo_store_stats = [] ): array {
-		return $this->request(
-			[
-				'business'        => $business_info,
-				'store'           => $store_info,
-				'woo_store_stats' => $woo_store_stats,
-			],
-			self::ONBOARDING_API . '/router/po_eligible',
-			self::POST,
-			true,
-			true
-		);
-	}
-
-	/**
 	 * Sends the compatibility data to the server to be saved to the account.
 	 *
 	 * @param array $compatibility_data The array containing the data.
@@ -2234,15 +2250,12 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 
 			$log_request_id = uniqid();
 
-			Logger::log(
-				Logger::format_object(
-					'REQUEST_' . $log_request_id,
-					array_merge(
-						$request_args,
-						[ 'url' => $redacted_url ],
-						null !== $body ? [ 'body' => $redacted_params ] : []
-					)
-				)
+			Logger::info(
+				sprintf( 'API REQUEST (%s): %s %s', $log_request_id, $method, $redacted_url ),
+				[
+					'request' => $request_args,
+					null !== $body ? [ 'body' => $redacted_params ] : [],
+				]
 			);
 
 			try {
@@ -2254,25 +2267,6 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 				$this->check_response_for_errors( $response );
 			} catch ( Connection_Exception $e ) {
 				$last_exception = $e;
-			} catch ( API_Exception $e ) {
-				if ( isset( $params['level3'] ) && 'invalid_request_error' === $e->get_error_code() ) {
-					// phpcs:disable WordPress.PHP.DevelopmentFunctions
-
-					// Log the issue so we could debug it.
-					Logger::error(
-						'Level3 data error: ' . PHP_EOL
-						. print_r( $e->getMessage(), true ) . PHP_EOL
-						. print_r( 'Level 3 data sent: ', true ) . PHP_EOL
-						. print_r( $params['level3'], true )
-					);
-
-					// phpcs:enable WordPress.PHP.DevelopmentFunctions
-
-					// Retry without level3 data.
-					unset( $params['level3'] );
-					return $this->request( $params, $api, $method, $is_site_specific, $use_user_token, $raw_response );
-				}
-				throw $e;
 			}
 
 			if ( $response_code || time() >= $stop_trying_at || $retries_limit === $retries ) {
@@ -2294,52 +2288,14 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			$response_body = $response;
 		}
 
-		Logger::log(
-			Logger::format_object(
-				'RESPONSE_' . $log_request_id,
-				WC_Payments_Utils::redact_array( $response_body, self::API_KEYS_TO_REDACT )
-			)
+		Logger::info(
+			sprintf( 'API RESPONSE (%s): %s %s', $log_request_id, $method, $redacted_url ),
+			[
+				'body' => WC_Payments_Utils::redact_array( $response_body, self::API_KEYS_TO_REDACT ),
+			]
 		);
 
 		return $response_body;
-	}
-
-	/**
-	 * Handles issues with level3 data and retries requests when necessary.
-	 *
-	 * @param array  $params           - Request parameters to send as either JSON or GET string. Defaults to test_mode=1 if either in dev or test mode, 0 otherwise.
-	 * @param string $api              - The API endpoint to call.
-	 * @param string $method           - The HTTP method to make the request with.
-	 * @param bool   $is_site_specific - If true, the site ID will be included in the request url.
-	 *
-	 * @return array
-	 * @throws API_Exception - If the account ID hasn't been set.
-	 */
-	private function request_with_level3_data( $params, $api, $method, $is_site_specific = true ) {
-		// If level3 data is not present for some reason, simply proceed normally.
-		if ( empty( $params['level3'] ) || ! is_array( $params['level3'] ) ) {
-			return $this->request( $params, $api, $method, $is_site_specific );
-		}
-
-		// If level3 data doesn't contain any items, add a zero priced fee to meet Stripe's requirement.
-		if ( ! isset( $params['level3']['line_items'] ) || ! is_array( $params['level3']['line_items'] ) || 0 === count( $params['level3']['line_items'] ) ) {
-			$params['level3']['line_items'] = [
-				[
-					'discount_amount'     => 0,
-					'product_code'        => 'empty-order',
-					'product_description' => 'The order is empty',
-					'quantity'            => 1,
-					'tax_amount'          => 0,
-					'unit_cost'           => 0,
-				],
-			];
-		}
-
-		/**
-		 * In case of invalid request errors, level3 data is now removed,
-		 * and the request is retried within `request()` instead of here.
-		 */
-		return $this->request( $params, $api, $method, $is_site_specific );
 	}
 
 	/**
@@ -2404,7 +2360,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 					$response_code
 				);
 			} elseif ( isset( $response_body['error'] ) ) {
-				$response_body_error_code = $response_body['error']['code'] ?? null;
+				$response_body_error_code = $response_body['error']['code'] ?? $response_body['error']['message_code'] ?? null;
 				$payment_intent_status    = $response_body['error']['payment_intent']['status'] ?? null;
 
 				// We redact the API error message to prevent prompting the merchant to contact Stripe support
@@ -2559,35 +2515,35 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 * Adds order information to the charge object.
 	 *
 	 * @param string $charge_id Charge ID.
-	 * @param array  $object    Object to add order information.
+	 * @param array  $entity    Object to add order information.
 	 *
 	 * @return array
 	 */
-	private function add_order_info_to_charge_object( $charge_id, $object ) {
+	private function add_order_info_to_charge_object( $charge_id, $entity ) {
 		$order  = $this->wcpay_db->order_from_charge_id( $charge_id );
-		$object = $this->add_order_info_to_object( $order, $object );
+		$entity = $this->add_order_info_to_object( $order, $entity );
 
-		return $object;
+		return $entity;
 	}
 
 	/**
 	 * Returns a transaction with order information when it exists.
 	 *
 	 * @param  bool|\WC_Order|\WC_Order_Refund $order  Order object.
-	 * @param  array                           $object Object to add order information.
+	 * @param  array                           $entity Object to add order information.
 	 *
 	 * @return array new object with order information.
 	 */
-	private function add_order_info_to_object( $order, $object ) {
+	private function add_order_info_to_object( $order, $entity ) {
 		// Add order information to the `$transaction`.
 		// If the order couldn't be retrieved, return an empty order.
-		$object['order'] = [];
+		$entity['order'] = [];
 
 		if ( $order ) {
-			$object['order'] = $this->build_order_info( $order );
+			$entity['order'] = $this->build_order_info( $order );
 		}
 
-		return $object;
+		return $entity;
 	}
 
 	/**
@@ -2824,12 +2780,17 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	/**
 	 * Fetch readers charge summary.
 	 *
-	 * @param string $charge_date Charge date for readers.
+	 * @param string      $charge_date    Charge date for readers.
+	 * @param string|null $transaction_id Optional transaction ID to filter results.
 	 *
 	 * @return array reader objects.
 	 */
-	public function get_readers_charge_summary( string $charge_date ): array {
-		return $this->request( [ 'charge_date' => $charge_date ], self::READERS_CHARGE_SUMMARY, self::GET );
+	public function get_readers_charge_summary( string $charge_date, ?string $transaction_id = null ): array {
+		$params = [ 'charge_date' => $charge_date ];
+		if ( $transaction_id ) {
+			$params['transaction_id'] = $transaction_id;
+		}
+		return $this->request( $params, self::READERS_CHARGE_SUMMARY, self::GET );
 	}
 
 	/**

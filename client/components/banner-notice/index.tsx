@@ -6,12 +6,12 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { ComponentProps } from 'react';
 
 import { __ } from '@wordpress/i18n';
 import { useEffect, renderToString } from '@wordpress/element';
 import { speak } from '@wordpress/a11y';
-import classNames from 'classnames';
+import clsx from 'clsx';
 import { Icon, Button } from '@wordpress/components';
 import { check, info } from '@wordpress/icons';
 import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
@@ -101,7 +101,7 @@ interface Props {
 	actions?: ReadonlyArray< {
 		label: string;
 		className?: string;
-		variant?: Button.Props[ 'variant' ];
+		variant?: ComponentProps< typeof Button >[ 'variant' ];
 		url?: string;
 		urlTarget?: string;
 		onClick?: React.MouseEventHandler< HTMLAnchorElement >;
@@ -114,7 +114,7 @@ interface Props {
 	onRemove?: () => void;
 }
 
-const BannerNotice: React.FC< Props > = ( {
+const BannerNotice: React.FC< React.PropsWithChildren< Props > > = ( {
 	icon,
 	children,
 	actions = [],
@@ -127,11 +127,7 @@ const BannerNotice: React.FC< Props > = ( {
 
 	const iconToDisplay = icon === true ? statusIconMap[ status ] : icon;
 
-	const classes = classNames(
-		className,
-		'wcpay-banner-notice',
-		'is-' + status
-	);
+	const classes = clsx( className, 'wcpay-banner-notice', 'is-' + status );
 
 	const handleRemove = () => onRemove?.();
 

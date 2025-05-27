@@ -75,6 +75,16 @@ declare global {
 				declineOnAVSFailure: boolean;
 				declineOnCVCFailure: boolean;
 			};
+			/**
+			 * Campaigns are temporary flags that are used to enable/disable features for a limited time.
+			 */
+			campaigns: {
+				/**
+				 * The flag for the WordPress.org merchant review campaign in 2025.
+				 * Eligibility is determined per-account on transact-platform-server.
+				 */
+				wporgReview2025: boolean;
+			};
 		} >;
 		accountLoans: {
 			has_active_loan: boolean;
@@ -100,11 +110,9 @@ declare global {
 			isComplete: boolean;
 			isEligibilityModalDismissed: boolean;
 		};
-		enabledPaymentMethods: string[];
 		dismissedDuplicateNotices: PaymentMethodToPluginsMap;
 		accountDefaultCurrency: string;
 		isFRTReviewFeatureActive: boolean;
-		frtDiscoverBannerSettings: string;
 		onboardingFieldsData?: {
 			business_types: Country[];
 			mccs_display_tree: MccsDisplayTreeItem[];
@@ -124,11 +132,11 @@ declare global {
 		isWooPayStoreCountryAvailable: boolean;
 		isSubscriptionsPluginActive: boolean;
 		isStripeBillingEligible: boolean;
-		capabilityRequestNotices: Record< string, boolean >;
 		storeName: string;
 		isNextDepositNoticeDismissed: boolean;
 		isInstantDepositNoticeDismissed: boolean;
 		isConnectionSuccessModalDismissed: boolean;
+		isWCReactifySettingsFeatureEnabled: boolean;
 		userLocale: {
 			/**
 			 * The locale of the current user profile, represented as a locale code supported by transact-platform-server.
@@ -160,6 +168,26 @@ declare global {
 		dateFormat: string;
 		timeFormat: string;
 	};
+
+	const wooPaymentsPaymentMethodDefinitions: Record<
+		string,
+		PaymentMethodServerDefinition
+	>;
+
+	const wooPaymentsPaymentMethodsConfig: Record<
+		string,
+		{
+			isReusable: boolean;
+			isBnpl: boolean;
+			title: string;
+			icon: string;
+			darkIcon: string;
+			showSaveOption: boolean;
+			countries: string[];
+			testingInstructions: string;
+			forceNetworkSavedCards: boolean;
+		}
+	>;
 
 	const wc: {
 		wcSettings: typeof wcSettingsModule;
@@ -223,6 +251,11 @@ declare global {
 			userLocale: string;
 		};
 		siteTitle: string;
+		wcVersion: string;
+	};
+
+	const wcpayPluginSettings: {
+		exitSurveyLastShown: string | null;
 	};
 
 	interface WcSettings {
@@ -245,5 +278,7 @@ declare global {
 		wc: typeof wc;
 		wcTracks: typeof wcTracks;
 		wcSettings: typeof wcSettings;
+		wcpayPluginSettings?: typeof wcpayPluginSettings;
+		wooPaymentsPaymentMethodsConfig?: typeof wooPaymentsPaymentMethodsConfig;
 	}
 }

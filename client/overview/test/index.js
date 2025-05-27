@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { render, screen, waitFor } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { select } from '@wordpress/data';
 
 /**
@@ -12,13 +12,19 @@ import { select } from '@wordpress/data';
 import OverviewPage from '../';
 import { getTasks } from '../task-list/tasks';
 import { getQuery } from '@woocommerce/navigation';
-import userEvent from '@testing-library/user-event';
 
 const settingsMock = {
 	enabled_payment_method_ids: [ 'foo', 'bar' ],
 	is_wcpay_enabled: true,
 };
 
+jest.mock( 'wcpay/embedded-components', () => {
+	return {
+		EmbeddedConnectNotificationBanner: () => (
+			<div className="embedded-connec-notification-banner"></div>
+		),
+	};
+} );
 jest.mock( '../task-list/tasks', () => ( { getTasks: jest.fn() } ) );
 jest.mock( '../inbox-notifications', () =>
 	jest.fn().mockImplementation( () => '[inbox-notifications]' )
@@ -67,7 +73,6 @@ jest.mock( 'wcpay/data', () => ( {
 		.mockReturnValue( { overviews: { currencies: [] } } ),
 	useActiveLoanSummary: jest.fn().mockReturnValue( { isLoading: true } ),
 } ) );
-jest.mock( 'wcpay/utils/embedded-components/account-session' );
 
 select.mockReturnValue( {
 	getSettings: () => settingsMock,
@@ -107,11 +112,6 @@ describe( 'Overview page', () => {
 				accountOverviewTaskList: true,
 			},
 			accountLoans: {},
-			frtDiscoverBannerSettings: JSON.stringify( {
-				remindMeCount: 0,
-				remindMeAt: null,
-				dontShowAgain: false,
-			} ),
 		};
 		getQuery.mockReturnValue( {} );
 		getTasks.mockReturnValue( [] );
@@ -253,60 +253,6 @@ describe( 'Overview page', () => {
 		expect(
 			container.querySelector( '.wcpay-loan-summary-header' )
 		).toBeVisible();
-	} );
-
-	it( 'renders FRTDiscoverabilityBanner if store has transacted', () => {
-		global.wcpaySettings = {
-			...global.wcpaySettings,
-			frtDiscoverBannerSettings: JSON.stringify( {
-				dontShowAgain: false,
-			} ),
-			lifetimeTPV: 100,
-		};
-		render( <OverviewPage /> );
-
-		expect(
-			screen.queryByText( 'Enhanced fraud protection for your store' )
-		).toBeInTheDocument();
-	} );
-
-	it( 'does not render FRTDiscoverabilityBanner if store has not transacted', () => {
-		global.wcpaySettings = {
-			...global.wcpaySettings,
-			frtDiscoverBannerSettings: JSON.stringify( {
-				dontShowAgain: false,
-			} ),
-			lifetimeTPV: 0,
-		};
-		render( <OverviewPage /> );
-
-		expect(
-			screen.queryByText( 'Enhanced fraud protection for your store' )
-		).not.toBeInTheDocument();
-	} );
-
-	it( 'dismisses the FRTDiscoverabilityBanner when dismiss button is clicked', async () => {
-		global.wcpaySettings = {
-			...global.wcpaySettings,
-			frtDiscoverBannerSettings: JSON.stringify( {
-				dontShowAgain: false,
-			} ),
-			lifetimeTPV: 100,
-		};
-
-		render( <OverviewPage /> );
-
-		const bannerHeader = screen.getByText(
-			'Enhanced fraud protection for your store'
-		);
-
-		expect( bannerHeader ).toBeInTheDocument();
-
-		userEvent.click( screen.getByText( 'Dismiss' ) );
-
-		await waitFor( () => {
-			expect( bannerHeader ).not.toBeInTheDocument();
-		} );
 	} );
 
 	it( 'displays ProgressiveOnboardingEligibilityModal if showProgressiveOnboardingEligibilityModal is true', () => {

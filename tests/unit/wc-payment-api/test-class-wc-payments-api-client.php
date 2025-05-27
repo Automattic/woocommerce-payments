@@ -305,6 +305,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 						'progressive'                 => false,
 						'collect_payout_requirements' => false,
 						'compatibility_data'          => $this->get_mock_compatibility_data(),
+						'referral_code'               => null,
 					]
 				),
 				true,
@@ -436,42 +437,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	}
 
 
-	/**
-	 * @dataProvider data_request_with_level3_data
-	 */
-	public function test_request_with_level3_data( $input_args, $expected_level3_args ) {
-		$this->mock_http_client
-			->expects( $this->once() )
-			->method( 'remote_request' )
-			->with(
-				$this->anything(),
-				$this->callback(
-					function ( $request_args_json ) use ( $expected_level3_args ) {
-						$request_args = json_decode( $request_args_json, true );
-
-						$this->assertSame( $expected_level3_args, $request_args['level3'] );
-
-						return true;
-					}
-				)
-			)
-			->willReturn(
-				[
-					'body'     => wp_json_encode( [ 'result' => 'success' ] ),
-					'response' => [
-						'code'    => 200,
-						'message' => 'OK',
-					],
-				]
-			);
-
-		PHPUnit_Utils::call_method(
-			$this->payments_api_client,
-			'request_with_level3_data',
-			[ $input_args, 'intentions', 'POST' ]
-		);
-	}
-
 	public function test_create_terminal_location_validation_array() {
 		$this->expectException( API_Exception::class );
 		$this->expectExceptionMessageMatches( '~address.*required~i' );
@@ -566,70 +531,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			$this->payments_api_client->delete_terminal_location( 'tml_XXXXXXX' ),
 			$delete_location_response
 		);
-	}
-
-	/**
-	 * Data provider for test_request_with_level3_data
-	 */
-	public function data_request_with_level3_data() {
-		return [
-			'australian_merchant'               => [
-				[
-					'level3' => [],
-				],
-				[],
-			],
-			'american_merchant_no_line_items'   => [
-				[
-					'level3' => [
-						'merchant_reference' => 'abc123',
-					],
-				],
-				[
-					'merchant_reference' => 'abc123',
-					'line_items'         => [
-						[
-							'discount_amount'     => 0,
-							'product_code'        => 'empty-order',
-							'product_description' => 'The order is empty',
-							'quantity'            => 1,
-							'tax_amount'          => 0,
-							'unit_cost'           => 0,
-						],
-					],
-				],
-			],
-			'american_merchant_with_line_items' => [
-				[
-					'level3' => [
-						'merchant_reference' => 'abc123',
-						'line_items'         => [
-							[
-								'discount_amount'     => 0,
-								'product_code'        => 'free-hug',
-								'product_description' => 'Free hug',
-								'quantity'            => 1,
-								'tax_amount'          => 0,
-								'unit_cost'           => 0,
-							],
-						],
-					],
-				],
-				[
-					'merchant_reference' => 'abc123',
-					'line_items'         => [
-						[
-							'discount_amount'     => 0,
-							'product_code'        => 'free-hug',
-							'product_description' => 'Free hug',
-							'quantity'            => 1,
-							'tax_amount'          => 0,
-							'unit_cost'           => 0,
-						],
-					],
-				],
-			],
-		];
 	}
 
 	/**
@@ -794,8 +695,8 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 * Data provider for test_redacting_params
 	 */
 	public function redacting_params_data() {
-		$string_should_not_include_secret = function ( $string ) {
-			return false === strpos( $string, 'some-secret' );
+		$string_should_not_include_secret = function ( $input ) {
+			return false === strpos( $input, 'some-secret' );
 		};
 
 		return [
@@ -832,30 +733,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$disputes_summary = $this->payments_api_client->get_disputes_summary();
 		$this->assertSame( 12, $disputes_summary['data']['count'] );
 	}
-
-	public function test_get_onboarding_po_eligible() {
-		$this->set_http_mock_response(
-			200,
-			[
-				'result' => 'eligible',
-				'data'   => [],
-			]
-		);
-
-		$po_eligible = $this->payments_api_client->get_onboarding_po_eligible(
-			[
-				'country' => Country_Code::UNITED_STATES,
-				'type'    => 'company',
-				'mcc'     => 'most_popular__software_services',
-			],
-			[
-				'annual_revenue'    => 'less_than_250k',
-				'go_live_timeframe' => 'within_1month',
-			]
-		);
-		$this->assertSame( 'eligible', $po_eligible['result'] );
-	}
-
 
 	public function test_get_woopay_eligibility_success() {
 		$this->set_http_mock_response(
@@ -1155,6 +1032,42 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		// Assert: Confirm we get the expected response.
 		$this->assertSame( 'success', $result['result'] );
 	}
+
+	public function test_get_readers_charge_summary() {
+		$transaction_id = uniqid( 'trx_' );
+		$charge_date    = gmdate( 'Y-m-d', 1634291278 );
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->willReturn(
+				[
+					'body'     => wp_json_encode(
+						[
+							'result' => 'success',
+							'data'   => [
+								(object) [
+									'reader_id' => 'reader_1',
+									'count'     => 1,
+									'status'    => 'active',
+									'fee'       => [
+										'amount'   => 100,
+										'currency' => 'USD',
+									],
+								],
+							],
+						]
+					),
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+				]
+			);
+
+		$result = $this->payments_api_client->get_readers_charge_summary( '2024-01-01', $transaction_id );
+		$this->assertSame( 1, $result['data'][0]['count'] );
+	}
+
 
 	public function test_get_tracking_info() {
 		$expect = [ 'hosting-provider' => 'test' ];

@@ -66,6 +66,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 				2
 			);
 			add_filter( 'rest_pre_dispatch', [ $this, 'tokenized_cart_store_api_address_normalization' ], 10, 3 );
+			add_filter( 'woocommerce_get_country_locale', [ $this, 'modify_country_locale_for_express_checkout' ], 20 );
 		}
 	}
 
@@ -508,29 +509,32 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		}
 
 		// This route is used to get shipping rates.
-		// GooglePay/ApplePay might provide us with "trimmed" zip codes.
+		// Google Pay/Apple Pay might provide us with "trimmed" zip codes.
 		// If that's the case, let's temporarily allow to skip the zip code validation, in order to get some shipping rates.
 		$is_update_customer_route = $request->get_route() === '/wc/store/v1/cart/update-customer';
 		if ( $is_update_customer_route ) {
 			add_filter( 'woocommerce_validate_postcode', [ $this, 'maybe_skip_postcode_validation' ], 10, 3 );
 		}
 
-		$request_data = $request->get_json_params();
-		if ( isset( $request_data['shipping_address'] ) ) {
-			$request->set_param( 'shipping_address', $this->transform_ece_address_state_data( $request_data['shipping_address'] ) );
-			// on the "update customer" route, GooglePay/Apple pay might provide redacted postcode data.
+		if ( isset( $request['shipping_address'] ) && is_array( $request['shipping_address'] ) ) {
+			$shipping_address = $request['shipping_address'];
+			$shipping_address = $this->transform_ece_address_state_data( $shipping_address );
+			// on the "update customer" route, Google Pay/Apple Pay might provide redacted postcode data.
 			// we need to modify the zip code to ensure that shipping zone identification still works.
 			if ( $is_update_customer_route ) {
-				$request->set_param( 'shipping_address', $this->transform_ece_address_postcode_data( $request_data['shipping_address'] ) );
+				$shipping_address = $this->transform_ece_address_postcode_data( $shipping_address );
 			}
+			$request->set_param( 'shipping_address', $shipping_address );
 		}
-		if ( isset( $request_data['billing_address'] ) ) {
-			$request->set_param( 'billing_address', $this->transform_ece_address_state_data( $request_data['billing_address'] ) );
-			// on the "update customer" route, GooglePay/Apple pay might provide redacted postcode data.
+		if ( isset( $request['billing_address'] ) && is_array( $request['billing_address'] ) ) {
+			$billing_address = $request['billing_address'];
+			$billing_address = $this->transform_ece_address_state_data( $billing_address );
+			// on the "update customer" route, Google Pay/Apple Pay might provide redacted postcode data.
 			// we need to modify the zip code to ensure that shipping zone identification still works.
 			if ( $is_update_customer_route ) {
-				$request->set_param( 'billing_address', $this->transform_ece_address_postcode_data( $request_data['billing_address'] ) );
+				$billing_address = $this->transform_ece_address_postcode_data( $billing_address );
 			}
+			$request->set_param( 'billing_address', $billing_address );
 		}
 
 		return $response;
@@ -561,9 +565,9 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 	}
 
 	/**
-	 * Transform a GooglePay/ApplePay state address data fields into values that are valid for WooCommerce.
+	 * Transform a Google Pay/Apple Pay state address data fields into values that are valid for WooCommerce.
 	 *
-	 * @param array $address The address to normalize from the GooglePay/ApplePay request.
+	 * @param array $address The address to normalize from the Google Pay/Apple Pay request.
 	 *
 	 * @return array
 	 */
@@ -583,9 +587,9 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 	}
 
 	/**
-	 * Transform a GooglePay/ApplePay postcode address data fields into values that are valid for WooCommerce.
+	 * Transform a Google Pay/Apple Pay postcode address data fields into values that are valid for WooCommerce.
 	 *
-	 * @param array $address The address to normalize from the GooglePay/ApplePay request.
+	 * @param array $address The address to normalize from the Google Pay/Apple Pay request.
 	 *
 	 * @return array
 	 */
@@ -602,5 +606,52 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		}
 
 		return $address;
+	}
+
+	/**
+	 * Modify country locale settings to handle express checkout address requirements.
+	 *
+	 * @param array $locales Array of country locale settings.
+	 * @return array Modified locales array.
+	 */
+	public function modify_country_locale_for_express_checkout( $locales ) {
+		// Only modify locale settings if this is an express checkout AJAX request.
+		if ( ! $this->is_express_checkout_context() ) {
+			return $locales;
+		}
+
+		include_once WCPAY_ABSPATH . 'includes/constants/class-express-checkout-element-states.php';
+
+		// For countries that don't have state fields, make the state field optional.
+		foreach ( \WCPay\Constants\Express_Checkout_Element_States::COUNTRIES_WITHOUT_STATES as $country_code ) {
+			$locales[ $country_code ]['state']['required'] = false;
+		}
+
+		return $locales;
+	}
+
+	/**
+	 * Check if we're in an express checkout context.
+	 *
+	 * @return bool True if we're in an express checkout context, false otherwise.
+	 */
+	private function is_express_checkout_context() {
+		// Only proceed if this is a Store API request.
+		if ( ! WC_Payments_Utils::is_store_api_request() ) {
+			return false;
+		}
+
+		// Check for the 'X-WooPayments-Tokenized-Cart' header using superglobals.
+		if ( 'true' !== sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART'] ?? '' ) ) ) {
+			return false;
+		}
+
+		// Verify the nonce from the 'X-WooPayments-Tokenized-Cart-Nonce' header using superglobals.
+		$nonce = sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_NONCE'] ?? '' ) );
+		if ( ! wp_verify_nonce( $nonce, 'woopayments_tokenized_cart_nonce' ) ) {
+			return false;
+		}
+
+		return true;
 	}
 }

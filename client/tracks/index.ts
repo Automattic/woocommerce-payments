@@ -6,7 +6,7 @@ import domReady from '@wordpress/dom-ready';
 /**
  * Internal dependencies
  */
-import { Event } from './event';
+import { MerchantEvent, ShopperEvent } from './event';
 import { getConfig } from 'wcpay/utils/checkout';
 import { getExpressCheckoutConfig } from 'wcpay/utils/express-checkout';
 
@@ -23,11 +23,13 @@ export const isEnabled = (): boolean => wcTracks.isEnabled;
  * By default Woo adds `url`, `blog_lang`, `blog_id`, `store_id`, `products_count`, and `wc_version`
  * properties to every event.
  *
- * @param {Event}  eventName         Name of the event.
+ * Event names will be prefixed with 'wcadmin_' when recorded.
+ *
+ * @param {Event}  eventName         Name of the event – don't include the 'wcadmin_' prefix, which will be added when recorded.
  * @param {Object} [eventProperties] Event properties (optional).
  */
 export const recordEvent = (
-	eventName: Event,
+	eventName: MerchantEvent,
 	eventProperties: Record< string, unknown > = {}
 ): void => {
 	// TODO: Load these properties in a new script to ensure it's available everywhere.
@@ -60,11 +62,13 @@ export const recordEvent = (
 /**
  * Records events from buyers (aka shoppers).
  *
- * @param {string}  eventName         Name of the event.
+ * Event names will be prefixed with 'wcpay_' when recorded.
+ *
+ * @param {string}  eventName         Name of the event – don't include the 'wcpay_' prefix, which will be added when recorded.
  * @param {Object}  [eventProperties] Event properties (optional).
  */
 export const recordUserEvent = (
-	eventName: string,
+	eventName: ShopperEvent,
 	eventProperties: Record< string, unknown > = {}
 ): void => {
 	const nonce =

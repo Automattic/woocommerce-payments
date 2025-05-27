@@ -2,8 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { render, waitFor } from '@testing-library/react';
-import apiFetch from '@wordpress/api-fetch';
+import { render } from '@testing-library/react';
 /**
  * Internal dependencies
  */
@@ -38,12 +37,9 @@ jest.mock( 'components/stepper', () => ( {
 
 const checkLinkToContainNecessaryParams = ( link: string ) => {
 	expect( link ).toContain( 'self_assessment' );
-	expect( link ).toContain( 'progressive' );
 	expect( link ).toContain( 'country' );
 	expect( link ).toContain( 'mcc' );
-	expect( link ).toContain( 'annual_revenue' );
 	expect( link ).toContain( 'business_type' );
-	expect( link ).toContain( 'go_live_timeframe' );
 };
 
 describe( 'Loading', () => {
@@ -70,76 +66,14 @@ describe( 'Loading', () => {
 		} );
 	} );
 
-	it( 'renders loading screen and sends request to server in case of po eligible', async () => {
+	it( 'renders loading screen', async () => {
 		data = {
 			country: 'US',
 			business_type: 'individual',
 			mcc: 'most_popular__software_services',
-			annual_revenue: 'less_than_250k',
-			go_live_timeframe: 'within_1month',
 		};
 
-		jest.mocked( apiFetch ).mockResolvedValueOnce( {
-			result: 'eligible',
-			data: [],
-		} );
-
-		render( <Loading name="loading" /> );
-
-		await waitFor( () => {
-			expect( apiFetch ).toHaveBeenCalledWith( {
-				data: {
-					business: {
-						country: 'US',
-						type: 'individual',
-						mcc: 'most_popular__software_services',
-					},
-					store: {
-						annual_revenue: 'less_than_250k',
-						go_live_timeframe: 'within_1month',
-					},
-				},
-				method: 'POST',
-				path: `/wc/v3/payments/onboarding/router/po_eligible`,
-			} );
-		} );
-
-		checkLinkToContainNecessaryParams( window.location.href );
-	} );
-
-	it( 'renders loading screen and sends request to server in case of po not eligible', async () => {
-		data = {
-			country: 'GB',
-			business_type: 'individual',
-			mcc: 'most_popular__software_services',
-			annual_revenue: 'less_than_250k',
-			go_live_timeframe: 'within_1month',
-		};
-
-		jest.mocked( apiFetch ).mockResolvedValueOnce( {
-			result: 'not_eligible',
-			data: [],
-		} );
-
-		render( <Loading name="loading" /> );
-
-		await waitFor( () => {
-			expect( apiFetch ).toHaveBeenCalledWith( {
-				data: {
-					business: {
-						country: 'GB',
-						type: 'individual',
-						mcc: 'most_popular__software_services',
-					},
-					store: {
-						annual_revenue: 'less_than_250k',
-						go_live_timeframe: 'within_1month',
-					},
-				},
-				method: 'POST',
-				path: `/wc/v3/payments/onboarding/router/po_eligible`,
-			} );
-		} );
+		render( <Loading /> );
 
 		checkLinkToContainNecessaryParams( window.location.href );
 	} );

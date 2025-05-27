@@ -49,7 +49,7 @@ const OnboardingKycPage: React.FC = () => {
 		};
 	}, [] );
 	return (
-		<Page className="wcpay-onboarding-prototype">
+		<Page className="wcpay-onboarding-mox">
 			<OnboardingContextProvider>
 				<div className="stepper__nav">
 					<img
@@ -68,7 +68,6 @@ const OnboardingKycPage: React.FC = () => {
 				<div className="stepper__wrapper">
 					<div className="stepper__content">
 						<EmbeddedKyc
-							continueKyc={ true }
 							collectPayoutRequirements={
 								collectPayoutRequirements
 							}

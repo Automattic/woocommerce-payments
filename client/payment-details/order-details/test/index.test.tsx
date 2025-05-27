@@ -19,6 +19,9 @@ import { ApiError } from 'wcpay/types/errors';
 declare const global: {
 	wcSettings: { countries: Record< string, string > };
 	wcpaySettings: {
+		accountStatus: {
+			country: string;
+		};
 		zeroDecimalCurrencies: string[];
 		featureFlags: Record< string, boolean >;
 		connect: {
@@ -109,6 +112,13 @@ jest.mock( '@wordpress/data', () => ( {
 	useSelect: jest.fn(),
 } ) );
 
+jest.mock( '@woocommerce/data', () => ( {
+	useUserPreferences: jest.fn( () => ( {
+		updateUserPreferences: jest.fn(),
+		wc_payments_wporg_review_2025_prompt_dismissed: false,
+	} ) ),
+} ) );
+
 const mockUseChargeFromOrder = useChargeFromOrder as jest.MockedFunction<
 	typeof useChargeFromOrder
 >;
@@ -141,6 +151,9 @@ describe( 'Order details page', () => {
 		};
 
 		global.wcpaySettings = {
+			accountStatus: {
+				country: 'US',
+			},
 			featureFlags: { paymentTimeline: true },
 			zeroDecimalCurrencies: [],
 			connect: { country: 'US' },

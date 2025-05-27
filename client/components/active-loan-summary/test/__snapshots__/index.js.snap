@@ -1,29 +1,173 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Active loan summary renders correctly 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+  border-bottom: 1px solid;
+  box-sizing: border-box;
+  border-color: rgba(0, 0, 0, 0.1);
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-4>* {
+  min-width: 0;
+}
+
+.emotion-4:last-child {
+  border-bottom: none;
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+.emotion-10 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-10:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-10:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-12 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: normal;
+  -webkit-box-align: normal;
+  -ms-flex-align: normal;
+  align-items: normal;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.emotion-12>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-12>* {
+  min-width: 0;
+}
+
+.emotion-14 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
+}
+
+.emotion-30 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-30 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-flex components-card__header components-card-header wcpay-loan-summary-header css-1g5oj2q-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
+        class="components-flex components-card__header components-card-header wcpay-loan-summary-header emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardHeader"
       >
         <div
-          class="components-flex-item css-mw3lhz-View-Item-sx-Base em57xhy0"
+          class="components-flex-item emotion-6 emotion-1"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
           Active loan overview
         </div>
         <div
-          class="components-flex-item css-mw3lhz-View-Item-sx-Base em57xhy0"
+          class="components-flex-item emotion-6 emotion-1"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
@@ -36,17 +180,17 @@ exports[`Active loan summary renders correctly 1`] = `
         </div>
       </div>
       <div
-        class="components-card__body components-card-body wcpay-loan-summary-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-loan-summary-body emotion-10 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
         <div
-          class="components-flex wcpay-loan-summary-row css-s9rxun-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex wcpay-loan-summary-row emotion-12 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
           <div
-            class="components-flex-item components-flex-block wcpay-loan-summary-block css-14wzr73-View-Item-sx-Base-block em57xhy0"
+            class="components-flex-item components-flex-block wcpay-loan-summary-block emotion-14 emotion-1"
             data-wp-c16t="true"
             data-wp-component="FlexBlock"
           >
@@ -67,7 +211,7 @@ exports[`Active loan summary renders correctly 1`] = `
             </div>
           </div>
           <div
-            class="components-flex-item components-flex-block wcpay-loan-summary-block css-14wzr73-View-Item-sx-Base-block em57xhy0"
+            class="components-flex-item components-flex-block wcpay-loan-summary-block emotion-14 emotion-1"
             data-wp-c16t="true"
             data-wp-component="FlexBlock"
           >
@@ -89,12 +233,12 @@ exports[`Active loan summary renders correctly 1`] = `
           </div>
         </div>
         <div
-          class="components-flex wcpay-loan-summary-row is-bottom-row css-s9rxun-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex wcpay-loan-summary-row is-bottom-row emotion-12 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
           <div
-            class="components-flex-item components-flex-block wcpay-loan-summary-block css-14wzr73-View-Item-sx-Base-block em57xhy0"
+            class="components-flex-item components-flex-block wcpay-loan-summary-block emotion-14 emotion-1"
             data-wp-c16t="true"
             data-wp-component="FlexBlock"
           >
@@ -110,7 +254,7 @@ exports[`Active loan summary renders correctly 1`] = `
             </div>
           </div>
           <div
-            class="components-flex-item components-flex-block wcpay-loan-summary-block css-14wzr73-View-Item-sx-Base-block em57xhy0"
+            class="components-flex-item components-flex-block wcpay-loan-summary-block emotion-14 emotion-1"
             data-wp-c16t="true"
             data-wp-component="FlexBlock"
           >
@@ -126,7 +270,7 @@ exports[`Active loan summary renders correctly 1`] = `
             </div>
           </div>
           <div
-            class="components-flex-item components-flex-block wcpay-loan-summary-block css-14wzr73-View-Item-sx-Base-block em57xhy0"
+            class="components-flex-item components-flex-block wcpay-loan-summary-block emotion-14 emotion-1"
             data-wp-c16t="true"
             data-wp-component="FlexBlock"
           >
@@ -142,7 +286,7 @@ exports[`Active loan summary renders correctly 1`] = `
             </div>
           </div>
           <div
-            class="components-flex-item components-flex-block wcpay-loan-summary-block css-14wzr73-View-Item-sx-Base-block em57xhy0"
+            class="components-flex-item components-flex-block wcpay-loan-summary-block emotion-14 emotion-1"
             data-wp-c16t="true"
             data-wp-component="FlexBlock"
           >
@@ -159,7 +303,7 @@ exports[`Active loan summary renders correctly 1`] = `
             </div>
           </div>
           <div
-            class="components-flex-item components-flex-block wcpay-loan-summary-block css-14wzr73-View-Item-sx-Base-block em57xhy0"
+            class="components-flex-item components-flex-block wcpay-loan-summary-block emotion-14 emotion-1"
             data-wp-c16t="true"
             data-wp-component="FlexBlock"
           >
@@ -179,13 +323,13 @@ exports[`Active loan summary renders correctly 1`] = `
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-30 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-30 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -194,22 +338,166 @@ exports[`Active loan summary renders correctly 1`] = `
 `;
 
 exports[`Active loan summary renders correctly when loading 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+  border-bottom: 1px solid;
+  box-sizing: border-box;
+  border-color: rgba(0, 0, 0, 0.1);
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-4>* {
+  min-width: 0;
+}
+
+.emotion-4:last-child {
+  border-bottom: none;
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+.emotion-8 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-8:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-8:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-10 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: normal;
+  -webkit-box-align: normal;
+  -ms-flex-align: normal;
+  align-items: normal;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.emotion-10>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-10>* {
+  min-width: 0;
+}
+
+.emotion-12 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
+}
+
+.emotion-28 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-28 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-flex components-card__header components-card-header wcpay-loan-summary-header css-1g5oj2q-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-medium em57xhy0"
+        class="components-flex components-card__header components-card-header wcpay-loan-summary-header emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardHeader"
       >
         <div
-          class="components-flex-item css-mw3lhz-View-Item-sx-Base em57xhy0"
+          class="components-flex-item emotion-6 emotion-1"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
@@ -217,17 +505,17 @@ exports[`Active loan summary renders correctly when loading 1`] = `
         </div>
       </div>
       <div
-        class="components-card__body components-card-body wcpay-loan-summary-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-loan-summary-body emotion-8 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
         <div
-          class="components-flex wcpay-loan-summary-row css-s9rxun-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex wcpay-loan-summary-row emotion-10 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
           <div
-            class="components-flex-item components-flex-block wcpay-loan-summary-block css-14wzr73-View-Item-sx-Base-block em57xhy0"
+            class="components-flex-item components-flex-block wcpay-loan-summary-block emotion-12 emotion-1"
             data-wp-c16t="true"
             data-wp-component="FlexBlock"
           >
@@ -248,7 +536,7 @@ exports[`Active loan summary renders correctly when loading 1`] = `
             </div>
           </div>
           <div
-            class="components-flex-item components-flex-block wcpay-loan-summary-block css-14wzr73-View-Item-sx-Base-block em57xhy0"
+            class="components-flex-item components-flex-block wcpay-loan-summary-block emotion-12 emotion-1"
             data-wp-c16t="true"
             data-wp-component="FlexBlock"
           >
@@ -270,12 +558,12 @@ exports[`Active loan summary renders correctly when loading 1`] = `
           </div>
         </div>
         <div
-          class="components-flex wcpay-loan-summary-row is-bottom-row css-s9rxun-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex wcpay-loan-summary-row is-bottom-row emotion-10 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
           <div
-            class="components-flex-item components-flex-block wcpay-loan-summary-block css-14wzr73-View-Item-sx-Base-block em57xhy0"
+            class="components-flex-item components-flex-block wcpay-loan-summary-block emotion-12 emotion-1"
             data-wp-c16t="true"
             data-wp-component="FlexBlock"
           >
@@ -296,7 +584,7 @@ exports[`Active loan summary renders correctly when loading 1`] = `
             </div>
           </div>
           <div
-            class="components-flex-item components-flex-block wcpay-loan-summary-block css-14wzr73-View-Item-sx-Base-block em57xhy0"
+            class="components-flex-item components-flex-block wcpay-loan-summary-block emotion-12 emotion-1"
             data-wp-c16t="true"
             data-wp-component="FlexBlock"
           >
@@ -317,7 +605,7 @@ exports[`Active loan summary renders correctly when loading 1`] = `
             </div>
           </div>
           <div
-            class="components-flex-item components-flex-block wcpay-loan-summary-block css-14wzr73-View-Item-sx-Base-block em57xhy0"
+            class="components-flex-item components-flex-block wcpay-loan-summary-block emotion-12 emotion-1"
             data-wp-c16t="true"
             data-wp-component="FlexBlock"
           >
@@ -338,7 +626,7 @@ exports[`Active loan summary renders correctly when loading 1`] = `
             </div>
           </div>
           <div
-            class="components-flex-item components-flex-block wcpay-loan-summary-block css-14wzr73-View-Item-sx-Base-block em57xhy0"
+            class="components-flex-item components-flex-block wcpay-loan-summary-block emotion-12 emotion-1"
             data-wp-c16t="true"
             data-wp-component="FlexBlock"
           >
@@ -359,7 +647,7 @@ exports[`Active loan summary renders correctly when loading 1`] = `
             </div>
           </div>
           <div
-            class="components-flex-item components-flex-block wcpay-loan-summary-block css-14wzr73-View-Item-sx-Base-block em57xhy0"
+            class="components-flex-item components-flex-block wcpay-loan-summary-block emotion-12 emotion-1"
             data-wp-c16t="true"
             data-wp-component="FlexBlock"
           >
@@ -384,13 +672,13 @@ exports[`Active loan summary renders correctly when loading 1`] = `
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-28 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-28 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />

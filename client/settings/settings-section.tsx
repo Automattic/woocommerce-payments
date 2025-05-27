@@ -3,7 +3,7 @@
  * External dependencies
  */
 import React from 'react';
-import classNames from 'classnames';
+import clsx from 'clsx';
 
 /**
  * Internal dependencies
@@ -22,7 +22,7 @@ const SettingsSection: React.FunctionComponent< {
 	className,
 	id,
 } ) => (
-	<div className={ classNames( 'settings-section', className ) } id={ id }>
+	<div className={ clsx( 'settings-section', className ) } id={ id }>
 		<div className="settings-section__details">
 			<Description />
 		</div>

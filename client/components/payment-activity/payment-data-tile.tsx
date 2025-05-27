@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import * as React from 'react';
+import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { Link } from '@woocommerce/components';
 import { recordEvent } from 'wcpay/tracks';
@@ -48,7 +48,9 @@ interface PaymentDataTileProps {
 	tracksSource?: string;
 }
 
-const PaymentDataTile: React.FC< PaymentDataTileProps > = ( {
+const PaymentDataTile: React.FC< React.PropsWithChildren<
+	PaymentDataTileProps
+> > = ( {
 	id,
 	label,
 	currencyCode,

@@ -10,7 +10,7 @@ import moment from 'moment';
 import { Button } from '@wordpress/components';
 import { TableCard, Link } from '@woocommerce/components';
 import { onQueryChange, getQuery, getHistory } from '@woocommerce/navigation';
-import classNames from 'classnames';
+import clsx from 'clsx';
 import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 
 /**
@@ -44,13 +44,14 @@ import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
 import { useReportExport } from 'wcpay/hooks/use-report-export';
 import { useDispatch } from '@wordpress/data';
+import { MaybeShowMerchantFeedbackPrompt } from 'wcpay/merchant-feedback-prompt';
 
 const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 	{
 		key: 'details',
 		label: '',
 		required: true,
-		cellClassName: classNames( 'info-button', {
+		cellClassName: clsx( 'info-button', {
 			'is-sorted': sortColumn === 'amount',
 		} ),
 		isLeftAligned: true,
@@ -263,10 +264,7 @@ export const DisputesList = (): JSX.Element => {
 			status: {
 				value: dispute.status,
 				display: clickable(
-					<DisputeStatusChip
-						status={ dispute.status }
-						dueBy={ dispute.due_by }
-					/>
+					<DisputeStatusChip status={ dispute.status } />
 				),
 			},
 			reason: {
@@ -446,6 +444,7 @@ export const DisputesList = (): JSX.Element => {
 
 	return (
 		<Page>
+			<MaybeShowMerchantFeedbackPrompt />
 			<TestModeNotice currentPage="disputes" />
 			<DisputesFilters storeCurrencies={ storeCurrencies } />
 			<TableCard

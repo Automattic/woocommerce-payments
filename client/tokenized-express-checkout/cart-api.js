@@ -115,6 +115,15 @@ export default class ExpressCheckoutCartApi {
 	}
 
 	/**
+	 * Ensures that the cart is emptied right after making the request.
+	 */
+	deleteAfterRequest() {
+		this.cartRequestHeaders = {
+			'X-WooPayments-Tokenized-Cart-Is-Ephemeral-Cart': '1',
+		};
+	}
+
+	/**
 	 * Update customer data and return the full cart response, or an error.
 	 * See https://github.com/woocommerce/woocommerce/blob/trunk/plugins/woocommerce/src/StoreApi/docs/cart.md#update-customer
 	 *

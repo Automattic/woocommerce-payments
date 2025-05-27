@@ -26,4 +26,13 @@ class Logger_Context {
 	public static function set_value( $key, $value ) {
 		wcpay_get_container()->get( InternalLoggerContext::class )->set_value( $key, $value );
 	}
+
+	/**
+	 * Gets a context.
+	 *
+	 * @return array<string, string>
+	 */
+	public static function get_context() {
+		return wcpay_get_container()->get( InternalLoggerContext::class )->get_context();
+	}
 }

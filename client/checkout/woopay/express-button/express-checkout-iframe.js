@@ -20,8 +20,19 @@ import { getTracksIdentity } from 'tracks';
 import { getAppearance } from 'wcpay/checkout/upe-styles';
 import { getAppearanceType } from 'wcpay/checkout/utils';
 
+const getEmailValue = async ( emailSelector ) => {
+	const isPayForOrder = window.wcpayConfig?.pay_for_order === 'true';
+
+	if ( isPayForOrder ) {
+		return window.wcpayCustomerData?.email;
+	}
+
+	const emailInput = await getTargetElement( emailSelector );
+
+	return emailInput?.value;
+};
+
 export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
-	const woopayEmailInput = await getTargetElement( emailSelector );
 	const tracksUserID = await getTracksIdentity();
 	let userEmail = '';
 
@@ -289,5 +300,7 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 		}
 	}
 
-	openIframe( woopayEmailInput?.value || getConfig( 'woopaySessionEmail' ) );
+	const email = await getEmailValue( emailSelector );
+
+	openIframe( email || getConfig( 'woopaySessionEmail' ) );
 };
