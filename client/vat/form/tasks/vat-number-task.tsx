@@ -27,16 +27,14 @@ import '../style.scss';
  */
 const getVatPrefix = () => {
 	switch ( wcpaySettings.accountStatus.country ) {
+		case 'SG':
 		case 'JP':
-			// Corporate numbers are not prefixed.
+			// Countries do not have tax prefixes.
 			return '';
 		case 'GR':
 			return 'EL ';
 		case 'CH':
 			return 'CHE ';
-		case 'SG':
-			// Singapore UEN/GST numbers don't have a prefix
-			return '';
 		default:
 			return `${ wcpaySettings.accountStatus.country } `;
 	}
