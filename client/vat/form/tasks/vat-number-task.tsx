@@ -81,7 +81,7 @@ const getVatTaxIDRequirementHint = () => {
 			);
 		case 'NZ':
 			return __(
-				'By inputting your IRD Number number you confirm that you are going to account for the GST.',
+				'By inputting your IRD number you confirm that you are going to account for the GST.',
 				'woocommerce-payments'
 			);
 		case 'SG':
