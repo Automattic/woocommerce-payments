@@ -68,6 +68,11 @@ const getVatTaxIDRequirementHint = () => {
 			// Leaving this blank intentionally, as I don't know what the requirements are in JP.
 			// Better to add this info later than clutter the dialog with vague/assumed legal requirements.
 			return __( '', 'woocommerce-payments' );
+		case 'NO':
+			return __(
+				'By inputting your VAT number you confirm you are a Norway VAT registered business and that you are going to account for the VAT',
+				'woocommerce-payments'
+			);
 		default:
 			// Note: this message is a little alarming and doesn't provide guidance for confused merchants.
 			// Logged: https://github.com/Automattic/woocommerce-payments/issues/9161.
