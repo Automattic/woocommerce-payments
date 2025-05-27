@@ -193,7 +193,11 @@ addFilter(
 		} );
 
 		pages.push( {
-			container: DisputeEvidencePage,
+			container: ( { query } ) => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<DisputeEvidencePage query={ query } />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/disputes/challenge',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
