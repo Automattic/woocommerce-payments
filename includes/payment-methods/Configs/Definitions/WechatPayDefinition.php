@@ -16,7 +16,7 @@ use WCPay\PaymentMethods\Configs\Utils\PaymentMethodUtils;
 /**
  * Class implementing the WeChat Pay payment method definition.
  */
-class WeChatPayDefinition implements PaymentMethodDefinitionInterface {
+class WechatPayDefinition implements PaymentMethodDefinitionInterface {
 
 	/**
 	 * Get the internal ID for the payment method
