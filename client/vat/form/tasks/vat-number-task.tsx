@@ -34,6 +34,8 @@ const getVatPrefix = () => {
 		case 'JP':
 			// Corporate numbers are not prefixed.
 			return '';
+		case 'NZ':
+			return '';
 		case 'GR':
 			return 'EL ';
 		case 'CH':
@@ -52,6 +54,8 @@ const getVatTaxIDName = () => {
 			return __( 'ABN', 'woocommerce-payments' );
 		case 'JP':
 			return __( 'Corporate Number', 'woocommerce-payments' );
+		case 'NZ':
+			return __( 'IRD Number', 'woocommerce-payments' );
 		default:
 			return __( 'VAT Number', 'woocommerce-payments' );
 	}
@@ -71,6 +75,11 @@ const getVatTaxIDRequirementHint = () => {
 		case 'NO':
 			return __(
 				'By inputting your VAT number you confirm you are a Norway VAT registered business and that you are going to account for the VAT',
+				'woocommerce-payments'
+			);
+		case 'NZ':
+			return __(
+				'By inputting your IRD Number number you confirm that you are going to account for the GST.',
 				'woocommerce-payments'
 			);
 		default:
@@ -93,7 +102,12 @@ const getVatTaxIDValidationHint = () => {
 			);
 		case 'JP':
 			return __(
-				'A 13 digit number, for example 1234567890123.',
+				'13-digit number, for example 1234567890123.',
+				'woocommerce-payments'
+			);
+		case 'NZ':
+			return __(
+				'8-digit or 9-digit number, for example 99-999-999 or 999-999-999.',
 				'woocommerce-payments'
 			);
 		default:
