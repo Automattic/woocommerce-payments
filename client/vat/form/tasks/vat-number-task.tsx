@@ -27,14 +27,11 @@ import '../style.scss';
  */
 const getVatPrefix = () => {
 	switch ( wcpaySettings.accountStatus.country ) {
-		case 'AU':
-			// AU ABN numbers are not prefixed.
-			// Based on a test lookup at https://abr.business.gov.au/
-			return '';
+		case 'AU': // AU ABN numbers are not prefixed. Based on a test lookup at https://abr.business.gov.au/
 		case 'JP':
-			// Corporate numbers are not prefixed.
-			return '';
 		case 'NZ':
+		case 'SG':
+			// Countries do not have tax prefixes.
 			return '';
 		case 'GR':
 			return 'EL ';
@@ -56,6 +53,11 @@ const getVatTaxIDName = () => {
 			return __( 'Corporate Number', 'woocommerce-payments' );
 		case 'NZ':
 			return __( 'IRD Number', 'woocommerce-payments' );
+		case 'SG':
+			return __(
+				'UEN or GST Registration Number',
+				'woocommerce-payments'
+			);
 		default:
 			return __( 'VAT Number', 'woocommerce-payments' );
 	}
@@ -80,6 +82,11 @@ const getVatTaxIDRequirementHint = () => {
 		case 'NZ':
 			return __(
 				'By inputting your IRD Number number you confirm that you are going to account for the GST.',
+				'woocommerce-payments'
+			);
+		case 'SG':
+			return __(
+				'By providing your UEN or GST number you confirm you are a Singapore GST registered business and you are going to account for the GST.',
 				'woocommerce-payments'
 			);
 		default:
@@ -108,6 +115,11 @@ const getVatTaxIDValidationHint = () => {
 		case 'NZ':
 			return __(
 				'8-digit or 9-digit number, for example 99-999-999 or 999-999-999.',
+				'woocommerce-payments'
+			);
+		case 'SG':
+			return __(
+				'Enter your UEN (e.g., 200312345A) or GST Registration Number (e.g., M91234567X)',
 				'woocommerce-payments'
 			);
 		default:
