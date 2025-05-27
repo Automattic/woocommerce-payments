@@ -358,6 +358,11 @@ class WC_Payments_Onboarding_Service {
 			DAY_IN_SECONDS
 		);
 
+		// If we have a new account, clear the account cache to force a refresh.
+		if ( ! empty( $account_session['account_created'] ) ) {
+			WC_Payments::get_account_service()->clear_cache();
+		}
+
 		return [
 			'clientSecret'   => $account_session['client_secret'] ?? '',
 			'expiresAt'      => $account_session['expires_at'] ?? 0,
@@ -397,6 +402,10 @@ class WC_Payments_Onboarding_Service {
 
 		// Clear the embedded KYC in progress option, since the onboarding flow is now complete.
 		$this->clear_embedded_kyc_in_progress();
+
+		// Clear the account cache to make sure the account data is fresh
+		// and not depend on webhooks that might not have been received yet.
+		WC_Payments::get_account_service()->clear_cache();
 
 		return [
 			'success'           => $success,
