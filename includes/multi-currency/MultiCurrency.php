@@ -436,7 +436,7 @@ class MultiCurrency {
 	 * @return ?array
 	 */
 	public function get_cached_currencies() {
-		$cached_data = $this->cache->get( MultiCurrencyCacheInterface::CURRENCIES_KEY );
+		$cached_data = $this->cache->get( MultiCurrencyCacheInterface::CURRENCIES_KEY, true );
 		// If connection to server cannot be established, or if payment provider is not connected, or if the account is rejected, return expired data or null.
 		if ( ! $this->payments_api_client->is_server_connected() || ! $this->payments_account->is_provider_connected() || $this->payments_account->is_account_rejected() ) {
 			return $cached_data ?? null;

@@ -20,6 +20,7 @@ declare global {
 			paymentTimeline: boolean;
 			isDisputeIssuerEvidenceEnabled: boolean;
 			isPaymentOverviewWidgetEnabled?: boolean;
+			isNewEvidenceSubmissionFormEnabled: boolean;
 			multiCurrency?: boolean;
 		};
 		accountFees: Record< string, any >;
