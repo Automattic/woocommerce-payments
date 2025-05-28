@@ -160,26 +160,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		}
 		$this->created_orders = [];
 
-		// Clear any remaining product lookup table entries to prevent conflicts.
-		global $wpdb;
-
-		// Clear by SKU pattern.
-		$wpdb->query( "DELETE FROM {$wpdb->prefix}wc_product_meta_lookup WHERE sku LIKE 'DUMMY SKU%' OR sku LIKE 'TEST_SKU_%'" );
-
-		// Clear any orphaned lookup entries.
-		$wpdb->query( "DELETE FROM {$wpdb->prefix}wc_product_meta_lookup WHERE product_id NOT IN (SELECT ID FROM {$wpdb->posts} WHERE post_type = 'product')" );
-
-		// Clear WooCommerce caches.
-		if ( function_exists( 'wc_delete_product_transients' ) ) {
-			wc_delete_product_transients();
-		}
-		if ( function_exists( 'wp_cache_flush' ) ) {
-			wp_cache_flush();
-		}
-
-		// Clear any object caches.
-		wp_cache_delete( 'wc_product_meta_lookup', 'woocommerce' );
-
 		WC_Payments::set_customer_service( $this->original_customer_service );
 
 		wp_set_current_user( 0 );
