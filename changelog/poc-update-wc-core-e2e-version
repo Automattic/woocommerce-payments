@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+chore: update minimum WC version for e2e to 9.5.0

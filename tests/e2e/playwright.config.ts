@@ -77,8 +77,7 @@ export default defineConfig( {
 	timeout: 120 * 1000, // Default is 30s, sometimes it is not enough for local tests due to long setup.
 	expect: {
 		toHaveScreenshot: {
-			maxDiffPixelRatio:
-				process.env.E2E_WC_VERSION === '7.7.0' ? 0.035 : 0.025,
+			maxDiffPixelRatio: 0.025,
 		},
 		//=* Increase expect timeout to 10 seconds. See https://playwright.dev/docs/test-timeouts#set-expect-timeout-in-the-config.*/
 		timeout: 20 * 1000,
