@@ -1,4 +1,4 @@
-.stepper-indicator {
+.stepper-panel {
 	display: flex;
 	gap: 24px;
 	align-items: center;
@@ -77,7 +77,7 @@
 }
 
 @media ( max-width: 600px ) {
-	.stepper-indicator {
+	.stepper-panel {
 		gap: 8px;
 		padding: 0 0.5rem;
 		font-size: 12px;

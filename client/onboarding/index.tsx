@@ -4,6 +4,10 @@
 import React, { useEffect } from 'react';
 
 /**
+ * WordPress dependencies
+ */
+
+/**
  * Internal dependencies
  */
 import Page from 'components/page';

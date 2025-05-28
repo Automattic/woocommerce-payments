@@ -8,9 +8,10 @@ import React, { useState } from 'react';
 /**
  * Internal dependencies.
  */
-import { Stepper, StepperIndicator, useStepperContext } from '../stepper';
 import { Button } from 'wcpay/components/wp-components-wrapped';
 import '../style.scss';
+import { Stepper, useStepperContext } from 'components/stepper';
+import { StepperPanel } from 'components/stepper/stepper-panel';
 
 interface StepProps {
 	name: string;
@@ -51,12 +52,12 @@ const StepThree: React.FC< StepProps > = () => {
 		<div>
 			<h2>Review</h2>
 			<p>Review your information before submitting.</p>
-			<button type="button" onClick={ prevStep }>
+			<Button variant="secondary" onClick={ prevStep }>
 				Previous
-			</button>
-			<button type="button" disabled>
+			</Button>
+			<Button variant="primary" disabled>
 				Submit
-			</button>
+			</Button>
 		</div>
 	);
 };
@@ -68,7 +69,7 @@ export default () => {
 
 	return (
 		<>
-			<StepperIndicator steps={ steps } currentStep={ currentStep } />
+			<StepperPanel steps={ steps } currentStep={ currentStep } />
 			<Stepper
 				initialStep={ steps[ currentStep ] }
 				onStepChange={ ( step ) =>

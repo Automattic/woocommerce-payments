@@ -1,8 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
-import { StepperContext, ContextValue } from './utils';
+import React, { useContext, useState } from 'react';
 
 /**
  * WordPress dependencies
@@ -11,14 +10,12 @@ import { StepperContext, ContextValue } from './utils';
 /**
  * Internal dependencies
  */
-
-interface UseContextValueParams {
-	steps: Record< string, React.ReactElement >;
-	initialStep?: string;
-	onStepChange?: ( step: string ) => void;
-	onComplete?: () => void;
-	onExit?: () => void;
-}
+import { StepperContext } from './stepper-context';
+import {
+	StepperContextValue,
+	UseContextValueParams,
+	StepperProps,
+} from './stepper-types';
 
 const useContextValue = ( {
 	steps,
@@ -26,7 +23,7 @@ const useContextValue = ( {
 	onStepChange,
 	onComplete,
 	onExit,
-}: UseContextValueParams ): ContextValue => {
+}: UseContextValueParams ): StepperContextValue => {
 	const keys = Object.keys( steps );
 	const [ currentStep, setCurrentStep ] = useState(
 		initialStep ?? keys[ 0 ]
@@ -69,15 +66,7 @@ const useContextValue = ( {
 	};
 };
 
-export interface StepperProps {
-	children: React.ReactElement< { name: string } >[];
-	initialStep?: string;
-	onStepChange?: ( step: string ) => void;
-	onComplete?: () => void;
-	onExit?: () => void;
-}
-
-const childrenToSteps = ( children: StepperProps[ 'children' ] ) => {
+function childrenToSteps( children: StepperProps[ 'children' ] ) {
 	return children.reduce(
 		( acc: Record< string, React.ReactElement >, child, index ) => {
 			if ( React.isValidElement( child ) ) {
@@ -87,9 +76,12 @@ const childrenToSteps = ( children: StepperProps[ 'children' ] ) => {
 		},
 		{}
 	);
-};
+}
 
-export const Stepper: React.FC< StepperProps > = ( { children, ...rest } ) => {
+export const Stepper: React.FC< React.PropsWithChildren< StepperProps > > = ( {
+	children,
+	...rest
+} ) => {
 	const steps = childrenToSteps( children );
 	const value = useContextValue( {
 		steps,
@@ -104,4 +96,10 @@ export const Stepper: React.FC< StepperProps > = ( { children, ...rest } ) => {
 	);
 };
 
-export type { ContextValue };
+export const useStepperContext = (): StepperContextValue => {
+	const context = useContext( StepperContext );
+	if ( ! context ) {
+		throw new Error( 'useStepperContext() must be used within <Stepper>' );
+	}
+	return context;
+};

@@ -20,11 +20,11 @@ interface StepperIndicatorProps {
 	currentStep: number;
 }
 
-export const StepperIndicator: React.FC< StepperIndicatorProps > = ( {
+export const StepperPanel: React.FC< StepperIndicatorProps > = ( {
 	steps,
 	currentStep,
 } ) => (
-	<div className="stepper-indicator">
+	<div className="stepper-panel">
 		{ steps.map( ( label, idx ) => {
 			const isComplete = idx < currentStep;
 			const isActive = idx === currentStep;
