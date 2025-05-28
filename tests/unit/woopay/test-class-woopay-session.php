@@ -35,8 +35,128 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	 */
 	private $original_customer_service;
 
+	/**
+	 * Orders created during tests that need cleanup.
+	 *
+	 * @var array
+	 */
+	private $created_orders = [];
+
+	/**
+	 * Helper method to create a unique product for this test.
+	 *
+	 * @return WC_Product_Simple The created product.
+	 */
+	private function create_unique_test_product() {
+		global $wpdb;
+
+		$test_name = $this->getName();
+		$unique_id = uniqid();
+		$timestamp = microtime( true );
+
+		// Create product with completely unique SKU including timestamp.
+		$sku = "TEST_SKU_{$test_name}_{$unique_id}_{$timestamp}";
+
+		// First, ensure this exact SKU doesn't exist in lookup table.
+		$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}wc_product_meta_lookup WHERE sku = %s", $sku ) );
+
+		$product = new WC_Product_Simple();
+		$product->set_props(
+			[
+				'name'          => "Test Product {$test_name} {$unique_id}",
+				'regular_price' => 10,
+				'price'         => 10,
+				'sku'           => $sku,
+				'manage_stock'  => false,
+				'tax_status'    => 'taxable',
+				'downloadable'  => false,
+				'virtual'       => false,
+				'stock_status'  => 'instock',
+				'weight'        => '1.1',
+			]
+		);
+
+		try {
+			$product->save();
+			return wc_get_product( $product->get_id() );
+		} catch ( Exception $e ) {
+			// If save fails due to lookup table conflict, try to clean up and retry.
+			$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}wc_product_meta_lookup WHERE sku = %s", $sku ) );
+
+			// Add extra randomness and try again.
+			$sku = "TEST_SKU_{$test_name}_{$unique_id}_{$timestamp}_" . wp_rand( 1000, 9999 );
+			$product->set_sku( $sku );
+			$product->save();
+			return wc_get_product( $product->get_id() );
+		}
+	}
+
+	/**
+	 * Helper method to create an order and track it for cleanup.
+	 *
+	 * @param int $customer_id The customer ID.
+	 * @param int $total The order total.
+	 * @param WC_Product $product The product.
+	 * @return WC_Order The created order.
+	 */
+	private function create_and_track_order( $customer_id = 1, $total = 50, $product = null ) {
+		if ( ! $product ) {
+			$product = $this->create_unique_test_product();
+		}
+		$order                  = \WC_Helper_Order::create_order( $customer_id, $total, $product );
+		$this->created_orders[] = $order->get_id();
+		return $order;
+	}
+
 	public function set_up() {
 		parent::set_up();
+
+		// Clear any existing test products and their lookup table entries.
+		global $wpdb;
+
+		// Get all test product IDs first.
+		$test_product_ids = $wpdb->get_col(
+			"SELECT DISTINCT p.ID FROM {$wpdb->posts} p
+			 LEFT JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id
+			 WHERE p.post_type = 'product'
+			 AND pm.meta_key = '_sku'
+			 AND (pm.meta_value LIKE 'DUMMY SKU%' OR pm.meta_value LIKE 'TEST_SKU_%')"
+		);
+
+		// Clear lookup table entries by product_id first.
+		if ( ! empty( $test_product_ids ) ) {
+			$placeholders = implode( ',', array_fill( 0, count( $test_product_ids ), '%d' ) );
+			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+			$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}wc_product_meta_lookup WHERE product_id IN ($placeholders)", $test_product_ids ) );
+		}
+
+		// Also clear by SKU pattern.
+		$wpdb->query( "DELETE FROM {$wpdb->prefix}wc_product_meta_lookup WHERE sku LIKE 'DUMMY SKU%' OR sku LIKE 'TEST_SKU_%'" );
+
+		// Force delete all test products.
+		foreach ( $test_product_ids as $product_id ) {
+			wp_delete_post( $product_id, true );
+		}
+
+		// Clear any remaining orphaned lookup entries (aggressive cleanup).
+		$wpdb->query( "DELETE FROM {$wpdb->prefix}wc_product_meta_lookup WHERE product_id NOT IN (SELECT ID FROM {$wpdb->posts} WHERE post_type = 'product')" );
+
+		// Reset post auto-increment to avoid ID conflicts.
+		$max_id = $wpdb->get_var( "SELECT MAX(ID) FROM {$wpdb->posts}" );
+		if ( $max_id ) {
+			$wpdb->query( $wpdb->prepare( "ALTER TABLE {$wpdb->posts} AUTO_INCREMENT = %d", $max_id + 1 ) );
+		}
+
+		// Clear WooCommerce caches.
+		if ( function_exists( 'wc_delete_product_transients' ) ) {
+			wc_delete_product_transients();
+		}
+		if ( function_exists( 'wp_cache_flush' ) ) {
+			wp_cache_flush();
+		}
+
+		// Clear any object caches.
+		wp_cache_delete( 'wc_product_meta_lookup', 'woocommerce' );
 
 		// Mock the main class's cache service.
 		$this->_cache     = WC_Payments::get_database_cache();
@@ -58,6 +178,34 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function tear_down() {
+		// Clean up any orders created during tests.
+		foreach ( $this->created_orders as $order_id ) {
+			if ( $order_id ) {
+				WC_Helper_Order::delete_order( $order_id );
+			}
+		}
+		$this->created_orders = [];
+
+		// Clear any remaining product lookup table entries to prevent conflicts.
+		global $wpdb;
+
+		// Clear by SKU pattern.
+		$wpdb->query( "DELETE FROM {$wpdb->prefix}wc_product_meta_lookup WHERE sku LIKE 'DUMMY SKU%' OR sku LIKE 'TEST_SKU_%'" );
+
+		// Clear any orphaned lookup entries.
+		$wpdb->query( "DELETE FROM {$wpdb->prefix}wc_product_meta_lookup WHERE product_id NOT IN (SELECT ID FROM {$wpdb->posts} WHERE post_type = 'product')" );
+
+		// Clear WooCommerce caches.
+		if ( function_exists( 'wc_delete_product_transients' ) ) {
+			wc_delete_product_transients();
+		}
+		if ( function_exists( 'wp_cache_flush' ) ) {
+			wp_cache_flush();
+		}
+
+		// Clear any object caches.
+		wp_cache_delete( 'wc_product_meta_lookup', 'woocommerce' );
+
 		WC_Payments::set_customer_service( $this->original_customer_service );
 
 		wp_set_current_user( 0 );
@@ -157,6 +305,9 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( WooPay_Session::get_user_id_from_cart_token(), $verified_user->ID );
 	}
 
+	/**
+	 * @group woopay-session
+	 */
 	public function test_woopay_order_payment_status_changed_with_verified_user_store_api_token_without_adapted_extensions() {
 		$verified_user = self::factory()->user->create_and_get();
 
@@ -166,16 +317,19 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$_SERVER['HTTP_CART_TOKEN']                      = $guest_cart_token;
 		$_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'] = $verified_user->user_email;
 
-		$order = \WC_Helper_Order::create_order( $verified_user->ID );
+		$order = $this->create_and_track_order( $verified_user->ID );
 		$order->set_billing_email( $verified_user->user_email );
 		$order->save();
-		WooPay_Session::woopay_order_payment_status_changed( $order->get_Id() );
+		WooPay_Session::woopay_order_payment_status_changed( $order->get_id() );
 
 		$updated_order = wc_get_order( $order->get_id() );
 		$this->assertEmpty( $updated_order->get_meta( 'woopay_merchant_customer_id' ) );
 		$this->assertEquals( $updated_order->get_customer_id(), $verified_user->ID );
 	}
 
+	/**
+	 * @group woopay-session
+	 */
 	public function test_woopay_order_payment_status_changed_with_verified_user_store_api_token_with_non_matching_order_billing_email() {
 		$verified_user = self::factory()->user->create_and_get();
 
@@ -187,7 +341,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 
 		$this->setup_adapted_extensions();
 
-		$order = \WC_Helper_Order::create_order( $verified_user->ID );
+		$order = $this->create_and_track_order( $verified_user->ID );
 		$order->set_billing_email( 'test@example.com' );
 		$order->save();
 		WooPay_Session::woopay_order_payment_status_changed( $order->get_id() );
@@ -208,7 +362,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 
 		$this->setup_adapted_extensions();
 
-		$order = \WC_Helper_Order::create_order( $verified_user->ID );
+		$order = $this->create_and_track_order( $verified_user->ID );
 		$order->set_billing_email( $verified_user->user_email );
 		$order->save();
 		WooPay_Session::woopay_order_payment_status_changed( $order->get_id() );

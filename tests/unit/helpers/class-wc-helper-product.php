@@ -38,7 +38,7 @@ class WC_Helper_Product {
 				'name'          => 'Dummy Product',
 				'regular_price' => 10,
 				'price'         => 10,
-				'sku'           => 'DUMMY SKU',
+				'sku'           => 'DUMMY SKU ' . uniqid(),
 				'manage_stock'  => false,
 				'tax_status'    => 'taxable',
 				'downloadable'  => false,
@@ -68,7 +68,7 @@ class WC_Helper_Product {
 			[
 				'name'          => 'Dummy External Product',
 				'regular_price' => 10,
-				'sku'           => 'DUMMY EXTERNAL SKU',
+				'sku'           => 'DUMMY EXTERNAL SKU ' . uniqid(),
 				'product_url'   => 'http://woocommerce.com',
 				'button_text'   => 'Buy external product',
 			]
@@ -91,7 +91,7 @@ class WC_Helper_Product {
 		$product->set_props(
 			[
 				'name' => 'Dummy Grouped Product',
-				'sku'  => 'DUMMY GROUPED SKU',
+				'sku'  => 'DUMMY GROUPED SKU ' . uniqid(),
 			]
 		);
 		$product->set_children( [ $simple_product_1->get_id(), $simple_product_2->get_id() ] );
@@ -112,7 +112,7 @@ class WC_Helper_Product {
 		$product->set_props(
 			[
 				'name' => 'Dummy Variable Product',
-				'sku'  => 'DUMMY VARIABLE SKU',
+				'sku'  => 'DUMMY VARIABLE SKU ' . uniqid(),
 			]
 		);
 
@@ -155,7 +155,7 @@ class WC_Helper_Product {
 		$variation_1->set_props(
 			[
 				'parent_id'     => $product->get_id(),
-				'sku'           => 'DUMMY SKU VARIABLE SMALL',
+				'sku'           => 'DUMMY SKU VARIABLE SMALL ' . uniqid(),
 				'regular_price' => 10,
 			]
 		);
@@ -166,7 +166,7 @@ class WC_Helper_Product {
 		$variation_2->set_props(
 			[
 				'parent_id'     => $product->get_id(),
-				'sku'           => 'DUMMY SKU VARIABLE LARGE',
+				'sku'           => 'DUMMY SKU VARIABLE LARGE ' . uniqid(),
 				'regular_price' => 15,
 			]
 		);
@@ -177,7 +177,7 @@ class WC_Helper_Product {
 		$variation_3->set_props(
 			[
 				'parent_id'     => $product->get_id(),
-				'sku'           => 'DUMMY SKU VARIABLE HUGE RED 0',
+				'sku'           => 'DUMMY SKU VARIABLE HUGE RED 0 ' . uniqid(),
 				'regular_price' => 16,
 			]
 		);
@@ -194,7 +194,7 @@ class WC_Helper_Product {
 		$variation_4->set_props(
 			[
 				'parent_id'     => $product->get_id(),
-				'sku'           => 'DUMMY SKU VARIABLE HUGE RED 2',
+				'sku'           => 'DUMMY SKU VARIABLE HUGE RED 2 ' . uniqid(),
 				'regular_price' => 17,
 			]
 		);
