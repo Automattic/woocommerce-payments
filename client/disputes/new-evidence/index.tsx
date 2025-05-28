@@ -51,18 +51,19 @@ const StepThree: React.FC< StepProps > = () => {
 		<div>
 			<h2>Review</h2>
 			<p>Review your information before submitting.</p>
-			<Button variant="secondary" onClick={ prevStep }>
+			<button type="button" onClick={ prevStep }>
 				Previous
-			</Button>
-			<Button variant="primary" disabled>
+			</button>
+			<button type="button" disabled>
 				Submit
-			</Button>
+			</button>
 		</div>
 	);
 };
 
+const steps = [ 'General evidence', 'Shipping information', 'Review' ];
+
 export default () => {
-	const steps = [ 'General evidence', 'Shipping information', 'Review' ];
 	const [ currentStep, setCurrentStep ] = useState( 0 );
 
 	return (
