@@ -13,6 +13,7 @@ import { check } from '@wordpress/icons';
  */
 import { Icon } from 'wcpay/components/wp-components-wrapped';
 import './style.scss';
+import clsx from 'clsx';
 
 interface StepperIndicatorProps {
 	steps: string[];
@@ -30,9 +31,10 @@ export const StepperIndicator: React.FC< StepperIndicatorProps > = ( {
 			return (
 				<div
 					key={ label }
-					className={ `stepper-step${ isActive ? ' active' : '' }${
-						isComplete ? ' complete' : ''
-					}` }
+					className={ clsx( 'stepper-step', {
+						active: isActive,
+						complete: isComplete,
+					} ) }
 				>
 					<div className="stepper-circle">
 						{ isComplete ? (
