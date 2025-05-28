@@ -48,16 +48,15 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	 * @return WC_Product_Simple The created product.
 	 */
 	private function create_unique_test_product() {
-		$test_name = $this->getName();
 		$unique_id = uniqid();
 
 		$product = new WC_Product_Simple();
 		$product->set_props(
 			[
-				'name'          => "Test Product {$test_name} {$unique_id}",
+				'name'          => "Test Product {$unique_id}",
 				'regular_price' => 10,
 				'price'         => 10,
-				'sku'           => "TEST_SKU_{$test_name}_{$unique_id}",
+				'sku'           => "TEST_SKU_{$unique_id}",
 				'manage_stock'  => false,
 				'tax_status'    => 'taxable',
 				'downloadable'  => false,
