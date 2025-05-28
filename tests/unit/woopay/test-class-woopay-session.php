@@ -305,9 +305,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( WooPay_Session::get_user_id_from_cart_token(), $verified_user->ID );
 	}
 
-	/**
-	 * @group woopay-session
-	 */
 	public function test_woopay_order_payment_status_changed_with_verified_user_store_api_token_without_adapted_extensions() {
 		$verified_user = self::factory()->user->create_and_get();
 
@@ -327,9 +324,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $updated_order->get_customer_id(), $verified_user->ID );
 	}
 
-	/**
-	 * @group woopay-session
-	 */
 	public function test_woopay_order_payment_status_changed_with_verified_user_store_api_token_with_non_matching_order_billing_email() {
 		$verified_user = self::factory()->user->create_and_get();
 
