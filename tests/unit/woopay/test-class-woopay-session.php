@@ -38,37 +38,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
-		// Clear any existing test products and their lookup table entries.
-		global $wpdb;
-
-		// Get all test product IDs first.
-		$test_product_ids = $wpdb->get_col(
-			"SELECT DISTINCT p.ID FROM {$wpdb->posts} p
-			 LEFT JOIN {$wpdb->postmeta} pm ON p.ID = pm.post_id
-			 WHERE p.post_type = 'product'
-			 AND pm.meta_key = '_sku'
-			 AND (pm.meta_value LIKE 'DUMMY SKU%' OR pm.meta_value LIKE 'TEST_SKU_%')"
-		);
-
-		// Force delete all test products.
-		foreach ( $test_product_ids as $product_id ) {
-			wp_delete_post( $product_id, true );
-		}
-
-		// Clear any remaining orphaned lookup entries (aggressive cleanup).
-		$wpdb->query( "DELETE FROM {$wpdb->prefix}wc_product_meta_lookup WHERE product_id NOT IN (SELECT ID FROM {$wpdb->posts} WHERE post_type = 'product')" );
-
-		// Clear WooCommerce caches.
-		if ( function_exists( 'wc_delete_product_transients' ) ) {
-			wc_delete_product_transients();
-		}
-		if ( function_exists( 'wp_cache_flush' ) ) {
-			wp_cache_flush();
-		}
-
-		// Clear any object caches.
-		wp_cache_delete( 'wc_product_meta_lookup', 'woocommerce' );
-
 		// Mock the main class's cache service.
 		$this->_cache     = WC_Payments::get_database_cache();
 		$this->mock_cache = $this->createMock( WCPay\Database_Cache::class );
