@@ -1,7 +1,8 @@
 /**
  * External dependencies
  */
-import React, { createContext, useContext, useState } from 'react';
+import React, { useState } from 'react';
+import { StepperContext, ContextValue } from './utils';
 
 /**
  * WordPress dependencies
@@ -25,7 +26,7 @@ const useContextValue = ( {
 	onStepChange,
 	onComplete,
 	onExit,
-}: UseContextValueParams ) => {
+}: UseContextValueParams ): ContextValue => {
 	const keys = Object.keys( steps );
 	const [ currentStep, setCurrentStep ] = useState(
 		initialStep ?? keys[ 0 ]
@@ -68,11 +69,7 @@ const useContextValue = ( {
 	};
 };
 
-type ContextValue = ReturnType< typeof useContextValue >;
-
-const StepperContext = createContext< ContextValue | null >( null );
-
-interface StepperProps {
+export interface StepperProps {
 	children: React.ReactElement< { name: string } >[];
 	initialStep?: string;
 	onStepChange?: ( step: string ) => void;
@@ -107,10 +104,4 @@ export const Stepper: React.FC< StepperProps > = ( { children, ...rest } ) => {
 	);
 };
 
-export const useStepperContext = (): ContextValue => {
-	const context = useContext( StepperContext );
-	if ( ! context ) {
-		throw new Error( 'useStepperContext() must be used within <Stepper>' );
-	}
-	return context;
-};
+export type { ContextValue };

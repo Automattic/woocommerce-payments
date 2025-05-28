@@ -10,5 +10,6 @@
  * WordPress dependencies
  */
 
-export { Stepper, useStepperContext } from './Stepper';
-export { StepperIndicator } from './StepperIndicator';
+export { Stepper } from './stepper';
+export { StepperIndicator } from './stepper-indicator';
+export { StepperContext, useStepperContext } from './utils';
