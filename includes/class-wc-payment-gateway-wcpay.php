@@ -1776,6 +1776,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$this->maybe_add_customer_notification_note( $order, $processing );
 
+		// ensuring the payment method title is set before any early return paths to avoid incomplete order data.
 		if ( empty( $_POST['payment_request_type'] ) && empty( $_POST['express_payment_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			// Extract payment method details for setting the payment method title.
 			if ( $payment_needed ) {
