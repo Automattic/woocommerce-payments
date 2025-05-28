@@ -1,9 +1,18 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Transaction status pill should render the allow pill correctly 1`] = `
+.emotion-0 {
+  color: #1e1e1e;
+  line-height: 1.2;
+  margin: 0;
+  font-size: calc((12 / 13) * 13px);
+  font-weight: normal;
+  line-height: 16px;
+}
+
 <div>
   <span
-    class="components-truncate components-text woocommerce-pill wcpay-pill__success css-1g4vivm-View-Text-sx-Base em57xhy0"
+    class="components-truncate components-text woocommerce-pill wcpay-pill__success emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Text"
   >
@@ -13,9 +22,18 @@ exports[`Transaction status pill should render the allow pill correctly 1`] = `
 `;
 
 exports[`Transaction status pill should render the block pill correctly 1`] = `
+.emotion-0 {
+  color: #1e1e1e;
+  line-height: 1.2;
+  margin: 0;
+  font-size: calc((12 / 13) * 13px);
+  font-weight: normal;
+  line-height: 16px;
+}
+
 <div>
   <span
-    class="components-truncate components-text woocommerce-pill wcpay-pill__danger css-1g4vivm-View-Text-sx-Base em57xhy0"
+    class="components-truncate components-text woocommerce-pill wcpay-pill__danger emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Text"
   >
@@ -25,9 +43,18 @@ exports[`Transaction status pill should render the block pill correctly 1`] = `
 `;
 
 exports[`Transaction status pill should render the review pill correctly 1`] = `
+.emotion-0 {
+  color: #1e1e1e;
+  line-height: 1.2;
+  margin: 0;
+  font-size: calc((12 / 13) * 13px);
+  font-weight: normal;
+  line-height: 16px;
+}
+
 <div>
   <span
-    class="components-truncate components-text woocommerce-pill wcpay-pill__alert css-1g4vivm-View-Text-sx-Base em57xhy0"
+    class="components-truncate components-text woocommerce-pill wcpay-pill__alert emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Text"
   >
@@ -37,9 +64,18 @@ exports[`Transaction status pill should render the review pill correctly 1`] = `
 `;
 
 exports[`Transaction status pill should render the unknown pill correctly 1`] = `
+.emotion-0 {
+  color: #1e1e1e;
+  line-height: 1.2;
+  margin: 0;
+  font-size: calc((12 / 13) * 13px);
+  font-weight: normal;
+  line-height: 16px;
+}
+
 <div>
   <span
-    class="components-truncate components-text woocommerce-pill wcpay-pill__light css-1g4vivm-View-Text-sx-Base em57xhy0"
+    class="components-truncate components-text woocommerce-pill wcpay-pill__light emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Text"
   >

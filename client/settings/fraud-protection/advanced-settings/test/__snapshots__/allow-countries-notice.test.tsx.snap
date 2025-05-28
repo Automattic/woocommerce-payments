@@ -3,7 +3,42 @@
 exports[`Allowed countries rule card notice tests renders correctly when countries except some are allowed, others will be blocked 1`] = `
 {
   "asFragment": [Function],
-  "baseElement": <body>
+  "baseElement": .emotion-0 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-0>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-0>* {
+  min-width: 0;
+}
+
+.emotion-2 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+<body>
     <p
       class="a11y-speak-intro-text"
       id="a11y-speak-intro-text"
@@ -37,12 +72,12 @@ exports[`Allowed countries rule card notice tests renders correctly when countri
           class="components-notice__content"
         >
           <div
-            class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+            class="components-flex emotion-0 emotion-1"
             data-wp-c16t="true"
             data-wp-component="Flex"
           >
             <div
-              class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon emotion-2 emotion-1"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -60,7 +95,7 @@ exports[`Allowed countries rule card notice tests renders correctly when countri
               </svg>
             </div>
             <div
-              class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-2 emotion-1"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -77,7 +112,42 @@ exports[`Allowed countries rule card notice tests renders correctly when countri
       </div>
     </div>
   </body>,
-  "container": <div>
+  "container": .emotion-0 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-0>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-0>* {
+  min-width: 0;
+}
+
+.emotion-2 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+<div>
     <div
       class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
     >
@@ -85,12 +155,12 @@ exports[`Allowed countries rule card notice tests renders correctly when countri
         class="components-notice__content"
       >
         <div
-          class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex emotion-0 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
           <div
-            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon emotion-2 emotion-1"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -108,7 +178,7 @@ exports[`Allowed countries rule card notice tests renders correctly when countri
             </svg>
           </div>
           <div
-            class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-2 emotion-1"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -181,7 +251,42 @@ exports[`Allowed countries rule card notice tests renders correctly when countri
 exports[`Allowed countries rule card notice tests renders correctly when countries except some are allowed, others will be hold 1`] = `
 {
   "asFragment": [Function],
-  "baseElement": <body>
+  "baseElement": .emotion-0 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-0>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-0>* {
+  min-width: 0;
+}
+
+.emotion-2 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+<body>
     <p
       class="a11y-speak-intro-text"
       id="a11y-speak-intro-text"
@@ -215,12 +320,12 @@ exports[`Allowed countries rule card notice tests renders correctly when countri
           class="components-notice__content"
         >
           <div
-            class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+            class="components-flex emotion-0 emotion-1"
             data-wp-c16t="true"
             data-wp-component="Flex"
           >
             <div
-              class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon emotion-2 emotion-1"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -238,7 +343,7 @@ exports[`Allowed countries rule card notice tests renders correctly when countri
               </svg>
             </div>
             <div
-              class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-2 emotion-1"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -255,7 +360,42 @@ exports[`Allowed countries rule card notice tests renders correctly when countri
       </div>
     </div>
   </body>,
-  "container": <div>
+  "container": .emotion-0 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-0>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-0>* {
+  min-width: 0;
+}
+
+.emotion-2 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+<div>
     <div
       class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
     >
@@ -263,12 +403,12 @@ exports[`Allowed countries rule card notice tests renders correctly when countri
         class="components-notice__content"
       >
         <div
-          class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex emotion-0 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
           <div
-            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon emotion-2 emotion-1"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -286,7 +426,7 @@ exports[`Allowed countries rule card notice tests renders correctly when countri
             </svg>
           </div>
           <div
-            class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-2 emotion-1"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -359,7 +499,42 @@ exports[`Allowed countries rule card notice tests renders correctly when countri
 exports[`Allowed countries rule card notice tests renders correctly when specific countries are allowed, others will be blocked 1`] = `
 {
   "asFragment": [Function],
-  "baseElement": <body>
+  "baseElement": .emotion-0 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-0>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-0>* {
+  min-width: 0;
+}
+
+.emotion-2 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+<body>
     <p
       class="a11y-speak-intro-text"
       id="a11y-speak-intro-text"
@@ -393,12 +568,12 @@ exports[`Allowed countries rule card notice tests renders correctly when specifi
           class="components-notice__content"
         >
           <div
-            class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+            class="components-flex emotion-0 emotion-1"
             data-wp-c16t="true"
             data-wp-component="Flex"
           >
             <div
-              class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon emotion-2 emotion-1"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -416,7 +591,7 @@ exports[`Allowed countries rule card notice tests renders correctly when specifi
               </svg>
             </div>
             <div
-              class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-2 emotion-1"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -433,7 +608,42 @@ exports[`Allowed countries rule card notice tests renders correctly when specifi
       </div>
     </div>
   </body>,
-  "container": <div>
+  "container": .emotion-0 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-0>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-0>* {
+  min-width: 0;
+}
+
+.emotion-2 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+<div>
     <div
       class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
     >
@@ -441,12 +651,12 @@ exports[`Allowed countries rule card notice tests renders correctly when specifi
         class="components-notice__content"
       >
         <div
-          class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex emotion-0 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
           <div
-            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon emotion-2 emotion-1"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -464,7 +674,7 @@ exports[`Allowed countries rule card notice tests renders correctly when specifi
             </svg>
           </div>
           <div
-            class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-2 emotion-1"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -537,7 +747,42 @@ exports[`Allowed countries rule card notice tests renders correctly when specifi
 exports[`Allowed countries rule card notice tests renders correctly when specific countries are allowed, others will be hold 1`] = `
 {
   "asFragment": [Function],
-  "baseElement": <body>
+  "baseElement": .emotion-0 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-0>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-0>* {
+  min-width: 0;
+}
+
+.emotion-2 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+<body>
     <p
       class="a11y-speak-intro-text"
       id="a11y-speak-intro-text"
@@ -571,12 +816,12 @@ exports[`Allowed countries rule card notice tests renders correctly when specifi
           class="components-notice__content"
         >
           <div
-            class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+            class="components-flex emotion-0 emotion-1"
             data-wp-c16t="true"
             data-wp-component="Flex"
           >
             <div
-              class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon emotion-2 emotion-1"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -594,7 +839,7 @@ exports[`Allowed countries rule card notice tests renders correctly when specifi
               </svg>
             </div>
             <div
-              class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-2 emotion-1"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -611,7 +856,42 @@ exports[`Allowed countries rule card notice tests renders correctly when specifi
       </div>
     </div>
   </body>,
-  "container": <div>
+  "container": .emotion-0 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-0>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-0>* {
+  min-width: 0;
+}
+
+.emotion-2 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+<div>
     <div
       class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
     >
@@ -619,12 +899,12 @@ exports[`Allowed countries rule card notice tests renders correctly when specifi
         class="components-notice__content"
       >
         <div
-          class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex emotion-0 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
           <div
-            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon emotion-2 emotion-1"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -642,7 +922,7 @@ exports[`Allowed countries rule card notice tests renders correctly when specifi
             </svg>
           </div>
           <div
-            class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-2 emotion-1"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -715,7 +995,42 @@ exports[`Allowed countries rule card notice tests renders correctly when specifi
 exports[`Allowed countries rule card notice tests renders html entities correctly 1`] = `
 {
   "asFragment": [Function],
-  "baseElement": <body>
+  "baseElement": .emotion-0 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-0>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-0>* {
+  min-width: 0;
+}
+
+.emotion-2 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+<body>
     <p
       class="a11y-speak-intro-text"
       id="a11y-speak-intro-text"
@@ -749,12 +1064,12 @@ exports[`Allowed countries rule card notice tests renders html entities correctl
           class="components-notice__content"
         >
           <div
-            class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+            class="components-flex emotion-0 emotion-1"
             data-wp-c16t="true"
             data-wp-component="Flex"
           >
             <div
-              class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon emotion-2 emotion-1"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -772,7 +1087,7 @@ exports[`Allowed countries rule card notice tests renders html entities correctl
               </svg>
             </div>
             <div
-              class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+              class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-2 emotion-1"
               data-wp-c16t="true"
               data-wp-component="FlexItem"
             >
@@ -789,7 +1104,42 @@ exports[`Allowed countries rule card notice tests renders html entities correctl
       </div>
     </div>
   </body>,
-  "container": <div>
+  "container": .emotion-0 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-0>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-0>* {
+  min-width: 0;
+}
+
+.emotion-2 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+<div>
     <div
       class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
     >
@@ -797,12 +1147,12 @@ exports[`Allowed countries rule card notice tests renders html entities correctl
         class="components-notice__content"
       >
         <div
-          class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex emotion-0 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
           <div
-            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon emotion-2 emotion-1"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -820,7 +1170,7 @@ exports[`Allowed countries rule card notice tests renders html entities correctl
             </svg>
           </div>
           <div
-            class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-2 emotion-1"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >

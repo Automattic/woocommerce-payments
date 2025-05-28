@@ -17,7 +17,7 @@ import {
 	TextareaControl,
 	SelectControl,
 	Notice,
-} from '@wordpress/components';
+} from 'wcpay/components/wp-components-wrapped';
 import { merge, some, flatten, isMatchWith } from 'lodash';
 
 /**

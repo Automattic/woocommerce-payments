@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Set payment method title for order before order status change to make it visible for status change actions.
