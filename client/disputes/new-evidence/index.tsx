@@ -10,8 +10,7 @@ import React, { useState } from 'react';
  */
 import { Button } from 'wcpay/components/wp-components-wrapped';
 import '../style.scss';
-import { Stepper, useStepperContext } from 'components/stepper';
-import { StepperPanel } from 'components/stepper/stepper-panel';
+import { Stepper, StepperPanel, useStepperContext } from 'components/stepper';
 
 interface StepProps {
 	name: string;
