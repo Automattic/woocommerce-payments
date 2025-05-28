@@ -29,6 +29,7 @@ const getVatPrefix = () => {
 	switch ( wcpaySettings.accountStatus.country ) {
 		case 'AU': // AU ABN numbers are not prefixed. Based on a test lookup at https://abr.business.gov.au/
 		case 'JP':
+		case 'NZ':
 		case 'SG':
 			// Countries do not have tax prefixes.
 			return '';
@@ -50,6 +51,8 @@ const getVatTaxIDName = () => {
 			return __( 'ABN', 'woocommerce-payments' );
 		case 'JP':
 			return __( 'Corporate Number', 'woocommerce-payments' );
+		case 'NZ':
+			return __( 'IRD Number', 'woocommerce-payments' );
 		case 'SG':
 			return __(
 				'UEN or GST Registration Number',
@@ -71,6 +74,16 @@ const getVatTaxIDRequirementHint = () => {
 			// Leaving this blank intentionally, as I don't know what the requirements are in JP.
 			// Better to add this info later than clutter the dialog with vague/assumed legal requirements.
 			return __( '', 'woocommerce-payments' );
+		case 'NO':
+			return __(
+				'By inputting your VAT number you confirm you are a Norway VAT registered business and that you are going to account for the VAT.',
+				'woocommerce-payments'
+			);
+		case 'NZ':
+			return __(
+				'By inputting your IRD number you confirm that you are going to account for the GST.',
+				'woocommerce-payments'
+			);
 		case 'SG':
 			return __(
 				'By providing your UEN or GST number you confirm you are a Singapore GST registered business and you are going to account for the GST.',
@@ -96,12 +109,17 @@ const getVatTaxIDValidationHint = () => {
 			);
 		case 'JP':
 			return __(
-				'A 13 digit number, for example 1234567890123.',
+				'13-digit number, for example 1234567890123.',
+				'woocommerce-payments'
+			);
+		case 'NZ':
+			return __(
+				'8-digit or 9-digit number, for example 99-999-999 or 999-999-999.',
 				'woocommerce-payments'
 			);
 		case 'SG':
 			return __(
-				'Enter your UEN (e.g., 200312345A) or GST Registration Number (e.g., M91234567X)',
+				'Enter your UEN (e.g., 200312345A) or GST Registration Number (e.g., M91234567X).',
 				'woocommerce-payments'
 			);
 		default:
