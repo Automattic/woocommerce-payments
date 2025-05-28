@@ -103,16 +103,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 			 AND (pm.meta_value LIKE 'DUMMY SKU%' OR pm.meta_value LIKE 'TEST_SKU_%')"
 		);
 
-		// Clear lookup table entries by product_id first.
-		if ( ! empty( $test_product_ids ) ) {
-			$placeholders = implode( ',', array_fill( 0, count( $test_product_ids ), '%d' ) );
-			// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
-			$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}wc_product_meta_lookup WHERE product_id IN ($placeholders)", $test_product_ids ) );
-		}
-
-		// Also clear by SKU pattern.
-		$wpdb->query( "DELETE FROM {$wpdb->prefix}wc_product_meta_lookup WHERE sku LIKE 'DUMMY SKU%' OR sku LIKE 'TEST_SKU_%'" );
-
 		// Force delete all test products.
 		foreach ( $test_product_ids as $product_id ) {
 			wp_delete_post( $product_id, true );
