@@ -121,12 +121,6 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 		// Clear any remaining orphaned lookup entries (aggressive cleanup).
 		$wpdb->query( "DELETE FROM {$wpdb->prefix}wc_product_meta_lookup WHERE product_id NOT IN (SELECT ID FROM {$wpdb->posts} WHERE post_type = 'product')" );
 
-		// Reset post auto-increment to avoid ID conflicts.
-		$max_id = $wpdb->get_var( "SELECT MAX(ID) FROM {$wpdb->posts}" );
-		if ( $max_id ) {
-			$wpdb->query( $wpdb->prepare( "ALTER TABLE {$wpdb->posts} AUTO_INCREMENT = %d", $max_id + 1 ) );
-		}
-
 		// Clear WooCommerce caches.
 		if ( function_exists( 'wc_delete_product_transients' ) ) {
 			wc_delete_product_transients();
