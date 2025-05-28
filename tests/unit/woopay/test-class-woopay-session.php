@@ -48,17 +48,8 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 	 * @return WC_Product_Simple The created product.
 	 */
 	private function create_unique_test_product() {
-		global $wpdb;
-
 		$test_name = $this->getName();
 		$unique_id = uniqid();
-		$timestamp = microtime( true );
-
-		// Create product with completely unique SKU including timestamp.
-		$sku = "TEST_SKU_{$test_name}_{$unique_id}_{$timestamp}";
-
-		// First, ensure this exact SKU doesn't exist in lookup table.
-		$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}wc_product_meta_lookup WHERE sku = %s", $sku ) );
 
 		$product = new WC_Product_Simple();
 		$product->set_props(
@@ -66,7 +57,7 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 				'name'          => "Test Product {$test_name} {$unique_id}",
 				'regular_price' => 10,
 				'price'         => 10,
-				'sku'           => $sku,
+				'sku'           => "TEST_SKU_{$test_name}_{$unique_id}",
 				'manage_stock'  => false,
 				'tax_status'    => 'taxable',
 				'downloadable'  => false,
@@ -76,19 +67,9 @@ class WooPay_Session_Test extends WCPAY_UnitTestCase {
 			]
 		);
 
-		try {
-			$product->save();
-			return wc_get_product( $product->get_id() );
-		} catch ( Exception $e ) {
-			// If save fails due to lookup table conflict, try to clean up and retry.
-			$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}wc_product_meta_lookup WHERE sku = %s", $sku ) );
+		$product->save();
 
-			// Add extra randomness and try again.
-			$sku = "TEST_SKU_{$test_name}_{$unique_id}_{$timestamp}_" . wp_rand( 1000, 9999 );
-			$product->set_sku( $sku );
-			$product->save();
-			return wc_get_product( $product->get_id() );
-		}
+		return wc_get_product( $product->get_id() );
 	}
 
 	/**
