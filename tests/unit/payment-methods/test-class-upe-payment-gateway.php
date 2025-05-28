@@ -11,7 +11,6 @@ use PHPUnit\Framework\MockObject\MockObject;
 use WC_Payments_Fraud_Service;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
-use WCPay\Constants\Payment_Method;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Core\Server\Request\Get_Setup_Intention;
 use WCPay\Exceptions\Process_Payment_Exception;
