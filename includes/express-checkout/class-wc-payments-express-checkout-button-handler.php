@@ -14,6 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use Automattic\WooCommerce\Blocks\Package;
 use Automattic\WooCommerce\Blocks\Assets\AssetDataRegistry;
 use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
+use WCPay\Inline_Script_Payloads\WCPay_Express_Checkout_Params;
 
 /**
  * WC_Payments_Express_Checkout_Button_Handler class.
@@ -271,8 +272,6 @@ class WC_Payments_Express_Checkout_Button_Handler {
 			return;
 		}
 
-		$express_checkout_params = $this->get_express_checkout_params();
-
 		if ( WC_Payments_Features::is_tokenized_cart_ece_enabled() ) {
 			WC_Payments::register_script_with_dependencies(
 				'WCPAY_EXPRESS_CHECKOUT_ECE',
@@ -307,8 +306,16 @@ class WC_Payments_Express_Checkout_Button_Handler {
 			);
 		}
 
-		wp_localize_script( 'WCPAY_EXPRESS_CHECKOUT_ECE', 'wcpayExpressCheckoutParams', $express_checkout_params );
-		wp_localize_script( 'WCPAY_BLOCKS_CHECKOUT', 'wcpayExpressCheckoutParams', $express_checkout_params );
+		wp_add_inline_script(
+			'WCPAY_EXPRESS_CHECKOUT_ECE',
+			new WCPay_Express_Checkout_Params( $this ),
+			'before'
+		);
+		wp_add_inline_script(
+			'WCPAY_BLOCKS_CHECKOUT',
+			new WCPay_Express_Checkout_Params( $this ),
+			'before'
+		);
 
 		wp_set_script_translations( 'WCPAY_EXPRESS_CHECKOUT_ECE', 'woocommerce-payments' );
 
