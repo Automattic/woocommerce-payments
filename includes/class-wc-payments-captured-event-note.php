@@ -62,6 +62,10 @@ class WC_Payments_Captured_Event_Note {
 			$lines = array_merge( $lines, $fee_breakdown_lines );
 		}
 
+		if ( $this->has_tax() ) {
+			$lines[] = $this->compose_tax_string();
+		}
+
 		$lines[] = $this->compose_net_string();
 
 		$html = '';
@@ -125,12 +129,22 @@ class WC_Payments_Captured_Event_Note {
 		}
 		$is_same_symbol = $this->has_same_currency_symbol( $data['transaction_details']['store_currency'], $data['transaction_details']['customer_currency'] );
 
+		$tax_string = '';
+		if ( $this->has_tax() ) {
+			$tax_string = sprintf(
+				' + %1$s%% %2$s',
+				self::format_fee( $this->captured_event['fee_rates']['tax']['percentage_rate'] ),
+				$this->get_localized_tax_description()
+			);
+		}
+
 		return sprintf(
-			'%1$s (%2$s%% + %3$s%4$s): %5$s%6$s',
+			'%1$s (%2$s%% + %3$s%4$s%5$s): %6$s%7$s',
 			$base_fee_label,
 			self::format_fee( $percentage ),
 			WC_Payments_Utils::format_currency( $fixed, $fixed_currency ),
 			$is_same_symbol ? ' ' . $data['transaction_details']['customer_currency'] : '',
+			$tax_string,
 			WC_Payments_Utils::format_currency( -$fee_amount, $fee_currency ),
 			$is_same_symbol ? " $fee_currency" : ''
 		);
@@ -460,5 +474,83 @@ class WC_Payments_Captured_Event_Note {
 	 */
 	private function has_same_currency_symbol( string $base_currency, string $currency ): bool {
 		return strcasecmp( $base_currency, $currency ) !== 0 && get_woocommerce_currency_symbol( $base_currency ) === get_woocommerce_currency_symbol( $currency );
+	}
+
+	/**
+	 * Check if the event has tax information.
+	 *
+	 * @return bool
+	 */
+	private function has_tax(): bool {
+		return isset( $this->captured_event['fee_rates']['tax'] );
+	}
+
+	/**
+	 * Compose tax string.
+	 *
+	 * @return string
+	 */
+	private function compose_tax_string(): string {
+		return self::HTML_BLACK_BULLET . ' ' . sprintf(
+			'%1$s: %2$s%%',
+			$this->get_localized_tax_description(),
+			self::format_fee( $this->captured_event['fee_rates']['tax']['percentage_rate'] )
+		);
+	}
+
+	/**
+	 * Get localized tax description based on the tax description ID contained in the captured event.
+	 *
+	 * @return string|null
+	 */
+	private function get_localized_tax_description(): ?string {
+		if ( ! isset( $this->captured_event['fee_rates']['tax']['description'] ) ) {
+			return null;
+		}
+
+		$tax_description_id = $this->captured_event['fee_rates']['tax']['description'];
+
+		$tax_descriptions = [
+			// European Union VAT.
+			'AT VAT' => __( 'AT VAT', 'woocommerce-payments' ), // Austria.
+			'BE VAT' => __( 'BE VAT', 'woocommerce-payments' ), // Belgium.
+			'BG VAT' => __( 'BG VAT', 'woocommerce-payments' ), // Bulgaria.
+			'CY VAT' => __( 'CY VAT', 'woocommerce-payments' ), // Cyprus.
+			'CZ VAT' => __( 'CZ VAT', 'woocommerce-payments' ), // Czech Republic.
+			'DE VAT' => __( 'DE VAT', 'woocommerce-payments' ), // Germany.
+			'DK VAT' => __( 'DK VAT', 'woocommerce-payments' ), // Denmark.
+			'EE VAT' => __( 'EE VAT', 'woocommerce-payments' ), // Estonia.
+			'ES VAT' => __( 'ES VAT', 'woocommerce-payments' ), // Spain.
+			'FI VAT' => __( 'FI VAT', 'woocommerce-payments' ), // Finland.
+			'FR VAT' => __( 'FR VAT', 'woocommerce-payments' ), // France.
+			'GB VAT' => __( 'UK VAT', 'woocommerce-payments' ), // United Kingdom.
+			'GR VAT' => __( 'GR VAT', 'woocommerce-payments' ), // Greece.
+			'HR VAT' => __( 'HR VAT', 'woocommerce-payments' ), // Croatia.
+			'HU VAT' => __( 'HU VAT', 'woocommerce-payments' ), // Hungary.
+			'IE VAT' => __( 'IE VAT', 'woocommerce-payments' ), // Ireland.
+			'IT VAT' => __( 'IT VAT', 'woocommerce-payments' ), // Italy.
+			'LT VAT' => __( 'LT VAT', 'woocommerce-payments' ), // Lithuania.
+			'LU VAT' => __( 'LU VAT', 'woocommerce-payments' ), // Luxembourg.
+			'LV VAT' => __( 'LV VAT', 'woocommerce-payments' ), // Latvia.
+			'MT VAT' => __( 'MT VAT', 'woocommerce-payments' ), // Malta.
+			'NL VAT' => __( 'NL VAT', 'woocommerce-payments' ), // Netherlands.
+			'PL VAT' => __( 'PL VAT', 'woocommerce-payments' ), // Poland.
+			'PT VAT' => __( 'PT VAT', 'woocommerce-payments' ), // Portugal.
+			'RO VAT' => __( 'RO VAT', 'woocommerce-payments' ), // Romania.
+			'SE VAT' => __( 'SE VAT', 'woocommerce-payments' ), // Sweden.
+			'SI VAT' => __( 'SI VAT', 'woocommerce-payments' ), // Slovenia.
+			'SK VAT' => __( 'SK VAT', 'woocommerce-payments' ), // Slovakia.
+
+			// GST Countries.
+			'AU GST' => __( 'AU GST', 'woocommerce-payments' ), // Australia.
+			'NZ GST' => __( 'NZ GST', 'woocommerce-payments' ), // New Zealand.
+			'SG GST' => __( 'SG GST', 'woocommerce-payments' ), // Singapore.
+
+			// Other Tax Systems.
+			'CH VAT' => __( 'CH VAT', 'woocommerce-payments' ), // Switzerland.
+			'JP JCT' => __( 'JP JCT', 'woocommerce-payments' ), // Japan Consumption Tax.
+		];
+
+		return $tax_descriptions[ $tax_description_id ] ?? __( 'Tax', 'woocommerce-payments' );
 	}
 }
