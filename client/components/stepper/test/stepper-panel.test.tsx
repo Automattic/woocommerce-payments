@@ -29,16 +29,16 @@ describe( 'StepperPanel', () => {
 		const steps = [ 'A', 'B', 'C' ];
 		render( <StepperPanel steps={ steps } currentStep={ 1 } /> );
 		// Instead, check DOM classes
-		const allStepDivs = screen
+		const [ step1, step2, step3 ] = screen
 			.getAllByText( /A|B|C/ )
 			.map( ( labelNode ) => labelNode.closest( '.stepper-step' ) );
 		// Step 0 should be complete
-		expect( allStepDivs[ 0 ] ).toHaveClass( 'complete' );
+		expect( step1 ).toHaveClass( 'complete' );
 		// Step 1 should be active
-		expect( allStepDivs[ 1 ] ).toHaveClass( 'active' );
+		expect( step2 ).toHaveClass( 'active' );
 		// Step 2 should be neither
-		expect( allStepDivs[ 2 ] ).not.toHaveClass( 'active' );
-		expect( allStepDivs[ 2 ] ).not.toHaveClass( 'complete' );
+		expect( step3 ).not.toHaveClass( 'active' );
+		expect( step3 ).not.toHaveClass( 'complete' );
 	} );
 
 	it( 'renders a mock icon for completed steps', () => {
