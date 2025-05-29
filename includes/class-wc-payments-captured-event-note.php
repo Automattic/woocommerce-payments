@@ -63,7 +63,7 @@ class WC_Payments_Captured_Event_Note {
 		}
 
 		if ( $this->has_tax() ) {
-			$lines[] = $this->compose_tax_string();
+			$lines[] = self::HTML_BLACK_BULLET . ' ' . $this->compose_tax_string();
 		}
 
 		$lines[] = $this->compose_net_string();
@@ -288,6 +288,23 @@ class WC_Payments_Captured_Event_Note {
 	}
 
 	/**
+	 * Compose tax string.
+	 *
+	 * @return string|null
+	 */
+	public function compose_tax_string(): ?string {
+		if ( ! $this->has_tax() ) {
+			return null;
+		}
+
+		return sprintf(
+			'%1$s: %2$s%%',
+			$this->get_localized_tax_description(),
+			self::format_fee( $this->captured_event['fee_rates']['tax']['percentage_rate'] )
+		);
+	}
+
+	/**
 	 * Check if this is a FX event.
 	 *
 	 * @return bool
@@ -483,19 +500,6 @@ class WC_Payments_Captured_Event_Note {
 	 */
 	private function has_tax(): bool {
 		return isset( $this->captured_event['fee_rates']['tax'] );
-	}
-
-	/**
-	 * Compose tax string.
-	 *
-	 * @return string
-	 */
-	private function compose_tax_string(): string {
-		return self::HTML_BLACK_BULLET . ' ' . sprintf(
-			'%1$s: %2$s%%',
-			$this->get_localized_tax_description(),
-			self::format_fee( $this->captured_event['fee_rates']['tax']['percentage_rate'] )
-		);
 	}
 
 	/**
