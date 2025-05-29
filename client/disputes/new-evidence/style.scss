@@ -1,0 +1,33 @@
+// Container for the new-evidence page
+.wcpay-dispute-evidence-new {
+	display: flex;
+	flex-direction: column;
+	gap: 24px;
+
+	&__stepper-divider {
+		margin: 0;
+	}
+}
+
+// Stepper section background to match accordion
+.wcpay-dispute-evidence-new__stepper-section {
+	background: $white; // Same as .wcpay-accordion
+	border: $border-width solid $gray-200;
+	padding: 0 24px 24px 24px;
+}
+
+// Optional: Card spacing and button spacing, copied from disputes style
+.wcpay-dispute-evidence-new .components-card {
+	margin-bottom: 24px;
+}
+
+.wcpay-dispute-evidence-new .components-button + .components-button {
+	margin-left: 10px;
+}
+
+// Limit the width of the stepper content and center it
+.wcpay-dispute-evidence-new__stepper-content {
+	max-width: 500px;
+	margin-left: auto;
+	margin-right: auto;
+}
