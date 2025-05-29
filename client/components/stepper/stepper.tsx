@@ -4,10 +4,6 @@
 import React, { useContext, useState } from 'react';
 
 /**
- * WordPress dependencies
- */
-
-/**
  * Internal dependencies
  */
 import { StepperContext } from './stepper-context';

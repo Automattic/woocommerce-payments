@@ -6,10 +6,6 @@
 import React from 'react';
 
 /**
- * WordPress dependencies
- */
-
-/**
  * Internal dependencies
  */
 
