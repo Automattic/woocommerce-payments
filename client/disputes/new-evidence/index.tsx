@@ -10,11 +10,7 @@ import React, { useState, useEffect } from 'react';
  */
 import { Button, HorizontalRule } from 'wcpay/components/wp-components-wrapped';
 import { getAdminUrl } from 'wcpay/utils';
-import {
-	Stepper,
-	StepperPanel,
-	useStepperContext,
-} from 'wcpay/components/stepper';
+import { StepperPanel } from 'wcpay/components/stepper';
 import {
 	Accordion,
 	AccordionBody,
@@ -22,44 +18,62 @@ import {
 } from 'wcpay/components/accordion';
 import Page from 'wcpay/components/page';
 
-import '../style.scss';
 import './style.scss';
 
 interface StepProps {
-	name: string;
+	heading: string;
+	subheading: string;
 }
 
-const StepOne: React.FC< StepProps > = () => {
-	const { nextStep } = useStepperContext();
+const Step: React.FC< StepProps > = ( { heading, subheading } ) => {
 	return (
 		<div>
-			<h2>General evidence</h2>
-			<p>Provide general evidence for your dispute.</p>
+			<h2 className="wcpay-dispute-evidence-new__stepper-title">
+				{ heading }
+			</h2>
+			<p className="wcpay-dispute-evidence-new__stepper-subheading">
+				{ subheading }
+			</p>
 		</div>
 	);
 };
 
-const StepTwo: React.FC< StepProps > = () => {
-	const { nextStep, prevStep } = useStepperContext();
-	return (
-		<div>
-			<h2>Shipping information</h2>
-			<p>Provide shipping details if applicable.</p>
-		</div>
-	);
-};
+const panelHeadings = [ 'General evidence', 'Shipping information', 'Review' ];
 
-const StepThree: React.FC< StepProps > = () => {
-	const { prevStep } = useStepperContext();
-	return (
-		<div>
-			<h2>Review</h2>
-			<p>Review your information before submitting.</p>
-		</div>
-	);
-};
+const steps = [
+	{
+		heading: 'Let’s gather the basics',
+		subheading:
+			'To make a stronger case, please provide as much info as possible. We prefilled some fields for you, please double check and upload all the necessary documents.',
+	},
+	{
+		heading: 'Shipping details',
+		subheading: 'Please make sure all the shipping information is correct.',
+	},
+	{
+		heading: 'Review the cover letter',
+		subheading:
+			'Please review the cover letter that will be submitted to the bank based on the information you provided. You can make changes to it or add additional details.',
+	},
+];
 
-const steps = [ 'General evidence', 'Shipping information', 'Review' ];
+const stepComponents = [
+	<Step
+		heading={ steps[ 0 ].heading }
+		subheading={ steps[ 0 ].subheading }
+		key="step-1"
+	/>,
+	<Step
+		heading={ steps[ 1 ].heading }
+		subheading={ steps[ 1 ].subheading }
+		key="step-2"
+	/>,
+	<Step
+		heading={ steps[ 2 ].heading }
+		subheading={ steps[ 2 ].subheading }
+		key="step-3"
+	/>,
+];
 
 export default () => {
 	const [ currentStep, setCurrentStep ] = useState( 0 );
@@ -97,21 +111,14 @@ export default () => {
 	const renderButtons = () => {
 		if ( currentStep === 0 ) {
 			return (
-				<div
-					style={ {
-						display: 'flex',
-						justifyContent: 'space-between',
-						marginTop: 32,
-					} }
-				>
+				<div className="wcpay-dispute-evidence-new__button-row">
 					<Button variant="secondary" onClick={ handleCancel }>
 						Cancel
 					</Button>
-					<div>
+					<div className="wcpay-dispute-evidence-new__button-group-right">
 						<Button
 							variant="tertiary"
 							onClick={ handleSaveForLater }
-							style={ { marginRight: 8 } }
 						>
 							Save for later
 						</Button>
@@ -124,21 +131,14 @@ export default () => {
 		}
 		if ( currentStep === 1 ) {
 			return (
-				<div
-					style={ {
-						display: 'flex',
-						justifyContent: 'space-between',
-						marginTop: 32,
-					} }
-				>
+				<div className="wcpay-dispute-evidence-new__button-row">
 					<Button variant="secondary" onClick={ handleBack }>
 						Back
 					</Button>
-					<div>
+					<div className="wcpay-dispute-evidence-new__button-group-right">
 						<Button
 							variant="tertiary"
 							onClick={ handleSaveForLater }
-							style={ { marginRight: 8 } }
 						>
 							Save for later
 						</Button>
@@ -151,22 +151,12 @@ export default () => {
 		}
 		// Step 2 (index 2): Review
 		return (
-			<div
-				style={ {
-					display: 'flex',
-					justifyContent: 'space-between',
-					marginTop: 32,
-				} }
-			>
+			<div className="wcpay-dispute-evidence-new__button-row">
 				<Button variant="secondary" onClick={ handleBack }>
 					Back
 				</Button>
-				<div>
-					<Button
-						variant="tertiary"
-						onClick={ handleSaveForLater }
-						style={ { marginRight: 8 } }
-					>
+				<div className="wcpay-dispute-evidence-new__button-group-right">
+					<Button variant="tertiary" onClick={ handleSaveForLater }>
 						Save for later
 					</Button>
 					<Button variant="primary" onClick={ handleSubmit }>
@@ -198,19 +188,13 @@ export default () => {
 
 				{ /* Section 2: Stepper */ }
 				<div className="wcpay-dispute-evidence-new__stepper-section">
-					<StepperPanel steps={ steps } currentStep={ currentStep } />
+					<StepperPanel
+						steps={ panelHeadings }
+						currentStep={ currentStep }
+					/>
 					<HorizontalRule className="wcpay-dispute-evidence-new__stepper-divider" />
 					<div className="wcpay-dispute-evidence-new__stepper-content">
-						<Stepper
-							initialStep={ steps[ currentStep ] }
-							onStepChange={ ( step ) =>
-								setCurrentStep( steps.indexOf( step ) )
-							}
-						>
-							<StepOne name="General evidence" />
-							<StepTwo name="Shipping information" />
-							<StepThree name="Review" />
-						</Stepper>
+						{ stepComponents[ currentStep ] }
 						{ renderButtons() }
 					</div>
 				</div>

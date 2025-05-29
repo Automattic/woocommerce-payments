@@ -31,3 +31,42 @@
 	margin-left: auto;
 	margin-right: auto;
 }
+
+.wcpay-dispute-evidence-new__stepper-title {
+	color: var( --Scales-Grays-gray-900, $gray-900 );
+	/* Heading XL */
+	font-size: var( --xl, 20px );
+	font-style: normal;
+	font-weight: var( --Medium, 500 );
+	line-height: var( --m, 24px ); /* 120% */
+
+	margin-top: 24px;
+	margin-bottom: 12px;
+}
+
+.wcpay-dispute-evidence-new__stepper-subheading {
+	color: var( --Scales-Grays-gray-700, $gray-700 );
+	/* Body MD */
+	font-size: var( --m, 13px );
+	font-style: normal;
+	font-weight: var( --Regular, 400 );
+	line-height: var( --s, 20px ); /* 153.846% */
+}
+
+.wcpay-dispute-evidence-new__button-row {
+	display: flex;
+	justify-content: space-between;
+	margin-top: 32px;
+}
+
+.wcpay-dispute-evidence-new__button-group-right {
+	display: flex;
+	align-items: center;
+}
+
+// Add spacing between right-aligned buttons
+.wcpay-dispute-evidence-new__button-group-right
+	.components-button
+	+ .components-button {
+	margin-left: 8px;
+}
