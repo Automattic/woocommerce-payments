@@ -104,7 +104,8 @@ export default ( { query }: { query: { id: string } } ) => {
 			try {
 				const d: any = await apiFetch( { path } );
 				setDispute( d );
-				setProductType( d.metadata?.__product_type || '' );
+				// fallback to multiple if no product type is set
+				setProductType( d.metadata?.__product_type || 'multiple' );
 			} finally {
 				setLoading( false );
 			}
