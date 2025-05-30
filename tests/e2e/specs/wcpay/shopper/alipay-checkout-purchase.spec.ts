@@ -7,10 +7,11 @@ import { test, expect, Page } from '@playwright/test';
  * Internal dependencies
  */
 import * as shopper from '../../../utils/shopper';
-import { getMerchant, getShopper } from '../../../utils/helpers';
+import { describeif, getMerchant, getShopper } from '../../../utils/helpers';
 import * as merchant from '../../../utils/merchant';
 import { config } from '../../../config/default';
 import { goToCheckoutWCB } from '../../../utils/shopper-navigation';
+import { shouldRunWCBlocksTests } from '../../../utils/constants';
 
 test.describe( 'Alipay Checkout', () => {
 	let merchantPage: Page;
@@ -63,45 +64,47 @@ test.describe( 'Alipay Checkout', () => {
 		}
 	);
 
-	test(
+	describeif( shouldRunWCBlocksTests )(
 		'checkout on block-based checkout page',
 		{ tag: '@critical' },
-		async () => {
-			await shopper.setupProductCheckout(
-				shopperPage,
-				[ [ config.products.cap, 1 ] ],
-				config.addresses.customer.billing
-			);
-			await goToCheckoutWCB( shopperPage );
-			await shopper.fillBillingAddressWCB(
-				shopperPage,
-				config.addresses.customer.billing
-			);
+		() => {
+			test( 'completes payment successfully', async () => {
+				await shopper.setupProductCheckout(
+					shopperPage,
+					[ [ config.products.cap, 1 ] ],
+					config.addresses.customer.billing
+				);
+				await goToCheckoutWCB( shopperPage );
+				await shopper.fillBillingAddressWCB(
+					shopperPage,
+					config.addresses.customer.billing
+				);
 
-			await shopperPage
-				.getByRole( 'radio', {
-					name: 'Alipay',
-				} )
-				.click();
+				await shopperPage
+					.getByRole( 'radio', {
+						name: 'Alipay',
+					} )
+					.click();
 
-			await shopper.placeOrderWCB( shopperPage, false );
+				await shopper.placeOrderWCB( shopperPage, false );
 
-			await expect(
-				shopperPage.getByText( /Alipay test payment page/ )
-			).toBeVisible();
+				await expect(
+					shopperPage.getByText( /Alipay test payment page/ )
+				).toBeVisible();
 
-			await shopperPage.getByText( 'Authorize Test Payment' ).click();
+				await shopperPage.getByText( 'Authorize Test Payment' ).click();
 
-			await expect(
-				shopperPage.getByRole( 'heading', {
-					name: 'Order received',
-				} )
-			).toBeVisible();
-			await expect(
-				shopperPage.getByRole( 'img', {
-					name: 'Alipay',
-				} )
-			).toBeVisible();
+				await expect(
+					shopperPage.getByRole( 'heading', {
+						name: 'Order received',
+					} )
+				).toBeVisible();
+				await expect(
+					shopperPage.getByRole( 'img', {
+						name: 'Alipay',
+					} )
+				).toBeVisible();
+			} );
 		}
 	);
 } );
