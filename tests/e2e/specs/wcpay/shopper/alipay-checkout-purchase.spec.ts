@@ -7,10 +7,11 @@ import { test, expect, Page } from '@playwright/test';
  * Internal dependencies
  */
 import * as shopper from '../../../utils/shopper';
-import { getMerchant, getShopper } from '../../../utils/helpers';
+import { describeif, getMerchant, getShopper } from '../../../utils/helpers';
 import * as merchant from '../../../utils/merchant';
 import { config } from '../../../config/default';
 import { goToCheckoutWCB } from '../../../utils/shopper-navigation';
+import { shouldRunWCBlocksTests } from '../../../utils/constants';
 
 test.describe( 'Alipay Checkout', () => {
 	let merchantPage: Page;
@@ -62,11 +63,27 @@ test.describe( 'Alipay Checkout', () => {
 			).toBeVisible();
 		}
 	);
+} );
 
-	test(
-		'checkout on block-based checkout page',
-		{ tag: '@critical' },
-		async () => {
+describeif( shouldRunWCBlocksTests )(
+	'Alipay Block Checkout',
+	{ tag: '@critical' },
+	() => {
+		let shopperPage: Page;
+		let merchantPage: Page;
+
+		test.beforeAll( async ( { browser } ) => {
+			shopperPage = ( await getShopper( browser ) ).shopperPage;
+			merchantPage = ( await getMerchant( browser ) ).merchantPage;
+			await merchant.enablePaymentMethods( merchantPage, [ 'alipay' ] );
+		} );
+
+		test.afterAll( async () => {
+			await shopper.emptyCart( shopperPage );
+			await merchant.disablePaymentMethods( merchantPage, [ 'alipay' ] );
+		} );
+
+		test( 'checkout on block-based checkout page', async () => {
 			await shopper.setupProductCheckout(
 				shopperPage,
 				[ [ config.products.cap, 1 ] ],
@@ -102,6 +119,6 @@ test.describe( 'Alipay Checkout', () => {
 					name: 'Alipay',
 				} )
 			).toBeVisible();
-		}
-	);
-} );
+		} );
+	}
+);
