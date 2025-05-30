@@ -96,7 +96,7 @@ export default ( { query }: { query: { id: string } } ) => {
 	const [ currentStep, setCurrentStep ] = useState( 0 );
 	const [ isAccordionOpen, setIsAccordionOpen ] = useState( true );
 	const [ redirectAfterSave, setRedirectAfterSave ] = useState( false );
-	const [ productDescription, setProductDescription ] = useState('');
+	const [ productDescription, setProductDescription ] = useState( '' );
 	const {
 		createSuccessNotice,
 		createErrorNotice,
@@ -197,10 +197,10 @@ export default ( { query }: { query: { id: string } } ) => {
 			} );
 			setEvidence( ( e: any ) => ( { ...e, [ key ]: uploadedFile.id } ) );
 		} catch ( err ) {
-			if (err instanceof Error) {
-				createErrorNotice(err.message);
+			if ( err instanceof Error ) {
+				createErrorNotice( err.message );
 			} else {
-				createErrorNotice(String(err));
+				createErrorNotice( String( err ) );
 			}
 		}
 	};
@@ -245,10 +245,10 @@ export default ( { query }: { query: { id: string } } ) => {
 			);
 			setRedirectAfterSave( true );
 		} catch ( err ) {
-			if (err instanceof Error) {
-				createErrorNotice(err.message);
+			if ( err instanceof Error ) {
+				createErrorNotice( err.message );
 			} else {
-				createErrorNotice(String(err));
+				createErrorNotice( String( err ) );
 			}
 		} finally {
 			setLoading( false );
@@ -334,34 +334,43 @@ export default ( { query }: { query: { id: string } } ) => {
 	const recommendedDocumentFields = [
 		{
 			key: 'order_receipt',
-			label: __('Order receipt', 'woocommerce-payments'),
+			label: __( 'Order receipt', 'woocommerce-payments' ),
 		},
 		{
 			key: 'customer_communication',
-			label: __('Customer communication', 'woocommerce-payments'),
+			label: __( 'Customer communication', 'woocommerce-payments' ),
 		},
 		{
 			key: 'customer_signature',
-			label: __('Customer signature', 'woocommerce-payments'),
+			label: __( 'Customer signature', 'woocommerce-payments' ),
 		},
 		{
 			key: 'refund_policy',
-			label: __('Copy of the store refund policy', 'woocommerce-payments'),
+			label: __(
+				'Copy of the store refund policy',
+				'woocommerce-payments'
+			),
 		},
 		{
 			key: 'additional_documents',
-			label: __('Any additional documents you think will support the case', 'woocommerce-payments'),
+			label: __(
+				'Any additional documents you think will support the case',
+				'woocommerce-payments'
+			),
 		},
 	];
 
-	const recommendedDocumentsFields = recommendedDocumentFields.map((field) => ({
-		key: field.key,
-		label: field.label,
-		fileName: evidence[field.key] || '',
-		uploaded: !!evidence[field.key],
-		onFileChange: (_key: string, file: File) => Promise.resolve(doUploadFile(field.key, file)),
-		onFileRemove: () => Promise.resolve(doRemoveFile(field.key)),
-	}));
+	const recommendedDocumentsFields = recommendedDocumentFields.map(
+		( field ) => ( {
+			key: field.key,
+			label: field.label,
+			fileName: evidence[ field.key ] || '',
+			uploaded: !! evidence[ field.key ],
+			onFileChange: ( _key: string, file: File ) =>
+				Promise.resolve( doUploadFile( field.key, file ) ),
+			onFileRemove: () => Promise.resolve( doRemoveFile( field.key ) ),
+		} )
+	);
 
 	const bankName = dispute?.charge ? getBankName( dispute.charge ) : null;
 
@@ -453,15 +462,17 @@ export default ( { query }: { query: { id: string } } ) => {
 					<p className="wcpay-dispute-evidence-new__stepper-subheading">
 						{ steps[ 0 ].subheading }
 					</p>
-					<CustomerDetails dispute={dispute} />
+					<CustomerDetails dispute={ dispute } />
 					<ProductDetails
-						productType={productType}
-						onProductTypeChange={updateProductType}
-						productDescription={productDescription}
-						onProductDescriptionChange={setProductDescription}
-						readOnly={readOnly}
+						productType={ productType }
+						onProductTypeChange={ updateProductType }
+						productDescription={ productDescription }
+						onProductDescriptionChange={ setProductDescription }
+						readOnly={ readOnly }
 					/>
-					<RecommendedDocuments fields={recommendedDocumentsFields} />
+					<RecommendedDocuments
+						fields={ recommendedDocumentsFields }
+					/>
 					<InlineNotice
 						icon
 						isDismissible={ false }
@@ -476,11 +487,11 @@ export default ( { query }: { query: { id: string } } ) => {
 											'woocommerce-payments'
 										),
 										bankName
-									)
+								  )
 								: __(
 										"<strong>WooPayments does not determine the outcome of the dispute process</strong> and is not liable for any chargebacks. The cardholder's bank makes the decision in this process.",
 										'woocommerce-payments'
-									),
+								  ),
 							{
 								strong: <strong />,
 							}
@@ -513,7 +524,7 @@ export default ( { query }: { query: { id: string } } ) => {
 		// Review step
 		const reviewStep = hasShipping ? 2 : 1;
 		if ( currentStep === reviewStep ) {
-	return (
+			return (
 				<>
 					<h2 className="wcpay-dispute-evidence-new__stepper-title">
 						{ steps[ reviewStep ].heading }
@@ -527,7 +538,7 @@ export default ( { query }: { query: { id: string } } ) => {
 								'No additional details provided.',
 								'woocommerce-payments'
 							) }
-		</div>
+					</div>
 				</>
 			);
 		}
@@ -570,7 +581,7 @@ export default ( { query }: { query: { id: string } } ) => {
 			);
 		}
 		if ( currentStep < reviewStep ) {
-	return (
+			return (
 				<div className="wcpay-dispute-evidence-new__button-row">
 					<Button
 						variant="secondary"
@@ -584,18 +595,18 @@ export default ( { query }: { query: { id: string } } ) => {
 							onClick={ () => doSave( false ) }
 						>
 							{ __( 'Save for later', 'woocommerce-payments' ) }
-			</Button>
+						</Button>
 						<Button
 							variant="primary"
 							onClick={ () => setCurrentStep( ( s ) => s + 1 ) }
 						>
 							{ __( 'Next', 'woocommerce-payments' ) }
-			</Button>
+						</Button>
 					</div>
-		</div>
-	);
+				</div>
+			);
 		}
-	return (
+		return (
 			<div className="wcpay-dispute-evidence-new__button-row">
 				<Button
 					variant="secondary"
@@ -609,14 +620,14 @@ export default ( { query }: { query: { id: string } } ) => {
 						onClick={ () => doSave( false ) }
 					>
 						{ __( 'Save for later', 'woocommerce-payments' ) }
-			</Button>
+					</Button>
 					<Button variant="primary" onClick={ () => doSave( true ) }>
 						{ __( 'Submit', 'woocommerce-payments' ) }
-			</Button>
+					</Button>
 				</div>
-		</div>
-	);
-};
+			</div>
+		);
+	};
 
 	// --- Main render ---
 	return (
