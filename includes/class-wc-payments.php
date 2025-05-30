@@ -748,10 +748,6 @@ class WC_Payments {
 			// Use tracks loader only in admin screens because it relies on WC_Tracks loaded by WC_Admin.
 			include_once WCPAY_ABSPATH . 'includes/admin/tracks/tracks-loader.php';
 
-			include_once __DIR__ . '/admin/class-wc-payments-admin-sections-overwrite.php';
-			$admin_sections_overwrite = new WC_Payments_Admin_Sections_Overwrite( self::get_account_service() );
-			$admin_sections_overwrite->init_hooks();
-
 			$wcpay_status = new WC_Payments_Status( self::get_gateway(), self::get_wc_payments_http(), self::get_account_service() );
 			$wcpay_status->init_hooks();
 
