@@ -63,7 +63,7 @@ class WC_Payments_Captured_Event_Note {
 		}
 
 		if ( $this->has_tax() ) {
-			$lines[] = self::HTML_BLACK_BULLET . ' ' . $this->compose_tax_string();
+			$lines[] = $this->compose_tax_string();
 		}
 
 		$lines[] = $this->compose_net_string();
@@ -111,7 +111,13 @@ class WC_Payments_Captured_Event_Note {
 		$history        = $fee_rates['history'];
 
 		$fee_currency = $data['transaction_details']['store_currency'];
-		$fee_amount   = WC_Payments_Utils::interpret_stripe_amount( (int) $data['transaction_details']['store_fee'], $fee_currency );
+
+		if ( $this->has_tax() ) {
+			$before_tax = $data['fee_rates']['before_tax'];
+			$fee_amount = WC_Payments_Utils::interpret_stripe_amount( $before_tax['amount'], $before_tax['currency'] );
+		} else {
+			$fee_amount = WC_Payments_Utils::interpret_stripe_amount( (int) $data['transaction_details']['store_fee'], $fee_currency );
+		}
 
 		$base_fee_label = $this->is_base_fee_only()
 			? __( 'Base fee', 'woocommerce-payments' )
@@ -129,22 +135,12 @@ class WC_Payments_Captured_Event_Note {
 		}
 		$is_same_symbol = $this->has_same_currency_symbol( $data['transaction_details']['store_currency'], $data['transaction_details']['customer_currency'] );
 
-		$tax_string = '';
-		if ( $this->has_tax() ) {
-			$tax_string = sprintf(
-				' + %1$s%% %2$s',
-				self::format_fee( $this->captured_event['fee_rates']['tax']['percentage_rate'] ),
-				$this->get_localized_tax_description()
-			);
-		}
-
 		return sprintf(
-			'%1$s (%2$s%% + %3$s%4$s%5$s): %6$s%7$s',
+			'%1$s (%2$s%% + %3$s%4$s): %5$s%6$s',
 			$base_fee_label,
 			self::format_fee( $percentage ),
 			WC_Payments_Utils::format_currency( $fixed, $fixed_currency ),
 			$is_same_symbol ? ' ' . $data['transaction_details']['customer_currency'] : '',
-			$tax_string,
 			WC_Payments_Utils::format_currency( -$fee_amount, $fee_currency ),
 			$is_same_symbol ? " $fee_currency" : ''
 		);
@@ -297,10 +293,28 @@ class WC_Payments_Captured_Event_Note {
 			return null;
 		}
 
+		$tax        = $this->captured_event['fee_rates']['tax'];
+		$tax_amount = $tax['amount'];
+		if ( 0 === $tax_amount ) {
+			return null;
+		}
+
+		$tax_currency     = $tax['currency'];
+		$formatted_amount = WC_Payments_Utils::format_currency(
+			-abs( WC_Payments_Utils::interpret_stripe_amount( $tax_amount, $tax_currency ) ),
+			$tax_currency
+		);
+
+		$tax_description      = ' ' . $this->get_localized_tax_description();
+		$percentage_rate      = $tax['percentage_rate'];
+		$formatted_percentage = ' (' . self::format_fee( $percentage_rate ) . '%)';
+
 		return sprintf(
-			'%1$s: %2$s%%',
-			$this->get_localized_tax_description(),
-			self::format_fee( $this->captured_event['fee_rates']['tax']['percentage_rate'] )
+			/* translators: 1: tax description 2: tax percentage 3: tax amount */
+			__( 'Tax%1$s%2$s: %3$s', 'woocommerce-payments' ),
+			$tax_description,
+			$formatted_percentage,
+			$formatted_amount
 		);
 	}
 

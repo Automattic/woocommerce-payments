@@ -56,12 +56,12 @@
   },
   "expectation": {
     "fxString": null,
-    "feeString": "Fee (3.5% + £0.25 + 20% UK VAT): -£0.94",
+    "feeString": "Fee (3.5% + £0.25): -£0.78",
     "feeBreakdown": {
       "base": "Base fee: 1.5% + £0.25",
       "additional-international": "International card fee: 2%"
     },
-    "netString": "Net payout: £14.07 GBP",
-    "taxString": "UK VAT: 20%"
+    "taxString": "Tax UK VAT (20%): -£0.16",
+    "netString": "Net payout: £14.07 GBP"
   }
 }
