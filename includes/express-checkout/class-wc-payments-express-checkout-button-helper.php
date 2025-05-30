@@ -542,123 +542,6 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
-	 * Gets shipping options available for specified shipping address
-	 *
-	 * @param array   $shipping_address Shipping address.
-	 * @param boolean $itemized_display_items Indicates whether to show subtotals or itemized views.
-	 *
-	 * @return array Shipping options data.
-	 *
-	 * phpcs:ignore Squiz.Commenting.FunctionCommentThrowTag
-	 */
-	public function get_shipping_options( $shipping_address, $itemized_display_items = false ) {
-		try {
-			// Set the shipping options.
-			$data = [];
-
-			// Remember current shipping method before resetting.
-			$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods', [] );
-			$this->calculate_shipping( apply_filters( 'wcpay_payment_request_shipping_posted_values', $shipping_address ) );
-
-			$packages = WC()->shipping->get_packages();
-
-			if ( ! empty( $packages ) && WC()->customer->has_calculated_shipping() ) {
-				foreach ( $packages as $package ) {
-					if ( empty( $package['rates'] ) ) {
-						throw new Exception( __( 'Unable to find shipping method for address.', 'woocommerce-payments' ) );
-					}
-
-					foreach ( $package['rates'] as $rate ) {
-						$data['shipping_options'][] = [
-							'id'          => $rate->id,
-							'displayName' => $rate->label,
-							'amount'      => WC_Payments_Utils::prepare_amount( $rate->cost, get_woocommerce_currency() ),
-						];
-					}
-				}
-			} else {
-				throw new Exception( __( 'Unable to find shipping method for address.', 'woocommerce-payments' ) );
-			}
-
-			// The first shipping option is automatically applied on the client.
-			// Keep chosen shipping method by sorting shipping options if the method still available for new address.
-			// Fallback to the first available shipping method.
-			if ( isset( $data['shipping_options'][0] ) ) {
-				if ( isset( $chosen_shipping_methods[0] ) ) {
-					$chosen_method_id         = $chosen_shipping_methods[0];
-					$compare_shipping_options = function ( $a, $b ) use ( $chosen_method_id ) {
-						if ( $a['id'] === $chosen_method_id ) {
-							return -1;
-						}
-
-						if ( $b['id'] === $chosen_method_id ) {
-							return 1;
-						}
-
-						return 0;
-					};
-					usort( $data['shipping_options'], $compare_shipping_options );
-				}
-
-				$first_shipping_method_id = $data['shipping_options'][0]['id'];
-				$this->update_shipping_method( [ $first_shipping_method_id ] );
-			}
-
-			WC()->cart->calculate_totals();
-
-			$this->maybe_restore_recurring_chosen_shipping_methods( $chosen_shipping_methods );
-
-			$data          += $this->build_display_items( $itemized_display_items );
-			$data['result'] = 'success';
-		} catch ( Exception $e ) {
-			$data          += $this->build_display_items( $itemized_display_items );
-			$data['result'] = 'invalid_shipping_address';
-		}
-
-		return $data;
-	}
-
-	/**
-	 * Restores the shipping methods previously chosen for each recurring cart after shipping was reset and recalculated
-	 * during the Express Checkout get_shipping_options flow.
-	 *
-	 * When the cart contains multiple subscriptions with different billing periods, customers are able to select different shipping
-	 * methods for each subscription, however, this is not supported when purchasing with Apple Pay and Google Pay as it's
-	 * only concerned about handling the initial purchase.
-	 *
-	 * In order to avoid Woo Subscriptions's `WC_Subscriptions_Cart::validate_recurring_shipping_methods` throwing an error, we need to restore
-	 * the previously chosen shipping methods for each recurring cart.
-	 *
-	 * This function needs to be called after `WC()->cart->calculate_totals()` is run, otherwise `WC()->cart->recurring_carts` won't exist yet.
-	 *
-	 * @param array $previous_chosen_methods The previously chosen shipping methods.
-	 */
-	private function maybe_restore_recurring_chosen_shipping_methods( $previous_chosen_methods = [] ) {
-		if ( empty( WC()->cart->recurring_carts ) || ! method_exists( 'WC_Subscriptions_Cart', 'get_recurring_shipping_package_key' ) ) {
-			return;
-		}
-
-		$chosen_shipping_methods = WC()->session->get( 'chosen_shipping_methods', [] );
-
-		foreach ( WC()->cart->recurring_carts as $recurring_cart_key => $recurring_cart ) {
-			foreach ( $recurring_cart->get_shipping_packages() as $recurring_cart_package_index => $recurring_cart_package ) {
-				// phpcs:ignore
-				/**
-				 * @psalm-suppress UndefinedClass
-				 */
-				$package_key = WC_Subscriptions_Cart::get_recurring_shipping_package_key( $recurring_cart_key, $recurring_cart_package_index );
-
-				// If the recurring cart package key is found in the previous chosen methods, but not in the current chosen methods, restore it.
-				if ( isset( $previous_chosen_methods[ $package_key ] ) && ! isset( $chosen_shipping_methods[ $package_key ] ) ) {
-					$chosen_shipping_methods[ $package_key ] = $previous_chosen_methods[ $package_key ];
-				}
-			}
-		}
-
-		WC()->session->set( 'chosen_shipping_methods', $chosen_shipping_methods );
-	}
-
-	/**
 	 * Gets the product data for the currently viewed page.
 	 *
 	 * @return mixed Returns false if not on a product page, the product information otherwise.
@@ -756,10 +639,6 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * @return bool
 	 */
 	private function is_pay_for_order_supported() {
-		if ( ! WC_Payments_Features::is_tokenized_cart_ece_enabled() ) {
-			return true;
-		}
-
 		$order_id = absint( get_query_var( 'order-pay' ) );
 		if ( 0 === $order_id ) {
 			return false;
@@ -944,100 +823,6 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
-	 * The Express Checkout Element API provides its own validation for the address form.
-	 * For some countries, it might not provide a state field, so we need to return a more descriptive
-	 * error message, indicating that the Express Checkout Element button is not supported for that country.
-	 */
-	public function validate_state() {
-		$wc_checkout     = WC_Checkout::instance();
-		$posted_data     = $wc_checkout->get_posted_data();
-		$checkout_fields = $wc_checkout->get_checkout_fields();
-		$countries       = WC()->countries->get_countries();
-
-		$is_supported = true;
-		// Checks if billing state is missing and is required.
-		if ( ! empty( $checkout_fields['billing']['billing_state']['required'] ) && '' === $posted_data['billing_state'] ) {
-			$is_supported = false;
-		}
-
-		// Checks if shipping state is missing and is required.
-		if ( WC()->cart->needs_shipping_address() && ! empty( $checkout_fields['shipping']['shipping_state']['required'] ) && '' === $posted_data['shipping_state'] ) {
-			$is_supported = false;
-		}
-
-		if ( ! $is_supported ) {
-			wc_add_notice(
-				sprintf(
-					/* translators: %s: country. */
-					__( 'The express checkout is not supported in %s because some required fields couldn\'t be verified. Please proceed to the checkout page and try again.', 'woocommerce-payments' ),
-					$countries[ $posted_data['billing_country'] ] ?? $posted_data['billing_country']
-				),
-				'error'
-			);
-		}
-	}
-
-	/**
-	 * Normalizes billing and shipping state fields.
-	 */
-	public function normalize_state() {
-		check_ajax_referer( 'woocommerce-process_checkout', '_wpnonce' );
-
-		$billing_country  = ! empty( $_POST['billing_country'] ) ? wc_clean( wp_unslash( $_POST['billing_country'] ) ) : '';
-		$shipping_country = ! empty( $_POST['shipping_country'] ) ? wc_clean( wp_unslash( $_POST['shipping_country'] ) ) : '';
-		$billing_state    = ! empty( $_POST['billing_state'] ) ? wc_clean( wp_unslash( $_POST['billing_state'] ) ) : '';
-		$shipping_state   = ! empty( $_POST['shipping_state'] ) ? wc_clean( wp_unslash( $_POST['shipping_state'] ) ) : '';
-
-		// Due to a bug in Apple Pay, the "Region" part of a Hong Kong address is delivered in
-		// `shipping_postcode`, so we need some special case handling for that. According to
-		// our sources at Apple Pay people will sometimes use the district or even sub-district
-		// for this value. As such we check against all regions, districts, and sub-districts
-		// with both English and Mandarin spelling.
-		//
-		// @reykjalin: The check here is quite elaborate in an attempt to make sure this doesn't break once
-		// Apple Pay fixes the bug that causes address values to be in the wrong place. Because of that the
-		// algorithm becomes:
-		// 1. Use the supplied state if it's valid (in case Apple Pay bug is fixed)
-		// 2. Use the value supplied in the postcode if it's a valid HK region (equivalent to a WC state).
-		// 3. Fall back to the value supplied in the state. This will likely cause a validation error, in
-		// which case a merchant can reach out to us so we can either: 1) add whatever the customer used
-		// as a state to our list of valid states; or 2) let them know the customer must spell the state
-		// in some way that matches our list of valid states.
-		//
-		// @reykjalin: This HK specific sanitazation *should be removed* once Apple Pay fix
-		// the address bug. More info on that in pc4etw-bY-p2.
-		if ( 'HK' === $billing_country ) {
-			include_once WCPAY_ABSPATH . 'includes/constants/class-express-checkout-hong-kong-states.php';
-
-			if ( ! \WCPay\Constants\Express_Checkout_Hong_Kong_States::is_valid_state( strtolower( $billing_state ) ) ) {
-				$billing_postcode = ! empty( $_POST['billing_postcode'] ) ? wc_clean( wp_unslash( $_POST['billing_postcode'] ) ) : '';
-				if ( \WCPay\Constants\Express_Checkout_Hong_Kong_States::is_valid_state( strtolower( $billing_postcode ) ) ) {
-					$billing_state = $billing_postcode;
-				}
-			}
-		}
-		if ( 'HK' === $shipping_country ) {
-			include_once WCPAY_ABSPATH . 'includes/constants/class-express-checkout-hong-kong-states.php';
-
-			if ( ! \WCPay\Constants\Express_Checkout_Hong_Kong_States::is_valid_state( strtolower( $shipping_state ) ) ) {
-				$shipping_postcode = ! empty( $_POST['shipping_postcode'] ) ? wc_clean( wp_unslash( $_POST['shipping_postcode'] ) ) : '';
-				if ( \WCPay\Constants\Express_Checkout_Hong_Kong_States::is_valid_state( strtolower( $shipping_postcode ) ) ) {
-					$shipping_state = $shipping_postcode;
-				}
-			}
-		}
-
-		// Finally we normalize the state value we want to process.
-		if ( $billing_state && $billing_country ) {
-			$_POST['billing_state'] = $this->get_normalized_state( $billing_state, $billing_country );
-		}
-
-		if ( $shipping_state && $shipping_country ) {
-			$_POST['shipping_state'] = $this->get_normalized_state( $shipping_state, $shipping_country );
-		}
-	}
-
-	/**
 	 * Checks if given state is normalized.
 	 *
 	 * @param string $state State.
@@ -1140,23 +925,6 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
-	 * Updates shipping method in WC session
-	 *
-	 * @param array $shipping_methods Array of selected shipping methods ids.
-	 */
-	public function update_shipping_method( $shipping_methods ) {
-		$chosen_shipping_methods = (array) WC()->session->get( 'chosen_shipping_methods' );
-
-		if ( is_array( $shipping_methods ) ) {
-			foreach ( $shipping_methods as $i => $value ) {
-				$chosen_shipping_methods[ $i ] = wc_clean( $value );
-			}
-		}
-
-		WC()->session->set( 'chosen_shipping_methods', $chosen_shipping_methods );
-	}
-
-	/**
 	 * Add express checkout payment method title to the order.
 	 *
 	 * @param integer $order_id The order ID.
@@ -1187,67 +955,5 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		$order = wc_get_order( $order_id );
 		$order->set_payment_method_title( $payment_method_title . $suffix );
 		$order->save();
-	}
-
-	/**
-	 * Calculate and set shipping method.
-	 *
-	 * @param array $address Shipping address.
-	 */
-	protected function calculate_shipping( $address = [] ) {
-		$country   = $address['country'];
-		$state     = $address['state'];
-		$postcode  = $address['postcode'];
-		$city      = $address['city'];
-		$address_1 = $address['address_1'];
-		$address_2 = $address['address_2'];
-
-		// Normalizes state to calculate shipping zones.
-		$state = $this->get_normalized_state( $state, $country );
-
-		// Normalizes postal code in case of redacted data from Apple Pay.
-		$postcode = $this->get_normalized_postal_code( $postcode, $country );
-
-		WC()->shipping->reset_shipping();
-
-		if ( $postcode && WC_Validation::is_postcode( $postcode, $country ) ) {
-			$postcode = wc_format_postcode( $postcode, $country );
-		}
-
-		if ( $country ) {
-			WC()->customer->set_location( $country, $state, $postcode, $city );
-			WC()->customer->set_shipping_location( $country, $state, $postcode, $city );
-		} else {
-			WC()->customer->set_billing_address_to_base();
-			WC()->customer->set_shipping_address_to_base();
-		}
-
-		WC()->customer->set_calculated_shipping( true );
-		WC()->customer->save();
-
-		$packages = [];
-
-		$packages[0]['contents']                 = WC()->cart->get_cart();
-		$packages[0]['contents_cost']            = 0;
-		$packages[0]['applied_coupons']          = WC()->cart->applied_coupons;
-		$packages[0]['user']['ID']               = get_current_user_id();
-		$packages[0]['destination']['country']   = $country;
-		$packages[0]['destination']['state']     = $state;
-		$packages[0]['destination']['postcode']  = $postcode;
-		$packages[0]['destination']['city']      = $city;
-		$packages[0]['destination']['address']   = $address_1;
-		$packages[0]['destination']['address_2'] = $address_2;
-
-		foreach ( WC()->cart->get_cart() as $item ) {
-			if ( $item['data']->needs_shipping() ) {
-				if ( isset( $item['line_total'] ) ) {
-					$packages[0]['contents_cost'] += $item['line_total'];
-				}
-			}
-		}
-
-		$packages = apply_filters( 'woocommerce_cart_shipping_packages', $packages );
-
-		WC()->shipping->calculate_shipping( $packages );
 	}
 }

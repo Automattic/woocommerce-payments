@@ -9,7 +9,7 @@ import { decodeEntities } from '@wordpress/html-entities';
  */
 import { getExpressCheckoutData } from '../utils';
 import { applyFilters } from '@wordpress/hooks';
-import { SHIPPING_RATES_UPPER_LIMIT_COUNT } from 'wcpay/tokenized-express-checkout/constants';
+import { SHIPPING_RATES_UPPER_LIMIT_COUNT } from 'wcpay/express-checkout/constants';
 
 /**
  * GooglePay/ApplePay expect the prices to be formatted in cents.
