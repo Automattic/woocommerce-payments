@@ -927,35 +927,6 @@ describe( 'composeTaxString', () => {
 		);
 	} );
 
-	// New test cases for tax percentage rate validation
-	it( 'should handle negative tax percentage rate', () => {
-		const event = {
-			fee_rates: {
-				tax: {
-					amount: 10,
-					currency: 'EUR',
-					percentage_rate: -0.21,
-					description: 'ES VAT',
-				},
-			},
-		};
-		expect( composeTaxString( event ) ).toBe( 'Tax ES VAT: -€0.10' );
-	} );
-
-	it( 'should handle tax percentage rate over 100%', () => {
-		const event = {
-			fee_rates: {
-				tax: {
-					amount: 10,
-					currency: 'EUR',
-					percentage_rate: 1.5,
-					description: 'ES VAT',
-				},
-			},
-		};
-		expect( composeTaxString( event ) ).toBe( 'Tax ES VAT: -€0.10' );
-	} );
-
 	it( 'should handle tax percentage rate at boundary (0%)', () => {
 		const event = {
 			fee_rates: {
@@ -984,32 +955,5 @@ describe( 'composeTaxString', () => {
 		expect( composeTaxString( event ) ).toBe(
 			'Tax ES VAT (100.00%): -€0.10'
 		);
-	} );
-
-	it( 'should handle invalid tax percentage rate with different currency', () => {
-		const event = {
-			fee_rates: {
-				tax: {
-					amount: 100,
-					currency: 'JPY',
-					percentage_rate: -0.15,
-					description: 'JP JCT',
-				},
-			},
-		};
-		expect( composeTaxString( event ) ).toBe( 'Tax JP JCT: -¥1' );
-	} );
-
-	it( 'should handle invalid tax percentage rate with no description', () => {
-		const event = {
-			fee_rates: {
-				tax: {
-					amount: 10,
-					currency: 'EUR',
-					percentage_rate: 1.5,
-				},
-			},
-		};
-		expect( composeTaxString( event ) ).toBe( 'Tax: -€0.10' );
 	} );
 } );

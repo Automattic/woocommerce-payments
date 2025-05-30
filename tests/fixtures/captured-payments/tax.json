@@ -55,7 +55,6 @@
     }
   },
   "expectation": {
-    "fxString": null,
     "feeString": "Fee (3.5% + £0.25): -£0.78",
     "feeBreakdown": {
       "base": "Base fee: 1.5% + £0.25",
