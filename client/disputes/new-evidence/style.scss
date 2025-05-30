@@ -1,3 +1,40 @@
+// Define mixins here
+@mixin heading-xl {
+  /* Heading XL */
+	font-size: var( --xl, 20px );
+	font-style: normal;
+	font-weight: var( --Medium, 500 );
+	line-height: var( --m, 24px ); /* 120% */
+}
+@mixin heading-md {
+  /* Heading MD */
+  font-size: var(--m, 13px);
+  font-style: normal;
+  font-weight: var(--Medium, 500);
+  line-height: var(--s, 20px); /* 153.846% */
+}
+@mixin heading-s {
+  /* Heading S */
+  font-size: var(--xs, 11px);
+  font-style: normal;
+  font-weight: var(--Medium, 500);
+  line-height: var(--xs, 16px); /* 145.455% */
+}
+@mixin body-md {
+  /* Body MD */
+	font-size: var( --m, 13px );
+	font-style: normal;
+	font-weight: var( --Regular, 400 );
+	line-height: var( --s, 20px ); /* 153.846% */
+}
+@mixin body-sm {
+  /* Body SM */
+  font-size: var(--s, 12px);
+  font-style: normal;
+  font-weight: var(--Regular, 400);
+  line-height: var(--xs, 16px); /* 133.333% */ 
+}
+
 // Container for the new-evidence page
 .wcpay-dispute-evidence-new {
 	display: flex;
@@ -33,24 +70,15 @@
 }
 
 .wcpay-dispute-evidence-new__stepper-title {
+  @include heading-xl;
 	color: var( --Scales-Grays-gray-900, $gray-900 );
-	/* Heading XL */
-	font-size: var( --xl, 20px );
-	font-style: normal;
-	font-weight: var( --Medium, 500 );
-	line-height: var( --m, 24px ); /* 120% */
-
 	margin-top: 24px;
 	margin-bottom: 12px;
 }
 
 .wcpay-dispute-evidence-new__stepper-subheading {
 	color: var( --Scales-Grays-gray-700, $gray-700 );
-	/* Body MD */
-	font-size: var( --m, 13px );
-	font-style: normal;
-	font-weight: var( --Regular, 400 );
-	line-height: var( --s, 20px ); /* 153.846% */
+  @include body-md;
 }
 
 .wcpay-dispute-evidence-new__button-row {
@@ -69,4 +97,194 @@
 	.components-button
 	+ .components-button {
 	margin-left: 8px;
+}
+
+// Customer details section
+.wcpay-dispute-evidence-customer-details {
+	margin-top: 24px;
+	margin-bottom: 40px;
+
+	&__heading {
+    @include heading-md;
+    color: var(--Scales-Grays-gray-900, $gray-900);
+    margin-bottom: 16px;
+	}
+
+	&__row {
+		display: flex;
+    align-items: flex-start;
+		gap: 32px;
+		margin-bottom: 24px;
+	}
+
+	&__row > div {
+		flex: 0 0 auto;
+		min-width: 70px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    align-self: stretch;
+
+    & > span {
+      color: var( --Scales-Grays-gray-700, $gray-700 );
+      @include body-md;
+    }
+	}
+
+	&__label,
+	&__billing-label {
+    color: var(--Scales-Grays-gray-900, $gray-900);
+    text-transform: uppercase;
+    @include heading-s;
+	}
+
+	&__link {
+		color: var( --wp-admin-theme-color );
+    @include body-sm; 
+		text-decoration: underline;
+		word-break: break-all;
+	}
+
+	&__billing {
+		margin-top: 8px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    align-self: stretch; 
+	}
+
+	&__billing-value {
+		color: var(--Scales-Grays-gray-900, $gray-700);
+		@include body-sm;
+		word-break: break-word;
+	}
+
+	@media (max-width: 700px) {
+		&__row {
+			flex-direction: column;
+			gap: 8px;
+		}
+		&__row > div {
+			min-width: 0;
+		}
+	}
+}
+
+// Product details section
+.wcpay-dispute-evidence-product-details {
+  margin-bottom: 40px;
+
+	&__heading {
+    @include heading-md;
+    color: var(--Scales-Grays-gray-900, $gray-900);
+    margin-bottom: 16px;
+	} 
+
+  &__field-group {
+    margin-bottom: 24px;
+  }
+}
+
+.wcpay-dispute-evidence-recommended-documents {
+  margin-bottom: 40px;
+
+	&__heading {
+    @include heading-md;
+    color: var(--Scales-Grays-gray-900, $gray-900);
+    margin-bottom: 16px;
+	}
+
+  &__subheading {
+    color: var(--Scales-Grays-gray-700, $gray-700);
+    @include body-md;
+  }
+}
+
+.wcpay-dispute-evidence-file-upload-control {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-bottom: 16px;
+
+  &__label {
+    flex: 1 0 220px;
+    color: var(--Scales-Grays-gray-900, $gray-900);
+    @include body-md;
+    margin-right: 16px;
+    text-align: left;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  &__upload .components-button {
+    background: var(--wp-admin-theme-color);;
+    color: #fff;
+    border-radius: 8px;
+    min-width: 48px;
+    min-height: 48px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: none;
+    border: none;
+    transition: background 0.2s;
+    &:hover:not(:disabled) {
+      background: color-mix(in srgb, var(--wp-admin-theme-color) 10%, transparent);
+    }
+    &:disabled {
+      background: #e0e6f7;
+      color: #b3b3b3;
+      cursor: not-allowed;
+    }
+  }
+
+  &__check {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  &__filename {
+    max-width: 260px;
+    background: color-mix(in srgb, var(--wp-admin-theme-color) 10%, transparent);
+    color: var(--wp-admin-theme-color);
+    border-radius: 24px;
+    padding: 0 20px;
+    font-size: 14px;
+    line-height: 32px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  &__remove .components-button {
+    background: transparent;
+    color: var(--wp-admin-theme-color);
+    border: none;
+    min-width: 32px;
+    min-height: 32px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    &:hover:not(:disabled) {
+      background: #e0e6f7;
+    }
+    &:disabled {
+      color: #b3b3b3;
+      cursor: not-allowed;
+    }
+  }
 }
