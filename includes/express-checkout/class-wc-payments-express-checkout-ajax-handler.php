@@ -307,9 +307,12 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			include_once WCPAY_ABSPATH . 'includes/constants/class-express-checkout-hong-kong-states.php';
 
 			$state = $address['state'] ?? '';
-			if ( ! empty( $state ) && ! \WCPay\Constants\Express_Checkout_Hong_Kong_States::is_valid_state( strtolower( $state ) ) ) {
+			if ( ! \WCPay\Constants\Express_Checkout_Hong_Kong_States::is_valid_state( strtolower( $state ) ) ) {
 				$postcode = $address['postcode'] ?? '';
-				if ( ! empty( $postcode ) && \WCPay\Constants\Express_Checkout_Hong_Kong_States::is_valid_state( strtolower( $postcode ) ) ) {
+				if ( strtolower( $postcode ) === 'hongkong' ) {
+					$postcode = 'hong kong';
+				}
+				if ( \WCPay\Constants\Express_Checkout_Hong_Kong_States::is_valid_state( strtolower( $postcode ) ) ) {
 					$address['state'] = $postcode;
 				}
 			}
