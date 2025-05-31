@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Constants\Country_Code;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Duplicates_Detection_Service;
 use WCPay\Payment_Methods\CC_Payment_Method;
@@ -29,27 +30,24 @@ class WC_Payments_Express_Checkout_Ajax_Handler_Test extends WCPAY_UnitTestCase 
 	public function set_up() {
 		parent::set_up();
 
-		$express_checkout_button_helper_mock = $this->getMockBuilder( WC_Payments_Express_Checkout_Button_Helper::class )
-			->onlyMethods( [] )
+		$gateway_mock = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
 			->disableOriginalConstructor()
 			->getMock();
 
-		update_option( '_wcpay_feature_tokenized_cart_ece', '1' );
+		$account_mock = $this->getMockBuilder( WC_Payments_Account::class )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$express_checkout_button_helper_mock = new WC_Payments_Express_Checkout_Button_Helper(
+			$gateway_mock,
+			$account_mock
+		);
+
 		$this->ajax_handler = new WC_Payments_Express_Checkout_Ajax_Handler(
 			$express_checkout_button_helper_mock
 		);
+
 		$this->ajax_handler->init();
-	}
-
-	/**
-	 * Clean up after each test.
-	 *
-	 * @return void
-	 */
-	public function tear_down() {
-		delete_option( '_wcpay_feature_tokenized_cart_ece' );
-
-		parent::tear_down();
 	}
 
 	public function test_tokenized_cart_address_avoid_normalization_when_missing_header() {
@@ -186,5 +184,63 @@ class WC_Payments_Express_Checkout_Ajax_Handler_Test extends WCPAY_UnitTestCase 
 		// this shouldn't be modified.
 		$this->assertSame( 'H3B', $shipping_address['postcode'] );
 		$this->assertSame( 'H3B', $billing_address['postcode'] );
+	}
+
+	public function test_tokenized_cart_italy_state_venezia_normalization() {
+		$request = new WP_REST_Request();
+		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_param(
+			'shipping_address',
+			[
+				'country' => 'IT',
+				'state'   => 'Venezia',
+			]
+		);
+		$request->set_param(
+			'billing_address',
+			[
+				'country' => 'IT',
+				'state'   => 'Milano',
+			]
+		);
+
+		$this->ajax_handler->tokenized_cart_store_api_address_normalization( null, null, $request );
+
+		$shipping_address = $request->get_param( 'shipping_address' );
+		$billing_address  = $request->get_param( 'billing_address' );
+
+		$this->assertSame( 'VE', $shipping_address['state'] );
+		$this->assertSame( 'MI', $billing_address['state'] );
+	}
+
+	public function test_tokenized_cart_italy_already_normalized_state() {
+		$request = new WP_REST_Request();
+		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_param(
+			'shipping_address',
+			[
+				'country' => 'IT',
+				'state'   => 'VE',
+			]
+		);
+		$request->set_param(
+			'billing_address',
+			[
+				'country' => 'IT',
+				'state'   => 'MI',
+			]
+		);
+
+		$this->ajax_handler->tokenized_cart_store_api_address_normalization( null, null, $request );
+
+		$shipping_address = $request->get_param( 'shipping_address' );
+		$billing_address  = $request->get_param( 'billing_address' );
+
+		$this->assertSame( 'VE', $shipping_address['state'] );
+		$this->assertSame( 'MI', $billing_address['state'] );
 	}
 }

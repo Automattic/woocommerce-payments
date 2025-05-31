@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Remove WooPayments adding their sections into other gateways when enabled

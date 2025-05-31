@@ -13,7 +13,7 @@ import {
 	getExpressCheckoutButtonStyleSettings,
 	getExpressCheckoutData,
 	normalizeLineItems,
-} from 'wcpay/express-checkout/utils';
+} from '../../utils';
 import {
 	onAbortPaymentHandler,
 	onCancelHandler,
@@ -21,7 +21,7 @@ import {
 	onCompletePaymentHandler,
 	onConfirmHandler,
 	onReadyHandler,
-} from 'wcpay/express-checkout/event-handlers';
+} from '../../event-handlers';
 import { SHIPPING_RATES_UPPER_LIMIT_COUNT } from 'wcpay/express-checkout/constants';
 
 export const useExpressCheckout = ( {
@@ -94,9 +94,7 @@ export const useExpressCheckout = ( {
 
 			const lineItems = normalizeLineItems( billing.cartTotalItems );
 			const totalAmountOfLineItems = lineItems.reduce(
-				( acc, lineItem ) => {
-					return acc + lineItem.amount;
-				},
+				( acc, lineItem ) => acc + lineItem.amount,
 				0
 			);
 
@@ -145,7 +143,12 @@ export const useExpressCheckout = ( {
 			elements,
 			completePayment,
 			abortPayment,
-			event
+			{
+				...event,
+				order_comments: wp?.data
+					?.select( 'wc/store/checkout' )
+					?.getOrderNotes(),
+			}
 		);
 	};
 
