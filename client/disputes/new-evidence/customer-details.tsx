@@ -8,6 +8,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { Dispute } from 'wcpay/types/disputes';
+import CustomerLink from 'wcpay/components/customer-link';
 
 interface CustomerDetailsProps {
 	dispute: Dispute;
@@ -42,12 +43,10 @@ const CustomerDetails: React.FC< CustomerDetailsProps > = ( { dispute } ) => {
 						{ __( 'NAME', 'woocommerce-payments' ) }
 					</div>
 					{ name !== '-' ? (
-						<a
-							href="#"
-							className="wcpay-dispute-evidence-customer-details__link"
-						>
-							{ name }
-						</a>
+						<CustomerLink
+							billing_details={ charge?.billing_details || null }
+							order_details={ charge?.order || null }
+						/>
 					) : (
 						<span>{ name }</span>
 					) }
