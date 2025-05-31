@@ -27,15 +27,13 @@ import CustomerDetails from './customer-details';
 import ProductDetails from './product-details';
 import RecommendedDocuments from './recommended-documents';
 import InlineNotice from 'components/inline-notice';
+import ShippingDetails from './shipping-details';
+import CoverLetter from './cover-letter';
 
 /**
  * Internal dependencies.
  */
-import {
-	Button,
-	HorizontalRule,
-	SelectControl,
-} from 'wcpay/components/wp-components-wrapped';
+import { Button, HorizontalRule } from 'wcpay/components/wp-components-wrapped';
 import { getAdminUrl } from 'wcpay/utils';
 import { StepperPanel } from 'wcpay/components/stepper';
 import {
@@ -97,6 +95,7 @@ export default ( { query }: { query: { id: string } } ) => {
 	const [ isAccordionOpen, setIsAccordionOpen ] = useState( true );
 	const [ redirectAfterSave, setRedirectAfterSave ] = useState( false );
 	const [ productDescription, setProductDescription ] = useState( '' );
+	const [ coverLetter, setCoverLetter ] = useState( '' );
 	const {
 		createSuccessNotice,
 		createErrorNotice,
@@ -112,6 +111,54 @@ export default ( { query }: { query: { id: string } } ) => {
 				setDispute( d );
 				// fallback to multiple if no product type is set
 				setProductType( d.metadata?.__product_type || 'multiple' );
+
+				// Generate default cover letter
+				const merchantName = d?.merchant_name || 'Sellthosejeans';
+				const merchantAddress =
+					d?.merchant_address ||
+					'123 High Street, LONDON, SW1A 1AA, UNITED KINGDOM';
+				const merchantEmail = d?.merchant_email || 'paul@gmail.com';
+				const merchantPhone = d?.merchant_phone || '+13334445566';
+				const today = new Date().toLocaleDateString( undefined, {
+					year: 'numeric',
+					month: 'long',
+					day: 'numeric',
+				} );
+				const acquiringBank =
+					'[Acquiring Bank or Payment Processor Name]';
+				const caseNumber = '[Chargeback Case Number]';
+				const transactionId = '[Transaction ID]';
+				const transactionDate = '[Transaction Date]';
+				const customerName = '[Customer Name]';
+				const product = '[Product]';
+				const orderDate = '[Order Date]';
+				const defaultLetter = `${ merchantName }
+${ merchantAddress }
+${ merchantEmail }
+${ merchantPhone }
+${ today }
+
+To: ${ acquiringBank }
+Subject: Chargeback Dispute – Case # ${ caseNumber }
+
+Dear Dispute Resolution Team,
+
+We are submitting evidence in response to chargeback # ${ caseNumber } for transaction # ${ transactionId } on ${ transactionDate }.
+
+Our records indicate that the customer and legitimate cardholder, ${ customerName }, ordered ${ product } on ${ orderDate }.
+
+To support our case, we are providing the following documentation:
+• AVS/CVV Match: Billing address and security code matched (Attachment A)
+• IP/Device Data: Location and device info used at purchase (Attachment B)
+• Customer Confirmation: Email or chat confirming purchase (Attachment C)
+• Usage Data: Login records for the digital goods (Attachment D)
+
+Based on this information, we respectfully request that the chargeback be reversed. Please let us know if any further details are required.
+
+Thank you,
+Paul McCartney
+${ merchantName }`;
+				setCoverLetter( defaultLetter );
 			} finally {
 				setLoading( false );
 			}
@@ -360,6 +407,14 @@ export default ( { query }: { query: { id: string } } ) => {
 		},
 	];
 
+	// --- Recommended shipping documents ---
+	const recommendedShippingDocumentFields = [
+		{
+			key: 'shipping_receipt',
+			label: __( 'Proof of shipping', 'woocommerce-payments' ),
+		},
+	];
+
 	const recommendedDocumentsFields = recommendedDocumentFields.map(
 		( field ) => ( {
 			key: field.key,
@@ -372,7 +427,46 @@ export default ( { query }: { query: { id: string } } ) => {
 		} )
 	);
 
+	const recommendedShippingDocumentsFields = recommendedShippingDocumentFields.map(
+		( field ) => ( {
+			key: field.key,
+			label: field.label,
+			fileName: evidence[ field.key ] || '',
+			uploaded: !! evidence[ field.key ],
+			onFileChange: ( _key: string, file: File ) =>
+				Promise.resolve( doUploadFile( field.key, file ) ),
+			onFileRemove: () => Promise.resolve( doRemoveFile( field.key ) ),
+		} )
+	);
+
 	const bankName = dispute?.charge ? getBankName( dispute.charge ) : null;
+
+	const inlineNotice = ( bankName: string | null ) => (
+		<InlineNotice
+			icon
+			isDismissible={ false }
+			status="info"
+			className="dispute-steps__notice-content"
+		>
+			{ createInterpolateElement(
+				bankName
+					? sprintf(
+							__(
+								'<strong>WooPayments does not determine the outcome of the dispute process</strong> and is not liable for any chargebacks. <strong>%1$s</strong> makes the decision in this process.',
+								'woocommerce-payments'
+							),
+							bankName
+					  )
+					: __(
+							"<strong>WooPayments does not determine the outcome of the dispute process</strong> and is not liable for any chargebacks. The cardholder's bank makes the decision in this process.",
+							'woocommerce-payments'
+					  ),
+				{
+					strong: <strong />,
+				}
+			) }
+		</InlineNotice>
+	);
 
 	// --- Step content ---
 	const renderStepContent = () => {
@@ -473,30 +567,7 @@ export default ( { query }: { query: { id: string } } ) => {
 					<RecommendedDocuments
 						fields={ recommendedDocumentsFields }
 					/>
-					<InlineNotice
-						icon
-						isDismissible={ false }
-						status="info"
-						className="dispute-steps__notice-content"
-					>
-						{ createInterpolateElement(
-							bankName
-								? sprintf(
-										__(
-											'<strong>WooPayments does not determine the outcome of the dispute process</strong> and is not liable for any chargebacks. <strong>%1$s</strong> makes the decision in this process.',
-											'woocommerce-payments'
-										),
-										bankName
-								  )
-								: __(
-										"<strong>WooPayments does not determine the outcome of the dispute process</strong> and is not liable for any chargebacks. The cardholder's bank makes the decision in this process.",
-										'woocommerce-payments'
-								  ),
-							{
-								strong: <strong />,
-							}
-						) }
-					</InlineNotice>
+					{ inlineNotice( bankName ) }
 				</>
 			);
 		}
@@ -509,15 +580,14 @@ export default ( { query }: { query: { id: string } } ) => {
 					<p className="wcpay-dispute-evidence-new__stepper-subheading">
 						{ steps[ 1 ].subheading }
 					</p>
-					{ fields
-						.filter(
-							( s: any ) => s.key === 'shipping_information'
-						)
-						.map( ( section: any ) => (
-							<div key={ section.key }>
-								{ section.fields.map( renderField ) }
-							</div>
-						) ) }
+					<ShippingDetails
+						dispute={ dispute }
+						readOnly={ readOnly }
+					/>
+					<RecommendedDocuments
+						fields={ recommendedShippingDocumentsFields }
+					/>
+					{ inlineNotice( bankName ) }
 				</>
 			);
 		}
@@ -532,13 +602,11 @@ export default ( { query }: { query: { id: string } } ) => {
 					<p className="wcpay-dispute-evidence-new__stepper-subheading">
 						{ steps[ reviewStep ].subheading }
 					</p>
-					<div className="cover-letter-preview">
-						{ evidence.uncategorized_text ||
-							__(
-								'No additional details provided.',
-								'woocommerce-payments'
-							) }
-					</div>
+					<CoverLetter
+						value={ coverLetter }
+						onChange={ setCoverLetter }
+					/>
+					{ inlineNotice( bankName ) }
 				</>
 			);
 		}

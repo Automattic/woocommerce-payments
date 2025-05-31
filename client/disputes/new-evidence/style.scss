@@ -189,6 +189,20 @@
   }
 }
 
+.wcpay-dispute-evidence-shipping-details {
+  margin-bottom: 40px;
+
+  &__heading {
+    @include heading-md;
+    color: var(--Scales-Grays-gray-900, $gray-900);
+    margin-bottom: 16px;
+  }
+
+  &__field-group {
+    margin-bottom: 24px;
+  }
+}
+  
 .wcpay-dispute-evidence-recommended-documents {
   margin-bottom: 40px;
 
@@ -226,7 +240,7 @@
   }
 
   &__upload .components-button {
-    background: var(--wp-admin-theme-color);;
+    background: var(--wp-admin-theme-color);
     color: #fff;
     border-radius: 8px;
     min-width: 48px;
@@ -248,43 +262,98 @@
     }
   }
 
-  &__check {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
   &__filename {
-    max-width: 260px;
+    max-width: 320px;
+    min-width: 120px;
     background: color-mix(in srgb, var(--wp-admin-theme-color) 10%, transparent);
-    color: var(--wp-admin-theme-color);
     border-radius: 24px;
-    padding: 0 20px;
+    padding: 0 12px 0 12px;
     font-size: 14px;
     line-height: 32px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    display: inline-block;
-    vertical-align: middle;
+    position: relative;
+  }
+
+  &__filename-text {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    color: var(--wp-admin-theme-color);
   }
 
   &__remove .components-button {
-    background: transparent;
-    color: var(--wp-admin-theme-color);
     border: none;
-    min-width: 32px;
-    min-height: 32px;
+    min-width: 24px;
+    min-height: 24px;
     padding: 0;
     display: flex;
     align-items: center;
     justify-content: center;
+    color: var(--wp-admin-theme-color);
+    background: transparent;
+    svg {
+      color: inherit;
+      fill: currentColor;
+    }
     &:hover:not(:disabled) {
-      background: #e0e6f7;
+      background: color-mix(in srgb, #fff 10%, transparent);
+      color: var(--wp-admin-theme-color);
     }
     &:disabled {
       color: #b3b3b3;
       cursor: not-allowed;
     }
+  }
+}
+
+.wcpay-dispute-evidence-cover-letter__printonly {
+  display: none;
+}
+
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+  .wcpay-dispute-evidence-cover-letter,
+  .wcpay-dispute-evidence-cover-letter * {
+    visibility: visible !important;
+  }
+  .wcpay-dispute-evidence-cover-letter {
+    display: flex !important;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    max-width: 700px;
+    margin: 0 auto !important;
+    background: #fff;
+    z-index: 9999;
+    padding: 40px;
+    box-sizing: border-box;
+    page-break-inside: avoid;
+  }
+  .wcpay-dispute-evidence-cover-letter__print,
+  .wcpay-dispute-evidence-cover-letter__textarea {
+    display: none !important;
+  }
+  .wcpay-dispute-evidence-cover-letter__printonly {
+    display: block !important;
+    white-space: pre-wrap;
+    font-family: inherit;
+    font-size: 16px;
+    color: #000;
+    background: #fff;
+    border: none;
+    margin: 0;
+    padding: 0;
+    text-align: left;
+    width: 100%;
   }
 }
