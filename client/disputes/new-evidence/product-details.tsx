@@ -34,9 +34,6 @@ const ProductDetails: React.FC< ProductDetailsProps > = ( {
 			</h3>
 			<div className="wcpay-dispute-evidence-product-details__field-group">
 				<SelectControl
-					// @ts-ignore
-					__next40pxDefaultSize
-					__nextHasNoMarginBottom
 					label={ __( 'PRODUCT TYPE', 'woocommerce-payments' ) }
 					help={ __(
 						'First select the kind of product you fulfilled.',
@@ -79,8 +76,6 @@ const ProductDetails: React.FC< ProductDetailsProps > = ( {
 			</div>
 			<div className="wcpay-dispute-evidence-product-details__field-group">
 				<TextareaControl
-					// @ts-ignore
-					__nextHasNoMarginBottom
 					label={ __(
 						'PRODUCT DESCRIPTION',
 						'woocommerce-payments'

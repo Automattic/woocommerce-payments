@@ -23,7 +23,7 @@ const CustomerDetails: React.FC< CustomerDetailsProps > = ( { dispute } ) => {
 	const phone = charge?.billing_details?.phone || '-';
 	const email = charge?.billing_details?.email || '-';
 	const ip = dispute.order?.ip_address || '-';
-	const address = charge?.billing_details.address;
+	const address = charge?.billing_details?.address;
 	const billingLine1 = address?.line1 || '';
 	const billingLine2 = address?.line2 || '';
 	const billingCity = address?.city || '';

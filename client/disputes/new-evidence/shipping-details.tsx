@@ -33,50 +33,46 @@ const ShippingDetails: React.FC< ShippingDetailsProps > = ( {
 			</h3>
 			<div className="wcpay-dispute-evidence-shipping-details__field-group">
 				<TextControl
-					// @ts-ignore
-					__next40pxDefaultSize
-					__nextHasNoMarginBottom
 					label={ __( 'SHIPPING CARRIER', 'woocommerce-payments' ) }
+					// eslint-disable-next-line @typescript-eslint/no-empty-function
 					onChange={ () => {} }
 					value={ carrier }
+					disabled={ readOnly }
 				/>
 			</div>
 			<div className="wcpay-dispute-evidence-shipping-details__field-group">
 				<TextControl
-					// @ts-ignore
-					__next40pxDefaultSize
-					__nextHasNoMarginBottom
 					label={ __( 'SHIPPING DATE', 'woocommerce-payments' ) }
+					// eslint-disable-next-line @typescript-eslint/no-empty-function
 					onChange={ () => {} }
 					value={ date.toLocaleDateString() }
+					disabled={ readOnly }
 				/>
 			</div>
 			<div className="wcpay-dispute-evidence-shipping-details__field-group">
 				<TextControl
-					// @ts-ignore
-					__next40pxDefaultSize
-					__nextHasNoMarginBottom
 					label={ __( 'TRACKING NUMBER', 'woocommerce-payments' ) }
 					help={ __(
 						'Please make sure the tracking number is accurate.',
 						'woocommerce-payments'
 					) }
+					// eslint-disable-next-line @typescript-eslint/no-empty-function
 					onChange={ () => {} }
 					value={ tracking }
+					disabled={ readOnly }
 				/>
 			</div>
 			<div className="wcpay-dispute-evidence-shipping-details__field-group">
 				<TextControl
-					// @ts-ignore
-					__next40pxDefaultSize
-					__nextHasNoMarginBottom
 					label={ __( 'SHIPPING ADDRESS', 'woocommerce-payments' ) }
 					help={ __(
-						'We prefilled the shipping address for you, please make sure it’s accurate.',
+						"We prefilled the shipping address for you, please make sure it's accurate.",
 						'woocommerce-payments'
 					) }
+					// eslint-disable-next-line @typescript-eslint/no-empty-function
 					onChange={ () => {} }
 					value={ address }
+					disabled={ readOnly }
 				/>
 			</div>
 		</section>

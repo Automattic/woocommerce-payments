@@ -3,6 +3,7 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
+import { external } from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -12,7 +13,6 @@ import {
 	Button,
 	Icon,
 } from 'wcpay/components/wp-components-wrapped';
-import { external } from '@wordpress/icons';
 
 interface CoverLetterProps {
 	value: string;
@@ -34,6 +34,11 @@ const CoverLetter: React.FC< CoverLetterProps > = ( { value, onChange } ) => {
 				variant="primary"
 				onClick={ () => window.print() }
 				icon={ <Icon icon={ external } size={ 24 } /> }
+				style={ {
+					background: '#3B5AFB',
+					color: '#fff',
+					marginBottom: 16,
+				} }
 			>
 				{ __( 'View cover letter', 'woocommerce-payments' ) }
 			</Button>

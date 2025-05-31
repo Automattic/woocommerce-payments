@@ -6,10 +6,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import apiFetch from '@wordpress/api-fetch';
 import { __, sprintf } from '@wordpress/i18n';
-import { useDispatch, useSelect } from '@wordpress/data';
+import { useDispatch } from '@wordpress/data';
 import useConfirmNavigation from 'utils/use-confirm-navigation';
 import { recordEvent } from 'tracks';
-import { FileUploadControl, UploadedReadOnly } from 'components/file-upload';
 import { TestModeNotice } from 'components/test-mode-notice';
 import ErrorBoundary from 'components/error-boundary';
 import Paragraphs from 'components/paragraphs';
@@ -22,7 +21,6 @@ import { HorizontalList } from 'components/horizontal-list';
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 import { getBankName } from 'utils/charge';
-import evidenceFields, { DisputeReason, ProductType } from './fields';
 import CustomerDetails from './customer-details';
 import ProductDetails from './product-details';
 import RecommendedDocuments from './recommended-documents';
@@ -88,7 +86,6 @@ function needsShipping( reason: string | undefined ) {
 export default ( { query }: { query: { id: string } } ) => {
 	const path = `/wc/v3/payments/disputes/${ query.id }`;
 	const [ dispute, setDispute ] = useState< any >();
-	const [ loading, setLoading ] = useState( false );
 	const [ evidence, setEvidence ] = useState< any >( {} );
 	const [ productType, setProductType ] = useState< string >( '' );
 	const [ currentStep, setCurrentStep ] = useState( 0 );
@@ -96,16 +93,13 @@ export default ( { query }: { query: { id: string } } ) => {
 	const [ redirectAfterSave, setRedirectAfterSave ] = useState( false );
 	const [ productDescription, setProductDescription ] = useState( '' );
 	const [ coverLetter, setCoverLetter ] = useState( '' );
-	const {
-		createSuccessNotice,
-		createErrorNotice,
-		createInfoNotice,
-	} = useDispatch( 'core/notices' );
+	const { createSuccessNotice, createErrorNotice } = useDispatch(
+		'core/notices'
+	);
 
 	// --- Data loading ---
 	useEffect( () => {
 		const fetchDispute = async () => {
-			setLoading( true );
 			try {
 				const d: any = await apiFetch( { path } );
 				setDispute( d );
@@ -159,12 +153,12 @@ Thank you,
 Paul McCartney
 ${ merchantName }`;
 				setCoverLetter( defaultLetter );
-			} finally {
-				setLoading( false );
+			} catch ( error ) {
+				createErrorNotice( String( error ) );
 			}
 		};
 		fetchDispute();
-	}, [ path ] );
+	}, [ path, createErrorNotice ] );
 
 	// --- Step logic ---
 	const disputeReason = dispute?.reason;
@@ -177,53 +171,12 @@ ${ merchantName }`;
 		setIsAccordionOpen( currentStep === 0 );
 	}, [ currentStep ] );
 
-	// --- Evidence fields ---
-	const fields = useMemo(
-		() =>
-			evidenceFields(
-				disputeReason as DisputeReason,
-				productType as ProductType
-			),
-		[ disputeReason, productType ]
-	);
-
 	// --- Read-only logic ---
 	const readOnly =
 		dispute &&
 		dispute.status !== 'needs_response' &&
 		dispute.status !== 'warning_needs_response';
 
-	// --- Notices for error deduplication ---
-	const { getNotices } = useSelect(
-		( select: any ) => select( 'core/notices' ),
-		[]
-	);
-
-	// --- Evidence update helpers ---
-	const isEvidenceWithinLengthLimit = ( field: any, value: string ) => {
-		if ( field.maxLength && value.length >= field.maxLength ) {
-			return false;
-		}
-		// Optionally, add total length check here if needed
-		return true;
-	};
-	const updateEvidence = ( key: string, value: any, field?: any ) => {
-		if ( field && ! isEvidenceWithinLengthLimit( field, value ) ) {
-			const errorMessage = __(
-				'Reached maximum character count for evidence',
-				'woocommerce-payments'
-			);
-			if (
-				! getNotices().some(
-					( notice: any ) => notice.content === errorMessage
-				)
-			) {
-				createErrorNotice( errorMessage );
-			}
-			return;
-		}
-		setEvidence( ( e: any ) => ( { ...e, [ key ]: value } ) );
-	};
 	const updateProductType = ( newType: string ) => {
 		recordEvent( 'wcpay_dispute_product_selected', { selection: newType } );
 		setProductType( newType );
@@ -274,7 +227,6 @@ ${ merchantName }`;
 
 	// --- Save/submit logic ---
 	const doSave = async ( submit: boolean ) => {
-		setLoading( true );
 		try {
 			await apiFetch( {
 				path,
@@ -297,8 +249,6 @@ ${ merchantName }`;
 			} else {
 				createErrorNotice( String( err ) );
 			}
-		} finally {
-			setLoading( false );
 		}
 	};
 
@@ -421,7 +371,7 @@ ${ merchantName }`;
 			label: field.label,
 			fileName: evidence[ field.key ] || '',
 			uploaded: !! evidence[ field.key ],
-			onFileChange: ( _key: string, file: File ) =>
+			onFileChange: ( key: string, file: File ) =>
 				Promise.resolve( doUploadFile( field.key, file ) ),
 			onFileRemove: () => Promise.resolve( doRemoveFile( field.key ) ),
 		} )
@@ -433,7 +383,7 @@ ${ merchantName }`;
 			label: field.label,
 			fileName: evidence[ field.key ] || '',
 			uploaded: !! evidence[ field.key ],
-			onFileChange: ( _key: string, file: File ) =>
+			onFileChange: ( key: string, file: File ) =>
 				Promise.resolve( doUploadFile( field.key, file ) ),
 			onFileRemove: () => Promise.resolve( doRemoveFile( field.key ) ),
 		} )
@@ -441,7 +391,7 @@ ${ merchantName }`;
 
 	const bankName = dispute?.charge ? getBankName( dispute.charge ) : null;
 
-	const inlineNotice = ( bankName: string | null ) => (
+	const inlineNotice = ( bankNameValue: string | null ) => (
 		<InlineNotice
 			icon
 			isDismissible={ false }
@@ -449,13 +399,13 @@ ${ merchantName }`;
 			className="dispute-steps__notice-content"
 		>
 			{ createInterpolateElement(
-				bankName
+				bankNameValue
 					? sprintf(
 							__(
 								'<strong>WooPayments does not determine the outcome of the dispute process</strong> and is not liable for any chargebacks. <strong>%1$s</strong> makes the decision in this process.',
 								'woocommerce-payments'
 							),
-							bankName
+							bankNameValue
 					  )
 					: __(
 							"<strong>WooPayments does not determine the outcome of the dispute process</strong> and is not liable for any chargebacks. The cardholder's bank makes the decision in this process.",
@@ -470,83 +420,7 @@ ${ merchantName }`;
 
 	// --- Step content ---
 	const renderStepContent = () => {
-		if ( ! fields.length ) return null;
-		// Helper to render a field with readOnly logic
-		const renderField = ( field: any ) => {
-			if ( field.type === 'file' ) {
-				return readOnly ? (
-					<UploadedReadOnly
-						key={ field.key }
-						field={ field }
-						fileName={ evidence[ field.key ] || '' }
-						showPreview={ false }
-						accept={ '.pdf, image/png, image/jpeg' }
-						isDone={ !! evidence[ field.key ] }
-						isLoading={ false }
-						error={ '' }
-						disabled={ true }
-						onFileChange={ async () => {} }
-						onFileRemove={ () => {} }
-					/>
-				) : (
-					<FileUploadControl
-						key={ field.key }
-						field={ field }
-						fileName={ evidence[ field.key ] || '' }
-						onFileChange={ ( _key: string, file: File ) =>
-							doUploadFile( field.key, file )
-						}
-						onFileRemove={ field.onFileRemove }
-						accept={ '.pdf, image/png, image/jpeg' }
-						isDone={ !! evidence[ field.key ] }
-						isLoading={ false }
-						error={ '' }
-						disabled={ false }
-					/>
-				);
-			}
-			if ( field.type === 'text' ) {
-				return (
-					<input
-						key={ field.key }
-						type="text"
-						value={ evidence[ field.key ] || '' }
-						onChange={ ( e: any ) =>
-							updateEvidence( field.key, e.target.value, field )
-						}
-						className="components-text-control__input"
-						disabled={ readOnly }
-					/>
-				);
-			}
-			if ( field.type === 'date' ) {
-				return (
-					<input
-						key={ field.key }
-						type="date"
-						value={ evidence[ field.key ] || '' }
-						onChange={ ( e: any ) =>
-							updateEvidence( field.key, e.target.value, field )
-						}
-						className="components-text-control__input"
-						disabled={ readOnly }
-					/>
-				);
-			}
-			// textarea
-			return (
-				<textarea
-					key={ field.key }
-					value={ evidence[ field.key ] || '' }
-					onChange={ ( e: any ) =>
-						updateEvidence( field.key, e.target.value, field )
-					}
-					maxLength={ field.maxLength }
-					className="components-textarea-control__input"
-					disabled={ readOnly }
-				/>
-			);
-		};
+		// if ( ! fields.length ) return null;
 		if ( currentStep === 0 ) {
 			return (
 				<>
