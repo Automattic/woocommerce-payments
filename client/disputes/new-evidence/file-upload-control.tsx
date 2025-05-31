@@ -35,36 +35,32 @@ const FileUploadControl: React.FC< FileUploadControlProps > = ( {
 } ) => {
 	return (
 		<div className="wcpay-dispute-evidence-file-upload-control">
-			{ isDone && fileName ? (
-				<span className="wcpay-dispute-evidence-file-upload-control__check">
-					<Icon icon={ check } size={ 20 } />
-				</span>
-			) : null }
+			{ isDone && fileName ? <Icon icon={ check } size={ 48 } /> : null }
 			<label className="wcpay-dispute-evidence-file-upload-control__label">
 				{ label }
 			</label>
+			{ isDone && fileName ? (
+				<span
+					className="wcpay-dispute-evidence-file-upload-control__filename"
+					title={ fileName }
+				>
+					<span className="wcpay-dispute-evidence-file-upload-control__filename-text">
+						{ fileName }
+					</span>
+					<Button
+						className="wcpay-dispute-evidence-file-upload-control__remove"
+						icon={ <Icon icon={ close } size={ 24 } /> }
+						onClick={ onFileRemove }
+						disabled={ disabled }
+						aria-label={ __(
+							'Remove file',
+							'woocommerce-payments'
+						) }
+						isDestructive
+					/>
+				</span>
+			) : null }
 			<div className="wcpay-dispute-evidence-file-upload-control__actions">
-				{ isDone && fileName ? (
-					<>
-						<span
-							className="wcpay-dispute-evidence-file-upload-control__filename"
-							title={ fileName }
-						>
-							{ fileName }
-						</span>
-						<Button
-							className="wcpay-dispute-evidence-file-upload-control__remove"
-							icon={ <Icon icon={ close } size={ 20 } /> }
-							onClick={ onFileRemove }
-							disabled={ disabled }
-							aria-label={ __(
-								'Remove file',
-								'woocommerce-payments'
-							) }
-							isDestructive
-						/>
-					</>
-				) : null }
 				<FormFileUpload
 					accept={ accept }
 					onChange={ (
@@ -78,7 +74,7 @@ const FileUploadControl: React.FC< FileUploadControlProps > = ( {
 					render={ ( { openFileDialog } ) => (
 						<Button
 							className="wcpay-dispute-evidence-file-upload-control__upload"
-							icon={ <Icon icon={ cloudUpload } size={ 20 } /> }
+							icon={ <Icon icon={ cloudUpload } size={ 24 } /> }
 							onClick={ openFileDialog }
 							disabled={ disabled }
 							aria-label={ __(
