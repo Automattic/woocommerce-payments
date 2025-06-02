@@ -304,8 +304,8 @@ ${ merchantName }`;
 
 	const doRemoveFile = ( key: string ) => {
 		setEvidence( ( e: any ) => ( { ...e, [ key ]: '' } ) );
-		setFileSizes( ( prev ) => ( { ...prev, [ key ]: 0 } ) );
 		setUploadingErrors( ( prev ) => ( { ...prev, [ key ]: '' } ) );
+		setFileSizes( ( prev ) => ( { ...prev, [ key ]: 0 } ) );
 	};
 
 	// --- Navigation warning ---
@@ -378,6 +378,34 @@ ${ merchantName }`;
 				}
 			);
 
+			// Only include file keys in the evidence object if they have a non-empty value
+			const evidenceToSend = Object.fromEntries(
+				Object.entries( {
+					...dispute.evidence,
+					product_description: productDescription,
+					receipt: evidence.receipt,
+					customer_communication: evidence.customer_communication,
+					customer_signature: evidence.customer_signature,
+					refund_policy: evidence.refund_policy,
+					duplicate_charge_documentation:
+						evidence.duplicate_charge_documentation,
+					shipping_documentation: evidence.shipping_documentation,
+					service_documentation: evidence.service_documentation,
+					cancellation_policy: evidence.cancellation_policy,
+					access_activity_log: evidence.access_activity_log,
+					uncategorized_file: evidence.uncategorized_file,
+				} ).filter( ( [ value ] ) => value && value !== '' )
+			);
+
+			await apiFetch( {
+				path,
+				method: 'post',
+				data: {
+					evidence: evidenceToSend,
+					metadata: dispute.metadata,
+					submit,
+				},
+			} );
 			setRedirectAfterSave( true );
 		} catch ( err ) {
 			recordEvent(
