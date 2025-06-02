@@ -27,6 +27,20 @@ const ProductDetails: React.FC< ProductDetailsProps > = ( {
 	onProductDescriptionChange,
 	readOnly = false,
 } ) => {
+	const [
+		localProductDescription,
+		setLocalProductDescription,
+	] = React.useState( productDescription );
+
+	React.useEffect( () => {
+		setLocalProductDescription( productDescription );
+	}, [ productDescription ] );
+
+	const handleProductDescriptionChange = ( value: string ) => {
+		setLocalProductDescription( value );
+		onProductDescriptionChange( value );
+	};
+
 	return (
 		<section className="wcpay-dispute-evidence-product-details">
 			<h3 className="wcpay-dispute-evidence-product-details__heading">
@@ -84,10 +98,8 @@ const ProductDetails: React.FC< ProductDetailsProps > = ( {
 						'Please make sure this is an accurate description of the product.',
 						'woocommerce-payments'
 					) }
-					value={ productDescription }
-					onChange={ ( value ) =>
-						onProductDescriptionChange( value )
-					}
+					value={ localProductDescription }
+					onChange={ handleProductDescriptionChange }
 					disabled={ readOnly }
 				/>
 			</div>

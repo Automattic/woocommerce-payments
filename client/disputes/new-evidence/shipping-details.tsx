@@ -12,19 +12,30 @@ import { TextControl } from 'wcpay/components/wp-components-wrapped';
 interface ShippingDetailsProps {
 	dispute: any;
 	readOnly?: boolean;
+	onShippingDetailsChange?: ( evidence: any ) => void;
 }
 
 const ShippingDetails: React.FC< ShippingDetailsProps > = ( {
 	dispute,
 	readOnly = false,
+	onShippingDetailsChange,
 } ) => {
+	const [ localEvidence, setLocalEvidence ] = React.useState(
+		dispute.evidence || {}
+	);
+
+	React.useEffect( () => {
+		setLocalEvidence( dispute.evidence || {} );
+	}, [ dispute ] );
+
 	if ( ! dispute ) return null;
-	// These would typically come from dispute.evidence or dispute.order
-	const evidence = dispute.evidence || {};
-	const carrier = evidence.shipping_carrier || '-';
-	const tracking = evidence.shipping_tracking_number || '-';
-	const address = evidence.shipping_address || '-';
-	const date = evidence.shipping_date || new Date();
+
+	const handleChange = ( key: string, value: string ) => {
+		setLocalEvidence( ( prev: any ) => ( { ...prev, [ key ]: value } ) );
+		if ( onShippingDetailsChange ) {
+			onShippingDetailsChange( { ...localEvidence, [ key ]: value } );
+		}
+	};
 
 	return (
 		<section className="wcpay-dispute-evidence-shipping-details">
@@ -34,18 +45,26 @@ const ShippingDetails: React.FC< ShippingDetailsProps > = ( {
 			<div className="wcpay-dispute-evidence-shipping-details__field-group">
 				<TextControl
 					label={ __( 'SHIPPING CARRIER', 'woocommerce-payments' ) }
-					// eslint-disable-next-line @typescript-eslint/no-empty-function
-					onChange={ () => {} }
-					value={ carrier }
+					onChange={ ( value ) =>
+						handleChange( 'shipping_carrier', value )
+					}
+					value={ localEvidence.shipping_carrier || '-' }
 					disabled={ readOnly }
 				/>
 			</div>
 			<div className="wcpay-dispute-evidence-shipping-details__field-group">
 				<TextControl
 					label={ __( 'SHIPPING DATE', 'woocommerce-payments' ) }
-					// eslint-disable-next-line @typescript-eslint/no-empty-function
-					onChange={ () => {} }
-					value={ date.toLocaleDateString() }
+					onChange={ ( value ) =>
+						handleChange( 'shipping_date', value )
+					}
+					value={
+						localEvidence.shipping_date
+							? new Date(
+									localEvidence.shipping_date
+							  ).toLocaleDateString()
+							: new Date().toLocaleDateString()
+					}
 					disabled={ readOnly }
 				/>
 			</div>
@@ -56,9 +75,10 @@ const ShippingDetails: React.FC< ShippingDetailsProps > = ( {
 						'Please make sure the tracking number is accurate.',
 						'woocommerce-payments'
 					) }
-					// eslint-disable-next-line @typescript-eslint/no-empty-function
-					onChange={ () => {} }
-					value={ tracking }
+					onChange={ ( value ) =>
+						handleChange( 'shipping_tracking_number', value )
+					}
+					value={ localEvidence.shipping_tracking_number || '-' }
 					disabled={ readOnly }
 				/>
 			</div>
@@ -69,9 +89,10 @@ const ShippingDetails: React.FC< ShippingDetailsProps > = ( {
 						"We prefilled the shipping address for you, please make sure it's accurate.",
 						'woocommerce-payments'
 					) }
-					// eslint-disable-next-line @typescript-eslint/no-empty-function
-					onChange={ () => {} }
-					value={ address }
+					onChange={ ( value ) =>
+						handleChange( 'shipping_address', value )
+					}
+					value={ localEvidence.shipping_address || '-' }
 					disabled={ readOnly }
 				/>
 			</div>
