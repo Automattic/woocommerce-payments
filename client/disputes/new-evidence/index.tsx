@@ -397,12 +397,18 @@ ${ merchantName }`;
 				} ).filter( ( [ value ] ) => value && value !== '' )
 			);
 
+			// Update metadata with the current productType
+			const updatedMetadata = {
+				...dispute.metadata,
+				__product_type: productType,
+			};
+
 			await apiFetch( {
 				path,
 				method: 'post',
 				data: {
 					evidence: evidenceToSend,
-					metadata: dispute.metadata,
+					metadata: updatedMetadata,
 					submit,
 				},
 			} );
