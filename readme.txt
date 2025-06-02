@@ -87,6 +87,27 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 
 == Changelog ==
 
+= 9.5.0-test-2 - unreleased =
+* Add - Add specific texts for collecting Norway and New Zealand tax data
+* Add - Add specific texts for collecting Singapore tax data
+* Add - Add tax to the fee breakdown on order notes
+* Add - Enable Australian merchants to add tax details (ABN) for generating tax documents.
+* Fix - Fixed handling of orders containing items with negative tax
+* Fix - Handle state field requirements for Express Checkout in countries without states
+* Update - Evidence submission form now should use the global wp.components
+* Update - Refactor: Remove unused Props interface from AccountTools component
+* Update - Remove WooPayments adding their sections into other gateways when enabled
+* Update - update: Apple Pay domain verification file is no longer needed
+* Update - update: remove `_wcpay_feature_tokenized_cart_ece` feature flag; remove `client/express-checkout` in favor of `client/tokenized-express-checkout`
+* Dev - Add the new StepperPanel component.
+* Dev - Bump WC tested up to version to 9.8.5
+* Dev - chore: update @stripe/connect-js @stripe/react-connect-js @stripe/react-stripe-js @stripe/stripe-js dependencies
+* Dev - Clean up database options after completing onboarding.
+* Dev - Condition AliPay block tests under shouldRunWCBlocksTests
+* Dev - Create a new feature flag for the evidence submission form
+* Dev - Decouple the accordion component from the dispute details screen.
+* Dev - fix: is_store_api_request utility on multisite with subdirectory install
+
 = 9.4.0 - 2025-05-21 =
 * Add - Add support for rendering fee tax details in the transaction timeline where available
 * Fix - Keep the shipping costs structure intact when applying multi-currency adjustments.
