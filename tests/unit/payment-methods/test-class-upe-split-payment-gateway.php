@@ -7,7 +7,6 @@
 
 namespace WCPay\Payment_Methods;
 
-use Exception;
 use PHPUnit\Framework\MockObject\MockObject;
 use WC_Payments_Fraud_Service;
 use WCPay\Constants\Order_Status;
@@ -24,7 +23,6 @@ use WC_Payments_Action_Scheduler_Service;
 use WC_Payments_API_Client;
 use WC_Payments_Customer_Service;
 use WC_Payment_Gateway_WCPay;
-use WC_Payment_Token_CC;
 use WC_Payments_Order_Service;
 use WC_Payments_Token_Service;
 use WCPay\Constants\Payment_Method;
@@ -468,7 +466,6 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_process_redirect_payment_intent_processing() {
-
 		$mock_upe_gateway = $this->mock_payment_gateways[ Payment_Method::CARD ];
 		$order            = WC_Helper_Order::create_order();
 
@@ -829,6 +826,127 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			$mock_upe_gateway->set_payment_method_title_for_order( $order, $payment_method_id, $payment_method_details );
 			$this->assertEquals( $expected_payment_method_titles[ $i ], $order->get_payment_method_title() );
 		}
+	}
+
+	public function test_process_payment_sets_card_payment_method_and_title() {
+		$mock_card_payment_gateway = $this->mock_payment_gateways[ Payment_Method::CARD ];
+		$user                      = wp_get_current_user();
+		$customer_id               = 'cus_mock';
+		$intent_id                 = 'pi_mock';
+		$payment_method_id         = 'pm_mock';
+
+		$order = WC_Helper_Order::create_order();
+		$_POST = [
+			'wcpay-payment-method' => $payment_method_id,
+			'payment_method'       => WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::CARD,
+		];
+
+		$mock_card_payment_gateway->expects( $this->once() )
+			->method( 'manage_customer_details_for_order' )
+			->will(
+				$this->returnValue( [ $user, $customer_id ] )
+			);
+
+		$card_method = $this->mock_payment_methods[ Payment_Method::CARD ];
+		$mock_card_payment_gateway->expects( $this->any() )
+			->method( 'get_selected_payment_method' )
+			->willReturn( $card_method );
+
+		$mock_card_payment_gateway->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD ] );
+
+		$payment_intent = WC_Helper_Intention::create_intention(
+			[
+				'status'            => Intent_Status::SUCCEEDED,
+				'id'                => $intent_id,
+				'payment_method_id' => $payment_method_id,
+				'charge'            => [
+					'payment_method_details' => [
+						'type' => 'card',
+						'card' => [
+							'network' => 'visa',
+							'funding' => 'credit',
+							'last4'   => '4242',
+							'brand'   => 'visa',
+						],
+					],
+				],
+			]
+		);
+
+		$this->mock_wcpay_request( Create_And_Confirm_Intention::class, 1 )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $payment_intent );
+
+		$this->set_cart_contains_subscription_items( false );
+
+		$result = $mock_card_payment_gateway->process_payment( $order->get_id() );
+
+		// reloading the order to get the updated data.
+		$result_order = wc_get_order( $order->get_id() );
+
+		$this->assertEquals( 'success', $result['result'] );
+		$this->assertEquals( WC_Payment_Gateway_WCPay::GATEWAY_ID, $result_order->get_payment_method() );
+		$this->assertEquals( 'Visa credit card', $result_order->get_payment_method_title() );
+		$this->assertEquals( '4242', $result_order->get_meta( 'last4', true ) );
+		$this->assertEquals( 'visa', $result_order->get_meta( '_card_brand', true ) );
+	}
+
+	public function test_process_payment_sets_sepa_payment_method_and_title() {
+		$mock_sepa_payment_gateway = $this->mock_payment_gateways[ Payment_Method::SEPA ];
+		$user                      = wp_get_current_user();
+		$customer_id               = 'cus_mock';
+		$intent_id                 = 'pi_mock';
+		$payment_method_id         = 'pm_mock';
+
+		$order = WC_Helper_Order::create_order();
+		$_POST = [
+			'wcpay-payment-method' => $payment_method_id,
+			'payment_method'       => 'woocommerce_payments_sepa_debit',
+		];
+
+		$mock_sepa_payment_gateway->expects( $this->once() )
+			->method( 'manage_customer_details_for_order' )
+			->will(
+				$this->returnValue( [ $user, $customer_id ] )
+			);
+
+		$mock_sepa_payment_gateway->expects( $this->any() )
+			->method( 'get_selected_payment_method' )
+			->willReturn( $this->mock_payment_methods[ Payment_Method::SEPA ] );
+
+		$mock_sepa_payment_gateway->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::SEPA ] );
+
+		$payment_intent = WC_Helper_Intention::create_intention(
+			[
+				'status'            => Intent_Status::REQUIRES_ACTION,
+				'id'                => $intent_id,
+				'payment_method_id' => $payment_method_id,
+				'charge'            => [
+					'payment_method_details' => [
+						'type' => 'sepa_debit',
+					],
+				],
+			]
+		);
+
+		$this->mock_wcpay_request( Create_And_Confirm_Intention::class, 1 )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $payment_intent );
+
+		$this->set_cart_contains_subscription_items( false );
+
+		$result = $mock_sepa_payment_gateway->process_payment( $order->get_id() );
+
+		// reloading the order to get the updated data.
+		$result_order = wc_get_order( $order->get_id() );
+
+		$this->assertEquals( 'success', $result['result'] );
+		$this->assertEquals( 'woocommerce_payments_sepa_debit', $result_order->get_payment_method() );
+		$this->assertEquals( 'SEPA Direct Debit', $result_order->get_payment_method_title() );
+		$this->assertEquals( null, $result_order->get_meta( 'last4', true ) );
+		$this->assertEquals( null, $result_order->get_meta( '_card_brand', true ) );
 	}
 
 	public function test_payment_methods_show_correct_default_outputs() {
