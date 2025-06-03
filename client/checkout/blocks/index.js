@@ -21,6 +21,7 @@ import enqueueFraudScripts from 'fraud-scripts';
 import {
 	expressCheckoutElementApplePay,
 	expressCheckoutElementGooglePay,
+	paymentMethodGooglePay,
 } from 'wcpay/express-checkout/blocks';
 
 import { getDeferredIntentCreationUPEFields } from './payment-elements';
@@ -110,6 +111,8 @@ const addCheckoutTracking = () => {
 		} );
 	}
 };
+
+registerPaymentMethod( paymentMethodGooglePay( api ) );
 
 // Call handleWooPayEmailInput if woopay is enabled and this is the checkout page.
 if ( getUPEConfig( 'isWooPayEnabled' ) ) {

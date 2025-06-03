@@ -861,6 +861,9 @@ class WC_Payments {
 			$gateways[] = self::get_payment_gateway_by_id( $payment_method_id );
 		}
 
+		require_once WCPAY_ABSPATH . '/includes/class-wc-gateway-google-pay.php';
+		$gateways[] = 'WC_Gateway_Google_Pay';
+
 		return $gateways;
 	}
 

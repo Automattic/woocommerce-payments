@@ -77,3 +77,36 @@ export const expressCheckoutElementGooglePay = ( api ) => ( {
 		return checkPaymentMethodIsAvailable( 'googlePay', cart );
 	},
 } );
+
+const CustomWrapper = ( { children } ) => <div>{ children }</div>;
+export const paymentMethodGooglePay = ( api ) => {
+	return {
+		name: 'woocommerce_payments_googlePay',
+		edit: <CustomWrapper />,
+		content: <CustomWrapper />,
+		paymentMethodId: 'woocommerce_payments_googlePay',
+		placeOrderButton: ( props ) => {
+			return (
+				<ExpressCheckoutContainer
+					api={ api }
+					expressPaymentMethod="googlePay"
+					{ ...props }
+				/>
+			);
+		},
+		label: 'Google Pay - WooPayments',
+		ariaLabel: 'Google Pay - WooPayments',
+		supports: {
+			showSavedCards: false,
+			showSaveOption: false,
+			features: getConfig( 'features' ),
+		},
+		canMakePayment: ( { cart } ) => {
+			if ( typeof wcpayExpressCheckoutParams === 'undefined' ) {
+				return false;
+			}
+
+			return checkPaymentMethodIsAvailable( 'googlePay', cart );
+		},
+	};
+};
