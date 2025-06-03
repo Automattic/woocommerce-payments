@@ -672,6 +672,7 @@ ${ merchantName }`;
 					<CoverLetter
 						value={ coverLetter }
 						onChange={ setCoverLetter }
+						dispute={ dispute }
 					/>
 					{ inlineNotice( bankName ) }
 				</>
