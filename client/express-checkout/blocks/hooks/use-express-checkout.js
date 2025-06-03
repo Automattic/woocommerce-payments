@@ -68,7 +68,10 @@ export const useExpressCheckout = ( {
 				return;
 			}
 
-			const shippingAddressRequired = shippingData?.needsShipping;
+			const shippingAddressRequired =
+				eventEmitters && eventEmitters.onPlaceOrderButtonValidation
+					? false
+					: shippingData?.needsShipping;
 
 			let shippingRates;
 			if ( shippingAddressRequired ) {
