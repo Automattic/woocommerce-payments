@@ -40,7 +40,7 @@ export const useExpressCheckout = ( {
 
 	const onCancel = () => {
 		onCancelHandler();
-		onClose();
+		onClose?.();
 	};
 
 	const completePayment = ( redirectUrl ) => {
@@ -130,7 +130,7 @@ export const useExpressCheckout = ( {
 			};
 
 			// Click event from WC Blocks.
-			onClick();
+			onClick?.();
 			// Global click event handler from WooPayments to ECE.
 			onClickHandler( event );
 			event.resolve( options );
