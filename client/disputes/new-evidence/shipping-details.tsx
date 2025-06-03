@@ -31,9 +31,10 @@ const ShippingDetails: React.FC< ShippingDetailsProps > = ( {
 	if ( ! dispute ) return null;
 
 	const handleChange = ( key: string, value: string ) => {
-		setLocalEvidence( ( prev: any ) => ( { ...prev, [ key ]: value } ) );
+		const newEvidence = { ...localEvidence, [ key ]: value };
+		setLocalEvidence( newEvidence );
 		if ( onShippingDetailsChange ) {
-			onShippingDetailsChange( { ...localEvidence, [ key ]: value } );
+			onShippingDetailsChange( newEvidence );
 		}
 	};
 
@@ -48,7 +49,7 @@ const ShippingDetails: React.FC< ShippingDetailsProps > = ( {
 					onChange={ ( value ) =>
 						handleChange( 'shipping_carrier', value )
 					}
-					value={ localEvidence.shipping_carrier || '-' }
+					value={ localEvidence.shipping_carrier || '' }
 					disabled={ readOnly }
 				/>
 			</div>
@@ -78,7 +79,7 @@ const ShippingDetails: React.FC< ShippingDetailsProps > = ( {
 					onChange={ ( value ) =>
 						handleChange( 'shipping_tracking_number', value )
 					}
-					value={ localEvidence.shipping_tracking_number || '-' }
+					value={ localEvidence.shipping_tracking_number || '' }
 					disabled={ readOnly }
 				/>
 			</div>
@@ -92,7 +93,7 @@ const ShippingDetails: React.FC< ShippingDetailsProps > = ( {
 					onChange={ ( value ) =>
 						handleChange( 'shipping_address', value )
 					}
-					value={ localEvidence.shipping_address || '-' }
+					value={ localEvidence.shipping_address || '' }
 					disabled={ readOnly }
 				/>
 			</div>
