@@ -45,12 +45,17 @@ describe( 'ShippingDetails', () => {
 		expect( screen.getByDisplayValue( '123 Ship St' ) ).toBeInTheDocument();
 	} );
 
-	it( 'renders dashes for missing data', () => {
+	it( 'renders empty strings for missing data', () => {
 		const dispute = { evidence: {} };
 		render( <ShippingDetails dispute={ dispute } /> );
-		expect( screen.getAllByDisplayValue( '-' ).length ).toBeGreaterThan(
-			0
-		);
+		const inputs = screen.getAllByRole( 'textbox' );
+		// SHIPPING CARRIER, TRACKING NUMBER, SHIPPING ADDRESS should be empty
+		expect( inputs[ 0 ] ).toHaveValue( '' ); // SHIPPING CARRIER
+		expect( inputs[ 2 ] ).toHaveValue( '' ); // TRACKING NUMBER
+		expect( inputs[ 3 ] ).toHaveValue( '' ); // SHIPPING ADDRESS
+		// SHIPPING DATE should be today's date
+		const today = new Date().toLocaleDateString();
+		expect( inputs[ 1 ] ).toHaveValue( today ); // SHIPPING DATE
 	} );
 
 	it( 'disables inputs when readOnly', () => {

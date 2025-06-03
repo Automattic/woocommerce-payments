@@ -130,10 +130,11 @@ describe( 'CoverLetter', () => {
 
 	it( 'calls onChange when textarea changes', () => {
 		render( <CoverLetter { ...baseProps } /> );
-		fireEvent.change( screen.getByLabelText( /COVER LETTER/i ), {
+		const textarea = screen.getByRole( 'textbox' );
+		fireEvent.change( textarea, {
 			target: { value: 'New text' },
 		} );
-		expect( baseProps.onChange ).toHaveBeenCalledWith( 'New text' );
+		expect( baseProps.onChange ).toHaveBeenCalledWith( 'New text', true );
 	} );
 
 	it( 'renders textarea with value', () => {
