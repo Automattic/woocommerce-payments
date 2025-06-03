@@ -31,6 +31,7 @@ export const useExpressCheckout = ( {
 	onClick,
 	onClose,
 	setExpressPaymentError,
+	eventEmitters,
 } ) => {
 	const stripe = useStripe();
 	const elements = useElements();
@@ -54,6 +55,13 @@ export const useExpressCheckout = ( {
 
 	const onButtonClick = useCallback(
 		( event ) => {
+			if ( eventEmitters && eventEmitters.onPlaceOrderButtonValidation ) {
+				const validationResult = eventEmitters.onPlaceOrderButtonValidation();
+				if ( ! validationResult ) {
+					return;
+				}
+			}
+
 			// If login is required for checkout, display redirect confirmation dialog.
 			if ( getExpressCheckoutData( 'login_confirmation' ) ) {
 				displayLoginConfirmation( event.expressPaymentType );
@@ -133,6 +141,7 @@ export const useExpressCheckout = ( {
 			billing.cartTotal.value,
 			shippingData.needsShipping,
 			shippingData.shippingRates,
+			eventEmitters,
 		]
 	);
 
