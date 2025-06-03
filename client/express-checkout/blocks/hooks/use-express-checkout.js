@@ -31,7 +31,7 @@ export const useExpressCheckout = ( {
 	onClick,
 	onClose,
 	setExpressPaymentError,
-	eventEmitters,
+	eventRegistration,
 } ) => {
 	const stripe = useStripe();
 	const elements = useElements();
@@ -55,8 +55,9 @@ export const useExpressCheckout = ( {
 
 	const onButtonClick = useCallback(
 		( event ) => {
-			if ( eventEmitters && eventEmitters.onPlaceOrderButtonValidation ) {
-				const validationResult = eventEmitters.onPlaceOrderButtonValidation();
+			if ( eventRegistration?.onPlaceOrderButtonValidation ) {
+				const validationResult = eventRegistration.onPlaceOrderButtonValidation();
+				console.log( '### vr', validationResult );
 				if ( ! validationResult ) {
 					return;
 				}
@@ -68,10 +69,9 @@ export const useExpressCheckout = ( {
 				return;
 			}
 
-			const shippingAddressRequired =
-				eventEmitters && eventEmitters.onPlaceOrderButtonValidation
-					? false
-					: shippingData?.needsShipping;
+			const shippingAddressRequired = eventRegistration?.onPlaceOrderButtonValidation
+				? false
+				: shippingData?.needsShipping;
 
 			let shippingRates;
 			if ( shippingAddressRequired ) {
@@ -144,7 +144,7 @@ export const useExpressCheckout = ( {
 			billing.cartTotal.value,
 			shippingData.needsShipping,
 			shippingData.shippingRates,
-			eventEmitters,
+			eventRegistration,
 		]
 	);
 
