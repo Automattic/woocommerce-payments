@@ -285,13 +285,143 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			return $address;
 		}
 
-		// states from Apple Pay or Google Pay might be in long format, we need their short format.
+		// Due to a bug in Apple Pay, the "Region" part of a Hong Kong address is delivered in
+		// `shipping_postcode`, so we need some special case handling for that. According to
+		// our sources at Apple Pay people will sometimes use the district or even sub-district
+		// for this value. As such we check against all regions, districts, and sub-districts
+		// with both English and Mandarin spelling.
+		//
+		// @reykjalin: The check here is quite elaborate in an attempt to make sure this doesn't break once
+		// Apple Pay fixes the bug that causes address values to be in the wrong place. Because of that the
+		// algorithm becomes:
+		// 1. Use the supplied state if it's valid (in case Apple Pay bug is fixed)
+		// 2. Use the value supplied in the postcode if it's a valid HK region (equivalent to a WC state).
+		// 3. Fall back to the value supplied in the state. This will likely cause a validation error, in
+		// which case a merchant can reach out to us so we can either: 1) add whatever the customer used
+		// as a state to our list of valid states; or 2) let them know the customer must spell the state
+		// in some way that matches our list of valid states.
+		//
+		// @reykjalin: This HK specific sanitazation *should be removed* once Apple Pay fix
+		// the address bug. More info on that in pc4etw-bY-p2.
+		if ( Country_Code::HONG_KONG === $country ) {
+			include_once WCPAY_ABSPATH . 'includes/constants/class-express-checkout-hong-kong-states.php';
+
+			$state = $address['state'] ?? '';
+			if ( ! \WCPay\Constants\Express_Checkout_Hong_Kong_States::is_valid_state( strtolower( $state ) ) ) {
+				$postcode = $address['postcode'] ?? '';
+				if ( strtolower( $postcode ) === 'hongkong' ) {
+					$postcode = 'hong kong';
+				}
+				if ( \WCPay\Constants\Express_Checkout_Hong_Kong_States::is_valid_state( strtolower( $postcode ) ) ) {
+					$address['state'] = $postcode;
+				}
+			}
+		}
+
+		// States from Apple Pay or Google Pay are in long format, we need their short format.
 		$state = $address['state'] ?? '';
 		if ( ! empty( $state ) ) {
-			$address['state'] = $this->express_checkout_button_helper->get_normalized_state( $state, $country );
+			$address['state'] = $this->get_normalized_state( $state, $country );
 		}
 
 		return $address;
+	}
+
+	/**
+	 * Gets the normalized state/county field because in some
+	 * cases, the state/county field is formatted differently from
+	 * what WC is expecting and throws an error. An example
+	 * for Ireland, the county dropdown in Chrome shows "Co. Clare" format.
+	 *
+	 * @param string $state Full state name or an already normalized abbreviation.
+	 * @param string $country Two-letter country code.
+	 *
+	 * @return string Normalized state abbreviation.
+	 */
+	private function get_normalized_state( $state, $country ) {
+		// If it's empty or already normalized, skip.
+		if ( ! $state || $this->is_normalized_state( $state, $country ) ) {
+			return $state;
+		}
+
+		// Try to match state from the Express Checkout API list of states.
+		$state = $this->get_normalized_state_from_ece_states( $state, $country );
+
+		// If it's normalized, return.
+		if ( $this->is_normalized_state( $state, $country ) ) {
+			return $state;
+		}
+
+		// If the above doesn't work, fallback to matching against the list of translated
+		// states from WooCommerce.
+		return $this->get_normalized_state_from_wc_states( $state, $country );
+	}
+
+	/**
+	 * Checks if given state is normalized.
+	 *
+	 * @param string $state State.
+	 * @param string $country Two-letter country code.
+	 *
+	 * @return bool Whether state is normalized or not.
+	 */
+	private function is_normalized_state( $state, $country ) {
+		$wc_states = WC()->countries->get_states( $country );
+		return is_array( $wc_states ) && array_key_exists( $state, $wc_states );
+	}
+
+	/**
+	 * Get normalized state from Express Checkout API dropdown list of states.
+	 *
+	 * @param string $state Full state name or state code.
+	 * @param string $country Two-letter country code.
+	 *
+	 * @return string Normalized state or original state input value.
+	 */
+	private function get_normalized_state_from_ece_states( $state, $country ) {
+		// Include Express Checkout Element API State list for compatibility with WC countries/states.
+		include_once WCPAY_ABSPATH . 'includes/constants/class-express-checkout-element-states.php';
+		$pr_states = \WCPay\Constants\Express_Checkout_Element_States::STATES;
+
+		if ( ! isset( $pr_states[ $country ] ) ) {
+			return $state;
+		}
+
+		foreach ( $pr_states[ $country ] as $wc_state_abbr => $pr_state ) {
+			$sanitized_state_string = $this->express_checkout_button_helper->sanitize_string( $state );
+			// Checks if input state matches with Express Checkout state code (0), name (1) or localName (2).
+			if (
+				( ! empty( $pr_state[0] ) && $sanitized_state_string === $this->express_checkout_button_helper->sanitize_string( $pr_state[0] ) ) ||
+				( ! empty( $pr_state[1] ) && $sanitized_state_string === $this->express_checkout_button_helper->sanitize_string( $pr_state[1] ) ) ||
+				( ! empty( $pr_state[2] ) && $sanitized_state_string === $this->express_checkout_button_helper->sanitize_string( $pr_state[2] ) )
+			) {
+				return $wc_state_abbr;
+			}
+		}
+
+		return $state;
+	}
+
+	/**
+	 * Get normalized state from WooCommerce list of translated states.
+	 *
+	 * @param string $state Full state name or state code.
+	 * @param string $country Two-letter country code.
+	 *
+	 * @return string Normalized state or original state input value.
+	 */
+	private function get_normalized_state_from_wc_states( $state, $country ) {
+		$wc_states = WC()->countries->get_states( $country );
+
+		if ( is_array( $wc_states ) ) {
+			foreach ( $wc_states as $wc_state_abbr => $wc_state_value ) {
+				if ( preg_match( '/' . preg_quote( $wc_state_value, '/' ) . '/i', $state ) ) {
+					return $wc_state_abbr;
+				}
+			}
+		}
+
+		return $state;
 	}
 
 	/**
@@ -310,10 +440,34 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		// Normalizes postal code in case of redacted data from Apple Pay or Google Pay.
 		$postcode = $address['postcode'] ?? '';
 		if ( ! empty( $postcode ) ) {
-			$address['postcode'] = $this->express_checkout_button_helper->get_normalized_postal_code( $postcode, $country );
+			$address['postcode'] = $this->get_normalized_postal_code( $postcode, $country );
 		}
 
 		return $address;
+	}
+
+	/**
+	 * Normalizes postal code in case of redacted data from Apple Pay.
+	 *
+	 * @param string $postcode Postal code.
+	 * @param string $country Country.
+	 */
+	private function get_normalized_postal_code( $postcode, $country ) {
+		/**
+		 * Currently, Apple Pay truncates the UK and Canadian postal codes to the first 4 and 3 characters respectively
+		 * when passing it back from the shippingcontactselected object. This causes WC to invalidate
+		 * the postal code and not calculate shipping zones correctly.
+		 */
+		if ( Country_Code::UNITED_KINGDOM === $country ) {
+			// Replaces a redacted string with something like N1C0000.
+			return str_pad( preg_replace( '/\s+/', '', $postcode ), 7, '0' );
+		}
+		if ( Country_Code::CANADA === $country ) {
+			// Replaces a redacted string with something like H3B000.
+			return str_pad( preg_replace( '/\s+/', '', $postcode ), 6, '0' );
+		}
+
+		return $postcode;
 	}
 
 	/**
