@@ -69,7 +69,6 @@ use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\Payment_Methods\Multibanco_Payment_Method;
 use WCPay\Payment_Methods\Grabpay_Payment_Method;
-use WCPay\Payment_Methods\Wechatpay_Payment_Method;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 
 /**
@@ -1777,6 +1776,34 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$this->maybe_add_customer_notification_note( $order, $processing );
 
+		// ensuring the payment method title is set before any early return paths to avoid incomplete order data.
+		if ( empty( $_POST['payment_request_type'] ) && empty( $_POST['express_payment_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			// Extract payment method details for setting the payment method title.
+			if ( $payment_needed ) {
+				$charge                 = $intent ? $intent->get_charge() : null;
+				$payment_method_details = $charge ? $charge->get_payment_method_details() : [];
+				// For payment intents, get payment method type from the intent itself, fallback to charge details.
+				$payment_method_type = $intent ? $intent->get_payment_method_type() : null;
+				if ( ! $payment_method_type && $payment_method_details ) {
+					$payment_method_type = $payment_method_details['type'] ?? null;
+				}
+
+				if ( 'card' === $payment_method_type && isset( $payment_method_details['card']['last4'] ) ) {
+					$order->add_meta_data( 'last4', $payment_method_details['card']['last4'], true );
+					if ( isset( $payment_method_details['card']['brand'] ) ) {
+						$order->add_meta_data( '_card_brand', $payment_method_details['card']['brand'], true );
+					}
+					$order->save_meta_data();
+				}
+			} else {
+				$payment_method_details = false;
+				$token                  = $payment_information->is_using_saved_payment_method() ? $payment_information->get_payment_token() : null;
+				$payment_method_type    = $token ? $this->get_payment_method_type_for_setup_intent( $intent, $token ) : null;
+			}
+
+			$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
+		}
+
 		if ( isset( $status ) && Intent_Status::REQUIRES_ACTION === $status && $this->is_changing_payment_method_for_subscription() ) {
 			// Because we're filtering woocommerce_subscriptions_update_payment_via_pay_shortcode, we need to manually set this delayed update all flag here.
 			if ( isset( $_POST['update_all_subscriptions_payment_method'] ) && wc_clean( wp_unslash( $_POST['update_all_subscriptions_payment_method'] ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
@@ -1795,27 +1822,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		wc_maybe_reduce_stock_levels( $order_id );
 		if ( isset( $cart ) ) {
 			$cart->empty_cart();
-		}
-
-		if ( $payment_needed ) {
-			$charge                 = $intent ? $intent->get_charge() : null;
-			$payment_method_details = $charge ? $charge->get_payment_method_details() : [];
-			$payment_method_type    = $payment_method_details ? $payment_method_details['type'] : null;
-
-			if ( 'card' === $payment_method_type && isset( $payment_method_details['card']['last4'] ) ) {
-				$order->add_meta_data( 'last4', $payment_method_details['card']['last4'], true );
-				if ( isset( $payment_method_details['card']['brand'] ) ) {
-					$order->add_meta_data( '_card_brand', $payment_method_details['card']['brand'], true );
-				}
-				$order->save_meta_data();
-			}
-		} else {
-			$payment_method_details = false;
-			$payment_method_type    = $this->get_payment_method_type_for_setup_intent( $intent, $token );
-		}
-
-		if ( empty( $_POST['payment_request_type'] ) && empty( $_POST['express_payment_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 		}
 
 		return [
@@ -4106,7 +4112,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$available_methods[] = Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Multibanco_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Grabpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$available_methods[] = Wechatpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 
 		// This gets all the registered payment method definitions. As new payment methods are converted from the legacy style, they need to be removed from the list above.
 		$payment_method_definitions = PaymentMethodDefinitionRegistry::instance()->get_all_payment_method_definitions();

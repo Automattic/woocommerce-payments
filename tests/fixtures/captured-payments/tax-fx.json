@@ -1,0 +1,82 @@
+{
+  "title": "Event with taxed fees and FX",
+  "capturedEvent": {
+    "type": "captured",
+    "amount": 1902,
+    "amount_captured": 1902,
+    "fee": 162,
+    "fee_rates": {
+      "percentage": 0.05500000000000001,
+      "fixed": 30,
+      "fixed_currency": "USD",
+      "history": [
+        {
+          "type": "base",
+          "additional_type": "",
+          "fee_id": "base-gb-card-fee",
+          "percentage_rate": 0.015,
+          "fixed_rate": 25,
+          "currency": "gbp"
+        },
+        {
+          "type": "additional",
+          "additional_type": "international",
+          "fee_id": "additional-gb-intl-fee",
+          "percentage_rate": 0.02,
+          "fixed_rate": 0,
+          "currency": "gbp"
+        },
+        {
+          "type": "additional",
+          "additional_type": "fx",
+          "fee_id": "additional-gb-card-fx-fee",
+          "percentage_rate": 0.02,
+          "fixed_rate": 0,
+          "currency": "gbp"
+        }
+      ],
+      "fee_exchange_rate": {
+        "from_currency": "gbp",
+        "to_currency": "usd",
+        "from_amount": 25,
+        "to_amount": 30,
+        "rate": 1.2002214394351323
+      },
+      "tax": {
+        "percentage_rate": 0.2,
+        "amount": 27,
+        "currency": "usd",
+        "description": "GB VAT"
+      },
+      "before_tax": {
+        "amount": 135,
+        "currency": "usd"
+      }
+    },
+    "currency": "USD",
+    "datetime": 1748598948,
+    "deposit": null,
+    "transaction_id": "txn_3RUPfDCE2s87ucX31kt6N9AY",
+    "transaction_details": {
+      "customer_currency": "USD",
+      "customer_amount": 1902,
+      "customer_amount_captured": 1902,
+      "customer_fee": 162,
+      "store_currency": "GBP",
+      "store_amount": 1600,
+      "store_amount_captured": 1600,
+      "store_fee": 136
+    }
+  },
+  "expectation": {
+    "fxString": "1.00 USD → 0.84122 GBP: £16.00 GBP",
+    "feeString": "Fee (5.5% + $0.30): -£1.12",
+    "feeBreakdown": {
+      "base": "Base fee: 1.5% + £0.25",
+      "additional-international": "International card fee: 2%",
+      "additional-fx": "Currency conversion fee: 2%"
+    },
+    "taxString": "Tax UK VAT (20%): -£0.22",
+    "netString": "Net payout: £14.64 GBP"
+  }
+}
