@@ -31,11 +31,13 @@ const ShippingDetails: React.FC< ShippingDetailsProps > = ( {
 	if ( ! dispute ) return null;
 
 	const handleChange = ( key: string, value: string ) => {
-		const newEvidence = { ...localEvidence, [ key ]: value };
-		setLocalEvidence( newEvidence );
-		if ( onShippingDetailsChange ) {
-			onShippingDetailsChange( newEvidence );
-		}
+		setLocalEvidence( ( prev: any ) => {
+			const next = { ...prev, [ key ]: value };
+			if ( onShippingDetailsChange ) {
+				onShippingDetailsChange( next );
+			}
+			return next;
+		} );
 	};
 
 	return (
@@ -93,7 +95,10 @@ const ShippingDetails: React.FC< ShippingDetailsProps > = ( {
 					onChange={ ( value ) =>
 						handleChange( 'shipping_address', value )
 					}
-					value={ localEvidence.shipping_address || '' }
+					value={ ( localEvidence.shipping_address || '' ).replace(
+						/\n/g,
+						' '
+					) }
 					disabled={ readOnly }
 				/>
 			</div>
