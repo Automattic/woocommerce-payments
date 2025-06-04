@@ -239,33 +239,6 @@
 		gap: 8px;
 	}
 
-	&__upload .components-button {
-		background: var( --wp-admin-theme-color );
-		color: #fff;
-		border-radius: 8px;
-		min-width: 48px;
-		min-height: 48px;
-		padding: 0;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		box-shadow: none;
-		border: none;
-		transition: background 0.2s;
-		&:hover:not( :disabled ) {
-			background: color-mix(
-				in srgb,
-				var( --wp-admin-theme-color ) 10%,
-				transparent
-			);
-		}
-		&:disabled {
-			background: #e0e6f7;
-			color: #b3b3b3;
-			cursor: not-allowed;
-		}
-	}
-
 	&__filename {
 		max-width: 320px;
 		min-width: 120px;
@@ -294,30 +267,6 @@
 		text-overflow: ellipsis;
 		white-space: nowrap;
 		color: var( --wp-admin-theme-color );
-	}
-
-	&__remove .components-button {
-		border: none;
-		min-width: 24px;
-		min-height: 24px;
-		padding: 0;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		color: var( --wp-admin-theme-color );
-		background: transparent;
-		svg {
-			color: inherit;
-			fill: currentColor;
-		}
-		&:hover:not( :disabled ) {
-			background: color-mix( in srgb, #fff 10%, transparent );
-			color: var( --wp-admin-theme-color );
-		}
-		&:disabled {
-			color: #b3b3b3;
-			cursor: not-allowed;
-		}
 	}
 }
 

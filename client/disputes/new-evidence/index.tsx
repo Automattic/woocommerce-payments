@@ -559,6 +559,7 @@ ${ merchantName }`;
 			onFileChange: ( key: string, file: File ) =>
 				Promise.resolve( doUploadFile( field.key, file ) ),
 			onFileRemove: () => Promise.resolve( doRemoveFile( field.key ) ),
+			isBusy: isUploading[ field.key ] || false,
 		} )
 	);
 
@@ -573,6 +574,7 @@ ${ merchantName }`;
 			onFileChange: ( key: string, file: File ) =>
 				Promise.resolve( doUploadFile( field.key, file ) ),
 			onFileRemove: () => Promise.resolve( doRemoveFile( field.key ) ),
+			isBusy: isUploading[ field.key ] || false,
 		} )
 	);
 

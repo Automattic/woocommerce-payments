@@ -20,6 +20,7 @@ interface FileUploadControlProps {
 	onFileRemove: () => void;
 	disabled?: boolean;
 	isDone?: boolean;
+	isBusy?: boolean;
 	accept?: string;
 	label: string;
 }
@@ -30,6 +31,7 @@ const FileUploadControl: React.FC< FileUploadControlProps > = ( {
 	onFileRemove,
 	disabled = false,
 	isDone = false,
+	isBusy = false,
 	accept = '.pdf, image/png, image/jpeg',
 	label,
 } ) => {
@@ -56,7 +58,7 @@ const FileUploadControl: React.FC< FileUploadControlProps > = ( {
 							'Remove file',
 							'woocommerce-payments'
 						) }
-						isDestructive
+						variant="tertiary"
 					/>
 				</span>
 			) : null }
@@ -76,15 +78,13 @@ const FileUploadControl: React.FC< FileUploadControlProps > = ( {
 							className="wcpay-dispute-evidence-file-upload-control__upload"
 							icon={ <Icon icon={ cloudUpload } size={ 24 } /> }
 							onClick={ openFileDialog }
-							disabled={ disabled }
+							disabled={ disabled || isBusy }
+							isBusy={ isBusy }
 							aria-label={ __(
 								'Upload file',
 								'woocommerce-payments'
 							) }
-							style={ {
-								background: 'var(--wp-admin-theme-color)',
-								color: '#fff',
-							} }
+							variant="primary"
 						/>
 					) }
 				/>
