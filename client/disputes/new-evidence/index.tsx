@@ -93,6 +93,9 @@ export default ( { query }: { query: { id: string } } ) => {
 	const [ redirectAfterSave, setRedirectAfterSave ] = useState( false );
 	const [ productDescription, setProductDescription ] = useState( '' );
 	const [ coverLetter, setCoverLetter ] = useState( '' );
+	const [ isUploading, setIsUploading ] = useState<
+		Record< string, boolean >
+	>( {} );
 	const { createSuccessNotice, createErrorNotice } = useDispatch(
 		'core/notices'
 	);
@@ -187,6 +190,7 @@ ${ merchantName }`;
 		if ( ! file ) return;
 		// TODO: Add file size checks, error handling, etc.
 		try {
+			setIsUploading( ( prev ) => ( { ...prev, [ key ]: true } ) );
 			const body = new FormData();
 			body.append( 'file', file );
 			body.append( 'purpose', 'dispute_evidence' );
@@ -202,6 +206,8 @@ ${ merchantName }`;
 			} else {
 				createErrorNotice( String( err ) );
 			}
+		} finally {
+			setIsUploading( ( prev ) => ( { ...prev, [ key ]: false } ) );
 		}
 	};
 	const doRemoveFile = ( key: string ) =>
@@ -374,6 +380,7 @@ ${ merchantName }`;
 			onFileChange: ( key: string, file: File ) =>
 				Promise.resolve( doUploadFile( field.key, file ) ),
 			onFileRemove: () => Promise.resolve( doRemoveFile( field.key ) ),
+			isBusy: isUploading[ field.key ] || false,
 		} )
 	);
 
@@ -386,6 +393,7 @@ ${ merchantName }`;
 			onFileChange: ( key: string, file: File ) =>
 				Promise.resolve( doUploadFile( field.key, file ) ),
 			onFileRemove: () => Promise.resolve( doRemoveFile( field.key ) ),
+			isBusy: isUploading[ field.key ] || false,
 		} )
 	);
 
