@@ -185,12 +185,6 @@ export default ( { query }: { query: { id: string } } ) => {
 					: 'wcpay_dispute_save_evidence_clicked'
 			);
 
-			recordEvent(
-				submit
-					? 'wcpay_dispute_submit_evidence_success'
-					: 'wcpay_dispute_save_evidence_success'
-			);
-
 			createSuccessNotice(
 				submit
 					? __( 'Evidence submitted!', 'woocommerce-payments' )
@@ -259,6 +253,13 @@ export default ( { query }: { query: { id: string } } ) => {
 					submit,
 				},
 			} );
+
+			recordEvent(
+				submit
+					? 'wcpay_dispute_submit_evidence_success'
+					: 'wcpay_dispute_save_evidence_success'
+			);
+
 			setRedirectAfterSave( true );
 		} catch ( err ) {
 			recordEvent(
