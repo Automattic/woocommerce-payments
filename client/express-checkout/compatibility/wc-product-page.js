@@ -9,7 +9,7 @@ import debounce from '../debounce';
  * External dependencies
  */
 import { addFilter, doAction } from '@wordpress/hooks';
-import { getExpressCheckoutData } from 'wcpay/tokenized-express-checkout/utils';
+import { getExpressCheckoutData } from 'wcpay/express-checkout/utils';
 
 jQuery( ( $ ) => {
 	$( document.body ).on( 'woocommerce_variation_has_changed', async () => {

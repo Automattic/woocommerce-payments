@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+update: remove `_wcpay_feature_tokenized_cart_ece` feature flag; remove `client/express-checkout` in favor of `client/tokenized-express-checkout`

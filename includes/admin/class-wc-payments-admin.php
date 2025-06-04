@@ -653,7 +653,7 @@ class WC_Payments_Admin {
 
 		wp_localize_script(
 			'WCPAY_ADMIN_SETTINGS',
-			'wcpayPaymentRequestParams',
+			'wcpayExpressCheckoutParams',
 			[
 				'stripe' => [
 					'publishableKey' => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),

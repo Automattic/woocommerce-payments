@@ -22,7 +22,6 @@ use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Eps_Payment_Method;
-use WCPay\Payment_Methods\Wechatpay_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\Payment_Methods\Multibanco_Payment_Method;
 use WCPay\WooPay_Tracker;
@@ -443,7 +442,6 @@ class WC_Payments {
 		include_once __DIR__ . '/payment-methods/class-klarna-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-multibanco-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-grabpay-payment-method.php';
-		include_once __DIR__ . '/payment-methods/class-wechatpay-payment-method.php';
 		include_once __DIR__ . '/inline-script-payloads/class-woo-payments-payment-methods-config.php';
 		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-button-helper.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-sepa.php';
@@ -591,7 +589,6 @@ class WC_Payments {
 			Klarna_Payment_Method::class,
 			Multibanco_Payment_Method::class,
 			Grabpay_Payment_Method::class,
-			Wechatpay_Payment_Method::class,
 		];
 
 		$payment_methods = [];
@@ -747,10 +744,6 @@ class WC_Payments {
 
 			// Use tracks loader only in admin screens because it relies on WC_Tracks loaded by WC_Admin.
 			include_once WCPAY_ABSPATH . 'includes/admin/tracks/tracks-loader.php';
-
-			include_once __DIR__ . '/admin/class-wc-payments-admin-sections-overwrite.php';
-			$admin_sections_overwrite = new WC_Payments_Admin_Sections_Overwrite( self::get_account_service() );
-			$admin_sections_overwrite->init_hooks();
 
 			$wcpay_status = new WC_Payments_Status( self::get_gateway(), self::get_wc_payments_http(), self::get_account_service() );
 			$wcpay_status->init_hooks();

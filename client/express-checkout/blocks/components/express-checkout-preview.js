@@ -62,7 +62,10 @@ export const ExpressCheckoutPreviewComponent = ( {
 			applePay: type,
 		},
 		paymentMethods: {
+			amazonPay: 'never',
 			link: 'never',
+			paypal: 'never',
+			klarna: 'never',
 			googlePay: 'always',
 			applePay: 'always',
 		},
@@ -81,7 +84,7 @@ export const ExpressCheckoutPreviewComponent = ( {
 		return (
 			<div
 				key={ `${ buttonType }-${ theme }` }
-				style={ { minHeight: `${ height }px` } }
+				style={ { minHeight: `${ height }px`, width: '100%' } }
 			>
 				<Elements stripe={ stripe } options={ options }>
 					<ExpressCheckoutElement
