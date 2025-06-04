@@ -85,34 +85,40 @@ const CoverLetter: React.FC< CoverLetterProps > = ( {
 			const merchantName = accountDetails.name;
 			const merchantEmail =
 				settings?.account_business_support_email ||
-				'<business@email.com>';
+				__( '<business@email.com>', 'woocommerce-payments' );
 			const merchantPhone =
 				settings?.account_business_support_phone ||
-				'<Business Phone Number>';
+				__( '<Business Phone Number>', 'woocommerce-payments' );
 			const today = new Date().toLocaleDateString( undefined, {
 				year: 'numeric',
 				month: 'long',
 				day: 'numeric',
 			} );
-			const acquiringBank = bankName || '<Bank Name>';
-			const caseNumber = dispute?.id || '<Case Number>';
-			const transactionId = dispute?.charge?.id || '<Transaction ID>';
+			const acquiringBank =
+				bankName || __( '<Bank Name>', 'woocommerce-payments' );
+			const caseNumber =
+				dispute?.id || __( '<Case Number>', 'woocommerce-payments' );
+			const transactionId =
+				dispute?.charge?.id ||
+				__( '<Transaction ID>', 'woocommerce-payments' );
 			const transactionDate = dispute?.created
 				? formatDateTimeFromTimestamp( dispute.created, {
 						separator: ', ',
 						includeTime: true,
 				  } )
-				: '<Transaction Date>';
+				: __( '<Transaction Date>', 'woocommerce-payments' );
 			const customerName =
-				dispute?.charge?.billing_details?.name || '<Customer Name>';
+				dispute?.charge?.billing_details?.name ||
+				__( '<Customer Name>', 'woocommerce-payments' );
 			const product =
-				dispute?.evidence?.product_description || '<Product>';
+				dispute?.evidence?.product_description ||
+				__( '<Product>', 'woocommerce-payments' );
 			const orderDate = dispute?.charge?.created
 				? formatDateTimeFromTimestamp( dispute.charge.created, {
 						separator: ', ',
 						includeTime: true,
 				  } )
-				: '<Order Date>';
+				: __( '<Order Date>', 'woocommerce-payments' );
 
 			// Generate list of attachments based on provided evidence
 			const attachments = [];
@@ -121,81 +127,109 @@ const CoverLetter: React.FC< CoverLetterProps > = ( {
 			if ( dispute.evidence?.receipt ) {
 				attachmentCount++;
 				attachments.push(
-					`• Order receipt (Attachment ${ String.fromCharCode(
-						64 + attachmentCount
-					) })`
-				);
-			}
-			if ( dispute.evidence?.receipt ) {
-				attachmentCount++;
-				attachments.push(
-					`• Order receipt (Attachment ${ String.fromCharCode(
-						64 + attachmentCount
-					) })`
+					`• ${ __(
+						'Order receipt',
+						'woocommerce-payments'
+					) } (${ __(
+						'Attachment',
+						'woocommerce-payments'
+					) } ${ String.fromCharCode( 64 + attachmentCount ) })`
 				);
 			}
 			if ( dispute.evidence?.customer_communication ) {
 				attachmentCount++;
 				attachments.push(
-					`• Customer communication (Attachment ${ String.fromCharCode(
-						64 + attachmentCount
-					) })`
+					`• ${ __(
+						'Customer communication',
+						'woocommerce-payments'
+					) } (${ __(
+						'Attachment',
+						'woocommerce-payments'
+					) } ${ String.fromCharCode( 64 + attachmentCount ) })`
 				);
 			}
 			if ( dispute.evidence?.customer_signature ) {
 				attachmentCount++;
 				attachments.push(
-					`• Customer signature (Attachment ${ String.fromCharCode(
-						64 + attachmentCount
-					) })`
+					`• ${ __(
+						'Customer signature',
+						'woocommerce-payments'
+					) } (${ __(
+						'Attachment',
+						'woocommerce-payments'
+					) } ${ String.fromCharCode( 64 + attachmentCount ) })`
 				);
 			}
 			if ( dispute.evidence?.refund_policy ) {
 				attachmentCount++;
 				attachments.push(
-					`• Store refund policy (Attachment ${ String.fromCharCode(
-						64 + attachmentCount
-					) })`
+					`• ${ __(
+						'Store refund policy',
+						'woocommerce-payments'
+					) } (${ __(
+						'Attachment',
+						'woocommerce-payments'
+					) } ${ String.fromCharCode( 64 + attachmentCount ) })`
 				);
 			}
 			if ( dispute.evidence?.shipping_documentation ) {
 				attachmentCount++;
 				attachments.push(
-					`• Proof of shipping (Attachment ${ String.fromCharCode(
-						64 + attachmentCount
-					) })`
+					`• ${ __(
+						'Proof of shipping',
+						'woocommerce-payments'
+					) } (${ __(
+						'Attachment',
+						'woocommerce-payments'
+					) } ${ String.fromCharCode( 64 + attachmentCount ) })`
 				);
 			}
 			if ( dispute.evidence?.service_documentation ) {
 				attachmentCount++;
 				attachments.push(
-					`• Service documentation (Attachment ${ String.fromCharCode(
-						64 + attachmentCount
-					) })`
+					`• ${ __(
+						'Service documentation',
+						'woocommerce-payments'
+					) } (${ __(
+						'Attachment',
+						'woocommerce-payments'
+					) } ${ String.fromCharCode( 64 + attachmentCount ) })`
 				);
 			}
 			if ( dispute.evidence?.cancellation_policy ) {
 				attachmentCount++;
 				attachments.push(
-					`• Cancellation policy (Attachment ${ String.fromCharCode(
-						64 + attachmentCount
-					) })`
+					`• ${ __(
+						'Cancellation policy',
+						'woocommerce-payments'
+					) } (${ __(
+						'Attachment',
+						'woocommerce-payments'
+					) } ${ String.fromCharCode( 64 + attachmentCount ) })`
 				);
 			}
 			if ( dispute.evidence?.access_activity_log ) {
 				attachmentCount++;
 				attachments.push(
-					`• Access activity log (Attachment ${ String.fromCharCode(
-						64 + attachmentCount
-					) })`
+					`• ${ __(
+						'Access activity log',
+						'woocommerce-payments'
+					) } (${ __(
+						'Attachment',
+						'woocommerce-payments'
+					) } ${ String.fromCharCode( 64 + attachmentCount ) })`
 				);
 			}
 			if ( dispute.evidence?.uncategorized_file ) {
 				attachmentCount++;
 				attachments.push(
-					`• Additional documentation (Attachment ${ String.fromCharCode(
-						64 + attachmentCount
-					) })`
+					`• ${ __(
+						'Additional documentation',
+						'woocommerce-payments'
+					) } (${ __(
+						'Attachment',
+						'woocommerce-payments'
+					) } ${ String.fromCharCode( 64 + attachmentCount ) })`
 				);
 			}
 
@@ -203,33 +237,90 @@ const CoverLetter: React.FC< CoverLetterProps > = ( {
 			const attachmentsList =
 				attachments.length > 0
 					? attachments.join( '\n' )
-					: `• AVS/CVV Match: Billing address and security code matched (Attachment A)
-• IP/Device Data: Location and device info used at purchase (Attachment B)
-• Customer Confirmation: Email or chat confirming purchase (Attachment C)
-• Usage Data: Login records for the digital goods (Attachment D)`;
+					: `• ${ __(
+							'AVS/CVV Match: Billing address and security code matched',
+							'woocommerce-payments'
+					  ) } (${ __( 'Attachment', 'woocommerce-payments' ) } A)
+• ${ __(
+							'IP/Device Data: Location and device info used at purchase',
+							'woocommerce-payments'
+					  ) } (${ __( 'Attachment', 'woocommerce-payments' ) } B)
+• ${ __(
+							'Customer Confirmation: Email or chat confirming purchase',
+							'woocommerce-payments'
+					  ) } (${ __( 'Attachment', 'woocommerce-payments' ) } C)
+• ${ __(
+							'Usage Data: Login records for the digital goods',
+							'woocommerce-payments'
+					  ) } (${ __( 'Attachment', 'woocommerce-payments' ) } D)`;
 
-			const generatedContent = `${ merchantName }
+			// Generate each section separately
+			const header = `${ merchantName }
 ${ merchantAddress }
 ${ merchantEmail }
 ${ merchantPhone }
-${ today }
+${ today }`;
 
-To: ${ acquiringBank }
-Subject: Chargeback Dispute – Case #${ caseNumber }
+			const recipient = `${ __(
+				'To:',
+				'woocommerce-payments'
+			) } ${ acquiringBank }
+${ __( 'Subject:', 'woocommerce-payments' ) } ${ __(
+				'Chargeback Dispute',
+				'woocommerce-payments'
+			) } – ${ __( 'Case', 'woocommerce-payments' ) } #${ caseNumber }`;
 
-Dear Dispute Resolution Team,
+			const greeting = __(
+				'Dear Dispute Resolution Team,',
+				'woocommerce-payments'
+			);
 
-We are submitting evidence in response to chargeback #${ caseNumber } for transaction #${ transactionId } on ${ transactionDate }.
+			const body = `${ __(
+				'We are submitting evidence in response to chargeback',
+				'woocommerce-payments'
+			) } #${ caseNumber } ${ __(
+				'for transaction',
+				'woocommerce-payments'
+			) } #${ transactionId } ${ __(
+				'on',
+				'woocommerce-payments'
+			) } ${ transactionDate }.
 
-Our records indicate that the customer and legitimate cardholder, ${ customerName }, ordered ${ product } on ${ orderDate }.
+${ __(
+	'Our records indicate that the customer and legitimate cardholder,',
+	'woocommerce-payments'
+) } ${ customerName }, ${ __(
+				'ordered',
+				'woocommerce-payments'
+			) } ${ product } ${ __(
+				'on',
+				'woocommerce-payments'
+			) } ${ orderDate }.
 
-To support our case, we are providing the following documentation:
+${ __(
+	'To support our case, we are providing the following documentation:',
+	'woocommerce-payments'
+) }
 ${ attachmentsList }
 
-Based on this information, we respectfully request that the chargeback be reversed. Please let me know if any further details are required.
+${ __(
+	'Based on this information, we respectfully request that the chargeback be reversed. Please let me know if any further details are required.',
+	'woocommerce-payments'
+) }`;
 
-Thank you,
+			const closing = `${ __( 'Thank you,', 'woocommerce-payments' ) }
 ${ merchantName }`;
+
+			// Combine all sections with proper spacing
+			const generatedContent = `${ header }
+
+${ recipient }
+
+${ greeting }
+
+${ body }
+
+${ closing }`;
 
 			setAutoGeneratedContent( generatedContent );
 			return generatedContent;
