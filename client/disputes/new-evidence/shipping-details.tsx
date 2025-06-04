@@ -51,10 +51,7 @@ const ShippingDetails: React.FC< ShippingDetailsProps > = ( {
 					onChange={ ( value ) =>
 						handleChange( 'shipping_carrier', value )
 					}
-					value={ ( localEvidence.shipping_carrier || '' ).replace(
-						/\n/g,
-						' '
-					) }
+					value={ localEvidence.shipping_carrier || '' }
 					disabled={ readOnly }
 				/>
 			</div>
@@ -98,7 +95,10 @@ const ShippingDetails: React.FC< ShippingDetailsProps > = ( {
 					onChange={ ( value ) =>
 						handleChange( 'shipping_address', value )
 					}
-					value={ localEvidence.shipping_address || '' }
+					value={ ( localEvidence.shipping_address || '' ).replace(
+						/\n/g,
+						' '
+					) }
 					disabled={ readOnly }
 				/>
 			</div>
