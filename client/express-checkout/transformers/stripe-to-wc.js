@@ -44,6 +44,9 @@ export const transformStripePaymentMethodForStoreApi = (
 
 	return {
 		customer_note: paymentData.order_comments,
+		customer_password: paymentData.customer_password
+			? paymentData.customer_password
+			: undefined,
 		billing_address: {
 			first_name: name.split( ' ' )?.slice( 0, 1 )?.join( ' ' ) ?? '',
 			last_name: name.split( ' ' )?.slice( 1 )?.join( ' ' ) || '-',
