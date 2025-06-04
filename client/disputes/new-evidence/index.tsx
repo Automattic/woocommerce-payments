@@ -671,6 +671,7 @@ export default ( { query }: { query: { id: string } } ) => {
 							}
 						} }
 						dispute={ dispute }
+						bankName={ bankName }
 					/>
 					{ inlineNotice( bankName ) }
 				</>

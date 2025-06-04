@@ -118,6 +118,7 @@ describe( 'CoverLetter', () => {
 			reason: 'general' as DisputeReason,
 			payment_intent: 'pi_123',
 		},
+		bankName: 'Bank Name',
 	};
 
 	it( 'renders textarea and print button', () => {
