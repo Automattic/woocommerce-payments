@@ -51,7 +51,10 @@ const ShippingDetails: React.FC< ShippingDetailsProps > = ( {
 					onChange={ ( value ) =>
 						handleChange( 'shipping_carrier', value )
 					}
-					value={ localEvidence.shipping_carrier || '' }
+					value={ ( localEvidence.shipping_carrier || '' ).replace(
+						/\n/g,
+						' '
+					) }
 					disabled={ readOnly }
 				/>
 			</div>

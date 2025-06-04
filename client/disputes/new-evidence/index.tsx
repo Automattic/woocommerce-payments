@@ -388,6 +388,11 @@ ${ merchantName }`;
 					cancellation_policy: evidence.cancellation_policy,
 					access_activity_log: evidence.access_activity_log,
 					uncategorized_file: evidence.uncategorized_file,
+					// Add shipping details
+					shipping_carrier: evidence.shipping_carrier,
+					shipping_date: evidence.shipping_date,
+					shipping_tracking_number: evidence.shipping_tracking_number,
+					shipping_address: evidence.shipping_address,
 				} ).filter( ( [ value ] ) => value && value !== '' )
 			);
 
