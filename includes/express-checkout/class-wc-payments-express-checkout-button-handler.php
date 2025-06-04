@@ -255,6 +255,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 				]
 			),
 			[
+				// placing these outside of the filter to prevent modification of the values.
 				'stripe' => [
 					'publishableKey' => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
 					'accountId'      => $this->account->get_stripe_account_id(),
