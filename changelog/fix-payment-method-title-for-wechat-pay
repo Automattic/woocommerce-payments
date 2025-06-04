@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: set the correct payment method title when processing the payment with wechat pay, multibanco, and others
