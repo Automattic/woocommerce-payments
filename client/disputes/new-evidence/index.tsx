@@ -539,6 +539,7 @@ export default ( { query }: { query: { id: string } } ) => {
 			onFileChange: ( key: string, file: File ) =>
 				Promise.resolve( doUploadFile( field.key, file ) ),
 			onFileRemove: () => Promise.resolve( doRemoveFile( field.key ) ),
+			isBusy: isUploading[ field.key ] || false,
 		} )
 	);
 
@@ -553,6 +554,7 @@ export default ( { query }: { query: { id: string } } ) => {
 			onFileChange: ( key: string, file: File ) =>
 				Promise.resolve( doUploadFile( field.key, file ) ),
 			onFileRemove: () => Promise.resolve( doRemoveFile( field.key ) ),
+			isBusy: isUploading[ field.key ] || false,
 		} )
 	);
 

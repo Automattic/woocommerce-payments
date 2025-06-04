@@ -17,6 +17,7 @@ interface DocumentField {
 	onFileRemove: () => Promise< void >;
 	uploaded?: boolean;
 	readOnly?: boolean;
+	isBusy?: boolean;
 }
 
 interface RecommendedDocumentsProps {
@@ -54,6 +55,7 @@ const RecommendedDocuments: React.FC< RecommendedDocumentsProps > = ( {
 							onFileRemove={ async () => field.onFileRemove() }
 							disabled={ readOnly || field.readOnly }
 							isDone={ !! field.uploaded }
+							isBusy={ field.isBusy }
 							accept={ '.pdf, image/png, image/jpeg' }
 						/>
 					</li>

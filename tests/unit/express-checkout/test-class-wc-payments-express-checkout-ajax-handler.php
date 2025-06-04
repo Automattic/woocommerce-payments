@@ -186,6 +186,74 @@ class WC_Payments_Express_Checkout_Ajax_Handler_Test extends WCPAY_UnitTestCase 
 		$this->assertSame( 'H3B', $billing_address['postcode'] );
 	}
 
+	/**
+	 * When Hong Kong has an invalid state, it should remain unchanged.
+	 */
+	public function test_tokenized_cart_hk_invalid_state() {
+		$request = new WP_REST_Request();
+		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_param(
+			'shipping_address',
+			[
+				'country' => Country_Code::HONG_KONG,
+				'state'   => 'invalid-state',
+			]
+		);
+
+		$this->ajax_handler->tokenized_cart_store_api_address_normalization( null, null, $request );
+		$shipping_address = $request->get_param( 'shipping_address' );
+		$this->assertEquals( Country_Code::HONG_KONG, $shipping_address['country'] );
+		$this->assertEquals( 'invalid-state', $shipping_address['state'] );
+	}
+
+	/**
+	 * When Hong Kong regions/districts are delivered in the postcode field due to an Apple Pay bug, they should be adjusted.
+	 */
+	public function test_tokenized_cart_hk_postcode_with_region() {
+		$request = new WP_REST_Request();
+		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_param(
+			'shipping_address',
+			[
+				'country'  => Country_Code::HONG_KONG,
+				'state'    => 'invalid-state',
+				'postcode' => 'kowloon',
+			]
+		);
+
+		$this->ajax_handler->tokenized_cart_store_api_address_normalization( null, null, $request );
+		$shipping_address = $request->get_param( 'shipping_address' );
+		$this->assertEquals( Country_Code::HONG_KONG, $shipping_address['country'] );
+		$this->assertEquals( 'KOWLOON', $shipping_address['state'] );
+	}
+
+	/**
+	 * When the `九龍` Hong Kong region is delivered in the postcode field, it should be adjusted for WooCommerce to be able to handle it.
+	 */
+	public function test_tokenized_cart_hk_postcode_with_九龍_region() {
+		$request = new WP_REST_Request();
+		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_param(
+			'shipping_address',
+			[
+				'country'  => Country_Code::HONG_KONG,
+				'state'    => 'invalid-state',
+				'postcode' => '九龍',
+			]
+		);
+
+		$this->ajax_handler->tokenized_cart_store_api_address_normalization( null, null, $request );
+		$shipping_address = $request->get_param( 'shipping_address' );
+		$this->assertEquals( Country_Code::HONG_KONG, $shipping_address['country'] );
+		$this->assertEquals( 'KOWLOON', $shipping_address['state'] );
+	}
+
 	public function test_tokenized_cart_italy_state_venezia_normalization() {
 		$request = new WP_REST_Request();
 		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
