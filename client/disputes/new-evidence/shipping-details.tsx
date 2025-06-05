@@ -61,6 +61,7 @@ const ShippingDetails: React.FC< ShippingDetailsProps > = ( {
 					onChange={ ( value ) =>
 						handleChange( 'shipping_date', value )
 					}
+					type="date"
 					value={
 						localEvidence.shipping_date
 							? new Date(
