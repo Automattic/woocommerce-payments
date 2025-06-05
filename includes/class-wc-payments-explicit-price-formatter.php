@@ -132,7 +132,6 @@ class WC_Payments_Explicit_Price_Formatter {
 		if ( false === static::should_output_explicit_price() ) {
 			return $price;
 		}
-
 		if ( empty( $currency_code ) ) {
 			return $price;
 		}
