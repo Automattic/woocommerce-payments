@@ -772,10 +772,12 @@ class WC_Payments_Onboarding_Service {
 			throw new Exception( __( 'Your store is not connected to WordPress.com. Please connect it first.', 'woocommerce-payments' ) );
 		}
 
+		WC_Payments::get_account_service()->set_account_deletion_in_progress();
 		// Delete the currently connected Stripe account, in the onboarding mode we are currently in.
 		$test_mode_onboarding = self::is_test_mode_enabled();
 		$result               = $this->payments_api_client->delete_account( $test_mode_onboarding );
 		if ( ! isset( $result['result'] ) || 'success' !== $result['result'] ) {
+			WC_Payments::get_account_service()->clear_account_deletion_in_progress();
 			throw new API_Exception( __( 'Failed to delete account.', 'woocommerce-payments' ), 'wcpay-onboarding-account-error', 400 );
 		}
 
@@ -833,8 +835,10 @@ class WC_Payments_Onboarding_Service {
 			WC_Payments::get_account_service()->save_test_drive_settings();
 
 			// Delete the currently connected Stripe account.
+			WC_Payments::get_account_service()->set_account_deletion_in_progress();
 			$this->payments_api_client->delete_account( true );
 		} catch ( API_Exception $e ) {
+			WC_Payments::get_account_service()->clear_account_deletion_in_progress();
 			throw new API_Exception( __( 'Failed to disable test drive account.', 'woocommerce-payments' ), 'wcpay-onboarding-account-error', 400 );
 		}
 
@@ -867,6 +871,8 @@ class WC_Payments_Onboarding_Service {
 
 		update_option( '_wcpay_onboarding_stripe_connected', [] );
 		update_option( self::TEST_MODE_OPTION, 'no' );
+
+		WC_Payments::get_account_service()->clear_account_deletion_in_progress();
 
 		// Discard any ongoing onboarding session.
 		delete_transient( WC_Payments_Account::ONBOARDING_STATE_TRANSIENT );

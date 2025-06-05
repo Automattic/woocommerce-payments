@@ -31,6 +31,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	const WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT                   = 'woopay_enabled_by_default';
 	const ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT       = 'test_drive_account_settings_for_live_account';
 	const EMBEDDED_KYC_IN_PROGRESS_OPTION                       = 'wcpay_onboarding_embedded_kyc_in_progress';
+	const ACCOUNT_DELETION_IN_PROGRESS_OPTION                   = 'wcpay_onboarding_account_deletion_in_progress';
 	const ERROR_MESSAGE_TRANSIENT                               = 'wcpay_error_message';
 	const INSTANT_DEPOSITS_REMINDER_ACTION                      = 'wcpay_instant_deposit_reminder';
 	const TRACKS_EVENT_ACCOUNT_CONNECT_START                    = 'wcpay_account_connect_start';
@@ -1367,9 +1368,11 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			if ( ! empty( $_GET['wcpay-reset-account'] ) && 'true' === $_GET['wcpay-reset-account'] ) {
 				$test_mode_onboarding = WC_Payments_Onboarding_Service::is_test_mode_enabled();
 				try {
+					$this->set_account_deletion_in_progress();
 					// Delete the currently Stripe connected account, in the onboarding mode we are currently in.
 					$this->payments_api_client->delete_account( $test_mode_onboarding );
 				} catch ( API_Exception $e ) {
+					$this->clear_account_deletion_in_progress();
 					// In case we fail to delete the account, log and redirect to the Overview page.
 					Logger::error( 'Failed to delete account: ' . $e->getMessage() );
 
@@ -1418,9 +1421,11 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 						// we need to collect the test drive settings before we delete the test-drive account,
 						// and apply those settings to the live account.
 						$this->save_test_drive_settings();
+						$this->set_account_deletion_in_progress();
 						// Delete the currently connected Stripe account.
 						$this->payments_api_client->delete_account( true );
 					} catch ( API_Exception $e ) {
+						$this->clear_account_deletion_in_progress();
 						// In case we fail to delete the account, log and carry on.
 						Logger::error( 'Failed to delete account in test mode: ' . $e->getMessage() );
 					}
@@ -2296,6 +2301,12 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			return [];
 		}
 
+		// If the account deletion process is in progress, return an empty array to simulate a disconnected account.
+		// This prevents any actions or display logic from using outdated or partial account data during the deletion process.
+		if ( $this->is_account_deletion_in_progress() ) {
+			return [];
+		}
+
 		$refreshed = false;
 
 		$account = $this->database_cache->get_or_add(
@@ -2765,6 +2776,33 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			'isLive'         => $account_session['is_live'] ?? false,
 			'publishableKey' => $account_session['publishable_key'] ?? '',
 		];
+	}
+
+	/**
+	 * Marks the account deletion process as in progress by setting the corresponding option to true.
+	 *
+	 * @return void
+	 */
+	public function set_account_deletion_in_progress(): void {
+		update_option( self::ACCOUNT_DELETION_IN_PROGRESS_OPTION, true );
+	}
+
+	/**
+	 * Checks whether the account deletion process is currently marked as in progress.
+	 *
+	 * @return bool True if account deletion is in progress, false otherwise.
+	 */
+	public function is_account_deletion_in_progress(): bool {
+		return boolval( get_option( self::ACCOUNT_DELETION_IN_PROGRESS_OPTION, false ) );
+	}
+
+	/**
+	 * Clears the account deletion in progress flag by removing the corresponding option.
+	 *
+	 * @return void
+	 */
+	public function clear_account_deletion_in_progress(): void {
+		delete_option( self::ACCOUNT_DELETION_IN_PROGRESS_OPTION );
 	}
 
 	/**
