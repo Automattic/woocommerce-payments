@@ -39,7 +39,7 @@ export const expressCheckoutElementApplePay = ( api ) => ( {
 			return false;
 		}
 
-		return checkPaymentMethodIsAvailable( 'applePay', cart );
+		return checkPaymentMethodIsAvailable( 'applePay', cart, api );
 	},
 } );
 
@@ -74,6 +74,6 @@ export const expressCheckoutElementGooglePay = ( api ) => ( {
 			return false;
 		}
 
-		return checkPaymentMethodIsAvailable( 'googlePay', cart );
+		return checkPaymentMethodIsAvailable( 'googlePay', cart, api );
 	},
 } );
