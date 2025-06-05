@@ -233,9 +233,7 @@ export default ( { query }: { query: { id: string } } ) => {
 					shipping_date: evidence.shipping_date,
 					shipping_tracking_number: evidence.shipping_tracking_number,
 					shipping_address: evidence.shipping_address,
-				} ).filter(
-					( [ , value ] ) => value !== undefined && value !== ''
-				)
+				} ).filter( ( [ value ] ) => value && value !== '' )
 			);
 
 			// Update metadata with the current productType
