@@ -286,7 +286,7 @@ export default ( { query }: { query: { id: string } } ) => {
 	// --- Handle step changes ---
 	const handleStepChange = async ( newStep: number ) => {
 		// // Save current evidence before changing step
-		// await doSave( false );
+		await doSave( false );
 
 		// Update step
 		setCurrentStep( newStep );
