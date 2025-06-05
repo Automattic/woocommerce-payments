@@ -12,6 +12,7 @@ import { memoize } from 'lodash';
  */
 import type WCPayAPI from 'wcpay/checkout/api';
 
+// types from https://github.com/woocommerce/woocommerce/blob/360d9bc0f5709e6cf13c646860360fca9968ebb0/plugins/woocommerce/client/blocks/assets/js/types/type-defs/cart.ts
 interface CartTotals {
 	total_price: string;
 	currency_code: string;
