@@ -1,0 +1,5 @@
+Significance: patch
+Type: dev
+Comment: fix: `wcpay_woopay_enabled` filter comment.
+
+
