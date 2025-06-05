@@ -242,7 +242,7 @@ export default ( { query }: { query: { id: string } } ) => {
 				__product_type: productType,
 			};
 
-			await apiFetch( {
+			const updatedDispute = await apiFetch( {
 				path,
 				method: 'post',
 				data: {
@@ -251,6 +251,8 @@ export default ( { query }: { query: { id: string } } ) => {
 					submit,
 				},
 			} );
+
+			setDispute( updatedDispute );
 
 			recordEvent(
 				submit
@@ -283,15 +285,11 @@ export default ( { query }: { query: { id: string } } ) => {
 
 	// --- Handle step changes ---
 	const handleStepChange = async ( newStep: number ) => {
-		// Save current evidence before changing step
-		await doSave( false );
+		// // Save current evidence before changing step
+		// await doSave( false );
 
 		// Update step
 		setCurrentStep( newStep );
-
-		// Update cover letter with latest evidence
-		const updatedDispute = await apiFetch( { path } );
-		setDispute( updatedDispute );
 	};
 
 	// --- Read-only logic ---
@@ -667,9 +665,9 @@ export default ( { query }: { query: { id: string } } ) => {
 						value={ coverLetter }
 						onChange={ ( value, isManualEdit ) => {
 							setCoverLetter( value );
-							if ( isManualEdit ) {
-								setIsCoverLetterManuallyEdited( true );
-							}
+							setIsCoverLetterManuallyEdited(
+								isManualEdit || false
+							);
 						} }
 						dispute={ dispute }
 						bankName={ bankName }
