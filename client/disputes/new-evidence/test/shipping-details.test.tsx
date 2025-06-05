@@ -51,11 +51,12 @@ describe( 'ShippingDetails', () => {
 		const inputs = screen.getAllByRole( 'textbox' );
 		// SHIPPING CARRIER, TRACKING NUMBER, SHIPPING ADDRESS should be empty
 		expect( inputs[ 0 ] ).toHaveValue( '' ); // SHIPPING CARRIER
-		expect( inputs[ 2 ] ).toHaveValue( '' ); // TRACKING NUMBER
-		expect( inputs[ 3 ] ).toHaveValue( '' ); // SHIPPING ADDRESS
+		expect( inputs[ 1 ] ).toHaveValue( '' ); // TRACKING NUMBER
+		expect( inputs[ 2 ] ).toHaveValue( '' ); // SHIPPING ADDRESS
 		// SHIPPING DATE should be today's date
-		const today = new Date().toLocaleDateString();
-		expect( inputs[ 1 ] ).toHaveValue( today ); // SHIPPING DATE
+		const dateInput = screen.getByLabelText( /SHIPPING DATE/i );
+		const today = new Date().toISOString().split( 'T' )[ 0 ];
+		expect( dateInput ).toHaveValue( today ); // SHIPPING DATE
 	} );
 
 	it( 'disables inputs when readOnly', () => {
