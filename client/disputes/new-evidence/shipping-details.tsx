@@ -58,15 +58,16 @@ const ShippingDetails: React.FC< ShippingDetailsProps > = ( {
 			<div className="wcpay-dispute-evidence-shipping-details__field-group">
 				<TextControl
 					label={ __( 'SHIPPING DATE', 'woocommerce-payments' ) }
-					onChange={ ( value ) =>
-						handleChange( 'shipping_date', value )
-					}
+					onChange={ ( value ) => {
+						handleChange( 'shipping_date', value );
+					} }
+					type="date"
 					value={
 						localEvidence.shipping_date
-							? new Date(
-									localEvidence.shipping_date
-							  ).toLocaleDateString()
-							: new Date().toLocaleDateString()
+							? new Date( localEvidence.shipping_date )
+									.toISOString()
+									.split( 'T' )[ 0 ]
+							: new Date().toISOString().split( 'T' )[ 0 ]
 					}
 					disabled={ readOnly }
 				/>
