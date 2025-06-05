@@ -45,6 +45,7 @@ const ShippingDetails: React.FC< ShippingDetailsProps > = ( {
 					label={ __( 'SHIPPING DATE', 'woocommerce-payments' ) }
 					// eslint-disable-next-line @typescript-eslint/no-empty-function
 					onChange={ () => {} }
+					type="date"
 					value={ date.toLocaleDateString() }
 					disabled={ readOnly }
 				/>
