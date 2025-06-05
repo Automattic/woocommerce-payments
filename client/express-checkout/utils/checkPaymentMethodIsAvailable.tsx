@@ -60,7 +60,11 @@ const checkPaymentMethodIsAvailableInternal = (
 			>
 				<ExpressCheckoutElement
 					onConfirm={ () => null }
-					onLoadError={ () => resolve( false ) }
+					onLoadError={ () => {
+						resolve( false );
+						ReactDOM.unmountComponentAtNode( containerEl );
+						containerEl.remove();
+					} }
 					options={ {
 						paymentMethods: {
 							applePay:
