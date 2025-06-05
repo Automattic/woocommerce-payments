@@ -1,4 +1,4 @@
 Significance: minor
 Type: add
 
-New Filter: disable_woopay – Allows developers to conditionally disable WooPay based on custom logic, improving compatibility with themes and plugins.
+New Filter: wcpay_woopay_enabled – Allows developers to conditionally disable WooPay based on custom logic, improving compatibility with themes and plugins.
