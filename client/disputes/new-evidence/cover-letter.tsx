@@ -358,6 +358,7 @@ ${ closing }`;
 			<!DOCTYPE html>
 			<html>
 			<head>
+				<meta charset="UTF-8">
 				<title>${ __( 'Cover Letter', 'woocommerce-payments' ) }</title>
 				<style>
 					body {
