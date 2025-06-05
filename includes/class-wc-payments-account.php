@@ -1366,6 +1366,11 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			// Make changes to account data as instructed by action GET params.
 			// This needs to happen early because we need to make things "not OK" for the rest of the logic.
 			if ( ! empty( $_GET['wcpay-reset-account'] ) && 'true' === $_GET['wcpay-reset-account'] ) {
+				// If there's already account deletion in place, redirect the merchant to the connect page with error message.
+				if ( $this->is_account_deletion_in_progress() ) {
+					$this->redirect_service->redirect_to_connect_page( 'Failed to reset the account: there is already another attempt in progress.', $from, [ 'wcpay-reset-account-error' => '1' ] );
+					return;
+				}
 				$test_mode_onboarding = WC_Payments_Onboarding_Service::is_test_mode_enabled();
 				try {
 					$this->set_account_deletion_in_progress();
@@ -1410,6 +1415,11 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				);
 				return;
 			} elseif ( ! empty( $_GET['wcpay-disable-onboarding-test-mode'] ) && 'true' === $_GET['wcpay-disable-onboarding-test-mode'] ) {
+				// If there's already account deletion in place, redirect the merchant to the connect page with error message.
+				if ( $this->is_account_deletion_in_progress() ) {
+					$this->redirect_service->redirect_to_connect_page( 'Failed to activate account: there is already another attempt in progress.', $from, [ 'wcpay-reset-account-error' => '1' ] );
+					return;
+				}
 				// If the test mode onboarding is enabled:
 				// - Delete the current account;
 				// - Cleanup the gateway state for a fresh onboarding flow.
@@ -2779,30 +2789,30 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	}
 
 	/**
-	 * Marks the account deletion process as in progress by setting the corresponding option to true.
+	 * Marks the account deletion in progress.
 	 *
 	 * @return void
 	 */
 	public function set_account_deletion_in_progress(): void {
-		update_option( self::ACCOUNT_DELETION_IN_PROGRESS_OPTION, true );
+		set_transient( self::ACCOUNT_DELETION_IN_PROGRESS_OPTION, 'yes', 30 );
 	}
 
 	/**
-	 * Checks whether the account deletion process is currently marked as in progress.
+	 * Checks whether the account deletion is currently marked as in progress.
 	 *
 	 * @return bool True if account deletion is in progress, false otherwise.
 	 */
 	public function is_account_deletion_in_progress(): bool {
-		return boolval( get_option( self::ACCOUNT_DELETION_IN_PROGRESS_OPTION, false ) );
+		return filter_var( get_transient( self::ACCOUNT_DELETION_IN_PROGRESS_OPTION ), FILTER_VALIDATE_BOOLEAN );
 	}
 
 	/**
-	 * Clears the account deletion in progress flag by removing the corresponding option.
+	 * Clears the account deletion in progress transient.
 	 *
 	 * @return void
 	 */
 	public function clear_account_deletion_in_progress(): void {
-		delete_option( self::ACCOUNT_DELETION_IN_PROGRESS_OPTION );
+		delete_transient( self::ACCOUNT_DELETION_IN_PROGRESS_OPTION );
 	}
 
 	/**
