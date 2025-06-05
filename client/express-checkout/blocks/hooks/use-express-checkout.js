@@ -148,9 +148,6 @@ export const useExpressCheckout = ( {
 				order_comments: wp?.data
 					?.select( 'wc/store/checkout' )
 					?.getOrderNotes(),
-				customer_password: wp?.data
-					?.select( 'wc/store/checkout' )
-					?.getCustomerPassword(),
 			}
 		);
 	};
