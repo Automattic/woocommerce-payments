@@ -11,7 +11,7 @@ import { server } from './utilities/msw-server';
 let handleUnhandledRequest;
 beforeAll( () => {
 	handleUnhandledRequest = jest.fn().mockImplementation( ( req ) => {
-		console.log( `
+		console.error( `
 [jest-msw-setup.js]
 Error: intercepted a request without a matching request handler:
 
