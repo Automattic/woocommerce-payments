@@ -1372,14 +1372,16 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				}
 				$test_mode_onboarding = WC_Payments_Onboarding_Service::is_test_mode_enabled();
 				try {
-					$this->set_account_deletion_in_progress();
+					// Immediately change the account cache to avoid API requests during the time it takes for
+					// the Transact Platform to actually delete the account.
+					$this->overwrite_cache_with_no_account();
 					// Delete the currently Stripe connected account, in the onboarding mode we are currently in.
 					$this->payments_api_client->delete_account( $test_mode_onboarding );
 				} catch ( API_Exception $e ) {
-					$this->clear_account_deletion_in_progress();
-					// In case we fail to delete the account, log and redirect to the Overview page.
+					// In case we fail to delete the account, log, force refresh the account cache
+					// and redirect to the Overview page.
 					Logger::error( 'Failed to delete account: ' . $e->getMessage() );
-
+					$this->refresh_account_data();
 					$this->redirect_service->redirect_to_overview_page_with_error( [ 'wcpay-reset-account-error' => '1' ] );
 					return;
 				}
@@ -1416,7 +1418,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			} elseif ( ! empty( $_GET['wcpay-disable-onboarding-test-mode'] ) && 'true' === $_GET['wcpay-disable-onboarding-test-mode'] ) {
 				// If the account does not exist anymore, redirect the merchant to the connect page with error message.
 				if ( empty( $this->get_cached_account_data() ) ) {
-					$this->redirect_service->redirect_to_connect_page( 'Failed to activate account: there is already another attempt in progress.', $from, [ 'wcpay-reset-account-error' => '1' ] );
+					$this->redirect_service->redirect_to_connect_page( 'Failed to activate live payments: there is already another attempt in progress.', $from, [ 'wcpay-reset-account-error' => '1' ] );
 					return;
 				}
 				// If the test mode onboarding is enabled:
@@ -1430,11 +1432,12 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 						// we need to collect the test drive settings before we delete the test-drive account,
 						// and apply those settings to the live account.
 						$this->save_test_drive_settings();
-						$this->set_account_deletion_in_progress();
+						// Immediately change the account cache to avoid API requests during the time it takes for
+						// the Transact Platform to actually delete the account.
+						$this->overwrite_cache_with_no_account();
 						// Delete the currently connected Stripe account.
 						$this->payments_api_client->delete_account( true );
 					} catch ( API_Exception $e ) {
-						$this->clear_account_deletion_in_progress();
 						// In case we fail to delete the account, log and carry on.
 						Logger::error( 'Failed to delete account in test mode: ' . $e->getMessage() );
 					}
@@ -2399,6 +2402,15 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	}
 
 	/**
+	 * Change the account cache to hold the connected-but-no-account value (empty array).
+	 *
+	 * @return void
+	 */
+	public function overwrite_cache_with_no_account(): void {
+		$this->database_cache->add( Database_Cache::ACCOUNT_KEY, [] );
+	}
+
+	/**
 	 * Checks if the cached account can be used in the current plugin state.
 	 *
 	 * @param bool|string|array $account cached account data.
@@ -2779,24 +2791,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			'isLive'         => $account_session['is_live'] ?? false,
 			'publishableKey' => $account_session['publishable_key'] ?? '',
 		];
-	}
-
-	/**
-	 * Marks the account deletion in progress.
-	 *
-	 * @return void
-	 */
-	public function set_account_deletion_in_progress(): void {
-		$this->database_cache->add( Database_Cache::ACCOUNT_KEY, [] );
-	}
-
-	/**
-	 * Clears the account deletion in progress transient.
-	 *
-	 * @return void
-	 */
-	public function clear_account_deletion_in_progress(): void {
-		$this->get_cached_account_data( true );
 	}
 
 	/**
