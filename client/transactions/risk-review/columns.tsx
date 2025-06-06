@@ -79,7 +79,7 @@ export const getRiskReviewListRowContent = (
 		includeTime: true,
 	} );
 
-	const clickable = ( children: JSX.Element | string ) => (
+	const clickable = ( children: React.ReactNode ) => (
 		<ClickableCell href={ detailsURL }>{ children }</ClickableCell>
 	);
 
