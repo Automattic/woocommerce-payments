@@ -240,7 +240,7 @@ export default ( { query }: { query: { id: string } } ) => {
 					cancellation_policy: evidence.cancellation_policy,
 					access_activity_log: evidence.access_activity_log,
 					uncategorized_file: evidence.uncategorized_file,
-                    uncategorized_text: coverLetter,
+					uncategorized_text: coverLetter,
 					// Add shipping details
 					shipping_carrier: shippingCarrier,
 					shipping_date: shippingDate,
@@ -264,7 +264,7 @@ export default ( { query }: { query: { id: string } } ) => {
 					submit,
 				},
 			} );
-            
+
 			setDispute( updatedDispute );
 
 			recordEvent(
