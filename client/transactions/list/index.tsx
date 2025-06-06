@@ -288,7 +288,9 @@ const getColumns = (
 		},
 	].filter( Boolean ) as Column[]; // We explicitly define the type because TypeScript can't infer the type post-filtering.
 
-export const TransactionsList = ( props: TransactionsListProps ) => {
+export const TransactionsList = (
+	props: TransactionsListProps
+): JSX.Element => {
 	const { transactions, isLoading } = useTransactions(
 		getQuery(),
 		props.depositId ?? ''
