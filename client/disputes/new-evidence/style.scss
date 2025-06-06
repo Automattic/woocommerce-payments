@@ -81,6 +81,11 @@
 	@include body-md;
 }
 
+.wcpay-dispute-evidence-new__cover-letter-warning {
+	margin-bottom: 16px;
+	border-left: 4px solid var( --wp-components-color-warning, #f0b849 );
+}
+
 .wcpay-dispute-evidence-new__button-row {
 	display: flex;
 	justify-content: space-between;
