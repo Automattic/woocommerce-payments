@@ -95,7 +95,12 @@ class WC_Payments_WooPay_Button_Handler {
 	 * @return bool
 	 */
 	public function is_woopay_enabled() {
-		return $this->is_woopay_eligible && $this->is_woopay_enabled && $this->is_woopay_express_button_enabled;
+		/**
+		 * Allows 3PD to programmatically show/hide the WooPay button.
+		 *
+		 * @since 9.5.0
+		 */
+		return apply_filters( 'wcpay_woopay_enabled', $this->is_woopay_eligible && $this->is_woopay_enabled && $this->is_woopay_express_button_enabled );
 	}
 
 	/**
