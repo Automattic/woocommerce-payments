@@ -85,9 +85,7 @@ const ProductDetails: React.FC< ProductDetailsProps > = ( {
 						'woocommerce-payments'
 					) }
 					value={ productDescription }
-					onChange={ ( value ) =>
-						onProductDescriptionChange( value )
-					}
+					onChange={ onProductDescriptionChange }
 					disabled={ readOnly }
 				/>
 			</div>

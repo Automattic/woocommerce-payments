@@ -93,12 +93,26 @@ export default ( { query }: { query: { id: string } } ) => {
 	const [ redirectAfterSave, setRedirectAfterSave ] = useState( false );
 	const [ productDescription, setProductDescription ] = useState( '' );
 	const [ coverLetter, setCoverLetter ] = useState( '' );
+	const [ shippingCarrier, setShippingCarrier ] = useState( '' );
+	const [ shippingDate, setShippingDate ] = useState( '' );
+	const [ shippingTrackingNumber, setShippingTrackingNumber ] = useState(
+		''
+	);
+	const [ shippingAddress, setShippingAddress ] = useState( '' );
 	const [ isUploading, setIsUploading ] = useState<
 		Record< string, boolean >
 	>( {} );
-	const { createSuccessNotice, createErrorNotice } = useDispatch(
-		'core/notices'
+	const [ uploadingErrors, setUploadingErrors ] = useState<
+		Record< string, string >
+	>( {} );
+	const [ fileSizes, setFileSizes ] = useState< Record< string, number > >(
+		{}
 	);
+	const {
+		createSuccessNotice,
+		createErrorNotice,
+		createInfoNotice,
+	} = useDispatch( 'core/notices' );
 
 	// --- Data loading ---
 	useEffect( () => {
@@ -107,7 +121,34 @@ export default ( { query }: { query: { id: string } } ) => {
 				const d: any = await apiFetch( { path } );
 				setDispute( d );
 				// fallback to multiple if no product type is set
-				setProductType( d.metadata?.__product_type || 'multiple' );
+				setProductType( d.metadata?.__product_type || '' );
+				// Load saved product description from evidence
+				setProductDescription( d.evidence?.product_description || '' );
+				// Load saved shipping details from evidence
+				setShippingCarrier( d.evidence?.shipping_carrier || '' );
+				setShippingDate( d.evidence?.shipping_date || '' );
+				setShippingTrackingNumber(
+					d.evidence?.shipping_tracking_number || ''
+				);
+				setShippingAddress( d.evidence?.shipping_address || '' );
+				// Load saved file IDs from evidence
+				setEvidence( ( prev: any ) => ( {
+					...prev,
+					receipt: d.evidence?.receipt || '',
+					customer_communication:
+						d.evidence?.customer_communication || '',
+					customer_signature: d.evidence?.customer_signature || '',
+					refund_policy: d.evidence?.refund_policy || '',
+					duplicate_charge_documentation:
+						d.evidence?.duplicate_charge_documentation || '',
+					shipping_documentation:
+						d.evidence?.shipping_documentation || '',
+					service_documentation:
+						d.evidence?.service_documentation || '',
+					cancellation_policy: d.evidence?.cancellation_policy || '',
+					access_activity_log: d.evidence?.access_activity_log || '',
+					uncategorized_file: d.evidence?.uncategorized_file || '',
+				} ) );
 
 				// Generate default cover letter
 				const merchantName = d?.merchant_name || 'Sellthosejeans';
@@ -185,33 +226,132 @@ ${ merchantName }`;
 		setProductType( newType );
 	};
 
+	const updateProductDescription = ( value: string ) => {
+		setProductDescription( value );
+		setEvidence( ( prev: any ) => ( {
+			...prev,
+			product_description: value,
+		} ) );
+	};
+
+	const updateShippingCarrier = ( value: string ) => {
+		setShippingCarrier( value );
+		setEvidence( ( prev: any ) => ( {
+			...prev,
+			shipping_carrier: value,
+		} ) );
+	};
+
+	const updateShippingDate = ( value: string ) => {
+		setShippingDate( value );
+		setEvidence( ( prev: any ) => ( {
+			...prev,
+			shipping_date: value,
+		} ) );
+	};
+
+	const updateShippingTrackingNumber = ( value: string ) => {
+		setShippingTrackingNumber( value );
+		setEvidence( ( prev: any ) => ( {
+			...prev,
+			shipping_tracking_number: value,
+		} ) );
+	};
+
+	const updateShippingAddress = ( value: string ) => {
+		setShippingAddress( value );
+		setEvidence( ( prev: any ) => ( {
+			...prev,
+			shipping_address: value,
+		} ) );
+	};
+
 	// --- File upload logic ---
+	const isUploadingEvidence = () =>
+		Object.values( isUploading ).some( Boolean );
+
+	const fileSizeExceeded = ( latestFileSize: number ) => {
+		const fileSizeLimitInBytes = 4500000;
+		const totalFileSize =
+			Object.values( fileSizes ).reduce(
+				( acc, fileSize ) => acc + fileSize,
+				0
+			) + latestFileSize;
+		if ( fileSizeLimitInBytes < totalFileSize ) {
+			createInfoNotice(
+				__(
+					"The files you've attached to this dispute as evidence will exceed the limit for a " +
+						"dispute's total size. Try using smaller files as evidence. Hint: if you've attached " +
+						'images, you might want to try providing them in lower resolutions.',
+					'woocommerce-payments'
+				)
+			);
+			return true;
+		}
+		return false;
+	};
+
 	const doUploadFile = async ( key: string, file: File ) => {
 		if ( ! file ) return;
-		// TODO: Add file size checks, error handling, etc.
+
+		if ( fileSizeExceeded( file.size ) ) {
+			return;
+		}
+
+		recordEvent( 'wcpay_dispute_file_upload_started', {
+			type: key,
+		} );
+
+		const body = new FormData();
+		body.append( 'file', file );
+		body.append( 'purpose', 'dispute_evidence' );
+
+		// Set request status for UI.
+		setIsUploading( ( prev ) => ( { ...prev, [ key ]: true } ) );
+		setUploadingErrors( ( prev ) => ( { ...prev, [ key ]: '' } ) );
+
+		// Force reload evidence components.
+		setEvidence( ( e: any ) => ( { ...e, [ key ]: '' } ) );
+
 		try {
-			setIsUploading( ( prev ) => ( { ...prev, [ key ]: true } ) );
-			const body = new FormData();
-			body.append( 'file', file );
-			body.append( 'purpose', 'dispute_evidence' );
 			const uploadedFile: any = await apiFetch( {
 				path: '/wc/v3/payments/file',
 				method: 'post',
 				body,
 			} );
+
+			// Store uploaded file name in metadata to display in submitted evidence or saved for later form.
 			setEvidence( ( e: any ) => ( { ...e, [ key ]: uploadedFile.id } ) );
+			setFileSizes( ( prev ) => ( {
+				...prev,
+				[ key ]: uploadedFile.size,
+			} ) );
+
+			recordEvent( 'wcpay_dispute_file_upload_success', {
+				type: key,
+			} );
 		} catch ( err ) {
-			if ( err instanceof Error ) {
-				createErrorNotice( err.message );
-			} else {
-				createErrorNotice( String( err ) );
-			}
+			recordEvent( 'wcpay_dispute_file_upload_failed', {
+				message: err instanceof Error ? err.message : String( err ),
+			} );
+
+			setUploadingErrors( ( prev ) => ( {
+				...prev,
+				[ key ]: err instanceof Error ? err.message : String( err ),
+			} ) );
+
+			// Force reload evidence components.
+			setEvidence( ( e: any ) => ( { ...e, [ key ]: '' } ) );
 		} finally {
 			setIsUploading( ( prev ) => ( { ...prev, [ key ]: false } ) );
 		}
 	};
-	const doRemoveFile = ( key: string ) =>
+
+	const doRemoveFile = ( key: string ) => {
 		setEvidence( ( e: any ) => ( { ...e, [ key ]: '' } ) );
+		setUploadingErrors( ( prev ) => ( { ...prev, [ key ]: '' } ) );
+		setFileSizes( ( prev ) => ( { ...prev, [ key ]: 0 } ) );
+	};
 
 	// --- Navigation warning ---
 	const pristine = useMemo(
@@ -233,28 +373,116 @@ ${ merchantName }`;
 
 	// --- Save/submit logic ---
 	const doSave = async ( submit: boolean ) => {
+		// Prevent submit if upload is in progress
+		if ( isUploadingEvidence() ) {
+			createInfoNotice(
+				__(
+					'Please wait until file upload is finished',
+					'woocommerce-payments'
+				)
+			);
+			return;
+		}
+
 		try {
+			recordEvent(
+				submit
+					? 'wcpay_dispute_submit_evidence_clicked'
+					: 'wcpay_dispute_save_evidence_clicked'
+			);
+
+			createSuccessNotice(
+				submit
+					? __( 'Evidence submitted!', 'woocommerce-payments' )
+					: __( 'Evidence saved!', 'woocommerce-payments' ),
+				{
+					actions: [
+						{
+							label: submit
+								? __(
+										'View submitted evidence',
+										'woocommerce-payments'
+								  )
+								: __(
+										'Return to evidence submission',
+										'woocommerce-payments'
+								  ),
+							url: getAdminUrl( {
+								page: 'wc-admin',
+								path: '/payments/disputes/challenge',
+								id: query.id,
+							} ),
+						},
+					],
+				}
+			);
+
+			// Only include file keys in the evidence object if they have a non-empty value
+			const evidenceToSend = Object.fromEntries(
+				Object.entries( {
+					...dispute.evidence,
+					product_description: productDescription,
+					receipt: evidence.receipt,
+					customer_communication: evidence.customer_communication,
+					customer_signature: evidence.customer_signature,
+					refund_policy: evidence.refund_policy,
+					duplicate_charge_documentation:
+						evidence.duplicate_charge_documentation,
+					shipping_documentation: evidence.shipping_documentation,
+					service_documentation: evidence.service_documentation,
+					cancellation_policy: evidence.cancellation_policy,
+					access_activity_log: evidence.access_activity_log,
+					uncategorized_file: evidence.uncategorized_file,
+					// Add shipping details
+					shipping_carrier: shippingCarrier,
+					shipping_date: shippingDate,
+					shipping_tracking_number: shippingTrackingNumber,
+					shipping_address: shippingAddress,
+				} ).filter( ( [ value ] ) => value && value !== '' )
+			);
+
+			// Update metadata with the current productType
+			const updatedMetadata = {
+				...dispute.metadata,
+				__product_type: productType,
+			};
+
 			await apiFetch( {
 				path,
 				method: 'post',
 				data: {
-					evidence: { ...dispute.evidence, ...evidence },
-					metadata: dispute.metadata,
+					evidence: evidenceToSend,
+					metadata: updatedMetadata,
 					submit,
 				},
 			} );
-			createSuccessNotice(
+
+			recordEvent(
 				submit
-					? __( 'Evidence submitted!', 'woocommerce-payments' )
-					: __( 'Evidence saved!', 'woocommerce-payments' )
+					? 'wcpay_dispute_submit_evidence_success'
+					: 'wcpay_dispute_save_evidence_success'
 			);
+
 			setRedirectAfterSave( true );
 		} catch ( err ) {
-			if ( err instanceof Error ) {
-				createErrorNotice( err.message );
-			} else {
-				createErrorNotice( String( err ) );
-			}
+			recordEvent(
+				submit
+					? 'wcpay_dispute_submit_evidence_failed'
+					: 'wcpay_dispute_save_evidence_failed'
+			);
+
+			const message = submit
+				? __(
+						'Failed to submit evidence. (%s)',
+						'woocommerce-payments'
+				  )
+				: __( 'Failed to save evidence. (%s)', 'woocommerce-payments' );
+			createErrorNotice(
+				sprintf(
+					message,
+					err instanceof Error ? err.message : String( err )
+				)
+			);
 		}
 	};
 
@@ -336,7 +564,7 @@ ${ merchantName }`;
 	// --- Recommended documents ---
 	const recommendedDocumentFields = [
 		{
-			key: 'order_receipt',
+			key: 'receipt',
 			label: __( 'Order receipt', 'woocommerce-payments' ),
 		},
 		{
@@ -355,7 +583,7 @@ ${ merchantName }`;
 			),
 		},
 		{
-			key: 'additional_documents',
+			key: 'uncategorized_file',
 			label: __(
 				'Any additional documents you think will support the case',
 				'woocommerce-payments'
@@ -366,7 +594,7 @@ ${ merchantName }`;
 	// --- Recommended shipping documents ---
 	const recommendedShippingDocumentFields = [
 		{
-			key: 'shipping_receipt',
+			key: 'shipping_documentation',
 			label: __( 'Proof of shipping', 'woocommerce-payments' ),
 		},
 	];
@@ -377,6 +605,8 @@ ${ merchantName }`;
 			label: field.label,
 			fileName: evidence[ field.key ] || '',
 			uploaded: !! evidence[ field.key ],
+			isLoading: isUploading[ field.key ] || false,
+			error: uploadingErrors[ field.key ] || '',
 			onFileChange: ( key: string, file: File ) =>
 				Promise.resolve( doUploadFile( field.key, file ) ),
 			onFileRemove: () => Promise.resolve( doRemoveFile( field.key ) ),
@@ -390,6 +620,8 @@ ${ merchantName }`;
 			label: field.label,
 			fileName: evidence[ field.key ] || '',
 			uploaded: !! evidence[ field.key ],
+			isLoading: isUploading[ field.key ] || false,
+			error: uploadingErrors[ field.key ] || '',
 			onFileChange: ( key: string, file: File ) =>
 				Promise.resolve( doUploadFile( field.key, file ) ),
 			onFileRemove: () => Promise.resolve( doRemoveFile( field.key ) ),
@@ -443,7 +675,7 @@ ${ merchantName }`;
 						productType={ productType }
 						onProductTypeChange={ updateProductType }
 						productDescription={ productDescription }
-						onProductDescriptionChange={ setProductDescription }
+						onProductDescriptionChange={ updateProductDescription }
 						readOnly={ readOnly }
 					/>
 					<RecommendedDocuments
@@ -463,8 +695,17 @@ ${ merchantName }`;
 						{ steps[ 1 ].subheading }
 					</p>
 					<ShippingDetails
-						dispute={ dispute }
+						shippingCarrier={ shippingCarrier }
+						shippingDate={ shippingDate }
+						shippingTrackingNumber={ shippingTrackingNumber }
+						shippingAddress={ shippingAddress }
 						readOnly={ readOnly }
+						onShippingCarrierChange={ updateShippingCarrier }
+						onShippingDateChange={ updateShippingDate }
+						onShippingTrackingNumberChange={
+							updateShippingTrackingNumber
+						}
+						onShippingAddressChange={ updateShippingAddress }
 					/>
 					<RecommendedDocuments
 						fields={ recommendedShippingDocumentsFields }
