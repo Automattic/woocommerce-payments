@@ -75,6 +75,7 @@ const chargeFromOrderMock = {
 		customer_email: '',
 		subscriptions: [],
 		fraud_meta_box_type: 'succeeded',
+		ip_address: '127.0.0.1',
 	},
 	paid: false,
 	paydown: null,
