@@ -256,6 +256,7 @@ describe( 'Tokenized Express Checkout Element - Pay-for-order page logic', () =>
 
 	afterEach( () => {
 		delete global.Stripe;
+		server.events.removeListener( 'request:start', requestListener );
 		server.resetHandlers();
 	} );
 
