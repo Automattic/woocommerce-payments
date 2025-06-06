@@ -772,10 +772,19 @@ class WC_Payments_Onboarding_Service {
 			throw new Exception( __( 'Your store is not connected to WordPress.com. Please connect it first.', 'woocommerce-payments' ) );
 		}
 
+		// If the account does not exist, there's nothing to reset.
+		if ( ! WC_Payments::get_account_service()->is_stripe_connected() ) {
+			throw new API_Exception( __( 'Failed to reset the account: account does not exist.', 'woocommerce-payments' ), 'wcpay-onboarding-account-error', 400 );
+		}
+
+		// Immediately change the account cache to avoid API requests during the time it takes for
+		// the Transact Platform to actually delete the account.
+		WC_Payments::get_account_service()->overwrite_cache_with_no_account();
 		// Delete the currently connected Stripe account, in the onboarding mode we are currently in.
 		$test_mode_onboarding = self::is_test_mode_enabled();
 		$result               = $this->payments_api_client->delete_account( $test_mode_onboarding );
 		if ( ! isset( $result['result'] ) || 'success' !== $result['result'] ) {
+			WC_Payments::get_account_service()->refresh_account_data();
 			throw new API_Exception( __( 'Failed to delete account.', 'woocommerce-payments' ), 'wcpay-onboarding-account-error', 400 );
 		}
 
@@ -818,6 +827,11 @@ class WC_Payments_Onboarding_Service {
 			throw new Exception( __( 'Your store is not connected to WordPress.com. Please connect it first.', 'woocommerce-payments' ) );
 		}
 
+		// If the account does not exist, there's nothing to disable.
+		if ( ! WC_Payments::get_account_service()->is_stripe_connected() ) {
+			throw new API_Exception( __( 'Failed to activate the account: account does not exist.', 'woocommerce-payments' ), 'wcpay-onboarding-account-error', 400 );
+		}
+
 		// If the test mode onboarding is not enabled, we don't need to do anything.
 		if ( ! self::is_test_mode_enabled() ) {
 			return false;
@@ -832,9 +846,13 @@ class WC_Payments_Onboarding_Service {
 			// and apply those settings to the live account.
 			WC_Payments::get_account_service()->save_test_drive_settings();
 
+			// Immediately change the account cache to avoid API requests during the time it takes for
+			// the Transact Platform to actually delete the account.
+			WC_Payments::get_account_service()->overwrite_cache_with_no_account();
 			// Delete the currently connected Stripe account.
 			$this->payments_api_client->delete_account( true );
 		} catch ( API_Exception $e ) {
+			WC_Payments::get_account_service()->refresh_account_data();
 			throw new API_Exception( __( 'Failed to disable test drive account.', 'woocommerce-payments' ), 'wcpay-onboarding-account-error', 400 );
 		}
 
