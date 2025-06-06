@@ -31,7 +31,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	const WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT                   = 'woopay_enabled_by_default';
 	const ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT       = 'test_drive_account_settings_for_live_account';
 	const EMBEDDED_KYC_IN_PROGRESS_OPTION                       = 'wcpay_onboarding_embedded_kyc_in_progress';
-	const ACCOUNT_DELETION_IN_PROGRESS_OPTION                   = 'wcpay_onboarding_account_deletion_in_progress';
 	const ERROR_MESSAGE_TRANSIENT                               = 'wcpay_error_message';
 	const INSTANT_DEPOSITS_REMINDER_ACTION                      = 'wcpay_instant_deposit_reminder';
 	const TRACKS_EVENT_ACCOUNT_CONNECT_START                    = 'wcpay_account_connect_start';
