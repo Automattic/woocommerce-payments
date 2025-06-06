@@ -773,8 +773,8 @@ class WC_Payments_Onboarding_Service {
 		}
 
 		// If the account does not exist, there's nothing to reset.
-		if ( empty( WC_Payments::get_account_service()->get_cached_account_data() ) ) {
-			throw new API_Exception( __( 'Can\'t reset account that does not exist anymore.', 'woocommerce-payments' ), 'wcpay-onboarding-account-error', 400 );
+		if ( ! WC_Payments::get_account_service()->is_stripe_connected() ) {
+			throw new API_Exception( __( 'Failed to reset the account: account does not exist.', 'woocommerce-payments' ), 'wcpay-onboarding-account-error', 400 );
 		}
 
 		// Immediately change the account cache to avoid API requests during the time it takes for
@@ -828,8 +828,8 @@ class WC_Payments_Onboarding_Service {
 		}
 
 		// If the account does not exist, there's nothing to disable.
-		if ( empty( WC_Payments::get_account_service()->get_cached_account_data() ) ) {
-			throw new API_Exception( __( 'Can\'t activate account that does not exist anymore.', 'woocommerce-payments' ), 'wcpay-onboarding-account-error', 400 );
+		if ( ! WC_Payments::get_account_service()->is_stripe_connected() ) {
+			throw new API_Exception( __( 'Failed to activate the account: account does not exist.', 'woocommerce-payments' ), 'wcpay-onboarding-account-error', 400 );
 		}
 
 		// If the test mode onboarding is not enabled, we don't need to do anything.

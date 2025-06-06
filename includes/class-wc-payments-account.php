@@ -1366,9 +1366,9 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			// This needs to happen early because we need to make things "not OK" for the rest of the logic.
 			if ( ! empty( $_GET['wcpay-reset-account'] ) && 'true' === $_GET['wcpay-reset-account'] ) {
 				// If the account does not exist, there's nothing to reset. Redirect the merchant to the connect page with error message.
-				if ( empty( $this->get_cached_account_data() ) ) {
+				if ( ! $this->is_stripe_connected() ) {
 					$this->redirect_service->redirect_to_connect_page(
-						'Failed to reset the account: account does not exist anymore.',
+						'Failed to reset the account: account does not exist.',
 						$from,
 						[
 							'wcpay-reset-account-error' => '1',
@@ -1423,10 +1423,10 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				);
 				return;
 			} elseif ( ! empty( $_GET['wcpay-disable-onboarding-test-mode'] ) && 'true' === $_GET['wcpay-disable-onboarding-test-mode'] ) {
-				// If the account does not exist anymore, redirect the merchant to the connect page with error message.
-				if ( empty( $this->get_cached_account_data() ) ) {
+				// If the account does not exist, redirect the merchant to the connect page with error message.
+				if ( ! $this->is_stripe_connected() ) {
 					$this->redirect_service->redirect_to_connect_page(
-						'Failed to activate live payments: there is already another attempt in progress.',
+						'Failed to activate the account: account does not exist.',
 						$from,
 						[
 							'wcpay-reset-account-error' => '1',
