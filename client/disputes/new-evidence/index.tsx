@@ -93,6 +93,10 @@ export default ( { query }: { query: { id: string } } ) => {
 	const [ redirectAfterSave, setRedirectAfterSave ] = useState( false );
 	const [ productDescription, setProductDescription ] = useState( '' );
 	const [ coverLetter, setCoverLetter ] = useState( '' );
+	const [
+		isCoverLetterManuallyEdited,
+		setIsCoverLetterManuallyEdited,
+	] = useState( false );
 	const [ shippingCarrier, setShippingCarrier ] = useState( '' );
 	const [ shippingDate, setShippingDate ] = useState( '' );
 	const [ shippingTrackingNumber, setShippingTrackingNumber ] = useState(
@@ -150,53 +154,8 @@ export default ( { query }: { query: { id: string } } ) => {
 					uncategorized_file: d.evidence?.uncategorized_file || '',
 				} ) );
 
-				// Generate default cover letter
-				const merchantName = d?.merchant_name || 'Sellthosejeans';
-				const merchantAddress =
-					d?.merchant_address ||
-					'123 High Street, LONDON, SW1A 1AA, UNITED KINGDOM';
-				const merchantEmail = d?.merchant_email || 'paul@gmail.com';
-				const merchantPhone = d?.merchant_phone || '+13334445566';
-				const today = new Date().toLocaleDateString( undefined, {
-					year: 'numeric',
-					month: 'long',
-					day: 'numeric',
-				} );
-				const acquiringBank =
-					'[Acquiring Bank or Payment Processor Name]';
-				const caseNumber = '[Chargeback Case Number]';
-				const transactionId = '[Transaction ID]';
-				const transactionDate = '[Transaction Date]';
-				const customerName = '[Customer Name]';
-				const product = '[Product]';
-				const orderDate = '[Order Date]';
-				const defaultLetter = `${ merchantName }
-${ merchantAddress }
-${ merchantEmail }
-${ merchantPhone }
-${ today }
-
-To: ${ acquiringBank }
-Subject: Chargeback Dispute – Case # ${ caseNumber }
-
-Dear Dispute Resolution Team,
-
-We are submitting evidence in response to chargeback # ${ caseNumber } for transaction # ${ transactionId } on ${ transactionDate }.
-
-Our records indicate that the customer and legitimate cardholder, ${ customerName }, ordered ${ product } on ${ orderDate }.
-
-To support our case, we are providing the following documentation:
-• AVS/CVV Match: Billing address and security code matched (Attachment A)
-• IP/Device Data: Location and device info used at purchase (Attachment B)
-• Customer Confirmation: Email or chat confirming purchase (Attachment C)
-• Usage Data: Login records for the digital goods (Attachment D)
-
-Based on this information, we respectfully request that the chargeback be reversed. Please let us know if any further details are required.
-
-Thank you,
-Paul McCartney
-${ merchantName }`;
-				setCoverLetter( defaultLetter );
+				// Set cover letter from saved evidence
+				setCoverLetter( d.evidence?.uncategorized_text || '' );
 			} catch ( error ) {
 				createErrorNotice( String( error ) );
 			}
@@ -214,6 +173,137 @@ ${ merchantName }`;
 	useEffect( () => {
 		setIsAccordionOpen( currentStep === 0 );
 	}, [ currentStep ] );
+
+	// --- File upload logic ---
+	const isUploadingEvidence = () =>
+		Object.values( isUploading ).some( Boolean );
+
+	// --- Save/submit logic ---
+	const doSave = async ( submit: boolean ) => {
+		// Prevent submit if upload is in progress
+		if ( isUploadingEvidence() ) {
+			createInfoNotice(
+				__(
+					'Please wait until file upload is finished',
+					'woocommerce-payments'
+				)
+			);
+			return;
+		}
+
+		try {
+			recordEvent(
+				submit
+					? 'wcpay_dispute_submit_evidence_clicked'
+					: 'wcpay_dispute_save_evidence_clicked'
+			);
+
+			createSuccessNotice(
+				submit
+					? __( 'Evidence submitted!', 'woocommerce-payments' )
+					: __( 'Evidence saved!', 'woocommerce-payments' ),
+				{
+					actions: [
+						{
+							label: submit
+								? __(
+										'View submitted evidence',
+										'woocommerce-payments'
+								  )
+								: __(
+										'Return to evidence submission',
+										'woocommerce-payments'
+								  ),
+							url: getAdminUrl( {
+								page: 'wc-admin',
+								path: '/payments/disputes/challenge',
+								id: query.id,
+							} ),
+						},
+					],
+				}
+			);
+
+			// Only include file keys in the evidence object if they have a non-empty value
+			const evidenceToSend = Object.fromEntries(
+				Object.entries( {
+					...dispute.evidence,
+					product_description: productDescription,
+					receipt: evidence.receipt,
+					customer_communication: evidence.customer_communication,
+					customer_signature: evidence.customer_signature,
+					refund_policy: evidence.refund_policy,
+					duplicate_charge_documentation:
+						evidence.duplicate_charge_documentation,
+					shipping_documentation: evidence.shipping_documentation,
+					service_documentation: evidence.service_documentation,
+					cancellation_policy: evidence.cancellation_policy,
+					access_activity_log: evidence.access_activity_log,
+					uncategorized_file: evidence.uncategorized_file,
+					uncategorized_text: coverLetter,
+					// Add shipping details
+					shipping_carrier: shippingCarrier,
+					shipping_date: shippingDate,
+					shipping_tracking_number: shippingTrackingNumber,
+					shipping_address: shippingAddress,
+				} ).filter( ( [ value ] ) => value && value !== '' )
+			);
+
+			// Update metadata with the current productType
+			const updatedMetadata = {
+				...dispute.metadata,
+				__product_type: productType,
+			};
+
+			const updatedDispute = await apiFetch( {
+				path,
+				method: 'post',
+				data: {
+					evidence: evidenceToSend,
+					metadata: updatedMetadata,
+					submit,
+				},
+			} );
+
+			setDispute( updatedDispute );
+
+			recordEvent(
+				submit
+					? 'wcpay_dispute_submit_evidence_success'
+					: 'wcpay_dispute_save_evidence_success'
+			);
+
+			setRedirectAfterSave( true );
+		} catch ( err ) {
+			recordEvent(
+				submit
+					? 'wcpay_dispute_submit_evidence_failed'
+					: 'wcpay_dispute_save_evidence_failed'
+			);
+
+			const message = submit
+				? __(
+						'Failed to submit evidence. (%s)',
+						'woocommerce-payments'
+				  )
+				: __( 'Failed to save evidence. (%s)', 'woocommerce-payments' );
+			createErrorNotice(
+				sprintf(
+					message,
+					err instanceof Error ? err.message : String( err )
+				)
+			);
+		}
+	};
+
+	// --- Handle step changes ---
+	const handleStepChange = async ( newStep: number ) => {
+		// // Save current evidence before changing step
+		await doSave( false );
+
+		// Update step
+		setCurrentStep( newStep );
+	};
 
 	// --- Read-only logic ---
 	const readOnly =
@@ -267,9 +357,6 @@ ${ merchantName }`;
 	};
 
 	// --- File upload logic ---
-	const isUploadingEvidence = () =>
-		Object.values( isUploading ).some( Boolean );
-
 	const fileSizeExceeded = ( latestFileSize: number ) => {
 		const fileSizeLimitInBytes = 4500000;
 		const totalFileSize =
@@ -370,121 +457,6 @@ ${ merchantName }`;
 	useEffect( () => {
 		confirmationNavigationCallback();
 	}, [ pristine, confirmationNavigationCallback, redirectAfterSave ] );
-
-	// --- Save/submit logic ---
-	const doSave = async ( submit: boolean ) => {
-		// Prevent submit if upload is in progress
-		if ( isUploadingEvidence() ) {
-			createInfoNotice(
-				__(
-					'Please wait until file upload is finished',
-					'woocommerce-payments'
-				)
-			);
-			return;
-		}
-
-		try {
-			recordEvent(
-				submit
-					? 'wcpay_dispute_submit_evidence_clicked'
-					: 'wcpay_dispute_save_evidence_clicked'
-			);
-
-			createSuccessNotice(
-				submit
-					? __( 'Evidence submitted!', 'woocommerce-payments' )
-					: __( 'Evidence saved!', 'woocommerce-payments' ),
-				{
-					actions: [
-						{
-							label: submit
-								? __(
-										'View submitted evidence',
-										'woocommerce-payments'
-								  )
-								: __(
-										'Return to evidence submission',
-										'woocommerce-payments'
-								  ),
-							url: getAdminUrl( {
-								page: 'wc-admin',
-								path: '/payments/disputes/challenge',
-								id: query.id,
-							} ),
-						},
-					],
-				}
-			);
-
-			// Only include file keys in the evidence object if they have a non-empty value
-			const evidenceToSend = Object.fromEntries(
-				Object.entries( {
-					...dispute.evidence,
-					product_description: productDescription,
-					receipt: evidence.receipt,
-					customer_communication: evidence.customer_communication,
-					customer_signature: evidence.customer_signature,
-					refund_policy: evidence.refund_policy,
-					duplicate_charge_documentation:
-						evidence.duplicate_charge_documentation,
-					shipping_documentation: evidence.shipping_documentation,
-					service_documentation: evidence.service_documentation,
-					cancellation_policy: evidence.cancellation_policy,
-					access_activity_log: evidence.access_activity_log,
-					uncategorized_file: evidence.uncategorized_file,
-					// Add shipping details
-					shipping_carrier: shippingCarrier,
-					shipping_date: shippingDate,
-					shipping_tracking_number: shippingTrackingNumber,
-					shipping_address: shippingAddress,
-				} ).filter( ( [ value ] ) => value && value !== '' )
-			);
-
-			// Update metadata with the current productType
-			const updatedMetadata = {
-				...dispute.metadata,
-				__product_type: productType,
-			};
-
-			await apiFetch( {
-				path,
-				method: 'post',
-				data: {
-					evidence: evidenceToSend,
-					metadata: updatedMetadata,
-					submit,
-				},
-			} );
-
-			recordEvent(
-				submit
-					? 'wcpay_dispute_submit_evidence_success'
-					: 'wcpay_dispute_save_evidence_success'
-			);
-
-			setRedirectAfterSave( true );
-		} catch ( err ) {
-			recordEvent(
-				submit
-					? 'wcpay_dispute_submit_evidence_failed'
-					: 'wcpay_dispute_save_evidence_failed'
-			);
-
-			const message = submit
-				? __(
-						'Failed to submit evidence. (%s)',
-						'woocommerce-payments'
-				  )
-				: __( 'Failed to save evidence. (%s)', 'woocommerce-payments' );
-			createErrorNotice(
-				sprintf(
-					message,
-					err instanceof Error ? err.message : String( err )
-				)
-			);
-		}
-	};
 
 	// --- Accordion summary content ---
 	const summaryItems = useMemo( () => {
@@ -725,9 +697,29 @@ ${ merchantName }`;
 					<p className="wcpay-dispute-evidence-new__stepper-subheading">
 						{ steps[ reviewStep ].subheading }
 					</p>
+					{ isCoverLetterManuallyEdited && (
+						<InlineNotice
+							icon
+							isDismissible={ false }
+							status="warning"
+							className="wcpay-dispute-evidence-new__cover-letter-warning"
+						>
+							{ __(
+								'The cover letter has been manually edited and will not be automatically updated with new evidence.',
+								'woocommerce-payments'
+							) }
+						</InlineNotice>
+					) }
 					<CoverLetter
 						value={ coverLetter }
-						onChange={ setCoverLetter }
+						onChange={ ( value, isManualEdit ) => {
+							setCoverLetter( value );
+							setIsCoverLetterManuallyEdited(
+								isManualEdit || false
+							);
+						} }
+						dispute={ dispute }
+						bankName={ bankName }
 					/>
 					{ inlineNotice( bankName ) }
 				</>
@@ -763,7 +755,9 @@ ${ merchantName }`;
 						</Button>
 						<Button
 							variant="primary"
-							onClick={ () => setCurrentStep( ( s ) => s + 1 ) }
+							onClick={ () =>
+								handleStepChange( currentStep + 1 )
+							}
 						>
 							{ __( 'Next', 'woocommerce-payments' ) }
 						</Button>
@@ -789,7 +783,9 @@ ${ merchantName }`;
 						</Button>
 						<Button
 							variant="primary"
-							onClick={ () => setCurrentStep( ( s ) => s + 1 ) }
+							onClick={ () =>
+								handleStepChange( currentStep + 1 )
+							}
 						>
 							{ __( 'Next', 'woocommerce-payments' ) }
 						</Button>

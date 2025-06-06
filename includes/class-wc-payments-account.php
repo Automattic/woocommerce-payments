@@ -1365,14 +1365,30 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			// Make changes to account data as instructed by action GET params.
 			// This needs to happen early because we need to make things "not OK" for the rest of the logic.
 			if ( ! empty( $_GET['wcpay-reset-account'] ) && 'true' === $_GET['wcpay-reset-account'] ) {
+				// If the account does not exist, there's nothing to reset. Redirect the merchant to the connect page with error message.
+				if ( ! $this->is_stripe_connected() ) {
+					$this->redirect_service->redirect_to_connect_page(
+						'Failed to reset the account: account does not exist.',
+						$from,
+						[
+							'wcpay-reset-account-error' => '1',
+							'source'                    => $onboarding_source,
+						]
+					);
+					return;
+				}
 				$test_mode_onboarding = WC_Payments_Onboarding_Service::is_test_mode_enabled();
 				try {
+					// Immediately change the account cache to avoid API requests during the time it takes for
+					// the Transact Platform to actually delete the account.
+					$this->overwrite_cache_with_no_account();
 					// Delete the currently Stripe connected account, in the onboarding mode we are currently in.
 					$this->payments_api_client->delete_account( $test_mode_onboarding );
 				} catch ( API_Exception $e ) {
-					// In case we fail to delete the account, log and redirect to the Overview page.
+					// In case we fail to delete the account, log, force refresh the account cache
+					// and redirect to the Overview page.
 					Logger::error( 'Failed to delete account: ' . $e->getMessage() );
-
+					$this->refresh_account_data();
 					$this->redirect_service->redirect_to_overview_page_with_error( [ 'wcpay-reset-account-error' => '1' ] );
 					return;
 				}
@@ -1407,6 +1423,18 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				);
 				return;
 			} elseif ( ! empty( $_GET['wcpay-disable-onboarding-test-mode'] ) && 'true' === $_GET['wcpay-disable-onboarding-test-mode'] ) {
+				// If the account does not exist, redirect the merchant to the connect page with error message.
+				if ( ! $this->is_stripe_connected() ) {
+					$this->redirect_service->redirect_to_connect_page(
+						'Failed to activate the account: account does not exist.',
+						$from,
+						[
+							'wcpay-reset-account-error' => '1',
+							'source'                    => $onboarding_source,
+						]
+					);
+					return;
+				}
 				// If the test mode onboarding is enabled:
 				// - Delete the current account;
 				// - Cleanup the gateway state for a fresh onboarding flow.
@@ -1418,6 +1446,9 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 						// we need to collect the test drive settings before we delete the test-drive account,
 						// and apply those settings to the live account.
 						$this->save_test_drive_settings();
+						// Immediately change the account cache to avoid API requests during the time it takes for
+						// the Transact Platform to actually delete the account.
+						$this->overwrite_cache_with_no_account();
 						// Delete the currently connected Stripe account.
 						$this->payments_api_client->delete_account( true );
 					} catch ( API_Exception $e ) {
@@ -2382,6 +2413,15 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	 */
 	public function refresh_account_data() {
 		return $this->get_cached_account_data( true );
+	}
+
+	/**
+	 * Change the account cache to hold the connected-but-no-account value (empty array).
+	 *
+	 * @return void
+	 */
+	public function overwrite_cache_with_no_account(): void {
+		$this->database_cache->add( Database_Cache::ACCOUNT_KEY, [] );
 	}
 
 	/**
