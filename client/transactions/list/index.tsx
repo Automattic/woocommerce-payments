@@ -22,35 +22,35 @@ import {
 /**
  * Internal dependencies
  */
-import { useTransactions, useTransactionsSummary } from 'data/index';
-import { Transaction } from 'data/transactions/hooks';
-import OrderLink from 'components/order-link';
-import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
-import ClickableCell from 'components/clickable-cell';
-import { getDetailsURL } from 'components/details-link';
-import { displayType } from 'transactions/strings';
-import { depositStatusLabels } from 'deposits/strings';
+import { useTransactions, useTransactionsSummary } from 'wcpay/data';
+import { Transaction } from 'wcpay/data/transactions/hooks';
+import OrderLink from 'wcpay/components/order-link';
+import RiskLevel, { calculateRiskMapping } from 'wcpay/components/risk-level';
+import ClickableCell from 'wcpay/components/clickable-cell';
+import { getDetailsURL } from 'wcpay/components/details-link';
+import { displayType } from 'wcpay/transactions/strings';
+import { depositStatusLabels } from 'wcpay/deposits/strings';
 import { formatStringValue, applyThousandSeparator } from 'wcpay/utils';
 import {
 	formatCurrency,
 	formatExplicitCurrency,
 	formatExportAmount,
 } from 'multi-currency/interface/functions';
-import { getTransactionChannel } from 'utils/charge';
+import { getTransactionChannel } from 'wcpay/utils/charge';
 import Deposit from './deposit';
 import ConvertedAmount from './converted-amount';
-import autocompleter from 'transactions/autocompleter';
+import autocompleter from 'wcpay/transactions/autocompleter';
 import './style.scss';
 import TransactionsFilters from '../filters';
 import Page from '../../components/page';
 import { recordEvent } from 'tracks';
-import DownloadButton from 'components/download-button';
+import DownloadButton from 'wcpay/components/download-button';
 import {
 	getTransactionsCSVRequestURL,
 	transactionsDownloadEndpoint,
 } from '../../data/transactions/resolvers';
 import p24BankList from '../../payment-details/payment-method/p24/bank-list';
-import { HoverTooltip } from 'components/tooltip';
+import { HoverTooltip } from 'wcpay/components/tooltip';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
 import { useReportExport } from 'wcpay/hooks/use-report-export';
@@ -327,12 +327,12 @@ export const TransactionsList = (
 		const clickable =
 			'financing_payout' !== txn.type &&
 			! ( 'financing_paydown' === txn.type && '' === txn.charge_id )
-				? ( children: JSX.Element | string ) => (
+				? ( children: React.ReactNode ) => (
 						<ClickableCell href={ detailsURL }>
 							{ children }
 						</ClickableCell>
 				  )
-				: ( children: JSX.Element | string ) => children;
+				: ( children: React.ReactNode ) => children;
 
 		const orderUrl = txn.order ? (
 			<OrderLink order={ txn.order } />
