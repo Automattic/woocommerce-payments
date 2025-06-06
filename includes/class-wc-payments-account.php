@@ -1367,7 +1367,14 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			if ( ! empty( $_GET['wcpay-reset-account'] ) && 'true' === $_GET['wcpay-reset-account'] ) {
 				// If the account does not exist, there's nothing to reset. Redirect the merchant to the connect page with error message.
 				if ( empty( $this->get_cached_account_data() ) ) {
-					$this->redirect_service->redirect_to_connect_page( 'Failed to reset the account: account does not exist anymore.', $from, [ 'wcpay-reset-account-error' => '1' ] );
+					$this->redirect_service->redirect_to_connect_page(
+						'Failed to reset the account: account does not exist anymore.',
+						$from,
+						[
+							'wcpay-reset-account-error' => '1',
+							'source'                    => $onboarding_source,
+						]
+					);
 					return;
 				}
 				$test_mode_onboarding = WC_Payments_Onboarding_Service::is_test_mode_enabled();
@@ -1418,7 +1425,14 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			} elseif ( ! empty( $_GET['wcpay-disable-onboarding-test-mode'] ) && 'true' === $_GET['wcpay-disable-onboarding-test-mode'] ) {
 				// If the account does not exist anymore, redirect the merchant to the connect page with error message.
 				if ( empty( $this->get_cached_account_data() ) ) {
-					$this->redirect_service->redirect_to_connect_page( 'Failed to activate live payments: there is already another attempt in progress.', $from, [ 'wcpay-reset-account-error' => '1' ] );
+					$this->redirect_service->redirect_to_connect_page(
+						'Failed to activate live payments: there is already another attempt in progress.',
+						$from,
+						[
+							'wcpay-reset-account-error' => '1',
+							'source'                    => $onboarding_source,
+						]
+					);
 					return;
 				}
 				// If the test mode onboarding is enabled:
