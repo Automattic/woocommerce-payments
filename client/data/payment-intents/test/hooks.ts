@@ -65,6 +65,7 @@ export const chargeMock: Charge = {
 		customer_name: '',
 		customer_email: '',
 		subscriptions: [],
+		ip_address: '127.0.0.1',
 	},
 	outcome: {
 		network_status: 'approved_by_network',
@@ -100,6 +101,7 @@ export const paymentIntentMock: PaymentIntent = {
 		customer_name: '',
 		customer_email: '',
 		fraud_meta_box_type: 'review',
+		ip_address: '127.0.0.1',
 	},
 };
 
