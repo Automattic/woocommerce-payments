@@ -93,6 +93,12 @@ export default ( { query }: { query: { id: string } } ) => {
 	const [ redirectAfterSave, setRedirectAfterSave ] = useState( false );
 	const [ productDescription, setProductDescription ] = useState( '' );
 	const [ coverLetter, setCoverLetter ] = useState( '' );
+	const [ shippingCarrier, setShippingCarrier ] = useState( '' );
+	const [ shippingDate, setShippingDate ] = useState( '' );
+	const [ shippingTrackingNumber, setShippingTrackingNumber ] = useState(
+		''
+	);
+	const [ shippingAddress, setShippingAddress ] = useState( '' );
 	const [ isUploading, setIsUploading ] = useState<
 		Record< string, boolean >
 	>( {} );
@@ -118,6 +124,13 @@ export default ( { query }: { query: { id: string } } ) => {
 				setProductType( d.metadata?.__product_type || '' );
 				// Load saved product description from evidence
 				setProductDescription( d.evidence?.product_description || '' );
+				// Load saved shipping details from evidence
+				setShippingCarrier( d.evidence?.shipping_carrier || '' );
+				setShippingDate( d.evidence?.shipping_date || '' );
+				setShippingTrackingNumber(
+					d.evidence?.shipping_tracking_number || ''
+				);
+				setShippingAddress( d.evidence?.shipping_address || '' );
 				// Load saved file IDs from evidence
 				setEvidence( ( prev: any ) => ( {
 					...prev,
@@ -218,6 +231,38 @@ ${ merchantName }`;
 		setEvidence( ( prev: any ) => ( {
 			...prev,
 			product_description: value,
+		} ) );
+	};
+
+	const updateShippingCarrier = ( value: string ) => {
+		setShippingCarrier( value );
+		setEvidence( ( prev: any ) => ( {
+			...prev,
+			shipping_carrier: value,
+		} ) );
+	};
+
+	const updateShippingDate = ( value: string ) => {
+		setShippingDate( value );
+		setEvidence( ( prev: any ) => ( {
+			...prev,
+			shipping_date: value,
+		} ) );
+	};
+
+	const updateShippingTrackingNumber = ( value: string ) => {
+		setShippingTrackingNumber( value );
+		setEvidence( ( prev: any ) => ( {
+			...prev,
+			shipping_tracking_number: value,
+		} ) );
+	};
+
+	const updateShippingAddress = ( value: string ) => {
+		setShippingAddress( value );
+		setEvidence( ( prev: any ) => ( {
+			...prev,
+			shipping_address: value,
 		} ) );
 	};
 
@@ -389,10 +434,10 @@ ${ merchantName }`;
 					access_activity_log: evidence.access_activity_log,
 					uncategorized_file: evidence.uncategorized_file,
 					// Add shipping details
-					shipping_carrier: evidence.shipping_carrier,
-					shipping_date: evidence.shipping_date,
-					shipping_tracking_number: evidence.shipping_tracking_number,
-					shipping_address: evidence.shipping_address,
+					shipping_carrier: shippingCarrier,
+					shipping_date: shippingDate,
+					shipping_tracking_number: shippingTrackingNumber,
+					shipping_address: shippingAddress,
 				} ).filter( ( [ value ] ) => value && value !== '' )
 			);
 
@@ -650,14 +695,17 @@ ${ merchantName }`;
 						{ steps[ 1 ].subheading }
 					</p>
 					<ShippingDetails
-						dispute={ dispute }
+						shippingCarrier={ shippingCarrier }
+						shippingDate={ shippingDate }
+						shippingTrackingNumber={ shippingTrackingNumber }
+						shippingAddress={ shippingAddress }
 						readOnly={ readOnly }
-						onShippingDetailsChange={ ( newEvidence ) =>
-							setEvidence( ( prev: any ) => ( {
-								...prev,
-								...newEvidence,
-							} ) )
+						onShippingCarrierChange={ updateShippingCarrier }
+						onShippingDateChange={ updateShippingDate }
+						onShippingTrackingNumberChange={
+							updateShippingTrackingNumber
 						}
+						onShippingAddressChange={ updateShippingAddress }
 					/>
 					<RecommendedDocuments
 						fields={ recommendedShippingDocumentsFields }

@@ -10,36 +10,28 @@ import { __ } from '@wordpress/i18n';
 import { TextControl } from 'wcpay/components/wp-components-wrapped';
 
 interface ShippingDetailsProps {
-	dispute: any;
+	shippingCarrier: string;
+	shippingDate: string;
+	shippingTrackingNumber: string;
+	shippingAddress: string;
 	readOnly?: boolean;
-	onShippingDetailsChange?: ( evidence: any ) => void;
+	onShippingCarrierChange: ( value: string ) => void;
+	onShippingDateChange: ( value: string ) => void;
+	onShippingTrackingNumberChange: ( value: string ) => void;
+	onShippingAddressChange: ( value: string ) => void;
 }
 
 const ShippingDetails: React.FC< ShippingDetailsProps > = ( {
-	dispute,
+	shippingCarrier,
+	shippingDate,
+	shippingTrackingNumber,
+	shippingAddress,
 	readOnly = false,
-	onShippingDetailsChange,
+	onShippingCarrierChange,
+	onShippingDateChange,
+	onShippingTrackingNumberChange,
+	onShippingAddressChange,
 } ) => {
-	const [ localEvidence, setLocalEvidence ] = React.useState(
-		dispute.evidence || {}
-	);
-
-	React.useEffect( () => {
-		setLocalEvidence( dispute.evidence || {} );
-	}, [ dispute ] );
-
-	if ( ! dispute ) return null;
-
-	const handleChange = ( key: string, value: string ) => {
-		setLocalEvidence( ( prev: any ) => {
-			const next = { ...prev, [ key ]: value };
-			if ( onShippingDetailsChange ) {
-				onShippingDetailsChange( next );
-			}
-			return next;
-		} );
-	};
-
 	return (
 		<section className="wcpay-dispute-evidence-shipping-details">
 			<h3 className="wcpay-dispute-evidence-shipping-details__heading">
@@ -48,23 +40,19 @@ const ShippingDetails: React.FC< ShippingDetailsProps > = ( {
 			<div className="wcpay-dispute-evidence-shipping-details__field-group">
 				<TextControl
 					label={ __( 'SHIPPING CARRIER', 'woocommerce-payments' ) }
-					onChange={ ( value ) =>
-						handleChange( 'shipping_carrier', value )
-					}
-					value={ localEvidence.shipping_carrier || '' }
+					onChange={ onShippingCarrierChange }
+					value={ shippingCarrier }
 					disabled={ readOnly }
 				/>
 			</div>
 			<div className="wcpay-dispute-evidence-shipping-details__field-group">
 				<TextControl
 					label={ __( 'SHIPPING DATE', 'woocommerce-payments' ) }
-					onChange={ ( value ) => {
-						handleChange( 'shipping_date', value );
-					} }
+					onChange={ onShippingDateChange }
 					type="date"
 					value={
-						localEvidence.shipping_date
-							? new Date( localEvidence.shipping_date )
+						shippingDate
+							? new Date( shippingDate )
 									.toISOString()
 									.split( 'T' )[ 0 ]
 							: new Date().toISOString().split( 'T' )[ 0 ]
@@ -79,10 +67,8 @@ const ShippingDetails: React.FC< ShippingDetailsProps > = ( {
 						'Please make sure the tracking number is accurate.',
 						'woocommerce-payments'
 					) }
-					onChange={ ( value ) =>
-						handleChange( 'shipping_tracking_number', value )
-					}
-					value={ localEvidence.shipping_tracking_number || '' }
+					onChange={ onShippingTrackingNumberChange }
+					value={ shippingTrackingNumber }
 					disabled={ readOnly }
 				/>
 			</div>
@@ -93,13 +79,8 @@ const ShippingDetails: React.FC< ShippingDetailsProps > = ( {
 						"We prefilled the shipping address for you, please make sure it's accurate.",
 						'woocommerce-payments'
 					) }
-					onChange={ ( value ) =>
-						handleChange( 'shipping_address', value )
-					}
-					value={ ( localEvidence.shipping_address || '' ).replace(
-						/\n/g,
-						' '
-					) }
+					onChange={ onShippingAddressChange }
+					value={ shippingAddress.replace( /\n/g, ' ' ) }
 					disabled={ readOnly }
 				/>
 			</div>
