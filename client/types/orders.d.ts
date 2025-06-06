@@ -25,4 +25,5 @@ interface OrderDetails {
 	customer_name: null | string;
 	subscriptions?: SubscriptionDetails[];
 	fraud_meta_box_type?: string;
+	ip_address: string;
 }
