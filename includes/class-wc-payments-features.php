@@ -28,7 +28,6 @@ class WC_Payments_Features {
 	const WOOPAY_DIRECT_CHECKOUT_FLAG_NAME       = '_wcpay_feature_woopay_direct_checkout';
 	const AUTH_AND_CAPTURE_FLAG_NAME             = '_wcpay_feature_auth_and_capture';
 	const DISPUTE_ISSUER_EVIDENCE                = '_wcpay_feature_dispute_issuer_evidence';
-	const PAYMENT_OVERVIEW_WIDGET_FLAG_NAME      = '_wcpay_feature_payment_overview_widget';
 	const WOOPAY_GLOBAL_THEME_SUPPORT_FLAG_NAME  = '_wcpay_feature_woopay_global_theme_support';
 	const NEW_EVIDENCE_SUBMISSION_FORM_FLAG_NAME = '_wcpay_feature_new_evidence_submission_form';
 
@@ -230,15 +229,6 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether Payment Overview Widget is enabled.
-	 *
-	 * @return bool
-	 */
-	public static function is_payment_overview_widget_ui_enabled(): bool {
-		return '1' === get_option( self::PAYMENT_OVERVIEW_WIDGET_FLAG_NAME, '0' );
-	}
-
-	/**
 	 * Checks whether WooPay Direct Checkout is enabled.
 	 *
 	 * @return bool True if Direct Checkout is enabled, false otherwise.
@@ -375,7 +365,6 @@ class WC_Payments_Features {
 				'woopayExpressCheckout'              => self::is_woopay_express_checkout_enabled(),
 				'isAuthAndCaptureEnabled'            => self::is_auth_and_capture_enabled(),
 				'isDisputeIssuerEvidenceEnabled'     => self::is_dispute_issuer_evidence_enabled(),
-				'isPaymentOverviewWidgetEnabled'     => self::is_payment_overview_widget_ui_enabled(),
 				'isNewEvidenceSubmissionFormEnabled' => self::is_new_evidence_submission_form_enabled(),
 			]
 		);

@@ -8,7 +8,7 @@ import { render } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import ClickableCell from '../';
+import ClickableCell from '..';
 
 describe( 'Clickable cell', () => {
 	test( 'renders a clickable cell when a link is provided', () => {

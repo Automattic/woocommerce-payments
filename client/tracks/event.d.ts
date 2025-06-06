@@ -100,7 +100,6 @@ export type MerchantEvent =
 	| 'wcpay_overview_deposits_view_history_click'
 	| 'wcpay_overview_deposits_change_schedule_click'
 	| 'wcpay_overview_task_click'
-	| 'wcpay_overview_payment_activity_click'
 	| 'wcpay_setup_live_payments_modal_open'
 	| 'wcpay_setup_live_payments_modal_exit'
 	| 'wcpay_test_mode_modal_exit'
