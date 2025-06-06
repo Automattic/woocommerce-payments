@@ -1,20 +1,29 @@
 /** @format **/
 
 /**
+ * External dependencies
+ */
+import React, { Fragment, ReactNode } from 'react';
+
+/**
  * Internal dependencies
  */
-import { Fragment } from 'react';
 import './style.scss';
 import p24BankList from '../../payment-details/payment-method/p24/bank-list';
 import { HoverTooltip } from '../tooltip';
 import { getTransactionPaymentMethodTitle } from 'wcpay/transactions/utils/getTransactionPaymentMethodTitle';
 
+interface Payment {
+	type: string;
+	[ key: string ]: any;
+}
+
 /**
  *
- * @param {Object} payment Payment charge object
- * @return {ReactNode} Fragment containing formatted summary detail
+ * @param payment Payment charge object
+ * @return Fragment containing formatted summary detail
  */
-const formatDetails = ( payment ) => {
+const formatDetails = ( payment: Payment ): ReactNode => {
 	const paymentMethod = payment[ payment.type ];
 	/**
 	 * FLAG: PAYMENT_METHODS_LIST
@@ -23,7 +32,7 @@ const formatDetails = ( payment ) => {
 	 * add it here. If not, you don't need to list it here.
 	 *
 	 * If you're removing a payment method, you'll probably want to leave this section
-	 * section alone because we still need to display the details of existing transactions.
+	 * alone because we still need to display the details of existing transactions.
 	 */
 	switch ( payment.type ) {
 		case 'card':
@@ -58,8 +67,11 @@ const formatDetails = ( payment ) => {
 	}
 };
 
-const PaymentMethodDetails = ( props ) => {
-	const { payment } = props;
+interface PaymentMethodDetailsProps {
+	payment: Payment;
+}
+
+const PaymentMethodDetails = ( { payment }: PaymentMethodDetailsProps ) => {
 	const paymentMethod = payment ? payment[ payment.type ] : null;
 
 	if ( ! paymentMethod && ( ! payment || payment.type !== 'link' ) ) {

@@ -22,7 +22,6 @@ import DepositsOverview from 'components/deposits-overview';
 import ErrorBoundary from 'components/error-boundary';
 import JetpackIdcNotice from 'components/jetpack-idc-notice';
 import Page from 'components/page';
-import PaymentActivity from 'wcpay/components/payment-activity';
 import Welcome from 'components/welcome';
 import { TestModeNotice } from 'components/test-mode-notice';
 import InboxNotifications from './inbox-notifications';
@@ -66,7 +65,6 @@ const OverviewPage = () => {
 		accountStatus,
 		accountStatus: { progressiveOnboarding },
 		accountLoans: { has_active_loan: hasActiveLoan },
-		featureFlags: { isPaymentOverviewWidgetEnabled },
 		overviewTasksVisibility,
 		wpcomReconnectUrl,
 	} = wcpaySettings;
@@ -390,15 +388,6 @@ const OverviewPage = () => {
 							<AccountBalances />
 						</ErrorBoundary>
 					</Card>
-
-					{
-						/* Show Payment Activity widget only when feature flag is set. To be removed before go live */
-						isPaymentOverviewWidgetEnabled && (
-							<ErrorBoundary>
-								<PaymentActivity />
-							</ErrorBoundary>
-						)
-					}
 
 					<DepositsOverview />
 				</ErrorBoundary>

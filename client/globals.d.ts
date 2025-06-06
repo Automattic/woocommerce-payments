@@ -19,7 +19,6 @@ declare global {
 			isAuthAndCaptureEnabled: boolean;
 			paymentTimeline: boolean;
 			isDisputeIssuerEvidenceEnabled: boolean;
-			isPaymentOverviewWidgetEnabled?: boolean;
 			isNewEvidenceSubmissionFormEnabled: boolean;
 			multiCurrency?: boolean;
 		};

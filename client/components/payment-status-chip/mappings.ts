@@ -8,10 +8,16 @@ import { __, sprintf } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import disputeStatuses from 'components/dispute-status-chip/mappings';
+import disputeStatuses from 'wcpay/components/dispute-status-chip/mappings';
+import type { ChipType } from '../chip';
+
+interface StatusMapping {
+	type: ChipType;
+	message: string;
+}
 
 const formattedDisputeStatuses = Object.entries( disputeStatuses ).reduce(
-	( statuses, [ status, mapping ] ) => {
+	( statuses: Record< string, StatusMapping >, [ status, mapping ] ) => {
 		statuses[ 'disputed_' + status ] = {
 			type: mapping.type,
 			message: status.startsWith( 'warning_' )
@@ -28,7 +34,7 @@ const formattedDisputeStatuses = Object.entries( disputeStatuses ).reduce(
 );
 
 /* TODO: implement other payment statuses (SCA and authorizations) */
-export default {
+const paymentStatusMappings: Record< string, StatusMapping > = {
 	refunded_partial: {
 		type: 'light',
 		message: __( 'Partial refund', 'woocommerce-payments' ),
@@ -67,3 +73,5 @@ export default {
 	},
 	...formattedDisputeStatuses,
 };
+
+export default paymentStatusMappings;
