@@ -37,7 +37,12 @@ const FileUploadControl: React.FC< FileUploadControlProps > = ( {
 } ) => {
 	return (
 		<div className="wcpay-dispute-evidence-file-upload-control">
-			{ isDone && fileName ? <Icon icon={ check } size={ 36 } /> : null }
+			{ isDone && fileName ? (
+				<Icon
+					className="wcpay-dispute-evidence-file-upload-control__check"
+					icon={ check }
+				/>
+			) : null }
 			<label className="wcpay-dispute-evidence-file-upload-control__label">
 				{ label }
 			</label>

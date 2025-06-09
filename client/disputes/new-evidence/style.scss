@@ -273,6 +273,10 @@
 		white-space: nowrap;
 		color: var( --wp-admin-theme-color );
 	}
+
+	&__check {
+		width: 48px;
+	}
 }
 
 .wcpay-dispute-evidence-cover-letter__printonly {
