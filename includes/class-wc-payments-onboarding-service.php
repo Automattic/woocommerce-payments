@@ -278,12 +278,15 @@ class WC_Payments_Onboarding_Service {
 	 *
 	 * @param array   $self_assessment_data Self assessment data.
 	 * @param boolean $progressive Whether the onboarding is progressive.
+	 * @param array   $capabilities Optional. List keyed by capabilities IDs (payment methods) with boolean values
+	 *                             indicating whether the capability should be requested when the account is created
+	 *                             and enabled in the settings.
 	 *
 	 * @return array Session data.
 	 *
 	 * @throws API_Exception|Exception
 	 */
-	public function create_embedded_kyc_session( array $self_assessment_data, bool $progressive = false ): array {
+	public function create_embedded_kyc_session( array $self_assessment_data, bool $progressive = false, array $capabilities = [] ): array {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			return [];
 		}
@@ -309,7 +312,7 @@ class WC_Payments_Onboarding_Service {
 		$account_data   = $this->get_account_data(
 			$setup_mode,
 			$self_assessment_data,
-			$this->get_capabilities_from_request()
+			$capabilities
 		);
 		$actioned_notes = self::get_actioned_notes();
 
@@ -321,8 +324,7 @@ class WC_Payments_Onboarding_Service {
 		 * @see self::update_enabled_payment_methods_ids
 		 * ==================
 		 */
-		$capabilities = $this->get_capabilities_from_request();
-		$gateway      = WC_Payments::get_gateway();
+		$gateway = WC_Payments::get_gateway();
 
 		// Activate enabled Payment Methods IDs.
 		if ( ! empty( $capabilities ) ) {
@@ -718,7 +720,7 @@ class WC_Payments_Onboarding_Service {
 		// the WooPay capability value from the request.
 		$should_enable_woopay = $this->should_enable_woopay(
 			filter_var( $onboarding_data['woopay_enabled_by_default'] ?? false, FILTER_VALIDATE_BOOLEAN ),
-			$this->get_capabilities_from_request()
+			$capabilities
 		);
 
 		if ( $should_enable_woopay ) {

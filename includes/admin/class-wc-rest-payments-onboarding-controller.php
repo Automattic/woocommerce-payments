@@ -86,6 +86,17 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 							],
 						],
 					],
+					'capabilities'    => [
+						'description' => 'The capabilities to request and enable for the test-drive account. Leave empty to use the default capabilities.',
+						'type'        => 'object',
+						'default'     => [],
+						'required'    => false,
+						'properties'  => [
+							'*' => [
+								'type' => 'boolean',
+							],
+						],
+					],
 				],
 			]
 		);
@@ -215,10 +226,12 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 	public function create_embedded_kyc_session( WP_REST_Request $request ) {
 		$self_assessment_data = ! empty( $request->get_param( 'self_assessment' ) ) ? wc_clean( wp_unslash( $request->get_param( 'self_assessment' ) ) ) : [];
 		$progressive          = ! empty( $request->get_param( 'progressive' ) ) && filter_var( $request->get_param( 'progressive' ), FILTER_VALIDATE_BOOLEAN );
+		$capabilities         = ! empty( $request->get_param( 'capabilities' ) ) ? wc_clean( wp_unslash( $request->get_param( 'capabilities' ) ) ) : [];
 
 		$account_session = $this->onboarding_service->create_embedded_kyc_session(
 			$self_assessment_data,
-			$progressive
+			$progressive,
+			$capabilities
 		);
 
 		if ( $account_session ) {
