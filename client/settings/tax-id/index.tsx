@@ -7,6 +7,7 @@ import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import {
 	CheckboxControl,
+	ExternalLink,
 	TextareaControl,
 	TextControl,
 } from '@wordpress/components';
@@ -14,6 +15,24 @@ import {
 const dummyOnChange = () => {
 	// eslint-disable-next-line no-console
 	console.log( 1 );
+};
+
+const MockSubmitted: React.FC = () => {
+	return (
+		<div className="wcpay-tax-details">
+			<h4>
+				{ __( 'Your VAT details', 'woocommerce-payments' ) }
+			</h4>
+			<p>
+				VAT Number: GB 1234<br/>
+				Company name: Big Quid Ltd<br/>
+				Company address: 123 Main St, London, UK<br/>
+			</p>
+			<p>
+				Please contact our <ExternalLink>Support Team</ExternalLink> if you need to update your VAT details.
+			</p>
+		</div>
+	);
 };
 
 const TaxDetails: React.FC = () => {
@@ -54,7 +73,6 @@ const TaxDetails: React.FC = () => {
 						value="Big Quid Ltd"
 						onChange={ dummyOnChange }
 					/>
-
 					<TextareaControl
 						label={ __( 'Address', 'woocommerce-payments' ) }
 						value="123 Main St, London, UK"
@@ -66,4 +84,4 @@ const TaxDetails: React.FC = () => {
 	);
 };
 
-export default TaxDetails;
+export default MockSubmitted;

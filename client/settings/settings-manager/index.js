@@ -30,6 +30,7 @@ import {
 import FraudProtection from '../fraud-protection';
 import DuplicatedPaymentMethodsContext from './duplicated-payment-methods-context';
 import './style.scss';
+import TaxDetails from 'wcpay/settings/tax-id';
 
 const ExpressCheckoutDescription = () => (
 	<>
@@ -96,6 +97,24 @@ const DepositsDescription = () => {
 			<ExternalLink href="https://woocommerce.com/document/woopayments/payouts/payout-schedule/">
 				{ __(
 					'Learn more about pending schedules',
+					'woocommerce-payments'
+				) }
+			</ExternalLink>
+		</>
+	);
+};
+
+const TaxDescription = () => {
+	return (
+		<>
+			<h2>{ __( 'Tax details', 'woocommerce-payments' ) }</h2>
+			<p>
+				The information you provide here will be used for all of your
+				account's tax documents.
+			</p>
+			<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/">
+				{ __(
+					'Learn more about tax documents',
 					'woocommerce-payments'
 				) }
 			</ExternalLink>
@@ -237,6 +256,15 @@ const SettingsManager = () => {
 					<LoadableSettingsSection numLines={ 20 }>
 						<ErrorBoundary>
 							<Deposits />
+						</ErrorBoundary>
+					</LoadableSettingsSection>
+				</div>
+			</SettingsSection>
+			<SettingsSection description={ TaxDescription } id="tax">
+				<div id="tax-details">
+					<LoadableSettingsSection numLines={ 20 }>
+						<ErrorBoundary>
+							<TaxDetails />
 						</ErrorBoundary>
 					</LoadableSettingsSection>
 				</div>
