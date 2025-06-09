@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: formatting of currencies in the backend will always honor the merchant's settings, rather than the currency locale.
