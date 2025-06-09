@@ -87,7 +87,7 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 
 == Changelog ==
 
-= 9.5.0 - 2025-06-11 =
+= 9.5.0-test-3 - unreleased =
 * Add - Add specific texts for collecting Norway and New Zealand tax data
 * Add - Add specific texts for collecting Singapore tax data
 * Add - Add tax to the fee breakdown on order notes
