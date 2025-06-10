@@ -214,7 +214,7 @@
 	&__heading {
 		@include heading-md;
 		color: var( --Scales-Grays-gray-900, $gray-900 );
-		margin-bottom: 16px;
+		margin-bottom: 8px;
 	}
 
 	&__subheading {
@@ -225,6 +225,11 @@
 	&__item {
 		margin-left: 15px;
 		margin-bottom: 10px;
+	}
+
+	&__list {
+		margin-top: 16px;
+		margin-bottom: 0;
 	}
 }
 
