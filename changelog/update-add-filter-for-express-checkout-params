@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+update: add `wcpay_express_checkout_js_params` filter for express checkout JS params.
