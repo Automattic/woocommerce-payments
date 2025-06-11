@@ -112,8 +112,13 @@ const CoverLetter: React.FC< CoverLetterProps > = ( {
 			const customerName =
 				dispute?.charge?.billing_details?.name ||
 				__( '<Customer Name>', 'woocommerce-payments' );
+			const level3ProductNames = ( dispute?.charge as any )?.level3?.line_items
+				?.map( ( item: any ) => item.product_description )
+				.filter( Boolean )
+				.join( ', ' );
 			const product =
 				dispute?.evidence?.product_description ||
+				level3ProductNames ||
 				__( '<Product>', 'woocommerce-payments' );
 			const orderDate = dispute?.charge?.created
 				? formatDateTimeFromTimestamp( dispute.charge.created, {
@@ -122,139 +127,208 @@ const CoverLetter: React.FC< CoverLetterProps > = ( {
 				  } )
 				: __( '<Order Date>', 'woocommerce-payments' );
 
+			// Add delivery/service date for product not received disputes
+			const dateString = dispute?.evidence?.shipping_date as string;
+			const unixTimestamp = Math.floor(
+				new Date( dateString ).getTime() / 1000
+			);
+			const deliveryDate = dateString
+				? formatDateTimeFromTimestamp( unixTimestamp, {
+						separator: ', ',
+						includeTime: false,
+				  } )
+				: __( '<Delivery/Service Date>', 'woocommerce-payments' );
+
 			// Generate list of attachments based on provided evidence
 			const attachments = [];
 			let attachmentCount = 0;
 
-			if ( dispute.evidence?.receipt ) {
-				attachmentCount++;
-				attachments.push(
-					`• ${ __(
-						'Order receipt',
-						'woocommerce-payments'
-					) } (${ __(
-						'Attachment',
-						'woocommerce-payments'
-					) } ${ String.fromCharCode( 64 + attachmentCount ) })`
-				);
-			}
-			if ( dispute.evidence?.customer_communication ) {
-				attachmentCount++;
-				attachments.push(
-					`• ${ __(
-						'Customer communication',
-						'woocommerce-payments'
-					) } (${ __(
-						'Attachment',
-						'woocommerce-payments'
-					) } ${ String.fromCharCode( 64 + attachmentCount ) })`
-				);
-			}
-			if ( dispute.evidence?.customer_signature ) {
-				attachmentCount++;
-				attachments.push(
-					`• ${ __(
-						'Customer signature',
-						'woocommerce-payments'
-					) } (${ __(
-						'Attachment',
-						'woocommerce-payments'
-					) } ${ String.fromCharCode( 64 + attachmentCount ) })`
-				);
-			}
-			if ( dispute.evidence?.refund_policy ) {
-				attachmentCount++;
-				attachments.push(
-					`• ${ __(
-						'Store refund policy',
-						'woocommerce-payments'
-					) } (${ __(
-						'Attachment',
-						'woocommerce-payments'
-					) } ${ String.fromCharCode( 64 + attachmentCount ) })`
-				);
-			}
-			if ( dispute.evidence?.shipping_documentation ) {
-				attachmentCount++;
-				attachments.push(
-					`• ${ __(
-						'Proof of shipping',
-						'woocommerce-payments'
-					) } (${ __(
-						'Attachment',
-						'woocommerce-payments'
-					) } ${ String.fromCharCode( 64 + attachmentCount ) })`
-				);
-			}
-			if ( dispute.evidence?.service_documentation ) {
-				attachmentCount++;
-				attachments.push(
-					`• ${ __(
-						'Service documentation',
-						'woocommerce-payments'
-					) } (${ __(
-						'Attachment',
-						'woocommerce-payments'
-					) } ${ String.fromCharCode( 64 + attachmentCount ) })`
-				);
-			}
-			if ( dispute.evidence?.cancellation_policy ) {
-				attachmentCount++;
-				attachments.push(
-					`• ${ __(
-						'Cancellation policy',
-						'woocommerce-payments'
-					) } (${ __(
-						'Attachment',
-						'woocommerce-payments'
-					) } ${ String.fromCharCode( 64 + attachmentCount ) })`
-				);
-			}
-			if ( dispute.evidence?.access_activity_log ) {
-				attachmentCount++;
-				attachments.push(
-					`• ${ __(
-						'Access activity log',
-						'woocommerce-payments'
-					) } (${ __(
-						'Attachment',
-						'woocommerce-payments'
-					) } ${ String.fromCharCode( 64 + attachmentCount ) })`
-				);
-			}
-			if ( dispute.evidence?.uncategorized_file ) {
-				attachmentCount++;
-				attachments.push(
-					`• ${ __(
-						'Additional documentation',
-						'woocommerce-payments'
-					) } (${ __(
-						'Attachment',
-						'woocommerce-payments'
-					) } ${ String.fromCharCode( 64 + attachmentCount ) })`
-				);
+			// For product not received disputes, prioritize shipping and delivery evidence
+			if ( dispute.reason === 'product_not_received' ) {
+				if ( dispute.evidence?.receipt ) {
+					attachmentCount++;
+					attachments.push(
+						`• ${ __(
+							'Proof of Purchase: Receipt and payment confirmation',
+							'woocommerce-payments'
+						) } (${ __(
+							'Attachment',
+							'woocommerce-payments'
+						) } ${ String.fromCharCode( 64 + attachmentCount ) })`
+					);
+				}
+				if ( dispute.evidence?.shipping_documentation ) {
+					attachmentCount++;
+					attachments.push(
+						`• ${ __(
+							'Proof of Shipping: Tracking details',
+							'woocommerce-payments'
+						) } (${ __(
+							'Attachment',
+							'woocommerce-payments'
+						) } ${ String.fromCharCode( 64 + attachmentCount ) })`
+					);
+				}
+				if ( dispute.evidence?.uncategorized_file ) {
+					attachmentCount++;
+					attachments.push(
+						`• ${ __(
+							'Proof of Delivery: Delivery confirmation receipt',
+							'woocommerce-payments'
+						) } (${ __(
+							'Attachment',
+							'woocommerce-payments'
+						) } ${ String.fromCharCode( 64 + attachmentCount ) })`
+					);
+				}
+			} else {
+				// Original attachment logic for other dispute reasons
+				if ( dispute.evidence?.receipt ) {
+					attachmentCount++;
+					attachments.push(
+						`• ${ __(
+							'Order receipt',
+							'woocommerce-payments'
+						) } (${ __(
+							'Attachment',
+							'woocommerce-payments'
+						) } ${ String.fromCharCode( 64 + attachmentCount ) })`
+					);
+				}
+				if ( dispute.evidence?.customer_communication ) {
+					attachmentCount++;
+					attachments.push(
+						`• ${ __(
+							'Customer communication',
+							'woocommerce-payments'
+						) } (${ __(
+							'Attachment',
+							'woocommerce-payments'
+						) } ${ String.fromCharCode( 64 + attachmentCount ) })`
+					);
+				}
+				if ( dispute.evidence?.customer_signature ) {
+					attachmentCount++;
+					attachments.push(
+						`• ${ __(
+							'Customer signature',
+							'woocommerce-payments'
+						) } (${ __(
+							'Attachment',
+							'woocommerce-payments'
+						) } ${ String.fromCharCode( 64 + attachmentCount ) })`
+					);
+				}
+				if ( dispute.evidence?.refund_policy ) {
+					attachmentCount++;
+					attachments.push(
+						`• ${ __(
+							'Store refund policy',
+							'woocommerce-payments'
+						) } (${ __(
+							'Attachment',
+							'woocommerce-payments'
+						) } ${ String.fromCharCode( 64 + attachmentCount ) })`
+					);
+				}
+				if ( dispute.evidence?.shipping_documentation ) {
+					attachmentCount++;
+					attachments.push(
+						`• ${ __(
+							'Proof of shipping',
+							'woocommerce-payments'
+						) } (${ __(
+							'Attachment',
+							'woocommerce-payments'
+						) } ${ String.fromCharCode( 64 + attachmentCount ) })`
+					);
+				}
+				if ( dispute.evidence?.service_documentation ) {
+					attachmentCount++;
+					attachments.push(
+						`• ${ __(
+							'Service documentation',
+							'woocommerce-payments'
+						) } (${ __(
+							'Attachment',
+							'woocommerce-payments'
+						) } ${ String.fromCharCode( 64 + attachmentCount ) })`
+					);
+				}
+				if ( dispute.evidence?.cancellation_policy ) {
+					attachmentCount++;
+					attachments.push(
+						`• ${ __(
+							'Cancellation policy',
+							'woocommerce-payments'
+						) } (${ __(
+							'Attachment',
+							'woocommerce-payments'
+						) } ${ String.fromCharCode( 64 + attachmentCount ) })`
+					);
+				}
+				if ( dispute.evidence?.access_activity_log ) {
+					attachmentCount++;
+					attachments.push(
+						`• ${ __(
+							'Access activity log',
+							'woocommerce-payments'
+						) } (${ __(
+							'Attachment',
+							'woocommerce-payments'
+						) } ${ String.fromCharCode( 64 + attachmentCount ) })`
+					);
+				}
+				if ( dispute.evidence?.uncategorized_file ) {
+					attachmentCount++;
+					attachments.push(
+						`• ${ __(
+							'Additional documentation',
+							'woocommerce-payments'
+						) } (${ __(
+							'Attachment',
+							'woocommerce-payments'
+						) } ${ String.fromCharCode( 64 + attachmentCount ) })`
+					);
+				}
 			}
 
 			// If no attachments were provided, use default list
-			const attachmentsList =
-				attachments.length > 0
-					? attachments.join( '\n' )
-					: `• ${ __(
-							'AVS/CVV Match: Billing address and security code matched',
-							'woocommerce-payments'
-					  ) } (${ __( 'Attachment', 'woocommerce-payments' ) } A)
+			let attachmentsList = '';
+
+			if ( attachments.length > 0 ) {
+				attachmentsList = attachments.join( '\n' );
+			} else if ( dispute.reason === 'product_not_received' ) {
+				attachmentsList = `• ${ __(
+					'Proof of Purchase: Receipt and payment confirmation',
+					'woocommerce-payments'
+				) } (${ __( 'Attachment', 'woocommerce-payments' ) } A)
 • ${ __(
-							'IP/Device Data: Location and device info used at purchase',
-							'woocommerce-payments'
-					  ) } (${ __( 'Attachment', 'woocommerce-payments' ) } B)
+					'Proof of Shipping: Tracking details',
+					'woocommerce-payments'
+				) } (${ __( 'Attachment', 'woocommerce-payments' ) } B)
 • ${ __(
-							'Customer Confirmation: Email or chat confirming purchase',
-							'woocommerce-payments'
-					  ) } (${ __( 'Attachment', 'woocommerce-payments' ) } C)
+					'Proof of Delivery: Delivery confirmation receipt',
+					'woocommerce-payments'
+				) } (${ __( 'Attachment', 'woocommerce-payments' ) } C)`;
+			} else {
+				attachmentsList = `• ${ __(
+					'AVS/CVV Match: Billing address and security code matched',
+					'woocommerce-payments'
+				) } (${ __( 'Attachment', 'woocommerce-payments' ) } A)
 • ${ __(
-							'Usage Data: Login records for the digital goods',
-							'woocommerce-payments'
-					  ) } (${ __( 'Attachment', 'woocommerce-payments' ) } D)`;
+					'IP/Device Data: Location and device info used at purchase',
+					'woocommerce-payments'
+				) } (${ __( 'Attachment', 'woocommerce-payments' ) } B)
+• ${ __(
+					'Customer Confirmation: Email or chat confirming purchase',
+					'woocommerce-payments'
+				) } (${ __( 'Attachment', 'woocommerce-payments' ) } C)
+• ${ __(
+					'Usage Data: Login records for the digital goods',
+					'woocommerce-payments'
+				) } (${ __( 'Attachment', 'woocommerce-payments' ) } D)`;
+			}
 
 			// Generate each section separately
 			const header = `${ merchantName }
@@ -277,27 +351,64 @@ ${ __( 'Subject:', 'woocommerce-payments' ) } ${ __(
 				'woocommerce-payments'
 			);
 
-			const body = `${ __(
-				'We are submitting evidence in response to chargeback',
-				'woocommerce-payments'
-			) } #${ caseNumber } ${ __(
-				'for transaction',
-				'woocommerce-payments'
-			) } #${ transactionId } ${ __(
-				'on',
-				'woocommerce-payments'
-			) } ${ transactionDate }.
+			const body =
+				dispute.reason === 'product_not_received'
+					? `${ __(
+							'We are submitting evidence in response to chargeback',
+							'woocommerce-payments'
+					  ) } #${ caseNumber } ${ __(
+							'for transaction',
+							'woocommerce-payments'
+					  ) } #${ transactionId } ${ __(
+							'on',
+							'woocommerce-payments'
+					  ) } ${ transactionDate }.
+
+${ __(
+	'Our records indicate that the customer,',
+	'woocommerce-payments'
+) } ${ customerName }, ${ __(
+							'ordered',
+							'woocommerce-payments'
+					  ) } ${ product } ${ __(
+							'on',
+							'woocommerce-payments'
+					  ) } ${ orderDate } ${ __(
+							'and received it on',
+							'woocommerce-payments'
+					  ) } ${ deliveryDate }.
+
+${ __(
+	'To support our case, we are providing the following documentation:',
+	'woocommerce-payments'
+) }
+${ attachmentsList }
+
+${ __(
+	'Based on this information, we respectfully request that the chargeback be reversed. Please let us know if any further details are required.',
+	'woocommerce-payments'
+) }`
+					: `${ __(
+							'We are submitting evidence in response to chargeback',
+							'woocommerce-payments'
+					  ) } #${ caseNumber } ${ __(
+							'for transaction',
+							'woocommerce-payments'
+					  ) } #${ transactionId } ${ __(
+							'on',
+							'woocommerce-payments'
+					  ) } ${ transactionDate }.
 
 ${ __(
 	'Our records indicate that the customer and legitimate cardholder,',
 	'woocommerce-payments'
 ) } ${ customerName }, ${ __(
-				'ordered',
-				'woocommerce-payments'
-			) } ${ product } ${ __(
-				'on',
-				'woocommerce-payments'
-			) } ${ orderDate }.
+							'ordered',
+							'woocommerce-payments'
+					  ) } ${ product } ${ __(
+							'on',
+							'woocommerce-payments'
+					  ) } ${ orderDate }.
 
 ${ __(
 	'To support our case, we are providing the following documentation:',
