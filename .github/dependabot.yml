@@ -14,7 +14,8 @@ updates:
         - dependency-name: "@woocommerce/*"
       # Reviewers for issues created
       reviewers:
-        - 'Automattic/harmony'
+        - 'Automattic/gamma'
+        - 'Automattic/moltres'
 
     # Enable version updates for composer
     - package-ecosystem: 'composer'
@@ -25,7 +26,8 @@ updates:
         interval: 'weekly'
       # Reviewers for issues created
       reviewers:
-          - 'Automattic/harmony'
+        - 'Automattic/gamma'
+        - 'Automattic/moltres'
 
     # Enable version updates for Docker
     - package-ecosystem: 'docker'
@@ -36,4 +38,5 @@ updates:
           interval: 'weekly'
       # Reviewers for issues created
       reviewers:
-          - 'Automattic/harmony'
+        - 'Automattic/gamma'
+        - 'Automattic/moltres'
