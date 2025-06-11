@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Prevent accounts scheduled for deletion from being accessible to the WooPayments client to avoid exposing stale or partial data.

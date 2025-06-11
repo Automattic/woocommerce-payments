@@ -4,7 +4,7 @@ Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.3
-Stable tag: 9.4.0
+Stable tag: 9.5.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -86,6 +86,37 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 4. Manage Disputes
 
 == Changelog ==
+
+= 9.5.0 - 2025-06-11 =
+* Add - Add specific texts for collecting Norway and New Zealand tax data
+* Add - Add specific texts for collecting Singapore tax data
+* Add - Add tax to the fee breakdown on order notes
+* Add - Enable Australian merchants to add tax details (ABN) for generating tax documents.
+* Add - New Filter: wcpay_woopay_enabled – Allows developers to conditionally disable WooPay based on custom logic, improving compatibility with themes and plugins.
+* Fix - fix: ensure `checkPaymentMethodIsAvailable` cache key is correctly memoized on express checkout elements
+* Fix - fix: formatting of currencies in the backend will always honor the merchant's settings, rather than the currency locale.
+* Fix - fix: set the correct payment method title when processing the payment with wechat pay, multibanco, and others
+* Fix - Fixed handling of orders containing items with negative tax
+* Fix - Handle state field requirements for Express Checkout in countries without states
+* Fix - Prevent accounts scheduled for deletion from being accessible to the WooPayments client to avoid exposing stale or partial data.
+* Update - Evidence submission form now should use the global wp.components
+* Update - refactor: add data massaging from legacy google pay/apple pay for HK-based addresses
+* Update - Refactor: Remove unused Props interface from AccountTools component
+* Update - Remove WooPayments adding their sections into other gateways when enabled
+* Update - update: Apple Pay domain verification file is no longer needed
+* Update - update: remove `_wcpay_feature_tokenized_cart_ece` feature flag; remove `client/express-checkout` in favor of `client/tokenized-express-checkout`
+* Dev - Add cover letter for fraudulent reason
+* Dev - Add the components that will be used on the evidence form
+* Dev - Add the logic "Save for later" when submitting evidence
+* Dev - Add the new StepperPanel component.
+* Dev - Bump WC tested up to version to 9.8.5
+* Dev - chore: update @stripe/connect-js @stripe/react-connect-js @stripe/react-stripe-js @stripe/stripe-js dependencies
+* Dev - Clean up database options after completing onboarding.
+* Dev - Condition AliPay block tests under shouldRunWCBlocksTests
+* Dev - Create a new feature flag for the evidence submission form
+* Dev - Decouple the accordion component from the dispute details screen.
+* Dev - fix: is_store_api_request utility on multisite with subdirectory install
+* Dev - refactor: introduced MSW for mocking network requests in tests.
 
 = 9.4.0 - 2025-05-21 =
 * Add - Add support for rendering fee tax details in the transaction timeline where available

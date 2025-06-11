@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-refactor: introduced MSW for mocking network requests in tests.
