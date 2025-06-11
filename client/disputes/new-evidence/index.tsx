@@ -296,20 +296,21 @@ export default ( { query }: { query: { id: string } } ) => {
 		}
 	};
 
-	// --- Handle step changes ---
-	const handleStepChange = async ( newStep: number ) => {
-		// // Save current evidence before changing step
-		await doSave( false );
-
-		// Update step
-		setCurrentStep( newStep );
-	};
-
 	// --- Read-only logic ---
 	const readOnly =
 		dispute &&
 		dispute.status !== 'needs_response' &&
 		dispute.status !== 'warning_needs_response';
+
+	// --- Handle step changes ---
+	const handleStepChange = async ( newStep: number ) => {
+		// Only save if not in readOnly mode
+		if ( ! readOnly ) {
+			await doSave( false );
+		}
+		// Update step
+		setCurrentStep( newStep );
+	};
 
 	const updateProductType = ( newType: string ) => {
 		recordEvent( 'wcpay_dispute_product_selected', { selection: newType } );
@@ -448,7 +449,7 @@ export default ( { query }: { query: { id: string } } ) => {
 		[ evidence, dispute ]
 	);
 	const confirmationNavigationCallback = useConfirmNavigation( () => {
-		if ( pristine || redirectAfterSave ) return;
+		if ( pristine || redirectAfterSave || readOnly ) return;
 		return __(
 			'There are unsaved changes on this page. Are you sure you want to leave and discard the unsaved changes?',
 			'woocommerce-payments'
@@ -456,7 +457,12 @@ export default ( { query }: { query: { id: string } } ) => {
 	} );
 	useEffect( () => {
 		confirmationNavigationCallback();
-	}, [ pristine, confirmationNavigationCallback, redirectAfterSave ] );
+	}, [
+		pristine,
+		confirmationNavigationCallback,
+		redirectAfterSave,
+		readOnly,
+	] );
 
 	// --- Accordion summary content ---
 	const summaryItems = useMemo( () => {
@@ -580,9 +586,15 @@ export default ( { query }: { query: { id: string } } ) => {
 			isLoading: isUploading[ field.key ] || false,
 			error: uploadingErrors[ field.key ] || '',
 			onFileChange: ( key: string, file: File ) =>
-				Promise.resolve( doUploadFile( field.key, file ) ),
-			onFileRemove: () => Promise.resolve( doRemoveFile( field.key ) ),
+				readOnly
+					? Promise.resolve()
+					: Promise.resolve( doUploadFile( field.key, file ) ),
+			onFileRemove: () =>
+				readOnly
+					? Promise.resolve()
+					: Promise.resolve( doRemoveFile( field.key ) ),
 			isBusy: isUploading[ field.key ] || false,
+			readOnly: readOnly,
 		} )
 	);
 
@@ -595,9 +607,15 @@ export default ( { query }: { query: { id: string } } ) => {
 			isLoading: isUploading[ field.key ] || false,
 			error: uploadingErrors[ field.key ] || '',
 			onFileChange: ( key: string, file: File ) =>
-				Promise.resolve( doUploadFile( field.key, file ) ),
-			onFileRemove: () => Promise.resolve( doRemoveFile( field.key ) ),
+				readOnly
+					? Promise.resolve()
+					: Promise.resolve( doUploadFile( field.key, file ) ),
+			onFileRemove: () =>
+				readOnly
+					? Promise.resolve()
+					: Promise.resolve( doRemoveFile( field.key ) ),
 			isBusy: isUploading[ field.key ] || false,
+			readOnly: readOnly,
 		} )
 	);
 
@@ -652,6 +670,7 @@ export default ( { query }: { query: { id: string } } ) => {
 					/>
 					<RecommendedDocuments
 						fields={ recommendedDocumentsFields }
+						readOnly={ readOnly }
 					/>
 					{ inlineNotice( bankName ) }
 				</>
@@ -681,6 +700,7 @@ export default ( { query }: { query: { id: string } } ) => {
 					/>
 					<RecommendedDocuments
 						fields={ recommendedShippingDocumentsFields }
+						readOnly={ readOnly }
 					/>
 					{ inlineNotice( bankName ) }
 				</>
@@ -713,13 +733,16 @@ export default ( { query }: { query: { id: string } } ) => {
 					<CoverLetter
 						value={ coverLetter }
 						onChange={ ( value, isManualEdit ) => {
-							setCoverLetter( value );
-							setIsCoverLetterManuallyEdited(
-								isManualEdit || false
-							);
+							if ( ! readOnly ) {
+								setCoverLetter( value );
+								setIsCoverLetterManuallyEdited(
+									isManualEdit || false
+								);
+							}
 						} }
 						dispute={ dispute }
 						bankName={ bankName }
+						readOnly={ readOnly }
 					/>
 					{ inlineNotice( bankName ) }
 				</>
@@ -747,12 +770,17 @@ export default ( { query }: { query: { id: string } } ) => {
 						{ __( 'Cancel', 'woocommerce-payments' ) }
 					</Button>
 					<div className="wcpay-dispute-evidence-new__button-group-right">
-						<Button
-							variant="tertiary"
-							onClick={ () => doSave( false ) }
-						>
-							{ __( 'Save for later', 'woocommerce-payments' ) }
-						</Button>
+						{ ! readOnly && (
+							<Button
+								variant="tertiary"
+								onClick={ () => doSave( false ) }
+							>
+								{ __(
+									'Save for later',
+									'woocommerce-payments'
+								) }
+							</Button>
+						) }
 						<Button
 							variant="primary"
 							onClick={ () =>
@@ -775,12 +803,17 @@ export default ( { query }: { query: { id: string } } ) => {
 						{ __( 'Back', 'woocommerce-payments' ) }
 					</Button>
 					<div className="wcpay-dispute-evidence-new__button-group-right">
-						<Button
-							variant="tertiary"
-							onClick={ () => doSave( false ) }
-						>
-							{ __( 'Save for later', 'woocommerce-payments' ) }
-						</Button>
+						{ ! readOnly && (
+							<Button
+								variant="tertiary"
+								onClick={ () => doSave( false ) }
+							>
+								{ __(
+									'Save for later',
+									'woocommerce-payments'
+								) }
+							</Button>
+						) }
 						<Button
 							variant="primary"
 							onClick={ () =>
@@ -801,17 +834,22 @@ export default ( { query }: { query: { id: string } } ) => {
 				>
 					{ __( 'Back', 'woocommerce-payments' ) }
 				</Button>
-				<div className="wcpay-dispute-evidence-new__button-group-right">
-					<Button
-						variant="tertiary"
-						onClick={ () => doSave( false ) }
-					>
-						{ __( 'Save for later', 'woocommerce-payments' ) }
-					</Button>
-					<Button variant="primary" onClick={ () => doSave( true ) }>
-						{ __( 'Submit', 'woocommerce-payments' ) }
-					</Button>
-				</div>
+				{ ! readOnly && (
+					<div className="wcpay-dispute-evidence-new__button-group-right">
+						<Button
+							variant="tertiary"
+							onClick={ () => doSave( false ) }
+						>
+							{ __( 'Save for later', 'woocommerce-payments' ) }
+						</Button>
+						<Button
+							variant="primary"
+							onClick={ () => doSave( true ) }
+						>
+							{ __( 'Submit', 'woocommerce-payments' ) }
+						</Button>
+					</div>
+				) }
 			</div>
 		);
 	};

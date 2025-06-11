@@ -209,17 +209,27 @@
 }
 
 .wcpay-dispute-evidence-recommended-documents {
-	margin-bottom: 40px;
+	margin-bottom: 45px;
 
 	&__heading {
 		@include heading-md;
 		color: var( --Scales-Grays-gray-900, $gray-900 );
-		margin-bottom: 16px;
+		margin-bottom: 8px;
 	}
 
 	&__subheading {
 		color: var( --Scales-Grays-gray-700, $gray-700 );
 		@include body-md;
+	}
+
+	&__item {
+		margin-left: 15px;
+		margin-bottom: 10px;
+	}
+
+	&__list {
+		margin-top: 16px;
+		margin-bottom: 0;
 	}
 }
 
@@ -228,7 +238,7 @@
 	align-items: center;
 	justify-content: flex-end;
 	gap: 12px;
-	margin-bottom: 16px;
+	margin-bottom: 8px;
 
 	&__label {
 		flex: 1 0 220px;
