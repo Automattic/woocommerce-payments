@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { HTTPClientFactory } from '@woocommerce/api';
+import { request, APIRequestContext } from '@playwright/test';
 
 /**
  * Internal dependencies
@@ -21,6 +21,7 @@ export type AddressType = Omit<
 
 class RestAPI {
 	private baseUrl: string;
+	private apiContext!: APIRequestContext;
 
 	constructor( baseUrl: string ) {
 		if ( ! baseUrl ) {
@@ -29,19 +30,26 @@ class RestAPI {
 		this.baseUrl = baseUrl;
 	}
 
-	private getAdminClient() {
-		return HTTPClientFactory.build( this.baseUrl )
-			.withBasicAuth(
-				config.users.admin.username,
-				config.users.admin.password
-			)
-			.create();
+	private async getAdminClient() {
+		if ( ! this.apiContext ) {
+			// Create a new API context with authentication
+			this.apiContext = await request.newContext( {
+				baseURL: this.baseUrl,
+				extraHTTPHeaders: {
+					Authorization:
+						'Basic ' +
+						Buffer.from(
+							`${ config.users.admin.username }:${ config.users.admin.password }`
+						).toString( 'base64' ),
+					'Content-Type': 'application/json',
+				},
+			} );
+		}
+		return this.apiContext;
 	}
 
 	/**
 	 * Deletes a customer account by their email address if the user exists.
-	 *
-	 * Copied from https://github.com/woocommerce/woocommerce/blob/trunk/packages/js/e2e-utils/src/flows/with-rest-api.js#L374
 	 *
 	 * @param {string} emailAddress Customer user account email address.
 	 * @return {Promise<void>}
@@ -49,24 +57,28 @@ class RestAPI {
 	async deleteCustomerByEmailAddress(
 		emailAddress: string
 	): Promise< void > {
-		const client = this.getAdminClient();
+		const client = await this.getAdminClient();
 
 		const query = {
 			search: emailAddress,
 			context: 'edit',
 			role: 'all',
 		};
-		const customers = await client.get( userEndpoint, query );
-		if ( customers.data && customers.data.length ) {
-			for ( let c = 0; c < customers.data.length; c++ ) {
+		const response = await client.get( userEndpoint, { params: query } );
+		const customers = await response.json();
+
+		if ( customers && customers.length ) {
+			for ( let c = 0; c < customers.length; c++ ) {
 				const deleteUserPayload = {
 					force: true,
 					reassign: 0,
 				};
 
 				await client.delete(
-					`${ userEndpoint }/${ customers.data[ c ].id }`,
-					deleteUserPayload
+					`${ userEndpoint }/${ customers[ c ].id }`,
+					{
+						data: deleteUserPayload,
+					}
 				);
 			}
 		}
@@ -77,21 +89,22 @@ class RestAPI {
 		widgetName: string,
 		blockFilter?: string
 	): Promise< void > {
-		const client = this.getAdminClient();
+		const client = await this.getAdminClient();
 
 		const query = {
 			sidebar: widgetArea,
 			context: 'edit',
 		};
-		const widgets = await client.get( widgetEndpoint, query );
+		const response = await client.get( widgetEndpoint, { params: query } );
+		const widgets = await response.json();
 
-		if ( widgets.data && widgets.data.length ) {
-			for ( let c = 0; c < widgets.data.length; c++ ) {
-				if ( widgets.data[ c ].id_base === widgetName ) {
+		if ( widgets && widgets.length ) {
+			for ( let c = 0; c < widgets.length; c++ ) {
+				if ( widgets[ c ].id_base === widgetName ) {
 					// Skip if blockFilter is provided and the block is not found in the widget content.
 					if (
 						widgetName === 'block' &&
-						! widgets.data[ c ].rendered.includes( blockFilter )
+						! widgets[ c ].rendered.includes( blockFilter )
 					) {
 						continue;
 					}
@@ -100,8 +113,8 @@ class RestAPI {
 					};
 
 					await client.delete(
-						`${ widgetEndpoint }/${ widgets.data[ c ].id }`,
-						deleteWidgetPayload
+						`${ widgetEndpoint }/${ widgets[ c ].id }`,
+						{ data: deleteWidgetPayload }
 					);
 				}
 			}
@@ -113,7 +126,7 @@ class RestAPI {
 		billingAddress: AddressType,
 		shippingAddress: AddressType
 	): Promise< number > {
-		const client = this.getAdminClient();
+		const client = await this.getAdminClient();
 		const customerCreationData = {
 			...customerData,
 			username: customerData.username,
@@ -138,11 +151,11 @@ class RestAPI {
 				country: billingAddress.country_code,
 			},
 		};
-		const customer = await client.post(
-			userEndpoint,
-			customerCreationData
-		);
-		return customer.data.id;
+		const response = await client.post( userEndpoint, {
+			data: customerCreationData,
+		} );
+		const customer = await response.json();
+		return customer.id;
 	}
 
 	async recreateCustomer(
@@ -156,28 +169,38 @@ class RestAPI {
 	}
 
 	async createOrder(): Promise< string > {
-		const client = this.getAdminClient();
+		const client = await this.getAdminClient();
 
-		const products = await client.get(
-			`${ productsEndpoint }?search=${ config.products.simple.name }`
-		);
+		const response = await client.get( `${ productsEndpoint }`, {
+			params: { search: config.products.simple.name },
+		} );
+		const products = await response.json();
 
-		if ( ! products.data || ! products.data.length ) {
+		if ( ! products || ! products.length ) {
 			throw new Error( 'No products found.' );
 		}
 
-		const [ product ] = products.data;
+		const [ product ] = products;
 
-		const order = await client.post( ordersEndpoint, {
-			line_items: [
-				{
-					product_id: product.id,
-					quantity: 1,
-				},
-			],
+		const orderResponse = await client.post( ordersEndpoint, {
+			data: {
+				line_items: [
+					{
+						product_id: product.id,
+						quantity: 1,
+					},
+				],
+			},
 		} );
+		const order = await orderResponse.json();
 
-		return `${ order.data.id }`;
+		return `${ order.id }`;
+	}
+
+	async dispose() {
+		if ( this.apiContext ) {
+			await this.apiContext.dispose();
+		}
 	}
 }
 
