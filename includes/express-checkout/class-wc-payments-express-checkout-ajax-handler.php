@@ -459,9 +459,14 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		 * the postal code and not calculate shipping zones correctly.
 		 */
 		if ( Country_Code::UNITED_KINGDOM === $country ) {
+			include_once WCPAY_ABSPATH . 'includes/constants/class-express-checkout-gb-postcodes.php';
+
+			$cleaned_postcode = preg_replace( '/[^A-Za-z0-9]/', '', $postcode );
+
 			// Replaces a redacted string with something like N1C0000.
-			return str_pad( preg_replace( '/\s+/', '', $postcode ), 7, '0' );
+			return \WCPay\Constants\Express_Checkout_GB_Postcodes::get_padded_postcode( substr( $cleaned_postcode, 0, 7 ) );
 		}
+
 		if ( Country_Code::CANADA === $country ) {
 			// Replaces a redacted string with something like H3B000.
 			return str_pad( preg_replace( '/\s+/', '', $postcode ), 6, '0' );
