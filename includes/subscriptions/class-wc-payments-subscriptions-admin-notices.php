@@ -55,12 +55,12 @@ class WC_Payments_Subscriptions_Admin_Notices {
 		}
 
 		// Check if we're on the subscriptions list table.
-		if ( 'edit-shop_subscription' === $screen->id ) {
+		if ( false !== strpos( $screen->id, 'edit-shop_subscription' ) ) {
 			return true;
 		}
 
 		// Check if we're on the edit subscription page.
-		if ( 'shop_subscription' === $screen->id ) {
+		if ( false !== strpos( $screen->id, 'shop_subscription' ) ) {
 			return true;
 		}
 
