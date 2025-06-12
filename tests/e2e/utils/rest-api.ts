@@ -32,6 +32,12 @@ class RestAPI {
 
 	private async getAdminClient() {
 		if ( ! this.apiContext ) {
+			if ( ! this.baseUrl.endsWith( '/' ) ) {
+				this.baseUrl += '/';
+			}
+
+			this.baseUrl += '?rest_route=';
+
 			// Create a new API context with authentication
 			this.apiContext = await request.newContext( {
 				baseURL: this.baseUrl,
