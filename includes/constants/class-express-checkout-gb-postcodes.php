@@ -16,6 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  */
 class Express_Checkout_GB_Postcodes {
 	// Source: https://www.doogal.co.uk/PostcodeDownloads .
+	// Using a key-value-pair for fast search in the `get_padded_postcode` method.
 	const TWO_LETTER_OUTWARD_CODES   = [
 		'B1' => true,
 		'B2' => true,
