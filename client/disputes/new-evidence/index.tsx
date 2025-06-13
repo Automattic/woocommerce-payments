@@ -7,6 +7,11 @@ import React, { useState, useEffect, useMemo } from 'react';
 import apiFetch from '@wordpress/api-fetch';
 import { __, sprintf } from '@wordpress/i18n';
 import { useDispatch } from '@wordpress/data';
+import { chevronLeft, chevronRight } from '@wordpress/icons';
+
+/**
+ * Internal dependencies.
+ */
 import useConfirmNavigation from 'utils/use-confirm-navigation';
 import { recordEvent } from 'tracks';
 import { TestModeNotice } from 'components/test-mode-notice';
@@ -27,10 +32,6 @@ import RecommendedDocuments from './recommended-documents';
 import InlineNotice from 'components/inline-notice';
 import ShippingDetails from './shipping-details';
 import CoverLetter from './cover-letter';
-
-/**
- * Internal dependencies.
- */
 import { Button, HorizontalRule } from 'wcpay/components/wp-components-wrapped';
 import { getAdminUrl } from 'wcpay/utils';
 import { StepperPanel } from 'wcpay/components/stepper';
@@ -786,6 +787,8 @@ export default ( { query }: { query: { id: string } } ) => {
 							onClick={ () =>
 								handleStepChange( currentStep + 1 )
 							}
+							icon={ chevronRight }
+							iconPosition="right"
 						>
 							{ __( 'Next', 'woocommerce-payments' ) }
 						</Button>
@@ -799,6 +802,8 @@ export default ( { query }: { query: { id: string } } ) => {
 					<Button
 						variant="secondary"
 						onClick={ () => setCurrentStep( ( s ) => s - 1 ) }
+						icon={ chevronLeft }
+						iconPosition="left"
 					>
 						{ __( 'Back', 'woocommerce-payments' ) }
 					</Button>
@@ -816,6 +821,8 @@ export default ( { query }: { query: { id: string } } ) => {
 						) }
 						<Button
 							variant="primary"
+							icon={ chevronRight }
+							iconPosition="right"
 							onClick={ () =>
 								handleStepChange( currentStep + 1 )
 							}
@@ -830,6 +837,8 @@ export default ( { query }: { query: { id: string } } ) => {
 			<div className="wcpay-dispute-evidence-new__button-row">
 				<Button
 					variant="secondary"
+					icon={ chevronLeft }
+					iconPosition="left"
 					onClick={ () => setCurrentStep( ( s ) => s - 1 ) }
 				>
 					{ __( 'Back', 'woocommerce-payments' ) }
