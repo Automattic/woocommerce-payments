@@ -11,11 +11,12 @@ defined( 'ABSPATH' ) || exit;
  * Class for handling admin notices related to Stripe Billing deprecation.
  */
 class WC_Payments_Subscriptions_Admin_Notices {
-
 	/**
-	 * Initialize the class and attach callbacks.
+	 * Initializes this class's WP hooks.
+	 *
+	 * @return void
 	 */
-	public function __construct() {
+	public function init_hooks() {
 		add_action( 'admin_notices', [ $this, 'display_stripe_billing_deprecation_notice' ] );
 	}
 
@@ -33,12 +34,34 @@ class WC_Payments_Subscriptions_Admin_Notices {
 			return;
 		}
 
-		$message = sprintf(
-			/* translators: %1$s: WooCommerce Subscriptions, %2$s: WooPayments */
-			__( 'We\'re no longer supporting bundled subscriptions with %2$s. To continue using Stripe Billing, please install the standalone %1$s plugin.', 'woocommerce-payments' ),
-			'WooCommerce Subscriptions',
-			'WooPayments'
-		);
+		$wcpay_version = WC_Payments::get_file_version( WCPAY_PLUGIN_FILE );
+		$message       = '';
+
+		if ( version_compare( $wcpay_version, '9.7.0', '<' ) ) {
+			$message = sprintf(
+				/* translators: %1$s: WooCommerce Subscriptions */
+				__( '<strong>Important:</strong> From version 9.7 of WooPayments (scheduled for 23 July, 2025), you\'ll <strong>no longer be able to offer new product subscriptions</strong>. To avoid disruption, please install <a target="_blank" href="%1$s">WooCommerce Subscriptions</a>.', 'woocommerce-payments' ),
+				'https://woocommerce.com/products/woocommerce-subscriptions/'
+			);
+		} elseif ( version_compare( $wcpay_version, '9.8.0', '<' ) ) {
+			$message = sprintf(
+				/* translators: %1$s: WooCommerce Subscriptions */
+				__( 'WooPayments no longer allows customers to create new subscriptions. Beginning in version 9.8, billing for existing customer subscriptions will no longer be supported. To ensure there is no interruption of service, please install <a target="_blank" href="%1$s">WooCommerce Subscriptions</a>.', 'woocommerce-payments' ),
+				'https://woocommerce.com/products/woocommerce-subscriptions/'
+			);
+		} elseif ( version_compare( $wcpay_version, '9.9.0', '<' ) ) {
+			$message = sprintf(
+				/* translators: %1$s: WooCommerce Subscriptions */
+				__( 'WooPayments no longer supports billing for existing customer subscriptions. All subscriptions data is read-only. Please install <a target="_blank" href="%1$s">WooCommerce Subscriptions</a> to continue managing your subscriptions.', 'woocommerce-payments' ),
+				'https://woocommerce.com/products/woocommerce-subscriptions/'
+			);
+		} else {
+			$message = sprintf(
+				/* translators: %1$s: WooCommerce Subscriptions */
+				__( 'WooPayments no longer supports subscriptions capabilities and subscriptions data can no longer be accessed. Please install <a target="_blank" href="%1$s">WooCommerce Subscriptions</a> to continue managing your subscriptions.', 'woocommerce-payments' ),
+				'https://woocommerce.com/products/woocommerce-subscriptions/'
+			);
+		}
 
 		WC_Payments::display_admin_notice( $message, 'notice-warning' );
 	}
@@ -61,6 +84,11 @@ class WC_Payments_Subscriptions_Admin_Notices {
 
 		// Check if we're on the edit subscription page.
 		if ( false !== strpos( $screen->id, 'shop_subscription' ) ) {
+			return true;
+		}
+
+		// Check if we're on the WooCommerce > Settings > Subscriptions page.
+		if ( 'woocommerce_page_wc-settings' === $screen->id && isset( $_GET['tab'] ) && 'subscriptions' === sanitize_text_field( wp_unslash( $_GET['tab'] ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			return true;
 		}
 

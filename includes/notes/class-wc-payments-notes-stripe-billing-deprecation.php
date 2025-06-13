@@ -46,14 +46,27 @@ class WC_Payments_Notes_Stripe_Billing_Deprecation {
 	 * Get the note.
 	 */
 	public static function get_note() {
-		$note = new Note();
+		$note          = new Note();
+		$wcpay_version = WC_Payments::get_file_version( WCPAY_PLUGIN_FILE );
 
-		$note->set_title( __( 'WooPayments no longer supports bundled subscriptions', 'woocommerce-payments' ) );
-		$note->set_content( __( 'To continue offering subscriptions to your customers, please install the standalone WooCommerce Subscriptions plugin.', 'woocommerce-payments' ) );
+		if ( version_compare( $wcpay_version, '9.7.0', '<' ) ) {
+			$note->set_title( __( 'Important information regarding subscriptions in WooPayments', 'woocommerce-payments' ) );
+			$note->set_content( __( 'From version 9.7 of WooPayments (scheduled for 23 July, 2025), you\'ll no longer be able to offer new product subscriptions using the built-in subscriptions functionality. To avoid disruption, please install WooCommerce Subscriptions for free.', 'woocommerce-payments' ) );
+		} elseif ( version_compare( $wcpay_version, '9.8.0', '<' ) ) {
+			$note->set_title( __( 'WooPayments subscriptions update', 'woocommerce-payments' ) );
+			$note->set_content( __( 'WooPayments no longer allows customers to create new subscriptions. Beginning in version 9.8, billing for existing customer subscriptions will no longer be supported. To ensure there is no interruption of service, please install WooCommerce Subscriptions.', 'woocommerce-payments' ) );
+		} elseif ( version_compare( $wcpay_version, '9.9.0', '<' ) ) {
+			$note->set_title( __( 'WooPayments subscriptions update', 'woocommerce-payments' ) );
+			$note->set_content( __( 'WooPayments no longer supports billing for existing customer subscriptions. All subscriptions data is read-only. Please install WooCommerce Subscriptions to continue managing your subscriptions.', 'woocommerce-payments' ) );
+		} else {
+			$note->set_title( __( 'WooPayments subscriptions update', 'woocommerce-payments' ) );
+			$note->set_content( __( 'WooPayments no longer supports subscriptions capabilities and subscriptions data can no longer be accessed. Please install WooCommerce Subscriptions to continue managing your subscriptions.', 'woocommerce-payments' ) );
+		}
+
 		$note->set_type( Note::E_WC_ADMIN_NOTE_INFORMATIONAL );
 		$note->set_name( self::NOTE_NAME );
 		$note->set_source( 'woocommerce-payments' );
-		$note->add_action( 'get-woocommerce-subscriptions', __( 'Get WooCommerce Subscriptions', 'woocommerce-payments' ), self::NOTE_SUBSCRIPTIONS_URL );
+		$note->add_action( 'get-woocommerce-subscriptions', __( 'Install WooCommerce Subscriptions', 'woocommerce-payments' ), self::NOTE_SUBSCRIPTIONS_URL );
 
 		return $note;
 	}
