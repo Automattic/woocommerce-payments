@@ -460,7 +460,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		 */
 		if ( Country_Code::UNITED_KINGDOM === $country ) {
 			$cleaned_postcode = substr( preg_replace( '/[^A-Za-z0-9]/', '', $postcode ), 0, 7 );
-			// minimum length for a GH postcode is 5 (2 characters for the outward code, 3 for the inward code)
+			// the minimum length for a GB postcode is 5 (2 characters for the outward code, 3 for the inward code)
 			// if the postcode is not redacted, avoid loading the large `Express_Checkout_GB_Postcodes` class.
 			if ( strlen( $cleaned_postcode ) >= 5 ) {
 				return $cleaned_postcode;
@@ -471,8 +471,8 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			// the "outward code" has a variable length, between two and four characters.
 			// the "inward code" always has 3 characters.
 			// Google Pay/Apple Pay might redact GB postcode units to just the "outward code".
-			// But WC Core expects a full postcode unit to return shipping rates.
-			// Since we can't interfere with the rate calculation,
+			// but WC Core expects a full postcode unit to return shipping rates.
+			// since we can't interfere with the rate calculation,
 			// we are padding the (redacted) outward code with `0`s to have a full length postcode unit,
 			// to be used for shipping rates calculations.
 			include_once WCPAY_ABSPATH . 'includes/constants/class-express-checkout-gb-postcodes.php';
