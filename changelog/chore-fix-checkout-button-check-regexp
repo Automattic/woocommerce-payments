@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Fix the regexp checking for the loading state of the checkout button to cover changes in latest WooCommerce.
