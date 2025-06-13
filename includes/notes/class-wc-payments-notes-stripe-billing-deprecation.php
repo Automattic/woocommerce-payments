@@ -6,7 +6,6 @@
  */
 
 use Automattic\WooCommerce\Admin\Notes\Note;
-use Automattic\WooCommerce\Admin\Notes\Notes;
 use Automattic\WooCommerce\Admin\Notes\NoteTraits;
 
 defined( 'ABSPATH' ) || exit;
@@ -57,17 +56,5 @@ class WC_Payments_Notes_Stripe_Billing_Deprecation {
 		$note->add_action( 'get-woocommerce-subscriptions', __( 'Get WooCommerce Subscriptions', 'woocommerce-payments' ), self::NOTE_SUBSCRIPTIONS_URL );
 
 		return $note;
-	}
-
-	/**
-	 * Delete the note if it exists.
-	 */
-	public static function possibly_delete_note() {
-		$data_store = Notes::load_data_store();
-		$note_ids   = $data_store->get_notes_with_name( self::NOTE_NAME );
-
-		foreach ( (array) $note_ids as $note_id ) {
-			$data_store->delete( $note_id );
-		}
 	}
 }
