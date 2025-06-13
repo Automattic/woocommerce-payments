@@ -244,7 +244,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler_Test extends WCPAY_UnitTestCase 
 			'shipping_address',
 			[
 				'country'  => 'GB',
-				'postcode' => 'Z Z Z Y-Y-Y',
+				'postcode' => 'Z Z Z Y-',
 			]
 		);
 		$request->set_param(
@@ -260,7 +260,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler_Test extends WCPAY_UnitTestCase 
 		$shipping_address = $request->get_param( 'shipping_address' );
 		$billing_address  = $request->get_param( 'billing_address' );
 
-		$this->assertSame( 'ZZZYYY0', $shipping_address['postcode'] );
+		$this->assertSame( 'ZZZY000', $shipping_address['postcode'] );
 		$this->assertSame( 'ZQQZZZZ', $billing_address['postcode'] );
 	}
 

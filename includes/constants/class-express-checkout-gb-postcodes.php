@@ -3000,7 +3000,8 @@ class Express_Checkout_GB_Postcodes {
 			return str_pad( $postcode, 5, '0' );
 		}
 
-		// let's assume the provided postcode has an outward code that we don't have in our registry, and pad it until it has length 7 (7 is the maximum length for GB postcodes).
-		return str_pad( $postcode, 7, '0' );
+		// if we don't have it in our registry, let's assume the provided postcode is an outward code.
+		// let's pad it with three `0`s (which are meant to be the inward code) so it becomes a full postcode unit.
+		return substr( $postcode . '000', 0, 7 );
 	}
 }
