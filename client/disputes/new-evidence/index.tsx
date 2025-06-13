@@ -7,7 +7,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import apiFetch from '@wordpress/api-fetch';
 import { __, sprintf } from '@wordpress/i18n';
 import { useDispatch } from '@wordpress/data';
-import { chevronLeft, chevronRight, Icon } from '@wordpress/icons';
+import { chevronLeft, chevronRight } from '@wordpress/icons';
 
 /**
  * Internal dependencies.
@@ -787,7 +787,7 @@ export default ( { query }: { query: { id: string } } ) => {
 							onClick={ () =>
 								handleStepChange( currentStep + 1 )
 							}
-							icon={ <Icon icon={ chevronRight } /> }
+							icon={ chevronRight }
 							iconPosition="right"
 						>
 							{ __( 'Next', 'woocommerce-payments' ) }
@@ -802,7 +802,7 @@ export default ( { query }: { query: { id: string } } ) => {
 					<Button
 						variant="secondary"
 						onClick={ () => setCurrentStep( ( s ) => s - 1 ) }
-						icon={ <Icon icon={ chevronLeft } /> }
+						icon={ chevronLeft }
 						iconPosition="left"
 					>
 						{ __( 'Back', 'woocommerce-payments' ) }
@@ -821,7 +821,7 @@ export default ( { query }: { query: { id: string } } ) => {
 						) }
 						<Button
 							variant="primary"
-							icon={ <Icon icon={ chevronRight } /> }
+							icon={ chevronRight }
 							iconPosition="right"
 							onClick={ () =>
 								handleStepChange( currentStep + 1 )
@@ -837,7 +837,7 @@ export default ( { query }: { query: { id: string } } ) => {
 			<div className="wcpay-dispute-evidence-new__button-row">
 				<Button
 					variant="secondary"
-					icon={ <Icon icon={ chevronLeft } /> }
+					icon={ chevronLeft }
 					iconPosition="left"
 					onClick={ () => setCurrentStep( ( s ) => s - 1 ) }
 				>
