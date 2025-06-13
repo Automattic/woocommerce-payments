@@ -30,11 +30,11 @@ class WC_Payments_Subscriptions_Admin_Notices {
 		}
 
 		// Only show if Stripe Billing is enabled and WooCommerce Subscriptions is not active.
-		if ( ! WC_Payments_Features::is_stripe_billing_enabled() || class_exists( 'WC_Subscriptions' ) ) {
+		if ( ! $this->is_bundled_subscriptions_enabled() ) {
 			return;
 		}
 
-		$wcpay_version = WC_Payments::get_file_version( WCPAY_PLUGIN_FILE );
+		$wcpay_version = $this->get_wcpay_version();
 		$message       = '';
 
 		if ( version_compare( $wcpay_version, '9.7.0', '<' ) ) {
@@ -67,31 +67,55 @@ class WC_Payments_Subscriptions_Admin_Notices {
 	}
 
 	/**
-	 * Check if the current page is subscription-related.
+	 * Check if the current page is a subscription-related page.
 	 *
 	 * @return bool
 	 */
-	private function is_subscription_page() {
+	protected function is_subscription_page() {
+		$screen = $this->get_screen_id();
+
+		if ( ! $screen ) {
+			return false;
+		} elseif ( false !== strpos( $screen, 'edit-shop_subscription' ) ) {
+			return true;
+		} elseif ( false !== strpos( $screen, 'shop_subscription' ) ) {
+			return true;
+		} elseif ( 'woocommerce_page_wc-settings' === $screen && isset( $_GET['tab'] ) && 'subscriptions' === sanitize_text_field( wp_unslash( $_GET['tab'] ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Get the current screen ID.
+	 *
+	 * @return string|false
+	 */
+	protected function get_screen_id() {
 		$screen = get_current_screen();
 		if ( ! $screen ) {
 			return false;
 		}
 
-		// Check if we're on the subscriptions list table.
-		if ( false !== strpos( $screen->id, 'edit-shop_subscription' ) ) {
-			return true;
-		}
+		return $screen->id;
+	}
 
-		// Check if we're on the edit subscription page.
-		if ( false !== strpos( $screen->id, 'shop_subscription' ) ) {
-			return true;
-		}
+	/**
+	 * Get the WooPayments version.
+	 *
+	 * @return string
+	 */
+	protected function get_wcpay_version() {
+		return WC_Payments::get_file_version( WCPAY_PLUGIN_FILE );
+	}
 
-		// Check if we're on the WooCommerce > Settings > Subscriptions page.
-		if ( 'woocommerce_page_wc-settings' === $screen->id && isset( $_GET['tab'] ) && 'subscriptions' === sanitize_text_field( wp_unslash( $_GET['tab'] ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			return true;
-		}
-
-		return false;
+	/**
+	 * Check if bundled subscriptions are enabled.
+	 *
+	 * @return bool
+	 */
+	protected function is_bundled_subscriptions_enabled() {
+		return WC_Payments_Features::is_stripe_billing_enabled() && ! class_exists( 'WC_Subscriptions' );
 	}
 }

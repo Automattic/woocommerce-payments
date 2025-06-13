@@ -9,6 +9,9 @@
  * Class WC_Payments_Notes_Stripe_Billing_Deprecation tests.
  */
 class WC_Payments_Notes_Stripe_Billing_Deprecation_Test extends WCPAY_UnitTestCase {
+	/**
+	 * Set up the test.
+	 */
 	public function set_up() {
 		parent::set_up();
 		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-stripe-billing-deprecation.php';
@@ -17,24 +20,20 @@ class WC_Payments_Notes_Stripe_Billing_Deprecation_Test extends WCPAY_UnitTestCa
 	/**
 	 * Tests for WC_Payments_Notes_Stripe_Billing_Deprecation::can_be_added()
 	 */
-	public function test_can_be_added() {
-		// Mock WC_Payments_Features::is_stripe_billing_enabled() to return true.
-		$this->set_feature_flag_option( WC_Payments_Features::WCPAY_SUBSCRIPTIONS_FLAG_NAME, '1' );
+	public function test_cannot_be_added() {
+		// Test when Stripe Billing is enabled and WooCommerce Subscriptions is not active.
 		$this->set_feature_flag_option( WC_Payments_Features::STRIPE_BILLING_FLAG_NAME, '1' );
+		$this->assertFalse( WC_Payments_Notes_Stripe_Billing_Deprecation::can_be_added() );
 
-		// Mock class_exists('WC_Subscriptions') to return false.
-		$this->mock_class_exists( 'WC_Subscriptions', false );
-
-		$this->assertTrue( WC_Payments_Notes_Stripe_Billing_Deprecation::can_be_added() );
+		// Test when Stripe Billing is disabled.
+		$this->set_feature_flag_option( WC_Payments_Features::STRIPE_BILLING_FLAG_NAME, '0' );
+		$this->assertFalse( WC_Payments_Notes_Stripe_Billing_Deprecation::can_be_added() );
 
 		// Test when WooCommerce Subscriptions is active.
-		$this->mock_class_exists( 'WC_Subscriptions', true );
+		$this->set_feature_flag_option( WC_Payments_Features::STRIPE_BILLING_FLAG_NAME, '1' );
+		add_filter( 'pre_option_wc_subscriptions_active', '__return_true' );
 		$this->assertFalse( WC_Payments_Notes_Stripe_Billing_Deprecation::can_be_added() );
-
-		// Test when Stripe Billing is not enabled.
-		$this->set_feature_flag_option( WC_Payments_Features::STRIPE_BILLING_FLAG_NAME, '0' );
-		$this->mock_class_exists( 'WC_Subscriptions', false );
-		$this->assertFalse( WC_Payments_Notes_Stripe_Billing_Deprecation::can_be_added() );
+		remove_filter( 'pre_option_wc_subscriptions_active', '__return_true' );
 	}
 
 	/**
@@ -60,16 +59,11 @@ class WC_Payments_Notes_Stripe_Billing_Deprecation_Test extends WCPAY_UnitTestCa
 	}
 
 	/**
-	 * Mock class_exists() for a specific class.
+	 * Set a feature flag option value.
 	 *
-	 * @param string $class_name The class name to mock.
-	 * @param bool   $exists     Whether the class exists.
+	 * @param string $option The option name.
+	 * @param string $value  The option value.
 	 */
-	private function mock_class_exists( $class_name, $exists ) {
-		global $wp_test_helpers;
-		$wp_test_helpers->mock_function( 'class_exists', $exists );
-	}
-
 	private function set_feature_flag_option( string $option, string $value ) {
 		add_filter(
 			'pre_option_' . $option,
