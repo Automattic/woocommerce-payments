@@ -749,15 +749,16 @@ class WC_Payments {
 
 			$wcpay_order_frt_meta_box = new WCPay\Fraud_Prevention\Order_Fraud_And_Risk_Meta_Box( self::$order_service );
 			$wcpay_order_frt_meta_box->init_hooks();
+
+			// Initialize Stripe Billing deprecation notices.
+			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions-admin-notices.php';
+			$wcpay_subscriptions_admin_notices = new WC_Payments_Subscriptions_Admin_Notices();
+			$wcpay_subscriptions_admin_notices->init_hooks();
 		}
 
 		// Load Stripe Billing subscription integration.
 		include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions.php';
 		WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::$order_service, self::$account, self::$token_service );
-
-		// Initialize Stripe Billing deprecation notices.
-		include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions-admin-notices.php';
-		new WC_Payments_Subscriptions_Admin_Notices();
 
 		// Add hook to remove Stripe Billing deprecation note when WooCommerce Subscriptions is installed.
 		add_action( 'activated_plugin', [ __CLASS__, 'maybe_remove_stripe_billing_deprecation_note' ], 10, 1 );
