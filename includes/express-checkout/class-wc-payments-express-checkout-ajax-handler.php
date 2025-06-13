@@ -454,17 +454,30 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 	 */
 	private function get_normalized_postal_code( $postcode, $country ) {
 		/**
-		 * Currently, Apple Pay truncates the UK and Canadian postal codes to the first 4 and 3 characters respectively
+		 * Currently, Apple Pay truncates the UK and Canadian postal codes to the first few characters respectively
 		 * when passing it back from the shippingcontactselected object. This causes WC to invalidate
 		 * the postal code and not calculate shipping zones correctly.
 		 */
 		if ( Country_Code::UNITED_KINGDOM === $country ) {
+			$cleaned_postcode = substr( preg_replace( '/[^A-Za-z0-9]/', '', $postcode ), 0, 7 );
+			// minimum length for a GH postcode is 5 (2 characters for the outward code, 3 for the inward code)
+			// if the postcode is not redacted, avoid loading the large `Express_Checkout_GB_Postcodes` class.
+			if ( strlen( $cleaned_postcode ) >= 5 ) {
+				return $cleaned_postcode;
+			}
+
+			// now, the juicity part: GB postcode units have a variable length, 5 to 7 characters (excluding the space).
+			// they are comprised by two main parts: the "outward code" and the "inward code".
+			// the "outward code" has a variable length, between two and four characters.
+			// the "inward code" always has 3 characters.
+			// Google Pay/Apple Pay might redact GB postcode units to just the "outward code".
+			// But WC Core expects a full postcode unit to return shipping rates.
+			// Since we can't interfere with the rate calculation,
+			// we are padding the (redacted) outward code with `0`s to have a full length postcode unit,
+			// to be used for shipping rates calculations.
 			include_once WCPAY_ABSPATH . 'includes/constants/class-express-checkout-gb-postcodes.php';
-
-			$cleaned_postcode = preg_replace( '/[^A-Za-z0-9]/', '', $postcode );
-
 			// Replaces a redacted string with something like N1C0000.
-			return \WCPay\Constants\Express_Checkout_GB_Postcodes::get_padded_postcode( substr( $cleaned_postcode, 0, 7 ) );
+			return \WCPay\Constants\Express_Checkout_GB_Postcodes::get_padded_postcode( $cleaned_postcode );
 		}
 
 		if ( Country_Code::CANADA === $country ) {
