@@ -631,7 +631,7 @@ export const confirmCardAuthenticationWCB = async (
 	);
 	await expect( placeOrderButton ).toBeDisabled();
 	await expect( placeOrderButton ).toHaveClass(
-		/wc-block-components-button--loading/
+		/\bwc-block-components-(?:[-\w]*-)?button--loading\b/
 	);
 	await confirmCardAuthentication( page, authorize );
 };
