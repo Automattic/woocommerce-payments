@@ -3556,7 +3556,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$this->order_service->update_order_status_from_intent( $order, $intent );
 
 			if ( $intent->is_authorized() ) {
-				wc_reduce_stock_levels( $order_id );
+				wc_maybe_reduce_stock_levels( $order_id );
 				WC()->cart->empty_cart();
 
 				$is_subscription            = function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order );
