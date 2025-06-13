@@ -466,8 +466,8 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 				return $cleaned_postcode;
 			}
 
-			// now, the juicity part: GB postcode units have a variable length, 5 to 7 characters (excluding the space).
-			// they are comprised by two main parts: the "outward code" and the "inward code".
+			// now, the juicy part: GB postcode units have a variable length, 5 to 7 characters (excluding the space).
+			// they consist of two main parts: the "outward code" and the "inward code".
 			// the "outward code" has a variable length, between two and four characters.
 			// the "inward code" always has 3 characters.
 			// Google Pay/Apple Pay might redact GB postcode units to just the "outward code".
