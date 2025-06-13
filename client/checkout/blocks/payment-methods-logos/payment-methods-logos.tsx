@@ -54,19 +54,58 @@ export const PaymentMethodsLogos: React.FC< PaymentMethodsLogosProps > = ( {
 
 	useEffect( () => {
 		const updateMaxElements = () => {
+			// Get the actual width based on whether we're in an iframe or not
+			let width: number;
+
+			// Try to find the preview iframe in the page editor
+			const previewFrame = document.querySelector(
+				'iframe[name="editor-canvas"]'
+			);
+
+			if ( previewFrame ) {
+				// Get the width from the iframe's style
+				const style = window.getComputedStyle( previewFrame );
+				width = parseInt( style.width, 10 );
+			} else {
+				width = window.innerWidth;
+			}
+
 			const sortedConfigs = [ ...breakpointConfigs ].sort(
 				( a, b ) => a.breakpoint - b.breakpoint
 			);
 			const config = sortedConfigs.find(
-				( cfg ) => window.innerWidth <= cfg.breakpoint
+				( cfg ) => width <= cfg.breakpoint
 			);
 
 			setMaxShownElements( config ? config.maxElements : maxElements );
 		};
 
+		// Initial update
 		updateMaxElements();
-		window.addEventListener( 'resize', updateMaxElements );
 
+		// Use ResizeObserver if available, otherwise fallback to window resize
+		if ( typeof ResizeObserver !== 'undefined' ) {
+			const resizeObserver = new ResizeObserver( updateMaxElements );
+
+			// Observe the iframe if it exists
+			const previewFrame = document.querySelector(
+				'iframe[name="editor-canvas"]'
+			);
+			if ( previewFrame ) {
+				resizeObserver.observe( previewFrame );
+			} else {
+				// Fallback to window resize
+				window.addEventListener( 'resize', updateMaxElements );
+			}
+
+			return () => {
+				resizeObserver.disconnect();
+				window.removeEventListener( 'resize', updateMaxElements );
+			};
+		}
+
+		// Fallback for browsers without ResizeObserver
+		window.addEventListener( 'resize', updateMaxElements );
 		return () => window.removeEventListener( 'resize', updateMaxElements );
 	}, [ breakpointConfigs, maxElements ] );
 
