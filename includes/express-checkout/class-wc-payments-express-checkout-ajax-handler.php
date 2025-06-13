@@ -461,7 +461,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		if ( Country_Code::UNITED_KINGDOM === $country ) {
 			$cleaned_postcode = substr( preg_replace( '/[^A-Za-z0-9]/', '', $postcode ), 0, 7 );
 			// the minimum length for a GB postcode is 5 (2 characters for the outward code, 3 for the inward code)
-			// if the postcode is not redacted, avoid loading the large `Express_Checkout_GB_Postcodes` class.
+			// if the postcode is not redacted, avoid padding it.
 			if ( strlen( $cleaned_postcode ) >= 5 ) {
 				return $cleaned_postcode;
 			}
@@ -475,9 +475,8 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			// since we can't interfere with the rate calculation,
 			// we are padding the (redacted) outward code with `0`s to have a full length postcode unit,
 			// to be used for shipping rates calculations.
-			include_once WCPAY_ABSPATH . 'includes/constants/class-express-checkout-gb-postcodes.php';
-			// Replaces a redacted string with something like N1C0000.
-			return \WCPay\Constants\Express_Checkout_GB_Postcodes::get_padded_postcode( $cleaned_postcode );
+			// Replaces a redacted `N1C` string with something like `N1C000`.
+			return substr( $cleaned_postcode . '000', 0, 7 );
 		}
 
 		if ( Country_Code::CANADA === $country ) {
