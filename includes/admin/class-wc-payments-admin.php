@@ -14,6 +14,7 @@ use WCPay\Inline_Script_Payloads\Woo_Payments_Payment_Method_Definitions;
 use WCPay\Inline_Script_Payloads\Woo_Payments_Payment_Methods_Config;
 use WCPay\Logger;
 use WCPay\WooPay\WooPay_Utilities;
+use WCPay\Core\WC_Payments_API_Charge;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -170,6 +171,7 @@ class WC_Payments_Admin {
 		add_action( 'woocommerce_admin_field_payment_gateways', [ $this, 'payment_gateways_container' ] );
 		add_action( 'woocommerce_admin_order_totals_after_total', [ $this, 'show_woopay_payment_method_name_admin' ] );
 		add_action( 'woocommerce_admin_order_totals_after_total', [ $this, 'display_wcpay_transaction_fee' ] );
+		add_action( 'woocommerce_admin_order_totals_after_total', [ $this, 'display_wcpay_payout' ] );
 		add_action( 'admin_init', [ $this, 'redirect_deposits_to_payouts' ] );
 		add_action( 'woocommerce_update_options_site-visibility', [ $this, 'inform_stripe_when_store_goes_live' ] );
 		add_action( 'admin_init', [ $this, 'add_css_classes' ] );
@@ -1331,6 +1333,56 @@ class WC_Payments_Admin {
 			<td width="1%"></td>
 			<td class="total">
 				-<?php echo wp_kses( wc_price( $order->get_meta( '_wcpay_transaction_fee' ), [ 'currency' => $order->get_currency() ] ), 'post' ); ?>
+			</td>
+		</tr>
+		<?php
+	}
+
+	/**
+	 * Displays the net payout amount after WooPayments transaction fees are deducted.
+	 *
+	 * @since $next_version
+	 *
+	 * @param int $order_id The ID of the order.
+	 */
+	public function display_wcpay_payout( $order_id ) {
+		$order = wc_get_order( $order_id );
+		if ( ! $order ) {
+			return;
+		}
+
+		// Get the charge ID using the injected service.
+		$charge_id = $this->order_service->get_charge_id_for_order( $order );
+		if ( ! $charge_id ) {
+			return;
+		}
+
+		// Fetch charge data from WCPay API.
+		$charge_data = $this->payments_api_client->get_charge( $charge_id );
+		$net_payout  = $charge_data['balance_transaction']['net'] ?? null;
+		if ( ! $net_payout ) {
+			return;
+		}
+
+		?>
+		<tr>
+			<td class="label wcpay-net-payout">
+				<?php
+					echo wp_kses_post(
+						wc_help_tip(
+							sprintf(
+							/* translators: %s: WooPayments */
+								__( 'This is the amount %s will pay out to your account after deducting fees.', 'woocommerce-payments' ),
+								'WooPayments'
+							)
+						)
+					);
+				?>
+				<?php esc_html_e( 'Net Payout:', 'woocommerce-payments' ); ?>
+			</td>
+			<td width="1%"></td>
+			<td class="total">
+				<?php echo wp_kses( wc_price( $net_payout / 100, [ 'currency' => $order->get_currency() ] ), 'post' ); ?>
 			</td>
 		</tr>
 		<?php
