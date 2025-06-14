@@ -14,7 +14,6 @@ use WCPay\Inline_Script_Payloads\Woo_Payments_Payment_Method_Definitions;
 use WCPay\Inline_Script_Payloads\Woo_Payments_Payment_Methods_Config;
 use WCPay\Logger;
 use WCPay\WooPay\WooPay_Utilities;
-use WCPay\Core\WC_Payments_API_Charge;
 
 defined( 'ABSPATH' ) || exit;
 
