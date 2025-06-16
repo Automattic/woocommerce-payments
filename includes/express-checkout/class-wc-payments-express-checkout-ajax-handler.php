@@ -476,7 +476,7 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			// we are padding the (redacted) outward code with `0`s to have a full length postcode unit,
 			// to be used for shipping rates calculations.
 			// Replaces a redacted `N1C` string with something like `N1C000`.
-			return substr( $cleaned_postcode . '000', 0, 7 );
+			return $cleaned_postcode . '000';
 		}
 
 		if ( Country_Code::CANADA === $country ) {
