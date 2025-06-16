@@ -754,6 +754,9 @@ class WC_Payments {
 			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions-admin-notices.php';
 			$wcpay_subscriptions_admin_notices = new WC_Payments_Subscriptions_Admin_Notices();
 			$wcpay_subscriptions_admin_notices->init_hooks();
+
+			// Update the Stripe Billing deprecation note.
+			self::maybe_update_stripe_billing_deprecation_note();
 		}
 
 		// Load Stripe Billing subscription integration.
@@ -2077,6 +2080,24 @@ class WC_Payments {
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-stripe-billing-deprecation.php';
 			WC_Payments_Notes_Stripe_Billing_Deprecation::possibly_delete_note();
 		}
+	}
+
+	/**
+	 * Update the Stripe Billing deprecation note.
+	 */
+	public static function maybe_update_stripe_billing_deprecation_note() {
+		// If Stripe Billing is not enabled or WooCommerce Subscriptions is active, do not update the note.
+		if ( ! WC_Payments_Features::is_stripe_billing_enabled() || class_exists( 'WC_Subscriptions' ) ) {
+			return;
+		}
+
+		// If the plugin version is not being updated, do not update the note.
+		if ( version_compare( WCPAY_VERSION_NUMBER, get_option( 'woocommerce_woocommerce_payments_version' ), '=' ) ) {
+			return;
+		}
+
+		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-stripe-billing-deprecation.php';
+		WC_Payments_Notes_Stripe_Billing_Deprecation::possibly_update_note();
 	}
 
 	/**
