@@ -204,24 +204,21 @@ export default ( { query }: { query: { id: string } } ) => {
 					? __( 'Evidence submitted!', 'woocommerce-payments' )
 					: __( 'Evidence saved!', 'woocommerce-payments' ),
 				{
-					actions: [
-						{
-							label: submit
-								? __(
+					actions: submit
+						? [
+								{
+									label: __(
 										'View submitted evidence',
 										'woocommerce-payments'
-								  )
-								: __(
-										'Return to evidence submission',
-										'woocommerce-payments'
-								  ),
-							url: getAdminUrl( {
-								page: 'wc-admin',
-								path: '/payments/disputes/challenge',
-								id: query.id,
-							} ),
-						},
-					],
+									),
+									url: getAdminUrl( {
+										page: 'wc-admin',
+										path: '/payments/disputes/challenge',
+										id: query.id,
+									} ),
+								},
+						  ]
+						: [],
 				}
 			);
 
