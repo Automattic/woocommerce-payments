@@ -63,16 +63,17 @@ const steps = [
 	{
 		heading: "Let's gather the basics",
 		subheading:
-			'To make a stronger case, please provide as much info as possible. We prefilled some fields for you, please double check and upload all the necessary documents.',
+			"The more info you can provide, the stronger your case will be. To speed things up, we've prefilled some fields for you — please check for accuracy and upload any relevant documents.",
 	},
 	{
-		heading: 'Shipping details',
-		subheading: 'Please make sure all the shipping information is correct.',
-	},
-	{
-		heading: 'Review the cover letter',
+		heading: 'Add your shipping details',
 		subheading:
-			'Please review the cover letter that will be submitted to the bank based on the information you provided. You can make changes to it or add additional details.',
+			"We've prefilled some of this for you — please check that it's correct and upload the recommended document.",
+	},
+	{
+		heading: 'Review your cover letter',
+		subheading:
+			"Using the information you've provided, we've automatically generated a cover letter for you. Before submitting to your customer's bank, please check all of the details are correct and make any required changes.",
 	},
 ];
 
@@ -175,8 +176,8 @@ export default ( { query }: { query: { id: string } } ) => {
 	const disputeReason = dispute?.reason;
 	const hasShipping = needsShipping( disputeReason );
 	const panelHeadings = hasShipping
-		? [ 'General evidence', 'Shipping information', 'Review' ]
-		: [ 'General evidence', 'Review' ];
+		? [ 'Purchase info', 'Shipping details', 'Review' ]
+		: [ 'Purchase info', 'Review' ];
 
 	useEffect( () => {
 		setIsAccordionOpen( currentStep === 0 );
