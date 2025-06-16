@@ -87,6 +87,21 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 
 == Changelog ==
 
+= 9.6.0-test-1 - unreleased =
+* Fix - Add NO VAT description for Norway in tax descriptions
+* Fix - Fix a layout shift when uploading evidence for a dispute on the new challenge dispute screen
+* Fix - Fix padding on the recommended document section
+* Fix - Fix preselected Payment Methods ignored during account creation via KYC session.
+* Fix - Fix spacing on disputes expandable block
+* Fix - Prevent double stock reduction after (3DS) authentication.
+* Fix - Prevent fatal error on the Pay for Order page upon deleted orders.
+* Update - update: add `wcpay_express_checkout_js_params` filter for express checkout JS params.
+* Dev - Add missing arrow icons from the new evidence form
+* Dev - Ensure the submitted state is working as expected
+* Dev - Fix the regexp checking for the loading state of the checkout button to cover changes in latest WooCommerce.
+* Dev - Revert @woocommerce/onboarding upgrade in PR 10840
+* Dev - Update reviewers for dependabot
+
 = 9.5.0 - 2025-06-11 =
 * Add - Add specific texts for collecting Norway and New Zealand tax data
 * Add - Add specific texts for collecting Singapore tax data
