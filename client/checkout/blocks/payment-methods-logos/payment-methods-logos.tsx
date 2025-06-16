@@ -52,15 +52,15 @@ export const PaymentMethodsLogos: React.FC< PaymentMethodsLogosProps > = ( {
 		buttonRef.current?.focus();
 	}, [] );
 
+	// Try to find the preview iframe in the page editor.
+	const previewFrame = document.querySelector(
+		'iframe[name="editor-canvas"]'
+	);
+
 	useEffect( () => {
 		const updateMaxElements = () => {
 			// Get the actual width based on whether we're in an iframe or not
 			let width: number;
-
-			// Try to find the preview iframe in the page editor
-			const previewFrame = document.querySelector(
-				'iframe[name="editor-canvas"]'
-			);
 
 			if ( previewFrame ) {
 				// Get the width from the iframe's style
@@ -87,10 +87,6 @@ export const PaymentMethodsLogos: React.FC< PaymentMethodsLogosProps > = ( {
 		if ( typeof ResizeObserver !== 'undefined' ) {
 			const resizeObserver = new ResizeObserver( updateMaxElements );
 
-			// Observe the iframe if it exists
-			const previewFrame = document.querySelector(
-				'iframe[name="editor-canvas"]'
-			);
 			if ( previewFrame ) {
 				resizeObserver.observe( previewFrame );
 			} else {
@@ -107,7 +103,7 @@ export const PaymentMethodsLogos: React.FC< PaymentMethodsLogosProps > = ( {
 		// Fallback for browsers without ResizeObserver
 		window.addEventListener( 'resize', updateMaxElements );
 		return () => window.removeEventListener( 'resize', updateMaxElements );
-	}, [ breakpointConfigs, maxElements ] );
+	}, [ breakpointConfigs, maxElements, previewFrame ] );
 
 	useEffect( () => {
 		if ( popoverAnchor ) {
