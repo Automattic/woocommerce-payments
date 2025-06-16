@@ -630,8 +630,13 @@ export const confirmCardAuthenticationWCB = async (
 		'.wc-block-components-checkout-place-order-button'
 	);
 	await expect( placeOrderButton ).toBeDisabled();
+	/**
+	 * Starting around version 9.9.0 WooCommerce Blocks class names changed to
+	 * be more specific. To cover both case, this check allows for additional
+	 * sections in the "loading" class name.
+	 */
 	await expect( placeOrderButton ).toHaveClass(
-		/wc-block-components-button--loading/
+		/\bwc-block-components-(?:[-\w]+-)?button--loading\b/
 	);
 	await confirmCardAuthentication( page, authorize );
 };
