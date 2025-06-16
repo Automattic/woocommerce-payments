@@ -59,13 +59,12 @@ export const PaymentMethodsLogos: React.FC< PaymentMethodsLogosProps > = ( {
 
 	useEffect( () => {
 		const updateMaxElements = () => {
-			// Get the actual width based on whether we're in an iframe or not
+			// Get the actual width based on whether we're in an iframe or not.
 			let width: number;
 
 			if ( previewFrame ) {
-				// Get the width from the iframe's style
-				const style = window.getComputedStyle( previewFrame );
-				width = parseInt( style.width, 10 );
+				// Get the width from the iframe's clientWidth.
+				width = previewFrame.clientWidth;
 			} else {
 				width = window.innerWidth;
 			}
