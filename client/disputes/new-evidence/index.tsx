@@ -125,10 +125,17 @@ export default ( { query }: { query: { id: string } } ) => {
 			try {
 				const d: any = await apiFetch( { path } );
 				setDispute( d );
+
 				// fallback to multiple if no product type is set
 				setProductType( d.metadata?.__product_type || '' );
-				// Load saved product description from evidence
-				setProductDescription( d.evidence?.product_description || '' );
+				// Load saved product description from evidence or level3 line items
+				const level3ProductNames = d.charge?.level3?.line_items
+					?.map( ( item: any ) => item.product_description )
+					.filter( Boolean )
+					.join( ', ' );
+				setProductDescription(
+					d.evidence?.product_description || level3ProductNames || ''
+				);
 				// Load saved shipping details from evidence
 				setShippingCarrier( d.evidence?.shipping_carrier || '' );
 				setShippingDate( d.evidence?.shipping_date || '' );
@@ -204,24 +211,21 @@ export default ( { query }: { query: { id: string } } ) => {
 					? __( 'Evidence submitted!', 'woocommerce-payments' )
 					: __( 'Evidence saved!', 'woocommerce-payments' ),
 				{
-					actions: [
-						{
-							label: submit
-								? __(
+					actions: submit
+						? [
+								{
+									label: __(
 										'View submitted evidence',
 										'woocommerce-payments'
-								  )
-								: __(
-										'Return to evidence submission',
-										'woocommerce-payments'
-								  ),
-							url: getAdminUrl( {
-								page: 'wc-admin',
-								path: '/payments/disputes/challenge',
-								id: query.id,
-							} ),
-						},
-					],
+									),
+									url: getAdminUrl( {
+										page: 'wc-admin',
+										path: '/payments/disputes/challenge',
+										id: query.id,
+									} ),
+								},
+						  ]
+						: [],
 				}
 			);
 
@@ -247,6 +251,7 @@ export default ( { query }: { query: { id: string } } ) => {
 					shipping_date: shippingDate,
 					shipping_tracking_number: shippingTrackingNumber,
 					shipping_address: shippingAddress,
+					customer_purchase_ip: dispute.order?.ip_address,
 				} ).filter( ( [ value ] ) => value && value !== '' )
 			);
 
