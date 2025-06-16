@@ -8,7 +8,6 @@
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 import {
 	formatMerchantAddress,
-	formatDate,
 	formatDeliveryDate,
 	generateAttachments,
 	generateHeader,
@@ -162,13 +161,6 @@ describe( 'Cover Letter Generator', () => {
 		} );
 	} );
 
-	describe( 'formatDate', () => {
-		it( 'should format current date', () => {
-			const result = formatDate();
-			expect( result ).toMatch( /^\w+ \d{1,2}, \d{4}$/ );
-		} );
-	} );
-
 	describe( 'formatDeliveryDate', () => {
 		it( 'should return placeholder when no date provided', () => {
 			const result = formatDeliveryDate( undefined );
@@ -176,7 +168,9 @@ describe( 'Cover Letter Generator', () => {
 		} );
 
 		it( 'should format delivery date correctly', () => {
+			const result = formatDeliveryDate( '2024-03-20' );
 			expect( formatDateTimeFromTimestamp ).toHaveBeenCalled();
+			expect( result ).toBe( 'Formatted 1710892800' );
 		} );
 	} );
 

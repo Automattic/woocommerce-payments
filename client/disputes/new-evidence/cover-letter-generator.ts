@@ -13,14 +13,6 @@ export const formatMerchantAddress = (
 	return `${ accountDetails.support_address_line1 }, ${ accountDetails.support_address_line2 }, ${ accountDetails.support_address_city }, ${ accountDetails.support_address_state } ${ accountDetails.support_address_postal_code } ${ accountDetails.support_address_country }`;
 };
 
-export const formatDate = (): string => {
-	return new Date().toLocaleDateString( undefined, {
-		year: 'numeric',
-		month: 'long',
-		day: 'numeric',
-	} );
-};
-
 export const formatDeliveryDate = (
 	dateString: string | undefined
 ): string => {
@@ -292,7 +284,10 @@ export const generateCoverLetter = (
 		merchantPhone:
 			settings?.account_business_support_phone ||
 			__( '<Business Phone Number>', 'woocommerce-payments' ),
-		today: formatDate(),
+		today: formatDateTimeFromTimestamp( Date.now(), {
+			separator: ', ',
+			includeTime: true,
+		} ),
 		acquiringBank: bankName || __( '<Bank Name>', 'woocommerce-payments' ),
 		caseNumber:
 			dispute?.id || __( '<Case Number>', 'woocommerce-payments' ),
