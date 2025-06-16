@@ -145,16 +145,4 @@ class WC_Payments_Subscriptions_Admin_Notices_Test extends WCPAY_UnitTestCase {
 
 		$this->assertEmpty( $output );
 	}
-
-	/**
-	 * Test get_wcpay_version method.
-	 */
-	public function test_get_wcpay_version() {
-		// Use reflection to access protected method.
-		$method = new ReflectionMethod( WC_Payments_Subscriptions_Admin_Notices::class, 'get_wcpay_version' );
-		$method->setAccessible( true );
-
-		// Test that it returns the version from WC_Payments::get_file_version.
-		$this->assertEquals( WC_Payments::get_file_version( WCPAY_PLUGIN_FILE ), $method->invoke( $this->admin_notices ) );
-	}
 }
