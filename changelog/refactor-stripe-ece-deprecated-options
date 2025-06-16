@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+refactor: moved deprecated `click` options on Stripe ECE to `create`, instead
