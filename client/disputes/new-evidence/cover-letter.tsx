@@ -12,7 +12,6 @@ import { useGetSettings } from 'wcpay/data';
 import {
 	TextareaControl,
 	Button,
-	Icon,
 } from 'wcpay/components/wp-components-wrapped';
 import { generateCoverLetter } from './cover-letter-generator';
 import type { ExtendedDispute } from './types';
