@@ -34,8 +34,13 @@ class WC_Payments_Notes_Stripe_Billing_Deprecation {
 	 * @return bool
 	 */
 	public static function can_be_added() {
-		// Only show if Stripe Billing is enabled and WooCommerce Subscriptions is not active.
+		// Only show if Stripe Billing is enabled and WooCommerce Subscriptions is not installed.
 		if ( ! self::is_bundled_subscriptions_enabled() ) {
+			return false;
+		}
+
+		// If wcpay version is >= 10.0, bail to note show the notice indefinitely.
+		if ( version_compare( WC_Payments::get_file_version( WCPAY_PLUGIN_FILE ), '10.0.0', '>=' ) ) {
 			return false;
 		}
 
@@ -70,16 +75,6 @@ class WC_Payments_Notes_Stripe_Billing_Deprecation {
 
 		return $note;
 	}
-
-	/**
-	 * Get the WooPayments version.
-	 *
-	 * @return string
-	 */
-	protected static function get_wcpay_version() {
-		return WC_Payments::get_file_version( WCPAY_PLUGIN_FILE );
-	}
-
 
 	/**
 	 * Check if bundled subscriptions are enabled.

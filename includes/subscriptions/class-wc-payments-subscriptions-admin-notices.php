@@ -35,7 +35,12 @@ class WC_Payments_Subscriptions_Admin_Notices {
 		}
 
 		$wcpay_version = $this->get_wcpay_version();
-		$message       = '';
+		// if wcpay version is >= 10.0, bail to note show the notice indefinitely.
+		if ( version_compare( $wcpay_version, '10.0.0', '>=' ) ) {
+			return;
+		}
+
+		$message = '';
 
 		if ( version_compare( $wcpay_version, '9.7.0', '<' ) ) {
 			$message = sprintf(
