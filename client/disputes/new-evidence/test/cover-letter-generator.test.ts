@@ -21,6 +21,7 @@ import type {
 	AccountDetails,
 	CoverLetterData,
 } from '../types';
+import type { DisputeReason } from 'wcpay/types/disputes';
 import PAYMENT_METHOD_IDS from '../../../constants/payment-method';
 
 jest.mock( 'wcpay/utils/date-time', () => ( {
@@ -224,6 +225,26 @@ describe( 'Cover Letter Generator', () => {
 			expect( result ).toContain( 'ch_123' );
 			expect( result ).toContain( 'John Doe' );
 			expect( result ).toContain( 'Test Product' );
+		} );
+
+		it( 'should generate body for product unacceptable dispute', () => {
+			const attachmentsList = '• Test Attachment';
+			const productUnacceptableDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_unacceptable' as DisputeReason,
+			};
+			const result = generateBody(
+				mockCoverLetterData,
+				productUnacceptableDispute,
+				attachmentsList
+			);
+			expect( result ).toContain( 'dp_123' );
+			expect( result ).toContain( 'ch_123' );
+			expect( result ).toContain( 'John Doe' );
+			expect( result ).toContain( 'Test Product' );
+			expect( result ).toContain(
+				'The product matched the description provided at the time of sale'
+			);
 		} );
 	} );
 
