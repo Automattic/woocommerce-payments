@@ -1,12 +1,12 @@
 /**
  * External dependencies
  */
-import * as React from 'react';
+import React from 'react';
 
 /**
  * Internal dependencies
  */
-import { formatCurrency } from 'wcpay/utils/currency';
+import { formatCurrency } from 'multi-currency/interface/functions';
 import Loadable from 'components/loadable';
 
 /**

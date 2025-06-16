@@ -2,6 +2,7 @@
  * Internal dependencies
  */
 import WoopayConnect from 'wcpay/checkout/woopay/connect/woopay-connect';
+import { getPostMessageTimeout } from 'wcpay/checkout/woopay/connect/connect-utils';
 
 class WooPaySessionConnect extends WoopayConnect {
 	constructor() {
@@ -12,6 +13,7 @@ class WooPaySessionConnect extends WoopayConnect {
 			...this.listeners,
 			setRedirectSessionDataCallback: () => {},
 			setTempThirdPartyCookieCallback: () => {},
+			getIsWooPayReachableCallback: () => {},
 			getIsThirdPartyCookiesEnabledCallback: () => {},
 			setPreemptiveSessionDataCallback: () => {},
 		};
@@ -32,54 +34,147 @@ class WooPaySessionConnect extends WoopayConnect {
 			removeTemporaryIframe,
 		} = this.injectTemporaryWooPayConnectIframe();
 
-		const isThirdPartyCookieSetPromise = new Promise( ( resolve ) => {
-			this.listeners.setTempThirdPartyCookieCallback = resolve;
-		} );
+		const isThirdPartyCookieSetPromise = new Promise(
+			( resolve, reject ) => {
+				let isRejected = false;
+
+				// Create a fail-safe timeout in case the WooPayConnectIframe does not respond.
+				const rejectTimeoutId = setTimeout( () => {
+					isRejected = true;
+
+					reject(
+						new Error(
+							'WooPayConnectIframe did not respond within the allotted time.'
+						)
+					);
+				}, getPostMessageTimeout() );
+
+				this.listeners.setTempThirdPartyCookieCallback = ( value ) => {
+					if ( isRejected ) {
+						return;
+					}
+
+					if ( rejectTimeoutId ) {
+						clearTimeout( rejectTimeoutId );
+					}
+
+					resolve( value );
+				};
+			}
+		);
+
+		if ( typeof resolvePostMessagePromise?.then !== 'function' ) {
+			return false;
+		}
 
 		// This request causes a page reload after the cookie has been set.
 		const tempPostMessage = await resolvePostMessagePromise;
 		tempPostMessage( { action: 'setTempThirdPartyCookie' } );
 
-		if ( ! ( await isThirdPartyCookieSetPromise ) ) {
+		try {
+			if ( ! ( await isThirdPartyCookieSetPromise ) ) {
+				// Once we have the result, we remove the temporary iframe.
+				removeTemporaryIframe();
+				return false;
+			}
+		} catch ( error ) {
+			// Once we have the result, we remove the temporary iframe.
+			removeTemporaryIframe();
 			return false;
 		}
 
-		const isThirdPartyCookieEnabledPromise = new Promise( ( resolve ) => {
-			this.listeners.getIsThirdPartyCookiesEnabledCallback = resolve;
-		} );
+		const isThirdPartyCookieEnabledPromise = new Promise(
+			( resolve, reject ) => {
+				let isRejected = false;
+
+				// Create a fail-safe timeout in case the WooPayConnectIframe does not respond.
+				const rejectTimeoutId = setTimeout( () => {
+					isRejected = true;
+
+					reject(
+						new Error(
+							'WooPayConnectIframe did not respond within the allotted time.'
+						)
+					);
+				}, getPostMessageTimeout() );
+
+				this.listeners.getIsThirdPartyCookiesEnabledCallback = (
+					value
+				) => {
+					if ( isRejected ) {
+						return;
+					}
+
+					if ( rejectTimeoutId ) {
+						clearTimeout( rejectTimeoutId );
+					}
+
+					resolve( value );
+				};
+			}
+		);
 		tempPostMessage( { action: 'getIsThirdPartyCookiesEnabled' } );
-		const isThirdPartyCookieEnabled = await isThirdPartyCookieEnabledPromise;
 
-		// Once we have the result, we remove the temporary iframe.
-		removeTemporaryIframe();
+		try {
+			const isThirdPartyCookieEnabled = await isThirdPartyCookieEnabledPromise;
 
-		return isThirdPartyCookieEnabled;
+			return isThirdPartyCookieEnabled;
+		} catch ( error ) {
+			return false;
+		} finally {
+			// Once we have the result, we remove the temporary iframe.
+			removeTemporaryIframe();
+		}
 	}
 
 	/**
 	 * Sends session data to WooPay.
 	 *
 	 * @param {Object} data The data to send to WooPay.
-	 * @return {Promise<*>} Resolves to the WooPay session response.
+	 * @return {Promise<Object|null>} Resolves to the WooPay session response.
 	 */
 	async sendRedirectSessionDataToWooPay( data ) {
-		return await super.sendMessageAndListenWith(
-			{ action: 'setRedirectSessionData', value: data },
-			'setRedirectSessionDataCallback'
-		);
+		try {
+			return await super.sendMessageAndListenWith(
+				{ action: 'setRedirectSessionData', value: data },
+				'setRedirectSessionDataCallback'
+			);
+		} catch ( error ) {
+			return null;
+		}
 	}
 
 	/**
 	 * Sends session data to WooPay, preemptively.
 	 *
 	 * @param {Object} data The data to send to WooPay.
-	 * @return {Promise<*>} Resolves to the WooPay session response.
+	 * @return {Promise<Object|null>} Resolves to the WooPay session response.
 	 */
 	async setPreemptiveSessionData( data ) {
-		return await super.sendMessageAndListenWith(
-			{ action: 'setPreemptiveSessionData', value: data },
-			'setPreemptiveSessionDataCallback'
-		);
+		try {
+			return await super.sendMessageAndListenWith(
+				{ action: 'setPreemptiveSessionData', value: data },
+				'setPreemptiveSessionDataCallback'
+			);
+		} catch ( error ) {
+			return null;
+		}
+	}
+
+	/**
+	 * Checks if WooPay is reachable.
+	 *
+	 * @return {Promise<bool>} Resolves to true if WooPay is reachable.
+	 */
+	async isWooPayReachable() {
+		try {
+			return await this.sendMessageAndListenWith(
+				{ action: 'isWooPayReachable' },
+				'getIsWooPayReachableCallback'
+			);
+		} catch ( error ) {
+			return false;
+		}
 	}
 
 	/**
@@ -106,6 +201,9 @@ class WooPaySessionConnect extends WoopayConnect {
 				this.listeners.getIsThirdPartyCookiesEnabledCallback(
 					data.value
 				);
+				break;
+			case 'get_is_woopay_reachable_success':
+				this.listeners.getIsWooPayReachableCallback( data.value );
 				break;
 			case 'set_preemptive_session_data_success':
 				this.listeners.setPreemptiveSessionDataCallback( data.value );

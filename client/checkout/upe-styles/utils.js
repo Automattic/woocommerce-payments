@@ -103,7 +103,48 @@ export const dashedToCamelCase = ( string ) => {
 };
 
 /**
- * Converts rgba to rgb format, since Stripe Appearances API does not accept rgba format for background.
+ * Searches through array of CSS selectors and returns first visible background color.
+ *
+ * @param {Array}  selectors List of CSS selectors to check.
+ * @param {Object} scope     The document scope to search in.
+ * @return {string} CSS color value.
+ */
+export const getBackgroundColor = ( selectors, scope = document ) => {
+	const defaultColor = '#ffffff';
+	let color = null;
+	let i = 0;
+	while ( ! color && i < selectors.length ) {
+		const element = scope.querySelector( selectors[ i ] );
+		if ( ! element ) {
+			i++;
+			continue;
+		}
+
+		const windowObject = scope.defaultView || window;
+
+		const bgColor = windowObject.getComputedStyle( element )
+			.backgroundColor;
+		// If backgroundColor property present and alpha > 0.
+		if ( bgColor && tinycolor( bgColor ).getAlpha() > 0 ) {
+			color = bgColor;
+		}
+		i++;
+	}
+	return color || defaultColor;
+};
+
+/**
+ * Determines whether background color is light or dark.
+ *
+ * @param {string} color CSS color value.
+ * @return {boolean} True, if background is light; false, if background is dark.
+ */
+export const isColorLight = ( color ) => {
+	return tinycolor( color ).getBrightness() > 125;
+};
+
+/**
+ * Converts rgba to rgb format, since Stripe Appearances API does not accept rgba format for text color.
  *
  * @param {string} color CSS color value.
  * @return {string} Accepted CSS color value.
@@ -123,38 +164,77 @@ export const maybeConvertRGBAtoRGB = ( color ) => {
 };
 
 /**
- * Searches through array of CSS selectors and returns first visible background color.
+ * Modifies the appearance object to include styles for floating label.
  *
- * @param {Array} selectors List of CSS selectors to check.
- * @return {string} CSS color value.
+ * @param {Object} appearance object to modify.
+ * @param {Object} floatingLabelStyles Floating label styles.
+ * @return {Object} Modified appearance object.
  */
-export const getBackgroundColor = ( selectors ) => {
-	const defaultColor = '#ffffff';
-	let color = null;
-	let i = 0;
-	while ( ! color && i < selectors.length ) {
-		const element = document.querySelector( selectors[ i ] );
-		if ( ! element ) {
-			i++;
-			continue;
-		}
+export const handleAppearanceForFloatingLabel = (
+	appearance,
+	floatingLabelStyles
+) => {
+	// Add floating label styles.
+	appearance.rules[ '.Label--floating' ] = floatingLabelStyles;
 
-		const bgColor = window.getComputedStyle( element ).backgroundColor;
-		// If backgroundColor property present and alpha > 0.
-		if ( bgColor && tinycolor( bgColor ).getAlpha() > 0 ) {
-			color = bgColor;
+	// Update line-height for floating label to account for scaling.
+	if (
+		appearance.rules[ '.Label--floating' ].transform &&
+		appearance.rules[ '.Label--floating' ].transform !== 'none'
+	) {
+		// Extract the scaling factors from the matrix
+		const transformMatrix =
+			appearance.rules[ '.Label--floating' ].transform;
+		const matrixValues = transformMatrix.match( /matrix\((.+)\)/ );
+		if ( matrixValues && matrixValues[ 1 ] ) {
+			const splitMatrixValues = matrixValues[ 1 ].split( ', ' );
+			const scaleX = parseFloat( splitMatrixValues[ 0 ] );
+			const scaleY = parseFloat( splitMatrixValues[ 3 ] );
+			const scale = ( scaleX + scaleY ) / 2;
+
+			const lineHeight = parseFloat(
+				appearance.rules[ '.Label--floating' ].lineHeight
+			);
+			const newLineHeight = Math.floor( lineHeight * scale );
+			appearance.rules[
+				'.Label--floating'
+			].lineHeight = `${ newLineHeight }px`;
+			appearance.rules[
+				'.Label--floating'
+			].fontSize = `${ newLineHeight }px`;
 		}
-		i++;
+		delete appearance.rules[ '.Label--floating' ].transform;
 	}
-	return color || defaultColor;
-};
 
-/**
- * Determines whether background color is light or dark.
- *
- * @param {string} color CSS color value.
- * @return {boolean} True, if background is light; false, if background is dark.
- */
-export const isColorLight = ( color ) => {
-	return tinycolor( color ).getBrightness() > 125;
+	// Subtract the label's lineHeight from padding-top to account for floating label height.
+	// Minus 4px which is a constant value added by stripe to the padding-top.
+	// Minus 1px for each vertical padding to account for the unpredictable input height
+	// (see https://github.com/Automattic/woocommerce-payments/issues/9476#issuecomment-2374766540).
+	// When the result is less than 0, it will automatically use 0.
+	if ( appearance.rules[ '.Input' ].paddingTop ) {
+		appearance.rules[
+			'.Input'
+			// eslint-disable-next-line max-len
+		].paddingTop = `calc(${ appearance.rules[ '.Input' ].paddingTop } - ${ appearance.rules[ '.Label--floating' ].lineHeight } - 4px - 1px)`;
+	}
+	if ( appearance.rules[ '.Input' ].paddingBottom ) {
+		const originalPaddingBottom = parseFloat(
+			appearance.rules[ '.Input' ].paddingBottom
+		);
+		appearance.rules[
+			'.Input'
+			// eslint-disable-next-line max-len
+		].paddingBottom = `${ originalPaddingBottom - 1 }px`;
+
+		const originalLabelMarginTop =
+			appearance.rules[ '.Label' ].marginTop ?? '0';
+		appearance.rules[ '.Label' ].marginTop = `${ Math.floor(
+			( originalPaddingBottom - 1 ) / 3
+		) }px`;
+		appearance.rules[
+			'.Label--floating'
+		].marginTop = originalLabelMarginTop;
+	}
+
+	return appearance;
 };

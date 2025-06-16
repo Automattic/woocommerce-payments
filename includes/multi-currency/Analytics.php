@@ -12,7 +12,7 @@ use Automattic\WooCommerce\Blocks\Assets\AssetDataRegistry;
 use Automattic\WooCommerce\Utilities\OrderUtil;
 use WC_Order;
 use WC_Order_Refund;
-use WC_Payments;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencySettingsInterface;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -43,12 +43,21 @@ class Analytics {
 	private $multi_currency;
 
 	/**
+	 * Instance of MultiCurrencySettingsInterface.
+	 *
+	 * @var MultiCurrencySettingsInterface $settings_service
+	 */
+	private $settings_service;
+
+	/**
 	 * Constructor
 	 *
-	 * @param MultiCurrency $multi_currency Instance of MultiCurrency.
+	 * @param MultiCurrency                  $multi_currency   Instance of MultiCurrency.
+	 * @param MultiCurrencySettingsInterface $settings_service Instance of MultiCurrencySettingsInterface.
 	 */
-	public function __construct( MultiCurrency $multi_currency ) {
-		$this->multi_currency = $multi_currency;
+	public function __construct( MultiCurrency $multi_currency, MultiCurrencySettingsInterface $settings_service ) {
+		$this->multi_currency   = $multi_currency;
+		$this->settings_service = $settings_service;
 		$this->init();
 	}
 
@@ -63,7 +72,7 @@ class Analytics {
 			$this->register_customer_currencies();
 		}
 
-		if ( WC_Payments::mode()->is_dev() ) {
+		if ( $this->settings_service->is_dev_mode() ) {
 			add_filter( 'woocommerce_analytics_report_should_use_cache', [ $this, 'disable_report_caching' ] );
 		}
 
@@ -105,7 +114,7 @@ class Analytics {
 	 * @return void
 	 */
 	public function register_admin_scripts() {
-		WC_Payments::register_script_with_dependencies( self::SCRIPT_NAME, 'dist/multi-currency-analytics' );
+		$this->multi_currency->register_script_with_dependencies( self::SCRIPT_NAME, 'dist/multi-currency-analytics' );
 	}
 
 	/**

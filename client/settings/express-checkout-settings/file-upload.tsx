@@ -10,7 +10,7 @@ import { useDispatch } from '@wordpress/data';
 import { useState } from '@wordpress/element';
 import { BaseControl, Button } from '@wordpress/components';
 import TrashIcon from 'gridicons/dist/trash';
-import classNames from 'classnames';
+import clsx from 'clsx';
 
 /**
  * Internal dependencies
@@ -28,20 +28,16 @@ interface WooPayFileUploadProps {
 	updateFileID: ( id: string ) => void;
 }
 
-const WooPayFileUpload: React.FunctionComponent< WooPayFileUploadProps > = (
-	props
-) => {
-	const {
-		fieldKey,
-		label,
-		accept,
-		disabled,
-		help,
-		purpose,
-		fileID,
-		updateFileID,
-	} = props;
-
+const WooPayFileUpload: React.FunctionComponent< WooPayFileUploadProps > = ( {
+	fieldKey,
+	label,
+	accept,
+	disabled,
+	help,
+	purpose,
+	fileID,
+	updateFileID,
+} ) => {
 	const [ isLoading, setLoading ] = useState( false );
 	const [ uploadError, setUploadError ] = useState< boolean | string >(
 		false
@@ -140,7 +136,7 @@ const WooPayFileUpload: React.FunctionComponent< WooPayFileUploadProps > = (
 	return (
 		<div className="wcpay-branding-upload-field__wrapper">
 			<div
-				className={ classNames(
+				className={ clsx(
 					'woopay-settings__update-store-logo',
 					fileID && 'has-file'
 				) }

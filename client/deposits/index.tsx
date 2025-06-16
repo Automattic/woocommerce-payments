@@ -4,7 +4,6 @@
  * External dependencies
  */
 import React, { useState } from 'react';
-import { useDispatch } from '@wordpress/data';
 import { ExternalLink } from '@wordpress/components';
 import { addQueryArgs } from '@wordpress/url';
 
@@ -22,9 +21,10 @@ import { useSettings } from 'wcpay/data';
 import DepositsList from './list';
 import { hasAutomaticScheduledDeposits } from 'wcpay/deposits/utils';
 import { recordEvent } from 'wcpay/tracks';
+import { MaybeShowMerchantFeedbackPrompt } from 'wcpay/merchant-feedback-prompt';
+import { saveOption } from 'wcpay/data/settings/actions';
 
 const useNextDepositNoticeState = () => {
-	const { updateOptions } = useDispatch( 'wc/admin/options' );
 	const [ isDismissed, setIsDismissed ] = useState(
 		wcpaySettings.isNextDepositNoticeDismissed
 	);
@@ -32,9 +32,7 @@ const useNextDepositNoticeState = () => {
 	const setNextDepositNoticeDismissed = () => {
 		setIsDismissed( true );
 		wcpaySettings.isNextDepositNoticeDismissed = true;
-		updateOptions( {
-			wcpay_next_deposit_notice_dismissed: true,
-		} );
+		saveOption( 'wcpay_next_deposit_notice_dismissed', true );
 	};
 
 	return {
@@ -101,11 +99,15 @@ const NextDepositNotice: React.FC = () => {
 
 const DepositFailureNotice: React.FC = () => {
 	const { hasErroredExternalAccount } = useAccountStatus();
-	const accountLink = addQueryArgs( wcpaySettings.accountStatus.accountLink, {
-		source: 'deposit__failure-notice',
-	} );
 
-	return hasErroredExternalAccount ? (
+	const accountLink = wcpaySettings.accountStatus.accountLink
+		? addQueryArgs( wcpaySettings.accountStatus.accountLink, {
+				from: 'WCPAY_PAYOUTS',
+				source: 'wcpay-payout-failure-notice',
+		  } )
+		: '';
+
+	return hasErroredExternalAccount && accountLink !== '' ? (
 		<BannerNotice
 			status="warning"
 			icon
@@ -114,7 +116,7 @@ const DepositFailureNotice: React.FC = () => {
 		>
 			{ interpolateComponents( {
 				mixedString: __(
-					'Deposits are currently paused because a recent deposit failed. Please {{updateLink}}update your bank account details{{/updateLink}}.',
+					'Payouts are currently paused because a recent payout failed. Please {{updateLink}}update your bank account details{{/updateLink}}.',
 					'woocommerce-payments'
 				),
 				components: {
@@ -123,7 +125,10 @@ const DepositFailureNotice: React.FC = () => {
 							onClick={ () =>
 								recordEvent(
 									'wcpay_account_details_link_clicked',
-									{ source: 'deposit__failure-notice' }
+									{
+										from: 'WCPAY_PAYOUTS',
+										source: 'wcpay-payout-failure-notice',
+									}
 								)
 							}
 							href={ accountLink }
@@ -141,6 +146,7 @@ const DepositsPage: React.FC = () => {
 
 	return (
 		<Page>
+			<MaybeShowMerchantFeedbackPrompt />
 			<TestModeNotice currentPage="deposits" />
 			<NextDepositNotice />
 			<DepositFailureNotice />

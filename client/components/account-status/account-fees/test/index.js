@@ -46,6 +46,16 @@ describe( 'AccountFees', () => {
 					precision: 2,
 				},
 			},
+			dateFormat: 'F j, Y',
+		};
+
+		global.wooPaymentsPaymentMethodsConfig = {
+			giropay: {
+				title: 'giropay',
+			},
+			sofort: {
+				title: 'Sofort',
+			},
 		};
 	} );
 

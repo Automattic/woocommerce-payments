@@ -4,6 +4,7 @@
  * Internal dependencies
  */
 import { ProtectionLevel } from '../../settings/fraud-protection/advanced-settings/constants';
+import { getDefaultBorderRadius } from 'wcpay/utils/express-checkout';
 
 const EMPTY_OBJ = {};
 const EMPTY_ARR = [];
@@ -20,20 +21,12 @@ export const getSettings = ( state ) => {
 	return getSettingsState( state ).data || EMPTY_OBJ;
 };
 
-const getSupportAddressState = ( state ) => {
-	return getSettings( state ).account_business_support_address || EMPTY_OBJ;
-};
-
 export const getDuplicatedPaymentMethodIds = ( state ) => {
 	return getSettings( state ).duplicated_payment_method_ids || EMPTY_OBJ;
 };
 
 export const getIsWCPayEnabled = ( state ) => {
 	return getSettings( state ).is_wcpay_enabled || false;
-};
-
-export const getIsClientSecretEncryptionEnabled = ( state ) => {
-	return getSettings( state ).is_client_secret_encryption_enabled || false;
 };
 
 export const getEnabledPaymentMethodIds = ( state ) => {
@@ -45,11 +38,15 @@ export const getAvailablePaymentMethodIds = ( state ) => {
 };
 
 export const getPaymentMethodStatuses = ( state ) => {
-	return getSettings( state ).payment_method_statuses || EMPTY_ARR;
+	return getSettings( state ).payment_method_statuses || EMPTY_OBJ;
 };
 
 export const isSavingSettings = ( state ) => {
 	return getSettingsState( state ).isSaving || false;
+};
+
+export const isDirty = ( state ) => {
+	return getSettingsState( state ).isDirty || false;
 };
 
 export const getAccountStatementDescriptor = ( state ) => {
@@ -64,42 +61,6 @@ export const getAccountStatementDescriptorKana = ( state ) => {
 	return getSettings( state ).account_statement_descriptor_kana || '';
 };
 
-export const getAccountBusinessName = ( state ) => {
-	return getSettings( state ).account_business_name || '';
-};
-
-export const getAccountBusinessURL = ( state ) => {
-	return getSettings( state ).account_business_url || '';
-};
-
-export const getAccountBusinessSupportAddress = ( state ) => {
-	return getSettings( state ).account_business_support_address || '';
-};
-
-export const getAccountBusinessSupportAddressCountry = ( state ) => {
-	return getSupportAddressState( state ).country || '';
-};
-
-export const getAccountBusinessSupportAddressLine1 = ( state ) => {
-	return getSupportAddressState( state ).line1 || '';
-};
-
-export const getAccountBusinessSupportAddressLine2 = ( state ) => {
-	return getSupportAddressState( state ).line2 || '';
-};
-
-export const getAccountBusinessSupportAddressCity = ( state ) => {
-	return getSupportAddressState( state ).city || '';
-};
-
-export const getAccountBusinessSupportAddressState = ( state ) => {
-	return getSupportAddressState( state ).state || '';
-};
-
-export const getAccountBusinessSupportAddressPostalCode = ( state ) => {
-	return getSupportAddressState( state ).postal_code || '';
-};
-
 export const getAccountBusinessSupportEmail = ( state ) => {
 	return getSettings( state ).account_business_support_email || '';
 };
@@ -108,20 +69,12 @@ export const getAccountBusinessSupportPhone = ( state ) => {
 	return getSettings( state ).account_business_support_phone || '';
 };
 
-export const getAccountBrandingLogo = ( state ) => {
-	return getSettings( state ).account_branding_logo || '';
-};
-
 export const getAccountDomesticCurrency = ( state ) => {
 	return getSettings( state ).account_domestic_currency || '';
 };
 
 export const getDepositScheduleInterval = ( state ) => {
 	return getSettings( state ).deposit_schedule_interval || '';
-};
-
-export const getExportLanguage = ( state ) => {
-	return getSettings( state ).reporting_export_language || '';
 };
 
 export const getDepositScheduleWeeklyAnchor = ( state ) => {
@@ -156,6 +109,10 @@ export const getIsTestModeEnabled = ( state ) => {
 	return getSettings( state ).is_test_mode_enabled || false;
 };
 
+export const getIsTestModeOnboarding = ( state ) => {
+	return getSettings( state ).is_test_mode_onboarding || false;
+};
+
 export const getIsDevModeEnabled = ( state ) => {
 	return getSettings( state ).is_dev_mode_enabled || false;
 };
@@ -188,6 +145,16 @@ export const getPaymentRequestButtonTheme = ( state ) => {
 	return getSettings( state ).payment_request_button_theme || '';
 };
 
+export const getPaymentRequestButtonBorderRadius = ( state ) => {
+	const radius = getSettings( state )?.payment_request_button_border_radius;
+
+	// We can't use a || shorthand because 0 is a valid value.
+	if ( radius === 0 || radius === '0' || radius ) {
+		return radius;
+	}
+	return getDefaultBorderRadius();
+};
+
 export const getIsSavedCardsEnabled = ( state ) => {
 	return getSettings( state ).is_saved_cards_enabled || false;
 };
@@ -216,6 +183,10 @@ export const getIsWooPayEnabled = ( state ) => {
 	return getSettings( state ).is_woopay_enabled || false;
 };
 
+export const getIsWooPayGlobalThemeSupportEnabled = ( state ) => {
+	return getSettings( state ).is_woopay_global_theme_support_enabled || false;
+};
+
 export const getWooPayCustomMessage = ( state ) => {
 	return getSettings( state ).woopay_custom_message || '';
 };
@@ -240,13 +211,6 @@ export const getAdvancedFraudProtectionSettings = ( state ) => {
 
 export const getShowWooPayIncompatibilityNotice = ( state ) => {
 	return getSettings( state ).show_woopay_incompatibility_notice || false;
-};
-
-export const getShowExpressCheckoutIncompatibilityNotice = ( state ) => {
-	return (
-		getSettings( state ).show_express_checkout_incompatibility_notice ||
-		false
-	);
 };
 
 export const getIsStripeBillingEnabled = ( state ) => {

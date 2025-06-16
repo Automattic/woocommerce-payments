@@ -1,17 +1,56 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ConnectAccountPage should render correctly 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-4 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <div
     class="connect-account-page woocommerce-payments-page is-narrow"
+    id="connect-account-page"
   >
     <div
-      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      class="components-surface components-card emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
       <div
-        class="css-mgwsf4-View-Content em57xhy0"
+        class="emotion-2 emotion-1"
       >
         <div
           class="connect-account-page__heading"
@@ -50,7 +89,7 @@ exports[`ConnectAccountPage should render correctly 1`] = `
                 class="components-button is-link"
                 type="button"
               >
-                enable deposits.
+                enable payouts.
               </button>
             </div>
           </div>
@@ -59,78 +98,83 @@ exports[`ConnectAccountPage should render correctly 1`] = `
           class="connect-account-page__payment-methods"
         >
           <div
-            class="connect-account-page__payment-methods__icons"
+            class="connect-account-page__payment-methods--logos"
           >
             <img
-              alt="Visa"
-              class="payment-method__icon"
-              src="assets/images/cards/visa.svg"
+              alt="visa"
+              height="24"
+              src="assets/images/payment-method-icons/visa.svg"
+              width="38"
             />
             <img
-              alt="Mastercard"
-              class="payment-method__icon"
-              src="assets/images/cards/mastercard.svg"
+              alt="mastercard"
+              height="24"
+              src="assets/images/payment-method-icons/mastercard.svg"
+              width="38"
             />
             <img
-              alt="American Express"
-              class="payment-method__icon"
-              src="assets/images/cards/amex.svg"
+              alt="amex"
+              height="24"
+              src="assets/images/payment-method-icons/amex.svg"
+              width="38"
             />
             <img
-              alt="Cartes Bancaires"
-              class="payment-method__icon"
-              src="assets/images/cards/cb.svg"
+              alt="discover"
+              height="24"
+              src="assets/images/payment-method-icons/discover.svg"
+              width="38"
             />
             <img
-              alt="Discover"
-              class="payment-method__icon"
-              src="assets/images/cards/discover.svg"
+              alt="applepay"
+              height="24"
+              src="assets/images/payment-method-icons/applepay.svg"
+              width="38"
             />
             <img
-              alt="iDEAL"
-              class="payment-method__icon"
-              src="assets/images/payment-methods/ideal.svg"
+              alt="googlepay"
+              height="24"
+              src="assets/images/payment-method-icons/gpay.svg"
+              width="38"
             />
             <img
-              alt="Apple Pay"
-              class="payment-method__icon"
-              src="assets/images/cards/apple-pay.svg"
+              alt="afterpay"
+              height="24"
+              src="assets/images/payment-method-icons/afterpay.svg"
+              width="38"
             />
             <img
-              alt="Google Pay"
-              class="payment-method__icon"
-              src="assets/images/cards/google-pay.svg"
+              alt="affirm"
+              height="24"
+              src="assets/images/payment-method-icons/affirm.svg"
+              width="38"
             />
             <img
-              alt="WooPay"
-              class="payment-method__icon"
-              src="assets/images/payment-methods/woo.svg"
+              alt="klarna"
+              height="24"
+              src="assets/images/payment-method-icons/klarna.svg"
+              width="38"
             />
             <img
-              alt="Klarna"
-              class="payment-method__icon"
-              src="assets/images/payment-methods/klarna.svg"
+              alt="cartebancaire"
+              height="24"
+              src="assets/images/cards/cartes_bancaires.svg"
+              width="38"
             />
-            <img
-              alt="Affirm"
-              class="payment-method__icon"
-              src="assets/images/payment-methods/affirm-badge.svg"
-            />
-            <img
-              alt="Afterpay"
-              class="payment-method__icon"
-              src="assets/images/payment-methods/afterpay-logo.svg"
-            />
-            <span>
-              & more
-            </span>
+            <div
+              class="connect-account-page__payment-methods--logos-count"
+              role="button"
+              tabindex="0"
+            >
+              + 
+              9
+            </div>
           </div>
           <div
             class="connect-account-page__payment-methods__description"
           >
             <div>
               <p>
-                Deposits
+                Payouts
               </p>
               <span>
                 Automatic - Daily
@@ -173,13 +217,13 @@ exports[`ConnectAccountPage should render correctly 1`] = `
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
@@ -225,20 +269,76 @@ exports[`ConnectAccountPage should render correctly 1`] = `
 `;
 
 exports[`ConnectAccountPage should render correctly when on-boarding disabled 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-6 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <div
     class="connect-account-page woocommerce-payments-page is-narrow"
+    id="connect-account-page"
   >
     <div
-      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      class="components-surface components-card emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
       <div
-        class="css-mgwsf4-View-Content em57xhy0"
+        class="emotion-2 emotion-1"
       >
         <div
-          class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+          class="components-card__body components-card-body emotion-4 emotion-1"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
@@ -247,13 +347,13 @@ exports[`ConnectAccountPage should render correctly when on-boarding disabled 1`
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation emotion-6 emotion-1"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation emotion-6 emotion-1"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
@@ -263,17 +363,56 @@ exports[`ConnectAccountPage should render correctly when on-boarding disabled 1`
 `;
 
 exports[`ConnectAccountPage should render correctly with WooPay eligible 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-4 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <div
     class="connect-account-page woocommerce-payments-page is-narrow"
+    id="connect-account-page"
   >
     <div
-      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      class="components-surface components-card emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
       <div
-        class="css-mgwsf4-View-Content em57xhy0"
+        class="emotion-2 emotion-1"
       >
         <div
           class="connect-account-page__heading"
@@ -312,7 +451,7 @@ exports[`ConnectAccountPage should render correctly with WooPay eligible 1`] = `
                 class="components-button is-link"
                 type="button"
               >
-                enable deposits.
+                enable payouts.
               </button>
             </div>
           </div>
@@ -321,78 +460,83 @@ exports[`ConnectAccountPage should render correctly with WooPay eligible 1`] = `
           class="connect-account-page__payment-methods"
         >
           <div
-            class="connect-account-page__payment-methods__icons"
+            class="connect-account-page__payment-methods--logos"
           >
             <img
-              alt="Visa"
-              class="payment-method__icon"
-              src="assets/images/cards/visa.svg"
+              alt="visa"
+              height="24"
+              src="assets/images/payment-method-icons/visa.svg"
+              width="38"
             />
             <img
-              alt="Mastercard"
-              class="payment-method__icon"
-              src="assets/images/cards/mastercard.svg"
+              alt="mastercard"
+              height="24"
+              src="assets/images/payment-method-icons/mastercard.svg"
+              width="38"
             />
             <img
-              alt="American Express"
-              class="payment-method__icon"
-              src="assets/images/cards/amex.svg"
+              alt="amex"
+              height="24"
+              src="assets/images/payment-method-icons/amex.svg"
+              width="38"
             />
             <img
-              alt="Cartes Bancaires"
-              class="payment-method__icon"
-              src="assets/images/cards/cb.svg"
+              alt="discover"
+              height="24"
+              src="assets/images/payment-method-icons/discover.svg"
+              width="38"
             />
             <img
-              alt="Discover"
-              class="payment-method__icon"
-              src="assets/images/cards/discover.svg"
+              alt="woopay"
+              height="24"
+              src="assets/images/payment-method-icons/woopay.svg"
+              width="38"
             />
             <img
-              alt="iDEAL"
-              class="payment-method__icon"
-              src="assets/images/payment-methods/ideal.svg"
+              alt="applepay"
+              height="24"
+              src="assets/images/payment-method-icons/applepay.svg"
+              width="38"
             />
             <img
-              alt="Apple Pay"
-              class="payment-method__icon"
-              src="assets/images/cards/apple-pay.svg"
+              alt="googlepay"
+              height="24"
+              src="assets/images/payment-method-icons/gpay.svg"
+              width="38"
             />
             <img
-              alt="Google Pay"
-              class="payment-method__icon"
-              src="assets/images/cards/google-pay.svg"
+              alt="afterpay"
+              height="24"
+              src="assets/images/payment-method-icons/afterpay.svg"
+              width="38"
             />
             <img
-              alt="WooPay"
-              class="payment-method__icon"
-              src="assets/images/payment-methods/woo.svg"
+              alt="affirm"
+              height="24"
+              src="assets/images/payment-method-icons/affirm.svg"
+              width="38"
             />
             <img
-              alt="Klarna"
-              class="payment-method__icon"
-              src="assets/images/payment-methods/klarna.svg"
+              alt="klarna"
+              height="24"
+              src="assets/images/payment-method-icons/klarna.svg"
+              width="38"
             />
-            <img
-              alt="Affirm"
-              class="payment-method__icon"
-              src="assets/images/payment-methods/affirm-badge.svg"
-            />
-            <img
-              alt="Afterpay"
-              class="payment-method__icon"
-              src="assets/images/payment-methods/afterpay-logo.svg"
-            />
-            <span>
-              & more
-            </span>
+            <div
+              class="connect-account-page__payment-methods--logos-count"
+              role="button"
+              tabindex="0"
+            >
+              + 
+              10
+            </div>
           </div>
           <div
             class="connect-account-page__payment-methods__description"
           >
             <div>
               <p>
-                Deposits
+                Payouts
               </p>
               <span>
                 Automatic - Daily
@@ -435,13 +579,13 @@ exports[`ConnectAccountPage should render correctly with WooPay eligible 1`] = `
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
@@ -487,17 +631,56 @@ exports[`ConnectAccountPage should render correctly with WooPay eligible 1`] = `
 `;
 
 exports[`ConnectAccountPage should render correctly with an incentive 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-4 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <div
     class="connect-account-page woocommerce-payments-page is-narrow"
+    id="connect-account-page"
   >
     <div
-      class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      class="components-surface components-card emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
       <div
-        class="css-mgwsf4-View-Content em57xhy0"
+        class="emotion-2 emotion-1"
       >
         <div
           class="connect-account-page__heading"
@@ -536,7 +719,7 @@ exports[`ConnectAccountPage should render correctly with an incentive 1`] = `
                 class="components-button is-link"
                 type="button"
               >
-                enable deposits.
+                enable payouts.
               </button>
             </div>
           </div>
@@ -545,78 +728,83 @@ exports[`ConnectAccountPage should render correctly with an incentive 1`] = `
           class="connect-account-page__payment-methods"
         >
           <div
-            class="connect-account-page__payment-methods__icons"
+            class="connect-account-page__payment-methods--logos"
           >
             <img
-              alt="Visa"
-              class="payment-method__icon"
-              src="assets/images/cards/visa.svg"
+              alt="visa"
+              height="24"
+              src="assets/images/payment-method-icons/visa.svg"
+              width="38"
             />
             <img
-              alt="Mastercard"
-              class="payment-method__icon"
-              src="assets/images/cards/mastercard.svg"
+              alt="mastercard"
+              height="24"
+              src="assets/images/payment-method-icons/mastercard.svg"
+              width="38"
             />
             <img
-              alt="American Express"
-              class="payment-method__icon"
-              src="assets/images/cards/amex.svg"
+              alt="amex"
+              height="24"
+              src="assets/images/payment-method-icons/amex.svg"
+              width="38"
             />
             <img
-              alt="Cartes Bancaires"
-              class="payment-method__icon"
-              src="assets/images/cards/cb.svg"
+              alt="discover"
+              height="24"
+              src="assets/images/payment-method-icons/discover.svg"
+              width="38"
             />
             <img
-              alt="Discover"
-              class="payment-method__icon"
-              src="assets/images/cards/discover.svg"
+              alt="applepay"
+              height="24"
+              src="assets/images/payment-method-icons/applepay.svg"
+              width="38"
             />
             <img
-              alt="iDEAL"
-              class="payment-method__icon"
-              src="assets/images/payment-methods/ideal.svg"
+              alt="googlepay"
+              height="24"
+              src="assets/images/payment-method-icons/gpay.svg"
+              width="38"
             />
             <img
-              alt="Apple Pay"
-              class="payment-method__icon"
-              src="assets/images/cards/apple-pay.svg"
+              alt="afterpay"
+              height="24"
+              src="assets/images/payment-method-icons/afterpay.svg"
+              width="38"
             />
             <img
-              alt="Google Pay"
-              class="payment-method__icon"
-              src="assets/images/cards/google-pay.svg"
+              alt="affirm"
+              height="24"
+              src="assets/images/payment-method-icons/affirm.svg"
+              width="38"
             />
             <img
-              alt="WooPay"
-              class="payment-method__icon"
-              src="assets/images/payment-methods/woo.svg"
+              alt="klarna"
+              height="24"
+              src="assets/images/payment-method-icons/klarna.svg"
+              width="38"
             />
             <img
-              alt="Klarna"
-              class="payment-method__icon"
-              src="assets/images/payment-methods/klarna.svg"
+              alt="cartebancaire"
+              height="24"
+              src="assets/images/cards/cartes_bancaires.svg"
+              width="38"
             />
-            <img
-              alt="Affirm"
-              class="payment-method__icon"
-              src="assets/images/payment-methods/affirm-badge.svg"
-            />
-            <img
-              alt="Afterpay"
-              class="payment-method__icon"
-              src="assets/images/payment-methods/afterpay-logo.svg"
-            />
-            <span>
-              & more
-            </span>
+            <div
+              class="connect-account-page__payment-methods--logos-count"
+              role="button"
+              tabindex="0"
+            >
+              + 
+              9
+            </div>
           </div>
           <div
             class="connect-account-page__payment-methods__description"
           >
             <div>
               <p>
-                Deposits
+                Payouts
               </p>
               <span>
                 Automatic - Daily
@@ -659,13 +847,13 @@ exports[`ConnectAccountPage should render correctly with an incentive 1`] = `
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />

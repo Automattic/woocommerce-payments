@@ -1,8 +1,8 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Review fraud outcome transactions columns should render the column correctly 1`] = `
-Array [
-  Object {
+[
+  {
     "display": <ClickableCell
       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock"
     >
@@ -10,7 +10,7 @@ Array [
     </ClickableCell>,
     "value": "Mar 20, 2023 / 4:08PM",
   },
-  Object {
+  {
     "display": <ClickableCell
       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock"
     >
@@ -18,7 +18,7 @@ Array [
     </ClickableCell>,
     "value": 1100,
   },
-  Object {
+  {
     "display": <ClickableCell
       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock"
     >
@@ -26,13 +26,13 @@ Array [
     </ClickableCell>,
     "value": "Mock Customer",
   },
-  Object {
+  {
     "display": <TransactionStatusPill
       status="review"
     />,
     "value": "review",
   },
-  Object {
+  {
     "display": <ForwardRef(Button)
       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock"
       isSecondary={true}

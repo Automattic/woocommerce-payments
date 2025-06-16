@@ -1,6 +1,14 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Account fees utility functions formatMethodFeesTooltip() displays base fee, when only promo discount without percentage or fixed 1`] = `
+.emotion-2 {
+  width: 1em;
+  height: 1em;
+  margin: 0;
+  vertical-align: middle;
+  fill: currentColor;
+}
+
 <div>
   <div
     class="wcpay-fees-tooltip"
@@ -23,7 +31,7 @@ exports[`Account fees utility functions formatMethodFeesTooltip() displays base 
     </div>
     <div>
       <div>
-        Foreign exchange fee
+        Currency conversion fee
       </div>
       <div>
         1%
@@ -44,11 +52,33 @@ exports[`Account fees utility functions formatMethodFeesTooltip() displays base 
     >
       <span>
         <a
+          class="components-external-link"
           href="https://woocommerce.com/document/woopayments/fees-and-debits/fees/#united-states"
-          rel="noreferrer"
+          rel="external noreferrer noopener"
           target="_blank"
         >
           Learn more
+          <span
+            class="components-visually-hidden emotion-0 emotion-1"
+            data-wp-c16t="true"
+            data-wp-component="VisuallyHidden"
+            style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+          >
+            (opens in a new tab)
+          </span>
+          <svg
+            aria-hidden="true"
+            class="components-external-link__icon emotion-2 emotion-3"
+            focusable="false"
+            height="24"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
+            />
+          </svg>
         </a>
          about WooPayments Fees in your country
       </span>
@@ -58,6 +88,14 @@ exports[`Account fees utility functions formatMethodFeesTooltip() displays base 
 `;
 
 exports[`Account fees utility functions formatMethodFeesTooltip() displays base percentage and fixed fee - no custom fee nor discount 1`] = `
+.emotion-2 {
+  width: 1em;
+  height: 1em;
+  margin: 0;
+  vertical-align: middle;
+  fill: currentColor;
+}
+
 <div>
   <div
     class="wcpay-fees-tooltip"
@@ -80,7 +118,7 @@ exports[`Account fees utility functions formatMethodFeesTooltip() displays base 
     </div>
     <div>
       <div>
-        Foreign exchange fee
+        Currency conversion fee
       </div>
       <div>
         1%
@@ -101,11 +139,33 @@ exports[`Account fees utility functions formatMethodFeesTooltip() displays base 
     >
       <span>
         <a
+          class="components-external-link"
           href="https://woocommerce.com/document/woopayments/fees-and-debits/fees/#united-states"
-          rel="noreferrer"
+          rel="external noreferrer noopener"
           target="_blank"
         >
           Learn more
+          <span
+            class="components-visually-hidden emotion-0 emotion-1"
+            data-wp-c16t="true"
+            data-wp-component="VisuallyHidden"
+            style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+          >
+            (opens in a new tab)
+          </span>
+          <svg
+            aria-hidden="true"
+            class="components-external-link__icon emotion-2 emotion-3"
+            focusable="false"
+            height="24"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
+            />
+          </svg>
         </a>
          about WooPayments Fees in your country
       </span>

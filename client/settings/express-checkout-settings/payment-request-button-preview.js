@@ -3,105 +3,90 @@
 /**
  * External dependencies
  */
-import { React, useState, useEffect } from 'react';
-import { __, sprintf } from '@wordpress/i18n';
-import {
-	PaymentRequestButtonElement,
-	useStripe,
-} from '@stripe/react-stripe-js';
+import { React } from 'react';
+import { __ } from '@wordpress/i18n';
+import { useStripe } from '@stripe/react-stripe-js';
 
 /**
  * Internal dependencies
  */
-import { shouldUseGooglePayBrand } from 'payment-request/utils';
 import InlineNotice from 'components/inline-notice';
 import { WoopayExpressCheckoutButton } from 'wcpay/checkout/woopay/express-button/woopay-express-checkout-button';
 import {
 	usePaymentRequestButtonSize,
 	usePaymentRequestButtonTheme,
 	usePaymentRequestButtonType,
+	usePaymentRequestButtonBorderRadius,
 	usePaymentRequestEnabledSettings,
 	useWooPayEnabledSettings,
 } from '../../data';
-
-const isPaymentRequestSettingsPage = () =>
-	document.getElementById( 'wcpay-express-checkout-settings-container' )
-		?.dataset.methodId === 'payment_request';
-
-/**
- * stripePromise is used to pass into <Elements>'s stripe props.
- * The stripe prop in <Elements> can't be change once passed in.
- * Keeping this outside of <PaymentRequestButtonPreview> so that
- * re-rendering does not change it.
- */
-
-const BrowserHelpText = () => {
-	if ( ! isPaymentRequestSettingsPage() ) return null;
-
-	let browser = 'Google Chrome';
-	let paymentMethodName = 'Google Pay';
-
-	if ( shouldUseGooglePayBrand() ) {
-		browser = 'Safari';
-		paymentMethodName = 'Apple Pay';
-	}
-
-	return (
-		<p className="payment-method-settings__preview-help-text">
-			{ sprintf(
-				__(
-					/* translators: %1: Payment method name %2: Browser name. */
-					'To preview the %1$s button, view this page in the %2$s browser.',
-					'woocommerce-payments'
-				),
-				paymentMethodName,
-				browser
-			) }
-		</p>
-	);
-};
+import { ExpressCheckoutPreviewComponent } from 'wcpay/express-checkout/blocks/components/express-checkout-preview';
 
 const buttonSizeToPxMap = {
 	small: 40,
 	medium: 48,
-	large: 56,
+	large: 55,
 };
+
+const WooPayButtonPreview = ( { size, buttonType, theme, radius } ) => (
+	<WoopayExpressCheckoutButton
+		isPreview={ true }
+		buttonSettings={ {
+			type: buttonType,
+			text: 'Buy',
+			theme: theme,
+			height: `${
+				buttonSizeToPxMap[ size ] || buttonSizeToPxMap.medium
+			}px`,
+			size,
+		} }
+		buttonAttributes={ {
+			height: buttonSizeToPxMap[ size ] || buttonSizeToPxMap.medium,
+			borderRadius: radius,
+		} }
+	/>
+);
+
+const ButtonPreviewWrapper = ( { theme, children } ) => (
+	<>
+		<div className="payment-method-settings__preview" data-theme={ theme }>
+			{ children }
+		</div>
+	</>
+);
+
+const PreviewRequirementsNotice = () => (
+	<InlineNotice icon status="info" isDismissible={ false }>
+		{ __(
+			'To preview the express checkout buttons, ' +
+				'ensure your store uses HTTPS on a publicly available domain, ' +
+				"and you're viewing this page in a Safari or Chrome browser. " +
+				'Your device must be configured to use Apple Pay or Google Pay.',
+			'woocommerce-payments'
+		) }
+	</InlineNotice>
+);
 
 const PaymentRequestButtonPreview = () => {
 	const stripe = useStripe();
-	const [ paymentRequest, setPaymentRequest ] = useState();
-	const [ isLoading, setIsLoading ] = useState( true );
 	const [ buttonType ] = usePaymentRequestButtonType();
 	const [ size ] = usePaymentRequestButtonSize();
 	const [ theme ] = usePaymentRequestButtonTheme();
+	const [ radius ] = usePaymentRequestButtonBorderRadius();
 	const [ isWooPayEnabled ] = useWooPayEnabledSettings();
 	const [ isPaymentRequestEnabled ] = usePaymentRequestEnabledSettings();
 
-	useEffect( () => {
-		if ( ! stripe ) {
-			return;
-		}
-
-		// Create a preview for payment button. The label and its total are placeholders.
-		const stripePaymentRequest = stripe.paymentRequest( {
-			country: 'US',
-			currency: 'usd',
-			total: {
-				label: __( 'Total', 'woocommerce-payments' ),
-				amount: 99,
-			},
-			requestPayerName: true,
-			requestPayerEmail: true,
-		} );
-
-		// Check the availability of the Payment Request API.
-		stripePaymentRequest.canMakePayment().then( ( result ) => {
-			if ( result ) {
-				setPaymentRequest( stripePaymentRequest );
-			}
-			setIsLoading( false );
-		} );
-	}, [ stripe, setPaymentRequest, setIsLoading ] );
+	if ( ! isWooPayEnabled && ! isPaymentRequestEnabled ) {
+		return (
+			<InlineNotice icon status="info" isDismissible={ false }>
+				{ __(
+					'To preview the express checkout buttons, ' +
+						'activate at least one express checkout.',
+					'woocommerce-payments'
+				) }
+			</InlineNotice>
+		);
+	}
 
 	/**
 	 * If stripe is loading, then display nothing.
@@ -109,79 +94,41 @@ const PaymentRequestButtonPreview = () => {
 	 * If stripe finished loading and payment request button loads, display the button.
 	 */
 
-	return (
-		<>
-			{ ( isWooPayEnabled ||
-				( isPaymentRequestEnabled && paymentRequest ) ) && (
-				<div
-					className="payment-method-settings__preview"
-					data-theme={ theme }
-				>
-					{ isWooPayEnabled && (
-						<WoopayExpressCheckoutButton
-							isPreview={ true }
-							buttonSettings={ {
-								type: buttonType,
-								text: 'Buy',
-								theme: theme,
-								height: `${
-									buttonSizeToPxMap[ size ] ||
-									buttonSizeToPxMap.medium
-								}px`,
-								size,
-							} }
-						/>
-					) }
-					{ isPaymentRequestEnabled &&
-						! isLoading &&
-						paymentRequest && (
-							<PaymentRequestButtonElement
-								key={ `${ buttonType }-${ theme }-${ size }` }
-								onClick={ ( e ) => {
-									e.preventDefault();
-								} }
-								options={ {
-									paymentRequest: paymentRequest,
-									style: {
-										paymentRequestButton: {
-											type: buttonType,
-											theme: theme,
-											height: `${
-												buttonSizeToPxMap[ size ] ||
-												buttonSizeToPxMap.medium
-											}px`,
-										},
-									},
-								} }
-							/>
-						) }
-				</div>
-			) }
-			{ ! isWooPayEnabled && ! isPaymentRequestEnabled && (
-				<InlineNotice icon status="info" isDismissible={ false }>
-					{ __(
-						'To preview the express checkout buttons, ' +
-							'activate at least one express checkout.',
-						'woocommerce-payments'
-					) }
-				</InlineNotice>
-			) }
-			{ isPaymentRequestSettingsPage() &&
-				isPaymentRequestEnabled &&
-				! isLoading &&
-				! paymentRequest && (
-					<InlineNotice icon status="info" isDismissible={ false }>
-						{ __(
-							'To preview the Apple Pay and Google Pay buttons, ' +
-								'ensure your device is configured to accept Apple Pay or Google Pay, ' +
-								'and view this page using the Safari or Chrome browsers.',
-							'woocommerce-payments'
-						) }
-					</InlineNotice>
-				) }
-			<BrowserHelpText />
-		</>
-	);
+	const woopayPreview = isWooPayEnabled ? (
+		<WooPayButtonPreview
+			size={ size }
+			buttonType={ buttonType }
+			theme={ theme }
+			radius={ radius }
+		/>
+	) : null;
+
+	const isHttpsEnabled = window.location.protocol === 'https:';
+
+	const expressCheckoutButtonPreview = isPaymentRequestEnabled
+		? ( isHttpsEnabled && (
+				<ExpressCheckoutPreviewComponent
+					stripe={ stripe }
+					buttonType={ buttonType }
+					theme={ theme }
+					height={
+						buttonSizeToPxMap[ size ] || buttonSizeToPxMap.medium
+					}
+					radius={ radius }
+				/>
+		  ) ) || <PreviewRequirementsNotice />
+		: null;
+
+	if ( woopayPreview || expressCheckoutButtonPreview ) {
+		return (
+			<ButtonPreviewWrapper theme={ theme }>
+				{ woopayPreview }
+				{ expressCheckoutButtonPreview }
+			</ButtonPreviewWrapper>
+		);
+	}
+
+	return <PreviewRequirementsNotice />;
 };
 
 export default PaymentRequestButtonPreview;

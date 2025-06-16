@@ -23,27 +23,36 @@ const renderSaveUserSection = () => {
 	);
 
 	if ( blocksCheckout.length ) {
-		const checkoutPageSaveUserContainer = document.createElement( 'div' );
-		const paymentOptions = document.getElementsByClassName(
-			'wp-block-woocommerce-checkout-payment-block'
-		)?.[ 0 ];
+		let checkoutPageSaveUserContainer = document.querySelector(
+			'#remember-me'
+		);
 
-		checkoutPageSaveUserContainer.className =
-			'wc-block-checkout__payment-method wp-block-woocommerce-checkout-remember-block ';
-		checkoutPageSaveUserContainer.id = 'remember-me';
+		if ( ! checkoutPageSaveUserContainer ) {
+			const paymentOptions = document.getElementsByClassName(
+				'wp-block-woocommerce-checkout-payment-block'
+			)?.[ 0 ];
 
-		if ( paymentOptions ) {
-			// Render right after the payment options block, as a sibling element.
-			paymentOptions.parentNode.insertBefore(
-				checkoutPageSaveUserContainer,
-				paymentOptions.nextSibling
+			checkoutPageSaveUserContainer = document.createElement(
+				'fieldset'
 			);
 
-			ReactDOM.render(
-				<CheckoutPageSaveUser isBlocksCheckout={ true } />,
-				checkoutPageSaveUserContainer
-			);
+			checkoutPageSaveUserContainer.className =
+				'wc-block-checkout__payment-method wp-block-woocommerce-checkout-remember-block wc-block-components-checkout-step ';
+			checkoutPageSaveUserContainer.id = 'remember-me';
+
+			if ( paymentOptions ) {
+				// Render right after the payment options block, as a sibling element.
+				paymentOptions.parentNode.insertBefore(
+					checkoutPageSaveUserContainer,
+					paymentOptions.nextSibling
+				);
+			}
 		}
+
+		ReactDOM.render(
+			<CheckoutPageSaveUser isBlocksCheckout={ true } />,
+			checkoutPageSaveUserContainer
+		);
 	} else {
 		const checkoutPageSaveUserContainer = document.createElement( 'div' );
 		checkoutPageSaveUserContainer.className =

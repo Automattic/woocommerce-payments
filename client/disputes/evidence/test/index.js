@@ -96,6 +96,7 @@ describe( 'Dispute evidence form', () => {
 
 		global.wcpaySettings = {
 			restUrl: 'http://example.com/wp-json/',
+			dateFormat: 'M j, Y',
 		};
 	} );
 	afterEach( () => {
@@ -190,6 +191,8 @@ describe( 'Dispute evidence page', () => {
 					precision: 2,
 				},
 			},
+			dateFormat: 'M j, Y',
+			timeFormat: 'g:iA',
 		};
 	} );
 

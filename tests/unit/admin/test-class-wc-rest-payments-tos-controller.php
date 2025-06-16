@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Compatibility_Service;
 use WCPay\Core\Server\Request\Add_Account_Tos_Agreement;
 use WCPay\Database_Cache;
 use WCPay\Duplicate_Payment_Prevention_Service;
@@ -60,10 +61,11 @@ class WC_REST_Payments_Tos_Controller_Test extends WCPAY_UnitTestCase {
 		$mock_fraud_service                = $this->createMock( WC_Payments_Fraud_Service::class );
 		$mock_db_cache                     = $this->createMock( Database_Cache::class );
 		$mock_session_service              = $this->createMock( WC_Payments_Session_Service::class );
-		$customer_service                  = new WC_Payments_Customer_Service( $mock_api_client, $mock_wcpay_account, $mock_db_cache, $mock_session_service );
-		$token_service                     = new WC_Payments_Token_Service( $mock_api_client, $customer_service );
 		$order_service                     = new WC_Payments_Order_Service( $this->createMock( WC_Payments_API_Client::class ) );
-		$action_scheduler_service          = new WC_Payments_Action_Scheduler_Service( $mock_api_client, $order_service );
+		$customer_service                  = new WC_Payments_Customer_Service( $mock_api_client, $mock_wcpay_account, $mock_db_cache, $mock_session_service, $order_service );
+		$token_service                     = new WC_Payments_Token_Service( $mock_api_client, $customer_service );
+		$mock_compatibility_service        = $this->createMock( Compatibility_Service::class );
+		$action_scheduler_service          = new WC_Payments_Action_Scheduler_Service( $mock_api_client, $order_service, $mock_compatibility_service );
 		$mock_dpps                         = $this->createMock( Duplicate_Payment_Prevention_Service::class );
 		$mock_payment_method               = $this->createMock( CC_Payment_Method::class );
 		$mock_duplicates_detection_service = $this->createMock( Duplicates_Detection_Service::class );
@@ -76,12 +78,12 @@ class WC_REST_Payments_Tos_Controller_Test extends WCPAY_UnitTestCase {
 			$action_scheduler_service,
 			$mock_payment_method,
 			[ 'card' => $mock_payment_method ],
-			$mock_rate_limiter,
 			$order_service,
 			$mock_dpps,
 			$this->createMock( WC_Payments_Localization_Service::class ),
 			$mock_fraud_service,
-			$mock_duplicates_detection_service
+			$mock_duplicates_detection_service,
+			$mock_rate_limiter
 		);
 		$this->controller = new WC_REST_Payments_Tos_Controller( $mock_api_client, $this->gateway, $mock_wcpay_account );
 

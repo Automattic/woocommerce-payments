@@ -16,6 +16,8 @@ use WCPay\Core\Mode;
 use WCPay\Internal\Logger;
 use PHPUnit\Framework\MockObject\MockObject;
 
+use WCPay\Logger as LoggerWrapper;
+
 /**
  * Internal Logger tests.
  *
@@ -36,7 +38,7 @@ class LoggerTest extends WCPAY_UnitTestCase {
 	private $mock_wc_logger;
 
 	/**
-	 * Holds the underlying WC_Logger
+	 * Holds the Mode class
 	 *
 	 * @var Mode|MockObject
 	 */

@@ -5,11 +5,13 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\Constants\Country_Code;
 use WCPay\MultiCurrency\Utils;
-use WCPay\Database_Cache;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyException;
 use WCPay\MultiCurrency\Exceptions\InvalidCurrencyRateException;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencyAccountInterface;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencyApiClientInterface;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencyCacheInterface;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencySettingsInterface;
 use WCPay\MultiCurrency\MultiCurrency;
 use WCPay\MultiCurrency\Settings;
 use WCPay\MultiCurrency\SettingsOnboardCta;
@@ -65,14 +67,14 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 	/**
 	 * Mock of the API client.
 	 *
-	 * @var WC_Payments_API_Client
+	 * @var MultiCurrencyApiClientInterface
 	 */
 	private $mock_api_client;
 
 	/**
-	 * Mock of the WC_Payments_Account.
+	 * Mock of the MultiCurrencyAccountInterface.
 	 *
-	 * @var WC_Payments_Account
+	 * @var MultiCurrencyAccountInterface
 	 */
 	private $mock_account;
 
@@ -81,14 +83,21 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 	 *
 	 * @var WC_Payments_Localization_Service
 	 */
-	private $mock_localization_service;
+	private $localization_service;
 
 	/**
-	 * Mock of Database_Cache.
+	 * Mock of MultiCurrencyCacheInterface.
 	 *
-	 * @var Database_Cache;
+	 * @var MultiCurrencyCacheInterface;
 	 */
-	private $mock_database_cache;
+	private $mock_cache;
+
+	/**
+	 * Mock of MultiCurrencySettingsInterface.
+	 *
+	 * @var MultiCurrencySettingsInterface;
+	 */
+	private $mock_settings;
 
 	/**
 	 * Mock of Utils.
@@ -99,6 +108,8 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 	public function set_up() {
 		parent::set_up();
+
+		$this->localization_service = new WC_Payments_Localization_Service();
 
 		$this->mock_currency_settings(
 			'GBP',
@@ -246,7 +257,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 		$expected = [];
 		foreach ( $mock_currencies as $code => $rate ) {
-			$currency = new WCPay\MultiCurrency\Currency( $code, $rate );
+			$currency = new WCPay\MultiCurrency\Currency( $this->localization_service, $code, $rate );
 			$currency->set_charm( 0.00 );
 			$currency->set_rounding( '1.00' );
 			$currency->set_last_updated( $this->timestamp_for_testing );
@@ -436,7 +447,6 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 	public function test_update_selected_currency_by_geolocation_does_not_set_session_when_currency_not_enabled() {
 		update_option( 'wcpay_multi_currency_enable_auto_currency', 'yes' );
-		$this->mock_localization_service->method( 'get_country_locale_data' )->with( 'CL' )->willReturn( [ 'currency_code' => 'CLP' ] );
 
 		add_filter(
 			'woocommerce_geolocate_ip',
@@ -452,11 +462,10 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 	public function test_update_selected_currency_by_geolocation_does_not_set_session_cookie() {
 		update_option( 'wcpay_multi_currency_enable_auto_currency', 'yes' );
-		$this->mock_localization_service->method( 'get_country_locale_data' )->with( Country_Code::CANADA )->willReturn( [ 'currency_code' => 'CAD' ] );
 		add_filter(
 			'woocommerce_geolocate_ip',
 			function () {
-				return Country_Code::CANADA;
+				return 'CA';
 			}
 		);
 
@@ -473,11 +482,9 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		add_filter(
 			'woocommerce_geolocate_ip',
 			function () {
-				return Country_Code::CANADA;
+				return 'CA';
 			}
 		);
-
-		$this->mock_localization_service->method( 'get_country_locale_data' )->with( Country_Code::CANADA )->willReturn( [ 'currency_code' => 'CAD' ] );
 
 		$this->multi_currency->update_selected_currency_by_geolocation();
 
@@ -490,11 +497,9 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		add_filter(
 			'woocommerce_geolocate_ip',
 			function () {
-				return Country_Code::CANADA;
+				return 'CA';
 			}
 		);
-
-		$this->mock_localization_service->method( 'get_country_locale_data' )->with( Country_Code::CANADA )->willReturn( [ 'currency_code' => 'CAD' ] );
 
 		$this->multi_currency->update_selected_currency_by_geolocation();
 
@@ -513,16 +518,11 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		add_filter(
 			'woocommerce_geolocate_ip',
 			function () {
-				return Country_Code::CANADA;
+				return 'CA';
 			}
 		);
 
-		// Arrange: Set the expected calls and retruns for our mock classes.
-		$this->mock_localization_service
-			->method( 'get_country_locale_data' )
-			->with( Country_Code::CANADA )
-			->willReturn( [ 'currency_code' => 'CAD' ] );
-
+		// Arrange: Set the expected calls and returns for our mock classes.
 		$this->mock_utils
 			->expects( $this->never() )
 			->method( 'set_customer_session_cookie' );
@@ -543,11 +543,9 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		add_filter(
 			'woocommerce_geolocate_ip',
 			function () {
-				return Country_Code::CANADA;
+				return 'CA';
 			}
 		);
-
-		$this->mock_localization_service->method( 'get_country_locale_data' )->with( Country_Code::CANADA )->willReturn( [ 'currency_code' => 'CAD' ] );
 
 		$this->multi_currency->display_geolocation_currency_update_notice();
 
@@ -555,11 +553,11 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 	}
 
 	public function test_display_geolocation_currency_update_notice_does_not_display_if_using_default_currency() {
-		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, Country_Code::UNITED_STATES );
+		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, 'US' );
 		add_filter(
 			'woocommerce_geolocate_ip',
 			function () {
-				return Country_Code::UNITED_STATES;
+				return 'US';
 			}
 		);
 
@@ -573,7 +571,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		add_filter(
 			'woocommerce_geolocate_ip',
 			function () {
-				return Country_Code::UNITED_STATES;
+				return 'US';
 			}
 		);
 
@@ -622,24 +620,27 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, 'GBP' );
 		add_filter( 'wcpay_multi_currency_apply_charm_only_to_products', '__return_false' );
 
-		// 0.708099 * 10 = 7,08099
-		$this->assertSame( 7.08099, $this->multi_currency->get_price( '10.0', 'coupon' ) );
+		// 0.708099 * 10 = 7.08099.
+		// round( 7.08099, 2 ) = 7.08.
+		$this->assertSame( 7.08, $this->multi_currency->get_price( '10.0', 'coupon' ) );
 	}
 
 	public function test_get_price_returns_converted_exchange_rate_without_adjustments() {
 		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, 'GBP' );
 		add_filter( 'wcpay_multi_currency_apply_charm_only_to_products', '__return_false' );
 
-		// 0.708099 * 10 = 7,08099
-		$this->assertSame( 7.08099, $this->multi_currency->get_price( '10.0', 'exchange_rate' ) );
+		// 0.708099 * 10 = 7.08099.
+		// round( 7.08099, 2 ) = 7.08.
+		$this->assertSame( 7.08, $this->multi_currency->get_price( '10.0', 'exchange_rate' ) );
 	}
 
 	public function test_get_price_returns_converted_tax_price() {
 		WC()->session->set( WCPay\MultiCurrency\MultiCurrency::CURRENCY_SESSION_KEY, 'GBP' );
 		add_filter( 'wcpay_multi_currency_apply_charm_only_to_products', '__return_false' );
 
-		// 0.708099 * 10 = 7,08099
-		$this->assertSame( 7.08099, $this->multi_currency->get_price( '10.0', 'tax' ) );
+		// 0.708099 * 10 = 7.08099.
+		// round( 7.08099, 2 ) = 7.08.
+		$this->assertSame( 7.08, $this->multi_currency->get_price( '10.0', 'tax' ) );
 	}
 
 	/**
@@ -732,13 +733,13 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 	public function test_get_cached_currencies_with_no_server_connection() {
 		// Need to create a new instance of MultiCurrency with a different $mock_api_client
 		// Because the mock return value of 'is_server_connected' cannot be overridden.
-		$mock_api_client = $this->createMock( WC_Payments_API_Client::class );
+		$mock_api_client = $this->createMock( MultiCurrencyApiClientInterface::class );
 
 		$mock_api_client->method( 'is_server_connected' )->willReturn( false );
 
 		$this->init_multi_currency( $mock_api_client );
 
-		$this->mock_database_cache->method( 'get' )->willReturn( $this->mock_cached_currencies );
+		$this->mock_cache->method( 'get' )->willReturn( $this->mock_cached_currencies );
 
 		$this->assertEquals(
 			$this->mock_cached_currencies,
@@ -747,7 +748,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_cached_currencies_with_account_rejected() {
-		$this->mock_database_cache
+		$this->mock_cache
 			->expects( $this->once() )
 			->method( 'get' )
 			->willReturn( null );
@@ -757,7 +758,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 			->method( 'is_account_rejected' )
 			->willReturn( true );
 
-		$this->mock_database_cache
+		$this->mock_cache
 			->expects( $this->never() )
 			->method( 'get_or_add' );
 
@@ -769,11 +770,11 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 	public function test_get_cached_currencies_fetches_from_server() {
 		$get_or_add_call_count = 1;
-		$mock_database_cache   = $this->createMock( Database_Cache::class );
-		$mock_database_cache
+		$mock_cache            = $this->createMock( MultiCurrencyCacheInterface::class );
+		$mock_cache
 			->expects( $this->exactly( 2 ) )
 			->method( 'get_or_add' )
-			->with( Database_Cache::CURRENCIES_KEY, $this->anything(), $this->anything() )
+			->with( MultiCurrencyCacheInterface::CURRENCIES_KEY, $this->anything(), $this->anything() )
 			->willReturnCallback(
 				function ( $key, $generator, $validator ) use ( &$get_or_add_call_count ) {
 					if ( 1 === $get_or_add_call_count ) {
@@ -787,7 +788,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 				}
 			);
 
-		$this->init_multi_currency( null, true, null, $mock_database_cache );
+		$this->init_multi_currency( null, true, null, $mock_cache );
 
 		$currency_from = strtolower( get_woocommerce_currency() );
 		$currencies_to = get_woocommerce_currencies();
@@ -897,7 +898,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 	public function test_get_cached_currencies_with_no_stripe_connection() {
 		$this->init_multi_currency( null, false );
-		$this->mock_database_cache->method( 'get' )->willReturn( $this->mock_cached_currencies );
+		$this->mock_cache->method( 'get' )->willReturn( $this->mock_cached_currencies );
 		$this->assertEquals(
 			$this->mock_cached_currencies,
 			$this->multi_currency->get_cached_currencies()
@@ -906,7 +907,7 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 	public function test_get_available_currencies_returns_store_currency_with_no_stripe_connection() {
 		$expected = [
-			'USD' => new WCPay\MultiCurrency\Currency( 'USD', 1 ),
+			'USD' => new WCPay\MultiCurrency\Currency( $this->localization_service, 'USD', 1 ),
 		];
 		$this->init_multi_currency( null, false );
 		$this->assertEquals( $expected, $this->multi_currency->get_available_currencies() );
@@ -924,6 +925,18 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		</div>';
 
 		$this->assertEquals( $expected, $this->multi_currency->get_switcher_widget_markup() );
+	}
+
+	public function test_get_switcher_widget_markup_when_widget_instance_is_null() {
+		$mock_multi_currency = $this
+			->getMockBuilder( WCPay\MultiCurrency\MultiCurrency::class )
+			->disableOriginalConstructor()
+			->onlyMethods( [ 'get_currency_switcher_widget' ] )
+			->getMock();
+
+		$mock_multi_currency->method( 'get_currency_switcher_widget' )->willReturn( null );
+
+		$this->assertEquals( '', $mock_multi_currency->get_switcher_widget_markup() );
 	}
 
 	public function test_validate_currency_code_returns_existing_currency_code() {
@@ -1016,7 +1029,8 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 
 	public function get_price_provider() {
 		return [
-			[ '5.2499', '0.00', 5.2499 ],
+			[ '5.2401', '0.00', 5.24 ], // Even though the precision is 0.00 we make sure the amount is rounded to the currency's number of digits.
+			[ '5.2499', '0.00', 5.25 ], // Even though the precision is 0.00 we make sure the amount is rounded to the currency's number of digits.
 			[ '5.2499', '0.25', 5.25 ],
 			[ '5.2500', '0.25', 5.25 ],
 			[ '5.2501', '0.25', 5.50 ],
@@ -1062,14 +1076,14 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$mock_orders[] = $this->add_mock_order_with_currency_meta( 'EUR' );
 		$mock_orders[] = $this->add_mock_order_with_currency_meta( 'USD' );
 
-		$mock_database_cache = $this->createMock( Database_Cache::class );
-		$mock_database_cache
+		$mock_cache = $this->createMock( MultiCurrencyCacheInterface::class );
+		$mock_cache
 			->expects( $this->once() )
 			->method( 'get_or_add' )
-			->with( Database_Cache::CURRENCIES_KEY, $this->anything(), $this->anything() )
+			->with( MultiCurrencyCacheInterface::CURRENCIES_KEY, $this->anything(), $this->anything() )
 			->willReturn( $this->mock_cached_currencies );
 
-		$this->init_multi_currency( null, true, null, $mock_database_cache );
+		$this->init_multi_currency( null, true, null, $mock_cache );
 
 		$result = $this->multi_currency->get_all_customer_currencies();
 
@@ -1084,14 +1098,14 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$mock_option_data = [ 'GBP', 'EUR', 'USD' ];
 		update_option( MultiCurrency::CUSTOMER_CURRENCIES_KEY, $mock_option_data );
 
-		$mock_database_cache = $this->createMock( Database_Cache::class );
-		$mock_database_cache
+		$mock_cache = $this->createMock( MultiCurrencyCacheInterface::class );
+		$mock_cache
 			->expects( $this->once() )
 			->method( 'get_or_add' )
-			->with( Database_Cache::CURRENCIES_KEY, $this->anything(), $this->anything() )
+			->with( MultiCurrencyCacheInterface::CURRENCIES_KEY, $this->anything(), $this->anything() )
 			->willReturn( $this->mock_cached_currencies );
 
-		$this->init_multi_currency( null, true, null, $mock_database_cache );
+		$this->init_multi_currency( null, true, null, $mock_cache );
 
 		$result = $this->multi_currency->get_all_customer_currencies();
 
@@ -1114,14 +1128,14 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		$mock_orders[] = $this->add_mock_order_with_currency_meta( 'EUR' );
 		$mock_orders[] = $this->add_mock_order_with_currency_meta( 'USD' );
 
-		$mock_database_cache = $this->createMock( Database_Cache::class );
-		$mock_database_cache
+		$mock_cache = $this->createMock( MultiCurrencyCacheInterface::class );
+		$mock_cache
 			->expects( $this->once() )
 			->method( 'get_or_add' )
-			->with( Database_Cache::CURRENCIES_KEY, $this->anything(), $this->anything() )
+			->with( MultiCurrencyCacheInterface::CURRENCIES_KEY, $this->anything(), $this->anything() )
 			->willReturn( $this->mock_cached_currencies );
 
-		$this->init_multi_currency( null, true, null, $mock_database_cache );
+		$this->init_multi_currency( null, true, null, $mock_cache );
 
 		$result = $this->multi_currency->get_all_customer_currencies();
 
@@ -1425,42 +1439,31 @@ class WCPay_Multi_Currency_Tests extends WCPAY_UnitTestCase {
 		}
 	}
 
-	private function init_multi_currency( $mock_api_client = null, $wcpay_account_connected = true, $mock_account = null, $mock_database_cache = null ) {
-		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
+	private function init_multi_currency( $mock_api_client = null, $wcpay_account_connected = true, $mock_account = null, $mock_cache = null ) {
+		$this->mock_api_client = $this->createMock( MultiCurrencyApiClientInterface::class );
 
-		$this->mock_account = $mock_account ?? $this->createMock( WC_Payments_Account::class );
-		$this->mock_account->method( 'is_stripe_connected' )->willReturn( $wcpay_account_connected );
-
-		$this->mock_localization_service = $this->createMock( WC_Payments_Localization_Service::class );
+		$this->mock_account = $mock_account ?? $this->createMock( MultiCurrencyAccountInterface::class );
+		$this->mock_account->method( 'is_provider_connected' )->willReturn( $wcpay_account_connected );
 
 		$this->mock_api_client->method( 'is_server_connected' )->willReturn( true );
 
-		$this->mock_localization_service->method( 'get_currency_format' )->willReturn(
-			[
-				'currency_pos' => 'left',
-				'thousand_sep' => ',',
-				'decimal_sep'  => '.',
-				'num_decimals' => 2,
-			]
-		);
-
-		$this->mock_database_cache = $this->createMock( Database_Cache::class );
-		$this->mock_database_cache->method( 'get_or_add' )->willReturn( $this->mock_cached_currencies );
+		$this->mock_cache = $this->createMock( MultiCurrencyCacheInterface::class );
+		$this->mock_cache->method( 'get_or_add' )->willReturn( $this->mock_cached_currencies );
 
 		$this->mock_utils = $this->createMock( Utils::class );
 
+		$this->mock_settings = $this->createMock( MultiCurrencySettingsInterface::class );
+
 		$this->multi_currency = new MultiCurrency(
+			$this->mock_settings,
 			$mock_api_client ?? $this->mock_api_client,
 			$this->mock_account,
-			$this->mock_localization_service,
-			$mock_database_cache ?? $this->mock_database_cache,
+			$this->localization_service,
+			$mock_cache ?? $this->mock_cache,
 			$this->mock_utils
 		);
 		$this->multi_currency->init_widgets();
 		$this->multi_currency->init();
-
-		// Fix an issue in WPCOM tests.
-		WC_Payments_Explicit_Price_Formatter::set_multi_currency_instance( $this->multi_currency );
 	}
 
 	private function add_mock_order_with_currency_meta( $currency ) {

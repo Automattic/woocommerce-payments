@@ -10,7 +10,6 @@ module.exports = {
 	entry: mapValues(
 		{
 			index: './client/index.js',
-			'bnpl-announcement': './client/bnpl-announcement/index.js',
 			settings: './client/settings/index.js',
 			'blocks-checkout': './client/checkout/blocks/index.js',
 			woopay: './client/checkout/woopay/index.js',
@@ -20,15 +19,15 @@ module.exports = {
 				'./client/checkout/woopay/direct-checkout/index.js',
 			cart: './client/cart/index.js',
 			checkout: './client/checkout/classic/event-handlers.js',
-			'payment-request': './client/payment-request/index.js',
+			'express-checkout': './client/express-checkout/index.js',
 			'subscription-edit-page': './client/subscription-edit-page.js',
 			tos: './client/tos/index.js',
 			'payment-gateways': './client/payment-gateways/index.js',
-			'multi-currency': './client/multi-currency/index.js',
+			'multi-currency': './includes/multi-currency/client/index.js',
 			'multi-currency-switcher-block':
-				'./client/multi-currency/blocks/currency-switcher.js',
+				'./includes/multi-currency/client/blocks/currency-switcher.js',
 			'multi-currency-analytics':
-				'./client/multi-currency-analytics/index.js',
+				'./includes/multi-currency/client/analytics/index.js',
 			order: './client/order/index.js',
 			'subscriptions-empty-state':
 				'./client/subscriptions-empty-state/index.js',
@@ -38,6 +37,9 @@ module.exports = {
 				'./client/subscription-product-onboarding/toast.js',
 			'product-details': './client/product-details/index.js',
 			'cart-block': './client/cart/blocks/index.js',
+			'plugins-page': './client/plugins-page/index.js',
+			'frontend-tracks': './client/frontend-tracks/index.js',
+			success: './client/success/index.js',
 		},
 		// Override webpack public path dynamically on every entry.
 		// Required for chunks loading to work on sites with JS concatenation.
@@ -109,9 +111,17 @@ module.exports = {
 	},
 	resolve: {
 		extensions: [ '.ts', '.tsx', '.json', '.js', '.jsx' ],
-		modules: [ path.join( process.cwd(), 'client' ), 'node_modules' ],
+		modules: [
+			path.join( process.cwd(), 'client' ),
+			path.join( process.cwd(), 'includes/multi-currency/client' ),
+			'node_modules',
+		],
 		alias: {
 			assets: path.resolve( process.cwd(), 'assets' ),
+			'multi-currency': path.resolve(
+				process.cwd(),
+				'includes/multi-currency/client'
+			),
 			wcpay: path.resolve( process.cwd(), 'client' ),
 			iti: path.resolve(
 				process.cwd(),

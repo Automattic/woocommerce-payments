@@ -8,10 +8,10 @@
 namespace WCPay\Internal\DependencyManagement\ServiceProvider;
 
 use WC_Payments_Account;
-use WC_Payments_Order_Service;
 use WCPay\Core\Mode;
 use WCPay\Internal\DependencyManagement\AbstractServiceProvider;
 use WCPay\Internal\Logger;
+use WCPay\Internal\LoggerContext;
 use WCPay\Internal\Proxy\HooksProxy;
 use WCPay\Internal\Proxy\LegacyProxy;
 use WCPay\Internal\Service\Level3Service;
@@ -30,6 +30,7 @@ class GenericServiceProvider extends AbstractServiceProvider {
 	 */
 	protected $provides = [
 		Logger::class,
+		LoggerContext::class,
 		OrderService::class,
 		Level3Service::class,
 		TranslationsLoader::class,
@@ -47,10 +48,10 @@ class GenericServiceProvider extends AbstractServiceProvider {
 			->addArgument( 'wc_get_logger' )
 			->addArgument( Mode::class );
 
+		$container->addShared( LoggerContext::class );
+
 		$container->addShared( OrderService::class )
-			->addArgument( WC_Payments_Order_Service::class )
 			->addArgument( LegacyProxy::class )
-			->addArgument( WC_Payments_Account::class )
 			->addArgument( HooksProxy::class );
 
 		$container->addShared( Level3Service::class )

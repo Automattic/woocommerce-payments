@@ -7,7 +7,21 @@ import moment from 'moment';
 import { dateI18n } from '@wordpress/date';
 import { NAMESPACE } from 'wcpay/data/constants';
 import { numberFormat } from '@woocommerce/number';
-import { __ } from '@wordpress/i18n';
+
+/**
+ * Returns whether a value is an object.
+ *
+ * @see https://stackoverflow.com/a/22482737 for the source of the approach and explanations.
+ *
+ * @param {any} value The value to check.
+ * @return {boolean} Whether the value is an object.
+ */
+export const isObject = ( value ) => {
+	if ( value === null ) {
+		return false;
+	}
+	return typeof value === 'function' || typeof value === 'object';
+};
 
 /**
  * Returns true if WooPayments is in test mode, false otherwise.
@@ -17,10 +31,34 @@ import { __ } from '@wordpress/i18n';
  * @return {boolean} True if in test mode, false otherwise. Fallback value if test mode value can't be found.
  */
 export const isInTestMode = ( fallback = false ) => {
-	if ( typeof wcpaySettings === 'undefined' ) {
+	if (
+		! isObject( wcpaySettings ) ||
+		! wcpaySettings.hasOwnProperty( 'testMode' )
+	) {
 		return fallback;
 	}
-	return wcpaySettings.testMode === '1' || fallback;
+
+	return !! wcpaySettings.testMode || fallback;
+};
+
+/**
+ * Returns true if WooPayments is in test/sandbox mode onboarding, false otherwise.
+ *
+ * @param {boolean} fallback Fallback in case test/sandbox mode onboarding value can't be found
+ * 							 (for example if the wcpaySettings are undefined).
+ *
+ * @return {boolean} True if in test/sandbox mode onboarding, false otherwise.
+ * 					 Fallback value if test/sandbox mode onboarding value can't be found.
+ */
+export const isInTestModeOnboarding = ( fallback = false ) => {
+	if (
+		! isObject( wcpaySettings ) ||
+		! wcpaySettings.hasOwnProperty( 'testModeOnboarding' )
+	) {
+		return fallback;
+	}
+
+	return !! wcpaySettings.testModeOnboarding || fallback;
 };
 
 /**
@@ -31,10 +69,14 @@ export const isInTestMode = ( fallback = false ) => {
  * @return {boolean} True if in dev/sandbox mode, false otherwise. Fallback value if dev/sandbox mode value can't be found.
  */
 export const isInDevMode = ( fallback = false ) => {
-	if ( typeof wcpaySettings === 'undefined' ) {
+	if (
+		! isObject( wcpaySettings ) ||
+		! wcpaySettings.hasOwnProperty( 'devMode' )
+	) {
 		return fallback;
 	}
-	return wcpaySettings.devMode === '1' || fallback;
+
+	return !! wcpaySettings.devMode || fallback;
 };
 
 export const getAdminUrl = ( args ) => addQueryArgs( 'admin.php', args );
@@ -55,6 +97,40 @@ export const getDocumentUrl = ( documentId ) => {
 			_wpnonce: wpApiSettings.nonce,
 		}
 	);
+};
+
+export const getConnectUrl = ( urlParams, from ) => {
+	// Ensure urlParams is an object.
+	const queryParams = typeof urlParams === 'object' ? urlParams : {};
+
+	const baseParams = {
+		page: 'wc-admin',
+		path: '/payments/connect',
+		source: queryParams.source?.replace( /[^\w-]+/g, '' ) || 'unknown',
+		from: from,
+	};
+
+	// Merge queryParams and baseParams into baseParams, ensuring baseParams takes precedence.
+	const params = { ...queryParams, ...baseParams };
+
+	return getAdminUrl( params );
+};
+
+export const getOverviewUrl = ( urlParams, from ) => {
+	// Ensure urlParams is an object.
+	const queryParams = typeof urlParams === 'object' ? urlParams : {};
+
+	const baseParams = {
+		page: 'wc-admin',
+		path: '/payments/overview',
+		source: queryParams.source?.replace( /[^\w-]+/g, '' ) || 'unknown',
+		from: from,
+	};
+
+	// Merge queryParams and baseParams into baseParams, ensuring baseParams takes precedence.
+	const params = { ...queryParams, ...baseParams };
+
+	return getAdminUrl( params );
 };
 
 /**
@@ -161,75 +237,33 @@ export const applyThousandSeparator = ( trxCount ) => {
 };
 
 /**
- * Returns true if Export Modal is dismissed, false otherwise.
+ * Given an object, remove all properties with null or undefined values.
  *
- * @return {boolean} True if dismissed, false otherwise.
+ * @param {Object} obj The object to remove empty properties from.
+ * @return {Object|any} A new object with all properties with null or undefined values removed.
  */
-export const isExportModalDismissed = () => {
-	if ( typeof wcpaySettings === 'undefined' ) {
-		return true;
-	}
-
-	return wcpaySettings?.reporting?.exportModalDismissed ?? false;
+export const objectRemoveEmptyProperties = ( obj ) => {
+	return Object.keys( obj )
+		.filter( ( k ) => obj[ k ] !== null && obj[ k ] !== undefined )
+		.reduce( ( a, k ) => ( { ...a, [ k ]: obj[ k ] } ), {} );
 };
 
 /**
- * Returns true if Export Modal is dismissed, false otherwise.
+ * Checks if the passed version is greater than or equal to the base version.
  *
- * @return {boolean} True if dismissed, false otherwise.
+ * Supports semantic version strings like "1.2.3-beta" by ignoring pre-release tags.
+ *
+ * @param {string} version Version that is compared.
+ * @param {string} base Version to compare with.
+ * @return {boolean} Whether version is greater than or equal to base.
  */
-
-export const isDefaultSiteLanguage = () => {
-	if ( typeof wcpaySettings === 'undefined' ) {
-		return true;
-	}
-
-	return wcpaySettings.locale?.code === 'en_US';
-};
-
-/**
- * Returns the language code for CSV exports.
- *
- * @param {string} language Selected language code.
- * @param {string} storedLanguage Stored language code.
- *
- * @return {string} Language code.
- */
-export const getExportLanguage = ( language, storedLanguage ) => {
-	let siteLanguage = 'en_US';
-
-	// If the default site language is en_US, skip
-	if ( isDefaultSiteLanguage() ) {
-		return siteLanguage;
-	}
-
-	if ( typeof wcpaySettings !== 'undefined' ) {
-		siteLanguage = wcpaySettings?.locale?.code ?? siteLanguage;
-	}
-
-	// In case the default export setting is not present, use the site locale.
-	const defaultLanguage = storedLanguage ?? siteLanguage;
-
-	// When modal is dismissed use the default language locale.
-	return language !== '' ? language : defaultLanguage;
-};
-
-/**
- * Returns the language options for CSV exports language selector.
- *
- * @return {Array} Language options.
- */
-export const getExportLanguageOptions = () => {
-	return [
-		{
-			label: __( 'English (United States)', 'woocommerce-payments' ),
-			value: 'en_US',
-		},
-		{
-			label:
-				__( 'Site Language - ', 'woocommerce-payments' ) +
-				wcpaySettings.locale.native_name,
-			value: wcpaySettings.locale.code,
-		},
-	];
+export const isVersionGreaterOrEqual = ( version, base ) => {
+	const parse = ( v ) => v.split( '-' )[ 0 ].split( '.' ).map( Number );
+	const [ v1 = 0, v2 = 0, v3 = 0 ] = parse( version );
+	const [ b1 = 0, b2 = 0, b3 = 0 ] = parse( base );
+	return (
+		v1 > b1 ||
+		( v1 === b1 && v2 > b2 ) ||
+		( v1 === b1 && v2 === b2 && v3 >= b3 )
+	);
 };

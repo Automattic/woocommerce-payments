@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { useEffect } from '@wordpress/element';
-import * as React from 'react';
+import React from 'react';
 
 /**
  * Internal dependencies
@@ -12,6 +12,7 @@ import ErrorBoundary from '../error-boundary';
 import './style.scss';
 
 interface PageProps {
+	id?: string;
 	isNarrow?: boolean;
 	maxWidth?: string | number;
 	className?: string;
@@ -19,8 +20,9 @@ interface PageProps {
 
 // The React.FunctionComponent is helpful here to make the type declaration of the props a bit
 // more concise; we get the `children` prop for free.
-const Page: React.FC< PageProps > = ( {
+const Page: React.FC< React.PropsWithChildren< PageProps > > = ( {
 	children,
+	id = '',
 	maxWidth,
 	isNarrow,
 	className = '',
@@ -40,7 +42,11 @@ const Page: React.FC< PageProps > = ( {
 	}, [] );
 
 	return (
-		<div className={ classNames.join( ' ' ) } style={ customStyle }>
+		<div
+			id={ id }
+			className={ classNames.join( ' ' ) }
+			style={ customStyle }
+		>
 			<ErrorBoundary>{ children }</ErrorBoundary>
 		</div>
 	);

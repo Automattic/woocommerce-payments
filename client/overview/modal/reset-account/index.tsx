@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useState } from 'react';
 import { Button, CardDivider, Modal } from '@wordpress/components';
 
 /**
@@ -9,6 +9,7 @@ import { Button, CardDivider, Modal } from '@wordpress/components';
  */
 import './style.scss';
 import strings from './strings';
+import { isInTestModeOnboarding } from 'utils';
 
 interface Props {
 	isVisible: boolean;
@@ -18,41 +19,57 @@ interface Props {
 
 const ResetAccountModal: React.FC< Props > = ( props: Props ) => {
 	const { isVisible, onDismiss, onSubmit } = props;
+	const [ isSubmitted, setSubmitted ] = useState( false );
 	if ( ! isVisible ) return null;
 
 	return (
 		<Modal
 			title={ strings.title }
 			className="wcpay-reset-account-modal"
-			onRequestClose={ onDismiss }
+			onRequestClose={ () => {
+				setSubmitted( false );
+				onDismiss();
+			} }
 		>
+			<p className="wcpay-reset-account-modal__headline">
+				{ strings.description }
+			</p>
 			<div className="wcpay-reset-account-modal__content">
-				<p>{ strings.description }</p>
-				<p>
-					<b>{ strings.beforeContinue }</b>
-				</p>
-				<ol>
-					<li>{ strings.step1 }</li>
-				</ol>
-				<CardDivider />
-				<ol start={ 2 }>
-					<li>{ strings.step2 }</li>
-				</ol>
-				<CardDivider />
-				<ol start={ 3 }>
-					<li>{ strings.step3 }</li>
-				</ol>
-				<CardDivider />
-				<p>{ strings.confirmation }</p>
+				{
+					// Only show the steps involved info if the account has been onboarded in live mode.
+					! isInTestModeOnboarding && (
+						<>
+							<b>{ strings.beforeContinue }</b>
+							<ol>
+								<li>{ strings.step1 }</li>
+								<li>{ strings.step2 }</li>
+								<li>{ strings.step3 }</li>
+							</ol>
+							<CardDivider />
+						</>
+					)
+				}
+				<b>{ strings.confirmation }</b>
 			</div>
 			<div className="wcpay-reset-account-modal__footer">
-				<Button variant={ 'tertiary' } onClick={ onDismiss }>
+				<Button
+					variant="tertiary"
+					onClick={ () => {
+						setSubmitted( false );
+						onDismiss();
+					} }
+				>
 					{ strings.cancel }
 				</Button>
 				<Button
-					variant={ 'primary' }
+					variant="primary"
 					isDestructive={ true }
-					onClick={ onSubmit }
+					isBusy={ isSubmitted }
+					disabled={ isSubmitted }
+					onClick={ () => {
+						setSubmitted( true );
+						onSubmit();
+					} }
 				>
 					{ strings.reset }
 				</Button>

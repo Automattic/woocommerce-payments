@@ -16,6 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use WCPay\Exceptions\Invalid_Price_Exception;
 use WCPay\Logger;
 use WCPay\Payment_Information;
+use WCPay\WooPay\WooPay_Session;
 use WCPay\WooPay\WooPay_Utilities;
 
 /**
@@ -94,7 +95,12 @@ class WC_Payments_WooPay_Button_Handler {
 	 * @return bool
 	 */
 	public function is_woopay_enabled() {
-		return $this->is_woopay_eligible && $this->is_woopay_enabled && $this->is_woopay_express_button_enabled;
+		/**
+		 * Allows 3PD to programmatically show/hide the WooPay button.
+		 *
+		 * @since 9.5.0
+		 */
+		return apply_filters( 'wcpay_woopay_enabled', $this->is_woopay_eligible && $this->is_woopay_enabled && $this->is_woopay_express_button_enabled );
 	}
 
 	/**
@@ -124,12 +130,12 @@ class WC_Payments_WooPay_Button_Handler {
 
 		// Create WooPay button location option if it doesn't exist and enable all locations by default.
 		if ( ! array_key_exists( self::BUTTON_LOCATIONS, get_option( 'woocommerce_woocommerce_payments_settings' ) ) ) {
+			if ( isset( $this->gateway->get_form_fields()[ self::BUTTON_LOCATIONS ]['options'] ) ) {
+				$all_locations = $this->gateway->get_form_fields()[ self::BUTTON_LOCATIONS ]['options'];
 
-			$all_locations = $this->gateway->form_fields[ self::BUTTON_LOCATIONS ]['options'];
-
-			$this->gateway->update_option( self::BUTTON_LOCATIONS, array_keys( $all_locations ) );
-
-			WC_Payments::woopay_tracker()->woopay_locations_updated( $all_locations, array_keys( $all_locations ) );
+				$this->gateway->update_option( self::BUTTON_LOCATIONS, array_keys( $all_locations ) );
+				WC_Payments::woopay_tracker()->woopay_locations_updated( $all_locations, array_keys( $all_locations ) );
+			}
 		}
 
 		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
@@ -148,10 +154,13 @@ class WC_Payments_WooPay_Button_Handler {
 	 * @return array The modified config array.
 	 */
 	public function add_woopay_config( $config ) {
+		$user = wp_get_current_user();
+
 		$config['woopayButton']           = $this->get_button_settings();
 		$config['woopayButtonNonce']      = wp_create_nonce( 'woopay_button_nonce' );
 		$config['addToCartNonce']         = wp_create_nonce( 'wcpay-add-to-cart' );
 		$config['shouldShowWooPayButton'] = $this->should_show_woopay_button();
+		$config['woopaySessionEmail']     = WooPay_Session::get_user_email( $user );
 
 		return $config;
 	}
@@ -166,12 +175,6 @@ class WC_Payments_WooPay_Button_Handler {
 		}
 
 		WC_Payments::register_script_with_dependencies( 'WCPAY_WOOPAY_EXPRESS_BUTTON', 'dist/woopay-express-button' );
-		WC_Payments_Utils::enqueue_style(
-			'WCPAY_WOOPAY_EXPRESS_BUTTON',
-			plugins_url( 'dist/woopay-express-button.css', WCPAY_PLUGIN_FILE ),
-			[],
-			WC_Payments::get_file_version( 'dist/woopay-express-button.css' )
-		);
 
 		$wcpay_config = rawurlencode( wp_json_encode( WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config() ) );
 
@@ -343,7 +346,7 @@ class WC_Payments_WooPay_Button_Handler {
 				data-type="<?php echo esc_attr( $settings['type'] ); ?>"
 				data-theme="<?php echo esc_attr( $settings['theme'] ); ?>"
 				data-size="<?php echo esc_attr( $settings['size'] ); ?>"
-				style="height: <?php echo esc_attr( $settings['height'] ); ?>px"
+				style="height: <?php echo esc_attr( $settings['height'] ); ?>px; border-radius: <?php echo esc_attr( $settings['radius'] ); ?>px"
 				disabled
 			></button>
 		</div>
@@ -369,12 +372,20 @@ class WC_Payments_WooPay_Button_Handler {
 		}
 
 		// Pre Orders products to be charged upon release are not supported.
-		if ( class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) {
+		if (
+			class_exists( 'WC_Pre_Orders_Product' ) &&
+			method_exists( 'WC_Pre_Orders_Product', 'product_is_charged_upon_release' ) &&
+			WC_Pre_Orders_Product::product_is_charged_upon_release( $product )
+		) {
 			$is_supported = false;
 		}
 
 		// WC Bookings require confirmation products are not supported.
-		if ( is_a( $product, 'WC_Product_Booking' ) && $product->get_requires_confirmation() ) {
+		if (
+			is_a( $product, 'WC_Product_Booking' ) &&
+			method_exists( $product, 'get_requires_confirmation' ) &&
+			$product->get_requires_confirmation()
+		) {
 			$is_supported = false;
 		}
 

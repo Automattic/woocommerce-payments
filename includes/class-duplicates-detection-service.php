@@ -18,12 +18,12 @@ use WCPay\Payment_Methods\Bancontact_Payment_Method;
 use WCPay\Payment_Methods\Becs_Payment_Method;
 use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Payment_Methods\Eps_Payment_Method;
-use WCPay\Payment_Methods\Giropay_Payment_Method;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Klarna_Payment_Method;
 use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
-use WCPay\Payment_Methods\Sofort_Payment_Method;
+use WCPay\Payment_Methods\Grabpay_Payment_Method;
+use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 
 /**
  * Class handling detection of payment methods enabled by multiple plugins simultaneously.
@@ -60,7 +60,7 @@ class Duplicates_Detection_Service {
 				->keep_duplicates_only();
 
 			// Return payment method IDs list so that front-end can successfully compare with its own list.
-			return array_keys( $this->gateways_qualified_by_duplicates_detector );
+			return $this->gateways_qualified_by_duplicates_detector;
 		} catch ( \Exception $e ) {
 			Logger::warning( 'Duplicates detection service failed silently with the following error: ' . $e->getMessage() );
 
@@ -93,11 +93,13 @@ class Duplicates_Detection_Service {
 	 * @return Duplicates_Detection_Service
 	 */
 	private function search_for_additional_payment_methods() {
+		/**
+		 * FLAG: PAYMENT_METHODS_LIST
+		 * As payment methods are converted to use definitions, they need to be removed from the list below.
+		 */
 		$keywords = [
 			'bancontact' => Bancontact_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'sepa'       => Sepa_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-			'giropay'    => Giropay_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-			'sofort'     => Sofort_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'p24'        => P24_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'przelewy24' => P24_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'ideal'      => Ideal_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
@@ -107,7 +109,19 @@ class Duplicates_Detection_Service {
 			'afterpay'   => Afterpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'clearpay'   => Afterpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 			'klarna'     => Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+			'grabpay'    => Grabpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
 		];
+
+		// Get all payment method definitions.
+		$payment_method_definitions = PaymentMethodDefinitionRegistry::instance()->get_all_payment_method_definitions();
+
+		// This gets all the registered payment method definitions. As new payment methods are converted from the legacy style, they need to be removed from the list above.
+		foreach ( $payment_method_definitions as $definition_class ) {
+			$definition_keywords = $definition_class::get_keywords();
+			foreach ( $definition_keywords as $keyword ) {
+				$keywords[ $keyword ] = $definition_class::get_id();
+			}
+		}
 
 		foreach ( $this->get_enabled_gateways() as $gateway ) {
 			foreach ( $keywords as $keyword => $payment_method ) {
@@ -136,18 +150,12 @@ class Duplicates_Detection_Service {
 		];
 
 		foreach ( $this->get_registered_gateways() as $gateway ) {
-			// Stripe gateway can enable PRBs while being disabled as well, hence no need to check for enabled status.
-			if ( 'stripe' === $gateway->id && 'yes' === $gateway->get_option( 'payment_request' ) ) {
-				$this->gateways_qualified_by_duplicates_detector[ $prb_payment_method ][] = $gateway->id;
-				continue;
-			}
-
 			if ( 'yes' === $gateway->enabled ) {
 				foreach ( $keywords as $keyword ) {
 					if ( strpos( $gateway->id, $keyword ) !== false ) {
 						$this->gateways_qualified_by_duplicates_detector[ $prb_payment_method ][] = $gateway->id;
 						break;
-					} elseif ( 'yes' === $gateway->get_option( 'payment_request' ) && 'woocommerce_payments' === $gateway->id ) {
+					} elseif ( 'yes' === $gateway->get_option( 'payment_request' ) && in_array( $gateway->id, [ 'woocommerce_payments', 'stripe' ], true ) ) {
 						$this->gateways_qualified_by_duplicates_detector[ $prb_payment_method ][] = $gateway->id;
 						break;
 					} elseif ( 'yes' === $gateway->get_option( 'express_checkout_enabled' ) ) {

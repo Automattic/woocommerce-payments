@@ -3,34 +3,33 @@
  */
 import React from 'react';
 import { render, fireEvent, screen, cleanup } from '@testing-library/react';
-import { useDispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
  */
 import DuplicateNotice from '..';
+import { saveOption } from 'wcpay/data/settings/actions';
 
-jest.mock( '@wordpress/data', () => ( {
-	useDispatch: jest.fn(),
+jest.mock( 'wcpay/data/settings/actions', () => ( {
+	saveOption: jest.fn(),
 } ) );
 
-const mockUseDispatch = useDispatch as jest.MockedFunction< any >;
+const mockSaveOption = saveOption as jest.MockedFunction< any >;
 
 describe( 'DuplicateNotice', () => {
-	const mockDispatch = jest.fn();
-	mockUseDispatch.mockReturnValue( {
-		updateOptions: mockDispatch,
-	} );
-
 	afterEach( () => {
 		cleanup();
 	} );
 
 	test( 'does not render when the payment method is dismissed', () => {
+		const dismissedDuplicateNotices = {
+			bancontact: [ 'woocommerce_payments' ],
+		};
 		render(
 			<DuplicateNotice
 				paymentMethod="bancontact"
-				dismissedDuplicateNotices={ [ 'bancontact' ] }
+				gatewaysEnablingPaymentMethod={ [ 'woocommerce_payments' ] }
+				dismissedNotices={ dismissedDuplicateNotices }
 				setDismissedDuplicateNotices={ jest.fn() }
 			/>
 		);
@@ -41,11 +40,36 @@ describe( 'DuplicateNotice', () => {
 		).not.toBeInTheDocument();
 	} );
 
+	test( 'renders correctly when the payment method is dismissed by some plugins but not all', () => {
+		const dismissedDuplicateNotices = {
+			bancontact: [ 'woocommerce_payments' ],
+		};
+
+		render(
+			<DuplicateNotice
+				paymentMethod="bancontact"
+				gatewaysEnablingPaymentMethod={ [
+					'woocommerce_payments',
+					'another_plugin',
+				] }
+				dismissedNotices={ dismissedDuplicateNotices }
+				setDismissedDuplicateNotices={ jest.fn() }
+			/>
+		);
+		expect(
+			screen.getByText(
+				'This payment method is enabled by other extensions. Review extensions to improve the shopper experience.'
+			)
+		).toBeInTheDocument();
+		cleanup();
+	} );
+
 	test( 'renders correctly when the payment method is not dismissed', () => {
 		render(
 			<DuplicateNotice
 				paymentMethod="card"
-				dismissedDuplicateNotices={ [] }
+				gatewaysEnablingPaymentMethod={ [ 'woocommerce_payments' ] }
+				dismissedNotices={ {} }
 				setDismissedDuplicateNotices={ jest.fn() }
 			/>
 		);
@@ -61,7 +85,8 @@ describe( 'DuplicateNotice', () => {
 		const paymentMethod = 'ideal';
 		const props = {
 			paymentMethod: paymentMethod,
-			dismissedDuplicateNotices: [],
+			gatewaysEnablingPaymentMethod: [ 'woocommerce_payments' ],
+			dismissedNotices: {},
 			setDismissedDuplicateNotices: jest.fn(),
 		};
 		const { container } = render( <DuplicateNotice { ...props } /> );
@@ -75,12 +100,15 @@ describe( 'DuplicateNotice', () => {
 		}
 
 		// Check if local state update function and Redux action dispatcher are called correctly
-		expect( props.setDismissedDuplicateNotices ).toHaveBeenCalledWith( [
-			paymentMethod,
-		] );
-		expect( mockDispatch ).toHaveBeenCalledWith( {
-			wcpay_duplicate_payment_method_notices_dismissed: [ paymentMethod ],
+		expect( props.setDismissedDuplicateNotices ).toHaveBeenCalledWith( {
+			[ paymentMethod ]: [ 'woocommerce_payments' ],
 		} );
+		expect(
+			mockSaveOption
+		).toHaveBeenCalledWith(
+			'wcpay_duplicate_payment_method_notices_dismissed',
+			{ [ paymentMethod ]: [ 'woocommerce_payments' ] }
+		);
 	} );
 
 	test( 'clicking on the Review extensions link navigates correctly', () => {
@@ -88,7 +116,8 @@ describe( 'DuplicateNotice', () => {
 			<DuplicateNotice
 				{ ...{
 					paymentMethod: 'ideal',
-					dismissedDuplicateNotices: [],
+					gatewaysEnablingPaymentMethod: [],
+					dismissedNotices: {},
 					setDismissedDuplicateNotices: jest.fn(),
 				} }
 			/>

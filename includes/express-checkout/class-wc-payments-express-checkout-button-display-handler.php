@@ -22,18 +22,25 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	private $gateway;
 
 	/**
-	 * Instance of WC_Payments_Payment_Request_Button_Handler, created in init function
-	 *
-	 * @var WC_Payments_Payment_Request_Button_Handler
-	 */
-	private $payment_request_button_handler;
-
-	/**
 	 * Instance of WC_Payments_WooPay_Button_Handler, created in init function
 	 *
 	 * @var WC_Payments_WooPay_Button_Handler
 	 */
 	private $platform_checkout_button_handler;
+
+	/**
+	 * Instance of WC_Payments_Express_Checkout_Button_Handler, created in init function
+	 *
+	 * @var WC_Payments_Express_Checkout_Button_Handler
+	 */
+	private $express_checkout_button_handler;
+
+	/**
+	 * Express Checkout Helper instance.
+	 *
+	 * @var WC_Payments_Express_Checkout_Ajax_Handler
+	 */
+	private $express_checkout_ajax_handler;
 
 	/**
 	 * Express Checkout Helper instance.
@@ -45,15 +52,23 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	/**
 	 * Initialize class actions.
 	 *
-	 * @param WC_Payment_Gateway_WCPay                   $gateway WCPay gateway.
-	 * @param WC_Payments_Payment_Request_Button_Handler $payment_request_button_handler Payment request button handler.
-	 * @param WC_Payments_WooPay_Button_Handler          $platform_checkout_button_handler Platform checkout button handler.
-	 * @param WC_Payments_Express_Checkout_Button_Helper $express_checkout_helper Express checkout helper.
+	 * @param WC_Payment_Gateway_WCPay                    $gateway WCPay gateway.
+	 * @param WC_Payments_WooPay_Button_Handler           $platform_checkout_button_handler Platform checkout button handler.
+	 * @param WC_Payments_Express_Checkout_Button_Handler $express_checkout_button_handler Express Checkout Element button handler.
+	 * @param WC_Payments_Express_Checkout_Ajax_Handler   $express_checkout_ajax_handler Express checkout ajax handlers.
+	 * @param WC_Payments_Express_Checkout_Button_Helper  $express_checkout_helper Express checkout button helper.
 	 */
-	public function __construct( WC_Payment_Gateway_WCPay $gateway, WC_Payments_Payment_Request_Button_Handler $payment_request_button_handler, WC_Payments_WooPay_Button_Handler $platform_checkout_button_handler, WC_Payments_Express_Checkout_Button_Helper $express_checkout_helper ) {
+	public function __construct(
+		WC_Payment_Gateway_WCPay $gateway,
+		WC_Payments_WooPay_Button_Handler $platform_checkout_button_handler,
+		WC_Payments_Express_Checkout_Button_Handler $express_checkout_button_handler,
+		WC_Payments_Express_Checkout_Ajax_Handler $express_checkout_ajax_handler,
+		WC_Payments_Express_Checkout_Button_Helper $express_checkout_helper
+	) {
 		$this->gateway                          = $gateway;
-		$this->payment_request_button_handler   = $payment_request_button_handler;
 		$this->platform_checkout_button_handler = $platform_checkout_button_handler;
+		$this->express_checkout_button_handler  = $express_checkout_button_handler;
+		$this->express_checkout_ajax_handler    = $express_checkout_ajax_handler;
 		$this->express_checkout_helper          = $express_checkout_helper;
 	}
 
@@ -64,20 +79,23 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	 */
 	public function init() {
 		$this->platform_checkout_button_handler->init();
-		$this->payment_request_button_handler->init();
+		$this->express_checkout_button_handler->init();
 
 		$is_woopay_enabled          = WC_Payments_Features::is_woopay_enabled();
 		$is_payment_request_enabled = 'yes' === $this->gateway->get_option( 'payment_request' );
 
-		if ( $is_woopay_enabled || $is_payment_request_enabled ) {
-			add_action( 'wc_ajax_wcpay_add_to_cart', [ $this->express_checkout_helper, 'ajax_add_to_cart' ] );
-			add_action( 'wc_ajax_wcpay_empty_cart', [ $this->express_checkout_helper, 'ajax_empty_cart' ] );
+		if ( $is_woopay_enabled ) {
+			add_action( 'wc_ajax_wcpay_add_to_cart', [ $this->express_checkout_ajax_handler, 'ajax_add_to_cart' ] );
+		}
 
+		if ( $is_woopay_enabled || $is_payment_request_enabled ) {
 			add_action( 'woocommerce_after_add_to_cart_form', [ $this, 'display_express_checkout_buttons' ], 1 );
 			add_action( 'woocommerce_proceed_to_checkout', [ $this, 'display_express_checkout_buttons' ], 21 );
 			add_action( 'woocommerce_checkout_before_customer_details', [ $this, 'display_express_checkout_buttons' ], 1 );
 			add_action( 'woocommerce_pay_order_before_payment', [ $this, 'display_express_checkout_buttons' ], 1 );
 		}
+
+		add_filter( 'wcpay_tracks_event_properties', [ $this, 'record_all_ece_tracks_events' ], 10, 2 );
 
 		if ( $this->is_pay_for_order_flow_supported() ) {
 			add_action( 'wp_enqueue_scripts', [ $this, 'add_pay_for_order_params_to_js_config' ], 5 );
@@ -93,7 +111,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	public function display_express_checkout_separator_if_necessary( $separator_starts_hidden = false ) {
 		if ( $this->express_checkout_helper->is_checkout() ) {
 			?>
-			<p id="wcpay-payment-request-button-separator" style="margin-top:1.5em;text-align:center;<?php echo $separator_starts_hidden ? 'display:none;' : ''; ?>">&mdash; <?php esc_html_e( 'OR', 'woocommerce-payments' ); ?> &mdash;</p>
+			<p id="wcpay-express-checkout-button-separator" style="margin-top:1.5em;text-align:center;<?php echo $separator_starts_hidden ? 'display:none;' : ''; ?>">&mdash; <?php esc_html_e( 'OR', 'woocommerce-payments' ); ?> &mdash;</p>
 			<?php
 		}
 	}
@@ -104,24 +122,41 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 	 * @return void
 	 */
 	public function display_express_checkout_buttons() {
-		$should_show_woopay          = $this->platform_checkout_button_handler->should_show_woopay_button();
-		$should_show_payment_request = $this->payment_request_button_handler->should_show_payment_request_button();
-		// When Payment Request button is enabled, we need the separator markup on the page, but hidden in case the browser doesn't have any payment request methods to display.
+		$should_show_woopay                  = $this->platform_checkout_button_handler->should_show_woopay_button();
+		$should_show_express_checkout_button = $this->express_checkout_helper->should_show_express_checkout_button();
+
+		// When Express Checkout button is enabled, we need the separator markup on the page, but hidden in case the browser doesn't have any express payment methods to display.
 		// More details: https://github.com/Automattic/woocommerce-payments/pull/5399#discussion_r1073633776.
-		$separator_starts_hidden = $should_show_payment_request && ! $should_show_woopay;
-		if ( $should_show_woopay || $should_show_payment_request ) {
+		$separator_starts_hidden = ! $should_show_woopay;
+		if ( $should_show_woopay || $should_show_express_checkout_button ) {
 			?>
-			<div class='wcpay-payment-request-wrapper' >
+			<div class='wcpay-express-checkout-wrapper' >
 			<?php
 			if ( ! $this->express_checkout_helper->is_pay_for_order_page() || $this->is_pay_for_order_flow_supported() ) {
 				$this->platform_checkout_button_handler->display_woopay_button_html();
 			}
-				$this->payment_request_button_handler->display_payment_request_button_html();
+
+			$this->express_checkout_button_handler->display_express_checkout_button_html();
+
+			if ( is_cart() ) {
+				add_action( 'woocommerce_after_cart', [ $this, 'add_order_attribution_inputs' ], 1 );
+			} else {
+				$this->add_order_attribution_inputs();
+			}
+			$this->display_express_checkout_separator_if_necessary( $separator_starts_hidden );
 			?>
 			</div >
 			<?php
-			$this->display_express_checkout_separator_if_necessary( $separator_starts_hidden );
 		}
+	}
+
+	/**
+	 * Add order attribution inputs to the page.
+	 *
+	 * @return void
+	 */
+	public function add_order_attribution_inputs() {
+		echo '<wc-order-attribution-inputs id="wcpay-express-checkout__order-attribution-inputs"></wc-order-attribution-inputs>';
 	}
 
 	/**
@@ -168,9 +203,7 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 						$session_email = is_array( $customer ) && isset( $customer['email'] ) ? $customer['email'] : '';
 					}
 
-					// Silence the filter_input warning because we are sanitizing the input with sanitize_email().
-					// nosemgrep: audit.php.lang.misc.filter-input-no-filter.
-					$user_email = isset( $_POST['email'] ) ? sanitize_email( wp_unslash( filter_input( INPUT_POST, 'email' ) ) ) : $session_email;
+					$user_email = isset( $_POST['email'] ) ? sanitize_email( wp_unslash( filter_input( INPUT_POST, 'email', FILTER_SANITIZE_EMAIL ) ) ) : $session_email;
 
 					$js_config['order_id'] = $order->get_id();
 					// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotValidated
@@ -187,5 +220,28 @@ class WC_Payments_Express_Checkout_Button_Display_Handler {
 			);
 		}
 		// phpcs:enable WordPress.Security.NonceVerification
+	}
+
+	/**
+	 * Record all ECE tracks events by adding the track_on_all_stores flag to the event.
+	 *
+	 * @param array  $properties Event properties.
+	 * @param string $event_name Event name.
+	 * @return array
+	 */
+	public function record_all_ece_tracks_events( $properties, $event_name ) {
+		$tracked_events_prefixes = [
+			'wcpay_applepay',
+			'wcpay_gpay',
+		];
+
+		foreach ( $tracked_events_prefixes as $prefix ) {
+			if ( strpos( $event_name, $prefix ) === 0 ) {
+				$properties['record_event_data']['track_on_all_stores'] = true;
+				break;
+			}
+		}
+
+		return $properties;
 	}
 }

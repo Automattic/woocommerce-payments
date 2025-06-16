@@ -8,6 +8,7 @@ import { useEffect } from 'react';
  */
 import PaymentProcessor from '../payment-processor';
 import { PaymentElement } from '@stripe/react-stripe-js';
+import { PAYMENT_METHOD_ERROR } from 'wcpay/checkout/constants';
 
 jest.mock( 'wcpay/checkout/classic/payment-processing', () => ( {
 	validateElements: jest.fn().mockResolvedValue(),
@@ -17,6 +18,7 @@ jest.mock( 'wcpay/checkout/blocks/utils', () => ( {
 } ) );
 jest.mock( '../hooks', () => ( {
 	usePaymentCompleteHandler: () => null,
+	usePaymentFailHandler: () => null,
 } ) );
 jest.mock( '@woocommerce/blocks-registry', () => ( {
 	getPaymentMethods: () => ( {
@@ -29,27 +31,20 @@ jest.mock( '@stripe/react-stripe-js', () => ( {
 	useStripe: jest.fn(),
 } ) );
 
-const MockPaymentElement = ( { onChange } ) => {
-	useEffect( () => {
-		onChange( { complete: true } );
-	}, [ onChange ] );
-
-	return null;
-};
-
 describe( 'PaymentProcessor', () => {
 	let mockApi;
 	let mockCreatePaymentMethod;
 	beforeEach( () => {
 		global.wcpay_upe_config = { paymentMethodsConfig: {} };
-		PaymentElement.mockImplementation( MockPaymentElement );
+		PaymentElement.mockImplementation( () => null );
 		mockCreatePaymentMethod = jest
 			.fn()
 			.mockResolvedValue( { paymentMethod: {} } );
 		mockApi = {
-			getStripeForUPE: () => ( {
-				createPaymentMethod: mockCreatePaymentMethod,
-			} ),
+			getStripeForUPE: () =>
+				Promise.resolve( {
+					createPaymentMethod: mockCreatePaymentMethod,
+				} ),
 		};
 	} );
 
@@ -97,8 +92,14 @@ describe( 'PaymentProcessor', () => {
 		).not.toBeInTheDocument();
 	} );
 
-	it( 'should return an error when the payment information is incomplete', async () => {
-		PaymentElement.mockImplementation( () => null );
+	it( 'should return an error if the payment method could not be loaded', async () => {
+		PaymentElement.mockImplementation( ( { onLoadError } ) => {
+			useEffect( () => {
+				onLoadError();
+			}, [ onLoadError ] );
+
+			return null;
+		} );
 		let onPaymentSetupCallback;
 		render(
 			<PaymentProcessor
@@ -112,13 +113,15 @@ describe( 'PaymentProcessor', () => {
 				} }
 				fingerprint=""
 				shouldSavePayment={ false }
-				upeMethods={ { card: 'woocommerce_payments' } }
+				upeMethods={ { card: { gatewayId: 'woocommerce_payments' } } }
+				onLoadError={ jest.fn() }
 			/>
 		);
 
 		expect( await onPaymentSetupCallback() ).toEqual( {
 			type: 'error',
-			message: 'Your payment information is incomplete.',
+			message:
+				'Invalid or missing payment details. Please ensure the provided payment method is correctly entered.',
 		} );
 		expect( mockCreatePaymentMethod ).not.toHaveBeenCalled();
 	} );
@@ -140,7 +143,9 @@ describe( 'PaymentProcessor', () => {
 					} }
 					fingerprint=""
 					shouldSavePayment={ false }
-					upeMethods={ { card: 'woocommerce_payments' } }
+					upeMethods={ {
+						card: { gatewayId: 'woocommerce_payments' },
+					} }
 				/>
 			);
 		} );
@@ -152,10 +157,15 @@ describe( 'PaymentProcessor', () => {
 		expect( mockCreatePaymentMethod ).not.toHaveBeenCalled();
 	} );
 
-	it( 'should return an error when createPaymentMethod fails', async () => {
+	it( 'should return success with the error data when createPaymentMethod fails', async () => {
 		let onPaymentSetupCallback;
 		mockCreatePaymentMethod = jest.fn().mockResolvedValue( {
-			error: { message: 'Error creating payment method' },
+			error: {
+				code: 'code',
+				decline_code: 'decline_code',
+				message: 'Error creating payment method',
+				type: 'card_error',
+			},
 		} );
 
 		act( () => {
@@ -171,15 +181,72 @@ describe( 'PaymentProcessor', () => {
 					} }
 					fingerprint=""
 					shouldSavePayment={ false }
-					upeMethods={ { card: 'woocommerce_payments' } }
+					upeMethods={ {
+						card: { gatewayId: 'woocommerce_payments' },
+					} }
 				/>
 			);
 		} );
 
 		expect( mockCreatePaymentMethod ).not.toHaveBeenCalled();
 		expect( await onPaymentSetupCallback() ).toEqual( {
-			type: 'error',
-			message: 'Error creating payment method',
+			type: 'success',
+			meta: {
+				paymentMethodData: {
+					payment_method: 'woocommerce_payments',
+					'wcpay-payment-method': PAYMENT_METHOD_ERROR,
+					'wcpay-payment-method-error-code': 'code',
+					'wcpay-payment-method-error-decline-code': 'decline_code',
+					'wcpay-payment-method-error-message':
+						'Error creating payment method',
+					'wcpay-payment-method-error-type': 'card_error',
+					'wcpay-fraud-prevention-token': '',
+					'wcpay-fingerprint': '',
+				},
+			},
+		} );
+		expect( mockCreatePaymentMethod ).toHaveBeenCalled();
+	} );
+
+	it( 'should return success when there are no failures', async () => {
+		let onPaymentSetupCallback;
+		mockCreatePaymentMethod = jest.fn().mockResolvedValue( {
+			paymentMethod: {
+				id: 'paymentMethodId',
+			},
+		} );
+
+		act( () => {
+			render(
+				<PaymentProcessor
+					activePaymentMethod="woocommerce_payments"
+					api={ mockApi }
+					paymentMethodId="card"
+					emitResponse={ {} }
+					eventRegistration={ {
+						onPaymentSetup: ( callback ) =>
+							( onPaymentSetupCallback = callback ),
+					} }
+					fingerprint=""
+					shouldSavePayment={ false }
+					upeMethods={ {
+						card: { gatewayId: 'woocommerce_payments' },
+					} }
+				/>
+			);
+		} );
+
+		expect( mockCreatePaymentMethod ).not.toHaveBeenCalled();
+		expect( await onPaymentSetupCallback() ).toEqual( {
+			type: 'success',
+			meta: {
+				paymentMethodData: {
+					payment_method: 'woocommerce_payments',
+					'wcpay-payment-method': 'paymentMethodId',
+					'wcpay-fraud-prevention-token': '',
+					'wcpay-fingerprint': '',
+				},
+			},
 		} );
 		expect( mockCreatePaymentMethod ).toHaveBeenCalled();
 	} );

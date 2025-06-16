@@ -3,9 +3,10 @@
 /**
  * External dependencies
  */
-import * as React from 'react';
+import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import { updateQueryString } from '@woocommerce/navigation';
+import { useUserPreferences } from '@woocommerce/data';
 
 /**
  * Internal dependencies
@@ -18,7 +19,6 @@ import {
 	useSettings,
 	useTransactions,
 	useTransactionsSummary,
-	useReportingExportLanguage,
 } from 'data/index';
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
@@ -30,6 +30,7 @@ jest.mock( '@wordpress/data', () => ( {
 	dispatch: jest.fn( () => ( {
 		setIsMatching: jest.fn(),
 		onLoad: jest.fn(),
+		onHistoryChange: jest.fn(),
 	} ) ),
 	registerStore: jest.fn(),
 	select: jest.fn(),
@@ -45,8 +46,16 @@ jest.mock( 'data/index', () => ( {
 	useManualCapture: jest.fn(),
 	useSettings: jest.fn(),
 	useAuthorizationsSummary: jest.fn(),
-	useReportingExportLanguage: jest.fn( () => [ 'en', jest.fn() ] ),
 } ) );
+
+jest.mock( '@woocommerce/data', () => {
+	const actualModule = jest.requireActual( '@woocommerce/data' );
+
+	return {
+		...actualModule,
+		useUserPreferences: jest.fn(),
+	};
+} );
 
 const mockUseTransactions = useTransactions as jest.MockedFunction<
 	typeof useTransactions
@@ -72,8 +81,8 @@ const mockUseFraudOutcomeTransactionsSummary = useFraudOutcomeTransactionsSummar
 	typeof useFraudOutcomeTransactionsSummary
 >;
 
-const mockUseReportingExportLanguage = useReportingExportLanguage as jest.MockedFunction<
-	typeof useReportingExportLanguage
+const mockUseUserPreferences = useUserPreferences as jest.MockedFunction<
+	typeof useUserPreferences
 >;
 
 declare const global: {
@@ -96,15 +105,14 @@ describe( 'TransactionsPage', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
 
-		mockUseReportingExportLanguage.mockReturnValue( [ 'en', jest.fn() ] );
-
 		// the query string is preserved across tests, so we need to reset it
 		updateQueryString( {}, '/', {} );
 
 		mockUseSettings.mockReturnValue( {
 			isLoading: false,
 			isSaving: false,
-			saveSettings: ( a ) => a,
+			isDirty: false,
+			saveSettings: () => null,
 		} );
 
 		mockUseTransactions.mockReturnValue( {
@@ -124,6 +132,12 @@ describe( 'TransactionsPage', () => {
 			isLoading: false,
 			transactionsSummary: {},
 		} );
+
+		mockUseUserPreferences.mockReturnValue( {
+			updateUserPreferences: jest.fn(),
+			wc_payments_transactions_hidden_columns: '',
+			isRequesting: false,
+		} as any );
 
 		global.wcpaySettings = {
 			featureFlags: {
@@ -151,7 +165,7 @@ describe( 'TransactionsPage', () => {
 	};
 
 	test( 'renders uncaptured tab if auth&capture is DISABLED but authorizations are present', async () => {
-		mockUseManualCapture.mockReturnValue( [ false ] );
+		mockUseManualCapture.mockReturnValue( [ false, () => null ] );
 		mockUseAuthorizationsSummary.mockReturnValue( {
 			authorizationsSummary: {
 				total: 5,
@@ -164,7 +178,7 @@ describe( 'TransactionsPage', () => {
 	} );
 
 	test( 'renders uncaptured tab if auth&capture is ENABLED and authorizations are present', async () => {
-		mockUseManualCapture.mockReturnValue( [ true ] );
+		mockUseManualCapture.mockReturnValue( [ true, () => null ] );
 		mockUseAuthorizationsSummary.mockReturnValue( {
 			authorizationsSummary: {
 				total: 5,
@@ -177,7 +191,7 @@ describe( 'TransactionsPage', () => {
 	} );
 
 	test( 'renders uncaptured tab if auth&capture is ENABLED and no authorizations are present', async () => {
-		mockUseManualCapture.mockReturnValue( [ true ] );
+		mockUseManualCapture.mockReturnValue( [ true, () => null ] );
 		mockUseAuthorizationsSummary.mockReturnValue( {
 			authorizationsSummary: {
 				total: 0,
@@ -190,7 +204,7 @@ describe( 'TransactionsPage', () => {
 	} );
 
 	test( 'do not render uncaptured tab if auth&capture is DISABLED and no authorizations are present', async () => {
-		mockUseManualCapture.mockReturnValue( [ false ] );
+		mockUseManualCapture.mockReturnValue( [ false, () => null ] );
 		mockUseAuthorizationsSummary.mockReturnValue( {
 			authorizationsSummary: {
 				total: 0,
@@ -203,7 +217,7 @@ describe( 'TransactionsPage', () => {
 	} );
 
 	test( 'renders fraud outcome tabs', async () => {
-		mockUseManualCapture.mockReturnValue( [ false ] );
+		mockUseManualCapture.mockReturnValue( [ false, () => null ] );
 		mockUseAuthorizationsSummary.mockReturnValue( {
 			authorizationsSummary: {
 				total: 0,

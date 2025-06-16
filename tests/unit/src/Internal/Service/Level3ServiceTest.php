@@ -160,13 +160,18 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 
 		if ( $with_negative_price_product ) {
 			$mock_items[] = $this->create_mock_item( 'Negative Product Price', $quantity, -18.99, 2.7, 42 );
+			$mock_items[] = $this->create_mock_item( 'Negative Product Price+Tax', $quantity, -18.99, -2.7, 42 );
 		}
 
 		if ( $basket_size > 1 ) {
 			// Keep the formely created item/fee and add duplicated items to the basket.
-			$mock_items = array_merge( $mock_items, array_fill( 0, $basket_size - 1, $mock_items[0] ) );
+			$mock_items = array_merge( $mock_items, array_fill( 0, $basket_size - count( $mock_items ), $mock_items[0] ) );
 		}
 
+		$this->mock_order( $mock_items, $shipping_postcode );
+	}
+
+	protected function mock_order( array $mock_items, string $shipping_postcode ) {
 		// Setup the order.
 		$mock_order = $this
 			->getMockBuilder( WC_Order::class )
@@ -336,6 +341,14 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 					'tax_amount'          => 270,
 					'discount_amount'     => 1899,
 				],
+				(object) [
+					'product_code'        => 42,
+					'product_description' => 'Negative Product Price+Tax',
+					'unit_cost'           => 0,
+					'quantity'            => 1,
+					'tax_amount'          => 0,
+					'discount_amount'     => 1899 + 270,
+				],
 			],
 			'shipping_address_zip' => '98012',
 			'shipping_from_zip'    => '94110',
@@ -432,6 +445,25 @@ class Level3ServiceTest extends WCPAY_UnitTestCase {
 		$level_3_data = $this->sut->get_data_from_order( $this->order_id );
 
 		$this->assertEquals( $expected_data, $level_3_data );
+	}
+
+	public function test_rounding_in_edge_cases() {
+		$this->mock_account->method( 'get_account_country' )->willReturn( Country_Code::UNITED_STATES );
+
+		$mock_items   = [];
+		$mock_items[] = $this->create_mock_item( 'Beanie with Addon', 3, 73, 0, 30 );
+		$this->mock_order( $mock_items, '98012' );
+
+		$level_3_data = $this->sut->get_data_from_order( $this->order_id );
+
+		$this->assertCount( 2, $level_3_data['line_items'] );
+		$this->assertEquals( 2433, $level_3_data['line_items'][0]->unit_cost );
+		$this->assertEquals( 'rounding-fix', $level_3_data['line_items'][1]->product_code );
+		$this->assertEquals( 'Rounding fix', $level_3_data['line_items'][1]->product_description );
+		$this->assertEquals( 1, $level_3_data['line_items'][1]->unit_cost );
+		$this->assertEquals( 1, $level_3_data['line_items'][1]->quantity );
+		$this->assertEquals( 0, $level_3_data['line_items'][1]->tax_amount );
+		$this->assertEquals( 0, $level_3_data['line_items'][1]->discount_amount );
 	}
 
 	public function test_full_level3_data_with_float_quantity_zero() {

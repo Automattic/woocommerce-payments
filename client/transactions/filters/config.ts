@@ -30,10 +30,6 @@ export interface TransactionsFilterType {
 
 const transactionTypesOptions = Object.entries( displayType )
 	.map( ( [ type, label ] ) => {
-		//@TODO - implement filter transactions by card reader fee
-		if ( type === 'card_reader_fee' ) {
-			return null;
-		}
 		return { label, value: type };
 	} )
 	.filter( function ( el ) {
@@ -99,6 +95,7 @@ export const getFilters = (
 				'filter',
 				'type_is',
 				'type_is_not',
+				'type_is_in',
 				'date_before',
 				'date_after',
 				'date_between',
@@ -153,7 +150,8 @@ export const getFilters = (
 
 /*eslint-disable max-len*/
 export const getAdvancedFilters = (
-	customerCurrencyOptions?: TransactionsFilterEntryType[]
+	customerCurrencyOptions?: TransactionsFilterEntryType[],
+	transactionSourceOptions?: TransactionsFilterEntryType[]
 ): any => {
 	// TODO: Remove this and all the checks once we drop support of WooCommerce 7.7 and below.
 	const wooCommerceVersionString = getSetting( 'wcVersion' );
@@ -267,6 +265,51 @@ export const getAdvancedFilters = (
 				input: {
 					component: 'SelectControl',
 					options: customerCurrencyOptions,
+				},
+			},
+			source: {
+				labels: {
+					add: __( 'Payment method', 'woocommerce-payments' ),
+					remove: __(
+						'Remove payment method filter',
+						'woocommerce-payments'
+					),
+					rule: __(
+						'Select a payment method filter match',
+						'woocommerce-payments'
+					),
+					title: __(
+						'<title>Payment method</title> <rule /> <filter />',
+						'woocommerce-payments'
+					),
+					filter: __(
+						'Select a payment method',
+						'woocommerce-payments'
+					),
+				},
+				rules: [
+					{
+						value: 'is',
+						/* translators: Sentence fragment, logical, "Is" refers to searching for transactions matching a chosen payment method. */
+						label: _x(
+							'Is',
+							'payment method',
+							'woocommerce-payments'
+						),
+					},
+					{
+						value: 'is_not',
+						/* translators: Sentence fragment, logical, "Is not" refers to searching for transactions that don\'t match a chosen payment method. */
+						label: _x(
+							'Is not',
+							'payment method',
+							'woocommerce-payments'
+						),
+					},
+				],
+				input: {
+					component: 'SelectControl',
+					options: transactionSourceOptions,
 				},
 			},
 			type: {
@@ -399,43 +442,46 @@ export const getAdvancedFilters = (
 			},
 			channel: {
 				labels: {
-					add: __( 'Channel', 'woocommerce-payments' ),
+					add: __( 'Sales channel', 'woocommerce-payments' ),
 					remove: __(
-						'Remove transaction channel filter',
+						'Remove transaction sales channel filter',
 						'woocommerce-payments'
 					),
 					rule: __(
-						'Select a transaction channel filter match',
+						'Select a transaction sales channel filter match',
 						'woocommerce-payments'
 					),
-					/* translators: A sentence describing a Transaction Channel filter. */
 					title:
 						wooCommerceVersion < 7.8
 							? __(
-									'{{title}}Channel{{/title}} {{rule /}} {{filter /}}',
+									'{{title}}Sales channel{{/title}} {{rule /}} {{filter /}}',
 									'woocommerce-payments'
 							  )
 							: __(
-									'<title>Channel</title> <rule /> <filter />',
+									'<title>Sales channel</title> <rule /> <filter />',
 									'woocommerce-payments'
 							  ),
 					filter: __(
-						'Select a transaction channel',
+						'Select a transaction sales channel',
 						'woocommerce-payments'
 					),
 				},
 				rules: [
 					{
 						value: 'is',
-						/* translators: Sentence fragment, logical, "Is" refers to searching for transactions matching a chosen transaction channel type. */
-						label: _x( 'Is', 'Channel', 'woocommerce-payments' ),
+						/* translators: Sentence fragment, logical, "Is" refers to searching for transactions matching a chosen transaction sales channel type. */
+						label: _x(
+							'Is',
+							'Sales channel',
+							'woocommerce-payments'
+						),
 					},
 					{
 						value: 'is_not',
-						/* translators: Sentence fragment, logical, "Is not" refers to searching for transactions that don\'t match a chosen transaction channel type. */
+						/* translators: Sentence fragment, logical, "Is not" refers to searching for transactions that don\'t match a chosen transaction sales channel type. */
 						label: _x(
 							'Is not',
-							'Channel',
+							'Sales channel',
 							'woocommerce-payments'
 						),
 					},

@@ -10,15 +10,11 @@ import React, { useContext } from 'react';
  * Internal dependencies
  */
 import { getPaymentMethodSettingsUrl } from '../../utils';
-import {
-	usePaymentRequestEnabledSettings,
-	useExpressCheckoutShowIncompatibilityNotice,
-} from 'wcpay/data';
-import { PaymentRequestEnabledSettingsHook } from './interfaces';
+import { usePaymentRequestEnabledSettings } from 'wcpay/data';
 import { ApplePayIcon, GooglePayIcon } from 'wcpay/payment-methods-icons';
-import { ExpressCheckoutIncompatibilityNotice } from 'wcpay/settings/settings-warnings/incompatibility-notice';
 import DuplicateNotice from 'wcpay/components/duplicate-notice';
 import DuplicatedPaymentMethodsContext from '../settings-manager/duplicated-payment-methods-context';
+import GooglePayTestModeCompatibilityNotice from '../google-pay-test-mode-compatibility-notice';
 
 const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 	const id = 'apple_pay_google_pay';
@@ -26,15 +22,14 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 	const [
 		isPaymentRequestEnabled,
 		updateIsPaymentRequestEnabled,
-	] = usePaymentRequestEnabledSettings() as PaymentRequestEnabledSettingsHook;
+	] = usePaymentRequestEnabledSettings();
 
-	const showIncompatibilityNotice = useExpressCheckoutShowIncompatibilityNotice();
 	const {
 		duplicates,
 		dismissedDuplicateNotices,
 		setDismissedDuplicateNotices,
 	} = useContext( DuplicatedPaymentMethodsContext );
-	const isDuplicate = duplicates.includes( id );
+	const isDuplicate = Object.keys( duplicates ).includes( id );
 
 	return (
 		<li
@@ -176,13 +171,12 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 					</div>
 				</div>
 			</div>
-			{ showIncompatibilityNotice && (
-				<ExpressCheckoutIncompatibilityNotice />
-			) }
+			<GooglePayTestModeCompatibilityNotice />
 			{ isDuplicate && (
 				<DuplicateNotice
 					paymentMethod={ id }
-					dismissedDuplicateNotices={ dismissedDuplicateNotices }
+					gatewaysEnablingPaymentMethod={ duplicates[ id ] }
+					dismissedNotices={ dismissedDuplicateNotices }
 					setDismissedDuplicateNotices={
 						setDismissedDuplicateNotices
 					}

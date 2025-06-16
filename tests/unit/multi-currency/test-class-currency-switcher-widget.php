@@ -33,21 +33,29 @@ class WCPay_Multi_Currency_Currency_Switcher_Widget_Tests extends WCPAY_UnitTest
 	private $currency_switcher_widget;
 
 	/**
+	 * WC_Payments_Localization_Service.
+	 *
+	 * @var WC_Payments_Localization_Service
+	 */
+	private $localization_service;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
 		parent::set_up();
 
-		$this->mock_compatibility  = $this->createMock( WCPay\MultiCurrency\Compatibility::class );
-		$this->mock_multi_currency = $this->createMock( WCPay\MultiCurrency\MultiCurrency::class );
+		$this->mock_compatibility   = $this->createMock( WCPay\MultiCurrency\Compatibility::class );
+		$this->mock_multi_currency  = $this->createMock( WCPay\MultiCurrency\MultiCurrency::class );
+		$this->localization_service = new WC_Payments_Localization_Service();
 		$this->mock_multi_currency
 			->method( 'get_enabled_currencies' )
 			->willReturn(
 				[
-					new Currency( 'USD' ),
-					new Currency( 'CAD', 1.2 ),
-					new Currency( 'EUR', 0.8 ),
-					new Currency( 'CHF', 1.1 ),
+					new Currency( $this->localization_service, 'USD' ),
+					new Currency( $this->localization_service, 'CAD', 1.2 ),
+					new Currency( $this->localization_service, 'EUR', 0.8 ),
+					new Currency( $this->localization_service, 'CHF', 1.1 ),
 				]
 			);
 
@@ -100,7 +108,7 @@ class WCPay_Multi_Currency_Currency_Switcher_Widget_Tests extends WCPAY_UnitTest
 
 	public function test_widget_selects_selected_currency() {
 		$this->mock_compatibility->method( 'should_disable_currency_switching' )->willReturn( false );
-		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( 'CAD' ) );
+		$this->mock_multi_currency->method( 'get_selected_currency' )->willReturn( new Currency( $this->localization_service, 'CAD' ) );
 		$this->expectOutputRegex( '/<option value="CAD" selected>&#36; CAD/' );
 		$this->render_widget();
 	}
@@ -126,7 +134,7 @@ class WCPay_Multi_Currency_Currency_Switcher_Widget_Tests extends WCPAY_UnitTest
 			->method( 'get_enabled_currencies' )
 			->willReturn(
 				[
-					new Currency( 'USD' ),
+					new Currency( $this->localization_service, 'USD' ),
 				]
 			);
 

@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Exceptions\API_Exception;
+use WCPay\Exceptions\API_Merchant_Exception;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Exceptions\Order_Not_Found_Exception;
@@ -102,6 +103,14 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @var bool False by default, true once the callbacks have been attached.
 	 */
 	private static $has_attached_integration_hooks = false;
+
+	/**
+	 * Used to temporary keep the state of the order_pay value on the Pay for order page with the SCA authorization flow.
+	 * For more details, see remove_order_pay_var and restore_order_pay_var hooks.
+	 *
+	 * @var string|int
+	 */
+	private $order_pay_var;
 
 	/**
 	 * Initialize subscription support and hooks.
@@ -216,6 +225,39 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 		// Update subscriptions token when user sets a default payment method.
 		add_filter( 'woocommerce_subscriptions_update_subscription_token', [ $this, 'update_subscription_token' ], 10, 3 );
+		add_filter( 'woocommerce_subscriptions_update_payment_via_pay_shortcode', [ $this, 'update_payment_method_for_subscriptions' ], 10, 3 );
+	}
+
+	/**
+	 * Stops WC Subscriptions from updating the payment method for subscriptions.
+	 *
+	 * @param bool            $update_payment_method Whether to update the payment method.
+	 * @param string          $new_payment_method The new payment method.
+	 * @param WC_Subscription $subscription The subscription.
+	 * @return bool
+	 */
+	public function update_payment_method_for_subscriptions( $update_payment_method, $new_payment_method, $subscription ) {
+		// Skip if the change payment method request was not made yet.
+		if ( ! isset( $_POST['_wcsnonce'] ) || ! wp_verify_nonce( sanitize_key( $_POST['_wcsnonce'] ), 'wcs_change_payment_method' ) ) {
+			return $update_payment_method;
+		}
+
+		// Avoid interfering with use-cases not related to updating payment method for subscriptions.
+		if ( ! $this->is_changing_payment_method_for_subscription() ) {
+			return $update_payment_method;
+		}
+
+		// Avoid interfering with other payment gateways' operations.
+		if ( $new_payment_method !== $this->id ) {
+			return $update_payment_method;
+		}
+
+		// If the payment method is a saved payment method, we don't need to stop WC Subscriptions from updating it.
+		if ( ( isset( $_POST[ 'wc-' . $new_payment_method . '-payment-token' ] ) && 'new' !== $_POST[ 'wc-' . $new_payment_method . '-payment-token' ] ) ) {
+			return $update_payment_method;
+		}
+
+		return false;
 	}
 
 	/**
@@ -264,7 +306,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		}
 
 		$js_config                     = WC_Payments::get_wc_payments_checkout()->get_payment_fields_js_config();
-		$js_config['intentSecret']     = WC_Payments_Utils::encrypt_client_secret( $intent->get_stripe_account_id(), $intent->get_client_secret() );
+		$js_config['intentSecret']     = $intent->get_client_secret();
 		$js_config['updateOrderNonce'] = wp_create_nonce( 'wcpay_update_order_status_nonce' );
 		wp_localize_script( 'WCPAY_CHECKOUT', 'wcpayConfig', $js_config );
 		wp_enqueue_script( 'WCPAY_CHECKOUT' );
@@ -317,14 +359,17 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 		$token = $this->get_payment_token( $renewal_order );
 		if ( is_null( $token ) && ! WC_Payments::is_network_saved_cards_enabled() ) {
+			$renewal_order->add_order_note( 'Subscription renewal failed: No saved payment method found.' );
 			Logger::error( 'There is no saved payment token for order #' . $renewal_order->get_id() );
 			// TODO: Update to use Order_Service->mark_payment_failed.
 			$renewal_order->update_status( 'failed' );
 			return;
 		}
 
+		$customer_id = $this->order_service->get_customer_id_for_order( $renewal_order );
+
 		try {
-			$payment_information = new Payment_Information( '', $renewal_order, Payment_Type::RECURRING(), $token, Payment_Initiated_By::MERCHANT(), null, null, '', $this->get_payment_method_to_use_for_intent() );
+			$payment_information = new Payment_Information( '', $renewal_order, Payment_Type::RECURRING(), $token, Payment_Initiated_By::MERCHANT(), null, null, '', $this->get_payment_method_to_use_for_intent(), $customer_id );
 			$this->process_payment_for_order( null, $payment_information, true );
 		} catch ( API_Exception $e ) {
 			Logger::error( 'Error processing subscription renewal: ' . $e->getMessage() );
@@ -332,6 +377,11 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			$renewal_order->update_status( 'failed' );
 
 			if ( ! empty( $payment_information ) ) {
+				$error_details = esc_html( rtrim( $e->getMessage(), '.' ) );
+				if ( $e instanceof API_Merchant_Exception ) {
+					$error_details = $error_details . '. ' . esc_html( rtrim( $e->get_merchant_message(), '.' ) );
+				}
+
 				$note = sprintf(
 					WC_Payments_Utils::esc_interpolated_html(
 					/* translators: %1: the failed payment amount, %2: error message  */
@@ -348,7 +398,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 						wc_price( $amount, [ 'currency' => WC_Payments_Utils::get_order_intent_currency( $renewal_order ) ] ),
 						$renewal_order
 					),
-					esc_html( rtrim( $e->getMessage(), '.' ) )
+					$error_details
 				);
 				$renewal_order->add_order_note( $note );
 			}
@@ -364,6 +414,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	public function update_failing_payment_method( $subscription, $renewal_order ) {
 		$renewal_token = $this->get_payment_token( $renewal_order );
 		if ( is_null( $renewal_token ) ) {
+			$renewal_order->add_order_note( 'Unable to update subscription payment method: No valid payment token or method found.' );
 			Logger::error( 'Failing subscription could not be updated: there is no saved payment token for order #' . $renewal_order->get_id() );
 			return;
 		}
@@ -860,17 +911,12 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @return bool True if the renewal order is linked to a renewal order. Otherwise false.
 	 */
 	private function is_wcpay_subscription_renewal_order( WC_Order $renewal_order ) {
-		/**
-		 * Check if WC_Payments_Subscription_Service class exists first before fetching the subscription for the renewal order.
-		 *
-		 * This class is only loaded when the store has the Stripe Billing feature turned on or has existing
-		 * WCPay Subscriptions @see WC_Payments::should_load_stripe_billing_integration().
-		 */
-		if ( ! class_exists( 'WC_Payments_Subscription_Service' ) ) {
+		// Renewal orders copy metadata from the parent subscription, so we can first check if it has the `_wcpay_subscription_id` meta.
+		if ( ! class_exists( 'WC_Payments_Subscription_Service' ) || ! $renewal_order->meta_exists( WC_Payments_Subscription_Service::SUBSCRIPTION_ID_META_KEY ) ) {
 			return false;
 		}
 
-		// Check if the renewal order is linked to a subscription which is a WCPay Subscription.
+		// Confirm the renewal order is linked to a subscription which is a WCPay Subscription.
 		foreach ( wcs_get_subscriptions_for_renewal_order( $renewal_order ) as $subscription ) {
 			if ( WC_Payments_Subscription_Service::is_wcpay_subscription( $subscription ) ) {
 				return true;
@@ -941,7 +987,9 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		if ( 1 < count( $subscriptions ) ) {
 			$result['card']['mandate_options']['amount_type'] = 'maximum';
 			$result['card']['mandate_options']['interval']    = 'sporadic';
-			unset( $result['card']['mandate_options']['interval_count'] );
+			if ( isset( $result['card']['mandate_options']['interval_count'] ) ) {
+				unset( $result['card']['mandate_options']['interval_count'] );
+			}
 		}
 
 		return $result;
@@ -971,7 +1019,6 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 			$order->add_order_note( $note );
 		}
-
 	}
 
 	/**

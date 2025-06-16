@@ -10,10 +10,8 @@ import React from 'react';
  */
 import DisputeStatusChip from '../';
 
-function renderDisputeStatus( status: string, dueBy = undefined ) {
-	const { container } = render(
-		<DisputeStatusChip status={ status } dueBy={ dueBy } />
-	);
+function renderDisputeStatus( status: string ) {
+	const { container } = render( <DisputeStatusChip status={ status } /> );
 	return container;
 }
 

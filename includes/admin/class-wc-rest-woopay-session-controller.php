@@ -21,14 +21,14 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 	 *
 	 * @var string
 	 */
-	protected $namespace = 'wc/v3';
+	protected $namespace = 'payments/woopay';
 
 	/**
 	 * Endpoint path.
 	 *
 	 * @var string
 	 */
-	protected $rest_base = 'woopay/session';
+	protected $rest_base = 'session';
 
 	/**
 	 * Configure REST API routes.
@@ -41,6 +41,13 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 				'methods'             => WP_REST_Server::READABLE,
 				'callback'            => [ $this, 'get_session_data' ],
 				'permission_callback' => [ $this, 'check_permission' ],
+				'args'                => [
+					'email' => [
+						'type'     => 'string',
+						'format'   => 'email',
+						'required' => true,
+					],
+				],
 			]
 		);
 	}

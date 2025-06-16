@@ -21,8 +21,7 @@
 		"wcpaySettings": true,
 		"page": true,
 		"browser": true,
-		"context": true,
-		"jestPuppeteer": true
+		"context": true
 	},
 	"settings": {
 		"react": {
@@ -32,7 +31,7 @@
 			"typescript": {}
 		}
 	},
-	"ignorePatterns": [ "docs/rest-api/source/**/*.js" ],
+	"ignorePatterns": [ "docs/rest-api/source/**/*.js", "playwright-report/**/*.js" ],
 	"rules": {
 		"camelcase": [
 			"error",
@@ -134,6 +133,7 @@
 				"@typescript-eslint/no-explicit-any": "off",
 				"no-use-before-define": "off",
 				"@typescript-eslint/no-use-before-define": [ "error" ],
+				"@typescript-eslint/explicit-module-boundary-types": "off",
 				"wpcalypso/jsx-classname-namespace": "off",
 				"react/react-in-jsx-scope": "error",
 				"no-shadow": "off",

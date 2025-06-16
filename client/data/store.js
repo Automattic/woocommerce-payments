@@ -14,14 +14,12 @@ import * as charges from './charges';
 import * as timeline from './timeline';
 import * as disputes from './disputes';
 import * as settings from './settings';
-import * as multiCurrency from './multi-currency';
 import * as readers from './card-readers';
 import * as capital from './capital';
 import * as documents from './documents';
 import * as paymentIntents from './payment-intents';
 import * as authorizations from './authorizations';
 import * as files from './files';
-import * as paymentActivity from './payment-activity';
 
 // Extracted into wrapper function to facilitate testing.
 export const initStore = () =>
@@ -33,14 +31,12 @@ export const initStore = () =>
 			timeline: timeline.reducer,
 			disputes: disputes.reducer,
 			settings: settings.reducer,
-			multiCurrency: multiCurrency.reducer,
 			readers: readers.reducer,
 			capital: capital.reducer,
 			documents: documents.reducer,
 			paymentIntents: paymentIntents.reducer,
 			authorizations: authorizations.reducer,
 			files: files.reducer,
-			paymentActivity: paymentActivity.reducer,
 		} ),
 		actions: {
 			...deposits.actions,
@@ -49,14 +45,12 @@ export const initStore = () =>
 			...timeline.actions,
 			...disputes.actions,
 			...settings.actions,
-			...multiCurrency.actions,
 			...readers.actions,
 			...capital.actions,
 			...documents.actions,
 			...paymentIntents.actions,
 			...authorizations.actions,
 			...files.actions,
-			...paymentActivity.actions,
 		},
 		controls,
 		selectors: {
@@ -66,14 +60,12 @@ export const initStore = () =>
 			...timeline.selectors,
 			...disputes.selectors,
 			...settings.selectors,
-			...multiCurrency.selectors,
 			...readers.selectors,
 			...capital.selectors,
 			...documents.selectors,
 			...paymentIntents.selectors,
 			...authorizations.selectors,
 			...files.selectors,
-			...paymentActivity.selectors,
 		},
 		resolvers: {
 			...deposits.resolvers,
@@ -82,13 +74,11 @@ export const initStore = () =>
 			...timeline.resolvers,
 			...disputes.resolvers,
 			...settings.resolvers,
-			...multiCurrency.resolvers,
 			...readers.resolvers,
 			...capital.resolvers,
 			...documents.resolvers,
 			...paymentIntents.resolvers,
 			...authorizations.resolvers,
 			...files.resolvers,
-			...paymentActivity.resolvers,
 		},
 	} );

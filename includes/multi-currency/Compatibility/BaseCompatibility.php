@@ -46,5 +46,5 @@ abstract class BaseCompatibility {
 	 *
 	 * @return void
 	 */
-	abstract protected function init();
+	abstract public function init();
 }

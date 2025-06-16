@@ -6,7 +6,6 @@
  */
 
 use WCPay\MultiCurrency\MultiCurrency;
-use WCPay\Logger;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -108,7 +107,7 @@ class WC_Payments_Explicit_Price_Formatter {
 	 *
 	 * @return string
 	 */
-	public static function get_explicit_price( string $price, WC_Abstract_Order $order = null ) {
+	public static function get_explicit_price( string $price, ?WC_Abstract_Order $order = null ) {
 		if ( null === $order ) {
 			$currency_code = get_woocommerce_currency();
 		} else {
@@ -137,7 +136,7 @@ class WC_Payments_Explicit_Price_Formatter {
 			return $price;
 		}
 
-		$price_to_check = html_entity_decode( wp_strip_all_tags( $price ) );
+		$price_to_check = html_entity_decode( wp_strip_all_tags( $price ), ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401 );
 
 		if ( false === strpos( $price_to_check, trim( $currency_code ) ) ) {
 			return $price . ' ' . $currency_code;

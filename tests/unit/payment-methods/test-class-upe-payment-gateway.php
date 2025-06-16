@@ -298,12 +298,12 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 					$this->mock_action_scheduler_service,
 					$this->mock_payment_method,
 					$this->mock_payment_methods,
-					$this->mock_rate_limiter,
 					$this->mock_order_service,
 					$this->mock_dpps,
 					$this->mock_localization_service,
 					$this->mock_fraud_service,
 					$this->mock_duplicates_detection_service,
+					$this->mock_rate_limiter,
 				]
 			)
 			->setMethods(
@@ -698,7 +698,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$afterpay_method   = $this->mock_payment_methods['afterpay_clearpay'];
 
 		$this->assertEquals( 'card', $card_method->get_id() );
-		$this->assertEquals( 'Credit card / debit card', $card_method->get_title( 'US' ) );
+		$this->assertEquals( 'Cards', $card_method->get_title( 'US' ) );
 		$this->assertEquals( 'Visa debit card', $card_method->get_title( 'US', $mock_visa_details ) );
 		$this->assertEquals( 'Mastercard credit card', $card_method->get_title( 'US', $mock_mastercard_details ) );
 		$this->assertTrue( $card_method->is_enabled_at_checkout( 'US' ) );
@@ -760,8 +760,8 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $affirm_method->is_reusable() );
 
 		$this->assertSame( 'afterpay_clearpay', $afterpay_method->get_id() );
-		$this->assertSame( 'Afterpay', $afterpay_method->get_title( 'US' ) );
-		$this->assertSame( 'Afterpay', $afterpay_method->get_title( 'US', $mock_afterpay_details ) );
+		$this->assertSame( 'Cash App Afterpay', $afterpay_method->get_title( 'US' ) );
+		$this->assertSame( 'Cash App Afterpay', $afterpay_method->get_title( 'US', $mock_afterpay_details ) );
 		$this->assertTrue( $afterpay_method->is_enabled_at_checkout( 'US' ) );
 		$this->assertFalse( $afterpay_method->is_reusable() );
 		$this->assertSame( 'Clearpay', $afterpay_method->get_title( 'GB' ) );
@@ -927,13 +927,16 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $mock_token, $this->mock_gateway->create_token_from_setup_intent( $mock_setup_intent_id, $mock_user ) );
 	}
 
-	public function test_exception_will_be_thrown_if_phone_number_is_invalid() {
+	public function test_failure_result_returned_if_phone_number_is_invalid() {
 		$order = WC_Helper_Order::create_order();
 		$order->set_billing_phone( '+1123456789123456789123' );
 		$order->save();
-		$this->expectException( Exception::class );
-		$this->expectExceptionMessage( 'Invalid phone number.' );
-		$this->mock_gateway->process_payment( $order->get_id() );
+		$result = $this->mock_gateway->process_payment( $order->get_id() );
+		$this->assertEquals( 'fail', $result['result'] );
+		$error_notices = WC()->session->get( 'wc_notices' );
+		$this->assertNotEmpty( $error_notices );
+		$this->assertEquals( 'Invalid phone number.', $error_notices['error'][0]['notice'] );
+		WC()->session->set( 'wc_notices', [] );
 	}
 
 	public function test_remove_link_payment_method_if_card_disabled() {
@@ -967,12 +970,12 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			$this->mock_action_scheduler_service,
 			$this->mock_payment_method,
 			$this->mock_payment_methods,
-			$this->mock_rate_limiter,
 			$this->mock_order_service,
 			$this->mock_dpps,
 			$this->mock_localization_service,
 			$this->mock_fraud_service,
-			$this->mock_duplicates_detection_service
+			$this->mock_duplicates_detection_service,
+			$this->mock_rate_limiter
 		);
 
 		$this->assertEquals( $expected_result, $gateway->get_upe_available_payment_methods() );

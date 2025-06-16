@@ -20,7 +20,7 @@ export default {
 				'woocommerce-payments'
 			),
 			subheading: __(
-				'We’ll use these details to enable payments for your store.',
+				'We’ll use these details to enable payments for your store. This information can’t be changed after your account is created.',
 				'woocommerce-payments'
 			),
 		},
@@ -43,11 +43,25 @@ export default {
 				'This will take place in a secure environment through our partner. Once your business details are verified, you’ll be redirected back to your store dashboard.',
 				'woocommerce-payments'
 			),
+			cta: __(
+				'Finish your verification process',
+				'woocommerce-payments'
+			),
+		},
+		embedded: {
+			heading: __(
+				'One last step! Verify your identity with our partner',
+				'woocommerce-payments'
+			),
+			subheading: __(
+				'This info will verify your account',
+				'woocommerce-payments'
+			),
 		},
 	},
 	fields: {
 		country: __(
-			'Where is your business legally registered?',
+			'Where is your business located?',
 			'woocommerce-payments'
 		),
 		business_type: __(
@@ -60,14 +74,6 @@ export default {
 		),
 		mcc: __(
 			'What type of goods or services does your business sell? ',
-			'woocommerce-payments'
-		),
-		annual_revenue: __(
-			'What is your estimated annual Ecommerce revenue (USD)?',
-			'woocommerce-payments'
-		),
-		go_live_timeframe: __(
-			'What is the estimated timeline for taking your store live?',
 			'woocommerce-payments'
 		),
 	},
@@ -86,11 +92,6 @@ export default {
 	placeholders: {
 		generic: __( 'Select an option', 'woocommerce-payments' ),
 		country: __( 'Select a country', 'woocommerce-payments' ),
-		annual_revenue: __(
-			'Select your annual revenue',
-			'woocommerce-payments'
-		),
-		go_live_timeframe: __( 'Select a timeline', 'woocommerce-payments' ),
 	},
 	annualRevenues: {
 		less_than_250k: __( 'Less than $250k', 'woocommerce-payments' ),
@@ -149,4 +150,5 @@ export default {
 	},
 	continue: __( 'Continue', 'woocommerce-payments' ),
 	back: __( 'Back', 'woocommerce-payments' ),
+	cancel: __( 'Cancel', 'woocommerce-payments' ),
 };

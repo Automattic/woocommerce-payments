@@ -64,132 +64,81 @@ class WC_REST_Payments_Onboarding_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( [ 'data' => $mock_business_types ], $response->get_data() );
 	}
 
-	public function test_get_required_verification_information_with_missing_params() {
-		$request  = new WP_REST_Request( 'GET', '', [ 'foo' => 'bar' ] );
-		$response = $this->controller->get_required_verification_information( $request );
-
-		$this->assertSame( 400, $response->status );
-		$this->assertSame(
-			[ 'result' => WC_REST_Payments_Onboarding_Controller::RESULT_BAD_REQUEST ],
-			$response->get_data()
-		);
-	}
-
-	public function test_get_required_verification_information() {
-		$mock_requirements = [
-			'business_profile.url',
-			'business_profile.mcc',
-			'representative.first_name',
-			'representative.last_name',
-			'representative.dob.day',
-			'representative.dob.month',
-			'representative.dob.year',
-			'representative.phone',
-			'representative.email',
-			'representative.address.line1',
-			'representative.address.postal_code',
-			'representative.address.city',
-			'representative.address.state',
-			'representative.ssn_last_4',
-			'company.name',
-			'company.tax_id',
-			'tos_acceptance.ip',
-			'tos_acceptance.date',
-			'external_account',
+	public function test_create_embedded_kyc_session() {
+		$kyc_session = [
+			'clientSecret'   => 'accs_secret__XXX',
+			'expiresAt'      => time() + 120,
+			'accountId'      => 'acct_XXX',
+			'isLive'         => false,
+			'accountCreated' => true,
+			'publishableKey' => 'pk_test_XXX',
 		];
 
 		$this->mock_onboarding_service
 			->expects( $this->once() )
-			->method( 'get_required_verification_information' )
-			->willReturn( $mock_requirements );
-
-		$request = new WP_REST_Request( 'GET' );
-		$request->set_url_params(
-			[
-				'country'   => Country_Code::UNITED_STATES,
-				'type'      => 'company',
-				'structure' => 'sole_proprietor',
-			]
-		);
-		$response = $this->controller->get_required_verification_information( $request );
-
-		$this->assertSame( 200, $response->status );
-		$this->assertSame( [ 'data' => $mock_requirements ], $response->get_data() );
-	}
-
-	public function test_get_progressive_onboarding_eligible() {
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_onboarding_po_eligible' )
+			->method( 'create_embedded_kyc_session' )
 			->willReturn(
-				[
-					'result' => 'eligible',
-					'data'   => [],
-				]
+				$kyc_session
 			);
 
 		$request = new WP_REST_Request( 'POST' );
 		$request->set_body_params(
 			[
-				'business'        => [
-					'country' => Country_Code::UNITED_STATES,
-					'type'    => 'company',
-					'mcc'     => 'most_popular__software_services',
-				],
-				'store'           => [
-					'annual_revenue'    => 'less_than_250k',
-					'go_live_timeframe' => 'within_1month',
-				],
-				'woo_store_stats' => [],
+				'progressive'         => true,
+				'create_live_account' => true,
 			]
 		);
 
-		$response = $this->controller->get_progressive_onboarding_eligible( $request );
+		$response = $this->controller->create_embedded_kyc_session( $request );
 		$this->assertSame( 200, $response->status );
 		$this->assertSame(
-			[
-				'result' => 'eligible',
-				'data'   => [],
-			],
+			array_merge(
+				$kyc_session,
+				[
+					'locale' => 'en_US',
+				]
+			),
 			$response->get_data()
 		);
 	}
 
-	public function test_get_progressive_onboarding_not_eligible() {
-		$this->mock_api_client
+	public function test_finalize_embedded_kyc() {
+		$response_data = [
+			'success'           => true,
+			'account_id'        => 'acct_1PvxJQQujq4nxoo6',
+			'details_submitted' => true,
+			'mode'              => 'test',
+			'promotion_id'      => null,
+		];
+		$this->mock_onboarding_service
 			->expects( $this->once() )
-			->method( 'get_onboarding_po_eligible' )
+			->method( 'finalize_embedded_kyc' )
 			->willReturn(
-				[
-					'result' => 'not_eligible',
-					'data'   => [],
-				]
+				$response_data
 			);
 
 		$request = new WP_REST_Request( 'POST' );
 		$request->set_body_params(
 			[
-
-				'business'        => [
-					'country' => Country_Code::UNITED_STATES,
-					'type'    => 'company',
-					'mcc'     => 'most_popular__software_services',
-				],
-				'store'           => [
-					'annual_revenue'    => 'from_1m_to_20m',
-					'go_live_timeframe' => 'from_1_to_3months', // Fails because of the go live timeframe.
-				],
-				'woo_store_stats' => [],
+				'source' => 'embedded',
+				'from'   => 'wcpay-connect',
 			]
 		);
 
-		$response = $this->controller->get_progressive_onboarding_eligible( $request );
+		$response = $this->controller->finalize_embedded_kyc( $request );
 		$this->assertSame( 200, $response->status );
 		$this->assertSame(
-			[
-				'result' => 'not_eligible',
-				'data'   => [],
-			],
+			array_merge(
+				$response_data,
+				[
+					'params' => [
+						'promo'                    => '',
+						'from'                     => 'wcpay-connect',
+						'source'                   => 'embedded',
+						'wcpay-connection-success' => '1',
+					],
+				]
+			),
 			$response->get_data()
 		);
 	}

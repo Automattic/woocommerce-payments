@@ -26,12 +26,12 @@ interface Props {
 	currentPage: CurrentPage;
 	actions?: React.ComponentProps< typeof BannerNotice >[ 'actions' ];
 	isDetailsView?: boolean;
-	isDevMode?: boolean;
+	isTestModeOnboarding?: boolean;
 }
 
 const nounToUse = {
 	documents: __( 'document', 'woocommerce-payments' ),
-	deposits: __( 'deposit', 'woocommerce-payments' ),
+	deposits: __( 'payout', 'woocommerce-payments' ),
 	disputes: __( 'dispute', 'woocommerce-payments' ),
 	loans: __( 'loan', 'woocommerce-payments' ),
 	payments: __( 'order', 'woocommerce-payments' ),
@@ -50,11 +50,11 @@ const verbToUse = {
 const getNoticeContent = (
 	currentPage: CurrentPage,
 	isDetailsView: boolean,
-	isDevMode: boolean
+	isTestModeOnboarding: boolean
 ): JSX.Element => {
 	switch ( currentPage ) {
 		case 'overview':
-			return isDevMode ? (
+			return isTestModeOnboarding ? (
 				<>
 					{ interpolateComponents( {
 						mixedString: sprintf(
@@ -143,7 +143,9 @@ const getNoticeContent = (
 								'Viewing test %1$s. To view live %1s, disable test mode in {{settingsLink}}%2s settings{{/settingsLink}}.',
 								'woocommerce-payments'
 							),
-							currentPage,
+							'deposits' === currentPage
+								? 'payouts'
+								: currentPage,
 							'WooPayments'
 						),
 						components: {
@@ -163,7 +165,7 @@ export const TestModeNotice: React.FC< Props > = ( {
 	currentPage,
 	actions,
 	isDetailsView = false,
-	isDevMode = false,
+	isTestModeOnboarding = false,
 } ) => {
 	if ( ! isInTestMode() ) return null;
 
@@ -173,7 +175,11 @@ export const TestModeNotice: React.FC< Props > = ( {
 			isDismissible={ false }
 			actions={ actions }
 		>
-			{ getNoticeContent( currentPage, isDetailsView, isDevMode ) }
+			{ getNoticeContent(
+				currentPage,
+				isDetailsView,
+				isTestModeOnboarding
+			) }
 		</BannerNotice>
 	);
 };

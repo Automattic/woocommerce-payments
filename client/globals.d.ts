@@ -2,27 +2,39 @@
  * Internal dependencies
  */
 import type { MccsDisplayTreeItem, Country } from 'onboarding/types';
+import { PaymentMethodToPluginsMap } from './components/duplicate-notice';
+import { WCPayExpressCheckoutParams } from './express-checkout/utils';
 
 declare global {
 	const wcpaySettings: {
 		version: string;
 		connectUrl: string;
+		overviewUrl: string;
 		isSubscriptionsActive: boolean;
 		featureFlags: {
 			customSearch: boolean;
+			woopay: boolean;
+			documents: boolean;
+			woopayExpressCheckout: boolean;
 			isAuthAndCaptureEnabled: boolean;
 			paymentTimeline: boolean;
 			isDisputeIssuerEvidenceEnabled: boolean;
-			isPaymentOverviewWidgetEnabled?: boolean;
+			isNewEvidenceSubmissionFormEnabled: boolean;
+			multiCurrency?: boolean;
 		};
+		accountFees: Record< string, any >;
 		fraudServices: unknown[];
 		testMode: boolean;
+		testModeOnboarding: boolean;
 		devMode: boolean;
 		isJetpackConnected: boolean;
 		isJetpackIdcActive: boolean;
-		accountStatus: {
+		isAccountConnected: boolean;
+		isAccountValid: boolean;
+		accountStatus: Partial< {
 			email?: string;
 			created: string;
+			isLive?: boolean;
 			error?: boolean;
 			status?: string;
 			country?: string;
@@ -41,7 +53,6 @@ declare global {
 				minimum_manual_deposit_amounts: Record< string, number >;
 				minimum_scheduled_deposit_amounts: Record< string, number >;
 			};
-			depositsStatus?: string;
 			currentDeadline?: bigint;
 			detailsSubmitted?: boolean;
 			pastDue?: boolean;
@@ -64,7 +75,17 @@ declare global {
 				declineOnAVSFailure: boolean;
 				declineOnCVCFailure: boolean;
 			};
-		};
+			/**
+			 * Campaigns are temporary flags that are used to enable/disable features for a limited time.
+			 */
+			campaigns: {
+				/**
+				 * The flag for the WordPress.org merchant review campaign in 2025.
+				 * Eligibility is determined per-account on transact-platform-server.
+				 */
+				wporgReview2025: boolean;
+			};
+		} >;
 		accountLoans: {
 			has_active_loan: boolean;
 			has_past_loans: boolean;
@@ -85,17 +106,13 @@ declare global {
 			isWelcomeTourDismissed?: boolean;
 		};
 		progressiveOnboarding?: {
-			isNewFlowEnabled: boolean;
 			isEnabled: boolean;
 			isComplete: boolean;
 			isEligibilityModalDismissed: boolean;
 		};
-		enabledPaymentMethods: string[];
-		dismissedDuplicateNotices: string[];
+		dismissedDuplicateNotices: PaymentMethodToPluginsMap;
 		accountDefaultCurrency: string;
 		isFRTReviewFeatureActive: boolean;
-		frtDiscoverBannerSettings: string;
-		onboardingTestMode: boolean;
 		onboardingFieldsData?: {
 			business_types: Country[];
 			mccs_display_tree: MccsDisplayTreeItem[];
@@ -115,15 +132,31 @@ declare global {
 		isWooPayStoreCountryAvailable: boolean;
 		isSubscriptionsPluginActive: boolean;
 		isStripeBillingEligible: boolean;
-		capabilityRequestNotices: Record< string, boolean >;
 		storeName: string;
 		isNextDepositNoticeDismissed: boolean;
-		reporting: {
-			exportModalDismissed?: boolean;
-		};
-		locale: {
+		isInstantDepositNoticeDismissed: boolean;
+		isConnectionSuccessModalDismissed: boolean;
+		isWCReactifySettingsFeatureEnabled: boolean;
+		userLocale: {
+			/**
+			 * The locale of the current user profile, represented as a locale code supported by transact-platform-server.
+			 *
+			 * @example 'es' // Spanish
+			 *
+			 * @see WC_Payments_Utils::convert_locale_to_language_code
+			 */
 			code: string;
+			/**
+			 * The English name of the locale.
+			 *
+			 * @example 'Spanish'
+			 */
 			english_name: string;
+			/**
+			 * The native name of the locale.
+			 *
+			 * @example 'Español'
+			 */
 			native_name: string;
 		};
 		trackingInfo?: {
@@ -131,9 +164,33 @@ declare global {
 		};
 		isOverviewSurveySubmitted: boolean;
 		lifetimeTPV: number;
+		defaultExpressCheckoutBorderRadius: string;
+		dateFormat: string;
+		timeFormat: string;
 	};
 
+	const wooPaymentsPaymentMethodDefinitions: Record<
+		string,
+		PaymentMethodServerDefinition
+	>;
+
+	const wooPaymentsPaymentMethodsConfig: Record<
+		string,
+		{
+			isReusable: boolean;
+			isBnpl: boolean;
+			title: string;
+			icon: string;
+			darkIcon: string;
+			showSaveOption: boolean;
+			countries: string[];
+			testingInstructions: string;
+			forceNetworkSavedCards: boolean;
+		}
+	>;
+
 	const wc: {
+		wcSettings: typeof wcSettingsModule;
 		tracks: {
 			recordEvent: (
 				eventName: string,
@@ -167,12 +224,65 @@ declare global {
 					woocommerce_all_except_countries: string[];
 					woocommerce_specific_allowed_countries: string[];
 					woocommerce_default_country: string;
+					woocommerce_store_address: string;
+					woocommerce_store_address_2: string;
+					woocommerce_store_city: string;
+					woocommerce_store_postcode: string;
 				};
 			};
+			siteVisibilitySettings: {
+				woocommerce_share_key: string;
+				woocommerce_coming_soon: string;
+				woocommerce_private_link: string;
+			};
+			timeZone: string;
 		};
 		adminUrl: string;
 		countries: Record< string, string >;
 		homeUrl: string;
+		locale: {
+			/**
+			 * The locale of the current site, as set in WP Admin → Settings → General.
+			 *
+			 * @example 'en_AU' // English (Australia)
+			 */
+			siteLocale: string;
+			/**
+			 * The locale of the current user profile, as set in WP Admin → Users → Profile → Language.
+			 *
+			 * @example 'en_UK' // English (United Kingdom)
+			 */
+			userLocale: string;
+		};
 		siteTitle: string;
+		wcVersion: string;
 	};
+
+	const wcpayPluginSettings: {
+		exitSurveyLastShown: string | null;
+	};
+
+	interface WcSettings {
+		ece_data?: WCPayExpressCheckoutParams;
+		woocommerce_payments_data: typeof wcpaySettings;
+	}
+
+	const wcSettingsModule: {
+		getSetting: <
+			K extends keyof WcSettings,
+			T extends WcSettings[ K ] | undefined
+		>(
+			setting: K,
+			fallback?: T
+		) => WcSettings[ K ] | T;
+	};
+
+	interface Window {
+		wcpaySettings: typeof wcpaySettings;
+		wc: typeof wc;
+		wcTracks: typeof wcTracks;
+		wcSettings: typeof wcSettings;
+		wcpayPluginSettings?: typeof wcpayPluginSettings;
+		wooPaymentsPaymentMethodsConfig?: typeof wooPaymentsPaymentMethodsConfig;
+	}
 }

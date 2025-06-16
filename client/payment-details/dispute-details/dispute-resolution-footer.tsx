@@ -2,12 +2,15 @@
  * External dependencies
  */
 import React from 'react';
-import moment from 'moment';
-import { dateI18n } from '@wordpress/date';
 import { __, sprintf } from '@wordpress/i18n';
 import { Link } from '@woocommerce/components';
 import { createInterpolateElement } from '@wordpress/element';
-import { Button, CardFooter, Flex, FlexItem } from '@wordpress/components';
+import {
+	Button,
+	CardFooter,
+	Flex,
+	FlexItem,
+} from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies
@@ -17,18 +20,15 @@ import { recordEvent } from 'tracks';
 import { getAdminUrl } from 'wcpay/utils';
 import { getDisputeFeeFormatted } from 'wcpay/disputes/utils';
 import './style.scss';
+import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 
 const DisputeUnderReviewFooter: React.FC< {
 	dispute: Pick< Dispute, 'id' | 'metadata' | 'status' >;
-} > = ( { dispute } ) => {
+	bankName: string | null;
+} > = ( { dispute, bankName } ) => {
 	const submissionDateFormatted = dispute.metadata.__evidence_submitted_at
-		? dateI18n(
-				'M j, Y',
-				moment
-					.unix(
-						parseInt( dispute.metadata.__evidence_submitted_at, 10 )
-					)
-					.toISOString()
+		? formatDateTimeFromTimestamp(
+				parseInt( dispute.metadata.__evidence_submitted_at, 10 )
 		  )
 		: '-';
 
@@ -37,14 +37,24 @@ const DisputeUnderReviewFooter: React.FC< {
 			<Flex justify="space-between">
 				<FlexItem>
 					{ createInterpolateElement(
-						sprintf(
-							/* Translators: %s - formatted date, <a> - link to documentation page */
-							__(
-								'You submitted evidence for this dispute on %s. The cardholder’s bank is reviewing the case, which can take 60 days or more. You will be alerted when they make their final decision. <a>Learn more about the dispute process</a>.',
-								'woocommerce-payments'
-							),
-							submissionDateFormatted
-						),
+						bankName
+							? sprintf(
+									/* Translators: %1$s - bank name, %2$s - formatted date, <a> - link to documentation page */
+									__(
+										'You submitted evidence for this dispute on %1$s. <strong>%2$s</strong> is reviewing the case, which can take 60 days or more. You will be alerted when they make their final decision. <a>Learn more about the dispute process</a>.',
+										'woocommerce-payments'
+									),
+									submissionDateFormatted,
+									bankName
+							  )
+							: sprintf(
+									/* Translators: %s - formatted date, <a> - link to documentation page */
+									__(
+										'You submitted evidence for this dispute on %s. The <strong>cardholder’s bank</strong> is reviewing the case, which can take 60 days or more. You will be alerted when they make their final decision. <a>Learn more about the dispute process</a>.',
+										'woocommerce-payments'
+									),
+									submissionDateFormatted
+							  ),
 						{
 							a: (
 								// eslint-disable-next-line jsx-a11y/anchor-has-content -- Link content is provided by createInterpolateElement
@@ -54,6 +64,7 @@ const DisputeUnderReviewFooter: React.FC< {
 									href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
 								/>
 							),
+							strong: <strong />,
 						}
 					) }
 				</FlexItem>
@@ -91,15 +102,11 @@ const DisputeUnderReviewFooter: React.FC< {
 
 const DisputeWonFooter: React.FC< {
 	dispute: Pick< Dispute, 'id' | 'metadata' | 'status' >;
-} > = ( { dispute } ) => {
+	bankName: string | null;
+} > = ( { dispute, bankName } ) => {
 	const closedDateFormatted = dispute.metadata.__dispute_closed_at
-		? dateI18n(
-				'M j, Y',
-				moment
-					.unix(
-						parseInt( dispute.metadata.__dispute_closed_at, 10 )
-					)
-					.toISOString()
+		? formatDateTimeFromTimestamp(
+				parseInt( dispute.metadata.__dispute_closed_at, 10 )
 		  )
 		: '-';
 
@@ -108,14 +115,24 @@ const DisputeWonFooter: React.FC< {
 			<Flex justify="space-between">
 				<FlexItem>
 					{ createInterpolateElement(
-						sprintf(
-							/* Translators: %s - formatted date, <a> - link to documentation page */
-							__(
-								'Good news! You won this dispute on %s. The disputed amount and the dispute fee have been credited back to your account. <a>Learn more about preventing disputes</a>.',
-								'woocommerce-payments'
-							),
-							closedDateFormatted
-						),
+						bankName
+							? sprintf(
+									/* Translators: %1$s - bank name, %2$s - formatted date, <a> - link to documentation page */
+									__(
+										'Good news! <strong>%1$s</strong> decided that you won the dispute on %2$s. The disputed amount and the dispute fee have been credited back to your account. <a>Learn more about preventing disputes</a>.',
+										'woocommerce-payments'
+									),
+									bankName,
+									closedDateFormatted
+							  )
+							: sprintf(
+									/* Translators: %s - formatted date, <a> - link to documentation page */
+									__(
+										'Good news! The <strong>cardholder’s bank</strong> decided that you won the dispute on %s. The disputed amount and the dispute fee have been credited back to your account. <a>Learn more about preventing disputes</a>.',
+										'woocommerce-payments'
+									),
+									closedDateFormatted
+							  ),
 						{
 							a: (
 								// eslint-disable-next-line jsx-a11y/anchor-has-content -- Link content is provided by createInterpolateElement
@@ -125,6 +142,7 @@ const DisputeWonFooter: React.FC< {
 									href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
 								/>
 							),
+							strong: <strong />,
 						}
 					) }
 				</FlexItem>
@@ -165,19 +183,15 @@ const DisputeLostFooter: React.FC< {
 		Dispute,
 		'id' | 'metadata' | 'status' | 'balance_transactions'
 	>;
-} > = ( { dispute } ) => {
+	bankName: string | null;
+} > = ( { dispute, bankName } ) => {
 	const isSubmitted = !! dispute.metadata.__evidence_submitted_at;
 	const isAccepted = dispute.metadata.__closed_by_merchant === '1';
 	const disputeFeeFormatted = getDisputeFeeFormatted( dispute, true ) ?? '-';
 
 	const closedDateFormatted = dispute.metadata.__dispute_closed_at
-		? dateI18n(
-				'M j, Y',
-				moment
-					.unix(
-						parseInt( dispute.metadata.__dispute_closed_at, 10 )
-					)
-					.toISOString()
+		? formatDateTimeFromTimestamp(
+				parseInt( dispute.metadata.__dispute_closed_at, 10 )
 		  )
 		: '-';
 
@@ -209,11 +223,36 @@ const DisputeLostFooter: React.FC< {
 		);
 	}
 
+	if ( isSubmitted ) {
+		if ( bankName ) {
+			messagePrefix = sprintf(
+				/* Translators: %1$s - bank name, %2$s - formatted date */
+				__(
+					'<strong>%1$s</strong> decided that you lost the dispute on %2$s.',
+					'woocommerce-payments'
+				),
+				bankName,
+				closedDateFormatted
+			);
+		} else {
+			messagePrefix = sprintf(
+				/* Translators: %s - formatted date */
+				__(
+					'The <strong>cardholder’s bank</strong> decided that you lost the dispute on %s',
+					'woocommerce-payments'
+				),
+				closedDateFormatted
+			);
+		}
+	}
+
 	return (
 		<CardFooter className="transaction-details-dispute-footer">
 			<Flex justify="space-between">
 				<FlexItem>
-					{ messagePrefix }{ ' ' }
+					{ createInterpolateElement( messagePrefix, {
+						strong: <strong />,
+					} ) }{ ' ' }
 					{ createInterpolateElement(
 						sprintf(
 							/* Translators: %1$s – the formatted dispute fee amount, <a> - link to documentation page */
@@ -272,15 +311,11 @@ const DisputeLostFooter: React.FC< {
 
 const InquiryUnderReviewFooter: React.FC< {
 	dispute: Pick< Dispute, 'id' | 'metadata' | 'status' >;
-} > = ( { dispute } ) => {
+	bankName: string | null;
+} > = ( { dispute, bankName } ) => {
 	const submissionDateFormatted = dispute.metadata.__evidence_submitted_at
-		? dateI18n(
-				'M j, Y',
-				moment
-					.unix(
-						parseInt( dispute.metadata.__evidence_submitted_at, 10 )
-					)
-					.toISOString()
+		? formatDateTimeFromTimestamp(
+				parseInt( dispute.metadata.__evidence_submitted_at, 10 )
 		  )
 		: '-';
 
@@ -289,14 +324,24 @@ const InquiryUnderReviewFooter: React.FC< {
 			<Flex justify="space-between">
 				<FlexItem>
 					{ createInterpolateElement(
-						sprintf(
-							/* Translators: %s - formatted date, <a> - link to documentation page */
-							__(
-								'You submitted evidence for this inquiry on %s. The cardholder’s bank is reviewing the case, which can take 120 days or more. You will be alerted when they make their final decision. <a>Learn more</a>.',
-								'woocommerce-payments'
-							),
-							submissionDateFormatted
-						),
+						bankName
+							? sprintf(
+									/* Translators: %1$s - bank name, %2$s - formatted date, <a> - link to documentation page */
+									__(
+										'You submitted evidence for this inquiry on %1$s. <strong>%2$s</strong> is reviewing the case, which can take 120 days or more. You will be alerted when they make their final decision. <a>Learn more</a>.',
+										'woocommerce-payments'
+									),
+									submissionDateFormatted,
+									bankName
+							  )
+							: sprintf(
+									/* Translators: %s - formatted date, <a> - link to documentation page */
+									__(
+										'You submitted evidence for this inquiry on %s. The <strong>cardholder’s bank</strong> is reviewing the case, which can take 120 days or more. You will be alerted when they make their final decision. <a>Learn more</a>.',
+										'woocommerce-payments'
+									),
+									submissionDateFormatted
+							  ),
 						{
 							a: (
 								// eslint-disable-next-line jsx-a11y/anchor-has-content -- Link content is provided by createInterpolateElement
@@ -306,6 +351,7 @@ const InquiryUnderReviewFooter: React.FC< {
 									href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries"
 								/>
 							),
+							strong: <strong />,
 						}
 					) }
 				</FlexItem>
@@ -346,13 +392,8 @@ const InquiryClosedFooter: React.FC< {
 } > = ( { dispute } ) => {
 	const isSubmitted = !! dispute.metadata.__evidence_submitted_at;
 	const closedDateFormatted = dispute.metadata.__dispute_closed_at
-		? dateI18n(
-				'M j, Y',
-				moment
-					.unix(
-						parseInt( dispute.metadata.__dispute_closed_at, 10 )
-					)
-					.toISOString()
+		? formatDateTimeFromTimestamp(
+				parseInt( dispute.metadata.__dispute_closed_at, 10 )
 		  )
 		: '-';
 
@@ -421,18 +462,29 @@ const DisputeResolutionFooter: React.FC< {
 		Dispute,
 		'id' | 'metadata' | 'status' | 'balance_transactions'
 	>;
-} > = ( { dispute } ) => {
+	bankName: string | null;
+} > = ( { dispute, bankName } ) => {
 	if ( dispute.status === 'under_review' ) {
-		return <DisputeUnderReviewFooter dispute={ dispute } />;
+		return (
+			<DisputeUnderReviewFooter
+				dispute={ dispute }
+				bankName={ bankName }
+			/>
+		);
 	}
 	if ( dispute.status === 'won' ) {
-		return <DisputeWonFooter dispute={ dispute } />;
+		return <DisputeWonFooter dispute={ dispute } bankName={ bankName } />;
 	}
 	if ( dispute.status === 'lost' ) {
-		return <DisputeLostFooter dispute={ dispute } />;
+		return <DisputeLostFooter dispute={ dispute } bankName={ bankName } />;
 	}
 	if ( dispute.status === 'warning_under_review' ) {
-		return <InquiryUnderReviewFooter dispute={ dispute } />;
+		return (
+			<InquiryUnderReviewFooter
+				dispute={ dispute }
+				bankName={ bankName }
+			/>
+		);
 	}
 	if ( dispute.status === 'warning_closed' ) {
 		return <InquiryClosedFooter dispute={ dispute } />;

@@ -22,12 +22,9 @@ const cleanupURL = () => {
 };
 
 export const showAuthenticationModalIfRequired = ( api ) => {
-	const paymentMethodId = document.querySelector( '#wcpay-payment-method' )
-		?.value;
-
 	const confirmationRequest = api.confirmIntent(
 		window.location.href,
-		shouldSavePaymentPaymentMethod() ? paymentMethodId : null
+		shouldSavePaymentPaymentMethod()
 	);
 
 	// Boolean `true` means that there is nothing to confirm.

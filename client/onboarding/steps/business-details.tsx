@@ -16,9 +16,11 @@ import {
 	getMccsFlatList,
 } from 'onboarding/utils';
 import { BusinessType } from 'onboarding/types';
-import InlineNotice from 'components/inline-notice';
 import strings from 'onboarding/strings';
 
+/**
+ * Contains business and store details KYC logic.
+ */
 const BusinessDetails: React.FC = () => {
 	const { data, setData } = useOnboardingContext();
 	const countries = getAvailableCountries();
@@ -26,7 +28,7 @@ const BusinessDetails: React.FC = () => {
 	const mccsFlatList = getMccsFlatList();
 
 	const selectedCountry = businessTypes.find( ( country ) => {
-		// Special case for Puerto Rico as it's considered a separate country in Core, but the business country should be US
+		// Special case for Puerto Rico as it's considered a separate country in Core, but the business country should be US.
 		if ( data.country === 'PR' ) {
 			return country.key === 'US';
 		}
@@ -34,7 +36,13 @@ const BusinessDetails: React.FC = () => {
 		return country.key === data.country;
 	} );
 
-	const selectedBusinessType = selectedCountry?.types.find(
+	// Reorder the country business types so company is always first, if it exists.
+	const reorderedBusinessTypes = selectedCountry?.types.sort( ( a, b ) =>
+		// eslint-disable-next-line no-nested-ternary
+		a.key === 'company' ? -1 : b.key === 'company' ? 1 : 0
+	);
+
+	const selectedBusinessType = reorderedBusinessTypes?.find(
 		( type ) => type.key === data.business_type
 	);
 
@@ -43,8 +51,6 @@ const BusinessDetails: React.FC = () => {
 		selectedBusinessType?.structures.find(
 			( structure ) => structure.key === data[ 'company.structure' ]
 		);
-
-	const selectedMcc = mccsFlatList.find( ( mcc ) => mcc.key === data.mcc );
 
 	const handleTiedChange = (
 		name: keyof OnboardingFields,
@@ -63,33 +69,13 @@ const BusinessDetails: React.FC = () => {
 
 	return (
 		<>
-			{ selectedCountry && (
-				<InlineNotice
-					isDismissible={ false }
-					buttonVariant={ 'link' }
-					actions={ [
-						{
-							label: strings.inlineNotice.action,
-							onClick: () => handleTiedChange( 'country', null ),
-						},
-					] }
-					status="info"
-				>
-					<div className="wcpay-inline-notice__content__title">
-						{ strings.inlineNotice.title }{ ' ' }
-						<b>{ selectedCountry.name }</b>
-					</div>
-				</InlineNotice>
-			) }
-			{ ! selectedCountry && (
-				<span data-testid={ 'country-select' }>
-					<OnboardingSelectField
-						name="country"
-						options={ countries }
-						onChange={ handleTiedChange }
-					/>
-				</span>
-			) }
+			<span data-testid={ 'country-select' }>
+				<OnboardingSelectField
+					name="country"
+					options={ countries }
+					onChange={ handleTiedChange }
+				/>
+			</span>
 			{ selectedCountry && selectedCountry.types.length > 0 && (
 				<span data-testid={ 'business-type-select' }>
 					<OnboardingSelectField
@@ -121,22 +107,18 @@ const BusinessDetails: React.FC = () => {
 			{ selectedCountry &&
 				selectedBusinessType &&
 				selectedBusinessStructure && (
-					<span data-testid={ 'mcc-select' }>
-						<OnboardingGroupedSelectField
-							name="mcc"
-							options={ mccsFlatList }
-							searchable
-						/>
-					</span>
-				) }
-
-			{ selectedCountry &&
-				selectedBusinessType &&
-				selectedBusinessStructure &&
-				selectedMcc && (
-					<span className={ 'wcpay-onboarding__tos' }>
-						{ strings.tos }
-					</span>
+					<>
+						<span data-testid={ 'mcc-select' }>
+							<OnboardingGroupedSelectField
+								name="mcc"
+								options={ mccsFlatList }
+								searchable
+							/>
+						</span>
+						<span className={ 'wcpay-onboarding__tos' }>
+							{ strings.tos }
+						</span>
+					</>
 				) }
 		</>
 	);

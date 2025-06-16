@@ -9,7 +9,6 @@ import { getQuery } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import { filters, advancedFilters } from './config';
-import './style.scss';
 
 export const DocumentsFilters = (): JSX.Element => {
 	return (

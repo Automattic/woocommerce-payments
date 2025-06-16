@@ -9,15 +9,24 @@ import interpolateComponents from '@automattic/interpolate-components';
 
 export default {
 	button: {
+		// CTA label to use when there isn't a working WPCOM/Jetpack connection.
 		jetpack_not_connected: __(
 			'Connect your store',
 			'woocommerce-payments'
 		),
-		jetpack_connected: __(
+		// CTA label to use when there is a working WPCOM/Jetpack connection but no Stripe account connected.
+		account_not_connected: __(
 			'Verify business details',
 			'woocommerce-payments'
 		),
+		// CTA label to use when there is a working WPCOM/Jetpack connection and a Stripe account connected,
+		// but only partially onboarded (not valid).
+		account_invalid: __(
+			'Finish business details verifications',
+			'woocommerce-payments'
+		),
 		sandbox: __( 'Enable sandbox mode', 'woocommerce-payments' ),
+		reset: __( 'Reset account', 'woocommerce-payments' ),
 	},
 	heading: ( firstName?: string ): string =>
 		sprintf(
@@ -26,6 +35,20 @@ export default {
 			firstName ? ` ${ firstName }` : '',
 			'WooPayments'
 		),
+	paymentMethods: {
+		deposits: {
+			title: __( 'Payouts', 'woocommerce-payments' ),
+			value: __( 'Automatic - Daily', 'woocommerce-payments' ),
+		},
+		capture: {
+			title: __( 'Payments capture', 'woocommerce-payments' ),
+			value: __( 'Capture on order', 'woocommerce-payments' ),
+		},
+		recurring: {
+			title: __( 'Recurring payments', 'woocommerce-payments' ),
+			value: __( 'Supported', 'woocommerce-payments' ),
+		},
+	},
 	usp1: __(
 		'Offer card payments, Apple Pay, iDeal, Affirm, Afterpay, and accept in-person payments with the Woo mobile app.',
 		'woocommerce-payments'
@@ -35,7 +58,7 @@ export default {
 		'woocommerce-payments'
 	),
 	usp3: __(
-		'Earn recurring revenue and get deposits into your bank account.',
+		'Earn recurring revenue and get payouts into your bank account.',
 		'woocommerce-payments'
 	),
 	sandboxMode: {
@@ -69,6 +92,14 @@ export default {
 			),
 		},
 	} ),
+	setupErrorNotice: sprintf(
+		/* translators: 1: WooPayments. */
+		__(
+			'Please <b>complete your %1$s setup</b> to process payments.',
+			'woocommerce-payments'
+		),
+		'WooPayments'
+	),
 	infoNotice: {
 		description: {
 			jetpack_connected: __(
@@ -80,7 +111,7 @@ export default {
 				'woocommerce-payments'
 			),
 		},
-		button: __( 'enable deposits.', 'woocommerce-payments' ),
+		button: __( 'enable payouts.', 'woocommerce-payments' ),
 	},
 	infoModal: {
 		title: sprintf(
@@ -221,7 +252,7 @@ export default {
 	step2: {
 		heading: __( 'Provide a few business details', 'woocommerce-payments' ),
 		description: __(
-			'Next we’ll ask you to verify your business and payment details to enable deposits.',
+			'Next we’ll ask you to verify your business and payment details to enable payouts.',
 			'woocommerce-payments'
 		),
 	},

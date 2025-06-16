@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Remove legacy method from `WooPay_Utilities`.

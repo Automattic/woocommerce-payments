@@ -17,35 +17,55 @@ if [[ -f "$E2E_ROOT/config/local.env" ]]; then
 	. "$E2E_ROOT/config/local.env"
 fi
 
+# Function to handle permissions in a cross-platform way
+handle_permissions() {
+    local path=$1
+    if [[ "$(uname)" == "Darwin" ]]; then
+        # For MacOS environments, use less strict permissions
+        echo "Setting MacOS compatible permissions for $path"
+        chmod -R 755 "$path"
+    else
+        # For Linux/CI environments
+        echo "Setting Linux/CI permissions for $path"
+        if ! sudo chown www-data:www-data -R "$path"; then
+            echo "Failed to set permissions on $path"
+            exit 1
+        fi
+    fi
+}
+
 # Variables
-BLOG_ID=${E2E_BLOG_ID-111}
-WC_GUEST_EMAIL=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.guest.email')
-WC_CUSTOMER_EMAIL=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.customer.email')
-WC_CUSTOMER_USERNAME=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.customer.username')
-WC_CUSTOMER_PASSWORD=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.customer.password')
-WP_ADMIN=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.admin.username')
-WP_ADMIN_PASSWORD=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.admin.password')
-WP_ADMIN_EMAIL=$(<"$DEFAULT_CONFIG_JSON_PATH" jq -r '.users.admin.email')
-SITE_TITLE="WooCommerce Payments E2E site"
+BLOG_ID=${E2E_JP_SITE_ID-111}
+WC_GUEST_EMAIL=$(<"$USERS_CONFIG_JSON_PATH" jq -r '.users.guest.email')
+WC_CUSTOMER_EMAIL=$(<"$USERS_CONFIG_JSON_PATH" jq -r '.users.customer.email')
+WC_CUSTOMER_USERNAME=$(<"$USERS_CONFIG_JSON_PATH" jq -r '.users.customer.username')
+WC_CUSTOMER_PASSWORD=$(<"$USERS_CONFIG_JSON_PATH" jq -r '.users.customer.password')
+WP_ADMIN=$(<"$USERS_CONFIG_JSON_PATH" jq -r '.users.admin.username')
+WP_ADMIN_PASSWORD=$(<"$USERS_CONFIG_JSON_PATH" jq -r '.users.admin.password')
+WP_ADMIN_EMAIL=$(<"$USERS_CONFIG_JSON_PATH" jq -r '.users.admin.email')
+WP_EDITOR=$(<"$USERS_CONFIG_JSON_PATH" jq -r '.users.editor.username')
+WP_EDITOR_PASSWORD=$(<"$USERS_CONFIG_JSON_PATH" jq -r '.users.editor.password')
+WP_EDITOR_EMAIL=$(<"$USERS_CONFIG_JSON_PATH" jq -r '.users.editor.email')
+SITE_TITLE="WooPayments E2E site"
 SITE_URL=$WP_URL
 
 if [[ $FORCE_E2E_DEPS_SETUP ]]; then
 	sudo rm -rf tests/e2e/deps
 fi
 
-# Setup WCPay local server instance.
+# Setup Transact Platform local server instance.
 # Only if E2E_USE_LOCAL_SERVER is present & equals to true.
 if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	if [[ ! -d "$SERVER_PATH" ]]; then
-		step "Fetching server (branch ${WCP_SERVER_BRANCH-trunk})"
+		step "Fetching server (branch ${TRANSACT_PLATFORM_SERVER_BRANCH-trunk})"
 
-		if [[ -z $WCP_SERVER_REPO ]]; then
-			echo "WCP_SERVER_REPO env variable is not defined"
+		if [[ -z $TRANSACT_PLATFORM_SERVER_REPO ]]; then
+			echo "TRANSACT_PLATFORM_SERVER_REPO env variable is not defined"
 			exit 1;
 		fi
 
 		rm -rf "$SERVER_PATH"
-		git clone --depth=1 --branch "${WCP_SERVER_BRANCH-trunk}" "$WCP_SERVER_REPO" "$SERVER_PATH"
+		git clone --depth=1 --branch "${TRANSACT_PLATFORM_SERVER_BRANCH-trunk}" "$TRANSACT_PLATFORM_SERVER_REPO" "$SERVER_PATH"
 	else
 		echo "Using cached server at ${SERVER_PATH}"
 	fi
@@ -60,12 +80,14 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	define( 'WCPAY_STRIPE_LIVE_PUBLIC_KEY', 'pk_live_XXXXXXX' );
 	define( 'WCPAY_STRIPE_LIVE_SECRET_KEY', 'sk_live_XXXXXXX' );
 	define( 'WCPAY_ONBOARDING_ENCRYPT_KEY', str_repeat( 'a', SODIUM_CRYPTO_SECRETBOX_KEYBYTES ) );
+	define( 'WOOPAY_URL', 'https://pay.woo.com' );
+	define( 'WOOPAY_BLOG_ID', '$E2E_WOOPAY_BLOG_ID' );
 	"
 	printf "$SECRETS" > "local/secrets.php"
 	echo "Secrets created"
 
 	step "Starting SERVER containers"
-	redirect_output docker-compose -f docker-compose.yml -f docker-compose.e2e.yml up --build --force-recreate -d
+	redirect_output docker compose -f docker-compose.yml -f docker-compose.e2e.yml up --build --force-recreate -d
 
 	# Get WordPress instance port number from running containers, and print a debug line to show if it works.
 	WP_LISTEN_PORT=$(docker ps | grep "$SERVER_CONTAINER" | sed -En "s/.*0:([0-9]+).*/\1/p")
@@ -73,8 +95,9 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 
 	if [[ -n $CI ]]; then
 		echo "Setting docker folder permissions"
-		redirect_output sudo chown www-data:www-data -R ./docker/wordpress
-		redirect_output ls -al ./docker
+		handle_permissions "$SERVER_PATH/docker/wordpress"
+		touch "$SERVER_PATH/logstash.log"
+		handle_permissions "$SERVER_PATH/logstash.log"
 	fi
 
 	step "Setting up SERVER containers"
@@ -82,6 +105,9 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 
 	step "Configuring server with stripe account"
 	"$SERVER_PATH"/local/bin/link-account.sh "$BLOG_ID" "$E2E_WCPAY_STRIPE_ACCOUNT_ID" test 1 1
+
+	step "Ensuring the site has the required flags for the e2e tests running against the local server"
+	"$SERVER_PATH"/local/bin/setup-account-metas.sh "$BLOG_ID"
 
 	if [[ -n $CI ]]; then
 		step "Disable Xdebug on server container"
@@ -104,9 +130,9 @@ if [[ ! -d "$DEV_TOOLS_PATH" ]]; then
 fi
 
 step "Starting CLIENT containers"
-redirect_output docker-compose -f "$E2E_ROOT"/env/docker-compose.yml up --build --force-recreate -d wordpress
+redirect_output docker compose -f "$E2E_ROOT"/env/docker-compose.yml up --build --force-recreate -d wordpress
 if [[ -z $CI ]]; then
-	docker-compose -f "$E2E_ROOT"/env/docker-compose.yml up --build --force-recreate -d phpMyAdmin
+	docker compose -f "$E2E_ROOT"/env/docker-compose.yml up --build --force-recreate -d phpMyAdmin
 fi
 
 if [[ -n $CI ]]; then
@@ -121,11 +147,11 @@ step "Setting up CLIENT site"
 # Wait for containers to be started up before the setup.
 # The db being accessible means that the db container started and the WP has been downloaded and the plugin linked
 set +e
-cli wp db check --path=/var/www/html --quiet > /dev/null
+cli wp db check --skip_ssl --path=/var/www/html --quiet > /dev/null
 while [[ $? -ne 0 ]]; do
 	echo "Waiting until the service is ready..."
 	sleep 5
-	cli wp db check --path=/var/www/html --quiet > /dev/null
+	cli wp db check --skip_ssl --path=/var/www/html --quiet > /dev/null
 done
 echo "Client DB is up and running..."
 set -e
@@ -136,7 +162,7 @@ echo
 
 if [[ -n $CI ]]; then
 	echo "Setting docker folder permissions"
-	redirect_output sudo chown www-data:www-data -R "$E2E_ROOT"/docker/wordpress/wp-content
+	handle_permissions "$E2E_ROOT/docker/wordpress/wp-content"
 	redirect_output ls -al "$E2E_ROOT"/docker/wordpress
 fi
 
@@ -169,6 +195,10 @@ if [[ "$DEBUG" != true ]]; then
 	cli wp config set WP_DEBUG_DISPLAY false --raw
 	cli wp config set WP_DEBUG_LOG true --raw
 fi
+
+# Ensuring that the jetpack "account protection" feature is disabled,
+# since the passwords for the locally run e2e tests can be allowed to be weak.
+cli wp config set DISABLE_JETPACK_ACCOUNT_PROTECTION true --raw
 
 echo "Updating permalink structure"
 cli wp rewrite structure '/%postname%/'
@@ -208,12 +238,19 @@ cli wp option set woocommerce_product_type "both"
 cli wp option set woocommerce_allow_tracking "no"
 cli wp option set woocommerce_enable_signup_and_login_from_checkout "yes"
 
+echo "Deactivating Coming Soon mode in WooCommerce..."
+cli wp option set woocommerce_coming_soon "no"
+
+echo "Enabling company field as an optional parameter in checkout form..."
+cli wp option set woocommerce_checkout_company_field "optional"
+
 echo "Importing WooCommerce shop pages..."
 cli wp wc --user=admin tool run install_pages
 
+INSTALLED_WC_VERSION=$(cli_debug wp plugin get woocommerce --field=version)
+
 # Start - Workaround for > WC 8.3 compatibility by updating cart & checkout pages to use shortcode.
 # To be removed when WooPayments L-2 support is >= WC 8.3
-INSTALLED_WC_VERSION=$(cli_debug wp plugin get woocommerce --field=version)
 IS_WORKAROUND_REQUIRED=$(cli_debug wp eval "echo version_compare(\"$INSTALLED_WC_VERSION\", \"8.3\", \">=\");")
 
 if [[ "$IS_WORKAROUND_REQUIRED" = "1" ]]; then
@@ -225,9 +262,17 @@ if [[ "$IS_WORKAROUND_REQUIRED" = "1" ]]; then
 	CART_SHORTCODE="<!-- wp:shortcode -->[woocommerce_cart]<!-- /wp:shortcode -->"
 	CHECKOUT_SHORTCODE="<!-- wp:shortcode -->[woocommerce_checkout]<!-- /wp:shortcode -->"
 
+	# Ensuring that a "checkout-wcb" page exists, which is the one that will contain the "WooCommerce Blocks" checkout
+	cli wp post create --from-post="$CHECKOUT_PAGE_ID" --post_type="page" --post_title="Checkout WCB" --post_status="publish" --post_name="checkout-wcb"
+	CHECKOUT_WCB_PAGE_ID=$(cli_debug wp post url-to-id checkout-wcb)
+
 	# Update cart & checkout pages to use shortcode.
 	cli wp post update "$CART_PAGE_ID" --post_content="$CART_SHORTCODE"
 	cli wp post update "$CHECKOUT_PAGE_ID" --post_content="$CHECKOUT_SHORTCODE"
+
+	# making the checkout pages full width, so that the sidebar doesn't take too much room in the UI.
+	cli wp post meta update "$CHECKOUT_PAGE_ID" _wp_page_template "template-fullwidth.php"
+	cli wp post meta update "$CHECKOUT_WCB_PAGE_ID" _wp_page_template "template-fullwidth.php"
 fi
 # End - Workaround for > WC 8.3 compatibility by updating cart & checkout pages to use shortcode.
 
@@ -243,25 +288,28 @@ cli wp user delete "$WC_GUEST_EMAIL" --yes
 echo "Adding customer account ..."
 cli wp user create "$WC_CUSTOMER_USERNAME" "$WC_CUSTOMER_EMAIL" --role=customer --user_pass="$WC_CUSTOMER_PASSWORD"
 
+echo "Adding editor account ..."
+cli wp user create "$WP_EDITOR" "$WP_EDITOR_EMAIL" --role=editor --user_pass="$WP_EDITOR_PASSWORD"
+
 # TODO: Build a zip and use it to install plugin to make sure production build is under test.
 if [[ "$WCPAY_USE_BUILD_ARTIFACT" = true ]]; then
-	echo "Creating WooCommerce Payments zip file from GitHub artifact..."
+	echo "Creating WooPayments zip file from GitHub artifact..."
 	mv "$WCPAY_ARTIFACT_DIRECTORY"/woocommerce-payments "$WCPAY_ARTIFACT_DIRECTORY"/woocommerce-payments-build
     cd "$WCPAY_ARTIFACT_DIRECTORY" && zip -r "$cwd"/woocommerce-payments-build.zip . && cd "$cwd"
 
-	echo "Installing & activating the WooCommerce Payments plugin using the zip file created..."
+	echo "Installing & activating the WooPayments plugin using the zip file created..."
 	cli wp plugin install wp-content/plugins/woocommerce-payments/woocommerce-payments-build.zip --activate
 else
-	echo "Activating the WooCommerce Payments plugin..."
+	echo "Activating the WooPayments plugin..."
 	cli wp plugin activate woocommerce-payments
 fi
 
-echo "Setting up WooCommerce Payments..."
+echo "Setting up WooPayments..."
 if [[ "0" == "$(cli wp option list --search=woocommerce_woocommerce_payments_settings --format=count)" ]]; then
-	echo "Creating WooCommerce Payments settings"
+	echo "Creating WooPayments settings"
 	cli wp option set woocommerce_woocommerce_payments_settings --format=json '{"enabled":"yes"}'
 else
-	echo "Updating WooCommerce Payments settings"
+	echo "Updating WooPayments settings"
 	cli wp option set woocommerce_woocommerce_payments_settings --format=json '{"enabled":"yes"}'
 fi
 
@@ -286,7 +334,7 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	cli wp wcpay_dev refresh_account_data
 else
 	echo "Setting Jetpack blog_id"
-	cli wp wcpay_dev set_blog_id "$BLOG_ID" --blog_token="$E2E_BLOG_TOKEN" --user_token="$E2E_USER_TOKEN"
+	cli wp wcpay_dev set_blog_id "$BLOG_ID" --blog_token="$E2E_JP_BLOG_TOKEN" --user_token="$E2E_JP_USER_TOKEN"
 fi
 
 if [[ ! ${SKIP_WC_SUBSCRIPTIONS_TESTS} ]]; then
@@ -303,7 +351,7 @@ if [[ ! ${SKIP_WC_SUBSCRIPTIONS_TESTS} ]]; then
 
 	unzip -qq woocommerce-subscriptions.zip -d woocommerce-subscriptions-source
 
-	echo "Moving the unzipped plugin files. This may require your admin password"
+	echo "Moving the unzipped plugin files..."
 	sudo mv woocommerce-subscriptions-source/woocommerce-subscriptions/* woocommerce-subscriptions
 
 	cli wp plugin activate woocommerce-subscriptions
@@ -324,18 +372,35 @@ else
 	echo "Skipping install of Action Scheduler"
 fi
 
+echo "Removing some WooCommerce Core 'tour' options so they don't interfere with tests"
+cli wp option set woocommerce_orders_report_date_tour_shown yes
 
 echo "Creating screenshots directory"
 mkdir -p $WCP_ROOT/screenshots
+handle_permissions $WCP_ROOT/screenshots
 
 echo "Disabling rate limiter for card declined in E2E tests"
 cli wp option set wcpay_session_rate_limiter_disabled_wcpay_card_declined_registry yes
+
+echo "Dismissing fraud protection welcome tour in E2E tests"
+cli wp option set wcpay_fraud_protection_welcome_tour_dismissed 1
 
 echo "Removing all coupons ..."
 cli wp db query "DELETE p, m FROM wp_posts p LEFT JOIN wp_postmeta m ON p.ID = m.post_id WHERE p.post_type = 'shop_coupon'"
 
 echo "Setting up a coupon for E2E tests"
 cli wp wc --user=admin shop_coupon create --code=free --amount=100 --discount_type=percent --individual_use=true --free_shipping=true
+
+# HPOS was officially released in WooCommerce 8.2.0, so we need to check if we should sync COT or HPOS data.
+IS_HPOS_AVAILABLE=$(cli_debug wp eval "echo version_compare(\"$INSTALLED_WC_VERSION\", \"8.2\", \">=\");")
+
+if [[ ${IS_HPOS_AVAILABLE} ]]; then
+	echo "Syncing HPOS data"
+	cli wp wc hpos sync
+else
+	echo "Syncing COT data"
+	cli wp wc cot sync
+fi
 
 # Log test configuration for visibility
 echo

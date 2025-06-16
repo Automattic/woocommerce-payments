@@ -19,7 +19,7 @@
 
 	<!-- Configs -->
 	<config name="minimum_supported_wp_version" value="6.0" />
-	<config name="testVersion" value="7.3-" />
+	<config name="testVersion" value="7.3-7.4" />
 
 	<!-- Rules -->
 	<rule ref="WooCommerce-Core" >
@@ -36,7 +36,6 @@
 
 		<!-- FIXME: Remove these ignores once https://github.com/Automattic/woocommerce-payments/issues/8434 is closed. -->
 		<exclude name="WordPress.Security.EscapeOutput.ExceptionNotEscaped" />
-		<exclude name="WordPress.Security.EscapeOutput.OutputNotEscaped" />
 		<exclude name="WordPress.Security.ValidatedSanitizedInput.InputNotValidated" />
 
 		<!-- FIXME: Remove these ignores once https://github.com/Automattic/woocommerce-payments/issues/8436 is closed. -->
@@ -69,6 +68,7 @@
 	<rule ref="VariableAnalysis.CodeAnalysis.VariableAnalysis.UndefinedVariable">
 		<exclude-pattern>templates/emails/</exclude-pattern>
 		<exclude-pattern>includes/in-person-payments/templates/</exclude-pattern>
+		<exclude-pattern>includes/compat/subscriptions/emails</exclude-pattern>
 	</rule>
 
 	<!-- Disallow long array syntax -->
@@ -79,6 +79,16 @@
 			<property name="text_domain" type="array" value="woocommerce-payments" />
 		</properties>
 	</rule>
+
+	<!-- REMOVE BEFORE MERGING:Only for poc/centralized-payment-method-definitions -->
+	<rule ref="WordPress.Files.FileName.NotHyphenatedLowercase">
+		<exclude-pattern>includes/payment-methods/Configs/</exclude-pattern>
+	</rule>
+
+	<rule ref="WordPress.Files.FileName.InvalidClassFileName">
+		<exclude-pattern>includes/payment-methods/Configs/</exclude-pattern>
+	</rule>
+	<!-- END REMOVE BEFORE MERGING: poc/centralized-payment-method-definitions -->
 
 	<rule ref="WordPress.Security">
 		<exclude-pattern>./tests/*</exclude-pattern>
@@ -101,7 +111,7 @@
 
 	<rule ref="WordPress.Files.FileName">
 		<exclude-pattern>tests/*</exclude-pattern>
-		<exclude-pattern>includes/multi-currency</exclude-pattern>
+		<exclude-pattern>includes/multi-currency/*</exclude-pattern>
 		<exclude-pattern>src</exclude-pattern>
 	</rule>
 
@@ -111,6 +121,7 @@
 				<element value="manage_woocommerce" />
 				<element value="pay_for_order" />
 				<element value="read_private_shop_orders" />
+				<element value="edit_shop_subscription_payment_method" />
 			</property>
 		</properties>
 	</rule>
@@ -137,7 +148,7 @@
 	<rule ref="PEAR.WhiteSpace.ObjectOperatorIndent" />
 
 	<!-- Custom WCPay rules -->
-	<rule ref="./dev/phpcs/ruleset.xml"/>
+	<rule ref="./dev/phpcs/WCPay/ruleset.xml"/>
 
 	<!-- Check the class structure (ordering of methods, properties, etc.) -->
 	<rule ref="SlevomatCodingStandard.Classes.ClassStructure">

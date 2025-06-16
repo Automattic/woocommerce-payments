@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React, { useState, useLayoutEffect } from 'react';
+import React, { useState, useLayoutEffect, useEffect } from 'react';
 import { ExternalLink } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { getQuery } from '@woocommerce/navigation';
@@ -11,16 +11,16 @@ import { getQuery } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import AdvancedSettings from '../advanced-settings';
-import PaymentMethods from '../../payment-methods';
 import ExpressCheckout from '../express-checkout';
 import SettingsSection from '../settings-section';
 import GeneralSettings from '../general-settings';
-import ReportingSettings from '../reporting-settings';
 import SettingsLayout from '../settings-layout';
 import SaveSettingsSection from '../save-settings-section';
 import Transactions from '../transactions';
 import Deposits from '../deposits';
 import LoadableSettingsSection from '../loadable-settings-section';
+import PaymentMethodsSection from '../payment-methods-section';
+import BuyNowPayLaterSection from '../buy-now-pay-later-section';
 import ErrorBoundary from '../../components/error-boundary';
 import {
 	useDepositDelayDays,
@@ -28,24 +28,8 @@ import {
 	useSettings,
 } from '../../data';
 import FraudProtection from '../fraud-protection';
-import { isDefaultSiteLanguage } from 'wcpay/utils';
 import DuplicatedPaymentMethodsContext from './duplicated-payment-methods-context';
-
-const PaymentMethodsDescription = () => (
-	<>
-		<h2>
-			{ __( 'Payments accepted on checkout', 'woocommerce-payments' ) }
-		</h2>
-		<p>
-			{ __(
-				'Add and edit payments available to customers at checkout. ' +
-					'Based on their device type, location, and purchase history, ' +
-					'your customers will only see the most relevant payment methods.',
-				'woocommerce-payments'
-			) }
-		</p>
-	</>
-);
+import './style.scss';
 
 const ExpressCheckoutDescription = () => (
 	<>
@@ -99,17 +83,17 @@ const DepositsDescription = () => {
 
 	return (
 		<>
-			<h2>{ __( 'Deposits', 'woocommerce-payments' ) }</h2>
+			<h2>{ __( 'Payouts', 'woocommerce-payments' ) }</h2>
 			<p>
 				{ sprintf(
 					__(
-						'Funds are available for deposit %s business days after they’re received.',
+						'Funds are available for payout %s business days after they’re received.',
 						'woocommerce-payments'
 					),
 					depositDelayDays
 				) }
 			</p>
-			<ExternalLink href="https://woocommerce.com/document/woopayments/deposits/deposit-schedule/">
+			<ExternalLink href="https://woocommerce.com/document/woopayments/payouts/payout-schedule/">
 				{ __(
 					'Learn more about pending schedules',
 					'woocommerce-payments'
@@ -139,20 +123,6 @@ const FraudProtectionDescription = () => {
 	);
 };
 
-const ReportingDescription = () => {
-	return (
-		<>
-			<h2>{ __( 'Reporting', 'woocommerce-payments' ) }</h2>
-			<p>
-				{ __(
-					'Adjust your report exporting language preferences.',
-					'woocommerce-payments'
-				) }
-			</p>
-		</>
-	);
-};
-
 const AdvancedDescription = () => {
 	return (
 		<>
@@ -175,7 +145,13 @@ const SettingsManager = () => {
 		true
 	);
 
-	const { isLoading } = useSettings();
+	const { isLoading, isDirty } = useSettings();
+
+	useEffect( () => {
+		if ( ! isDirty ) {
+			window.onbeforeunload = null;
+		}
+	}, [ isDirty ] );
 
 	useLayoutEffect( () => {
 		const { anchor } = getQuery();
@@ -208,7 +184,7 @@ const SettingsManager = () => {
 	const [
 		dismissedDuplicateNotices,
 		setDismissedDuplicateNotices,
-	] = useState( wcpaySettings.dismissedDuplicateNotices || [] );
+	] = useState( wcpaySettings.dismissedDuplicateNotices || {} );
 
 	return (
 		<SettingsLayout>
@@ -229,16 +205,8 @@ const SettingsManager = () => {
 					setDismissedDuplicateNotices: setDismissedDuplicateNotices,
 				} }
 			>
-				<SettingsSection
-					description={ PaymentMethodsDescription }
-					id="payment-methods"
-				>
-					<LoadableSettingsSection numLines={ 60 }>
-						<ErrorBoundary>
-							<PaymentMethods />
-						</ErrorBoundary>
-					</LoadableSettingsSection>
-				</SettingsSection>
+				<PaymentMethodsSection />
+				<BuyNowPayLaterSection />
 				<SettingsSection
 					id="express-checkouts"
 					description={ ExpressCheckoutDescription }
@@ -265,7 +233,7 @@ const SettingsManager = () => {
 				</LoadableSettingsSection>
 			</SettingsSection>
 			<SettingsSection description={ DepositsDescription } id="deposits">
-				<div id={ 'deposit-schedule' }>
+				<div id="payout-schedule">
 					<LoadableSettingsSection numLines={ 20 }>
 						<ErrorBoundary>
 							<Deposits />
@@ -283,18 +251,6 @@ const SettingsManager = () => {
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
-			{ ! isDefaultSiteLanguage() && (
-				<SettingsSection
-					description={ ReportingDescription }
-					id="fp-settings"
-				>
-					<LoadableSettingsSection numLines={ 20 }>
-						<ErrorBoundary>
-							<ReportingSettings />
-						</ErrorBoundary>
-					</LoadableSettingsSection>
-				</SettingsSection>
-			) }
 			<SettingsSection
 				description={ AdvancedDescription }
 				id="advanced-settings"

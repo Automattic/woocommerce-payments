@@ -5,7 +5,7 @@ import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 // eslint-disable-next-line import/no-unresolved
-import { extensionCartUpdate } from '@woocommerce/blocks-checkout';
+import { addAction } from '@wordpress/hooks';
 
 /**
  * Internal dependencies
@@ -13,7 +13,33 @@ import { extensionCartUpdate } from '@woocommerce/blocks-checkout';
 import CheckoutPageSaveUser from '../checkout-page-save-user';
 import useWooPayUser from '../../hooks/use-woopay-user';
 import useSelectedPaymentMethod from '../../hooks/use-selected-payment-method';
+import request from '../../../../checkout/utils/request';
 import { getConfig } from 'utils/checkout';
+import { useDispatch } from '@wordpress/data';
+
+const jQueryMock = ( selector ) => {
+	if ( typeof selector === 'function' ) {
+		return selector( jQueryMock );
+	}
+
+	return {
+		on: ( event, callbackOrSelector, callback2 ) =>
+			addAction(
+				`payment-request-test.jquery-event.${ selector }${
+					typeof callbackOrSelector === 'string'
+						? `.${ callbackOrSelector }`
+						: ''
+				}.${ event }`,
+				'tests',
+				typeof callbackOrSelector === 'string'
+					? callback2
+					: callbackOrSelector
+			),
+		val: () => null,
+		is: () => null,
+		remove: () => null,
+	};
+};
 
 jest.mock( '../../hooks/use-woopay-user', () => jest.fn() );
 jest.mock( '../../hooks/use-selected-payment-method', () => jest.fn() );
@@ -23,23 +49,21 @@ jest.mock( 'utils/checkout', () => ( {
 jest.mock(
 	'@woocommerce/blocks-checkout',
 	() => ( {
-		extensionCartUpdate: jest.fn(),
+		ValidationInputError: () => {
+			return <div>Dummy error element</div>;
+		},
 	} ),
 	{ virtual: true }
 );
-jest.mock( '@wordpress/data', () => ( {
-	useDispatch: jest.fn().mockReturnValue( {
-		setBillingAddress: jest.fn(),
-		setShippingAddress: jest.fn(),
-	} ),
-} ) );
+jest.mock( '../../../../checkout/utils/request', () => jest.fn() );
+
+jest.mock( '@wordpress/data' );
 
 jest.mock( 'tracks', () => ( {
 	recordUserEvent: jest.fn().mockReturnValue( true ),
 	events: {
 		WOOPAY_EMAIL_CHECK: 'checkout_email_address_woopay_check',
 		WOOPAY_OFFERED: 'checkout_woopay_save_my_info_offered',
-		WOOPAY_AUTO_REDIRECT: 'checkout_woopay_auto_redirect',
 		WOOPAY_SKIPPED: 'woopay_skipped',
 		WOOPAY_BUTTON_LOAD: 'woopay_button_load',
 		WOOPAY_BUTTON_CLICK: 'woopay_button_click',
@@ -58,6 +82,14 @@ jest.mock( 'tracks', () => ( {
 	},
 } ) );
 
+jest.mock(
+	'@woocommerce/block-data',
+	() => ( {
+		VALIDATION_STORE_KEY: 'wc/store/validation',
+	} ),
+	{ virtual: true }
+);
+
 const BlocksCheckoutEnvironmentMock = ( { children } ) => (
 	<div>
 		<button className="wc-block-components-checkout-place-order-button">
@@ -72,8 +104,20 @@ const BlocksCheckoutEnvironmentMock = ( { children } ) => (
 
 describe( 'CheckoutPageSaveUser', () => {
 	beforeEach( () => {
+		global.$ = jQueryMock;
+		global.jQuery = jQueryMock;
+		useDispatch.mockImplementation( () => {
+			return {
+				setValidationErrors: jest.fn(),
+				clearValidationError: jest.fn(),
+				setBillingAddress: jest.fn(),
+				setShippingAddress: jest.fn(),
+			};
+		} );
+
 		useWooPayUser.mockImplementation( () => false );
-		extensionCartUpdate.mockResolvedValue( {} );
+		request.mockImplementation( () => ( { then() {} } ) );
+		request.mockClear();
 
 		useSelectedPaymentMethod.mockImplementation( () => ( {
 			isWCPayChosen: true,
@@ -83,6 +127,15 @@ describe( 'CheckoutPageSaveUser', () => {
 		getConfig.mockImplementation(
 			( setting ) => setting === 'forceNetworkSavedCards'
 		);
+
+		window.wcSettings = {
+			wcVersion: '9.1.2',
+			storePages: {
+				checkout: {
+					permalink: 'http://localhost/',
+				},
+			},
+		};
 
 		window.wcpaySettings = {
 			accountStatus: {
@@ -107,6 +160,11 @@ describe( 'CheckoutPageSaveUser', () => {
 				'Securely save my information for 1-click checkout'
 			)
 		).not.toBeChecked();
+		expect(
+			screen.queryAllByLabelText(
+				'Securely save my information for 1-click checkout'
+			)
+		).toHaveLength( 1 );
 	} );
 
 	it( 'should not render checkbox for saving WooPay user when user is already registered', () => {
@@ -131,7 +189,7 @@ describe( 'CheckoutPageSaveUser', () => {
 		).not.toBeInTheDocument();
 	} );
 
-	it( 'should render checkbox for saving WooPay user when selected payment method is not card', () => {
+	it( 'should not render checkbox for saving WooPay user when selected payment method is not card', () => {
 		useSelectedPaymentMethod.mockImplementation( () => ( {
 			isWCPayChosen: false,
 		} ) );
@@ -182,14 +240,13 @@ describe( 'CheckoutPageSaveUser', () => {
 
 		expect( label ).toBeChecked();
 		expect( screen.queryByTestId( 'save-user-form' ) ).toBeInTheDocument();
+		expect( screen.getAllByTestId( 'save-user-form' ) ).toHaveLength( 1 );
 	} );
 
-	it( 'should not call `extensionCartUpdate` on classic checkout when checkbox is clicked', () => {
-		extensionCartUpdate.mockResolvedValue( {} );
-
+	it( 'should not call `request` on classic checkout when checkbox is clicked', () => {
 		render( <CheckoutPageSaveUser isBlocksCheckout={ false } /> );
 
-		expect( extensionCartUpdate ).not.toHaveBeenCalled();
+		expect( request ).not.toHaveBeenCalled();
 
 		// click on the checkbox
 		userEvent.click(
@@ -198,10 +255,10 @@ describe( 'CheckoutPageSaveUser', () => {
 			)
 		);
 
-		expect( extensionCartUpdate ).not.toHaveBeenCalled();
+		expect( request ).not.toHaveBeenCalled();
 	} );
 
-	it( 'call `extensionCartUpdate` on blocks checkout when checkbox is clicked', async () => {
+	it( 'call `request` on blocks checkout when checkbox is clicked', async () => {
 		render( <CheckoutPageSaveUser isBlocksCheckout={ true } />, {
 			wrapper: BlocksCheckoutEnvironmentMock,
 		} );
@@ -211,23 +268,21 @@ describe( 'CheckoutPageSaveUser', () => {
 		);
 
 		expect( label ).not.toBeChecked();
-		expect( extensionCartUpdate ).not.toHaveBeenCalled();
+		expect( request ).not.toHaveBeenCalled();
 
 		// click on the checkbox to select
 		userEvent.click( label );
 
 		expect( label ).toBeChecked();
 		await waitFor( () =>
-			expect( extensionCartUpdate ).toHaveBeenCalledWith( {
-				namespace: 'woopay',
-				data: {
-					save_user_in_woopay: true,
-					woopay_source_url: 'http://localhost/',
-					woopay_is_blocks: true,
-					woopay_viewport: '0x0',
-					woopay_user_phone_field: {
-						full: '+12015555551',
-					},
+			expect( request ).toHaveBeenLastCalledWith( 'false', {
+				_ajax_nonce: false,
+				save_user_in_woopay: 1,
+				woopay_source_url: 'http://localhost/',
+				woopay_is_blocks: 1,
+				woopay_viewport: '0x0',
+				woopay_user_phone_field: {
+					full: '+12015555551',
 				},
 			} )
 		);
@@ -237,9 +292,9 @@ describe( 'CheckoutPageSaveUser', () => {
 
 		expect( label ).not.toBeChecked();
 		await waitFor( () =>
-			expect( extensionCartUpdate ).toHaveBeenCalledWith( {
-				namespace: 'woopay',
-				data: {},
+			expect( request ).toHaveBeenLastCalledWith( 'false', {
+				_ajax_nonce: false,
+				empty: 1,
 			} )
 		);
 	} );
@@ -265,8 +320,19 @@ describe( 'CheckoutPageSaveUser', () => {
 		// click on the checkbox to hide/show it again (and reset the previously entered values)
 		userEvent.click( saveMyInfoCheckbox );
 		document.getElementById( 'phone' ).remove();
-		await waitFor( () => expect( extensionCartUpdate ).toHaveBeenCalled() );
+		await waitFor( () => expect( request ).toHaveBeenCalled() );
 
+		userEvent.click( saveMyInfoCheckbox );
+		expect( saveMyInfoCheckbox ).toBeChecked();
+		expect( screen.getByLabelText( 'Mobile phone number' ).value ).toEqual(
+			'2015555553'
+		);
+
+		userEvent.click( saveMyInfoCheckbox );
+		document.getElementById( 'billing-phone' ).remove();
+		await waitFor( () => expect( request ).toHaveBeenCalled() );
+
+		// click on the checkbox to hide/show it again (and reset the previously entered values)
 		userEvent.click( saveMyInfoCheckbox );
 		expect( saveMyInfoCheckbox ).toBeChecked();
 		expect( screen.getByLabelText( 'Mobile phone number' ).value ).toEqual(
@@ -276,28 +342,17 @@ describe( 'CheckoutPageSaveUser', () => {
 		// click on the checkbox to hide/show it again (and reset the previously entered values)
 		userEvent.click( saveMyInfoCheckbox );
 		document.getElementById( 'shipping-phone' ).remove();
-		await waitFor( () => expect( extensionCartUpdate ).toHaveBeenCalled() );
-
-		userEvent.click( saveMyInfoCheckbox );
-		expect( saveMyInfoCheckbox ).toBeChecked();
-		expect( screen.getByLabelText( 'Mobile phone number' ).value ).toEqual(
-			'2015555553'
-		);
-
-		// click on the checkbox to hide/show it again (and reset the previously entered values)
-		userEvent.click( saveMyInfoCheckbox );
-		document.getElementById( 'billing-phone' ).remove();
-		await waitFor( () => expect( extensionCartUpdate ).toHaveBeenCalled() );
+		await waitFor( () => expect( request ).toHaveBeenCalled() );
 
 		userEvent.click( saveMyInfoCheckbox );
 		expect( saveMyInfoCheckbox ).toBeChecked();
 		expect( screen.getByLabelText( 'Mobile phone number' ).value ).toEqual(
 			''
 		);
-		await waitFor( () => expect( extensionCartUpdate ).toHaveBeenCalled() );
+		await waitFor( () => expect( request ).toHaveBeenCalled() );
 	} );
 
-	it( 'call `extensionCartUpdate` on blocks checkout when checkbox is clicked with a phone without country code', async () => {
+	it( 'call `request` on blocks checkout when checkbox is clicked with a phone without country code', async () => {
 		render( <CheckoutPageSaveUser isBlocksCheckout={ true } />, {
 			wrapper: BlocksCheckoutEnvironmentMock,
 		} );
@@ -307,23 +362,21 @@ describe( 'CheckoutPageSaveUser', () => {
 		);
 
 		expect( label ).not.toBeChecked();
-		expect( extensionCartUpdate ).not.toHaveBeenCalled();
+		expect( request ).not.toHaveBeenCalled();
 
 		// click on the checkbox to select
 		userEvent.click( label );
 
 		expect( label ).toBeChecked();
 		await waitFor( () =>
-			expect( extensionCartUpdate ).toHaveBeenCalledWith( {
-				namespace: 'woopay',
-				data: {
-					save_user_in_woopay: true,
-					woopay_source_url: 'http://localhost/',
-					woopay_is_blocks: true,
-					woopay_viewport: '0x0',
-					woopay_user_phone_field: {
-						full: '+12015555551',
-					},
+			expect( request ).toHaveBeenLastCalledWith( 'false', {
+				_ajax_nonce: false,
+				save_user_in_woopay: 1,
+				woopay_source_url: 'http://localhost/',
+				woopay_is_blocks: 1,
+				woopay_viewport: '0x0',
+				woopay_user_phone_field: {
+					full: '+12015555551',
 				},
 			} )
 		);
@@ -333,9 +386,9 @@ describe( 'CheckoutPageSaveUser', () => {
 
 		expect( label ).not.toBeChecked();
 		await waitFor( () =>
-			expect( extensionCartUpdate ).toHaveBeenCalledWith( {
-				namespace: 'woopay',
-				data: {},
+			expect( request ).toHaveBeenLastCalledWith( 'false', {
+				_ajax_nonce: false,
+				empty: 1,
 			} )
 		);
 	} );

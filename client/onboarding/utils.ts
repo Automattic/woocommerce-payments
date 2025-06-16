@@ -2,13 +2,15 @@
  * External dependencies
  */
 import { set, toPairs } from 'lodash';
+import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
  */
+import { NAMESPACE } from 'data/constants';
 import { ListItem } from 'components/grouped-select-control';
 import businessTypeDescriptionStrings from './translations/descriptions';
-import { Country } from './types';
+import { Country, FinalizeOnboardingResponse } from './types';
 
 export const fromDotNotation = (
 	record: Record< string, unknown >
@@ -43,12 +45,28 @@ export const getBusinessTypes = (): Country[] => {
 };
 
 /**
+ * Make an API request to finalize the onboarding process.
+ *
+ * @param urlSource The source URL.
+ */
+export const finalizeOnboarding = async ( urlSource: string ) => {
+	return await apiFetch< FinalizeOnboardingResponse >( {
+		path: `${ NAMESPACE }/onboarding/kyc/finalize`,
+		method: 'POST',
+		data: {
+			source: urlSource,
+			from: 'WCPAY_ONBOARDING_WIZARD',
+		},
+	} );
+};
+
+/**
  * Get the MCC code for the selected industry.
  *
  * @return {string | undefined} The MCC code for the selected industry. Will return undefined if no industry is selected.
  */
 export const getMccFromIndustry = (): string | undefined => {
-	const industry = wcSettings.admin.onboarding.profile.industry?.[ 0 ];
+	const industry = wcSettings.admin?.onboarding?.profile?.industry?.[ 0 ];
 	if ( ! industry ) {
 		return undefined;
 	}

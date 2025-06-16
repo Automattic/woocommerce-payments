@@ -39,15 +39,23 @@ class WCPay_Multi_Currency_WooCommerceNameYourPrice_Tests extends WCPAY_UnitTest
 	private $woocommerce_nyp;
 
 	/**
+	 * WC_Payments_Localization_Service.
+	 *
+	 * @var WC_Payments_Localization_Service
+	 */
+	private $localization_service;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function setUp(): void {
 		parent::setUp();
 
 		// Create the class instances needed for testing.
-		$this->mock_multi_currency = $this->createMock( MultiCurrency::class );
-		$this->mock_utils          = $this->createMock( Utils::class );
-		$this->woocommerce_nyp     = new WooCommerceNameYourPrice( $this->mock_multi_currency, $this->mock_utils );
+		$this->mock_multi_currency  = $this->createMock( MultiCurrency::class );
+		$this->mock_utils           = $this->createMock( Utils::class );
+		$this->woocommerce_nyp      = new WooCommerceNameYourPrice( $this->mock_multi_currency, $this->mock_utils );
+		$this->localization_service = new WC_Payments_Localization_Service();
 
 		// Set is_nyp to return false by default.
 		$this->set_is_nyp( false );
@@ -95,7 +103,7 @@ class WCPay_Multi_Currency_WooCommerceNameYourPrice_Tests extends WCPAY_UnitTest
 	// Check to make sure the proper elements are added to the cart_item array.
 	public function test_add_initial_currency_returns_modified_cart_item() {
 		// Arrange: Set up the currency used for the test.
-		$currency = new Currency( 'EUR', 2.0 );
+		$currency = new Currency( $this->localization_service, 'EUR', 2.0 );
 
 		// Arrange: Set up the cart_item and expected cart_item, set is_nyp to return true.
 		$nyp_value          = 12.34;
@@ -144,7 +152,7 @@ class WCPay_Multi_Currency_WooCommerceNameYourPrice_Tests extends WCPAY_UnitTest
 	// If the selected currency matches the currency of the item, then it should just return the item.
 	public function test_convert_cart_currency_returns_cart_item_with_original_value() {
 		// Arrange: Set up the currency used for the test.
-		$currency = new Currency( 'EUR', 2.0 );
+		$currency = new Currency( $this->localization_service, 'EUR', 2.0 );
 
 		// Arrange: Set up the cart_item.
 		$nyp_value = 12.34;
@@ -174,8 +182,8 @@ class WCPay_Multi_Currency_WooCommerceNameYourPrice_Tests extends WCPAY_UnitTest
 	// Convert the amount of the item to the selected currency.
 	public function test_convert_cart_currency_returns_cart_item_with_converted_value() {
 		// Arrange: Set up the currencies used for the test.
-		$item_currency     = new Currency( 'EUR', 2.0 );
-		$selected_currency = new Currency( 'GBP', 0.5 );
+		$item_currency     = new Currency( $this->localization_service, 'EUR', 2.0 );
+		$selected_currency = new Currency( $this->localization_service, 'GBP', 0.5 );
 
 		// Arrange: Set up the cart_item.
 		$nyp_value = 12.34;
@@ -214,8 +222,8 @@ class WCPay_Multi_Currency_WooCommerceNameYourPrice_Tests extends WCPAY_UnitTest
 	// Convert the amount of the item into the default (selected) currency.
 	public function test_convert_cart_currency_returns_cart_item_with_converted_value_with_default_currency() {
 		// Arrange: Set up the currencies used for the test.
-		$item_currency     = new Currency( 'EUR', 2.0 );
-		$selected_currency = new Currency( 'USD', 1 );
+		$item_currency     = new Currency( $this->localization_service, 'EUR', 2.0 );
+		$selected_currency = new Currency( $this->localization_service, 'USD', 1 );
 
 		// Arrange: Set up the cart_item.
 		$nyp_value = 12.34;
@@ -260,7 +268,7 @@ class WCPay_Multi_Currency_WooCommerceNameYourPrice_Tests extends WCPAY_UnitTest
 	// If the meta value is already set on the product, the method should return false.
 	public function test_should_convert_product_price_returns_false_when_product_is_already_converted() {
 		// Arrange: Set up the currency used for the test.
-		$selected_currency = new Currency( 'EUR', 2.0 );
+		$selected_currency = new Currency( $this->localization_service, 'EUR', 2.0 );
 
 		// Arrange: Set up the product, and add the meta data to it.
 		$product = WC_Helper_Product::create_simple_product();
@@ -282,7 +290,7 @@ class WCPay_Multi_Currency_WooCommerceNameYourPrice_Tests extends WCPAY_UnitTest
 	// If the product is tagged a a nyp product, false should be returned.
 	public function test_should_convert_product_price_returns_false_when_product_is_a_nyp_product() {
 		// Arrange: Set up the currency and product used for the test.
-		$selected_currency = new Currency( 'EUR', 2.0 );
+		$selected_currency = new Currency( $this->localization_service, 'EUR', 2.0 );
 		$product           = WC_Helper_Product::create_simple_product();
 
 		// Arrange: Set up the mock_multi_currency method mock.
@@ -301,7 +309,7 @@ class WCPay_Multi_Currency_WooCommerceNameYourPrice_Tests extends WCPAY_UnitTest
 	// If no tests return true, method should return true.
 	public function test_should_convert_product_price_returns_true_when_no_matches() {
 		// Arrange: Set up the currency and product used for the test.
-		$selected_currency = new Currency( 'EUR', 2.0 );
+		$selected_currency = new Currency( $this->localization_service, 'EUR', 2.0 );
 		$product           = WC_Helper_Product::create_simple_product();
 
 		// Arrange: Set up the mock_multi_currency method mock.
@@ -319,7 +327,7 @@ class WCPay_Multi_Currency_WooCommerceNameYourPrice_Tests extends WCPAY_UnitTest
 
 	public function test_edit_in_cart_args() {
 		// Arrange: Set up the currency  used for the test.
-		$selected_currency = new Currency( 'EUR', 2.0 );
+		$selected_currency = new Currency( $this->localization_service, 'EUR', 2.0 );
 
 		// Arrange: Set up the mock_multi_currency method mock.
 		$this->mock_multi_currency
@@ -342,8 +350,8 @@ class WCPay_Multi_Currency_WooCommerceNameYourPrice_Tests extends WCPAY_UnitTest
 	public function test_get_initial_price( $initial_price, $suffix, $request, $get_selected_currency, $get_raw_conversion ) {
 		// Arrange: Set the initial expected price and the currencies that may be used.
 		$expected_price    = $initial_price;
-		$selected_currency = new Currency( 'EUR', 2.0 );
-		$store_currency    = new Currency( 'USD', 1 );
+		$selected_currency = new Currency( $this->localization_service, 'EUR', 2.0 );
+		$store_currency    = new Currency( $this->localization_service, 'USD', 1 );
 
 		// Arrange: Set expectations for calls to get_selected_currency method.
 		if ( $get_selected_currency ) {

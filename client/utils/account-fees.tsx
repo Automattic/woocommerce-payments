@@ -1,7 +1,7 @@
 /** @format */
 
 /**
- * External depencencies
+ * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
@@ -10,12 +10,13 @@ import './account-fees.scss';
 /**
  * Internal dependencies
  */
-import { formatCurrency } from 'utils/currency';
+import { formatCurrency } from 'multi-currency/interface/functions';
 import { formatFee } from 'utils/fees';
 import React from 'react';
 import { BaseFee, DiscountFee, FeeStructure } from 'wcpay/types/fees';
-import { PaymentMethod } from 'wcpay/types/payment-methods';
 import { createInterpolateElement } from '@wordpress/element';
+import { ExternalLink } from '@wordpress/components';
+import PAYMENT_METHOD_IDS from 'constants/payment-method';
 
 const countryFeeStripeDocsBaseLink =
 	'https://woocommerce.com/document/woopayments/fees-and-debits/fees/#';
@@ -113,7 +114,7 @@ export const getCurrentBaseFee = (
 };
 
 export const formatMethodFeesTooltip = (
-	accountFees: FeeStructure
+	accountFees?: FeeStructure
 ): JSX.Element => {
 	if ( ! accountFees ) return <></>;
 
@@ -122,7 +123,7 @@ export const formatMethodFeesTooltip = (
 			? 1 - accountFees.discount[ 0 ].discount
 			: 1;
 
-	// Per https://woo.com/es/terms-conditions/woopayments-promotion-2023/ we exclude FX fees from discounts.
+	// Per https://woocommerce.com/terms-conditions/woopayments-promotion-2023/ we exclude FX fees from discounts.
 	const total = {
 		percentage_rate:
 			accountFees.base.percentage_rate * discountAdjustedFeeRate +
@@ -142,7 +143,7 @@ export const formatMethodFeesTooltip = (
 	return (
 		<div className={ 'wcpay-fees-tooltip' }>
 			<div>
-				<div>Base fee</div>
+				<div>{ __( 'Base fee', 'woocommerce-payments' ) }</div>
 				<div>
 					{ getFeeDescriptionString(
 						accountFees.base,
@@ -152,7 +153,12 @@ export const formatMethodFeesTooltip = (
 			</div>
 			{ hasFees( accountFees.additional ) ? (
 				<div>
-					<div>International payment method fee</div>
+					<div>
+						{ __(
+							'International payment method fee',
+							'woocommerce-payments'
+						) }
+					</div>
 					<div>
 						{ getFeeDescriptionString(
 							accountFees.additional,
@@ -165,14 +171,21 @@ export const formatMethodFeesTooltip = (
 			) }
 			{ hasFees( accountFees.fx ) ? (
 				<div>
-					<div>Foreign exchange fee</div>
+					<div>
+						{ __(
+							'Currency conversion fee',
+							'woocommerce-payments'
+						) }
+					</div>
 					<div>{ getFeeDescriptionString( accountFees.fx ) }</div>
 				</div>
 			) : (
 				''
 			) }
 			<div>
-				<div>Total per transaction</div>
+				<div>
+					{ __( 'Total per transaction', 'woocommerce-payments' ) }
+				</div>
 				<div className={ 'wcpay-fees-tooltip__bold' }>
 					{ getFeeDescriptionString( total ) }
 				</div>
@@ -180,7 +193,7 @@ export const formatMethodFeesTooltip = (
 			{ wcpaySettings &&
 			wcpaySettings.connect &&
 			wcpaySettings.connect.country ? (
-				<div className={ 'wcpay-fees-tooltip__hint-text' }>
+				<div className="wcpay-fees-tooltip__hint-text">
 					<span>
 						{ stripeFeeSectionExistsForCountry(
 							wcpaySettings.connect.country
@@ -196,19 +209,17 @@ export const formatMethodFeesTooltip = (
 									),
 									components: {
 										linkToStripePage: (
-											<a
+											<ExternalLink
 												href={ getStripeFeeSectionUrl(
 													wcpaySettings.connect
 														.country
 												) }
-												target={ '_blank' }
-												rel={ 'noreferrer' }
 											>
 												{ __(
 													'Learn more',
 													'woocommerce-payments'
 												) }
-											</a>
+											</ExternalLink>
 										),
 									},
 							  } )
@@ -223,18 +234,16 @@ export const formatMethodFeesTooltip = (
 									),
 									components: {
 										linkToStripePage: (
-											<a
+											<ExternalLink
 												href={
 													countryFeeStripeDocsBaseLinkNoCountry
 												}
-												target={ '_blank' }
-												rel={ 'noreferrer' }
 											>
 												{ __(
 													'Learn more',
 													'woocommerce-payments'
 												) }
-											</a>
+											</ExternalLink>
 										),
 									},
 							  } ) }
@@ -341,45 +350,27 @@ export const formatMethodFeesDescription = (
 };
 
 export const getTransactionsPaymentMethodName = (
-	paymentMethod: PaymentMethod
+	paymentMethod: PAYMENT_METHOD_IDS
 ): string => {
+	// Special cases that won't be in wooPaymentsPaymentMethodsConfig
+	// `card` WILL be in that config, but it's title is "Cards" and we want to show "Card transactions."
 	switch ( paymentMethod ) {
-		case 'au_becs_debit':
-			return __(
-				'BECS Direct Debit transactions',
-				'woocommerce-payments'
-			);
-		case 'bancontact':
-			return __( 'Bancontact transactions', 'woocommerce-payments' );
 		case 'card':
 			return __( 'Card transactions', 'woocommerce-payments' );
 		case 'card_present':
 			return __( 'In-person transactions', 'woocommerce-payments' );
-		case 'eps':
-			return __( 'EPS transactions', 'woocommerce-payments' );
-		case 'giropay':
-			return __( 'giropay transactions', 'woocommerce-payments' );
-		case 'ideal':
-			return __( 'iDEAL transactions', 'woocommerce-payments' );
-		case 'p24':
-			return __(
-				'Przelewy24 (P24) transactions',
-				'woocommerce-payments'
-			);
-		case 'sepa_debit':
-			return __(
-				'SEPA Direct Debit transactions',
-				'woocommerce-payments'
-			);
-		case 'sofort':
-			return __( 'Sofort transactions', 'woocommerce-payments' );
-		case 'affirm':
-			return __( 'Affirm transactions', 'woocommerce-payments' );
-		case 'afterpay_clearpay':
-			return __( 'Afterpay transactions', 'woocommerce-payments' );
-		case 'klarna':
-			return __( 'Klarna transactions', 'woocommerce-payments' );
-		default:
-			return __( 'Unknown transactions', 'woocommerce-payments' );
 	}
+
+	// Try to get the title from wooPaymentsPaymentMethodsConfig
+	const methodConfig = wooPaymentsPaymentMethodsConfig[ paymentMethod ];
+	if ( methodConfig?.title ) {
+		return sprintf(
+			/* translators: %s: Payment method title */
+			__( '%s transactions', 'woocommerce-payments' ),
+			methodConfig.title
+		);
+	}
+
+	// Fallback for unknown payment methods
+	return __( 'Unknown transactions', 'woocommerce-payments' );
 };

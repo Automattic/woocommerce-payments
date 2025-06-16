@@ -47,7 +47,12 @@ class WC_Payments_Token_Service {
 	public function __construct( WC_Payments_API_Client $payments_api_client, WC_Payments_Customer_Service $customer_service ) {
 		$this->payments_api_client = $payments_api_client;
 		$this->customer_service    = $customer_service;
+	}
 
+	/**
+	 * Initializes hooks.
+	 */
+	public function init_hooks() {
 		add_action( 'woocommerce_payment_token_deleted', [ $this, 'woocommerce_payment_token_deleted' ], 10, 2 );
 		add_action( 'woocommerce_payment_token_set_default', [ $this, 'woocommerce_payment_token_set_default' ], 10, 2 );
 		add_filter( 'woocommerce_get_customer_payment_tokens', [ $this, 'woocommerce_get_customer_payment_tokens' ], 10, 3 );
@@ -62,7 +67,7 @@ class WC_Payments_Token_Service {
 	 *
 	 * @param   array   $payment_method                                          Payment method to be added.
 	 * @param   WP_User $user                                                    User to attach payment method to.
-	 * @return  WC_Payment_Token|WC_Payment_Token_CC|WC_Payment_Token_WCPay_SEPA The WC object for the payment token.
+	 * @return  WC_Payment_Token The WC object for the payment token.
 	 */
 	public function add_token_to_user( $payment_method, $user ) {
 		// Clear cached payment methods.
@@ -163,15 +168,7 @@ class WC_Payments_Token_Service {
 				}
 			}
 
-			$retrievable_payment_method_types = [ Payment_Method::CARD ];
-
-			if ( in_array( Payment_Method::SEPA, WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids(), true ) ) {
-				$retrievable_payment_method_types[] = Payment_Method::SEPA;
-			}
-
-			if ( in_array( Payment_Method::LINK, WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids(), true ) ) {
-				$retrievable_payment_method_types[] = Payment_Method::LINK;
-			}
+			$retrievable_payment_method_types = $this->get_retrievable_payment_method_types( $gateway_id );
 
 			$payment_methods = [];
 
@@ -214,21 +211,108 @@ class WC_Payments_Token_Service {
 	}
 
 	/**
+	 * Retrieves the payment method types for which tokens should be retrieved.
+	 *
+	 * This function determines the appropriate payment method types based on the provided gateway ID.
+	 * - If a gateway ID is provided, it retrieves the payment methods specific to that gateway to prevent duplication of saved tokens under incorrect payment methods during checkout.
+	 * - If no gateway ID is provided, it retrieves the default payment methods to fetch all saved tokens, e.g., for the Blocks checkout or My Account page.
+	 *
+	 * @param string|null $gateway_id The optional ID of the gateway.
+	 * @return array The list of retrievable payment method types.
+	 */
+	private function get_retrievable_payment_method_types( $gateway_id = null ) {
+		if ( empty( $gateway_id ) ) {
+			return $this->get_all_retrievable_payment_types();
+		} else {
+			return $this->get_gateway_specific_retrievable_payment_types( $gateway_id );
+		}
+	}
+
+	/**
+	 * Returns all the enabled retrievable payment method types.
+	 *
+	 * @return array Enabled retrievable payment method types.
+	 */
+	private function get_all_retrievable_payment_types() {
+		$types = [ Payment_Method::CARD ];
+
+		if ( $this->is_payment_method_enabled( Payment_Method::SEPA ) ) {
+			$types[] = Payment_Method::SEPA;
+		}
+
+		if ( $this->is_payment_method_enabled( Payment_Method::LINK ) ) {
+			$types[] = Payment_Method::LINK;
+		}
+
+		return $types;
+	}
+	/**
+	 * Returns retrievable payment method types for a given gateway.
+	 *
+	 * @param string $gateway_id The ID of the gateway.
+	 * @return array Retrievable payment method types for the specified gateway.
+	 */
+	private function get_gateway_specific_retrievable_payment_types( $gateway_id ) {
+		$types = [];
+
+		foreach ( self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD as $payment_method => $gateway ) {
+			if ( $gateway !== $gateway_id ) {
+				continue;
+			}
+
+			// Stripe Link is part of the card gateway, so we need to check separately if Link is enabled.
+			if ( Payment_Method::LINK === $payment_method && ! $this->is_payment_method_enabled( Payment_Method::LINK ) ) {
+				continue;
+			}
+
+			$types[] = $payment_method;
+		}
+
+		return $types;
+	}
+
+	/**
+	 * Checks if a payment method is enabled.
+	 *
+	 * @param string $payment_method The payment method to check.
+	 * @return bool True if the payment method is enabled, false otherwise.
+	 */
+	private function is_payment_method_enabled( $payment_method ) {
+		return in_array( $payment_method, WC_Payments::get_gateway()->get_upe_enabled_payment_method_ids(), true );
+	}
+
+	/**
 	 * Delete token from Stripe.
 	 *
 	 * @param string           $token_id Token ID.
-	 * @param WC_Payment_Token $token    Token object.
+	 * @param WC_Payment_Token $token Token object.
+	 *
+	 * @throws Exception
 	 */
 	public function woocommerce_payment_token_deleted( $token_id, $token ) {
 
-		if ( in_array( $token->get_gateway_id(), self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD, true ) ) {
-			try {
-				$this->payments_api_client->detach_payment_method( $token->get_token() );
-				// Clear cached payment methods.
-				$this->customer_service->clear_cached_payment_methods_for_user( $token->get_user_id() );
-			} catch ( Exception $e ) {
-				Logger::log( 'Error detaching payment method:' . $e->getMessage() );
-			}
+		// If it's not reusable payment method, we don't need to perform any additional checks.
+		if ( ! in_array( $token->get_gateway_id(), self::REUSABLE_GATEWAYS_BY_PAYMENT_METHOD, true ) ) {
+			return;
+		}
+		// First check if it's live mode.
+		// Second check if it's admin.
+		// Third check if it's not production environment.
+		// When all conditions are met, we don't want to delete the payment method from Stripe.
+		// This is to avoid detaching the payment method from the live stripe account on non production environments.
+		if (
+			WC_Payments::mode()->is_live() &&
+			is_admin() &&
+			'production' !== wp_get_environment_type()
+		) {
+			return;
+		}
+		try {
+			$this->payments_api_client->detach_payment_method( $token->get_token() );
+			// Clear cached payment methods.
+			$this->customer_service->clear_cached_payment_methods_for_user( $token->get_user_id() );
+		} catch ( Exception $e ) {
+			Logger::log( 'Error detaching payment method:' . $e->getMessage() );
 		}
 	}
 

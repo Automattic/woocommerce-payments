@@ -10,25 +10,22 @@
 	}
 }
 
-.components-card__body {
-	> *:first-child {
-		margin-top: 0;
-	}
+.woocommerce-payments-page {
+	.components-card__body {
+		> *:first-child {
+			margin-top: 0;
+		}
 
-	> *:last-child {
-		margin-bottom: 0;
+		> *:last-child {
+			margin-bottom: 0;
+		}
 	}
 }
 
-.woocommerce-table {
-	font-weight: 300;
-	letter-spacing: 0.012rem;
-	color: $studio-gray-60;
-
-	.woocommerce-table__summary {
-		border-radius: 0 0 3px 3px;
-	}
-
+/**
+* This styling is for all `<TableCard />` components found in WooPayments screens.
+*/
+.woocommerce-payments-page .woocommerce-table {
 	.woocommerce-table__item {
 		white-space: nowrap;
 	}
@@ -109,6 +106,10 @@
 		font-weight: normal;
 		line-height: 20px;
 		padding: 4px 0;
+
+		@media screen and ( max-width: 470px ) {
+			flex: 0 0 40%;
+		}
 	}
 
 	&__value {
@@ -136,14 +137,37 @@
 
 img {
 	&.payment-method__icon {
-		outline: 1px solid rgba( 0, 0, 0, 0.25 );
-		outline-offset: -1px;
-		border-radius: 3px;
+		border: 1px solid rgba( 0, 0, 0, 0.25 );
+		border-radius: 4px;
 		display: block;
 
-		&.no-outline {
-			outline: none;
+		&.no-border {
+			border: none;
 			border-radius: 0;
+		}
+	}
+}
+
+/**
+ * This styling fixes the appearance of advanced filters on list screens.
+ * In particular, it adds a gap between advanced date filter inputs on viewports >= 783px.
+ * See https://github.com/woocommerce/woocommerce/blob/892afbe1b9ee7bd1d20e7c34ad6180d91b8b94d9/packages/js/components/src/advanced-filters/style.scss#L119
+ */
+.woocommerce-filters-deposits,
+.woocommerce-filters-disputes,
+.woocommerce-filters-documents,
+.woocommerce-filters-transactions {
+	@media screen and ( min-width: 783px ) {
+		.woocommerce-filters-advanced {
+			&__fieldset {
+				display: grid;
+				grid-template-columns: 100px auto 1fr;
+			}
+		}
+		.components-select-control
+			.components-input-control__container
+			.components-select-control__input {
+			padding-right: var( --main-gap );
 		}
 	}
 }

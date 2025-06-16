@@ -9,10 +9,10 @@
 			padding: 24px;
 			background: #fff;
 
-			.gridicons-notice-outline {
+			.loadable-checkbox__icon .gridicons-notice-outline {
 				fill: #f0b849;
 				margin-bottom: -5px;
-				margin-right: 16px;
+				margin-left: -4px;
 			}
 
 			&__label-container {
@@ -151,6 +151,41 @@
 					align-items: flex-start;
 					flex-wrap: wrap;
 				}
+			}
+		}
+	}
+}
+
+body {
+	&.woocommerce-payments-checkout-section {
+		.express-checkouts {
+			.express-checkouts-list {
+				.express-checkout {
+					padding-left: 0;
+					padding-right: 0;
+					&:first-child {
+						padding-top: 0;
+					}
+					&:last-child {
+						padding-bottom: 0;
+					}
+				}
+				.express-checkout__label-container {
+					display: block;
+				}
+			}
+		}
+	}
+}
+
+@media ( min-width: 661px ) {
+	body {
+		&.woocommerce-payments-checkout-section {
+			.express-checkout__text-container {
+				width: 100%;
+			}
+			.express-checkout__link {
+				margin-left: auto;
 			}
 		}
 	}

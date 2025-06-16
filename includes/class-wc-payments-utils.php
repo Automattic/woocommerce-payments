@@ -34,22 +34,43 @@ class WC_Payments_Utils {
 	const FORCE_DISCONNECTED_FLAG_NAME = 'wcpaydev_force_disconnected';
 
 	/**
+	 * The Store API route patterns that should be handled by the WooPay session handler.
+	 */
+	const STORE_API_ROUTE_PATTERNS = [
+		'@^\/wc\/store(\/v[\d]+)?\/cart$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/add-item$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/remove-item$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/apply-coupon$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/remove-coupon$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/select-shipping-rate$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/update-customer$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/update-item$@',
+		'@^\/wc\/store(\/v[\d]+)?\/cart\/extensions$@',
+		'@^\/wc\/store(\/v[\d]+)?\/checkout\/(?P<id>[\d]+)@',
+		'@^\/wc\/store(\/v[\d]+)?\/checkout$@',
+		'@^\/wc\/store(\/v[\d]+)?\/order\/(?P<id>[\d]+)@',
+		// The route below is not a Store API route. However, this REST endpoint is used by WooPay to indirectly reach the Store API.
+		// By adding it to this list, we're able to identify the user and load the correct session for this route.
+		'@^\/payments\/woopay\/session$@',
+	];
+
+	/**
 	 * Mirrors JS's createInterpolateElement functionality.
 	 * Returns a string where angle brackets expressions are replaced with unescaped html while the rest is escaped.
 	 *
-	 * @param string $string string to process.
+	 * @param string $text string to process.
 	 * @param array  $element_map map of elements to not escape.
 	 *
 	 * @return string String where all of the html was escaped, except for the tags specified in element map.
 	 */
-	public static function esc_interpolated_html( $string, $element_map ) {
+	public static function esc_interpolated_html( $text, $element_map ) {
 		// Regex to match string expressions wrapped in angle brackets.
 		$tokenizer    = '/<(\/)?(\w+)\s*(\/)?>/';
 		$string_queue = [];
 		$token_queue  = [];
 		$last_mapped  = true;
 		// Start with a copy of the string.
-		$processed = $string;
+		$processed = $text;
 
 		// Match every angle bracket expression.
 		while ( preg_match( $tokenizer, $processed, $matches ) ) {
@@ -76,7 +97,7 @@ class WC_Payments_Utils {
 				$map_matched = preg_match( '/^<(\w+)(\s.+?)?\/?>$/', $element_map[ $token ], $map_matches );
 				if ( ! $map_matches ) {
 					// Should not happen with the properly formatted html as map value. Return the whole string escaped.
-					return esc_html( $string );
+					return esc_html( $text );
 				}
 				// Add the matched token and its attributes into the token queue. It will not be escaped when constructing the final string.
 				$tag   = $map_matches[1];
@@ -102,7 +123,7 @@ class WC_Payments_Utils {
 		// No mapped tokens were found in the string, or token and string queues are not of equal length.
 		// The latter should not happen - token queue and string queue should be the same length.
 		if ( empty( $token_queue ) || count( $token_queue ) !== count( $string_queue ) ) {
-			return esc_html( $string );
+			return esc_html( $text );
 		}
 
 		// Construct the final string by escaping the string queue values and not escaping the token queue.
@@ -338,48 +359,22 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Extract the billing details from the WC order
-	 *
-	 * @param WC_Order $order Order to extract the billing details from.
-	 *
-	 * @return array
-	 */
-	public static function get_billing_details_from_order( $order ) {
-		$billing_details = [
-			'address' => [
-				'city'        => $order->get_billing_city(),
-				'country'     => $order->get_billing_country(),
-				'line1'       => $order->get_billing_address_1(),
-				'line2'       => $order->get_billing_address_2(),
-				'postal_code' => $order->get_billing_postcode(),
-				'state'       => $order->get_billing_state(),
-			],
-			'email'   => $order->get_billing_email(),
-			'name'    => trim( $order->get_formatted_billing_full_name() ),
-			'phone'   => $order->get_billing_phone(),
-		];
-
-		$billing_details['address'] = array_filter( $billing_details['address'] );
-		return array_filter( $billing_details );
-	}
-
-	/**
 	 * Redacts the provided array, removing the sensitive information, and limits its depth to LOG_MAX_RECURSION.
 	 *
-	 * @param object|array $array          The array to redact.
+	 * @param object|array $input          The array to redact.
 	 * @param array        $keys_to_redact The keys whose values need to be redacted.
 	 * @param integer      $level          The current recursion level.
 	 *
 	 * @return string|array The redacted array.
 	 */
-	public static function redact_array( $array, array $keys_to_redact, int $level = 0 ) {
-		if ( is_object( $array ) ) {
+	public static function redact_array( $input, array $keys_to_redact, int $level = 0 ) {
+		if ( is_object( $input ) ) {
 			// TODO: if we ever want to log objects, they could implement a method returning an array or a string.
-			return get_class( $array ) . '()';
+			return get_class( $input ) . '()';
 		}
 
-		if ( ! is_array( $array ) ) {
-			return $array;
+		if ( ! is_array( $input ) ) {
+			return $input;
 		}
 
 		if ( $level >= self::MAX_ARRAY_DEPTH ) {
@@ -388,7 +383,7 @@ class WC_Payments_Utils {
 
 		$result = [];
 
-		foreach ( $array as $key => $value ) {
+		foreach ( $input as $key => $value ) {
 			if ( in_array( $key, $keys_to_redact, true ) ) {
 				$result[ $key ] = '(redacted)';
 				continue;
@@ -403,22 +398,118 @@ class WC_Payments_Utils {
 	/**
 	 * Apply a callback on every value in an array, regardless of the number of array dimensions.
 	 *
-	 * @param array    $array The array to map.
+	 * @param array    $input    The array to map.
 	 * @param callable $callback The callback to apply.
+	 *
 	 * @return array The mapped array.
 	 */
-	public static function array_map_recursive( array $array, callable $callback ): array {
-		foreach ( $array as $key => $value ) {
+	public static function array_map_recursive( array $input, callable $callback ): array {
+		foreach ( $input as $key => $value ) {
 			if ( \is_array( $value ) ) {
 				$value = self::array_map_recursive( $value, $callback );
 			} else {
-				$value = $callback( $value, $key, $array );
+				$value = $callback( $value, $key, $input );
 			}
 
-			$array[ $key ] = $value;
+			$input[ $key ] = $value;
 		}
 
-		return $array;
+		return $input;
+	}
+
+	/**
+	 * Filter a multidimensional array.
+	 *
+	 * It works just like array_filter, but it also filters multidimensional/nested arrays, regardless of depth.
+	 *
+	 * @see https://www.php.net/manual/en/function.array-filter.php
+	 *
+	 * @param array         $input    The array to filter.
+	 * @param callable|null $callback Optional. The callback to apply.
+	 *                                The callback should return true to keep the value, false otherwise.
+	 *                                If no callback is provided, all non-truthy values will be removed.
+	 *
+	 * @return array The filtered array.
+	 */
+	public static function array_filter_recursive( array $input, ?callable $callback = null ): array {
+		foreach ( $input as $key => &$value ) { // Mind the use of a reference.
+			if ( \is_array( $value ) ) {
+				$value = self::array_filter_recursive( $value, $callback );
+				if ( ! $value ) {
+					unset( $input[ $key ] );
+				}
+			} elseif ( ! is_null( $callback ) ) {
+				if ( ! $callback( $value ) ) {
+					unset( $input[ $key ] );
+				}
+			} elseif ( ! $value ) {
+				unset( $input[ $key ] );
+			}
+		}
+		unset( $value ); // Kill the reference to avoid memory leaks.
+
+		return $input;
+	}
+
+	/**
+	 * Merge arrays recursively like array_merge.
+	 *
+	 * This method merges any number of arrays recursively, replacing entries with string keys with values from latter arrays.
+	 * If the entry or the next value to be assigned is an array, then it automagically treats both arguments as an array.
+	 * Numeric entries are appended, not replaced, but only if they are unique.
+	 * If the entry or the next value to be assigned is null, it will not overwrite non-null entries.
+	 *
+	 * Note that this does not work the same as array_merge_recursive:
+	 * array_merge_recursive has a behavior that is not quite helpful, especially around overwriting values
+	 * with the same string keys (it will not overwrite, but gather them in an array).
+	 *
+	 * @link http://www.php.net/manual/en/function.array-merge-recursive.php#96201 (initial source)
+	 *
+	 * @return array
+	 */
+	public static function array_merge_recursive_distinct(): array {
+		$arrays = func_get_args();
+		$base   = array_shift( $arrays );
+
+		// Make sure the base is an array.
+		if ( ! is_array( $base ) ) {
+			$base = empty( $base ) ? [] : [ $base ];
+		}
+
+		foreach ( $arrays as $append ) {
+			// Coerce single values to array.
+			if ( ! is_array( $append ) ) {
+				$append = [ $append ];
+			}
+
+			foreach ( $append as $key => $value ) {
+				if ( ! array_key_exists( $key, $base ) && ! is_numeric( $key ) ) {
+					$base[ $key ] = $value;
+					continue;
+				}
+
+				// We include null values only when using string keys that don't exist in the base.
+				// For the rest of the scenarios, null entries are ignored.
+				if ( is_null( $value ) ) {
+					continue;
+				}
+
+				if ( is_array( $value ) || ( array_key_exists( $key, $base ) && is_array( $base[ $key ] ) ) ) {
+					if ( ! isset( $base[ $key ] ) ) {
+						$base[ $key ] = [];
+					}
+					$base[ $key ] = self::array_merge_recursive_distinct( $base[ $key ], $value );
+				} elseif ( is_numeric( $key ) ) {
+					if ( ! in_array( $value, $base, true ) ) {
+						$base[] = $value;
+					}
+				} else {
+					$base[ $key ] = $value;
+				}
+			}
+		}
+
+		return $base;
 	}
 
 	/**
@@ -464,6 +555,19 @@ class WC_Payments_Utils {
 	}
 
 	/**
+	 * Checks if the currently displayed page is the WooPayments onboarding page.
+	 *
+	 * @return bool
+	 */
+	public static function is_onboarding_page(): bool {
+		return (
+			is_admin()
+			&& isset( $_GET['page'] ) && 'wc-admin' === $_GET['page']  // phpcs:ignore WordPress.Security.NonceVerification
+			&& isset( $_GET['path'] ) && '/payments/onboarding' === $_GET['path']  // phpcs:ignore WordPress.Security.NonceVerification
+		);
+	}
+
+	/**
 	 * Converts a locale to the closest supported by Stripe.js.
 	 *
 	 * Stripe.js supports only a subset of IETF language tags, if a country specific locale is not supported we use
@@ -489,13 +593,16 @@ class WC_Payments_Utils {
 			'es-419', // Spanish (Latin America).
 			'et',     // Estonian (Estonia).
 			'fi',     // Finnish (Finland).
+			'fil',    // Filipino (Philippines).
 			'fr',     // French (France).
 			'fr-CA',  // French (Canada).
 			'he',     // Hebrew (Israel).
+			'hr',     // Croatian (Croatia).
 			'hu',     // Hungarian (Hungary).
 			'id',     // Indonesian (Indonesia).
 			'it',     // Italian (Italy).
-			'ja',     // Japanese.
+			'ja',     // Japanese (Japan).
+			'ko',     // Korean (Korea).
 			'lt',     // Lithuanian (Lithuania).
 			'lv',     // Latvian (Latvia).
 			'ms',     // Malay (Malaysia).
@@ -510,8 +617,9 @@ class WC_Payments_Utils {
 			'sk',     // Slovak (Slovakia).
 			'sl',     // Slovenian (Slovenia).
 			'sv',     // Swedish (Sweden).
-			'th',     // Thai.
+			'th',     // Thai (Thailand).
 			'tr',     // Turkish (Turkey).
+			'vi',     // Vietnamese (Vietnam).
 			'zh',     // Chinese Simplified (China).
 			'zh-HK',  // Chinese Traditional (Hong Kong).
 			'zh-TW',  // Chinese Traditional (Taiwan).
@@ -609,6 +717,188 @@ class WC_Payments_Utils {
 		}
 
 		return $status_code ?? 400;
+	}
+
+	/**
+	 * Get the BNPL limits per currency for a specific payment method.
+	 *
+	 * FLAG: PAYMENT_METHODS_LIST
+	 * This can be replaced once all BNPL methods are converted to use definitions.
+	 *
+	 * @param string $payment_method The payment method name ('affirm', 'afterpay_clearpay', or 'klarna').
+	 * @return array The BNPL limits per currency for the specified payment method.
+	 */
+	public static function get_bnpl_limits_per_currency( $payment_method ) {
+		switch ( $payment_method ) {
+			case 'affirm':
+				return [
+					Currency_Code::CANADIAN_DOLLAR      => [
+						Country_Code::CANADA => [
+							'min' => 5000,
+							'max' => 3000000,
+						], // Represents CAD 50 - 30,000 CAD.
+					],
+					Currency_Code::UNITED_STATES_DOLLAR => [
+						Country_Code::UNITED_STATES => [
+							'min' => 5000,
+							'max' => 3000000,
+						],
+					], // Represents USD 50 - 30,000 USD.
+				];
+			case 'afterpay_clearpay':
+				return [
+					Currency_Code::AUSTRALIAN_DOLLAR    => [
+						Country_Code::AUSTRALIA => [
+							'min' => 100,
+							'max' => 200000,
+						], // Represents AUD 1 - 2,000 AUD.
+					],
+					Currency_Code::CANADIAN_DOLLAR      => [
+						Country_Code::CANADA => [
+							'min' => 100,
+							'max' => 200000,
+						], // Represents CAD 1 - 2,000 CAD.
+					],
+					Currency_Code::NEW_ZEALAND_DOLLAR   => [
+						Country_Code::NEW_ZEALAND => [
+							'min' => 100,
+							'max' => 200000,
+						], // Represents NZD 1 - 2,000 NZD.
+					],
+					Currency_Code::POUND_STERLING       => [
+						Country_Code::UNITED_KINGDOM => [
+							'min' => 100,
+							'max' => 120000,
+						], // Represents GBP 1 - 1,200 GBP.
+					],
+					Currency_Code::UNITED_STATES_DOLLAR => [
+						Country_Code::UNITED_STATES => [
+							'min' => 100,
+							'max' => 400000,
+						], // Represents USD 1 - 4,000 USD.
+					],
+				];
+			case 'klarna':
+				return [
+					Currency_Code::UNITED_STATES_DOLLAR => [
+						Country_Code::UNITED_STATES => [
+							'min' => 100,
+							'max' => 1000000,
+						], // Represents USD 1 - 10,000 USD.
+					],
+					Currency_Code::POUND_STERLING       => [
+						Country_Code::UNITED_KINGDOM => [
+							'min' => 100,
+							'max' => 500000,
+						], // Represents GBP 1 - 5,000 GBP.
+					],
+					Currency_Code::EURO                 => [
+						Country_Code::AUSTRIA     => [
+							'min' => 100,
+							'max' => 1000000,
+						], // Represents EUR 1 - 10,000 EUR.
+						Country_Code::BELGIUM     => [
+							'min' => 100,
+							'max' => 1000000,
+						], // Represents EUR 1 - 10,000 EUR.
+						Country_Code::GERMANY     => [
+							'min' => 100,
+							'max' => 1000000,
+						], // Represents EUR 1 - 10,000 EUR.
+						Country_Code::NETHERLANDS => [
+							'min' => 100,
+							'max' => 500000,
+						], // Represents EUR 1 - 5,000 EUR.
+						Country_Code::FINLAND     => [
+							'min' => 100,
+							'max' => 1000000,
+						], // Represents EUR 1 - 10,000 EUR.
+						Country_Code::SPAIN       => [
+							'min' => 100,
+							'max' => 1000000,
+						], // Represents EUR 1 - 10,000 EUR.
+						Country_Code::IRELAND     => [
+							'min' => 100,
+							'max' => 400000,
+						], // Represents EUR 1 - 4,000 EUR.
+						Country_Code::ITALY       => [
+							'min' => 100,
+							'max' => 400000,
+						], // Represents EUR 1 - 4,000 EUR.
+						Country_Code::FRANCE      => [
+							'min' => 100,
+							'max' => 400000,
+						], // Represents EUR 1 - 4,000 EUR.
+					],
+					Currency_Code::DANISH_KRONE         => [
+						Country_Code::DENMARK => [
+							'min' => 100,
+							'max' => 10000000,
+						], // Represents DKK 1 - 100,000 DKK.
+					],
+					Currency_Code::NORWEGIAN_KRONE      => [
+						Country_Code::NORWAY => [
+							'min' => 100,
+							'max' => 10000000,
+						], // Represents NOK 1 - 100,000 NOK.
+					],
+					Currency_Code::SWEDISH_KRONA        => [
+						Country_Code::SWEDEN => [
+							'min' => 100,
+							'max' => 10000000,
+						], // Represents SEK 1 - 100,000 SEK.
+					],
+				];
+			default:
+				return [];
+		}
+	}
+
+	/**
+	 * Check if any BNPL method is available for a given country, currency, and price.
+	 *
+	 * @param array  $enabled_methods Array of enabled BNPL methods.
+	 * @param string $country_code Country code.
+	 * @param string $currency_code Currency code.
+	 * @param float  $price Product price.
+	 * @return bool True if any BNPL method is available, false otherwise.
+	 */
+	public static function is_any_bnpl_method_available( array $enabled_methods, string $country_code, string $currency_code, float $price ): bool {
+		$price_in_cents = $price;
+
+		foreach ( $enabled_methods as $method ) {
+			$limits = self::get_bnpl_limits_per_currency( $method );
+
+			if ( isset( $limits[ $currency_code ][ $country_code ] ) ) {
+				$min_amount = $limits[ $currency_code ][ $country_code ]['min'];
+				$max_amount = $limits[ $currency_code ][ $country_code ]['max'];
+
+				if ( $price_in_cents >= $min_amount && $price_in_cents <= $max_amount ) {
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Check if any BNPL method is available for a given country.
+	 *
+	 * @param array  $enabled_methods Array of enabled BNPL methods.
+	 * @param string $country_code Country code.
+	 * @param string $currency_code Currency code.
+	 * @return bool True if any BNPL method is available, false otherwise.
+	 */
+	public static function is_any_bnpl_supporting_country( array $enabled_methods, string $country_code, string $currency_code ): bool {
+		foreach ( $enabled_methods as $method ) {
+			$limits = self::get_bnpl_limits_per_currency( $method );
+			if ( isset( $limits[ $currency_code ][ $country_code ] ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
@@ -748,7 +1038,7 @@ class WC_Payments_Utils {
 	 * @return boolean
 	 */
 	public static function should_use_new_onboarding_flow(): bool {
-		if ( defined( 'WCPAY_DISABLE_NEW_ONBOARDING' ) && WCPAY_DISABLE_NEW_ONBOARDING ) {
+		if ( apply_filters( 'wcpay_disable_new_onboarding', defined( 'WCPAY_DISABLE_NEW_ONBOARDING' ) && WCPAY_DISABLE_NEW_ONBOARDING ) ) {
 			return false;
 		}
 
@@ -881,27 +1171,6 @@ class WC_Payments_Utils {
 		}
 
 		return $formatted_amount;
-	}
-
-	/**
-	 * Encrypts client secret of intents created on Stripe.
-	 *
-	 * @param   string $stripe_account_id Stripe account ID.
-	 * @param   string $client_secret     Client secret string.
-	 *
-	 * @return  string                 Encrypted value.
-	 */
-	public static function encrypt_client_secret( string $stripe_account_id, string $client_secret ): string {
-		if ( \WC_Payments_Features::is_client_secret_encryption_enabled() ) {
-			return openssl_encrypt(
-				$client_secret,
-				'aes-128-cbc',
-				substr( $stripe_account_id, 5 ),
-				0,
-				str_repeat( 'WC', 8 )
-			);
-		}
-		return $client_secret;
 	}
 
 	/**
@@ -1088,15 +1357,74 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Block based themes display the cart block even when the cart shortcode is used. has_block() isn't effective
-	 * in this case because it checks the page content for the block, which isn't present.
+	 * Determine if the current page is a cart block.
 	 *
-	 * @return bool
+	 * @return bool True if the current page is a cart block, false otherwise.
 	 *
 	 * @psalm-suppress UndefinedFunction
 	 */
 	public static function is_cart_block(): bool {
-		return has_block( 'woocommerce/cart' ) || ( wp_is_block_theme() && is_cart() );
+		return has_block( 'woocommerce/cart' );
+	}
+
+	/**
+	 * Determine if the request that's currently being processed is a Store API request.
+	 *
+	 * @return bool True if request is a Store API request, false otherwise.
+	 */
+	public static function is_store_api_request(): bool {
+		// @TODO We should move to a more robust way of getting to the route, like WC is doing in the StoreAPI library. https://github.com/woocommerce/woocommerce/blob/9ac48232a944baa2dbfaa7dd47edf9027cca9519/plugins/woocommerce/src/StoreApi/Authentication.php#L15-L15
+		if ( isset( $_REQUEST['rest_route'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			$rest_route = sanitize_text_field( $_REQUEST['rest_route'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.NonceVerification
+		} else {
+			$rest_route = self::extract_rest_route_from_url();
+		}
+
+		// Bail early if the rest route is empty.
+		if ( empty( $rest_route ) ) {
+			return false;
+		}
+
+		// Try to match the rest route against the store API route patterns.
+		foreach ( self::STORE_API_ROUTE_PATTERNS as $pattern ) {
+			if ( 1 === preg_match( $pattern, $rest_route ) ) {
+				return true;
+			}
+		}
+
+		// If no match was found, this is not a Store API request.
+		return false;
+	}
+
+	/**
+	 * Extract the REST route from the current request URL.
+	 *
+	 * @return string The REST route, or empty string if not found.
+	 */
+	private static function extract_rest_route_from_url(): string {
+		// Extract the request path from the request URL.
+		$url_parts = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+		if ( empty( $url_parts['path'] ) ) {
+			return '';
+		}
+
+		$request_path = rtrim( $url_parts['path'], '/' );
+		if ( empty( $request_path ) ) {
+			return '';
+		}
+
+		// Remove the REST API prefix from the request path to end up with the route.
+		$rest_prefix = trailingslashit( rest_get_url_prefix() );
+
+		// For multisite subdirectory setups, we need to handle the subdirectory prefix.
+		// Look for the wp-json prefix in the path and extract everything after it.
+		$wp_json_pos = strpos( $request_path, '/' . rtrim( $rest_prefix, '/' ) );
+		if ( false !== $wp_json_pos ) {
+			return substr( $request_path, $wp_json_pos + strlen( $rest_prefix ) );
+		}
+
+		// Fallback: simple prefix replacement for non-multisite cases.
+		return str_replace( $rest_prefix, '', $request_path );
 	}
 
 	/**
@@ -1150,5 +1478,47 @@ class WC_Payments_Utils {
 
 		// Fallback to 'stripe' if no transients are set.
 		return 'stripe';
+	}
+
+	/**
+	 * Returns the list of countries in the European Economic Area (EEA).
+	 *
+	 * Based on the list documented at https://www.gov.uk/eu-eea.
+	 *
+	 * @return string[]
+	 */
+	public static function get_european_economic_area_countries() {
+		return [
+			Country_Code::AUSTRIA,
+			Country_Code::BELGIUM,
+			Country_Code::BULGARIA,
+			Country_Code::CROATIA,
+			Country_Code::CYPRUS,
+			Country_Code::CZECHIA,
+			Country_Code::DENMARK,
+			Country_Code::ESTONIA,
+			Country_Code::FINLAND,
+			Country_Code::FRANCE,
+			Country_Code::GERMANY,
+			Country_Code::GREECE,
+			Country_Code::HUNGARY,
+			Country_Code::IRELAND,
+			Country_Code::ICELAND,
+			Country_Code::ITALY,
+			Country_Code::LATVIA,
+			Country_Code::LIECHTENSTEIN,
+			Country_Code::LITHUANIA,
+			Country_Code::LUXEMBOURG,
+			Country_Code::MALTA,
+			Country_Code::NORWAY,
+			Country_Code::NETHERLANDS,
+			Country_Code::POLAND,
+			Country_Code::PORTUGAL,
+			Country_Code::ROMANIA,
+			Country_Code::SLOVAKIA,
+			Country_Code::SLOVENIA,
+			Country_Code::SPAIN,
+			Country_Code::SWEDEN,
+		];
 	}
 }

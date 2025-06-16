@@ -38,6 +38,6 @@ services:
     container_name: wcp_e2e_phpmyadmin
     image: phpmyadmin/phpmyadmin:latest
     ports:
-      - "8093:80"
+      - "8085:80"
     env_file:
       - ${E2E_ROOT}/env/default.env

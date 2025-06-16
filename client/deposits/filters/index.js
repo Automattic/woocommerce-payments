@@ -8,7 +8,7 @@ import { getQuery } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import { filters, advancedFilters } from './config';
-import { formatCurrencyName } from '../../utils/currency';
+import { formatCurrencyName } from 'multi-currency/interface/functions';
 
 export const DepositsFilters = ( props ) => {
 	const populateDepositCurrencies = ( filtersConfiguration ) => {
@@ -33,13 +33,15 @@ export const DepositsFilters = ( props ) => {
 	};
 
 	return (
-		<ReportFilters
-			filters={ populateDepositCurrencies( filters ) }
-			advancedFilters={ advancedFilters }
-			showDatePicker={ false }
-			path="/payments/deposits"
-			query={ getQuery() }
-		/>
+		<div className="woocommerce-filters-deposits">
+			<ReportFilters
+				filters={ populateDepositCurrencies( filters ) }
+				advancedFilters={ advancedFilters }
+				showDatePicker={ false }
+				path="/payments/payouts"
+				query={ getQuery() }
+			/>
+		</div>
 	);
 };
 

@@ -72,24 +72,39 @@ class WC_Payments_Customer_Service {
 	private $session_service;
 
 	/**
+	 * WC_Payments_Order_Service instance
+	 *
+	 * @var WC_Payments_Order_Service
+	 */
+	private $order_service;
+
+	/**
 	 * Class constructor
 	 *
 	 * @param WC_Payments_API_Client      $payments_api_client Payments API client.
-	 * @param WC_Payments_Account         $account             WC_Payments_Account instance.
-	 * @param Database_Cache              $database_cache      Database_Cache instance.
-	 * @param WC_Payments_Session_Service $session_service     Session Service class instance.
+	 * @param WC_Payments_Account         $account WC_Payments_Account instance.
+	 * @param Database_Cache              $database_cache Database_Cache instance.
+	 * @param WC_Payments_Session_Service $session_service Session Service class instance.
+	 * @param WC_Payments_Order_Service   $order_service Order Service class instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
 		WC_Payments_Account $account,
 		Database_Cache $database_cache,
-		WC_Payments_Session_Service $session_service
+		WC_Payments_Session_Service $session_service,
+		WC_Payments_Order_Service $order_service
 	) {
 		$this->payments_api_client = $payments_api_client;
 		$this->account             = $account;
 		$this->database_cache      = $database_cache;
 		$this->session_service     = $session_service;
+		$this->order_service       = $order_service;
+	}
 
+	/**
+	 * Initialize hooks
+	 */
+	public function init_hooks() {
 		/*
 		 * Adds the WooCommerce Payments customer ID found in the user session
 		 * to the WordPress user as metadata.
@@ -168,12 +183,12 @@ class WC_Payments_Customer_Service {
 	 *
 	 * @return string           WooPayments customer ID.
 	 * @throws API_Exception    Throws when server API request fails.
-*/
+	 */
 	public function get_or_create_customer_id_from_order( ?int $user_id, WC_Order $order ): string {
 		// Determine the customer making the payment, create one if we don't have one already.
 		$customer_id   = $this->get_customer_id_by_user_id( $user_id );
 		$customer_data = self::map_customer_data( $order, new WC_Customer( $user_id ?? 0 ) );
-		$user          =  null === $user_id ? null :  get_user_by( 'id', $user_id );
+		$user          = null === $user_id ? null : get_user_by( 'id', $user_id );
 
 		if ( null !== $customer_id ) {
 			$this->update_customer_for_user( $customer_id, $user, $customer_data );
@@ -265,8 +280,8 @@ class WC_Payments_Customer_Service {
 			return $payment_methods;
 
 		} catch ( API_Exception $e ) {
-			// If we failed to find the we can simply return empty payment methods as this customer will
-			// be recreated when the user succesfuly adds a payment method.
+			// If we failed to find the payment methods, we can simply return empty payment methods as this customer
+			// will be recreated when the user successfully adds a payment method.
 			if ( $e->get_error_code() === 'resource_missing' ) {
 				return [];
 			}
@@ -283,7 +298,7 @@ class WC_Payments_Customer_Service {
 	 * @param WC_Order $order             Order to be used on the update.
 	 */
 	public function update_payment_method_with_billing_details_from_order( $payment_method_id, $order ) {
-		$billing_details = WC_Payments_Utils::get_billing_details_from_order( $order );
+		$billing_details = $this->order_service->get_billing_data_from_order( $order );
 
 		if ( ! empty( $billing_details ) ) {
 			$this->payments_api_client->update_payment_method(
@@ -321,7 +336,7 @@ class WC_Payments_Customer_Service {
 	 *
 	 * @return array Customer data.
 	 */
-	public static function map_customer_data( WC_Order $wc_order = null, WC_Customer $wc_customer = null ): array {
+	public static function map_customer_data( ?WC_Order $wc_order = null, ?WC_Customer $wc_customer = null ): array {
 		if ( null === $wc_customer && null === $wc_order ) {
 			return [];
 		}
@@ -373,7 +388,7 @@ class WC_Payments_Customer_Service {
 	}
 
 	/**
-	 * Delete all saved payment methods that are stored inside database cache driver.
+	 * Delete all saved payment methods that are stored inside the database cache driver.
 	 *
 	 * @return void
 	 */
@@ -517,20 +532,29 @@ class WC_Payments_Customer_Service {
 		}
 
 		global $wp;
-		$user_email = '';
-		$firstname  = '';
-		$lastname   = '';
+		$user_email      = '';
+		$firstname       = '';
+		$lastname        = '';
 		$billing_country = '';
+		$address         = null;
 
 		if ( isset( $_GET['pay_for_order'] ) && 'true' === $_GET['pay_for_order'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			$order_id = absint( $wp->query_vars['order-pay'] );
 			$order    = wc_get_order( $order_id );
 
 			if ( is_a( $order, 'WC_Order' ) ) {
-				$firstname  = $order->get_billing_first_name();
-				$lastname   = $order->get_billing_last_name();
-				$user_email = $order->get_billing_email();
+				$firstname       = $order->get_billing_first_name();
+				$lastname        = $order->get_billing_last_name();
+				$user_email      = $order->get_billing_email();
 				$billing_country = $order->get_billing_country();
+				$address         = [
+					'city'        => $order->get_billing_city(),
+					'country'     => $order->get_billing_country(),
+					'line1'       => $order->get_billing_address_1(),
+					'line2'       => $order->get_billing_address_2(),
+					'postal_code' => $order->get_billing_postcode(),
+					'state'       => $order->get_billing_state(),
+				];
 			}
 		}
 
@@ -538,18 +562,19 @@ class WC_Payments_Customer_Service {
 			$user = wp_get_current_user();
 
 			if ( $user->ID ) {
-				$firstname  = $user->user_firstname;
-				$lastname   = $user->user_lastname;
-				$user_email = get_user_meta( $user->ID, 'billing_email', true );
-				$user_email = $user_email ?: $user->user_email;
+				$firstname       = $user->user_firstname;
+				$lastname        = $user->user_lastname;
+				$user_email      = get_user_meta( $user->ID, 'billing_email', true );
+				$user_email      = ! empty( $user_email ) ? $user_email : $user->user_email;
 				$billing_country = get_user_meta( $user->ID, 'billing_country', true );
 			}
 		}
 
 		return [
-			'name'  => $firstname . ' ' . $lastname,
-			'email' => $user_email,
+			'name'            => $firstname . ' ' . $lastname,
+			'email'           => $user_email,
 			'billing_country' => $billing_country,
+			'address'         => $address,
 		];
 	}
 }

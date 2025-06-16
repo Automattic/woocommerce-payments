@@ -18,7 +18,10 @@ import {
 	disputeAwaitingResponseStatuses,
 	disputeUnderReviewStatuses,
 } from 'wcpay/disputes/filters/config';
-import { formatCurrency, formatExplicitCurrency } from 'wcpay/utils/currency';
+import {
+	formatCurrency,
+	formatExplicitCurrency,
+} from 'multi-currency/interface/functions';
 
 interface IsDueWithinProps {
 	dueBy: CachedDispute[ 'due_by' ] | EvidenceDetails[ 'due_by' ];

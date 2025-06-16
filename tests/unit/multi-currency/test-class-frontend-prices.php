@@ -5,8 +5,6 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use WCPay\Constants\Country_Code;
-
 /**
  * WCPay\MultiCurrency\FrontendPrices unit tests.
  */
@@ -33,13 +31,21 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 	private $frontend_prices;
 
 	/**
+	 * WC_Payments_Localization_Service.
+	 *
+	 * @var WC_Payments_Localization_Service
+	 */
+	private $localization_service;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
 		parent::set_up();
 
-		$this->mock_compatibility  = $this->createMock( WCPay\MultiCurrency\Compatibility::class );
-		$this->mock_multi_currency = $this->createMock( WCPay\MultiCurrency\MultiCurrency::class );
+		$this->mock_compatibility   = $this->createMock( WCPay\MultiCurrency\Compatibility::class );
+		$this->mock_multi_currency  = $this->createMock( WCPay\MultiCurrency\MultiCurrency::class );
+		$this->localization_service = new WC_Payments_Localization_Service();
 
 		$this->frontend_prices = new WCPay\MultiCurrency\FrontendPrices( $this->mock_multi_currency, $this->mock_compatibility );
 		$this->frontend_prices->init_hooks();
@@ -208,7 +214,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		);
 
 		WC()->session->init();
-		WC()->customer->set_location( Country_Code::UNITED_STATES, 'CA' );
+		WC()->customer->set_location( 'US', 'CA' );
 
 		$shipping_method             = new \WC_Shipping_Flat_Rate();
 		$shipping_method->tax_status = 'taxable';
@@ -227,11 +233,23 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 	}
 
 	public function test_convert_shipping_method_rate_cost_for_array_cost() {
+		$matcher = $this->exactly( 2 );
 		$this->mock_multi_currency
-			->expects( $this->once() )
+			->expects( $matcher )
 			->method( 'get_price' )
-			->with( '11' )
-			->willReturn( 25.0 );
+			->willReturnCallback(
+				function ( $price ) use ( $matcher ) {
+					switch ( $matcher->getInvocationCount() ) {
+						case 1:
+							$this->assertEquals( 10.0, $price );
+							break;
+						case 2:
+							$this->assertEquals( 1.0, $price );
+							break;
+					}
+					return $price;
+				}
+			);
 
 		add_filter( 'wc_tax_enabled', '__return_true' );
 		add_filter(
@@ -252,7 +270,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		);
 
 		WC()->session->init();
-		WC()->customer->set_location( Country_Code::UNITED_STATES, 'CA' );
+		WC()->customer->set_location( 'US', 'CA' );
 
 		$shipping_method             = new \WC_Shipping_Flat_Rate();
 		$shipping_method->tax_status = 'taxable';
@@ -266,8 +284,8 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		$shipping_rate = $shipping_method->rates[1];
 
 		// Cost gets converted and taxes properly calculated based on it.
-		$this->assertSame( '25.00', $shipping_rate->cost );
-		$this->assertSame( 2.5, $shipping_rate->taxes[1] );
+		$this->assertSame( '11.00', $shipping_rate->cost );
+		$this->assertSame( 1.1, $shipping_rate->taxes[1] );
 	}
 
 	public function test_get_coupon_amount_returns_empty_amount() {
@@ -329,7 +347,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 	}
 
 	public function test_add_order_meta_skips_default_currency() {
-		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( new WCPay\MultiCurrency\Currency( 'USD' ) );
+		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( new WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' ) );
 
 		$order = wc_create_order();
 		$order->set_currency( 'USD' );
@@ -344,7 +362,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 	}
 
 	public function test_add_order_meta() {
-		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( new WCPay\MultiCurrency\Currency( 'USD' ) );
+		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( new WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' ) );
 		$this->mock_multi_currency->method( 'get_price' )->with( 1, 'exchange_rate' )->willReturn( 0.71 );
 
 		$order = wc_create_order();
@@ -357,5 +375,249 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 
 		$this->assertSame( '0.71', $order->get_meta( '_wcpay_multi_currency_order_exchange_rate' ) );
 		$this->assertSame( 'USD', $order->get_meta( '_wcpay_multi_currency_order_default_currency' ) );
+	}
+
+	/**
+	 * Test that maybe_modify_price_ranges_rest_response() does nothing
+	 * if the REST route is not /wc/store/v1/products/collection-data.
+	 */
+	public function test_maybe_modify_price_ranges_rest_response_non_target_route() {
+		$response = new \WP_REST_Response(
+			[
+				'price_range' => (object) [
+					'min_price' => '10',
+					'max_price' => '100',
+				],
+			]
+		);
+		$server   = $this->createMock( \WP_REST_Server::class );
+		$request  = $this->createMock( \WP_REST_Request::class );
+
+		// Simulate a route we don't care about.
+		$request->method( 'get_route' )->willReturn( '/wc/store/v1/cart' );
+
+		$modified = $this->frontend_prices->maybe_modify_price_ranges_rest_response( $response, $server, $request );
+		$this->assertSame( $response, $modified, 'Response should remain unchanged for non-target routes.' );
+	}
+
+	/**
+	 * Test that maybe_modify_price_ranges_rest_response() does nothing
+	 * if the price_range key is missing or not an object.
+	 */
+	public function test_maybe_modify_price_ranges_rest_response_missing_or_invalid_price_range() {
+		$server  = $this->createMock( \WP_REST_Server::class );
+		$request = $this->createMock( \WP_REST_Request::class );
+		$request->method( 'get_route' )->willReturn( '/wc/store/v1/products/collection-data' );
+
+		// No price_range at all.
+		$response = new \WP_REST_Response( [ 'some_key' => 123 ] );
+		$modified = $this->frontend_prices->maybe_modify_price_ranges_rest_response( $response, $server, $request );
+		$this->assertSame( $response, $modified, 'Response should be unchanged if price_range is missing.' );
+
+		// price_range is not an object.
+		$response->set_data( [ 'price_range' => 'not-an-object' ] );
+		$modified = $this->frontend_prices->maybe_modify_price_ranges_rest_response( $response, $server, $request );
+		$this->assertSame( $response, $modified, 'Response should be unchanged if price_range is not an object.' );
+	}
+
+	/**
+	 * Test that maybe_modify_price_ranges_rest_response() does nothing if
+	 * the store currency equals the selected currency.
+	 */
+	public function test_maybe_modify_price_ranges_rest_response_same_currency() {
+		// Store currency = USD, selected currency = USD.
+		$this->mock_multi_currency
+			->method( 'get_default_currency' )
+			->willReturn( new \WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' ) );
+		$this->mock_multi_currency
+			->method( 'get_selected_currency' )
+			->willReturn( new \WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' ) );
+
+		$request  = $this->createMock( \WP_REST_Request::class );
+		$server   = $this->createMock( \WP_REST_Server::class );
+		$response = new \WP_REST_Response(
+			[
+				'price_range' => (object) [
+					'min_price' => '10',
+					'max_price' => '100',
+				],
+			]
+		);
+
+		$request->method( 'get_route' )->willReturn( '/wc/store/v1/products/collection-data' );
+
+		$modified = $this->frontend_prices->maybe_modify_price_ranges_rest_response( $response, $server, $request );
+		$this->assertSame( $response, $modified, 'Expected no changes if currencies are the same.' );
+	}
+
+	/**
+	 * Test that maybe_modify_price_ranges_rest_response() converts
+	 * min_price and max_price when store and selected currencies differ.
+	 */
+	public function test_maybe_modify_price_ranges_rest_response_converts_price_range() {
+		// Store currency = USD, selected currency = EUR.
+		$this->mock_multi_currency
+			->method( 'get_default_currency' )
+			->willReturn( new \WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' ) );
+		$this->mock_multi_currency
+			->method( 'get_selected_currency' )
+			->willReturn( new \WCPay\MultiCurrency\Currency( $this->localization_service, 'EUR' ) );
+
+		// Mock the get_price() conversion to always multiply by 2.5 for easy checking.
+		$this->mock_multi_currency
+			->method( 'get_price' )
+			->willReturnCallback(
+				function ( $value ) {
+					return (float) $value * 2.5;
+				}
+			);
+
+		$request = $this->createMock( \WP_REST_Request::class );
+		$server  = $this->createMock( \WP_REST_Server::class );
+		$request->method( 'get_route' )->willReturn( '/wc/store/v1/products/collection-data' );
+
+		$response = new \WP_REST_Response(
+			[
+				'price_range' => (object) [
+					'min_price' => '10',
+					'max_price' => '100',
+				],
+			]
+		);
+		$modified = $this->frontend_prices->maybe_modify_price_ranges_rest_response( $response, $server, $request );
+		$data     = $modified->get_data();
+
+		$this->assertSame( '25', $data['price_range']->min_price, 'Expected min_price to be 10 * 2.5' );
+		$this->assertSame( '250', $data['price_range']->max_price, 'Expected max_price to be 100 * 2.5' );
+	}
+
+	/**
+	 * Test that maybe_modify_price_ranges_query_var() does nothing if post_type != 'product'.
+	 */
+	public function test_maybe_modify_price_ranges_query_var_not_product() {
+		$query = [
+			'post_type'  => 'page',
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+			'meta_query' => [
+				[
+					'key'     => '_price',
+					'compare' => '>=',
+					'value'   => 10,
+				],
+			],
+		];
+
+		$block = $this->createMock( \WP_Block::class );
+		$page  = 1;
+
+		$modified_query = $this->frontend_prices->maybe_modify_price_ranges_query_var( $query, $block, $page );
+		$this->assertSame( $query, $modified_query, 'Query should be unchanged when post_type is not product.' );
+	}
+
+	/**
+	 * Test that maybe_modify_price_ranges_query_var() does nothing if meta_query is missing or not an array.
+	 */
+	public function test_maybe_modify_price_ranges_query_var_no_meta_query() {
+		$query = [ 'post_type' => 'product' ]; // no meta_query at all.
+		$block = $this->createMock( \WP_Block::class );
+		$page  = 1;
+
+		$modified_query = $this->frontend_prices->maybe_modify_price_ranges_query_var( $query, $block, $page );
+		$this->assertSame( $query, $modified_query, 'Query should remain unchanged if meta_query is missing.' );
+
+		// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+		$query['meta_query'] = 'string_value'; // meta_query is not an array.
+		$modified_query      = $this->frontend_prices->maybe_modify_price_ranges_query_var( $query, $block, $page );
+		$this->assertSame( $query, $modified_query, 'Query should remain unchanged if meta_query is not an array.' );
+	}
+
+	/**
+	 * Test that maybe_modify_price_ranges_query_var() does nothing if
+	 * the store currency equals the selected currency.
+	 */
+	public function test_maybe_modify_price_ranges_query_var_same_currency() {
+		$this->mock_multi_currency
+			->method( 'get_default_currency' )
+			->willReturn( new \WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' ) );
+		$this->mock_multi_currency
+			->method( 'get_selected_currency' )
+			->willReturn( new \WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' ) );
+
+		$query = [
+			'post_type'  => 'product',
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+			'meta_query' => [
+				[
+					'key'     => '_price',
+					'compare' => '>=',
+					'value'   => 10,
+				],
+			],
+		];
+
+		$block = $this->createMock( \WP_Block::class );
+		$page  = 1;
+
+		$modified_query = $this->frontend_prices->maybe_modify_price_ranges_query_var( $query, $block, $page );
+		$this->assertSame( $query, $modified_query, 'Expected no changes if the store and selected currencies match.' );
+	}
+
+	/**
+	 * Test that maybe_modify_price_ranges_query_var() converts _price values
+	 * when store and selected currencies differ, applying floor or ceil where needed.
+	 */
+	public function test_maybe_modify_price_ranges_query_var_converts_price_filters() {
+		$this->mock_multi_currency
+			->method( 'get_default_currency' )
+			->willReturn( new \WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' ) );
+		$this->mock_multi_currency
+			->method( 'get_selected_currency' )
+			->willReturn( new \WCPay\MultiCurrency\Currency( $this->localization_service, 'EUR' ) );
+
+		// Suppose 1 USD = 0.75 EUR, for test convenience.
+		// We'll detect floors or ceilings based on 'compare'.
+		$this->mock_multi_currency
+			->method( 'get_raw_conversion' )
+			->willReturnCallback(
+				function ( $price, $from_currency, $to_currency ) {
+					return (float) $price * 0.75;
+				}
+			);
+
+		$query = [
+			'post_type'  => 'product',
+			// phpcs:ignore WordPress.DB.SlowDBQuery.slow_db_query_meta_query
+			'meta_query' => [
+				[
+					'key'     => '_price',
+					'compare' => '>=',
+					'value'   => 10,
+				],
+				[
+					'key'     => '_price',
+					'compare' => '<=',
+					'value'   => 100,
+				],
+				[
+					'key'     => '_price',
+					'compare' => '>=',
+					'value'   => 99.75, // checking an odd decimal.
+				],
+			],
+		];
+
+		$block = $this->createMock( \WP_Block::class );
+		$page  = 1;
+
+		$modified_query = $this->frontend_prices->maybe_modify_price_ranges_query_var( $query, $block, $page );
+
+		// We expect:
+		// - ">= 10" becomes >= floor(10*0.75) = >= floor(7.5) = >= 7.
+		// - "<= 100" becomes <= ceil(100*0.75) = <= ceil(75) = <= 75.
+		// - ">= 99.75" => floor(99.75*0.75) => floor(74.8125) => 74.
+
+		$this->assertSame( '7', $modified_query['meta_query'][0]['value'] );
+		$this->assertSame( '75', $modified_query['meta_query'][1]['value'] );
+		$this->assertSame( '74', $modified_query['meta_query'][2]['value'] );
 	}
 }

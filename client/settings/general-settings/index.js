@@ -9,17 +9,18 @@ import interpolateComponents from '@automattic/interpolate-components';
 /**
  * Internal dependencies
  */
-import { useDevMode, useTestMode } from 'wcpay/data';
+import { useTestMode, useTestModeOnboarding } from 'wcpay/data';
 import CardBody from '../card-body';
 import InlineNotice from 'wcpay/components/inline-notice';
-import SetupLivePaymentsModal from 'wcpay/overview/modal/setup-live-payments';
+import SetupLivePaymentsModal from 'wcpay/components/sandbox-mode-switch-to-live-notice/modal';
 import TestModeConfirmationModal from './test-mode-confirm-modal';
 import EnableWooPaymentsCheckbox from './enable-woopayments-checkbox';
+import { recordEvent } from 'wcpay/tracks';
 
 const GeneralSettings = () => {
 	const [ isEnabled, updateIsTestModeEnabled ] = useTestMode();
 	const [ modalVisible, setModalVisible ] = useState( false );
-	const isDevModeEnabled = useDevMode();
+	const isTestModeOnboarding = useTestModeOnboarding();
 	const [ testModeModalVisible, setTestModeModalVisible ] = useState( false );
 
 	return (
@@ -27,7 +28,7 @@ const GeneralSettings = () => {
 			<Card>
 				<CardBody>
 					<EnableWooPaymentsCheckbox />
-					{ ! isDevModeEnabled && (
+					{ ! isTestModeOnboarding && (
 						<>
 							<h4>
 								{ __( 'Test mode', 'woocommerce-payments' ) }
@@ -38,9 +39,14 @@ const GeneralSettings = () => {
 									if ( enableTestMode ) {
 										setTestModeModalVisible( true );
 									} else {
-										updateIsTestModeEnabled(
-											enableTestMode
+										recordEvent(
+											'wcpay_test_mode_disabled',
+											{
+												source: 'wcadmin-settings-page',
+											}
 										);
+
+										updateIsTestModeEnabled( false );
 									}
 								} }
 								label={ __(
@@ -76,7 +82,7 @@ const GeneralSettings = () => {
 							/>
 						</>
 					) }
-					{ isDevModeEnabled && (
+					{ isTestModeOnboarding && (
 						<InlineNotice
 							status="warning"
 							isDismissible={ false }
@@ -88,6 +94,13 @@ const GeneralSettings = () => {
 									),
 									variant: 'secondary',
 									onClick: () => {
+										recordEvent(
+											'wcpay_settings_setup_live_payments_click',
+											{
+												source: 'wcadmin-settings-page',
+											}
+										);
+
 										setModalVisible( true );
 									},
 								},
@@ -125,15 +138,31 @@ const GeneralSettings = () => {
 			</Card>
 			{ modalVisible && (
 				<SetupLivePaymentsModal
-					onClose={ () => setModalVisible( false ) }
+					from="WCPAY_SETTINGS"
+					source="wcadmin-settings-page"
+					onClose={ () => {
+						recordEvent( 'wcpay_setup_live_payments_modal_exit', {
+							source: 'wcadmin-settings-page',
+						} );
+
+						setModalVisible( false );
+					} }
 				/>
 			) }
 			{ testModeModalVisible && (
 				<TestModeConfirmationModal
 					onClose={ () => {
+						recordEvent( 'wcpay_test_mode_modal_exit', {
+							source: 'wcadmin-settings-page',
+						} );
+
 						setTestModeModalVisible( false );
 					} }
 					onConfirm={ () => {
+						recordEvent( 'wcpay_test_mode_enabled', {
+							source: 'wcadmin-settings-page',
+						} );
+
 						updateIsTestModeEnabled( true );
 						setTestModeModalVisible( false );
 					} }

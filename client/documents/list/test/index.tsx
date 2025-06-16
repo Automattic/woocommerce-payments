@@ -3,10 +3,11 @@
 /**
  * External dependencies
  */
-import * as React from 'react';
+import React from 'react';
 import { render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
+import { useUserPreferences } from '@woocommerce/data';
 
 /**
  * Internal dependencies
@@ -14,7 +15,6 @@ import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { DocumentsList } from '../';
 import { useDocuments, useDocumentsSummary } from 'data/index';
 import type { Document } from 'data/documents/hooks';
-import { mocked } from 'ts-jest/utils';
 import VatForm from 'wcpay/vat/form';
 
 jest.mock( 'data/index', () => ( {
@@ -24,6 +24,15 @@ jest.mock( 'data/index', () => ( {
 
 jest.mock( 'wcpay/vat/form', () => jest.fn() );
 
+jest.mock( '@woocommerce/data', () => {
+	const actualModule = jest.requireActual( '@woocommerce/data' );
+
+	return {
+		...actualModule,
+		useUserPreferences: jest.fn(),
+	};
+} );
+
 const mockUseDocuments = useDocuments as jest.MockedFunction<
 	typeof useDocuments
 >;
@@ -32,11 +41,16 @@ const mockUseDocumentsSummary = useDocumentsSummary as jest.MockedFunction<
 	typeof useDocumentsSummary
 >;
 
+const mockUseUserPreferences = useUserPreferences as jest.MockedFunction<
+	typeof useUserPreferences
+>;
+
 declare const global: {
 	wcpaySettings: {
 		accountStatus: {
 			hasSubmittedVatData: boolean;
 		};
+		dateFormat: string;
 	};
 };
 
@@ -61,6 +75,11 @@ describe( 'Documents list', () => {
 	let container: Element;
 	let rerender: ( ui: React.ReactElement ) => void;
 	beforeEach( () => {
+		global.wcpaySettings = {
+			accountStatus: { hasSubmittedVatData: true },
+			dateFormat: 'M j, Y',
+		};
+
 		mockUseDocuments.mockReturnValue( {
 			documents: getMockDocuments(),
 			isLoading: false,
@@ -73,6 +92,12 @@ describe( 'Documents list', () => {
 			},
 			isLoading: false,
 		} );
+
+		mockUseUserPreferences.mockReturnValue( {
+			updateUserPreferences: jest.fn(),
+			wc_payments_documents_hidden_columns: '',
+			isRequesting: false,
+		} as any );
 
 		( { container, rerender } = render( <DocumentsList /> ) );
 	} );
@@ -182,7 +207,7 @@ describe( 'Document download button', () => {
 				documentsError: undefined,
 			} );
 
-			mocked( VatForm ).mockImplementation( ( { onCompleted } ) => (
+			jest.mocked( VatForm ).mockImplementation( ( { onCompleted } ) => (
 				<button
 					onClick={ () =>
 						onCompleted(
@@ -201,6 +226,7 @@ describe( 'Document download button', () => {
 			beforeEach( () => {
 				global.wcpaySettings = {
 					accountStatus: { hasSubmittedVatData: true },
+					dateFormat: 'M j, Y',
 				};
 
 				render( <DocumentsList /> );
@@ -224,6 +250,7 @@ describe( 'Document download button', () => {
 			beforeEach( () => {
 				global.wcpaySettings = {
 					accountStatus: { hasSubmittedVatData: false },
+					dateFormat: 'M j, Y',
 				};
 
 				render( <DocumentsList /> );
@@ -239,20 +266,24 @@ describe( 'Document download button', () => {
 				expect( window.open ).not.toHaveBeenCalled();
 			} );
 
-			it( 'should open the VAT form modal', () => {
+			it( 'should open the tax details modal', () => {
 				// Make sure the modal is not opened before clicking on the button.
 				expect(
-					screen.queryByRole( 'dialog', { name: 'VAT details' } )
+					screen.queryByRole( 'dialog', {
+						name: 'Set your tax details',
+					} )
 				).toBeNull();
 
 				user.click( downloadButton );
 
 				expect(
-					screen.getByRole( 'dialog', { name: 'VAT details' } )
+					screen.getByRole( 'dialog', {
+						name: 'Set your tax details',
+					} )
 				).toBeVisible();
 			} );
 
-			describe( 'after the VAT details are submitted', () => {
+			describe( 'after the tax details are submitted', () => {
 				beforeEach( () => {
 					user.click( downloadButton );
 
@@ -261,7 +292,9 @@ describe( 'Document download button', () => {
 
 				it( 'should close the modal', () => {
 					expect(
-						screen.queryByRole( 'dialog', { name: 'VAT details' } )
+						screen.queryByRole( 'dialog', {
+							name: 'Set your tax details',
+						} )
 					).toBeNull();
 				} );
 
@@ -288,6 +321,7 @@ describe( 'Direct document download', () => {
 
 		global.wcpaySettings = {
 			accountStatus: { hasSubmittedVatData: true },
+			dateFormat: 'M j, Y',
 		};
 	} );
 

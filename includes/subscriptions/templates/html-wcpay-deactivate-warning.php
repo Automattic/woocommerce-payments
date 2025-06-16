@@ -44,7 +44,7 @@
 					</p>
 					<strong>
 						<?php
-							echo sprintf(
+							printf(
 								/* translators: %s: WooPayments. */
 								esc_html__( 'Are you sure you want to deactivate %s?', 'woocommerce-payments' ),
 								'WooPayments'

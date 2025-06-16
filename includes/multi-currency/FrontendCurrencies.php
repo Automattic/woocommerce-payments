@@ -8,7 +8,7 @@
 namespace WCPay\MultiCurrency;
 
 use WC_Order;
-use WC_Payments_Localization_Service;
+use WCPay\MultiCurrency\Interfaces\MultiCurrencyLocalizationInterface;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -24,9 +24,9 @@ class FrontendCurrencies {
 	protected $multi_currency;
 
 	/**
-	 * WC_Payments_Localization_Service instance.
+	 * MultiCurrencyLocalizationInterface instance.
 	 *
-	 * @var WC_Payments_Localization_Service
+	 * @var MultiCurrencyLocalizationInterface
 	 */
 	protected $localization_service;
 
@@ -89,12 +89,12 @@ class FrontendCurrencies {
 	/**
 	 * Constructor.
 	 *
-	 * @param MultiCurrency                    $multi_currency       The MultiCurrency instance.
-	 * @param WC_Payments_Localization_Service $localization_service The Localization Service instance.
-	 * @param Utils                            $utils                Utils instance.
-	 * @param Compatibility                    $compatibility        Compatibility instance.
+	 * @param MultiCurrency                      $multi_currency       The MultiCurrency instance.
+	 * @param MultiCurrencyLocalizationInterface $localization_service The Localization Service instance.
+	 * @param Utils                              $utils                Utils instance.
+	 * @param Compatibility                      $compatibility        Compatibility instance.
 	 */
-	public function __construct( MultiCurrency $multi_currency, WC_Payments_Localization_Service $localization_service, Utils $utils, Compatibility $compatibility ) {
+	public function __construct( MultiCurrency $multi_currency, MultiCurrencyLocalizationInterface $localization_service, Utils $utils, Compatibility $compatibility ) {
 		$this->multi_currency       = $multi_currency;
 		$this->localization_service = $localization_service;
 		$this->utils                = $utils;
@@ -135,6 +135,22 @@ class FrontendCurrencies {
 		$this->price_decimal_separators = [];
 		$this->woocommerce_currency     = null;
 		$this->store_currency           = null;
+	}
+
+	/**
+	 * Removes 'min_price' and 'max_price' from the URL query parameters.
+	 *
+	 * Clears existing price filters when the currency is changed to prevent inconsistencies.
+	 *
+	 * @return void
+	 */
+	public function clear_url_price_params() {
+		if ( isset( $_GET['min_price'] ) || isset( $_GET['max_price'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			$url = remove_query_arg( [ 'min_price', 'max_price' ] );
+
+			wp_safe_redirect( $url );
+			exit;
+		}
 	}
 
 	/**

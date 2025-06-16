@@ -8,6 +8,12 @@
 }
 
 .woopay-save-new-user-container {
+	.save-details {
+		.wc-block-components-text-input input:-webkit-autofill {
+			padding: 1.5em 0.5em 1.5em 0.5em;
+		}
+	}
+
 	.save-details-header {
 		display: flex;
 		align-items: flex-start;
@@ -41,15 +47,15 @@
 				text-indent: 0;
 			}
 
-			input {
-				margin-right: $gap-small;
-			}
-
 			span {
 				@include breakpoint( '>960px' ) {
 					margin-right: 1.25rem;
 				}
 			}
 		}
+	}
+
+	h2 {
+		margin-bottom: 4px;
 	}
 }

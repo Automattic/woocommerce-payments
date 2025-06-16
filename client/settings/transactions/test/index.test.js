@@ -17,7 +17,8 @@ import {
 	useManualCapture,
 	useSavedCards,
 	useCardPresentEligible,
-} from '../../../data';
+	useStripeBilling,
+} from 'wcpay/data';
 import { select } from '@wordpress/data';
 
 jest.mock( '@wordpress/data', () => ( {
@@ -41,7 +42,9 @@ jest.mock( 'wcpay/data', () => ( {
 	useGetSavingError: jest.fn(),
 	useSavedCards: jest.fn(),
 	useDevMode: jest.fn(),
+	useTestModeOnboarding: jest.fn(),
 	useCardPresentEligible: jest.fn(),
+	useStripeBilling: jest.fn(),
 } ) );
 
 describe( 'Settings - Transactions', () => {
@@ -61,6 +64,7 @@ describe( 'Settings - Transactions', () => {
 		useGetSavingError.mockReturnValue( null );
 		useSavedCards.mockReturnValue( [ false, jest.fn() ] );
 		useCardPresentEligible.mockReturnValue( [ false ] );
+		useStripeBilling.mockReturnValue( [ false, jest.fn() ] );
 		window.wcpaySettings = {
 			accountStatus: {
 				country: 'US',
@@ -131,6 +135,17 @@ describe( 'Settings - Transactions', () => {
 
 		expect(
 			screen.getByText( new RegExp( 'The setting is not applied to' ) )
+		).toBeInTheDocument();
+	} );
+
+	it( 'display manual capture conflict notice', async () => {
+		useStripeBilling.mockReturnValue( [ true, jest.fn() ] );
+
+		render( <Transactions /> );
+		expect(
+			screen.getAllByText(
+				/Manual capture is not available when Stripe Billing is active/i
+			)[ 0 ]
 		).toBeInTheDocument();
 	} );
 

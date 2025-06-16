@@ -5,6 +5,7 @@
  */
 import { dispatch, select } from '@wordpress/data';
 import { apiFetch } from '@wordpress/data-controls';
+import directApiFetch from '@wordpress/api-fetch';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -28,12 +29,6 @@ export function updateIsCardPresentEligible( isEnabled ) {
 	return updateSettingsValues( { is_card_present_eligible: isEnabled } );
 }
 
-export function updateIsClientSecretEncryptionEnabled( isEnabled ) {
-	return updateSettingsValues( {
-		is_client_secret_encryption_enabled: isEnabled,
-	} );
-}
-
 export function updatePaymentRequestButtonType( type ) {
 	return updateSettingsValues( { payment_request_button_type: type } );
 }
@@ -44,6 +39,12 @@ export function updatePaymentRequestButtonSize( size ) {
 
 export function updatePaymentRequestButtonTheme( theme ) {
 	return updateSettingsValues( { payment_request_button_theme: theme } );
+}
+
+export function updatePaymentRequestButtonBorderRadius( radius ) {
+	return updateSettingsValues( {
+		payment_request_button_border_radius: radius,
+	} );
 }
 
 export function updateSettings( data ) {
@@ -64,12 +65,6 @@ export function updateIsPaymentRequestEnabled( isEnabled ) {
 export function updateEnabledPaymentMethodIds( methodIds ) {
 	return updateSettingsValues( {
 		enabled_payment_method_ids: [ ...methodIds ],
-	} );
-}
-
-export function updateAvailablePaymentMethodIds( methodIds ) {
-	return updateSettingsValues( {
-		available_payment_method_ids: [ ...methodIds ],
 	} );
 }
 
@@ -139,26 +134,6 @@ export function updateAccountStatementDescriptorKana(
 	} );
 }
 
-export function updateAccountBusinessName( accountBusinessName ) {
-	return updateSettingsValues( {
-		account_business_name: accountBusinessName,
-	} );
-}
-
-export function updateAccountBusinessURL( accountBusinessURL ) {
-	return updateSettingsValues( {
-		account_business_url: accountBusinessURL,
-	} );
-}
-
-export function updateAccountBusinessSupportAddress(
-	accountBusinessSupportAddress
-) {
-	return updateSettingsValues( {
-		account_business_support_address: accountBusinessSupportAddress,
-	} );
-}
-
 export function updateAccountBusinessSupportEmail(
 	accountBusinessSupportEmail
 ) {
@@ -172,12 +147,6 @@ export function updateAccountBusinessSupportPhone(
 ) {
 	return updateSettingsValues( {
 		account_business_support_phone: accountBusinessSupportPhone,
-	} );
-}
-
-export function updateAccountBrandingLogo( accountBrandingLogo ) {
-	return updateSettingsValues( {
-		account_branding_logo: accountBrandingLogo,
 	} );
 }
 
@@ -201,12 +170,6 @@ export function updateDepositScheduleMonthlyAnchor(
 			depositScheduleMonthlyAnchor === ''
 				? null
 				: parseInt( depositScheduleMonthlyAnchor, 10 ),
-	} );
-}
-
-export function updateExportLanguage( language ) {
-	return updateSettingsValues( {
-		reporting_export_language: language,
 	} );
 }
 
@@ -256,6 +219,12 @@ export function updatePaymentRequestLocations( locations ) {
 
 export function updateIsWooPayEnabled( isEnabled ) {
 	return updateSettingsValues( { is_woopay_enabled: isEnabled } );
+}
+
+export function updateIsWooPayGlobalThemeSupportEnabled( isEnabled ) {
+	return updateSettingsValues( {
+		is_woopay_global_theme_support_enabled: isEnabled,
+	} );
 }
 
 export function updateWooPayCustomMessage( message ) {
@@ -312,4 +281,16 @@ export function* submitStripeBillingSubscriptionMigration() {
 	yield dispatch( STORE_NAME ).finishResolution(
 		'scheduleStripeBillingMigration'
 	);
+}
+
+export function saveOption( optionName, value ) {
+	directApiFetch( {
+		path: `${ NAMESPACE }/settings/${ optionName }`,
+		method: 'post',
+		data: { value },
+	} ).catch( () => {
+		dispatch( 'core/notices' ).createErrorNotice(
+			__( 'Error saving option', 'woocommerce-payments' )
+		);
+	} );
 }

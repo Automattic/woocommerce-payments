@@ -1,17 +1,53 @@
-.wcpay-payment-request-wrapper {
-	margin-top: 1em;
+.wcpay-express-checkout-wrapper {
 	width: 100%;
 	clear: both;
 
-	&:first-child {
-		margin-top: 0;
+	display: flex;
+	flex-direction: column;
+
+	#wcpay-express-checkout-element {
+		opacity: 0;
+		transition: all 0.3s ease-in-out;
+		min-height: 0;
+		margin: 0;
+
+		&.is-ready {
+			opacity: 1;
+
+			&:not( :first-child ) {
+				margin-top: 12px;
+			}
+		}
+	}
+
+	.woocommerce-cart & {
+		margin-bottom: 0;
+	}
+
+	.woocommerce-checkout & {
+		#wcpay-express-checkout-element.is-ready:first-child {
+			margin-top: 4px;
+		}
+
+		#wcpay-woopay-button {
+			margin-top: 4px;
+		}
+	}
+
+	// Add spacing for product pages and shortcode cart
+	.woocommerce .type-product &,
+	.wp-block-add-to-cart-form &,
+	.wc-proceed-to-checkout & {
+		margin-top: 1em;
+		margin-bottom: 1em;
 	}
 }
 
-.woocommerce-checkout .wcpay-payment-request-wrapper {
-	margin-bottom: 1.5em;
-}
-
-.wcpay-payment-request-wrapper > div:not( :last-child ) {
-	margin-bottom: 1em;
+// This fixes width calculation issues inside the iframe for blocks and shortcode pages.
+.wcpay-express-checkout-wrapper,
+.wc-block-components-express-payment__event-buttons {
+	.StripeElement iframe {
+		max-width: unset;
+	}
+	list-style: none;
 }

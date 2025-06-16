@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Make sure an explicit currency code is present in the cart and checkout blocks when multi-currency is enabled

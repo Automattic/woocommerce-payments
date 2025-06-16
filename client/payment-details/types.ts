@@ -39,3 +39,13 @@ export const isPaymentIntent = (
 export const isCharge = ( data: PaymentIntent | Charge ): data is Charge => {
 	return ( data as PaymentIntent ).charge === undefined;
 };
+
+/*
+ * Interface for PaymentMethodDetails used in the payment method components on transaction details page.
+ */
+export interface PaymentMethodDetails {
+	id: string;
+	name: null | string;
+	email: null | string;
+	formattedAddress?: string;
+}

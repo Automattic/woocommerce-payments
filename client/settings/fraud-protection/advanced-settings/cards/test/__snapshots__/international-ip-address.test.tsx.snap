@@ -1,18 +1,121 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`International IP address card renders correctly when enabled 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  font-size: 13px;
+}
+
+.emotion-8 {
+  margin-bottom: calc(4px * 2);
+}
+
+.components-panel__row .emotion-8 {
+  margin-bottom: inherit;
+}
+
+.emotion-10 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-10>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-10>* {
+  min-width: 0;
+}
+
+.emotion-12 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+.emotion-16 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-16 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
     id="international-ip-address-card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -22,50 +125,21 @@ exports[`International IP address card renders correctly when enabled 1`] = `
           >
             International IP Address
           </p>
-          <p
-            class="fraud-protection-rule-card-description"
-          >
-            This filter screens for 
-            <a
-              data-link-type="external"
-              href="https://simple.wikipedia.org/wiki/IP_address"
-              target="_blank"
-            >
-              IP addresses
-            </a>
-             outside of your 
-            <a
-              href="admin.php?page=wc-settings&tab=general"
-            >
-              supported countries
-            </a>
-            .
-          </p>
         </div>
-      </div>
-      <hr />
-      <div
-        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
-        data-wp-c16t="true"
-        data-wp-component="CardBody"
-      >
         <div
           class="fraud-protection-rule-toggle"
         >
-          <strong>
-            Enable filtering
-          </strong>
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
+            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
           >
             <div
-              class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+              class="components-base-control__field emotion-8 emotion-9"
             >
               <span
                 class="components-form-toggle is-checked"
               >
                 <input
-                  aria-describedby="inspector-toggle-control-2__help"
+                  checked=""
                   class="components-form-toggle__input"
                   id="inspector-toggle-control-2"
                   type="checkbox"
@@ -81,15 +155,28 @@ exports[`International IP address card renders correctly when enabled 1`] = `
                 class="components-toggle-control__label"
                 for="inspector-toggle-control-2"
               >
-                Block transactions for international IP addresses
+                Enable International IP Address filter
               </label>
             </div>
-            <p
-              class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
-              id="inspector-toggle-control-2__help"
+          </div>
+          <div
+            class="fraud-protection-rule-toggle-description"
+          >
+            This filter screens for 
+            <a
+              data-link-type="external"
+              href="https://simple.wikipedia.org/wiki/IP_address"
+              target="_blank"
             >
-              The payment will be blocked.
-            </p>
+              IP addresses
+            </a>
+             outside of your 
+            <a
+              href="admin.php?page=wc-settings&tab=general"
+            >
+              supported countries
+            </a>
+            . When enabled the payment will be blocked.
           </div>
           <div />
         </div>
@@ -110,12 +197,12 @@ exports[`International IP address card renders correctly when enabled 1`] = `
             class="components-notice__content"
           >
             <div
-              class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+              class="components-flex emotion-10 emotion-1"
               data-wp-c16t="true"
               data-wp-component="Flex"
             >
               <div
-                class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+                class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon emotion-12 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="FlexItem"
               >
@@ -133,11 +220,11 @@ exports[`International IP address card renders correctly when enabled 1`] = `
                 </svg>
               </div>
               <div
-                class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+                class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-12 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="FlexItem"
               >
-                Orders from outside of the following countries will be blocked by the filter: 
+                Orders from outside of the following countries will be screened by the filter: 
                 <strong>
                   Canada, United States
                 </strong>
@@ -152,13 +239,13 @@ exports[`International IP address card renders correctly when enabled 1`] = `
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-16 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-16 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -167,18 +254,121 @@ exports[`International IP address card renders correctly when enabled 1`] = `
 `;
 
 exports[`International IP address card renders correctly when enabled and checked 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  font-size: 13px;
+}
+
+.emotion-8 {
+  margin-bottom: calc(4px * 2);
+}
+
+.components-panel__row .emotion-8 {
+  margin-bottom: inherit;
+}
+
+.emotion-10 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-10>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-10>* {
+  min-width: 0;
+}
+
+.emotion-12 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+.emotion-16 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-16 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
     id="international-ip-address-card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -188,50 +378,21 @@ exports[`International IP address card renders correctly when enabled and checke
           >
             International IP Address
           </p>
-          <p
-            class="fraud-protection-rule-card-description"
-          >
-            This filter screens for 
-            <a
-              data-link-type="external"
-              href="https://simple.wikipedia.org/wiki/IP_address"
-              target="_blank"
-            >
-              IP addresses
-            </a>
-             outside of your 
-            <a
-              href="admin.php?page=wc-settings&tab=general"
-            >
-              supported countries
-            </a>
-            .
-          </p>
         </div>
-      </div>
-      <hr />
-      <div
-        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
-        data-wp-c16t="true"
-        data-wp-component="CardBody"
-      >
         <div
           class="fraud-protection-rule-toggle"
         >
-          <strong>
-            Enable filtering
-          </strong>
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
+            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
           >
             <div
-              class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+              class="components-base-control__field emotion-8 emotion-9"
             >
               <span
                 class="components-form-toggle is-checked"
               >
                 <input
-                  aria-describedby="inspector-toggle-control-3__help"
+                  checked=""
                   class="components-form-toggle__input"
                   id="inspector-toggle-control-3"
                   type="checkbox"
@@ -247,15 +408,28 @@ exports[`International IP address card renders correctly when enabled and checke
                 class="components-toggle-control__label"
                 for="inspector-toggle-control-3"
               >
-                Block transactions for international IP addresses
+                Enable International IP Address filter
               </label>
             </div>
-            <p
-              class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
-              id="inspector-toggle-control-3__help"
+          </div>
+          <div
+            class="fraud-protection-rule-toggle-description"
+          >
+            This filter screens for 
+            <a
+              data-link-type="external"
+              href="https://simple.wikipedia.org/wiki/IP_address"
+              target="_blank"
             >
-              The payment will be blocked.
-            </p>
+              IP addresses
+            </a>
+             outside of your 
+            <a
+              href="admin.php?page=wc-settings&tab=general"
+            >
+              supported countries
+            </a>
+            . When enabled the payment will be blocked.
           </div>
           <div />
         </div>
@@ -276,12 +450,12 @@ exports[`International IP address card renders correctly when enabled and checke
             class="components-notice__content"
           >
             <div
-              class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+              class="components-flex emotion-10 emotion-1"
               data-wp-c16t="true"
               data-wp-component="Flex"
             >
               <div
-                class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+                class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon emotion-12 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="FlexItem"
               >
@@ -299,7 +473,7 @@ exports[`International IP address card renders correctly when enabled and checke
                 </svg>
               </div>
               <div
-                class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+                class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-12 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="FlexItem"
               >
@@ -318,13 +492,13 @@ exports[`International IP address card renders correctly when enabled and checke
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-16 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-16 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -333,18 +507,108 @@ exports[`International IP address card renders correctly when enabled and checke
 `;
 
 exports[`International IP address card renders correctly when woocommerce_allowed_countries is all 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-6>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-6>* {
+  min-width: 0;
+}
+
+.emotion-8 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+.emotion-12 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-12 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
     id="international-ip-address-card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -354,33 +618,7 @@ exports[`International IP address card renders correctly when woocommerce_allowe
           >
             International IP Address
           </p>
-          <p
-            class="fraud-protection-rule-card-description"
-          >
-            This filter screens for 
-            <a
-              data-link-type="external"
-              href="https://simple.wikipedia.org/wiki/IP_address"
-              target="_blank"
-            >
-              IP addresses
-            </a>
-             outside of your 
-            <a
-              href="admin.php?page=wc-settings&tab=general"
-            >
-              supported countries
-            </a>
-            .
-          </p>
         </div>
-      </div>
-      <hr />
-      <div
-        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
-        data-wp-c16t="true"
-        data-wp-component="CardBody"
-      >
         <div
           class="wcpay-inline-notice wcpay-inline-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
         >
@@ -388,12 +626,12 @@ exports[`International IP address card renders correctly when woocommerce_allowe
             class="components-notice__content"
           >
             <div
-              class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+              class="components-flex emotion-6 emotion-1"
               data-wp-c16t="true"
               data-wp-component="Flex"
             >
               <div
-                class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+                class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon emotion-8 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="FlexItem"
               >
@@ -412,7 +650,7 @@ exports[`International IP address card renders correctly when woocommerce_allowe
                 </svg>
               </div>
               <div
-                class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+                class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content emotion-8 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="FlexItem"
               >
@@ -438,13 +676,13 @@ exports[`International IP address card renders correctly when woocommerce_allowe
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-12 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-12 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -453,18 +691,121 @@ exports[`International IP address card renders correctly when woocommerce_allowe
 `;
 
 exports[`International IP address card renders correctly when woocommerce_allowed_countries is all_except 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  font-size: 13px;
+}
+
+.emotion-8 {
+  margin-bottom: calc(4px * 2);
+}
+
+.components-panel__row .emotion-8 {
+  margin-bottom: inherit;
+}
+
+.emotion-10 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-10>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-10>* {
+  min-width: 0;
+}
+
+.emotion-12 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+.emotion-16 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-16 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
     id="international-ip-address-card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -474,50 +815,20 @@ exports[`International IP address card renders correctly when woocommerce_allowe
           >
             International IP Address
           </p>
-          <p
-            class="fraud-protection-rule-card-description"
-          >
-            This filter screens for 
-            <a
-              data-link-type="external"
-              href="https://simple.wikipedia.org/wiki/IP_address"
-              target="_blank"
-            >
-              IP addresses
-            </a>
-             outside of your 
-            <a
-              href="admin.php?page=wc-settings&tab=general"
-            >
-              supported countries
-            </a>
-            .
-          </p>
         </div>
-      </div>
-      <hr />
-      <div
-        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
-        data-wp-c16t="true"
-        data-wp-component="CardBody"
-      >
         <div
           class="fraud-protection-rule-toggle"
         >
-          <strong>
-            Enable filtering
-          </strong>
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
+            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
           >
             <div
-              class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+              class="components-base-control__field emotion-8 emotion-9"
             >
               <span
                 class="components-form-toggle"
               >
                 <input
-                  aria-describedby="inspector-toggle-control-1__help"
                   class="components-form-toggle__input"
                   id="inspector-toggle-control-1"
                   type="checkbox"
@@ -533,15 +844,28 @@ exports[`International IP address card renders correctly when woocommerce_allowe
                 class="components-toggle-control__label"
                 for="inspector-toggle-control-1"
               >
-                Block transactions for international IP addresses
+                Enable International IP Address filter
               </label>
             </div>
-            <p
-              class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
-              id="inspector-toggle-control-1__help"
+          </div>
+          <div
+            class="fraud-protection-rule-toggle-description"
+          >
+            This filter screens for 
+            <a
+              data-link-type="external"
+              href="https://simple.wikipedia.org/wiki/IP_address"
+              target="_blank"
             >
-              When enabled, the payment will be blocked.
-            </p>
+              IP addresses
+            </a>
+             outside of your 
+            <a
+              href="admin.php?page=wc-settings&tab=general"
+            >
+              supported countries
+            </a>
+            . When enabled the payment will be blocked.
           </div>
         </div>
         <div
@@ -561,12 +885,12 @@ exports[`International IP address card renders correctly when woocommerce_allowe
             class="components-notice__content"
           >
             <div
-              class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+              class="components-flex emotion-10 emotion-1"
               data-wp-c16t="true"
               data-wp-component="Flex"
             >
               <div
-                class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+                class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon emotion-12 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="FlexItem"
               >
@@ -584,11 +908,11 @@ exports[`International IP address card renders correctly when woocommerce_allowe
                 </svg>
               </div>
               <div
-                class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+                class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-12 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="FlexItem"
               >
-                Orders from the following countries will be blocked by the filter: 
+                Orders from the following countries will be screened by the filter: 
                 <strong>
                   Canada, United States
                 </strong>
@@ -603,13 +927,13 @@ exports[`International IP address card renders correctly when woocommerce_allowe
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-16 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-16 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -618,18 +942,121 @@ exports[`International IP address card renders correctly when woocommerce_allowe
 `;
 
 exports[`International IP address card renders correctly when woocommerce_allowed_countries is specific 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  font-size: 13px;
+}
+
+.emotion-8 {
+  margin-bottom: calc(4px * 2);
+}
+
+.components-panel__row .emotion-8 {
+  margin-bottom: inherit;
+}
+
+.emotion-10 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-10>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-10>* {
+  min-width: 0;
+}
+
+.emotion-12 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+.emotion-16 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-16 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
     id="international-ip-address-card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -639,50 +1066,20 @@ exports[`International IP address card renders correctly when woocommerce_allowe
           >
             International IP Address
           </p>
-          <p
-            class="fraud-protection-rule-card-description"
-          >
-            This filter screens for 
-            <a
-              data-link-type="external"
-              href="https://simple.wikipedia.org/wiki/IP_address"
-              target="_blank"
-            >
-              IP addresses
-            </a>
-             outside of your 
-            <a
-              href="admin.php?page=wc-settings&tab=general"
-            >
-              supported countries
-            </a>
-            .
-          </p>
         </div>
-      </div>
-      <hr />
-      <div
-        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
-        data-wp-c16t="true"
-        data-wp-component="CardBody"
-      >
         <div
           class="fraud-protection-rule-toggle"
         >
-          <strong>
-            Enable filtering
-          </strong>
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
+            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
           >
             <div
-              class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+              class="components-base-control__field emotion-8 emotion-9"
             >
               <span
                 class="components-form-toggle"
               >
                 <input
-                  aria-describedby="inspector-toggle-control-0__help"
                   class="components-form-toggle__input"
                   id="inspector-toggle-control-0"
                   type="checkbox"
@@ -698,114 +1095,12 @@ exports[`International IP address card renders correctly when woocommerce_allowe
                 class="components-toggle-control__label"
                 for="inspector-toggle-control-0"
               >
-                Block transactions for international IP addresses
+                Enable International IP Address filter
               </label>
             </div>
-            <p
-              class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
-              id="inspector-toggle-control-0__help"
-            >
-              When enabled, the payment will be blocked.
-            </p>
           </div>
-        </div>
-        <div
-          class="fraud-protection-rule-description"
-        >
-          <strong>
-            How does this filter protect me?
-          </strong>
-          <p>
-            You should be especially wary when a customer has an international IP address but uses domestic billing and shipping information. Fraudsters often pretend to live in one location, but live and shop from another.
-          </p>
-        </div>
-        <div
-          class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
-        >
           <div
-            class="components-notice__content"
-          >
-            <div
-              class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
-              data-wp-c16t="true"
-              data-wp-component="Flex"
-            >
-              <div
-                class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
-                data-wp-c16t="true"
-                data-wp-component="FlexItem"
-              >
-                <svg
-                  aria-hidden="true"
-                  focusable="false"
-                  height="24"
-                  size="24"
-                  viewBox="0 0 24 24"
-                  width="24"
-                >
-                  <path
-                    d="M12 15.8c-3.7 0-6.8-3-6.8-6.8s3-6.8 6.8-6.8c3.7 0 6.8 3 6.8 6.8s-3.1 6.8-6.8 6.8zm0-12C9.1 3.8  6.8 6.1 6.8 9s2.4 5.2 5.2 5.2c2.9 0 5.2-2.4 5.2-5.2S14.9 3.8 12 3.8zM8 17.5h8V19H8zM10 20.5h4V22h-4z"
-                  />
-                </svg>
-              </div>
-              <div
-                class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
-                data-wp-c16t="true"
-                data-wp-component="FlexItem"
-              >
-                Orders from outside of the following countries will be blocked by the filter: 
-                <strong>
-                  Canada, United States
-                </strong>
-              </div>
-            </div>
-            <div
-              class="components-notice__actions"
-            />
-          </div>
-        </div>
-      </div>
-    </div>
-    <div
-      aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
-      data-wp-c16t="true"
-      data-wp-component="Elevation"
-    />
-    <div
-      aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
-      data-wp-c16t="true"
-      data-wp-component="Elevation"
-    />
-  </div>
-</div>
-`;
-
-exports[`International IP address card renders like disabled when checked, but not enabled 1`] = `
-<div>
-  <div
-    class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
-    data-wp-c16t="true"
-    data-wp-component="Card"
-    id="international-ip-address-card"
-  >
-    <div
-      class="css-mgwsf4-View-Content em57xhy0"
-    >
-      <div
-        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
-        data-wp-c16t="true"
-        data-wp-component="CardBody"
-      >
-        <div>
-          <p
-            class="fraud-protection-rule-card-header"
-          >
-            International IP Address
-          </p>
-          <p
-            class="fraud-protection-rule-card-description"
+            class="fraud-protection-rule-toggle-description"
           >
             This filter screens for 
             <a
@@ -821,57 +1116,7 @@ exports[`International IP address card renders like disabled when checked, but n
             >
               supported countries
             </a>
-            .
-          </p>
-        </div>
-      </div>
-      <hr />
-      <div
-        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
-        data-wp-c16t="true"
-        data-wp-component="CardBody"
-      >
-        <div
-          class="fraud-protection-rule-toggle"
-        >
-          <strong>
-            Enable filtering
-          </strong>
-          <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
-          >
-            <div
-              class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
-            >
-              <span
-                class="components-form-toggle"
-              >
-                <input
-                  aria-describedby="inspector-toggle-control-4__help"
-                  class="components-form-toggle__input"
-                  id="inspector-toggle-control-4"
-                  type="checkbox"
-                />
-                <span
-                  class="components-form-toggle__track"
-                />
-                <span
-                  class="components-form-toggle__thumb"
-                />
-              </span>
-              <label
-                class="components-toggle-control__label"
-                for="inspector-toggle-control-4"
-              >
-                Block transactions for international IP addresses
-              </label>
-            </div>
-            <p
-              class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
-              id="inspector-toggle-control-4__help"
-            >
-              When enabled, the payment will be blocked.
-            </p>
+            . When enabled the payment will be blocked.
           </div>
         </div>
         <div
@@ -891,12 +1136,12 @@ exports[`International IP address card renders like disabled when checked, but n
             class="components-notice__content"
           >
             <div
-              class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+              class="components-flex emotion-10 emotion-1"
               data-wp-c16t="true"
               data-wp-component="Flex"
             >
               <div
-                class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+                class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon emotion-12 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="FlexItem"
               >
@@ -914,7 +1159,258 @@ exports[`International IP address card renders like disabled when checked, but n
                 </svg>
               </div>
               <div
-                class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+                class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-12 emotion-1"
+                data-wp-c16t="true"
+                data-wp-component="FlexItem"
+              >
+                Orders from outside of the following countries will be screened by the filter: 
+                <strong>
+                  Canada, United States
+                </strong>
+              </div>
+            </div>
+            <div
+              class="components-notice__actions"
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+    <div
+      aria-hidden="true"
+      class="components-elevation emotion-16 emotion-1"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+    <div
+      aria-hidden="true"
+      class="components-elevation emotion-16 emotion-1"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+  </div>
+</div>
+`;
+
+exports[`International IP address card renders like disabled when checked, but not enabled 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  font-size: 13px;
+}
+
+.emotion-8 {
+  margin-bottom: calc(4px * 2);
+}
+
+.components-panel__row .emotion-8 {
+  margin-bottom: inherit;
+}
+
+.emotion-10 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-10>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-10>* {
+  min-width: 0;
+}
+
+.emotion-12 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+.emotion-16 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-16 {
+    transition-duration: 0ms;
+  }
+}
+
+<div>
+  <div
+    class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
+    data-wp-c16t="true"
+    data-wp-component="Card"
+    id="international-ip-address-card"
+  >
+    <div
+      class="emotion-2 emotion-1"
+    >
+      <div
+        class="components-card__body components-card-body wcpay-card-body emotion-4 emotion-1"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
+      >
+        <div>
+          <p
+            class="fraud-protection-rule-card-header"
+          >
+            International IP Address
+          </p>
+        </div>
+        <div
+          class="fraud-protection-rule-toggle"
+        >
+          <div
+            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+          >
+            <div
+              class="components-base-control__field emotion-8 emotion-9"
+            >
+              <span
+                class="components-form-toggle"
+              >
+                <input
+                  class="components-form-toggle__input"
+                  id="inspector-toggle-control-4"
+                  type="checkbox"
+                />
+                <span
+                  class="components-form-toggle__track"
+                />
+                <span
+                  class="components-form-toggle__thumb"
+                />
+              </span>
+              <label
+                class="components-toggle-control__label"
+                for="inspector-toggle-control-4"
+              >
+                Enable International IP Address filter
+              </label>
+            </div>
+          </div>
+          <div
+            class="fraud-protection-rule-toggle-description"
+          >
+            This filter screens for 
+            <a
+              data-link-type="external"
+              href="https://simple.wikipedia.org/wiki/IP_address"
+              target="_blank"
+            >
+              IP addresses
+            </a>
+             outside of your 
+            <a
+              href="admin.php?page=wc-settings&tab=general"
+            >
+              supported countries
+            </a>
+            . When enabled the payment will be blocked.
+          </div>
+        </div>
+        <div
+          class="fraud-protection-rule-description"
+        >
+          <strong>
+            How does this filter protect me?
+          </strong>
+          <p>
+            You should be especially wary when a customer has an international IP address but uses domestic billing and shipping information. Fraudsters often pretend to live in one location, but live and shop from another.
+          </p>
+        </div>
+        <div
+          class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
+        >
+          <div
+            class="components-notice__content"
+          >
+            <div
+              class="components-flex emotion-10 emotion-1"
+              data-wp-c16t="true"
+              data-wp-component="Flex"
+            >
+              <div
+                class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon emotion-12 emotion-1"
+                data-wp-c16t="true"
+                data-wp-component="FlexItem"
+              >
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  height="24"
+                  size="24"
+                  viewBox="0 0 24 24"
+                  width="24"
+                >
+                  <path
+                    d="M12 15.8c-3.7 0-6.8-3-6.8-6.8s3-6.8 6.8-6.8c3.7 0 6.8 3 6.8 6.8s-3.1 6.8-6.8 6.8zm0-12C9.1 3.8  6.8 6.1 6.8 9s2.4 5.2 5.2 5.2c2.9 0 5.2-2.4 5.2-5.2S14.9 3.8 12 3.8zM8 17.5h8V19H8zM10 20.5h4V22h-4z"
+                  />
+                </svg>
+              </div>
+              <div
+                class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-12 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="FlexItem"
               >
@@ -933,13 +1429,13 @@ exports[`International IP address card renders like disabled when checked, but n
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-16 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-16 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />

@@ -45,7 +45,7 @@ class AdminNotices {
 
 			if ( $notice['dismissible'] ) {
 				?>
-				<a href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'wcpay-multi-currency-hide-notice', $notice_key ), 'wcpay_multi_currency_hide_notices_nonce', '_wcpay_multi_currency_notice_nonce' ) ); ?>" class="woocommerce-message-close notice-dismiss" style="position:relative;float:right;padding:9px 0px 9px 9px 9px;text-decoration:none;"></a>
+				<a href="<?php echo esc_url( wp_nonce_url( add_query_arg( 'wcpay-multi-currency-hide-notice', $notice_key ), 'wcpay_multi_currency_hide_notices_nonce', '_wcpay_multi_currency_notice_nonce' ) ); ?>" class="woocommerce-message-close notice-dismiss" style="position:relative;float:right;padding:9px 0 9px 9px;text-decoration:none;"></a>
 				<?php
 			}
 

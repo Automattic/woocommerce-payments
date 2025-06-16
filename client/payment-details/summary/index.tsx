@@ -4,16 +4,16 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { dateI18n } from '@wordpress/date';
 import {
-	Card,
-	CardBody,
 	CardDivider,
-	Flex,
 	DropdownMenu,
 	MenuGroup,
 	MenuItem,
-} from '@wordpress/components';
+	Card,
+	CardBody,
+	Flex,
+	CardNotice,
+} from 'wcpay/components/wp-components-wrapped';
 import { moreVertical } from '@wordpress/icons';
 import moment from 'moment';
 import React, { useContext, useState } from 'react';
@@ -29,6 +29,7 @@ import {
 	getChargeStatus,
 	getChargeChannel,
 	isOnHoldByFraudTools,
+	getBankName,
 } from 'utils/charge';
 import isValueTruthy from 'utils/is-value-truthy';
 import PaymentStatusChip from 'components/payment-status-chip';
@@ -37,7 +38,10 @@ import { HorizontalList, HorizontalListItem } from 'components/horizontal-list';
 import Loadable, { LoadableBlock } from 'components/loadable';
 import riskMappings from 'components/risk-level/strings';
 import OrderLink from 'components/order-link';
-import { formatCurrency, formatExplicitCurrency } from 'utils/currency';
+import {
+	formatCurrency,
+	formatExplicitCurrency,
+} from 'multi-currency/interface/functions';
 import CustomerLink from 'components/customer-link';
 import { ClickTooltip } from 'components/tooltip';
 import DisputeStatusChip from 'components/dispute-status-chip';
@@ -60,7 +64,10 @@ import DisputeAwaitingResponseDetails from '../dispute-details/dispute-awaiting-
 import DisputeResolutionFooter from '../dispute-details/dispute-resolution-footer';
 import ErrorBoundary from 'components/error-boundary';
 import RefundModal from 'wcpay/payment-details/summary/refund-modal';
-import CardNotice from 'wcpay/components/card-notice';
+import {
+	formatDateTimeFromString,
+	formatDateTimeFromTimestamp,
+} from 'wcpay/utils/date-time';
 
 declare const window: any;
 
@@ -107,20 +114,21 @@ const composePaymentSummaryItems = ( {
 		{
 			title: __( 'Date', 'woocommerce-payments' ),
 			content: charge.created
-				? dateI18n(
-						'M j, Y, g:ia',
-						moment( charge.created * 1000 ).toISOString()
-				  )
+				? formatDateTimeFromTimestamp( charge.created, {
+						separator: ', ',
+						includeTime: true,
+				  } )
 				: '–',
 		},
 		{
-			title: __( 'Channel', 'woocommerce-payments' ),
+			title: __( 'Sales channel', 'woocommerce-payments' ),
 			content: (
 				<span>
 					{ isTapToPay( metadata?.reader_model )
 						? getTapToPayChannel( metadata?.platform )
 						: getChargeChannel(
-								charge.payment_method_details?.type
+								charge.payment_method_details?.type,
+								metadata
 						  ) }
 				</span>
 			),
@@ -192,7 +200,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 
 	const { authorization } = useAuthorization(
 		charge.payment_intent as string,
-		charge.order?.number as number,
+		charge.order?.id as number,
 		shouldFetchAuthorization
 	);
 
@@ -248,43 +256,51 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	);
 
 	const [ isRefundModalOpen, setIsRefundModalOpen ] = useState( false );
+
+	const shouldUseBundledComponents = ! charge?.dispute;
+
+	const bankName = getBankName( charge );
 	return (
-		<Card>
-			<CardBody>
-				<Flex direction="row" align="start">
+		<Card useBundledComponent={ shouldUseBundledComponents }>
+			<CardBody useBundledComponent={ shouldUseBundledComponents }>
+				<Flex
+					direction="row"
+					align="start"
+					useBundledComponent={ shouldUseBundledComponents }
+				>
 					<div className="payment-details-summary">
 						<div className="payment-details-summary__section">
-							<p className="payment-details-summary__amount">
-								<Loadable
-									isLoading={ isLoading }
-									placeholder={ __(
-										'Amount placeholder',
-										'woocommerce-payments'
-									) }
-								>
-									{ formattedAmount }
-									<span className="payment-details-summary__amount-currency">
-										{ charge.currency || 'USD' }
-									</span>
-									{ charge.dispute ? (
-										<DisputeStatusChip
-											status={ charge.dispute.status }
-											dueBy={
-												charge.dispute.evidence_details
-													?.due_by
-											}
-											prefixDisputeType={ true }
-										/>
-									) : (
-										<PaymentStatusChip
-											status={ getChargeStatus(
-												charge,
-												paymentIntent
-											) }
-										/>
-									) }
-								</Loadable>
-							</p>
+							<div className="payment-details-summary__amount-wrapper">
+								<p className="payment-details-summary__amount">
+									<Loadable
+										isLoading={ isLoading }
+										placeholder={ __(
+											'Amount placeholder',
+											'woocommerce-payments'
+										) }
+									>
+										{ formattedAmount }
+										<span className="payment-details-summary__amount-currency">
+											{ charge.currency || 'USD' }
+										</span>
+									</Loadable>
+								</p>
+								{ charge.dispute ? (
+									<DisputeStatusChip
+										className="payment-details-summary__status"
+										status={ charge.dispute.status }
+										prefixDisputeType={ true }
+									/>
+								) : (
+									<PaymentStatusChip
+										className="payment-details-summary__status"
+										status={ getChargeStatus(
+											charge,
+											paymentIntent
+										) }
+									/>
+								) }
+							</div>
 							<div className="payment-details-summary__breakdown">
 								{ renderStorePrice ? (
 									<p className="payment-details-summary__breakdown__settlement-currency">
@@ -447,7 +463,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 							{ ! isLoading && isFraudOutcomeReview && (
 								<div className="payment-details-summary__fraud-outcome-action">
 									<CancelAuthorizationButton
-										orderId={ charge.order?.number || 0 }
+										orderId={ charge.order?.id || 0 }
 										paymentIntentId={
 											charge.payment_intent || ''
 										}
@@ -473,7 +489,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 
 									<CaptureAuthorizationButton
 										buttonIsPrimary
-										orderId={ charge.order?.number || 0 }
+										orderId={ charge.order?.id || 0 }
 										paymentIntentId={
 											charge.payment_intent || ''
 										}
@@ -544,6 +560,9 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								placeholder={ moreVertical }
 							>
 								<DropdownMenu
+									useBundledComponent={
+										shouldUseBundledComponents
+									}
 									icon={ moreVertical }
 									label={ __(
 										'Transaction actions',
@@ -555,9 +574,16 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 									className="refund-controls__dropdown-menu"
 								>
 									{ ( { onClose } ) => (
-										<MenuGroup>
+										<MenuGroup
+											useBundledComponent={
+												shouldUseBundledComponents
+											}
+										>
 											{ ! isPartiallyRefunded && (
 												<MenuItem
+													useBundledComponent={
+														shouldUseBundledComponents
+													}
 													onClick={ () => {
 														setIsRefundModalOpen(
 															true
@@ -580,6 +606,9 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 											) }
 											{ isPartiallyRefundable && (
 												<MenuItem
+													useBundledComponent={
+														shouldUseBundledComponents
+													}
 													onClick={ () => {
 														recordEvent(
 															'payments_transactions_details_partial_refund',
@@ -588,7 +617,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 																	charge.payment_intent,
 																order_id:
 																	charge.order
-																		?.number,
+																		?.id,
 															}
 														);
 														window.location =
@@ -609,8 +638,8 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 					</div>
 				</Flex>
 			</CardBody>
-			<CardDivider />
-			<CardBody>
+			<CardDivider useBundledComponent={ shouldUseBundledComponents } />
+			<CardBody useBundledComponent={ shouldUseBundledComponents }>
 				<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
 					<HorizontalList
 						items={ composePaymentSummaryItems( {
@@ -629,9 +658,16 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 							customer={ charge.billing_details }
 							chargeCreated={ charge.created }
 							orderUrl={ charge.order?.url }
+							paymentMethod={
+								charge.payment_method_details?.type
+							}
+							bankName={ bankName }
 						/>
 					) : (
-						<DisputeResolutionFooter dispute={ charge.dispute } />
+						<DisputeResolutionFooter
+							dispute={ charge.dispute }
+							bankName={ bankName }
+						/>
 					) }
 				</ErrorBoundary>
 			) }
@@ -662,10 +698,11 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 				! authorization.captured && (
 					<Loadable isLoading={ isLoading } placeholder="">
 						<CardNotice
+							useBundledComponent={ shouldUseBundledComponents }
 							actions={
 								! isFraudOutcomeReview ? (
 									<CaptureAuthorizationButton
-										orderId={ charge.order?.number || 0 }
+										orderId={ charge.order?.id || 0 }
 										paymentIntentId={
 											charge.payment_intent || ''
 										}
@@ -703,12 +740,13 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								}
 							) }{ ' ' }
 							<abbr
-								title={ dateI18n(
-									'M j, Y / g:iA',
+								title={ formatDateTimeFromString(
+									// TODO: is this string?
 									moment
 										.utc( authorization.created )
-										.add( 7, 'days' ),
-									'UTC'
+										.add( 7, 'days' )
+										.toISOString(),
+									{ includeTime: true }
 								) }
 							>
 								<b>

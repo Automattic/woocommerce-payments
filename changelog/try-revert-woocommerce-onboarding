@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Revert @woocommerce/onboarding upgrade in PR 10840

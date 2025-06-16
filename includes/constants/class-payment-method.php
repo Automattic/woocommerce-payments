@@ -18,6 +18,11 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @psalm-immutable
  */
 class Payment_Method extends Base_Constant {
+	/**
+	 * FLAG: PAYMENT_METHODS_LIST
+	 * We need to see how we can use the definitions to replace these constants.
+	 */
+	const ALIPAY          = 'alipay';
 	const BANCONTACT      = 'bancontact';
 	const BASC            = 'bacs_debit';
 	const BECS            = 'au_becs_debit';
@@ -35,6 +40,9 @@ class Payment_Method extends Base_Constant {
 	const AFFIRM          = 'affirm';
 	const AFTERPAY        = 'afterpay_clearpay';
 	const KLARNA          = 'klarna';
+	const MULTIBANCO      = 'multibanco';
+	const GRABPAY         = 'grabpay';
+	const WECHAT_PAY      = 'wechat_pay';
 
 	const IPP_ALLOWED_PAYMENT_METHODS = [
 		self::CARD_PRESENT,
@@ -45,5 +53,13 @@ class Payment_Method extends Base_Constant {
 		self::AFFIRM,
 		self::AFTERPAY,
 		self::KLARNA,
+	];
+
+	const OFFLINE_PAYMENT_METHODS = [
+		self::MULTIBANCO,
+	];
+
+	const REDIRECT_PAYMENT_METHODS = [
+		self::WECHAT_PAY,
 	];
 }

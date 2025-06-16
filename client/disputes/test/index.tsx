@@ -3,36 +3,20 @@
  * External dependencies
  */
 import { render, waitFor } from '@testing-library/react';
-import { downloadCSVFile } from '@woocommerce/csv-export';
 import apiFetch from '@wordpress/api-fetch';
-import os from 'os';
+import { useUserPreferences } from '@woocommerce/data';
 
 /**
  * Internal dependencies
  */
 import DisputesList from '..';
-import {
-	useDisputes,
-	useDisputesSummary,
-	useReportingExportLanguage,
-	useSettings,
-} from 'data/index';
-import { formatDate, getUnformattedAmount } from 'wcpay/utils/test-utils';
+import { useDisputes, useDisputesSummary, useSettings } from 'data/index';
 import React from 'react';
 import {
 	CachedDispute,
 	DisputeReason,
 	DisputeStatus,
 } from 'wcpay/types/disputes';
-
-jest.mock( '@woocommerce/csv-export', () => {
-	const actualModule = jest.requireActual( '@woocommerce/csv-export' );
-
-	return {
-		...actualModule,
-		downloadCSVFile: jest.fn(),
-	};
-} );
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 
@@ -54,13 +38,17 @@ jest.mock( '@wordpress/data', () => ( {
 jest.mock( 'data/index', () => ( {
 	useDisputes: jest.fn(),
 	useDisputesSummary: jest.fn(),
-	useReportingExportLanguage: jest.fn( () => [ 'en', jest.fn() ] ),
 	useSettings: jest.fn(),
 } ) );
 
-const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
-	typeof downloadCSVFile
->;
+jest.mock( '@woocommerce/data', () => {
+	const actualModule = jest.requireActual( '@woocommerce/data' );
+
+	return {
+		...actualModule,
+		useUserPreferences: jest.fn(),
+	};
+} );
 
 const mockApiFetch = apiFetch as jest.MockedFunction< typeof apiFetch >;
 
@@ -76,8 +64,8 @@ const mockUseSettings = useSettings as jest.MockedFunction<
 	typeof useSettings
 >;
 
-const mockUseReportingExportLanguage = useReportingExportLanguage as jest.MockedFunction<
-	typeof useReportingExportLanguage
+const mockUseUserPreferences = useUserPreferences as jest.MockedFunction<
+	typeof useUserPreferences
 >;
 
 declare const global: {
@@ -97,8 +85,10 @@ declare const global: {
 				precision: number;
 			};
 		};
-		reporting?: {
-			exportModalDismissed: boolean;
+		dateFormat?: string;
+		timeFormat?: string;
+		userLocale: {
+			code: string;
 		};
 	};
 };
@@ -170,13 +160,18 @@ describe( 'Disputes list', () => {
 			new Date( '2019-11-07T12:33:37.000Z' ).getTime()
 		);
 
-		mockUseReportingExportLanguage.mockReturnValue( [ 'en', jest.fn() ] );
-
 		mockUseSettings.mockReturnValue( {
 			isLoading: false,
 			isSaving: false,
-			saveSettings: ( a ) => a,
+			saveSettings: () => null,
+			isDirty: false,
 		} );
+
+		mockUseUserPreferences.mockReturnValue( {
+			updateUserPreferences: jest.fn(),
+			wc_payments_disputes_hidden_columns: '',
+			isRequesting: false,
+		} as any );
 
 		global.wcpaySettings = {
 			zeroDecimalCurrencies: [],
@@ -194,8 +189,10 @@ describe( 'Disputes list', () => {
 					precision: 2,
 				},
 			},
-			reporting: {
-				exportModalDismissed: true,
+			dateFormat: 'Y-m-d',
+			timeFormat: 'g:iA',
+			userLocale: {
+				code: 'en',
 			},
 		};
 	} );
@@ -222,6 +219,40 @@ describe( 'Disputes list', () => {
 		expect( list ).toMatchSnapshot();
 	} );
 
+	test( 'renders columns hidden as per user preferences', () => {
+		mockUseDisputes.mockReturnValue( {
+			isLoading: false,
+			disputes: mockDisputes,
+		} );
+
+		mockUseDisputesSummary.mockReturnValue( {
+			isLoading: false,
+			disputesSummary: {
+				count: 25,
+			},
+		} );
+
+		mockUseUserPreferences.mockReturnValue( {
+			wc_payments_disputes_hidden_columns: [ 'customerEmail' ],
+		} as any );
+
+		const { getByRole, queryByRole } = render( <DisputesList /> );
+
+		// Email column should not be visible, as it is hidden in user preferences.
+		expect(
+			queryByRole( 'columnheader', {
+				name: /Email/i,
+			} )
+		).not.toBeInTheDocument();
+
+		// Country column should be visible, as it is not hidden in user preferences.
+		expect(
+			getByRole( 'columnheader', {
+				name: /Country/i,
+			} )
+		).toBeInTheDocument();
+	} );
+
 	describe( 'Download button', () => {
 		test( 'renders when there are one or more disputes', () => {
 			mockUseDisputes.mockReturnValue( {
@@ -230,7 +261,7 @@ describe( 'Disputes list', () => {
 			} );
 
 			const { queryByRole } = render( <DisputesList /> );
-			const button = queryByRole( 'button', { name: 'Download' } );
+			const button = queryByRole( 'button', { name: 'Export' } );
 
 			expect( button ).not.toBeNull();
 		} );
@@ -242,7 +273,7 @@ describe( 'Disputes list', () => {
 			} );
 
 			const { queryByRole } = render( <DisputesList /> );
-			const button = queryByRole( 'button', { name: 'Download' } );
+			const button = queryByRole( 'button', { name: 'Export' } );
 
 			expect( button ).toBeNull();
 		} );
@@ -275,7 +306,7 @@ describe( 'Disputes list', () => {
 
 			const { getByRole } = render( <DisputesList /> );
 
-			getByRole( 'button', { name: 'Download' } ).click();
+			getByRole( 'button', { name: 'Export' } ).click();
 
 			expect( window.confirm ).toHaveBeenCalledTimes( 1 );
 			expect( window.confirm ).toHaveBeenCalledWith(
@@ -290,81 +321,6 @@ describe( 'Disputes list', () => {
 						'/wc/v3/payments/disputes/download?user_email=mock%40example.com&locale=en',
 				} );
 			} );
-		} );
-
-		test( 'should render expected columns in CSV when the download button is clicked ', () => {
-			const { getByRole } = render( <DisputesList /> );
-			getByRole( 'button', { name: 'Download' } ).click();
-
-			const expected = [
-				'"Dispute Id"',
-				'Amount',
-				'Currency',
-				'Status',
-				'Reason',
-				'Source',
-				'"Order #"',
-				'Customer',
-				'Email',
-				'Country',
-				'"Disputed on"',
-				'"Respond by"',
-			];
-
-			const csvContent = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ];
-			const csvHeaderRow = csvContent.split( os.EOL )[ 0 ].split( ',' );
-			expect( csvHeaderRow ).toEqual( expected );
-		} );
-
-		test( 'should match the visible rows', () => {
-			const { getByRole, getAllByRole } = render( <DisputesList /> );
-			getByRole( 'button', { name: 'Download' } ).click();
-
-			const csvContent = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ];
-			const csvRows = csvContent.split( os.EOL );
-			const displayRows = getAllByRole( 'row' );
-
-			expect( csvRows.length ).toEqual( displayRows.length );
-
-			const csvFirstDispute = csvRows[ 1 ].split( ',' );
-			const displayFirstDispute = Array.from(
-				displayRows[ 1 ].querySelectorAll( 'td' )
-			).map( ( td ) => td.textContent );
-
-			// Note:
-			//
-			// 1. CSV and display indexes are off by 2 because:
-			// 		- the first field in CSV is dispute id, which is missing in display.
-			// 		- the third field in CSV is currency, which is missing in display (it's displayed in "amount" column).
-			//
-			// 2. The indexOf check in amount's expect is because the amount in CSV may not contain
-			//    trailing zeros as in the display amount.
-			//
-			expect(
-				getUnformattedAmount( displayFirstDispute[ 0 ] ).indexOf(
-					csvFirstDispute[ 1 ]
-				)
-			).not.toBe( -1 ); // amount
-
-			expect( csvFirstDispute[ 2 ] ).toBe( 'usd' );
-
-			expect( csvFirstDispute[ 3 ] ).toBe(
-				`"${ displayFirstDispute[ 1 ] }"`
-			); //status
-
-			expect( csvFirstDispute[ 4 ] ).toBe(
-				`"${ displayFirstDispute[ 2 ] }"`
-			); // reason
-
-			expect( csvFirstDispute[ 6 ] ).toBe( displayFirstDispute[ 4 ] ); // order
-
-			expect( csvFirstDispute[ 7 ] ).toBe(
-				`"${ displayFirstDispute[ 5 ] }"`
-			); // customer
-
-			expect( formatDate( csvFirstDispute[ 11 ], 'Y-m-d / g:iA' ) ).toBe(
-				formatDate( displayFirstDispute[ 6 ], 'Y-m-d / g:iA' )
-			); // date respond by
 		} );
 	} );
 } );

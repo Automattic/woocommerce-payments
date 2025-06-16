@@ -9,16 +9,30 @@ import { __ } from '@wordpress/i18n';
 import { getConfig } from 'utils/checkout';
 import request from 'wcpay/checkout/utils/request';
 import { showErrorMessage } from 'wcpay/checkout/woopay/express-button/utils';
-import { buildAjaxURL } from 'wcpay/payment-request/utils';
+import { buildAjaxURL } from 'wcpay/utils/express-checkout';
 import {
 	getTargetElement,
 	validateEmail,
 	appendRedirectionParams,
+	isSupportedThemeEntrypoint,
 } from '../utils';
 import { getTracksIdentity } from 'tracks';
+import { getAppearance } from 'wcpay/checkout/upe-styles';
+import { getAppearanceType } from 'wcpay/checkout/utils';
+
+const getEmailValue = async ( emailSelector ) => {
+	const isPayForOrder = window.wcpayConfig?.pay_for_order === 'true';
+
+	if ( isPayForOrder ) {
+		return window.wcpayCustomerData?.email;
+	}
+
+	const emailInput = await getTargetElement( emailSelector );
+
+	return emailInput?.value;
+};
 
 export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
-	const woopayEmailInput = await getTargetElement( emailSelector );
 	const tracksUserID = await getTracksIdentity();
 	let userEmail = '';
 
@@ -97,6 +111,12 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 	iframe.addEventListener( 'load', () => {
 		// Set the initial value.
 		iframeHeaderValue = true;
+		const appearanceType = getAppearanceType();
+		const appearance =
+			isSupportedThemeEntrypoint( appearanceType ) &&
+			getConfig( 'isWooPayGlobalThemeSupportEnabled' )
+				? getAppearance( appearanceType, true )
+				: null;
 
 		if ( getConfig( 'isWoopayFirstPartyAuthEnabled' ) ) {
 			request(
@@ -106,6 +126,7 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 					order_id: getConfig( 'order_id' ),
 					key: getConfig( 'key' ),
 					billing_email: getConfig( 'billing_email' ),
+					appearance: appearance,
 				}
 			).then( ( response ) => {
 				if ( response?.data?.session ) {
@@ -172,7 +193,7 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 			userEmail = email;
 			urlParams.append( 'email', email );
 		}
-		urlParams.append( 'is_blocks', !! wcSettings.wcBlocksConfig );
+		urlParams.append( 'is_blocks', !! window.wcSettings?.wcBlocksConfig );
 		urlParams.append( 'is_express', 'true' );
 		urlParams.append( 'express_context', context );
 		urlParams.append( 'source_url', window.location.href );
@@ -279,5 +300,7 @@ export const expressCheckoutIframe = async ( api, context, emailSelector ) => {
 		}
 	}
 
-	openIframe( woopayEmailInput?.value );
+	const email = await getEmailValue( emailSelector );
+
+	openIframe( email || getConfig( 'woopaySessionEmail' ) );
 };

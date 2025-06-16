@@ -10,8 +10,8 @@ import user from '@testing-library/user-event';
  */
 import ProgressiveOnboardingEligibilityModal from '../index';
 
-jest.mock( '@wordpress/data', () => ( {
-	useDispatch: jest.fn().mockReturnValue( { updateOptions: jest.fn() } ),
+jest.mock( 'wcpay/data/settings/actions', () => ( {
+	saveOption: jest.fn(),
 } ) );
 
 declare const global: {
@@ -36,7 +36,7 @@ describe( 'Progressive Onboarding Eligibility Modal', () => {
 
 		const queryHeading = () =>
 			screen.queryByRole( 'heading', {
-				name: 'You’re ready to sell.',
+				name: "You're ready to accept payments!",
 			} );
 
 		expect( queryHeading() ).toBeInTheDocument();
@@ -83,12 +83,12 @@ describe( 'Progressive Onboarding Eligibility Modal', () => {
 
 		user.click(
 			screen.getByRole( 'button', {
-				name: 'Start receiving deposits',
+				name: 'Set up payouts',
 			} )
 		);
 
 		expect( window.location.href ).toBe(
-			`https://wcpay.test/connect?collect_payout_requirements=true`
+			`https://wcpay.test/connect?collect_payout_requirements=true&source=unknown&from=WCPAY_OVERVIEW`
 		);
 	} );
 } );

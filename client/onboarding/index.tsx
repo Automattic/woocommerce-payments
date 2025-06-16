@@ -13,17 +13,22 @@ import { getMccFromIndustry } from 'onboarding/utils';
 import { OnboardingForm } from './form';
 import Step from './step';
 import BusinessDetails from './steps/business-details';
-import StoreDetails from './steps/store-details';
-import LoadingStep from './steps/loading';
+import EmbeddedKyc from './steps/embedded-kyc';
 import { trackStarted } from './tracking';
 import { getAdminUrl } from 'wcpay/utils';
 import './style.scss';
 
 const OnboardingStepper = () => {
 	const handleExit = () => {
+		const urlParams = new URLSearchParams( window.location.search );
+
 		window.location.href = getAdminUrl( {
 			page: 'wc-admin',
 			path: '/payments/connect',
+			source:
+				urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) ||
+				'unknown',
+			from: 'WCPAY_ONBOARDING_WIZARD',
 		} );
 	};
 
@@ -36,31 +41,40 @@ const OnboardingStepper = () => {
 					<BusinessDetails />
 				</OnboardingForm>
 			</Step>
-			<Step name="store">
-				<OnboardingForm>
-					<StoreDetails />
-				</OnboardingForm>
+			<Step name="embedded" showHeading={ false }>
+				<EmbeddedKyc />
 			</Step>
-			<LoadingStep name="loading" />
 		</Stepper>
 	);
+};
+
+const getComingSoonShareKey = () => {
+	const {
+		woocommerce_share_key: shareKey,
+		woocommerce_coming_soon: comingSoon,
+		woocommerce_private_link: privateLink,
+	} = wcSettings?.admin?.siteVisibilitySettings || {};
+
+	if ( comingSoon !== 'yes' || privateLink === 'no' ) {
+		return '';
+	}
+
+	return shareKey ? '?woo-share=' + shareKey : '';
 };
 
 const initialData = {
 	business_name: wcSettings?.siteTitle,
 	mcc: getMccFromIndustry(),
-	url:
+	site:
 		location.hostname === 'localhost'
 			? 'https://wcpay.test'
-			: wcSettings?.homeUrl,
+			: wcSettings?.homeUrl + getComingSoonShareKey(),
 	country: wcpaySettings?.connect?.country,
 };
 
 const OnboardingPage: React.FC = () => {
 	useEffect( () => {
-		const urlParams = new URLSearchParams( window.location.search );
-		const source = urlParams.get( 'source' ) || '';
-		trackStarted( source.replace( /[^\w-]+/g, '' ) );
+		trackStarted();
 
 		// Remove loading class and add those required for full screen.
 		document.body.classList.remove( 'woocommerce-admin-is-loading' );
@@ -77,7 +91,7 @@ const OnboardingPage: React.FC = () => {
 	}, [] );
 
 	return (
-		<Page className="wcpay-onboarding-prototype">
+		<Page className="wcpay-onboarding-mox">
 			<OnboardingContextProvider initialData={ initialData }>
 				<OnboardingStepper />
 			</OnboardingContextProvider>

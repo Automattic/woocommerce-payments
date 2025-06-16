@@ -11,14 +11,14 @@ import {
 } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import React, { useContext, useEffect, useState } from 'react';
-import CollapsibleBody from 'wcpay/additional-methods-setup/wizard/collapsible-body';
-import WizardTaskItem from 'wcpay/additional-methods-setup/wizard/task-item';
-import WizardTaskContext from 'wcpay/additional-methods-setup/wizard/task/context';
 import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
  */
+import CollapsibleBody from 'wcpay/components/wizard/collapsible-body';
+import WizardTaskItem from 'wcpay/components/wizard/task-item';
+import WizardTaskContext from 'wcpay/components/wizard/task/context';
 import {
 	VatError,
 	VatFormOnCompleted,
@@ -96,9 +96,8 @@ export const CompanyDataTask = ( {
 				'Confirm your business details',
 				'woocommerce-payments'
 			) }
-			className={ null }
 		>
-			<CollapsibleBody className={ null }>
+			<CollapsibleBody>
 				<TextControl
 					label={ __( 'Business name', 'woocommerce-payments' ) }
 					value={ companyName }

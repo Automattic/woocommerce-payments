@@ -40,9 +40,24 @@ class Sepa_Payment_Method extends UPE_Payment_Method {
 	/**
 	 * Returns testing credentials to be printed at checkout in test mode.
 	 *
+	 * @param string $account_country The country of the account.
 	 * @return string
 	 */
-	public function get_testing_instructions() {
-		return __( '<strong>Test mode:</strong> use the test account number AT611904300234573201. Other payment methods may redirect to a Stripe test page to authorize payment. More test card numbers are listed <a>here</a>.', 'woocommerce-payments' );
+	public function get_testing_instructions( string $account_country ) {
+		return __( '<strong>Test mode:</strong> use the test account number <number>AT611904300234573201</number>. Other payment methods may redirect to a Stripe test page to authorize payment. More test card numbers are listed <a>here</a>.', 'woocommerce-payments' );
+	}
+
+	/**
+	 * Returns payment method description for the settings page.
+	 *
+	 * @param string|null $account_country Country of merchants account.
+	 *
+	 * @return string
+	 */
+	public function get_description( ?string $account_country = null ) {
+		return __(
+			'Reach 500 million customers and over 20 million businesses across the European Union.',
+			'woocommerce-payments'
+		);
 	}
 }

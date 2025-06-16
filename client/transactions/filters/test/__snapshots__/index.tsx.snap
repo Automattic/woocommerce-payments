@@ -5,12 +5,17 @@ HTMLOptionsCollection [
   <option
     value="online"
   >
-    Online
+    Online store
   </option>,
   <option
     value="in_person"
   >
     In-Person
+  </option>,
+  <option
+    value="in_person_pos"
+  >
+    In-Person (POS)
   </option>,
 ]
 `;
@@ -51,6 +56,26 @@ HTMLOptionsCollection [
     value="gbp"
   >
     Pound sterling
+  </option>,
+]
+`;
+
+exports[`Transactions filters when filtering by payment method should render all types 1`] = `
+HTMLOptionsCollection [
+  <option
+    value="visa"
+  >
+    Visa
+  </option>,
+  <option
+    value="mastercard"
+  >
+    Mastercard
+  </option>,
+  <option
+    value="sofort"
+  >
+    Sofort
   </option>,
 ]
 `;
@@ -131,6 +156,11 @@ HTMLOptionsCollection [
     value="dispute_reversal"
   >
     Dispute reversal
+  </option>,
+  <option
+    value="card_reader_fee"
+  >
+    Reader fee
   </option>,
   <option
     value="financing_payout"

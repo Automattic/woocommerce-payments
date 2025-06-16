@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import * as React from 'react';
+import React from 'react';
 import { render, screen } from '@testing-library/react';
 import { updateQueryString } from '@woocommerce/navigation';
 import os from 'os';
@@ -159,7 +159,7 @@ describe( 'RenderPaymentCardReaderChargeDetails', () => {
 				transactionId={ 'mock_transaction_id' }
 			/>
 		);
-		getByRole( 'button', { name: 'Download' } ).click();
+		getByRole( 'button', { name: 'Export' } ).click();
 		const expected = [ '"Reader id"', 'Status', 'Transactions', 'Fee' ];
 
 		// checking if columns in CSV are rendered correctly
@@ -191,7 +191,7 @@ describe( 'RenderPaymentCardReaderChargeDetails', () => {
 				transactionId={ 'mock_transaction_id' }
 			/>
 		);
-		getByRole( 'button', { name: 'Download' } ).click();
+		getByRole( 'button', { name: 'Export' } ).click();
 		const csvContent = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ];
 		const csvRows = csvContent.split( os.EOL );
 		const displayRows = getAllByRole( 'row' );

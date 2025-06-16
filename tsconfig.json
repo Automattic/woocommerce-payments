@@ -13,10 +13,12 @@
     "esModuleInterop": true,
     "noImplicitAny": true,
     "paths": {
+      "jest-utils/*": [ "../tests/js/utilities/*" ],
       "assets/*": [ "../assets/*" ],
       "wcpay/*": [ "./*" ],
+      "multi-currency/*": [ "../includes/multi-currency/client/*" ],
       "iti/utils": [ "../node_modules/intl-tel-input/build/js/utils" ],
-      "react": ["../node_modules/@types/react"]
+      "react": [ "../node_modules/@types/react" ]
     },
     "types": [
       "node",

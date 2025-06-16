@@ -5,7 +5,6 @@ import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 import { Link } from '@woocommerce/components';
-import { tip } from '@wordpress/icons';
 import { ExternalLink } from '@wordpress/components';
 import { addQueryArgs } from '@wordpress/url';
 
@@ -29,7 +28,7 @@ export const SuspendedDepositNotice: React.FC = () => {
 			{ interpolateComponents( {
 				/** translators: {{strong}}: placeholders are opening and closing strong tags. {{suspendLink}}: is a <a> link element */
 				mixedString: __(
-					'Your deposits are {{strong}}temporarily suspended{{/strong}}. {{suspendLink}}Learn more{{/suspendLink}}',
+					'Your payouts are {{strong}}temporarily suspended{{/strong}}. {{suspendLink}}Learn more{{/suspendLink}}',
 					'woocommerce-payments'
 				),
 				components: {
@@ -37,7 +36,7 @@ export const SuspendedDepositNotice: React.FC = () => {
 					suspendLink: (
 						<Link
 							href={
-								'https://woocommerce.com/document/woopayments/deposits/why-deposits-suspended/'
+								'https://woocommerce.com/document/woopayments/payouts/why-payouts-suspended/'
 							}
 						/>
 					),
@@ -46,33 +45,6 @@ export const SuspendedDepositNotice: React.FC = () => {
 		</InlineNotice>
 	);
 };
-
-/**
- * Renders a notice informing the user that the next deposit will include funds from a loan disbursement.
- */
-export const DepositIncludesLoanPayoutNotice: React.FC = () => (
-	<InlineNotice icon status="warning" isDismissible={ false }>
-		{ interpolateComponents( {
-			mixedString: __(
-				'This deposit will include funds from your WooCommerce Capital loan. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
-				'woocommerce-payments'
-			),
-			components: {
-				learnMoreLink: (
-					// Link content is in the format string above. Consider disabling jsx-a11y/anchor-has-content.
-					// eslint-disable-next-line jsx-a11y/anchor-has-content
-					<a
-						href={
-							'https://woocommerce.com/document/woopayments/stripe-capital/overview/'
-						}
-						target="_blank"
-						rel="noreferrer"
-					/>
-				),
-			},
-		} ) }
-	</InlineNotice>
-);
 
 /**
  * Renders a notice informing the user of the new account deposit waiting period.
@@ -86,7 +58,7 @@ export const NewAccountWaitingPeriodNotice: React.FC = () => (
 	>
 		{ interpolateComponents( {
 			mixedString: __(
-				'Your first deposit is held for 7-14 days. {{whyLink}}Why?{{/whyLink}}',
+				'Your first payout is held for 7-14 days. {{whyLink}}Why?{{/whyLink}}',
 				'woocommerce-payments'
 			),
 			components: {
@@ -96,27 +68,11 @@ export const NewAccountWaitingPeriodNotice: React.FC = () => (
 					<a
 						target="_blank"
 						rel="noopener noreferrer"
-						href="https://woocommerce.com/document/woopayments/deposits/deposit-schedule/#new-accounts"
+						href="https://woocommerce.com/document/woopayments/payouts/payout-schedule/#new-accounts"
 					/>
 				),
 			},
 		} ) }
-	</InlineNotice>
-);
-
-/**
- * Renders a notice informing the user of the number of days it may take for deposits to appear in their bank account.
- */
-export const DepositTransitDaysNotice: React.FC = () => (
-	<InlineNotice
-		icon={ tip }
-		isDismissible={ false }
-		className="wcpay-deposit-transit-days-notice"
-	>
-		{ __(
-			'It may take 1-3 business days for deposits to reach your bank account.',
-			'woocommerce-payments'
-		) }
 	</InlineNotice>
 );
 
@@ -134,7 +90,7 @@ export const NegativeBalanceDepositsPausedNotice: React.FC = () => (
 			mixedString: sprintf(
 				/* translators: %s: WooPayments */
 				__(
-					'Deposits may be interrupted while your %s balance remains negative. {{whyLink}}Why?{{/whyLink}}',
+					'Payouts may be interrupted while your %s balance remains negative. {{whyLink}}Why?{{/whyLink}}',
 					'woocommerce-payments'
 				),
 				'WooPayments'
@@ -169,7 +125,7 @@ export const DepositMinimumBalanceNotice: React.FC< {
 				mixedString: sprintf(
 					/* translators: %s: a formatted currency amount, e.g. $5.00 USD */
 					__(
-						'Deposits are paused while your available funds balance remains below %s. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+						'Payouts are paused while your available funds balance remains below %s. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 						'woocommerce-payments'
 					),
 					minimumDepositAmountFormatted
@@ -181,7 +137,7 @@ export const DepositMinimumBalanceNotice: React.FC< {
 						<a
 							target="_blank"
 							rel="noopener noreferrer"
-							href="https://woocommerce.com/document/woopayments/deposits/deposit-schedule/#minimum-deposit-amounts"
+							href="https://woocommerce.com/document/woopayments/payouts/payout-schedule/#minimum-payout-amounts"
 						/>
 					),
 				},
@@ -197,7 +153,7 @@ export const NoFundsAvailableForDepositNotice: React.FC = () => (
 	<InlineNotice status="warning" icon isDismissible={ false }>
 		{ interpolateComponents( {
 			mixedString: __(
-				'You have no funds available to deposit. {{whyLink}}Why?{{/whyLink}}',
+				'You have no funds available. {{whyLink}}Why?{{/whyLink}}',
 				'woocommerce-payments'
 			),
 			components: {
@@ -207,7 +163,7 @@ export const NoFundsAvailableForDepositNotice: React.FC = () => (
 					<a
 						target="_blank"
 						rel="noopener noreferrer"
-						href="https://woocommerce.com/document/woopayments/deposits/deposit-schedule/#pending-funds"
+						href="https://woocommerce.com/document/woopayments/payouts/payout-schedule/#pending-funds"
 					/>
 				),
 			},
@@ -222,12 +178,16 @@ export const DepositFailureNotice: React.FC< {
 	/**
 	 * The link to update the account details.
 	 */
-	updateAccountLink: string;
+	updateAccountLink?: string;
 } > = ( { updateAccountLink } ) => {
-	const accountLinkWithSource = addQueryArgs( updateAccountLink, {
-		source: 'deposits-overview__deposit-failure-notice',
-	} );
-	return (
+	const accountLinkWithSource = updateAccountLink
+		? addQueryArgs( updateAccountLink, {
+				from: 'WCPAY_PAYOUTS',
+				source: 'wcpay-payout-failure-notice',
+		  } )
+		: '';
+
+	return updateAccountLink !== '' ? (
 		<InlineNotice
 			status="warning"
 			icon
@@ -236,7 +196,7 @@ export const DepositFailureNotice: React.FC< {
 		>
 			{ interpolateComponents( {
 				mixedString: __(
-					'Deposits are currently paused because a recent deposit failed. Please {{updateLink}}update your bank account details{{/updateLink}}.',
+					'Payouts are currently paused because a recent payout failed. Please {{updateLink}}update your bank account details{{/updateLink}}.',
 					'woocommerce-payments'
 				),
 				components: {
@@ -246,8 +206,8 @@ export const DepositFailureNotice: React.FC< {
 								recordEvent(
 									'wcpay_account_details_link_clicked',
 									{
-										source:
-											'deposits-overview__deposit-failure-notice',
+										from: 'WCPAY_PAYOUTS',
+										source: 'wcpay-payout-failure-notice',
 									}
 								)
 							}
@@ -257,5 +217,5 @@ export const DepositFailureNotice: React.FC< {
 				},
 			} ) }
 		</InlineNotice>
-	);
+	) : null;
 };

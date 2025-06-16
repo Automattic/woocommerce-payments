@@ -1,24 +1,123 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline component) 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+  border-bottom: 1px solid;
+  box-sizing: border-box;
+  border-color: rgba(0, 0, 0, 0.1);
+  padding: calc(4px * 6) calc(4px * 8);
+}
+
+.emotion-4>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-4>* {
+  min-width: 0;
+}
+
+.emotion-4:last-child {
+  border-bottom: none;
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 6) calc(4px * 8);
+}
+
+.emotion-6:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-6:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-8 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-8 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-flex components-card__header components-card-header css-1e8ifbz-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-large em57xhy0"
+        class="components-flex components-card__header components-card-header emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardHeader"
       >
         Timeline
       </div>
       <div
-        class="components-card__body components-card-body css-1nonx1n-View-Body-borderRadius-large em57xhy0"
+        class="components-card__body components-card-body emotion-6 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -61,7 +160,11 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         </g>
                       </svg>
                       <span>
-                        Payment status changed to Disputed: Lost.
+                        Payment status changed to 
+                        <strong>
+                          Disputed: Lost
+                        </strong>
+                        .
                       </span>
                     </div>
                     <span
@@ -100,7 +203,14 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         </g>
                       </svg>
                       <span>
-                        Dispute lost. The bank ruled in favor of your customer.
+                        <strong>
+                          Dispute lost.
+                        </strong>
+                         
+                        <strong>
+                          The bank
+                        </strong>
+                         decided that you lost the dispute.
                       </span>
                     </div>
                     <span
@@ -139,7 +249,11 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         </g>
                       </svg>
                       <span>
-                        Payment status changed to Disputed: Won.
+                        Payment status changed to 
+                        <strong>
+                          Disputed: Won
+                        </strong>
+                        .
                       </span>
                     </div>
                     <span
@@ -181,9 +295,9 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         $115.00 was added to your 
                         <a
                           data-link-type="wc-admin"
-                          href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b2d3"
+                          href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b2d3"
                         >
-                          Apr 5, 2020 deposit
+                          Apr 5, 2020 payout
                         </a>
                         .
                       </span>
@@ -270,7 +384,11 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         </g>
                       </svg>
                       <span>
-                        Payment status changed to Refunded.
+                        Payment status changed to 
+                        <strong>
+                          Refunded
+                        </strong>
+                        .
                       </span>
                     </div>
                     <span
@@ -309,7 +427,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         </g>
                       </svg>
                       <span>
-                        $100.00 will be deducted from a future deposit.
+                        $100.00 will be deducted from a future payout.
                       </span>
                     </div>
                     <span
@@ -402,7 +520,11 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         </g>
                       </svg>
                       <span>
-                        Payment status changed to Partial refund.
+                        Payment status changed to 
+                        <strong>
+                          Partial refund
+                        </strong>
+                        .
                       </span>
                     </div>
                     <span
@@ -441,7 +563,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         </g>
                       </svg>
                       <span>
-                        $50.00 will be deducted from a future deposit.
+                        $50.00 will be deducted from a future payout.
                       </span>
                     </div>
                     <span
@@ -534,7 +656,11 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         </g>
                       </svg>
                       <span>
-                        Payment status changed to Disputed: In review.
+                        Payment status changed to 
+                        <strong>
+                          Disputed: In review
+                        </strong>
+                        .
                       </span>
                     </div>
                     <span
@@ -624,7 +750,11 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         </g>
                       </svg>
                       <span>
-                        Payment status changed to Disputed: Needs response.
+                        Payment status changed to 
+                        <strong>
+                          Disputed: Needs response
+                        </strong>
+                        .
                       </span>
                     </div>
                     <span
@@ -663,7 +793,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         </g>
                       </svg>
                       <span>
-                        $110.00 will be deducted from a future deposit.
+                        $110.00 will be deducted from a future payout.
                       </span>
                     </div>
                     <span
@@ -749,7 +879,11 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         </g>
                       </svg>
                       <span>
-                        Payment status changed to Paid.
+                        Payment status changed to 
+                        <strong>
+                          Paid
+                        </strong>
+                        .
                       </span>
                     </div>
                     <span
@@ -791,9 +925,9 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         $59.50 was added to your 
                         <a
                           data-link-type="wc-admin"
-                          href="admin.php?page=wc-admin&path=%2Fpayments%2Fdeposits%2Fdetails&id=dummy_po_5eaada696b281"
+                          href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=dummy_po_5eaada696b281"
                         >
-                          Apr 2, 2020 deposit
+                          Apr 2, 2020 payout
                         </a>
                         .
                       </span>
@@ -846,13 +980,11 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                   <div
                     class="woocommerce-timeline-item__body"
                   >
-                    <span />
                     <span>
                       Fee: $3.50
                     </span>
-                    <span />
                     <span>
-                      Net deposit: $59.50
+                      Net payout: $59.50
                     </span>
                   </div>
                 </li>
@@ -894,7 +1026,11 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         </g>
                       </svg>
                       <span>
-                        Payment status changed to Failed.
+                        Payment status changed to 
+                        <strong>
+                          Failed
+                        </strong>
+                        .
                       </span>
                     </div>
                     <span
@@ -933,7 +1069,7 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         </g>
                       </svg>
                       <span>
-                        A payment of $77.00 failed.
+                        A payment of $77.00 failed: The card was declined by the bank.
                       </span>
                     </div>
                     <span
@@ -972,7 +1108,11 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         </g>
                       </svg>
                       <span>
-                        Payment status changed to Authorization expired.
+                        Payment status changed to 
+                        <strong>
+                          Authorization expired
+                        </strong>
+                        .
                       </span>
                     </div>
                     <span
@@ -1050,7 +1190,11 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         </g>
                       </svg>
                       <span>
-                        Payment status changed to Authorization voided.
+                        Payment status changed to 
+                        <strong>
+                          Authorization voided
+                        </strong>
+                        .
                       </span>
                     </div>
                     <span
@@ -1140,7 +1284,11 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
                         </g>
                       </svg>
                       <span>
-                        Payment status changed to Authorized.
+                        Payment status changed to 
+                        <strong>
+                          Authorized
+                        </strong>
+                        .
                       </span>
                     </div>
                     <span
@@ -1201,13 +1349,13 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-8 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-8 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -1216,24 +1364,123 @@ exports[`PaymentDetailsTimeline renders correctly (with a mocked Timeline compon
 `;
 
 exports[`PaymentDetailsTimeline renders error 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+  border-bottom: 1px solid;
+  box-sizing: border-box;
+  border-color: rgba(0, 0, 0, 0.1);
+  padding: calc(4px * 6) calc(4px * 8);
+}
+
+.emotion-4>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-4>* {
+  min-width: 0;
+}
+
+.emotion-4:last-child {
+  border-bottom: none;
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 6) calc(4px * 8);
+}
+
+.emotion-6:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-6:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-8 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-8 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-flex components-card__header components-card-header css-1e8ifbz-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-large em57xhy0"
+        class="components-flex components-card__header components-card-header emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardHeader"
       >
         Timeline
       </div>
       <div
-        class="components-card__body components-card-body css-1nonx1n-View-Body-borderRadius-large em57xhy0"
+        class="components-card__body components-card-body emotion-6 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -1242,13 +1489,13 @@ exports[`PaymentDetailsTimeline renders error 1`] = `
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-8 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-8 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -1257,17 +1504,116 @@ exports[`PaymentDetailsTimeline renders error 1`] = `
 `;
 
 exports[`PaymentDetailsTimeline renders loading 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+  border-bottom: 1px solid;
+  box-sizing: border-box;
+  border-color: rgba(0, 0, 0, 0.1);
+  padding: calc(4px * 6) calc(4px * 8);
+}
+
+.emotion-4>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-4>* {
+  min-width: 0;
+}
+
+.emotion-4:last-child {
+  border-bottom: none;
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 6) calc(4px * 8);
+}
+
+.emotion-6:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-6:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-8 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-8 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-flex components-card__header components-card-header css-1e8ifbz-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-large em57xhy0"
+        class="components-flex components-card__header components-card-header emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardHeader"
       >
@@ -1279,7 +1625,7 @@ exports[`PaymentDetailsTimeline renders loading 1`] = `
         </span>
       </div>
       <div
-        class="components-card__body components-card-body css-1nonx1n-View-Body-borderRadius-large em57xhy0"
+        class="components-card__body components-card-body emotion-6 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -1327,13 +1673,13 @@ exports[`PaymentDetailsTimeline renders loading 1`] = `
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-8 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-8 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -1342,24 +1688,123 @@ exports[`PaymentDetailsTimeline renders loading 1`] = `
 `;
 
 exports[`PaymentDetailsTimeline renders subscription fee correctly 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+  border-bottom: 1px solid;
+  box-sizing: border-box;
+  border-color: rgba(0, 0, 0, 0.1);
+  padding: calc(4px * 6) calc(4px * 8);
+}
+
+.emotion-4>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-4>* {
+  min-width: 0;
+}
+
+.emotion-4:last-child {
+  border-bottom: none;
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 6) calc(4px * 8);
+}
+
+.emotion-6:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-6:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-8 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-8 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-flex components-card__header components-card-header css-1e8ifbz-View-Flex-sx-Base-sx-Items-ItemsRow-Header-borderRadius-borderColor-large em57xhy0"
+        class="components-flex components-card__header components-card-header emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardHeader"
       >
         Timeline
       </div>
       <div
-        class="components-card__body components-card-body css-1nonx1n-View-Body-borderRadius-large em57xhy0"
+        class="components-card__body components-card-body emotion-6 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -1402,7 +1847,11 @@ exports[`PaymentDetailsTimeline renders subscription fee correctly 1`] = `
                         </g>
                       </svg>
                       <span>
-                        Payment status changed to Paid.
+                        Payment status changed to 
+                        <strong>
+                          Paid
+                        </strong>
+                        .
                       </span>
                     </div>
                     <span
@@ -1441,7 +1890,7 @@ exports[`PaymentDetailsTimeline renders subscription fee correctly 1`] = `
                         </g>
                       </svg>
                       <span>
-                        $0.66 will be added to a future deposit.
+                        $0.66 will be added to a future payout.
                       </span>
                     </div>
                     <span
@@ -1492,7 +1941,6 @@ exports[`PaymentDetailsTimeline renders subscription fee correctly 1`] = `
                   <div
                     class="woocommerce-timeline-item__body"
                   >
-                    <span />
                     <span>
                       Fee (3.9% + $0.30): -$0.34
                     </span>
@@ -1511,7 +1959,7 @@ exports[`PaymentDetailsTimeline renders subscription fee correctly 1`] = `
                       </ul>
                     </span>
                     <span>
-                      Net deposit: $0.66
+                      Net payout: $0.66
                     </span>
                   </div>
                 </li>
@@ -1541,7 +1989,11 @@ exports[`PaymentDetailsTimeline renders subscription fee correctly 1`] = `
                         </g>
                       </svg>
                       <span>
-                        Payment status changed to Authorized.
+                        Payment status changed to 
+                        <strong>
+                          Authorized
+                        </strong>
+                        .
                       </span>
                     </div>
                     <span
@@ -1602,13 +2054,13 @@ exports[`PaymentDetailsTimeline renders subscription fee correctly 1`] = `
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-8 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-8 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />

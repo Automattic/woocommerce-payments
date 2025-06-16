@@ -8,14 +8,6 @@ import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import apiRequest from 'wcpay/checkout/utils/request';
 
-/**
- * Initializes the appearance of the payment element by retrieving the UPE configuration
- * from the API and saving the appearance if it doesn't exist. If the appearance already exists,
- * it is simply returned.
- *
- * @param {Object} api The API object used to save the UPE configuration.
- * @return {Promise<Object>} The appearance object for the UPE.
- */
 const elementsLocations = {
 	bnplProductPage: {
 		configKey: 'upeBnplProductPageAppearance',
@@ -27,6 +19,16 @@ const elementsLocations = {
 	},
 };
 
+/**
+ * Initializes the appearance of the payment element by retrieving the UPE configuration
+ * from the API and saving the appearance if it doesn't exist. If the appearance already exists,
+ * it is simply returned.
+ *
+ * @param {Object} api The API object used to save the UPE configuration.
+ * @param {string} location The location of the UPE.
+ *
+ * @return {Promise<Object>} The appearance object for the UPE.
+ */
 async function initializeAppearance( api, location ) {
 	const { configKey, appearanceKey } = elementsLocations[ location ];
 
@@ -51,50 +53,54 @@ export const initializeBnplSiteMessaging = async () => {
 		paymentMethods,
 		currencyCode,
 		isCart,
-		isCartBlock,
 		cartTotal,
+		shouldShowPMME,
 	} = window.wcpayStripeSiteMessaging;
 
 	let amount;
 	let elementLocation = 'bnplProductPage';
+	const paymentMessageContainer = document.getElementById(
+		'payment-method-message'
+	);
 
-	if ( isCart || isCartBlock ) {
+	if ( isCart ) {
 		amount = parseInt( cartTotal, 10 ) || 0;
 		elementLocation = 'bnplClassicCart';
 	} else {
 		amount = parseInt( productVariations.base_product.amount, 10 ) || 0;
+
+		if ( ! shouldShowPMME ) {
+			paymentMessageContainer.style.setProperty( 'display', 'none' );
+		}
 	}
 
-	let paymentMessageElement;
+	const api = new WCPayAPI(
+		{
+			publishableKey: publishableKey,
+			accountId: accountId,
+			locale: locale,
+		},
+		apiRequest
+	);
 
-	if ( ! isCartBlock ) {
-		const api = new WCPayAPI(
-			{
-				publishableKey: publishableKey,
-				accountId: accountId,
-				locale: locale,
-			},
-			apiRequest
-		);
+	const options = {
+		amount: amount,
+		currency: currencyCode || 'USD',
+		paymentMethodTypes: paymentMethods || [],
+		countryCode: country, // Customer's country or base country of the store.
+	};
 
-		const options = {
-			amount: amount,
-			currency: currencyCode || 'USD',
-			paymentMethodTypes: paymentMethods || [],
-			countryCode: country, // Customer's country or base country of the store.
-		};
+	const elementsOptions = {
+		appearance: await initializeAppearance( api, elementLocation ),
+		fonts: getFontRulesFromPage(),
+	};
 
-		const elementsOptions = {
-			appearance: await initializeAppearance( api, elementLocation ),
-			fonts: getFontRulesFromPage(),
-		};
+	const stripe = await api.getStripe();
 
-		paymentMessageElement = api
-			.getStripe()
-			.elements( elementsOptions )
-			.create( 'paymentMethodMessaging', options );
-		paymentMessageElement.mount( '#payment-method-message' );
-	}
+	const paymentMessageElement = stripe
+		.elements( elementsOptions )
+		.create( 'paymentMethodMessaging', options );
+	paymentMessageElement.mount( '#payment-method-message' );
 
 	// This function converts relative units (rem/em) to pixels based on the current font size.
 	function convertToPixels( value, baseFontSize ) {
@@ -140,19 +146,23 @@ export const initializeBnplSiteMessaging = async () => {
 		}
 
 		// Set the `--wc-bnpl-margin-bottom` CSS variable to the computed bottom margin of the price element.
-		document
-			.getElementById( 'payment-method-message' )
-			.style.setProperty( '--wc-bnpl-margin-bottom', bottomMargin );
+		paymentMessageContainer.style.setProperty(
+			'--wc-bnpl-margin-bottom',
+			bottomMargin
+		);
 
-		// When the payment message element is ready, add the `ready` class so the necessary CSS rules are applied.
+		let paymentMessageLoading;
+		if ( ! isCart ) {
+			paymentMessageLoading = document.createElement( 'div' );
+			paymentMessageLoading.classList.add( 'pmme-loading' );
+			paymentMessageContainer.prepend( paymentMessageLoading );
+		}
+
 		paymentMessageElement.on( 'ready', () => {
-			document
-				.getElementById( 'payment-method-message' )
-				.classList.add( 'ready' );
-
 			// On the cart page, get the height of the PMME after it's rendered and store it in a CSS variable. This helps
 			// prevent layout shifts when the PMME is loaded asynchronously upon cart total update.
 			if ( isCart ) {
+				paymentMessageContainer.classList.add( 'ready' );
 				// An element that won't be removed with the cart total update.
 				const cartCollaterals = document.querySelector(
 					'.cart-collaterals'
@@ -200,6 +210,8 @@ export const initializeBnplSiteMessaging = async () => {
 
 					pmme.style.setProperty( '--wc-bnpl-margin-bottom', '-4px' );
 				}, 2000 );
+			} else {
+				paymentMessageLoading?.remove();
 			}
 		} );
 	}

@@ -48,27 +48,18 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	private $order_service;
 
 	/**
-	 * WC_Payments_Token instance for working with customer tokens
-	 *
-	 * @var WC_Payments_Token_Service
-	 */
-	private $token_service;
-
-	/**
 	 * WC_Payments_REST_Controller constructor.
 	 *
 	 * @param WC_Payments_API_Client       $api_client       WooCommerce Payments API client.
 	 * @param WC_Payment_Gateway_WCPay     $gateway          WooCommerce Payments payment gateway.
 	 * @param WC_Payments_Customer_Service $customer_service Customer class instance.
 	 * @param WC_Payments_Order_Service    $order_service    Order Service class instance.
-	 * @param WC_Payments_Token_Service    $token_service    Token Service class instance.
 	 */
-	public function __construct( WC_Payments_API_Client $api_client, WC_Payment_Gateway_WCPay $gateway, WC_Payments_Customer_Service $customer_service, WC_Payments_Order_Service $order_service, WC_Payments_Token_Service $token_service ) {
+	public function __construct( WC_Payments_API_Client $api_client, WC_Payment_Gateway_WCPay $gateway, WC_Payments_Customer_Service $customer_service, WC_Payments_Order_Service $order_service ) {
 		parent::__construct( $api_client );
 		$this->gateway          = $gateway;
 		$this->customer_service = $customer_service;
 		$this->order_service    = $order_service;
-		$this->token_service    = $token_service;
 	}
 
 	/**
@@ -213,14 +204,26 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			$result = $is_intent_captured ? $result_for_captured_intent : $this->gateway->capture_charge( $order, false, $intent_metadata );
 
 			if ( Intent_Status::SUCCEEDED !== $result['status'] ) {
-				$http_code = $result['http_code'] ?? 502;
-				return new WP_Error(
-					'wcpay_capture_error',
-					sprintf(
+				$http_code     = $result['http_code'] ?? 502;
+				$extra_details = $result['extra_details'] ?? [];
+				$error_type    = $result['error_code'] ?? null;
+				$error_code    = 'wcpay_capture_error';
+
+				$message = sprintf(
 					// translators: %s: the error message.
-						__( 'Payment capture failed to complete with the following message: %s', 'woocommerce-payments' ),
-						$result['message'] ?? __( 'Unknown error', 'woocommerce-payments' )
-					),
+					__( 'Payment capture failed to complete with the following message: %s', 'woocommerce-payments' ),
+					$result['message'] ?? __( 'Unknown error', 'woocommerce-payments' )
+				);
+
+				if ( 'amount_too_small' === $error_type && ! empty( $extra_details ) ) {
+					// Make it easier to parse the error metadata for the mobile apps.
+					$error_code = 'wcpay_capture_error_amount_too_small';
+					$message    = esc_html( wp_json_encode( $extra_details ) );
+				}
+
+				return new WP_Error(
+					$error_code,
+					$message,
 					[ 'status' => $http_code ]
 				);
 			}
@@ -237,7 +240,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 										function_exists( 'wcs_is_manual_renewal_required' ) &&
 										wcs_order_contains_subscription( $order_id );
 				if ( $has_subscriptions ) {
-					$token = $this->token_service->add_payment_method_to_user( $generated_card, $order->get_user() );
+					$token = WC_Payments::get_token_service()->add_payment_method_to_user( $generated_card, $order->get_user() );
 					$this->gateway->add_token_to_order( $order, $token );
 					foreach ( wcs_get_subscriptions_for_order( $order ) as $subscription ) {
 						$subscription->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
@@ -313,6 +316,8 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 			$result = $this->gateway->capture_charge( $order, true, $intent_metadata );
 
 			if ( Intent_Status::SUCCEEDED !== $result['status'] ) {
+				$error_code    = $result['error_code'] ?? null;
+				$extra_details = $result['extra_details'] ?? [];
 				return new WP_Error(
 					'wcpay_capture_error',
 					sprintf(
@@ -320,7 +325,11 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 						__( 'Payment capture failed to complete with the following message: %s', 'woocommerce-payments' ),
 						$result['message'] ?? __( 'Unknown error', 'woocommerce-payments' )
 					),
-					[ 'status' => $result['http_code'] ?? 502 ]
+					[
+						'status'        => $result['http_code'] ?? 502,
+						'extra_details' => $extra_details,
+						'error_type'    => $error_code,
+					]
 				);
 			}
 
@@ -447,7 +456,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	 * @param WP_REST_Request $request Request object.
 	 * @param array           $default_value - default value.
 	 *
-	 * @return array|null
+	 * @return array
 	 * @throws \Exception
 	 */
 	public function get_terminal_intent_payment_method( $request, array $default_value = [ Payment_Method::CARD_PRESENT ] ): array {
@@ -475,7 +484,7 @@ class WC_REST_Payments_Orders_Controller extends WC_Payments_REST_Controller {
 	 * @param WP_REST_Request $request Request object.
 	 * @param string          $default_value default value.
 	 *
-	 * @return string|null
+	 * @return string
 	 * @throws \Exception
 	 */
 	public function get_terminal_intent_capture_method( $request, string $default_value = 'manual' ): string {

@@ -9,18 +9,21 @@ import { getQuery } from '@woocommerce/navigation';
  * Internal dependencies
  */
 import { getFilters, getAdvancedFilters } from './config';
-import { formatCurrencyName } from '../../utils/currency';
-import './style.scss';
+import { formatCurrencyName } from 'multi-currency/interface/functions';
 import { recordEvent } from 'tracks';
+import { Transaction } from 'wcpay/data';
+import { getTransactionPaymentMethodTitle } from 'wcpay/transactions/utils/getTransactionPaymentMethodTitle';
 
 interface TransactionsFiltersProps {
 	storeCurrencies: string[];
 	customerCurrencies: string[];
+	transactionSources: Transaction[ 'source' ][];
 }
 
 export const TransactionsFilters = ( {
 	storeCurrencies,
 	customerCurrencies,
+	transactionSources,
 }: TransactionsFiltersProps ): JSX.Element => {
 	const advancedFilters = useMemo(
 		() =>
@@ -28,9 +31,15 @@ export const TransactionsFilters = ( {
 				customerCurrencies.map( ( currencyCode: string ) => ( {
 					label: formatCurrencyName( currencyCode ),
 					value: currencyCode,
-				} ) )
+				} ) ),
+				typeof transactionSources === 'undefined'
+					? []
+					: transactionSources.map( ( source ) => ( {
+							label: getTransactionPaymentMethodTitle( source ),
+							value: source,
+					  } ) )
 			),
-		[ customerCurrencies ]
+		[ customerCurrencies, transactionSources ]
 	);
 
 	const filters = useMemo(

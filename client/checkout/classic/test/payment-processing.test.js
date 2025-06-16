@@ -6,13 +6,23 @@ import {
 	mountStripePaymentElement,
 	processPayment,
 	renderTerms,
+	__resetGatewayUPEComponentsElement,
+	__resetHasCheckoutCompleted,
 } from '../payment-processing';
 import { getAppearance } from '../../upe-styles';
 import { getUPEConfig } from 'wcpay/utils/checkout';
-import { getFingerprint } from 'wcpay/checkout/utils/fingerprint';
+import {
+	getFingerprint,
+	appendFingerprintInputToForm,
+} from 'wcpay/checkout/utils/fingerprint';
 import showErrorCheckout from 'wcpay/checkout/utils/show-error-checkout';
 import { waitFor } from '@testing-library/react';
-import { getSelectedUPEGatewayPaymentMethod } from 'wcpay/checkout/utils/upe';
+import {
+	appendPaymentMethodErrorDataToForm,
+	appendPaymentMethodIdToForm,
+	getSelectedUPEGatewayPaymentMethod,
+} from 'wcpay/checkout/utils/upe';
+import { PAYMENT_METHOD_ERROR } from 'wcpay/checkout/constants';
 
 jest.mock( '../../upe-styles' );
 
@@ -57,6 +67,7 @@ jest.mock( 'wcpay/utils/checkout', () => ( {
 
 jest.mock( 'wcpay/checkout/utils/fingerprint', () => ( {
 	getFingerprint: jest.fn(),
+	appendFingerprintInputToForm: jest.fn(),
 } ) );
 
 jest.mock( 'wcpay/checkout/utils/show-error-checkout', () => jest.fn() );
@@ -65,9 +76,16 @@ const mockUpdateFunction = jest.fn();
 
 const mockMountFunction = jest.fn();
 
+let eventHandlersFromElementsCreate = {};
 const mockCreateFunction = jest.fn( () => ( {
 	mount: mockMountFunction,
 	update: mockUpdateFunction,
+	on: ( event, handler ) => {
+		if ( ! eventHandlersFromElementsCreate[ event ] ) {
+			eventHandlersFromElementsCreate[ event ] = [];
+		}
+		eventHandlersFromElementsCreate[ event ].push( handler );
+	},
 } ) );
 
 const mockSubmit = jest.fn( () => ( {
@@ -79,14 +97,20 @@ const mockElements = jest.fn( () => ( {
 	submit: mockSubmit,
 } ) );
 
-const mockCreatePaymentMethod = jest.fn().mockResolvedValue( {} );
+const mockCreatePaymentMethod = jest.fn().mockResolvedValue( {
+	paymentMethod: {
+		id: 'paymentMethodId',
+	},
+} );
 
 const apiMock = {
 	saveUPEAppearance: jest.fn().mockResolvedValue( {} ),
-	getStripeForUPE: jest.fn( () => ( {
-		elements: mockElements,
-		createPaymentMethod: mockCreatePaymentMethod,
-	} ) ),
+	getStripeForUPE: jest.fn( () =>
+		Promise.resolve( {
+			elements: mockElements,
+			createPaymentMethod: mockCreatePaymentMethod,
+		} )
+	),
 	setupIntent: jest.fn().mockResolvedValue( {} ),
 };
 
@@ -95,6 +119,7 @@ describe( 'Stripe Payment Element mounting', () => {
 
 	beforeEach( () => {
 		mockDomElement = document.createElement( 'div' );
+		eventHandlersFromElementsCreate = {};
 		getUPEConfig.mockImplementation( ( argument ) => {
 			if (
 				argument === 'wcBlocksUPEAppearance' ||
@@ -134,108 +159,118 @@ describe( 'Stripe Payment Element mounting', () => {
 		jest.clearAllMocks();
 	} );
 
-	test( 'initializes the appearance when it is not set and saves it', async () => {
-		getUPEConfig.mockImplementation( ( argument ) => {
-			if (
-				argument === 'wcBlocksUPEAppearance' ||
-				argument === 'upeAppearance'
-			) {
-				return null;
-			}
+	[
+		{
+			elementsLocation: 'shortcode_checkout',
+			expectedProperty: 'upeAppearance',
+		},
+		{
+			elementsLocation: 'add_payment_method',
+			expectedProperty: 'upeAddPaymentMethodAppearance',
+		},
+		{
+			elementsLocation: 'other',
+			expectedProperty: 'upeAppearance',
+		},
+	].forEach( ( { elementsLocation, expectedProperty } ) => {
+		describe( `when elementsLocation is ${ elementsLocation }`, () => {
+			beforeEach( () => {
+				__resetGatewayUPEComponentsElement( 'giropay' );
+			} );
 
-			if ( argument === 'paymentMethodsConfig' ) {
-				return {
-					card: {
-						label: 'Card',
-						forceNetworkSavedCards: true,
-					},
-					giropay: {
-						label: 'Giropay',
-						forceNetworkSavedCards: false,
-					},
-					ideal: {
-						label: 'iDEAL',
-						forceNetworkSavedCards: false,
-					},
-					sepa: {
-						label: 'SEPA',
-						forceNetworkSavedCards: false,
-					},
-				};
-			}
+			test( 'initializes the appearance when it is not set and saves it', async () => {
+				getUPEConfig.mockImplementation( ( argument ) => {
+					if (
+						argument === 'upeAddPaymentMethodAppearance' ||
+						argument === 'upeAppearance'
+					) {
+						return null;
+					}
 
-			if ( argument === 'currency' ) {
-				return 'eur';
-			}
+					if ( argument === 'paymentMethodsConfig' ) {
+						return {
+							giropay: {
+								label: 'Giropay',
+								forceNetworkSavedCards: false,
+							},
+						};
+					}
+
+					if ( argument === 'currency' ) {
+						return 'eur';
+					}
+				} );
+
+				// Create a mock function to track the event dispatch for tokenization-form.js execution
+				const dispatchMock = jest.fn();
+				document.body.dispatchEvent = dispatchMock;
+
+				const appearanceMock = { backgroundColor: '#fff' };
+				getAppearance.mockReturnValue( appearanceMock );
+				getFingerprint.mockImplementation( () => {
+					return 'fingerprint';
+				} );
+
+				mockDomElement.dataset.paymentMethodType = 'giropay';
+
+				await mountStripePaymentElement(
+					apiMock,
+					mockDomElement,
+					elementsLocation
+				);
+
+				expect( getAppearance ).toHaveBeenCalled();
+				expect( apiMock.saveUPEAppearance ).toHaveBeenCalledWith(
+					appearanceMock,
+					elementsLocation
+				);
+				expect( getUPEConfig ).toHaveBeenCalledWith( expectedProperty );
+				expect( dispatchMock ).toHaveBeenCalled();
+			} );
+
+			test( 'does not call getAppearance or saveUPEAppearance if appearance is already set', async () => {
+				const appearanceMock = { backgroundColor: '#fff' };
+				getAppearance.mockReturnValue( appearanceMock );
+				getFingerprint.mockImplementation( () => {
+					return 'fingerprint';
+				} );
+				getUPEConfig.mockImplementation( ( argument ) => {
+					if ( argument === 'currency' ) {
+						return 'eur';
+					}
+
+					if (
+						argument === 'upeAppearance' ||
+						argument === 'upeAddPaymentMethodAppearance'
+					) {
+						return {
+							backgroundColor: '#fff',
+						};
+					}
+
+					if ( argument === 'paymentMethodsConfig' ) {
+						return {
+							giropay: {
+								label: 'Giropay',
+								forceNetworkSavedCards: false,
+							},
+						};
+					}
+				} );
+
+				mockDomElement.dataset.paymentMethodType = 'giropay';
+
+				await mountStripePaymentElement(
+					apiMock,
+					mockDomElement,
+					elementsLocation
+				);
+
+				expect( getUPEConfig ).toHaveBeenCalledWith( expectedProperty );
+				expect( getAppearance ).not.toHaveBeenCalled();
+				expect( apiMock.saveUPEAppearance ).not.toHaveBeenCalled();
+			} );
 		} );
-
-		// Create a mock function to track the event dispatch for tokenization-form.js execution
-		const dispatchMock = jest.fn();
-		document.body.dispatchEvent = dispatchMock;
-
-		const appearanceMock = { backgroundColor: '#fff' };
-		getAppearance.mockReturnValue( appearanceMock );
-		getFingerprint.mockImplementation( () => {
-			return 'fingerprint';
-		} );
-
-		mockDomElement.dataset.paymentMethodType = 'giropay';
-
-		await mountStripePaymentElement( apiMock, mockDomElement );
-
-		expect( getAppearance ).toHaveBeenCalled();
-		expect( apiMock.saveUPEAppearance ).toHaveBeenCalledWith(
-			appearanceMock,
-			'shortcode_checkout'
-		);
-		expect( dispatchMock ).toHaveBeenCalled();
-	} );
-
-	test( 'does not call getAppearance or saveUPEAppearance if appearance is already set', async () => {
-		const appearanceMock = { backgroundColor: '#fff' };
-		getAppearance.mockReturnValue( appearanceMock );
-		getFingerprint.mockImplementation( () => {
-			return 'fingerprint';
-		} );
-		getUPEConfig.mockImplementation( ( argument ) => {
-			if ( argument === 'currency' ) {
-				return 'eur';
-			}
-
-			if ( argument === 'upeAppearance' ) {
-				return {
-					backgroundColor: '#fff',
-				};
-			}
-
-			if ( argument === 'paymentMethodsConfig' ) {
-				return {
-					ideal: {
-						label: 'iDEAL',
-						forceNetworkSavedCards: false,
-					},
-					card: {
-						label: 'Card',
-						forceNetworkSavedCards: true,
-					},
-					giropay: {
-						label: 'Giropay',
-						forceNetworkSavedCards: false,
-					},
-					sepa: {
-						label: 'SEPA',
-						forceNetworkSavedCards: false,
-					},
-				};
-			}
-		} );
-
-		mockDomElement.dataset.paymentMethodType = 'giropay';
-
-		await mountStripePaymentElement( apiMock, mockDomElement );
-
-		expect( getAppearance ).not.toHaveBeenCalled();
-		expect( apiMock.saveUPEAppearance ).not.toHaveBeenCalled();
 	} );
 
 	test( 'Prevents from mounting when no figerprint is available', async () => {
@@ -367,6 +402,7 @@ describe( 'Payment processing', () => {
 
 			document.body.removeChild( element );
 		} );
+		__resetHasCheckoutCompleted();
 		jest.clearAllMocks();
 	} );
 
@@ -439,6 +475,8 @@ describe( 'Payment processing', () => {
 		};
 
 		await processPayment( apiMock, checkoutForm, 'card' );
+		// Wait for promises to resolve.
+		await new Promise( ( resolve ) => setImmediate( resolve ) );
 
 		expect( mockCreatePaymentMethod ).toHaveBeenCalledWith( {
 			elements: expect.any( Object ),
@@ -480,6 +518,8 @@ describe( 'Payment processing', () => {
 		};
 
 		await processPayment( apiMock, checkoutForm, 'card' );
+		// Wait for promises to resolve.
+		await new Promise( ( resolve ) => setImmediate( resolve ) );
 
 		expect( mockCreatePaymentMethod ).toHaveBeenCalledWith( {
 			elements: expect.any( Object ),
@@ -517,6 +557,8 @@ describe( 'Payment processing', () => {
 		};
 
 		await processPayment( apiMock, checkoutForm, 'card' );
+		// Wait for promises to resolve.
+		await new Promise( ( resolve ) => setImmediate( resolve ) );
 
 		expect( mockCreatePaymentMethod ).toHaveBeenCalledWith( {
 			elements: expect.any( Object ),
@@ -551,6 +593,8 @@ describe( 'Payment processing', () => {
 		};
 
 		await processPayment( apiMock, checkoutForm, 'card' );
+		// Wait for promises to resolve.
+		await new Promise( ( resolve ) => setImmediate( resolve ) );
 
 		expect( mockCreatePaymentMethod ).toHaveBeenCalledWith( {
 			elements: expect.any( Object ),
@@ -583,11 +627,139 @@ describe( 'Payment processing', () => {
 		};
 
 		await processPayment( apiMock, addPaymentMethodForm, 'card' );
+		// Wait for promises to resolve.
+		await new Promise( ( resolve ) => setImmediate( resolve ) );
 
 		expect( mockCreatePaymentMethod ).toHaveBeenCalledWith( {
 			elements: expect.any( Object ),
 			params: {},
 		} );
+	} );
+
+	test( 'Payment processing adds the payment information to the form', async () => {
+		setupBillingDetailsFields();
+		getFingerprint.mockImplementation( () => {
+			return { visitorId: 'fingerprint' };
+		} );
+
+		const mockDomElement = document.createElement( 'div' );
+		mockDomElement.dataset.paymentMethodType = 'card';
+
+		await mountStripePaymentElement( apiMock, mockDomElement );
+
+		const checkoutForm = {
+			submit: jest.fn(),
+			addClass: jest.fn( () => ( {
+				block: jest.fn(),
+			} ) ),
+			removeClass: jest.fn( () => ( {
+				unblock: jest.fn(),
+				submit: checkoutForm.submit,
+			} ) ),
+			attr: jest.fn().mockReturnValue( 'checkout' ),
+		};
+
+		mockCreatePaymentMethod.mockReturnValue( {
+			paymentMethod: {
+				id: 'paymentMethodId',
+			},
+		} );
+
+		await processPayment( apiMock, checkoutForm, 'card' );
+		// Wait for promises to resolve.
+		await new Promise( ( resolve ) => setImmediate( resolve ) );
+
+		expect( mockCreatePaymentMethod ).toHaveBeenCalledWith( {
+			elements: expect.any( Object ),
+			params: {
+				billing_details: expect.objectContaining( {
+					name: 'John Doe',
+					email: 'john.doe@example.com',
+					phone: '555-1234',
+					address: expect.any( Object ),
+				} ),
+			},
+		} );
+
+		expect( appendPaymentMethodIdToForm ).toHaveBeenCalledWith(
+			checkoutForm,
+			'paymentMethodId'
+		);
+
+		expect( appendFingerprintInputToForm ).toHaveBeenCalledWith(
+			checkoutForm,
+			'fingerprint'
+		);
+
+		expect( checkoutForm.submit ).toHaveBeenCalled();
+	} );
+
+	test( 'Payment processing adds the error information if payment method fails to be created', async () => {
+		setupBillingDetailsFields();
+		getFingerprint.mockImplementation( () => {
+			return { visitorId: 'fingerprint' };
+		} );
+
+		const mockDomElement = document.createElement( 'div' );
+		mockDomElement.dataset.paymentMethodType = 'card';
+
+		await mountStripePaymentElement( apiMock, mockDomElement );
+
+		const checkoutForm = {
+			submit: jest.fn(),
+			addClass: jest.fn( () => ( {
+				block: jest.fn(),
+			} ) ),
+			removeClass: jest.fn( () => ( {
+				unblock: jest.fn(),
+				submit: checkoutForm.submit,
+			} ) ),
+			attr: jest.fn().mockReturnValue( 'checkout' ),
+		};
+
+		const errorData = {
+			code: 'code',
+			decline_code: 'decline_code',
+			message: 'message',
+			type: 'type',
+		};
+
+		mockCreatePaymentMethod.mockReturnValue( {
+			error: errorData,
+		} );
+
+		await processPayment( apiMock, checkoutForm, 'card' );
+		// Wait for promises to resolve.
+		await new Promise( ( resolve ) => setImmediate( resolve ) );
+
+		expect( mockCreatePaymentMethod ).toHaveBeenCalledWith( {
+			elements: expect.any( Object ),
+			params: {
+				billing_details: expect.objectContaining( {
+					name: 'John Doe',
+					email: 'john.doe@example.com',
+					phone: '555-1234',
+					address: expect.any( Object ),
+				} ),
+			},
+		} );
+
+		expect( appendPaymentMethodIdToForm ).toHaveBeenCalledWith(
+			checkoutForm,
+			PAYMENT_METHOD_ERROR
+		);
+
+		expect( appendPaymentMethodErrorDataToForm ).toHaveBeenCalledWith(
+			checkoutForm,
+			errorData
+		);
+
+		expect( appendFingerprintInputToForm ).toHaveBeenCalledWith(
+			checkoutForm,
+			'fingerprint'
+		);
+
+		expect( checkoutForm.submit ).toHaveBeenCalled();
 	} );
 
 	function setupBillingDetailsFields() {

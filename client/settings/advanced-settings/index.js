@@ -12,7 +12,6 @@ import MultiCurrencyToggle from './multi-currency-toggle';
 import WCPaySubscriptionsToggle from './wcpay-subscriptions-toggle';
 import './style.scss';
 import CardBody from '../card-body';
-import ClientSecretEncryptionToggle from './client-secret-encryption-toggle';
 import StripeBillingSection from './stripe-billing-section';
 
 const AdvancedSettings = () => {
@@ -21,9 +20,6 @@ const AdvancedSettings = () => {
 			<Card>
 				<CardBody>
 					<MultiCurrencyToggle />
-					{ wcpaySettings.isClientEncryptionEligible && (
-						<ClientSecretEncryptionToggle />
-					) }
 					{ wcpaySettings.isSubscriptionsActive &&
 					wcpaySettings.isStripeBillingEligible ? (
 						<StripeBillingSection />

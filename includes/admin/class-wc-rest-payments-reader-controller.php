@@ -146,10 +146,9 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 *
-	 * @return WP_Error|WP_HTTP_Response|WP_REST_Response
+	 * @return WP_REST_Response|WP_Error
 	 */
 	public function get_summary( $request ) {
-
 		$transaction_id = $request->get_param( 'transaction_id' );
 
 		try {
@@ -159,7 +158,10 @@ class WC_REST_Payments_Reader_Controller extends WC_Payments_REST_Controller {
 			if ( empty( $transaction ) ) {
 				return rest_ensure_response( [] );
 			}
-			$summary = $this->api_client->get_readers_charge_summary( gmdate( 'Y-m-d', $transaction['created'] ) );
+			$summary = $this->api_client->get_readers_charge_summary(
+				gmdate( 'Y-m-d', $transaction['created'] ),
+				$transaction_id
+			);
 		} catch ( API_Exception $e ) {
 			return rest_ensure_response( new WP_Error( 'wcpay_get_summary', $e->getMessage() ) );
 		}

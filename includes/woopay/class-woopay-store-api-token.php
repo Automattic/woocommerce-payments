@@ -55,6 +55,7 @@ if ( class_exists( AbstractCartRoute::class ) ) {
 		 * @psalm-suppress UndefinedMethod
 		 */
 		public function get_cart_token() {
+			// @phpstan-ignore-next-line.
 			return parent::get_cart_token();
 		}
 	}

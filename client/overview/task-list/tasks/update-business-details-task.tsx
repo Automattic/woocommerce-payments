@@ -11,9 +11,8 @@ import { addQueryArgs } from '@wordpress/url';
  */
 import type { TaskItemProps } from '../types';
 import UpdateBusinessDetailsModal from 'wcpay/overview/modal/update-business-details';
-import { dateI18n } from '@wordpress/date';
-import moment from 'moment';
 import { recordEvent } from 'wcpay/tracks';
+import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 
 export const getUpdateBusinessDetailsTask = (
 	errorMessages: string[],
@@ -27,9 +26,13 @@ export const getUpdateBusinessDetailsTask = (
 	const accountDetailsPastDue = 'restricted' === status && pastDue;
 	const hasMultipleErrors = 1 < errorMessages.length;
 	const hasSingleError = 1 === errorMessages.length;
-	const accountLinkWithSource = addQueryArgs( accountLink, {
-		source: 'overview-page__update-business-details-task',
-	} );
+	const connectUrl = wcpaySettings.connectUrl;
+	const accountLinkWithSource = accountLink
+		? addQueryArgs( accountLink, {
+				from: 'WCPAY_OVERVIEW',
+				source: 'wcpay-update-business-details-task',
+		  } )
+		: '';
 
 	let accountDetailsTaskDescription: React.ReactElement | string = '',
 		errorMessageDescription,
@@ -39,13 +42,12 @@ export const getUpdateBusinessDetailsTask = (
 		accountDetailsUpdateByDescription = sprintf(
 			/* translators: %s - formatted requirements current deadline (date) */
 			__(
-				'Update by %s to avoid a disruption in deposits.',
+				'Update by %s to avoid a disruption in payouts.',
 				'woocommerce-payments'
 			),
-			dateI18n(
-				'ga M j, Y',
-				moment( currentDeadline * 1000 ).toISOString()
-			)
+			formatDateTimeFromTimestamp( currentDeadline, {
+				customFormat: 'ga M j, Y',
+			} )
 		);
 
 		if ( hasSingleError ) {
@@ -66,14 +68,14 @@ export const getUpdateBusinessDetailsTask = (
 			accountDetailsTaskDescription =
 				/* translators: <a> - dashboard login URL */
 				__(
-					'Payments and deposits are disabled for this account until setup is completed.',
+					'Payments and payouts are disabled for this account until setup is completed.',
 					'woocommerce-payments'
 				);
 		} else {
 			accountDetailsTaskDescription =
 				/* translators: <a> - dashboard login URL */
 				__(
-					'Payments and deposits are disabled for this account until missing business information is updated.',
+					'Payments and payouts are disabled for this account until missing business information is updated.',
 					'woocommerce-payments'
 				);
 		}
@@ -110,10 +112,24 @@ export const getUpdateBusinessDetailsTask = (
 		if ( hasMultipleErrors ) {
 			renderModal();
 		} else {
+			let source = 'wcpay-update-business-details-task';
+			if ( ! detailsSubmitted ) {
+				source = 'wcpay-finish-setup-task';
+			}
 			recordEvent( 'wcpay_account_details_link_clicked', {
-				source: 'overview-page__update-business-details-task',
+				source,
 			} );
-			window.open( accountLinkWithSource, '_blank' );
+
+			// If the onboarding isn't complete use the connectUrl instead,
+			// as the accountLink doesn't handle redirecting back to the overview page.
+			if ( ! detailsSubmitted ) {
+				window.location.href = addQueryArgs( connectUrl, {
+					from: 'WCPAY_OVERVIEW',
+					source: 'wcpay-finish-setup-task',
+				} );
+			} else {
+				window.open( accountLinkWithSource, '_blank' );
+			}
 		}
 	};
 

@@ -18,44 +18,19 @@ import { SavedTokenHandler } from './saved-token-handler';
 import PaymentMethodLabel from './payment-method-label';
 import request from '../utils/request';
 import enqueueFraudScripts from 'fraud-scripts';
-import paymentRequestPaymentMethod from '../../payment-request/blocks';
 import {
-	PAYMENT_METHOD_NAME_CARD,
-	PAYMENT_METHOD_NAME_BANCONTACT,
-	PAYMENT_METHOD_NAME_BECS,
-	PAYMENT_METHOD_NAME_EPS,
-	PAYMENT_METHOD_NAME_GIROPAY,
-	PAYMENT_METHOD_NAME_IDEAL,
-	PAYMENT_METHOD_NAME_P24,
-	PAYMENT_METHOD_NAME_SEPA,
-	PAYMENT_METHOD_NAME_SOFORT,
-	PAYMENT_METHOD_NAME_AFFIRM,
-	PAYMENT_METHOD_NAME_AFTERPAY,
-	PAYMENT_METHOD_NAME_KLARNA,
-} from '../constants.js';
+	expressCheckoutElementApplePay,
+	expressCheckoutElementGooglePay,
+} from 'wcpay/express-checkout/blocks';
+
 import { getDeferredIntentCreationUPEFields } from './payment-elements';
 import { handleWooPayEmailInput } from '../woopay/email-input-iframe';
 import { recordUserEvent } from 'tracks';
 import wooPayExpressCheckoutPaymentMethod from '../woopay/express-button/woopay-express-checkout-payment-method';
 import { isPreviewing } from '../preview';
-
-const upeMethods = {
-	card: PAYMENT_METHOD_NAME_CARD,
-	bancontact: PAYMENT_METHOD_NAME_BANCONTACT,
-	au_becs_debit: PAYMENT_METHOD_NAME_BECS,
-	eps: PAYMENT_METHOD_NAME_EPS,
-	giropay: PAYMENT_METHOD_NAME_GIROPAY,
-	ideal: PAYMENT_METHOD_NAME_IDEAL,
-	p24: PAYMENT_METHOD_NAME_P24,
-	sepa_debit: PAYMENT_METHOD_NAME_SEPA,
-	sofort: PAYMENT_METHOD_NAME_SOFORT,
-	affirm: PAYMENT_METHOD_NAME_AFFIRM,
-	afterpay_clearpay: PAYMENT_METHOD_NAME_AFTERPAY,
-	klarna: PAYMENT_METHOD_NAME_KLARNA,
-};
+import '../utils/copy-test-number';
 
 const enabledPaymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
-const upeAppearanceTheme = getUPEConfig( 'wcBlocksUPEAppearanceTheme' );
 const isStripeLinkEnabled = isLinkEnabled( enabledPaymentMethodsConfig );
 
 // Create an API object, which will be used throughout the checkout.
@@ -70,45 +45,43 @@ const api = new WCPayAPI(
 	request
 );
 
-const stripeAppearance = getUPEConfig( 'wcBlocksUPEAppearance' );
-
 Object.entries( enabledPaymentMethodsConfig )
 	.filter( ( [ upeName ] ) => upeName !== 'link' )
 	.forEach( ( [ upeName, upeConfig ] ) => {
 		registerPaymentMethod( {
-			name: upeMethods[ upeName ],
+			name: upeConfig.gatewayId,
 			content: getDeferredIntentCreationUPEFields(
 				upeName,
-				upeMethods,
+				enabledPaymentMethodsConfig,
 				api,
 				upeConfig.testingInstructions
 			),
 			edit: getDeferredIntentCreationUPEFields(
 				upeName,
-				upeMethods,
+				enabledPaymentMethodsConfig,
 				api,
 				upeConfig.testingInstructions
 			),
 			savedTokenComponent: <SavedTokenHandler api={ api } />,
 			canMakePayment: ( cartData ) => {
 				const billingCountry = cartData.billingAddress.country;
+				const needsPayment = cartData.cart.cartNeedsPayment;
 				const isRestrictedInAnyCountry = !! upeConfig.countries.length;
 				const isAvailableInTheCountry =
 					! isRestrictedInAnyCountry ||
 					upeConfig.countries.includes( billingCountry );
-				return (
-					isAvailableInTheCountry && !! api.getStripeForUPE( upeName )
-				);
+				// We used to check if stripe was loaded with `getStripeForUPE`, but we can't guarantee it will be loaded synchronously.
+				return needsPayment && isAvailableInTheCountry;
 			},
-			paymentMethodId: upeMethods[ upeName ],
+			paymentMethodId: upeConfig.gatewayId,
 			// see .wc-block-checkout__payment-method styles in blocks/style.scss
 			label: (
 				<PaymentMethodLabel
 					api={ api }
-					upeConfig={ upeConfig }
+					title={ upeConfig.title }
+					iconLight={ upeConfig.icon }
+					iconDark={ upeConfig.darkIcon }
 					upeName={ upeName }
-					stripeAppearance={ stripeAppearance }
-					upeAppearanceTheme={ upeAppearanceTheme }
 				/>
 			),
 			ariaLabel: 'WooPayments',
@@ -153,7 +126,10 @@ if ( getUPEConfig( 'isWooPayEnabled' ) ) {
 	}
 }
 
-registerExpressPaymentMethod( paymentRequestPaymentMethod( api ) );
+if ( getUPEConfig( 'isPaymentRequestEnabled' ) ) {
+	registerExpressPaymentMethod( expressCheckoutElementApplePay( api ) );
+	registerExpressPaymentMethod( expressCheckoutElementGooglePay( api ) );
+}
 window.addEventListener( 'load', () => {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
 	addCheckoutTracking();

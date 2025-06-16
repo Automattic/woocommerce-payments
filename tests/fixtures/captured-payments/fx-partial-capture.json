@@ -57,13 +57,13 @@
     "feeString": "Fee (3.51% + £0.21): -$0.88",
     "feeBreakdown": {
       "base": "Base fee: 2.9% + $0.30",
-      "additional-fx": "Foreign exchange fee: 1%",
+      "additional-fx": "Currency conversion fee: 1%",
       "discount": {
         "label": "Discount",
         "variable": "Variable fee: -0.39%",
         "fixed": "Fixed fee: -$0.03"
       }
     },
-    "netString": "Net deposit: $16.79 USD"
+    "netString": "Net payout: $16.79 USD"
   }
 }

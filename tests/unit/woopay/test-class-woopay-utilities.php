@@ -6,6 +6,7 @@
  */
 
 use WCPay\WooPay\WooPay_Utilities;
+use WCPay\WooPay\WooPay_Session;
 
 /**
  * WooPay_Utilities unit tests.
@@ -24,13 +25,14 @@ class WooPay_Utilities_Test extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		// Restore the cache service in the main class.
 		WC_Payments::set_database_cache( $this->_cache );
+
 		parent::tear_down();
 	}
 
 	/**
 	 * Data provider for test_should_enable_woopay.
 	 *
-	 * @return boolean
+	 * @return array
 	 */
 	public function should_enable_woopay_data_provider() {
 		return [
@@ -61,9 +63,11 @@ class WooPay_Utilities_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Data provider for test_should_enable_woopay.
+	 * Data provider for test_is_country_available.
 	 *
-	 * @return boolean
+	 * @see test-data/ip_geolocation.json
+	 *
+	 * @return array
 	 */
 	public function is_country_available_data_provider() {
 		return [
@@ -84,7 +88,7 @@ class WooPay_Utilities_Test extends WCPAY_UnitTestCase {
 		WC_Payments::mode()->live();
 
 		$woopay_utilities = new WooPay_Utilities();
-		$actual           = $woopay_utilities->is_country_available( $this->gateway_mock );
+		$actual           = $woopay_utilities->is_country_available();
 		$this->assertSame( $expected, $actual );
 	}
 
@@ -92,7 +96,7 @@ class WooPay_Utilities_Test extends WCPAY_UnitTestCase {
 		WC_Payments::mode()->test();
 
 		$woopay_utilities = new WooPay_Utilities();
-		$actual           = $woopay_utilities->is_country_available( $this->gateway_mock );
+		$actual           = $woopay_utilities->is_country_available();
 		$this->assertSame( true, $actual );
 	}
 
@@ -172,6 +176,19 @@ class WooPay_Utilities_Test extends WCPAY_UnitTestCase {
 
 		$this->assertFalse( $woopay_utilities->should_enable_woopay_on_cart_or_checkout() );
 		$this->clean_up_should_enable_woopay_tests();
+	}
+
+	/**
+	 * WooPay user is saved to platform on classic checkout.
+	 *
+	 * @return void
+	 */
+	public function test_should_save_platform_customer_in_classic_checkout() {
+		$woopay_utilities = new WooPay_Utilities();
+
+		$_POST['save_user_in_woopay'] = 'true';
+		$this->assertTrue( $woopay_utilities->should_save_platform_customer() );
+		unset( $_POST['save_user_in_woopay'] );
 	}
 
 	private function clean_up_should_enable_woopay_tests() {

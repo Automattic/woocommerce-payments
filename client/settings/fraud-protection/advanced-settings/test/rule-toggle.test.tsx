@@ -9,6 +9,7 @@ import { render } from '@testing-library/react';
  */
 import FraudProtectionRuleToggle from '../rule-toggle';
 import FraudPreventionSettingsContext from '../context';
+import userEvent from '@testing-library/user-event';
 
 declare const global: {
 	wcpaySettings: {
@@ -23,9 +24,8 @@ interface mockContext {
 			block: boolean;
 		};
 	};
-	protectionSettingsChanged: boolean;
 	setProtectionSettingsUI: jest.Mock;
-	setProtectionSettingsChanged: jest.Mock;
+	setIsDirty: jest.Mock;
 }
 
 describe( 'Fraud protection rule toggle tests', () => {
@@ -40,9 +40,8 @@ describe( 'Fraud protection rule toggle tests', () => {
 				block: false,
 			},
 		},
-		protectionSettingsChanged: false,
 		setProtectionSettingsUI: jest.fn(),
-		setProtectionSettingsChanged: jest.fn(),
+		setIsDirty: jest.fn(),
 	};
 
 	beforeEach( () => {
@@ -53,9 +52,8 @@ describe( 'Fraud protection rule toggle tests', () => {
 					block: false,
 				},
 			},
-			protectionSettingsChanged: false,
 			setProtectionSettingsUI: jest.fn(),
-			setProtectionSettingsChanged: jest.fn(),
+			setIsDirty: jest.fn(),
 		};
 	} );
 
@@ -65,6 +63,7 @@ describe( 'Fraud protection rule toggle tests', () => {
 				<FraudProtectionRuleToggle
 					setting={ 'test_rule' }
 					label={ 'Test rule toggle' }
+					description={ 'Test rule toggle description' }
 				>
 					test content
 				</FraudProtectionRuleToggle>
@@ -74,11 +73,6 @@ describe( 'Fraud protection rule toggle tests', () => {
 		expect(
 			container.getByLabelText( 'Test rule toggle' )
 		).not.toBeChecked();
-		expect(
-			container.queryByText(
-				'When enabled, the payment will be blocked.'
-			)
-		).toBeInTheDocument();
 		expect(
 			container.queryByText( 'Test rule toggle' )
 		).toBeInTheDocument();
@@ -93,15 +87,13 @@ describe( 'Fraud protection rule toggle tests', () => {
 				<FraudProtectionRuleToggle
 					setting={ 'test_rule' }
 					label={ 'Test rule toggle' }
+					description={ 'Test rule toggle description' }
 				>
 					test content
 				</FraudProtectionRuleToggle>
 			</FraudPreventionSettingsContext.Provider>
 		);
 		expect( container ).toMatchSnapshot();
-		expect(
-			container.queryByText( 'The payment will be blocked.' )
-		).toBeInTheDocument();
 		expect(
 			container.queryByText( 'Test rule toggle' )
 		).toBeInTheDocument();
@@ -116,6 +108,7 @@ describe( 'Fraud protection rule toggle tests', () => {
 				<FraudProtectionRuleToggle
 					setting={ 'test_rule' }
 					label={ 'Test rule toggle' }
+					description={ 'Test rule toggle description' }
 				>
 					test content
 				</FraudProtectionRuleToggle>
@@ -123,36 +116,29 @@ describe( 'Fraud protection rule toggle tests', () => {
 		);
 		expect( container ).toMatchSnapshot();
 		expect(
-			container.queryByText( 'The payment will be blocked.' )
-		).toBeInTheDocument();
-		expect(
 			container.queryByText( 'Test rule toggle' )
 		).toBeInTheDocument();
 		expect( container.getByLabelText( 'Test rule toggle' ) ).toBeChecked();
 		expect( container.queryByText( 'test content' ) ).toBeInTheDocument();
 	} );
-	test( 'sets the value correctly when enabled', () => {
+	test( 'calls the toggle enable function when clicking in the label', () => {
+		mockContext.protectionSettingsUI.test_rule.enabled = false;
+
 		const container = render(
 			<FraudPreventionSettingsContext.Provider value={ mockContext }>
 				<FraudProtectionRuleToggle
 					setting={ 'test_rule' }
 					label={ 'Test rule toggle' }
+					description={ 'Test rule toggle description' }
 				>
 					test content
 				</FraudProtectionRuleToggle>
 			</FraudPreventionSettingsContext.Provider>
 		);
+
 		const activationToggle = container.getByLabelText( 'Test rule toggle' );
-		expect(
-			mockContext.protectionSettingsUI.test_rule.enabled
-		).toBeFalsy();
-		activationToggle.click();
-		expect(
-			mockContext.protectionSettingsUI.test_rule.enabled
-		).toBeTruthy();
-		activationToggle.click();
-		expect(
-			mockContext.protectionSettingsUI.test_rule.enabled
-		).toBeFalsy();
+		userEvent.click( activationToggle );
+
+		expect( mockContext.setProtectionSettingsUI ).toHaveBeenCalled();
 	} );
 } );

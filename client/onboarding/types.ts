@@ -2,32 +2,14 @@
  * Internal dependencies
  */
 
-export type OnboardingSteps = 'business' | 'store' | 'loading';
+export type OnboardingSteps = 'business' | 'store' | 'embedded' | 'loading';
 
 export type OnboardingFields = {
 	country?: string;
 	business_type?: string;
 	'company.structure'?: string;
 	mcc?: string;
-	annual_revenue?: string;
-	go_live_timeframe?: string;
 };
-
-export interface PoEligibleResult {
-	result: 'eligible' | 'not_eligible';
-}
-
-export interface PoEligibleData {
-	business: {
-		country: string;
-		type: string;
-		mcc: string;
-	};
-	store: {
-		annual_revenue: string;
-		go_live_timeframe: string;
-	};
-}
 
 export interface Country {
 	key: string;
@@ -54,4 +36,19 @@ export interface MccsDisplayTreeItem {
 	items?: MccsDisplayTreeItem[];
 	mcc?: number;
 	keywords?: string[];
+}
+
+export interface AccountKycSession {
+	clientSecret: string;
+	expiresAt: number;
+	accountId: string;
+	isLive: boolean;
+	accountCreated: boolean;
+	publishableKey: string;
+	locale: string;
+}
+
+export interface FinalizeOnboardingResponse {
+	success: boolean;
+	params: Record< string, string >;
 }

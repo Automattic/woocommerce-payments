@@ -28,3 +28,26 @@ export function getConnectIframeInjectedState() {
 		INJECTED_STATE.NOT_INJECTED
 	);
 }
+
+/**
+ * Set the postMessage timeout for WooPayConnect.
+ * This is the amount of time to wait for a response from the WooPayConnectIframe.
+ *
+ * @param {int} milliseconds The postMessage timeout in milliseconds.
+ */
+export function setPostMessageTimeout( milliseconds ) {
+	if ( ! window.WooPayConnect ) {
+		window.WooPayConnect = {};
+	}
+
+	window.WooPayConnect.postMessageTimeout = milliseconds;
+}
+
+/**
+ * Get the postMessage timeout for WooPayConnect. If not set, the default is 5000 milliseconds.
+ *
+ * @return {int|number} The postMessage timeout in milliseconds.
+ */
+export function getPostMessageTimeout() {
+	return window?.WooPayConnect?.postMessageTimeout || 5000;
+}

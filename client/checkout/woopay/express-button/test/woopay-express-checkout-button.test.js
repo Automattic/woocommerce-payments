@@ -14,11 +14,15 @@ import request from 'wcpay/checkout/utils/request';
 import { getConfig } from 'utils/checkout';
 import useExpressCheckoutProductHandler from '../use-express-checkout-product-handler';
 
-jest.mock( 'wcpay/checkout/utils/request', () => ( {
-	__esModule: true,
-	default: jest.fn( () => Promise.resolve( {} ) ),
+jest.mock( 'wcpay/checkout/utils/request', () =>
+	jest.fn( () => Promise.resolve( {} ) )
+);
+jest.mock( 'wcpay/checkout/woopay/express-button/utils', () => ( {
+	showErrorMessage: () => null,
 } ) );
-
+jest.mock( 'wcpay/checkout/woopay/connect/woopay-connect-iframe', () => ( {
+	WooPayConnectIframe: () => null,
+} ) );
 jest.mock( 'utils/checkout', () => ( {
 	getConfig: jest.fn(),
 } ) );
@@ -36,7 +40,6 @@ jest.mock( 'tracks', () => ( {
 	events: {
 		WOOPAY_EMAIL_CHECK: 'checkout_email_address_woopay_check',
 		WOOPAY_OFFERED: 'checkout_woopay_save_my_info_offered',
-		WOOPAY_AUTO_REDIRECT: 'checkout_woopay_auto_redirect',
 		WOOPAY_SKIPPED: 'woopay_skipped',
 		WOOPAY_BUTTON_LOAD: 'woopay_button_load',
 		WOOPAY_BUTTON_CLICK: 'woopay_button_click',
@@ -69,7 +72,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		theme: 'dark',
 	};
 	const mockRequest = jest.fn().mockResolvedValue( true );
-	const mockAddToCart = jest.fn().mockResolvedValue( true );
+	const mockAddToCart = jest.fn().mockResolvedValue( {} );
 	const api = new WCPayAPI( {}, mockRequest );
 
 	beforeEach( () => {
@@ -98,6 +101,27 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		expect(
 			screen.queryByRole( 'button', { name: 'WooPay' } )
 		).toBeInTheDocument();
+	} );
+
+	test( 'respect buttonAttributes API when available ', () => {
+		render(
+			<WoopayExpressCheckoutButton
+				isPreview={ false }
+				buttonSettings={ buttonSettings }
+				api={ api }
+				isProductPage={ false }
+				emailSelector="#email"
+				buttonAttributes={ {
+					height: '55',
+					borderRadius: '20',
+				} }
+			/>
+		);
+
+		const button = screen.queryByRole( 'button', { name: 'WooPay' } );
+		expect( button.getAttribute( 'style' ) ).toBe(
+			'height: 55px; border-radius: 20px;'
+		);
 	} );
 
 	test( 'does not prefetch session data by default', async () => {
@@ -146,6 +170,8 @@ describe( 'WoopayExpressCheckoutButton', () => {
 					return 'testkey';
 				case 'order_id':
 					return 1;
+				case 'appearance':
+					return null;
 				default:
 					return 'foo';
 			}
@@ -171,6 +197,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 				order_id: 1,
 				key: 'testkey',
 				billing_email: 'test@test.com',
+				appearance: null,
 			} );
 			expect( expressCheckoutIframe ).not.toHaveBeenCalled();
 		} );

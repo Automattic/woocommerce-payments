@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments
  */
 
+use WCPay\Compatibility_Service;
 use WCPay\Constants\Order_Mode;
 
 defined( 'ABSPATH' ) || exit;
@@ -30,19 +31,28 @@ class WC_Payments_Action_Scheduler_Service {
 	 */
 	private $order_service;
 
+	/**
+	 * Compatibility service instance for updating compatibility data.
+	 *
+	 * @var Compatibility_Service
+	 */
+	private $compatibility_service;
 
 	/**
 	 * Constructor for WC_Payments_Action_Scheduler_Service.
 	 *
 	 * @param WC_Payments_API_Client    $payments_api_client - WooCommerce Payments API client.
 	 * @param WC_Payments_Order_Service $order_service - Order Service.
+	 * @param Compatibility_Service     $compatibility_service - Compatibility service instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
-		WC_Payments_Order_Service $order_service
+		WC_Payments_Order_Service $order_service,
+		Compatibility_Service $compatibility_service
 	) {
-		$this->payments_api_client = $payments_api_client;
-		$this->order_service       = $order_service;
+		$this->payments_api_client   = $payments_api_client;
+		$this->order_service         = $order_service;
+		$this->compatibility_service = $compatibility_service;
 
 		$this->add_action_scheduler_hooks();
 	}
@@ -56,6 +66,7 @@ class WC_Payments_Action_Scheduler_Service {
 		add_action( 'wcpay_track_new_order', [ $this, 'track_new_order_action' ] );
 		add_action( 'wcpay_track_update_order', [ $this, 'track_update_order_action' ] );
 		add_action( WC_Payments_Order_Service::ADD_FEE_BREAKDOWN_TO_ORDER_NOTES, [ $this->order_service, 'add_fee_breakdown_to_order_notes' ], 10, 3 );
+		add_action( Compatibility_Service::UPDATE_COMPATIBILITY_DATA, [ $this->compatibility_service, 'update_compatibility_data_hook' ], 10, 0 );
 	}
 
 	/**
@@ -136,23 +147,39 @@ class WC_Payments_Action_Scheduler_Service {
 	}
 
 	/**
-	 * Schedule an action scheduler job. Also unschedules (replaces) any previous instances of the same job.
-	 * This prevents duplicate jobs, for example when multiple events fire as part of the order update process.
-	 * The `as_unschedule_action` function will only replace a job which has the same $hook, $args AND $group.
+	 * Schedule an action scheduler job.
 	 *
-	 * @param int    $timestamp - When the job will run.
-	 * @param string $hook      - The hook to trigger.
-	 * @param array  $args      - An array containing the arguments to be passed to the hook.
-	 * @param string $group     - The AS group the action will be created under.
+	 * Also, unschedules (replaces) any previous instances of the same job.
+	 * This prevents duplicate jobs, for example when multiple events fire as part of the order update process.
+	 * We will only replace a job which has the same $hook, $args AND $group.
+	 *
+	 * @param int    $timestamp When the job will run.
+	 * @param string $hook      The hook to trigger.
+	 * @param array  $args      Optional. An array containing the arguments to be passed to the hook.
+	 *                          Defaults to an empty array.
+	 * @param string $group     Optional. The AS group the action will be created under.
+	 *                          Defaults to 'woocommerce_payments'.
 	 *
 	 * @return void
 	 */
 	public function schedule_job( int $timestamp, string $hook, array $args = [], string $group = self::GROUP_ID ) {
-		// Unschedule any previously scheduled instances of this particular job.
-		as_unschedule_action( $hook, $args, $group );
-
-		// Schedule the job.
-		as_schedule_single_action( $timestamp, $hook, $args, $group );
+		// The `action_scheduler_init` hook was introduced in ActionScheduler 3.5.5 (WooCommerce 7.9.0).
+		if ( version_compare( WC()->version, '7.9.0', '>=' ) ) {
+			// If the ActionScheduler is already initialized, schedule the job.
+			if ( did_action( 'action_scheduler_init' ) ) {
+				$this->schedule_action_and_prevent_duplicates( $timestamp, $hook, $args, $group );
+			} else {
+				// The ActionScheduler is not initialized yet; we need to schedule the job when it fires the init hook.
+				add_action(
+					'action_scheduler_init',
+					function () use ( $timestamp, $hook, $args, $group ) {
+						$this->schedule_action_and_prevent_duplicates( $timestamp, $hook, $args, $group );
+					}
+				);
+			}
+		} else {
+			$this->schedule_action_and_prevent_duplicates( $timestamp, $hook, $args, $group );
+		}
 	}
 
 	/**
@@ -172,5 +199,30 @@ class WC_Payments_Action_Scheduler_Service {
 		);
 
 		return ( is_countable( $actions ) ? count( $actions ) : 0 ) > 0;
+	}
+
+	/**
+	 * Schedule an action while unscheduling any scheduled actions that are exactly the same.
+	 *
+	 * We will look for scheduled actions with the same name, args and group when unscheduling.
+	 *
+	 * @param int    $timestamp When the action will run.
+	 * @param string $action    The action name to schedule.
+	 * @param array  $args      Optional. An array containing the arguments to be passed to the action.
+	 *                          Defaults to an empty array.
+	 * @param string $group     Optional. The ActionScheduler group the action will be created under.
+	 *                          Defaults to 'woocommerce_payments'.
+	 *
+	 * @return void
+	 */
+	private function schedule_action_and_prevent_duplicates( int $timestamp, string $action, array $args = [], string $group = self::GROUP_ID ) {
+		// Unschedule any previously scheduled actions with the same name, args, and group combination.
+		// It is more efficient/performant to check if the action is already scheduled before unscheduling it.
+		// @see https://github.com/Automattic/woocommerce-payments/issues/6662.
+		if ( as_has_scheduled_action( $action, $args, $group ) ) {
+			as_unschedule_action( $action, $args, $group );
+		}
+
+		as_schedule_single_action( $timestamp, $action, $args, $group );
 	}
 }

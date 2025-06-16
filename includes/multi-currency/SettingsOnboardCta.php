@@ -7,6 +7,8 @@
 
 namespace WCPay\MultiCurrency;
 
+use WCPay\MultiCurrency\Interfaces\MultiCurrencyAccountInterface;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -28,14 +30,23 @@ class SettingsOnboardCta extends \WC_Settings_Page {
 	private $multi_currency;
 
 	/**
+	 * Instance of MultiCurrencyAccountInterface.
+	 *
+	 * @var MultiCurrencyAccountInterface
+	 */
+	private $payments_account;
+
+	/**
 	 * Constructor.
 	 *
-	 * @param MultiCurrency $multi_currency The MultiCurrency instance.
+	 * @param MultiCurrency                 $multi_currency The MultiCurrency instance.
+	 * @param MultiCurrencyAccountInterface $payments_account Payments Account instance.
 	 */
-	public function __construct( MultiCurrency $multi_currency ) {
-		$this->multi_currency = $multi_currency;
-		$this->id             = $this->multi_currency->id;
-		$this->label          = _x( 'Multi-currency', 'Settings tab label', 'woocommerce-payments' );
+	public function __construct( MultiCurrency $multi_currency, MultiCurrencyAccountInterface $payments_account ) {
+		$this->multi_currency   = $multi_currency;
+		$this->payments_account = $payments_account;
+		$this->id               = $this->multi_currency->id;
+		$this->label            = _x( 'Multi-currency', 'Settings tab label', 'woocommerce-payments' );
 
 		parent::__construct();
 	}
@@ -53,7 +64,7 @@ class SettingsOnboardCta extends \WC_Settings_Page {
 	 * Output the call to action button if needing to onboard.
 	 */
 	public function currencies_settings_onboarding_cta() {
-		$href = \WC_Payments_Account::get_connect_page_url();
+		$href = $this->payments_account->get_provider_onboarding_page_url();
 		?>
 			<div>
 				<p>

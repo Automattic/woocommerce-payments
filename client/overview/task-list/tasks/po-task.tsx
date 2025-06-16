@@ -21,20 +21,22 @@ export const getVerifyBankAccountTask = (): any => {
 		progressiveOnboarding: {
 			isEnabled: poEnabled,
 			isComplete: poComplete,
-			tpv,
+			tpv = 0,
 			firstTransactionDate: firstPaymentDate,
-		},
+		} = {},
 		created: createdDate,
 	} = wcpaySettings.accountStatus;
 
 	const handleClick = () => {
-		recordEvent( 'wcpay_account_details_link_clicked', {
-			source: 'overview-page__po-verify-bank-account-task',
+		recordEvent( 'wcpay_overview_task_click', {
+			task: 'po-bank-account',
+			source: 'wcpay-po-bank-account-task',
 		} );
 
 		window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
 			collect_payout_requirements: true,
-			source: 'overview-page__po-verify-bank-account-task',
+			from: 'WCPAY_OVERVIEW',
+			source: 'wcpay-po-bank-account-task',
 		} );
 	};
 

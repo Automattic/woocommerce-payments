@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-fix: Stripe terms warning at checkout when Link is enabled

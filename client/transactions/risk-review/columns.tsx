@@ -2,9 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { dateI18n } from '@wordpress/date';
 import { __ } from '@wordpress/i18n';
-import moment from 'moment';
 import { TableCardColumn, TableCardBodyColumn } from '@woocommerce/components';
 import { Button } from '@wordpress/components';
 
@@ -13,12 +11,13 @@ import { Button } from '@wordpress/components';
  */
 import { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
-import { formatExplicitCurrency } from 'utils/currency';
+import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import { recordEvent } from 'tracks';
 import TransactionStatusPill from 'wcpay/components/transaction-status-pill';
 import { FraudOutcomeTransaction } from '../../data';
+import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 
-interface Column extends TableCardColumn {
+export interface Column extends TableCardColumn {
 	key: 'created' | 'amount' | 'customer' | 'status';
 	visible?: boolean;
 	cellClassName?: string;
@@ -76,12 +75,11 @@ export const getRiskReviewListRowContent = (
 	data: FraudOutcomeTransaction
 ): Record< string, TableCardBodyColumn > => {
 	const detailsURL = getDetailsURL( data.payment_intent.id, 'transactions' );
-	const formattedCreatedDate = dateI18n(
-		'M j, Y / g:iA',
-		moment.utc( data.created ).local().toISOString()
-	);
+	const formattedCreatedDate = formatDateTimeFromString( data.created, {
+		includeTime: true,
+	} );
 
-	const clickable = ( children: JSX.Element | string ) => (
+	const clickable = ( children: React.ReactNode ) => (
 		<ClickableCell href={ detailsURL }>{ children }</ClickableCell>
 	);
 

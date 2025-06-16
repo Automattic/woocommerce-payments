@@ -45,6 +45,7 @@ class Blocks_Data_Extractor {
 			// phpcs:ignore
 			/**
 			 * @psalm-suppress UndefinedClass
+			 * @phpstan-ignore-next-line
 			 */
 			$blocks[] = new \Automatewoo\Blocks\Marketing_Optin_Block();
 		}
@@ -53,8 +54,18 @@ class Blocks_Data_Extractor {
 			// phpcs:ignore
 			/**
 			 * @psalm-suppress UndefinedClass
+			 * @phpstan-ignore-next-line
 			 */
 			$blocks[] = new \Mailchimp_Woocommerce_Newsletter_Blocks_Integration();
+		}
+
+		if ( class_exists( '\WCK\Blocks\CheckoutIntegration' ) ) {
+			// phpcs:ignore
+			/**
+			 * @psalm-suppress UndefinedClass
+			 * @phpstan-ignore-next-line
+			 */
+			$blocks[] = new \WCK\Blocks\CheckoutIntegration();
 		}
 
 		return $blocks;
@@ -96,11 +107,13 @@ class Blocks_Data_Extractor {
 		 * We check whether relevant MailPoet classes exists before invoking this method.
 		 *
 		 * @psalm-suppress UndefinedClass
+		 * @phpstan-ignore-next-line
 		 */
 		$mailpoet_wc_subscription = \MailPoet\DI\ContainerWrapper::getInstance()->get( \MailPoet\WooCommerce\Subscription::class );
 		// phpcs:ignore
 		/**
 		 * @psalm-suppress UndefinedClass
+		 * @phpstan-ignore-next-line
 		 */
 		$settings_instance = \MailPoet\Settings\SettingsController::getInstance();
 		$settings          = [

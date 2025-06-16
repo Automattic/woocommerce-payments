@@ -32,19 +32,21 @@ describe( 'Getting styles for automated theming', () => {
 	};
 
 	test( 'getFieldStyles returns correct styles for inputs', () => {
-		jest.spyOn( document, 'querySelector' ).mockImplementation( () => {
-			return mockElement;
-		} );
-		jest.spyOn( window, 'getComputedStyle' ).mockImplementation( () => {
-			return mockCSStyleDeclaration;
-		} );
+		const scope = {
+			querySelector: jest.fn( () => mockElement ),
+			defaultView: {
+				getComputedStyle: jest.fn( () => mockCSStyleDeclaration ),
+			},
+		};
 
 		const fieldStyles = upeStyles.getFieldStyles(
 			'.woocommerce-checkout .form-row input',
-			'.Input'
+			'.Input',
+			null,
+			scope
 		);
 		expect( fieldStyles ).toEqual( {
-			backgroundColor: 'rgb(255, 255, 255)',
+			backgroundColor: 'rgba(0, 0, 0, 0)',
 			color: 'rgb(109, 109, 109)',
 			fontFamily:
 				'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
@@ -55,13 +57,15 @@ describe( 'Getting styles for automated theming', () => {
 	} );
 
 	test( 'getFieldStyles returns empty object if it can not find the element', () => {
-		jest.spyOn( document, 'querySelector' ).mockImplementation( () => {
-			return undefined;
-		} );
+		const scope = {
+			querySelector: jest.fn( () => undefined ),
+		};
 
 		const fieldStyles = upeStyles.getFieldStyles(
 			'.i-do-not-exist',
-			'.Input'
+			'.Input',
+			null,
+			scope
 		);
 		expect( fieldStyles ).toEqual( {} );
 	} );
@@ -103,23 +107,32 @@ describe( 'Getting styles for automated theming', () => {
 			},
 			1: { href: null },
 		};
-		jest.spyOn( document, 'styleSheets', 'get' ).mockReturnValue(
-			mockStyleSheets
-		);
+		const scope = {
+			styleSheets: {
+				get: jest.fn( () => mockStyleSheets ),
+			},
+		};
 
-		const fontRules = upeStyles.getFontRulesFromPage();
+		const fontRules = upeStyles.getFontRulesFromPage( scope );
 		expect( fontRules ).toEqual( [] );
 	} );
 
 	test( 'getAppearance returns the object with filtered CSS rules for UPE theming', () => {
-		jest.spyOn( document, 'querySelector' ).mockImplementation( () => {
-			return mockElement;
-		} );
-		jest.spyOn( window, 'getComputedStyle' ).mockImplementation( () => {
-			return mockCSStyleDeclaration;
-		} );
+		const scope = {
+			querySelector: jest.fn( () => mockElement ),
+			createElement: jest.fn( ( htmlTag ) =>
+				document.createElement( htmlTag )
+			),
+			defaultView: {
+				getComputedStyle: jest.fn( () => mockCSStyleDeclaration ),
+			},
+		};
 
-		const appearance = upeStyles.getAppearance( 'shortcode_checkout' );
+		const appearance = upeStyles.getAppearance(
+			'shortcode_checkout',
+			true,
+			scope
+		);
 		expect( appearance ).toEqual( {
 			variables: {
 				colorBackground: '#ffffff',
@@ -131,7 +144,7 @@ describe( 'Getting styles for automated theming', () => {
 			theme: 'stripe',
 			rules: {
 				'.Input': {
-					backgroundColor: 'rgb(255, 255, 255)',
+					backgroundColor: 'rgba(0, 0, 0, 0)',
 					color: 'rgb(109, 109, 109)',
 					fontFamily:
 						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
@@ -140,7 +153,7 @@ describe( 'Getting styles for automated theming', () => {
 					padding: '10px',
 				},
 				'.Input--invalid': {
-					backgroundColor: 'rgb(255, 255, 255)',
+					backgroundColor: 'rgba(0, 0, 0, 0)',
 					color: 'rgb(109, 109, 109)',
 					fontFamily:
 						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
@@ -155,25 +168,28 @@ describe( 'Getting styles for automated theming', () => {
 					fontSize: '12px',
 					padding: '10px',
 				},
+				'.Label--resting': {
+					fontSize: '12px',
+				},
 				'.Tab': {
-					backgroundColor: 'rgb(255, 255, 255)',
+					backgroundColor: 'rgba(0, 0, 0, 0)',
 					color: 'rgb(109, 109, 109)',
 					fontFamily:
 						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
 				},
 				'.Tab:hover': {
-					backgroundColor: 'rgb(237, 237, 237)',
-					color: 'rgb(0, 0, 0)',
+					backgroundColor: 'rgba(18, 18, 18, 0)',
+					color: 'rgb(255, 255, 255)',
 					fontFamily:
 						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
 				},
 				'.Tab--selected': {
-					backgroundColor: 'rgb(255, 255, 255)',
+					backgroundColor: 'rgba(0, 0, 0, 0)',
 					color: 'rgb(109, 109, 109)',
 					outline: '1px solid rgb(150, 88, 138)',
 				},
 				'.TabIcon:hover': {
-					color: 'rgb(0, 0, 0)',
+					color: 'rgb(255, 255, 255)',
 				},
 				'.TabIcon--selected': {
 					color: 'rgb(109, 109, 109)',
@@ -196,7 +212,111 @@ describe( 'Getting styles for automated theming', () => {
 					padding: '10px',
 					backgroundColor: '#ffffff',
 				},
+				'.Heading': {
+					color: 'rgb(109, 109, 109)',
+					fontFamily:
+						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
+					fontSize: '12px',
+					padding: '10px',
+				},
+				'.Button': {
+					backgroundColor: 'rgba(0, 0, 0, 0)',
+					color: 'rgb(109, 109, 109)',
+					fontFamily:
+						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
+					fontSize: '12px',
+					outline: '1px solid rgb(150, 88, 138)',
+					padding: '10px',
+				},
+				'.Link': {
+					color: 'rgb(109, 109, 109)',
+					fontFamily:
+						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
+					fontSize: '12px',
+					padding: '10px',
+				},
+				'.Container': {
+					backgroundColor: 'rgba(0, 0, 0, 0)',
+				},
+				'.Footer': {
+					color: 'rgb(109, 109, 109)',
+					backgroundColor: 'rgba(0, 0, 0, 0)',
+					fontFamily:
+						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
+					fontSize: '12px',
+					padding: '10px',
+				},
+				'.Footer-link': {
+					color: 'rgb(109, 109, 109)',
+					fontFamily:
+						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
+					fontSize: '12px',
+					padding: '10px',
+				},
+				'.Header': {
+					color: 'rgb(109, 109, 109)',
+					backgroundColor: 'rgba(0, 0, 0, 0)',
+					fontFamily:
+						'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
+					fontSize: '12px',
+					padding: '10px',
+				},
 			},
+			labels: 'above',
+		} );
+	} );
+
+	[
+		{
+			elementsLocation: 'shortcode_checkout',
+			expectedSelectors: [
+				upeStyles.appearanceSelectors.classicCheckout
+					.upeThemeInputSelector,
+				upeStyles.appearanceSelectors.classicCheckout
+					.upeThemeLabelSelector,
+			],
+		},
+		{
+			elementsLocation: 'blocks_checkout',
+			expectedSelectors: [
+				upeStyles.appearanceSelectors.blocksCheckout
+					.upeThemeInputSelector,
+				upeStyles.appearanceSelectors.blocksCheckout
+					.upeThemeLabelSelector,
+			],
+		},
+		{
+			elementsLocation: 'other',
+			expectedSelectors: [
+				upeStyles.appearanceSelectors.blocksCheckout
+					.upeThemeInputSelector,
+				upeStyles.appearanceSelectors.blocksCheckout
+					.upeThemeLabelSelector,
+			],
+		},
+	].forEach( ( { elementsLocation, expectedSelectors } ) => {
+		describe( `when elementsLocation is ${ elementsLocation }`, () => {
+			test( 'getAppearance uses the correct appearanceSelectors based on the elementsLocation', () => {
+				const scope = {
+					querySelector: jest.fn( () => mockElement ),
+					createElement: jest.fn( ( htmlTag ) =>
+						document.createElement( htmlTag )
+					),
+					defaultView: {
+						getComputedStyle: jest.fn(
+							() => mockCSStyleDeclaration
+						),
+					},
+				};
+
+				upeStyles.getAppearance( elementsLocation, false, scope );
+
+				expectedSelectors.forEach( ( selector ) => {
+					expect( scope.querySelector ).toHaveBeenCalledWith(
+						selector
+					);
+				} );
+			} );
 		} );
 	} );
 } );

@@ -7,6 +7,7 @@
 
 defined( 'ABSPATH' ) || exit;
 
+use WCPay\WooPay\WooPay_Session;
 use WCPay\WooPay\WooPay_Utilities;
 
 /**
@@ -36,6 +37,10 @@ class WooPay_Save_User {
 	 * Load scripts and styles for checkout page.
 	 */
 	public function register_checkout_page_scripts() {
+		if ( ! is_checkout() && ! has_block( 'woocommerce/checkout' ) ) {
+			return;
+		}
+
 		// Don't enqueue checkout page scripts when WCPay isn't available.
 		$gateways = WC()->payment_gateways->get_available_payment_gateways();
 		if ( ! isset( $gateways['woocommerce_payments'] ) ) {
@@ -111,10 +116,10 @@ class WooPay_Save_User {
 	 * @return void
 	 */
 	public function maybe_clear_session_key() {
-		$session_data = WC()->session->get( WooPay_Extension::WOOPAY_SESSION_KEY );
+		$session_data = WC()->session->get( WooPay_Session::WOOPAY_SESSION_KEY );
 
 		if ( ! empty( $session_data ) ) {
-			WC()->session->__unset( WooPay_Extension::WOOPAY_SESSION_KEY );
+			WC()->session->__unset( WooPay_Session::WOOPAY_SESSION_KEY );
 		}
 	}
 }

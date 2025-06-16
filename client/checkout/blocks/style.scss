@@ -1,9 +1,7 @@
+@import '../style';
+
 .wcpay-payment-element {
 	margin-bottom: 2rem;
-}
-
-.wcpay-card-mounted {
-	background-color: #fff;
 }
 
 /* stylelint-disable-next-line selector-id-pattern */
@@ -45,39 +43,58 @@ button.wcpay-stripelink-modal-trigger:hover {
 }
 
 .wc-block-checkout__payment-method {
-	.wc-block-components-radio-control__label span {
-		width: 95%;
-
-		&:has( .StripeElement ) {
-			display: grid;
-			grid-template-columns: 1fr auto;
+	input:checked ~ div {
+		.wc-block-components-radio-control__label {
+			> .payment-method-label {
+				.test-mode.badge {
+					// hiding the badge when the payment method is not selected
+					display: inline-block;
+				}
+			}
 		}
+	}
 
-		img {
-			float: right;
-			border: 0;
-			padding: 0;
-			height: 24px;
-			max-height: 24px;
-		}
+	.wc-block-components-radio-control__label {
+		width: 100%;
+		display: block !important;
 
-		.StripeElement {
+		> .payment-method-label {
+			display: grid !important;
+			justify-content: normal !important;
+			grid-template-columns: max-content auto;
+			grid-template-areas: 'label badge logos';
+			align-items: center;
+			gap: 8px;
 			width: 100%;
-			grid-column: 1 / span 2;
-			grid-row-start: 2;
-			pointer-events: none;
 
-			+ img {
-				grid-row: 1 / span 2;
-				grid-column: 2;
+			> .payment-method-label__label {
+				grid-area: label;
+				width: 100%;
+			}
+
+			> .payment-methods--logos {
+				grid-area: logos;
+				justify-self: end;
+			}
+
+			> .test-mode.badge {
+				grid-area: badge;
+				background-color: #fff2d7;
+				border-radius: 4px;
+				padding: 4px 6px;
+				font-size: 12px;
+				font-weight: 400;
+				line-height: 16px;
+				color: #4d3716;
+				justify-self: start;
+				width: max-content;
+				display: none;
 			}
 		}
 	}
 }
 
 #remember-me {
-	margin-top: 36px;
-
 	h2 {
 		font-size: 18px;
 		font-weight: 600;
@@ -87,15 +104,6 @@ button.wcpay-stripelink-modal-trigger:hover {
 }
 
 #payment-method {
-	label.wc-block-components-radio-control__option-checked {
-		.StripeElement {
-			display: none;
-		}
-		img {
-			grid-column: 2;
-			grid-row: 1;
-		}
-	}
 	/* stylelint-disable-next-line selector-id-pattern */
 	#radio-control-wc-payment-method-options-woocommerce_payments_affirm__label
 		img {

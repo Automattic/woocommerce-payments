@@ -1,18 +1,86 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Purchase price threshold card renders correctly 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  font-size: 13px;
+}
+
+.emotion-8 {
+  margin-bottom: calc(4px * 2);
+}
+
+.components-panel__row .emotion-8 {
+  margin-bottom: inherit;
+}
+
+.emotion-10 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-10 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
     id="purchase-price-threshold-card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -22,36 +90,20 @@ exports[`Purchase price threshold card renders correctly 1`] = `
           >
             Purchase Price Threshold
           </p>
-          <p
-            class="fraud-protection-rule-card-description"
-          >
-            This filter compares the purchase price of an order to the minimum and maximum purchase amounts that you specify.
-          </p>
         </div>
-      </div>
-      <hr />
-      <div
-        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
-        data-wp-c16t="true"
-        data-wp-component="CardBody"
-      >
         <div
           class="fraud-protection-rule-toggle"
         >
-          <strong>
-            Enable filtering
-          </strong>
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
+            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
           >
             <div
-              class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+              class="components-base-control__field emotion-8 emotion-9"
             >
               <span
                 class="components-form-toggle"
               >
                 <input
-                  aria-describedby="inspector-toggle-control-0__help"
                   class="components-form-toggle__input"
                   id="inspector-toggle-control-0"
                   type="checkbox"
@@ -67,15 +119,14 @@ exports[`Purchase price threshold card renders correctly 1`] = `
                 class="components-toggle-control__label"
                 for="inspector-toggle-control-0"
               >
-                Block transactions for abnormal purchase prices
+                Enable Purchase Price Threshold filter
               </label>
             </div>
-            <p
-              class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
-              id="inspector-toggle-control-0__help"
-            >
-              When enabled, the payment will be blocked.
-            </p>
+          </div>
+          <div
+            class="fraud-protection-rule-toggle-description"
+          >
+            This filter compares the purchase price of an order to the minimum and maximum purchase amounts that you specify. When enabled the payment will be blocked.
           </div>
         </div>
         <div
@@ -92,13 +143,13 @@ exports[`Purchase price threshold card renders correctly 1`] = `
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-10 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-10 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -107,18 +158,121 @@ exports[`Purchase price threshold card renders correctly 1`] = `
 `;
 
 exports[`Purchase price threshold card renders correctly when enabled 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  font-size: 13px;
+}
+
+.emotion-8 {
+  margin-bottom: calc(4px * 2);
+}
+
+.components-panel__row .emotion-8 {
+  margin-bottom: inherit;
+}
+
+.emotion-10 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-10>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-10>* {
+  min-width: 0;
+}
+
+.emotion-12 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+.emotion-16 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-16 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
     id="purchase-price-threshold-card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -128,36 +282,21 @@ exports[`Purchase price threshold card renders correctly when enabled 1`] = `
           >
             Purchase Price Threshold
           </p>
-          <p
-            class="fraud-protection-rule-card-description"
-          >
-            This filter compares the purchase price of an order to the minimum and maximum purchase amounts that you specify.
-          </p>
         </div>
-      </div>
-      <hr />
-      <div
-        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
-        data-wp-c16t="true"
-        data-wp-component="CardBody"
-      >
         <div
           class="fraud-protection-rule-toggle"
         >
-          <strong>
-            Enable filtering
-          </strong>
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
+            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
           >
             <div
-              class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+              class="components-base-control__field emotion-8 emotion-9"
             >
               <span
                 class="components-form-toggle is-checked"
               >
                 <input
-                  aria-describedby="inspector-toggle-control-1__help"
+                  checked=""
                   class="components-form-toggle__input"
                   id="inspector-toggle-control-1"
                   type="checkbox"
@@ -173,15 +312,14 @@ exports[`Purchase price threshold card renders correctly when enabled 1`] = `
                 class="components-toggle-control__label"
                 for="inspector-toggle-control-1"
               >
-                Block transactions for abnormal purchase prices
+                Enable Purchase Price Threshold filter
               </label>
             </div>
-            <p
-              class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
-              id="inspector-toggle-control-1__help"
-            >
-              The payment will be blocked.
-            </p>
+          </div>
+          <div
+            class="fraud-protection-rule-toggle-description"
+          >
+            This filter compares the purchase price of an order to the minimum and maximum purchase amounts that you specify. When enabled the payment will be blocked.
           </div>
           <div>
             <div
@@ -262,7 +400,9 @@ exports[`Purchase price threshold card renders correctly when enabled 1`] = `
                   </div>
                 </div>
               </div>
-              <div>
+              <div
+                class="fraud-protection-rule-toggle-children-notice"
+              >
                 <br />
                 <div
                   class="wcpay-inline-notice wcpay-inline-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
@@ -271,12 +411,12 @@ exports[`Purchase price threshold card renders correctly when enabled 1`] = `
                     class="components-notice__content"
                   >
                     <div
-                      class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+                      class="components-flex emotion-10 emotion-1"
                       data-wp-c16t="true"
                       data-wp-component="Flex"
                     >
                       <div
-                        class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+                        class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon emotion-12 emotion-1"
                         data-wp-c16t="true"
                         data-wp-component="FlexItem"
                       >
@@ -295,7 +435,7 @@ exports[`Purchase price threshold card renders correctly when enabled 1`] = `
                         </svg>
                       </div>
                       <div
-                        class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+                        class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content emotion-12 emotion-1"
                         data-wp-c16t="true"
                         data-wp-component="FlexItem"
                       >
@@ -325,13 +465,13 @@ exports[`Purchase price threshold card renders correctly when enabled 1`] = `
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-16 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-16 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -340,18 +480,121 @@ exports[`Purchase price threshold card renders correctly when enabled 1`] = `
 `;
 
 exports[`Purchase price threshold card renders correctly when enabled and checked 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  font-size: 13px;
+}
+
+.emotion-8 {
+  margin-bottom: calc(4px * 2);
+}
+
+.components-panel__row .emotion-8 {
+  margin-bottom: inherit;
+}
+
+.emotion-10 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-10>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-10>* {
+  min-width: 0;
+}
+
+.emotion-12 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+.emotion-16 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-16 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
     id="purchase-price-threshold-card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -361,36 +604,21 @@ exports[`Purchase price threshold card renders correctly when enabled and checke
           >
             Purchase Price Threshold
           </p>
-          <p
-            class="fraud-protection-rule-card-description"
-          >
-            This filter compares the purchase price of an order to the minimum and maximum purchase amounts that you specify.
-          </p>
         </div>
-      </div>
-      <hr />
-      <div
-        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
-        data-wp-c16t="true"
-        data-wp-component="CardBody"
-      >
         <div
           class="fraud-protection-rule-toggle"
         >
-          <strong>
-            Enable filtering
-          </strong>
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
+            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
           >
             <div
-              class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+              class="components-base-control__field emotion-8 emotion-9"
             >
               <span
                 class="components-form-toggle is-checked"
               >
                 <input
-                  aria-describedby="inspector-toggle-control-2__help"
+                  checked=""
                   class="components-form-toggle__input"
                   id="inspector-toggle-control-2"
                   type="checkbox"
@@ -406,15 +634,14 @@ exports[`Purchase price threshold card renders correctly when enabled and checke
                 class="components-toggle-control__label"
                 for="inspector-toggle-control-2"
               >
-                Block transactions for abnormal purchase prices
+                Enable Purchase Price Threshold filter
               </label>
             </div>
-            <p
-              class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
-              id="inspector-toggle-control-2__help"
-            >
-              The payment will be blocked.
-            </p>
+          </div>
+          <div
+            class="fraud-protection-rule-toggle-description"
+          >
+            This filter compares the purchase price of an order to the minimum and maximum purchase amounts that you specify. When enabled the payment will be blocked.
           </div>
           <div>
             <div
@@ -495,7 +722,9 @@ exports[`Purchase price threshold card renders correctly when enabled and checke
                   </div>
                 </div>
               </div>
-              <div>
+              <div
+                class="fraud-protection-rule-toggle-children-notice"
+              >
                 <br />
                 <div
                   class="wcpay-inline-notice wcpay-inline-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
@@ -504,12 +733,12 @@ exports[`Purchase price threshold card renders correctly when enabled and checke
                     class="components-notice__content"
                   >
                     <div
-                      class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+                      class="components-flex emotion-10 emotion-1"
                       data-wp-c16t="true"
                       data-wp-component="Flex"
                     >
                       <div
-                        class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+                        class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon emotion-12 emotion-1"
                         data-wp-c16t="true"
                         data-wp-component="FlexItem"
                       >
@@ -528,7 +757,7 @@ exports[`Purchase price threshold card renders correctly when enabled and checke
                         </svg>
                       </div>
                       <div
-                        class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+                        class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content emotion-12 emotion-1"
                         data-wp-c16t="true"
                         data-wp-component="FlexItem"
                       >
@@ -558,13 +787,13 @@ exports[`Purchase price threshold card renders correctly when enabled and checke
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-16 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-16 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -573,18 +802,86 @@ exports[`Purchase price threshold card renders correctly when enabled and checke
 `;
 
 exports[`Purchase price threshold card renders like disabled when checked, but not enabled 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  font-size: 13px;
+}
+
+.emotion-8 {
+  margin-bottom: calc(4px * 2);
+}
+
+.components-panel__row .emotion-8 {
+  margin-bottom: inherit;
+}
+
+.emotion-10 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-10 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card fraud-protection-rule-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card fraud-protection-rule-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
     id="purchase-price-threshold-card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body fraud-protection-rule-card-header-container css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body wcpay-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -594,36 +891,20 @@ exports[`Purchase price threshold card renders like disabled when checked, but n
           >
             Purchase Price Threshold
           </p>
-          <p
-            class="fraud-protection-rule-card-description"
-          >
-            This filter compares the purchase price of an order to the minimum and maximum purchase amounts that you specify.
-          </p>
         </div>
-      </div>
-      <hr />
-      <div
-        class="components-card__body components-card-body wcpay-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
-        data-wp-c16t="true"
-        data-wp-component="CardBody"
-      >
         <div
           class="fraud-protection-rule-toggle"
         >
-          <strong>
-            Enable filtering
-          </strong>
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle css-wdf2ti-Wrapper ej5x27r4"
+            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
           >
             <div
-              class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+              class="components-base-control__field emotion-8 emotion-9"
             >
               <span
                 class="components-form-toggle"
               >
                 <input
-                  aria-describedby="inspector-toggle-control-3__help"
                   class="components-form-toggle__input"
                   id="inspector-toggle-control-3"
                   type="checkbox"
@@ -639,15 +920,14 @@ exports[`Purchase price threshold card renders like disabled when checked, but n
                 class="components-toggle-control__label"
                 for="inspector-toggle-control-3"
               >
-                Block transactions for abnormal purchase prices
+                Enable Purchase Price Threshold filter
               </label>
             </div>
-            <p
-              class="components-base-control__help css-v0euhr-StyledHelp-deprecatedMarginHelp ej5x27r1"
-              id="inspector-toggle-control-3__help"
-            >
-              When enabled, the payment will be blocked.
-            </p>
+          </div>
+          <div
+            class="fraud-protection-rule-toggle-description"
+          >
+            This filter compares the purchase price of an order to the minimum and maximum purchase amounts that you specify. When enabled the payment will be blocked.
           </div>
         </div>
         <div
@@ -664,13 +944,13 @@ exports[`Purchase price threshold card renders like disabled when checked, but n
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-10 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-10 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />

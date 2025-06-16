@@ -36,9 +36,24 @@ class Eps_Payment_Method extends UPE_Payment_Method {
 	/**
 	 * Returns testing credentials to be printed at checkout in test mode.
 	 *
+	 * @param string $account_country The country of the account.
 	 * @return string
 	 */
-	public function get_testing_instructions() {
+	public function get_testing_instructions( string $account_country ) {
 		return '';
+	}
+
+	/**
+	 * Returns payment method description for the settings page.
+	 *
+	 * @param string|null $account_country Country of merchants account.
+	 *
+	 * @return string
+	 */
+	public function get_description( ?string $account_country = null ) {
+		return __(
+			'Accept your payment with EPS — a common payment method in Austria.',
+			'woocommerce-payments'
+		);
 	}
 }

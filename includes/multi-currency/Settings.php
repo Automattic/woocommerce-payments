@@ -88,7 +88,7 @@ class Settings extends \WC_Settings_Page {
 	 * Load inline Emoji detection script on multi-currency settings page
 	 */
 	public function maybe_add_print_emoji_detection_script() {
-		if ( WC_Payments_Multi_Currency()->is_multi_currency_settings_page() ) {
+		if ( $this->multi_currency->is_multi_currency_settings_page() ) {
 			print_emoji_detection_script();
 		}
 	}

@@ -4,22 +4,21 @@
  * External dependencies
  */
 import React from 'react';
-import moment from 'moment';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import { __ } from '@wordpress/i18n';
-import { dateI18n } from '@wordpress/date';
 
 /**
  * Internal dependencies
  */
 import type { Dispute } from 'wcpay/types/disputes';
 import { HorizontalList } from 'wcpay/components/horizontal-list';
-import { formatExplicitCurrency } from 'wcpay/utils/currency';
+import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import { reasons } from 'wcpay/disputes/strings';
 import { formatStringValue } from 'wcpay/utils';
 import { ClickTooltip } from 'wcpay/components/tooltip';
 import Paragraphs from 'wcpay/components/paragraphs';
 import DisputeDueByDate from './dispute-due-by-date';
+import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 
 interface Props {
 	dispute: Dispute;
@@ -39,10 +38,10 @@ const DisputeSummaryRow: React.FC< Props > = ( { dispute } ) => {
 		{
 			title: __( 'Disputed On', 'woocommerce-payments' ),
 			content: dispute.created
-				? dateI18n(
-						'M j, Y, g:ia',
-						moment( dispute.created * 1000 ).toISOString()
-				  )
+				? formatDateTimeFromTimestamp( dispute.created, {
+						separator: ', ',
+						includeTime: true,
+				  } )
 				: '–',
 		},
 		{

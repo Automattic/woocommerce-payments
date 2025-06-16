@@ -482,3 +482,109 @@ describe( 'Charge utilities / getChargeAmounts', () => {
 		} );
 	} );
 } );
+
+jest.mock( '@wordpress/i18n', () => ( {
+	__: jest.fn( ( text ) => text ),
+} ) );
+
+describe( 'Charge utilities / get channel string', () => {
+	describe( 'getTransactionChannel', () => {
+		test( 'should return "In-Person (POS)" for in_person_pos channel', () => {
+			const result = utils.getTransactionChannel( 'in_person_pos' );
+			expect( result ).toBe( 'In-Person (POS)' );
+		} );
+
+		test( 'should return "In-Person" for in_person channel', () => {
+			const result = utils.getTransactionChannel( 'in_person' );
+			expect( result ).toBe( 'In-Person' );
+		} );
+
+		test( 'should return "Online store" for online channel', () => {
+			const result = utils.getTransactionChannel( 'online' );
+			expect( result ).toBe( 'Online store' );
+		} );
+
+		test( 'should return "Online store" for null channel', () => {
+			const result = utils.getTransactionChannel( null );
+			expect( result ).toBe( 'Online store' );
+		} );
+	} );
+
+	describe( 'getChargeChannel', () => {
+		test( 'should return "In-Person (POS)" for card_present type with mobile_pos metadata', () => {
+			const result = utils.getChargeChannel( 'card_present', {
+				ipp_channel: 'mobile_pos',
+			} );
+			expect( result ).toBe( 'In-Person (POS)' );
+		} );
+
+		test( 'should return "In-Person" for card_present type with mobile_store_management metadata', () => {
+			const result = utils.getChargeChannel( 'card_present', {
+				ipp_channel: 'mobile_store_management',
+			} );
+			expect( result ).toBe( 'In-Person' );
+		} );
+
+		test( 'should return "In-Person" for card_present type with null ipp_channel metadata', () => {
+			const result = utils.getChargeChannel( 'card_present', {} );
+			expect( result ).toBe( 'In-Person' );
+		} );
+
+		test( 'should return "Online store" for online type', () => {
+			const result = utils.getChargeChannel( 'online', {
+				ipp_channel: 'mobile_pos',
+			} );
+			expect( result ).toBe( 'Online store' );
+		} );
+	} );
+
+	describe( 'getBankName', () => {
+		test( 'should return "Affirm" for affirm type', () => {
+			const result = utils.getBankName( {
+				payment_method_details: { type: 'affirm' },
+			} );
+			expect( result ).toBe( 'Affirm' );
+		} );
+
+		test( 'should return "Afterpay / Clearpay" for afterpay_clearpay type', () => {
+			const result = utils.getBankName( {
+				payment_method_details: { type: 'afterpay_clearpay' },
+			} );
+			expect( result ).toBe( 'Afterpay / Clearpay' );
+		} );
+
+		test( 'should return "Klarna" for klarna type', () => {
+			const result = utils.getBankName( {
+				payment_method_details: { type: 'klarna' },
+			} );
+			expect( result ).toBe( 'Klarna' );
+		} );
+
+		test( 'should return null for unknown type', () => {
+			const result = utils.getBankName( {
+				payment_method_details: { type: 'unknown' },
+			} );
+			expect( result ).toBe( null );
+		} );
+
+		test( 'should return the issuer for card type', () => {
+			const result = utils.getBankName( {
+				payment_method_details: {
+					type: 'card',
+					card: { issuer: 'Chase Bank' },
+				},
+			} );
+			expect( result ).toBe( 'Chase Bank' );
+		} );
+
+		test( 'should return null for card type with no issuer', () => {
+			const result = utils.getBankName( {
+				payment_method_details: {
+					type: 'card',
+					card: { issuer: null },
+				},
+			} );
+			expect( result ).toBe( null );
+		} );
+	} );
+} );

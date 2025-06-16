@@ -3,15 +3,15 @@
  * Plugin Name: WooPayments
  * Plugin URI: https://woocommerce.com/payments/
  * Description: Accept payments via credit card. Manage transactions within WordPress.
- * Author: Automattic
+ * Author: WooCommerce
  * Author URI: https://woocommerce.com/
  * Text Domain: woocommerce-payments
  * Domain Path: /languages
  * WC requires at least: 7.6
- * WC tested up to: 8.7.0
+ * WC tested up to: 9.8.5
  * Requires at least: 6.0
  * Requires PHP: 7.3
- * Version: 7.5.3
+ * Version: 9.5.0
  * Requires Plugins: woocommerce
  *
  * @package WooCommerce\Payments
@@ -26,13 +26,16 @@ define( 'WCPAY_SUBSCRIPTIONS_ABSPATH', __DIR__ . '/vendor/woocommerce/subscripti
 
 require_once __DIR__ . '/vendor/autoload_packages.php';
 require_once __DIR__ . '/includes/class-wc-payments-features.php';
-require_once __DIR__ . '/includes/woopay-user/class-woopay-extension.php';
 require_once __DIR__ . '/includes/woopay/class-woopay-session.php';
 
 /**
  * Plugin activation hook.
  */
 function wcpay_activated() {
+	// Clear the WC-shared incentives cache.
+	// This way we don't end up with stale incentives that were caller-bound.
+	delete_transient( 'woocommerce_admin_pes_incentive_woopayments_cache' );
+
 	// When WooCommerce Payments is installed and activated from the WooCommerce onboarding wizard (via wc-admin REST request), check if the site is eligible for subscriptions.
 	if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
 		update_option( 'wcpay_check_subscriptions_eligibility_after_onboarding', true );
@@ -43,7 +46,7 @@ function wcpay_activated() {
 		// Only redirect to onboarding when activated on its own. Either with a link...
 		isset( $_GET['action'] ) && 'activate' === $_GET['action'] // phpcs:ignore WordPress.Security.NonceVerification
 		// ...or with a bulk action.
-		|| isset( $_POST['checked'] ) && is_array( $_POST['checked'] ) && 1 === count( $_POST['checked'] ) // phpcs:ignore WordPress.Security.NonceVerification
+		|| isset( $_POST['checked'] ) && is_array( $_POST['checked'] ) && 1 === count( $_POST['checked'] ) // phpcs:ignore WordPress.Security.NonceVerification, Generic.CodeAnalysis.RequireExplicitBooleanOperatorPrecedence.MissingParentheses
 	) {
 		update_option( 'wcpay_should_redirect_to_onboarding', true );
 	}
@@ -53,10 +56,12 @@ function wcpay_activated() {
  * Plugin deactivation hook.
  */
 function wcpay_deactivated() {
+	// Clear the WC-shared incentives cache.
+	// This way we don't end up with stale incentives that were caller-bound.
+	delete_transient( 'woocommerce_admin_pes_incentive_woopayments_cache' );
+
 	require_once WCPAY_ABSPATH . '/includes/class-wc-payments.php';
 	WC_Payments::remove_woo_admin_notes();
-	delete_user_meta( get_current_user_id(), '_wcpay_bnpl_april15_viewed' );
-	delete_transient( 'wcpay_bnpl_april15_successful_purchases_count' );
 }
 
 register_activation_hook( __FILE__, 'wcpay_activated' );
@@ -81,6 +86,12 @@ function wcpay_jetpack_init() {
 	if ( ! wcpay_check_old_jetpack_version() ) {
 		return;
 	}
+	$connection_version = Automattic\Jetpack\Connection\Package_Version::PACKAGE_VERSION;
+
+	$custom_content = version_compare( $connection_version, '6.1.0', '>' ) ?
+		'wcpay_get_jetpack_idc_custom_content' :
+		wcpay_get_jetpack_idc_custom_content();
+
 	$jetpack_config = new Automattic\Jetpack\Config();
 	$jetpack_config->ensure(
 		'connection',
@@ -93,7 +104,7 @@ function wcpay_jetpack_init() {
 		'identity_crisis',
 		[
 			'slug'          => 'woocommerce-payments',
-			'customContent' => wcpay_get_jetpack_idc_custom_content(),
+			'customContent' => $custom_content,
 			'logo'          => plugins_url( 'assets/images/logo.svg', WCPAY_PLUGIN_FILE ),
 			'admin_page'    => '/wp-admin/admin.php?page=wc-admin',
 			'priority'      => 5,
@@ -101,30 +112,18 @@ function wcpay_jetpack_init() {
 	);
 
 	// When only WooPayments is active, minimize the data to send back to WPCOM, tied to merchant's privacy settings.
-	$sync_modules = [
-		'Automattic\\Jetpack\\Sync\\Modules\\Options',
-		'Automattic\\Jetpack\\Sync\\Modules\\Full_Sync',
-	];
-	if ( class_exists( 'WC_Site_Tracking' ) && WC_Site_Tracking::is_tracking_enabled() ) {
-		$sync_modules[] = 'Automattic\\Jetpack\\Sync\\Modules\\WooCommerce';
-		if ( class_exists( 'Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController' ) ) {
-			try {
-				$cot_controller = wc_get_container()->get( Automattic\WooCommerce\Internal\DataStores\Orders\CustomOrdersTableController::class );
-				if ( $cot_controller->custom_orders_table_usage_is_enabled() ) {
-					$sync_modules[] = 'Automattic\\Jetpack\\Sync\\Modules\\WooCommerce_HPOS_Orders';
-				}
-			} catch ( Exception $e ) { // phpcs:ignore Generic.CodeAnalysis.EmptyStatement.DetectedCatch
-				// Do nothing.
-			}
-		}
-	}
-
 	$jetpack_config->ensure(
 		'sync',
 		array_merge_recursive(
 			\Automattic\Jetpack\Sync\Data_Settings::MUST_SYNC_DATA_SETTINGS,
 			[
-				'jetpack_sync_modules'           => $sync_modules,
+				'jetpack_sync_modules'           =>
+					[
+						'Automattic\Jetpack\Sync\Modules\Full_Sync_Immediately',
+						'Automattic\Jetpack\Sync\Modules\Options',
+						'Automattic\Jetpack\Sync\Modules\Posts',
+						'Automattic\Jetpack\Sync\Modules\Meta',
+					],
 				'jetpack_sync_options_whitelist' =>
 					[
 						'active_plugins',
@@ -162,12 +161,14 @@ add_action( 'plugins_loaded', 'wcpay_jetpack_init', 1 );
  */
 function wcpay_init() {
 	require_once WCPAY_ABSPATH . '/includes/class-wc-payments.php';
+	require_once WCPAY_ABSPATH . '/includes/class-wc-payments-payment-request-session.php';
 	WC_Payments::init();
 	/**
 	 * Needs to be loaded as soon as possible
 	 * Check https://github.com/Automattic/woocommerce-payments/issues/4759
 	 */
 	\WCPay\WooPay\WooPay_Session::init();
+	( new WC_Payments_Payment_Request_Session() )->init();
 }
 
 // Make sure this is run *after* WooCommerce has a chance to initialize its packages (wc-admin, etc). That is run with priority 10.
@@ -332,7 +333,7 @@ function wcpay_get_jetpack_idc_custom_content(): array {
 		'nonAdminTitle'             => __( 'Safe Mode activated', 'woocommerce-payments' ),
 		'nonAdminBodyText'          => sprintf(
 			/* translators: %s: WooPayments. */
-			__( 'We’ve detected that you have duplicate sites connected to %s. When Safe Mode is active, payments will not be interrupted. However, some features may not be available until you’ve resolved this issue below. Safe Mode is most frequently activated when you’re transferring your site from one domain to another, or creating a staging site for testing. A site adminstrator can resolve this issue. <safeModeLink>Learn more</safeModeLink>', 'woocommerce-payments' ),
+			__( 'We’ve detected that you have duplicate sites connected to %s. When Safe Mode is active, payments will not be interrupted. However, some features may not be available until you’ve resolved this issue below. Safe Mode is most frequently activated when you’re transferring your site from one domain to another, or creating a staging site for testing. A site administrator can resolve this issue. <safeModeLink>Learn more</safeModeLink>', 'woocommerce-payments' ),
 			'WooPayments'
 		),
 		'supportURL'                => 'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/safe-mode/',
@@ -341,6 +342,7 @@ function wcpay_get_jetpack_idc_custom_content(): array {
 			__( '%s Safe Mode', 'woocommerce-payments' ),
 			'WooPayments'
 		),
+		'stayInSafeModeButtonLabel' => __( 'Stay in Safe Mode', 'woocommerce-payments' ),
 		'dynamicSiteUrlText'        => sprintf(
 			/* translators: %s: WooPayments. */
 			__( "<strong>Notice:</strong> It appears that your 'wp-config.php' file might be using dynamic site URL values. Dynamic site URLs could cause %s to enter Safe Mode. <dynamicSiteUrlSupportLink>Learn how to set a static site URL.</dynamicSiteUrlSupportLink>", 'woocommerce-payments' ),
@@ -352,16 +354,7 @@ function wcpay_get_jetpack_idc_custom_content(): array {
 	$urls = Automattic\Jetpack\Identity_Crisis::get_mismatched_urls();
 	if ( false !== $urls ) {
 		$current_url = untrailingslashit( $urls['current_url'] );
-		/**
-		 * Undo the reverse the Jetpack IDC library is doing since we want to display the URL.
-		 *
-		 * @see https://github.com/Automattic/jetpack-identity-crisis/blob/trunk/src/class-identity-crisis.php#L471
-		 */
-		$idc_sync_error = Automattic\Jetpack\Identity_Crisis::check_identity_crisis();
-		if ( is_array( $idc_sync_error ) && ! empty( $idc_sync_error['reversed_url'] ) ) {
-			$urls['wpcom_url'] = strrev( $urls['wpcom_url'] );
-		}
-		$wpcom_url = untrailingslashit( $urls['wpcom_url'] );
+		$wpcom_url   = untrailingslashit( $urls['wpcom_url'] );
 
 		$custom_content['migrateCardBodyText'] = sprintf(
 			/* translators: %1$s: The current site domain name. %2$s: The original site domain name. Please keep hostname tags in your translation so that they can be formatted properly. %3$s: WooPayments. */
@@ -374,6 +367,7 @@ function wcpay_get_jetpack_idc_custom_content(): array {
 			'WooPayments'
 		);
 
+		// Regular "Start Fresh" card body text - used for non-development sites.
 		$custom_content['startFreshCardBodyText'] = sprintf(
 			/* translators: %1$s: The current site domain name. %2$s: The original site domain name. Please keep hostname tags in your translation so that they can be formatted properly. %3$s: WooPayments. */
 			__(
@@ -383,6 +377,38 @@ function wcpay_get_jetpack_idc_custom_content(): array {
 			$current_url,
 			$wpcom_url,
 			'WooPayments'
+		);
+
+		// Start Fresh card body text when in the development mode.
+		$custom_content['startFreshCardBodyTextDev'] = sprintf(
+			/* translators: %1$s: The current site domain name. %2$s: The original site domain name. %3$s: WooPayments. */
+			__(
+				'<p><strong>Recommended for</strong></p><list><item>development sites</item><item>sites that need access to all %3$s features</item></list><p><strong>Please note</strong> that creating a fresh connection for <hostname>%1$s</hostname> would require restoring the connection on <hostname>%2$s</hostname> if that site is cloned back to production. <safeModeLink>Learn more</safeModeLink>.</p>',
+				'woocommerce-payments'
+			),
+			$current_url,
+			$wpcom_url,
+			'WooPayments'
+		);
+
+		// Safe Mode card body text when in the development mode.
+		$custom_content['safeModeCardBodyText'] = sprintf(
+			/* translators: %s: WooPayments. */
+			__(
+				'<p><strong>Recommended for</strong></p><list><item>short-lived test sites</item><item>sites that will be cloned back to production after testing</item></list><p><strong>Please note</strong> that staying in Safe Mode will cause issues for some %s features such as dispute and refund updates, payment confirmations for local payment methods. <safeModeLink>Learn more</safeModeLink>.</p>',
+				'woocommerce-payments'
+			),
+			'WooPayments'
+		);
+
+		$custom_content['mainBodyTextDev'] = sprintf(
+			/* translators: %1$s: The current site domain name. %2$s: The original site domain name. */
+			__(
+				'<span>Your site is in Safe Mode because <hostname>%1$s</hostname> appears to be a staging or development copy of <hostname>%2$s</hostname>.</span> Two sites that are telling WooPayments they’re the same site. <safeModeLink>Learn more about Safe Mode issues</safeModeLink>.',
+				'woocommerce-payments'
+			),
+			$current_url,
+			$wpcom_url,
 		);
 	}
 
@@ -406,15 +432,6 @@ function wcpay_tasks_init() {
 add_action( 'plugins_loaded', 'wcpay_tasks_init' );
 
 /**
- * Register blocks extension for woopay.
- */
-function register_woopay_extension() {
-	( new WooPay_Extension() )->register_extend_rest_api_update_callback();
-}
-
-add_action( 'woocommerce_blocks_loaded', 'register_woopay_extension' );
-
-/**
  * As the class is defined in later versions of WC, Psalm infers error.
  *
  * @psalm-suppress UndefinedClass
@@ -423,7 +440,8 @@ add_action(
 	'before_woocommerce_init',
 	function () {
 		if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
-			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', 'woocommerce-payments/woocommerce-payments.php', true );
+			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'cart_checkout_blocks', __FILE__, true );
+			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
 		}
 	}
 );

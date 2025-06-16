@@ -1,17 +1,124 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Deposit overview renders automatic deposit correctly 1`] = `
+exports[`Deposit overview renders automatic payout correctly 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-4 {
+    transition-duration: 0ms;
+  }
+}
+
+.emotion-12 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+  border-bottom: 1px solid;
+  box-sizing: border-box;
+  border-color: rgba(0, 0, 0, 0.1);
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-12>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-12>* {
+  min-width: 0;
+}
+
+.emotion-12:last-child {
+  border-bottom: none;
+}
+
+.emotion-12:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-12:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-14 {
+  color: #1e1e1e;
+  line-height: 1.2;
+  margin: 0;
+  font-size: calc((16 / 13) * 13px);
+  font-weight: 600;
+}
+
+.emotion-16 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-16:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-16:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
 <div>
   <div
     class="wcpay-deposit-overview"
   >
     <div
-      class="components-surface components-card wcpay-deposit-automatic css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+      class="components-surface components-card wcpay-deposit-automatic emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Card"
     >
       <div
-        class="css-mgwsf4-View-Content em57xhy0"
+        class="emotion-2 emotion-1"
       >
         <ul>
           <li
@@ -23,7 +130,7 @@ exports[`Deposit overview renders automatic deposit correctly 1`] = `
               <div
                 class="woocommerce-summary__item-label"
               >
-                Deposit date: Jan 2, 2020
+                Payout date: Jan 2, 2020
               </div>
               <div
                 class="woocommerce-summary__item-data"
@@ -37,14 +144,9 @@ exports[`Deposit overview renders automatic deposit correctly 1`] = `
                     <span
                       class="woocommerce-order-status__indicator is-paid"
                     />
-                    Paid
+                    Completed (paid)
                   </div>
                 </div>
-              </div>
-              <div
-                class="wcpay-summary__item-detail"
-              >
-                MOCK BANK •••• 1234 (USD)
               </div>
             </div>
           </li>
@@ -57,13 +159,333 @@ exports[`Deposit overview renders automatic deposit correctly 1`] = `
       </div>
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
       <div
         aria-hidden="true"
-        class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+        class="components-elevation emotion-4 emotion-1"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+    </div>
+    <div
+      class="components-surface components-card emotion-0 emotion-1"
+      data-wp-c16t="true"
+      data-wp-component="Card"
+    >
+      <div
+        class="emotion-2 emotion-1"
+      >
+        <div
+          class="components-flex components-card__header components-card-header emotion-12 emotion-1"
+          data-wp-c16t="true"
+          data-wp-component="CardHeader"
+        >
+          <span
+            class="components-truncate components-text emotion-14 emotion-1"
+            data-wp-c16t="true"
+            data-wp-component="Text"
+          >
+            Payout details
+          </span>
+        </div>
+        <div
+          class="components-card__body components-card-body emotion-16 emotion-1"
+          data-wp-c16t="true"
+          data-wp-component="CardBody"
+        >
+          <div
+            class="woopayments-payout-details-header"
+          >
+            <div
+              class="woopayments-payout-details-header__item"
+            >
+              <h2>
+                Bank account
+              </h2>
+              <div
+                class="woopayments-payout-details-header__value"
+              >
+                MOCK BANK •••• 1234 (USD)
+              </div>
+            </div>
+            <div
+              class="woopayments-payout-details-header__item"
+            >
+              <h2>
+                Bank reference ID
+              </h2>
+              <div
+                class="woopayments-payout-details-header__value"
+              >
+                <div
+                  class="woopayments-payout-details-header__value"
+                >
+                  Not available
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        aria-hidden="true"
+        class="components-elevation emotion-4 emotion-1"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+      <div
+        aria-hidden="true"
+        class="components-elevation emotion-4 emotion-1"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Deposit overview renders automatic withdrawal correctly 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-4 {
+    transition-duration: 0ms;
+  }
+}
+
+.emotion-12 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+  border-bottom: 1px solid;
+  box-sizing: border-box;
+  border-color: rgba(0, 0, 0, 0.1);
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-12>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-12>* {
+  min-width: 0;
+}
+
+.emotion-12:last-child {
+  border-bottom: none;
+}
+
+.emotion-12:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-12:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-14 {
+  color: #1e1e1e;
+  line-height: 1.2;
+  margin: 0;
+  font-size: calc((16 / 13) * 13px);
+  font-weight: 600;
+}
+
+.emotion-16 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-16:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-16:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+<div>
+  <div
+    class="wcpay-deposit-overview"
+  >
+    <div
+      class="components-surface components-card wcpay-deposit-automatic emotion-0 emotion-1"
+      data-wp-c16t="true"
+      data-wp-component="Card"
+    >
+      <div
+        class="emotion-2 emotion-1"
+      >
+        <ul>
+          <li
+            class="woocommerce-summary__item-container"
+          >
+            <div
+              class="woocommerce-summary__item"
+            >
+              <div
+                class="woocommerce-summary__item-label"
+              >
+                Withdrawal date: Jan 2, 2020
+              </div>
+              <div
+                class="woocommerce-summary__item-data"
+              >
+                <div
+                  class="woocommerce-summary__item-value"
+                >
+                  <div
+                    class="woocommerce-order-status"
+                  >
+                    <span
+                      class="woocommerce-order-status__indicator is-paid"
+                    />
+                    Completed (deducted)
+                  </div>
+                </div>
+              </div>
+            </div>
+          </li>
+          <li
+            class="wcpay-deposit-amount"
+          >
+            -$20.00
+          </li>
+        </ul>
+      </div>
+      <div
+        aria-hidden="true"
+        class="components-elevation emotion-4 emotion-1"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+      <div
+        aria-hidden="true"
+        class="components-elevation emotion-4 emotion-1"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+    </div>
+    <div
+      class="components-surface components-card emotion-0 emotion-1"
+      data-wp-c16t="true"
+      data-wp-component="Card"
+    >
+      <div
+        class="emotion-2 emotion-1"
+      >
+        <div
+          class="components-flex components-card__header components-card-header emotion-12 emotion-1"
+          data-wp-c16t="true"
+          data-wp-component="CardHeader"
+        >
+          <span
+            class="components-truncate components-text emotion-14 emotion-1"
+            data-wp-c16t="true"
+            data-wp-component="Text"
+          >
+            Withdrawal details
+          </span>
+        </div>
+        <div
+          class="components-card__body components-card-body emotion-16 emotion-1"
+          data-wp-c16t="true"
+          data-wp-component="CardBody"
+        >
+          <div
+            class="woopayments-payout-details-header"
+          >
+            <div
+              class="woopayments-payout-details-header__item"
+            >
+              <h2>
+                Bank account
+              </h2>
+              <div
+                class="woopayments-payout-details-header__value"
+              >
+                MOCK BANK •••• 1234 (USD)
+              </div>
+            </div>
+            <div
+              class="woopayments-payout-details-header__item"
+            >
+              <h2>
+                Bank reference ID
+              </h2>
+              <div
+                class="woopayments-payout-details-header__value"
+              >
+                <div
+                  class="woopayments-payout-details-header__value"
+                >
+                  Not available
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        aria-hidden="true"
+        class="components-elevation emotion-4 emotion-1"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+      <div
+        aria-hidden="true"
+        class="components-elevation emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="Elevation"
       />
@@ -73,13 +495,120 @@ exports[`Deposit overview renders automatic deposit correctly 1`] = `
 `;
 
 exports[`Deposit overview renders instant deposit correctly 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+  border-bottom: 1px solid;
+  box-sizing: border-box;
+  border-color: rgba(0, 0, 0, 0.1);
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-4>* {
+  min-width: 0;
+}
+
+.emotion-4:last-child {
+  border-bottom: none;
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  color: #1e1e1e;
+  line-height: 1.2;
+  margin: 0;
+  font-size: calc((16 / 13) * 13px);
+  font-weight: 600;
+}
+
+.emotion-8 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-8:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-8:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-10 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-10 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <div
     class="wcpay-deposit-overview"
   >
     <div
       aria-describedby="woocommerce-summary-helptext-1"
-      aria-label="Deposit overview"
+      aria-label="Payout overview"
       aria-orientation="horizontal"
       role="menu"
     >
@@ -101,7 +630,7 @@ exports[`Deposit overview renders instant deposit correctly 1`] = `
             <div
               class="woocommerce-summary__item-label"
             >
-              Instant deposit date: Jan 2, 2020
+              Instant payout date: Jan 2, 2020
             </div>
             <div
               class="woocommerce-summary__item-data"
@@ -115,14 +644,9 @@ exports[`Deposit overview renders instant deposit correctly 1`] = `
                   <span
                     class="woocommerce-order-status__indicator is-paid"
                   />
-                  Paid
+                  Completed (paid)
                 </div>
               </div>
-            </div>
-            <div
-              class="wcpay-summary__item-detail"
-            >
-              MOCK BANK •••• 1234 (USD)
             </div>
           </div>
         </li>
@@ -135,7 +659,7 @@ exports[`Deposit overview renders instant deposit correctly 1`] = `
             <div
               class="woocommerce-summary__item-label"
             >
-              Deposit amount
+              Payout amount
             </div>
             <div
               class="woocommerce-summary__item-data"
@@ -179,7 +703,7 @@ exports[`Deposit overview renders instant deposit correctly 1`] = `
             <div
               class="woocommerce-summary__item-label"
             >
-              Net deposit amount
+              Net payout amount
             </div>
             <div
               class="woocommerce-summary__item-data"
@@ -194,11 +718,119 @@ exports[`Deposit overview renders instant deposit correctly 1`] = `
         </li>
       </ul>
     </div>
+    <div
+      class="components-surface components-card emotion-0 emotion-1"
+      data-wp-c16t="true"
+      data-wp-component="Card"
+    >
+      <div
+        class="emotion-2 emotion-1"
+      >
+        <div
+          class="components-flex components-card__header components-card-header emotion-4 emotion-1"
+          data-wp-c16t="true"
+          data-wp-component="CardHeader"
+        >
+          <span
+            class="components-truncate components-text emotion-6 emotion-1"
+            data-wp-c16t="true"
+            data-wp-component="Text"
+          >
+            Payout details
+          </span>
+        </div>
+        <div
+          class="components-card__body components-card-body emotion-8 emotion-1"
+          data-wp-c16t="true"
+          data-wp-component="CardBody"
+        >
+          <div
+            class="woopayments-payout-details-header"
+          >
+            <div
+              class="woopayments-payout-details-header__item"
+            >
+              <h2>
+                Bank account
+              </h2>
+              <div
+                class="woopayments-payout-details-header__value"
+              >
+                MOCK BANK •••• 1234 (USD)
+              </div>
+            </div>
+            <div
+              class="woopayments-payout-details-header__item"
+            >
+              <h2>
+                Bank reference ID
+              </h2>
+              <div
+                class="woopayments-payout-details-header__value"
+              >
+                <div
+                  class="woopayments-payout-details-header__value"
+                >
+                  Not available
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        aria-hidden="true"
+        class="components-elevation emotion-10 emotion-1"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+      <div
+        aria-hidden="true"
+        class="components-elevation emotion-10 emotion-1"
+        data-wp-c16t="true"
+        data-wp-component="Elevation"
+      />
+    </div>
   </div>
 </div>
 `;
 
 exports[`Deposit overview renders notice when deposit data is not found 1`] = `
+.emotion-0 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-0>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-0>* {
+  min-width: 0;
+}
+
+.emotion-2 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
 <div>
   <div
     class="wcpay-inline-notice wcpay-inline-error-notice components-notice is-error"
@@ -207,12 +839,12 @@ exports[`Deposit overview renders notice when deposit data is not found 1`] = `
       class="components-notice__content"
     >
       <div
-        class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+        class="components-flex emotion-0 emotion-1"
         data-wp-c16t="true"
         data-wp-component="Flex"
       >
         <div
-          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-error-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-error-notice__icon emotion-2 emotion-1"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
@@ -231,7 +863,7 @@ exports[`Deposit overview renders notice when deposit data is not found 1`] = `
           </svg>
         </div>
         <div
-          class="components-flex-item wcpay-inline-notice__content wcpay-inline-error-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+          class="components-flex-item wcpay-inline-notice__content wcpay-inline-error-notice__content emotion-2 emotion-1"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >

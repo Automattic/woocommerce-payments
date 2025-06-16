@@ -10,16 +10,11 @@ import {
 	isSavingSettings,
 	getPaymentRequestLocations,
 	getIsPaymentRequestEnabled,
-	getAccountBusinessName,
-	getAccountBusinessURL,
-	getAccountBusinessSupportAddress,
 	getAccountBusinessSupportEmail,
 	getAccountBusinessSupportPhone,
-	getAccountBrandingLogo,
 	getIsWooPayEnabled,
 	getWooPayCustomMessage,
 	getWooPayStoreLogo,
-	getIsClientSecretEncryptionEnabled,
 	getDuplicatedPaymentMethodIds,
 } from '../selectors';
 
@@ -65,29 +60,6 @@ describe( 'Settings selectors tests', () => {
 			[ { settings: { data: {} } } ],
 		] )( 'returns false if missing (tested state: %j)', ( state ) => {
 			expect( getIsWCPayEnabled( state ) ).toBeFalsy();
-		} );
-	} );
-
-	describe( 'getIsClientSecretEncryptionEnabled()', () => {
-		test( 'returns the value of state.settings.data.is_client_secret_encryption_enabled', () => {
-			const state = {
-				settings: {
-					data: {
-						is_client_secret_encryption_enabled: true,
-					},
-				},
-			};
-
-			expect( getIsClientSecretEncryptionEnabled( state ) ).toBeTruthy();
-		} );
-
-		test.each( [
-			[ undefined ],
-			[ {} ],
-			[ { settings: {} } ],
-			[ { settings: { data: {} } } ],
-		] )( 'returns false if missing (tested state: %j)', ( state ) => {
-			expect( getIsClientSecretEncryptionEnabled( state ) ).toBeFalsy();
 		} );
 	} );
 
@@ -306,12 +278,6 @@ describe( 'Settings selectors tests', () => {
 	} );
 
 	describe.each( [
-		{ getFunc: getAccountBusinessName, setting: 'account_business_name' },
-		{ getFunc: getAccountBusinessURL, setting: 'account_business_url' },
-		{
-			getFunc: getAccountBusinessSupportAddress,
-			setting: 'account_business_support_address',
-		},
 		{
 			getFunc: getAccountBusinessSupportEmail,
 			setting: 'account_business_support_email',
@@ -320,7 +286,6 @@ describe( 'Settings selectors tests', () => {
 			getFunc: getAccountBusinessSupportPhone,
 			setting: 'account_business_support_phone',
 		},
-		{ getFunc: getAccountBrandingLogo, setting: 'account_branding_logo' },
 	] )( 'Test get method: %j', ( setting ) => {
 		test( 'returns the value of state.settings.data.${setting.setting}', () => {
 			const state = {
