@@ -14,11 +14,13 @@
 	justify-content: space-around;
 	gap: 16px;
 	align-items: center;
+	position: relative;
 }
 
 .stepper-circle {
 	width: 24px;
 	height: 24px;
+	min-width: 24px;
 
 	display: flex;
 	align-items: center;
@@ -111,42 +113,19 @@
 	z-index: 0;
 }
 
-@media ( max-width: 600px ) {
+@media ( max-width: 782px ) {
 	.stepper-panel {
-		gap: 8px;
+		margin-top: 24px;
+		margin-bottom: 24px;
+		justify-content: space-around;
 		padding: 0 0.5rem;
-		font-size: 12px;
-		overflow-x: auto;
-		min-width: unset;
-	}
-
-	.stepper-step {
-		gap: 6px;
-	}
-
-	.stepper-circle {
-		width: 20px;
-		height: 20px;
-		font-size: 11px;
-		padding: 2px 4px;
-	}
-
-	.stepper-label {
-		font-size: 11px;
-		max-width: 60px;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
 	}
 
 	.stepper-line {
-		width: 24px;
+		display: none;
 	}
-}
 
-// For very small screens
-@media ( max-width: 400px ) {
 	.stepper-label {
-		display: none; // Optionally hide labels for extreme smallness
+		display: none;
 	}
 }
