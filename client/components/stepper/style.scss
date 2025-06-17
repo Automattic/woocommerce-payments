@@ -51,9 +51,6 @@
 	.stepper-circle,
 	.stepper-label {
 		cursor: pointer;
-		&:hover {
-			color: var( --wp-admin-theme-color );
-		}
 		&:disabled {
 			cursor: default;
 		}
