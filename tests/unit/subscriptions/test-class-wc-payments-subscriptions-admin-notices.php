@@ -88,7 +88,7 @@ class WC_Payments_Subscriptions_Admin_Notices_Test extends WCPAY_UnitTestCase {
 	 *
 	 * @return WC_Payments_Subscriptions_Admin_Notices|\PHPUnit\Framework\MockObject\MockObject
 	 */
-	private function get_admin_notices_mock(): WC_Payments_Subscriptions_Admin_Notices|\PHPUnit\Framework\MockObject\MockObject {
+	private function get_admin_notices_mock() {
 		return $this->getMockBuilder( WC_Payments_Subscriptions_Admin_Notices::class )
 			->onlyMethods( [ 'is_bundled_subscriptions_enabled', 'get_screen_id', 'get_wcpay_version' ] )
 			->getMock();
