@@ -5,22 +5,6 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use PHPUnit\Framework\MockObject\CannotUseOnlyMethodsException;
-use PHPUnit\Framework\MockObject\ReflectionException;
-use PHPUnit\Framework\InvalidArgumentException;
-use PHPUnit\Framework\MockObject\ClassAlreadyExistsException;
-use PHPUnit\Framework\MockObject\ClassIsFinalException;
-use PHPUnit\Framework\MockObject\DuplicateMethodException;
-use PHPUnit\Framework\MockObject\InvalidMethodNameException;
-use PHPUnit\Framework\MockObject\OriginalConstructorInvocationRequiredException;
-use PHPUnit\Framework\MockObject\RuntimeException;
-use PHPUnit\Framework\MockObject\UnknownTypeException;
-use PHPUnit\Framework\MockObject\MethodCannotBeConfiguredException;
-use PHPUnit\Framework\MockObject\MethodNameAlreadyConfiguredException;
-use PHPUnit\Framework\MockObject\IncompatibleReturnValueException;
-use SebastianBergmann\RecursionContext\InvalidArgumentException as RecursionContextInvalidArgumentException;
-use PHPUnit\Framework\ExpectationFailedException;
-
 /**
  * Class WC_Payments_Subscriptions_Admin_Notices tests.
  */
@@ -88,7 +72,7 @@ class WC_Payments_Subscriptions_Admin_Notices_Test extends WCPAY_UnitTestCase {
 	 *
 	 * @return WC_Payments_Subscriptions_Admin_Notices|\PHPUnit\Framework\MockObject\MockObject
 	 */
-	private function get_admin_notices_mock(): WC_Payments_Subscriptions_Admin_Notices|\PHPUnit\Framework\MockObject\MockObject {
+	private function get_admin_notices_mock() {
 		return $this->getMockBuilder( WC_Payments_Subscriptions_Admin_Notices::class )
 			->onlyMethods( [ 'is_bundled_subscriptions_enabled', 'get_screen_id', 'get_wcpay_version' ] )
 			->getMock();
