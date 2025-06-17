@@ -5,35 +5,43 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use PHPUnit\Framework\MockObject\CannotUseOnlyMethodsException;
+use PHPUnit\Framework\MockObject\ReflectionException;
+use PHPUnit\Framework\InvalidArgumentException;
+use PHPUnit\Framework\MockObject\ClassAlreadyExistsException;
+use PHPUnit\Framework\MockObject\ClassIsFinalException;
+use PHPUnit\Framework\MockObject\DuplicateMethodException;
+use PHPUnit\Framework\MockObject\InvalidMethodNameException;
+use PHPUnit\Framework\MockObject\OriginalConstructorInvocationRequiredException;
+use PHPUnit\Framework\MockObject\RuntimeException;
+use PHPUnit\Framework\MockObject\UnknownTypeException;
+use PHPUnit\Framework\MockObject\MethodCannotBeConfiguredException;
+use PHPUnit\Framework\MockObject\MethodNameAlreadyConfiguredException;
+use PHPUnit\Framework\MockObject\IncompatibleReturnValueException;
+use SebastianBergmann\RecursionContext\InvalidArgumentException as RecursionContextInvalidArgumentException;
+use PHPUnit\Framework\ExpectationFailedException;
+
 /**
  * Class WC_Payments_Subscriptions_Admin_Notices tests.
  */
 class WC_Payments_Subscriptions_Admin_Notices_Test extends WCPAY_UnitTestCase {
-	/**
-	 * Admin notices instance.
-	 *
-	 * @var WC_Payments_Subscriptions_Admin_Notices
-	 */
-	private $admin_notices;
-
 	/**
 	 * Set up the test.
 	 */
 	public function set_up() {
 		parent::set_up();
 		require_once WCPAY_ABSPATH . 'includes/subscriptions/class-wc-payments-subscriptions-admin-notices.php';
-		$this->admin_notices = new WC_Payments_Subscriptions_Admin_Notices();
 	}
 
 	/**
 	 * Test display_stripe_billing_deprecation_notice method.
+	 *
+	 * @dataProvider display_stripe_billing_deprecation_notice_provider
+	 * @param string $version The version of WooPayments.
+	 * @param string $expected_output The expected output of the notice.
 	 */
-	public function test_display_stripe_billing_deprecation_notice() {
-		// Test version < 9.7.0.
-		/** @var WC_Payments_Subscriptions_Admin_Notices|\PHPUnit\Framework\MockObject\MockObject $admin_notices */
-		$admin_notices = $this->getMockBuilder( WC_Payments_Subscriptions_Admin_Notices::class )
-			->onlyMethods( [ 'is_bundled_subscriptions_enabled', 'get_screen_id', 'get_wcpay_version' ] )
-			->getMock();
+	public function test_display_stripe_billing_deprecation_notice( $version, $expected_output ): void {
+		$admin_notices = $this->get_admin_notices_mock();
 
 		$admin_notices->expects( $this->once() )
 			->method( 'is_bundled_subscriptions_enabled' )
@@ -45,91 +53,20 @@ class WC_Payments_Subscriptions_Admin_Notices_Test extends WCPAY_UnitTestCase {
 
 		$admin_notices->expects( $this->once() )
 			->method( 'get_wcpay_version' )
-			->willReturn( '9.6.0' );
+			->willReturn( $version );
 
 		ob_start();
 		$admin_notices->display_stripe_billing_deprecation_notice();
 		$output = ob_get_clean();
 
-		$this->assertStringContainsString( '<p><strong>Important:</strong> From version 9.7 of WooPayments (scheduled for 23 July, 2025)', $output );
+		$this->assertStringContainsString( $expected_output, $output );
+	}
 
-		// Test version < 9.8.0.
-		/** @var WC_Payments_Subscriptions_Admin_Notices|\PHPUnit\Framework\MockObject\MockObject $admin_notices */
-		$admin_notices = $this->getMockBuilder( WC_Payments_Subscriptions_Admin_Notices::class )
-			->onlyMethods( [ 'is_bundled_subscriptions_enabled', 'get_screen_id', 'get_wcpay_version' ] )
-			->getMock();
-
-		$admin_notices->expects( $this->once() )
-			->method( 'is_bundled_subscriptions_enabled' )
-			->willReturn( true );
-
-		$admin_notices->expects( $this->once() )
-			->method( 'get_screen_id' )
-			->willReturn( 'edit-shop_subscription' );
-
-		$admin_notices->expects( $this->once() )
-			->method( 'get_wcpay_version' )
-			->willReturn( '9.7.0' );
-
-		ob_start();
-		$admin_notices->display_stripe_billing_deprecation_notice();
-		$output = ob_get_clean();
-
-		$this->assertStringContainsString( 'WooPayments no longer allows customers to create new subscriptions', $output );
-
-		// Test version < 9.9.0.
-		/** @var WC_Payments_Subscriptions_Admin_Notices|\PHPUnit\Framework\MockObject\MockObject $admin_notices */
-		$admin_notices = $this->getMockBuilder( WC_Payments_Subscriptions_Admin_Notices::class )
-			->onlyMethods( [ 'is_bundled_subscriptions_enabled', 'get_screen_id', 'get_wcpay_version' ] )
-			->getMock();
-
-		$admin_notices->expects( $this->once() )
-			->method( 'is_bundled_subscriptions_enabled' )
-			->willReturn( true );
-
-		$admin_notices->expects( $this->once() )
-			->method( 'get_screen_id' )
-			->willReturn( 'edit-shop_subscription' );
-
-		$admin_notices->expects( $this->once() )
-			->method( 'get_wcpay_version' )
-			->willReturn( '9.8.0' );
-
-		ob_start();
-		$admin_notices->display_stripe_billing_deprecation_notice();
-		$output = ob_get_clean();
-
-		$this->assertStringContainsString( 'WooPayments no longer supports billing for existing customer subscriptions', $output );
-
-		// Test version >= 9.9.0.
-		/** @var WC_Payments_Subscriptions_Admin_Notices|\PHPUnit\Framework\MockObject\MockObject $admin_notices */
-		$admin_notices = $this->getMockBuilder( WC_Payments_Subscriptions_Admin_Notices::class )
-			->onlyMethods( [ 'is_bundled_subscriptions_enabled', 'get_screen_id', 'get_wcpay_version' ] )
-			->getMock();
-
-		$admin_notices->expects( $this->once() )
-			->method( 'is_bundled_subscriptions_enabled' )
-			->willReturn( true );
-
-		$admin_notices->expects( $this->once() )
-			->method( 'get_screen_id' )
-			->willReturn( 'edit-shop_subscription' );
-
-		$admin_notices->expects( $this->once() )
-			->method( 'get_wcpay_version' )
-			->willReturn( '9.9.0' );
-
-		ob_start();
-		$admin_notices->display_stripe_billing_deprecation_notice();
-		$output = ob_get_clean();
-
-		$this->assertStringContainsString( 'WooPayments no longer supports subscriptions capabilities', $output );
-
-		// Test that the notice is not displayed when is_bundled_subscriptions_enabled returns false.
-		/** @var WC_Payments_Subscriptions_Admin_Notices|\PHPUnit\Framework\MockObject\MockObject $admin_notices */
-		$admin_notices = $this->getMockBuilder( WC_Payments_Subscriptions_Admin_Notices::class )
-			->onlyMethods( [ 'is_bundled_subscriptions_enabled', 'get_screen_id' ] )
-			->getMock();
+	/**
+	 * Test that the notice is not displayed when is_bundled_subscriptions_enabled returns false.
+	 */
+	public function test_the_notice_is_not_displayed_when_bundled_subscriptions_is_not_enabled(): void {
+		$admin_notices = $this->get_admin_notices_mock();
 
 		$admin_notices->expects( $this->once() )
 			->method( 'get_screen_id' )
@@ -144,5 +81,40 @@ class WC_Payments_Subscriptions_Admin_Notices_Test extends WCPAY_UnitTestCase {
 		$output = ob_get_clean();
 
 		$this->assertEmpty( $output );
+	}
+
+	/**
+	 * Get a mock of the admin notices class.
+	 *
+	 * @return WC_Payments_Subscriptions_Admin_Notices|\PHPUnit\Framework\MockObject\MockObject
+	 */
+	private function get_admin_notices_mock(): WC_Payments_Subscriptions_Admin_Notices|\PHPUnit\Framework\MockObject\MockObject {
+		return $this->getMockBuilder( WC_Payments_Subscriptions_Admin_Notices::class )
+			->onlyMethods( [ 'is_bundled_subscriptions_enabled', 'get_screen_id', 'get_wcpay_version' ] )
+			->getMock();
+	}
+
+	/**
+	 * Get a provider for the display_stripe_billing_deprecation_notice method.
+	 *
+	 * @return iterable
+	 */
+	private function display_stripe_billing_deprecation_notice_provider(): iterable {
+		yield '< 9.7.0' => [
+			'version'         => '9.6.0',
+			'expected_output' => '<p><strong>Important:</strong> From version 9.7 of WooPayments (scheduled for 23 July, 2025)',
+		];
+		yield '9.7.0' => [
+			'version'         => '9.7.0',
+			'expected_output' => 'WooPayments no longer allows customers to create new subscriptions',
+		];
+		yield '9.8.0' => [
+			'version'         => '9.8.0',
+			'expected_output' => 'WooPayments no longer supports billing for existing customer subscriptions',
+		];
+		yield '>= 9.9.0' => [
+			'version'         => '9.9.0',
+			'expected_output' => 'WooPayments no longer supports subscriptions capabilities',
+		];
 	}
 }
