@@ -316,6 +316,8 @@ export default ( { query }: { query: { id: string } } ) => {
 		}
 		// Update step
 		setCurrentStep( newStep );
+		// Scroll to top of page
+		window.scrollTo( { top: 0, behavior: 'smooth' } );
 	};
 
 	const updateProductType = ( newType: string ) => {
