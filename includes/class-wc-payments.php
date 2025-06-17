@@ -2089,11 +2089,6 @@ class WC_Payments {
 			return;
 		}
 
-		// If the plugin version is not being updated, do not update the note.
-		if ( version_compare( WCPAY_VERSION_NUMBER, get_option( 'woocommerce_woocommerce_payments_version' ), '=' ) ) {
-			return;
-		}
-
 		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-stripe-billing-deprecation.php';
 		WC_Payments_Notes_Stripe_Billing_Deprecation::possibly_update_note();
 	}
