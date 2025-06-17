@@ -908,6 +908,9 @@ export default ( { query }: { query: { id: string } } ) => {
 						<StepperPanel
 							steps={ panelHeadings }
 							currentStep={ currentStep }
+							onStepClick={ ( stepIndex ) => {
+								handleStepChange( stepIndex );
+							} }
 						/>
 						<HorizontalRule className="wcpay-dispute-evidence-new__stepper-divider" />
 						<div className="wcpay-dispute-evidence-new__stepper-content">

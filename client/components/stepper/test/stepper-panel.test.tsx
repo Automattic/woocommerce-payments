@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -63,5 +63,64 @@ describe( 'StepperPanel', () => {
 		expect( document.querySelectorAll( '.stepper-line' ) ).toHaveLength(
 			2
 		);
+	} );
+
+	describe( 'clickable steps', () => {
+		it( 'makes completed and current steps clickable when onStepClick is provided', () => {
+			const steps = [ 'A', 'B', 'C' ];
+			const onStepClick = jest.fn();
+			render(
+				<StepperPanel
+					steps={ steps }
+					currentStep={ 1 }
+					onStepClick={ onStepClick }
+				/>
+			);
+
+			const stepElements = screen
+				.getAllByText( /A|B|C/ )
+				.map( ( label ) => label.closest( '.stepper-step' ) );
+
+			// First step (completed) should be clickable
+			expect( stepElements[ 0 ] ).toHaveClass( 'clickable' );
+			// Second step (current) should be clickable
+			expect( stepElements[ 1 ] ).toHaveClass( 'clickable' );
+			// Third step (future) should not be clickable
+			expect( stepElements[ 2 ] ).toHaveClass( 'clickable' );
+		} );
+
+		it( 'calls onStepClick with correct index when clicking a step', () => {
+			const steps = [ 'A', 'B', 'C' ];
+			const onStepClick = jest.fn();
+			render(
+				<StepperPanel
+					steps={ steps }
+					currentStep={ 1 }
+					onStepClick={ onStepClick }
+				/>
+			);
+
+			// Click the first step (completed)
+			fireEvent.click( screen.getByText( 'A' ) );
+			expect( onStepClick ).toHaveBeenCalledWith( 0 );
+
+			// Click the second step (current)
+			fireEvent.click( screen.getByText( 'B' ) );
+			expect( onStepClick ).toHaveBeenCalledWith( 1 );
+		} );
+
+		it( 'does not make steps clickable when onStepClick is not provided', () => {
+			const steps = [ 'A', 'B', 'C' ];
+			render( <StepperPanel steps={ steps } currentStep={ 1 } /> );
+
+			const stepElements = screen
+				.getAllByText( /A|B|C/ )
+				.map( ( label ) => label.closest( '.stepper-step' ) );
+
+			// No steps should be clickable
+			stepElements.forEach( ( step ) => {
+				expect( step ).not.toHaveClass( 'clickable' );
+			} );
+		} );
 	} );
 } );
