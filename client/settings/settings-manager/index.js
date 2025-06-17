@@ -5,7 +5,7 @@
 import React, { useState, useLayoutEffect, useEffect } from 'react';
 import { ExternalLink } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
-import { getQuery } from '@woocommerce/navigation';
+import { getQuery, updateQueryString } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
@@ -29,6 +29,7 @@ import {
 } from '../../data';
 import FraudProtection from '../fraud-protection';
 import DuplicatedPaymentMethodsContext from './duplicated-payment-methods-context';
+import VatFormModal from '../../vat/form-modal';
 import './style.scss';
 
 const ExpressCheckoutDescription = () => (
@@ -185,84 +186,121 @@ const SettingsManager = () => {
 		dismissedDuplicateNotices,
 		setDismissedDuplicateNotices,
 	] = useState( wcpaySettings.dismissedDuplicateNotices || {} );
+	const [ isVatFormModalOpen, setVatFormModalOpen ] = useState( false );
+
+	const handleVatDetailsParam = () => {
+		const urlParams = new URLSearchParams( window.location.search );
+		if ( urlParams.get( 'submit-vat-details' ) === 'true' ) {
+			setVatFormModalOpen( true );
+		}
+	};
+
+	useEffect( () => {
+		handleVatDetailsParam();
+	}, [] );
+
+	const handleModalClose = () => {
+		setVatFormModalOpen( false );
+		// Remove the URL parameter when the modal is closed
+		updateQueryString( { 'submit-vat-details': undefined } );
+		// Check URL parameters after updating
+		handleVatDetailsParam();
+	};
+
+	const onVatFormCompleted = () => {
+		// Set the flag to true so that the user can download the document without refreshing the page
+		wcpaySettings.accountStatus.hasSubmittedVatData = true;
+		// Close the modal and remove the URL parameter
+		handleModalClose();
+	};
 
 	return (
-		<SettingsLayout>
-			<SettingsSection
-				description={ GeneralSettingsDescription }
-				id="general"
-			>
-				<LoadableSettingsSection numLines={ 20 }>
-					<ErrorBoundary>
-						<GeneralSettings />
-					</ErrorBoundary>
-				</LoadableSettingsSection>
-			</SettingsSection>
-			<DuplicatedPaymentMethodsContext.Provider
-				value={ {
-					duplicates: useGetDuplicatedPaymentMethodIds(),
-					dismissedDuplicateNotices: dismissedDuplicateNotices,
-					setDismissedDuplicateNotices: setDismissedDuplicateNotices,
-				} }
-			>
-				<PaymentMethodsSection />
-				<BuyNowPayLaterSection />
+		<>
+			<SettingsLayout>
 				<SettingsSection
-					id="express-checkouts"
-					description={ ExpressCheckoutDescription }
+					description={ GeneralSettingsDescription }
+					id="general"
 				>
 					<LoadableSettingsSection numLines={ 20 }>
 						<ErrorBoundary>
-							<ExpressCheckout />
+							<GeneralSettings />
 						</ErrorBoundary>
 					</LoadableSettingsSection>
 				</SettingsSection>
-			</DuplicatedPaymentMethodsContext.Provider>
-			<SettingsSection
-				description={ TransactionsDescription }
-				id="transactions"
-			>
-				<LoadableSettingsSection numLines={ 20 }>
-					<ErrorBoundary>
-						<Transactions
-							setTransactionInputsValid={
-								setTransactionInputsValid
-							}
-						/>
-					</ErrorBoundary>
-				</LoadableSettingsSection>
-			</SettingsSection>
-			<SettingsSection description={ DepositsDescription } id="deposits">
-				<div id="payout-schedule">
+				<DuplicatedPaymentMethodsContext.Provider
+					value={ {
+						duplicates: useGetDuplicatedPaymentMethodIds(),
+						dismissedDuplicateNotices: dismissedDuplicateNotices,
+						setDismissedDuplicateNotices: setDismissedDuplicateNotices,
+					} }
+				>
+					<PaymentMethodsSection />
+					<BuyNowPayLaterSection />
+					<SettingsSection
+						id="express-checkouts"
+						description={ ExpressCheckoutDescription }
+					>
+						<LoadableSettingsSection numLines={ 20 }>
+							<ErrorBoundary>
+								<ExpressCheckout />
+							</ErrorBoundary>
+						</LoadableSettingsSection>
+					</SettingsSection>
+				</DuplicatedPaymentMethodsContext.Provider>
+				<SettingsSection
+					description={ TransactionsDescription }
+					id="transactions"
+				>
 					<LoadableSettingsSection numLines={ 20 }>
 						<ErrorBoundary>
-							<Deposits />
+							<Transactions
+								setTransactionInputsValid={
+									setTransactionInputsValid
+								}
+							/>
 						</ErrorBoundary>
 					</LoadableSettingsSection>
-				</div>
-			</SettingsSection>
-			<SettingsSection
-				description={ FraudProtectionDescription }
-				id="fp-settings"
-			>
-				<LoadableSettingsSection numLines={ 20 }>
-					<ErrorBoundary>
-						<FraudProtection />
-					</ErrorBoundary>
-				</LoadableSettingsSection>
-			</SettingsSection>
-			<SettingsSection
-				description={ AdvancedDescription }
-				id="advanced-settings"
-			>
-				<LoadableSettingsSection numLines={ 20 }>
-					<ErrorBoundary>
-						<AdvancedSettings />
-					</ErrorBoundary>
-				</LoadableSettingsSection>
-			</SettingsSection>
-			<SaveSettingsSection disabled={ ! isTransactionInputsValid } />
-		</SettingsLayout>
+				</SettingsSection>
+				<SettingsSection
+					description={ DepositsDescription }
+					id="deposits"
+				>
+					<div id="payout-schedule">
+						<LoadableSettingsSection numLines={ 20 }>
+							<ErrorBoundary>
+								<Deposits />
+							</ErrorBoundary>
+						</LoadableSettingsSection>
+					</div>
+				</SettingsSection>
+				<SettingsSection
+					description={ FraudProtectionDescription }
+					id="fp-settings"
+				>
+					<LoadableSettingsSection numLines={ 20 }>
+						<ErrorBoundary>
+							<FraudProtection />
+						</ErrorBoundary>
+					</LoadableSettingsSection>
+				</SettingsSection>
+				<SettingsSection
+					description={ AdvancedDescription }
+					id="advanced-settings"
+				>
+					<LoadableSettingsSection numLines={ 20 }>
+						<ErrorBoundary>
+							<AdvancedSettings />
+						</ErrorBoundary>
+					</LoadableSettingsSection>
+				</SettingsSection>
+				<SaveSettingsSection disabled={ ! isTransactionInputsValid } />
+			</SettingsLayout>
+			<VatFormModal
+				isModalOpen={ isVatFormModalOpen }
+				setModalOpen={ handleModalClose }
+				onCompleted={ onVatFormCompleted }
+			/>
+		</>
 	);
 };
 
