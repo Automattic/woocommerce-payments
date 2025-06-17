@@ -83,7 +83,7 @@ class WC_Payments_Subscriptions_Admin_Notices_Test extends WCPAY_UnitTestCase {
 	 *
 	 * @return iterable
 	 */
-	private function display_stripe_billing_deprecation_notice_provider(): iterable {
+	protected function display_stripe_billing_deprecation_notice_provider(): iterable {
 		yield '< 9.7.0' => [
 			'version'         => '9.6.0',
 			'expected_output' => '<p><strong>Important:</strong> From version 9.7 of WooPayments (scheduled for 23 July, 2025)',
