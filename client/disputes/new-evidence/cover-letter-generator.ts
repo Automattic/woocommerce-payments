@@ -7,6 +7,30 @@ import type { ExtendedDispute, AccountDetails, CoverLetterData } from './types';
 
 // --- Utility Functions ---
 
+export const getBusinessDetails = (): AccountDetails => {
+	const wcStoreCountry =
+		wcSettings?.admin?.preloadSettings?.general
+			?.woocommerce_default_country || ':';
+	const [ storeCountry, storeState ] = wcStoreCountry.split( ':' );
+	return {
+		name: wcSettings?.siteTitle || '<Your Business Name>',
+		support_address_city:
+			wcSettings?.admin?.preloadSettings?.general
+				?.woocommerce_store_city || '',
+		support_address_country: storeCountry,
+		support_address_line1:
+			wcSettings?.admin?.preloadSettings?.general
+				?.woocommerce_store_address || '',
+		support_address_line2:
+			wcSettings?.admin?.preloadSettings?.general
+				?.woocommerce_store_address_2 || '',
+		support_address_postal_code:
+			wcSettings?.admin?.preloadSettings?.general
+				?.woocommerce_store_postcode || '',
+		support_address_state: storeState,
+	};
+};
+
 export const formatMerchantAddress = (
 	accountDetails: AccountDetails
 ): string => {
