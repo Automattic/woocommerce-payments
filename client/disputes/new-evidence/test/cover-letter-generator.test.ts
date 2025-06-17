@@ -177,9 +177,9 @@ describe( 'Cover Letter Generator', () => {
 	describe( 'generateAttachments', () => {
 		it( 'should generate attachments for product not received dispute', () => {
 			const result = generateAttachments( mockDispute );
-			expect( result ).toContain( 'Proof of Purchase' );
-			expect( result ).toContain( 'Proof of Shipping' );
-			expect( result ).toContain( 'Proof of Delivery' );
+			expect( result ).toContain( 'Order receipt' );
+			expect( result ).toContain( 'Proof of shipping' );
+			expect( result ).toContain( 'Additional documentation' );
 		} );
 
 		it( 'should generate default attachments when no evidence provided', () => {
