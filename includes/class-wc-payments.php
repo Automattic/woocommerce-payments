@@ -754,9 +754,6 @@ class WC_Payments {
 			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions-admin-notices.php';
 			$wcpay_subscriptions_admin_notices = new WC_Payments_Subscriptions_Admin_Notices();
 			$wcpay_subscriptions_admin_notices->init_hooks();
-
-			// Update the Stripe Billing deprecation note.
-			self::maybe_update_stripe_billing_deprecation_note();
 		}
 
 		// Load Stripe Billing subscription integration.
@@ -771,6 +768,7 @@ class WC_Payments {
 		}
 
 		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'maybe_disable_wcpay_subscriptions_on_update' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'maybe_update_stripe_billing_deprecation_note' ] );
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'set_plugin_activation_timestamp' ] );
