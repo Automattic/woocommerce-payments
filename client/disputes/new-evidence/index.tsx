@@ -44,6 +44,7 @@ import Page from 'wcpay/components/page';
 
 import './style.scss';
 import { createInterpolateElement } from '@wordpress/element';
+import getRecommendedDocumentFields from './recommended-document-fields';
 
 // --- Utility: Determine if shipping is required for a given reason ---
 const ReasonsNeedShipping = [
@@ -63,16 +64,17 @@ const steps = [
 	{
 		heading: "Let's gather the basics",
 		subheading:
-			'To make a stronger case, please provide as much info as possible. We prefilled some fields for you, please double check and upload all the necessary documents.',
+			"The more info you can provide, the stronger your case will be. To speed things up, we've prefilled some fields for you — please check for accuracy and upload any relevant documents.",
 	},
 	{
-		heading: 'Shipping details',
-		subheading: 'Please make sure all the shipping information is correct.',
-	},
-	{
-		heading: 'Review the cover letter',
+		heading: 'Add your shipping details',
 		subheading:
-			'Please review the cover letter that will be submitted to the bank based on the information you provided. You can make changes to it or add additional details.',
+			"We've prefilled some of this for you — please check that it's correct and upload the recommended document.",
+	},
+	{
+		heading: 'Review your cover letter',
+		subheading:
+			"Using the information you've provided, we've automatically generated a cover letter for you. Before submitting to your customer's bank, please check all of the details are correct and make any required changes.",
 	},
 ];
 
@@ -125,10 +127,17 @@ export default ( { query }: { query: { id: string } } ) => {
 			try {
 				const d: any = await apiFetch( { path } );
 				setDispute( d );
+
 				// fallback to multiple if no product type is set
 				setProductType( d.metadata?.__product_type || '' );
-				// Load saved product description from evidence
-				setProductDescription( d.evidence?.product_description || '' );
+				// Load saved product description from evidence or level3 line items
+				const level3ProductNames = d.charge?.level3?.line_items
+					?.map( ( item: any ) => item.product_description )
+					.filter( Boolean )
+					.join( ', ' );
+				setProductDescription(
+					d.evidence?.product_description || level3ProductNames || ''
+				);
 				// Load saved shipping details from evidence
 				setShippingCarrier( d.evidence?.shipping_carrier || '' );
 				setShippingDate( d.evidence?.shipping_date || '' );
@@ -168,8 +177,8 @@ export default ( { query }: { query: { id: string } } ) => {
 	const disputeReason = dispute?.reason;
 	const hasShipping = needsShipping( disputeReason );
 	const panelHeadings = hasShipping
-		? [ 'General evidence', 'Shipping information', 'Review' ]
-		: [ 'General evidence', 'Review' ];
+		? [ 'Purchase info', 'Shipping details', 'Review' ]
+		: [ 'Purchase info', 'Review' ];
 
 	useEffect( () => {
 		setIsAccordionOpen( currentStep === 0 );
@@ -204,24 +213,21 @@ export default ( { query }: { query: { id: string } } ) => {
 					? __( 'Evidence submitted!', 'woocommerce-payments' )
 					: __( 'Evidence saved!', 'woocommerce-payments' ),
 				{
-					actions: [
-						{
-							label: submit
-								? __(
+					actions: submit
+						? [
+								{
+									label: __(
 										'View submitted evidence',
 										'woocommerce-payments'
-								  )
-								: __(
-										'Return to evidence submission',
-										'woocommerce-payments'
-								  ),
-							url: getAdminUrl( {
-								page: 'wc-admin',
-								path: '/payments/disputes/challenge',
-								id: query.id,
-							} ),
-						},
-					],
+									),
+									url: getAdminUrl( {
+										page: 'wc-admin',
+										path: '/payments/disputes/challenge',
+										id: query.id,
+									} ),
+								},
+						  ]
+						: [],
 				}
 			);
 
@@ -247,6 +253,7 @@ export default ( { query }: { query: { id: string } } ) => {
 					shipping_date: shippingDate,
 					shipping_tracking_number: shippingTrackingNumber,
 					shipping_address: shippingAddress,
+					customer_purchase_ip: dispute.order?.ip_address,
 				} ).filter( ( [ value ] ) => value && value !== '' )
 			);
 
@@ -311,6 +318,8 @@ export default ( { query }: { query: { id: string } } ) => {
 		}
 		// Update step
 		setCurrentStep( newStep );
+		// Scroll to top of page
+		window.scrollTo( { top: 0, behavior: 'smooth' } );
 	};
 
 	const updateProductType = ( newType: string ) => {
@@ -541,34 +550,9 @@ export default ( { query }: { query: { id: string } } ) => {
 	}, [ dispute ] );
 
 	// --- Recommended documents ---
-	const recommendedDocumentFields = [
-		{
-			key: 'receipt',
-			label: __( 'Order receipt', 'woocommerce-payments' ),
-		},
-		{
-			key: 'customer_communication',
-			label: __( 'Customer communication', 'woocommerce-payments' ),
-		},
-		{
-			key: 'customer_signature',
-			label: __( 'Customer signature', 'woocommerce-payments' ),
-		},
-		{
-			key: 'refund_policy',
-			label: __(
-				'Copy of the store refund policy',
-				'woocommerce-payments'
-			),
-		},
-		{
-			key: 'uncategorized_file',
-			label: __(
-				'Any additional documents you think will support the case',
-				'woocommerce-payments'
-			),
-		},
-	];
+	const recommendedDocumentFields = getRecommendedDocumentFields(
+		disputeReason
+	);
 
 	// --- Recommended shipping documents ---
 	const recommendedShippingDocumentFields = [
@@ -903,6 +887,9 @@ export default ( { query }: { query: { id: string } } ) => {
 						<StepperPanel
 							steps={ panelHeadings }
 							currentStep={ currentStep }
+							onStepClick={ ( stepIndex ) => {
+								handleStepChange( stepIndex );
+							} }
 						/>
 						<HorizontalRule className="wcpay-dispute-evidence-new__stepper-divider" />
 						<div className="wcpay-dispute-evidence-new__stepper-content">
