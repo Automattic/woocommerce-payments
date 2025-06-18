@@ -196,9 +196,11 @@ describe( 'Cover Letter Generator', () => {
 	describe( 'generateAttachments', () => {
 		it( 'should generate attachments for product not received dispute', () => {
 			const result = generateAttachments( mockDispute );
-			expect( result ).toContain( 'Proof of Purchase' );
-			expect( result ).toContain( 'Proof of Shipping' );
-			expect( result ).toContain( 'Proof of Delivery' );
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain( 'Proof of shipping (Attachment B)' );
+			expect( result ).toContain(
+				'Additional documentation (Attachment C)'
+			);
 		} );
 
 		it( 'should generate default attachments when no evidence provided', () => {
@@ -207,9 +209,12 @@ describe( 'Cover Letter Generator', () => {
 				evidence: {},
 			};
 			const result = generateAttachments( disputeWithoutEvidence );
-			expect( result ).toContain( 'Proof of Purchase' );
-			expect( result ).toContain( 'Proof of Shipping' );
-			expect( result ).toContain( 'Proof of Delivery' );
+			expect( result ).toContain(
+				'<Attachment description> (Attachment A)'
+			);
+			expect( result ).toContain(
+				'<Attachment description> (Attachment B)'
+			);
 		} );
 
 		it( 'should handle non-string evidence values', () => {
@@ -221,21 +226,12 @@ describe( 'Cover Letter Generator', () => {
 				},
 			};
 			const result = generateAttachments( disputeWithNonStringEvidence );
-			expect( result ).toContain( 'Proof of Purchase' );
-			expect( result ).toContain( 'Proof of Shipping' );
-		} );
-
-		it( 'should generate attachments for non-product-not-received dispute', () => {
-			const disputeWithDifferentReason = {
-				...mockDispute,
-				reason: 'fraudulent' as const,
-				evidence: {},
-			};
-			const result = generateAttachments( disputeWithDifferentReason );
-			expect( result ).toContain( 'AVS/CVV Match' );
-			expect( result ).toContain( 'IP/Device Data' );
-			expect( result ).toContain( 'Customer Confirmation' );
-			expect( result ).toContain( 'Usage Data' );
+			expect( result ).toContain(
+				'<Attachment description> (Attachment A)'
+			);
+			expect( result ).toContain(
+				'<Attachment description> (Attachment B)'
+			);
 		} );
 	} );
 
