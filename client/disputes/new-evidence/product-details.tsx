@@ -32,13 +32,15 @@ const ProductDetails: React.FC< ProductDetailsProps > = ( {
 			<h3 className="wcpay-dispute-evidence-product-details__heading">
 				{ __( 'Product details', 'woocommerce-payments' ) }
 			</h3>
+			<div className="wcpay-dispute-evidence-product-details__subheading">
+				{ __(
+					'Please check the correct product type has been selected and the description is accurate.',
+					'woocommerce-payments'
+				) }
+			</div>
 			<div className="wcpay-dispute-evidence-product-details__field-group">
 				<SelectControl
 					label={ __( 'PRODUCT TYPE', 'woocommerce-payments' ) }
-					help={ __(
-						'First select the kind of product you fulfilled.',
-						'woocommerce-payments'
-					) }
 					value={ productType }
 					onChange={ onProductTypeChange }
 					options={ [
@@ -78,10 +80,6 @@ const ProductDetails: React.FC< ProductDetailsProps > = ( {
 				<TextareaControl
 					label={ __(
 						'PRODUCT DESCRIPTION',
-						'woocommerce-payments'
-					) }
-					help={ __(
-						'Please make sure this is an accurate description of the product.',
 						'woocommerce-payments'
 					) }
 					value={ productDescription }

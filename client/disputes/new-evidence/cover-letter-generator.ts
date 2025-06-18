@@ -62,58 +62,154 @@ export const generateAttachments = ( dispute: ExtendedDispute ): string => {
 	const attachments: string[] = [];
 	let attachmentCount = 0;
 
-	// Standard attachment logic for other dispute reasons
-	const standardAttachments = [
-		{
-			key: 'receipt',
-			label: __( 'Order receipt', 'woocommerce-payments' ),
-		},
-		{
-			key: 'customer_communication',
-			label: __( 'Customer communication', 'woocommerce-payments' ),
-		},
-		{
-			key: 'customer_signature',
-			label: __( 'Customer signature', 'woocommerce-payments' ),
-		},
-		{
-			key: 'refund_policy',
-			label: __( 'Store refund policy', 'woocommerce-payments' ),
-		},
-		{
-			key: 'shipping_documentation',
-			label: __( 'Proof of shipping', 'woocommerce-payments' ),
-		},
-		{
-			key: 'service_documentation',
-			label: __( 'Service documentation', 'woocommerce-payments' ),
-		},
-		{
-			key: 'cancellation_policy',
-			label: __( 'Cancellation policy', 'woocommerce-payments' ),
-		},
-		{
-			key: 'access_activity_log',
-			label: __( 'Access activity log', 'woocommerce-payments' ),
-		},
-		{
-			key: 'uncategorized_file',
-			label: __( 'Additional documentation', 'woocommerce-payments' ),
-		},
-	] as const;
-
-	standardAttachments.forEach( ( { key, label } ) => {
-		const evidence = dispute.evidence?.[ key ];
-		if ( evidence && isEvidenceString( evidence ) ) {
+	// For product not received disputes, prioritize shipping and delivery evidence
+	if ( dispute.reason === 'product_not_received' ) {
+		if (
+			dispute.evidence?.receipt &&
+			isEvidenceString( dispute.evidence.receipt )
+		) {
 			attachmentCount++;
 			attachments.push(
-				`• ${ label } (${ __(
+				`• ${ __(
+					'Proof of Purchase: Receipt and payment confirmation',
+					'woocommerce-payments'
+				) } (${ __(
 					'Attachment',
 					'woocommerce-payments'
 				) } ${ String.fromCharCode( 64 + attachmentCount ) })`
 			);
 		}
-	} );
+		if (
+			dispute.evidence?.shipping_documentation &&
+			isEvidenceString( dispute.evidence.shipping_documentation )
+		) {
+			attachmentCount++;
+			attachments.push(
+				`• ${ __(
+					'Proof of Shipping: Tracking details',
+					'woocommerce-payments'
+				) } (${ __(
+					'Attachment',
+					'woocommerce-payments'
+				) } ${ String.fromCharCode( 64 + attachmentCount ) })`
+			);
+		}
+		if (
+			dispute.evidence?.uncategorized_file &&
+			isEvidenceString( dispute.evidence.uncategorized_file )
+		) {
+			attachmentCount++;
+			attachments.push(
+				`• ${ __(
+					'Proof of Delivery: Delivery confirmation receipt',
+					'woocommerce-payments'
+				) } (${ __(
+					'Attachment',
+					'woocommerce-payments'
+				) } ${ String.fromCharCode( 64 + attachmentCount ) })`
+			);
+		}
+	} else if ( dispute.reason === 'product_unacceptable' ) {
+		// For product unacceptable disputes, prioritize product description and condition evidence
+		if (
+			dispute.evidence?.product_description &&
+			isEvidenceString( dispute.evidence.product_description )
+		) {
+			attachmentCount++;
+			attachments.push(
+				`• ${ __(
+					'Product Description: As shown on the order page',
+					'woocommerce-payments'
+				) } (${ __(
+					'Attachment',
+					'woocommerce-payments'
+				) } ${ String.fromCharCode( 64 + attachmentCount ) })`
+			);
+		}
+		if (
+			dispute.evidence?.service_documentation &&
+			isEvidenceString( dispute.evidence.service_documentation )
+		) {
+			attachmentCount++;
+			attachments.push(
+				`• ${ __(
+					'Photos of Shipped Item: Proof of quality',
+					'woocommerce-payments'
+				) } (${ __(
+					'Attachment',
+					'woocommerce-payments'
+				) } ${ String.fromCharCode( 64 + attachmentCount ) })`
+			);
+		}
+		if (
+			dispute.evidence?.refund_policy &&
+			isEvidenceString( dispute.evidence.refund_policy )
+		) {
+			attachmentCount++;
+			attachments.push(
+				`• ${ __(
+					'Return/Refund Policy: Displayed on website',
+					'woocommerce-payments'
+				) } (${ __(
+					'Attachment',
+					'woocommerce-payments'
+				) } ${ String.fromCharCode( 64 + attachmentCount ) })`
+			);
+		}
+	} else {
+		// Standard attachment logic for other dispute reasons
+		const standardAttachments = [
+			{
+				key: 'receipt',
+				label: __( 'Order receipt', 'woocommerce-payments' ),
+			},
+			{
+				key: 'customer_communication',
+				label: __( 'Customer communication', 'woocommerce-payments' ),
+			},
+			{
+				key: 'customer_signature',
+				label: __( 'Customer signature', 'woocommerce-payments' ),
+			},
+			{
+				key: 'refund_policy',
+				label: __( 'Store refund policy', 'woocommerce-payments' ),
+			},
+			{
+				key: 'shipping_documentation',
+				label: __( 'Proof of shipping', 'woocommerce-payments' ),
+			},
+			{
+				key: 'service_documentation',
+				label: __( 'Service documentation', 'woocommerce-payments' ),
+			},
+			{
+				key: 'cancellation_policy',
+				label: __( 'Cancellation policy', 'woocommerce-payments' ),
+			},
+			{
+				key: 'access_activity_log',
+				label: __( 'Access activity log', 'woocommerce-payments' ),
+			},
+			{
+				key: 'uncategorized_file',
+				label: __( 'Additional documentation', 'woocommerce-payments' ),
+			},
+		] as const;
+
+		standardAttachments.forEach( ( { key, label } ) => {
+			const evidence = dispute.evidence?.[ key ];
+			if ( evidence && isEvidenceString( evidence ) ) {
+				attachmentCount++;
+				attachments.push(
+					`• ${ label } (${ __(
+						'Attachment',
+						'woocommerce-payments'
+					) } ${ String.fromCharCode( 64 + attachmentCount ) })`
+				);
+			}
+		} );
+	}
 
 	// If no attachments were provided, use default list
 	if ( attachments.length === 0 ) {
@@ -128,6 +224,19 @@ export const generateAttachments = ( dispute: ExtendedDispute ): string => {
 			) } (${ __( 'Attachment', 'woocommerce-payments' ) } B)
 • ${ __(
 				'Proof of Delivery: Delivery confirmation receipt',
+				'woocommerce-payments'
+			) } (${ __( 'Attachment', 'woocommerce-payments' ) } C)`;
+		} else if ( dispute.reason === 'product_unacceptable' ) {
+			return `• ${ __(
+				'Product Description: As shown on the order page',
+				'woocommerce-payments'
+			) } (${ __( 'Attachment', 'woocommerce-payments' ) } A)
+• ${ __(
+				'Photos of Shipped Item: Proof of quality',
+				'woocommerce-payments'
+			) } (${ __( 'Attachment', 'woocommerce-payments' ) } B)
+• ${ __(
+				'Return/Refund Policy: Displayed on website',
 				'woocommerce-payments'
 			) } (${ __( 'Attachment', 'woocommerce-payments' ) } C)`;
 		}
@@ -195,6 +304,39 @@ ${ __( 'Our records indicate that the customer,', 'woocommerce-payments' ) } ${
 			'and received it on',
 			'woocommerce-payments'
 		) } ${ data.deliveryDate }.
+
+${ __(
+	'To support our case, we are providing the following documentation:',
+	'woocommerce-payments'
+) }
+${ attachmentsList }
+
+${ __(
+	'Based on this information, we respectfully request that the chargeback be reversed. Please let us know if any further details are required.',
+	'woocommerce-payments'
+) }`;
+	}
+
+	if ( dispute.reason === 'product_unacceptable' ) {
+		return `${ __(
+			'We are submitting evidence in response to chargeback',
+			'woocommerce-payments'
+		) } #${ data.caseNumber } ${ __(
+			'for transaction',
+			'woocommerce-payments'
+		) } #${ data.transactionId } ${ __( 'on', 'woocommerce-payments' ) } ${
+			data.transactionDate
+		}.
+
+${ __( 'Our records indicate that the customer,', 'woocommerce-payments' ) } ${
+			data.customerName
+		}, ${ __( 'ordered', 'woocommerce-payments' ) } ${ data.product } ${ __(
+			'on',
+			'woocommerce-payments'
+		) } ${ data.orderDate }. ${ __(
+			'The product matched the description provided at the time of sale, and we did not receive any indication from the customer that it was defective or not as described.',
+			'woocommerce-payments'
+		) }
 
 ${ __(
 	'To support our case, we are providing the following documentation:',

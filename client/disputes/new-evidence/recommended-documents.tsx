@@ -36,7 +36,7 @@ const RecommendedDocuments: React.FC< RecommendedDocumentsProps > = ( {
 			</h3>
 			<div className="wcpay-dispute-evidence-recommended-documents__subheading">
 				{ __(
-					'We recommend providing the following documents. All fields are optional.',
+					'While optional, we strongly recommend providing as many of these documents as possible. The following file types are supported: PDF, JPEG, and PNG.',
 					'woocommerce-payments'
 				) }
 			</div>
