@@ -294,13 +294,6 @@
 }
 
 @media print {
-	body * {
-		visibility: hidden !important;
-	}
-	.wcpay-dispute-evidence-cover-letter,
-	.wcpay-dispute-evidence-cover-letter * {
-		visibility: visible !important;
-	}
 	.wcpay-dispute-evidence-cover-letter {
 		max-width: 700px;
 		margin: 0 auto !important;
