@@ -4,6 +4,7 @@
 import { __ } from '@wordpress/i18n';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 import type { ExtendedDispute, AccountDetails, CoverLetterData } from './types';
+import { DOCUMENT_FIELD_KEYS } from './recommended-document-fields';
 
 // --- Utility Functions ---
 
@@ -65,40 +66,40 @@ export const generateAttachments = ( dispute: ExtendedDispute ): string => {
 	// Standard attachment logic for other dispute reasons
 	const standardAttachments = [
 		{
-			key: 'receipt',
+			key: DOCUMENT_FIELD_KEYS.RECEIPT,
 			label: __( 'Order receipt', 'woocommerce-payments' ),
 		},
 		{
-			key: 'customer_communication',
+			key: DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
 			label: __( 'Customer communication', 'woocommerce-payments' ),
 		},
 		{
-			key: 'customer_signature',
-			label: __( 'Customer signature', 'woocommerce-payments' ),
+			key: DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE,
+			label: __( "Customer's signature", 'woocommerce-payments' ),
 		},
 		{
-			key: 'refund_policy',
+			key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
 			label: __( 'Store refund policy', 'woocommerce-payments' ),
 		},
 		{
-			key: 'shipping_documentation',
+			key: DOCUMENT_FIELD_KEYS.SHIPPING_DOCUMENTATION,
 			label: __( 'Proof of shipping', 'woocommerce-payments' ),
 		},
 		{
-			key: 'service_documentation',
-			label: __( 'Service documentation', 'woocommerce-payments' ),
+			key: DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION,
+			label: __( 'Item condition', 'woocommerce-payments' ),
 		},
 		{
-			key: 'cancellation_policy',
+			key: DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
 			label: __( 'Cancellation policy', 'woocommerce-payments' ),
 		},
 		{
-			key: 'access_activity_log',
-			label: __( 'Access activity log', 'woocommerce-payments' ),
+			key: DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
+			label: __( 'Proof of active subscription', 'woocommerce-payments' ),
 		},
 		{
-			key: 'uncategorized_file',
-			label: __( 'Additional documentation', 'woocommerce-payments' ),
+			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+			label: __( 'Other documents', 'woocommerce-payments' ),
 		},
 	] as const;
 

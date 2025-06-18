@@ -37,6 +37,7 @@ describe( 'RecommendedDocuments', () => {
 			key: 'doc1',
 			label: 'Order receipt',
 			fileName: '',
+			description: 'A copy of the order receipt or invoice',
 			onFileChange: jest.fn(),
 			onFileRemove: jest.fn(),
 			uploaded: false,
@@ -46,6 +47,8 @@ describe( 'RecommendedDocuments', () => {
 			key: 'doc2',
 			label: 'Customer communication',
 			fileName: 'file.pdf',
+			description:
+				'Any correspondence with the customer regarding this purchase.',
 			onFileChange: jest.fn(),
 			onFileRemove: jest.fn(),
 			uploaded: true,

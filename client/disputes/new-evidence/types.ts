@@ -54,3 +54,39 @@ export interface CoverLetterProps {
 	onChange: ( value: string ) => void;
 	readOnly?: boolean;
 }
+
+export interface RecommendedDocument {
+	key: string;
+	label: string;
+	description: string | null;
+	order: number;
+}
+
+export interface DocumentField {
+	key: string;
+	label: string;
+	description: string | null;
+	fileName?: string;
+	onFileChange: ( key: string, file: File ) => Promise< void >;
+	onFileRemove: () => Promise< void >;
+	uploaded?: boolean;
+	readOnly?: boolean;
+	isBusy?: boolean;
+}
+
+export interface FileUploadControlProps {
+	fileName?: string;
+	description: string | null;
+	onFileChange: ( file: File ) => void;
+	onFileRemove: () => void;
+	disabled?: boolean;
+	isDone?: boolean;
+	isBusy?: boolean;
+	accept?: string;
+	label: string;
+}
+
+export interface RecommendedDocumentsProps {
+	fields: DocumentField[];
+	readOnly?: boolean;
+}
