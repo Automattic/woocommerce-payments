@@ -12,7 +12,6 @@ import { useGetSettings } from 'wcpay/data';
 import {
 	TextareaControl,
 	Button,
-	Icon,
 } from 'wcpay/components/wp-components-wrapped';
 import { generateCoverLetter } from './cover-letter-generator';
 import type { ExtendedDispute } from './types';
@@ -208,9 +207,11 @@ const CoverLetter: React.FC< CoverLetterProps > = ( {
 				className="wcpay-dispute-evidence-cover-letter__print"
 				variant="primary"
 				onClick={ handleViewCoverLetter }
-				icon={ <Icon icon={ external } size={ 24 } /> }
+				iconPosition="right"
+				iconSize={ 24 }
+				icon={ external }
 			>
-				{ __( 'View cover letter', 'woocommerce-payments' ) }
+				{ __( 'Preview cover letter', 'woocommerce-payments' ) }
 			</Button>
 		</section>
 	);
