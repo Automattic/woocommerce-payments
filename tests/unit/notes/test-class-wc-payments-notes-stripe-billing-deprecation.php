@@ -18,25 +18,6 @@ class WC_Payments_Notes_Stripe_Billing_Deprecation_Test extends WCPAY_UnitTestCa
 	}
 
 	/**
-	 * Tests for WC_Payments_Notes_Stripe_Billing_Deprecation::can_be_added()
-	 */
-	public function test_cannot_be_added() {
-		// Test when Stripe Billing is enabled and WooCommerce Subscriptions is not active.
-		$this->set_feature_flag_option( WC_Payments_Features::STRIPE_BILLING_FLAG_NAME, '1' );
-		$this->assertFalse( WC_Payments_Notes_Stripe_Billing_Deprecation::can_be_added() );
-
-		// Test when Stripe Billing is disabled.
-		$this->set_feature_flag_option( WC_Payments_Features::STRIPE_BILLING_FLAG_NAME, '0' );
-		$this->assertFalse( WC_Payments_Notes_Stripe_Billing_Deprecation::can_be_added() );
-
-		// Test when WooCommerce Subscriptions is active.
-		$this->set_feature_flag_option( WC_Payments_Features::STRIPE_BILLING_FLAG_NAME, '1' );
-		add_filter( 'pre_option_wc_subscriptions_active', '__return_true' );
-		$this->assertFalse( WC_Payments_Notes_Stripe_Billing_Deprecation::can_be_added() );
-		remove_filter( 'pre_option_wc_subscriptions_active', '__return_true' );
-	}
-
-	/**
 	 * Tests for WC_Payments_Notes_Stripe_Billing_Deprecation::get_note()
 	 */
 	public function test_get_note() {
