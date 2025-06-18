@@ -2,11 +2,17 @@
 	> div {
 		display: flex;
 		align-items: center;
+		flex-wrap: nowrap;
+		min-width: 0;
+		max-width: 100%;
+		overflow: hidden;
 
 		img {
 			width: 37px;
 			height: 24px;
 			margin-right: 4px;
+			flex-shrink: 1;
+			min-width: 0;
 		}
 	}
 
@@ -20,6 +26,11 @@
 		border-radius: 3px;
 		font-size: 11px;
 		font-weight: 600;
+		white-space: nowrap;
+		flex-shrink: 0;
+		margin-left: 4px;
+		text-overflow: ellipsis;
+		overflow: hidden;
 	}
 }
 
