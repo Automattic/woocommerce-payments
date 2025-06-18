@@ -454,14 +454,31 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 	 */
 	private function get_normalized_postal_code( $postcode, $country ) {
 		/**
-		 * Currently, Apple Pay truncates the UK and Canadian postal codes to the first 4 and 3 characters respectively
+		 * Currently, Apple Pay truncates the UK and Canadian postal codes to the first few characters respectively
 		 * when passing it back from the shippingcontactselected object. This causes WC to invalidate
 		 * the postal code and not calculate shipping zones correctly.
 		 */
 		if ( Country_Code::UNITED_KINGDOM === $country ) {
-			// Replaces a redacted string with something like N1C0000.
-			return str_pad( preg_replace( '/\s+/', '', $postcode ), 7, '0' );
+			$cleaned_postcode = substr( preg_replace( '/[^A-Za-z0-9]/', '', $postcode ), 0, 7 );
+			// the minimum length for a GB postcode is 5 (2 characters for the outward code, 3 for the inward code)
+			// if the postcode is not redacted, avoid padding it.
+			if ( strlen( $cleaned_postcode ) >= 5 ) {
+				return $cleaned_postcode;
+			}
+
+			// now, the juicy part: GB postcode units have a variable length, 5 to 7 characters (excluding the space).
+			// they consist of two main parts: the "outward code" and the "inward code".
+			// the "outward code" has a variable length, between two and four characters.
+			// the "inward code" always has 3 characters.
+			// Google Pay/Apple Pay might redact GB postcode units to just the "outward code".
+			// but WC Core expects a full postcode unit to return shipping rates.
+			// since we can't interfere with the rate calculation,
+			// we are padding the (redacted) outward code with `0`s to have a full length postcode unit,
+			// to be used for shipping rates calculations.
+			// Replaces a redacted `N1C` string with something like `N1C000`.
+			return $cleaned_postcode . '000';
 		}
+
 		if ( Country_Code::CANADA === $country ) {
 			// Replaces a redacted string with something like H3B000.
 			return str_pad( preg_replace( '/\s+/', '', $postcode ), 6, '0' );
