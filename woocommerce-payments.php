@@ -169,6 +169,11 @@ function wcpay_init() {
 	 */
 	\WCPay\WooPay\WooPay_Session::init();
 	( new WC_Payments_Payment_Request_Session() )->init();
+
+	// @todo This is a temporary solution that will be replaced by a dedicated VAT settings section.
+	// Remove this initialization when the permanent solution is implemented.
+	require_once WCPAY_ABSPATH . '/includes/class-wc-payments-vat-redirect-service.php';
+	( new \WCPay\WC_Payments_VAT_Redirect_Service() )->init_hooks();
 }
 
 // Make sure this is run *after* WooCommerce has a chance to initialize its packages (wc-admin, etc). That is run with priority 10.

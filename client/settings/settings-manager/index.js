@@ -190,7 +190,7 @@ const SettingsManager = () => {
 
 	const handleVatDetailsParam = () => {
 		const urlParams = new URLSearchParams( window.location.search );
-		if ( urlParams.get( 'submit-vat-details' ) === 'true' ) {
+		if ( urlParams.get( 'vat-details-modal' ) === 'true' ) {
 			setVatFormModalOpen( true );
 		}
 	};
@@ -202,15 +202,13 @@ const SettingsManager = () => {
 	const handleModalClose = () => {
 		setVatFormModalOpen( false );
 		// Remove the URL parameter when the modal is closed
-		updateQueryString( { 'submit-vat-details': undefined } );
+		updateQueryString( { 'vat-details-modal': undefined } );
 		// Check URL parameters after updating
 		handleVatDetailsParam();
 	};
 
 	const onVatFormCompleted = () => {
-		// Set the flag to true so that the user can download the document without refreshing the page
-		wcpaySettings.accountStatus.hasSubmittedVatData = true;
-		// Close the modal and remove the URL parameter
+		// Close the modal and remove the URL parameter.
 		handleModalClose();
 	};
 
