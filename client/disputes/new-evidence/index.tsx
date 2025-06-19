@@ -318,6 +318,8 @@ export default ( { query }: { query: { id: string } } ) => {
 		}
 		// Update step
 		setCurrentStep( newStep );
+		// Scroll to top of page
+		window.scrollTo( { top: 0, behavior: 'smooth' } );
 	};
 
 	const updateProductType = ( newType: string ) => {
@@ -885,6 +887,9 @@ export default ( { query }: { query: { id: string } } ) => {
 						<StepperPanel
 							steps={ panelHeadings }
 							currentStep={ currentStep }
+							onStepClick={ ( stepIndex ) => {
+								handleStepChange( stepIndex );
+							} }
 						/>
 						<HorizontalRule className="wcpay-dispute-evidence-new__stepper-divider" />
 						<div className="wcpay-dispute-evidence-new__stepper-content">
