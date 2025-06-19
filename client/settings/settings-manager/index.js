@@ -199,17 +199,12 @@ const SettingsManager = () => {
 		handleVatDetailsParam();
 	}, [] );
 
-	const handleModalClose = () => {
+	const handleVatFormModalClose = () => {
 		setVatFormModalOpen( false );
-		// Remove the URL parameter when the modal is closed
+		// Remove the URL parameter when the modal is closed.
 		updateQueryString( { 'vat-details-modal': undefined } );
-		// Check URL parameters after updating
+		// Check URL parameters after updating.
 		handleVatDetailsParam();
-	};
-
-	const onVatFormCompleted = () => {
-		// Close the modal and remove the URL parameter.
-		handleModalClose();
 	};
 
 	return (
@@ -295,8 +290,8 @@ const SettingsManager = () => {
 			</SettingsLayout>
 			<VatFormModal
 				isModalOpen={ isVatFormModalOpen }
-				setModalOpen={ handleModalClose }
-				onCompleted={ onVatFormCompleted }
+				setModalOpen={ handleVatFormModalClose }
+				onCompleted={ handleVatFormModalClose }
 			/>
 		</>
 	);
