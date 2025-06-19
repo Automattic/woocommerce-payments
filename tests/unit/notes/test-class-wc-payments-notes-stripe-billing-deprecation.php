@@ -38,19 +38,4 @@ class WC_Payments_Notes_Stripe_Billing_Deprecation_Test extends WCPAY_UnitTestCa
 		$this->assertEquals( 'Install WooCommerce Subscriptions', $actions[0]->label );
 		$this->assertEquals( 'https://woocommerce.com/products/woocommerce-subscriptions/', $actions[0]->query );
 	}
-
-	/**
-	 * Set a feature flag option value.
-	 *
-	 * @param string $option The option name.
-	 * @param string $value  The option value.
-	 */
-	private function set_feature_flag_option( string $option, string $value ) {
-		add_filter(
-			'pre_option_' . $option,
-			function () use ( $value ) {
-				return $value;
-			}
-		);
-	}
 }
