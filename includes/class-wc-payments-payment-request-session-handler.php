@@ -66,6 +66,7 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 		}
 
 		add_action( 'shutdown', [ $this, 'save_data' ], 20 );
+		add_action( 'woocommerce_set_cart_cookies', [ $this, 'set_customer_session_cookie' ], 10 );
 	}
 
 	/**
@@ -162,7 +163,7 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 	}
 
 	/**
-	 * Save data  - copy of parent method with a few modifications.
+	 * Save data - copy of parent method with a few modifications.
 	 *
 	 * @param int $old_session_key session ID before user logs in.
 	 */
