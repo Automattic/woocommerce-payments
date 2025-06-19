@@ -1065,19 +1065,16 @@ class WC_Payments_Order_Service {
 		return $billing_details;
 	}
 
+
 	/**
-	 * Creates an "authorization cancelled" order note if not already present.
+	 * Creates an "authorization cancelled" order note.
 	 *
 	 * @param WC_Order $order The order.
-	 * @return boolean        True if the note was added, false otherwise.
+	 * @return void
 	 */
-	public function post_unique_capture_cancelled_note( $order ) {
+	public function post_capture_cancelled_note( $order ): void {
 		$note = $this->generate_capture_cancelled_note();
-		if ( ! $this->order_note_exists( $order, $note ) ) {
-			$order->add_order_note( $note );
-			return true;
-		}
-		return false;
+		$order->add_order_note( $note );
 	}
 
 	/**
@@ -1106,10 +1103,7 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	private function mark_payment_capture_cancelled( $order, $intent_data ) {
-		if ( false === $this->post_unique_capture_cancelled_note( $order ) ) {
-			$this->complete_order_processing( $order );
-			return;
-		}
+		$this->post_capture_cancelled_note( $order );
 
 		/**
 		 * If we have a status for the fraud outcome, we want to add the proper meta data.
@@ -1339,7 +1333,7 @@ class WC_Payments_Order_Service {
 							$request->set_hook_args( $order );
 							$intent = $request->send();
 
-							$this->post_unique_capture_cancelled_note( $order );
+							$this->post_capture_cancelled_note( $order );
 					}
 
 					$this->set_intention_status_for_order( $order, $intent->get_status() );
