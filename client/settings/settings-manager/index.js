@@ -5,7 +5,7 @@
 import React, { useState, useLayoutEffect, useEffect } from 'react';
 import { ExternalLink } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
-import { getQuery, updateQueryString } from '@woocommerce/navigation';
+import { updateQueryString } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
