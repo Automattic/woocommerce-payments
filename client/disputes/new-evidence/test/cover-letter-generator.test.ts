@@ -160,6 +160,18 @@ describe( 'Cover Letter Generator', () => {
 				'123 Main St, Suite 100, Test City, TS 12345 US'
 			);
 		} );
+
+		it( 'should handle empty address fields', () => {
+			const emptyAddressDetails = {
+				...mockAccountDetails,
+				support_address_line2: '',
+				support_address_city: '',
+				support_address_state: '',
+				support_address_postal_code: '',
+			};
+			const result = formatMerchantAddress( emptyAddressDetails );
+			expect( result ).toBe( '123 Main St, , ,   US' );
+		} );
 	} );
 
 	describe( 'formatDeliveryDate', () => {
@@ -173,14 +185,22 @@ describe( 'Cover Letter Generator', () => {
 			expect( formatDateTimeFromTimestamp ).toHaveBeenCalled();
 			expect( result ).toBe( 'Formatted 1710892800' );
 		} );
+
+		it( 'should handle invalid date string', () => {
+			const result = formatDeliveryDate( 'invalid-date' );
+			expect( formatDateTimeFromTimestamp ).toHaveBeenCalled();
+			expect( result ).toBe( 'Formatted NaN' );
+		} );
 	} );
 
 	describe( 'generateAttachments', () => {
 		it( 'should generate attachments for product not received dispute', () => {
 			const result = generateAttachments( mockDispute );
-			expect( result ).toContain( 'Proof of Purchase' );
-			expect( result ).toContain( 'Proof of Shipping' );
-			expect( result ).toContain( 'Proof of Delivery' );
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain( 'Proof of shipping (Attachment B)' );
+			expect( result ).toContain(
+				'Additional documentation (Attachment C)'
+			);
 		} );
 
 		it( 'should generate default attachments when no evidence provided', () => {
@@ -189,9 +209,29 @@ describe( 'Cover Letter Generator', () => {
 				evidence: {},
 			};
 			const result = generateAttachments( disputeWithoutEvidence );
-			expect( result ).toContain( 'Proof of Purchase' );
-			expect( result ).toContain( 'Proof of Shipping' );
-			expect( result ).toContain( 'Proof of Delivery' );
+			expect( result ).toContain(
+				'<Attachment description> (Attachment A)'
+			);
+			expect( result ).toContain(
+				'<Attachment description> (Attachment B)'
+			);
+		} );
+
+		it( 'should handle non-string evidence values', () => {
+			const disputeWithNonStringEvidence = {
+				...mockDispute,
+				evidence: {
+					receipt: { url: 'receipt_url' },
+					shipping_documentation: { url: 'shipping_url' },
+				},
+			};
+			const result = generateAttachments( disputeWithNonStringEvidence );
+			expect( result ).toContain(
+				'<Attachment description> (Attachment A)'
+			);
+			expect( result ).toContain(
+				'<Attachment description> (Attachment B)'
+			);
 		} );
 	} );
 
@@ -203,6 +243,19 @@ describe( 'Cover Letter Generator', () => {
 			expect( result ).toContain( 'test@example.com' );
 			expect( result ).toContain( '123-456-7890' );
 		} );
+
+		it( 'should handle missing merchant details', () => {
+			const dataWithMissingDetails = {
+				...mockCoverLetterData,
+				merchantEmail: '',
+				merchantPhone: '',
+			};
+			const result = generateHeader( dataWithMissingDetails );
+			expect( result ).toContain( 'Test Store' );
+			expect( result ).toContain( '123 Main St' );
+			expect( result ).not.toContain( 'test@example.com' );
+			expect( result ).not.toContain( '123-456-7890' );
+		} );
 	} );
 
 	describe( 'generateRecipient', () => {
@@ -210,6 +263,15 @@ describe( 'Cover Letter Generator', () => {
 			const result = generateRecipient( mockCoverLetterData );
 			expect( result ).toContain( 'Test Bank' );
 			expect( result ).toContain( 'dp_123' );
+		} );
+
+		it( 'should handle missing bank name', () => {
+			const dataWithoutBank = {
+				...mockCoverLetterData,
+				acquiringBank: '<Bank Name>',
+			};
+			const result = generateRecipient( dataWithoutBank );
+			expect( result ).toContain( '<Bank Name>' );
 		} );
 	} );
 
@@ -246,6 +308,35 @@ describe( 'Cover Letter Generator', () => {
 				'The product matched the description provided at the time of sale'
 			);
 		} );
+
+		it( 'should generate body for non-product-not-received dispute', () => {
+			const disputeWithDifferentReason = {
+				...mockDispute,
+				reason: 'fraudulent' as const,
+			};
+			const attachmentsList = '• Test Attachment';
+			const result = generateBody(
+				mockCoverLetterData,
+				disputeWithDifferentReason,
+				attachmentsList
+			);
+			expect( result ).toContain( 'legitimate cardholder' );
+			expect( result ).not.toContain( 'received it on' );
+		} );
+
+		it( 'should handle missing customer name', () => {
+			const mockCoverLetterDataWithoutCustomer = {
+				...mockCoverLetterData,
+				customerName: '<Customer Name>',
+			};
+			const attachmentsList = '• Test Attachment';
+			const result = generateBody(
+				mockCoverLetterDataWithoutCustomer,
+				mockDispute,
+				attachmentsList
+			);
+			expect( result ).toContain( '<Customer Name>' );
+		} );
 	} );
 
 	describe( 'generateClosing', () => {
@@ -253,6 +344,16 @@ describe( 'Cover Letter Generator', () => {
 			const result = generateClosing( mockCoverLetterData );
 			expect( result ).toContain( 'Thank you' );
 			expect( result ).toContain( 'Test Store' );
+		} );
+
+		it( 'should handle missing merchant name', () => {
+			const dataWithoutMerchant = {
+				...mockCoverLetterData,
+				merchantName: '',
+			};
+			const result = generateClosing( dataWithoutMerchant );
+			expect( result ).toContain( 'Thank you' );
+			expect( result ).not.toContain( 'Test Store' );
 		} );
 	} );
 
@@ -288,6 +389,43 @@ describe( 'Cover Letter Generator', () => {
 				null
 			);
 			expect( result ).toContain( '<Bank Name>' );
+		} );
+
+		it( 'should handle missing product description', () => {
+			const disputeWithoutProduct = {
+				...mockDispute,
+				evidence: {
+					...mockDispute.evidence,
+					product_description: '',
+				},
+				charge: {
+					...mockDispute.charge,
+					level3: {
+						line_items: [],
+					},
+				},
+			};
+			const result = generateCoverLetter(
+				disputeWithoutProduct,
+				mockAccountDetails,
+				mockSettings,
+				'Test Bank'
+			);
+			expect( result ).toContain( '<Product>' );
+		} );
+
+		it( 'should handle missing transaction date', () => {
+			const disputeWithoutDate = {
+				...mockDispute,
+				created: 0, // Use 0 instead of undefined to satisfy TypeScript
+			};
+			const result = generateCoverLetter(
+				disputeWithoutDate,
+				mockAccountDetails,
+				mockSettings,
+				'Test Bank'
+			);
+			expect( result ).toContain( '<Transaction Date>' );
 		} );
 	} );
 } );

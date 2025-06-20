@@ -48,3 +48,9 @@ export interface CoverLetterData {
 	orderDate: string;
 	deliveryDate: string;
 }
+
+export interface CoverLetterProps {
+	value: string;
+	onChange: ( value: string ) => void;
+	readOnly?: boolean;
+}

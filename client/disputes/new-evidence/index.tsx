@@ -26,6 +26,11 @@ import { HorizontalList } from 'components/horizontal-list';
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 import { getBankName } from 'utils/charge';
+import {
+	generateCoverLetter,
+	getBusinessDetails,
+} from './cover-letter-generator';
+import { useGetSettings } from 'wcpay/data';
 import CustomerDetails from './customer-details';
 import ProductDetails from './product-details';
 import RecommendedDocuments from './recommended-documents';
@@ -120,6 +125,8 @@ export default ( { query }: { query: { id: string } } ) => {
 		createErrorNotice,
 		createInfoNotice,
 	} = useDispatch( 'core/notices' );
+	const settings = useGetSettings();
+	const bankName = dispute?.charge ? getBankName( dispute.charge ) : null;
 
 	// --- Data loading ---
 	useEffect( () => {
@@ -127,7 +134,6 @@ export default ( { query }: { query: { id: string } } ) => {
 			try {
 				const d: any = await apiFetch( { path } );
 				setDispute( d );
-
 				// fallback to multiple if no product type is set
 				setProductType( d.metadata?.__product_type || '' );
 				// Load saved product description from evidence or level3 line items
@@ -164,14 +170,61 @@ export default ( { query }: { query: { id: string } } ) => {
 					uncategorized_file: d.evidence?.uncategorized_file || '',
 				} ) );
 
-				// Set cover letter from saved evidence
-				setCoverLetter( d.evidence?.uncategorized_text || '' );
+				// Set cover letter from saved evidence or generate new one
+				const savedCoverLetter = d.evidence?.uncategorized_text;
+				if ( savedCoverLetter ) {
+					setCoverLetter( savedCoverLetter );
+					// Only mark as manually edited if it differs from what would be auto-generated
+					const generatedContent = generateCoverLetter(
+						d,
+						getBusinessDetails(),
+						settings,
+						bankName
+					);
+					setIsCoverLetterManuallyEdited(
+						savedCoverLetter !== generatedContent
+					);
+				} else {
+					// Generate new cover letter
+					const generatedCoverLetter = generateCoverLetter(
+						d,
+						getBusinessDetails(),
+						settings,
+						bankName
+					);
+					setCoverLetter( generatedCoverLetter );
+					setIsCoverLetterManuallyEdited( false );
+				}
 			} catch ( error ) {
 				createErrorNotice( String( error ) );
 			}
 		};
 		fetchDispute();
-	}, [ path, createErrorNotice ] );
+	}, [ path, createErrorNotice, settings, bankName ] );
+
+	// Update cover letter when evidence changes
+	useEffect( () => {
+		if ( ! dispute || ! settings || isCoverLetterManuallyEdited ) return;
+
+		const generatedCoverLetter = generateCoverLetter(
+			dispute,
+			getBusinessDetails(),
+			settings,
+			bankName
+		);
+		setCoverLetter( generatedCoverLetter );
+	}, [
+		dispute,
+		settings,
+		bankName,
+		isCoverLetterManuallyEdited,
+		evidence,
+		productDescription,
+		shippingCarrier,
+		shippingDate,
+		shippingTrackingNumber,
+		shippingAddress,
+	] );
 
 	// --- Step logic ---
 	const disputeReason = dispute?.reason;
@@ -604,8 +657,6 @@ export default ( { query }: { query: { id: string } } ) => {
 		} )
 	);
 
-	const bankName = dispute?.charge ? getBankName( dispute.charge ) : null;
-
 	const inlineNotice = ( bankNameValue: string | null ) => (
 		<InlineNotice
 			icon
@@ -717,16 +768,36 @@ export default ( { query }: { query: { id: string } } ) => {
 					) }
 					<CoverLetter
 						value={ coverLetter }
-						onChange={ ( value, isManualEdit ) => {
-							if ( ! readOnly ) {
-								setCoverLetter( value );
-								setIsCoverLetterManuallyEdited(
-									isManualEdit || false
-								);
+						onChange={ ( newValue: string ) => {
+							if ( readOnly ) {
+								return;
 							}
+
+							// If the value is empty, regenerate the content
+							if ( newValue.trim() === '' ) {
+								const generatedContent = generateCoverLetter(
+									dispute,
+									getBusinessDetails(),
+									settings,
+									bankName
+								);
+								setCoverLetter( generatedContent );
+								setIsCoverLetterManuallyEdited( false );
+								return;
+							}
+
+							// Compare with what would be auto-generated
+							const generatedContent = generateCoverLetter(
+								dispute,
+								getBusinessDetails(),
+								settings,
+								bankName
+							);
+							setCoverLetter( newValue );
+							setIsCoverLetterManuallyEdited(
+								newValue !== generatedContent
+							);
 						} }
-						dispute={ dispute }
-						bankName={ bankName }
 						readOnly={ readOnly }
 					/>
 					{ inlineNotice( bankName ) }
