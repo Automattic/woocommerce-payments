@@ -36,6 +36,7 @@ class WC_Payments_VAT_Redirect_Service {
 		if ( empty( $_GET['vat-details-redirect'] ) ) {
 			return;
 		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 
 		// skip REST API calls.
 		if ( defined( 'REST_REQUEST' ) && REST_REQUEST ) {
@@ -52,11 +53,11 @@ class WC_Payments_VAT_Redirect_Service {
 			wp_safe_redirect( wp_login_url( home_url( add_query_arg( null, null ) ) ) );
 			exit;
 		}
-
 		// phpcs:disable WordPress.Security.NonceVerification.Recommended
 		if ( 'show' === sanitize_text_field( wp_unslash( $_GET['vat-details-redirect'] ) ) ) {
 			wp_safe_redirect( admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&vat-details-modal=true' ) );
 			exit;
 		}
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended
 	}
 }
