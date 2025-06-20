@@ -2,10 +2,10 @@
 /**
  * External dependencies
  */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect } from 'react';
 import { ExternalLink } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
-import { updateQueryString } from '@woocommerce/navigation';
+import { getQuery, updateQueryString } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies
