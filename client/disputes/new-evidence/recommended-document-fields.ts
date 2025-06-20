@@ -41,7 +41,7 @@ const getRecommendedDocumentFields = (
 			key: DOCUMENT_FIELD_KEYS.RECEIPT,
 			label: __( 'Order receipt', 'woocommerce-payments' ),
 			description: __(
-				'A copy of the order receipt or invoice',
+				"A copy of the customer's receipt, which can be found in the receipt history for this transaction.",
 				'woocommerce-payments'
 			),
 			order: 10,

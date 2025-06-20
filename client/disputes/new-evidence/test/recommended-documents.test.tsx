@@ -37,7 +37,8 @@ describe( 'RecommendedDocuments', () => {
 			key: 'doc1',
 			label: 'Order receipt',
 			fileName: '',
-			description: 'A copy of the order receipt or invoice',
+			description:
+				"A copy of the customer's receipt, which can be found in the receipt history for this transaction.",
 			onFileChange: jest.fn(),
 			onFileRemove: jest.fn(),
 			uploaded: false,
