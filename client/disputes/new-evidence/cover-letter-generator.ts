@@ -7,6 +7,30 @@ import type { ExtendedDispute, AccountDetails, CoverLetterData } from './types';
 
 // --- Utility Functions ---
 
+export const getBusinessDetails = (): AccountDetails => {
+	const wcStoreCountry =
+		wcSettings?.admin?.preloadSettings?.general
+			?.woocommerce_default_country || ':';
+	const [ storeCountry, storeState ] = wcStoreCountry.split( ':' );
+	return {
+		name: wcSettings?.siteTitle || '<Your Business Name>',
+		support_address_city:
+			wcSettings?.admin?.preloadSettings?.general
+				?.woocommerce_store_city || '',
+		support_address_country: storeCountry,
+		support_address_line1:
+			wcSettings?.admin?.preloadSettings?.general
+				?.woocommerce_store_address || '',
+		support_address_line2:
+			wcSettings?.admin?.preloadSettings?.general
+				?.woocommerce_store_address_2 || '',
+		support_address_postal_code:
+			wcSettings?.admin?.preloadSettings?.general
+				?.woocommerce_store_postcode || '',
+		support_address_state: storeState,
+	};
+};
+
 export const formatMerchantAddress = (
 	accountDetails: AccountDetails
 ): string => {
@@ -38,200 +62,69 @@ export const generateAttachments = ( dispute: ExtendedDispute ): string => {
 	const attachments: string[] = [];
 	let attachmentCount = 0;
 
-	// For product not received disputes, prioritize shipping and delivery evidence
-	if ( dispute.reason === 'product_not_received' ) {
-		if (
-			dispute.evidence?.receipt &&
-			isEvidenceString( dispute.evidence.receipt )
-		) {
-			attachmentCount++;
-			attachments.push(
-				`• ${ __(
-					'Proof of Purchase: Receipt and payment confirmation',
-					'woocommerce-payments'
-				) } (${ __(
-					'Attachment',
-					'woocommerce-payments'
-				) } ${ String.fromCharCode( 64 + attachmentCount ) })`
-			);
-		}
-		if (
-			dispute.evidence?.shipping_documentation &&
-			isEvidenceString( dispute.evidence.shipping_documentation )
-		) {
-			attachmentCount++;
-			attachments.push(
-				`• ${ __(
-					'Proof of Shipping: Tracking details',
-					'woocommerce-payments'
-				) } (${ __(
-					'Attachment',
-					'woocommerce-payments'
-				) } ${ String.fromCharCode( 64 + attachmentCount ) })`
-			);
-		}
-		if (
-			dispute.evidence?.uncategorized_file &&
-			isEvidenceString( dispute.evidence.uncategorized_file )
-		) {
-			attachmentCount++;
-			attachments.push(
-				`• ${ __(
-					'Proof of Delivery: Delivery confirmation receipt',
-					'woocommerce-payments'
-				) } (${ __(
-					'Attachment',
-					'woocommerce-payments'
-				) } ${ String.fromCharCode( 64 + attachmentCount ) })`
-			);
-		}
-	} else if ( dispute.reason === 'product_unacceptable' ) {
-		// For product unacceptable disputes, prioritize product description and condition evidence
-		if (
-			dispute.evidence?.product_description &&
-			isEvidenceString( dispute.evidence.product_description )
-		) {
-			attachmentCount++;
-			attachments.push(
-				`• ${ __(
-					'Product Description: As shown on the order page',
-					'woocommerce-payments'
-				) } (${ __(
-					'Attachment',
-					'woocommerce-payments'
-				) } ${ String.fromCharCode( 64 + attachmentCount ) })`
-			);
-		}
-		if (
-			dispute.evidence?.service_documentation &&
-			isEvidenceString( dispute.evidence.service_documentation )
-		) {
-			attachmentCount++;
-			attachments.push(
-				`• ${ __(
-					'Photos of Shipped Item: Proof of quality',
-					'woocommerce-payments'
-				) } (${ __(
-					'Attachment',
-					'woocommerce-payments'
-				) } ${ String.fromCharCode( 64 + attachmentCount ) })`
-			);
-		}
-		if (
-			dispute.evidence?.refund_policy &&
-			isEvidenceString( dispute.evidence.refund_policy )
-		) {
-			attachmentCount++;
-			attachments.push(
-				`• ${ __(
-					'Return/Refund Policy: Displayed on website',
-					'woocommerce-payments'
-				) } (${ __(
-					'Attachment',
-					'woocommerce-payments'
-				) } ${ String.fromCharCode( 64 + attachmentCount ) })`
-			);
-		}
-	} else {
-		// Standard attachment logic for other dispute reasons
-		const standardAttachments = [
-			{
-				key: 'receipt',
-				label: __( 'Order receipt', 'woocommerce-payments' ),
-			},
-			{
-				key: 'customer_communication',
-				label: __( 'Customer communication', 'woocommerce-payments' ),
-			},
-			{
-				key: 'customer_signature',
-				label: __( 'Customer signature', 'woocommerce-payments' ),
-			},
-			{
-				key: 'refund_policy',
-				label: __( 'Store refund policy', 'woocommerce-payments' ),
-			},
-			{
-				key: 'shipping_documentation',
-				label: __( 'Proof of shipping', 'woocommerce-payments' ),
-			},
-			{
-				key: 'service_documentation',
-				label: __( 'Service documentation', 'woocommerce-payments' ),
-			},
-			{
-				key: 'cancellation_policy',
-				label: __( 'Cancellation policy', 'woocommerce-payments' ),
-			},
-			{
-				key: 'access_activity_log',
-				label: __( 'Access activity log', 'woocommerce-payments' ),
-			},
-			{
-				key: 'uncategorized_file',
-				label: __( 'Additional documentation', 'woocommerce-payments' ),
-			},
-		] as const;
+	// Standard attachment logic for other dispute reasons
+	const standardAttachments = [
+		{
+			key: 'receipt',
+			label: __( 'Order receipt', 'woocommerce-payments' ),
+		},
+		{
+			key: 'customer_communication',
+			label: __( 'Customer communication', 'woocommerce-payments' ),
+		},
+		{
+			key: 'customer_signature',
+			label: __( 'Customer signature', 'woocommerce-payments' ),
+		},
+		{
+			key: 'refund_policy',
+			label: __( 'Store refund policy', 'woocommerce-payments' ),
+		},
+		{
+			key: 'shipping_documentation',
+			label: __( 'Proof of shipping', 'woocommerce-payments' ),
+		},
+		{
+			key: 'service_documentation',
+			label: __( 'Service documentation', 'woocommerce-payments' ),
+		},
+		{
+			key: 'cancellation_policy',
+			label: __( 'Cancellation policy', 'woocommerce-payments' ),
+		},
+		{
+			key: 'access_activity_log',
+			label: __( 'Access activity log', 'woocommerce-payments' ),
+		},
+		{
+			key: 'uncategorized_file',
+			label: __( 'Additional documentation', 'woocommerce-payments' ),
+		},
+	] as const;
 
-		standardAttachments.forEach( ( { key, label } ) => {
-			const evidence = dispute.evidence?.[ key ];
-			if ( evidence && isEvidenceString( evidence ) ) {
-				attachmentCount++;
-				attachments.push(
-					`• ${ label } (${ __(
-						'Attachment',
-						'woocommerce-payments'
-					) } ${ String.fromCharCode( 64 + attachmentCount ) })`
-				);
-			}
-		} );
-	}
+	standardAttachments.forEach( ( { key, label } ) => {
+		const evidence = dispute.evidence?.[ key ];
+		if ( evidence && isEvidenceString( evidence ) ) {
+			attachmentCount++;
+			attachments.push(
+				`• ${ label } (${ __(
+					'Attachment',
+					'woocommerce-payments'
+				) } ${ String.fromCharCode( 64 + attachmentCount ) })`
+			);
+		}
+	} );
 
 	// If no attachments were provided, use default list
 	if ( attachments.length === 0 ) {
-		if ( dispute.reason === 'product_not_received' ) {
-			return `• ${ __(
-				'Proof of Purchase: Receipt and payment confirmation',
-				'woocommerce-payments'
-			) } (${ __( 'Attachment', 'woocommerce-payments' ) } A)
-• ${ __(
-				'Proof of Shipping: Tracking details',
-				'woocommerce-payments'
-			) } (${ __( 'Attachment', 'woocommerce-payments' ) } B)
-• ${ __(
-				'Proof of Delivery: Delivery confirmation receipt',
-				'woocommerce-payments'
-			) } (${ __( 'Attachment', 'woocommerce-payments' ) } C)`;
-		} else if ( dispute.reason === 'product_unacceptable' ) {
-			return `• ${ __(
-				'Product Description: As shown on the order page',
-				'woocommerce-payments'
-			) } (${ __( 'Attachment', 'woocommerce-payments' ) } A)
-• ${ __(
-				'Photos of Shipped Item: Proof of quality',
-				'woocommerce-payments'
-			) } (${ __( 'Attachment', 'woocommerce-payments' ) } B)
-• ${ __(
-				'Return/Refund Policy: Displayed on website',
-				'woocommerce-payments'
-			) } (${ __( 'Attachment', 'woocommerce-payments' ) } C)`;
-		}
 		return `• ${ __(
-			'AVS/CVV Match: Billing address and security code matched',
+			'<Attachment description>',
 			'woocommerce-payments'
 		) } (${ __( 'Attachment', 'woocommerce-payments' ) } A)
-• ${ __(
-			'IP/Device Data: Location and device info used at purchase',
+• ${ __( '<Attachment description>', 'woocommerce-payments' ) } (${ __(
+			'Attachment',
 			'woocommerce-payments'
-		) } (${ __( 'Attachment', 'woocommerce-payments' ) } B)
-• ${ __(
-			'Customer Confirmation: Email or chat confirming purchase',
-			'woocommerce-payments'
-		) } (${ __( 'Attachment', 'woocommerce-payments' ) } C)
-• ${ __(
-			'Usage Data: Login records for the digital goods',
-			'woocommerce-payments'
-		) } (${ __( 'Attachment', 'woocommerce-payments' ) } D)`;
+		) } B)`;
 	}
 
 	return attachments.join( '\n' );
@@ -368,6 +261,11 @@ export const generateCoverLetter = (
 	settings: any,
 	bankName: string | null
 ): string => {
+	const todayUnixTimestamp = Math.floor( Date.now() / 1000 );
+	const todayFormatted = formatDateTimeFromTimestamp( todayUnixTimestamp, {
+		separator: ', ',
+		includeTime: false,
+	} );
 	const data: CoverLetterData = {
 		merchantAddress: formatMerchantAddress( accountDetails ),
 		merchantName: accountDetails.name,
@@ -377,10 +275,7 @@ export const generateCoverLetter = (
 		merchantPhone:
 			settings?.account_business_support_phone ||
 			__( '<Business Phone Number>', 'woocommerce-payments' ),
-		today: formatDateTimeFromTimestamp( Date.now(), {
-			separator: ', ',
-			includeTime: true,
-		} ),
+		today: todayFormatted,
 		acquiringBank: bankName || __( '<Bank Name>', 'woocommerce-payments' ),
 		caseNumber:
 			dispute?.id || __( '<Case Number>', 'woocommerce-payments' ),
