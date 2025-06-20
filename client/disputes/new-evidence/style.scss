@@ -48,7 +48,9 @@
 	&__stepper-section {
 		background: $white; // Same as .wcpay-accordion
 		border: $border-width solid $gray-200;
-		padding: 0 24px 128px 24px;
+		padding: 0 32px 64px 32px;
+		display: flex;
+		flex-direction: column;
 	}
 
 	// Limit the width of the stepper content and center it
@@ -56,18 +58,22 @@
 		max-width: 500px;
 		margin-left: auto;
 		margin-right: auto;
+		display: flex;
+		flex-direction: column;
 	}
 
 	&__stepper-title {
 		@include heading-xl;
 		color: var( --Scales-Grays-gray-900, $gray-900 );
-		margin-top: 24px;
+		margin-top: 32px;
 		margin-bottom: 12px;
 	}
 
 	&__stepper-subheading {
 		color: var( --Scales-Grays-gray-700, $gray-700 );
 		@include body-md;
+		margin-top: 0;
+		margin-bottom: 16px;
 	}
 
 	&__cover-letter-warning {
@@ -78,7 +84,7 @@
 	&__button-row {
 		display: flex;
 		justify-content: space-between;
-		margin-top: 40px;
+		margin-top: 16px;
 	}
 
 	&__button-group-right {
@@ -98,24 +104,31 @@
 	&__button-group-right .components-button + .components-button {
 		margin-left: 8px;
 	}
+
+	.dispute-steps__notice-content {
+		margin-top: 8px;
+	}
 }
 
 // Customer details section
 .wcpay-dispute-evidence-customer-details {
-	margin-top: 40px;
-	margin-bottom: 40px;
+	margin-top: 24px;
+	margin-bottom: 32px;
+	display: flex;
+	flex-direction: column;
 
 	&__heading {
 		@include heading-md;
 		color: var( --Scales-Grays-gray-900, $gray-900 );
 		margin-bottom: 16px;
+		margin-top: 0;
 	}
 
 	&__row {
 		display: flex;
 		align-items: flex-start;
-		gap: 32px;
-		margin-bottom: 24px;
+		gap: 40px;
+		margin-bottom: 20px;
 	}
 
 	&__row > div {
@@ -177,7 +190,7 @@
 
 // Product details section
 .wcpay-dispute-evidence-product-details {
-	margin-bottom: 40px;
+	margin-bottom: 8px; // another part of bottom margin comes from the last field group
 
 	&__heading {
 		@include heading-md;
@@ -198,34 +211,42 @@
 
 // Shipping details section
 .wcpay-dispute-evidence-shipping-details {
-	margin-top: 40px;
-	margin-bottom: 40px;
+	margin-top: 16px;
+	margin-bottom: 0; // bottom margin comes from the last field group
+	display: flex;
+	flex-direction: column;
 
 	&__heading {
 		@include heading-md;
 		color: var( --Scales-Grays-gray-900, $gray-900 );
-		margin-bottom: 16px;
+		margin-bottom: 8px;
 	}
 
 	&__field-group {
+		margin-top: 0;
 		margin-bottom: 24px;
 	}
 
 	&__subheading {
 		color: var( --Scales-Grays-gray-700, $gray-700 );
 		@include body-sm;
-		margin-bottom: 24px;
+		margin-top: 0;
+		margin-bottom: 16px;
 	}
 }
 
 // Recommended documents section
 .wcpay-dispute-evidence-recommended-documents {
-	margin-bottom: 45px;
+	margin-top: 16px;
+	margin-bottom: 32px;
+	display: flex;
+	flex-direction: column;
 
 	&__heading {
 		@include heading-md;
 		color: var( --Scales-Grays-gray-900, $gray-900 );
 		margin-bottom: 8px;
+		margin-top: 0;
 	}
 
 	&__subheading {
@@ -302,8 +323,8 @@
 
 // Cover letter section
 .wcpay-dispute-evidence-cover-letter {
-	margin-top: 40px;
-	margin-bottom: 40px;
+	margin-top: 24px;
+	margin-bottom: 32px;
 
 	&__textarea {
 		margin-bottom: 16px;
