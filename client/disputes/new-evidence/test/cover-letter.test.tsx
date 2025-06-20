@@ -135,7 +135,7 @@ describe( 'CoverLetter', () => {
 		fireEvent.change( textarea, {
 			target: { value: 'New text' },
 		} );
-		expect( baseProps.onChange ).toHaveBeenCalledWith( 'New text', true );
+		expect( baseProps.onChange ).toHaveBeenCalledWith( 'New text' );
 	} );
 
 	it( 'renders textarea with value', () => {

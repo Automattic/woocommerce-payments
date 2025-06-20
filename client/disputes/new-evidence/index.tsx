@@ -26,6 +26,11 @@ import { HorizontalList } from 'components/horizontal-list';
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 import { getBankName } from 'utils/charge';
+import {
+	generateCoverLetter,
+	getBusinessDetails,
+} from './cover-letter-generator';
+import { useGetSettings } from 'wcpay/data';
 import CustomerDetails from './customer-details';
 import ProductDetails from './product-details';
 import RecommendedDocuments from './recommended-documents';
@@ -41,10 +46,15 @@ import {
 	AccordionRow,
 } from 'wcpay/components/accordion';
 import Page from 'wcpay/components/page';
+import { createInterpolateElement } from '@wordpress/element';
+import {
+	DOCUMENT_FIELD_KEYS,
+	getRecommendedDocumentFields,
+	getRecommendedShippingDocumentFields,
+} from './recommended-document-fields';
+import { RecommendedDocument } from './types';
 
 import './style.scss';
-import { createInterpolateElement } from '@wordpress/element';
-import getRecommendedDocumentFields from './recommended-document-fields';
 
 // --- Utility: Determine if shipping is required for a given reason ---
 const ReasonsNeedShipping = [
@@ -115,11 +125,17 @@ export default ( { query }: { query: { id: string } } ) => {
 	const [ fileSizes, setFileSizes ] = useState< Record< string, number > >(
 		{}
 	);
+	// This is used to display the file name in the UI.
+	const [ uploadedFiles, setUploadedFiles ] = useState<
+		Record< string, string >
+	>( {} );
 	const {
 		createSuccessNotice,
 		createErrorNotice,
 		createInfoNotice,
 	} = useDispatch( 'core/notices' );
+	const settings = useGetSettings();
+	const bankName = dispute?.charge ? getBankName( dispute.charge ) : null;
 
 	// --- Data loading ---
 	useEffect( () => {
@@ -127,7 +143,6 @@ export default ( { query }: { query: { id: string } } ) => {
 			try {
 				const d: any = await apiFetch( { path } );
 				setDispute( d );
-
 				// fallback to multiple if no product type is set
 				setProductType( d.metadata?.__product_type || '' );
 				// Load saved product description from evidence or level3 line items
@@ -164,14 +179,101 @@ export default ( { query }: { query: { id: string } } ) => {
 					uncategorized_file: d.evidence?.uncategorized_file || '',
 				} ) );
 
-				// Set cover letter from saved evidence
-				setCoverLetter( d.evidence?.uncategorized_text || '' );
+				// Set cover letter from saved evidence or generate new one
+				const savedCoverLetter = d.evidence?.uncategorized_text;
+				if ( savedCoverLetter ) {
+					setCoverLetter( savedCoverLetter );
+					// Only mark as manually edited if it differs from what would be auto-generated
+					const generatedContent = generateCoverLetter(
+						d,
+						getBusinessDetails(),
+						settings,
+						bankName
+					);
+					setIsCoverLetterManuallyEdited(
+						savedCoverLetter !== generatedContent
+					);
+				} else {
+					// Generate new cover letter
+					const generatedCoverLetter = generateCoverLetter(
+						d,
+						getBusinessDetails(),
+						settings,
+						bankName
+					);
+					setCoverLetter( generatedCoverLetter );
+					setIsCoverLetterManuallyEdited( false );
+				}
 			} catch ( error ) {
 				createErrorNotice( String( error ) );
 			}
 		};
 		fetchDispute();
-	}, [ path, createErrorNotice ] );
+	}, [ path, createErrorNotice, settings, bankName ] );
+
+	// --- File name display logic ---
+	useEffect( () => {
+		const fetchFile = async () => {
+			const allFileKeys = Object.values( DOCUMENT_FIELD_KEYS );
+			// Filter out the file keys that are not in the dispute evidence.
+			const fileKeys = allFileKeys.filter(
+				( fileKey ) => dispute?.evidence?.[ fileKey ]
+			);
+			// If we don't have any file keys, return.
+			if ( fileKeys.length === 0 ) return;
+			// If we already loaded the file details, return.
+			if ( Object.keys( uploadedFiles ).length > 0 ) return;
+			// Build the URLS to bulk fetch the file details.
+			const fileDetails = await Promise.all(
+				fileKeys.map( async ( fileKey ) => {
+					const fileId = dispute?.evidence?.[ fileKey ];
+					if ( ! fileId ) return null;
+					const file: any = await apiFetch( {
+						path: `/wc/v3/payments/file/${ fileId }/details`,
+					} );
+					return { fileKey: fileKey, filename: file.filename };
+				} )
+			);
+			const filteredFileDetails = fileDetails.filter(
+				( fileDetail ) => fileDetail !== null
+			);
+			setUploadedFiles( ( prev ) => ( {
+				...prev,
+				...Object.fromEntries(
+					filteredFileDetails.map( ( fileDetail ) => [
+						fileDetail?.fileKey,
+						fileDetail?.filename,
+					] )
+				),
+			} ) );
+		};
+		fetchFile();
+		// eslint-disable-next-line react-hooks/exhaustive-deps -- We only want to fetch the file details when uploadedFiles changes.
+	}, [ dispute?.evidence ] );
+
+	// Update cover letter when evidence changes
+	useEffect( () => {
+		if ( ! dispute || ! settings || isCoverLetterManuallyEdited ) return;
+
+		const generatedCoverLetter = generateCoverLetter(
+			dispute,
+			getBusinessDetails(),
+			settings,
+			bankName
+		);
+		setCoverLetter( generatedCoverLetter );
+	}, [
+		dispute,
+		settings,
+		bankName,
+		isCoverLetterManuallyEdited,
+		evidence,
+		productDescription,
+		shippingCarrier,
+		shippingDate,
+		shippingTrackingNumber,
+		shippingAddress,
+	] );
 
 	// --- Step logic ---
 	const disputeReason = dispute?.reason;
@@ -420,6 +522,11 @@ export default ( { query }: { query: { id: string } } ) => {
 
 			// Store uploaded file name in metadata to display in submitted evidence or saved for later form.
 			setEvidence( ( e: any ) => ( { ...e, [ key ]: uploadedFile.id } ) );
+			// Store uploaded file name to avoid fetching the file details again.
+			setUploadedFiles( ( prev ) => ( {
+				...prev,
+				[ key ]: uploadedFile.filename,
+			} ) );
 			setFileSizes( ( prev ) => ( {
 				...prev,
 				[ key ]: uploadedFile.size,
@@ -449,6 +556,8 @@ export default ( { query }: { query: { id: string } } ) => {
 		setEvidence( ( e: any ) => ( { ...e, [ key ]: '' } ) );
 		setUploadingErrors( ( prev ) => ( { ...prev, [ key ]: '' } ) );
 		setFileSizes( ( prev ) => ( { ...prev, [ key ]: 0 } ) );
+		// Remove the file name from the uploaded files.
+		setUploadedFiles( ( prev ) => ( { ...prev, [ key ]: '' } ) );
 	};
 
 	// --- Navigation warning ---
@@ -554,19 +663,13 @@ export default ( { query }: { query: { id: string } } ) => {
 		disputeReason
 	);
 
-	// --- Recommended shipping documents ---
-	const recommendedShippingDocumentFields = [
-		{
-			key: 'shipping_documentation',
-			label: __( 'Proof of shipping', 'woocommerce-payments' ),
-		},
-	];
-
+	const recommendedShippingDocumentFields = getRecommendedShippingDocumentFields();
 	const recommendedDocumentsFields = recommendedDocumentFields.map(
-		( field ) => ( {
+		( field: RecommendedDocument ) => ( {
 			key: field.key,
 			label: field.label,
-			fileName: evidence[ field.key ] || '',
+			description: field.description,
+			fileName: uploadedFiles[ field.key ] || evidence[ field.key ] || '',
 			uploaded: !! evidence[ field.key ],
 			isLoading: isUploading[ field.key ] || false,
 			error: uploadingErrors[ field.key ] || '',
@@ -584,9 +687,10 @@ export default ( { query }: { query: { id: string } } ) => {
 	);
 
 	const recommendedShippingDocumentsFields = recommendedShippingDocumentFields.map(
-		( field ) => ( {
+		( field: RecommendedDocument ) => ( {
 			key: field.key,
 			label: field.label,
+			description: field.description,
 			fileName: evidence[ field.key ] || '',
 			uploaded: !! evidence[ field.key ],
 			isLoading: isUploading[ field.key ] || false,
@@ -603,8 +707,6 @@ export default ( { query }: { query: { id: string } } ) => {
 			readOnly: readOnly,
 		} )
 	);
-
-	const bankName = dispute?.charge ? getBankName( dispute.charge ) : null;
 
 	const inlineNotice = ( bankNameValue: string | null ) => (
 		<InlineNotice
@@ -717,16 +819,36 @@ export default ( { query }: { query: { id: string } } ) => {
 					) }
 					<CoverLetter
 						value={ coverLetter }
-						onChange={ ( value, isManualEdit ) => {
-							if ( ! readOnly ) {
-								setCoverLetter( value );
-								setIsCoverLetterManuallyEdited(
-									isManualEdit || false
-								);
+						onChange={ ( newValue: string ) => {
+							if ( readOnly ) {
+								return;
 							}
+
+							// If the value is empty, regenerate the content
+							if ( newValue.trim() === '' ) {
+								const generatedContent = generateCoverLetter(
+									dispute,
+									getBusinessDetails(),
+									settings,
+									bankName
+								);
+								setCoverLetter( generatedContent );
+								setIsCoverLetterManuallyEdited( false );
+								return;
+							}
+
+							// Compare with what would be auto-generated
+							const generatedContent = generateCoverLetter(
+								dispute,
+								getBusinessDetails(),
+								settings,
+								bankName
+							);
+							setCoverLetter( newValue );
+							setIsCoverLetterManuallyEdited(
+								newValue !== generatedContent
+							);
 						} }
-						dispute={ dispute }
-						bankName={ bankName }
 						readOnly={ readOnly }
 					/>
 					{ inlineNotice( bankName ) }

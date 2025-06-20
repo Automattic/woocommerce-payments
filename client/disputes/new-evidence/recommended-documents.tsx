@@ -8,22 +8,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import FileUploadControl from './file-upload-control';
-
-interface DocumentField {
-	key: string;
-	label: string;
-	fileName?: string;
-	onFileChange: ( key: string, file: File ) => Promise< void >;
-	onFileRemove: () => Promise< void >;
-	uploaded?: boolean;
-	readOnly?: boolean;
-	isBusy?: boolean;
-}
-
-interface RecommendedDocumentsProps {
-	fields: DocumentField[];
-	readOnly?: boolean;
-}
+import { DocumentField, RecommendedDocumentsProps } from './types';
 
 const RecommendedDocuments: React.FC< RecommendedDocumentsProps > = ( {
 	fields,
@@ -41,7 +26,7 @@ const RecommendedDocuments: React.FC< RecommendedDocumentsProps > = ( {
 				) }
 			</div>
 			<ul className="wcpay-dispute-evidence-recommended-documents__list">
-				{ fields.map( ( field ) => (
+				{ fields.map( ( field: DocumentField ) => (
 					<li
 						key={ field.key }
 						className="wcpay-dispute-evidence-recommended-documents__item"
@@ -49,6 +34,7 @@ const RecommendedDocuments: React.FC< RecommendedDocumentsProps > = ( {
 						<FileUploadControl
 							label={ field.label }
 							fileName={ field.fileName || '' }
+							description={ field.description }
 							onFileChange={ async ( file: File ) =>
 								field.onFileChange( field.key, file )
 							}
