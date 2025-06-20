@@ -46,10 +46,15 @@ import {
 	AccordionRow,
 } from 'wcpay/components/accordion';
 import Page from 'wcpay/components/page';
+import { createInterpolateElement } from '@wordpress/element';
+import {
+	DOCUMENT_FIELD_KEYS,
+	getRecommendedDocumentFields,
+	getRecommendedShippingDocumentFields,
+} from './recommended-document-fields';
+import { RecommendedDocument } from './types';
 
 import './style.scss';
-import { createInterpolateElement } from '@wordpress/element';
-import getRecommendedDocumentFields from './recommended-document-fields';
 
 // --- Utility: Determine if shipping is required for a given reason ---
 const ReasonsNeedShipping = [
@@ -120,6 +125,10 @@ export default ( { query }: { query: { id: string } } ) => {
 	const [ fileSizes, setFileSizes ] = useState< Record< string, number > >(
 		{}
 	);
+	// This is used to display the file name in the UI.
+	const [ uploadedFiles, setUploadedFiles ] = useState<
+		Record< string, string >
+	>( {} );
 	const {
 		createSuccessNotice,
 		createErrorNotice,
@@ -201,6 +210,46 @@ export default ( { query }: { query: { id: string } } ) => {
 		};
 		fetchDispute();
 	}, [ path, createErrorNotice, settings, bankName ] );
+
+	// --- File name display logic ---
+	useEffect( () => {
+		const fetchFile = async () => {
+			const allFileKeys = Object.values( DOCUMENT_FIELD_KEYS );
+			// Filter out the file keys that are not in the dispute evidence.
+			const fileKeys = allFileKeys.filter(
+				( fileKey ) => dispute?.evidence?.[ fileKey ]
+			);
+			// If we don't have any file keys, return.
+			if ( fileKeys.length === 0 ) return;
+			// If we already loaded the file details, return.
+			if ( Object.keys( uploadedFiles ).length > 0 ) return;
+			// Build the URLS to bulk fetch the file details.
+			const fileDetails = await Promise.all(
+				fileKeys.map( async ( fileKey ) => {
+					const fileId = dispute?.evidence?.[ fileKey ];
+					if ( ! fileId ) return null;
+					const file: any = await apiFetch( {
+						path: `/wc/v3/payments/file/${ fileId }/details`,
+					} );
+					return { fileKey: fileKey, filename: file.filename };
+				} )
+			);
+			const filteredFileDetails = fileDetails.filter(
+				( fileDetail ) => fileDetail !== null
+			);
+			setUploadedFiles( ( prev ) => ( {
+				...prev,
+				...Object.fromEntries(
+					filteredFileDetails.map( ( fileDetail ) => [
+						fileDetail?.fileKey,
+						fileDetail?.filename,
+					] )
+				),
+			} ) );
+		};
+		fetchFile();
+		// eslint-disable-next-line react-hooks/exhaustive-deps -- We only want to fetch the file details when uploadedFiles changes.
+	}, [ dispute?.evidence ] );
 
 	// Update cover letter when evidence changes
 	useEffect( () => {
@@ -473,6 +522,11 @@ export default ( { query }: { query: { id: string } } ) => {
 
 			// Store uploaded file name in metadata to display in submitted evidence or saved for later form.
 			setEvidence( ( e: any ) => ( { ...e, [ key ]: uploadedFile.id } ) );
+			// Store uploaded file name to avoid fetching the file details again.
+			setUploadedFiles( ( prev ) => ( {
+				...prev,
+				[ key ]: uploadedFile.filename,
+			} ) );
 			setFileSizes( ( prev ) => ( {
 				...prev,
 				[ key ]: uploadedFile.size,
@@ -502,6 +556,8 @@ export default ( { query }: { query: { id: string } } ) => {
 		setEvidence( ( e: any ) => ( { ...e, [ key ]: '' } ) );
 		setUploadingErrors( ( prev ) => ( { ...prev, [ key ]: '' } ) );
 		setFileSizes( ( prev ) => ( { ...prev, [ key ]: 0 } ) );
+		// Remove the file name from the uploaded files.
+		setUploadedFiles( ( prev ) => ( { ...prev, [ key ]: '' } ) );
 	};
 
 	// --- Navigation warning ---
@@ -607,19 +663,13 @@ export default ( { query }: { query: { id: string } } ) => {
 		disputeReason
 	);
 
-	// --- Recommended shipping documents ---
-	const recommendedShippingDocumentFields = [
-		{
-			key: 'shipping_documentation',
-			label: __( 'Proof of shipping', 'woocommerce-payments' ),
-		},
-	];
-
+	const recommendedShippingDocumentFields = getRecommendedShippingDocumentFields();
 	const recommendedDocumentsFields = recommendedDocumentFields.map(
-		( field ) => ( {
+		( field: RecommendedDocument ) => ( {
 			key: field.key,
 			label: field.label,
-			fileName: evidence[ field.key ] || '',
+			description: field.description,
+			fileName: uploadedFiles[ field.key ] || evidence[ field.key ] || '',
 			uploaded: !! evidence[ field.key ],
 			isLoading: isUploading[ field.key ] || false,
 			error: uploadingErrors[ field.key ] || '',
@@ -637,9 +687,10 @@ export default ( { query }: { query: { id: string } } ) => {
 	);
 
 	const recommendedShippingDocumentsFields = recommendedShippingDocumentFields.map(
-		( field ) => ( {
+		( field: RecommendedDocument ) => ( {
 			key: field.key,
 			label: field.label,
+			description: field.description,
 			fileName: evidence[ field.key ] || '',
 			uploaded: !! evidence[ field.key ],
 			isLoading: isUploading[ field.key ] || false,

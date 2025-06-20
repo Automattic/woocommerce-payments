@@ -198,9 +198,7 @@ describe( 'Cover Letter Generator', () => {
 			const result = generateAttachments( mockDispute );
 			expect( result ).toContain( 'Order receipt (Attachment A)' );
 			expect( result ).toContain( 'Proof of shipping (Attachment B)' );
-			expect( result ).toContain(
-				'Additional documentation (Attachment C)'
-			);
+			expect( result ).toContain( 'Other documents (Attachment C)' );
 		} );
 
 		it( 'should generate default attachments when no evidence provided', () => {
