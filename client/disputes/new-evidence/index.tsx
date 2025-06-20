@@ -812,7 +812,7 @@ export default ( { query }: { query: { id: string } } ) => {
 							className="wcpay-dispute-evidence-new__cover-letter-warning"
 						>
 							{ __(
-								'The cover letter has been manually edited and will not be automatically updated with new evidence.',
+								"You've made some manual edits to your cover letter. If you update your evidence again, those changes won't be reflected here automatically — but you can always make further edits yourself.",
 								'woocommerce-payments'
 							) }
 						</InlineNotice>
