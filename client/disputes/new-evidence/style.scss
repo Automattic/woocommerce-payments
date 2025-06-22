@@ -35,7 +35,7 @@
 	line-height: var( --xs, 16px ); /* 133.333% */
 }
 
-// Container for the new-evidence page
+// Stepper section background to match accordion
 .wcpay-dispute-evidence-new {
 	display: flex;
 	flex-direction: column;
@@ -44,69 +44,65 @@
 	&__stepper-divider {
 		margin: 0;
 	}
-}
 
-// Stepper section background to match accordion
-.wcpay-dispute-evidence-new__stepper-section {
-	background: $white; // Same as .wcpay-accordion
-	border: $border-width solid $gray-200;
-	padding: 0 24px 128px 24px;
-}
+	&__stepper-section {
+		background: $white; // Same as .wcpay-accordion
+		border: $border-width solid $gray-200;
+		padding: 0 24px 128px 24px;
+	}
 
-// Optional: Card spacing and button spacing, copied from disputes style
-.wcpay-dispute-evidence-new .components-card {
-	margin-bottom: 24px;
-}
+	// Limit the width of the stepper content and center it
+	&__stepper-content {
+		max-width: 500px;
+		margin-left: auto;
+		margin-right: auto;
+	}
 
-.wcpay-dispute-evidence-new .components-button + .components-button {
-	margin-left: 10px;
-}
+	&__stepper-title {
+		@include heading-xl;
+		color: var( --Scales-Grays-gray-900, $gray-900 );
+		margin-top: 24px;
+		margin-bottom: 12px;
+	}
 
-// Limit the width of the stepper content and center it
-.wcpay-dispute-evidence-new__stepper-content {
-	max-width: 500px;
-	margin-left: auto;
-	margin-right: auto;
-}
+	&__stepper-subheading {
+		color: var( --Scales-Grays-gray-700, $gray-700 );
+		@include body-md;
+	}
 
-.wcpay-dispute-evidence-new__stepper-title {
-	@include heading-xl;
-	color: var( --Scales-Grays-gray-900, $gray-900 );
-	margin-top: 24px;
-	margin-bottom: 12px;
-}
+	&__cover-letter-warning {
+		margin-bottom: 16px;
+		border-left: 4px solid var( --wp-components-color-warning, #f0b849 );
+	}
 
-.wcpay-dispute-evidence-new__stepper-subheading {
-	color: var( --Scales-Grays-gray-700, $gray-700 );
-	@include body-md;
-}
+	&__button-row {
+		display: flex;
+		justify-content: space-between;
+		margin-top: 40px;
+	}
 
-.wcpay-dispute-evidence-new__cover-letter-warning {
-	margin-bottom: 16px;
-	border-left: 4px solid var( --wp-components-color-warning, #f0b849 );
-}
+	&__button-group-right {
+		display: flex;
+		align-items: center;
+	}
 
-.wcpay-dispute-evidence-new__button-row {
-	display: flex;
-	justify-content: space-between;
-	margin-top: 32px;
-}
+	.components-card {
+		margin-bottom: 24px;
+	}
 
-.wcpay-dispute-evidence-new__button-group-right {
-	display: flex;
-	align-items: center;
-}
+	.components-button + .components-button {
+		margin-left: 10px;
+	}
 
-// Add spacing between right-aligned buttons
-.wcpay-dispute-evidence-new__button-group-right
-	.components-button
-	+ .components-button {
-	margin-left: 8px;
+	// Add spacing between right-aligned buttons
+	&__button-group-right .components-button + .components-button {
+		margin-left: 8px;
+	}
 }
 
 // Customer details section
 .wcpay-dispute-evidence-customer-details {
-	margin-top: 24px;
+	margin-top: 40px;
 	margin-bottom: 40px;
 
 	&__heading {
@@ -186,15 +182,23 @@
 	&__heading {
 		@include heading-md;
 		color: var( --Scales-Grays-gray-900, $gray-900 );
-		margin-bottom: 16px;
+		margin-bottom: 8px;
 	}
 
 	&__field-group {
 		margin-bottom: 24px;
 	}
+
+	&__subheading {
+		color: var( --Scales-Grays-gray-700, $gray-700 );
+		@include body-sm;
+		margin-bottom: 16px;
+	}
 }
 
+// Shipping details section
 .wcpay-dispute-evidence-shipping-details {
+	margin-top: 40px;
 	margin-bottom: 40px;
 
 	&__heading {
@@ -206,10 +210,17 @@
 	&__field-group {
 		margin-bottom: 24px;
 	}
+
+	&__subheading {
+		color: var( --Scales-Grays-gray-700, $gray-700 );
+		@include body-sm;
+		margin-bottom: 24px;
+	}
 }
 
+// Recommended documents section
 .wcpay-dispute-evidence-recommended-documents {
-	margin-bottom: 45px;
+	margin-bottom: 40px;
 
 	&__heading {
 		@include heading-md;
@@ -219,16 +230,23 @@
 
 	&__subheading {
 		color: var( --Scales-Grays-gray-700, $gray-700 );
-		@include body-md;
+		@include body-sm;
 	}
 
 	&__item {
-		margin-left: 15px;
-		margin-bottom: 10px;
+		padding-bottom: 16px;
+		margin-bottom: 16px;
+		border-bottom: 1px solid var( --Scales-Grays-gray-100, $gray-100 );
+
+		&:last-child {
+			border-bottom: none;
+			margin-bottom: 0;
+			padding-bottom: 10px;
+		}
 	}
 
 	&__list {
-		margin-top: 16px;
+		margin-top: 24px;
 		margin-bottom: 0;
 	}
 }
@@ -236,71 +254,86 @@
 .wcpay-dispute-evidence-file-upload-control {
 	display: flex;
 	align-items: center;
-	justify-content: flex-end;
-	gap: 12px;
-	margin-bottom: 8px;
+	gap: 10px;
+	justify-content: space-between;
 
-	&__label {
-		flex: 1 0 220px;
-		color: var( --Scales-Grays-gray-900, $gray-900 );
-		@include body-md;
-		margin-right: 16px;
-		text-align: left;
-	}
-
-	&__actions {
+	&__chip {
 		display: flex;
 		align-items: center;
-		gap: 8px;
-	}
-
-	&__filename {
-		max-width: 320px;
-		min-width: 120px;
-		background: color-mix(
-			in srgb,
-			var( --wp-admin-theme-color ) 10%,
-			transparent
+		height: 32px;
+		max-height: 32px;
+		border-radius: var( --radius-full, 999px );
+		background: var(
+			--Scales-Theme-theme-alpha-04,
+			rgba( 56, 88, 233, 0.04 )
 		);
-		border-radius: 24px;
-		padding: 0 12px 0 12px;
-		font-size: 14px;
-		line-height: 32px;
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		position: relative;
 	}
 
-	&__filename-text {
-		flex: 1 1 auto;
-		min-width: 0;
-		overflow: hidden;
+	&__chip-filename {
 		text-overflow: ellipsis;
-		white-space: nowrap;
 		color: var( --wp-admin-theme-color );
+		padding-left: 8px;
+		max-width: 200px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
-	&__check {
-		width: 48px;
+	// Small screen
+	@media ( max-width: 768px ) {
+		&__chip-filename {
+			max-width: 150px;
+		}
+	}
+
+	// Super small screen
+	@media ( max-width: 480px ) {
+		&__chip-filename {
+			max-width: 100px;
+		}
+	}
+
+	@media ( max-width: 360px ) {
+		&__chip-filename {
+			max-width: 60px;
+		}
+	}
+
+	&__info {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 4px;
+	}
+	&__info-header {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: flex-start;
+		gap: 8px;
+	}
+	&__info-description {
+		color: var( --Scales-Grays-gray-700, $gray-700 );
+		@include body-sm;
+		margin: 0;
 	}
 }
 
-.wcpay-dispute-evidence-cover-letter__printonly {
-	display: none;
+// Cover letter section
+.wcpay-dispute-evidence-cover-letter {
+	margin-top: 40px;
+	margin-bottom: 40px;
+
+	&__textarea {
+		margin-bottom: 16px;
+	}
+
+	&__printonly {
+		display: none;
+	}
 }
 
 @media print {
-	body * {
-		visibility: hidden !important;
-	}
-	.wcpay-dispute-evidence-cover-letter,
-	.wcpay-dispute-evidence-cover-letter * {
-		visibility: visible !important;
-	}
 	.wcpay-dispute-evidence-cover-letter {
 		max-width: 700px;
 		margin: 0 auto !important;

@@ -37,6 +37,12 @@ const ShippingDetails: React.FC< ShippingDetailsProps > = ( {
 			<h3 className="wcpay-dispute-evidence-shipping-details__heading">
 				{ __( 'Delivery details', 'woocommerce-payments' ) }
 			</h3>
+			<div className="wcpay-dispute-evidence-shipping-details__subheading">
+				{ __(
+					'Please check that all of the prefilled information is accurate and complete any empty fields.',
+					'woocommerce-payments'
+				) }
+			</div>
 			<div className="wcpay-dispute-evidence-shipping-details__field-group">
 				<TextControl
 					label={ __( 'SHIPPING CARRIER', 'woocommerce-payments' ) }
@@ -63,10 +69,6 @@ const ShippingDetails: React.FC< ShippingDetailsProps > = ( {
 			<div className="wcpay-dispute-evidence-shipping-details__field-group">
 				<TextControl
 					label={ __( 'TRACKING NUMBER', 'woocommerce-payments' ) }
-					help={ __(
-						'Please make sure the tracking number is accurate.',
-						'woocommerce-payments'
-					) }
 					onChange={ onShippingTrackingNumberChange }
 					value={ shippingTrackingNumber }
 					disabled={ readOnly }
@@ -75,10 +77,6 @@ const ShippingDetails: React.FC< ShippingDetailsProps > = ( {
 			<div className="wcpay-dispute-evidence-shipping-details__field-group">
 				<TextControl
 					label={ __( 'SHIPPING ADDRESS', 'woocommerce-payments' ) }
-					help={ __(
-						"We prefilled the shipping address for you, please make sure it's accurate.",
-						'woocommerce-payments'
-					) }
 					onChange={ onShippingAddressChange }
 					value={ shippingAddress.replace( /\n/g, ' ' ) }
 					disabled={ readOnly }

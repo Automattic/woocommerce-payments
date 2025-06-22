@@ -749,17 +749,26 @@ class WC_Payments {
 
 			$wcpay_order_frt_meta_box = new WCPay\Fraud_Prevention\Order_Fraud_And_Risk_Meta_Box( self::$order_service );
 			$wcpay_order_frt_meta_box->init_hooks();
+
+			// Initialize Stripe Billing deprecation notices.
+			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions-admin-notices.php';
+			$wcpay_subscriptions_admin_notices = new WC_Payments_Subscriptions_Admin_Notices();
+			$wcpay_subscriptions_admin_notices->init_hooks();
 		}
 
 		// Load Stripe Billing subscription integration.
 		include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions.php';
 		WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::$order_service, self::$account, self::$token_service );
 
+		// Add hook to remove Stripe Billing deprecation note when WooCommerce Subscriptions is installed.
+		add_action( 'activated_plugin', [ __CLASS__, 'maybe_remove_stripe_billing_deprecation_note' ], 10, 1 );
+
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '7.9.0', '<' ) ) {
 			add_action( 'woocommerce_onboarding_profile_data_updated', 'WC_Payments_Features::maybe_enable_wcpay_subscriptions_after_onboarding', 10, 2 );
 		}
 
 		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'maybe_disable_wcpay_subscriptions_on_update' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'maybe_update_stripe_billing_deprecation_note' ] );
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'set_plugin_activation_timestamp' ] );
@@ -1026,25 +1035,6 @@ class WC_Payments {
 			$http_class,
 			self::$db_helper
 		);
-	}
-
-	/**
-	 * Create the HTTP instantiation.
-	 *
-	 * @return WC_Payments_Http_Interface
-	 */
-	private static function get_wc_payments_http() {
-		require_once __DIR__ . '/wc-payment-api/class-wc-payments-http-interface.php';
-		require_once __DIR__ . '/wc-payment-api/class-wc-payments-http.php';
-
-		$http_class = apply_filters( 'wc_payments_http', null );
-
-		if ( ! $http_class instanceof WC_Payments_Http_Interface ) {
-			$http_class = new WC_Payments_Http( new Automattic\Jetpack\Connection\Manager( 'woocommerce-payments' ) );
-			$http_class->init_hooks();
-		}
-
-		return $http_class;
 	}
 
 	/**
@@ -1525,6 +1515,9 @@ class WC_Payments {
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-stripelink.php';
 			WC_Payments_Notes_Set_Up_StripeLink::set_gateway( self::get_gateway() );
 			WC_Payments_Notes_Set_Up_StripeLink::possibly_add_note();
+
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-stripe-billing-deprecation.php';
+			WC_Payments_Notes_Stripe_Billing_Deprecation::possibly_add_note();
 		}
 
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '7.5', '<' ) && get_woocommerce_currency() === 'NOK' ) {
@@ -1588,6 +1581,9 @@ class WC_Payments {
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-stripelink.php';
 			WC_Payments_Notes_Set_Up_StripeLink::possibly_delete_note();
+
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-stripe-billing-deprecation.php';
+			WC_Payments_Notes_Stripe_Billing_Deprecation::possibly_delete_note();
 		}
 	}
 
@@ -2049,6 +2045,74 @@ class WC_Payments {
 	}
 
 	/**
+	 * Disable the WCPay Subscriptions feature on WooPayments plugin update if it's enabled and the store is no longer eligible.
+	 *
+	 * @see WC_Payments_Features::is_wcpay_subscriptions_eligible() for eligibility criteria.
+	 */
+	public static function maybe_disable_wcpay_subscriptions_on_update() {
+		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() && ( class_exists( 'WC_Subscriptions' ) || ! WC_Payments_Features::is_wcpay_subscriptions_eligible() ) ) {
+			update_option( WC_Payments_Features::WCPAY_SUBSCRIPTIONS_FLAG_NAME, '0' );
+		}
+	}
+
+	/**
+	 * Show error when WooPay opt-in is checked but no phone number was typed.
+	 */
+	public static function maybe_show_woopay_phone_number_error() {
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( isset( $_POST['save_user_in_woopay'] ) && 'true' === $_POST['save_user_in_woopay'] ) {
+            // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			if ( ! isset( $_POST['woopay_user_phone_field'] ) || ! isset( $_POST['woopay_user_phone_field']['no-country-code'] ) || empty( $_POST['woopay_user_phone_field']['no-country-code'] ) ) {
+				wc_add_notice( '<strong>' . __( 'Mobile Number', 'woocommerce-payments' ) . '</strong> ' . __( 'is required to create an WooPay account.', 'woocommerce-payments' ), 'error' );
+			}
+		}
+	}
+
+	/**
+	 * Removes the Stripe Billing deprecation note when WooCommerce Subscriptions is installed.
+	 *
+	 * @param string $plugin The plugin being activated.
+	 */
+	public static function maybe_remove_stripe_billing_deprecation_note( $plugin ) {
+		if ( 'woocommerce-subscriptions/woocommerce-subscriptions.php' === $plugin || 'woocommerce-com-woocommerce-subscriptions/woocommerce-subscriptions.php' === $plugin ) {
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-stripe-billing-deprecation.php';
+			WC_Payments_Notes_Stripe_Billing_Deprecation::possibly_delete_note();
+		}
+	}
+
+	/**
+	 * Update the Stripe Billing deprecation note.
+	 */
+	public static function maybe_update_stripe_billing_deprecation_note() {
+		// If Stripe Billing is not enabled or WooCommerce Subscriptions is active, do not update the note.
+		if ( ! WC_Payments_Features::is_stripe_billing_enabled() || class_exists( 'WC_Subscriptions' ) ) {
+			return;
+		}
+
+		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-stripe-billing-deprecation.php';
+		WC_Payments_Notes_Stripe_Billing_Deprecation::possibly_update_note();
+	}
+
+	/**
+	 * Create the HTTP instantiation.
+	 *
+	 * @return WC_Payments_Http_Interface
+	 */
+	private static function get_wc_payments_http() {
+		require_once __DIR__ . '/wc-payment-api/class-wc-payments-http-interface.php';
+		require_once __DIR__ . '/wc-payment-api/class-wc-payments-http.php';
+
+		$http_class = apply_filters( 'wc_payments_http', null );
+
+		if ( ! $http_class instanceof WC_Payments_Http_Interface ) {
+			$http_class = new WC_Payments_Http( new Automattic\Jetpack\Connection\Manager( 'woocommerce-payments' ) );
+			$http_class->init_hooks();
+		}
+
+		return $http_class;
+	}
+
+	/**
 	 * Determines whether we should load Stripe Billing integration classes.
 	 *
 	 * Return true when:
@@ -2085,29 +2149,5 @@ class WC_Payments {
 		);
 
 		return (bool) ( is_countable( $result ) ? count( $result ) : 0 );
-	}
-
-	/**
-	 * Disable the WCPay Subscriptions feature on WooPayments plugin update if it's enabled and the store is no longer eligible.
-	 *
-	 * @see WC_Payments_Features::is_wcpay_subscriptions_eligible() for eligibility criteria.
-	 */
-	public static function maybe_disable_wcpay_subscriptions_on_update() {
-		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() && ( class_exists( 'WC_Subscriptions' ) || ! WC_Payments_Features::is_wcpay_subscriptions_eligible() ) ) {
-			update_option( WC_Payments_Features::WCPAY_SUBSCRIPTIONS_FLAG_NAME, '0' );
-		}
-	}
-
-	/**
-	 * Show error when WooPay opt-in is checked but no phone number was typed.
-	 */
-	public static function maybe_show_woopay_phone_number_error() {
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing
-		if ( isset( $_POST['save_user_in_woopay'] ) && 'true' === $_POST['save_user_in_woopay'] ) {
-			// phpcs:ignore WordPress.Security.NonceVerification.Missing
-			if ( ! isset( $_POST['woopay_user_phone_field'] ) || ! isset( $_POST['woopay_user_phone_field']['no-country-code'] ) || empty( $_POST['woopay_user_phone_field']['no-country-code'] ) ) {
-				wc_add_notice( '<strong>' . __( 'Mobile Number', 'woocommerce-payments' ) . '</strong> ' . __( 'is required to create an WooPay account.', 'woocommerce-payments' ), 'error' );
-			}
-		}
 	}
 }
