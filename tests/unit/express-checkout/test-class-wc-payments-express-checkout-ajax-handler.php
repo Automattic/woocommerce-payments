@@ -5,13 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
-use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Constants\Country_Code;
-use WCPay\Duplicate_Payment_Prevention_Service;
-use WCPay\Duplicates_Detection_Service;
-use WCPay\Payment_Methods\CC_Payment_Method;
-use WCPay\Session_Rate_Limiter;
-use WCPay\WooPay\WooPay_Utilities;
 
 /**
  * WC_Payments_Express_Checkout_Ajax_Handler_Test class.
@@ -148,6 +142,126 @@ class WC_Payments_Express_Checkout_Ajax_Handler_Test extends WCPAY_UnitTestCase 
 		$this->assertSame( 'H3B000', $shipping_address['postcode'] );
 		// this shouldn't be modified.
 		$this->assertSame( '90210', $billing_address['postcode'] );
+	}
+
+	public function test_tokenized_cart_gb_address_outward_code_2_postcode_normalization() {
+		$request = new WP_REST_Request();
+		$request->set_route( '/wc/store/v1/cart/update-customer' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_param(
+			'shipping_address',
+			[
+				'country'  => 'GB',
+				'postcode' => 'B1',
+			]
+		);
+		$request->set_param(
+			'billing_address',
+			[
+				'country'  => 'GB',
+				'postcode' => 'B2',
+			]
+		);
+
+		$this->ajax_handler->tokenized_cart_store_api_address_normalization( null, null, $request );
+
+		$shipping_address = $request->get_param( 'shipping_address' );
+		$billing_address  = $request->get_param( 'billing_address' );
+
+		$this->assertSame( 'B1000', $shipping_address['postcode'] );
+		$this->assertSame( 'B2000', $billing_address['postcode'] );
+	}
+
+	public function test_tokenized_cart_gb_address_outward_code_3_postcode_normalization() {
+		$request = new WP_REST_Request();
+		$request->set_route( '/wc/store/v1/cart/update-customer' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_param(
+			'shipping_address',
+			[
+				'country'  => 'GB',
+				'postcode' => 'B10',
+			]
+		);
+		$request->set_param(
+			'billing_address',
+			[
+				'country'  => 'GB',
+				'postcode' => 'B24',
+			]
+		);
+
+		$this->ajax_handler->tokenized_cart_store_api_address_normalization( null, null, $request );
+
+		$shipping_address = $request->get_param( 'shipping_address' );
+		$billing_address  = $request->get_param( 'billing_address' );
+
+		$this->assertSame( 'B10000', $shipping_address['postcode'] );
+		$this->assertSame( 'B24000', $billing_address['postcode'] );
+	}
+
+	public function test_tokenized_cart_gb_address_outward_code_4_postcode_normalization() {
+		$request = new WP_REST_Request();
+		$request->set_route( '/wc/store/v1/cart/update-customer' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_param(
+			'shipping_address',
+			[
+				'country'  => 'GB',
+				'postcode' => 'BB10',
+			]
+		);
+		$request->set_param(
+			'billing_address',
+			[
+				'country'  => 'GB',
+				'postcode' => 'GU52',
+			]
+		);
+
+		$this->ajax_handler->tokenized_cart_store_api_address_normalization( null, null, $request );
+
+		$shipping_address = $request->get_param( 'shipping_address' );
+		$billing_address  = $request->get_param( 'billing_address' );
+
+		$this->assertSame( 'BB10000', $shipping_address['postcode'] );
+		$this->assertSame( 'GU52000', $billing_address['postcode'] );
+	}
+
+	public function test_tokenized_cart_gb_address_unknown_outward_code_postcode_normalization() {
+		$request = new WP_REST_Request();
+		$request->set_route( '/wc/store/v1/cart/update-customer' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart', 'true' );
+		$request->set_header( 'X-WooPayments-Tokenized-Cart-Nonce', wp_create_nonce( 'woopayments_tokenized_cart_nonce' ) );
+		$request->set_header( 'Content-Type', 'application/json' );
+		$request->set_param(
+			'shipping_address',
+			[
+				'country'  => 'GB',
+				'postcode' => 'Z Z Z Y-',
+			]
+		);
+		$request->set_param(
+			'billing_address',
+			[
+				'country'  => 'GB',
+				'postcode' => 'ZQ QZZZZZZZA',
+			]
+		);
+
+		$this->ajax_handler->tokenized_cart_store_api_address_normalization( null, null, $request );
+
+		$shipping_address = $request->get_param( 'shipping_address' );
+		$billing_address  = $request->get_param( 'billing_address' );
+
+		$this->assertSame( 'ZZZY000', $shipping_address['postcode'] );
+		$this->assertSame( 'ZQQZZZZ', $billing_address['postcode'] );
 	}
 
 	public function test_tokenized_cart_avoid_address_postcode_normalization_if_route_incorrect() {
