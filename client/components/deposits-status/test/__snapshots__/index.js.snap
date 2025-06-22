@@ -18,7 +18,7 @@ exports[`DepositsStatus renders blocked status 1`] = `
         />
       </g>
     </svg>
-    Temporarily suspended
+    Under Review
     <button
       class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
       type="button"
@@ -69,7 +69,7 @@ exports[`DepositsStatus renders blocked status 2`] = `
         />
       </g>
     </svg>
-    Temporarily suspended
+    Under Review
     <button
       class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
       type="button"
@@ -212,7 +212,7 @@ exports[`DepositsStatus renders pending verification status 1`] = `
         />
       </g>
     </svg>
-    Temporarily suspended
+    Under Review
     <button
       class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
       type="button"
