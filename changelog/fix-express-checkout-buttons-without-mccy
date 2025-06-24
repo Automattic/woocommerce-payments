@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+fix: update Google Pay/Apple Pay buttons compatibility when multi-currency functionality is disabled - they'll no longer throw an exception for logged-out customers
