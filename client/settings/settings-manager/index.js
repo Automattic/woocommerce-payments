@@ -206,92 +206,87 @@ const SettingsManager = () => {
 	};
 
 	return (
-		<>
-			<SettingsLayout>
+		<SettingsLayout>
+			<SettingsSection
+				description={ GeneralSettingsDescription }
+				id="general"
+			>
+				<LoadableSettingsSection numLines={ 20 }>
+					<ErrorBoundary>
+						<GeneralSettings />
+					</ErrorBoundary>
+				</LoadableSettingsSection>
+			</SettingsSection>
+			<DuplicatedPaymentMethodsContext.Provider
+				value={ {
+					duplicates: useGetDuplicatedPaymentMethodIds(),
+					dismissedDuplicateNotices: dismissedDuplicateNotices,
+					setDismissedDuplicateNotices: setDismissedDuplicateNotices,
+				} }
+			>
+				<PaymentMethodsSection />
+				<BuyNowPayLaterSection />
 				<SettingsSection
-					description={ GeneralSettingsDescription }
-					id="general"
+					id="express-checkouts"
+					description={ ExpressCheckoutDescription }
 				>
 					<LoadableSettingsSection numLines={ 20 }>
 						<ErrorBoundary>
-							<GeneralSettings />
+							<ExpressCheckout />
 						</ErrorBoundary>
 					</LoadableSettingsSection>
 				</SettingsSection>
-				<DuplicatedPaymentMethodsContext.Provider
-					value={ {
-						duplicates: useGetDuplicatedPaymentMethodIds(),
-						dismissedDuplicateNotices: dismissedDuplicateNotices,
-						setDismissedDuplicateNotices: setDismissedDuplicateNotices,
-					} }
-				>
-					<PaymentMethodsSection />
-					<BuyNowPayLaterSection />
-					<SettingsSection
-						id="express-checkouts"
-						description={ ExpressCheckoutDescription }
-					>
-						<LoadableSettingsSection numLines={ 20 }>
-							<ErrorBoundary>
-								<ExpressCheckout />
-							</ErrorBoundary>
-						</LoadableSettingsSection>
-					</SettingsSection>
-				</DuplicatedPaymentMethodsContext.Provider>
-				<SettingsSection
-					description={ TransactionsDescription }
-					id="transactions"
-				>
+			</DuplicatedPaymentMethodsContext.Provider>
+			<SettingsSection
+				description={ TransactionsDescription }
+				id="transactions"
+			>
+				<LoadableSettingsSection numLines={ 20 }>
+					<ErrorBoundary>
+						<Transactions
+							setTransactionInputsValid={
+								setTransactionInputsValid
+							}
+						/>
+					</ErrorBoundary>
+				</LoadableSettingsSection>
+			</SettingsSection>
+			<SettingsSection description={ DepositsDescription } id="deposits">
+				<div id="payout-schedule">
 					<LoadableSettingsSection numLines={ 20 }>
 						<ErrorBoundary>
-							<Transactions
-								setTransactionInputsValid={
-									setTransactionInputsValid
-								}
-							/>
+							<Deposits />
 						</ErrorBoundary>
 					</LoadableSettingsSection>
-				</SettingsSection>
-				<SettingsSection
-					description={ DepositsDescription }
-					id="deposits"
-				>
-					<div id="payout-schedule">
-						<LoadableSettingsSection numLines={ 20 }>
-							<ErrorBoundary>
-								<Deposits />
-							</ErrorBoundary>
-						</LoadableSettingsSection>
-					</div>
-				</SettingsSection>
-				<SettingsSection
-					description={ FraudProtectionDescription }
-					id="fp-settings"
-				>
-					<LoadableSettingsSection numLines={ 20 }>
-						<ErrorBoundary>
-							<FraudProtection />
-						</ErrorBoundary>
-					</LoadableSettingsSection>
-				</SettingsSection>
-				<SettingsSection
-					description={ AdvancedDescription }
-					id="advanced-settings"
-				>
-					<LoadableSettingsSection numLines={ 20 }>
-						<ErrorBoundary>
-							<AdvancedSettings />
-						</ErrorBoundary>
-					</LoadableSettingsSection>
-				</SettingsSection>
-				<SaveSettingsSection disabled={ ! isTransactionInputsValid } />
-			</SettingsLayout>
+				</div>
+			</SettingsSection>
+			<SettingsSection
+				description={ FraudProtectionDescription }
+				id="fp-settings"
+			>
+				<LoadableSettingsSection numLines={ 20 }>
+					<ErrorBoundary>
+						<FraudProtection />
+					</ErrorBoundary>
+				</LoadableSettingsSection>
+			</SettingsSection>
+			<SettingsSection
+				description={ AdvancedDescription }
+				id="advanced-settings"
+			>
+				<LoadableSettingsSection numLines={ 20 }>
+					<ErrorBoundary>
+						<AdvancedSettings />
+					</ErrorBoundary>
+				</LoadableSettingsSection>
+			</SettingsSection>
+			<SaveSettingsSection disabled={ ! isTransactionInputsValid } />
 			<VatFormModal
 				isModalOpen={ isVatFormModalOpen }
 				setModalOpen={ handleVatFormModalClose }
 				onCompleted={ handleVatFormModalClose }
 			/>
-		</>
+		</SettingsLayout>
 	);
 };
 
