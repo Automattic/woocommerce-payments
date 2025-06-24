@@ -31,6 +31,7 @@ import FraudProtection from '../fraud-protection';
 import DuplicatedPaymentMethodsContext from './duplicated-payment-methods-context';
 import VatFormModal from '../../vat/form-modal';
 import './style.scss';
+import { useDispatch } from '@wordpress/data';
 
 const ExpressCheckoutDescription = () => (
 	<>
@@ -205,6 +206,16 @@ const SettingsManager = () => {
 		updateQueryString( { 'woopayments-vat-details-modal': undefined } );
 	};
 
+	const { createNotice } = useDispatch( 'core/notices' );
+
+	const handleVatFormModalCompleted = () => {
+		createNotice(
+			'success',
+			__( 'Tax details updated', 'woocommerce-payments' )
+		);
+		handleVatFormModalClose();
+	};
+
 	return (
 		<SettingsLayout>
 			<SettingsSection
@@ -284,7 +295,7 @@ const SettingsManager = () => {
 			<VatFormModal
 				isModalOpen={ isVatFormModalOpen }
 				setModalOpen={ handleVatFormModalClose }
-				onCompleted={ handleVatFormModalClose }
+				onCompleted={ handleVatFormModalCompleted }
 			/>
 		</SettingsLayout>
 	);
