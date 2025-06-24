@@ -6,6 +6,7 @@ import React, { useState, useEffect, useLayoutEffect } from 'react';
 import { ExternalLink } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
+import { dispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -31,7 +32,6 @@ import FraudProtection from '../fraud-protection';
 import DuplicatedPaymentMethodsContext from './duplicated-payment-methods-context';
 import VatFormModal from '../../vat/form-modal';
 import './style.scss';
-import { useDispatch } from '@wordpress/data';
 
 const ExpressCheckoutDescription = () => (
 	<>
@@ -188,9 +188,6 @@ const SettingsManager = () => {
 		setDismissedDuplicateNotices,
 	] = useState( wcpaySettings.dismissedDuplicateNotices || {} );
 	const [ isVatFormModalOpen, setVatFormModalOpen ] = useState( false );
-	const { createSuccessNotice, createInfoNotice } = useDispatch(
-		'core/notices'
-	);
 
 	useEffect( () => {
 		const urlParams = new URLSearchParams( window.location.search );
@@ -198,15 +195,15 @@ const SettingsManager = () => {
 			if ( ! wcpaySettings.accountStatus.hasSubmittedVatData ) {
 				setVatFormModalOpen( true );
 			} else {
-				createInfoNotice(
+				dispatch( 'core/notices' ).createInfoNotice(
 					__(
-						'Tax details are already submitted',
+						'Tax details are already submitted.',
 						'woocommerce-payments'
 					)
 				);
 			}
 		}
-	}, [ createInfoNotice ] );
+	}, [] );
 
 	const handleVatFormModalClose = () => {
 		setVatFormModalOpen( false );
@@ -215,7 +212,7 @@ const SettingsManager = () => {
 	};
 
 	const handleVatFormModalCompleted = () => {
-		createSuccessNotice(
+		dispatch( 'core/notices' ).createInfoNotice(
 			__( 'Tax details updated', 'woocommerce-payments' )
 		);
 		handleVatFormModalClose();
