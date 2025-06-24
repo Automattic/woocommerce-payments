@@ -188,7 +188,9 @@ const SettingsManager = () => {
 		setDismissedDuplicateNotices,
 	] = useState( wcpaySettings.dismissedDuplicateNotices || {} );
 	const [ isVatFormModalOpen, setVatFormModalOpen ] = useState( false );
-	const { createInfoNotice } = useDispatch( 'core/notices' );
+	const { createSuccessNotice, createInfoNotice } = useDispatch(
+		'core/notices'
+	);
 
 	useEffect( () => {
 		const urlParams = new URLSearchParams( window.location.search );
@@ -198,7 +200,7 @@ const SettingsManager = () => {
 			} else {
 				createInfoNotice(
 					__(
-						'Tax details are already submitted.',
+						'Tax details are already submitted',
 						'woocommerce-payments'
 					)
 				);
@@ -213,7 +215,9 @@ const SettingsManager = () => {
 	};
 
 	const handleVatFormModalCompleted = () => {
-		createInfoNotice( __( 'Tax details updated', 'woocommerce-payments' ) );
+		createSuccessNotice(
+			__( 'Tax details updated', 'woocommerce-payments' )
+		);
 		handleVatFormModalClose();
 	};
 
