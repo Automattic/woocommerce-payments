@@ -48,7 +48,7 @@ class WC_Payments_VAT_Redirect_Service {
 			return;
 		}
 
-		wp_safe_redirect( admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&vat-details-modal=true' ) );
+		wp_safe_redirect( admin_url( 'admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&woopayments-vat-details-modal=true' ) );
 		exit;
 	}
 }

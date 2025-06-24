@@ -190,7 +190,7 @@ const SettingsManager = () => {
 
 	const handleVatDetailsParam = () => {
 		const urlParams = new URLSearchParams( window.location.search );
-		if ( urlParams.get( 'vat-details-modal' ) === 'true' ) {
+		if ( urlParams.get( 'woopayments-vat-details-modal' ) === 'true' ) {
 			setVatFormModalOpen( true );
 		}
 	};
@@ -202,9 +202,7 @@ const SettingsManager = () => {
 	const handleVatFormModalClose = () => {
 		setVatFormModalOpen( false );
 		// Remove the URL parameter when the modal is closed.
-		updateQueryString( { 'vat-details-modal': undefined } );
-		// Check URL parameters after updating.
-		handleVatDetailsParam();
+		updateQueryString( { 'woopayments-vat-details-modal': undefined } );
 	};
 
 	return (
