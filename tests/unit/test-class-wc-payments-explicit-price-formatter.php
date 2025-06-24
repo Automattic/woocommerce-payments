@@ -234,7 +234,7 @@ class WC_Payments_Explicit_Price_Formatter_Test extends WCPAY_UnitTestCase {
 	}
 
 	private function init_multi_currency( $mock_api_client = null, $wcpay_account_connected = true ) {
-		$this->mock_api_client = $this->createMock( WC_Payments_API_V2_Client::class );
+		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
 
 		$this->mock_account = $this->createMock( WC_Payments_Account::class );
 		$this->mock_account->method( 'is_provider_connected' )->willReturn( $wcpay_account_connected );
