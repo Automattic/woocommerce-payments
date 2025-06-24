@@ -406,7 +406,8 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				$this->containsIdentical( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/currency/rates?test_mode=0&currency_from=USD' ),
+				// Please note the use of the V2 API endpoint - `/transact/` instead of `/wcpay/`.
+				$this->containsIdentical( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/transact/currency/rates?test_mode=0&currency_from=USD' ),
 				null,
 				true,
 				false
