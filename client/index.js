@@ -21,7 +21,8 @@ import TransactionsPage from 'transactions';
 import PaymentDetailsPage from 'payment-details';
 import DisputesPage from 'disputes';
 import RedirectToTransactionDetails from 'disputes/redirect-to-transaction-details';
-import DisputeEvidencePage from 'disputes/evidence';
+import DisputeEvidencePage from 'wcpay/disputes/evidence';
+import DisputeNewEvidencePage from 'wcpay/disputes/new-evidence';
 import { MultiCurrencySetupPage } from 'multi-currency/interface/components';
 import CardReadersPage from 'card-readers';
 import CapitalPage from 'capital';
@@ -192,24 +193,57 @@ addFilter(
 			capability: 'manage_woocommerce',
 		} );
 
-		pages.push( {
-			container: DisputeEvidencePage,
-			path: '/payments/disputes/challenge',
-			wpOpenMenu: menuID,
-			breadcrumbs: [
-				rootLink,
-				[
-					'/payments/disputes',
-					__( 'Disputes', 'woocommerce-payments' ),
+		if ( wcpaySettings.featureFlags.isNewEvidenceSubmissionFormEnabled ) {
+			pages.push( {
+				container: ( { query } ) => (
+					<WordPressComponentsContext.Provider
+						value={ wp.components }
+					>
+						<DisputeNewEvidencePage query={ query } />
+					</WordPressComponentsContext.Provider>
+				),
+				path: '/payments/disputes/challenge',
+				wpOpenMenu: menuID,
+				breadcrumbs: [
+					rootLink,
+					[
+						'/payments/disputes',
+						__( 'Disputes', 'woocommerce-payments' ),
+					],
+					__( 'Challenge dispute', 'woocommerce-payments' ),
 				],
-				__( 'Challenge dispute', 'woocommerce-payments' ),
-			],
-			navArgs: {
-				id: 'wc-payments-disputes-challenge',
-				parentPath: '/payments/disputes',
-			},
-			capability: 'manage_woocommerce',
-		} );
+				navArgs: {
+					id: 'wc-payments-disputes-challenge',
+					parentPath: '/payments/disputes',
+				},
+				capability: 'manage_woocommerce',
+			} );
+		} else {
+			pages.push( {
+				container: ( { query } ) => (
+					<WordPressComponentsContext.Provider
+						value={ wp.components }
+					>
+						<DisputeEvidencePage query={ query } />
+					</WordPressComponentsContext.Provider>
+				),
+				path: '/payments/disputes/challenge',
+				wpOpenMenu: menuID,
+				breadcrumbs: [
+					rootLink,
+					[
+						'/payments/disputes',
+						__( 'Disputes', 'woocommerce-payments' ),
+					],
+					__( 'Challenge dispute', 'woocommerce-payments' ),
+				],
+				navArgs: {
+					id: 'wc-payments-disputes-challenge',
+					parentPath: '/payments/disputes',
+				},
+				capability: 'manage_woocommerce',
+			} );
+		}
 		pages.push( {
 			container: MultiCurrencySetupPage,
 			path: '/payments/multi-currency-setup',

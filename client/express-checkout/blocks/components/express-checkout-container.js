@@ -11,7 +11,7 @@ import ExpressCheckoutComponent from './express-checkout-component';
 import {
 	getExpressCheckoutButtonAppearance,
 	getExpressCheckoutData,
-} from 'wcpay/express-checkout/utils';
+} from '../../utils';
 import '../express-checkout-element.scss';
 
 const ExpressCheckoutContainer = ( props ) => {

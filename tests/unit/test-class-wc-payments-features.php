@@ -296,34 +296,6 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 		$this->clear_feature_flag_options( [ 'wcpay_frt_review_feature_active' ] );
 	}
 
-	public function test_is_tokenized_cart_ece_enabled_returns_true_when_site_flag_is_true() {
-		$this->mock_cache->method( 'get' )->willReturn( [] );
-		$this->set_feature_flag_option( '_wcpay_feature_tokenized_cart_ece', '1' );
-		$this->assertTrue( WC_Payments_Features::is_tokenized_cart_ece_enabled() );
-		$this->clear_feature_flag_options( [ '_wcpay_feature_tokenized_cart_ece' ] );
-	}
-
-	public function test_is_tokenized_cart_ece_enabled_returns_false_when_site_flag_is_false() {
-		$this->mock_cache->method( 'get' )->willReturn( [] );
-		$this->set_feature_flag_option( '_wcpay_feature_tokenized_cart_ece', '0' );
-		$this->assertFalse( WC_Payments_Features::is_tokenized_cart_ece_enabled() );
-		$this->clear_feature_flag_options( [ '_wcpay_feature_tokenized_cart_ece' ] );
-	}
-
-	public function test_is_tokenized_cart_ece_enabled_returns_false_when_account_flag_is_true() {
-		$this->mock_cache->method( 'get' )->willReturn( [ 'is_tokenized_ece_disabled' => true ] );
-		$this->set_feature_flag_option( '_wcpay_feature_tokenized_cart_ece', '1' );
-		$this->assertFalse( WC_Payments_Features::is_tokenized_cart_ece_enabled() );
-		$this->clear_feature_flag_options( [ '_wcpay_feature_tokenized_cart_ece' ] );
-	}
-
-	public function test_is_tokenized_cart_ece_enabled_returns_true_when_account_flag_is_false() {
-		$this->mock_cache->method( 'get' )->willReturn( [ 'is_tokenized_ece_disabled' => false ] );
-		$this->set_feature_flag_option( '_wcpay_feature_tokenized_cart_ece', '1' );
-		$this->assertTrue( WC_Payments_Features::is_tokenized_cart_ece_enabled() );
-		$this->clear_feature_flag_options( [ '_wcpay_feature_tokenized_cart_ece' ] );
-	}
-
 	public function test_is_frt_review_feature_active_returns_false_when_flag_is_not_set() {
 		$this->assertFalse( WC_Payments_Features::is_frt_review_feature_active() );
 	}

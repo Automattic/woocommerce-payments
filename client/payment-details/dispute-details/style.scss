@@ -124,11 +124,12 @@
 		border-bottom: 1px solid var( --Scales-Grays-gray-200, #e0e0e0 );
 
 		&:first-child {
-			padding: 4px 0 16px;
+			padding: 12px 0 16px;
 		}
 
 		&:last-child {
 			border-bottom: none;
+			padding-bottom: 28px;
 		}
 
 		@media screen and ( max-width: $break-small ) {

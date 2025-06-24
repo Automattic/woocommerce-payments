@@ -209,6 +209,32 @@ const isFXEvent = ( event = {} ) => {
 };
 
 /**
+ * Given the fee amount and currency, converts it to the store currency if necessary and formats using formatCurrency.
+ *
+ * @param {number} feeAmount Fee amount to convert and format.
+ * @param {string} feeCurrency Fee currency to convert from.
+ * @param {Object} event Event object containing fee rates and transaction details.
+ *
+ * @return {string} Formatted fee amount in the store currency.
+ */
+const convertAndFormatFeeAmount = ( feeAmount, feeCurrency, event ) => {
+	if ( ! isFXEvent( event ) || ! event.fee_rates?.fee_exchange_rate ) {
+		return formatCurrency( -Math.abs( feeAmount ), feeCurrency );
+	}
+
+	const { rate, fromCurrency } = event.fee_rates.fee_exchange_rate;
+	const storeCurrency = event.transaction_details.store_currency;
+
+	// Convert based on the direction of the exchange rate
+	const convertedAmount =
+		feeCurrency === fromCurrency
+			? feeAmount * rate // Converting from store currency to customer currency
+			: feeAmount / rate; // Converting from customer currency to store currency
+
+	return formatCurrency( -Math.abs( convertedAmount ), storeCurrency );
+};
+
+/**
  * Returns a boolean indicating whether only fee applied is the base fee
  *
  * @param {Object} event Event object
@@ -263,44 +289,15 @@ export const composeTaxString = ( event ) => {
 		? ` ${ getLocalizedTaxDescription( tax.description ) }`
 		: '';
 
-	// Validate tax percentage rate is within reasonable bounds (0-100%)
-	if (
-		tax.percentage_rate !== undefined &&
-		( tax.percentage_rate < 0 || tax.percentage_rate > 1 )
-	) {
-		return sprintf(
-			/* translators: 1: tax description 2: tax amount */
-			__( 'Tax%1$s: %2$s', 'woocommerce-payments' ),
-			taxDescription,
-			formatCurrency( -Math.abs( tax.amount ), tax.currency )
-		);
-	}
-
 	const taxPercentage = tax.percentage_rate
 		? ` (${ ( tax.percentage_rate * 100 ).toFixed( 2 ) }%)`
 		: '';
 
-	let formattedTaxAmount;
-	if ( isFXEvent( event ) && event.fee_rates.fee_exchange_rate ) {
-		const { rate, fromCurrency } = event.fee_rates.fee_exchange_rate;
-		const storeCurrency = event.transaction_details.store_currency;
-
-		// Convert based on the direction of the exchange rate
-		const convertedTaxAmount =
-			tax.currency === fromCurrency
-				? tax.amount * rate // Converting from store currency to customer currency
-				: tax.amount / rate; // Converting from customer currency to store currency
-
-		formattedTaxAmount = formatCurrency(
-			-Math.abs( convertedTaxAmount ),
-			storeCurrency
-		);
-	} else {
-		formattedTaxAmount = formatCurrency(
-			-Math.abs( tax.amount ),
-			tax.currency
-		);
-	}
+	const formattedTaxAmount = convertAndFormatFeeAmount(
+		tax.amount,
+		tax.currency,
+		event
+	);
 
 	return sprintf(
 		/* translators: 1: tax description 2: tax percentage 3: tax amount */
@@ -334,8 +331,12 @@ export const composeFeeString = ( event ) => {
 	// Get the appropriate fee amounts and currencies
 	let feeAmount, feeCurrency, baseFee, baseFeeCurrency;
 	if ( isFXEvent( event ) ) {
-		feeAmount = event.transaction_details.store_fee;
-		feeCurrency = event.transaction_details.store_currency;
+		feeAmount =
+			event.fee_rates?.before_tax?.amount ||
+			event.transaction_details.store_fee;
+		feeCurrency =
+			event.fee_rates?.before_tax?.currency ||
+			event.transaction_details.store_currency;
 		baseFee = fixed || 0;
 		baseFeeCurrency = fixedCurrency || feeCurrency;
 	} else {
@@ -349,12 +350,18 @@ export const composeFeeString = ( event ) => {
 		baseFeeCurrency = fixedCurrency;
 	}
 
+	const formattedFeeAmount = convertAndFormatFeeAmount(
+		feeAmount,
+		feeCurrency,
+		event
+	);
+
 	if ( isBaseFeeOnly( event ) && history[ 0 ]?.capped ) {
 		return sprintf(
 			'%1$s (capped at %2$s): %3$s',
 			baseFeeLabel,
 			formatCurrency( baseFee, baseFeeCurrency ),
-			formatCurrency( -feeAmount, feeCurrency )
+			formattedFeeAmount
 		);
 	}
 
@@ -369,7 +376,7 @@ export const composeFeeString = ( event ) => {
 		formatFee( percentage ),
 		formatCurrency( baseFee, baseFeeCurrency ),
 		hasIdenticalSymbol ? ` ${ baseFeeCurrency }` : '',
-		formatCurrency( -feeAmount, feeCurrency ),
+		formattedFeeAmount,
 		hasIdenticalSymbol ? ` ${ feeCurrency }` : ''
 	);
 };

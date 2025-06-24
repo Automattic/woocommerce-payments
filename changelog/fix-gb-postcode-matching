@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: ensure Google Pay/Apple Pay postcode matching for shipping zones works even when the provided postcode is redacted.

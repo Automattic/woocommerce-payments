@@ -712,6 +712,11 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		// This should be in sync with the current account mode.
 		WC_Payments_Onboarding_Service::set_test_mode( false );
 
+		// The server needs to be connected.
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+
 		// Assert.
 		$this->mock_api_client
 			->expects( $this->once() )
@@ -720,7 +725,60 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->mock_redirect_service
 			->expects( $this->once() )
 			->method( 'redirect_to_connect_page' )
-			->with( null, WC_Payments_Onboarding_Service::FROM_RESET_ACCOUNT, [ 'source' => WC_Payments_Onboarding_Service::SOURCE_WCPAY_RESET_ACCOUNT ] );
+			->with(
+				null, // No error message.
+				WC_Payments_Onboarding_Service::FROM_RESET_ACCOUNT,
+				[
+					'source' => WC_Payments_Onboarding_Service::SOURCE_WCPAY_RESET_ACCOUNT,
+				]
+			);
+		// We should be in live mode now.
+		$this->assertFalse( WC_Payments_Onboarding_Service::is_test_mode_enabled() );
+
+		// Act.
+		$this->wcpay_account->maybe_handle_onboarding();
+	}
+
+	public function test_maybe_handle_onboarding_reset_account_with_no_cache_account() {
+		// Arrange.
+		// We need to be in the WP admin dashboard.
+		$this->set_is_admin( true );
+		// Test as an admin user.
+		wp_set_current_user( 1 );
+
+		$_GET['wcpay-connect'] = 'connect-from';
+		$_REQUEST['_wpnonce']  = wp_create_nonce( 'wcpay-connect' );
+		// Set the request as if the user is on some bogus page. It doesn't matter.
+		$_GET['page'] = 'wc-admin';
+		$_GET['path'] = '/payments/some-bogus-page';
+
+		// This is the flag indicating the account should be reset.
+		$_GET['wcpay-reset-account'] = 'true';
+
+		$this->cache_account_details( [] );
+		// This should be in sync with the current account mode.
+		WC_Payments_Onboarding_Service::set_test_mode( false );
+
+		// The server needs to be connected.
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+
+		// Assert.
+		$this->mock_api_client
+			->expects( $this->never() )
+			->method( 'delete_account' );
+		$this->mock_redirect_service
+			->expects( $this->once() )
+			->method( 'redirect_to_connect_page' )
+			->with(
+				$this->isType( 'string' ), // The error message.
+				WC_Payments_Onboarding_Service::FROM_RESET_ACCOUNT,
+				[
+					'wcpay-reset-account-error' => '1',
+					'source'                    => WC_Payments_Onboarding_Service::SOURCE_WCPAY_RESET_ACCOUNT,
+				]
+			);
 		// We should be in live mode now.
 		$this->assertFalse( WC_Payments_Onboarding_Service::is_test_mode_enabled() );
 

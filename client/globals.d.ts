@@ -19,7 +19,7 @@ declare global {
 			isAuthAndCaptureEnabled: boolean;
 			paymentTimeline: boolean;
 			isDisputeIssuerEvidenceEnabled: boolean;
-			isPaymentOverviewWidgetEnabled?: boolean;
+			isNewEvidenceSubmissionFormEnabled: boolean;
 			multiCurrency?: boolean;
 		};
 		accountFees: Record< string, any >;
@@ -224,6 +224,10 @@ declare global {
 					woocommerce_all_except_countries: string[];
 					woocommerce_specific_allowed_countries: string[];
 					woocommerce_default_country: string;
+					woocommerce_store_address: string;
+					woocommerce_store_address_2: string;
+					woocommerce_store_city: string;
+					woocommerce_store_postcode: string;
 				};
 			};
 			siteVisibilitySettings: {

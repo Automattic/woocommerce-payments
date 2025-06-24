@@ -20,6 +20,10 @@ import {
 	MenuGroup as BundledWordPressComponentsMenuGroup,
 	MenuItem as BundledWordPressComponentsMenuItem,
 	Notice as BundledWordPressComponentsNotice,
+	SelectControl as BundledWordPressComponentsSelectControl,
+	TextControl as BundledWordPressComponentsTextControl,
+	TextareaControl as BundledWordPressComponentsTextareaControl,
+	FormFileUpload as BundledWordPressComponentsFormFileUpload,
 } from '@wordpress/components';
 import BundledWordPressComponentsCardNotice from 'wcpay/components/card-notice';
 
@@ -335,6 +339,76 @@ const WrappedNotice = (
 	return <Notice { ...rest } />;
 };
 
+const WrappedSelectControl = (
+	props: ComponentProps< typeof BundledWordPressComponentsSelectControl > & {
+		useBundledComponent?: boolean;
+	}
+) => {
+	const { useBundledComponent, ...rest } = props;
+	const context = useContext( WordPressComponentsContext );
+
+	if ( ! context || useBundledComponent ) {
+		return <BundledWordPressComponentsSelectControl { ...rest } />;
+	}
+
+	const { SelectControl } = context;
+
+	return <SelectControl { ...rest } />;
+};
+
+const WrappedTextControl = (
+	props: ComponentProps< typeof BundledWordPressComponentsTextControl > & {
+		useBundledComponent?: boolean;
+	}
+) => {
+	const { useBundledComponent, ...rest } = props;
+	const context = useContext( WordPressComponentsContext );
+
+	if ( ! context || useBundledComponent ) {
+		return <BundledWordPressComponentsTextControl { ...rest } />;
+	}
+
+	const { TextControl } = context;
+
+	return <TextControl { ...rest } />;
+};
+
+const WrappedTextareaControl = (
+	props: ComponentProps<
+		typeof BundledWordPressComponentsTextareaControl
+	> & {
+		useBundledComponent?: boolean;
+	}
+) => {
+	const { useBundledComponent, ...rest } = props;
+	const context = useContext( WordPressComponentsContext );
+
+	if ( ! context || useBundledComponent ) {
+		return <BundledWordPressComponentsTextareaControl { ...rest } />;
+	}
+
+	const { TextareaControl } = context;
+
+	return <TextareaControl { ...rest } />;
+};
+
+const WrappedFormFileUpload = (
+	props: ComponentProps< typeof BundledWordPressComponentsFormFileUpload > & {
+		useBundledComponent?: boolean;
+	}
+) => {
+	const { useBundledComponent, ...rest } = props;
+	const context = useContext( WordPressComponentsContext );
+
+	if ( ! context || useBundledComponent ) {
+		return <BundledWordPressComponentsFormFileUpload { ...rest } />;
+	}
+
+	const { FormFileUpload } = context;
+
+	return <FormFileUpload { ...rest } />;
+};
+
 export {
 	WrappedCard as Card,
 	WrappedCardBody as CardBody,
@@ -354,4 +428,8 @@ export {
 	WrappedMenuItem as MenuItem,
 	WrappedCardNotice as CardNotice,
 	WrappedNotice as Notice,
+	WrappedSelectControl as SelectControl,
+	WrappedTextControl as TextControl,
+	WrappedTextareaControl as TextareaControl,
+	WrappedFormFileUpload as FormFileUpload,
 };

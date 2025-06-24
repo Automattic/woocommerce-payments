@@ -9,14 +9,14 @@ import user from '@testing-library/user-event';
 import apiFetch from '@wordpress/api-fetch';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { useUserPreferences } from '@woocommerce/data';
-import { getUserTimeZone } from 'wcpay/utils/test-utils';
 import { PAYMENT_METHOD_BRANDS } from 'wcpay/constants/payment-method';
 
 /**
  * Internal dependencies
  */
-import { TransactionsList } from '../';
-import { useTransactions, useTransactionsSummary } from 'data/index';
+import { getUserTimeZone } from 'jest-utils/timezone';
+import { TransactionsList } from '..';
+import { useTransactions, useTransactionsSummary } from 'data';
 import type { Transaction } from 'data/transactions/hooks';
 
 jest.mock( '@woocommerce/data', () => {
@@ -120,6 +120,7 @@ const getMockTransactions: () => Transaction[] = () => [
 			customer_url: 'https://example.com/customer/my-name',
 			customer_name: '',
 			customer_email: '',
+			ip_address: '127.0.0.1',
 		},
 		channel: 'online',
 		source_identifier: '1234',
@@ -152,6 +153,7 @@ const getMockTransactions: () => Transaction[] = () => [
 			customer_url: 'https://example.com/customer/my-name',
 			customer_name: '',
 			customer_email: '',
+			ip_address: '127.0.0.1',
 		},
 		channel: 'online',
 		source_identifier: '1234',
@@ -184,6 +186,7 @@ const getMockTransactions: () => Transaction[] = () => [
 			customer_url: 'https://example.com/customer/my-name',
 			customer_name: '',
 			customer_email: '',
+			ip_address: '127.0.0.1',
 		},
 		channel: 'in_person',
 		source_identifier: '1234',

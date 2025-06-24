@@ -16,7 +16,7 @@ import {
 	updateTransactionsSummary,
 } from '../actions';
 import { getTransactions, getTransactionsSummary } from '../resolvers';
-import { getUserTimeZone } from 'wcpay/utils/test-utils';
+import { getUserTimeZone } from 'jest-utils/timezone';
 
 const errorResponse = { code: 'error' };
 
