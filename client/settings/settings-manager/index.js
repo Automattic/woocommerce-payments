@@ -188,17 +188,23 @@ const SettingsManager = () => {
 		setDismissedDuplicateNotices,
 	] = useState( wcpaySettings.dismissedDuplicateNotices || {} );
 	const [ isVatFormModalOpen, setVatFormModalOpen ] = useState( false );
-
-	const handleVatDetailsParam = () => {
-		const urlParams = new URLSearchParams( window.location.search );
-		if ( urlParams.get( 'woopayments-vat-details-modal' ) === 'true' ) {
-			setVatFormModalOpen( true );
-		}
-	};
+	const { createInfoNotice } = useDispatch( 'core/notices' );
 
 	useEffect( () => {
-		handleVatDetailsParam();
-	}, [] );
+		const urlParams = new URLSearchParams( window.location.search );
+		if ( urlParams.get( 'woopayments-vat-details-modal' ) === 'true' ) {
+			if ( ! wcpaySettings.accountStatus.hasSubmittedVatData ) {
+				setVatFormModalOpen( true );
+			} else {
+				createInfoNotice(
+					__(
+						'Tax details are already submitted.',
+						'woocommerce-payments'
+					)
+				);
+			}
+		}
+	}, [ createInfoNotice ] );
 
 	const handleVatFormModalClose = () => {
 		setVatFormModalOpen( false );
@@ -206,13 +212,8 @@ const SettingsManager = () => {
 		updateQueryString( { 'woopayments-vat-details-modal': undefined } );
 	};
 
-	const { createNotice } = useDispatch( 'core/notices' );
-
 	const handleVatFormModalCompleted = () => {
-		createNotice(
-			'success',
-			__( 'Tax details updated', 'woocommerce-payments' )
-		);
+		createInfoNotice( __( 'Tax details updated', 'woocommerce-payments' ) );
 		handleVatFormModalClose();
 	};
 
