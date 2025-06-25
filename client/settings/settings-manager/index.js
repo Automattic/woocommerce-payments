@@ -2,10 +2,11 @@
 /**
  * External dependencies
  */
-import React, { useState, useLayoutEffect, useEffect } from 'react';
+import React, { useState, useEffect, useLayoutEffect } from 'react';
 import { ExternalLink } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
-import { getQuery } from '@woocommerce/navigation';
+import { getQuery, updateQueryString } from '@woocommerce/navigation';
+import { dispatch } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -29,6 +30,7 @@ import {
 } from '../../data';
 import FraudProtection from '../fraud-protection';
 import DuplicatedPaymentMethodsContext from './duplicated-payment-methods-context';
+import VatFormModal from '../../vat/form-modal';
 import './style.scss';
 
 const ExpressCheckoutDescription = () => (
@@ -185,6 +187,36 @@ const SettingsManager = () => {
 		dismissedDuplicateNotices,
 		setDismissedDuplicateNotices,
 	] = useState( wcpaySettings.dismissedDuplicateNotices || {} );
+	const [ isVatFormModalOpen, setVatFormModalOpen ] = useState( false );
+
+	useEffect( () => {
+		const urlParams = new URLSearchParams( window.location.search );
+		if ( urlParams.get( 'woopayments-vat-details-modal' ) === 'true' ) {
+			if ( ! wcpaySettings.accountStatus.hasSubmittedVatData ) {
+				setVatFormModalOpen( true );
+			} else {
+				dispatch( 'core/notices' ).createInfoNotice(
+					__(
+						'Tax details are already submitted.',
+						'woocommerce-payments'
+					)
+				);
+			}
+		}
+	}, [] );
+
+	const handleVatFormModalClose = () => {
+		setVatFormModalOpen( false );
+		// Remove the URL parameter when the modal is closed.
+		updateQueryString( { 'woopayments-vat-details-modal': undefined } );
+	};
+
+	const handleVatFormModalCompleted = () => {
+		dispatch( 'core/notices' ).createInfoNotice(
+			__( 'Tax details updated', 'woocommerce-payments' )
+		);
+		handleVatFormModalClose();
+	};
 
 	return (
 		<SettingsLayout>
@@ -262,6 +294,11 @@ const SettingsManager = () => {
 				</LoadableSettingsSection>
 			</SettingsSection>
 			<SaveSettingsSection disabled={ ! isTransactionInputsValid } />
+			<VatFormModal
+				isModalOpen={ isVatFormModalOpen }
+				setModalOpen={ handleVatFormModalClose }
+				onCompleted={ handleVatFormModalCompleted }
+			/>
 		</SettingsLayout>
 	);
 };
