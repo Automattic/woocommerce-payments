@@ -67,7 +67,7 @@ const DepositsStatusSuspended: React.FC< DepositsStatusProps > = ( {
 } ) => {
 	const description =
 		/* translators: <a> - suspended accounts FAQ URL */
-		__( 'Temporarily suspended', 'woocommerce-payments' );
+		__( 'Under Review', 'woocommerce-payments' );
 
 	return (
 		<span className={ 'account-status__info__yellow' }>
@@ -85,7 +85,7 @@ const DepositsStatusSuspended: React.FC< DepositsStatusProps > = ( {
 						/* translators: 1: WooPayments */
 						__(
 							// eslint-disable-next-line max-len
-							'After the information review, your account was temporarily suspended. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+							'While the account is under review payouts may remain suspended. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 							'woocommerce-payments'
 						),
 						'WooPayments'
@@ -134,12 +134,8 @@ const DepositsStatus: React.FC< Props > = ( {
 	status,
 	interval,
 	accountStatus,
-	poEnabled,
-	poComplete,
 	iconSize,
 } ) => {
-	const isPoInProgress = poEnabled && ! poComplete;
-
 	if ( status === 'blocked' || accountStatus === 'under_review' ) {
 		return (
 			<DepositsStatusSuspended
@@ -147,7 +143,7 @@ const DepositsStatus: React.FC< Props > = ( {
 				interval={ interval }
 			/>
 		);
-	} else if ( accountStatus === 'pending_verification' || isPoInProgress ) {
+	} else if ( accountStatus === 'pending_verification' ) {
 		return (
 			<DepositsStatusPending
 				iconSize={ iconSize }

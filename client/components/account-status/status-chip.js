@@ -12,7 +12,7 @@ import Chip from 'components/chip';
 import './style.scss';
 
 const StatusChip = ( props ) => {
-	const { accountStatus, poEnabled, poComplete } = props;
+	const { accountStatus } = props;
 
 	let description = __( 'Unknown', 'woocommerce-payments' );
 	let type = 'light';
@@ -27,10 +27,7 @@ const StatusChip = ( props ) => {
 	} else if ( accountStatus === 'restricted_soon' ) {
 		description = __( 'Restricted soon', 'woocommerce-payments' );
 		type = 'warning';
-	} else if (
-		accountStatus === 'pending_verification' ||
-		( poEnabled && ! poComplete && accountStatus === 'restricted' )
-	) {
+	} else if ( accountStatus === 'pending_verification' ) {
 		description = __( 'Pending', 'woocommerce-payments' );
 		type = 'light';
 		tooltip = __(
