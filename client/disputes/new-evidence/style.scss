@@ -220,7 +220,7 @@
 
 // Recommended documents section
 .wcpay-dispute-evidence-recommended-documents {
-	margin-bottom: 45px;
+	margin-bottom: 40px;
 
 	&__heading {
 		@include heading-md;
@@ -234,12 +234,19 @@
 	}
 
 	&__item {
-		margin-left: 15px;
-		margin-bottom: 10px;
+		padding-bottom: 16px;
+		margin-bottom: 16px;
+		border-bottom: 1px solid var( --Scales-Grays-gray-100, $gray-100 );
+
+		&:last-child {
+			border-bottom: none;
+			margin-bottom: 0;
+			padding-bottom: 10px;
+		}
 	}
 
 	&__list {
-		margin-top: 16px;
+		margin-top: 24px;
 		margin-bottom: 0;
 	}
 }
@@ -247,56 +254,68 @@
 .wcpay-dispute-evidence-file-upload-control {
 	display: flex;
 	align-items: center;
-	justify-content: flex-end;
-	gap: 12px;
-	margin-bottom: 8px;
+	gap: 10px;
+	justify-content: space-between;
 
-	&__label {
-		flex: 1 0 220px;
-		color: var( --Scales-Grays-gray-900, $gray-900 );
-		@include body-md;
-		margin-right: 16px;
-		text-align: left;
-	}
-
-	&__actions {
+	&__chip {
 		display: flex;
 		align-items: center;
-		gap: 8px;
-	}
-
-	&__filename {
-		max-width: 320px;
-		min-width: 120px;
-		background: color-mix(
-			in srgb,
-			var( --wp-admin-theme-color ) 10%,
-			transparent
+		height: 32px;
+		max-height: 32px;
+		border-radius: var( --radius-full, 999px );
+		background: var(
+			--Scales-Theme-theme-alpha-04,
+			rgba( 56, 88, 233, 0.04 )
 		);
-		border-radius: 24px;
-		padding: 0 12px 0 12px;
-		font-size: 14px;
-		line-height: 32px;
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		position: relative;
 	}
 
-	&__filename-text {
-		flex: 1 1 auto;
-		min-width: 0;
-		overflow: hidden;
+	&__chip-filename {
 		text-overflow: ellipsis;
-		white-space: nowrap;
 		color: var( --wp-admin-theme-color );
+		padding-left: 8px;
+		max-width: 200px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
-	&__check {
-		width: 48px;
+	// Small screen
+	@media ( max-width: 768px ) {
+		&__chip-filename {
+			max-width: 150px;
+		}
+	}
+
+	// Super small screen
+	@media ( max-width: 480px ) {
+		&__chip-filename {
+			max-width: 100px;
+		}
+	}
+
+	@media ( max-width: 360px ) {
+		&__chip-filename {
+			max-width: 60px;
+		}
+	}
+
+	&__info {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 4px;
+	}
+	&__info-header {
+		display: flex;
+		flex-direction: row;
+		align-items: center;
+		justify-content: flex-start;
+		gap: 8px;
+	}
+	&__info-description {
+		color: var( --Scales-Grays-gray-700, $gray-700 );
+		@include body-sm;
+		margin: 0;
 	}
 }
 

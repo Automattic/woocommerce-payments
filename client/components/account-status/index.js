@@ -118,10 +118,6 @@ const AccountStatusDetails = ( props ) => {
 					status={ accountStatus.deposits?.status }
 					interval={ accountStatus.deposits?.interval }
 					accountStatus={ accountStatus.status }
-					poEnabled={ accountStatus.progressiveOnboarding.isEnabled }
-					poComplete={
-						accountStatus.progressiveOnboarding.isComplete
-					}
 					iconSize={ 24 }
 				/>
 			</AccountStatusItem>

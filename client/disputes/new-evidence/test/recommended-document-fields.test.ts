@@ -5,7 +5,8 @@
 /**
  * Internal dependencies
  */
-import getRecommendedDocumentFields from '../recommended-document-fields';
+import { getRecommendedDocumentFields } from '../recommended-document-fields';
+import { RecommendedDocument } from '../types';
 
 describe( 'Recommended Documents', () => {
 	describe( 'getRecommendedDocumentFields', () => {
@@ -60,7 +61,9 @@ describe( 'Recommended Documents', () => {
 			const result = getRecommendedDocumentFields(
 				'product_unacceptable'
 			);
-			const order = result.map( ( field ) => field.key );
+			const order = result.map(
+				( field: RecommendedDocument ) => field.key
+			);
 			expect( order ).toEqual( [
 				'receipt',
 				'customer_communication',

@@ -1,0 +1,4 @@
+Significance: minor
+Type: add
+
+Added a URL parameter to allow merchants to access the VAT details modal.

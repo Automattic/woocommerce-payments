@@ -35,6 +35,7 @@ describe( 'FileUploadControl', () => {
 	const baseProps = {
 		label: 'Order receipt',
 		fileName: '',
+		description: '',
 		onFileChange: jest.fn(),
 		onFileRemove: jest.fn(),
 		disabled: false,
