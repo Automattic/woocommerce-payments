@@ -52,20 +52,25 @@ const makeWrappedComponent = <
 >(
 	BundledComponent: T,
 	componentName: N
-) => ( props: ComponentProps< T > & { useBundledComponent?: boolean } ) => {
-	const { useBundledComponent, ...rest } = props;
-	const context = useContext( WordPressComponentsContext );
+) =>
+	React.forwardRef<
+		any,
+		ComponentProps< T > & { useBundledComponent?: boolean }
+	>( ( props, ref ) => {
+		const { useBundledComponent, ...rest } = props;
+		const context = useContext( WordPressComponentsContext );
 
-	if ( ! context || useBundledComponent ) {
-		return <BundledComponent { ...( rest as any ) } />;
-	}
+		if ( ! context || useBundledComponent ) {
+			// @ts-expect-error: the type of props is not always well-defined, ignoring the error.
+			return <BundledComponent { ...rest } ref={ ref } />;
+		}
 
-	const ContextComponent = context[
-		componentName as keyof typeof context
-	] as React.ComponentType< any >;
+		const ContextComponent = context[
+			componentName as keyof typeof context
+		] as React.ComponentType< any >;
 
-	return <ContextComponent { ...rest } />;
-};
+		return <ContextComponent { ...rest } ref={ ref } />;
+	} );
 
 export const BaseControl = makeWrappedComponent(
 	BundledBaseControl,

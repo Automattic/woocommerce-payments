@@ -1,5 +1,5 @@
 /**
- * WordPress dependencies
+ * External dependencies
  */
 // eslint-disable-next-line import/no-unresolved
 import { WordPressComponentProps } from '@wordpress/components/ui/context/wordpress-component';

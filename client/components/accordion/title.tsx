@@ -3,18 +3,16 @@
  */
 import React, { forwardRef } from 'react';
 import clsx from 'clsx';
-
-/**
- * WordPress dependencies
- */
 import { chevronUp, chevronDown } from '@wordpress/icons';
+// eslint-disable-next-line no-restricted-syntax
+import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import type { AccordionTitleProps } from './types';
 import type { WordPressComponentProps } from '@wordpress/components/ui/context/wordpress-component';
-import { Button, Icon } from 'wcpay/components/wp-components-wrapped';
+import { Icon } from 'wcpay/components/wp-components-wrapped';
 import AccordionSubtitle from './subtitle';
 import './style.scss';
 
@@ -37,7 +35,7 @@ const AccordionTitle = forwardRef<
 						'is-md': md,
 						'is-lg': lg,
 					} ) }
-					ref={ ref }
+					ref={ ref as React.Ref< HTMLButtonElement > }
 					{ ...props }
 				>
 					{ /*
