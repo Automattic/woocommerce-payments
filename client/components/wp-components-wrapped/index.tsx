@@ -2,434 +2,189 @@
  * External dependencies
  */
 import React, { ComponentProps, useContext } from 'react';
+// eslint-disable-next-line no-restricted-syntax
 import {
-	Card as BundledWordPressComponentsCard,
-	CardBody as BundledWordPressComponentsCardBody,
-	Button as BundledWordPressComponentsButton,
-	PanelBody as BundledWordPressComponentsPanelBody,
-	ExternalLink as BundledWordPressComponentsExternalLink,
-	Flex as BundledWordPressComponentsFlex,
-	FlexItem as BundledWordPressComponentsFlexItem,
-	Icon as BundledWordPressComponentsIcon,
-	Modal as BundledWordPressComponentsModal,
-	HorizontalRule as BundledWordPressComponentsHorizontalRule,
-	CardFooter as BundledWordPressComponentsCardFooter,
-	CardHeader as BundledWordPressComponentsCardHeader,
-	CardDivider as BundledWordPressComponentsCardDivider,
-	DropdownMenu as BundledWordPressComponentsDropdownMenu,
-	MenuGroup as BundledWordPressComponentsMenuGroup,
-	MenuItem as BundledWordPressComponentsMenuItem,
-	Notice as BundledWordPressComponentsNotice,
-	SelectControl as BundledWordPressComponentsSelectControl,
-	TextControl as BundledWordPressComponentsTextControl,
-	TextareaControl as BundledWordPressComponentsTextareaControl,
-	FormFileUpload as BundledWordPressComponentsFormFileUpload,
+	BaseControl as BundledBaseControl,
+	CheckboxControl as BundledCheckboxControl,
+	Card as BundledCard,
+	CardBody as BundledCardBody,
+	Button as BundledButton,
+	PanelBody as BundledPanelBody,
+	ExternalLink as BundledExternalLink,
+	Flex as BundledFlex,
+	FlexItem as BundledFlexItem,
+	Icon as BundledIcon,
+	Modal as BundledModal,
+	CardFooter as BundledCardFooter,
+	CardHeader as BundledCardHeader,
+	CardDivider as BundledCardDivider,
+	DropdownMenu as BundledDropdownMenu,
+	MenuGroup as BundledMenuGroup,
+	MenuItem as BundledMenuItem,
+	Notice as BundledNotice,
+	SelectControl as BundledSelectControl,
+	TextControl as BundledTextControl,
+	TextareaControl as BundledTextareaControl,
+	FormFileUpload as BundledFormFileUpload,
+	Tooltip as BundledTooltip,
+	RadioControl as BundledRadioControl,
+	ToggleControl as BundledToggleControl,
+	FlexBlock as BundledFlexBlock,
+	DropZone as BundledDropZone,
+	Popover as BundledPopover,
+	TabPanel as BundledTabPanel,
+	HorizontalRule as BundledHorizontalRule,
+	Spinner as BundledSpinner,
+	Panel as BundledPanel,
+	SnackbarList as BundledSnackbarList,
+	RangeControl as BundledRangeControl,
 } from '@wordpress/components';
-import BundledWordPressComponentsCardNotice from 'wcpay/components/card-notice';
+import BundledCardNotice from 'wcpay/components/card-notice';
 
 /**
  * Internal dependencies
  */
 import { WordPressComponentsContext } from 'wcpay/wordpress-components-context/context';
 
-const WrappedCard = (
-	props: ComponentProps< typeof BundledWordPressComponentsCard > & {
-		useBundledComponent?: boolean;
-	}
-) => {
+const makeWrappedComponent = <
+	T extends React.ComponentType< any >,
+	N extends string
+>(
+	BundledComponent: T,
+	componentName: N
+) => ( props: ComponentProps< T > & { useBundledComponent?: boolean } ) => {
 	const { useBundledComponent, ...rest } = props;
 	const context = useContext( WordPressComponentsContext );
 
 	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsCard { ...rest } />;
+		return <BundledComponent { ...( rest as any ) } />;
 	}
 
-	const { Card } = context;
+	const ContextComponent = context[
+		componentName as keyof typeof context
+	] as React.ComponentType< any >;
 
-	return <Card { ...rest } />;
+	return <ContextComponent { ...rest } />;
 };
 
-const WrappedCardBody = (
-	props: ComponentProps< typeof BundledWordPressComponentsCardBody > & {
-		useBundledComponent?: boolean;
-	}
-) => {
-	const { useBundledComponent, ...rest } = props;
-	const context = useContext( WordPressComponentsContext );
-
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsCardBody { ...rest } />;
-	}
-
-	const { CardBody } = context;
-
-	return <CardBody { ...rest } />;
-};
-
-const WrappedButton = (
-	props: ComponentProps< typeof BundledWordPressComponentsButton > & {
-		useBundledComponent?: boolean;
-	}
-) => {
-	const { useBundledComponent, ...rest } = props;
-	const context = useContext( WordPressComponentsContext );
-
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsButton { ...rest } />;
-	}
-
-	const { Button } = context;
-
-	return <Button { ...rest } />;
-};
-
-const WrappedPanelBody = (
-	props: ComponentProps< typeof BundledWordPressComponentsPanelBody > & {
-		useBundledComponent?: boolean;
-	}
-) => {
-	const { useBundledComponent, ...rest } = props;
-	const context = useContext( WordPressComponentsContext );
-
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsPanelBody { ...rest } />;
-	}
-
-	const { PanelBody } = context;
-
-	return <PanelBody { ...rest } />;
-};
-
-const WrappedExternalLink = (
-	props: ComponentProps< typeof BundledWordPressComponentsExternalLink > & {
-		useBundledComponent?: boolean;
-	}
-) => {
-	const { useBundledComponent, ...rest } = props;
-	const context = useContext( WordPressComponentsContext );
-
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsExternalLink { ...rest } />;
-	}
-
-	const { ExternalLink } = context;
-
-	return <ExternalLink { ...rest } />;
-};
-
-const WrappedFlex = (
-	props: ComponentProps< typeof BundledWordPressComponentsFlex > & {
-		useBundledComponent?: boolean;
-	}
-) => {
-	const { useBundledComponent, ...rest } = props;
-	const context = useContext( WordPressComponentsContext );
-
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsFlex { ...rest } />;
-	}
-
-	const { Flex } = context;
-
-	return <Flex { ...rest } />;
-};
-
-const WrappedFlexItem = (
-	props: ComponentProps< typeof BundledWordPressComponentsFlexItem > & {
-		useBundledComponent?: boolean;
-	}
-) => {
-	const { useBundledComponent, ...rest } = props;
-	const context = useContext( WordPressComponentsContext );
-
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsFlexItem { ...rest } />;
-	}
-
-	const { FlexItem } = context;
-
-	return <FlexItem { ...rest } />;
-};
-
-const WrappedIcon = (
-	props: ComponentProps< typeof BundledWordPressComponentsIcon > & {
-		useBundledComponent?: boolean;
-		className?: string;
-	}
-) => {
-	const { useBundledComponent, ...rest } = props;
-	const context = useContext( WordPressComponentsContext );
-
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsIcon { ...rest } />;
-	}
-
-	const { Icon } = context;
-
-	return <Icon { ...rest } />;
-};
-
-const WrappedModal = (
-	props: ComponentProps< typeof BundledWordPressComponentsModal > & {
-		useBundledComponent?: boolean;
-	}
-) => {
-	const { useBundledComponent, ...rest } = props;
-	const context = useContext( WordPressComponentsContext );
-
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsModal { ...rest } />;
-	}
-
-	const { Modal } = context;
-
-	return <Modal { ...rest } />;
-};
-
-const WrappedHorizontalRule = (
-	props: ComponentProps< typeof BundledWordPressComponentsHorizontalRule > & {
-		useBundledComponent?: boolean;
-	}
-) => {
-	const { useBundledComponent, ...rest } = props;
-	const context = useContext( WordPressComponentsContext );
-
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsHorizontalRule { ...rest } />;
-	}
-
-	const { HorizontalRule } = context;
-
-	return <HorizontalRule { ...rest } />;
-};
-
-const WrappedCardFooter = (
-	props: ComponentProps< typeof BundledWordPressComponentsCardFooter > & {
-		useBundledComponent?: boolean;
-	}
-) => {
-	const { useBundledComponent, ...rest } = props;
-	const context = useContext( WordPressComponentsContext );
-
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsCardFooter { ...rest } />;
-	}
-
-	const { CardFooter } = context;
-
-	return <CardFooter { ...rest } />;
-};
-
-const WrappedCardHeader = (
-	props: ComponentProps< typeof BundledWordPressComponentsCardHeader > & {
-		useBundledComponent?: boolean;
-	}
-) => {
-	const { useBundledComponent, ...rest } = props;
-	const context = useContext( WordPressComponentsContext );
-
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsCardHeader { ...rest } />;
-	}
-
-	const { CardHeader } = context;
-
-	return <CardHeader { ...rest } />;
-};
-
-const WrappedCardDivider = (
-	props: ComponentProps< typeof BundledWordPressComponentsCardDivider > & {
-		useBundledComponent?: boolean;
-	}
-) => {
-	const { useBundledComponent, ...rest } = props;
-	const context = useContext( WordPressComponentsContext );
-
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsCardDivider { ...rest } />;
-	}
-
-	const { CardDivider } = context;
-
-	return <CardDivider { ...rest } />;
-};
-
-const WrappedDropdownMenu = (
-	props: ComponentProps< typeof BundledWordPressComponentsDropdownMenu > & {
-		useBundledComponent?: boolean;
-	}
-) => {
-	const { useBundledComponent, ...rest } = props;
-	const context = useContext( WordPressComponentsContext );
-
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsDropdownMenu { ...rest } />;
-	}
-
-	const { DropdownMenu } = context;
-
-	return <DropdownMenu { ...rest } />;
-};
-
-const WrappedMenuGroup = (
-	props: ComponentProps< typeof BundledWordPressComponentsMenuGroup > & {
-		useBundledComponent?: boolean;
-	}
-) => {
-	const { useBundledComponent, ...rest } = props;
-	const context = useContext( WordPressComponentsContext );
-
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsMenuGroup { ...rest } />;
-	}
-
-	const { MenuGroup } = context;
-
-	return <MenuGroup { ...rest } />;
-};
-
-const WrappedMenuItem = (
-	props: ComponentProps< typeof BundledWordPressComponentsMenuItem > & {
-		useBundledComponent?: boolean;
-	}
-) => {
-	const { useBundledComponent, ...rest } = props;
-	const context = useContext( WordPressComponentsContext );
-
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsMenuItem { ...rest } />;
-	}
-
-	const { MenuItem } = context;
-
-	return <MenuItem { ...rest } />;
-};
-
-const WrappedCardNotice = (
-	props: ComponentProps< typeof BundledWordPressComponentsCardNotice > & {
-		useBundledComponent?: boolean;
-	}
-) => {
-	const { useBundledComponent, ...rest } = props;
-	const context = useContext( WordPressComponentsContext );
-
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsCardNotice { ...rest } />;
-	}
-
-	const { CardNotice } = context;
-
-	return <CardNotice { ...rest } />;
-};
-
-const WrappedNotice = (
-	props: ComponentProps< typeof BundledWordPressComponentsNotice > & {
-		useBundledComponent?: boolean;
-	}
-) => {
-	const { useBundledComponent, ...rest } = props;
-	const context = useContext( WordPressComponentsContext );
-
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsNotice { ...rest } />;
-	}
-
-	const { Notice } = context;
-
-	return <Notice { ...rest } />;
-};
-
-const WrappedSelectControl = (
-	props: ComponentProps< typeof BundledWordPressComponentsSelectControl > & {
-		useBundledComponent?: boolean;
-	}
-) => {
-	const { useBundledComponent, ...rest } = props;
-	const context = useContext( WordPressComponentsContext );
-
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsSelectControl { ...rest } />;
-	}
-
-	const { SelectControl } = context;
-
-	return <SelectControl { ...rest } />;
-};
-
-const WrappedTextControl = (
-	props: ComponentProps< typeof BundledWordPressComponentsTextControl > & {
-		useBundledComponent?: boolean;
-	}
-) => {
-	const { useBundledComponent, ...rest } = props;
-	const context = useContext( WordPressComponentsContext );
-
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsTextControl { ...rest } />;
-	}
-
-	const { TextControl } = context;
-
-	return <TextControl { ...rest } />;
-};
-
-const WrappedTextareaControl = (
-	props: ComponentProps<
-		typeof BundledWordPressComponentsTextareaControl
-	> & {
-		useBundledComponent?: boolean;
-	}
-) => {
-	const { useBundledComponent, ...rest } = props;
-	const context = useContext( WordPressComponentsContext );
-
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsTextareaControl { ...rest } />;
-	}
-
-	const { TextareaControl } = context;
-
-	return <TextareaControl { ...rest } />;
-};
-
-const WrappedFormFileUpload = (
-	props: ComponentProps< typeof BundledWordPressComponentsFormFileUpload > & {
-		useBundledComponent?: boolean;
-	}
-) => {
-	const { useBundledComponent, ...rest } = props;
-	const context = useContext( WordPressComponentsContext );
-
-	if ( ! context || useBundledComponent ) {
-		return <BundledWordPressComponentsFormFileUpload { ...rest } />;
-	}
-
-	const { FormFileUpload } = context;
-
-	return <FormFileUpload { ...rest } />;
-};
-
-export {
-	WrappedCard as Card,
-	WrappedCardBody as CardBody,
-	WrappedButton as Button,
-	WrappedPanelBody as PanelBody,
-	WrappedExternalLink as ExternalLink,
-	WrappedFlex as Flex,
-	WrappedFlexItem as FlexItem,
-	WrappedIcon as Icon,
-	WrappedModal as Modal,
-	WrappedHorizontalRule as HorizontalRule,
-	WrappedCardFooter as CardFooter,
-	WrappedCardHeader as CardHeader,
-	WrappedCardDivider as CardDivider,
-	WrappedDropdownMenu as DropdownMenu,
-	WrappedMenuGroup as MenuGroup,
-	WrappedMenuItem as MenuItem,
-	WrappedCardNotice as CardNotice,
-	WrappedNotice as Notice,
-	WrappedSelectControl as SelectControl,
-	WrappedTextControl as TextControl,
-	WrappedTextareaControl as TextareaControl,
-	WrappedFormFileUpload as FormFileUpload,
-};
+export const BaseControl = makeWrappedComponent(
+	BundledBaseControl,
+	'BaseControl'
+);
+
+export const Tooltip = makeWrappedComponent( BundledTooltip, 'Tooltip' );
+
+export const ToggleControl = makeWrappedComponent(
+	BundledToggleControl,
+	'ToggleControl'
+);
+
+export const RadioControl = makeWrappedComponent(
+	BundledRadioControl,
+	'RadioControl'
+);
+
+export const CheckboxControl = makeWrappedComponent(
+	BundledCheckboxControl,
+	'CheckboxControl'
+);
+
+export const Card = makeWrappedComponent( BundledCard, 'Card' );
+
+export const CardBody = makeWrappedComponent( BundledCardBody, 'CardBody' );
+
+export const Button = makeWrappedComponent( BundledButton, 'Button' );
+
+export const PanelBody = makeWrappedComponent( BundledPanelBody, 'PanelBody' );
+
+export const ExternalLink = makeWrappedComponent(
+	BundledExternalLink,
+	'ExternalLink'
+);
+
+export const Flex = makeWrappedComponent( BundledFlex, 'Flex' );
+
+export const FlexItem = makeWrappedComponent( BundledFlexItem, 'FlexItem' );
+
+export const Icon = makeWrappedComponent( BundledIcon, 'Icon' );
+
+export const Modal = makeWrappedComponent( BundledModal, 'Modal' );
+
+export const CardFooter = makeWrappedComponent(
+	BundledCardFooter,
+	'CardFooter'
+);
+
+export const CardHeader = makeWrappedComponent(
+	BundledCardHeader,
+	'CardHeader'
+);
+
+export const CardDivider = makeWrappedComponent(
+	BundledCardDivider,
+	'CardDivider'
+);
+
+export const DropdownMenu = makeWrappedComponent(
+	BundledDropdownMenu,
+	'DropdownMenu'
+);
+
+export const MenuGroup = makeWrappedComponent( BundledMenuGroup, 'MenuGroup' );
+
+export const MenuItem = makeWrappedComponent( BundledMenuItem, 'MenuItem' );
+
+export const CardNotice = makeWrappedComponent(
+	BundledCardNotice,
+	'CardNotice'
+);
+
+export const Notice = makeWrappedComponent( BundledNotice, 'Notice' );
+
+export const SelectControl = makeWrappedComponent(
+	BundledSelectControl,
+	'SelectControl'
+);
+
+export const TextControl = makeWrappedComponent(
+	BundledTextControl,
+	'TextControl'
+);
+
+export const TextareaControl = makeWrappedComponent(
+	BundledTextareaControl,
+	'TextareaControl'
+);
+
+export const FormFileUpload = makeWrappedComponent(
+	BundledFormFileUpload,
+	'FormFileUpload'
+);
+
+export const FlexBlock = makeWrappedComponent( BundledFlexBlock, 'FlexBlock' );
+
+export const DropZone = makeWrappedComponent( BundledDropZone, 'DropZone' );
+
+export const Popover = makeWrappedComponent( BundledPopover, 'Popover' );
+
+export const TabPanel = makeWrappedComponent( BundledTabPanel, 'TabPanel' );
+
+export const HorizontalRule = makeWrappedComponent(
+	// @ts-expect-error: suppressing because of how the HorizontalRule component is defined, but it's no problem.
+	BundledHorizontalRule,
+	'HorizontalRule'
+);
+
+export const Spinner = makeWrappedComponent( BundledSpinner, 'Spinner' );
+
+export const Panel = makeWrappedComponent( BundledPanel, 'Panel' );
+
+export const SnackbarList = makeWrappedComponent(
+	BundledSnackbarList,
+	'SnackbarList'
+);
+
+export const RangeControl = makeWrappedComponent(
+	BundledRangeControl,
+	'RangeControl'
+);

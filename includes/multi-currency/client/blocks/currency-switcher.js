@@ -16,7 +16,7 @@ import {
 	CheckboxControl,
 	PanelBody,
 	RangeControl,
-} from '@wordpress/components';
+} from 'wcpay/components/wp-components-wrapped';
 import { registerBlockType } from '@wordpress/blocks';
 import {
 	ColorPaletteControl,

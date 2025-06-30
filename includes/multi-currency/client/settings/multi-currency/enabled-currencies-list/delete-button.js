@@ -3,7 +3,7 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { Button, Icon } from '@wordpress/components';
+import { Button, Icon } from 'wcpay/components/wp-components-wrapped';
 import interpolateComponents from '@automattic/interpolate-components';
 import { useCallback, useState } from '@wordpress/element';
 import {

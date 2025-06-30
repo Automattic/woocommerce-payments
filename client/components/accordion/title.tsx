@@ -3,6 +3,7 @@
  */
 import React, { forwardRef } from 'react';
 import clsx from 'clsx';
+
 /**
  * WordPress dependencies
  */
@@ -45,6 +46,7 @@ const AccordionTitle = forwardRef<
 			*/ }
 					<span aria-hidden="true">
 						<Icon
+							// @ts-expect-error: className is not a prop defined in the WP Icon component.
 							className="wcpay-accordion__arrow"
 							icon={ isOpened ? chevronUp : chevronDown }
 						/>
@@ -58,6 +60,7 @@ const AccordionTitle = forwardRef<
 					{ icon && (
 						<Icon
 							icon={ icon }
+							// @ts-expect-error: className is not a prop defined in the WP Icon component.
 							className="wcpay-accordion__icon"
 							size={ 20 }
 						/>

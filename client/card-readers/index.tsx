@@ -11,7 +11,7 @@ import { __ } from '@wordpress/i18n';
  */
 import Page from 'components/page';
 import ReadersList from './list';
-import { TabPanel } from '@wordpress/components';
+import { TabPanel } from 'wcpay/components/wp-components-wrapped';
 
 import './style.scss';
 

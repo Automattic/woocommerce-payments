@@ -3,7 +3,7 @@
  */
 import React, { useState } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Modal } from '@wordpress/components';
+import { Modal } from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies

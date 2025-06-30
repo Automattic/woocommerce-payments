@@ -8,14 +8,14 @@ import apiFetch from '@wordpress/api-fetch';
 import { __ } from '@wordpress/i18n';
 import { useDispatch } from '@wordpress/data';
 import { useState } from '@wordpress/element';
-import { BaseControl, Button } from '@wordpress/components';
 import TrashIcon from 'gridicons/dist/trash';
 import clsx from 'clsx';
 
 /**
  * Internal dependencies
  */
-import { FileUploadControl } from 'components/file-upload';
+import { BaseControl, Button } from 'wcpay/components/wp-components-wrapped';
+import { FileUploadControl } from 'wcpay/components/file-upload';
 
 interface WooPayFileUploadProps {
 	fieldKey: string;

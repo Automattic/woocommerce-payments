@@ -18,7 +18,7 @@ import {
 	CardFooter,
 	Flex,
 	FlexItem,
-} from '@wordpress/components';
+} from 'wcpay/components/wp-components-wrapped';
 import { TimelineItem } from 'wcpay/data/timeline/types';
 import Loadable, { LoadableBlock } from 'components/loadable';
 import { formatCurrency } from 'multi-currency/interface/functions';

@@ -3,7 +3,7 @@
  */
 import React, { useContext, useEffect, useState } from 'react';
 import { sprintf, __, _n } from '@wordpress/i18n';
-import { Button, Card, CardBody } from '@wordpress/components';
+import { Button, Card, CardBody } from 'wcpay/components/wp-components-wrapped';
 import interpolateComponents from '@automattic/interpolate-components';
 import _ from 'lodash';
 

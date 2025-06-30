@@ -2,7 +2,12 @@
  * External dependencies
  */
 import React, { useContext, useState, useEffect } from 'react';
-import { Button, Card, CardBody, CheckboxControl } from '@wordpress/components';
+import {
+	Button,
+	Card,
+	CardBody,
+	CheckboxControl,
+} from 'wcpay/components/wp-components-wrapped';
 import { __ } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 

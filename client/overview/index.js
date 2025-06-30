@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React, { useEffect, useState } from 'react';
-import { Card, Notice } from '@wordpress/components';
+import { Card, Notice } from 'wcpay/components/wp-components-wrapped';
 import { getQuery } from '@woocommerce/navigation';
 import { __, sprintf } from '@wordpress/i18n';
 import { dispatch } from '@wordpress/data';

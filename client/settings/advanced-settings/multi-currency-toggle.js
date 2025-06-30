@@ -1,7 +1,10 @@
 /**
  * External dependencies
  */
-import { CheckboxControl, ExternalLink } from '@wordpress/components';
+import {
+	CheckboxControl,
+	ExternalLink,
+} from 'wcpay/components/wp-components-wrapped';
 import { __ } from '@wordpress/i18n';
 
 /**

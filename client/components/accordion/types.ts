@@ -3,6 +3,7 @@
  */
 // eslint-disable-next-line import/no-unresolved
 import { WordPressComponentProps } from '@wordpress/components/ui/context/wordpress-component';
+// eslint-disable-next-line no-restricted-syntax
 import { Button } from '@wordpress/components';
 
 export type AccordionProps = {

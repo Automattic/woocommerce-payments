@@ -3,6 +3,7 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
+// eslint-disable-next-line no-restricted-syntax
 import { Notice } from '@wordpress/components';
 
 /**

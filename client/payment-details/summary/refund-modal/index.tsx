@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { Button, RadioControl } from '@wordpress/components';
+import { Button, RadioControl } from 'wcpay/components/wp-components-wrapped';
 import { __, sprintf } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 import interpolateComponents from '@automattic/interpolate-components';

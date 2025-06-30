@@ -12,7 +12,7 @@ import moment from 'moment';
  */
 import CurrencyPreview from './currency-preview';
 import './style.scss';
-import { Button, Card, CardBody } from '@wordpress/components';
+import { Button, Card, CardBody } from 'wcpay/components/wp-components-wrapped';
 import clsx from 'clsx';
 import {
 	decimalCurrencyCharmOptions,

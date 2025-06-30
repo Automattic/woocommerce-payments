@@ -7,9 +7,10 @@ import {
 	Button,
 	Flex,
 	FlexItem,
-	NoticeList,
 	SnackbarList,
-} from '@wordpress/components';
+} from 'wcpay/components/wp-components-wrapped';
+// eslint-disable-next-line no-restricted-syntax
+import { NoticeList } from '@wordpress/components';
 import { Icon, thumbsUp, thumbsDown } from '@wordpress/icons';
 import { useSelect } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';

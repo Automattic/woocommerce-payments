@@ -4,7 +4,7 @@
 import { __, sprintf } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 import interpolateComponents from '@automattic/interpolate-components';
-import { Button, Notice, Modal } from '@wordpress/components';
+import { Button, Notice, Modal } from 'wcpay/components/wp-components-wrapped';
 import { Link } from '@woocommerce/components';
 import { addQueryArgs } from '@wordpress/url';
 
