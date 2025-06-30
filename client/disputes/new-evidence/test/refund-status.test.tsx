@@ -164,7 +164,24 @@ describe( 'RefundStatus', () => {
 	} );
 
 	it( 'handles multiple rapid clicks correctly', () => {
-		render( <RefundStatus { ...baseProps } /> );
+		// Wrapper to manage refundStatus state
+		const Wrapper: React.FC = () => {
+			const [ refundStatus, setRefundStatus ] = React.useState(
+				'refund_has_been_issued'
+			);
+			return (
+				<RefundStatus
+					refundStatus={ refundStatus }
+					onRefundStatusChange={ ( value ) => {
+						baseProps.onRefundStatusChange( value );
+						setRefundStatus( value );
+					} }
+					readOnly={ false }
+				/>
+			);
+		};
+
+		render( <Wrapper /> );
 
 		const refundNotOwedRadio = screen.getByLabelText(
 			'Refund was not owed'
@@ -173,10 +190,10 @@ describe( 'RefundStatus', () => {
 			'Refund has been issued'
 		);
 
-		// Click multiple times rapidly
-		fireEvent.click( refundNotOwedRadio );
-		fireEvent.click( refundIssuedRadio );
-		fireEvent.click( refundNotOwedRadio );
+		// Click multiple times rapidly - only changes should trigger onChange
+		fireEvent.click( refundNotOwedRadio ); // Should change from 'refund_has_been_issued' to 'refund_was_not_owed'
+		fireEvent.click( refundIssuedRadio ); // Should change from 'refund_was_not_owed' to 'refund_has_been_issued'
+		fireEvent.click( refundNotOwedRadio ); // Should change from 'refund_has_been_issued' to 'refund_was_not_owed'
 
 		expect( baseProps.onRefundStatusChange ).toHaveBeenCalledTimes( 3 );
 		expect( baseProps.onRefundStatusChange ).toHaveBeenNthCalledWith(
