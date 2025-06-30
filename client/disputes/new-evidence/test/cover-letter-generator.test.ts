@@ -307,6 +307,75 @@ describe( 'Cover Letter Generator', () => {
 			);
 		} );
 
+		it( 'should generate body for credit not processed dispute with refund issued', () => {
+			const attachmentsList = '• Test Attachment';
+			const creditNotProcessedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'credit_not_processed' as DisputeReason,
+			};
+			const coverLetterDataWithRefundStatus = {
+				...mockCoverLetterData,
+				refundStatus: 'refund_has_been_issued',
+			};
+			const result = generateBody(
+				coverLetterDataWithRefundStatus,
+				creditNotProcessedDispute,
+				attachmentsList
+			);
+			expect( result ).toContain( 'dp_123' );
+			expect( result ).toContain( 'ch_123' );
+			expect( result ).toContain( 'John Doe' );
+			expect( result ).toContain( 'was refunded on' );
+			expect( result ).toContain( '10.00 USD' );
+			expect( result ).toContain(
+				"The refund was processed through our payment provider and should be visible on the customer's statement within 7 - 10 business days."
+			);
+		} );
+
+		it( 'should generate body for credit not processed dispute with refund not owed', () => {
+			const attachmentsList = '• Test Attachment';
+			const creditNotProcessedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'credit_not_processed' as DisputeReason,
+			};
+			const coverLetterDataWithRefundStatus = {
+				...mockCoverLetterData,
+				refundStatus: 'refund_was_not_owed',
+			};
+			const result = generateBody(
+				coverLetterDataWithRefundStatus,
+				creditNotProcessedDispute,
+				attachmentsList
+			);
+			expect( result ).toContain( 'dp_123' );
+			expect( result ).toContain( 'ch_123' );
+			expect( result ).toContain(
+				'The customer requested a refund outside of the eligible window outlined in our refund policy, which was clearly presented on the website and on the order confirmation.'
+			);
+		} );
+
+		it( 'should generate body for credit not processed dispute with missing refund status', () => {
+			const attachmentsList = '• Test Attachment';
+			const creditNotProcessedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'credit_not_processed' as DisputeReason,
+			};
+			const coverLetterDataWithoutRefundStatus = {
+				...mockCoverLetterData,
+				refundStatus: undefined,
+			};
+			const result = generateBody(
+				coverLetterDataWithoutRefundStatus,
+				creditNotProcessedDispute,
+				attachmentsList
+			);
+			expect( result ).toContain( 'dp_123' );
+			expect( result ).toContain( 'ch_123' );
+			expect( result ).toContain(
+				'The customer requested a refund outside of the eligible window outlined in our refund policy, which was clearly presented on the website and on the order confirmation.'
+			);
+		} );
+
 		it( 'should generate body for non-product-not-received dispute', () => {
 			const disputeWithDifferentReason = {
 				...mockDispute,
@@ -424,6 +493,68 @@ describe( 'Cover Letter Generator', () => {
 				'Test Bank'
 			);
 			expect( result ).toContain( '<Transaction Date>' );
+		} );
+
+		it( 'should generate cover letter for credit not processed dispute with refund issued', () => {
+			const creditNotProcessedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'credit_not_processed' as DisputeReason,
+			};
+			const result = generateCoverLetter(
+				creditNotProcessedDispute,
+				mockAccountDetails,
+				mockSettings,
+				'Test Bank',
+				'refund_has_been_issued'
+			);
+			expect( result ).toContain( 'Test Store' );
+			expect( result ).toContain( 'Test Bank' );
+			expect( result ).toContain( 'dp_123' );
+			expect( result ).toContain( 'ch_123' );
+			expect( result ).toContain( 'John Doe' );
+			expect( result ).toContain( 'was refunded on' );
+			expect( result ).toContain( '10.00 USD' );
+		} );
+
+		it( 'should generate cover letter for credit not processed dispute with refund not owed', () => {
+			const creditNotProcessedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'credit_not_processed' as DisputeReason,
+			};
+			const result = generateCoverLetter(
+				creditNotProcessedDispute,
+				mockAccountDetails,
+				mockSettings,
+				'Test Bank',
+				'refund_was_not_owed'
+			);
+			expect( result ).toContain( 'Test Store' );
+			expect( result ).toContain( 'Test Bank' );
+			expect( result ).toContain( 'dp_123' );
+			expect( result ).toContain( 'ch_123' );
+			expect( result ).toContain(
+				'The customer requested a refund outside of the eligible window outlined in our refund policy, which was clearly presented on the website and on the order confirmation.'
+			);
+		} );
+
+		it( 'should handle credit not processed dispute with missing refund status', () => {
+			const creditNotProcessedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'credit_not_processed' as DisputeReason,
+			};
+			const result = generateCoverLetter(
+				creditNotProcessedDispute,
+				mockAccountDetails,
+				mockSettings,
+				'Test Bank'
+			);
+			expect( result ).toContain( 'Test Store' );
+			expect( result ).toContain( 'Test Bank' );
+			expect( result ).toContain( 'dp_123' );
+			expect( result ).toContain( 'ch_123' );
+			expect( result ).toContain(
+				'The customer requested a refund outside of the eligible window outlined in our refund policy, which was clearly presented on the website and on the order confirmation.'
+			);
 		} );
 	} );
 } );
