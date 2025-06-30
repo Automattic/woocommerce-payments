@@ -87,7 +87,7 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 
 == Changelog ==
 
-= 9.6.0 - 2025-07-02 =
+= 9.6.0-test-3 - unreleased =
 * Add - Add cover letter for the new evidence submission screen for Product Unacceptable chargeback reason
 * Add - Added a URL parameter to allow merchants to access the VAT details modal.
 * Add - Show an admin notice when bundled subscriptions are in use
