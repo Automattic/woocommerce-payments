@@ -315,6 +315,7 @@ export default ( { query }: { query: { id: string } } ) => {
 					? __( 'Evidence submitted!', 'woocommerce-payments' )
 					: __( 'Evidence saved!', 'woocommerce-payments' ),
 				{
+					id: 'evidence-saved-' + query.id,
 					actions: submit
 						? [
 								{
