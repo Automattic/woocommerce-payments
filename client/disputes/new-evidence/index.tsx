@@ -594,7 +594,7 @@ export default ( { query }: { query: { id: string } } ) => {
 	// --- Accordion summary content ---
 	const summaryItems = useMemo( () => {
 		if ( ! dispute ) return [];
-		const disputeReasonSummary = reasons[ dispute.reason ]?.summary || [];
+		const disputeReasonSummary = reasons[ disputeReason ]?.summary || [];
 		return [
 			{
 				title: __( 'Dispute Amount', 'woocommerce-payments' ),
@@ -616,7 +616,7 @@ export default ( { query }: { query: { id: string } } ) => {
 				title: __( 'Reason', 'woocommerce-payments' ),
 				content: (
 					<>
-						{ reasons[ dispute.reason ]?.display || dispute.reason }
+						{ reasons[ disputeReason ]?.display || disputeReason }
 						{ disputeReasonSummary.length > 0 && (
 							<ClickTooltip
 								buttonLabel={ __(
@@ -626,8 +626,8 @@ export default ( { query }: { query: { id: string } } ) => {
 								content={
 									<div className="dispute-reason-tooltip">
 										<p>
-											{ reasons[ dispute.reason ]
-												?.display || dispute.reason }
+											{ reasons[ disputeReason ]
+												?.display || disputeReason }
 										</p>
 										<Paragraphs>
 											{ disputeReasonSummary }
@@ -664,7 +664,7 @@ export default ( { query }: { query: { id: string } } ) => {
 				content: <OrderLink order={ dispute.order } />,
 			},
 		];
-	}, [ dispute ] );
+	}, [ dispute, disputeReason ] );
 
 	// --- Recommended documents ---
 	const recommendedDocumentFields = getRecommendedDocumentFields(
