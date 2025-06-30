@@ -308,11 +308,9 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 	/**
 	 * Get fields data via API.
 	 *
-	 * @param WP_REST_Request $request Request object.
-	 *
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public function get_fields( WP_REST_Request $request ) {
+	public function get_fields() {
 		$fields = $this->onboarding_service->get_fields_data( get_user_locale() );
 		if ( is_null( $fields ) ) {
 			return new WP_Error( self::RESULT_BAD_REQUEST, 'Failed to retrieve the onboarding fields.', [ 'status' => 400 ] );
@@ -324,11 +322,9 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 	/**
 	 * Get business types via API.
 	 *
-	 * @param WP_REST_Request $request Request object.
-	 *
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public function get_business_types( WP_REST_Request $request ) {
+	public function get_business_types() {
 		$business_types = $this->onboarding_service->get_cached_business_types();
 		return rest_ensure_response( [ 'data' => $business_types ] );
 	}
