@@ -32,6 +32,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	const ENDPOINT_BASE          = 'https://public-api.wordpress.com/wpcom/v2';
 	const ENDPOINT_SITE_FRAGMENT = 'sites/%s';
 	const ENDPOINT_REST_BASE     = 'wcpay';
+	const V2_ENDPOINT_REST_BASE  = 'transact';
 
 	const POST   = 'POST';
 	const GET    = 'GET';
@@ -972,7 +973,11 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		return $this->request(
 			$query_body,
 			self::CURRENCY_API . '/rates',
-			self::GET
+			self::GET,
+			true,
+			false,
+			false,
+			true
 		);
 	}
 
@@ -2459,11 +2464,12 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 * @param bool   $is_site_specific - If true, the site ID will be included in the request url. Defaults to true.
 	 * @param bool   $use_user_token   - If true, the request will be signed with the user token rather than blog token. Defaults to false.
 	 * @param bool   $raw_response     - If true, the raw response will be returned. Defaults to false.
+	 * @param bool   $use_v2_api       - If true, the request will be sent to the V2 API endpoint. Defaults to false.
 	 *
 	 * @return array
 	 * @throws API_Exception - If the account ID hasn't been set.
 	 */
-	protected function request( $params, $api, $method, $is_site_specific = true, $use_user_token = false, bool $raw_response = false ) {
+	protected function request( $params, $api, $method, $is_site_specific = true, $use_user_token = false, bool $raw_response = false, bool $use_v2_api = false ) {
 		// Apply the default params that can be overridden by the calling method.
 		$params = wp_parse_args(
 			$params,
@@ -2474,12 +2480,17 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 
 		$params = apply_filters( 'wcpay_api_request_params', $params, $api, $method );
 
-		// Build the URL we want to send the URL to.
+		// Build the URL we want to send the request to.
 		$url = self::ENDPOINT_BASE;
 		if ( $is_site_specific ) {
 			$url .= '/' . self::ENDPOINT_SITE_FRAGMENT;
 		}
-		$url .= '/' . self::ENDPOINT_REST_BASE . '/' . $api;
+		if ( $use_v2_api ) {
+			$url .= '/' . self::V2_ENDPOINT_REST_BASE;
+		} else {
+			$url .= '/' . self::ENDPOINT_REST_BASE;
+		}
+		$url .= '/' . $api;
 
 		$headers                 = [];
 		$headers['Content-Type'] = 'application/json; charset=utf-8';
