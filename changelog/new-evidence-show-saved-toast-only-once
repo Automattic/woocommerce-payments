@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Prevent "Evidence saved" toast from appearing multiple times.
