@@ -317,7 +317,7 @@ export default ( { query }: { query: { id: string } } ) => {
 				{
 					id: submit
 						? 'evidence-submitted'
-						: `evidence-saved-${dispute.id}`,
+						: `evidence-saved-${ dispute.id }`,
 					actions: submit
 						? [
 								{
