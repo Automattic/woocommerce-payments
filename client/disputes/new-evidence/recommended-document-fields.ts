@@ -90,6 +90,15 @@ const getRecommendedDocumentFields = (
 				),
 				order: 40,
 			},
+			{
+				key: DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION,
+				label: __( 'Item condition', 'woocommerce-payments' ),
+				description: __(
+					'A screenshot of the item condition.',
+					'woocommerce-payments'
+				),
+				order: 50,
+			},
 		],
 		duplicate: [
 			{
