@@ -24,6 +24,7 @@ import {
 	TextControl as BundledWordPressComponentsTextControl,
 	TextareaControl as BundledWordPressComponentsTextareaControl,
 	FormFileUpload as BundledWordPressComponentsFormFileUpload,
+	RadioControl as BundledWordPressComponentsRadioControl,
 } from '@wordpress/components';
 import BundledWordPressComponentsCardNotice from 'wcpay/components/card-notice';
 
@@ -409,6 +410,23 @@ const WrappedFormFileUpload = (
 	return <FormFileUpload { ...rest } />;
 };
 
+const WrappedRadioControl = (
+	props: ComponentProps< typeof BundledWordPressComponentsRadioControl > & {
+		useBundledComponent?: boolean;
+	}
+) => {
+	const { useBundledComponent, ...rest } = props;
+	const context = useContext( WordPressComponentsContext );
+
+	if ( ! context || useBundledComponent ) {
+		return <BundledWordPressComponentsRadioControl { ...rest } />;
+	}
+
+	const { RadioControl } = context;
+
+	return <RadioControl { ...rest } />;
+};
+
 export {
 	WrappedCard as Card,
 	WrappedCardBody as CardBody,
@@ -432,4 +450,5 @@ export {
 	WrappedTextControl as TextControl,
 	WrappedTextareaControl as TextareaControl,
 	WrappedFormFileUpload as FormFileUpload,
+	WrappedRadioControl as RadioControl,
 };

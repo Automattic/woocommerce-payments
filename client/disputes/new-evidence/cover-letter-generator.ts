@@ -183,6 +183,76 @@ ${ __(
 ) }`;
 };
 
+const generateBodyCreditNotProcessed = (
+	data: CoverLetterData,
+	dispute: ExtendedDispute,
+	attachmentsList: string
+): string => {
+		if ( data.refundStatus === 'refund_has_been_issued' ) {
+			return `${ __(
+				'We are submitting evidence in response to chargeback',
+				'woocommerce-payments'
+			) } #${ data.caseNumber } ${ __(
+				'for transaction',
+				'woocommerce-payments'
+			) } #${ data.transactionId } ${ __(
+				'on',
+				'woocommerce-payments'
+			) } ${ data.transactionDate }.
+
+${ __( 'Our records indicate that the customer,', 'woocommerce-payments' ) } ${
+				data.customerName
+			}, ${ __( 'was refunded on', 'woocommerce-payments' ) } ${
+				data.orderDate
+			} ${ __( 'for the amount of', 'woocommerce-payments' ) } ${
+				dispute.amount
+					? `${ ( dispute.amount / 100 ).toFixed(
+							2
+					  ) } ${ dispute.currency?.toUpperCase() }`
+					: __( '[Refund Amount]', 'woocommerce-payments' )
+			}. ${ __(
+				"The refund was processed through our payment provider and should be visible on the customer's statement within 7 - 10 business days.",
+				'woocommerce-payments'
+			) }
+
+${ __(
+	'To support our case, we are providing the following documentation:',
+	'woocommerce-payments'
+) }
+${ attachmentsList }
+
+${ __(
+	'Based on this information, we respectfully request that the chargeback be reversed. Please let us know if any further details are required.',
+	'woocommerce-payments'
+) }`;
+		}
+		// refund_was_not_owed
+		return `${ __(
+			'We are submitting evidence in response to chargeback',
+			'woocommerce-payments'
+		) } #${ data.caseNumber } ${ __(
+			'for transaction',
+			'woocommerce-payments'
+		) } #${ data.transactionId } ${ __( 'on', 'woocommerce-payments' ) } ${
+			data.transactionDate
+		}.
+${ __(
+	'The customer requested a refund outside of the eligible window outlined in our refund policy, which was clearly presented on the website and on the order confirmation.',
+	'woocommerce-payments'
+) }
+
+${ __(
+	'To support our case, we are providing the following documentation:',
+	'woocommerce-payments'
+) }
+${ attachmentsList }
+
+${ __(
+	'Based on this information, we respectfully request that the chargeback be reversed. Please let us know if any further details are required.',
+	'woocommerce-payments'
+) }`;
+};
+
 const generateBodyGeneral = (
 	data: CoverLetterData,
 	dispute: ExtendedDispute,
@@ -302,7 +372,11 @@ export const generateBody = (
 	if ( dispute.reason === 'product_not_received' ) {
 		return generateBodyProductNotReceived( data, dispute, attachmentsList );
 	}
-
+  
+	if ( dispute.reason === 'credit_not_processed' ) {
+		return generateBodyCreditNotProcessed( data, dispute, attachmentsList );
+  }
+  
 	if ( dispute.reason === 'product_unacceptable' ) {
 		return generateBodyProductUnacceptable(
 			data,
@@ -329,7 +403,8 @@ export const generateCoverLetter = (
 	dispute: ExtendedDispute,
 	accountDetails: AccountDetails,
 	settings: any,
-	bankName: string | null
+	bankName: string | null,
+	refundStatus?: string
 ): string => {
 	const todayUnixTimestamp = Math.floor( Date.now() / 1000 );
 	const todayFormatted = formatDateTimeFromTimestamp( todayUnixTimestamp, {
@@ -382,6 +457,7 @@ export const generateCoverLetter = (
 				? dispute.evidence.shipping_date
 				: undefined
 		),
+		refundStatus: refundStatus,
 	};
 
 	const attachmentsList = generateAttachments( dispute );
