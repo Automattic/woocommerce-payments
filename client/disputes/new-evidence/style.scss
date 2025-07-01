@@ -375,3 +375,27 @@
 		width: 100%;
 	}
 }
+
+// Disable React Transition Group animations for HorizontalList in evidence summary
+.evidence-summary__body {
+	.woocommerce-list__item-enter,
+	.woocommerce-list__item-enter-active,
+	.woocommerce-list__item-enter-done,
+	.woocommerce-list__item-exit,
+	.woocommerce-list__item-exit-active,
+	.woocommerce-list__item-exit-done {
+		transition: none !important;
+		animation: none !important;
+		transform: none !important;
+		opacity: 1 !important;
+		max-height: none !important;
+	}
+
+	.woocommerce-list__item {
+		transition: none !important;
+		animation: none !important;
+		transform: none !important;
+		opacity: 1 !important;
+		max-height: none !important;
+	}
+}
