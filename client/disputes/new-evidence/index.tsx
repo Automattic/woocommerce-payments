@@ -435,6 +435,12 @@ export default ( { query }: { query: { id: string } } ) => {
 		window.scrollTo( { top: 0, behavior: 'smooth' } );
 	};
 
+	const handleStepBack = ( step: number ) => {
+		setCurrentStep( step );
+		// Scroll to top of page
+		window.scrollTo( { top: 0, behavior: 'smooth' } );
+	};
+
 	const updateProductType = ( newType: string ) => {
 		recordEvent( 'wcpay_dispute_product_selected', { selection: newType } );
 		setProductType( newType );
@@ -930,7 +936,7 @@ export default ( { query }: { query: { id: string } } ) => {
 				<div className="wcpay-dispute-evidence-new__button-row">
 					<Button
 						variant="secondary"
-						onClick={ () => setCurrentStep( ( s ) => s - 1 ) }
+						onClick={ () => handleStepBack( currentStep - 1 ) }
 						icon={ chevronLeft }
 						iconPosition="left"
 					>
@@ -968,7 +974,7 @@ export default ( { query }: { query: { id: string } } ) => {
 					variant="secondary"
 					icon={ chevronLeft }
 					iconPosition="left"
-					onClick={ () => setCurrentStep( ( s ) => s - 1 ) }
+					onClick={ () => handleStepBack( currentStep - 1 ) }
 				>
 					{ __( 'Back', 'woocommerce-payments' ) }
 				</Button>
