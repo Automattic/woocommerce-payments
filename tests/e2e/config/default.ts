@@ -287,7 +287,7 @@ export const config = {
 			number: '4000000000000069',
 			expires: {
 				month: '06',
-				year: '25',
+				year: '45',
 			},
 			cvc: '626',
 			label: 'Visa ending in 0069',
