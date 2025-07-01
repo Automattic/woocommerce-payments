@@ -204,7 +204,7 @@ const getRecommendedDocumentFields = (
 					'Such as billing history, subscription status, or cancellation logs.',
 					'woocommerce-payments'
 				),
-				order: 50,
+				order: 40,
 			},
 			{
 				key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
@@ -213,7 +213,7 @@ const getRecommendedDocumentFields = (
 					"A screenshot of your store's refund policy.",
 					'woocommerce-payments'
 				),
-				order: 40,
+				order: 50,
 			},
 			{
 				key: DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION,
@@ -222,7 +222,7 @@ const getRecommendedDocumentFields = (
 					"A screenshot of your store's terms of service.",
 					'woocommerce-payments'
 				),
-				order: 40,
+				order: 60,
 			},
 		],
 	};
