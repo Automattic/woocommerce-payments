@@ -1,195 +1,35 @@
-/**
- * External dependencies
- */
-import React, { ComponentProps, useContext } from 'react';
-// eslint-disable-next-line no-restricted-syntax
-import {
-	BaseControl as BundledBaseControl,
-	CheckboxControl as BundledCheckboxControl,
-	Card as BundledCard,
-	CardBody as BundledCardBody,
-	Button as BundledButton,
-	PanelBody as BundledPanelBody,
-	ExternalLink as BundledExternalLink,
-	Flex as BundledFlex,
-	FlexItem as BundledFlexItem,
-	Icon as BundledIcon,
-	Modal as BundledModal,
-	CardFooter as BundledCardFooter,
-	CardHeader as BundledCardHeader,
-	CardDivider as BundledCardDivider,
-	DropdownMenu as BundledDropdownMenu,
-	MenuGroup as BundledMenuGroup,
-	MenuItem as BundledMenuItem,
-	Notice as BundledNotice,
-	SelectControl as BundledSelectControl,
-	TextControl as BundledTextControl,
-	TextareaControl as BundledTextareaControl,
-	FormFileUpload as BundledFormFileUpload,
-	Tooltip as BundledTooltip,
-	RadioControl as BundledRadioControl,
-	ToggleControl as BundledToggleControl,
-	FlexBlock as BundledFlexBlock,
-	DropZone as BundledDropZone,
-	Popover as BundledPopover,
-	TabPanel as BundledTabPanel,
-	HorizontalRule as BundledHorizontalRule,
-	Spinner as BundledSpinner,
-	Panel as BundledPanel,
-	SnackbarList as BundledSnackbarList,
-	RangeControl as BundledRangeControl,
-} from '@wordpress/components';
-import BundledCardNotice from 'wcpay/components/card-notice';
-
-/**
- * Internal dependencies
- */
-import { WordPressComponentsContext } from 'wcpay/wordpress-components-context/context';
-
-const makeWrappedComponent = <
-	T extends React.ComponentType< any >,
-	N extends string
->(
-	BundledComponent: T,
-	componentName: N
-) =>
-	React.forwardRef<
-		any,
-		ComponentProps< T > & { useBundledComponent?: boolean }
-	>( ( props, ref ) => {
-		const { useBundledComponent, ...rest } = props;
-		const context = useContext( WordPressComponentsContext );
-
-		if ( ! context || useBundledComponent ) {
-			// @ts-expect-error: the type of props is not always well-defined, ignoring the error.
-			return <BundledComponent { ...rest } ref={ ref } />;
-		}
-
-		const ContextComponent = context[
-			componentName as keyof typeof context
-		] as React.ComponentType< any >;
-
-		return <ContextComponent { ...rest } ref={ ref } />;
-	} );
-
-export const BaseControl = makeWrappedComponent(
-	BundledBaseControl,
-	'BaseControl'
-);
-
-export const Tooltip = makeWrappedComponent( BundledTooltip, 'Tooltip' );
-
-export const ToggleControl = makeWrappedComponent(
-	BundledToggleControl,
-	'ToggleControl'
-);
-
-export const RadioControl = makeWrappedComponent(
-	BundledRadioControl,
-	'RadioControl'
-);
-
-export const CheckboxControl = makeWrappedComponent(
-	BundledCheckboxControl,
-	'CheckboxControl'
-);
-
-export const Card = makeWrappedComponent( BundledCard, 'Card' );
-
-export const CardBody = makeWrappedComponent( BundledCardBody, 'CardBody' );
-
-export const Button = makeWrappedComponent( BundledButton, 'Button' );
-
-export const PanelBody = makeWrappedComponent( BundledPanelBody, 'PanelBody' );
-
-export const ExternalLink = makeWrappedComponent(
-	BundledExternalLink,
-	'ExternalLink'
-);
-
-export const Flex = makeWrappedComponent( BundledFlex, 'Flex' );
-
-export const FlexItem = makeWrappedComponent( BundledFlexItem, 'FlexItem' );
-
-export const Icon = makeWrappedComponent( BundledIcon, 'Icon' );
-
-export const Modal = makeWrappedComponent( BundledModal, 'Modal' );
-
-export const CardFooter = makeWrappedComponent(
-	BundledCardFooter,
-	'CardFooter'
-);
-
-export const CardHeader = makeWrappedComponent(
-	BundledCardHeader,
-	'CardHeader'
-);
-
-export const CardDivider = makeWrappedComponent(
-	BundledCardDivider,
-	'CardDivider'
-);
-
-export const DropdownMenu = makeWrappedComponent(
-	BundledDropdownMenu,
-	'DropdownMenu'
-);
-
-export const MenuGroup = makeWrappedComponent( BundledMenuGroup, 'MenuGroup' );
-
-export const MenuItem = makeWrappedComponent( BundledMenuItem, 'MenuItem' );
-
-export const CardNotice = makeWrappedComponent(
-	BundledCardNotice,
-	'CardNotice'
-);
-
-export const Notice = makeWrappedComponent( BundledNotice, 'Notice' );
-
-export const SelectControl = makeWrappedComponent(
-	BundledSelectControl,
-	'SelectControl'
-);
-
-export const TextControl = makeWrappedComponent(
-	BundledTextControl,
-	'TextControl'
-);
-
-export const TextareaControl = makeWrappedComponent(
-	BundledTextareaControl,
-	'TextareaControl'
-);
-
-export const FormFileUpload = makeWrappedComponent(
-	BundledFormFileUpload,
-	'FormFileUpload'
-);
-
-export const FlexBlock = makeWrappedComponent( BundledFlexBlock, 'FlexBlock' );
-
-export const DropZone = makeWrappedComponent( BundledDropZone, 'DropZone' );
-
-export const Popover = makeWrappedComponent( BundledPopover, 'Popover' );
-
-export const TabPanel = makeWrappedComponent( BundledTabPanel, 'TabPanel' );
-
-export const HorizontalRule = makeWrappedComponent(
-	// @ts-expect-error: suppressing because of how the HorizontalRule component is defined, but it's no problem.
-	BundledHorizontalRule,
-	'HorizontalRule'
-);
-
-export const Spinner = makeWrappedComponent( BundledSpinner, 'Spinner' );
-
-export const Panel = makeWrappedComponent( BundledPanel, 'Panel' );
-
-export const SnackbarList = makeWrappedComponent(
-	BundledSnackbarList,
-	'SnackbarList'
-);
-
-export const RangeControl = makeWrappedComponent(
-	BundledRangeControl,
-	'RangeControl'
-);
+export { BaseControl } from './components/base-control';
+export { Button } from './components/button';
+export { Card } from './components/card';
+export { CardBody } from './components/card-body';
+export { CardDivider } from './components/card-divider';
+export { CardFooter } from './components/card-footer';
+export { CardHeader } from './components/card-header';
+export { CardNotice } from './components/card-notice';
+export { CheckboxControl } from './components/checkbox-control';
+export { DropdownMenu } from './components/dropdown-menu';
+export { DropZone } from './components/drop-zone';
+export { ExternalLink } from './components/external-link';
+export { Flex } from './components/flex';
+export { FlexBlock } from './components/flex-block';
+export { FlexItem } from './components/flex-item';
+export { FormFileUpload } from './components/form-file-upload';
+export { HorizontalRule } from './components/horizontal-rule';
+export { Icon } from './components/icon';
+export { MenuGroup } from './components/menu-group';
+export { MenuItem } from './components/menu-item';
+export { Modal } from './components/modal';
+export { Notice } from './components/notice';
+export { Panel } from './components/panel';
+export { PanelBody } from './components/panel-body';
+export { Popover } from './components/popover';
+export { RadioControl } from './components/radio-control';
+export { RangeControl } from './components/range-control';
+export { SelectControl } from './components/select-control';
+export { SnackbarList } from './components/snackbar-list';
+export { Spinner } from './components/spinner';
+export { TabPanel } from './components/tab-panel';
+export { TextControl } from './components/text-control';
+export { TextareaControl } from './components/textarea-control';
+export { ToggleControl } from './components/toggle-control';
+export { Tooltip } from './components/tooltip';
