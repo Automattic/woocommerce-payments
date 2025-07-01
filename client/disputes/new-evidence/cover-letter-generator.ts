@@ -284,7 +284,7 @@ ${ __(
 ${ attachmentsList }
 
 ${ __(
-	'Based on this information, we respectfully request that the chargeback be reversed. Please let me know if any further details are required.',
+	'Based on this information, we respectfully request that the chargeback be reversed. Please let us know if any further details are required.',
 	'woocommerce-payments'
 ) }`;
 };
