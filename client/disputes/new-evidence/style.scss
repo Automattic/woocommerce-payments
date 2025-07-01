@@ -263,6 +263,16 @@
 	}
 }
 
+.wcpay-dispute-evidence-duplicate-status {
+	margin-bottom: 40px;
+
+	&__heading {
+		@include heading-md;
+		color: var( --Scales-Grays-gray-900, $gray-900 );
+		margin-bottom: 8px;
+	}
+}
+
 .wcpay-dispute-evidence-file-upload-control {
 	display: flex;
 	align-items: center;

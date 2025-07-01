@@ -220,6 +220,78 @@ ${ __(
 ) }`;
 	}
 
+	if ( dispute.reason === 'duplicate' ) {
+		if ( data.duplicateStatus === 'is_duplicate' ) {
+			return `${ __(
+				'We are submitting evidence in response to chargeback',
+				'woocommerce-payments'
+			) } #${ data.caseNumber } ${ __(
+				'for transaction',
+				'woocommerce-payments'
+			) } #${ data.transactionId } ${ __(
+				'on',
+				'woocommerce-payments'
+			) } ${ data.transactionDate }.
+${ __(
+	'Our records indicate that this charge was a duplicate of a previous transaction. A refund has already been issued to the customer on',
+	'woocommerce-payments'
+) } ${ data.orderDate } ${ __(
+				'for the amount of',
+				'woocommerce-payments'
+			) } ${
+				dispute.amount
+					? `${ ( dispute.amount / 100 ).toFixed(
+							2
+					  ) } ${ dispute.currency?.toUpperCase() }`
+					: __( '[Refund Amount]', 'woocommerce-payments' )
+			}. ${ __(
+				"This refund should be visible on the customer's statement within 7 - 10 business days.",
+				'woocommerce-payments'
+			) }
+
+${ __(
+	'To support our case, we are providing the following documentation:',
+	'woocommerce-payments'
+) }
+${ attachmentsList }
+
+${ __(
+	'Based on this information, we respectfully request that the chargeback be reversed. Please let us know if any further details are required.',
+	'woocommerce-payments'
+) }`;
+		}
+		// is_not_duplicate
+		return `${ __(
+			'We are submitting evidence in response to chargeback',
+			'woocommerce-payments'
+		) } #${ data.caseNumber } ${ __(
+			'for transaction',
+			'woocommerce-payments'
+		) } #${ data.transactionId } ${ __( 'on', 'woocommerce-payments' ) } ${
+			data.transactionDate
+		}.
+${ __(
+	'Our records show that the customer placed two distinct orders:',
+	'woocommerce-payments'
+) } ${ data.caseNumber } ${ __( 'and', 'woocommerce-payments' ) } ${
+			data.transactionId
+		}. ${ __(
+			'Both transactions were legitimate, fulfilled independently, and are not duplicates.',
+			'woocommerce-payments'
+		) }
+
+${ __(
+	'To support our case, we are providing the following documentation:',
+	'woocommerce-payments'
+) }
+${ attachmentsList }
+
+${ __(
+	'Based on this information, we respectfully request that the chargeback be reversed. Please let us know if any further details are required.',
+	'woocommerce-payments'
+) }`;
+	}
+
 	if ( dispute.reason === 'product_not_received' ) {
 		return `${ __(
 			'We are submitting evidence in response to chargeback',
@@ -359,7 +431,8 @@ export const generateCoverLetter = (
 	accountDetails: AccountDetails,
 	settings: any,
 	bankName: string | null,
-	refundStatus?: string
+	refundStatus?: string,
+	duplicateStatus?: string
 ): string => {
 	const todayUnixTimestamp = Math.floor( Date.now() / 1000 );
 	const todayFormatted = formatDateTimeFromTimestamp( todayUnixTimestamp, {
@@ -413,6 +486,7 @@ export const generateCoverLetter = (
 				: undefined
 		),
 		refundStatus: refundStatus,
+		duplicateStatus: duplicateStatus,
 	};
 
 	const attachmentsList = generateAttachments( dispute );

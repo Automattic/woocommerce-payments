@@ -29,10 +29,14 @@ export const DOCUMENT_FIELD_KEYS = {
  * Get recommended document fields based on dispute reason
  *
  * @param {string} reason - The dispute reason
+ * @param {string} refundStatus - The refund status (for credit_not_processed disputes)
+ * @param {string} duplicateStatus - The duplicate status (for duplicate disputes)
  * @return {Array<{key: string, label: string}>} Array of recommended document fields
  */
 const getRecommendedDocumentFields = (
-	reason: string
+	reason: string,
+	refundStatus?: string,
+	duplicateStatus?: string
 ): Array< RecommendedDocument > => {
 	// Define fields with their order
 	const orderedFields = [
@@ -71,58 +75,118 @@ const getRecommendedDocumentFields = (
 		string,
 		Array< RecommendedDocument >
 	> = {
-		credit_not_processed: [
-			{
-				key: DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE,
-				label: __( "Customer's signature", 'woocommerce-payments' ),
-				description: __(
-					"Any relevant documents showing the customer's signature, such as signed proof of delivery.",
-					'woocommerce-payments'
-				),
-				order: 30,
-			},
-			{
-				key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
-				label: __( 'Store refund policy', 'woocommerce-payments' ),
-				description: __(
-					"A screenshot of your store's refund policy.",
-					'woocommerce-payments'
-				),
-				order: 40,
-			},
-			{
-				key: DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION,
-				label: __( 'Item condition', 'woocommerce-payments' ),
-				description: __(
-					'A screenshot of the item condition.',
-					'woocommerce-payments'
-				),
-				order: 50,
-			},
-		],
-		duplicate: [
-			{
-				key: DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE,
-				label: __( "Customer's signature", 'woocommerce-payments' ),
-				description: __(
-					"Any relevant documents showing the customer's signature, such as signed proof of delivery.",
-					'woocommerce-payments'
-				),
-				order: 30,
-			},
-			{
-				key: DOCUMENT_FIELD_KEYS.DUPLICATE_CHARGE_DOCUMENTATION,
-				label: __(
-					'Documentation for the duplicate charge',
-					'woocommerce-payments'
-				),
-				description: __(
-					'A screenshot of the duplicate charge.',
-					'woocommerce-payments'
-				),
-				order: 40,
-			},
-		],
+		credit_not_processed:
+			refundStatus === 'refund_was_not_owed'
+				? [
+						// For refund_was_not_owed: Order receipt, Customer communication, Store refund policy, Other documents
+						{
+							key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+							label: __(
+								'Store refund policy',
+								'woocommerce-payments'
+							),
+							description: __(
+								"A screenshot of your store's refund policy.",
+								'woocommerce-payments'
+							),
+							order: 40,
+						},
+				  ]
+				: [
+						// For refund_has_been_issued: Current selection (Order receipt, Customer communication, Customer signature, Store refund policy, Item condition, Other documents)
+						{
+							key: DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE,
+							label: __(
+								"Customer's signature",
+								'woocommerce-payments'
+							),
+							description: __(
+								"Any relevant documents showing the customer's signature, such as signed proof of delivery.",
+								'woocommerce-payments'
+							),
+							order: 30,
+						},
+						{
+							key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+							label: __(
+								'Store refund policy',
+								'woocommerce-payments'
+							),
+							description: __(
+								"A screenshot of your store's refund policy.",
+								'woocommerce-payments'
+							),
+							order: 40,
+						},
+						{
+							key: DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION,
+							label: __(
+								'Item condition',
+								'woocommerce-payments'
+							),
+							description: __(
+								'A screenshot of the item condition.',
+								'woocommerce-payments'
+							),
+							order: 50,
+						},
+				  ],
+		duplicate:
+			duplicateStatus === 'is_duplicate'
+				? [
+						// For is_duplicate: Order receipt, Customer communication, Proof of active subscription, Store refund policy, Terms of service, Other documents
+						{
+							key: DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
+							label: __(
+								'Proof of active subscription',
+								'woocommerce-payments'
+							),
+							description: __(
+								'Any documents showing the billing history, subscription status, or cancellation logs, for example.',
+								'woocommerce-payments'
+							),
+							order: 30,
+						},
+						{
+							key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+							label: __(
+								'Store refund policy',
+								'woocommerce-payments'
+							),
+							description: __(
+								"A screenshot of your store's refund policy.",
+								'woocommerce-payments'
+							),
+							order: 40,
+						},
+						{
+							key: DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
+							label: __(
+								'Terms of service',
+								'woocommerce-payments'
+							),
+							description: __(
+								"A screenshot of your store's terms of service.",
+								'woocommerce-payments'
+							),
+							order: 50,
+						},
+				  ]
+				: [
+						// For is_not_duplicate: Order receipt, Customer communication, Store refund policy, Other documents
+						{
+							key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+							label: __(
+								'Store refund policy',
+								'woocommerce-payments'
+							),
+							description: __(
+								"A screenshot of your store's refund policy.",
+								'woocommerce-payments'
+							),
+							order: 30,
+						},
+				  ],
 		subscription_canceled: [
 			{
 				key: DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
@@ -249,9 +313,12 @@ const getRecommendedDocumentFields = (
 		],
 	};
 
+	// For credit_not_processed with refund_was_not_owed, we need to filter out customer_signature from orderedFields
+	const baseFields = orderedFields;
+
 	// Combine default fields with reason-specific fields
 	const allFields = [
-		...orderedFields,
+		...baseFields,
 		...( reasonSpecificFields[ reason ] || [] ),
 	];
 
