@@ -12,11 +12,10 @@ describe( 'Recommended Documents', () => {
 	describe( 'getRecommendedDocumentFields', () => {
 		it( 'should return default fields when no specific reason is provided', () => {
 			const result = getRecommendedDocumentFields( '' );
-			expect( result ).toHaveLength( 4 ); // Default fields
+			expect( result ).toHaveLength( 3 ); // Default fields
 			expect( result[ 0 ].key ).toBe( 'receipt' );
 			expect( result[ 1 ].key ).toBe( 'customer_communication' );
-			expect( result[ 2 ].key ).toBe( 'customer_signature' );
-			expect( result[ 3 ].key ).toBe( 'uncategorized_file' );
+			expect( result[ 2 ].key ).toBe( 'uncategorized_file' );
 		} );
 
 		it( 'should return fields for product_unacceptable reason', () => {
@@ -51,9 +50,9 @@ describe( 'Recommended Documents', () => {
 			expect( result ).toHaveLength( 6 ); // Default fields + 2 specific fields
 			expect( result[ 0 ].key ).toBe( 'receipt' );
 			expect( result[ 1 ].key ).toBe( 'customer_communication' );
-			expect( result[ 2 ].key ).toBe( 'customer_signature' );
-			expect( result[ 3 ].key ).toBe( 'cancellation_policy' );
-			expect( result[ 4 ].key ).toBe( 'access_activity_log' );
+			expect( result[ 2 ].key ).toBe( 'access_activity_log' );
+			expect( result[ 3 ].key ).toBe( 'refund_policy' );
+			expect( result[ 4 ].key ).toBe( 'cancellation_policy' );
 			expect( result[ 5 ].key ).toBe( 'uncategorized_file' );
 		} );
 
