@@ -60,6 +60,7 @@ import './style.scss';
 const ReasonsNeedShipping = [
 	'product_unacceptable',
 	'product_not_received',
+	'general',
 	'fraudulent',
 ];
 

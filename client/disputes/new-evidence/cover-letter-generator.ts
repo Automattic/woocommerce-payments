@@ -149,77 +149,11 @@ ${ __( 'Subject:', 'woocommerce-payments' ) } ${ __(
 	) } – ${ __( 'Case', 'woocommerce-payments' ) } #${ data.caseNumber }`;
 };
 
-export const generateBody = (
+const generateBodyFallback = (
 	data: CoverLetterData,
 	dispute: ExtendedDispute,
 	attachmentsList: string
 ): string => {
-	if ( dispute.reason === 'product_not_received' ) {
-		return `${ __(
-			'We are submitting evidence in response to chargeback',
-			'woocommerce-payments'
-		) } #${ data.caseNumber } ${ __(
-			'for transaction',
-			'woocommerce-payments'
-		) } #${ data.transactionId } ${ __( 'on', 'woocommerce-payments' ) } ${
-			data.transactionDate
-		}.
-
-${ __( 'Our records indicate that the customer,', 'woocommerce-payments' ) } ${
-			data.customerName
-		}, ${ __( 'ordered', 'woocommerce-payments' ) } ${ data.product } ${ __(
-			'on',
-			'woocommerce-payments'
-		) } ${ data.orderDate } ${ __(
-			'and received it on',
-			'woocommerce-payments'
-		) } ${ data.deliveryDate }.
-
-${ __(
-	'To support our case, we are providing the following documentation:',
-	'woocommerce-payments'
-) }
-${ attachmentsList }
-
-${ __(
-	'Based on this information, we respectfully request that the chargeback be reversed. Please let us know if any further details are required.',
-	'woocommerce-payments'
-) }`;
-	}
-
-	if ( dispute.reason === 'product_unacceptable' ) {
-		return `${ __(
-			'We are submitting evidence in response to chargeback',
-			'woocommerce-payments'
-		) } #${ data.caseNumber } ${ __(
-			'for transaction',
-			'woocommerce-payments'
-		) } #${ data.transactionId } ${ __( 'on', 'woocommerce-payments' ) } ${
-			data.transactionDate
-		}.
-
-${ __( 'Our records indicate that the customer,', 'woocommerce-payments' ) } ${
-			data.customerName
-		}, ${ __( 'ordered', 'woocommerce-payments' ) } ${ data.product } ${ __(
-			'on',
-			'woocommerce-payments'
-		) } ${ data.orderDate }. ${ __(
-			'The product matched the description provided at the time of sale, and we did not receive any indication from the customer that it was defective or not as described.',
-			'woocommerce-payments'
-		) }
-
-${ __(
-	'To support our case, we are providing the following documentation:',
-	'woocommerce-payments'
-) }
-${ attachmentsList }
-
-${ __(
-	'Based on this information, we respectfully request that the chargeback be reversed. Please let us know if any further details are required.',
-	'woocommerce-payments'
-) }`;
-	}
-
 	return `${ __(
 		'We are submitting evidence in response to chargeback',
 		'woocommerce-payments'
@@ -247,6 +181,141 @@ ${ __(
 	'Based on this information, we respectfully request that the chargeback be reversed. Please let me know if any further details are required.',
 	'woocommerce-payments'
 ) }`;
+};
+
+const generateBodyGeneral = (
+	data: CoverLetterData,
+	dispute: ExtendedDispute,
+	attachmentsList: string
+): string => {
+	return `${ __(
+		'We are submitting evidence in response to chargeback',
+		'woocommerce-payments'
+	) } #${ data.caseNumber } ${ __(
+		'for transaction',
+		'woocommerce-payments'
+	) } #${ data.transactionId } ${ __( 'on', 'woocommerce-payments' ) } ${
+		data.transactionDate
+	}.
+
+${ __( 'Our records indicate that the customer,', 'woocommerce-payments' ) } ${
+		data.customerName
+	}, ${ __( 'ordered', 'woocommerce-payments' ) } ${ data.product } ${ __(
+		'on',
+		'woocommerce-payments'
+	) } ${ data.orderDate } ${ __(
+		'and received it on',
+		'woocommerce-payments'
+	) } ${ data.deliveryDate }.
+
+${ __(
+	'To support our case, we are providing the following documentation:',
+	'woocommerce-payments'
+) }
+${ attachmentsList }
+
+${ __(
+	'Based on this information, we respectfully request that the chargeback be reversed. Please let me know if any further details are required.',
+	'woocommerce-payments'
+) }`;
+};
+
+const generateBodyProductNotReceived = (
+	data: CoverLetterData,
+	dispute: ExtendedDispute,
+	attachmentsList: string
+): string => {
+	return `${ __(
+		'We are submitting evidence in response to chargeback',
+		'woocommerce-payments'
+	) } #${ data.caseNumber } ${ __(
+		'for transaction',
+		'woocommerce-payments'
+	) } #${ data.transactionId } ${ __( 'on', 'woocommerce-payments' ) } ${
+		data.transactionDate
+	}.
+
+${ __( 'Our records indicate that the customer,', 'woocommerce-payments' ) } ${
+		data.customerName
+	}, ${ __( 'ordered', 'woocommerce-payments' ) } ${ data.product } ${ __(
+		'on',
+		'woocommerce-payments'
+	) } ${ data.orderDate } ${ __(
+		'and received it on',
+		'woocommerce-payments'
+	) } ${ data.deliveryDate }.
+
+${ __(
+	'To support our case, we are providing the following documentation:',
+	'woocommerce-payments'
+) }
+${ attachmentsList }
+
+${ __(
+	'Based on this information, we respectfully request that the chargeback be reversed. Please let us know if any further details are required.',
+	'woocommerce-payments'
+) }`;
+};
+
+const generateBodyProductUnacceptable = (
+	data: CoverLetterData,
+	dispute: ExtendedDispute,
+	attachmentsList: string
+): string => {
+	return `${ __(
+		'We are submitting evidence in response to chargeback',
+		'woocommerce-payments'
+	) } #${ data.caseNumber } ${ __(
+		'for transaction',
+		'woocommerce-payments'
+	) } #${ data.transactionId } ${ __( 'on', 'woocommerce-payments' ) } ${
+		data.transactionDate
+	}.
+
+${ __( 'Our records indicate that the customer,', 'woocommerce-payments' ) } ${
+		data.customerName
+	}, ${ __( 'ordered', 'woocommerce-payments' ) } ${ data.product } ${ __(
+		'on',
+		'woocommerce-payments'
+	) } ${ data.orderDate }. ${ __(
+		'The product matched the description provided at the time of sale, and we did not receive any indication from the customer that it was defective or not as described.',
+		'woocommerce-payments'
+	) }
+
+${ __(
+	'To support our case, we are providing the following documentation:',
+	'woocommerce-payments'
+) }
+${ attachmentsList }
+
+${ __(
+	'Based on this information, we respectfully request that the chargeback be reversed. Please let us know if any further details are required.',
+	'woocommerce-payments'
+) }`;
+};
+
+export const generateBody = (
+	data: CoverLetterData,
+	dispute: ExtendedDispute,
+	attachmentsList: string
+): string => {
+	if ( dispute.reason === 'product_not_received' ) {
+		return generateBodyProductNotReceived( data, dispute, attachmentsList );
+	}
+
+	if ( dispute.reason === 'product_unacceptable' ) {
+		return generateBodyProductUnacceptable(
+			data,
+			dispute,
+			attachmentsList
+		);
+	}
+
+	if ( dispute.reason === 'general' ) {
+		return generateBodyGeneral( data, dispute, attachmentsList );
+	}
+
+	return generateBodyFallback( data, dispute, attachmentsList );
 };
 
 export const generateClosing = ( data: CoverLetterData ): string => {
