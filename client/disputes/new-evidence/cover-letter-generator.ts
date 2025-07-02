@@ -475,47 +475,23 @@ ${ __(
 ) }`;
 };
 
+const bodyGenerators: { [ reason: string ]: CallableFunction } = {
+	product_not_received: generateBodyProductNotReceived,
+	credit_not_processed: generateBodyCreditNotProcessed,
+	product_unacceptable: generateBodyProductUnacceptable,
+	subscription_canceled: generateBodySubscriptionCanceled,
+	duplicate: generateBodyDuplicate,
+	fraudulent: generateBodyUnrecognized,
+	unrecognized: generateBodyUnrecognized,
+};
+
 export const generateBody = (
 	data: CoverLetterData,
 	dispute: ExtendedDispute,
 	attachmentsList: string
-): string => {
-	if ( dispute.reason === 'product_not_received' ) {
-		return generateBodyProductNotReceived( data, dispute, attachmentsList );
-	}
-
-	if ( dispute.reason === 'credit_not_processed' ) {
-		return generateBodyCreditNotProcessed( data, dispute, attachmentsList );
-	}
-
-	if ( dispute.reason === 'product_unacceptable' ) {
-		return generateBodyProductUnacceptable(
-			data,
-			dispute,
-			attachmentsList
-		);
-	}
-
-	if ( dispute.reason === 'subscription_canceled' ) {
-		return generateBodySubscriptionCanceled(
-			data,
-			dispute,
-			attachmentsList
-		);
-	}
-
-	if ( dispute.reason === 'duplicate' ) {
-		return generateBodyDuplicate( data, dispute, attachmentsList );
-	}
-
-	if (
-		dispute.reason === 'fraudulent' ||
-		dispute.reason === 'unrecognized'
-	) {
-		return generateBodyUnrecognized( data, dispute, attachmentsList );
-	}
-
-	return generateBodyGeneral( data, dispute, attachmentsList );
+) => {
+	const handler = bodyGenerators[ dispute.reason ] || generateBodyGeneral;
+	return handler( data, dispute, attachmentsList );
 };
 
 export const generateClosing = ( data: CoverLetterData ): string => {
