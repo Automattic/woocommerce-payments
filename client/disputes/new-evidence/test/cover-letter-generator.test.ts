@@ -376,6 +376,33 @@ describe( 'Cover Letter Generator', () => {
 			);
 		} );
 
+		it( 'should generate complete cover letter for general dispute', () => {
+			const generalDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'general' as DisputeReason,
+			};
+			const result = generateCoverLetter(
+				generalDispute,
+				mockAccountDetails,
+				mockSettings,
+				'Test Bank'
+			);
+			expect( result ).toContain( 'Test Store' );
+			expect( result ).toContain(
+				'123 Main St, Suite 100, Test City, TS 12345 US'
+			);
+			expect( result ).toContain( 'test@example.com' );
+			expect( result ).toContain( 'Test Bank' );
+			expect( result ).toContain( 'dp_123' );
+			expect( result ).toContain( 'ch_123' );
+			expect( result ).toContain( 'John Doe' );
+			expect( result ).toContain( 'Test Product' );
+			expect( result ).toContain( 'ordered Test Product on' );
+			expect( result ).toContain( 'and received it on' );
+			expect( result ).toContain( 'Dear Dispute Resolution Team,' );
+			expect( result ).toContain( 'Thank you,' );
+		} );
+
 		it( 'should generate body for non-product-not-received dispute', () => {
 			const disputeWithDifferentReason = {
 				...mockDispute,
