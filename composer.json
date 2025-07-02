@@ -1,5 +1,5 @@
 {
-    "name": "woocommerce/payments",
+    "name": "woocommerce/woocommerce-payments",
     "description": "WooCommerce Payments",
     "homepage": "https://github.com/Automattic/woocommerce-payments",
     "type": "wordpress-plugin",

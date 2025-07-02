@@ -149,31 +149,35 @@ function wcpay_jetpack_init() {
 		}
 	);
 }
+
 // Jetpack's Rest_Authentication needs to be initialized even before plugins_loaded.
 Automattic\Jetpack\Connection\Rest_Authentication::init();
 
 // Jetpack-config will initialize the modules on "plugins_loaded" with priority 2, so this code needs to be run before that.
 add_action( 'plugins_loaded', 'wcpay_jetpack_init', 1 );
 
-/**
- * Initialize the extension. Note that this gets called on the "plugins_loaded" filter,
- * so WooCommerce classes are guaranteed to exist at this point (if WooCommerce is enabled).
- */
-function wcpay_init() {
-	require_once WCPAY_ABSPATH . '/includes/class-wc-payments.php';
-	require_once WCPAY_ABSPATH . '/includes/class-wc-payments-payment-request-session.php';
-	WC_Payments::init();
+// Only initialize as standalone plugin if not loaded as a WooCommerce package
+if ( ! class_exists( '\WCPay\Package' ) ) {
 	/**
-	 * Needs to be loaded as soon as possible
-	 * Check https://github.com/Automattic/woocommerce-payments/issues/4759
+	 * Initialize the extension. Note that this gets called on the "plugins_loaded" filter,
+	 * so WooCommerce classes are guaranteed to exist at this point (if WooCommerce is enabled).
 	 */
-	\WCPay\WooPay\WooPay_Session::init();
-	( new WC_Payments_Payment_Request_Session() )->init();
-}
+	function wcpay_init() {
+		require_once WCPAY_ABSPATH . '/includes/class-wc-payments.php';
+		require_once WCPAY_ABSPATH . '/includes/class-wc-payments-payment-request-session.php';
+		WC_Payments::init();
+		/**
+		 * Needs to be loaded as soon as possible
+		 * Check https://github.com/Automattic/woocommerce-payments/issues/4759
+		 */
+		\WCPay\WooPay\WooPay_Session::init();
+		( new WC_Payments_Payment_Request_Session() )->init();
+	}
 
-// Make sure this is run *after* WooCommerce has a chance to initialize its packages (wc-admin, etc). That is run with priority 10.
-// If you change the priority of this action, you'll need to change it in the wcpay_check_old_jetpack_version function too.
-add_action( 'plugins_loaded', 'wcpay_init', 11 );
+	// Make sure this is run *after* WooCommerce has a chance to initialize its packages (wc-admin, etc). That is run with priority 10.
+	// If you change the priority of this action, you'll need to change it in the wcpay_check_old_jetpack_version function too.
+	add_action( 'plugins_loaded', 'wcpay_init', 11 );
+}
 
 if ( ! function_exists( 'wcpay_init_subscriptions_core' ) ) {
 
@@ -445,3 +449,10 @@ add_action(
 		}
 	}
 );
+
+function wcpay_init_package() {
+	require_once WCPAY_ABSPATH . '/src/Package.php';
+	\WCPay\Package::init();
+}
+
+add_action( 'plugins_loaded', 'wcpay_init_package' );
