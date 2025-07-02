@@ -13,8 +13,8 @@ import {
 /**
  * Internal dependencies.
  */
-import Page from 'components/page';
-import { useDispute } from 'data/index';
+import Page from 'wcpay/components/page';
+import { useDispute } from 'wcpay/data';
 import { Charge } from 'wcpay/types/charges';
 import { getAdminUrl } from 'wcpay/utils';
 

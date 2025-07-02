@@ -29,7 +29,7 @@ jest.mock( '../../context', () => ( {
 	} ) ),
 } ) );
 
-jest.mock( 'components/stepper', () => ( {
+jest.mock( 'wcpay/components/stepper', () => ( {
 	useStepperContext: jest.fn( () => ( {
 		currentStep: 'loading',
 	} ) ),

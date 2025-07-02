@@ -11,7 +11,7 @@ import { WoopayExpressCheckoutButton } from '../woopay-express-checkout-button';
 import { expressCheckoutIframe } from '../express-checkout-iframe';
 import WCPayAPI from 'wcpay/checkout/api';
 import request from 'wcpay/checkout/utils/request';
-import { getConfig } from 'utils/checkout';
+import { getConfig } from 'wcpay/utils/checkout';
 import useExpressCheckoutProductHandler from '../use-express-checkout-product-handler';
 
 jest.mock( 'wcpay/checkout/utils/request', () =>
@@ -23,7 +23,7 @@ jest.mock( 'wcpay/checkout/woopay/express-button/utils', () => ( {
 jest.mock( 'wcpay/checkout/woopay/connect/woopay-connect-iframe', () => ( {
 	WooPayConnectIframe: () => null,
 } ) );
-jest.mock( 'utils/checkout', () => ( {
+jest.mock( 'wcpay/utils/checkout', () => ( {
 	getConfig: jest.fn(),
 } ) );
 

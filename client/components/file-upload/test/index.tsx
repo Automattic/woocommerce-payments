@@ -10,7 +10,7 @@ import userEvent from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import { FileUploadControl } from 'components/file-upload';
+import { FileUploadControl } from 'wcpay/components/file-upload';
 import type { FileUploadControlProps } from 'wcpay/types/disputes';
 
 describe( 'FileUploadControl', () => {

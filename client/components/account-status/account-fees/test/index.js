@@ -7,7 +7,7 @@ import { render } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import AccountFees from '../index';
+import AccountFees from '..';
 
 describe( 'AccountFees', () => {
 	const renderAccountFees = ( accountFees ) => {

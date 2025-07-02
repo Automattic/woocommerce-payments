@@ -12,12 +12,12 @@ import moment from 'moment';
 /**
  * Internal dependencies
  */
-import { useAuthorizations, useAuthorizationsSummary } from 'data/index';
+import { useAuthorizations, useAuthorizationsSummary } from 'wcpay/data';
 import Page from '../../components/page';
-import { getDetailsURL } from 'components/details-link';
-import ClickableCell from 'components/clickable-cell';
+import { getDetailsURL } from 'wcpay/components/details-link';
+import ClickableCell from 'wcpay/components/clickable-cell';
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
-import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
+import RiskLevel, { calculateRiskMapping } from 'wcpay/components/risk-level';
 import { recordEvent } from 'tracks';
 import CaptureAuthorizationButton from 'wcpay/components/capture-authorization-button';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';

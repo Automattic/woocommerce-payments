@@ -24,7 +24,7 @@ import { useContext } from '@wordpress/element';
 import CardBody from '../card-body';
 import PaymentRequestButtonPreview from './payment-request-button-preview';
 import interpolateComponents from '@automattic/interpolate-components';
-import { getExpressCheckoutConfig } from 'utils/express-checkout';
+import { getExpressCheckoutConfig } from 'wcpay/utils/express-checkout';
 import WCPaySettingsContext from '../wcpay-settings-context';
 import InlineNotice from 'wcpay/components/inline-notice';
 import {

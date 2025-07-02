@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { getConfig } from 'utils/order';
+import { getConfig } from 'wcpay/utils/order';
 import { isAwaitingResponse, isUnderReview } from 'wcpay/disputes/utils';
 import TestModeNotice from './test-mode-notice';
 import DisputedOrderNoticeHandler from 'wcpay/components/disputed-order-notice';

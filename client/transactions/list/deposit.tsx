@@ -13,8 +13,8 @@ import InfoOutlineIcon from 'gridicons/dist/info-outline';
 /**
  * Internal dependencies
  */
-import { getAdminUrl } from 'utils';
-import { ClickTooltip } from 'components/tooltip';
+import { getAdminUrl } from 'wcpay/utils';
+import { ClickTooltip } from 'wcpay/components/tooltip';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 
 interface DepositProps {

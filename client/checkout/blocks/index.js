@@ -11,7 +11,7 @@ import {
 /**
  * Internal dependencies
  */
-import { getUPEConfig, getConfig } from 'utils/checkout';
+import { getUPEConfig, getConfig } from 'wcpay/utils/checkout';
 import { isLinkEnabled } from '../utils/upe';
 import WCPayAPI from '../api';
 import { SavedTokenHandler } from './saved-token-handler';

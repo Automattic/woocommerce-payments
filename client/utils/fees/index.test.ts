@@ -1,7 +1,7 @@
 /**
  * Internal dependencies
  */
-import { formatFee } from 'utils/fees';
+import { formatFee } from 'wcpay/utils/fees';
 
 describe( 'Fees utilities', () => {
 	it.each( [

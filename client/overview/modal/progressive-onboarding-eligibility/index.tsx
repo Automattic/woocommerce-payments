@@ -12,7 +12,7 @@ import interpolateComponents from '@automattic/interpolate-components';
  * Internal dependencies
  */
 import { trackEligibilityModalClosed } from 'onboarding/tracking';
-import ConfettiAnimation from 'components/confetti-animation';
+import ConfettiAnimation from 'wcpay/components/confetti-animation';
 import { saveOption } from 'wcpay/data/settings/actions';
 import './style.scss';
 

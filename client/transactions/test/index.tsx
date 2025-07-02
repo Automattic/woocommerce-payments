@@ -19,7 +19,7 @@ import {
 	useSettings,
 	useTransactions,
 	useTransactionsSummary,
-} from 'data/index';
+} from 'wcpay/data';
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
 
@@ -39,7 +39,7 @@ jest.mock( '@wordpress/data', () => ( {
 	withSelect: jest.fn( () => jest.fn() ),
 } ) );
 
-jest.mock( 'data/index', () => ( {
+jest.mock( 'wcpay/data', () => ( {
 	useTransactions: jest.fn(),
 	useTransactionsSummary: jest.fn(),
 	useFraudOutcomeTransactionsSummary: jest.fn(),

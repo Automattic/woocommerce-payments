@@ -5,7 +5,7 @@
  */
 import reducer from '../reducer';
 import types from '../action-types';
-import { getResourceId } from 'utils/data';
+import { getResourceId } from 'wcpay/utils/data';
 
 describe( 'Transactions reducer tests', () => {
 	const mockQuery = { paged: '2', perPage: '50' };

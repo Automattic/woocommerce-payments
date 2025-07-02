@@ -8,9 +8,9 @@ import { waitFor } from '@testing-library/react';
  */
 import { expressCheckoutIframe } from '../express-checkout-iframe';
 import WCPayAPI from 'wcpay/checkout/api';
-import { getConfig } from 'utils/checkout';
+import { getConfig } from 'wcpay/utils/checkout';
 
-jest.mock( 'utils/checkout', () => ( {
+jest.mock( 'wcpay/utils/checkout', () => ( {
 	getConfig: jest.fn(),
 } ) );
 

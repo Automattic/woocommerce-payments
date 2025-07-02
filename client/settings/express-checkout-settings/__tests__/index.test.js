@@ -52,7 +52,7 @@ jest.mock( '@stripe/stripe-js', () => ( {
 	loadStripe: jest.fn().mockReturnValue( null ),
 } ) );
 
-jest.mock( 'utils/express-checkout', () => ( {
+jest.mock( 'wcpay/utils/express-checkout', () => ( {
 	getExpressCheckoutConfig: jest.fn().mockReturnValue( {
 		publishableKey: '123',
 		accountId: '0001',

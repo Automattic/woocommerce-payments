@@ -11,7 +11,7 @@ import { createInterpolateElement } from '@wordpress/element';
  * Internal dependencies
  */
 import './style.scss';
-import InlineNotice from 'components/inline-notice';
+import InlineNotice from 'wcpay/components/inline-notice';
 import { reasons } from 'wcpay/disputes/strings';
 import { Dispute } from 'wcpay/types/disputes';
 import { isInquiry } from 'wcpay/disputes/utils';

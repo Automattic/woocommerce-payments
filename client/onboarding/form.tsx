@@ -8,9 +8,9 @@ import { isEmpty, mapValues } from 'lodash';
 /**
  * Internal dependencies
  */
-import { useStepperContext } from 'components/stepper';
-import { Item as SelectItem } from 'components/custom-select-control';
-import { ListItem as GroupedSelectItem } from 'components/grouped-select-control';
+import { useStepperContext } from 'wcpay/components/stepper';
+import { Item as SelectItem } from 'wcpay/components/custom-select-control';
+import { ListItem as GroupedSelectItem } from 'wcpay/components/grouped-select-control';
 import {
 	GroupedSelectField,
 	GroupedSelectFieldProps,
@@ -18,7 +18,7 @@ import {
 	SelectFieldProps,
 	TextField,
 	TextFieldProps,
-} from 'components/form/fields';
+} from 'wcpay/components/form/fields';
 import { useOnboardingContext } from './context';
 import { OnboardingFields } from './types';
 import { useValidation } from './validation';

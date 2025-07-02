@@ -10,7 +10,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import RefundConfirmationModal from '../refund-confirm-modal';
-import { getConfig } from 'utils/order';
+import { getConfig } from 'wcpay/utils/order';
 import OrderStatusConfirmationModal from '../order-status-confirmation-modal';
 import React from 'react';
 

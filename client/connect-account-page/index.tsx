@@ -21,8 +21,8 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { recordEvent } from 'tracks';
-import Page from 'components/page';
-import BannerNotice from 'components/banner-notice';
+import Page from 'wcpay/components/page';
+import BannerNotice from 'wcpay/components/banner-notice';
 import Incentive from './incentive';
 import InfoNotice from './info-notice-modal';
 import OnboardingLocationCheckModal from './modal';
@@ -30,8 +30,8 @@ import LogoImg from 'assets/images/woopayments.svg?asset';
 import SetupImg from 'assets/images/illustrations/setup.svg?asset';
 import strings from './strings';
 import './style.scss';
-import InlineNotice from 'components/inline-notice';
-import { WooPaymentsMethodsLogos } from 'components/payment-method-logos';
+import InlineNotice from 'wcpay/components/inline-notice';
+import { WooPaymentsMethodsLogos } from 'wcpay/components/payment-method-logos';
 import WooLogo from 'assets/images/woo-logo.svg?asset';
 import { sanitizeHTML } from 'wcpay/utils/sanitize';
 import { isInTestModeOnboarding } from 'wcpay/utils';

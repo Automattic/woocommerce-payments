@@ -9,7 +9,7 @@ import type { Query } from '@woocommerce/navigation';
  */
 import reducer from '../reducer';
 import types from '../action-types';
-import { getResourceId } from 'utils/data';
+import { getResourceId } from 'wcpay/utils/data';
 import { Authorization } from 'wcpay/types/authorizations';
 import authorizationsFixture from './authorizations.fixture.json';
 import authorizationsSummaryFixture from './authorizations-summary.fixture.json';

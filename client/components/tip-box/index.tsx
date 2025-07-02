@@ -7,7 +7,7 @@ import clsx from 'clsx';
 /**
  * Internal dependencies
  */
-import LightbulbIcon from 'components/icons/lightbulb';
+import LightbulbIcon from 'wcpay/components/icons/lightbulb';
 import './style.scss';
 
 interface Props {

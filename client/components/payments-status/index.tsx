@@ -11,7 +11,7 @@ import React from 'react';
 /**
  * Internal dependencies
  */
-import 'components/account-status/shared.scss';
+import 'wcpay/components/account-status/shared.scss';
 import type { AccountStatus } from 'wcpay/types/account/account-status';
 
 interface PaymentsStatusProps {

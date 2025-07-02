@@ -15,8 +15,8 @@ import 'wp-mediaelement';
  */
 import './style.scss';
 import ConnectAccountPage from 'connect-account-page';
-import DepositsPage from 'deposits';
-import DepositDetailsPage from 'deposits/details';
+import DepositsPage from 'wcpay/deposits';
+import DepositDetailsPage from 'wcpay/deposits/details';
 import TransactionsPage from 'transactions';
 import PaymentDetailsPage from 'payment-details';
 import DisputesPage from 'disputes';

@@ -30,21 +30,24 @@ import {
 	getChargeChannel,
 	isOnHoldByFraudTools,
 	getBankName,
-} from 'utils/charge';
-import isValueTruthy from 'utils/is-value-truthy';
-import PaymentStatusChip from 'components/payment-status-chip';
-import PaymentMethodDetails from 'components/payment-method-details';
-import { HorizontalList, HorizontalListItem } from 'components/horizontal-list';
-import Loadable, { LoadableBlock } from 'components/loadable';
-import riskMappings from 'components/risk-level/strings';
-import OrderLink from 'components/order-link';
+} from 'wcpay/utils/charge';
+import isValueTruthy from 'wcpay/utils/is-value-truthy';
+import PaymentStatusChip from 'wcpay/components/payment-status-chip';
+import PaymentMethodDetails from 'wcpay/components/payment-method-details';
+import {
+	HorizontalList,
+	HorizontalListItem,
+} from 'wcpay/components/horizontal-list';
+import Loadable, { LoadableBlock } from 'wcpay/components/loadable';
+import riskMappings from 'wcpay/components/risk-level/strings';
+import OrderLink from 'wcpay/components/order-link';
 import {
 	formatCurrency,
 	formatExplicitCurrency,
 } from 'multi-currency/interface/functions';
-import CustomerLink from 'components/customer-link';
-import { ClickTooltip } from 'components/tooltip';
-import DisputeStatusChip from 'components/dispute-status-chip';
+import CustomerLink from 'wcpay/components/customer-link';
+import { ClickTooltip } from 'wcpay/components/tooltip';
+import DisputeStatusChip from 'wcpay/components/dispute-status-chip';
 import {
 	getDisputeFeeFormatted,
 	isAwaitingResponse,
@@ -62,7 +65,7 @@ import { PaymentIntent } from '../../types/payment-intents';
 import MissingOrderNotice from 'wcpay/payment-details/summary/missing-order-notice';
 import DisputeAwaitingResponseDetails from '../dispute-details/dispute-awaiting-response-details';
 import DisputeResolutionFooter from '../dispute-details/dispute-resolution-footer';
-import ErrorBoundary from 'components/error-boundary';
+import ErrorBoundary from 'wcpay/components/error-boundary';
 import RefundModal from 'wcpay/payment-details/summary/refund-modal';
 import {
 	formatDateTimeFromString,

@@ -10,13 +10,13 @@ import { Link } from '@woocommerce/components';
 /**
  * Internal dependencies.
  */
-import OrderLink from 'components/order-link';
-import { getDetailsURL } from 'components/details-link';
+import OrderLink from 'wcpay/components/order-link';
+import { getDetailsURL } from 'wcpay/components/details-link';
 import { reasons } from '../strings';
 import { formatStringValue } from 'utils';
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import './style.scss';
-import Loadable from 'components/loadable';
+import Loadable from 'wcpay/components/loadable';
 import { Dispute } from 'wcpay/types/disputes';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 

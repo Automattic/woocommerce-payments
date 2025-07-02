@@ -26,13 +26,16 @@ import { merge, some, flatten, isMatchWith } from 'lodash';
 import '../style.scss';
 import { useDisputeEvidence } from 'wcpay/data';
 import evidenceFields from './fields';
-import { FileUploadControl, UploadedReadOnly } from 'components/file-upload';
-import { TestModeNotice } from 'components/test-mode-notice';
+import {
+	FileUploadControl,
+	UploadedReadOnly,
+} from 'wcpay/components/file-upload';
+import { TestModeNotice } from 'wcpay/components/test-mode-notice';
 import Info from '../info';
-import Page from 'components/page';
-import ErrorBoundary from 'components/error-boundary';
-import Loadable, { LoadableBlock } from 'components/loadable';
-import useConfirmNavigation from 'utils/use-confirm-navigation';
+import Page from 'wcpay/components/page';
+import ErrorBoundary from 'wcpay/components/error-boundary';
+import Loadable, { LoadableBlock } from 'wcpay/components/loadable';
+import useConfirmNavigation from 'wcpay/utils/use-confirm-navigation';
 import { recordEvent } from 'tracks';
 import { getAdminUrl } from 'wcpay/utils';
 

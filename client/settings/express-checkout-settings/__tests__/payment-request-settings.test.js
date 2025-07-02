@@ -36,7 +36,7 @@ jest.mock( '../../../data', () => ( {
 jest.mock( '../payment-request-button-preview' );
 PaymentRequestButtonPreview.mockImplementation( () => '<></>' );
 
-jest.mock( 'utils/express-checkout', () => ( {
+jest.mock( 'wcpay/utils/express-checkout', () => ( {
 	getExpressCheckoutConfig: jest.fn().mockReturnValue( {
 		publishableKey: '123',
 		accountId: '0001',

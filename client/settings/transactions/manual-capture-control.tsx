@@ -21,7 +21,7 @@ import {
 import './style.scss';
 import ConfirmationModal from 'wcpay/components/confirmation-modal';
 import interpolateComponents from '@automattic/interpolate-components';
-import InlineNotice from 'components/inline-notice';
+import InlineNotice from 'wcpay/components/inline-notice';
 
 const ManualCaptureControl = (): JSX.Element => {
 	const [

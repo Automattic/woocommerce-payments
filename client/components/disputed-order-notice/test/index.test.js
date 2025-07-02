@@ -6,7 +6,7 @@ import { render, screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import DisputedOrderNoticeHandler from '../index';
+import DisputedOrderNoticeHandler from '..';
 import { useCharge } from 'wcpay/data';
 
 jest.mock( 'wcpay/data', () => ( {

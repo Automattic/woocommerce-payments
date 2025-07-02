@@ -10,17 +10,17 @@ import { TableCard } from '@woocommerce/components';
 /**
  * Internal dependencies.
  */
-import Page from 'components/page';
-import { TestModeNotice } from 'components/test-mode-notice';
-import ErrorBoundary from 'components/error-boundary';
-import ActiveLoanSummary from 'components/active-loan-summary';
+import Page from 'wcpay/components/page';
+import { TestModeNotice } from 'wcpay/components/test-mode-notice';
+import ErrorBoundary from 'wcpay/components/error-boundary';
+import ActiveLoanSummary from 'wcpay/components/active-loan-summary';
 import {
 	formatExplicitCurrency,
 	isZeroDecimalCurrency,
 } from 'multi-currency/interface/functions';
-import { CapitalLoan } from 'data/capital/types';
-import ClickableCell from 'components/clickable-cell';
-import Chip from 'components/chip';
+import { CapitalLoan } from 'wcpay/data/capital/types';
+import ClickableCell from 'wcpay/components/clickable-cell';
+import Chip from 'wcpay/components/chip';
 import { useLoans } from 'wcpay/data';
 import { getAdminUrl } from 'wcpay/utils';
 import './style.scss';

@@ -18,8 +18,8 @@ import { __ } from '@wordpress/i18n';
  */
 import AccountFees from './account-fees';
 import AccountStatusItem from './account-status-item';
-import DepositsStatus from 'components/deposits-status';
-import PaymentsStatus from 'components/payments-status';
+import DepositsStatus from 'wcpay/components/deposits-status';
+import PaymentsStatus from 'wcpay/components/payments-status';
 import StatusChip from './status-chip';
 import './style.scss';
 import './shared.scss';

@@ -7,7 +7,7 @@ import { render } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import ProtectionLevelModalNotice from '../index';
+import ProtectionLevelModalNotice from '..';
 
 describe( 'ProtectionLevelModalNotice', () => {
 	it( 'renders the standard notice when the level prop is standard', () => {

@@ -10,7 +10,7 @@ import { addQueryArgs } from '@wordpress/url';
 import { useOnboardingContext } from '../context';
 import { fromDotNotation } from '../utils';
 import { trackRedirected, useTrackAbandoned } from '../tracking';
-import LoadBar from 'components/load-bar';
+import LoadBar from 'wcpay/components/load-bar';
 import strings from '../strings';
 
 const LoadingStep: React.FC = () => {

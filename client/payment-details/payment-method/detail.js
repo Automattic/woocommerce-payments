@@ -7,7 +7,7 @@
 /**
  * Internal dependencies.
  */
-import Loadable from 'components/loadable';
+import Loadable from 'wcpay/components/loadable';
 
 const PaymentDetailsPaymentMethodDetail = ( props ) => {
 	const { label, children, isLoading } = props;

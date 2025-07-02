@@ -7,7 +7,7 @@ import React from 'react';
  * Internal dependencies
  */
 import { formatCurrency } from 'multi-currency/interface/functions';
-import Loadable from 'components/loadable';
+import Loadable from 'wcpay/components/loadable';
 
 /**
  * BalanceBlockProps

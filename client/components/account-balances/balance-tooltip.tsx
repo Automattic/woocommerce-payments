@@ -9,9 +9,9 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { ClickTooltip } from 'components/tooltip';
+import { ClickTooltip } from 'wcpay/components/tooltip';
 import { documentationUrls, fundLabelStrings } from './strings';
-import InlineNotice from 'components/inline-notice';
+import InlineNotice from 'wcpay/components/inline-notice';
 
 type TotalBalanceTooltipProps = {
 	balance: number;

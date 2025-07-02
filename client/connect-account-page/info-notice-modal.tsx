@@ -11,7 +11,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { recordEvent } from 'tracks';
-import TipBox from 'components/tip-box';
+import TipBox from 'wcpay/components/tip-box';
 import strings from './strings';
 import './style.scss';
 

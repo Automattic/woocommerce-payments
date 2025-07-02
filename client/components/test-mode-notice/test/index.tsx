@@ -7,8 +7,8 @@ import { render } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import { isInTestMode } from 'utils';
-import { TestModeNotice } from '../index';
+import { isInTestMode } from 'wcpay/utils';
+import { TestModeNotice } from '..';
 
 declare const global: {
 	wcSettings: { countries: Record< string, string > };
@@ -19,7 +19,7 @@ declare const global: {
 	};
 };
 
-jest.mock( 'utils', () => ( {
+jest.mock( 'wcpay/utils', () => ( {
 	isInTestMode: jest.fn(),
 	getPaymentSettingsUrl: jest.fn().mockReturnValue( 'https://example.com/' ),
 } ) );

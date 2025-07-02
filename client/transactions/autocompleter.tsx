@@ -10,7 +10,7 @@ import interpolateComponents from '@automattic/interpolate-components';
 /**
  * Internal dependencies
  */
-import computeSuggestionMatch from 'utils/compute-suggestion-match';
+import computeSuggestionMatch from 'wcpay/utils/compute-suggestion-match';
 
 /**
  * @typedef {Object} Completer

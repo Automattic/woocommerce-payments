@@ -6,7 +6,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { getConfig } from 'utils/checkout';
+import { getConfig } from 'wcpay/utils/checkout';
 import request from 'wcpay/checkout/utils/request';
 import { showErrorMessage } from 'wcpay/checkout/woopay/express-button/utils';
 import { buildAjaxURL } from 'wcpay/utils/express-checkout';

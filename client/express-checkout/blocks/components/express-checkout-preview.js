@@ -8,7 +8,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import InlineNotice from 'components/inline-notice';
+import InlineNotice from 'wcpay/components/inline-notice';
 import { getDefaultBorderRadius } from 'wcpay/utils/express-checkout';
 
 export const ExpressCheckoutPreviewComponent = ( {

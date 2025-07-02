@@ -16,28 +16,26 @@ import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 /**
  * Internal dependencies.
  */
-import { useDisputes, useDisputesSummary } from 'data/index';
-import OrderLink from 'components/order-link';
-import DisputeStatusChip from 'components/dispute-status-chip';
-import ClickableCell from 'components/clickable-cell';
-import DetailsLink, { getDetailsURL } from 'components/details-link';
-import Page from 'components/page';
-import { TestModeNotice } from 'components/test-mode-notice';
+import { useDisputes, useDisputesSummary, useSettings } from 'wcpay/data';
+import OrderLink from 'wcpay/components/order-link';
+import DisputeStatusChip from 'wcpay/components/dispute-status-chip';
+import ClickableCell from 'wcpay/components/clickable-cell';
+import DetailsLink, { getDetailsURL } from 'wcpay/components/details-link';
+import Page from 'wcpay/components/page';
+import { TestModeNotice } from 'wcpay/components/test-mode-notice';
 import { reasons } from './strings';
-import { formatStringValue } from 'utils';
+import { formatStringValue, applyThousandSeparator } from 'wcpay/utils';
 import {
 	formatExplicitCurrency,
 	formatExportAmount,
 } from 'multi-currency/interface/functions';
 import DisputesFilters from './filters';
-import DownloadButton from 'components/download-button';
+import DownloadButton from 'wcpay/components/download-button';
 import { CachedDispute, DisputesTableHeader } from 'wcpay/types/disputes';
 import {
 	getDisputesCSVRequestURL,
 	disputesDownloadEndpoint,
 } from 'wcpay/data/disputes/resolvers';
-import { applyThousandSeparator } from 'wcpay/utils';
-import { useSettings } from 'wcpay/data';
 import { isAwaitingResponse } from 'wcpay/disputes/utils';
 import './style.scss';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';

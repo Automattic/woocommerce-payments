@@ -7,7 +7,7 @@ import ReactDOM from 'react-dom';
 /**
  * Internal dependencies
  */
-import { getConfig } from 'utils/checkout';
+import { getConfig } from 'wcpay/utils/checkout';
 import { WoopayExpressCheckoutButton } from './woopay-express-checkout-button';
 import WCPayAPI from '../../api';
 import request from '../../utils/request';

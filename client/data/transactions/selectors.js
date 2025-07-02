@@ -3,7 +3,7 @@
 /**
  * Internal dependencies
  */
-import { getResourceId } from 'utils/data';
+import { getResourceId } from 'wcpay/utils/data';
 
 /**
  * Retrieves the transactions state from the wp.data store if the state

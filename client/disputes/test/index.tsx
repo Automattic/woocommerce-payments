@@ -10,7 +10,7 @@ import { useUserPreferences } from '@woocommerce/data';
  * Internal dependencies
  */
 import DisputesList from '..';
-import { useDisputes, useDisputesSummary, useSettings } from 'data/index';
+import { useDisputes, useDisputesSummary, useSettings } from 'wcpay/data';
 import React from 'react';
 import {
 	CachedDispute,
@@ -35,7 +35,7 @@ jest.mock( '@wordpress/data', () => ( {
 	withSelect: jest.fn( () => jest.fn() ),
 } ) );
 
-jest.mock( 'data/index', () => ( {
+jest.mock( 'wcpay/data', () => ( {
 	useDisputes: jest.fn(),
 	useDisputesSummary: jest.fn(),
 	useSettings: jest.fn(),

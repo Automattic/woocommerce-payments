@@ -16,8 +16,8 @@ import {
  * Internal dependencies
  */
 import PhoneNumberInput from 'settings/phone-input';
-import { getConfig } from 'utils/checkout';
-import { buildAjaxURL } from 'utils/express-checkout';
+import { getConfig } from 'wcpay/utils/checkout';
+import { buildAjaxURL } from 'wcpay/utils/express-checkout';
 import AdditionalInformation from './additional-information';
 import Agreement from './agreement';
 import Container from './container';

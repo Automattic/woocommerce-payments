@@ -9,7 +9,7 @@ import interpolateComponents from '@automattic/interpolate-components';
 /**
  * Internal dependencies
  */
-import { getConfig } from 'utils/checkout';
+import { getConfig } from 'wcpay/utils/checkout';
 
 interface apiResponse {
 	url: Location;

@@ -21,17 +21,17 @@ import {
 	formatExplicitCurrency,
 	formatExportAmount,
 } from 'multi-currency/interface/functions';
-import DetailsLink, { getDetailsURL } from 'components/details-link';
-import ClickableCell from 'components/clickable-cell';
+import DetailsLink, { getDetailsURL } from 'wcpay/components/details-link';
+import ClickableCell from 'wcpay/components/clickable-cell';
 import Page from '../../components/page';
 import DepositsFilters from '../filters';
-import DownloadButton from 'components/download-button';
+import DownloadButton from 'wcpay/components/download-button';
 import {
 	getPayoutsCSVRequestURL,
 	payoutsDownloadEndpoint,
 } from 'wcpay/data/deposits/resolvers';
-import { applyThousandSeparator } from '../../utils/index.js';
-import DepositStatusChip from 'components/deposit-status-chip';
+import { applyThousandSeparator } from '../../utils';
+import DepositStatusChip from 'wcpay/components/deposit-status-chip';
 import { useReportExport } from 'wcpay/hooks/use-report-export';
 
 import './style.scss';

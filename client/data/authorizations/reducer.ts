@@ -4,7 +4,7 @@
  * Internal dependencies
  */
 import TYPES from './action-types';
-import { getResourceId } from 'utils/data';
+import { getResourceId } from 'wcpay/utils/data';
 import {
 	AuthorizationsState,
 	SetErrorForAuthorizationsAction,

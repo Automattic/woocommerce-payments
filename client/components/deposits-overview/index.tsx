@@ -18,7 +18,7 @@ import { getHistory } from '@woocommerce/navigation';
 import { getAdminUrl } from 'wcpay/utils';
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import { recordEvent } from 'tracks';
-import Loadable from 'components/loadable';
+import Loadable from 'wcpay/components/loadable';
 import { useSelectedCurrencyOverview } from 'wcpay/overview/hooks';
 import RecentDepositsList from './recent-deposits-list';
 import DepositSchedule from './deposit-schedule';

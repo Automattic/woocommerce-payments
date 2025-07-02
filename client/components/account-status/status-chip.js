@@ -8,7 +8,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import Chip from 'components/chip';
+import Chip from 'wcpay/components/chip';
 import './style.scss';
 
 const StatusChip = ( props ) => {

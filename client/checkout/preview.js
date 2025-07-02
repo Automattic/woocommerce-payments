@@ -2,7 +2,7 @@
  * Internal dependencies
  */
 
-import { getConfig } from 'utils/checkout';
+import { getConfig } from 'wcpay/utils/checkout';
 
 /**
  * Checks whether we're in a preview context.

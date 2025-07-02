@@ -8,7 +8,7 @@ import { dispatch, select } from '@wordpress/data';
 /**
  * Internal dependencies
  */
-import { MaybeShowMerchantFeedbackPrompt } from '../index';
+import { MaybeShowMerchantFeedbackPrompt } from '..';
 import { recordEvent } from 'wcpay/tracks';
 import { NegativeFeedbackModal } from '../negative-modal';
 

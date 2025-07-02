@@ -11,9 +11,9 @@ import { __, sprintf } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import Page from 'components/page';
+import Page from 'wcpay/components/page';
 import TransactionsList from './list';
-import { TestModeNotice } from 'components/test-mode-notice';
+import { TestModeNotice } from 'wcpay/components/test-mode-notice';
 import Authorizations from './uncaptured';
 import './style.scss';
 import {

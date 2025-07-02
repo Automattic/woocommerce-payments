@@ -6,10 +6,10 @@ import { screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import '../index';
-import { getConfig } from 'utils/checkout';
+import '..';
+import { getConfig } from 'wcpay/utils/checkout';
 
-jest.mock( 'utils/checkout', () => ( {
+jest.mock( 'wcpay/utils/checkout', () => ( {
 	getConfig: jest.fn(),
 } ) );
 

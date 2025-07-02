@@ -6,7 +6,7 @@ import React from 'react';
 /**
  * Internal dependencies
  */
-import Chip, { ChipType } from 'components/chip';
+import Chip, { ChipType } from 'wcpay/components/chip';
 import type { CachedDeposit, DepositStatus } from 'wcpay/types/deposits';
 import { depositStatusLabels } from 'wcpay/deposits/strings';
 

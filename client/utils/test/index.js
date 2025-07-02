@@ -7,7 +7,7 @@ import {
 	getDocumentUrl,
 	getPaymentMethodSettingsUrl,
 	isVersionGreaterOrEqual,
-} from '../index';
+} from '..';
 
 describe( 'Utilities', () => {
 	test( 'payment method settings link matches expected', () => {

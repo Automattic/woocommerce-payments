@@ -13,7 +13,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies.
  */
-import Loadable from 'components/loadable';
+import Loadable from 'wcpay/components/loadable';
 import BancontactDetails from './bancontact';
 import BecsDetails from './becs';
 import CardDetails from './card';

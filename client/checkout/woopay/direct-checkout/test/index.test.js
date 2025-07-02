@@ -46,7 +46,7 @@ global.$ = jest.fn( () => ( {
 	},
 } ) );
 
-require( '../index.js' );
+require( '..' );
 
 describe( 'WooPay direct checkout window "load" event listener', () => {
 	beforeEach( () => {

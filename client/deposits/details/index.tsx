@@ -29,14 +29,14 @@ import clsx from 'clsx';
  * Internal dependencies.
  */
 import type { CachedDeposit } from 'types/deposits';
-import { useDeposit } from 'data';
+import { useDeposit } from 'wcpay/data';
 import TransactionsList from 'transactions/list';
-import { CopyButton } from 'components/copy-button';
-import Page from 'components/page';
-import ErrorBoundary from 'components/error-boundary';
-import { TestModeNotice } from 'components/test-mode-notice';
-import BannerNotice from 'components/banner-notice';
-import InlineNotice from 'components/inline-notice';
+import { CopyButton } from 'wcpay/components/copy-button';
+import Page from 'wcpay/components/page';
+import ErrorBoundary from 'wcpay/components/error-boundary';
+import { TestModeNotice } from 'wcpay/components/test-mode-notice';
+import BannerNotice from 'wcpay/components/banner-notice';
+import InlineNotice from 'wcpay/components/inline-notice';
 import {
 	formatCurrency,
 	formatExplicitCurrency,

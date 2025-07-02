@@ -10,7 +10,7 @@ import { useStripe } from '@stripe/react-stripe-js';
 /**
  * Internal dependencies
  */
-import InlineNotice from 'components/inline-notice';
+import InlineNotice from 'wcpay/components/inline-notice';
 import { WoopayExpressCheckoutButton } from 'wcpay/checkout/woopay/express-button/woopay-express-checkout-button';
 import {
 	usePaymentRequestButtonSize,

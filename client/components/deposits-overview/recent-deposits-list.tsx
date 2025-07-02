@@ -17,8 +17,8 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies.
  */
 import './style.scss';
-import DepositStatusChip from 'components/deposit-status-chip';
-import { getDepositDate } from 'deposits/utils';
+import DepositStatusChip from 'wcpay/components/deposit-status-chip';
+import { getDepositDate } from 'wcpay/deposits/utils';
 import { CachedDeposit } from 'wcpay/types/deposits';
 import { formatCurrency } from 'multi-currency/interface/functions';
 import { getDetailsURL } from 'wcpay/components/details-link';
