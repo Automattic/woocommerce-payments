@@ -386,8 +386,6 @@
 	.woocommerce-list__item-exit-active,
 	.woocommerce-list__item-exit-done,
 	.woocommerce-list__item {
-		// Try without !important first - if animations still appear, !important may be needed
-		// to override React Transition Group's inline styles
 		transition: none;
 		animation: none;
 		transform: none;
