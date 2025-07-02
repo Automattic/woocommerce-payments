@@ -21,6 +21,7 @@ import {
 	InspectorControls,
 	useBlockProps,
 } from '@wordpress/block-editor';
+import { WordPressComponentsContext } from 'wcpay/wordpress-components-context/context';
 
 registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 	apiVersion: 3,
@@ -202,138 +203,159 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 
 		return (
 			<div { ...blockProps }>
-				<InspectorControls key="setting">
-					<PanelBody
-						title={ __(
-							'Multi-Currency settings',
-							'woocommerce-payments'
-						) }
-					>
-						<a
-							href={
-								'/wp-admin/admin.php?page=wc-settings&tab=wcpay_multi_currency'
-							}
-							target="_blank"
-							rel="noreferrer"
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<InspectorControls key="setting">
+						<PanelBody
+							title={ __(
+								'Multi-Currency settings',
+								'woocommerce-payments'
+							) }
 						>
-							{ __(
-								'Adjust and edit your Multi-Currency settings',
-								'woocommerce-payments'
-							) }
-						</a>
-					</PanelBody>
-					<PanelBody title={ __( 'Layout', 'woocommerce-payments' ) }>
-						<CheckboxControl
-							label={ __(
-								'Display flags',
-								'woocommerce-payments'
-							) }
-							checked={ flag }
-							onChange={ onChangeFlag }
-						/>
+							<a
+								href={
+									'/wp-admin/admin.php?page=wc-settings&tab=wcpay_multi_currency'
+								}
+								target="_blank"
+								rel="noreferrer"
+							>
+								{ __(
+									'Adjust and edit your Multi-Currency settings',
+									'woocommerce-payments'
+								) }
+							</a>
+						</PanelBody>
+						<PanelBody
+							title={ __( 'Layout', 'woocommerce-payments' ) }
+						>
+							<CheckboxControl
+								label={ __(
+									'Display flags',
+									'woocommerce-payments'
+								) }
+								checked={ flag }
+								onChange={ onChangeFlag }
+								__nextHasNoMarginBottom
+							/>
 
-						<CheckboxControl
-							label={ __(
-								'Display currency symbols',
+							<CheckboxControl
+								label={ __(
+									'Display currency symbols',
+									'woocommerce-payments'
+								) }
+								checked={ symbol }
+								onChange={ onChangeSymbol }
+								__nextHasNoMarginBottom
+							/>
+
+							<CheckboxControl
+								label={ __( 'Border', 'woocommerce-payments' ) }
+								checked={ border }
+								onChange={ onChangeBorder }
+								__nextHasNoMarginBottom
+							/>
+
+							<RangeControl
+								label={ __(
+									'Border radius',
+									'woocommerce-payments'
+								) }
+								value={ borderRadius }
+								onChange={ onChangeBorderRadius }
+								min={ 1 }
+								max={ 20 }
+								__nextHasNoMarginBottom
+							/>
+						</PanelBody>
+						<PanelBody
+							title={ __( 'Typography', 'woocommerce-payments' ) }
+						>
+							<RangeControl
+								label={ __( 'Size', 'woocommerce-payments' ) }
+								value={ fontSize }
+								onChange={ onChangeFontSize }
+								min={ 6 }
+								max={ 48 }
+								__nextHasNoMarginBottom
+							/>
+							<RangeControl
+								label={ __(
+									'Line height',
+									'woocommerce-payments'
+								) }
+								value={ fontLineHeight }
+								onChange={ onChangeFontLineHeight }
+								min={ 1 }
+								max={ 3 }
+								step={ 0.1 }
+								__nextHasNoMarginBottom
+							/>
+						</PanelBody>
+						<PanelBody
+							title={ __(
+								'Color settings',
 								'woocommerce-payments'
 							) }
-							checked={ symbol }
-							onChange={ onChangeSymbol }
-						/>
+						>
+							<ColorPaletteControl
+								onChange={ onChangeFontColor }
+								value={ fontColor }
+								label={ __( 'Text', 'woocommerce-payments' ) }
+							/>
 
-						<CheckboxControl
-							label={ __( 'Border', 'woocommerce-payments' ) }
-							checked={ border }
-							onChange={ onChangeBorder }
-						/>
+							<ColorPaletteControl
+								onChange={ onChangeBackgroundColor }
+								value={ backgroundColor }
+								label={ __(
+									'Background',
+									'woocommerce-payments'
+								) }
+							/>
 
-						<RangeControl
-							label={ __(
-								'Border radius',
-								'woocommerce-payments'
-							) }
-							value={ borderRadius }
-							onChange={ onChangeBorderRadius }
-							min={ 1 }
-							max={ 20 }
-						/>
-					</PanelBody>
-					<PanelBody
-						title={ __( 'Typography', 'woocommerce-payments' ) }
+							<ColorPaletteControl
+								onChange={ onChangeBorderColor }
+								value={ borderColor }
+								label={ __( 'Border', 'woocommerce-payments' ) }
+							/>
+						</PanelBody>
+					</InspectorControls>
+
+					<div
+						className="currency-switcher-holder"
+						style={ styles.div }
 					>
-						<RangeControl
-							label={ __( 'Size', 'woocommerce-payments' ) }
-							value={ fontSize }
-							onChange={ onChangeFontSize }
-							min={ 6 }
-							max={ 48 }
-						/>
-						<RangeControl
-							label={ __(
-								'Line height',
-								'woocommerce-payments'
-							) }
-							value={ fontLineHeight }
-							onChange={ onChangeFontLineHeight }
-							min={ 1 }
-							max={ 3 }
-							step={ 0.1 }
-						/>
-					</PanelBody>
-					<PanelBody
-						title={ __( 'Color settings', 'woocommerce-payments' ) }
-					>
-						<ColorPaletteControl
-							onChange={ onChangeFontColor }
-							value={ fontColor }
-							label={ __( 'Text', 'woocommerce-payments' ) }
-						/>
-
-						<ColorPaletteControl
-							onChange={ onChangeBackgroundColor }
-							value={ backgroundColor }
-							label={ __( 'Background', 'woocommerce-payments' ) }
-						/>
-
-						<ColorPaletteControl
-							onChange={ onChangeBorderColor }
-							value={ borderColor }
-							label={ __( 'Border', 'woocommerce-payments' ) }
-						/>
-					</PanelBody>
-				</InspectorControls>
-
-				<div className="currency-switcher-holder" style={ styles.div }>
-					<select
-						name="currency"
-						disabled={ isLoading }
-						style={ styles.select }
-					>
-						{ isLoading && (
-							<option>
-								{ __( 'Loading…', 'woocommerce-payments' ) }
-							</option>
-						) }
-						{ ! isLoading &&
-							enabledCurrencies &&
-							enabledKeys.map( ( code ) => (
-								<option
-									key={ enabledCurrencies[ code ].id }
-									value={ enabledCurrencies[ code ].code }
-								>
-									{ supportsFlagEmoji && flag
-										? enabledCurrencies[ code ].flag + ' '
-										: '' }
-									{ symbol &&
-									enabledCurrencies[ code ].symbol !==
-										enabledCurrencies[ code ].code
-										? enabledCurrencies[ code ].symbol + ' '
-										: '' }
-									{ enabledCurrencies[ code ].code }
+						<select
+							name="currency"
+							disabled={ isLoading }
+							style={ styles.select }
+						>
+							{ isLoading && (
+								<option>
+									{ __( 'Loading…', 'woocommerce-payments' ) }
 								</option>
-							) ) }
-					</select>
-				</div>
+							) }
+							{ ! isLoading &&
+								enabledCurrencies &&
+								enabledKeys.map( ( code ) => (
+									<option
+										key={ enabledCurrencies[ code ].id }
+										value={ enabledCurrencies[ code ].code }
+									>
+										{ supportsFlagEmoji && flag
+											? enabledCurrencies[ code ].flag +
+											  ' '
+											: '' }
+										{ symbol &&
+										enabledCurrencies[ code ].symbol !==
+											enabledCurrencies[ code ].code
+											? enabledCurrencies[ code ].symbol +
+											  ' '
+											: '' }
+										{ enabledCurrencies[ code ].code }
+									</option>
+								) ) }
+						</select>
+					</div>
+				</WordPressComponentsContext.Provider>
 			</div>
 		);
 	},
