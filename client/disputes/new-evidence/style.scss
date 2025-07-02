@@ -385,3 +385,21 @@
 		width: 100%;
 	}
 }
+
+// Disable React Transition Group animations for HorizontalList in evidence summary
+// Higher specificity selector to target only the specific HorizontalList instance
+.evidence-summary__body .woocommerce-list--horizontal {
+	.woocommerce-list__item-enter,
+	.woocommerce-list__item-enter-active,
+	.woocommerce-list__item-enter-done,
+	.woocommerce-list__item-exit,
+	.woocommerce-list__item-exit-active,
+	.woocommerce-list__item-exit-done,
+	.woocommerce-list__item {
+		transition: none;
+		animation: none;
+		transform: none;
+		opacity: 1;
+		max-height: none;
+	}
+}

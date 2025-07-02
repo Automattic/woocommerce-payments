@@ -1076,11 +1076,7 @@ export default ( { query }: { query: { id: string } } ) => {
 									{ dispute && (
 										<DisputeNotice
 											dispute={ dispute }
-											isUrgent={
-												dispute.evidence_details
-													?.due_by <
-												Date.now() / 1000
-											}
+											isUrgent={ true }
 											paymentMethod={
 												dispute.payment_method_details
 													?.type || null
