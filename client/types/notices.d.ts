@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+// eslint-disable-next-line no-restricted-syntax
 import { Notice } from '@wordpress/components';
 
 interface ActionButton extends Notice.ButtonAction {

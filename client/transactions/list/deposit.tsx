@@ -6,7 +6,7 @@
 import React from 'react';
 import { __ } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
-import { ExternalLink } from '@wordpress/components';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
 import { Link } from '@woocommerce/components';
 import InfoOutlineIcon from 'gridicons/dist/info-outline';
 

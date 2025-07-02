@@ -2,6 +2,7 @@
  * External dependencies
  */
 import React, { ComponentProps } from 'react';
+// eslint-disable-next-line no-restricted-syntax
 import {
 	Flex as BundledWordPressComponentsFlex,
 	FlexItem as BundledWordPressComponentsFlexItem,

@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import apiFetch from '@wordpress/api-fetch';
 import { __, sprintf } from '@wordpress/i18n';
 import { useDispatch } from '@wordpress/data';
@@ -142,6 +142,11 @@ export default ( { query }: { query: { id: string } } ) => {
 		'refund_has_been_issued'
 	);
 	const [ duplicateStatus, setDuplicateStatus ] = useState( 'is_duplicate' );
+
+	// Refs for heading elements to focus on step navigation
+	const stepHeadingRefs = useRef< {
+		[ key: number ]: HTMLHeadingElement | null;
+	} >( {} );
 
 	// --- Data loading ---
 	useEffect( () => {
@@ -447,6 +452,25 @@ export default ( { query }: { query: { id: string } } ) => {
 		// Scroll to top of page
 		window.scrollTo( { top: 0, behavior: 'smooth' } );
 	};
+
+	const handleStepBack = ( step: number ) => {
+		setCurrentStep( step );
+		// Scroll to top of page
+		window.scrollTo( { top: 0, behavior: 'smooth' } );
+	};
+
+	// Focus on heading when step changes
+	useEffect( () => {
+		// Use setTimeout to ensure the DOM has updated with the new step content
+		const timeoutId = setTimeout( () => {
+			const headingRef = stepHeadingRefs.current[ currentStep ];
+			if ( headingRef ) {
+				headingRef.focus();
+			}
+		}, 100 );
+
+		return () => clearTimeout( timeoutId );
+	}, [ currentStep ] );
 
 	const updateProductType = ( newType: string ) => {
 		recordEvent( 'wcpay_dispute_product_selected', { selection: newType } );
@@ -767,7 +791,11 @@ export default ( { query }: { query: { id: string } } ) => {
 		if ( currentStep === 0 ) {
 			return (
 				<>
-					<h2 className="wcpay-dispute-evidence-new__stepper-title">
+					<h2
+						className="wcpay-dispute-evidence-new__stepper-title"
+						ref={ ( el ) => ( stepHeadingRefs.current[ 0 ] = el ) }
+						tabIndex={ -1 }
+					>
 						{ steps[ 0 ].heading }
 					</h2>
 					<p className="wcpay-dispute-evidence-new__stepper-subheading">
@@ -812,7 +840,11 @@ export default ( { query }: { query: { id: string } } ) => {
 		if ( hasShipping && currentStep === 1 ) {
 			return (
 				<>
-					<h2 className="wcpay-dispute-evidence-new__stepper-title">
+					<h2
+						className="wcpay-dispute-evidence-new__stepper-title"
+						ref={ ( el ) => ( stepHeadingRefs.current[ 1 ] = el ) }
+						tabIndex={ -1 }
+					>
 						{ steps[ 1 ].heading }
 					</h2>
 					<p className="wcpay-dispute-evidence-new__stepper-subheading">
@@ -844,7 +876,13 @@ export default ( { query }: { query: { id: string } } ) => {
 		if ( currentStep === reviewStep ) {
 			return (
 				<>
-					<h2 className="wcpay-dispute-evidence-new__stepper-title">
+					<h2
+						className="wcpay-dispute-evidence-new__stepper-title"
+						ref={ ( el ) =>
+							( stepHeadingRefs.current[ reviewStep ] = el )
+						}
+						tabIndex={ -1 }
+					>
 						{ steps[ reviewStep ].heading }
 					</h2>
 					<p className="wcpay-dispute-evidence-new__stepper-subheading">
@@ -957,7 +995,7 @@ export default ( { query }: { query: { id: string } } ) => {
 				<div className="wcpay-dispute-evidence-new__button-row">
 					<Button
 						variant="secondary"
-						onClick={ () => setCurrentStep( ( s ) => s - 1 ) }
+						onClick={ () => handleStepBack( currentStep - 1 ) }
 						icon={ chevronLeft }
 						iconPosition="left"
 					>
@@ -995,7 +1033,7 @@ export default ( { query }: { query: { id: string } } ) => {
 					variant="secondary"
 					icon={ chevronLeft }
 					iconPosition="left"
-					onClick={ () => setCurrentStep( ( s ) => s - 1 ) }
+					onClick={ () => handleStepBack( currentStep - 1 ) }
 				>
 					{ __( 'Back', 'woocommerce-payments' ) }
 				</Button>

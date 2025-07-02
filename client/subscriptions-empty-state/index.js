@@ -4,7 +4,7 @@
 import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement, render, useState } from '@wordpress/element';
-import { Button } from '@wordpress/components';
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 
 import { recordEvent } from '../tracks';
 import UnconnectedImage from 'assets/images/subscriptions-empty-state-unconnected.svg?asset';

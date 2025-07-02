@@ -19,7 +19,7 @@ import {
 	getCurrentBaseFee,
 	getTransactionsPaymentMethodName,
 } from 'utils/account-fees';
-import { CardDivider } from '@wordpress/components';
+import { CardDivider } from 'wcpay/components/wp-components-wrapped';
 import './styles.scss';
 
 const AccountFee = ( props ) => {

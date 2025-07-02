@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
  */
 import { TestModeNotice } from '../../components/test-mode-notice';
 import Page from '../../components/page';
-import { Card, CardBody } from '@wordpress/components';
+import { Card, CardBody } from 'wcpay/components/wp-components-wrapped';
 import ErrorBoundary from '../../components/error-boundary';
 import PaymentDetailsSummary from '../summary';
 import PaymentDetailsTimeline from '../timeline';

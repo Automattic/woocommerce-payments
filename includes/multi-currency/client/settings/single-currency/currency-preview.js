@@ -4,7 +4,8 @@
  */
 import React, { useCallback, useEffect, useState } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Card, CardBody } from '@wordpress/components';
+import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
+import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
 import { TextControlWithAffixes } from '@woocommerce/components';
 import {
 	formatCurrency,
