@@ -64,31 +64,48 @@ This document describes our strategy for progressively migrating from bundled `@
 
     **Note**: For Disputes, this configuration was redundant since we are already passing the context per page. But for other cases where we need to externalize components to specific paths, this configuration is useful.
 
-2. **Component Context System**
+2. **Component Wrapping System**
+   We use a `makeWrappedComponent` utility that creates wrapped components:
    ```typescript
-   // WordPressComponentsContext provides access to core components
-   const context = useContext(WordPressComponentsContext);
-   
-   // Components can use either bundled or core versions
-   const { useBundledComponent, ...rest } = props;
-   if (!context || useBundledComponent) {
-       return <BundledComponent {...rest} />;
-   }
-   
-   const { Component } = context;
-   return <Component {...rest} />;
+   // makeWrappedComponent utility
+   export const makeWrappedComponent = <T extends React.ComponentType<any>, N extends string>(
+     BundledComponent: T,
+     componentName: N
+   ) =>
+     React.forwardRef<any, ComponentProps<T> & { useBundledComponent?: boolean }>(
+       (props, ref) => {
+         const { useBundledComponent, ...rest } = props;
+         const context = useContext(WordPressComponentsContext);
+
+         if (!context || useBundledComponent) {
+           return <BundledComponent {...rest} ref={ref} />;
+         }
+
+         const ContextComponent = context[componentName as keyof typeof context];
+         return <ContextComponent {...rest} ref={ref} />;
+       }
+     );
    ```
    This system:
-   - Provides runtime flexibility
-   - Maintains backward compatibility
+   - Provides runtime flexibility between bundled and context components
+   - Maintains backward compatibility with `useBundledComponent` prop
    - Allows gradual migration
+   - Properly forwards refs to underlying components
+   - Uses TypeScript generics for type safety
 
    **Using Wrapped Components**
-   We've already wrapped common WordPress components in `client/components/wp-components-wrapped/index.tsx`. Instead of implementing the context logic yourself, you can simply:
+   We've already wrapped common WordPress components in `client/components/wp-components-wrapped/`. Each component is exported as an individual file using a shared `makeWrappedComponent` utility. This approach enables Webpack's tree-shaking mechanism to work more effectively, allowing consumers to import only the specific components they need.
 
    ```diff
    // Before
    - import { Button, Card, Notice } from '@wordpress/components';
+   
+   // Import individual components for better tree-shaking
+   + import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
+   + import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
+   + import { Notice } from 'wcpay/components/wp-components-wrapped/components/notice';
+   
+   // Or import from the main index file
    + import { Button, Card, Notice } from 'wcpay/components/wp-components-wrapped';
    
    // The components will automatically handle the context switching
@@ -192,17 +209,19 @@ This document describes our strategy for progressively migrating from bundled `@
    - import { Button, Card, Notice } from '@wordpress/components';
    + import { Button, Card, Notice } from 'wcpay/components/wp-components-wrapped';
    ```
-   - If it doesn't exist, add it to the wrapped components file:
+   - If it doesn't exist, add it to the wrapped components:
+   ```typescript
+   // client/components/wp-components-wrapped/components/new-component.tsx
+   import { NewComponent as BundledNewComponent } from '@wordpress/components';
+   import { makeWrappedComponent } from '../make-wrapped-component';
+   
+   export const NewComponent = makeWrappedComponent( BundledNewComponent, 'NewComponent' );
+   ```
+   
+   - Then export it from the main index file:
    ```typescript
    // client/components/wp-components-wrapped/index.tsx
-   export const NewComponent = (props) => {
-     const context = useContext(WordPressComponentsContext);
-     if (!context) {
-       return <BundledComponent {...props} />;
-     }
-     const { Component } = context;
-     return <Component {...props} />;
-   };
+   export { NewComponent } from './components/new-component';
    ```
 
 4. **Wrap Custom Components**

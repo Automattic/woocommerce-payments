@@ -55,6 +55,7 @@ import {
 import { RecommendedDocument } from './types';
 
 import './style.scss';
+import RefundStatus from './refund-status';
 
 // --- Utility: Determine if shipping is required for a given reason ---
 const ReasonsNeedShipping = [
@@ -136,6 +137,9 @@ export default ( { query }: { query: { id: string } } ) => {
 	} = useDispatch( 'core/notices' );
 	const settings = useGetSettings();
 	const bankName = dispute?.charge ? getBankName( dispute.charge ) : null;
+	const [ refundStatus, setRefundStatus ] = useState(
+		'refund_has_been_issued'
+	);
 
 	// --- Data loading ---
 	useEffect( () => {
@@ -188,7 +192,8 @@ export default ( { query }: { query: { id: string } } ) => {
 						d,
 						getBusinessDetails(),
 						settings,
-						bankName
+						bankName,
+						refundStatus
 					);
 					setIsCoverLetterManuallyEdited(
 						savedCoverLetter !== generatedContent
@@ -199,7 +204,8 @@ export default ( { query }: { query: { id: string } } ) => {
 						d,
 						getBusinessDetails(),
 						settings,
-						bankName
+						bankName,
+						refundStatus
 					);
 					setCoverLetter( generatedCoverLetter );
 					setIsCoverLetterManuallyEdited( false );
@@ -209,7 +215,7 @@ export default ( { query }: { query: { id: string } } ) => {
 			}
 		};
 		fetchDispute();
-	}, [ path, createErrorNotice, settings, bankName ] );
+	}, [ path, createErrorNotice, settings, bankName, refundStatus ] );
 
 	// --- File name display logic ---
 	useEffect( () => {
@@ -259,7 +265,8 @@ export default ( { query }: { query: { id: string } } ) => {
 			dispute,
 			getBusinessDetails(),
 			settings,
-			bankName
+			bankName,
+			refundStatus
 		);
 		setCoverLetter( generatedCoverLetter );
 	}, [
@@ -273,6 +280,7 @@ export default ( { query }: { query: { id: string } } ) => {
 		shippingDate,
 		shippingTrackingNumber,
 		shippingAddress,
+		refundStatus,
 	] );
 
 	// --- Step logic ---
@@ -589,7 +597,7 @@ export default ( { query }: { query: { id: string } } ) => {
 	// --- Accordion summary content ---
 	const summaryItems = useMemo( () => {
 		if ( ! dispute ) return [];
-		const disputeReasonSummary = reasons[ dispute.reason ]?.summary || [];
+		const disputeReasonSummary = reasons[ disputeReason ]?.summary || [];
 		return [
 			{
 				title: __( 'Dispute Amount', 'woocommerce-payments' ),
@@ -611,7 +619,7 @@ export default ( { query }: { query: { id: string } } ) => {
 				title: __( 'Reason', 'woocommerce-payments' ),
 				content: (
 					<>
-						{ reasons[ dispute.reason ]?.display || dispute.reason }
+						{ reasons[ disputeReason ]?.display || disputeReason }
 						{ disputeReasonSummary.length > 0 && (
 							<ClickTooltip
 								buttonLabel={ __(
@@ -621,8 +629,8 @@ export default ( { query }: { query: { id: string } } ) => {
 								content={
 									<div className="dispute-reason-tooltip">
 										<p>
-											{ reasons[ dispute.reason ]
-												?.display || dispute.reason }
+											{ reasons[ disputeReason ]
+												?.display || disputeReason }
 										</p>
 										<Paragraphs>
 											{ disputeReasonSummary }
@@ -659,7 +667,7 @@ export default ( { query }: { query: { id: string } } ) => {
 				content: <OrderLink order={ dispute.order } />,
 			},
 		];
-	}, [ dispute ] );
+	}, [ dispute, disputeReason ] );
 
 	// --- Recommended documents ---
 	const recommendedDocumentFields = getRecommendedDocumentFields(
@@ -758,6 +766,16 @@ export default ( { query }: { query: { id: string } } ) => {
 						onProductDescriptionChange={ updateProductDescription }
 						readOnly={ readOnly }
 					/>
+					{ /* only show if the dispute reason is credit_not_processed */ }
+					{ disputeReason === 'credit_not_processed' && (
+						<RefundStatus
+							refundStatus={ refundStatus }
+							onRefundStatusChange={
+								setRefundStatus as ( value: string ) => void
+							}
+							readOnly={ readOnly }
+						/>
+					) }
 					<RecommendedDocuments
 						fields={ recommendedDocumentsFields }
 						readOnly={ readOnly }
@@ -833,7 +851,8 @@ export default ( { query }: { query: { id: string } } ) => {
 									dispute,
 									getBusinessDetails(),
 									settings,
-									bankName
+									bankName,
+									refundStatus
 								);
 								setCoverLetter( generatedContent );
 								setIsCoverLetterManuallyEdited( false );
@@ -845,7 +864,8 @@ export default ( { query }: { query: { id: string } } ) => {
 								dispute,
 								getBusinessDetails(),
 								settings,
-								bankName
+								bankName,
+								refundStatus
 							);
 							setCoverLetter( newValue );
 							setIsCoverLetterManuallyEdited(

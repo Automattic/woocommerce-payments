@@ -4,15 +4,14 @@
 import React, { forwardRef } from 'react';
 import clsx from 'clsx';
 import { chevronUp, chevronDown } from '@wordpress/icons';
-// eslint-disable-next-line no-restricted-syntax
-import { Button } from '@wordpress/components';
+import { Icon } from 'wcpay/components/wp-components-wrapped/components/icon';
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 
 /**
  * Internal dependencies
  */
 import type { AccordionTitleProps } from './types';
 import type { WordPressComponentProps } from '@wordpress/components/ui/context/wordpress-component';
-import { Icon } from 'wcpay/components/wp-components-wrapped';
 import AccordionSubtitle from './subtitle';
 import './style.scss';
 
@@ -35,7 +34,8 @@ const AccordionTitle = forwardRef<
 						'is-md': md,
 						'is-lg': lg,
 					} ) }
-					ref={ ref as React.Ref< HTMLButtonElement > }
+					// @ts-expect-error: there is a type discrepancy between the wrapped WP components and the bundled components.
+					ref={ ref }
 					{ ...props }
 				>
 					{ /*
