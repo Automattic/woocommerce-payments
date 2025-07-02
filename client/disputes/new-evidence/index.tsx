@@ -30,7 +30,7 @@ import {
 	generateCoverLetter,
 	getBusinessDetails,
 } from './cover-letter-generator';
-import { useGetSettings } from 'wcpay/data';
+import { useGetSettings, useDisputeEvidence } from 'wcpay/data';
 import CustomerDetails from './customer-details';
 import ProductDetails from './product-details';
 import RecommendedDocuments from './recommended-documents';
@@ -137,6 +137,7 @@ export default ( { query }: { query: { id: string } } ) => {
 		createErrorNotice,
 		createInfoNotice,
 	} = useDispatch( 'core/notices' );
+	const { updateDispute: updateDisputeInStore } = useDisputeEvidence();
 	const settings = useGetSettings();
 	const bankName = dispute?.charge ? getBankName( dispute.charge ) : null;
 	const [ refundStatus, setRefundStatus ] = useState(
@@ -318,6 +319,62 @@ export default ( { query }: { query: { id: string } } ) => {
 		Object.values( isUploading ).some( Boolean );
 
 	// --- Save/submit logic ---
+	const handleSaveSuccess = ( submit: boolean ) => {
+		const message = submit
+			? __( 'Evidence submitted!', 'woocommerce-payments' )
+			: __( 'Evidence saved!', 'woocommerce-payments' );
+
+		recordEvent(
+			submit
+				? 'wcpay_dispute_submit_evidence_success'
+				: 'wcpay_dispute_save_evidence_success'
+		);
+
+		createSuccessNotice( message, {
+			id: submit
+				? 'evidence-submitted'
+				: `evidence-saved-${ dispute.id }`,
+			actions: submit
+				? [
+						{
+							label: __(
+								'View submitted evidence',
+								'woocommerce-payments'
+							),
+							url: getAdminUrl( {
+								page: 'wc-admin',
+								path: '/payments/disputes/challenge',
+								id: query.id,
+							} ),
+						},
+				  ]
+				: [],
+		} );
+
+		// Only redirect after submission, not after save
+		if ( submit ) {
+			setRedirectAfterSave( true );
+		}
+	};
+
+	const handleSaveError = ( err: any, submit: boolean ) => {
+		recordEvent(
+			submit
+				? 'wcpay_dispute_submit_evidence_failed'
+				: 'wcpay_dispute_save_evidence_failed'
+		);
+
+		const message = submit
+			? __( 'Failed to submit evidence. (%s)', 'woocommerce-payments' )
+			: __( 'Failed to save evidence. (%s)', 'woocommerce-payments' );
+		createErrorNotice(
+			sprintf(
+				message,
+				err instanceof Error ? err.message : String( err )
+			)
+		);
+	};
+
 	const doSave = async ( submit: boolean ) => {
 		// Prevent submit if upload is in progress
 		if ( isUploadingEvidence() ) {
@@ -335,32 +392,6 @@ export default ( { query }: { query: { id: string } } ) => {
 				submit
 					? 'wcpay_dispute_submit_evidence_clicked'
 					: 'wcpay_dispute_save_evidence_clicked'
-			);
-
-			createSuccessNotice(
-				submit
-					? __( 'Evidence submitted!', 'woocommerce-payments' )
-					: __( 'Evidence saved!', 'woocommerce-payments' ),
-				{
-					id: submit
-						? 'evidence-submitted'
-						: `evidence-saved-${ dispute.id }`,
-					actions: submit
-						? [
-								{
-									label: __(
-										'View submitted evidence',
-										'woocommerce-payments'
-									),
-									url: getAdminUrl( {
-										page: 'wc-admin',
-										path: '/payments/disputes/challenge',
-										id: query.id,
-									} ),
-								},
-						  ]
-						: [],
-				}
 			);
 
 			// Only include file keys in the evidence object if they have a non-empty value
@@ -406,33 +437,11 @@ export default ( { query }: { query: { id: string } } ) => {
 			} );
 
 			setDispute( updatedDispute );
-
-			recordEvent(
-				submit
-					? 'wcpay_dispute_submit_evidence_success'
-					: 'wcpay_dispute_save_evidence_success'
-			);
-
-			setRedirectAfterSave( true );
+			setEvidence( {} );
+			handleSaveSuccess( submit );
+			updateDisputeInStore( updatedDispute as any );
 		} catch ( err ) {
-			recordEvent(
-				submit
-					? 'wcpay_dispute_submit_evidence_failed'
-					: 'wcpay_dispute_save_evidence_failed'
-			);
-
-			const message = submit
-				? __(
-						'Failed to submit evidence. (%s)',
-						'woocommerce-payments'
-				  )
-				: __( 'Failed to save evidence. (%s)', 'woocommerce-payments' );
-			createErrorNotice(
-				sprintf(
-					message,
-					err instanceof Error ? err.message : String( err )
-				)
-			);
+			handleSaveError( err, submit );
 		}
 	};
 
@@ -610,27 +619,40 @@ export default ( { query }: { query: { id: string } } ) => {
 	};
 
 	// --- Navigation warning ---
-	const pristine = useMemo(
-		() =>
-			JSON.stringify( evidence ) ===
-			JSON.stringify( dispute?.evidence || {} ),
-		[ evidence, dispute ]
-	);
 	const confirmationNavigationCallback = useConfirmNavigation( () => {
-		if ( pristine || redirectAfterSave || readOnly ) return;
+		if ( redirectAfterSave || readOnly ) return;
 		return __(
 			'There are unsaved changes on this page. Are you sure you want to leave and discard the unsaved changes?',
 			'woocommerce-payments'
 		);
 	} );
+
+	// Store the cleanup function from the navigation confirmation
+	const [ navigationCleanup, setNavigationCleanup ] = useState<
+		( () => void ) | null
+	>( null );
+
 	useEffect( () => {
-		confirmationNavigationCallback();
-	}, [
-		pristine,
-		confirmationNavigationCallback,
-		redirectAfterSave,
-		readOnly,
-	] );
+		const cleanup = confirmationNavigationCallback();
+		setNavigationCleanup( cleanup );
+	}, [ confirmationNavigationCallback, redirectAfterSave, readOnly ] );
+
+	// Redirect after successful submission only
+	useEffect( () => {
+		if ( redirectAfterSave ) {
+			// Clean up navigation confirmation before redirecting
+			if ( navigationCleanup ) {
+				navigationCleanup();
+			}
+
+			const href = getAdminUrl( {
+				page: 'wc-admin',
+				path: '/payments/disputes',
+				filter: 'awaiting_response',
+			} );
+			window.location.replace( href );
+		}
+	}, [ redirectAfterSave, navigationCleanup ] );
 
 	// --- Accordion summary content ---
 	const summaryItems = useMemo( () => {
