@@ -220,6 +220,15 @@
 		}
 	}
 
+	&__steps {
+		&__response-date {
+			&--urgent {
+				color: var( --Gutenberg-Alert-Red, #cc1818 );
+				font-weight: 700;
+			}
+		}
+	}
+
 	&__notice {
 		.dispute-steps__notice-content {
 			.components-notice__content {
