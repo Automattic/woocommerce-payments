@@ -167,7 +167,6 @@ class WC_Payments_Admin {
 		add_action( 'admin_init', [ $this, 'maybe_redirect_from_payments_admin_child_pages' ], 16 );
 		add_action( 'admin_enqueue_scripts', [ $this, 'register_payments_scripts' ], 9 );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_payments_scripts' ], 9 );
-		add_action( 'woocommerce_admin_field_payment_gateways', [ $this, 'payment_gateways_container' ] );
 		add_action( 'woocommerce_admin_order_totals_after_total', [ $this, 'show_woopay_payment_method_name_admin' ] );
 		add_action( 'woocommerce_admin_order_totals_after_total', [ $this, 'display_wcpay_transaction_fee' ] );
 		add_action( 'admin_init', [ $this, 'redirect_deposits_to_payouts' ] );
@@ -673,21 +672,6 @@ class WC_Payments_Admin {
 			'all'
 		);
 
-		WC_Payments::register_script_with_dependencies( 'WCPAY_PAYMENT_GATEWAYS_PAGE', 'dist/payment-gateways' );
-		wp_add_inline_script(
-			'WCPAY_PAYMENT_GATEWAYS_PAGE',
-			new Woo_Payments_Payment_Method_Definitions(),
-			'before'
-		);
-
-		WC_Payments_Utils::register_style(
-			'WCPAY_PAYMENT_GATEWAYS_PAGE',
-			plugins_url( 'dist/payment-gateways.css', WCPAY_PLUGIN_FILE ),
-			[ 'wc-components' ],
-			WC_Payments::get_file_version( 'dist/payment-gateways.css' ),
-			'all'
-		);
-
 		WC_Payments::register_script_with_dependencies( 'WCPAY_PLUGINS_PAGE', 'dist/plugins-page', [ 'wp-api-request' ] );
 		wp_set_script_translations( 'WCPAY_PLUGINS_PAGE', 'woocommerce-payments' );
 
@@ -704,7 +688,7 @@ class WC_Payments_Admin {
 	 * Load the assets
 	 */
 	public function enqueue_payments_scripts() {
-		global $current_tab, $current_section;
+		global $current_tab;
 
 		// Enqueue the admin settings assets on any WCPay settings page.
 		// We also need to enqueue and localize on the multi-currency tab.
@@ -781,17 +765,6 @@ class WC_Payments_Admin {
 
 			wp_enqueue_script( 'WCPAY_TOS' );
 			wp_enqueue_style( 'WCPAY_TOS' );
-		}
-
-		$is_payment_methods_page = (
-			is_admin() &&
-			$current_tab && ! $current_section
-			&& 'checkout' === $current_tab
-		);
-
-		if ( $is_payment_methods_page ) {
-			wp_enqueue_script( 'WCPAY_PAYMENT_GATEWAYS_PAGE' );
-			wp_enqueue_style( 'WCPAY_PAYMENT_GATEWAYS_PAGE' );
 		}
 
 		$screen = get_current_screen();
@@ -1202,16 +1175,6 @@ class WC_Payments_Admin {
 		}
 
 		return false;
-	}
-
-	/**
-	 * Adds a container to the "payment gateways" page.
-	 * This is where the "Are you sure you want to disable WCPay?" confirmation dialog is rendered.
-	 */
-	public function payment_gateways_container() {
-		?>
-		<div id="wcpay-payment-gateways-container" />
-		<?php
 	}
 
 	/**
