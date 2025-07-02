@@ -35,7 +35,7 @@ const cards: Array< CardType > = [
 	[
 		'declined-expired',
 		config.cards[ 'declined-expired' ],
-		'Error: Your card has expired.',
+		"Your card's expiration date is in the past.",
 	],
 	[
 		'declined-cvc',

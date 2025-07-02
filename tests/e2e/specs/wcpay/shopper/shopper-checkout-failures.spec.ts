@@ -42,7 +42,10 @@ test.describe(
 			);
 			await shopper.placeOrder( page );
 
-			await waitForBanner( page, 'Error: Your card has expired.' );
+			await waitForBanner(
+				page,
+				"Your card's expiration date is in the past."
+			);
 		} );
 
 		test( 'should throw an error that the card CVV number is invalid', async ( {
@@ -93,7 +96,10 @@ test.describe(
 			);
 			await shopper.placeOrder( page );
 
-			await waitForBanner( page, 'Error: Your card has expired.' );
+			await waitForBanner(
+				page,
+				"Your card's expiration date is in the past."
+			);
 		} );
 
 		test( 'should throw an error that the card was declined due to incorrect CVC number', async ( {
