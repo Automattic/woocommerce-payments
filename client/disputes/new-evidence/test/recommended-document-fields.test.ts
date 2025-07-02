@@ -12,10 +12,13 @@ describe( 'Recommended Documents', () => {
 	describe( 'getRecommendedDocumentFields', () => {
 		it( 'should return default fields when no specific reason is provided', () => {
 			const result = getRecommendedDocumentFields( '' );
-			expect( result ).toHaveLength( 3 ); // Default fields
+			expect( result ).toHaveLength( 6 ); // Default fields + fields for the "general" reason
 			expect( result[ 0 ].key ).toBe( 'receipt' );
 			expect( result[ 1 ].key ).toBe( 'customer_communication' );
-			expect( result[ 2 ].key ).toBe( 'uncategorized_file' );
+			expect( result[ 2 ].key ).toBe( 'access_activity_log' );
+			expect( result[ 3 ].key ).toBe( 'refund_policy' );
+			expect( result[ 4 ].key ).toBe( 'service_documentation' );
+			expect( result[ 5 ].key ).toBe( 'uncategorized_file' );
 		} );
 
 		it( 'should return fields for product_unacceptable reason', () => {
@@ -91,14 +94,13 @@ describe( 'Recommended Documents', () => {
 				"A screenshot of your store's terms of service."
 			);
 
-			expect( result ).toHaveLength( 7 );
+			expect( result ).toHaveLength( 6 );
 			expect( result[ 0 ].key ).toBe( 'receipt' );
 			expect( result[ 1 ].key ).toBe( 'customer_communication' );
-			expect( result[ 2 ].key ).toBe( 'customer_signature' );
-			expect( result[ 3 ].key ).toBe( 'access_activity_log' );
-			expect( result[ 4 ].key ).toBe( 'refund_policy' );
-			expect( result[ 5 ].key ).toBe( 'service_documentation' );
-			expect( result[ 6 ].key ).toBe( 'uncategorized_file' );
+			expect( result[ 2 ].key ).toBe( 'access_activity_log' );
+			expect( result[ 3 ].key ).toBe( 'refund_policy' );
+			expect( result[ 4 ].key ).toBe( 'service_documentation' );
+			expect( result[ 5 ].key ).toBe( 'uncategorized_file' );
 		} );
 
 		it( 'should maintain correct order of fields', () => {

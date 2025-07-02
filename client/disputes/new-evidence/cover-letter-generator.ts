@@ -149,7 +149,7 @@ ${ __( 'Subject:', 'woocommerce-payments' ) } ${ __(
 	) } – ${ __( 'Case', 'woocommerce-payments' ) } #${ data.caseNumber }`;
 };
 
-const generateBodyFallback = (
+const generateBodyUnrecognized = (
 	data: CoverLetterData,
 	dispute: ExtendedDispute,
 	attachmentsList: string
@@ -420,10 +420,6 @@ export const generateBody = (
 		);
 	}
 
-	if ( dispute.reason === 'general' ) {
-		return generateBodyGeneral( data, dispute, attachmentsList );
-	}
-
 	if ( dispute.reason === 'subscription_canceled' ) {
 		return generateBodySubscriptionCanceled(
 			data,
@@ -432,7 +428,15 @@ export const generateBody = (
 		);
 	}
 
-	return generateBodyFallback( data, dispute, attachmentsList );
+	if (
+		dispute.reason === 'duplicate' ||
+		dispute.reason === 'fraudulent' ||
+		dispute.reason === 'unrecognized'
+	) {
+		return generateBodyUnrecognized( data, dispute, attachmentsList );
+	}
+
+	return generateBodyGeneral( data, dispute, attachmentsList );
 };
 
 export const generateClosing = ( data: CoverLetterData ): string => {

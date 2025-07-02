@@ -284,7 +284,7 @@ const getRecommendedDocumentFields = (
 	// Combine default fields with reason-specific fields
 	const allFields = [
 		...orderedFields,
-		...( reasonSpecificFields[ reason ] || [] ),
+		...( reasonSpecificFields[ reason ] || reasonSpecificFields.general ),
 	];
 
 	// Sort fields by order and remove the order property
