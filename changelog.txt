@@ -1,5 +1,36 @@
 *** WooPayments Changelog ***
 
+= 9.6.0 - 2025-07-02 =
+* Add - Add cover letter for the new evidence submission screen for Product Unacceptable chargeback reason
+* Add - Added a URL parameter to allow merchants to access the VAT details modal.
+* Add - Show an admin notice when bundled subscriptions are in use
+* Fix - Add NO VAT description for Norway in tax descriptions
+* Fix - fix: ensure Google Pay/Apple Pay postcode matching for shipping zones works even when the provided postcode is redacted.
+* Fix - Fix a layout shift when uploading evidence for a dispute on the new challenge dispute screen
+* Fix - Fix mobile version of the StepperPanel and make the top navigation clickable.
+* Fix - Fix padding on the recommended document section
+* Fix - Fix payment methods logos width calculation in block editor preview
+* Fix - Fix preselected Payment Methods ignored during account creation via KYC session.
+* Fix - Fix spacing on disputes expandable block
+* Fix - Fix state for the cover letter.
+* Fix - Fix the browser print preview page on the payouts page.
+* Fix - Prevent double stock reduction after (3DS) authentication.
+* Fix - Prevent fatal error on the Pay for Order page upon deleted orders.
+* Update - Change the copy of the cover letter notice.
+* Update - Clicking on the Next button scroll the page position to the top.
+* Update - Evidence submission form for product not received
+* Update - fix: update Google Pay/Apple Pay buttons compatibility when multi-currency functionality is disabled - they'll no longer throw an exception for logged-out customers
+* Update - Refine "Temporarily Suspended" language, statuses and tooltip copy
+* Update - update: add `wcpay_express_checkout_js_params` filter for express checkout JS params.
+* Update - Updates the recomended documents section for the new disputes experience
+* Dev - Add missing arrow icons from the new evidence form
+* Dev - Ensure the submitted state is working as expected
+* Dev - Fix the regexp checking for the loading state of the checkout button to cover changes in latest WooCommerce.
+* Dev - Remove CTA from the new evidence "Evidence saved!" toast.
+* Dev - Revert @woocommerce/onboarding upgrade in PR 10840
+* Dev - Update reviewers for dependabot
+* Dev - Update tested WooCommerce version to 10.0.0
+
 = 9.5.0 - 2025-06-11 =
 * Add - Add specific texts for collecting Norway and New Zealand tax data
 * Add - Add specific texts for collecting Singapore tax data
