@@ -2,7 +2,8 @@
  * External dependencies
  */
 import React, { useContext } from 'react';
-import { CardBody as BundledWordPressComponentsCardBody } from 'wcpay/components/wp-components-wrapped';
+// eslint-disable-next-line no-restricted-syntax
+import { CardBody as BundledWordPressComponentsCardBody } from '@wordpress/components';
 import clsx from 'clsx';
 
 /**
@@ -27,6 +28,7 @@ const WcpayCardBody: React.FC< React.PropsWithChildren<
 			<BundledWordPressComponentsCardBody
 				className={ clsx( 'wcpay-card-body', className ) }
 				{ ...props }
+				data-wcpay-bundled-wp-component="true"
 			/>
 		);
 	}
