@@ -195,9 +195,44 @@ export default ( { query }: { query: { id: string } } ) => {
 				const savedCoverLetter = d.evidence?.uncategorized_text;
 				if ( savedCoverLetter ) {
 					setCoverLetter( savedCoverLetter );
+					// Create a dispute object with current evidence state for comparison
+					const disputeWithCurrentEvidence = {
+						...d,
+						evidence: {
+							...d.evidence,
+							product_description:
+								d.evidence?.product_description || '',
+							receipt: d.evidence?.receipt || '',
+							customer_communication:
+								d.evidence?.customer_communication || '',
+							customer_signature:
+								d.evidence?.customer_signature || '',
+							refund_policy: d.evidence?.refund_policy || '',
+							duplicate_charge_documentation:
+								d.evidence?.duplicate_charge_documentation ||
+								'',
+							shipping_documentation:
+								d.evidence?.shipping_documentation || '',
+							service_documentation:
+								d.evidence?.service_documentation || '',
+							cancellation_policy:
+								d.evidence?.cancellation_policy || '',
+							access_activity_log:
+								d.evidence?.access_activity_log || '',
+							uncategorized_file:
+								d.evidence?.uncategorized_file || '',
+							shipping_carrier:
+								d.evidence?.shipping_carrier || '',
+							shipping_date: d.evidence?.shipping_date || '',
+							shipping_tracking_number:
+								d.evidence?.shipping_tracking_number || '',
+							shipping_address:
+								d.evidence?.shipping_address || '',
+						},
+					};
 					// Only mark as manually edited if it differs from what would be auto-generated
 					const generatedContent = generateCoverLetter(
-						d,
+						disputeWithCurrentEvidence,
 						getBusinessDetails(),
 						settings,
 						bankName,
@@ -276,17 +311,49 @@ export default ( { query }: { query: { id: string } } ) => {
 
 	// Update cover letter when evidence changes
 	useEffect( () => {
-		if ( ! dispute || ! settings || isCoverLetterManuallyEdited ) return;
+		if ( ! dispute || ! settings ) return;
+
+		// Create a dispute object with current evidence state for generation
+		const disputeWithCurrentEvidence = {
+			...dispute,
+			evidence: {
+				...dispute.evidence,
+				product_description: productDescription,
+				receipt: evidence.receipt,
+				customer_communication: evidence.customer_communication,
+				customer_signature: evidence.customer_signature,
+				refund_policy: evidence.refund_policy,
+				duplicate_charge_documentation:
+					evidence.duplicate_charge_documentation,
+				shipping_documentation: evidence.shipping_documentation,
+				service_documentation: evidence.service_documentation,
+				cancellation_policy: evidence.cancellation_policy,
+				access_activity_log: evidence.access_activity_log,
+				uncategorized_file: evidence.uncategorized_file,
+				shipping_carrier: shippingCarrier,
+				shipping_date: shippingDate,
+				shipping_tracking_number: shippingTrackingNumber,
+				shipping_address: shippingAddress,
+			},
+		};
 
 		const generatedCoverLetter = generateCoverLetter(
-			dispute,
+			disputeWithCurrentEvidence,
 			getBusinessDetails(),
 			settings,
 			bankName,
 			refundStatus,
 			duplicateStatus
 		);
-		setCoverLetter( generatedCoverLetter );
+
+		// Only auto-update if not manually edited, or if the current content matches what was previously generated
+		if (
+			! isCoverLetterManuallyEdited ||
+			coverLetter === generatedCoverLetter
+		) {
+			setCoverLetter( generatedCoverLetter );
+			setIsCoverLetterManuallyEdited( false );
+		}
 	}, [
 		dispute,
 		settings,
@@ -300,6 +367,7 @@ export default ( { query }: { query: { id: string } } ) => {
 		shippingAddress,
 		refundStatus,
 		duplicateStatus,
+		coverLetter,
 	] );
 
 	// --- Step logic ---
@@ -909,10 +977,41 @@ export default ( { query }: { query: { id: string } } ) => {
 								return;
 							}
 
+							// Create a dispute object with current evidence state for generation
+							const disputeWithCurrentEvidence = {
+								...dispute,
+								evidence: {
+									...dispute.evidence,
+									product_description: productDescription,
+									receipt: evidence.receipt,
+									customer_communication:
+										evidence.customer_communication,
+									customer_signature:
+										evidence.customer_signature,
+									refund_policy: evidence.refund_policy,
+									duplicate_charge_documentation:
+										evidence.duplicate_charge_documentation,
+									shipping_documentation:
+										evidence.shipping_documentation,
+									service_documentation:
+										evidence.service_documentation,
+									cancellation_policy:
+										evidence.cancellation_policy,
+									access_activity_log:
+										evidence.access_activity_log,
+									uncategorized_file:
+										evidence.uncategorized_file,
+									shipping_carrier: shippingCarrier,
+									shipping_date: shippingDate,
+									shipping_tracking_number: shippingTrackingNumber,
+									shipping_address: shippingAddress,
+								},
+							};
+
 							// If the value is empty, regenerate the content
 							if ( newValue.trim() === '' ) {
 								const generatedContent = generateCoverLetter(
-									dispute,
+									disputeWithCurrentEvidence,
 									getBusinessDetails(),
 									settings,
 									bankName,
@@ -926,7 +1025,7 @@ export default ( { query }: { query: { id: string } } ) => {
 
 							// Compare with what would be auto-generated
 							const generatedContent = generateCoverLetter(
-								dispute,
+								disputeWithCurrentEvidence,
 								getBusinessDetails(),
 								settings,
 								bankName,
