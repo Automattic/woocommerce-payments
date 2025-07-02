@@ -56,6 +56,7 @@ import { RecommendedDocument } from './types';
 
 import './style.scss';
 import RefundStatus from './refund-status';
+import DuplicateStatus from './duplicate-status';
 
 // --- Utility: Determine if shipping is required for a given reason ---
 const ReasonsNeedShipping = [
@@ -141,6 +142,7 @@ export default ( { query }: { query: { id: string } } ) => {
 	const [ refundStatus, setRefundStatus ] = useState(
 		'refund_has_been_issued'
 	);
+	const [ duplicateStatus, setDuplicateStatus ] = useState( 'is_duplicate' );
 
 	// Refs for heading elements to focus on step navigation
 	const stepHeadingRefs = useRef< {
@@ -199,7 +201,8 @@ export default ( { query }: { query: { id: string } } ) => {
 						getBusinessDetails(),
 						settings,
 						bankName,
-						refundStatus
+						refundStatus,
+						duplicateStatus
 					);
 					setIsCoverLetterManuallyEdited(
 						savedCoverLetter !== generatedContent
@@ -211,7 +214,8 @@ export default ( { query }: { query: { id: string } } ) => {
 						getBusinessDetails(),
 						settings,
 						bankName,
-						refundStatus
+						refundStatus,
+						duplicateStatus
 					);
 					setCoverLetter( generatedCoverLetter );
 					setIsCoverLetterManuallyEdited( false );
@@ -221,7 +225,14 @@ export default ( { query }: { query: { id: string } } ) => {
 			}
 		};
 		fetchDispute();
-	}, [ path, createErrorNotice, settings, bankName, refundStatus ] );
+	}, [
+		path,
+		createErrorNotice,
+		settings,
+		bankName,
+		refundStatus,
+		duplicateStatus,
+	] );
 
 	// --- File name display logic ---
 	useEffect( () => {
@@ -272,7 +283,8 @@ export default ( { query }: { query: { id: string } } ) => {
 			getBusinessDetails(),
 			settings,
 			bankName,
-			refundStatus
+			refundStatus,
+			duplicateStatus
 		);
 		setCoverLetter( generatedCoverLetter );
 	}, [
@@ -287,6 +299,7 @@ export default ( { query }: { query: { id: string } } ) => {
 		shippingTrackingNumber,
 		shippingAddress,
 		refundStatus,
+		duplicateStatus,
 	] );
 
 	// --- Step logic ---
@@ -696,7 +709,9 @@ export default ( { query }: { query: { id: string } } ) => {
 
 	// --- Recommended documents ---
 	const recommendedDocumentFields = getRecommendedDocumentFields(
-		disputeReason
+		disputeReason,
+		disputeReason === 'credit_not_processed' ? refundStatus : undefined,
+		disputeReason === 'duplicate' ? duplicateStatus : undefined
 	);
 
 	const recommendedShippingDocumentFields = getRecommendedShippingDocumentFields();
@@ -805,6 +820,16 @@ export default ( { query }: { query: { id: string } } ) => {
 							readOnly={ readOnly }
 						/>
 					) }
+					{ /* only show if the dispute reason is duplicate */ }
+					{ disputeReason === 'duplicate' && (
+						<DuplicateStatus
+							duplicateStatus={ duplicateStatus }
+							onDuplicateStatusChange={
+								setDuplicateStatus as ( value: string ) => void
+							}
+							readOnly={ readOnly }
+						/>
+					) }
 					<RecommendedDocuments
 						fields={ recommendedDocumentsFields }
 						readOnly={ readOnly }
@@ -891,7 +916,8 @@ export default ( { query }: { query: { id: string } } ) => {
 									getBusinessDetails(),
 									settings,
 									bankName,
-									refundStatus
+									refundStatus,
+									duplicateStatus
 								);
 								setCoverLetter( generatedContent );
 								setIsCoverLetterManuallyEdited( false );
@@ -904,7 +930,8 @@ export default ( { query }: { query: { id: string } } ) => {
 								getBusinessDetails(),
 								settings,
 								bankName,
-								refundStatus
+								refundStatus,
+								duplicateStatus
 							);
 							setCoverLetter( newValue );
 							setIsCoverLetterManuallyEdited(
