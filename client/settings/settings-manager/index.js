@@ -3,7 +3,7 @@
  * External dependencies
  */
 import React, { useState, useEffect, useLayoutEffect } from 'react';
-import { ExternalLink } from '@wordpress/components';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
 import { __, sprintf } from '@wordpress/i18n';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { dispatch } from '@wordpress/data';

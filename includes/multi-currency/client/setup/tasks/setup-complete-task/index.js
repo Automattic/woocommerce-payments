@@ -4,7 +4,7 @@
 import React from 'react';
 import { useEffect, useContext } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
-import { Button } from '@wordpress/components';
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 
 /**
  * Internal dependencies

@@ -3,7 +3,7 @@
  * External dependencies
  */
 import React, { useState } from 'react';
-import { Button } from '@wordpress/components';
+import { Button } from 'wcpay/components/wp-components-wrapped';
 import { __ } from '@wordpress/i18n';
 
 /**

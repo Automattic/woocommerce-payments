@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React, { useContext } from 'react';
-import { TabPanel } from '@wordpress/components';
+import { TabPanel } from 'wcpay/components/wp-components-wrapped';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { __, sprintf } from '@wordpress/i18n';
 

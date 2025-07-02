@@ -2,7 +2,11 @@
  * External dependencies
  */
 import React from 'react';
-import { CardHeader, Flex, FlexItem } from '@wordpress/components';
+import {
+	CardHeader,
+	Flex,
+	FlexItem,
+} from 'wcpay/components/wp-components-wrapped';
 import { __, sprintf } from '@wordpress/i18n';
 
 /**
