@@ -56,15 +56,6 @@ const getRecommendedDocumentFields = (
 			order: 20,
 		},
 		{
-			key: DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE,
-			label: __( "Customer's signature", 'woocommerce-payments' ),
-			description: __(
-				"Any relevant documents showing the customer's signature, such as signed proof of delivery.",
-				'woocommerce-payments'
-			),
-			order: 30,
-		},
-		{
 			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
 			label: __( 'Other documents', 'woocommerce-payments' ),
 			description: __(
@@ -81,6 +72,15 @@ const getRecommendedDocumentFields = (
 		Array< RecommendedDocument >
 	> = {
 		credit_not_processed: [
+			{
+				key: DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE,
+				label: __( "Customer's signature", 'woocommerce-payments' ),
+				description: __(
+					"Any relevant documents showing the customer's signature, such as signed proof of delivery.",
+					'woocommerce-payments'
+				),
+				order: 30,
+			},
 			{
 				key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
 				label: __( 'Store refund policy', 'woocommerce-payments' ),
@@ -102,6 +102,15 @@ const getRecommendedDocumentFields = (
 		],
 		duplicate: [
 			{
+				key: DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE,
+				label: __( "Customer's signature", 'woocommerce-payments' ),
+				description: __(
+					"Any relevant documents showing the customer's signature, such as signed proof of delivery.",
+					'woocommerce-payments'
+				),
+				order: 30,
+			},
+			{
 				key: DOCUMENT_FIELD_KEYS.DUPLICATE_CHARGE_DOCUMENTATION,
 				label: __(
 					'Documentation for the duplicate charge',
@@ -116,28 +125,46 @@ const getRecommendedDocumentFields = (
 		],
 		subscription_canceled: [
 			{
-				key: DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
-				label: __( 'Cancellation policy', 'woocommerce-payments' ),
-				description: __(
-					"A screenshot of your store's cancellation policy.",
-					'woocommerce-payments'
-				),
-				order: 40,
-			},
-			{
 				key: DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
 				label: __(
 					'Proof of active subscription',
 					'woocommerce-payments'
 				),
 				description: __(
-					'Such as billing history, subscription status, or cancellation logs.',
+					'Any documents showing the billing history, subscription status, or cancellation logs, for example.',
+					'woocommerce-payments'
+				),
+				order: 30,
+			},
+			{
+				key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+				label: __( 'Store refund policy', 'woocommerce-payments' ),
+				description: __(
+					"A screenshot of your store's refund policy.",
+					'woocommerce-payments'
+				),
+				order: 40,
+			},
+			{
+				key: DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
+				label: __( 'Terms of service', 'woocommerce-payments' ),
+				description: __(
+					"A screenshot of your store's terms of service.",
 					'woocommerce-payments'
 				),
 				order: 50,
 			},
 		],
 		fraudulent: [
+			{
+				key: DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE,
+				label: __( "Customer's signature", 'woocommerce-payments' ),
+				description: __(
+					"Any relevant documents showing the customer's signature, such as signed proof of delivery.",
+					'woocommerce-payments'
+				),
+				order: 30,
+			},
 			{
 				key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
 				label: __( 'Store refund policy', 'woocommerce-payments' ),
@@ -150,6 +177,15 @@ const getRecommendedDocumentFields = (
 		],
 		product_not_received: [
 			{
+				key: DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE,
+				label: __( "Customer's signature", 'woocommerce-payments' ),
+				description: __(
+					"Any relevant documents showing the customer's signature, such as signed proof of delivery.",
+					'woocommerce-payments'
+				),
+				order: 30,
+			},
+			{
 				key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
 				label: __( 'Store refund policy', 'woocommerce-payments' ),
 				description: __(
@@ -160,6 +196,15 @@ const getRecommendedDocumentFields = (
 			},
 		],
 		product_unacceptable: [
+			{
+				key: DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE,
+				label: __( "Customer's signature", 'woocommerce-payments' ),
+				description: __(
+					"Any relevant documents showing the customer's signature, such as signed proof of delivery.",
+					'woocommerce-payments'
+				),
+				order: 30,
+			},
 			{
 				key: DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION,
 				label: __( 'Item condition', 'woocommerce-payments' ),
@@ -180,6 +225,15 @@ const getRecommendedDocumentFields = (
 			},
 		],
 		unrecognized: [
+			{
+				key: DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE,
+				label: __( "Customer's signature", 'woocommerce-payments' ),
+				description: __(
+					"Any relevant documents showing the customer's signature, such as signed proof of delivery.",
+					'woocommerce-payments'
+				),
+				order: 30,
+			},
 			{
 				key: DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
 				label: __(
