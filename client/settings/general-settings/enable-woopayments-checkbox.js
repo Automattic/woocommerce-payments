@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-import { CheckboxControl } from '@wordpress/components';
+import { CheckboxControl } from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies

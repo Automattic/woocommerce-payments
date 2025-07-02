@@ -12,11 +12,9 @@ import {
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import {
-	CheckboxControl,
-	PanelBody,
-	RangeControl,
-} from '@wordpress/components';
+import { CheckboxControl } from 'wcpay/components/wp-components-wrapped/components/checkbox-control';
+import { PanelBody } from 'wcpay/components/wp-components-wrapped/components/panel-body';
+import { RangeControl } from 'wcpay/components/wp-components-wrapped/components/range-control';
 import { registerBlockType } from '@wordpress/blocks';
 import {
 	ColorPaletteControl,

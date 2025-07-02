@@ -12,7 +12,7 @@ import { __ } from '@wordpress/i18n';
 import { useEffect, renderToString } from '@wordpress/element';
 import { speak } from '@wordpress/a11y';
 import clsx from 'clsx';
-import { Icon, Button } from '@wordpress/components';
+import { Icon, Button } from 'wcpay/components/wp-components-wrapped';
 import { check, info } from '@wordpress/icons';
 import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 import NoticeIcon from 'gridicons/dist/notice';
@@ -136,6 +136,7 @@ const BannerNotice: React.FC< React.PropsWithChildren< Props > > = ( {
 			{ iconToDisplay && (
 				<Icon
 					icon={ iconToDisplay }
+					// @ts-expect-error: className is not a prop defined in the WP Icon component.
 					className="wcpay-banner-notice__icon"
 				/>
 			) }

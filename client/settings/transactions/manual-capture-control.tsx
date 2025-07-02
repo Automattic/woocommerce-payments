@@ -4,7 +4,11 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { CheckboxControl, Button, ExternalLink } from '@wordpress/components';
+import {
+	CheckboxControl,
+	Button,
+	ExternalLink,
+} from 'wcpay/components/wp-components-wrapped';
 import { useState } from '@wordpress/element';
 /**
  * Internal dependencies

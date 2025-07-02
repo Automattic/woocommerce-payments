@@ -11,7 +11,7 @@ import {
 	CardBody,
 	Panel,
 	PanelBody,
-} from '@wordpress/components';
+} from 'wcpay/components/wp-components-wrapped';
 import apiFetch from '@wordpress/api-fetch';
 import { addQueryArgs } from '@wordpress/url';
 import { Loader } from '@woocommerce/onboarding';

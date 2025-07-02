@@ -102,6 +102,10 @@
 			{
 				"selector": "ImportDeclaration[source.value=/gridicons(?!\\u002F)/]",
 				"message": "Do not import whole Gridicons, import them individually with 'gridicons/dist/icon-name'."
+			},
+			{
+				"selector": "ImportDeclaration[source.value='@wordpress/components']",
+				"message": "Do not import from '@wordpress/components' directly. Use components from 'wcpay/components/wp-components-wrapped' instead."
 			}
 		]
 	},

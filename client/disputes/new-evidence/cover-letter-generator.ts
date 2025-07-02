@@ -363,6 +363,42 @@ ${ __(
 ) }`;
 };
 
+const generateBodySubscriptionCanceled = (
+	data: CoverLetterData,
+	dispute: ExtendedDispute,
+	attachmentsList: string
+): string => {
+	return `${ __(
+		'We are submitting evidence in response to chargeback',
+		'woocommerce-payments'
+	) } #${ data.caseNumber } ${ __(
+		'for transaction',
+		'woocommerce-payments'
+	) } #${ data.transactionId } ${ __( 'on', 'woocommerce-payments' ) } ${
+		data.transactionDate
+	}.
+
+${ __( 'Our records indicate that the customer,', 'woocommerce-payments' ) } ${
+		data.customerName
+	}, ${ __( 'subscribed to', 'woocommerce-payments' ) } ${
+		data.product
+	} ${ __(
+		"and was billed according to the terms accepted at the time of signup. The customer's account remained active and no cancellation was recorded prior to the billing date.",
+		'woocommerce-payments'
+	) }
+
+${ __(
+	'To support our case, we are providing the following documentation:',
+	'woocommerce-payments'
+) }
+${ attachmentsList }
+
+${ __(
+	'Based on this information, we respectfully request that the chargeback be reversed. Please let us know if any further details are required.',
+	'woocommerce-payments'
+) }`;
+};
+
 export const generateBody = (
 	data: CoverLetterData,
 	dispute: ExtendedDispute,
@@ -386,6 +422,14 @@ export const generateBody = (
 
 	if ( dispute.reason === 'general' ) {
 		return generateBodyGeneral( data, dispute, attachmentsList );
+	}
+
+	if ( dispute.reason === 'subscription_canceled' ) {
+		return generateBodySubscriptionCanceled(
+			data,
+			dispute,
+			attachmentsList
+		);
 	}
 
 	return generateBodyFallback( data, dispute, attachmentsList );

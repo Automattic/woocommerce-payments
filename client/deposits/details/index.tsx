@@ -5,15 +5,18 @@
  */
 import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
+// eslint-disable-next-line no-restricted-syntax
+import {
+	// @ts-expect-error: Suppressing Module '"@wordpress/components"' has no exported member '__experimentalText'.
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis -- used by TableCard component which we replicate here.
+	__experimentalText as Text,
+} from '@wordpress/components';
 import {
 	Card,
 	CardBody,
 	CardHeader,
 	ExternalLink,
-	// @ts-expect-error: Suppressing Module '"@wordpress/components"' has no exported member '__experimentalText'.
-	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis -- used by TableCard component which we replicate here.
-	__experimentalText as Text,
-} from '@wordpress/components';
+} from 'wcpay/components/wp-components-wrapped';
 import {
 	SummaryListPlaceholder,
 	SummaryList,

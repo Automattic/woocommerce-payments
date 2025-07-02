@@ -8,7 +8,7 @@ import {
 	Flex,
 	FlexItem,
 	Icon,
-} from '@wordpress/components';
+} from 'wcpay/components/wp-components-wrapped';
 import { calendar } from '@wordpress/icons';
 import { Link } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';

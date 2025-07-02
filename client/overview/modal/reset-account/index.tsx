@@ -2,7 +2,11 @@
  * External dependencies
  */
 import React, { useState } from 'react';
-import { Button, CardDivider, Modal } from '@wordpress/components';
+import {
+	Button,
+	CardDivider,
+	Modal,
+} from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies
