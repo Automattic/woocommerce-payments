@@ -48,6 +48,7 @@ export interface CoverLetterData {
 	orderDate: string;
 	deliveryDate: string;
 	refundStatus?: string;
+	duplicateStatus?: string;
 }
 
 export interface CoverLetterProps {

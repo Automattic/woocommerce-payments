@@ -404,6 +404,102 @@ describe( 'Cover Letter Generator', () => {
 			);
 			expect( result ).toContain( '<Customer Name>' );
 		} );
+
+		it( 'should generate body for subscription canceled dispute', () => {
+			const attachmentsList = '• Test Attachment';
+			const subscriptionCanceledDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'subscription_canceled' as DisputeReason,
+			};
+			const result = generateBody(
+				mockCoverLetterData,
+				subscriptionCanceledDispute,
+				attachmentsList
+			);
+			expect( result ).toContain( 'dp_123' );
+			expect( result ).toContain( 'ch_123' );
+			expect( result ).toContain( 'John Doe' );
+			expect( result ).toContain( 'Test Product' );
+			expect( result ).toContain( 'subscribed to' );
+			expect( result ).toContain(
+				"and was billed according to the terms accepted at the time of signup. The customer's account remained active and no cancellation was recorded prior to the billing date."
+			);
+		} );
+
+		it( 'should generate body for duplicate dispute with is_duplicate status', () => {
+			const attachmentsList = '• Test Attachment';
+			const duplicateDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'duplicate' as DisputeReason,
+			};
+			const coverLetterDataWithDuplicateStatus = {
+				...mockCoverLetterData,
+				duplicateStatus: 'is_duplicate',
+			};
+			const result = generateBody(
+				coverLetterDataWithDuplicateStatus,
+				duplicateDispute,
+				attachmentsList
+			);
+			expect( result ).toContain( 'dp_123' );
+			expect( result ).toContain( 'ch_123' );
+			expect( result ).toContain(
+				'was a duplicate of a previous transaction'
+			);
+			expect( result ).toContain(
+				'A refund has already been issued to the customer on'
+			);
+			expect( result ).toContain( '10.00 USD' );
+			expect( result ).toContain(
+				"This refund should be visible on the customer's statement within 7 - 10 business days."
+			);
+		} );
+
+		it( 'should generate body for duplicate dispute with is_not_duplicate status', () => {
+			const attachmentsList = '• Test Attachment';
+			const duplicateDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'duplicate' as DisputeReason,
+			};
+			const coverLetterDataWithDuplicateStatus = {
+				...mockCoverLetterData,
+				duplicateStatus: 'is_not_duplicate',
+			};
+			const result = generateBody(
+				coverLetterDataWithDuplicateStatus,
+				duplicateDispute,
+				attachmentsList
+			);
+			expect( result ).toContain( 'dp_123' );
+			expect( result ).toContain( 'ch_123' );
+			expect( result ).toContain( 'placed two distinct orders' );
+			expect( result ).toContain(
+				'Both transactions were legitimate, fulfilled independently, and are not duplicates'
+			);
+		} );
+
+		it( 'should generate body for duplicate dispute with missing duplicate status', () => {
+			const attachmentsList = '• Test Attachment';
+			const duplicateDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'duplicate' as DisputeReason,
+			};
+			const coverLetterDataWithoutDuplicateStatus = {
+				...mockCoverLetterData,
+				duplicateStatus: undefined,
+			};
+			const result = generateBody(
+				coverLetterDataWithoutDuplicateStatus,
+				duplicateDispute,
+				attachmentsList
+			);
+			expect( result ).toContain( 'dp_123' );
+			expect( result ).toContain( 'ch_123' );
+			expect( result ).toContain( 'placed two distinct orders' );
+			expect( result ).toContain(
+				'Both transactions were legitimate, fulfilled independently, and are not duplicates'
+			);
+		} );
 	} );
 
 	describe( 'generateClosing', () => {
@@ -554,6 +650,99 @@ describe( 'Cover Letter Generator', () => {
 			expect( result ).toContain( 'ch_123' );
 			expect( result ).toContain(
 				'The customer requested a refund outside of the eligible window outlined in our refund policy, which was clearly presented on the website and on the order confirmation.'
+			);
+		} );
+
+		it( 'should generate cover letter for subscription canceled dispute', () => {
+			const subscriptionCanceledDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'subscription_canceled' as DisputeReason,
+			};
+			const result = generateCoverLetter(
+				subscriptionCanceledDispute,
+				mockAccountDetails,
+				mockSettings,
+				'Test Bank'
+			);
+			expect( result ).toContain( 'Test Store' );
+			expect( result ).toContain( 'Test Bank' );
+			expect( result ).toContain( 'dp_123' );
+			expect( result ).toContain( 'ch_123' );
+			expect( result ).toContain( 'John Doe' );
+			expect( result ).toContain( 'Test Product' );
+			expect( result ).toContain( 'subscribed to' );
+			expect( result ).toContain(
+				"and was billed according to the terms accepted at the time of signup. The customer's account remained active and no cancellation was recorded prior to the billing date."
+			);
+		} );
+
+		it( 'should generate cover letter for duplicate dispute with is_duplicate status', () => {
+			const duplicateDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'duplicate' as DisputeReason,
+			};
+			const result = generateCoverLetter(
+				duplicateDispute,
+				mockAccountDetails,
+				mockSettings,
+				'Test Bank',
+				undefined,
+				'is_duplicate'
+			);
+			expect( result ).toContain( 'Test Store' );
+			expect( result ).toContain( 'Test Bank' );
+			expect( result ).toContain( 'dp_123' );
+			expect( result ).toContain( 'ch_123' );
+			expect( result ).toContain(
+				'was a duplicate of a previous transaction'
+			);
+			expect( result ).toContain(
+				'A refund has already been issued to the customer on'
+			);
+			expect( result ).toContain( '10.00 USD' );
+		} );
+
+		it( 'should generate cover letter for duplicate dispute with is_not_duplicate status', () => {
+			const duplicateDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'duplicate' as DisputeReason,
+			};
+			const result = generateCoverLetter(
+				duplicateDispute,
+				mockAccountDetails,
+				mockSettings,
+				'Test Bank',
+				undefined,
+				'is_not_duplicate'
+			);
+			expect( result ).toContain( 'Test Store' );
+			expect( result ).toContain( 'Test Bank' );
+			expect( result ).toContain( 'dp_123' );
+			expect( result ).toContain( 'ch_123' );
+			expect( result ).toContain( 'placed two distinct orders' );
+			expect( result ).toContain(
+				'Both transactions were legitimate, fulfilled independently, and are not duplicates'
+			);
+		} );
+
+		it( 'should handle duplicate dispute with missing duplicate status', () => {
+			const duplicateDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'duplicate' as DisputeReason,
+			};
+			const result = generateCoverLetter(
+				duplicateDispute,
+				mockAccountDetails,
+				mockSettings,
+				'Test Bank'
+			);
+			expect( result ).toContain( 'Test Store' );
+			expect( result ).toContain( 'Test Bank' );
+			expect( result ).toContain( 'dp_123' );
+			expect( result ).toContain( 'ch_123' );
+			expect( result ).toContain( 'placed two distinct orders' );
+			expect( result ).toContain(
+				'Both transactions were legitimate, fulfilled independently, and are not duplicates'
 			);
 		} );
 	} );
