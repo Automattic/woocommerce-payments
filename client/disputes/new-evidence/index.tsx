@@ -55,8 +55,10 @@ import {
 import { RecommendedDocument } from './types';
 
 import './style.scss';
+import './confirmation-styles.scss';
 import RefundStatus from './refund-status';
 import DuplicateStatus from './duplicate-status';
+import DisputeEvidenceSubmittedIllustration from 'assets/images/dispute-evidence-submitted.svg?asset';
 
 // --- Utility: Determine if shipping is required for a given reason ---
 const ReasonsNeedShipping = [
@@ -97,6 +99,155 @@ function needsShipping( reason: string | undefined ) {
 	if ( ReasonsNeedShipping.includes( reason ) ) return true;
 	return true;
 }
+
+// --- Confirmation Screen Component ---
+const ConfirmationScreen = ( { query }: { query: { id: string } } ) => {
+	return (
+		<div className="wcpay-dispute-evidence-confirmation">
+			<div className="wcpay-dispute-evidence-confirmation__content">
+				{ /* Success illustration */ }
+				<div className="wcpay-dispute-evidence-confirmation__illustration">
+					<img
+						src={ DisputeEvidenceSubmittedIllustration }
+						alt={ __(
+							'Evidence submitted successfully',
+							'woocommerce-payments'
+						) }
+						className="wcpay-dispute-evidence-confirmation__illustration-image"
+					/>
+				</div>
+
+				{ /* Main success message */ }
+				<h2 className="wcpay-dispute-evidence-confirmation__title">
+					{ __(
+						"You did it! The form is in the bank's hands",
+						'woocommerce-payments'
+					) }
+				</h2>
+
+				<p className="wcpay-dispute-evidence-confirmation__subtitle">
+					{ __(
+						'Thank you for taking the time and submitting the dispute.',
+						'woocommerce-payments'
+					) }
+				</p>
+
+				{ /* What's next section */ }
+				<div className="wcpay-dispute-evidence-confirmation__next-steps">
+					<h3>{ __( "What's next?", 'woocommerce-payments' ) }</h3>
+					<ul>
+						<li>
+							{ __(
+								"It might take a few days for the cardholder's bank to review your dispute",
+								'woocommerce-payments'
+							) }
+						</li>
+						<li>
+							{ createInterpolateElement(
+								__(
+									"Once reviewed, you'll receive an email or you can check back regularly on <disputesPageLink>Disputes page</disputesPageLink>",
+									'woocommerce-payments'
+								),
+								{
+									disputesPageLink: (
+										<a
+											href={ getAdminUrl( {
+												page: 'wc-admin',
+												path: '/payments/disputes',
+											} ) }
+										>
+											{ __(
+												'Disputes page',
+												'woocommerce-payments'
+											) }
+										</a>
+									),
+								}
+							) }
+						</li>
+						<li>
+							{ createInterpolateElement(
+								__(
+									'Still unsure or need more information? <learnMoreLink>Learn more about disputes</learnMoreLink>',
+									'woocommerce-payments'
+								),
+								{
+									learnMoreLink: (
+										<a
+											href="https://woocommerce.com/document/payments/disputes/"
+											target="_blank"
+											rel="noopener noreferrer"
+										>
+											{ __(
+												'Learn more about disputes',
+												'woocommerce-payments'
+											) }
+										</a>
+									),
+								}
+							) }
+						</li>
+					</ul>
+				</div>
+
+				{ /* Important notice */ }
+				<div className="wcpay-dispute-evidence-confirmation__notice">
+					<div className="wcpay-dispute-evidence-confirmation__notice-icon">
+						<span role="img" aria-label="Information">
+							ℹ️
+						</span>
+					</div>
+					<div className="wcpay-dispute-evidence-confirmation__notice-content">
+						<strong>
+							{ __(
+								'The outcome of this dispute will be determined by Chase.',
+								'woocommerce-payments'
+							) }
+						</strong>
+						<br />
+						{ __(
+							'WooPayments has no influence over the decision and is not liable for any chargebacks.',
+							'woocommerce-payments'
+						) }
+					</div>
+				</div>
+
+				{ /* Action buttons */ }
+				<div className="wcpay-dispute-evidence-confirmation__actions">
+					<Button
+						variant="secondary"
+						onClick={ () => {
+							window.location.href = getAdminUrl( {
+								page: 'wc-admin',
+								path: '/payments/transactions',
+							} );
+						} }
+					>
+						{ __(
+							'Return to transactions',
+							'woocommerce-payments'
+						) }
+					</Button>
+					<Button
+						variant="primary"
+						onClick={ () => {
+							window.location.href = getAdminUrl( {
+								page: 'wc-admin',
+								path: '/payments/disputes/challenge',
+								id: query.id,
+							} );
+						} }
+					>
+						{ __(
+							'View submitted dispute',
+							'woocommerce-payments'
+						) }
+					</Button>
+				</div>
+			</div>
+		</div>
+	);
+};
 
 // --- Main Component ---
 export default ( { query }: { query: { id: string } } ) => {
@@ -149,6 +300,7 @@ export default ( { query }: { query: { id: string } } ) => {
 	const stepHeadingRefs = useRef< {
 		[ key: number ]: HTMLHeadingElement | null;
 	} >( {} );
+	const [ showConfirmation, setShowConfirmation ] = useState( false );
 
 	// --- Data loading ---
 	useEffect( () => {
@@ -688,7 +840,7 @@ export default ( { query }: { query: { id: string } } ) => {
 
 	// --- Navigation warning ---
 	const confirmationNavigationCallback = useConfirmNavigation( () => {
-		if ( redirectAfterSave || readOnly ) return;
+		if ( showConfirmation || readOnly ) return;
 		return __(
 			'There are unsaved changes on this page. Are you sure you want to leave and discard the unsaved changes?',
 			'woocommerce-payments'
@@ -706,21 +858,21 @@ export default ( { query }: { query: { id: string } } ) => {
 	}, [ confirmationNavigationCallback, redirectAfterSave, readOnly ] );
 
 	// Redirect after successful submission only
-	useEffect( () => {
-		if ( redirectAfterSave ) {
-			// Clean up navigation confirmation before redirecting
-			if ( navigationCleanup ) {
-				navigationCleanup();
-			}
+	// useEffect( () => {
+	// 	if ( redirectAfterSave ) {
+	// 		// Clean up navigation confirmation before redirecting
+	// 		if ( navigationCleanup ) {
+	// 			navigationCleanup();
+	// 		}
 
-			const href = getAdminUrl( {
-				page: 'wc-admin',
-				path: '/payments/disputes',
-				filter: 'awaiting_response',
-			} );
-			window.location.replace( href );
-		}
-	}, [ redirectAfterSave, navigationCleanup ] );
+	// 		const href = getAdminUrl( {
+	// 			page: 'wc-admin',
+	// 			path: '/payments/disputes',
+	// 			filter: 'awaiting_response',
+	// 		} );
+	// 		window.location.replace( href );
+	// 	}
+	// }, [ redirectAfterSave, navigationCleanup ] );
 
 	// --- Accordion summary content ---
 	const summaryItems = useMemo( () => {
@@ -1210,21 +1362,25 @@ export default ( { query }: { query: { id: string } } ) => {
 							</AccordionRow>
 						</AccordionBody>
 					</Accordion>
-					{ /* Section 2: Stepper */ }
-					<div className="wcpay-dispute-evidence-new__stepper-section">
-						<StepperPanel
-							steps={ panelHeadings }
-							currentStep={ currentStep }
-							onStepClick={ ( stepIndex ) => {
-								handleStepChange( stepIndex );
-							} }
-						/>
-						<HorizontalRule className="wcpay-dispute-evidence-new__stepper-divider" />
-						<div className="wcpay-dispute-evidence-new__stepper-content">
-							{ renderStepContent() }
-							{ renderButtons() }
+					{ /* Section 2: Stepper or Confirmation */ }
+					{ showConfirmation ? (
+						<ConfirmationScreen query={ query } />
+					) : (
+						<div className="wcpay-dispute-evidence-new__stepper-section">
+							<StepperPanel
+								steps={ panelHeadings }
+								currentStep={ currentStep }
+								onStepClick={ ( stepIndex ) => {
+									handleStepChange( stepIndex );
+								} }
+							/>
+							<HorizontalRule className="wcpay-dispute-evidence-new__stepper-divider" />
+							<div className="wcpay-dispute-evidence-new__stepper-content">
+								{ renderStepContent() }
+								{ renderButtons() }
+							</div>
 						</div>
-					</div>
+					) }
 				</div>
 			</ErrorBoundary>
 		</Page>
