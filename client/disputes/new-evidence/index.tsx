@@ -41,6 +41,7 @@ import {
 	Button,
 	HorizontalRule,
 	Icon,
+	ExternalLink,
 } from 'wcpay/components/wp-components-wrapped';
 import { getAdminUrl } from 'wcpay/utils';
 import { StepperPanel } from 'wcpay/components/stepper';
@@ -180,16 +181,12 @@ const ConfirmationScreen = ( { query }: { query: { id: string } } ) => {
 									),
 									{
 										learnMoreLink: (
-											<a
-												href="https://woocommerce.com/document/payments/disputes/"
-												target="_blank"
-												rel="noopener noreferrer"
-											>
+											<ExternalLink href="https://woocommerce.com/document/payments/disputes/">
 												{ __(
 													'Learn more about disputes',
 													'woocommerce-payments'
 												) }
-											</a>
+											</ExternalLink>
 										),
 									}
 								) }
