@@ -311,6 +311,38 @@ const getRecommendedDocumentFields = (
 				order: 40,
 			},
 		],
+		general: [
+			{
+				key: DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
+				label: __(
+					'Proof of active subscription',
+					'woocommerce-payments'
+				),
+				description: __(
+					'Such as billing history, subscription status, or cancellation logs.',
+					'woocommerce-payments'
+				),
+				order: 40,
+			},
+			{
+				key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+				label: __( 'Store refund policy', 'woocommerce-payments' ),
+				description: __(
+					"A screenshot of your store's refund policy.",
+					'woocommerce-payments'
+				),
+				order: 50,
+			},
+			{
+				key: DOCUMENT_FIELD_KEYS.SERVICE_DOCUMENTATION,
+				label: __( 'Terms of service', 'woocommerce-payments' ),
+				description: __(
+					"A screenshot of your store's terms of service.",
+					'woocommerce-payments'
+				),
+				order: 60,
+			},
+		],
 	};
 
 	// For credit_not_processed with refund_was_not_owed, we need to filter out customer_signature from orderedFields
@@ -319,7 +351,7 @@ const getRecommendedDocumentFields = (
 	// Combine default fields with reason-specific fields
 	const allFields = [
 		...baseFields,
-		...( reasonSpecificFields[ reason ] || [] ),
+		...( reasonSpecificFields[ reason ] || reasonSpecificFields.general ),
 	];
 
 	// Sort fields by order and remove the order property
