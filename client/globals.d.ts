@@ -136,6 +136,7 @@ declare global {
 		isNextDepositNoticeDismissed: boolean;
 		isInstantDepositNoticeDismissed: boolean;
 		isConnectionSuccessModalDismissed: boolean;
+		isWCReactifySettingsFeatureEnabled: boolean;
 		trackingInfo?: {
 			hosting_provider: string;
 		};
