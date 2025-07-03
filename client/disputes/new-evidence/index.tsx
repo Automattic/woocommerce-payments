@@ -505,9 +505,12 @@ export default ( { query }: { query: { id: string } } ) => {
 			} );
 
 			setDispute( updatedDispute );
-			setEvidence( {} );
 			handleSaveSuccess( submit );
 			updateDisputeInStore( updatedDispute as any );
+
+			if ( submit ) {
+				setEvidence( {} );
+			}
 		} catch ( err ) {
 			handleSaveError( err, submit );
 		}
@@ -832,7 +835,7 @@ export default ( { query }: { query: { id: string } } ) => {
 			key: field.key,
 			label: field.label,
 			description: field.description,
-			fileName: evidence[ field.key ] || '',
+			fileName: uploadedFiles[ field.key ] || evidence[ field.key ] || '',
 			uploaded: !! evidence[ field.key ],
 			isLoading: isUploading[ field.key ] || false,
 			error: uploadingErrors[ field.key ] || '',
