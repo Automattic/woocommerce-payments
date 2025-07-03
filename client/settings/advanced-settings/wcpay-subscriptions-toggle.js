@@ -1,9 +1,11 @@
 /**
  * External dependencies
  */
-import { CheckboxControl, ExternalLink } from '@wordpress/components';
+import {
+	CheckboxControl,
+	ExternalLink,
+} from 'wcpay/components/wp-components-wrapped';
 import { __, sprintf } from '@wordpress/i18n';
-import { useEffect, useRef } from '@wordpress/element';
 
 /**
  * Internal dependencies
@@ -17,14 +19,6 @@ const WCPaySubscriptionsToggle = () => {
 		isWCPaySubscriptionsEligible,
 		updateIsWCPaySubscriptionsEnabled,
 	] = useWCPaySubscriptions();
-
-	const headingRef = useRef( null );
-
-	useEffect( () => {
-		if ( ! headingRef.current ) return;
-
-		headingRef.current.focus();
-	}, [] );
 
 	const handleWCPaySubscriptionsStatusChange = ( value ) => {
 		updateIsWCPaySubscriptionsEnabled( value );

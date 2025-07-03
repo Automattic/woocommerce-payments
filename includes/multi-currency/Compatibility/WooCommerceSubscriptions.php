@@ -75,7 +75,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 				add_filter( MultiCurrency::FILTER_PREFIX . 'should_disable_currency_switching', [ $this, 'should_disable_currency_switching' ], 50 );
 				add_filter( 'woocommerce_subscription_price_string_details', [ $this, 'maybe_set_current_my_account_subscription' ], 50, 2 );
 				add_filter( 'woocommerce_get_formatted_subscription_total', [ $this, 'maybe_clear_current_my_account_subscription' ], 50, 2 );
-				add_filter( 'wc_price', [ $this, 'maybe_get_explicit_format_for_subscription_total' ], 50, 5 );
+				add_filter( 'wc_price', [ $this, 'maybe_get_explicit_format_for_subscription_total' ], 50, 1 );
 			}
 		}
 	}
@@ -390,15 +390,11 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	/**
 	 * If the current_my_account_subscription var is set, then we use that subscription's currency in order to set the explicit total.
 	 *
-	 * @param string       $html_price        Price HTML markup.
-	 * @param string       $price             Formatted price.
-	 * @param array        $args              Pass on the args.
-	 * @param float        $unformatted_price Price as float to allow plugins custom formatting. Since 3.2.0.
-	 * @param float|string $original_price    Original price as float, or empty string. Since 5.0.0.
+	 * @param string $html_price Price HTML markup.
 	 *
 	 * @return string The wc_price with HTML wrapping, possibly with the currency code added for explicit formatting.
 	 */
-	public function maybe_get_explicit_format_for_subscription_total( $html_price, $price, $args, $unformatted_price, $original_price ): string {
+	public function maybe_get_explicit_format_for_subscription_total( $html_price ): string {
 		if ( ! $this->is_current_my_account_subscription_set() ) {
 			return $html_price;
 		}

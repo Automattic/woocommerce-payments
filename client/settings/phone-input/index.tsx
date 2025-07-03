@@ -44,10 +44,32 @@ const PhoneNumberInput = ( {
 	] = useState< intlTelInput.Plugin | null >( null );
 	const inputRef = useRef< HTMLInputElement >( null );
 
+	// in some special cases, the phone number is valid but the library doesn't recognize it as such
+	const isValidNumber = ( instance: intlTelInput.Plugin ): boolean => {
+		// Special case for Singapore: some numbers are valid but the library doesn't recognize them
+		if (
+			'65' === instance.getSelectedCountryData().dialCode &&
+			! instance.isValidNumber()
+		) {
+			if ( 11 !== instance.getNumber().length ) {
+				return false;
+			}
+
+			if (
+				[ '800', '805', '806', '807', '808', '809' ].includes(
+					instance.getNumber().substr( 3, 3 )
+				)
+			) {
+				return true;
+			}
+		}
+		return instance.isValidNumber();
+	};
+
 	const handlePhoneNumberInputChange = () => {
 		if ( inputInstance ) {
 			onValueChange( inputInstance.getNumber() );
-			onValidationChange( inputInstance.isValidNumber() );
+			onValidationChange( isValidNumber( inputInstance ) );
 		}
 	};
 
@@ -69,7 +91,7 @@ const PhoneNumberInput = ( {
 		const handleCountryChange = () => {
 			if ( iti && ( focusLost || iti.getNumber() ) ) {
 				onValueChange( iti.getNumber() );
-				onValidationChange( iti.isValidNumber() );
+				onValidationChange( isValidNumber( iti ) );
 			}
 		};
 
@@ -151,7 +173,7 @@ const PhoneNumberInput = ( {
 			( focusLost || inputInstance.getNumber() )
 		) {
 			inputInstance.setNumber( value );
-			onValidationChange( inputInstance.isValidNumber() );
+			onValidationChange( isValidNumber( inputInstance ) );
 		}
 	}, [ value, inputInstance, inputRef, onValidationChange, focusLost ] );
 
@@ -178,7 +200,7 @@ const PhoneNumberInput = ( {
 				}
 				name={ inputProps.name }
 				className={
-					inputInstance && ! inputInstance.isValidNumber()
+					inputInstance && ! isValidNumber( inputInstance )
 						? 'phone-input input-text has-error'
 						: 'phone-input input-text'
 				}

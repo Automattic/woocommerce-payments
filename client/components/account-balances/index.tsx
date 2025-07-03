@@ -2,8 +2,12 @@
  * External dependencies
  */
 import React, { useState } from 'react';
-import { useDispatch } from '@wordpress/data';
-import { Card, CardBody, CardHeader, Flex } from '@wordpress/components';
+import {
+	Card,
+	CardBody,
+	CardHeader,
+	Flex,
+} from 'wcpay/components/wp-components-wrapped';
 import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 import { Link } from '@woocommerce/components';
@@ -26,10 +30,10 @@ import { ClickTooltip } from '../tooltip';
 import { formatCurrency } from 'multi-currency/interface/functions';
 import { useAllDepositsOverviews } from 'wcpay/data';
 import { useSelectedCurrency } from 'wcpay/overview/hooks';
+import { saveOption } from 'wcpay/data/settings/actions';
 import './style.scss';
 
 const useInstantDepositNoticeState = () => {
-	const { updateOptions } = useDispatch( 'wc/admin/options' );
 	const [ isDismissed, setIsDismissed ] = useState(
 		wcpaySettings.isInstantDepositNoticeDismissed
 	);
@@ -37,7 +41,7 @@ const useInstantDepositNoticeState = () => {
 	const setInstantDepositNoticeDismissed = () => {
 		setIsDismissed( true );
 		wcpaySettings.isInstantDepositNoticeDismissed = true;
-		updateOptions( { wcpay_instant_deposit_notice_dismissed: true } );
+		saveOption( 'wcpay_instant_deposit_notice_dismissed', true );
 	};
 
 	return {

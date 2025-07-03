@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-fix: add payment method page query initialization - ensuring that the WP_Query is initialized when checking for payment methods availability

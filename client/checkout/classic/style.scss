@@ -35,6 +35,13 @@
 #payment .payment_methods {
 	li[class*='payment_method_woocommerce_payments'] label {
 		display: inline;
+		.payment-methods--logos {
+			float: right;
+
+			img:last-of-type {
+				margin-right: 0;
+			}
+		}
 		img {
 			float: right;
 			border: 0;
@@ -42,62 +49,22 @@
 			height: 24px !important;
 			max-height: 24px !important;
 		}
-	}
-}
-
-// Payment methods with PMME styles.
-li.wc_payment_method:has( label .stripe-pmme-container ) {
-	display: grid;
-	grid-template-columns: max-content 1fr;
-	grid-template-areas: 'li-input li-label'; // List Item grid.
-	align-items: baseline;
-
-	.input-radio {
-		grid-area: li-input;
-	}
-
-	> label {
-		grid-area: li-label;
-
-		display: grid !important;
-		grid-template-columns: max-content 1fr;
-		grid-template-areas: 'label-spacer label-inner'; // Label grid.
-
-		> span.spacer {
-			grid-area: label-spacer;
-		}
-
-		> .woopayments-inner-label {
-			grid-area: label-inner;
+		.logo-popover {
+			background-color: #fff;
+			border: 1px solid $gray-300;
+			border-radius: 3px;
+			padding: 8px;
+			box-sizing: border-box;
+			box-shadow: 0 0 10px 0 rgba( 0, 0, 0, 0.1 );
 			display: grid;
-			grid-template-columns: 1fr max-content;
-			grid-template-areas:
-				'inner-text inner-logo'
-				'inner-pmme inner-logo'; // Inner label grid.
-			align-items: center;
+			gap: 8px;
+			justify-content: center;
+			cursor: pointer;
 
 			> img {
-				grid-area: inner-logo;
-				justify-self: right;
-			}
-
-			> .stripe-pmme-container {
-				width: 100%;
-				grid-area: inner-pmme;
-				pointer-events: none;
-			}
-		}
-	}
-}
-
-// Hide the PMMe container when the payment method is checked.
-li.wc_payment_method:has( .input-radio:checked
-		+ label
-		.stripe-pmme-container ) {
-	.input-radio:checked {
-		+ label {
-			.stripe-pmme-container {
-				display: none;
+				box-shadow: 0 0 0 1px rgba( 0, 0, 0, 0.1 );
+				width: 38px;
+				height: 24px;
 			}
 		}
 	}

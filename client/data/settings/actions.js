@@ -5,6 +5,7 @@
  */
 import { dispatch, select } from '@wordpress/data';
 import { apiFetch } from '@wordpress/data-controls';
+import directApiFetch from '@wordpress/api-fetch';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -64,12 +65,6 @@ export function updateIsPaymentRequestEnabled( isEnabled ) {
 export function updateEnabledPaymentMethodIds( methodIds ) {
 	return updateSettingsValues( {
 		enabled_payment_method_ids: [ ...methodIds ],
-	} );
-}
-
-export function updateAvailablePaymentMethodIds( methodIds ) {
-	return updateSettingsValues( {
-		available_payment_method_ids: [ ...methodIds ],
 	} );
 }
 
@@ -139,26 +134,6 @@ export function updateAccountStatementDescriptorKana(
 	} );
 }
 
-export function updateAccountBusinessName( accountBusinessName ) {
-	return updateSettingsValues( {
-		account_business_name: accountBusinessName,
-	} );
-}
-
-export function updateAccountBusinessURL( accountBusinessURL ) {
-	return updateSettingsValues( {
-		account_business_url: accountBusinessURL,
-	} );
-}
-
-export function updateAccountBusinessSupportAddress(
-	accountBusinessSupportAddress
-) {
-	return updateSettingsValues( {
-		account_business_support_address: accountBusinessSupportAddress,
-	} );
-}
-
 export function updateAccountBusinessSupportEmail(
 	accountBusinessSupportEmail
 ) {
@@ -172,12 +147,6 @@ export function updateAccountBusinessSupportPhone(
 ) {
 	return updateSettingsValues( {
 		account_business_support_phone: accountBusinessSupportPhone,
-	} );
-}
-
-export function updateAccountBrandingLogo( accountBrandingLogo ) {
-	return updateSettingsValues( {
-		account_branding_logo: accountBrandingLogo,
 	} );
 }
 
@@ -312,4 +281,16 @@ export function* submitStripeBillingSubscriptionMigration() {
 	yield dispatch( STORE_NAME ).finishResolution(
 		'scheduleStripeBillingMigration'
 	);
+}
+
+export function saveOption( optionName, value ) {
+	directApiFetch( {
+		path: `${ NAMESPACE }/settings/${ optionName }`,
+		method: 'post',
+		data: { value },
+	} ).catch( () => {
+		dispatch( 'core/notices' ).createErrorNotice(
+			__( 'Error saving option', 'woocommerce-payments' )
+		);
+	} );
 }

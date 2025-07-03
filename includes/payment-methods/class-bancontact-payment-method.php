@@ -42,4 +42,18 @@ class Bancontact_Payment_Method extends UPE_Payment_Method {
 	public function get_testing_instructions( string $account_country ) {
 		return '';
 	}
+
+	/**
+	 * Returns payment method description for the settings page.
+	 *
+	 * @param string|null $account_country Country of merchants account.
+	 *
+	 * @return string
+	 */
+	public function get_description( ?string $account_country = null ) {
+		return __(
+			'Bancontact is a bank redirect payment method offered by more than 80% of online businesses in Belgium.',
+			'woocommerce-payments'
+		);
+	}
 }

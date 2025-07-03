@@ -1,23 +1,45 @@
 .wcpay-express-checkout-wrapper {
-	margin-top: 1em;
 	width: 100%;
 	clear: both;
+
+	display: flex;
+	flex-direction: column;
+
+	#wcpay-express-checkout-element {
+		opacity: 0;
+		transition: all 0.3s ease-in-out;
+		min-height: 0;
+		margin: 0;
+
+		&.is-ready {
+			opacity: 1;
+
+			&:not( :first-child ) {
+				margin-top: 12px;
+			}
+		}
+	}
 
 	.woocommerce-cart & {
 		margin-bottom: 0;
 	}
 
 	.woocommerce-checkout & {
-		margin-top: 0;
+		#wcpay-express-checkout-element.is-ready:first-child {
+			margin-top: 4px;
+		}
+
+		#wcpay-woopay-button {
+			margin-top: 4px;
+		}
 	}
 
-	> div {
-		margin: 4px;
-		margin-bottom: 12px;
-
-		&:last-of-type {
-			margin-bottom: 0;
-		}
+	// Add spacing for product pages and shortcode cart
+	.woocommerce .type-product &,
+	.wp-block-add-to-cart-form &,
+	.wc-proceed-to-checkout & {
+		margin-top: 1em;
+		margin-bottom: 1em;
 	}
 }
 

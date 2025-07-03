@@ -13,6 +13,7 @@
     "esModuleInterop": true,
     "noImplicitAny": true,
     "paths": {
+      "jest-utils/*": [ "../tests/js/utilities/*" ],
       "assets/*": [ "../assets/*" ],
       "wcpay/*": [ "./*" ],
       "multi-currency/*": [ "../includes/multi-currency/client/*" ],

@@ -3,10 +3,10 @@
 /**
  * External dependencies
  */
-import React, { Fragment, useState } from 'react';
+import React, { Fragment } from 'react';
 import { uniq } from 'lodash';
-import { useDispatch } from '@wordpress/data';
 import { __, _n, sprintf } from '@wordpress/i18n';
+import { useDispatch } from '@wordpress/data';
 import {
 	TableCard,
 	Search,
@@ -18,45 +18,43 @@ import {
 	getQuery,
 	updateQueryString,
 } from '@woocommerce/navigation';
-import {
-	downloadCSVFile,
-	generateCSVDataFromTable,
-	generateCSVFileName,
-} from '@woocommerce/csv-export';
-import apiFetch from '@wordpress/api-fetch';
 
 /**
  * Internal dependencies
  */
-import { useTransactions, useTransactionsSummary } from 'data/index';
-import { Transaction } from 'data/transactions/hooks';
-import OrderLink from 'components/order-link';
-import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
-import ClickableCell from 'components/clickable-cell';
-import { getDetailsURL } from 'components/details-link';
-import { displayType } from 'transactions/strings';
-import { depositStatusLabels } from 'deposits/strings';
+import { useTransactions, useTransactionsSummary } from 'wcpay/data';
+import { Transaction } from 'wcpay/data/transactions/hooks';
+import OrderLink from 'wcpay/components/order-link';
+import RiskLevel, { calculateRiskMapping } from 'wcpay/components/risk-level';
+import ClickableCell from 'wcpay/components/clickable-cell';
+import { getDetailsURL } from 'wcpay/components/details-link';
+import { displayType } from 'wcpay/transactions/strings';
+import { depositStatusLabels } from 'wcpay/deposits/strings';
 import { formatStringValue, applyThousandSeparator } from 'wcpay/utils';
 import {
 	formatCurrency,
 	formatExplicitCurrency,
 	formatExportAmount,
 } from 'multi-currency/interface/functions';
-import { getTransactionChannel } from 'utils/charge';
+import { getTransactionChannel } from 'wcpay/utils/charge';
 import Deposit from './deposit';
 import ConvertedAmount from './converted-amount';
-import autocompleter from 'transactions/autocompleter';
+import autocompleter from 'wcpay/transactions/autocompleter';
 import './style.scss';
 import TransactionsFilters from '../filters';
 import Page from '../../components/page';
 import { recordEvent } from 'tracks';
-import DownloadButton from 'components/download-button';
-import { getTransactionsCSV } from '../../data/transactions/resolvers';
+import DownloadButton from 'wcpay/components/download-button';
+import {
+	getTransactionsCSVRequestURL,
+	transactionsDownloadEndpoint,
+} from '../../data/transactions/resolvers';
 import p24BankList from '../../payment-details/payment-method/p24/bank-list';
-import { HoverTooltip } from 'components/tooltip';
-import { PAYMENT_METHOD_TITLES } from 'wcpay/constants/payment-method';
+import { HoverTooltip } from 'wcpay/components/tooltip';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
+import { useReportExport } from 'wcpay/hooks/use-report-export';
+import { getTransactionPaymentMethodTitle } from 'wcpay/transactions/utils/getTransactionPaymentMethodTitle';
 
 interface TransactionsListProps {
 	depositId?: string;
@@ -81,9 +79,10 @@ interface Column extends TableCardColumn {
 		| 'deposit';
 	visible?: boolean;
 	cellClassName?: string;
-	labelInCsv?: string;
 }
 
+// FLAG: PAYMENT_METHODS_LIST
+// If your payment method needs a custom display on the transactions list, you can add it here.
 const getPaymentSourceDetails = ( txn: Transaction ) => {
 	if ( ! txn.source_identifier ) {
 		return <Fragment></Fragment>;
@@ -146,7 +145,6 @@ const getColumns = (
 			key: 'date',
 			label: __( 'Date / Time', 'woocommerce-payments' ),
 			screenReaderLabel: __( 'Date and time', 'woocommerce-payments' ),
-			labelInCsv: __( 'Date / Time (UTC)', 'woocommerce-payments' ),
 			required: true,
 			isLeftAligned: true,
 			defaultOrder: 'desc',
@@ -163,8 +161,8 @@ const getColumns = (
 		},
 		{
 			key: 'channel',
-			label: __( 'Channel', 'woocommerce-payments' ),
-			screenReaderLabel: __( 'Channel', 'woocommerce-payments' ),
+			label: __( 'Sales channel', 'woocommerce-payments' ),
+			screenReaderLabel: __( 'Sales channel', 'woocommerce-payments' ),
 			required: true,
 			isLeftAligned: true,
 		},
@@ -293,8 +291,6 @@ const getColumns = (
 export const TransactionsList = (
 	props: TransactionsListProps
 ): JSX.Element => {
-	const [ isDownloading, setIsDownloading ] = useState( false );
-	const { createNotice } = useDispatch( 'core/notices' );
 	const { transactions, isLoading } = useTransactions(
 		getQuery(),
 		props.depositId ?? ''
@@ -303,6 +299,10 @@ export const TransactionsList = (
 		transactionsSummary,
 		isLoading: isSummaryLoading,
 	} = useTransactionsSummary( getQuery(), props.depositId ?? '' );
+
+	const { requestReportExport, isExportInProgress } = useReportExport();
+
+	const { createNotice } = useDispatch( 'core/notices' );
 
 	const { onColumnsChange, columnsToDisplay } = usePersistedColumnVisibility<
 		Column
@@ -327,12 +327,12 @@ export const TransactionsList = (
 		const clickable =
 			'financing_payout' !== txn.type &&
 			! ( 'financing_paydown' === txn.type && '' === txn.charge_id )
-				? ( children: JSX.Element | string ) => (
+				? ( children: React.ReactNode ) => (
 						<ClickableCell href={ detailsURL }>
 							{ children }
 						</ClickableCell>
 				  )
-				: ( children: JSX.Element | string ) => children;
+				: ( children: React.ReactNode ) => children;
 
 		const orderUrl = txn.order ? (
 			<OrderLink order={ txn.order } />
@@ -400,12 +400,10 @@ export const TransactionsList = (
 			return {
 				value: feeAmount,
 				display: clickable(
-					0 !== feeAmount
-						? formatCurrency(
-								isCardReader ? txn.amount : txn.fees * -1,
-								currency
-						  )
-						: __( 'N/A', 'woocommerce-payments' )
+					formatCurrency(
+						isCardReader ? txn.amount : txn.fees * -1,
+						currency
+					)
 				),
 			};
 		};
@@ -437,6 +435,8 @@ export const TransactionsList = (
 		const depositStatus = txn.deposit_status
 			? depositStatusLabels[ txn.deposit_status ]
 			: '';
+
+		const accountCountry = wcpaySettings?.accountStatus?.country || 'US';
 
 		// Map transaction into table row.
 		const data = {
@@ -475,15 +475,17 @@ export const TransactionsList = (
 							<span className="payment-method-details-list-item">
 								<HoverTooltip
 									isVisible={ false }
-									content={
-										PAYMENT_METHOD_TITLES[ txn.source ]
-									}
+									content={ getTransactionPaymentMethodTitle(
+										txn.source
+									) }
 								>
 									<span
-										className={ `payment-method__brand payment-method__brand--${ txn.source }` }
-										aria-label={
-											PAYMENT_METHOD_TITLES[ txn.source ]
-										}
+										className={ `payment-method__brand payment-method__brand--${
+											txn.source
+										} account-country--${ accountCountry?.toLowerCase() }` }
+										aria-label={ getTransactionPaymentMethodTitle(
+											txn.source
+										) }
 									/>
 								</HoverTooltip>
 								{ getPaymentSourceDetails( txn ) }
@@ -586,12 +588,17 @@ export const TransactionsList = (
 
 	const downloadable = !! rows.length;
 
-	const endpointExport = async () => {
-		// We destructure page and path to get the right params.
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		const { page, path, ...params } = getQuery();
-		const userEmail = wcpaySettings.currentUserEmail;
+	const { path } = getQuery();
+	const onExport = async () => {
+		recordEvent( 'wcpay_csv_export_click', {
+			row_type: 'transactions',
+			source: path,
+			exported_row_count: transactionsSummary.count,
+		} );
+
 		const locale = wcSettings.locale.userLocale;
+		const userEmail = wcpaySettings.currentUserEmail;
+		const depositId = props.depositId;
 
 		const {
 			date_after: dateAfter,
@@ -613,8 +620,32 @@ export const TransactionsList = (
 			customer_currency_is_not: customerCurrencyIsNot,
 			source_is: sourceIs,
 			source_is_not: sourceIsNot,
-		} = params;
-		const depositId = props.depositId;
+		} = getQuery();
+
+		const exportRequestURL = getTransactionsCSVRequestURL( {
+			userEmail,
+			locale,
+			dateAfter,
+			dateBefore,
+			dateBetween,
+			match,
+			search,
+			typeIs,
+			typeIsNot,
+			sourceDeviceIs,
+			sourceDeviceIsNot,
+			customerCurrencyIs,
+			customerCurrencyIsNot,
+			sourceIs,
+			sourceIsNot,
+			channelIs,
+			channelIsNot,
+			customerCountryIs,
+			customerCountryIsNot,
+			riskLevelIs,
+			riskLevelIsNot,
+			depositId,
+		} );
 
 		const isFiltered =
 			!! dateAfter ||
@@ -648,88 +679,23 @@ export const TransactionsList = (
 			totalRows < confirmThreshold ||
 			window.confirm( confirmMessage )
 		) {
-			try {
-				await apiFetch( {
-					path: getTransactionsCSV( {
-						userEmail,
-						dateAfter,
-						dateBefore,
-						dateBetween,
-						match,
-						search,
-						typeIs,
-						typeIsNot,
-						sourceDeviceIs,
-						sourceDeviceIsNot,
-						customerCurrencyIs,
-						customerCurrencyIsNot,
-						sourceIs,
-						sourceIsNot,
-						channelIs,
-						channelIsNot,
-						customerCountryIs,
-						customerCountryIsNot,
-						riskLevelIs,
-						riskLevelIsNot,
-						depositId,
-						locale,
-					} ),
-					method: 'POST',
-				} );
-
-				createNotice(
-					'success',
-					sprintf(
-						__(
-							'Your export will be emailed to %s',
-							'woocommerce-payments'
-						),
-						userEmail
-					)
-				);
-			} catch {
-				createNotice(
-					'error',
-					__(
-						'There was a problem generating your export.',
-						'woocommerce-payments'
-					)
-				);
-			}
-		}
-	};
-
-	const onDownload = async () => {
-		setIsDownloading( true );
-
-		// We destructure page and path to get the right params.
-		// eslint-disable-next-line @typescript-eslint/no-unused-vars
-		const { page, path, ...params } = getQuery();
-		const downloadType = totalRows > rows.length ? 'endpoint' : 'browser';
-
-		recordEvent( 'wcpay_transactions_download_csv_click', {
-			location: props.depositId ? 'deposit_details' : 'transactions',
-			download_type: downloadType,
-			exported_transactions: rows.length,
-			total_transactions: transactionsSummary.count,
-		} );
-
-		if ( 'endpoint' === downloadType ) {
-			endpointExport();
-		} else {
-			const columnsToDisplayInCsv = columnsToDisplay.map( ( column ) => {
-				if ( column.labelInCsv ) {
-					return { ...column, label: column.labelInCsv };
-				}
-				return column;
+			requestReportExport( {
+				exportRequestURL,
+				exportFileAvailabilityEndpoint: transactionsDownloadEndpoint,
+				userEmail,
 			} );
-			downloadCSVFile(
-				generateCSVFileName( title, params ),
-				generateCSVDataFromTable( columnsToDisplayInCsv, rows )
+
+			createNotice(
+				'success',
+				sprintf(
+					__(
+						'We’re processing your export. 🎉 The file will download automatically and be emailed to %s.',
+						'woocommerce-payments'
+					),
+					userEmail
+				)
 			);
 		}
-
-		setIsDownloading( false );
 	};
 
 	if ( ! wcpaySettings.featureFlags.customSearch ) {
@@ -846,8 +812,9 @@ export const TransactionsList = (
 					downloadable && (
 						<DownloadButton
 							key="download"
-							isDisabled={ isLoading || isDownloading }
-							onClick={ onDownload }
+							isDisabled={ isLoading || isExportInProgress }
+							isBusy={ isExportInProgress }
+							onClick={ onExport }
 						/>
 					),
 				] }

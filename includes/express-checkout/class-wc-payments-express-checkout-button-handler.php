@@ -92,7 +92,6 @@ class WC_Payments_Express_Checkout_Button_Handler {
 		add_filter( 'woocommerce_registration_redirect', [ $this, 'get_login_redirect_url' ], 10, 3 );
 		add_filter( 'woocommerce_cart_needs_shipping_address', [ $this, 'filter_cart_needs_shipping_address' ], 11, 1 );
 		add_action( 'wp_enqueue_scripts', [ $this, 'scripts' ] );
-		add_action( 'before_woocommerce_pay_form', [ $this, 'display_pay_for_order_page_html' ], 1 );
 		add_filter( 'woocommerce_gateway_title', [ $this, 'filter_gateway_title' ], 10, 2 );
 		add_action( 'woocommerce_checkout_order_processed', [ $this->express_checkout_helper, 'add_order_payment_method_title' ], 10, 2 );
 
@@ -214,6 +213,59 @@ class WC_Payments_Express_Checkout_Button_Handler {
 	}
 
 	/**
+	 * Gets the parameters needed for Express Checkout functionality.
+	 *
+	 * @return array Parameters for Express Checkout.
+	 */
+	public function get_express_checkout_params() {
+		/**
+		 * Allowing some specific configuration to be tweaked by 3pd.
+		 *
+		 * @since 9.5.0
+		 */
+		return array_merge(
+			apply_filters(
+				'wcpay_express_checkout_js_params',
+				[
+					'ajax_url'           => admin_url( 'admin-ajax.php' ),
+					'wc_ajax_url'        => WC_AJAX::get_endpoint( '%%endpoint%%' ),
+					'nonce'              => [
+						'platform_tracker'             => wp_create_nonce( 'platform_tracks_nonce' ),
+						// needed to communicate via the Store API.
+						'tokenized_cart_nonce'         => wp_create_nonce( 'woopayments_tokenized_cart_nonce' ),
+						'tokenized_cart_session_nonce' => wp_create_nonce( 'woopayments_tokenized_cart_session_nonce' ),
+						'store_api_nonce'              => wp_create_nonce( 'wc_store_api' ),
+					],
+					'checkout'           => [
+						'currency_code'              => strtolower( get_woocommerce_currency() ),
+						'currency_decimals'          => WC_Payments::get_localization_service()->get_currency_format( get_woocommerce_currency() )['num_decimals'],
+						'country_code'               => substr( get_option( 'woocommerce_default_country' ), 0, 2 ),
+						'needs_shipping'             => WC()->cart->needs_shipping(),
+						// Defaults to 'required' to match how core initializes this option.
+						'needs_payer_phone'          => 'required' === get_option( 'woocommerce_checkout_phone_field', 'required' ),
+						'allowed_shipping_countries' => array_keys( WC()->countries->get_shipping_countries() ?? [] ),
+						'display_prices_with_tax'    => 'incl' === get_option( 'woocommerce_tax_display_cart' ),
+					],
+					'button'             => $this->get_button_settings(),
+					'login_confirmation' => $this->get_login_confirmation_settings(),
+					'button_context'     => $this->express_checkout_helper->get_button_context(),
+					'has_block'          => has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ),
+					'product'            => $this->express_checkout_helper->get_product_data(),
+					'store_name'         => get_bloginfo( 'name' ),
+				]
+			),
+			[
+				// placing these outside of the filter to prevent modification of the values.
+				'stripe' => [
+					'publishableKey' => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
+					'accountId'      => $this->account->get_stripe_account_id(),
+					'locale'         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
+				],
+			]
+		);
+	}
+
+	/**
 	 * Load public scripts and styles.
 	 */
 	public function scripts() {
@@ -222,81 +274,26 @@ class WC_Payments_Express_Checkout_Button_Handler {
 			return;
 		}
 
-		$express_checkout_params = [
-			'ajax_url'           => admin_url( 'admin-ajax.php' ),
-			'wc_ajax_url'        => WC_AJAX::get_endpoint( '%%endpoint%%' ),
-			'stripe'             => [
-				'publishableKey' => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
-				'accountId'      => $this->account->get_stripe_account_id(),
-				'locale'         => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
-			],
-			'nonce'              => [
-				'get_cart_details'             => wp_create_nonce( 'wcpay-get-cart-details' ),
-				'shipping'                     => wp_create_nonce( 'wcpay-payment-request-shipping' ),
-				'update_shipping'              => wp_create_nonce( 'wcpay-update-shipping-method' ),
-				'checkout'                     => wp_create_nonce( 'woocommerce-process_checkout' ),
-				'add_to_cart'                  => wp_create_nonce( 'wcpay-add-to-cart' ),
-				'empty_cart'                   => wp_create_nonce( 'wcpay-empty-cart' ),
-				'get_selected_product_data'    => wp_create_nonce( 'wcpay-get-selected-product-data' ),
-				'platform_tracker'             => wp_create_nonce( 'platform_tracks_nonce' ),
-				'pay_for_order'                => wp_create_nonce( 'pay_for_order' ),
-				// needed to communicate via the Store API.
-				'tokenized_cart_nonce'         => wp_create_nonce( 'woopayments_tokenized_cart_nonce' ),
-				'tokenized_cart_session_nonce' => wp_create_nonce( 'woopayments_tokenized_cart_session_nonce' ),
-				'store_api_nonce'              => wp_create_nonce( 'wc_store_api' ),
-			],
-			'checkout'           => [
-				'currency_code'              => strtolower( get_woocommerce_currency() ),
-				'currency_decimals'          => WC_Payments::get_localization_service()->get_currency_format( get_woocommerce_currency() )['num_decimals'],
-				'country_code'               => substr( get_option( 'woocommerce_default_country' ), 0, 2 ),
-				'needs_shipping'             => WC()->cart->needs_shipping(),
-				// Defaults to 'required' to match how core initializes this option.
-				'needs_payer_phone'          => 'required' === get_option( 'woocommerce_checkout_phone_field', 'required' ),
-				'allowed_shipping_countries' => array_keys( WC()->countries->get_shipping_countries() ?? [] ),
-			],
-			'button'             => $this->get_button_settings(),
-			'login_confirmation' => $this->get_login_confirmation_settings(),
-			'button_context'     => $this->express_checkout_helper->get_button_context(),
-			'has_block'          => has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ),
-			'product'            => $this->express_checkout_helper->get_product_data(),
-			'total_label'        => $this->express_checkout_helper->get_total_label(),
-		];
+		$express_checkout_params = $this->get_express_checkout_params();
 
-		if ( WC_Payments_Features::is_tokenized_cart_ece_enabled() ) {
-			WC_Payments::register_script_with_dependencies(
-				'WCPAY_EXPRESS_CHECKOUT_ECE',
-				'dist/tokenized-express-checkout',
-				[
-					'jquery',
-					'stripe',
-				]
-			);
+		WC_Payments::register_script_with_dependencies(
+			'WCPAY_EXPRESS_CHECKOUT_ECE',
+			'dist/express-checkout',
+			[
+				'jquery',
+				'stripe',
+			]
+		);
 
-			WC_Payments_Utils::enqueue_style(
-				'WCPAY_EXPRESS_CHECKOUT_ECE',
-				plugins_url( 'dist/tokenized-express-checkout.css', WCPAY_PLUGIN_FILE ),
-				[],
-				WC_Payments::get_file_version( 'dist/tokenized-express-checkout.css' )
-			);
-		} else {
-			WC_Payments::register_script_with_dependencies(
-				'WCPAY_EXPRESS_CHECKOUT_ECE',
-				'dist/express-checkout',
-				[
-					'jquery',
-					'stripe',
-				]
-			);
-
-			WC_Payments_Utils::enqueue_style(
-				'WCPAY_EXPRESS_CHECKOUT_ECE',
-				plugins_url( 'dist/express-checkout.css', WCPAY_PLUGIN_FILE ),
-				[],
-				WC_Payments::get_file_version( 'dist/express-checkout.css' )
-			);
-		}
+		WC_Payments_Utils::enqueue_style(
+			'WCPAY_EXPRESS_CHECKOUT_ECE',
+			plugins_url( 'dist/express-checkout.css', WCPAY_PLUGIN_FILE ),
+			[],
+			WC_Payments::get_file_version( 'dist/express-checkout.css' )
+		);
 
 		wp_localize_script( 'WCPAY_EXPRESS_CHECKOUT_ECE', 'wcpayExpressCheckoutParams', $express_checkout_params );
+		wp_localize_script( 'WCPAY_BLOCKS_CHECKOUT', 'wcpayExpressCheckoutParams', $express_checkout_params );
 
 		wp_set_script_translations( 'WCPAY_EXPRESS_CHECKOUT_ECE', 'woocommerce-payments' );
 
@@ -318,67 +315,8 @@ class WC_Payments_Express_Checkout_Button_Handler {
 			return;
 		}
 		?>
-		<div id="wcpay-express-checkout-element" style="display: none;"></div>
+		<div id="wcpay-express-checkout-element"></div>
 		<?php
-	}
-
-	/**
-	 * Displays the necessary HTML for the Pay for Order page.
-	 *
-	 * @param WC_Order $order The order that needs payment.
-	 */
-	public function display_pay_for_order_page_html( $order ) {
-		$currency = get_woocommerce_currency();
-
-		$data  = [];
-		$items = [];
-
-		foreach ( $order->get_items() as $item ) {
-			if ( method_exists( $item, 'get_total' ) ) {
-				$items[] = [
-					'label'  => $item->get_name(),
-					'amount' => WC_Payments_Utils::prepare_amount( $item->get_total(), $currency ),
-				];
-			}
-		}
-
-		if ( $order->get_total_tax() ) {
-			$items[] = [
-				'label'  => __( 'Tax', 'woocommerce-payments' ),
-				'amount' => WC_Payments_Utils::prepare_amount( $order->get_total_tax(), $currency ),
-			];
-		}
-
-		if ( $order->get_shipping_total() ) {
-			$shipping_label = sprintf(
-			// Translators: %s is the name of the shipping method.
-				__( 'Shipping (%s)', 'woocommerce-payments' ),
-				$order->get_shipping_method()
-			);
-
-			$items[] = [
-				'label'  => $shipping_label,
-				'amount' => WC_Payments_Utils::prepare_amount( $order->get_shipping_total(), $currency ),
-			];
-		}
-
-		foreach ( $order->get_fees() as $fee ) {
-			$items[] = [
-				'label'  => $fee->get_name(),
-				'amount' => WC_Payments_Utils::prepare_amount( $fee->get_amount(), $currency ),
-			];
-		}
-
-		$data['order']          = $order->get_id();
-		$data['displayItems']   = $items;
-		$data['needs_shipping'] = false; // This should be already entered/prepared.
-		$data['total']          = [
-			'label'   => apply_filters( 'wcpay_payment_request_total_label', $this->express_checkout_helper->get_total_label() ),
-			'amount'  => WC_Payments_Utils::prepare_amount( $order->get_total(), $currency ),
-			'pending' => true,
-		];
-
-		wp_localize_script( 'WCPAY_EXPRESS_CHECKOUT_ECE', 'wcpayECEPayForOrderParams', $data );
 	}
 
 	/**
@@ -388,12 +326,15 @@ class WC_Payments_Express_Checkout_Button_Handler {
 	 * @return void
 	 */
 	public function set_session() {
-		// Don't set session cookies on product pages to allow for caching when express checkout
-		// buttons are disabled. But keep cookies if there is already an active WC session in place.
-		if (
-			! ( $this->express_checkout_helper->is_product() && $this->express_checkout_helper->should_show_express_checkout_button() )
-			|| ( isset( WC()->session ) && WC()->session->has_session() )
-		) {
+		// Skip if there's already an active WC session. Otherwise, only set session cookies on checkout and cart pages.
+		// This helps with caching as product pages can be cached when no cookies are present.
+		$has_active_session = isset( WC()->session ) && WC()->session->has_session();
+		if ( $has_active_session ) {
+			return;
+		}
+
+		$is_checkout_or_cart = $this->express_checkout_helper->is_checkout() || $this->express_checkout_helper->is_cart();
+		if ( ! $is_checkout_or_cart ) {
 			return;
 		}
 

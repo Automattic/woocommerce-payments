@@ -87,9 +87,10 @@ const formatQueryFilters = ( query ) => ( {
 	locale: query.locale,
 } );
 
-export function getDepositsCSV( query ) {
+export const payoutsDownloadEndpoint = `${ NAMESPACE }/deposits/download`;
+export function getPayoutsCSVRequestURL( query ) {
 	const path = addQueryArgs(
-		`${ NAMESPACE }/deposits/download`,
+		payoutsDownloadEndpoint,
 		formatQueryFilters( query )
 	);
 

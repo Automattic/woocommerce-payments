@@ -104,4 +104,79 @@ describe( 'Deposit overview', () => {
 		);
 		expect( overview ).toMatchSnapshot();
 	} );
+
+	test( 'renders failure reason when deposit has a known failure code', () => {
+		const failedDeposit = {
+			...mockDeposit,
+			status: 'failed',
+			failure_code: 'insufficient_funds',
+		} as CachedDeposit;
+
+		const { getByText } = render(
+			<DepositOverview deposit={ failedDeposit } />
+		);
+
+		expect( getByText( 'Failure reason:' ) ).toBeInTheDocument();
+		expect(
+			getByText(
+				'Your account has insufficient funds to cover your negative balance.'
+			)
+		).toBeInTheDocument();
+	} );
+
+	test( 'renders failure_message when failure_code is new and not included in our mapping', () => {
+		// @ts-expect-error Testing invalid failure code scenario
+		const failedDeposit = {
+			...mockDeposit,
+			status: 'failed',
+			failure_code: 'unknown_failure_code',
+			failure_message:
+				'Failure error message originally captured from the Stripe Payout object',
+		} as CachedDeposit;
+
+		const { getByText } = render(
+			<DepositOverview deposit={ failedDeposit } />
+		);
+
+		expect( getByText( 'Failure reason:' ) ).toBeInTheDocument();
+		expect(
+			getByText(
+				'Failure error message originally captured from the Stripe Payout object'
+			)
+		).toBeInTheDocument();
+	} );
+
+	test( 'renders failure_message when no failure_code exists', () => {
+		const failedDeposit = {
+			...mockDeposit,
+			status: 'failed',
+			failure_message:
+				'Failure error message originally captured from the Stripe Payout object',
+		} as CachedDeposit;
+
+		const { getByText } = render(
+			<DepositOverview deposit={ failedDeposit } />
+		);
+
+		expect( getByText( 'Failure reason:' ) ).toBeInTheDocument();
+		expect(
+			getByText(
+				'Failure error message originally captured from the Stripe Payout object'
+			)
+		).toBeInTheDocument();
+	} );
+
+	test( 'renders Unknown when no failure_code nor failure_message exist - edge case', () => {
+		const failedDeposit = {
+			...mockDeposit,
+			status: 'failed',
+		} as CachedDeposit;
+
+		const { getByText } = render(
+			<DepositOverview deposit={ failedDeposit } />
+		);
+
+		expect( getByText( 'Failure reason:' ) ).toBeInTheDocument();
+		expect( getByText( 'Unknown' ) ).toBeInTheDocument();
+	} );
 } );

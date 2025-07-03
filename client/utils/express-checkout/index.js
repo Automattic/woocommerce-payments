@@ -1,4 +1,4 @@
-/* global wcpayPaymentRequestParams, wcpayExpressCheckoutParams */
+/* global wcpayExpressCheckoutParams */
 
 /**
  * Retrieves express checkout config from global variable.
@@ -12,12 +12,6 @@ export const getExpressCheckoutConfig = ( key ) => {
 		wcpayExpressCheckoutParams.hasOwnProperty( key )
 	) {
 		return wcpayExpressCheckoutParams[ key ];
-	}
-	if (
-		typeof wcpayPaymentRequestParams === 'object' &&
-		wcpayPaymentRequestParams.hasOwnProperty( key )
-	) {
-		return wcpayPaymentRequestParams[ key ];
 	}
 	return null;
 };
@@ -34,17 +28,6 @@ export const getDefaultBorderRadius = () => {
 		10
 	);
 };
-
-/**
- * Get WC AJAX endpoint URL for express checkout endpoints.
- *
- * @param {string} endpoint Endpoint.
- * @return {string} URL with interpolated endpoint.
- */
-export const getExpressCheckoutAjaxURL = ( endpoint ) =>
-	getExpressCheckoutConfig( 'wc_ajax_url' )
-		.toString()
-		.replace( '%%endpoint%%', 'wcpay_' + endpoint );
 
 /**
  * Construct WC AJAX endpoint URL.

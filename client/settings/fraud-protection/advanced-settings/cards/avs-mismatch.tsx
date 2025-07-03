@@ -15,17 +15,17 @@ const AVSMismatchRuleCard: React.FC = () => {
 	return (
 		<FraudProtectionRuleCard
 			title={ __( 'AVS Mismatch', 'woocommerce-payments' ) }
-			description={ __(
-				'This filter compares the street number and the post code submitted by the customer against the data on ' +
-					'file with the card issuer.',
-				'woocommerce-payments'
-			) }
 			id="avs-mismatch-card"
 		>
 			<FraudProtectionRuleToggle
 				setting="avs_verification"
 				label={ __(
-					'Block transactions for mismatched AVS',
+					'Enable AVS Mismatch filter',
+					'woocommerce-payments'
+				) }
+				description={ __(
+					'This filter compares the street number and the post code submitted by the customer against the data on ' +
+						'file with the card issuer. When enabled the payment will be blocked.',
 					'woocommerce-payments'
 				) }
 			/>

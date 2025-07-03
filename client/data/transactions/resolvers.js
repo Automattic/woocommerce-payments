@@ -88,9 +88,10 @@ export function* getTransactions( query ) {
 	}
 }
 
-export function getTransactionsCSV( query ) {
+export const transactionsDownloadEndpoint = `${ NAMESPACE }/transactions/download`;
+export function getTransactionsCSVRequestURL( query ) {
 	const path = addQueryArgs(
-		`${ NAMESPACE }/transactions/download`,
+		transactionsDownloadEndpoint,
 		formatQueryFilters( query )
 	);
 

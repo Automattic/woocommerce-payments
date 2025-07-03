@@ -3,12 +3,11 @@
 /**
  * Internal dependencies
  */
-import { getConfig, getUPEConfig } from 'utils/checkout';
+import { getConfig, getUPEConfig } from 'wcpay/utils/checkout';
 import {
 	getExpressCheckoutConfig,
 	buildAjaxURL,
-	getExpressCheckoutAjaxURL,
-} from 'utils/express-checkout';
+} from 'wcpay/utils/express-checkout';
 import { getAppearance } from 'checkout/upe-styles';
 import { getAppearanceType } from '../utils';
 
@@ -153,7 +152,6 @@ export default class WCPayAPI {
 		let orderId = partials[ 2 ];
 		const clientSecret = partials[ 3 ];
 		const nonce = partials[ 4 ];
-
 		const orderPayIndex = redirectUrl.indexOf( 'order-pay' );
 		const isOrderPage = orderPayIndex > -1;
 
@@ -211,6 +209,20 @@ export default class WCPayAPI {
 			confirmPaymentOrSetup()
 				// ToDo: Switch to an async function once it works with webpack.
 				.then( ( result ) => {
+					let paymentError = null;
+					if ( result.paymentIntent?.last_payment_error ) {
+						paymentError = {
+							message:
+								result.paymentIntent.last_payment_error.message,
+						};
+					}
+					// If a wallet iframe is closed, Stripe doesn't throw an error, but the intent status will be requires_action.
+					if ( result.paymentIntent?.status === 'requires_action' ) {
+						paymentError = {
+							message: 'Payment requires additional action.',
+						};
+					}
+
 					const intentId =
 						( result.paymentIntent && result.paymentIntent.id ) ||
 						( result.setupIntent && result.setupIntent.id ) ||
@@ -226,6 +238,8 @@ export default class WCPayAPI {
 						getExpressCheckoutConfig( 'ajax_url' ) ??
 						getConfig( 'ajaxUrl' );
 
+					const isChangingPayment = getConfig( 'isChangingPayment' );
+
 					const ajaxCall = this.request( ajaxUrl, {
 						action: 'update_order_status',
 						order_id: orderId,
@@ -236,13 +250,16 @@ export default class WCPayAPI {
 						should_save_payment_method: shouldSavePaymentMethod
 							? 'true'
 							: 'false',
+						is_changing_payment: isChangingPayment
+							? 'true'
+							: 'false',
 					} );
 
-					return [ ajaxCall, result.error ];
+					return [ ajaxCall, paymentError, result.error ];
 				} )
-				.then( ( [ verificationCall, originalError ] ) => {
-					if ( originalError ) {
-						throw originalError;
+				.then( ( [ verificationCall, paymentError, resultError ] ) => {
+					if ( resultError ) {
+						throw resultError;
 					}
 
 					return verificationCall.then( ( response ) => {
@@ -253,6 +270,10 @@ export default class WCPayAPI {
 
 						if ( result.error ) {
 							throw result.error;
+						}
+
+						if ( paymentError ) {
+							throw paymentError;
 						}
 
 						return result.return_url;
@@ -326,115 +347,6 @@ export default class WCPayAPI {
 			} );
 	}
 
-	/**
-	 * Updates cart with selected shipping option.
-	 *
-	 * @param {Object} shippingOption Shipping option.
-	 * @return {Promise} Promise for the request to the server.
-	 */
-	expressCheckoutECEUpdateShippingDetails( shippingOption ) {
-		return this.request(
-			getExpressCheckoutAjaxURL( 'ece_update_shipping_method' ),
-			{
-				security: getExpressCheckoutConfig( 'nonce' )?.update_shipping,
-				shipping_method: [ shippingOption.id ],
-				is_product_page:
-					getExpressCheckoutConfig( 'button_context' ) === 'product',
-			}
-		);
-	}
-
-	/**
-	 * Get cart items and total amount.
-	 *
-	 * @return {Promise} Promise for the request to the server.
-	 */
-	expressCheckoutECEGetCartDetails() {
-		return this.request(
-			getExpressCheckoutAjaxURL( 'ece_get_cart_details' ),
-			{
-				security: getExpressCheckoutConfig( 'nonce' )?.get_cart_details,
-			}
-		);
-	}
-
-	/**
-	 * Add product to cart from variable product page.
-	 *
-	 * @param {Object} productData Product data.
-	 * @return {Promise} Promise for the request to the server.
-	 */
-	expressCheckoutECEAddToCart( productData ) {
-		return this.request( getExpressCheckoutAjaxURL( 'add_to_cart' ), {
-			security: getExpressCheckoutConfig( 'nonce' )?.add_to_cart,
-			...productData,
-		} );
-	}
-
-	/**
-	 * Get selected product data from variable product page.
-	 *
-	 * @param {Object} productData Product data.
-	 * @return {Promise} Promise for the request to the server.
-	 */
-	expressCheckoutECEGetSelectedProductData( productData ) {
-		return this.request(
-			getExpressCheckoutAjaxURL( 'ece_get_selected_product_data' ),
-			{
-				security: getExpressCheckoutConfig( 'nonce' )
-					?.get_selected_product_data,
-				...productData,
-			}
-		);
-	}
-
-	/**
-	 * Submits shipping address to get available shipping options
-	 * from Express Checkout ECE payment method.
-	 *
-	 * @param {Object} shippingAddress Shipping details.
-	 * @return {Promise} Promise for the request to the server.
-	 */
-	expressCheckoutECECalculateShippingOptions( shippingAddress ) {
-		return this.request(
-			getExpressCheckoutAjaxURL( 'ece_get_shipping_options' ),
-			{
-				security: getExpressCheckoutConfig( 'nonce' )?.shipping,
-				is_product_page:
-					getExpressCheckoutConfig( 'button_context' ) === 'product',
-				...shippingAddress,
-			}
-		);
-	}
-
-	/**
-	 * Creates order based on Express Checkout ECE payment method.
-	 *
-	 * @param {Object} paymentData Order data.
-	 * @return {Promise} Promise for the request to the server.
-	 */
-	expressCheckoutECECreateOrder( paymentData ) {
-		return this.request( getExpressCheckoutAjaxURL( 'ece_create_order' ), {
-			_wpnonce: getExpressCheckoutConfig( 'nonce' )?.checkout,
-			...paymentData,
-		} );
-	}
-
-	/**
-	 * Pays for an order based on the Express Checkout payment method.
-	 *
-	 * @param {integer} order The order ID.
-	 * @param {Object} paymentData Order data.
-	 * @return {Promise} Promise for the request to the server.
-	 */
-	expressCheckoutECEPayForOrder( order, paymentData ) {
-		return this.request( getExpressCheckoutAjaxURL( 'ece_pay_for_order' ), {
-			_wpnonce: getExpressCheckoutConfig( 'nonce' )?.pay_for_order,
-			order,
-			...paymentData,
-		} );
-	}
-
 	initWooPay( userEmail, woopayUserSession ) {
 		if ( ! this.isWooPayRequesting ) {
 			this.isWooPayRequesting = true;
@@ -465,27 +377,6 @@ export default class WCPayAPI {
 		return this.request( buildAjaxURL( wcAjaxUrl, 'add_to_cart' ), {
 			security: addToCartNonce,
 			...productData,
-		} );
-	}
-
-	/**
-	 * Fetches the cart data from the woocommerce store api.
-	 *
-	 * @return {Object} JSON data.
-	 * @throws Error if the response is not ok.
-	 */
-	pmmeGetCartData() {
-		return fetch( `${ getUPEConfig( 'storeApiURL' ) }/cart`, {
-			method: 'GET',
-			credentials: 'same-origin',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-		} ).then( ( response ) => {
-			if ( ! response.ok ) {
-				throw new Error( response.statusText );
-			}
-			return response.json();
 		} );
 	}
 }

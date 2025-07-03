@@ -5,22 +5,25 @@
  */
 import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
+// eslint-disable-next-line no-restricted-syntax
+import {
+	// @ts-expect-error: Suppressing Module '"@wordpress/components"' has no exported member '__experimentalText'.
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis -- used by TableCard component which we replicate here.
+	__experimentalText as Text,
+} from '@wordpress/components';
 import {
 	Card,
 	CardBody,
 	CardHeader,
 	ExternalLink,
-	// @ts-expect-error: Suppressing Module '"@wordpress/components"' has no exported member '__experimentalText'.
-	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis -- used by TableCard component which we replicate here.
-	__experimentalText as Text,
-} from '@wordpress/components';
+} from 'wcpay/components/wp-components-wrapped';
 import {
 	SummaryListPlaceholder,
 	SummaryList,
 	OrderStatus,
 } from '@woocommerce/components';
 import interpolateComponents from '@automattic/interpolate-components';
-import classNames from 'classnames';
+import clsx from 'clsx';
 
 /**
  * Internal dependencies.
@@ -32,14 +35,16 @@ import { CopyButton } from 'components/copy-button';
 import Page from 'components/page';
 import ErrorBoundary from 'components/error-boundary';
 import { TestModeNotice } from 'components/test-mode-notice';
+import BannerNotice from 'components/banner-notice';
 import InlineNotice from 'components/inline-notice';
 import {
 	formatCurrency,
 	formatExplicitCurrency,
 } from 'multi-currency/interface/functions';
-import { depositStatusLabels } from '../strings';
+import { depositStatusLabels, payoutFailureMessages } from '../strings';
 import './style.scss';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
+import { MaybeShowMerchantFeedbackPrompt } from 'wcpay/merchant-feedback-prompt';
 
 /**
  * Renders the deposit status indicator UI, re-purposing the OrderStatus component from @woocommerce/components.
@@ -86,7 +91,7 @@ const SummaryItem: React.FC< SummaryItemProps > = ( {
 			<div className="woocommerce-summary__item-label">{ label }</div>
 			<div className="woocommerce-summary__item-data">
 				<div
-					className={ classNames(
+					className={ clsx(
 						'woocommerce-summary__item-value',
 						valueClass
 					) }
@@ -227,6 +232,20 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 					] }
 				</SummaryList>
 			) }
+			{ deposit.status === 'failed' && (
+				<BannerNotice
+					status="error"
+					isDismissible={ false }
+					key="payout-failure-notice"
+				>
+					<strong>
+						{ __( 'Failure reason: ', 'woocommerce-payments' ) }
+					</strong>
+					{ payoutFailureMessages[ deposit.failure_code ] ||
+						deposit.failure_message ||
+						__( 'Unknown', 'woocommerce-payments' ) }
+				</BannerNotice>
+			) }
 			<Card>
 				<CardHeader>
 					<Text size={ 16 } weight={ 600 }>
@@ -300,6 +319,7 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 
 	return (
 		<Page>
+			<MaybeShowMerchantFeedbackPrompt />
 			<TestModeNotice currentPage="deposits" isDetailsView={ true } />
 			<ErrorBoundary>
 				{ isLoading ? (
@@ -308,7 +328,6 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 					<DepositOverview deposit={ deposit } />
 				) }
 			</ErrorBoundary>
-
 			{ deposit && (
 				<ErrorBoundary>
 					{ isInstantDeposit ? (

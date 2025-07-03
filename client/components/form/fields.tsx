@@ -1,9 +1,9 @@
 /**
  * External dependencies
  */
-import React, { forwardRef } from 'react';
-import { TextControl } from '@wordpress/components';
-import classNames from 'classnames';
+import React, { ComponentProps, forwardRef } from 'react';
+import { TextControl } from 'wcpay/components/wp-components-wrapped';
+import clsx from 'clsx';
 
 /**
  * Internal dependencies
@@ -22,7 +22,7 @@ interface CommonProps {
 	error?: string;
 }
 
-export type TextFieldProps = TextControl.Props & CommonProps;
+export type TextFieldProps = ComponentProps< typeof TextControl > & CommonProps;
 export type SelectFieldProps< ItemType > = SelectControlProps< ItemType > &
 	CommonProps;
 export type GroupedSelectFieldProps< ItemType > = GroupedSelectControlProps<
@@ -50,7 +50,7 @@ const makeField = (
 			<Control
 				{ ...rest }
 				ref={ ref }
-				className={ classNames( rest.className, 'has-error' ) }
+				className={ clsx( rest.className, 'has-error' ) }
 			/>
 			{ <div className="components-form-field__error">{ error }</div> }
 		</>

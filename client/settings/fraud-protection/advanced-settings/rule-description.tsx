@@ -9,7 +9,9 @@ import React from 'react';
  */
 import './../style.scss';
 
-const FraudProtectionRuleDescription: React.FC = ( { children } ) => {
+const FraudProtectionRuleDescription: React.FC< {
+	children?: React.ReactNode;
+} > = ( { children } ) => {
 	return (
 		<div className="fraud-protection-rule-description">
 			<strong>

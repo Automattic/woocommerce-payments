@@ -13,11 +13,16 @@ declare global {
 		isSubscriptionsActive: boolean;
 		featureFlags: {
 			customSearch: boolean;
+			woopay: boolean;
+			documents: boolean;
+			woopayExpressCheckout: boolean;
 			isAuthAndCaptureEnabled: boolean;
 			paymentTimeline: boolean;
 			isDisputeIssuerEvidenceEnabled: boolean;
-			isPaymentOverviewWidgetEnabled?: boolean;
+			isNewEvidenceSubmissionFormEnabled: boolean;
+			multiCurrency?: boolean;
 		};
+		accountFees: Record< string, any >;
 		fraudServices: unknown[];
 		testMode: boolean;
 		testModeOnboarding: boolean;
@@ -26,9 +31,10 @@ declare global {
 		isJetpackIdcActive: boolean;
 		isAccountConnected: boolean;
 		isAccountValid: boolean;
-		accountStatus: {
+		accountStatus: Partial< {
 			email?: string;
 			created: string;
+			isLive?: boolean;
 			error?: boolean;
 			status?: string;
 			country?: string;
@@ -69,7 +75,17 @@ declare global {
 				declineOnAVSFailure: boolean;
 				declineOnCVCFailure: boolean;
 			};
-		};
+			/**
+			 * Campaigns are temporary flags that are used to enable/disable features for a limited time.
+			 */
+			campaigns: {
+				/**
+				 * The flag for the WordPress.org merchant review campaign in 2025.
+				 * Eligibility is determined per-account on transact-platform-server.
+				 */
+				wporgReview2025: boolean;
+			};
+		} >;
 		accountLoans: {
 			has_active_loan: boolean;
 			has_past_loans: boolean;
@@ -94,11 +110,9 @@ declare global {
 			isComplete: boolean;
 			isEligibilityModalDismissed: boolean;
 		};
-		enabledPaymentMethods: string[];
 		dismissedDuplicateNotices: PaymentMethodToPluginsMap;
 		accountDefaultCurrency: string;
 		isFRTReviewFeatureActive: boolean;
-		frtDiscoverBannerSettings: string;
 		onboardingFieldsData?: {
 			business_types: Country[];
 			mccs_display_tree: MccsDisplayTreeItem[];
@@ -118,7 +132,6 @@ declare global {
 		isWooPayStoreCountryAvailable: boolean;
 		isSubscriptionsPluginActive: boolean;
 		isStripeBillingEligible: boolean;
-		capabilityRequestNotices: Record< string, boolean >;
 		storeName: string;
 		isNextDepositNoticeDismissed: boolean;
 		isInstantDepositNoticeDismissed: boolean;
@@ -132,6 +145,26 @@ declare global {
 		dateFormat: string;
 		timeFormat: string;
 	};
+
+	const wooPaymentsPaymentMethodDefinitions: Record<
+		string,
+		PaymentMethodServerDefinition
+	>;
+
+	const wooPaymentsPaymentMethodsConfig: Record<
+		string,
+		{
+			isReusable: boolean;
+			isBnpl: boolean;
+			title: string;
+			icon: string;
+			darkIcon: string;
+			showSaveOption: boolean;
+			countries: string[];
+			testingInstructions: string;
+			forceNetworkSavedCards: boolean;
+		}
+	>;
 
 	const wc: {
 		wcSettings: typeof wcSettingsModule;
@@ -168,6 +201,10 @@ declare global {
 					woocommerce_all_except_countries: string[];
 					woocommerce_specific_allowed_countries: string[];
 					woocommerce_default_country: string;
+					woocommerce_store_address: string;
+					woocommerce_store_address_2: string;
+					woocommerce_store_city: string;
+					woocommerce_store_postcode: string;
 				};
 			};
 			siteVisibilitySettings: {
@@ -195,6 +232,11 @@ declare global {
 			userLocale: string;
 		};
 		siteTitle: string;
+		wcVersion: string;
+	};
+
+	const wcpayPluginSettings: {
+		exitSurveyLastShown: string | null;
 	};
 
 	interface WcSettings {
@@ -217,5 +259,7 @@ declare global {
 		wc: typeof wc;
 		wcTracks: typeof wcTracks;
 		wcSettings: typeof wcSettings;
+		wcpayPluginSettings?: typeof wcpayPluginSettings;
+		wooPaymentsPaymentMethodsConfig?: typeof wooPaymentsPaymentMethodsConfig;
 	}
 }

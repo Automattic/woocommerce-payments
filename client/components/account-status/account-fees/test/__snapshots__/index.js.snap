@@ -1,13 +1,25 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`AccountFees renders discounted base fee 1`] = `
+.emotion-0 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
 <div>
   <div
     class="account-fees"
   >
     <hr
       aria-orientation="horizontal"
-      class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+      class="components-divider components-card__divider components-card-divider emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="CardDivider"
       role="separator"
@@ -57,13 +69,25 @@ exports[`AccountFees renders discounted base fee 1`] = `
 `;
 
 exports[`AccountFees renders discounted fee with USD volume currency and non-USD base fee 1`] = `
+.emotion-0 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
 <div>
   <div
     class="account-fees"
   >
     <hr
       aria-orientation="horizontal"
-      class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+      class="components-divider components-card__divider components-card-divider emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="CardDivider"
       role="separator"
@@ -113,13 +137,25 @@ exports[`AccountFees renders discounted fee with USD volume currency and non-USD
 `;
 
 exports[`AccountFees renders discounted fee with end date 1`] = `
+.emotion-0 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
 <div>
   <div
     class="account-fees"
   >
     <hr
       aria-orientation="horizontal"
-      class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+      class="components-divider components-card__divider components-card-divider emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="CardDivider"
       role="separator"
@@ -147,13 +183,25 @@ exports[`AccountFees renders discounted fee with end date 1`] = `
 `;
 
 exports[`AccountFees renders discounted fee with volume limit 1`] = `
+.emotion-0 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
 <div>
   <div
     class="account-fees"
   >
     <hr
       aria-orientation="horizontal"
-      class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+      class="components-divider components-card__divider components-card-divider emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="CardDivider"
       role="separator"
@@ -203,13 +251,25 @@ exports[`AccountFees renders discounted fee with volume limit 1`] = `
 `;
 
 exports[`AccountFees renders discounted fee with volume limit and end date 1`] = `
+.emotion-0 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
 <div>
   <div
     class="account-fees"
   >
     <hr
       aria-orientation="horizontal"
-      class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+      class="components-divider components-card__divider components-card-divider emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="CardDivider"
       role="separator"
@@ -259,13 +319,25 @@ exports[`AccountFees renders discounted fee with volume limit and end date 1`] =
 `;
 
 exports[`AccountFees renders discounted fee without volume limit 1`] = `
+.emotion-0 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
 <div>
   <div
     class="account-fees"
   >
     <hr
       aria-orientation="horizontal"
-      class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+      class="components-divider components-card__divider components-card-divider emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="CardDivider"
       role="separator"
@@ -288,13 +360,25 @@ exports[`AccountFees renders discounted fee without volume limit 1`] = `
 `;
 
 exports[`AccountFees renders discounted non-USD base fee 1`] = `
+.emotion-0 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
 <div>
   <div
     class="account-fees"
   >
     <hr
       aria-orientation="horizontal"
-      class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+      class="components-divider components-card__divider components-card-divider emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="CardDivider"
       role="separator"
@@ -344,13 +428,25 @@ exports[`AccountFees renders discounted non-USD base fee 1`] = `
 `;
 
 exports[`AccountFees renders discounts multiple payment methods 1`] = `
+.emotion-0 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
 <div>
   <div
     class="account-fees"
   >
     <hr
       aria-orientation="horizontal"
-      class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+      class="components-divider components-card__divider components-card-divider emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="CardDivider"
       role="separator"
@@ -393,13 +489,25 @@ exports[`AccountFees renders discounts multiple payment methods 1`] = `
 `;
 
 exports[`AccountFees renders first discounted fee ignoring the rest 1`] = `
+.emotion-0 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
 <div>
   <div
     class="account-fees"
   >
     <hr
       aria-orientation="horizontal"
-      class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+      class="components-divider components-card__divider components-card-divider emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="CardDivider"
       role="separator"
@@ -422,13 +530,25 @@ exports[`AccountFees renders first discounted fee ignoring the rest 1`] = `
 `;
 
 exports[`AccountFees renders non-USD base fee 1`] = `
+.emotion-0 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
 <div>
   <div
     class="account-fees"
   >
     <hr
       aria-orientation="horizontal"
-      class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+      class="components-divider components-card__divider components-card-divider emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="CardDivider"
       role="separator"
@@ -451,13 +571,25 @@ exports[`AccountFees renders non-USD base fee 1`] = `
 `;
 
 exports[`AccountFees renders normal base fee 1`] = `
+.emotion-0 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
 <div>
   <div
     class="account-fees"
   >
     <hr
       aria-orientation="horizontal"
-      class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+      class="components-divider components-card__divider components-card-divider emotion-0 emotion-1"
       data-wp-c16t="true"
       data-wp-component="CardDivider"
       role="separator"

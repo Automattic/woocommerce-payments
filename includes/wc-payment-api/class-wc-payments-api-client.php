@@ -32,6 +32,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	const ENDPOINT_BASE          = 'https://public-api.wordpress.com/wpcom/v2';
 	const ENDPOINT_SITE_FRAGMENT = 'sites/%s';
 	const ENDPOINT_REST_BASE     = 'wcpay';
+	const V2_ENDPOINT_REST_BASE  = 'transact';
 
 	const POST   = 'POST';
 	const GET    = 'GET';
@@ -81,7 +82,6 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	const FRAUD_OUTCOMES_API           = 'fraud_outcomes';
 	const FRAUD_RULESET_API            = 'fraud_ruleset';
 	const COMPATIBILITY_API            = 'compatibility';
-	const REPORTING_API                = 'reporting/payment_activity';
 	const RECOMMENDED_PAYMENT_METHODS  = 'payment_methods/recommended';
 
 	/**
@@ -453,6 +453,42 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		}
 
 		return $this->request( $filters, self::TRANSACTIONS_API . '/download', self::POST );
+	}
+
+	/**
+	 * Get the transactions export URL for a given export ID, if available.
+	 *
+	 * @param string $export_id The export ID.
+	 *
+	 * @return array The export URL response.
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function get_transactions_export_url( string $export_id ): array {
+		return $this->request( [], self::TRANSACTIONS_API . "/download/{$export_id}", self::GET );
+	}
+
+	/**
+	 * Get the disputes export URL for a given export ID, if available.
+	 *
+	 * @param string $export_id The export ID.
+	 *
+	 * @return array The export URL response.
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function get_disputes_export_url( string $export_id ): array {
+		return $this->request( [], self::DISPUTES_API . "/download/{$export_id}", self::GET );
+	}
+
+	/**
+	 * Get the payouts export URL for a given export ID, if available.
+	 *
+	 * @param string $export_id The export ID.
+	 *
+	 * @return array The export URL response.
+	 * @throws API_Exception - Exception thrown on request failure.
+	 */
+	public function get_payouts_export_url( string $export_id ): array {
+		return $this->request( [], self::DEPOSITS_API . "/download/{$export_id}", self::GET );
 	}
 
 	/**
@@ -937,7 +973,11 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		return $this->request(
 			$query_body,
 			self::CURRENCY_API . '/rates',
-			self::GET
+			self::GET,
+			true,
+			false,
+			false,
+			true
 		);
 	}
 
@@ -1002,19 +1042,30 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	/**
 	 * Get data needed to initialize the onboarding flow
 	 *
-	 * @param bool   $live_account                Whether to get the onboarding data for a live mode or test mode account.
-	 * @param string $return_url                  URL to redirect to at the end of the flow.
-	 * @param array  $site_data                   Data to track ToS agreement.
-	 * @param array  $user_data                   Data about the user doing the onboarding (location and device).
-	 * @param array  $account_data                Data to prefill the onboarding.
-	 * @param array  $actioned_notes              Actioned WCPay note names to be sent to the onboarding flow.
-	 * @param bool   $progressive                 Whether we need to enable progressive onboarding prefill.
-	 * @param bool   $collect_payout_requirements Whether we need to redirect user to Stripe KYC to complete their payouts data.
+	 * @param bool    $live_account                Whether to get the onboarding data for a live mode or test mode account.
+	 * @param string  $return_url                  URL to redirect to at the end of the flow.
+	 * @param array   $site_data                   Data to track ToS agreement.
+	 * @param array   $user_data                   Data about the user doing the onboarding (location and device).
+	 * @param array   $account_data                Data to prefill the onboarding.
+	 * @param array   $actioned_notes              Actioned WCPay note names to be sent to the onboarding flow.
+	 * @param bool    $progressive                 Whether we need to enable progressive onboarding prefill.
+	 * @param bool    $collect_payout_requirements Whether we need to redirect user to Stripe KYC to complete their payouts data.
+	 * @param ?string $referral_code              Referral code to be used for onboarding.
 	 *
 	 * @return array An array containing the url and state fields.
 	 * @throws API_Exception Exception thrown on request failure.
 	 */
-	public function get_onboarding_data( bool $live_account, string $return_url, array $site_data = [], array $user_data = [], array $account_data = [], array $actioned_notes = [], bool $progressive = false, bool $collect_payout_requirements = false ): array {
+	public function get_onboarding_data(
+		bool $live_account,
+		string $return_url,
+		array $site_data = [],
+		array $user_data = [],
+		array $account_data = [],
+		array $actioned_notes = [],
+		bool $progressive = false,
+		bool $collect_payout_requirements = false,
+		?string $referral_code = null
+	): array {
 		$request_args = apply_filters(
 			'wc_payments_get_onboarding_data_args',
 			[
@@ -1029,24 +1080,35 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			]
 		);
 
+		$request_args['referral_code'] = $referral_code;
+
 		return $this->request( $request_args, self::ONBOARDING_API . '/init', self::POST, true, true );
 	}
 
 	/**
 	 * Initialize the onboarding embedded KYC flow, returning a session object which is used by the frontend.
 	 *
-	 * @param bool  $live_account Whether to create live account.
-	 * @param array $site_data Site data.
-	 * @param array $user_data User data.
-	 * @param array $account_data Account data to be prefilled.
-	 * @param array $actioned_notes Actioned notes to be sent.
-	 * @param bool  $progressive Whether progressive onboarding should be enabled for this onboarding.
+	 * @param bool    $live_account Whether to create live account.
+	 * @param array   $site_data Site data.
+	 * @param array   $user_data User data.
+	 * @param array   $account_data Account data to be prefilled.
+	 * @param array   $actioned_notes Actioned notes to be sent.
+	 * @param bool    $progressive Whether progressive onboarding should be enabled for this onboarding.
+	 * @param ?string $referral_code Referral code to be used for onboarding.
 	 *
 	 * @return array
 	 *
 	 * @throws API_Exception
 	 */
-	public function initialize_onboarding_embedded_kyc( bool $live_account, array $site_data = [], array $user_data = [], array $account_data = [], array $actioned_notes = [], bool $progressive = false ): array {
+	public function initialize_onboarding_embedded_kyc(
+		bool $live_account,
+		array $site_data = [],
+		array $user_data = [],
+		array $account_data = [],
+		array $actioned_notes = [],
+		bool $progressive = false,
+		?string $referral_code = null
+	): array {
 		$request_args = apply_filters(
 			'wc_payments_get_onboarding_data_args',
 			[
@@ -1059,7 +1121,26 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			]
 		);
 
+		$request_args['referral_code'] = $referral_code;
+
 		$session = $this->request( $request_args, self::ONBOARDING_API . '/embedded', self::POST, true, true );
+
+		if ( ! is_array( $session ) ) {
+			return [];
+		}
+
+		return $session;
+	}
+
+	/**
+	 * Fetch the embedded account session object utilized by the frontend.
+	 *
+	 * @return array
+	 *
+	 * @throws API_Exception
+	 */
+	public function create_embedded_account_session(): array {
+		$session = $this->request( [], self::ACCOUNTS_API . '/embedded/session', self::POST, true, true );
 
 		if ( ! is_array( $session ) ) {
 			return [];
@@ -1217,6 +1298,23 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			$customer_data,
 			self::CUSTOMERS_API . '/' . $customer_id,
 			self::POST
+		);
+	}
+
+	/**
+	 * Fetch a product.
+	 *
+	 * @param string $product_id ID of the product to get.
+	 *
+	 * @return array The product.
+	 *
+	 * @throws API_Exception If fetching the product fails.
+	 */
+	public function get_product_by_id( string $product_id ): array {
+		return $this->request(
+			[],
+			self::PRODUCTS_API . '/' . $product_id,
+			self::GET
 		);
 	}
 
@@ -2028,31 +2126,6 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	}
 
 	/**
-	 * Check if the merchant is eligible for Progressive Onboarding based on self-assessment information.
-	 *
-	 * @param array $business_info   Business information.
-	 * @param array $store_info      Store information.
-	 * @param array $woo_store_stats Optional. Stats about the WooCommerce store to given more context to the PO eligibility decision.
-	 *
-	 * @return array HTTP response on success.
-	 *
-	 * @throws API_Exception - If not connected to server or request failed.
-	 */
-	public function get_onboarding_po_eligible( array $business_info, array $store_info, array $woo_store_stats = [] ): array {
-		return $this->request(
-			[
-				'business'        => $business_info,
-				'store'           => $store_info,
-				'woo_store_stats' => $woo_store_stats,
-			],
-			self::ONBOARDING_API . '/router/po_eligible',
-			self::POST,
-			true,
-			true
-		);
-	}
-
-	/**
 	 * Sends the compatibility data to the server to be saved to the account.
 	 *
 	 * @param array $compatibility_data The array containing the data.
@@ -2106,348 +2179,6 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	}
 
 	/**
-	 * Send the request to the WooCommerce Payment API
-	 *
-	 * @param array  $params           - Request parameters to send as either JSON or GET string. Defaults to test_mode=1 if either in dev or test mode, 0 otherwise.
-	 * @param string $api              - The API endpoint to call.
-	 * @param string $method           - The HTTP method to make the request with.
-	 * @param bool   $is_site_specific - If true, the site ID will be included in the request url. Defaults to true.
-	 * @param bool   $use_user_token   - If true, the request will be signed with the user token rather than blog token. Defaults to false.
-	 * @param bool   $raw_response     - If true, the raw response will be returned. Defaults to false.
-	 *
-	 * @return array
-	 * @throws API_Exception - If the account ID hasn't been set.
-	 */
-	protected function request( $params, $api, $method, $is_site_specific = true, $use_user_token = false, bool $raw_response = false ) {
-		// Apply the default params that can be overridden by the calling method.
-		$params = wp_parse_args(
-			$params,
-			[
-				'test_mode' => WC_Payments::mode()->is_test(),
-			]
-		);
-
-		$params = apply_filters( 'wcpay_api_request_params', $params, $api, $method );
-
-		// Build the URL we want to send the URL to.
-		$url = self::ENDPOINT_BASE;
-		if ( $is_site_specific ) {
-			$url .= '/' . self::ENDPOINT_SITE_FRAGMENT;
-		}
-		$url .= '/' . self::ENDPOINT_REST_BASE . '/' . $api;
-
-		$headers                 = [];
-		$headers['Content-Type'] = 'application/json; charset=utf-8';
-		$headers['User-Agent']   = $this->user_agent;
-		$body                    = null;
-
-		$redacted_params = WC_Payments_Utils::redact_array( $params, self::API_KEYS_TO_REDACT );
-		$redacted_url    = $url;
-
-		if ( in_array( $method, [ self::GET, self::DELETE ], true ) ) {
-			$url          .= '?' . http_build_query( $params );
-			$redacted_url .= '?' . http_build_query( $redacted_params );
-		} else {
-			$headers['Idempotency-Key'] = $this->uuid();
-			$body                       = wp_json_encode( $params );
-			if ( ! $body ) {
-				throw new API_Exception(
-					__( 'Unable to encode body for request to WooCommerce Payments API.', 'woocommerce-payments' ),
-					'wcpay_client_unable_to_encode_json',
-					0
-				);
-			}
-		}
-
-		$headers        = apply_filters( 'wcpay_api_request_headers', $headers );
-		$stop_trying_at = time() + self::API_TIMEOUT_SECONDS;
-		$retries        = 0;
-		$retries_limit  = array_key_exists( 'Idempotency-Key', $headers ) ? self::API_RETRIES_LIMIT : 0;
-
-		while ( true ) {
-			$response_code  = null;
-			$last_exception = null;
-
-			// The header intention is to give us insights into request latency between store and backend.
-			$headers['X-Request-Initiated'] = microtime( true );
-
-			$request_args = [
-				'url'             => $url,
-				'method'          => $method,
-				'headers'         => $headers,
-				'timeout'         => self::API_TIMEOUT_SECONDS,
-				'connect_timeout' => self::API_TIMEOUT_SECONDS,
-			];
-
-			$log_request_id = uniqid();
-
-			Logger::log(
-				Logger::format_object(
-					'REQUEST_' . $log_request_id,
-					array_merge(
-						$request_args,
-						[ 'url' => $redacted_url ],
-						null !== $body ? [ 'body' => $redacted_params ] : []
-					)
-				)
-			);
-
-			try {
-				$response = $this->http_client->remote_request( $request_args, $body, $is_site_specific, $use_user_token );
-
-				$response      = apply_filters( 'wcpay_api_request_response', $response, $method, $url, $api );
-				$response_code = wp_remote_retrieve_response_code( $response );
-
-				$this->check_response_for_errors( $response );
-			} catch ( Connection_Exception $e ) {
-				$last_exception = $e;
-			} catch ( API_Exception $e ) {
-				if ( isset( $params['level3'] ) && 'invalid_request_error' === $e->get_error_code() ) {
-					// phpcs:disable WordPress.PHP.DevelopmentFunctions
-
-					// Log the issue so we could debug it.
-					Logger::error(
-						'Level3 data error: ' . PHP_EOL
-						. print_r( $e->getMessage(), true ) . PHP_EOL
-						. print_r( 'Level 3 data sent: ', true ) . PHP_EOL
-						. print_r( $params['level3'], true )
-					);
-
-					// phpcs:enable WordPress.PHP.DevelopmentFunctions
-
-					// Retry without level3 data.
-					unset( $params['level3'] );
-					return $this->request( $params, $api, $method, $is_site_specific, $use_user_token, $raw_response );
-				}
-				throw $e;
-			}
-
-			if ( $response_code || time() >= $stop_trying_at || $retries_limit === $retries ) {
-				if ( null !== $last_exception ) {
-					throw $last_exception;
-				}
-				break;
-			}
-
-			// Use exponential backoff to not overload backend.
-			usleep( self::API_RETRIES_BACKOFF_MSEC * ( 2 ** $retries ) );
-			++$retries;
-		}
-
-		// @todo We don't always return an array. `extract_response_body` can also return a string. We should standardize this!
-		if ( ! $raw_response ) {
-			$response_body = $this->extract_response_body( $response );
-		} else {
-			$response_body = $response;
-		}
-
-		Logger::log(
-			Logger::format_object(
-				'RESPONSE_' . $log_request_id,
-				WC_Payments_Utils::redact_array( $response_body, self::API_KEYS_TO_REDACT )
-			)
-		);
-
-		return $response_body;
-	}
-
-	/**
-	 * Handles issues with level3 data and retries requests when necessary.
-	 *
-	 * @param array  $params           - Request parameters to send as either JSON or GET string. Defaults to test_mode=1 if either in dev or test mode, 0 otherwise.
-	 * @param string $api              - The API endpoint to call.
-	 * @param string $method           - The HTTP method to make the request with.
-	 * @param bool   $is_site_specific - If true, the site ID will be included in the request url.
-	 *
-	 * @return array
-	 * @throws API_Exception - If the account ID hasn't been set.
-	 */
-	private function request_with_level3_data( $params, $api, $method, $is_site_specific = true ) {
-		// If level3 data is not present for some reason, simply proceed normally.
-		if ( empty( $params['level3'] ) || ! is_array( $params['level3'] ) ) {
-			return $this->request( $params, $api, $method, $is_site_specific );
-		}
-
-		// If level3 data doesn't contain any items, add a zero priced fee to meet Stripe's requirement.
-		if ( ! isset( $params['level3']['line_items'] ) || ! is_array( $params['level3']['line_items'] ) || 0 === count( $params['level3']['line_items'] ) ) {
-			$params['level3']['line_items'] = [
-				[
-					'discount_amount'     => 0,
-					'product_code'        => 'empty-order',
-					'product_description' => 'The order is empty',
-					'quantity'            => 1,
-					'tax_amount'          => 0,
-					'unit_cost'           => 0,
-				],
-			];
-		}
-
-		/**
-		 * In case of invalid request errors, level3 data is now removed,
-		 * and the request is retried within `request()` instead of here.
-		 */
-		return $this->request( $params, $api, $method, $is_site_specific );
-	}
-
-	/**
-	 * From a given response extract the body.
-	 *
-	 * @param array $response That was given to us by http_client remote_request.
-	 *
-	 * @return mixed $response_body
-	 */
-	protected function extract_response_body( $response ) {
-		$response_body = json_decode( wp_remote_retrieve_body( $response ), true );
-		if ( null === $response_body ) {
-			return wp_remote_retrieve_body( $response );
-		}
-
-		// Make sure empty metadata serialized on the client as an empty object {} rather than array [].
-		if ( isset( $response_body['metadata'] ) && empty( $response_body['metadata'] ) ) {
-			$response_body['metadata'] = new stdClass();
-		}
-
-		return $response_body;
-	}
-
-	/**
-	 * Checks if a response has any errors and throws the appropriate API_Exception.
-	 *
-	 * @param array $response That was given to us by http_client remote_request.
-	 *
-	 * @return void
-	 *
-	 * @throws API_Exception If there's something wrong with the response.
-	 */
-	protected function check_response_for_errors( $response ) {
-		$response_code = wp_remote_retrieve_response_code( $response );
-		if ( ! $response_code ) {
-			$response_code = 0;
-		}
-
-		$response_body_json = wp_remote_retrieve_body( $response );
-		$response_body      = json_decode( $response_body_json, true );
-		if ( null === $response_body && $this->is_json_response( $response ) ) {
-			$message = __( 'Unable to decode response from WooCommerce Payments API', 'woocommerce-payments' );
-			Logger::error( $message );
-			throw new API_Exception(
-				$message,
-				'wcpay_unparseable_or_null_body',
-				$response_code
-			);
-		} elseif ( null === $response_body && ! $this->is_json_response( $response ) ) {
-			$response_body = wp_remote_retrieve_body( $response );
-		}
-
-		// Check error codes for 4xx and 5xx responses.
-		if ( 400 <= $response_code ) {
-			$error_type   = null;
-			$decline_code = null;
-			if ( isset( $response_body['code'] ) && 'amount_too_small' === $response_body['code'] ) {
-				throw new Amount_Too_Small_Exception(
-					$response_body['message'],
-					$response_body['data']['minimum_amount'],
-					$response_body['data']['currency'],
-					$response_code
-				);
-			} elseif ( isset( $response_body['error'] ) ) {
-				$response_body_error_code = $response_body['error']['code'] ?? null;
-				$payment_intent_status    = $response_body['error']['payment_intent']['status'] ?? null;
-
-				// We redact the API error message to prevent prompting the merchant to contact Stripe support
-				// when attempting to manually capture an amount greater than what's authorized. Contacting support is unnecessary in this scenario.
-				if ( 'amount_too_large' === $response_body_error_code && Intent_Status::REQUIRES_CAPTURE === $payment_intent_status ) {
-					throw new Amount_Too_Large_Exception(
-						// translators: This is an error API response.
-						__( 'Error: The payment could not be captured because the requested capture amount is greater than the amount you can capture for this charge.', 'woocommerce-payments' ),
-						$response_code
-					);
-				}
-				$decline_code = $response_body['error']['decline_code'] ?? '';
-				$this->maybe_act_on_fraud_prevention( $decline_code );
-
-				$error_code    = $response_body_error_code ?? $response_body['error']['type'] ?? null;
-				$error_message = $response_body['error']['message'] ?? null;
-				$error_type    = $response_body['error']['type'] ?? null;
-			} elseif ( isset( $response_body['code'] ) ) {
-				$this->maybe_act_on_fraud_prevention( $response_body['code'] );
-
-				if (
-					'invalid_request_error' === $response_body['code']
-					&& 0 === strpos( $response_body['message'], 'You cannot combine currencies on a single customer.' )
-				) {
-					// Get the currency, which is the last part of the error message,
-					// and remove the period from the end of the error message.
-					$message  = $response_body['message'];
-					$currency = substr( $message, -4 );
-					$currency = strtoupper( substr( $currency, 0, 3 ) );
-
-					// Only throw the error if we can find a valid currency.
-					if ( false !== Currency_Code::search( $currency ) ) {
-						throw new Cannot_Combine_Currencies_Exception(
-							$message,
-							$currency,
-							$response_code
-						);
-					}
-				}
-
-				$error_code    = $response_body['code'];
-				$error_message = $response_body['message'];
-			} else {
-				$error_code    = 'wcpay_client_error_code_missing';
-				$error_message = __( 'Server error. Please try again.', 'woocommerce-payments' );
-			}
-
-			$message = sprintf(
-				// translators: This is an error API response.
-				_x( 'Error: %1$s', 'API error message to throw as Exception', 'woocommerce-payments' ),
-				$error_message
-			);
-
-			Logger::error( "$error_message ($error_code)" );
-
-			if ( 'card_declined' === $error_code && isset( $response_body['error']['payment_intent']['charges']['data'][0]['outcome']['seller_message'] ) ) {
-				$merchant_message = $response_body['error']['payment_intent']['charges']['data'][0]['outcome']['seller_message'];
-
-				throw new API_Merchant_Exception( $message, $error_code, $response_code, $merchant_message, $error_type, $decline_code );
-			}
-
-			throw new API_Exception( $message, $error_code, $response_code, $error_type, $decline_code );
-		}
-	}
-
-	/**
-	 * If error code indicates fraudulent activity, trigger fraud prevention measures.
-	 *
-	 * @param string $error_code Error code.
-	 *
-	 * @return void
-	 */
-	private function maybe_act_on_fraud_prevention( string $error_code ) {
-		// Might be flagged by Stripe Radar or WCPay card testing prevention services.
-		$is_fraudulent = 'fraudulent' === $error_code || 'wcpay_card_testing_prevention' === $error_code;
-		if ( $is_fraudulent && WC()->session ) {
-			$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
-			if ( $fraud_prevention_service->is_enabled() ) {
-				$fraud_prevention_service->regenerate_token();
-				// Here we tried triggering checkout refresh, but it clashes with AJAX handling.
-			}
-		}
-	}
-
-	/**
-	 * Returns true if the response is JSON, based on the content-type header.
-	 *
-	 * @param array $response That was given to us by http_client remote_request.
-	 *
-	 * @return bool True if content-type is application/json, false otherwise.
-	 */
-	protected function is_json_response( $response ) {
-		return 'application/json' === substr( wp_remote_retrieve_header( $response, 'content-type' ), 0, strlen( 'application/json' ) );
-	}
-
-	/**
 	 * Adds additional info to charge object.
 	 *
 	 * @param array $charge - Charge object.
@@ -2489,55 +2220,6 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	}
 
 	/**
-	 * Adds additional info to intention object.
-	 *
-	 * @param string $intention_id Intention ID.
-	 *
-	 * @return array
-	 */
-	private function get_order_info_from_intention_object( $intention_id ) {
-		$order  = $this->wcpay_db->order_from_intent_id( $intention_id );
-		$object = $this->add_order_info_to_object( $order, [] );
-
-		return $object['order'];
-	}
-
-	/**
-	 * Adds order information to the charge object.
-	 *
-	 * @param string $charge_id Charge ID.
-	 * @param array  $object    Object to add order information.
-	 *
-	 * @return array
-	 */
-	private function add_order_info_to_charge_object( $charge_id, $object ) {
-		$order  = $this->wcpay_db->order_from_charge_id( $charge_id );
-		$object = $this->add_order_info_to_object( $order, $object );
-
-		return $object;
-	}
-
-	/**
-	 * Returns a transaction with order information when it exists.
-	 *
-	 * @param  bool|\WC_Order|\WC_Order_Refund $order  Order object.
-	 * @param  array                           $object Object to add order information.
-	 *
-	 * @return array new object with order information.
-	 */
-	private function add_order_info_to_object( $order, $object ) {
-		// Add order information to the `$transaction`.
-		// If the order couldn't be retrieved, return an empty order.
-		$object['order'] = [];
-
-		if ( $order ) {
-			$object['order'] = $this->build_order_info( $order );
-		}
-
-		return $object;
-	}
-
-	/**
 	 * Creates the array representing order for frontend.
 	 *
 	 * @param WC_Order $order The order.
@@ -2545,12 +2227,14 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 */
 	public function build_order_info( WC_Order $order ): array {
 		$order_info = [
+			'id'                  => $order->get_id(),
 			'number'              => $order->get_order_number(),
 			'url'                 => $order->get_edit_order_url(),
 			'customer_url'        => $this->get_customer_url( $order ),
 			'customer_name'       => trim( $order->get_formatted_billing_full_name() ),
 			'customer_email'      => $order->get_billing_email(),
 			'fraud_meta_box_type' => $order->get_meta( '_wcpay_fraud_meta_box_type' ),
+			'ip_address'          => $order->get_customer_ip_address(),
 		];
 
 		if ( function_exists( 'wcs_get_subscriptions_for_order' ) ) {
@@ -2565,76 +2249,6 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			}
 		}
 		return $order_info;
-	}
-
-	/**
-	 * Generates url to single customer in analytics table.
-	 *
-	 * @param WC_Order $order The Order.
-	 * @return string|null
-	 */
-	private function get_customer_url( WC_Order $order ) {
-		$customer_id = DataStore::get_existing_customer_id_from_order( $order );
-
-		if ( ! $customer_id ) {
-			return null;
-		}
-
-		return add_query_arg(
-			[
-				'page'      => 'wc-admin',
-				'path'      => '/customers',
-				'filter'    => 'single_customer',
-				'customers' => $customer_id,
-			],
-			'admin.php'
-		);
-	}
-
-	/**
-	 * De-serialize a charge array into a charge object
-	 *
-	 * @param array $charge_array - The charge array to de-serialize.
-	 *
-	 * @return WC_Payments_API_Charge
-	 * @throws API_Exception - Unable to deserialize charge array.
-	 */
-	private function deserialize_charge_object_from_array( array $charge_array ) {
-		// TODO: Throw an exception if the response array doesn't contain mandatory properties.
-		$created = new DateTime();
-		$created->setTimestamp( $charge_array['created'] );
-
-		$charge_array = $this->add_additional_info_to_charge( $charge_array );
-
-		$charge = new WC_Payments_API_Charge(
-			$charge_array['id'],
-			$charge_array['amount'],
-			$created,
-			$charge_array['payment_method_details'] ?? null,
-			$charge_array['payment_method'] ?? null,
-			$charge_array['amount_captured'] ?? null,
-			$charge_array['amount_refunded'] ?? null,
-			$charge_array['application_fee_amount'] ?? null,
-			$charge_array['balance_transaction'] ?? null,
-			$charge_array['billing_details'] ?? null,
-			$charge_array['currency'] ?? null,
-			$charge_array['dispute'] ?? null,
-			$charge_array['disputed'] ?? null,
-			$charge_array['order'] ?? null,
-			$charge_array['outcome'] ?? null,
-			$charge_array['paid'] ?? null,
-			$charge_array['paydown'] ?? null,
-			$charge_array['payment_intent'] ?? null,
-			$charge_array['refunded'] ?? null,
-			$charge_array['refunds'] ?? null,
-			$charge_array['status'] ?? null
-		);
-
-		if ( isset( $charge_array['captured'] ) ) {
-			$charge->set_captured( $charge_array['captured'] );
-		}
-
-		return $charge;
 	}
 
 	/**
@@ -2736,46 +2350,19 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	}
 
 	/**
-	 * Returns a formatted intention description.
-	 *
-	 * @param  string $order_number The order number (might be different from the ID).
-	 * @return string               A formatted intention description.
-	 */
-	private function get_intent_description( $order_number ): string {
-		$domain_name = str_replace( [ 'https://', 'http://' ], '', get_site_url() );
-		$blog_id     = $this->get_blog_id();
-
-		// Forgo i18n as this is only visible in the Stripe dashboard.
-		return sprintf(
-			'Online Payment%s for %s%s',
-			0 !== $order_number ? " for Order #$order_number" : '',
-			$domain_name,
-			null !== $blog_id ? " blog_id $blog_id" : ''
-		);
-	}
-
-	/**
-	 * Returns a v4 UUID.
-	 *
-	 * @return string
-	 */
-	private function uuid() {
-		$arr    = array_values( unpack( 'N1a/n4b/N1c', random_bytes( 16 ) ) );
-		$arr[2] = ( $arr[2] & 0x0fff ) | 0x4000;
-		$arr[3] = ( $arr[3] & 0x3fff ) | 0x8000;
-		return vsprintf( '%08x-%04x-%04x-%04x-%04x%08x', $arr );
-	}
-
-
-	/**
 	 * Fetch readers charge summary.
 	 *
-	 * @param string $charge_date Charge date for readers.
+	 * @param string      $charge_date    Charge date for readers.
+	 * @param string|null $transaction_id Optional transaction ID to filter results.
 	 *
 	 * @return array reader objects.
 	 */
-	public function get_readers_charge_summary( string $charge_date ): array {
-		return $this->request( [ 'charge_date' => $charge_date ], self::READERS_CHARGE_SUMMARY, self::GET );
+	public function get_readers_charge_summary( string $charge_date, ?string $transaction_id = null ): array {
+		$params = [ 'charge_date' => $charge_date ];
+		if ( $transaction_id ) {
+			$params['transaction_id'] = $transaction_id;
+		}
+		return $this->request( $params, self::READERS_CHARGE_SUMMARY, self::GET );
 	}
 
 	/**
@@ -2803,21 +2390,6 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		);
 	}
 
-	/**
-	 * Returns a list of fingerprinting metadata to attach to order.
-	 *
-	 * @param string $fingerprint User fingerprint.
-	 *
-	 * @return array List of fingerprinting metadata.
-	 *
-	 * @throws API_Exception If an error occurs.
-	 */
-	private function get_fingerprint_metadata( $fingerprint = '' ): array {
-		$customer_fingerprint_metadata                                    = Buyer_Fingerprinting_Service::get_instance()->get_hashed_data_for_customer( $fingerprint );
-		$customer_fingerprint_metadata['fraud_prevention_data_available'] = true;
-
-		return $customer_fingerprint_metadata;
-	}
 
 	/**
 	 * Return summary for authorizations.
@@ -2881,5 +2453,459 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			true,
 			true
 		);
+	}
+
+	/**
+	 * Send the request to the WooCommerce Payment API
+	 *
+	 * @param array  $params           - Request parameters to send as either JSON or GET string. Defaults to test_mode=1 if either in dev or test mode, 0 otherwise.
+	 * @param string $api              - The API endpoint to call.
+	 * @param string $method           - The HTTP method to make the request with.
+	 * @param bool   $is_site_specific - If true, the site ID will be included in the request url. Defaults to true.
+	 * @param bool   $use_user_token   - If true, the request will be signed with the user token rather than blog token. Defaults to false.
+	 * @param bool   $raw_response     - If true, the raw response will be returned. Defaults to false.
+	 * @param bool   $use_v2_api       - If true, the request will be sent to the V2 API endpoint. Defaults to false.
+	 *
+	 * @return array
+	 * @throws API_Exception - If the account ID hasn't been set.
+	 */
+	protected function request( $params, $api, $method, $is_site_specific = true, $use_user_token = false, bool $raw_response = false, bool $use_v2_api = false ) {
+		// Apply the default params that can be overridden by the calling method.
+		$params = wp_parse_args(
+			$params,
+			[
+				'test_mode' => WC_Payments::mode()->is_test(),
+			]
+		);
+
+		$params = apply_filters( 'wcpay_api_request_params', $params, $api, $method );
+
+		// Build the URL we want to send the request to.
+		$url = self::ENDPOINT_BASE;
+		if ( $is_site_specific ) {
+			$url .= '/' . self::ENDPOINT_SITE_FRAGMENT;
+		}
+		if ( $use_v2_api ) {
+			$url .= '/' . self::V2_ENDPOINT_REST_BASE;
+		} else {
+			$url .= '/' . self::ENDPOINT_REST_BASE;
+		}
+		$url .= '/' . $api;
+
+		$headers                 = [];
+		$headers['Content-Type'] = 'application/json; charset=utf-8';
+		$headers['User-Agent']   = $this->user_agent;
+		$body                    = null;
+
+		$redacted_params = WC_Payments_Utils::redact_array( $params, self::API_KEYS_TO_REDACT );
+		$redacted_url    = $url;
+
+		if ( in_array( $method, [ self::GET, self::DELETE ], true ) ) {
+			$url          .= '?' . http_build_query( $params );
+			$redacted_url .= '?' . http_build_query( $redacted_params );
+		} else {
+			$headers['Idempotency-Key'] = $this->uuid();
+			$body                       = wp_json_encode( $params );
+			if ( ! $body ) {
+				throw new API_Exception(
+					__( 'Unable to encode body for request to WooCommerce Payments API.', 'woocommerce-payments' ),
+					'wcpay_client_unable_to_encode_json',
+					0
+				);
+			}
+		}
+
+		$headers        = apply_filters( 'wcpay_api_request_headers', $headers );
+		$stop_trying_at = time() + self::API_TIMEOUT_SECONDS;
+		$retries        = 0;
+		$retries_limit  = array_key_exists( 'Idempotency-Key', $headers ) ? self::API_RETRIES_LIMIT : 0;
+
+		while ( true ) {
+			$response_code  = null;
+			$last_exception = null;
+
+			// The header intention is to give us insights into request latency between store and backend.
+			$headers['X-Request-Initiated'] = microtime( true );
+
+			$request_args = [
+				'url'             => $url,
+				'method'          => $method,
+				'headers'         => $headers,
+				'timeout'         => self::API_TIMEOUT_SECONDS,
+				'connect_timeout' => self::API_TIMEOUT_SECONDS,
+			];
+
+			$log_request_id = uniqid();
+
+			Logger::info(
+				sprintf( 'API REQUEST (%s): %s %s', $log_request_id, $method, $redacted_url ),
+				[
+					'request' => $request_args,
+					null !== $body ? [ 'body' => $redacted_params ] : [],
+				]
+			);
+
+			try {
+				$response = $this->http_client->remote_request( $request_args, $body, $is_site_specific, $use_user_token );
+
+				$response      = apply_filters( 'wcpay_api_request_response', $response, $method, $url, $api );
+				$response_code = wp_remote_retrieve_response_code( $response );
+
+				$this->check_response_for_errors( $response );
+			} catch ( Connection_Exception $e ) {
+				$last_exception = $e;
+			}
+
+			if ( $response_code || time() >= $stop_trying_at || $retries_limit === $retries ) {
+				if ( null !== $last_exception ) {
+					throw $last_exception;
+				}
+				break;
+			}
+
+			// Use exponential backoff to not overload backend.
+			usleep( self::API_RETRIES_BACKOFF_MSEC * ( 2 ** $retries ) );
+			++$retries;
+		}
+
+		// @todo We don't always return an array. `extract_response_body` can also return a string. We should standardize this!
+		if ( ! $raw_response ) {
+			$response_body = $this->extract_response_body( $response );
+		} else {
+			$response_body = $response;
+		}
+
+		Logger::info(
+			sprintf( 'API RESPONSE (%s): %s %s', $log_request_id, $method, $redacted_url ),
+			[
+				'body' => WC_Payments_Utils::redact_array( $response_body, self::API_KEYS_TO_REDACT ),
+			]
+		);
+
+		return $response_body;
+	}
+
+	/**
+	 * From a given response extract the body.
+	 *
+	 * @param array $response That was given to us by http_client remote_request.
+	 *
+	 * @return mixed $response_body
+	 */
+	protected function extract_response_body( $response ) {
+		$response_body = json_decode( wp_remote_retrieve_body( $response ), true );
+		if ( null === $response_body ) {
+			return wp_remote_retrieve_body( $response );
+		}
+
+		// Make sure empty metadata serialized on the client as an empty object {} rather than array [].
+		if ( isset( $response_body['metadata'] ) && empty( $response_body['metadata'] ) ) {
+			$response_body['metadata'] = new stdClass();
+		}
+
+		return $response_body;
+	}
+
+	/**
+	 * Checks if a response has any errors and throws the appropriate API_Exception.
+	 *
+	 * @param array $response That was given to us by http_client remote_request.
+	 *
+	 * @return void
+	 *
+	 * @throws API_Exception If there's something wrong with the response.
+	 */
+	protected function check_response_for_errors( $response ) {
+		$response_code = wp_remote_retrieve_response_code( $response );
+		if ( ! $response_code ) {
+			$response_code = 0;
+		}
+
+		$response_body_json = wp_remote_retrieve_body( $response );
+		$response_body      = json_decode( $response_body_json, true );
+		if ( null === $response_body && $this->is_json_response( $response ) ) {
+			$message = __( 'Unable to decode response from WooCommerce Payments API', 'woocommerce-payments' );
+			Logger::error( $message );
+			throw new API_Exception(
+				$message,
+				'wcpay_unparseable_or_null_body',
+				$response_code
+			);
+		} elseif ( null === $response_body && ! $this->is_json_response( $response ) ) {
+			$response_body = wp_remote_retrieve_body( $response );
+		}
+
+		// Check error codes for 4xx and 5xx responses.
+		if ( 400 <= $response_code ) {
+			$error_type   = null;
+			$decline_code = null;
+			if ( isset( $response_body['code'] ) && 'amount_too_small' === $response_body['code'] ) {
+				throw new Amount_Too_Small_Exception(
+					$response_body['message'],
+					$response_body['data']['minimum_amount'],
+					$response_body['data']['currency'],
+					$response_code
+				);
+			} elseif ( isset( $response_body['error'] ) ) {
+				$response_body_error_code = $response_body['error']['code'] ?? $response_body['error']['message_code'] ?? null;
+				$payment_intent_status    = $response_body['error']['payment_intent']['status'] ?? null;
+
+				// We redact the API error message to prevent prompting the merchant to contact Stripe support
+				// when attempting to manually capture an amount greater than what's authorized. Contacting support is unnecessary in this scenario.
+				if ( 'amount_too_large' === $response_body_error_code && Intent_Status::REQUIRES_CAPTURE === $payment_intent_status ) {
+					throw new Amount_Too_Large_Exception(
+						// translators: This is an error API response.
+						__( 'Error: The payment could not be captured because the requested capture amount is greater than the amount you can capture for this charge.', 'woocommerce-payments' ),
+						$response_code
+					);
+				}
+				$decline_code = $response_body['error']['decline_code'] ?? '';
+				$this->maybe_act_on_fraud_prevention( $decline_code );
+
+				$error_code    = $response_body_error_code ?? $response_body['error']['type'] ?? null;
+				$error_message = $response_body['error']['message'] ?? null;
+				$error_type    = $response_body['error']['type'] ?? null;
+			} elseif ( isset( $response_body['code'] ) ) {
+				$this->maybe_act_on_fraud_prevention( $response_body['code'] );
+
+				if (
+					'invalid_request_error' === $response_body['code']
+					&& 0 === strpos( $response_body['message'], 'You cannot combine currencies on a single customer.' )
+				) {
+					// Get the currency, which is the last part of the error message,
+					// and remove the period from the end of the error message.
+					$message  = $response_body['message'];
+					$currency = substr( $message, -4 );
+					$currency = strtoupper( substr( $currency, 0, 3 ) );
+
+					// Only throw the error if we can find a valid currency.
+					if ( false !== Currency_Code::search( $currency ) ) {
+						throw new Cannot_Combine_Currencies_Exception(
+							$message,
+							$currency,
+							$response_code
+						);
+					}
+				}
+
+				$error_code    = $response_body['code'];
+				$error_message = $response_body['message'];
+			} else {
+				$error_code    = 'wcpay_client_error_code_missing';
+				$error_message = __( 'Server error. Please try again.', 'woocommerce-payments' );
+			}
+
+			$message = sprintf(
+				// translators: This is an error API response.
+				_x( 'Error: %1$s', 'API error message to throw as Exception', 'woocommerce-payments' ),
+				$error_message
+			);
+
+			Logger::error( "$error_message ($error_code)" );
+
+			if ( 'card_declined' === $error_code && isset( $response_body['error']['payment_intent']['charges']['data'][0]['outcome']['seller_message'] ) ) {
+				$merchant_message = $response_body['error']['payment_intent']['charges']['data'][0]['outcome']['seller_message'];
+
+				throw new API_Merchant_Exception( $message, $error_code, $response_code, $merchant_message, $error_type, $decline_code );
+			}
+
+			throw new API_Exception( $message, $error_code, $response_code, $error_type, $decline_code );
+		}
+	}
+
+	/**
+	 * Returns true if the response is JSON, based on the content-type header.
+	 *
+	 * @param array $response That was given to us by http_client remote_request.
+	 *
+	 * @return bool True if content-type is application/json, false otherwise.
+	 */
+	protected function is_json_response( $response ) {
+		return 'application/json' === substr( wp_remote_retrieve_header( $response, 'content-type' ), 0, strlen( 'application/json' ) );
+	}
+
+	/**
+	 * If error code indicates fraudulent activity, trigger fraud prevention measures.
+	 *
+	 * @param string $error_code Error code.
+	 *
+	 * @return void
+	 */
+	private function maybe_act_on_fraud_prevention( string $error_code ) {
+		// Might be flagged by Stripe Radar or WCPay card testing prevention services.
+		$is_fraudulent = 'fraudulent' === $error_code || 'wcpay_card_testing_prevention' === $error_code;
+		if ( $is_fraudulent && WC()->session ) {
+			$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
+			if ( $fraud_prevention_service->is_enabled() ) {
+				$fraud_prevention_service->regenerate_token();
+				// Here we tried triggering checkout refresh, but it clashes with AJAX handling.
+			}
+		}
+	}
+
+	/**
+	 * Adds additional info to intention object.
+	 *
+	 * @param string $intention_id Intention ID.
+	 *
+	 * @return array
+	 */
+	private function get_order_info_from_intention_object( $intention_id ) {
+		$order  = $this->wcpay_db->order_from_intent_id( $intention_id );
+		$object = $this->add_order_info_to_object( $order, [] );
+
+		return $object['order'];
+	}
+
+	/**
+	 * Adds order information to the charge object.
+	 *
+	 * @param string $charge_id Charge ID.
+	 * @param array  $entity    Object to add order information.
+	 *
+	 * @return array
+	 */
+	private function add_order_info_to_charge_object( $charge_id, $entity ) {
+		$order  = $this->wcpay_db->order_from_charge_id( $charge_id );
+		$entity = $this->add_order_info_to_object( $order, $entity );
+
+		return $entity;
+	}
+
+	/**
+	 * Returns a transaction with order information when it exists.
+	 *
+	 * @param  bool|\WC_Order|\WC_Order_Refund $order  Order object.
+	 * @param  array                           $entity Object to add order information.
+	 *
+	 * @return array new object with order information.
+	 */
+	private function add_order_info_to_object( $order, $entity ) {
+		// Add order information to the `$transaction`.
+		// If the order couldn't be retrieved, return an empty order.
+		$entity['order'] = [];
+
+		if ( $order ) {
+			$entity['order'] = $this->build_order_info( $order );
+		}
+
+		return $entity;
+	}
+
+	/**
+	 * Generates url to single customer in analytics table.
+	 *
+	 * @param WC_Order $order The Order.
+	 * @return string|null
+	 */
+	private function get_customer_url( WC_Order $order ) {
+		$customer_id = DataStore::get_existing_customer_id_from_order( $order );
+
+		if ( ! $customer_id ) {
+			return null;
+		}
+
+		return add_query_arg(
+			[
+				'page'      => 'wc-admin',
+				'path'      => '/customers',
+				'filter'    => 'single_customer',
+				'customers' => $customer_id,
+			],
+			'admin.php'
+		);
+	}
+
+	/**
+	 * De-serialize a charge array into a charge object
+	 *
+	 * @param array $charge_array - The charge array to de-serialize.
+	 *
+	 * @return WC_Payments_API_Charge
+	 * @throws API_Exception - Unable to deserialize charge array.
+	 */
+	private function deserialize_charge_object_from_array( array $charge_array ) {
+		// TODO: Throw an exception if the response array doesn't contain mandatory properties.
+		$created = new DateTime();
+		$created->setTimestamp( $charge_array['created'] );
+
+		$charge_array = $this->add_additional_info_to_charge( $charge_array );
+
+		$charge = new WC_Payments_API_Charge(
+			$charge_array['id'],
+			$charge_array['amount'],
+			$created,
+			$charge_array['payment_method_details'] ?? null,
+			$charge_array['payment_method'] ?? null,
+			$charge_array['amount_captured'] ?? null,
+			$charge_array['amount_refunded'] ?? null,
+			$charge_array['application_fee_amount'] ?? null,
+			$charge_array['balance_transaction'] ?? null,
+			$charge_array['billing_details'] ?? null,
+			$charge_array['currency'] ?? null,
+			$charge_array['dispute'] ?? null,
+			$charge_array['disputed'] ?? null,
+			$charge_array['order'] ?? null,
+			$charge_array['outcome'] ?? null,
+			$charge_array['paid'] ?? null,
+			$charge_array['paydown'] ?? null,
+			$charge_array['payment_intent'] ?? null,
+			$charge_array['refunded'] ?? null,
+			$charge_array['refunds'] ?? null,
+			$charge_array['status'] ?? null
+		);
+
+		if ( isset( $charge_array['captured'] ) ) {
+			$charge->set_captured( $charge_array['captured'] );
+		}
+
+		return $charge;
+	}
+
+	/**
+	 * Returns a formatted intention description.
+	 *
+	 * @param  string $order_number The order number (might be different from the ID).
+	 * @return string               A formatted intention description.
+	 */
+	private function get_intent_description( $order_number ): string {
+		$domain_name = str_replace( [ 'https://', 'http://' ], '', get_site_url() );
+		$blog_id     = $this->get_blog_id();
+
+		// Forgo i18n as this is only visible in the Stripe dashboard.
+		return sprintf(
+			'Online Payment%s for %s%s',
+			0 !== $order_number ? " for Order #$order_number" : '',
+			$domain_name,
+			null !== $blog_id ? " blog_id $blog_id" : ''
+		);
+	}
+
+	/**
+	 * Returns a v4 UUID.
+	 *
+	 * @return string
+	 */
+	private function uuid() {
+		$arr    = array_values( unpack( 'N1a/n4b/N1c', random_bytes( 16 ) ) );
+		$arr[2] = ( $arr[2] & 0x0fff ) | 0x4000;
+		$arr[3] = ( $arr[3] & 0x3fff ) | 0x8000;
+		return vsprintf( '%08x-%04x-%04x-%04x-%04x%08x', $arr );
+	}
+
+	/**
+	 * Returns a list of fingerprinting metadata to attach to order.
+	 *
+	 * @param string $fingerprint User fingerprint.
+	 *
+	 * @return array List of fingerprinting metadata.
+	 *
+	 * @throws API_Exception If an error occurs.
+	 */
+	private function get_fingerprint_metadata( $fingerprint = '' ): array {
+		$customer_fingerprint_metadata                                    = Buyer_Fingerprinting_Service::get_instance()->get_hashed_data_for_customer( $fingerprint );
+		$customer_fingerprint_metadata['fraud_prevention_data_available'] = true;
+
+		return $customer_fingerprint_metadata;
 	}
 }

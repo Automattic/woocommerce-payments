@@ -5,6 +5,10 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Payment_Methods\UPE_Payment_Method;
+use WCPay\Core\Server\Request\Get_Intention;
+use WCPay\Constants\Payment_Method;
+
 /**
  * WC_Payments_Order_Success_Page unit tests.
  */
@@ -93,19 +97,110 @@ class WC_Payments_Order_Success_Page_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $method_name, $result );
 	}
 
-	public function test_show_woopay_payment_method_name_order_with_woopay_meta() {
+	public function test_show_lpm_payment_method_name() {
+		$gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$gateway->method( 'get_account_country' )->willReturn( 'SG' );
+
+		$payment_method = $this->createMock( UPE_Payment_Method::class );
+		$payment_method->method( 'get_title' )->willReturn( 'GrabPay' );
+		$payment_method->method( 'get_id' )->willReturn( 'grabpay' );
+		$payment_method->method( 'get_payment_method_icon_for_location' )->willReturn( '/grabpay.svg' );
+
+		$result = $this->payments_order_success_page->show_lpm_payment_method_name( $gateway, $payment_method );
+
+		$this->assertStringContainsString( 'wc-payment-gateway-method-logo-wrapper', $result );
+		$this->assertStringContainsString( 'alt="GrabPay"', $result );
+		$this->assertStringContainsString( 'title="GrabPay"', $result );
+		$this->assertStringContainsString( 'src="/grabpay.svg"', $result );
+	}
+
+	public function test_show_lpm_payment_method_name_icon_not_found() {
+		$gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$gateway->method( 'get_account_country' )->willReturn( 'SG' );
+
+		$payment_method = $this->createMock( UPE_Payment_Method::class );
+		$payment_method->method( 'get_title' )->willReturn( 'GrabPay' );
+		$payment_method->method( 'get_id' )->willReturn( 'grabpay' );
+		$payment_method->method( 'get_payment_method_icon_for_location' )->willReturn( '' );
+
+		$result = $this->payments_order_success_page->show_lpm_payment_method_name( $gateway, $payment_method, true );
+
+		$this->assertFalse( $result );
+	}
+
+	public function test_replace_order_received_text_for_failed_orders_with_failed_status() {
 		$order = WC_Helper_Order::create_order();
-		$order->add_meta_data( 'is_woopay', true );
-		$order->add_meta_data( 'last4', '1234' );
+		$order->set_status( 'failed' );
 		$order->set_payment_method( 'woocommerce_payments' );
+		$order->set_total( 50 ); // Ensure order needs payment.
 		$order->save();
 
-		add_filter( 'woocommerce_is_order_received_page', '__return_true' );
-		$result = $this->payments_order_success_page->show_woocommerce_payments_payment_method_name( 'Credit card', $order );
-		remove_filter( 'woocommerce_is_order_received_page', '__return_true' );
+		// Set up global wp query vars.
+		global $wp;
+		$wp->query_vars['order-received'] = $order->get_id();
 
-		$this->assertStringContainsString( 'wc-payment-gateway-method-logo-wrapper woopay', $result );
-		$this->assertStringContainsString( 'img alt="WooPay"', $result );
-		$this->assertStringContainsString( sprintf( 'Card ending in %s', $order->get_meta( 'last4' ) ), $result );
+		$original_text = 'Thank you. Your order has been received.';
+		$result        = $this->payments_order_success_page->replace_order_received_text_for_failed_orders( $original_text );
+
+		$this->assertStringContainsString( 'Unfortunately, your order has failed', $result );
+		$this->assertStringContainsString( wc_get_checkout_url(), $result );
+	}
+
+	public function test_replace_order_received_text_for_failed_orders_with_redirect_payment_failed_intent() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_payment_method( 'woocommerce_payments_wechat_pay' );
+		$order->set_total( 50 ); // Ensure order needs payment.
+		$order->add_meta_data( '_intent_id', 'pi_123' );
+		$order->save();
+
+		// Set up global wp query vars.
+		global $wp;
+		$wp->query_vars['order-received'] = $order->get_id();
+
+		// Mock the Get_Intention request.
+		$mock_intent = WC_Helper_Intention::create_intention(
+			[
+				'id'                 => 'pi_123',
+				'status'             => 'requires_payment_method',
+				'last_payment_error' => [ 'message' => 'Payment failed' ],
+			]
+		);
+
+		$this->mock_wcpay_request( Get_Intention::class, 1, 'pi_123' )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $mock_intent );
+
+		$original_text = 'Thank you. Your order has been received.';
+		$result        = $this->payments_order_success_page->replace_order_received_text_for_failed_orders( $original_text );
+
+		$this->assertStringContainsString( 'Unfortunately, your order has failed', $result );
+		$this->assertStringContainsString( wc_get_checkout_url(), $result );
+	}
+
+	public function test_replace_order_received_text_for_non_failed_order() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( 'processing' );
+		$order->save();
+
+		// Set up global wp query vars.
+		global $wp;
+		$wp->query_vars['order-received'] = $order->get_id();
+
+		$original_text = 'Thank you. Your order has been received.';
+		$result        = $this->payments_order_success_page->replace_order_received_text_for_failed_orders( $original_text );
+
+		$this->assertEquals( $original_text, $result );
+	}
+
+	public function test_replace_order_received_text_for_invalid_order() {
+		// Set up global wp query vars with invalid order ID.
+		global $wp;
+		$wp->query_vars['order-received'] = 999999;
+
+		$original_text = 'Thank you. Your order has been received.';
+		$result        = $this->payments_order_success_page->replace_order_received_text_for_failed_orders( $original_text );
+
+		$this->assertEquals( $original_text, $result );
 	}
 }

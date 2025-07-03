@@ -1,9 +1,9 @@
 /**
  * External dependencies
  */
-import React from 'react';
-import { Modal } from '@wordpress/components';
-import classNames from 'classnames';
+import React, { ComponentProps } from 'react';
+import { Modal } from 'wcpay/components/wp-components-wrapped/components/modal';
+import clsx from 'clsx';
 import { HorizontalRule } from '@wordpress/primitives';
 
 /**
@@ -11,18 +11,15 @@ import { HorizontalRule } from '@wordpress/primitives';
  */
 import './styles.scss';
 
-interface ConfirmationModalProps extends Modal.Props {
+interface ConfirmationModalProps {
 	actions: JSX.Element;
 }
 
-const ConfirmationModal: React.FunctionComponent< ConfirmationModalProps > = ( {
-	children,
-	actions,
-	className,
-	...props
-} ) => (
+const ConfirmationModal: React.FunctionComponent<
+	ConfirmationModalProps & ComponentProps< typeof Modal >
+> = ( { children, actions, className, ...props } ) => (
 	<Modal
-		className={ classNames( 'wcpay-confirmation-modal', className ) }
+		className={ clsx( 'wcpay-confirmation-modal', className ) }
 		{ ...props }
 	>
 		{ children }

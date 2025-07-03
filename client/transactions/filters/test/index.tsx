@@ -13,6 +13,9 @@ import { getQuery, updateQueryString } from '@woocommerce/navigation';
  */
 import { TransactionsFilters } from '../';
 import { Transaction } from 'wcpay/data';
+import PAYMENT_METHOD_IDS, {
+	PAYMENT_METHOD_BRANDS,
+} from 'wcpay/constants/payment-method';
 
 // TODO: this is a bit of a hack as we're mocking an old version of WC, we should relook at this.
 jest.mock( '@woocommerce/settings', () => ( {
@@ -35,13 +38,14 @@ function addAdvancedFilter( filter: string ) {
 const storeCurrencies = [ 'eur', 'usd' ];
 const customerCurrencies = [ 'eur', 'usd', 'gbp' ];
 const transactionSources: Transaction[ 'source' ][] = [
-	'visa',
-	'mastercard',
-	'sofort',
+	PAYMENT_METHOD_BRANDS.VISA,
+	PAYMENT_METHOD_BRANDS.MASTERCARD,
+	PAYMENT_METHOD_IDS.SOFORT,
 ];
 
 declare const global: {
 	wcSettings: { countries: Record< string, string > };
+	wooPaymentsPaymentMethodsConfig: Record< string, { title: string } >;
 };
 
 global.wcSettings = {
@@ -49,6 +53,12 @@ global.wcSettings = {
 		US: 'United States of America',
 		CA: 'Canada',
 		UK: 'United Kingdom',
+	},
+};
+
+global.wooPaymentsPaymentMethodsConfig = {
+	sofort: {
+		title: 'Sofort',
 	},
 };
 
@@ -356,15 +366,15 @@ describe( 'Transactions filters', () => {
 		let ruleSelector: HTMLElement;
 
 		beforeEach( () => {
-			addAdvancedFilter( 'Channel' );
+			addAdvancedFilter( 'Sales channel' );
 			ruleSelector = screen.getByRole( 'combobox', {
-				name: /transaction channel filter/i,
+				name: /transaction sales channel filter/i,
 			} );
 		} );
 
 		test( 'should render all types', () => {
 			const typeSelect = screen.getByRole( 'combobox', {
-				name: /transaction channel$/i,
+				name: /transaction sales channel$/i,
 			} ) as HTMLSelectElement;
 			expect( typeSelect.options ).toMatchSnapshot();
 		} );
@@ -372,10 +382,9 @@ describe( 'Transactions filters', () => {
 		test( 'should filter by is', () => {
 			user.selectOptions( ruleSelector, 'is' );
 
-			// need to include $ in name, otherwise "Select a transaction type filter" is also matched.
 			user.selectOptions(
 				screen.getByRole( 'combobox', {
-					name: /transaction channel$/i,
+					name: /transaction sales channel$/i,
 				} ),
 				'online'
 			);
@@ -390,7 +399,7 @@ describe( 'Transactions filters', () => {
 			// need to include $ in name, otherwise "Select a transaction type filter" is also matched.
 			user.selectOptions(
 				screen.getByRole( 'combobox', {
-					name: /transaction channel$/i,
+					name: /transaction sales channel$/i,
 				} ),
 				'in_person'
 			);

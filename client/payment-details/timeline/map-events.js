@@ -31,6 +31,7 @@ import { ShieldIcon } from 'wcpay/icons';
 import { fraudOutcomeRulesetMapping, paymentFailureMapping } from './mappings';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 import { hasSameSymbol } from 'multi-currency/utils/currency';
+import { getLocalizedTaxDescription } from '../utils/tax-descriptions';
 
 /**
  * Creates a timeline item about a payment status change
@@ -44,10 +45,18 @@ const getStatusChangeTimelineItem = ( event, status ) => {
 	return {
 		date: new Date( event.datetime * 1000 ),
 		icon: <SyncIcon />,
-		headline: sprintf(
-			// translators: %s new status, for example Authorized, Refunded, etc
-			__( 'Payment status changed to %s.', 'woocommerce-payments' ),
-			status
+		headline: createInterpolateElement(
+			sprintf(
+				// translators: %s new status, for example Authorized, Refunded, etc
+				__(
+					'Payment status changed to <strong>%s</strong>.',
+					'woocommerce-payments'
+				),
+				status
+			),
+			{
+				strong: <strong />,
+			}
 		),
 		body: [],
 	};
@@ -200,6 +209,32 @@ const isFXEvent = ( event = {} ) => {
 };
 
 /**
+ * Given the fee amount and currency, converts it to the store currency if necessary and formats using formatCurrency.
+ *
+ * @param {number} feeAmount Fee amount to convert and format.
+ * @param {string} feeCurrency Fee currency to convert from.
+ * @param {Object} event Event object containing fee rates and transaction details.
+ *
+ * @return {string} Formatted fee amount in the store currency.
+ */
+const convertAndFormatFeeAmount = ( feeAmount, feeCurrency, event ) => {
+	if ( ! isFXEvent( event ) || ! event.fee_rates?.fee_exchange_rate ) {
+		return formatCurrency( -Math.abs( feeAmount ), feeCurrency );
+	}
+
+	const { rate, fromCurrency } = event.fee_rates.fee_exchange_rate;
+	const storeCurrency = event.transaction_details.store_currency;
+
+	// Convert based on the direction of the exchange rate
+	const convertedAmount =
+		feeCurrency === fromCurrency
+			? feeAmount * rate // Converting from store currency to customer currency
+			: feeAmount / rate; // Converting from customer currency to store currency
+
+	return formatCurrency( -Math.abs( convertedAmount ), storeCurrency );
+};
+
+/**
  * Returns a boolean indicating whether only fee applied is the base fee
  *
  * @param {Object} event Event object
@@ -244,6 +279,35 @@ export const composeNetString = ( event ) => {
 	);
 };
 
+export const composeTaxString = ( event ) => {
+	const tax = event.fee_rates?.tax;
+	if ( ! tax || tax.amount === 0 ) {
+		return '';
+	}
+
+	const taxDescription = tax.description
+		? ` ${ getLocalizedTaxDescription( tax.description ) }`
+		: '';
+
+	const taxPercentage = tax.percentage_rate
+		? ` (${ ( tax.percentage_rate * 100 ).toFixed( 2 ) }%)`
+		: '';
+
+	const formattedTaxAmount = convertAndFormatFeeAmount(
+		tax.amount,
+		tax.currency,
+		event
+	);
+
+	return sprintf(
+		/* translators: 1: tax description 2: tax percentage 3: tax amount */
+		__( 'Tax%1$s%2$s: %3$s', 'woocommerce-payments' ),
+		taxDescription,
+		taxPercentage,
+		formattedTaxAmount
+	);
+};
+
 export const composeFeeString = ( event ) => {
 	if ( ! event.fee_rates ) {
 		return sprintf(
@@ -259,24 +323,45 @@ export const composeFeeString = ( event ) => {
 		fixed_currency: fixedCurrency,
 		history,
 	} = event.fee_rates;
-	let feeAmount = event.fee;
-	let feeCurrency = event.currency;
-
-	if ( isFXEvent( event ) ) {
-		feeAmount = event.transaction_details.store_fee;
-		feeCurrency = event.transaction_details.store_currency;
-	}
 
 	const baseFeeLabel = isBaseFeeOnly( event )
 		? __( 'Base fee', 'woocommerce-payments' )
 		: __( 'Fee', 'woocommerce-payments' );
 
+	// Get the appropriate fee amounts and currencies
+	let feeAmount, feeCurrency, baseFee, baseFeeCurrency;
+	if ( isFXEvent( event ) ) {
+		feeAmount =
+			event.fee_rates?.before_tax?.amount ||
+			event.transaction_details.store_fee;
+		feeCurrency =
+			event.fee_rates?.before_tax?.currency ||
+			event.transaction_details.store_currency;
+		baseFee = fixed || 0;
+		baseFeeCurrency = fixedCurrency || feeCurrency;
+	} else {
+		feeAmount = event.fee_rates.before_tax
+			? event.fee_rates.before_tax.amount
+			: event.fee;
+		feeCurrency = event.fee_rates.before_tax
+			? event.fee_rates.before_tax.currency
+			: event.currency;
+		baseFee = fixed;
+		baseFeeCurrency = fixedCurrency;
+	}
+
+	const formattedFeeAmount = convertAndFormatFeeAmount(
+		feeAmount,
+		feeCurrency,
+		event
+	);
+
 	if ( isBaseFeeOnly( event ) && history[ 0 ]?.capped ) {
 		return sprintf(
 			'%1$s (capped at %2$s): %3$s',
 			baseFeeLabel,
-			formatCurrency( fixed, fixedCurrency ),
-			formatCurrency( -feeAmount, feeCurrency )
+			formatCurrency( baseFee, baseFeeCurrency ),
+			formattedFeeAmount
 		);
 	}
 
@@ -289,9 +374,9 @@ export const composeFeeString = ( event ) => {
 		'%1$s (%2$f%% + %3$s%4$s): %5$s%6$s',
 		baseFeeLabel,
 		formatFee( percentage ),
-		formatCurrency( fixed, fixedCurrency ),
-		hasIdenticalSymbol ? ` ${ fixedCurrency }` : '',
-		formatCurrency( -feeAmount, feeCurrency ),
+		formatCurrency( baseFee, baseFeeCurrency ),
+		hasIdenticalSymbol ? ` ${ baseFeeCurrency }` : '',
+		formattedFeeAmount,
 		hasIdenticalSymbol ? ` ${ feeCurrency }` : ''
 	);
 };
@@ -611,10 +696,11 @@ const getAutomaticFraudOutcomeTimelineItem = ( event, status ) => {
  * Formats an event into one or more payment timeline items
  *
  * @param {Object} event An event data
+ * @param {string | null} bankName The name of the bank
  *
  * @return {Array} Payment timeline items
  */
-const mapEventToTimelineItems = ( event ) => {
+const mapEventToTimelineItems = ( event, bankName = null ) => {
 	const { type } = event;
 
 	const stringWithAmount = ( headline, amount, explicit = false ) =>
@@ -695,6 +781,15 @@ const mapEventToTimelineItems = ( event ) => {
 			];
 		case 'captured':
 			const formattedNet = formatNetString( event );
+			const body = [
+				composeFXString( event ),
+				composeFeeString( event ),
+				composeFeeBreakdown( event ),
+				event?.fee_rates?.tax?.amount !== 0
+					? composeTaxString( event )
+					: null,
+				composeNetString( event ),
+			].filter( Boolean );
 			return [
 				getStatusChangeTimelineItem(
 					event,
@@ -704,8 +799,8 @@ const mapEventToTimelineItems = ( event ) => {
 				getMainTimelineItem(
 					event,
 					stringWithAmount(
+						/* translators: %s is a monetary amount */
 						__(
-							/* translators: %s is a monetary amount */
 							'A payment of %s was successfully charged.',
 							'woocommerce-payments'
 						),
@@ -713,12 +808,7 @@ const mapEventToTimelineItems = ( event ) => {
 						true
 					),
 					<CheckmarkIcon className="is-success" />,
-					[
-						composeFXString( event ),
-						composeFeeString( event ),
-						composeFeeBreakdown( event ),
-						composeNetString( event ),
-					]
+					body
 				),
 			];
 		case 'partial_refund':
@@ -930,9 +1020,22 @@ const mapEventToTimelineItems = ( event ) => {
 				),
 				getMainTimelineItem(
 					event,
-					__(
-						'Dispute lost. The bank ruled in favor of your customer.',
-						'woocommerce-payments'
+					createInterpolateElement(
+						bankName
+							? sprintf(
+									__(
+										'<strong>Dispute lost.</strong> <strong>%s</strong> decided that you lost the dispute.',
+										'woocommerce-payments'
+									),
+									bankName
+							  )
+							: __(
+									'<strong>Dispute lost.</strong> <strong>The bank</strong> decided that you lost the dispute.',
+									'woocommerce-payments'
+							  ),
+						{
+							strong: <strong />,
+						}
 					),
 					<CrossIcon className="is-error" />
 				),
@@ -1007,13 +1110,16 @@ const mapEventToTimelineItems = ( event ) => {
  * Maps the timeline events coming from the server to items that can be used in Timeline component
  *
  * @param {Array} timelineEvents array of events
+ * @param {string | null} bankName The name of the bank
  *
  * @return {Array} Array of view items
  */
-export default ( timelineEvents ) => {
+export default ( timelineEvents, bankName = null ) => {
 	if ( ! timelineEvents ) {
 		return [];
 	}
 
-	return flatMap( timelineEvents, mapEventToTimelineItems );
+	return flatMap( timelineEvents, ( event ) =>
+		mapEventToTimelineItems( event, bankName )
+	);
 };

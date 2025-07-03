@@ -1,25 +1,52 @@
 /**
- * The Event type represents the different events that can be tracked in WooPayments.
+ * Represents the different shopper events that can be tracked by WooPayments on the site's frontend.
+ *
+ * When recorded, these are prefixed with 'wcpay_'.
+ *
  * It also allows an arbitrary string for dynamic event names.
  *
  * @see https://github.com/Automattic/woocommerce-payments/issues/8075#issuecomment-1933823687
- * @typedef {string} Event
  */
-export type Event =
+export type ShopperEvent =
 	| 'applepay_button_click'
 	| 'applepay_button_load'
+	| 'gpay_button_click'
+	| 'gpay_button_load'
+	| 'woopay_skipped'
+	| 'woopay_button_load'
+	| 'woopay_button_click'
+	| 'checkout_email_address_woopay_check'
+	| 'checkout_woopay_save_my_info_offered'
+	| 'checkout_woopay_save_my_info_country_click'
+	| 'checkout_woopay_save_my_info_mobile_enter'
+	| 'checkout_save_my_info_tos_click'
+	| 'checkout_save_my_info_privacy_policy_click'
+	| 'checkout_save_my_info_tooltip_click'
+	| 'checkout_save_my_info_tooltip_learn_more_click'
+	| 'checkout_place_order_button_click'
+	| string;
+
+/**
+ * Represents the different merchant events that can be tracked by WooPayments on the site's WP-admin.
+ *
+ * When recorded, these are prefixed with 'wcadmin_'.
+ *
+ * It also allows an arbitrary string for dynamic event names.
+ *
+ * @see https://github.com/Automattic/woocommerce-payments/issues/8075#issuecomment-1933823687
+ */
+export type MerchantEvent =
 	| 'page_view'
 	| 'wcpay_connect_account_clicked'
 	| 'wcpay_account_details_link_clicked'
 	| 'wcpay_welcome_learn_more'
 	| 'wcpay_stripe_connected'
 	| 'wcpay_connect_account_kyc_modal_opened'
+	| 'wcpay_csv_export_click'
 	| 'wcpay_deposits_row_click'
-	| 'wcpay_deposits_download'
 	| 'wcpay_disputes_row_action_click'
 	| 'wcpay_dispute_challenge_clicked'
 	| 'wcpay_dispute_accept_click'
-	| 'wcpay_disputes_download'
 	| 'wcpay_dispute_accept_modal_view'
 	| 'wcpay_dispute_product_selected'
 	| 'wcpay_dispute_inquiry_refund_click'
@@ -47,17 +74,25 @@ export type Event =
 	| 'wcpay_fraud_protection_tour_abandoned'
 	| 'wcpay_fraud_outcome_transactions_download'
 	| 'wcpay_gateway_toggle'
-	| 'gpay_button_click'
-	| 'gpay_button_load'
 	| 'wcpay_inbox_action_dismissed'
 	| 'wcpay_inbox_action_click'
 	| 'wcpay_inbox_note_view'
+	| 'wcpay_merchant_feedback_prompt_view'
+	| 'wcpay_merchant_feedback_prompt_dismiss'
+	| 'wcpay_merchant_feedback_prompt_yes_click'
+	| 'wcpay_merchant_feedback_prompt_no_click'
+	| 'wcpay_merchant_feedback_prompt_positive_modal_view'
+	| 'wcpay_merchant_feedback_prompt_positive_modal_leave_review_click'
+	| 'wcpay_merchant_feedback_prompt_positive_modal_close_click'
+	| 'wcpay_merchant_feedback_prompt_negative_modal_view'
+	| 'wcpay_merchant_feedback_prompt_negative_feedback'
+	| 'wcpay_merchant_feedback_prompt_negative_modal_contact_support_click'
+	| 'wcpay_merchant_feedback_prompt_negative_modal_close_click'
 	| 'wcpay_onboarding_flow_started'
 	| 'wcpay_onboarding_flow_step_completed'
 	| 'wcpay_onboarding_flow_hidden'
 	| 'wcpay_onboarding_flow_exited'
 	| 'wcpay_onboarding_flow_redirected'
-	| 'wcpay_onboarding_flow_reset'
 	| 'wcpay_onboarding_flow_eligibility_modal_closed'
 	| 'wcpay_onboarding_flow_setup_live_payments'
 	| 'wcpay_onboarding_flow_embedded_step_change'
@@ -65,7 +100,6 @@ export type Event =
 	| 'wcpay_overview_deposits_view_history_click'
 	| 'wcpay_overview_deposits_change_schedule_click'
 	| 'wcpay_overview_task_click'
-	| 'wcpay_overview_payment_activity_click'
 	| 'wcpay_setup_live_payments_modal_open'
 	| 'wcpay_setup_live_payments_modal_exit'
 	| 'wcpay_test_mode_modal_exit'
@@ -79,14 +113,12 @@ export type Event =
 	| 'wcpay_multi_currency_enabled_currencies_updated'
 	| 'wcpay_payment_request_settings_change'
 	| 'wcpay_proceed_to_checkout_button_click'
-	| 'checkout_place_order_button_click'
 	| 'wcpay_subscriptions_empty_state_view'
 	| 'wcpay_subscriptions_empty_state_finish_setup'
 	| 'wcpay_subscriptions_empty_state_create_product'
 	| 'wcpay_subscriptions_account_not_connected_product_modal_view'
 	| 'wcpay_subscriptions_account_not_connected_product_modal_finish_setup'
 	| 'wcpay_subscriptions_account_not_connected_product_modal_dismiss'
-	| 'wcpay_transactions_download_csv_click'
 	| 'payments_transactions_details_refund_modal_close'
 	| 'payments_transactions_details_refund_modal_open'
 	| 'payments_transactions_details_capture_charge_button_click'
@@ -95,15 +127,4 @@ export type Event =
 	| 'payments_transactions_details_refund_full'
 	| 'payments_transactions_risk_review_list_review_button_click'
 	| 'payments_transactions_uncaptured_list_capture_charge_button_click'
-	| 'checkout_email_address_woopay_check'
-	| 'checkout_woopay_save_my_info_offered'
-	| 'checkout_woopay_save_my_info_country_click'
-	| 'checkout_woopay_save_my_info_mobile_enter'
-	| 'checkout_save_my_info_tos_click'
-	| 'checkout_save_my_info_privacy_policy_click'
-	| 'checkout_save_my_info_tooltip_click'
-	| 'checkout_save_my_info_tooltip_learn_more_click'
-	| 'woopay_skipped'
-	| 'woopay_button_load'
-	| 'woopay_button_click'
 	| string;

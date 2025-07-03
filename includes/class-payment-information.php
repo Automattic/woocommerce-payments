@@ -11,6 +11,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use WCPay\Constants\Payment_Method;
 use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Capture_Type;
@@ -497,5 +498,14 @@ class Payment_Information {
 	 */
 	public function get_error() {
 		return $this->error;
+	}
+
+	/**
+	 * Returns true if the payment method is an offline payment method, false otherwise.
+	 *
+	 * @return bool True if the payment method is an offline payment method, false otherwise.
+	 */
+	public function is_offline_payment_method(): bool {
+		return in_array( $this->payment_method_stripe_id, Payment_Method::OFFLINE_PAYMENT_METHODS, true );
 	}
 }

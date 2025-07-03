@@ -10,7 +10,7 @@ import user from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import CustomSelectControl from '../';
+import CustomSelectControl from '..';
 
 interface Item {
 	key: string;

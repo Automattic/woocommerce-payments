@@ -3,7 +3,11 @@
 /**
  * External dependencies
  */
-import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
+import {
+	Flex,
+	FlexBlock,
+	FlexItem,
+} from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies

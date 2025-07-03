@@ -18,9 +18,7 @@ interface PaymentsStatusProps {
 	iconSize: number;
 }
 
-const PaymentsStatusEnabled: React.FC< PaymentsStatusProps > = ( props ) => {
-	const { iconSize } = props;
-
+const PaymentsStatusEnabled = ( { iconSize }: PaymentsStatusProps ) => {
 	return (
 		<span className={ 'account-status__info__green' }>
 			<GridiconCheckmarkCircle size={ iconSize } />
@@ -29,9 +27,7 @@ const PaymentsStatusEnabled: React.FC< PaymentsStatusProps > = ( props ) => {
 	);
 };
 
-const PaymentsStatusDisabled: React.FC< PaymentsStatusProps > = ( props ) => {
-	const { iconSize } = props;
-
+const PaymentsStatusDisabled = ( { iconSize }: PaymentsStatusProps ) => {
 	return (
 		<span className={ 'account-status__info__red' }>
 			<GridiconNotice size={ iconSize } />
@@ -40,9 +36,7 @@ const PaymentsStatusDisabled: React.FC< PaymentsStatusProps > = ( props ) => {
 	);
 };
 
-const PaymentsStatusPending: React.FC< PaymentsStatusProps > = ( props ) => {
-	const { iconSize } = props;
-
+const PaymentsStatusPending = ( { iconSize }: PaymentsStatusProps ) => {
 	return (
 		<span className={ 'account-status__info__gray' }>
 			<GridiconNotice size={ iconSize } />
@@ -57,17 +51,19 @@ interface Props {
 	iconSize: number;
 }
 
-const PaymentsStatus: React.FC< Props > = ( props ) => {
-	const { paymentsEnabled, accountStatus } = props;
-
+const PaymentsStatus = ( {
+	paymentsEnabled,
+	accountStatus,
+	iconSize,
+}: Props ) => {
 	if ( paymentsEnabled ) {
-		return <PaymentsStatusEnabled iconSize={ props.iconSize } />;
+		return <PaymentsStatusEnabled iconSize={ iconSize } />;
 	}
 
 	return accountStatus === 'pending_verification' ? (
-		<PaymentsStatusPending iconSize={ props.iconSize } />
+		<PaymentsStatusPending iconSize={ iconSize } />
 	) : (
-		<PaymentsStatusDisabled iconSize={ props.iconSize } />
+		<PaymentsStatusDisabled iconSize={ iconSize } />
 	);
 };
 

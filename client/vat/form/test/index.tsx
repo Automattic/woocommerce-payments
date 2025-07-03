@@ -57,6 +57,7 @@ const countryTaxNumberInfo = [
 	[ 'GR', 'EL', 'VAT Number' ],
 	[ 'CH', 'CHE', 'VAT Number' ],
 	[ 'JP', '', 'Corporate Number' ],
+	[ 'AU', '', 'ABN' ],
 ];
 
 describe( 'VAT form', () => {
@@ -70,9 +71,7 @@ describe( 'VAT form', () => {
 			render( <VatForm onCompleted={ mockOnCompleted } /> );
 
 			user.click(
-				screen.getByLabelText(
-					`I'm registered for a ${ expectedTaxIdName }`
-				)
+				screen.getByLabelText( `I have a valid ${ expectedTaxIdName }` )
 			);
 
 			if ( expectedPrefix ) {
@@ -221,9 +220,7 @@ describe( 'VAT form', () => {
 
 	describe( 'when registered for VAT', () => {
 		beforeEach( () => {
-			user.click(
-				screen.getByLabelText( "I'm registered for a VAT Number" )
-			);
+			user.click( screen.getByLabelText( 'I have a valid VAT Number' ) );
 		} );
 
 		it( 'should disable the Continue button', () => {

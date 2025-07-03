@@ -10,7 +10,11 @@ import { useSelect } from '@wordpress/data';
  */
 import { usePaymentIntentWithChargeFallback } from '../';
 import { STORE_NAME } from '../../constants';
-import { Charge, OutcomeRiskLevel } from '../../../types/charges';
+import {
+	Charge,
+	OutcomeRiskLevel,
+	PaymentMethodDetails,
+} from '../../../types/charges';
 import { PaymentIntent } from '../../../types/payment-intents';
 
 jest.mock( '@wordpress/data' );
@@ -23,10 +27,10 @@ export const chargeMock: Charge = {
 	id: chargeId,
 	amount: 8903,
 	created: 1656701170,
-	payment_method_details: {
+	payment_method_details: ( {
 		card: {},
 		type: 'card',
-	},
+	} as unknown ) as PaymentMethodDetails,
 	payment_method: 'pm_mock',
 	amount_captured: 8903,
 	amount_refunded: 8903,
@@ -54,12 +58,14 @@ export const chargeMock: Charge = {
 	dispute: null,
 	disputed: false,
 	order: {
-		number: Number( '67' ),
+		id: 123,
+		number: 'custom-67',
 		url: 'http://order.url',
 		customer_url: 'customer.url',
 		customer_name: '',
 		customer_email: '',
 		subscriptions: [],
+		ip_address: '127.0.0.1',
 	},
 	outcome: {
 		network_status: 'approved_by_network',
@@ -88,12 +94,14 @@ export const paymentIntentMock: PaymentIntent = {
 	payment_method: 'pm_mock',
 	status: 'requires_capture',
 	order: {
-		number: 123,
+		id: 123,
+		number: 'custom-123',
 		url: 'http://order.url',
 		customer_url: 'customer.url',
 		customer_name: '',
 		customer_email: '',
 		fraud_meta_box_type: 'review',
+		ip_address: '127.0.0.1',
 	},
 };
 

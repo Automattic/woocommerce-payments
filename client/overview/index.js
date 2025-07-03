@@ -3,11 +3,13 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
-import { Card, Notice } from '@wordpress/components';
+import React, { useEffect, useState } from 'react';
+import { Card, Notice } from 'wcpay/components/wp-components-wrapped';
 import { getQuery } from '@woocommerce/navigation';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { dispatch } from '@wordpress/data';
+import interpolateComponents from '@automattic/interpolate-components';
+import { Link } from '@woocommerce/components';
 
 /**
  * Internal dependencies.
@@ -18,10 +20,8 @@ import ActiveLoanSummary from 'components/active-loan-summary';
 import ConnectionSuccessModal from './modal/connection-success';
 import DepositsOverview from 'components/deposits-overview';
 import ErrorBoundary from 'components/error-boundary';
-import FRTDiscoverabilityBanner from 'components/fraud-risk-tools-banner';
 import JetpackIdcNotice from 'components/jetpack-idc-notice';
 import Page from 'components/page';
-import PaymentActivity from 'wcpay/components/payment-activity';
 import Welcome from 'components/welcome';
 import { TestModeNotice } from 'components/test-mode-notice';
 import InboxNotifications from './inbox-notifications';
@@ -32,6 +32,11 @@ import { useDisputes, useGetSettings, useSettings } from 'data';
 import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
 import './style.scss';
 import BannerNotice from 'wcpay/components/banner-notice';
+import { MaybeShowMerchantFeedbackPrompt } from 'wcpay/merchant-feedback-prompt';
+import { recordEvent } from 'wcpay/tracks';
+import StripeSpinner from 'wcpay/components/stripe-spinner';
+import { getAdminUrl } from 'wcpay/utils';
+import { EmbeddedConnectNotificationBanner } from 'wcpay/embedded-components';
 
 const OverviewPageError = () => {
 	const queryParams = getQuery();
@@ -60,12 +65,39 @@ const OverviewPage = () => {
 		accountStatus,
 		accountStatus: { progressiveOnboarding },
 		accountLoans: { has_active_loan: hasActiveLoan },
-		enabledPaymentMethods,
-		featureFlags: { isPaymentOverviewWidgetEnabled },
 		overviewTasksVisibility,
-		showUpdateDetailsTask,
 		wpcomReconnectUrl,
 	} = wcpaySettings;
+
+	// Don't show the update details and verify business tasks by default due to embedded component.
+	const [ showUpdateDetailsTask, setShowUpdateDetailsTask ] = useState(
+		false
+	);
+	const [
+		showGetVerifyBankAccountTask,
+		setShowGetVerifyBankAccountTask,
+	] = useState( false );
+
+	const [
+		stripeNotificationsBannerErrorMessage,
+		setStripeNotificationsBannerErrorMessage,
+	] = useState( '' );
+	const [
+		stripeNotificationsBannerErrorType,
+		setStripeNotificationsBannerErrorType,
+	] = useState( '' );
+	const [
+		notificationsBannerMessage,
+		setNotificationsBannerMessage,
+	] = React.useState( '' );
+	const [ stripeComponentLoading, setStripeComponentLoading ] = useState(
+		true
+	);
+	// Variable to memoize the count of Stripe notifications.
+	const [
+		stripeNotificationsCountToAddressMemo,
+		setStripeNotificationsCountToAddressMemo,
+	] = useState( 0 );
 
 	const isTestModeOnboarding = wcpaySettings.testModeOnboarding;
 	const { isLoading: settingsIsLoading } = useSettings();
@@ -84,7 +116,7 @@ const OverviewPage = () => {
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
 		activeDisputes,
-		enabledPaymentMethods,
+		showGetVerifyBankAccountTask,
 	} );
 	const tasks =
 		Array.isArray( tasksUnsorted ) && tasksUnsorted.sort( taskSort );
@@ -157,8 +189,77 @@ const OverviewPage = () => {
 		setTestDriveSuccessDisplayed( true );
 	}
 
+	// Show old tasks if the embedded component fails to load.
+	useEffect( () => {
+		if ( stripeNotificationsBannerErrorMessage ) {
+			setShowUpdateDetailsTask( true );
+			setShowGetVerifyBankAccountTask( true );
+			setStripeComponentLoading( false );
+		}
+	}, [ stripeNotificationsBannerErrorMessage ] );
+
+	// eslint-disable-next-line valid-jsdoc
+	/**
+	 * Configure custom banner behaviour so the banner isn't shown when there are no action items.
+	 * We'll use notificationBannerMessage for that.
+	 * See https://docs.stripe.com/connect/supported-embedded-components/notification-banner#configure-custom-banner-behavior
+	 */
+	const handleNotificationsChange = ( response ) => {
+		if ( response.actionRequired > 0 ) {
+			// eslint-disable-next-line max-len
+			// Do something related to required actions, such as adding margins to the banner container or tracking the current number of notifications.
+			setNotificationsBannerMessage(
+				'You must resolve the notifications on this page before proceeding.'
+			);
+		} else if ( response.total > 0 ) {
+			// Do something related to notifications that don't require action.
+			setNotificationsBannerMessage( 'The items below are in review.' );
+		} else {
+			// This is the case where we addressed everything and previously had some notifications to address.
+			// We recommend the merchant to reload the page in this case.
+			if ( stripeNotificationsCountToAddressMemo > 0 ) {
+				dispatch( 'core/notices' ).createSuccessNotice(
+					__(
+						'Updates take a moment to appear. Please refresh the page in a minute.',
+						'woocommerce-payments'
+					),
+					{
+						actions: [
+							{
+								label: __( 'Refresh', 'woocommerce-payments' ),
+								url: getAdminUrl( {
+									page: 'wc-admin',
+									path: '/payments/overview',
+								} ),
+							},
+						],
+						explicitDismiss: true,
+					}
+				);
+				// No need to add extra params, we are interested in the total amount of actions here.
+				recordEvent(
+					'wcpay_overview_stripe_notifications_banner_action_completed'
+				);
+			}
+			setNotificationsBannerMessage( '' );
+		}
+		if ( response.actionRequired > 0 || response.total > 0 ) {
+			// Record the event indicating user got the notifications banner with some actionRequired or total items.
+			recordEvent( 'wcpay_overview_stripe_notifications_banner_update', {
+				action_required_count: response.actionRequired,
+				total_count: response.total,
+			} );
+			// Memoize the notifications count to be able to compare it with the fresh count when this function is called one more time.
+			setStripeNotificationsCountToAddressMemo( response.total );
+		}
+		// If the component inits successfully, this function is always called.
+		// It's safe to set the loading false here rather than onLoaderStart, because it happens too early and the UX is not smooth.
+		setStripeComponentLoading( false );
+	};
+
 	return (
 		<Page isNarrow className="wcpay-overview">
+			<MaybeShowMerchantFeedbackPrompt />
 			<OverviewPageError />
 			<JetpackIdcNotice />
 			{ showLoanOfferError && (
@@ -197,13 +298,77 @@ const OverviewPage = () => {
 					actions={ [] }
 				/>
 			) }
-			<ErrorBoundary>
-				<FRTDiscoverabilityBanner />
-			</ErrorBoundary>
-
+			{ stripeNotificationsBannerErrorMessage &&
+				stripeNotificationsBannerErrorType ===
+					'invalid_request_error' && (
+					<BannerNotice
+						status="warning"
+						icon={ true }
+						isDismissible={ false }
+					>
+						{ interpolateComponents( {
+							mixedString: sprintf(
+								__(
+									// eslint-disable-next-line max-len
+									'Some account related notifications require HTTPS and cannot be displayed. View them on our financial partner’s website. {{seeDetailsLink}}See details{{/seeDetailsLink}}',
+									'woocommerce-payments'
+								)
+							),
+							components: {
+								seeDetailsLink: (
+									// eslint-disable-next-line jsx-a11y/anchor-has-content
+									<Link
+										href={
+											// eslint-disable-next-line max-len
+											'https://woocommerce.com/document/woopayments/startup-guide/#requirements'
+										}
+										target="_blank"
+										rel="noreferrer"
+										type="external"
+									/>
+								),
+							},
+						} ) }
+					</BannerNotice>
+				) }
 			{ ! accountRejected && ! accountUnderReview && (
 				<ErrorBoundary>
 					<Welcome />
+
+					{ stripeComponentLoading &&
+						accountStatus.status !== 'complete' && (
+							<Card>
+								<div className="stripe-notifications-banner-loader">
+									<StripeSpinner />
+								</div>
+							</Card>
+						) }
+					<div
+						className="stripe-notifications-banner-wrapper"
+						style={ {
+							display: notificationsBannerMessage
+								? 'block'
+								: 'none',
+						} }
+					>
+						<ErrorBoundary>
+							<EmbeddedConnectNotificationBanner
+								onLoadError={ ( loadError ) => {
+									setStripeNotificationsBannerErrorMessage(
+										loadError.error.message ||
+											'Unknown error'
+									);
+									setStripeNotificationsBannerErrorType(
+										loadError.error.type
+									);
+									setStripeComponentLoading( false );
+								} }
+								onNotificationsChange={
+									handleNotificationsChange
+								}
+							/>
+						</ErrorBoundary>
+					</div>
 
 					{ showTaskList && (
 						<Card>
@@ -223,15 +388,6 @@ const OverviewPage = () => {
 							<AccountBalances />
 						</ErrorBoundary>
 					</Card>
-
-					{
-						/* Show Payment Activity widget only when feature flag is set. To be removed before go live */
-						isPaymentOverviewWidgetEnabled && (
-							<ErrorBoundary>
-								<PaymentActivity />
-							</ErrorBoundary>
-						)
-					}
 
 					<DepositsOverview />
 				</ErrorBoundary>

@@ -7,13 +7,11 @@
 
 namespace WCPay\Internal\Service;
 
-use stdClass;
 use WC_Order_Item;
 use WC_Order_Item_Product;
 use WC_Order_Item_Fee;
 use WC_Payments_Account;
 use WC_Payments_Utils;
-use WCPay\Internal\Service\OrderService;
 use WCPay\Exceptions\Order_Not_Found_Exception;
 use WCPay\Internal\Proxy\LegacyProxy;
 
@@ -162,6 +160,12 @@ class Level3Service {
 			// It's possible to create products with negative price - represent it as free one with discount.
 			$discount_amount = abs( $this->prepare_amount( $subtotal / $quantity, $currency ) );
 			$unit_cost       = 0;
+		}
+
+		// Tax also shouldn't be negative so represent it as a discount.
+		if ( $tax_amount < 0 ) {
+			$discount_amount += abs( $tax_amount );
+			$tax_amount       = 0;
 		}
 
 		$line_item  = (object) [

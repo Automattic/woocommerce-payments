@@ -16,6 +16,10 @@ class WC_Payments_Subscription_Change_Payment_Method_Handler {
 	 * Constructor.
 	 */
 	public function __construct() {
+		if ( ! WC_Payments_Features::should_use_stripe_billing() ) {
+			return;
+		}
+
 		// Add an "Update card" action to all WCPay billing subscriptions with a failed renewal order.
 		add_filter( 'wcs_view_subscription_actions', [ $this, 'update_subscription_change_payment_button' ], 15, 2 );
 		add_filter( 'woocommerce_can_subscription_be_updated_to_new-payment-method', [ $this, 'can_update_payment_method' ], 15, 2 );
@@ -63,7 +67,7 @@ class WC_Payments_Subscription_Change_Payment_Method_Handler {
 	 */
 	public function update_order_pay_button( $actions, $order ) {
 		// If the order isn't payable, there's nothing to update.
-		if ( ! isset( $actions['pay'] ) ) {
+		if ( ! isset( $actions['pay'] ) || ! function_exists( 'wcs_get_subscriptions_for_order' ) ) {
 			return $actions;
 		}
 
@@ -110,6 +114,10 @@ class WC_Payments_Subscription_Change_Payment_Method_Handler {
 
 		// Note: There is no nonce verification for the "pay for order" action - the URL is long living.
 		if ( ! isset( $_GET['pay_for_order'], $_GET['key'] ) || ! empty( $_GET['change_payment_method'] ) || ( ! isset( $_GET['order_id'] ) && ! isset( $wp->query_vars['order-pay'] ) ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return;
+		}
+
+		if ( ! function_exists( 'wcs_get_subscriptions_for_order' ) ) {
 			return;
 		}
 
@@ -178,7 +186,7 @@ class WC_Payments_Subscription_Change_Payment_Method_Handler {
 	 */
 	private function does_subscription_need_payment_updated( $subscription ) {
 		// We're only interested in WC Pay subscriptions that are on hold due to a failed payment.
-		if ( ! $subscription->has_status( 'on-hold' ) || ! WC_Payments_Subscription_Service::is_wcpay_subscription( $subscription ) ) {
+		if ( ! is_a( $subscription, 'WC_Subscription' ) || ! $subscription->has_status( 'on-hold' ) || ! WC_Payments_Subscription_Service::is_wcpay_subscription( $subscription ) ) {
 			return false;
 		}
 
@@ -211,7 +219,7 @@ class WC_Payments_Subscription_Change_Payment_Method_Handler {
 	 */
 	public function change_payment_method_form_submit_text( $button_text ) {
 
-		if ( isset( $_GET['change_payment_method'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+		if ( isset( $_GET['change_payment_method'] ) && function_exists( 'wcs_get_subscription' ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			$subscription = wcs_get_subscription( wc_clean( wp_unslash( $_GET['change_payment_method'] ) ) ); // phpcs:ignore WordPress.Security.NonceVerification
 
 			if ( $subscription && $this->does_subscription_need_payment_updated( $subscription ) ) {

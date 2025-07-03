@@ -2,9 +2,9 @@
 Contributors: woocommerce, automattic
 Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment gateway
 Requires at least: 6.0
-Tested up to: 6.7
+Tested up to: 6.8
 Requires PHP: 7.3
-Stable tag: 8.8.0
+Stable tag: 9.6.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -86,6 +86,338 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 4. Manage Disputes
 
 == Changelog ==
+
+= 9.6.0 - 2025-07-02 =
+* Add - Add cover letter for the new evidence submission screen for Product Unacceptable chargeback reason
+* Add - Added a URL parameter to allow merchants to access the VAT details modal.
+* Add - Show an admin notice when bundled subscriptions are in use
+* Fix - Add NO VAT description for Norway in tax descriptions
+* Fix - fix: ensure Google Pay/Apple Pay postcode matching for shipping zones works even when the provided postcode is redacted.
+* Fix - Fix a layout shift when uploading evidence for a dispute on the new challenge dispute screen
+* Fix - Fix mobile version of the StepperPanel and make the top navigation clickable.
+* Fix - Fix padding on the recommended document section
+* Fix - Fix payment methods logos width calculation in block editor preview
+* Fix - Fix preselected Payment Methods ignored during account creation via KYC session.
+* Fix - Fix spacing on disputes expandable block
+* Fix - Fix state for the cover letter.
+* Fix - Fix the browser print preview page on the payouts page.
+* Fix - Prevent double stock reduction after (3DS) authentication.
+* Fix - Prevent fatal error on the Pay for Order page upon deleted orders.
+* Update - Change the copy of the cover letter notice.
+* Update - Clicking on the Next button scroll the page position to the top.
+* Update - Evidence submission form for product not received
+* Update - fix: update Google Pay/Apple Pay buttons compatibility when multi-currency functionality is disabled - they'll no longer throw an exception for logged-out customers
+* Update - Refine "Temporarily Suspended" language, statuses and tooltip copy
+* Update - update: add `wcpay_express_checkout_js_params` filter for express checkout JS params.
+* Update - Updates the recomended documents section for the new disputes experience
+* Dev - Add missing arrow icons from the new evidence form
+* Dev - Ensure the submitted state is working as expected
+* Dev - Fix the regexp checking for the loading state of the checkout button to cover changes in latest WooCommerce.
+* Dev - Remove CTA from the new evidence "Evidence saved!" toast.
+* Dev - Revert @woocommerce/onboarding upgrade in PR 10840
+* Dev - Update reviewers for dependabot
+* Dev - Update tested WooCommerce version to 10.0.0
+
+= 9.5.0 - 2025-06-11 =
+* Add - Add specific texts for collecting Norway and New Zealand tax data
+* Add - Add specific texts for collecting Singapore tax data
+* Add - Add tax to the fee breakdown on order notes
+* Add - Enable Australian merchants to add tax details (ABN) for generating tax documents.
+* Add - New Filter: wcpay_woopay_enabled – Allows developers to conditionally disable WooPay based on custom logic, improving compatibility with themes and plugins.
+* Fix - fix: ensure `checkPaymentMethodIsAvailable` cache key is correctly memoized on express checkout elements
+* Fix - fix: formatting of currencies in the backend will always honor the merchant's settings, rather than the currency locale.
+* Fix - fix: set the correct payment method title when processing the payment with wechat pay, multibanco, and others
+* Fix - Fixed handling of orders containing items with negative tax
+* Fix - Handle state field requirements for Express Checkout in countries without states
+* Fix - Prevent accounts scheduled for deletion from being accessible to the WooPayments client to avoid exposing stale or partial data.
+* Update - Evidence submission form now should use the global wp.components
+* Update - refactor: add data massaging from legacy google pay/apple pay for HK-based addresses
+* Update - Refactor: Remove unused Props interface from AccountTools component
+* Update - Remove WooPayments adding their sections into other gateways when enabled
+* Update - update: Apple Pay domain verification file is no longer needed
+* Update - update: remove `_wcpay_feature_tokenized_cart_ece` feature flag; remove `client/express-checkout` in favor of `client/tokenized-express-checkout`
+* Dev - Add cover letter for fraudulent reason
+* Dev - Add the components that will be used on the evidence form
+* Dev - Add the logic "Save for later" when submitting evidence
+* Dev - Add the new StepperPanel component.
+* Dev - Bump WC tested up to version to 9.8.5
+* Dev - chore: update @stripe/connect-js @stripe/react-connect-js @stripe/react-stripe-js @stripe/stripe-js dependencies
+* Dev - Clean up database options after completing onboarding.
+* Dev - Condition AliPay block tests under shouldRunWCBlocksTests
+* Dev - Create a new feature flag for the evidence submission form
+* Dev - Decouple the accordion component from the dispute details screen.
+* Dev - fix: is_store_api_request utility on multisite with subdirectory install
+* Dev - refactor: introduced MSW for mocking network requests in tests.
+
+= 9.4.0 - 2025-05-21 =
+* Add - Add support for rendering fee tax details in the transaction timeline where available
+* Fix - Keep the shipping costs structure intact when applying multi-currency adjustments.
+* Fix - Only display the transaction URL for authorized intent statuses in WP Admin order page
+* Fix - Optimize session handling by only setting cookies on cart and checkout pages, improving product page caching performance.
+* Update - chore: remove "add payment methods" wizard task in favor of NOX flow.
+* Update - chore: update "Tested up to" WordPress 6.8
+* Update - Improve error message for embedded onboarding.
+* Update - Improve the user experience of the WooCommerce Payments dispute management interface, focusing on visual clarity of the dispute steps component that guides merchants through the process of handling payment disputes and inquiries.
+* Update - Perist payment method checkbox after capability request
+* Update - refactor: adjust payment method settings UI to show inline notices and disabled checkboxes instead of `(!)` icon
+* Update - Remove self-assessment fields from the onboarding flow
+* Update - update: ensure Klarna is never part of ECE buttons
+* Update - update: remove BNPL payment method messaging element/offering from checkout labels
+* Update - Update ‘Activate payments’ task to use NOX flow when the reactify-settings-payments feature is enabled.
+* Dev - refactor: created a "common" component for the payment method details on the transactions view, made for Affirm, Afterpay, Alipay, WeChat Pay, Grabpay, Multibanco
+* Dev - Set payment method title for order before order status change to make it visible for status change actions.
+* Dev - Unbundles wordpress/components for Dispute screens
+* Dev - upgrade currency-switcher block to apiVersion 3
+
+= 9.3.0 - 2025-05-05 =
+* Add - Add dedicated onboarding REST API endpoint for disabling test drive account, when possible.
+* Add - Transaction Fees breakdown component in the Payment details.
+* Fix - Disabled the Transactions Breakdown section to avoid misleading data in certain scenarios.
+* Fix - fix: ensuring that Google Pay/Apple Pay buttons hide on shortcode cart & checkout when totals go to 0
+* Fix - fix: Multibanco payment instructions font size adjustment on some block-based themes (e.g.: Twenty-Twenty-Four, Twenty-Twenty-Three)
+* Fix - Fix a bug when the notice after downloading CSV that was mispositioned.
+* Fix - Fix capabilities query param type
+* Fix - Fixed inconsistent spacing between "Add to Cart" button and express checkout buttons on product pages.
+* Fix - Fixes a styling issue when the payment method has a tooltip next to it, it was shifting the logo to the right.
+* Fix - Fix for validation issue with POST params in some cases generating account session.
+* Fix - Improve styling of the Embedded components to be closer to WPDS.
+* Fix - Improve subscriptions code compatibility to avoid causing fatal errors.
+* Fix - Remove the referrer check to update the fraud protection settings
+* Fix - Set the onboarding test mode while creating test drive account with API
+* Update - Add dedicated onboarding REST API endpoint for resetting onboarding, when possible.
+* Update - Advanced fraud protection settings redesign.
+* Update - chore: removed notices about the JCB capability request. JCB will be automatically requested for every new and existing merchant, regardless of the merchant country.
+* Update - Include a failure message in the order notes when Stripe Billing subscription renewal has failed.
+* Update - On the payment settings page, change the "Credit/Debit Cards" icon to a more generic icon and add a static list of card brands below the "Credit/Debit Cards" element.
+* Update - Remove progressive onboarding eligibility check during embedded KYC session creation
+* Update - Simplified refund handling with clear errors and standard reasons to aid resolution.
+* Update - Updated the Stripe locales list.
+* Update - Update log file format for better compatibility with the WooCommerce log viewer.
+* Dev - Add Cursor config folder to .gitignore
+* Dev - Bump WC tested up to version to 9.8.1
+* Dev - Bump WC tested up to version to 9.8.2
+* Dev - Delete NOX profile during account reset from Overview or Connect page.
+* Dev - Fix Apple Pay and Google Pay not requested from NOX In-context flow.
+* Dev - Merged WC_REST_Payments_Payment_Intents_Create_Controller back into WC_REST_Payments_Payment_Intents_Controller after confirming that the issue that caused the split was solved.
+* Dev - Replace WCPay in messages with WooPayments
+
+= 9.2.1 - 2025-04-23 =
+* Update - Update account session creation route definition to use POST rather than GET.
+
+
+= 9.2.0 - 2025-04-09 =
+* Add - Add back button for tertiary+ level pages in WooPayments settings.
+* Fix - fix: cancel GooglePay/ApplePay dialog on product page if add-to-cart product validation fails
+* Fix - fix: fatal error when Klarna is enabled on an EU account and a non-EU currency is configured on the store.
+* Fix - fix: Google Pay/Apple Pay display on pay-for-order pages.
+* Fix - Fix deprecated hook woocommerce_rest_api_option_permissions
+* Fix - Fix errors in WooCommerce email settings preview
+* Fix - Fix Multi-currency conversion for WooCommerce Bookings range type cost adjustments
+* Fix - Fix PMME display on shortcode cart with block-based themes.
+* Fix - Fix WooPay enabled during NOX onboarding despite being disabled in recommended payment methods.
+* Fix - Handle pending refunds properly
+* Fix - Linked account ID to product ID to maintain consistency and prevent issues when the account ID changes.
+* Fix - Prevent unsaved changes dialog when changes have been saved.
+* Fix - Removed hard-coded lists of payment methods where possible.
+* Fix - Remove unused wcpay_date_format_notice_dismissed option from the permission list
+* Fix - Set background color to white for the Payments settings page
+* Fix - update: ensure Google Pay/Apple Pay honor 'Display prices during cart and checkout' setting
+* Fix - Update WooPay icon on order page.
+* Update - Added _wcpay_net to the metadata.
+* Update - Chore: check the array type in dismissed noticeces component.
+* Update - chore: disable request of JCB capability
+* Update - fix: Google Pay/Apple Pay HK test address override.
+* Update - fix: parsing of error message for GooglePay/ApplePay buttons to be displayed to customer, instead of displaying generic error message on failure.
+* Update - Improve the ECE container loading experience.
+* Update - Move payment method map definition to the backend
+* Update - Prevent creation of the renewal orders if original order was created in the different WooPayments mode.
+* Update - refactor: delete temporary Google Pay/Apple Pay cart contents right after making the request, to improve performance and avoiding bots sending wrong session data in subsequent requests.
+* Update - Remove fraud protection discoverability and update tour
+* Update - Stripe Billing and Manual Capture incompatibility notice on the Settings page.
+* Update - Update Settings page as per the new design
+* Update - Update to Cash App Afterpay branding.
+* Dev - Bump WC tested up to version to 9.7.1.
+* Dev - Fix unneeded double square brackets in the post-merge script
+* Dev - Removed the deprecated wcpay_exit_survey_dismissed option from the ALLOWED_OPTIONS list.
+* Dev - Remove level3 retry logic and legacy request_with_level3_data method
+* Dev - Updated the progressive parameter in the KYC session creation API to use a boolean type.
+* Dev - We switch to using site instead of url as the key in the self assessment data to avoid XSS firewall false-positives.
+
+= 9.1.0 - 2025-03-19 =
+* Add - Add a prompt to encourage merchants to provide feedback or leave a WordPress.org review for WooPayments
+* Add - Add order failure message on Order Received page.
+* Add - Add support to change payment method to 3DS card for subscriptions.
+* Add - Add WeChat Pay response handling.
+* Add - Implement Multibanco payment method
+* Add - Implement specific handling for insufficient_balance_for_refund when refunding the admin order management
+* Add - Inform Stripe when a store switch from coming soon to live mode
+* Add - Show failure reason in details page for failed payout. This will help merchants get better support, or understand the next steps needed to fix the failing payouts.
+* Fix - Add an order note when a recurring payment fails or when updating the payment method fails due to a missing or invalid payment token.
+* Fix - Bypass enabled at checkout checks for rendering payment methods configs.
+* Fix - Correct the dispute notice for Klarna Inquiries
+* Fix - fix: GooglePay/ApplePay fail when there are more than 9 shipping options.
+* Fix - fix: GooglePay/ApplePay script dependencies with WooCommerce 9.7
+* Fix - Fix issue where survey modal is not scrollable on smaller screen sizes.
+* Fix - Fix validation for support phone numbers for Singapore
+* Fix - Improve payout failure messages for better clarity and accuracy
+* Fix - Inconsitent Safe Mode notice with the latest Jetpack version
+* Fix - Init PMME container in cart block so that it can be dynamically rendered once the requirements are met.
+* Fix - Make sure that WooPayments gateways follow the main WooPayments card gateway in gateway ordering on the page.
+* Fix - Manual capture fails in the transaction detail screen with a customized order number
+* Fix - Properly extract styles when using the site editor.
+* Fix - Renamed function parameters to avoid reserved keyword conflicts
+* Fix - Resolved an issue on stores that had the Stripe Billing feature enabled (US-only) and then changed their store location to an ineligible country.
+* Fix - Scoped CSS selectors for WP components to prevent unintended styling on other pages
+* Fix - Show Express Checkout button previews in template editor
+* Fix - Skip email input search in pay for order flow and use email provided in order data for WooPay iframe.
+* Fix - Skip limits per currency check on admin pages
+* Fix - Tests: Suppressed unexpected JSON output in maybe_handle_onboarding test by wrapping execution with ob_start() and ob_end_clean()
+* Update - Better handling of HTTPs errors in embedded components.
+* Update - Change wording for Sales Channel, Online Store, In-Person, and In-Person (POS)
+* Update - Enhancements to country select field in onboarding.
+* Update - feat: add compatibility notice for Google Pay with live mode accounts.
+* Update - Jetpack packages in composer
+* Update - Remove the 60 day survey admin note, since it will be redundant after we add the reviews prompt.
+* Update - Track action complete event in Stripe Notification embedded component.
+* Update - update: tokenize ECE initialization and update flow on pricing change.
+* Dev - Add centralized payment method definitions to streamline implementation and maintenance of payment methods.
+* Dev - Exclude playwright-report from eslint.
+* Dev - Include transaction ID when requesting card reader fee charges summary.
+* Dev - Refactors to the embedded compoennts logic.
+* Dev - Update @wordpress/icons version to latest version 10.19.0
+
+= 9.0.0 - 2025-02-26 =
+* Add - Add E2E tests for currency switching at checkout.
+* Add - Add GrabPay payment method details to the View Transaction page.
+* Add - Add GrabPay to the settings page when eligible.
+* Add - Add loader indication for Stripe notifications banner component
+* Add - Add payment method logos to checkout block card label.
+* Add - Adds store_id property to body of WooPay tracker events.
+* Add - Add Stripe embedded account notifications component on the Overview page
+* Add - Add WeChat Pay settings.
+* Add - Add WeChat Pay support to checkout.
+* Add - feat: add initial support for Alipay settings
+* Add - feat: add order notes to tokenized ECE GooglePay/ApplePay on blocks checkout
+* Add - Implement checkout for GrabPay payments.
+* Add - Pass the business name to the express checkout handler.
+* Fix - Avoid duplicated payment methods detection notice on new stores.
+* Fix - Avoid PMME init for unavailable BNPL use-cases.
+* Fix - Ensure multi-currency widget markup getter don't throw errors.
+* Fix - Ensures that the tokenised cart for ECE implementation is disabled by default.
+* Fix - fix: attribute selection from PDPs with tokenized ECE
+* Fix - fix: tokenized ECE improvements with WC Deposits, Bookings, Bundles.
+* Fix - Fixed an issue with the copy test card number on Astra theme
+* Fix - Fixes incorrect defined statement for WC_Install::STORE_ID_OPTION constant.
+* Fix - Fixes thrown PHP warning in checkout config.
+* Fix - Fix Stripe KYC flow Woo color
+* Fix - Fix the default value of the FRT advanced options.
+* Fix - Improve how Stripe Billing integration is loaded to prevent unnecessary queries on every page load.
+* Fix - Prevent fatal errors when subscription is deactivated due outdated version.
+* Fix - Set orderby to `none` for order queries where checking if order exists.
+* Fix - Update the size of Woo logo on the test drive onboarding page.
+* Update - Add a notice indicating that overview page needs to be reloaded after completing the requirements in the embedded component.
+* Update - Add JSON-formatted minimum amount details to the amount too small error message.
+* Update - feat: GooglePay/ApplePay refactor to leverage Store API is enabled by default - second try.
+* Update - Improve CSV export experience and deliver consistent reports via async transact platform service-based CSV exports.
+* Update - Remove the receipt details tab in the card readers page.
+* Update - update: add payment method functionality to honor WC rate limit.
+* Update - update: tokenized ECE to exclude itemized items on rounding discrepancies of totals.
+* Update - Update copy in the Woopayments Reset account modal for incomplete onboarding accounts
+* Update - Update Credit Card / Debit Card label to Cards
+* Update - Update handling for 0 feeAmount to be consistent with details page.
+* Update - Update handling for refund processing in case of insufficient funds.
+* Update - Update handling of PR as a country in the terminal locations endpoint.
+* Update - Update the copy in the existing modal for resetting a WooPayments account.
+* Dev - Add critical tag to tests that are part of the critical flows.
+* Dev - Add new E2E tests to make sure a non-admin user, such as an editor, can access the wp-admin without errors.
+* Dev - Add Slack integration to Playwright E2E tests.
+* Dev - Cache calls to wc_get_orders in the incentives class
+* Dev - Extract the Account Session logic from Embedded components onboarding into a reusable utility hook.
+* Dev - Fix potential flakiness while creating a page with the checkout block.
+* Dev - Remove Puppeteer references.
+* Dev - Remove routing to the partially re-engineered payment process"
+* Dev - Update E2E NPM scripts.
+* Dev - Update E2E readme doc.
+* Dev - Update E2E setup scripts to avoid conflicts with other containers and permissions.
+* Dev - Update Github actions and workflows. Change e2e tests directory structure.
+
+= 8.9.2 - 2025-02-21 =
+* Fix - Fixed WooPay opt-in race condition
+
+
+= 8.9.1 - 2025-02-07 =
+* Fix - Ensures that the tokenised cart for ECE implementation is disabled by default.
+
+
+= 8.9.0 - 2025-02-04 =
+* Add - Add a popover to WooPayments to present all possible payment methods
+* Add - Added persistent column visibility preferences for reporting tables, allowing merchants to customize and save their preferred table view layouts across sessions.
+* Add - Add support for `WP_DEVELOPMENT_MODE`. Any non-empty setting will force the plugin into development mode.
+* Add - Add wcpay_capture_error_amount_too_small error type and minimum amount details when capturing payments below the supported threshold.
+* Add - Admin analytics page E2E tests for Playwright
+* Add - Enable "Reader fee" type filtering for transactions list.
+* Add - Show Bank reference key on top of the payout details page, whenever available.
+* Fix - Add currency code to fee breakdown when multi-currency is enabled, and currencies share the same symbol.
+* Fix - Added timestamp to the order note when terminal payment fails.
+* Fix - fix: add payment method page query initialization - ensuring that the WP_Query is initialized when checking for payment methods availability
+* Fix - fix: avoid ECE error when no address is provided on initialization
+* Fix - Fix cart subtotal amount when manually renewing a subscription.
+* Fix - Fixed fraud prevention token not available on blocks checkout
+* Fix - Fix flaky Multi-Currency test.
+* Fix - Fix global styling for popovers
+* Fix - Fix guest users being able to buy subscriptions with WooPay via Direct Checkout.
+* Fix - Fix incorrect payment method logos used on WooPayment Settings
+* Fix - Fix the amounts in the Filter by Price block to reflect the shopper's selected currency.
+* Fix - Pass theme editor footer and header styles to WooPay.
+* Fix - Prevent potential fatal when initializing the WooPay express checkout button.
+* Fix - Set a default minimum height to the WooPay button.
+* Fix - Update gateway form fields references to prevent errors.
+* Fix - Update set up live payments task list item copy
+* Fix - WooPay blocks checkout terms and condition default text
+* Update - Design improvements related to the overview page
+* Update - feat: GooglePay/ApplePay refactor to leverage Store API is enabled by default. Please contact us if you encounter new issues with these buttons.
+* Update - Improve loading experience in embedded KYC
+* Update - Remove date format notice across all admin pages.
+* Update - Removes Sofort payment method from settings and checkout, permanently deprecates Sofort from settings.
+* Update - Replace payments overview page connection success notice with a modal for live accounts.
+* Update - Simplify localization of CSV exports to use user language settings from WP Admin, allowing the CSV export to match the localization of the data presented in the admin UI.
+* Update - Update the loader image for test account creation
+* Update - Woo Colors and logos
+* Dev - Add E2E environment variables to Playwright config.
+* Dev - Add e2e tests for the multi-currency widget setup.
+* Dev - Converted E2E merchant-progressive-onboarding spec from Puppeteer to Playwright.
+* Dev - Convert merchant-orders-partial-refund spec from Puppeteer to Playwright.
+* Dev - Convert merchant admin transactions E2E test to Playwright
+* Dev - Convert order refund failure E2E tests to Playwright
+* Dev - Convert shopper-checkout-purchase spec from Puppeteer to Playwright
+* Dev - Convert shopper-multi-currency-widget spec from Puppeteer to Playwright
+* Dev - Convert shopper checkout save card and purchase test to Playwright
+* Dev - Convert shopper checkout with site editor theme spec to Playwright
+* Dev - Convert shopper checkout with UPE methods E2E test to Playwright, split saving card tests to separate file
+* Dev - Convert shopper free coupon checkout E2E test to Playwright
+* Dev - Convert shopper purchase multiple subscriptions E2E tests to Playwright
+* Dev - Convert Shopper WC Blocks saved card checkout and usage test to Playwright
+* Dev - Convert the merchant orders status change spec from Puppeteer to Playwright.
+* Dev - Convert the shopper-myaccount-payment-methods-add-fail spec from Puppeteer to Playwright.
+* Dev - E2E Playwright Migration: convert Admin Disputes spec
+* Dev - E2E Playwright Migration: convert Order Manual Capture spec
+* Dev - E2E Playwright Migration: convert shopper-checkout-failures spec to Playwright and remove Puppeteer spec.
+* Dev - E2E Playwright Migration: convert shopper-wc-blocks-checkout-purchase spec
+* Dev - Enhance log file format to provide more information about the request flow.
+* Dev - Fix flakiness in saved card tests caused by selling the same cart multiple times, triggering duplicate order protection
+* Dev - Migrate merchant subscription settings spec to Playwright
+* Dev - Migrate shopper subscription free-trial purchase E2E test to Playwright
+* Dev - Migrate shopper subscriptions - No signup fee E2E test to Playwright
+* Dev - Migrate the merchant subscriptions renew action scheduler spec from Puppeteer to Playwright.
+* Dev - Migrate the Shopper Renew Subscription spec to Playwright and remove the corresponding Puppeteer test.
+* Dev - Migrate the Shopper Subscriptions Manage Payments spec to Playwright and remove the corresponding Puppeteer test.
+* Dev - Optimise memory consumption when formatting log entries.
+* Dev - Port merchant subscription renewal E2E test to Playwright
+* Dev - Refactoring of snackbar checks in Playwright e2e tests
+* Dev - Refresh customer instance with REST API, replace customer creation by new order with anonymous customer
+* Dev - Removed unused get single transaction endpoint
+* Dev - Remove the subscriptions spec for Puppeteer
+* Dev - Restore activated currencies after all tests that deactivate current ones.
 
 = 8.8.0 - 2025-01-15 =
 * Add - Allow transactions filtered by Payment Method.

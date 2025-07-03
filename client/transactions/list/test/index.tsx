@@ -3,33 +3,21 @@
 /**
  * External dependencies
  */
-import * as React from 'react';
+import React from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import user from '@testing-library/user-event';
 import apiFetch from '@wordpress/api-fetch';
-import { dateI18n } from '@wordpress/date';
-import { downloadCSVFile } from '@woocommerce/csv-export';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { useUserPreferences } from '@woocommerce/data';
-import { getUserTimeZone } from 'wcpay/utils/test-utils';
-import moment from 'moment';
-import os from 'os';
+import { PAYMENT_METHOD_BRANDS } from 'wcpay/constants/payment-method';
 
 /**
  * Internal dependencies
  */
-import { TransactionsList } from '../';
-import { useTransactions, useTransactionsSummary } from 'data/index';
+import { getUserTimeZone } from 'jest-utils/timezone';
+import { TransactionsList } from '..';
+import { useTransactions, useTransactionsSummary } from 'data';
 import type { Transaction } from 'data/transactions/hooks';
-
-jest.mock( '@woocommerce/csv-export', () => {
-	const actualModule = jest.requireActual( '@woocommerce/csv-export' );
-
-	return {
-		...actualModule,
-		downloadCSVFile: jest.fn(),
-	};
-} );
 
 jest.mock( '@woocommerce/data', () => {
 	const actualModule = jest.requireActual( '@woocommerce/data' );
@@ -72,10 +60,6 @@ jest.mock( '@wordpress/date', () => ( {
 	} ),
 } ) );
 
-const mockDownloadCSVFile = downloadCSVFile as jest.MockedFunction<
-	typeof downloadCSVFile
->;
-
 const mockApiFetch = apiFetch as jest.MockedFunction< typeof apiFetch >;
 
 const mockUseTransactions = useTransactions as jest.MockedFunction<
@@ -92,6 +76,9 @@ const mockUseUserPreferences = useUserPreferences as jest.MockedFunction<
 
 declare const global: {
 	wcpaySettings: {
+		accountStatus: {
+			country: string;
+		};
 		isSubscriptionsActive: boolean;
 		featureFlags: {
 			customSearch: boolean;
@@ -112,6 +99,7 @@ declare const global: {
 			};
 		};
 	};
+	wooPaymentsPaymentMethodsConfig: Record< string, { title: string } >;
 };
 
 const getMockTransactions: () => Transaction[] = () => [
@@ -120,14 +108,16 @@ const getMockTransactions: () => Transaction[] = () => [
 		transaction_id: 'txn_j23jda9JJa',
 		date: '2020-01-02 17:46:02',
 		type: 'refund',
-		source: 'visa',
+		source: PAYMENT_METHOD_BRANDS.VISA,
 		order: {
-			number: 123,
+			id: 123,
+			number: 'custom-123',
 			url: 'https://example.com/order/123',
 			// eslint-disable-next-line camelcase
 			customer_url: 'https://example.com/customer/my-name',
 			customer_name: '',
 			customer_email: '',
+			ip_address: '127.0.0.1',
 		},
 		channel: 'online',
 		source_identifier: '1234',
@@ -151,14 +141,16 @@ const getMockTransactions: () => Transaction[] = () => [
 		date: '2020-01-05 04:22:59',
 		available_on: '2020-01-07 00:00:00',
 		type: 'charge',
-		source: 'mastercard',
+		source: PAYMENT_METHOD_BRANDS.MASTERCARD,
 		order: {
-			number: 125,
+			id: 123,
+			number: 'custom-125',
 			url: 'https://example.com/order/125',
 			// eslint-disable-next-line camelcase
 			customer_url: 'https://example.com/customer/my-name',
 			customer_name: '',
 			customer_email: '',
+			ip_address: '127.0.0.1',
 		},
 		channel: 'online',
 		source_identifier: '1234',
@@ -182,14 +174,16 @@ const getMockTransactions: () => Transaction[] = () => [
 		transaction_id: 'txn_mmtr89gjh5',
 		date: '2020-01-02 19:55:05',
 		type: 'charge',
-		source: 'visa',
+		source: PAYMENT_METHOD_BRANDS.VISA,
 		order: {
-			number: 335,
+			id: 123,
+			number: 'custom-335',
 			url: 'https://example.com/order/335',
 			// eslint-disable-next-line camelcase
 			customer_url: 'https://example.com/customer/my-name',
 			customer_name: '',
 			customer_email: '',
+			ip_address: '127.0.0.1',
 		},
 		channel: 'in_person',
 		source_identifier: '1234',
@@ -210,18 +204,6 @@ const getMockTransactions: () => Transaction[] = () => [
 	},
 ];
 
-function getUnformattedAmount( formattedAmount: string ) {
-	const amount = formattedAmount.replace( /[^0-9,.' ]/g, '' ).trim();
-	return amount.replace( ',', '.' ); // Euro fix
-}
-
-function formatDate( date: string ) {
-	return dateI18n(
-		'M j, Y / g:iA',
-		moment.utc( date ).local().toISOString()
-	);
-}
-
 describe( 'Transactions list', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
@@ -236,6 +218,9 @@ describe( 'Transactions list', () => {
 		} as any );
 
 		global.wcpaySettings = {
+			accountStatus: {
+				country: 'US',
+			},
 			featureFlags: {
 				customSearch: true,
 			},
@@ -256,6 +241,9 @@ describe( 'Transactions list', () => {
 				},
 			},
 		};
+
+		global.wooPaymentsPaymentMethodsConfig = {};
+
 		window.wcpaySettings.dateFormat = 'M j, Y';
 		window.wcpaySettings.timeFormat = 'g:iA';
 	} );
@@ -447,7 +435,7 @@ describe( 'Transactions list', () => {
 		const mockTransactions = getMockTransactions();
 		mockTransactions[ 0 ].order.subscriptions = [
 			{
-				number: 246,
+				number: 'custom-246',
 				url: 'https://example.com/subscription/246',
 			},
 		];
@@ -601,7 +589,7 @@ describe( 'Transactions list', () => {
 
 			const { getByRole } = render( <TransactionsList /> );
 
-			getByRole( 'button', { name: 'Download' } ).click();
+			getByRole( 'button', { name: 'Export' } ).click();
 
 			expect( window.confirm ).toHaveBeenCalledTimes( 1 );
 			expect( window.confirm ).toHaveBeenCalledWith(
@@ -624,7 +612,7 @@ describe( 'Transactions list', () => {
 
 			const { getByRole } = render( <TransactionsList /> );
 
-			getByRole( 'button', { name: 'Download' } ).click();
+			getByRole( 'button', { name: 'Export' } ).click();
 
 			expect( window.confirm ).toHaveBeenCalledTimes( 1 );
 			expect( window.confirm ).toHaveBeenCalledWith(
@@ -656,7 +644,7 @@ describe( 'Transactions list', () => {
 				<TransactionsList depositId="po_mock" />
 			);
 
-			getByRole( 'button', { name: 'Download' } ).click();
+			getByRole( 'button', { name: 'Export' } ).click();
 
 			await waitFor( () => {
 				expect( mockApiFetch ).toHaveBeenCalledTimes( 1 );
@@ -667,106 +655,6 @@ describe( 'Transactions list', () => {
 					) }&locale=en_US`,
 				} );
 			} );
-		} );
-
-		test( 'should render expected columns in CSV when the download button is clicked', () => {
-			const { getByRole } = render( <TransactionsList /> );
-
-			getByRole( 'button', { name: 'Download' } ).click();
-
-			const expected = [
-				'"Transaction ID"',
-				'"Date / Time (UTC)"',
-				'Type',
-				'Channel',
-				'"Paid Currency"',
-				'"Amount Paid"',
-				'"Payout Currency"',
-				'Amount',
-				'Fees',
-				'Net',
-				'"Order #"',
-				'"Payment Method"',
-				'Customer',
-				'Email',
-				'Country',
-				'"Risk level"',
-				'"Payout ID"',
-				'"Payout date"',
-				'"Payout status"',
-			];
-
-			// checking if columns in CSV are rendered correctly
-			expect(
-				mockDownloadCSVFile.mock.calls[ 0 ][ 1 ]
-					.split( '\n' )[ 0 ]
-					.split( ',' )
-			).toEqual( expected );
-		} );
-
-		test( 'should match the visible rows', () => {
-			const { getByRole, getAllByRole } = render( <TransactionsList /> );
-
-			getByRole( 'button', { name: 'Download' } ).click();
-
-			const csvContent = mockDownloadCSVFile.mock.calls[ 0 ][ 1 ];
-			const csvRows = csvContent.split( os.EOL );
-			const displayRows: HTMLElement[] = getAllByRole( 'row' );
-
-			expect( csvRows.length ).toEqual( displayRows.length );
-
-			const csvFirstTransaction = csvRows[ 1 ].split( ',' );
-			const displayFirstTransaction: string[] = Array.from(
-				displayRows[ 1 ].querySelectorAll( 'td' )
-			).map( ( td: HTMLElement ) => td.textContent || '' );
-
-			// Date/Time column is a th
-			// Extract is separately and prepend to csvFirstTransaction
-			const displayFirstRowHead: string[] = Array.from(
-				displayRows[ 1 ].querySelectorAll( 'th' )
-			).map( ( th: HTMLElement ) => th.textContent || '' );
-			displayFirstTransaction.unshift( displayFirstRowHead[ 0 ] );
-
-			// Note:
-			//
-			// 1. CSV and display indexes are off by 1 because the first field in CSV is transaction id,
-			//    which is missing in display.
-			//
-			// 2. The indexOf check in amount's expect is because the amount in CSV may not contain
-			//    trailing zeros as in the display amount.
-			//
-			expect( displayFirstTransaction[ 0 ] ).toBe(
-				formatDate( csvFirstTransaction[ 1 ].replace( /['"]+/g, '' ) ) // strip extra quotes
-			); // date
-			expect( displayFirstTransaction[ 1 ] ).toBe(
-				csvFirstTransaction[ 2 ]
-			); // type
-			expect( displayFirstTransaction[ 2 ] ).toBe(
-				csvFirstTransaction[ 3 ]
-			); // channel
-			expect(
-				getUnformattedAmount( displayFirstTransaction[ 3 ] ).indexOf(
-					csvFirstTransaction[ 7 ]
-				)
-			).not.toBe( -1 ); // amount
-			expect(
-				-Number( getUnformattedAmount( displayFirstTransaction[ 4 ] ) )
-			).toEqual(
-				Number(
-					csvFirstTransaction[ 8 ].replace( /['"]+/g, '' ) // strip extra quotes
-				)
-			); // fees
-			expect(
-				getUnformattedAmount( displayFirstTransaction[ 5 ] ).indexOf(
-					csvFirstTransaction[ 9 ]
-				)
-			).not.toBe( -1 ); // net
-			expect( displayFirstTransaction[ 6 ] ).toBe(
-				csvFirstTransaction[ 10 ]
-			); // order number
-			expect( displayFirstTransaction[ 8 ] ).toBe(
-				csvFirstTransaction[ 12 ].replace( /['"]+/g, '' ) // strip extra quotes
-			); // customer
 		} );
 	} );
 } );

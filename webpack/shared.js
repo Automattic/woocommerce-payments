@@ -20,11 +20,8 @@ module.exports = {
 			cart: './client/cart/index.js',
 			checkout: './client/checkout/classic/event-handlers.js',
 			'express-checkout': './client/express-checkout/index.js',
-			'tokenized-express-checkout':
-				'./client/tokenized-express-checkout/index.js',
 			'subscription-edit-page': './client/subscription-edit-page.js',
 			tos: './client/tos/index.js',
-			'payment-gateways': './client/payment-gateways/index.js',
 			'multi-currency': './includes/multi-currency/client/index.js',
 			'multi-currency-switcher-block':
 				'./includes/multi-currency/client/blocks/currency-switcher.js',
@@ -41,6 +38,7 @@ module.exports = {
 			'cart-block': './client/cart/blocks/index.js',
 			'plugins-page': './client/plugins-page/index.js',
 			'frontend-tracks': './client/frontend-tracks/index.js',
+			success: './client/success/index.js',
 		},
 		// Override webpack public path dynamically on every entry.
 		// Required for chunks loading to work on sites with JS concatenation.

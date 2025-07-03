@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { render } from '@testing-library/react';
+import { render, act } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -17,47 +17,61 @@ declare const global: {
 	};
 };
 
+jest.mock( '@woocommerce/components', () => ( {
+	TourKit: () => <div data-testid="tour-kit" />,
+} ) );
+
 jest.mock( 'wcpay/data', () => ( {
 	useSettings: jest.fn().mockReturnValue( { isLoading: false } ),
 } ) );
 
 jest.mock( '@wordpress/data', () => ( {
 	useDispatch: jest.fn( () => ( {
-		createNotice: jest.fn(),
 		updateOptions: jest.fn(),
 	} ) ),
 } ) );
 
-jest.mock( '@woocommerce/components', () => ( {
-	TourKit: () => <div>Tour Component</div>,
-} ) );
-
 describe( 'FraudProtectionTour', () => {
+	let mockIntersectionObserver: jest.Mock;
+
 	beforeEach( () => {
 		global.wcpaySettings = {
 			fraudProtection: {
 				isWelcomeTourDismissed: false,
 			},
 		};
-	} );
 
-	afterAll( () => {
 		jest.clearAllMocks();
+
+		mockIntersectionObserver = jest.fn();
+		mockIntersectionObserver.mockReturnValue( {
+			observe: jest.fn(),
+			disconnect: jest.fn(),
+		} );
+		window.IntersectionObserver = mockIntersectionObserver;
 	} );
 
-	it( 'should render the tour component correctly', () => {
-		Reflect.defineProperty( window, 'location', {
-			configurable: true,
-			enumerable: true,
-			value: {
-				search:
-					'?page=wc-settings&tab=checkout&anchor=%23fp-settings&section=woocommerce_payments/',
-			},
+	it( 'should not render the tour component initially', () => {
+		const { queryByTestId } = render( <FraudProtectionTour /> );
+		expect( queryByTestId( 'tour-kit' ) ).not.toBeInTheDocument();
+	} );
+
+	it( 'should render the tour when reference element is visible', () => {
+		const referenceElement = document.createElement( 'div' );
+		referenceElement.id = 'fp-settings';
+		document.body.appendChild( referenceElement );
+
+		const { queryByTestId } = render( <FraudProtectionTour /> );
+
+		// Simulate intersection
+		const [ observerCallback ] = mockIntersectionObserver.mock.calls[ 0 ];
+		act( () => {
+			observerCallback( [ { isIntersecting: true } ] );
 		} );
 
-		const { baseElement } = render( <FraudProtectionTour /> );
+		expect( queryByTestId( 'tour-kit' ) ).toBeInTheDocument();
 
-		expect( baseElement ).toMatchSnapshot();
+		document.body.removeChild( referenceElement );
 	} );
 
 	it( 'should not render the tour component if it was already dismissed', () => {
@@ -67,24 +81,21 @@ describe( 'FraudProtectionTour', () => {
 			},
 		};
 
-		const { baseElement } = render( <FraudProtectionTour /> );
-
-		expect( baseElement ).toMatchSnapshot();
+		const { queryByTestId } = render( <FraudProtectionTour /> );
+		expect( queryByTestId( 'tour-kit' ) ).not.toBeInTheDocument();
 	} );
 
-	it( 'should not render the tour component if settings page accessed directly', () => {
-		Reflect.deleteProperty( window, 'location' );
-		Reflect.defineProperty( window, 'location', {
-			configurable: true,
-			enumerable: true,
-			value: {
-				search:
-					'?page=wc-settings&tab=checkout&section=woocommerce_payments/',
-			},
+	it( 'should not render the tour component if settings are loading', () => {
+		jest.requireMock( 'wcpay/data' ).useSettings.mockReturnValue( {
+			isLoading: true,
 		} );
 
-		const { baseElement } = render( <FraudProtectionTour /> );
+		const { queryByTestId } = render( <FraudProtectionTour /> );
+		expect( queryByTestId( 'tour-kit' ) ).not.toBeInTheDocument();
+	} );
 
-		expect( baseElement ).toMatchSnapshot();
+	it( 'should not render the tour if reference element is not found', () => {
+		const { queryByTestId } = render( <FraudProtectionTour /> );
+		expect( queryByTestId( 'tour-kit' ) ).not.toBeInTheDocument();
 	} );
 } );

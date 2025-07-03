@@ -4,17 +4,18 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { Card, CheckboxControl } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import CardBody from '../card-body';
+import { Card, CheckboxControl } from 'wcpay/components/wp-components-wrapped';
 import GeneralPaymentRequestButtonSettings from './general-payment-request-button-settings';
 import {
 	usePaymentRequestEnabledSettings,
 	usePaymentRequestLocations,
 } from 'wcpay/data';
+import GooglePayTestModeCompatibilityNotice from '../google-pay-test-mode-compatibility-notice';
 
 const PaymentRequestSettings = ( { section } ) => {
 	const [
@@ -44,6 +45,7 @@ const PaymentRequestSettings = ( { section } ) => {
 		<Card>
 			{ section === 'enable' && (
 				<CardBody>
+					<GooglePayTestModeCompatibilityNotice />
 					<CheckboxControl
 						checked={ isPaymentRequestEnabled }
 						onChange={ updateIsPaymentRequestEnabled }

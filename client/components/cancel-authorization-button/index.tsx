@@ -5,7 +5,7 @@
  */
 import React, { useState } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Button } from '@wordpress/components';
+import { Button } from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies
@@ -20,7 +20,9 @@ interface CancelAuthorizationButtonProps {
 	onClick?: () => void;
 }
 
-const CancelAuthorizationButton: React.FC< CancelAuthorizationButtonProps > = ( {
+const CancelAuthorizationButton: React.FC< React.PropsWithChildren<
+	CancelAuthorizationButtonProps
+> > = ( {
 	orderId,
 	children,
 	paymentIntentId,

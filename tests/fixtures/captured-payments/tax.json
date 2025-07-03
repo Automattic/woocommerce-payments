@@ -1,0 +1,66 @@
+{
+  "title": "Event with taxed fees",
+  "capturedEvent": {
+    "type": "captured",
+    "amount": 1501,
+    "amount_captured": 1501,
+    "fee": 94,
+    "fee_rates": {
+      "percentage": 0.035,
+      "fixed": 25,
+      "fixed_currency": "GBP",
+      "history": [
+        {
+          "type": "base",
+          "additional_type": "",
+          "fee_id": "base-gb-card-fee",
+          "percentage_rate": 0.015,
+          "fixed_rate": 25,
+          "currency": "gbp"
+        },
+        {
+          "type": "additional",
+          "additional_type": "international",
+          "fee_id": "additional-gb-intl-fee",
+          "percentage_rate": 0.02,
+          "fixed_rate": 0,
+          "currency": "gbp"
+        }
+      ],
+      "fee_exchange_rate": null,
+      "tax": {
+        "percentage_rate": 0.2,
+        "amount": 16,
+        "currency": "gbp",
+        "description": "GB VAT"
+      },
+      "before_tax": {
+        "amount": 78,
+        "currency": "gbp"
+      }
+    },
+    "currency": "GBP",
+    "datetime": 1748530236,
+    "deposit": null,
+    "transaction_id": "txn_3RU7myCE2s87ucX31ZrUhTfa",
+    "transaction_details": {
+      "customer_currency": "GBP",
+      "customer_amount": 1501,
+      "customer_amount_captured": 1501,
+      "customer_fee": 94,
+      "store_currency": "GBP",
+      "store_amount": 1501,
+      "store_amount_captured": 1501,
+      "store_fee": 94
+    }
+  },
+  "expectation": {
+    "feeString": "Fee (3.5% + £0.25): -£0.78",
+    "feeBreakdown": {
+      "base": "Base fee: 1.5% + £0.25",
+      "additional-international": "International card fee: 2%"
+    },
+    "taxString": "Tax UK VAT (20%): -£0.16",
+    "netString": "Net payout: £14.07 GBP"
+  }
+}

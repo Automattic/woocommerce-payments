@@ -27,6 +27,16 @@ jQuery( async function ( $ ) {
 		return;
 	}
 
+	const { shouldInitializePMME } = window.wcpayStripeSiteMessaging;
+
+	if ( ! shouldInitializePMME ) {
+		const paymentMessageContainer = document.getElementById(
+			'payment-method-message'
+		);
+		paymentMessageContainer.style.setProperty( 'display', 'none' );
+		return;
+	}
+
 	const {
 		productVariations,
 		productId,
@@ -81,7 +91,7 @@ jQuery( async function ( $ ) {
 		if ( totalAmount <= 0 || ! currency ) {
 			return;
 		}
-		bnplPaymentMessageElement.update( { amount: totalAmount, currency } );
+		bnplPaymentMessageElement?.update( { amount: totalAmount, currency } );
 	};
 
 	/**

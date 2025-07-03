@@ -17,7 +17,6 @@ import { getReconnectWpcomTask } from './tasks/reconnect-task';
 import { getUpdateBusinessDetailsTask } from './tasks/update-business-details-task';
 import { CachedDispute } from 'wcpay/types/disputes';
 import { TaskItemProps } from './types';
-import { getAddApmsTask } from './tasks/add-apms-task';
 import { getGoLiveTask } from './tasks/go-live-task';
 import { isInTestModeOnboarding } from 'wcpay/utils';
 
@@ -28,16 +27,16 @@ interface TaskListProps {
 	showUpdateDetailsTask: boolean;
 	wpcomReconnectUrl: string;
 	activeDisputes?: CachedDispute[];
-	enabledPaymentMethods?: string[];
 	showGoLiveTask: boolean;
+	showGetVerifyBankAccountTask: boolean;
 }
 
 export const getTasks = ( {
 	showUpdateDetailsTask,
 	wpcomReconnectUrl,
 	activeDisputes = [],
-	enabledPaymentMethods = [],
 	showGoLiveTask = false,
+	showGetVerifyBankAccountTask = true,
 }: TaskListProps ): TaskItemProps[] => {
 	const {
 		status,
@@ -70,8 +69,6 @@ export const getTasks = ( {
 	};
 
 	const isPoEnabled = progressiveOnboarding?.isEnabled;
-	const isPoComplete = progressiveOnboarding?.isComplete;
-	const isPoInProgress = isPoEnabled && ! isPoComplete;
 	const errorMessages = getErrorMessagesFromRequirements();
 
 	const isUpdateDetailsTaskVisible =
@@ -83,30 +80,27 @@ export const getTasks = ( {
 		// Only show the dispute task if there are disputes due within 7 days.
 		0 < getDisputesDueWithinDays( activeDisputes, 7 ).length;
 
-	const isAddApmsTaskVisible =
-		enabledPaymentMethods?.length === 1 &&
-		detailsSubmitted &&
-		! isPoInProgress;
-
 	const isGoLiveTaskVisible =
 		wcpaySettings.isAccountConnected &&
 		isInTestModeOnboarding( false ) &&
 		showGoLiveTask;
+
+	const isGetVerifyBankAccountTaskVisible =
+		showGetVerifyBankAccountTask && isPoEnabled && detailsSubmitted;
 
 	return [
 		isUpdateDetailsTaskVisible &&
 			getUpdateBusinessDetailsTask(
 				errorMessages,
 				status ?? '',
-				accountLink,
+				accountLink ?? '',
 				Number( currentDeadline ) ?? null,
 				pastDue ?? false,
 				detailsSubmitted ?? true
 			),
 		wpcomReconnectUrl && getReconnectWpcomTask( wpcomReconnectUrl ),
 		isDisputeTaskVisible && getDisputeResolutionTask( activeDisputes ),
-		isPoEnabled && detailsSubmitted && getVerifyBankAccountTask(),
-		isAddApmsTaskVisible && getAddApmsTask(),
+		isGetVerifyBankAccountTaskVisible && getVerifyBankAccountTask(),
 		isGoLiveTaskVisible && getGoLiveTask(),
 	].filter( Boolean );
 };

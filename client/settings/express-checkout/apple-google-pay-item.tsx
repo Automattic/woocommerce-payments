@@ -2,7 +2,10 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Button, CheckboxControl } from '@wordpress/components';
+import {
+	Button,
+	CheckboxControl,
+} from 'wcpay/components/wp-components-wrapped';
 import interpolateComponents from '@automattic/interpolate-components';
 import React, { useContext } from 'react';
 
@@ -11,10 +14,10 @@ import React, { useContext } from 'react';
  */
 import { getPaymentMethodSettingsUrl } from '../../utils';
 import { usePaymentRequestEnabledSettings } from 'wcpay/data';
-import { PaymentRequestEnabledSettingsHook } from './interfaces';
 import { ApplePayIcon, GooglePayIcon } from 'wcpay/payment-methods-icons';
 import DuplicateNotice from 'wcpay/components/duplicate-notice';
 import DuplicatedPaymentMethodsContext from '../settings-manager/duplicated-payment-methods-context';
+import GooglePayTestModeCompatibilityNotice from '../google-pay-test-mode-compatibility-notice';
 
 const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 	const id = 'apple_pay_google_pay';
@@ -22,7 +25,7 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 	const [
 		isPaymentRequestEnabled,
 		updateIsPaymentRequestEnabled,
-	] = usePaymentRequestEnabledSettings() as PaymentRequestEnabledSettingsHook;
+	] = usePaymentRequestEnabledSettings();
 
 	const {
 		duplicates,
@@ -171,6 +174,7 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 					</div>
 				</div>
 			</div>
+			<GooglePayTestModeCompatibilityNotice />
 			{ isDuplicate && (
 				<DuplicateNotice
 					paymentMethod={ id }

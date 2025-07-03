@@ -9,6 +9,8 @@ use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Constants\Order_Status;
 use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Payment_Method;
+use WCPay\Constants\Refund_Status;
+use WCPay\Constants\Refund_Failure_Reason;
 use WCPay\Database_Cache;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
 use WCPay\Exceptions\Invalid_Webhook_Data_Exception;
@@ -31,45 +33,45 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	private $webhook_processing_service;
 
 	/**
-	 * @var WC_Payments_DB|MockObject
+	 * @var WC_Payments_DB&MockObject
 	 */
 	private $mock_db_wrapper;
 
 	/**
-	 * @var WC_Payments_Remote_Note_Service|MockObject
+	 * @var WC_Payments_Remote_Note_Service&MockObject
 	 */
 	private $mock_remote_note_service;
 
 	/**
-	 * @var WC_Payments_Order_Service
+	 * @var WC_Payments_Order_Service&MockObject
 	 */
 	private $order_service;
 
 	/**
 	 * receipt_service
 	 *
-	 * @var WC_Payments_In_Person_Payments_Receipts_Service|MockObject
+	 * @var WC_Payments_In_Person_Payments_Receipts_Service&MockObject
 	 */
 	private $mock_receipt_service;
 
 	/**
 	 * mock_wcpay_gateway
 	 *
-	 * @var WC_Payment_Gateway_WCPay|MockObject
+	 * @var WC_Payment_Gateway_WCPay&MockObject
 	 */
 	private $mock_wcpay_gateway;
 
 	/**
 	 * Mock customer service
 	 *
-	 * @var WC_Payments_Customer_Service|MockObject
+	 * @var WC_Payments_Customer_Service&MockObject
 	 */
 	private $mock_customer_service;
 
 	/**
 	 * Mock database cache
 	 *
-	 * @var Database_Cache
+	 * @var Database_Cache&MockObject
 	 */
 	private $mock_database_cache;
 
@@ -79,9 +81,14 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	private $event_body;
 
 	/**
-	 * @var WC_Order
+	 * @var WC_Order&MockObject
 	 */
 	private $mock_order;
+
+	/**
+	 * @var WC_Payments_API_Client&MockObject
+	 */
+	private $mock_api_client;
 
 	/**
 	 * Pre-test setup
@@ -94,16 +101,23 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->disableOriginalConstructor()
 			->getMock();
 
-		$mock_wcpay_account = $this->createMock( WC_Payments_Account::class );
-
 		$this->order_service = $this->getMockBuilder( 'WC_Payments_Order_Service' )
 			->setConstructorArgs( [ $this->createMock( WC_Payments_API_Client::class ) ] )
-			->setMethods( [ 'get_wcpay_refund_id_for_order', 'add_note_and_metadata_for_refund', 'create_refund_for_order', 'mark_terminal_payment_failed' ] )
+			->onlyMethods(
+				[
+					'get_wcpay_refund_id_for_order',
+					'add_note_and_metadata_for_created_refund',
+					'create_refund_for_order',
+					'mark_terminal_payment_failed',
+					'handle_insufficient_balance_for_refund',
+					'handle_failed_refund',
+				]
+			)
 			->getMock();
 
 		$this->mock_db_wrapper = $this->getMockBuilder( WC_Payments_DB::class )
 			->disableOriginalConstructor()
-			->setMethods( [ 'order_from_charge_id', 'order_from_intent_id', 'order_from_order_id' ] )
+			->onlyMethods( [ 'order_from_charge_id', 'order_from_intent_id', 'order_from_order_id' ] )
 			->getMock();
 
 		$this->mock_remote_note_service = $this->createMock( WC_Payments_Remote_Note_Service::class );
@@ -116,7 +130,17 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_database_cache = $this->createMock( Database_Cache::class );
 
-		$this->webhook_processing_service = new WC_Payments_Webhook_Processing_Service( $this->mock_api_client, $this->mock_db_wrapper, $mock_wcpay_account, $this->mock_remote_note_service, $this->order_service, $this->mock_receipt_service, $this->mock_wcpay_gateway, $this->mock_customer_service, $this->mock_database_cache );
+		$this->webhook_processing_service = new WC_Payments_Webhook_Processing_Service(
+			$this->mock_api_client,
+			$this->mock_db_wrapper,
+			$this->createMock( WC_Payments_Account::class ),
+			$this->mock_remote_note_service,
+			$this->order_service,
+			$this->mock_receipt_service,
+			$this->mock_wcpay_gateway,
+			$this->mock_customer_service,
+			$this->mock_database_cache
+		);
 
 		// Build the event body data.
 		$event_object = [];
@@ -124,7 +148,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 		$event_data           = [];
 		$event_data['object'] = $event_object;
 
-		$this->event_body         = [];
+		$this->event_body         = [ 'id' => uniqid( 'evt_' ) ];
 		$this->event_body['data'] = $event_data;
 
 		$this->mock_order = $this->createMock( WC_Order::class );
@@ -132,7 +156,6 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->expects( $this->any() )
 			->method( 'get_id' )
 			->willReturn( 1234 );
-
 		WC_Payments::mode()->live();
 	}
 
@@ -168,7 +191,6 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_webhook_with_test_event_and_live_gateway() {
 		$this->event_body['type']     = 'wcpay.notification';
-		$this->event_body['id']       = 'testID';
 		$this->event_body['livemode'] = false;
 		$this->event_body['data']     = [
 			'title'   => 'test',
@@ -193,7 +215,6 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_webhook_with_live_event_and_test_gateway() {
 		$this->event_body['type']     = 'wcpay.notification';
-		$this->event_body['id']       = 'testID';
 		$this->event_body['livemode'] = true;
 		$this->event_body['data']     = [
 			'title'   => 'test',
@@ -249,9 +270,9 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Test a valid refund sets failed meta.
+	 * Test a failed refund without matched WC Refunds.
 	 */
-	public function test_valid_failed_refund_webhook_sets_failed_meta() {
+	public function test_failed_refund_update_webhook_without_matched_wc_refund() {
 		// Setup test request data.
 		$this->event_body['type']           = 'charge.refund.updated';
 		$this->event_body['livemode']       = true;
@@ -263,36 +284,25 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'currency' => 'gbp',
 		];
 
-		$this->mock_order->method( 'get_currency' )->willReturn( 'GBP' );
-
-		$this->mock_order
-			->expects( $this->once() )
-			->method( 'add_order_note' )
-			->with(
-				'A refund of <span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&pound;</span>9.99</bdi></span> was <strong>unsuccessful</strong> using WooPayments (<code>test_refund_id</code>).'
-			);
-
-		// The expects condition here is the real test; we expect that the 'update_meta_data' function
-		// is called with the appropriate values.
-		$this->mock_order
-			->expects( $this->once() )
-			->method( 'update_meta_data' )
-			->with( '_wcpay_refund_status', 'failed' );
-
 		$this->mock_db_wrapper
 			->expects( $this->once() )
 			->method( 'order_from_charge_id' )
 			->with( 'test_charge_id' )
 			->willReturn( $this->mock_order );
 
+		$this->order_service
+			->expects( $this->once() )
+			->method( 'handle_failed_refund' )
+			->with( $this->mock_order, 'test_refund_id', 999, 'gbp', null );
+
 		// Run the test.
 		$this->webhook_processing_service->process( $this->event_body );
 	}
 
 	/**
-	 * Test a vaild refund failure deletes WooCommerce Refund.
+	 * Test a failed refund with matched WC Refunds.
 	 */
-	public function test_valid_failed_refund_webhook_deletes_wc_refund() {
+	public function test_failed_refund_update_webhook_with_matched_wc_refund() {
 		// Setup test request data.
 		$this->event_body['type']           = 'charge.refund.updated';
 		$this->event_body['livemode']       = true;
@@ -330,38 +340,119 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->with( 'test_charge_id' )
 			->willReturn( $this->mock_order );
 
-		$mock_refund_1
-			->expects( $this->never() )
-			->method( 'delete' );
-
-		$mock_refund_2
+		$this->order_service
 			->expects( $this->once() )
-			->method( 'delete' );
+			->method( 'handle_failed_refund' )
+			->with( $this->mock_order, 'test_refund_id', 999, 'usd', $mock_refund_2 );
 
 		// Run the test.
 		$this->webhook_processing_service->process( $this->event_body );
 	}
 
 	/**
-	 * Test a valid refund does not set failed meta.
+	 * Test a refund update with status `cancelled`
 	 */
-	public function test_non_failed_refund_update_webhook_does_not_set_failed_meta() {
+	public function test_cancelled_refund_update_webhook_with_matched_wc_refund() {
 		// Setup test request data.
 		$this->event_body['type']           = 'charge.refund.updated';
 		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
-			'status' => 'success',
+			'status'   => Refund_Status::CANCELED,
+			'charge'   => 'test_charge_id',
+			'id'       => 'test_refund_id',
+			'amount'   => 999,
+			'currency' => 'usd',
+		];
+
+		$mock_refund_1 = $this->createMock( WC_Order_Refund::class );
+		$mock_refund_2 = $this->createMock( WC_Order_Refund::class );
+		$this->order_service
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_wcpay_refund_id_for_order' )
+			->withConsecutive(
+				[ $mock_refund_1 ],
+				[ $mock_refund_2 ]
+			)->willReturnOnConsecutiveCalls(
+				'another_test_refund_id',
+				'test_refund_id'
+			);
+
+		$this->mock_order->method( 'get_refunds' )->willReturn(
+			[
+				$mock_refund_1,
+				$mock_refund_2,
+			]
+		);
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $this->mock_order );
+
+		$this->order_service
+			->expects( $this->once() )
+			->method( 'handle_failed_refund' )
+			->with( $this->mock_order, 'test_refund_id', 999, 'usd', $mock_refund_2, true );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Test a failed refund update webhook with insufficient funds.
+	 */
+	public function test_failed_refund_update_webhook_with_insufficient_funds() {
+		// Setup test request data.
+		$this->event_body['type']           = 'charge.refund.updated';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'status'         => 'failed',
+			'charge'         => 'charge_id',
+			'id'             => 'test_refund_id',
+			'amount'         => 999,
+			'currency'       => 'gbp',
+			'failure_reason' => 'insufficient_funds',
 		];
 
 		$this->mock_db_wrapper
-			->expects( $this->never() )
-			->method( 'order_from_charge_id' );
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'charge_id' )
+			->willReturn( $this->mock_order );
 
-		// The expects condition here is the real test; we expect that the 'update_meta_data' function
-		// is never called to update the meta data.
-		$this->mock_order
+		$this->order_service
+			->expects( $this->once() )
+			->method( 'handle_failed_refund' )
+			->with( $this->mock_order, 'test_refund_id', 999, 'gbp', null, false, 'insufficient_funds' );
+
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Test a refund does not set failed meta.
+	 */
+	public function test_succeeded_refund_update_webhook_without_matched_wc_refund() {
+		// Setup test request data.
+		$this->event_body['type']           = 'charge.refund.updated';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'status'   => Refund_Status::SUCCEEDED,
+			'charge'   => 'test_charge_id',
+			'id'       => 'test_refund_id',
+			'amount'   => 999,
+			'currency' => 'usd',
+		];
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $this->mock_order );
+
+		$this->order_service
 			->expects( $this->never() )
-			->method( 'update_meta_data' );
+			->method( 'add_note_and_metadata_for_created_refund' );
 
 		// Run the test.
 		$this->webhook_processing_service->process( $this->event_body );
@@ -370,58 +461,38 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Test a valid failed refund update webhook.
 	 */
-	public function test_valid_failed_refund_update_webhook() {
+	public function test_succeeded_refund_update_webhook_with_matched_wc_refund() {
 		// Setup test request data.
 		$this->event_body['type']           = 'charge.refund.updated';
 		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
-			'status'   => 'failed',
-			'charge'   => 'test_charge_id',
-			'id'       => 'test_refund_id',
-			'amount'   => 999,
-			'currency' => 'gbp',
+			'status'              => 'succeeded',
+			'charge'              => 'test_charge_id',
+			'id'                  => 'test_refund_id',
+			'amount'              => 999,
+			'currency'            => 'usd',
+			'balance_transaction' => 'txn_balance_transaction',
 		];
 
-		$this->mock_order->method( 'get_currency' )->willReturn( 'GBP' );
-
-		$this->mock_order
-			->expects( $this->once() )
-			->method( 'add_order_note' )
-			->with(
-				'A refund of <span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&pound;</span>9.99</bdi></span> was <strong>unsuccessful</strong> using WooPayments (<code>test_refund_id</code>).'
+		$mock_refund_1 = $this->createMock( WC_Order_Refund::class );
+		$mock_refund_2 = $this->createMock( WC_Order_Refund::class );
+		$this->order_service
+			->expects( $this->exactly( 2 ) )
+			->method( 'get_wcpay_refund_id_for_order' )
+			->withConsecutive(
+				[ $mock_refund_1 ],
+				[ $mock_refund_2 ]
+			)->willReturnOnConsecutiveCalls(
+				'another_test_refund_id',
+				'test_refund_id'
 			);
 
-		$this->mock_db_wrapper
-			->expects( $this->once() )
-			->method( 'order_from_charge_id' )
-			->with( 'test_charge_id' )
-			->willReturn( $this->mock_order );
-
-		// Run the test.
-		$this->webhook_processing_service->process( $this->event_body );
-	}
-
-	/**
-	 * Test a valid failed refund update webhook for non-USD.
-	 */
-	public function test_valid_failed_refund_update_webhook_non_usd() {
-		// Setup test request data.
-		$this->event_body['type']           = 'charge.refund.updated';
-		$this->event_body['livemode']       = true;
-		$this->event_body['data']['object'] = [
-			'status'   => 'failed',
-			'charge'   => 'test_charge_id',
-			'id'       => 'test_refund_id',
-			'amount'   => 999,
-			'currency' => 'eur',
-		];
-
-		$this->mock_order->method( 'get_currency' )->willReturn( 'GBP' );
-
-		$this->mock_order
-			->expects( $this->once() )
-			->method( 'add_order_note' )
-			->with( 'A refund of <span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&euro;</span>9.99</bdi></span> was <strong>unsuccessful</strong> using WooPayments (<code>test_refund_id</code>).' );
+		$this->mock_order->method( 'get_refunds' )->willReturn(
+			[
+				$mock_refund_1,
+				$mock_refund_2,
+			]
+		);
 
 		$this->mock_db_wrapper
 			->expects( $this->once() )
@@ -429,46 +500,19 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->with( 'test_charge_id' )
 			->willReturn( $this->mock_order );
 
-		// Run the test.
-		$this->webhook_processing_service->process( $this->event_body );
-	}
-
-	/**
-	 * Test a valid failed refund update webhook for zero decimal currency.
-	 */
-	public function test_valid_failed_refund_update_webhook_zero_decimal_currency() {
-		// Setup test request data.
-		$this->event_body['type']           = 'charge.refund.updated';
-		$this->event_body['livemode']       = true;
-		$this->event_body['data']['object'] = [
-			'status'   => 'failed',
-			'charge'   => 'test_charge_id',
-			'id'       => 'test_refund_id',
-			'amount'   => 999,
-			'currency' => 'jpy',
-		];
-
-		$this->mock_order->method( 'get_currency' )->willReturn( 'GBP' );
-
-		$this->mock_order
+		$this->order_service
 			->expects( $this->once() )
-			->method( 'add_order_note' )
-			->with( 'A refund of <span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&yen;</span>999.00</bdi></span> was <strong>unsuccessful</strong> using WooPayments (<code>test_refund_id</code>).' );
-
-		$this->mock_db_wrapper
-			->expects( $this->once() )
-			->method( 'order_from_charge_id' )
-			->with( 'test_charge_id' )
-			->willReturn( $this->mock_order );
+			->method( 'add_note_and_metadata_for_created_refund' )
+			->with( $this->mock_order, $mock_refund_2, 'test_refund_id', 'txn_balance_transaction' );
 
 		// Run the test.
 		$this->webhook_processing_service->process( $this->event_body );
 	}
 
 	/**
-	 * Test a valid failed refund update webhook with an unknown charge ID.
+	 * Test a failed refund update webhook with an unknown charge ID.
 	 */
-	public function test_valid_failed_refund_update_webhook_with_unknown_charge_id() {
+	public function test_failed_refund_update_webhook_with_unknown_charge_id() {
 		// Setup test request data.
 		$this->event_body['type']           = 'charge.refund.updated';
 		$this->event_body['livemode']       = true;
@@ -494,22 +538,28 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Test a valid non-failed refund update webhook
+	 * Test an invalid status refund update webhook
 	 */
-	public function test_non_failed_refund_update_webhook() {
+	public function test_invalid_status_refund_update_webhook_throws_exceptions() {
 		// Setup test request data.
 		$this->event_body['type']           = 'charge.refund.updated';
 		$this->event_body['livemode']       = true;
 		$this->event_body['data']['object'] = [
-			'status' => 'updated',
-			'charge' => 'test_charge_id',
-			'id'     => 'test_refund_id',
-			'amount' => 999,
+			'status'   => 'invalid_status',
+			'charge'   => 'test_charge_id',
+			'id'       => 'test_refund_id',
+			'amount'   => 999,
+			'currency' => 'gbp',
 		];
 
 		$this->mock_db_wrapper
-			->expects( $this->never() )
-			->method( 'order_from_charge_id' );
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $this->mock_order );
+
+		$this->expectException( Invalid_Webhook_Data_Exception::class );
+		$this->expectExceptionMessage( 'Invalid refund update status: invalid_status' );
 
 		// Run the test.
 		$this->webhook_processing_service->process( $this->event_body );
@@ -647,6 +697,108 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				[ '_payment_method_id', $payment_method_id ],
 				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, $currency ],
 				[ '_intention_status', $intent_status ]
+			);
+
+		$this->mock_order
+			->expects( $this->exactly( 2 ) )
+			->method( 'save' );
+
+			$this->mock_order
+				->method( 'get_total' )
+				->willReturn( 15.00 );
+
+		$this->mock_order
+			->expects( $this->exactly( 2 ) )
+			->method( 'has_status' )
+			->with(
+				[
+					Order_Status::PROCESSING,
+					Order_Status::COMPLETED,
+				]
+			)
+			->willReturn( false );
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'payment_complete' );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $this->mock_order );
+
+		$this->mock_order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
+
+		$this->mock_order
+			->method( 'get_meta' )
+			->willReturn( '' );
+
+		$this->mock_receipt_service
+			->expects( $this->never() )
+			->method( 'send_customer_ipp_receipt_email' );
+
+		$this->mock_wcpay_gateway
+			->expects( $this->never() )
+			->method( 'get_option' );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that a payment_intent.succeeded event will add relevant metadata.
+	 */
+	public function test_payment_intent_successful_adds_relevant_metadata() {
+		$this->event_body['type']           = 'payment_intent.succeeded';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'       => $id            = 'pi_123123123123123', // payment_intent's ID.
+			'object'   => 'payment_intent',
+			'amount'   => 1500,
+			'charges'  => [
+				'data' => [
+					[
+						'id'                     => $charge_id         = 'py_123123123123123',
+						'payment_method'         => $payment_method_id = 'pm_foo',
+						'payment_method_details' => [
+							'type' => 'card',
+						],
+						'application_fee_amount' => 100,
+					],
+				],
+			],
+			'currency' => $currency      = 'eur',
+			'status'   => $intent_status = Intent_Status::SUCCEEDED,
+			'metadata' => [],
+		];
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'deserialize_payment_intention_object_from_array' )
+			->with( $this->event_body['data']['object'] )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'status'                 => $intent_status,
+						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
+					]
+				)
+			);
+
+		$this->mock_order
+			->expects( $this->exactly( 7 ) )
+			->method( 'update_meta_data' )
+			->withConsecutive(
+				[ '_intent_id', $id ],
+				[ '_charge_id', $charge_id ],
+				[ '_payment_method_id', $payment_method_id ],
+				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, $currency ],
+				[ '_wcpay_transaction_fee', 1.0 ],
+				[ '_wcpay_net', 14.00 ],
+				[ '_intention_status', $intent_status ],
 			);
 
 		$this->mock_order
@@ -1436,6 +1588,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				'data' => [
 					[
 						'id'                  => 'test_refund_id',
+						'status'              => Refund_Status::SUCCEEDED,
 						'amount'              => 1800,
 						'currency'            => 'usd',
 						'reason'              => 'requested_by_customer',
@@ -1477,7 +1630,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->order_service
 			->expects( $this->once() )
-			->method( 'add_note_and_metadata_for_refund' )
+			->method( 'add_note_and_metadata_for_created_refund' )
 			->with( $this->mock_order, $mock_refund, 'test_refund_id', 'txn_123' );
 
 		$this->webhook_processing_service->process( $this->event_body );
@@ -1492,6 +1645,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				'data' => [
 					[
 						'id'                  => 'test_refund_id',
+						'status'              => Refund_Status::SUCCEEDED,
 						'amount'              => 900,
 						'currency'            => 'usd',
 						'reason'              => 'requested_by_customer',
@@ -1524,7 +1678,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->order_service
 			->expects( $this->once() )
-			->method( 'add_note_and_metadata_for_refund' )
+			->method( 'add_note_and_metadata_for_created_refund' )
 			->with( $this->mock_order, $mock_refund, 'test_refund_id', 'txn_123' );
 
 		$this->webhook_processing_service->process( $this->event_body );
@@ -1585,7 +1739,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->order_service
 			->expects( $this->never() )
-			->method( 'add_note_and_metadata_for_refund' );
+			->method( 'add_note_and_metadata_for_created_refund' );
 
 		$this->webhook_processing_service->process( $this->event_body );
 	}
@@ -1599,7 +1753,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->order_service
 			->expects( $this->never() )
-			->method( 'add_note_and_metadata_for_refund' );
+			->method( 'add_note_and_metadata_for_created_refund' );
 
 		$this->webhook_processing_service->process( $this->event_body );
 	}
@@ -1630,7 +1784,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->order_service
 			->expects( $this->never() )
-			->method( 'add_note_and_metadata_for_refund' );
+			->method( 'add_note_and_metadata_for_created_refund' );
 	}
 
 	public function test_process_refund_throws_when_order_not_found(): void {
@@ -1817,6 +1971,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_payment_intent_failed_handles_terminal_payment() {
 		$this->event_body = [
+			'id'       => uniqid( 'evt_' ),
 			'type'     => 'payment_intent.payment_failed',
 			'livemode' => true,
 			'data'     => [
@@ -1861,5 +2016,76 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			);
 
 		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * @dataProvider refund_failure_reason_data_provider
+	 */
+	public function test_process_webhook_refund_updated_handles_different_failure_reasons( string $failure_reason ): void {
+		$this->event_body['type']           = 'charge.refund.updated';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'status'         => 'failed',
+			'charge'         => 'test_charge_id',
+			'id'             => 'test_refund_id',
+			'amount'         => 1999,
+			'currency'       => 'usd',
+			'failure_reason' => $failure_reason,
+		];
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_charge_id' )
+			->with( 'test_charge_id' )
+			->willReturn( $this->mock_order );
+
+		$this->order_service
+			->expects( $this->once() )
+			->method( 'handle_failed_refund' )
+			->with(
+				$this->mock_order,
+				'test_refund_id',
+				1999,
+				'usd',
+				null,
+				false,
+				$failure_reason
+			);
+
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Data provider for refund failure reason tests.
+	 *
+	 * @return array
+	 */
+	public function refund_failure_reason_data_provider(): array {
+		return [
+			'insufficient_funds'  => [
+				Refund_Failure_Reason::INSUFFICIENT_FUNDS,
+				'Insufficient funds to process the refund',
+			],
+			'declined'            => [
+				Refund_Failure_Reason::DECLINED,
+				'The refund was declined',
+			],
+			'expired_card'        => [
+				Refund_Failure_Reason::EXPIRED_OR_CANCELED_CARD,
+				'The card used for the original payment has expired or been canceled',
+			],
+			'lost_or_stolen_card' => [
+				Refund_Failure_Reason::LOST_OR_STOLEN_CARD,
+				'The card used for the original payment was reported as lost or stolen',
+			],
+			'merchant_request'    => [
+				Refund_Failure_Reason::MERCHANT_REQUEST,
+				'The refund was canceled at your request',
+			],
+			'unknown'             => [
+				Refund_Failure_Reason::UNKNOWN,
+				'An unknown error occurred while processing the refund',
+			],
+		];
 	}
 }

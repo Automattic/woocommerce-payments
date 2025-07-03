@@ -13,7 +13,7 @@ import {
 	getExpressCheckoutButtonStyleSettings,
 	getExpressCheckoutData,
 	normalizeLineItems,
-} from 'wcpay/express-checkout/utils';
+} from '../../utils';
 import {
 	onAbortPaymentHandler,
 	onCancelHandler,
@@ -21,7 +21,8 @@ import {
 	onCompletePaymentHandler,
 	onConfirmHandler,
 	onReadyHandler,
-} from 'wcpay/express-checkout/event-handlers';
+} from '../../event-handlers';
+import { SHIPPING_RATES_UPPER_LIMIT_COUNT } from 'wcpay/express-checkout/constants';
 
 export const useExpressCheckout = ( {
 	api,
@@ -68,15 +69,15 @@ export const useExpressCheckout = ( {
 					0;
 
 				if ( hasValidRates ) {
-					shippingRates = shippingData.shippingRates[ 0 ].shipping_rates.map(
-						( rate ) => {
+					shippingRates = shippingData.shippingRates[ 0 ].shipping_rates
+						.map( ( rate ) => {
 							return {
 								id: rate.rate_id,
 								amount: parseInt( rate.price, 10 ),
 								displayName: rate.name,
 							};
-						}
-					);
+						} )
+						.slice( 0, SHIPPING_RATES_UPPER_LIMIT_COUNT );
 				} else {
 					shippingRates = [
 						{
@@ -91,8 +92,25 @@ export const useExpressCheckout = ( {
 				}
 			}
 
+			const lineItems = normalizeLineItems( billing.cartTotalItems );
+			const totalAmountOfLineItems = lineItems.reduce(
+				( acc, lineItem ) => acc + lineItem.amount,
+				0
+			);
+
 			const options = {
-				lineItems: normalizeLineItems( billing?.cartTotalItems ),
+				business: {
+					name: getExpressCheckoutData( 'store_name' ),
+				},
+				// if the `billing.cartTotal.value` is less than the total of `lineItems`, Stripe throws an error
+				// it can sometimes happen that the total is _slightly_ less, due to rounding errors on individual items/taxes/shipping
+				// (or with the `woocommerce_tax_round_at_subtotal` setting).
+				// if that happens, let's just not return any of the line items.
+				// This way, just the total amount will be displayed to the customer.
+				lineItems:
+					billing.cartTotal.value < totalAmountOfLineItems
+						? []
+						: lineItems,
 				emailRequired: true,
 				shippingAddressRequired,
 				phoneNumberRequired:
@@ -112,6 +130,7 @@ export const useExpressCheckout = ( {
 		[
 			onClick,
 			billing.cartTotalItems,
+			billing.cartTotal.value,
 			shippingData.needsShipping,
 			shippingData.shippingRates,
 		]
@@ -124,7 +143,12 @@ export const useExpressCheckout = ( {
 			elements,
 			completePayment,
 			abortPayment,
-			event
+			{
+				...event,
+				order_comments: wp?.data
+					?.select( 'wc/store/checkout' )
+					?.getOrderNotes(),
+			}
 		);
 	};
 

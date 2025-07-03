@@ -1,7 +1,7 @@
 body.wcpay-onboarding__body {
 	background-color: #fff;
 
-	.wcpay-onboarding-prototype {
+	.wcpay-onboarding-mox {
 		a {
 			text-decoration: none;
 		}
@@ -80,8 +80,13 @@ body.wcpay-onboarding__body {
 				line-height: 24px;
 				font-weight: 400;
 				text-align: center;
+				text-wrap: wrap;
 				color: $studio-gray-60;
 				margin: $gap-small 0 $gap-largest;
+
+				@media screen and ( max-width: $break-small ) {
+					text-wrap: balance;
+				}
 			}
 
 			&__content {
@@ -160,6 +165,16 @@ body.wcpay-onboarding__body {
 					width: auto;
 					padding-top: 0;
 				}
+			}
+		}
+
+		.wcpay-banner-notice--embedded-kyc {
+			&.is-warning {
+				background-color: lighten( $alert-yellow, 35% );
+			}
+
+			&.is-error {
+				background-color: lighten( $alert-red, 35% );
 			}
 		}
 

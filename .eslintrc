@@ -21,8 +21,7 @@
 		"wcpaySettings": true,
 		"page": true,
 		"browser": true,
-		"context": true,
-		"jestPuppeteer": true
+		"context": true
 	},
 	"settings": {
 		"react": {
@@ -32,7 +31,7 @@
 			"typescript": {}
 		}
 	},
-	"ignorePatterns": [ "docs/rest-api/source/**/*.js" ],
+	"ignorePatterns": [ "docs/rest-api/source/**/*.js", "playwright-report/**/*.js" ],
 	"rules": {
 		"camelcase": [
 			"error",
@@ -103,6 +102,10 @@
 			{
 				"selector": "ImportDeclaration[source.value=/gridicons(?!\\u002F)/]",
 				"message": "Do not import whole Gridicons, import them individually with 'gridicons/dist/icon-name'."
+			},
+			{
+				"selector": "ImportDeclaration[source.value='@wordpress/components']",
+				"message": "Do not import from '@wordpress/components' directly. Use components from 'wcpay/components/wp-components-wrapped' instead."
 			}
 		]
 	},
