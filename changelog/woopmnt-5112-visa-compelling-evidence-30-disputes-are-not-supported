@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Remove options to challenge Visa compliance and Visa compelling evidence disputes, as both flows are not supported by the plugin.
