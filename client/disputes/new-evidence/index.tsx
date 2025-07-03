@@ -7,7 +7,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import apiFetch from '@wordpress/api-fetch';
 import { __, sprintf } from '@wordpress/i18n';
 import { useDispatch } from '@wordpress/data';
-import { chevronLeft, chevronRight } from '@wordpress/icons';
+import { chevronLeft, chevronRight, info } from '@wordpress/icons';
 
 /**
  * Internal dependencies.
@@ -37,7 +37,11 @@ import RecommendedDocuments from './recommended-documents';
 import InlineNotice from 'components/inline-notice';
 import ShippingDetails from './shipping-details';
 import CoverLetter from './cover-letter';
-import { Button, HorizontalRule } from 'wcpay/components/wp-components-wrapped';
+import {
+	Button,
+	HorizontalRule,
+	Icon,
+} from 'wcpay/components/wp-components-wrapped';
 import { getAdminUrl } from 'wcpay/utils';
 import { StepperPanel } from 'wcpay/components/stepper';
 import {
@@ -104,145 +108,147 @@ function needsShipping( reason: string | undefined ) {
 const ConfirmationScreen = ( { query }: { query: { id: string } } ) => {
 	return (
 		<div className="wcpay-dispute-evidence-confirmation">
-			<div className="wcpay-dispute-evidence-confirmation__content">
-				{ /* Success illustration */ }
-				<div className="wcpay-dispute-evidence-confirmation__illustration">
-					<img
-						src={ DisputeEvidenceSubmittedIllustration }
-						alt={ __(
-							'Evidence submitted successfully',
-							'woocommerce-payments'
-						) }
-						className="wcpay-dispute-evidence-confirmation__illustration-image"
-					/>
-				</div>
-
-				{ /* Main success message */ }
-				<h2 className="wcpay-dispute-evidence-confirmation__title">
-					{ __(
-						"You did it! The form is in the bank's hands",
-						'woocommerce-payments'
-					) }
-				</h2>
-
-				<p className="wcpay-dispute-evidence-confirmation__subtitle">
-					{ __(
-						'Thank you for taking the time and submitting the dispute.',
-						'woocommerce-payments'
-					) }
-				</p>
-
-				{ /* What's next section */ }
-				<div className="wcpay-dispute-evidence-confirmation__next-steps">
-					<h3>{ __( "What's next?", 'woocommerce-payments' ) }</h3>
-					<ul>
-						<li>
-							{ __(
-								"It might take a few days for the cardholder's bank to review your dispute",
+			<div className="wcpay-dispute-evidence-confirmation__wrapper">
+				<div className="wcpay-dispute-evidence-confirmation__content">
+					{ /* Success illustration */ }
+					<div className="wcpay-dispute-evidence-confirmation__illustration">
+						<img
+							src={ DisputeEvidenceSubmittedIllustration }
+							alt={ __(
+								'Evidence submitted successfully',
 								'woocommerce-payments'
 							) }
-						</li>
-						<li>
-							{ createInterpolateElement(
-								__(
-									"Once reviewed, you'll receive an email or you can check back regularly on <disputesPageLink>Disputes page</disputesPageLink>",
-									'woocommerce-payments'
-								),
-								{
-									disputesPageLink: (
-										<a
-											href={ getAdminUrl( {
-												page: 'wc-admin',
-												path: '/payments/disputes',
-											} ) }
-										>
-											{ __(
-												'Disputes page',
-												'woocommerce-payments'
-											) }
-										</a>
-									),
-								}
-							) }
-						</li>
-						<li>
-							{ createInterpolateElement(
-								__(
-									'Still unsure or need more information? <learnMoreLink>Learn more about disputes</learnMoreLink>',
-									'woocommerce-payments'
-								),
-								{
-									learnMoreLink: (
-										<a
-											href="https://woocommerce.com/document/payments/disputes/"
-											target="_blank"
-											rel="noopener noreferrer"
-										>
-											{ __(
-												'Learn more about disputes',
-												'woocommerce-payments'
-											) }
-										</a>
-									),
-								}
-							) }
-						</li>
-					</ul>
-				</div>
-
-				{ /* Important notice */ }
-				<div className="wcpay-dispute-evidence-confirmation__notice">
-					<div className="wcpay-dispute-evidence-confirmation__notice-icon">
-						<span role="img" aria-label="Information">
-							ℹ️
-						</span>
+							className="wcpay-dispute-evidence-confirmation__illustration-image"
+						/>
 					</div>
-					<div className="wcpay-dispute-evidence-confirmation__notice-content">
-						<strong>
+
+					{ /* Main success message */ }
+					<h2 className="wcpay-dispute-evidence-confirmation__title">
+						{ __(
+							"You did it! The form is in the bank's hands",
+							'woocommerce-payments'
+						) }
+					</h2>
+
+					<p className="wcpay-dispute-evidence-confirmation__subtitle">
+						{ __(
+							'Thank you for taking the time and submitting the dispute.',
+							'woocommerce-payments'
+						) }
+					</p>
+
+					{ /* What's next section */ }
+					<div className="wcpay-dispute-evidence-confirmation__next-steps">
+						<h3>
+							{ __( "What's next?", 'woocommerce-payments' ) }
+						</h3>
+						<ul>
+							<li>
+								{ __(
+									"It might take a few days for the cardholder's bank to review your dispute",
+									'woocommerce-payments'
+								) }
+							</li>
+							<li>
+								{ createInterpolateElement(
+									__(
+										"Once reviewed, you'll receive an email or you can check back regularly on <disputesPageLink>Disputes page</disputesPageLink>",
+										'woocommerce-payments'
+									),
+									{
+										disputesPageLink: (
+											<a
+												href={ getAdminUrl( {
+													page: 'wc-admin',
+													path: '/payments/disputes',
+												} ) }
+											>
+												{ __(
+													'Disputes page',
+													'woocommerce-payments'
+												) }
+											</a>
+										),
+									}
+								) }
+							</li>
+							<li>
+								{ createInterpolateElement(
+									__(
+										'Still unsure or need more information? <learnMoreLink>Learn more about disputes</learnMoreLink>',
+										'woocommerce-payments'
+									),
+									{
+										learnMoreLink: (
+											<a
+												href="https://woocommerce.com/document/payments/disputes/"
+												target="_blank"
+												rel="noopener noreferrer"
+											>
+												{ __(
+													'Learn more about disputes',
+													'woocommerce-payments'
+												) }
+											</a>
+										),
+									}
+								) }
+							</li>
+						</ul>
+					</div>
+
+					{ /* Important notice */ }
+					<div className="wcpay-dispute-evidence-confirmation__notice">
+						<div className="wcpay-dispute-evidence-confirmation__notice-icon">
+							<Icon icon={ info } />
+						</div>
+						<div className="wcpay-dispute-evidence-confirmation__notice-content">
+							<strong>
+								{ __(
+									'The outcome of this dispute will be determined by Chase.',
+									'woocommerce-payments'
+								) }
+							</strong>
+							<br />
 							{ __(
-								'The outcome of this dispute will be determined by Chase.',
+								'WooPayments has no influence over the decision and is not liable for any chargebacks.',
 								'woocommerce-payments'
 							) }
-						</strong>
-						<br />
-						{ __(
-							'WooPayments has no influence over the decision and is not liable for any chargebacks.',
-							'woocommerce-payments'
-						) }
+						</div>
 					</div>
-				</div>
 
-				{ /* Action buttons */ }
-				<div className="wcpay-dispute-evidence-confirmation__actions">
-					<Button
-						variant="secondary"
-						onClick={ () => {
-							window.location.href = getAdminUrl( {
-								page: 'wc-admin',
-								path: '/payments/transactions',
-							} );
-						} }
-					>
-						{ __(
-							'Return to transactions',
-							'woocommerce-payments'
-						) }
-					</Button>
-					<Button
-						variant="primary"
-						onClick={ () => {
-							window.location.href = getAdminUrl( {
-								page: 'wc-admin',
-								path: '/payments/disputes/challenge',
-								id: query.id,
-							} );
-						} }
-					>
-						{ __(
-							'View submitted dispute',
-							'woocommerce-payments'
-						) }
-					</Button>
+					{ /* Action buttons */ }
+					<div className="wcpay-dispute-evidence-confirmation__actions">
+						<Button
+							variant="secondary"
+							onClick={ () => {
+								window.location.href = getAdminUrl( {
+									page: 'wc-admin',
+									path: '/payments/transactions',
+								} );
+							} }
+						>
+							{ __(
+								'Return to transactions',
+								'woocommerce-payments'
+							) }
+						</Button>
+						<Button
+							variant="primary"
+							onClick={ () => {
+								window.location.href = getAdminUrl( {
+									page: 'wc-admin',
+									path: '/payments/disputes/challenge',
+									id: query.id,
+								} );
+							} }
+						>
+							{ __(
+								'View submitted dispute',
+								'woocommerce-payments'
+							) }
+						</Button>
+					</div>
 				</div>
 			</div>
 		</div>
