@@ -292,33 +292,10 @@
 	}
 
 	&__chip-filename {
-		text-overflow: ellipsis;
 		color: var( --wp-admin-theme-color );
 		padding-left: 8px;
-		max-width: 200px;
-		overflow: hidden;
-		text-overflow: ellipsis;
+		padding-right: 8px;
 		white-space: nowrap;
-	}
-
-	// Small screen
-	@media ( max-width: 768px ) {
-		&__chip-filename {
-			max-width: 150px;
-		}
-	}
-
-	// Super small screen
-	@media ( max-width: 480px ) {
-		&__chip-filename {
-			max-width: 100px;
-		}
-	}
-
-	@media ( max-width: 360px ) {
-		&__chip-filename {
-			max-width: 60px;
-		}
 	}
 
 	&__info {

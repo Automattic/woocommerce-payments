@@ -34,6 +34,7 @@ const RecommendedDocuments: React.FC< RecommendedDocumentsProps > = ( {
 						<FileUploadControl
 							label={ field.label }
 							fileName={ field.fileName || '' }
+							fileSize={ field.fileSize }
 							description={ field.description }
 							onFileChange={ async ( file: File ) =>
 								field.onFileChange( field.key, file )
