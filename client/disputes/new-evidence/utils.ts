@@ -27,16 +27,16 @@ export const getFileExtension = ( filename: string ): string => {
 };
 
 /**
- * Formats a file name with size, truncating the name if it's too long.
+ * Formats a file name with size, returning separate parts for CSS-based truncation.
  * 
  * @param fileName - The original file name
  * @param fileSize - The file size in bytes
- * @returns Formatted string like "My file name... .jpg (3.1mb)" or "Short name.jpg (3.0mb)"
+ * @returns Object with namePart and extensionSizePart for flexible CSS styling
  */
 export const formatFileNameWithSize = (
 	fileName: string,
 	fileSize: number
-): string => {
+): { namePart: string; extensionSizePart: string } => {
 	// Extract file extension
 	const lastDotIndex = fileName.lastIndexOf( '.' );
 	const extension = lastDotIndex !== -1 ? fileName.substring( lastDotIndex ) : '';
@@ -50,24 +50,20 @@ export const formatFileNameWithSize = (
 		const kb = bytes / 1024;
 		
 		if ( mb >= 1 ) {
-			return `${ mb.toFixed( 1 ) }mb`;
+			// Show decimal only if not a whole number
+			return mb % 1 === 0 ? `${ mb }MB` : `${ mb.toFixed( 1 ) }MB`;
 		} else {
-			return `${ kb.toFixed( 1 ) }kb`;
+			// Show decimal only if not a whole number
+			return kb % 1 === 0 ? `${ kb }KB` : `${ kb.toFixed( 1 ) }KB`;
 		}
 	};
 
-	// Truncate name if it's longer than 25 characters (i.e., 26+ characters)
-	const maxNameLength = 25;
-	let displayName = nameWithoutExtension;
-	let displayExtension = extension;
-	
-	if ( nameWithoutExtension.length > maxNameLength ) {
-		displayName = nameWithoutExtension.substring( 0, maxNameLength ) + '...';
-		// Add space before extension when truncating
-		displayExtension = extension ? ' ' + extension : '';
-	}
-
-	// Combine name, extension, and size
+	// Return separate parts for CSS-based truncation
 	const formattedSize = formatFileSize( fileSize );
-	return `${ displayName }${ displayExtension } (${ formattedSize })`;
+	const extensionSizePart = extension ? `${ extension } (${ formattedSize })` : `(${ formattedSize })`;
+	
+	return {
+		namePart: nameWithoutExtension,
+		extensionSizePart: extensionSizePart
+	};
 }; 

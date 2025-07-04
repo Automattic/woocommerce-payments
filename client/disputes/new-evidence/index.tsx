@@ -290,7 +290,11 @@ export default ( { query }: { query: { id: string } } ) => {
 					const file: any = await apiFetch( {
 						path: `/wc/v3/payments/file/${ fileId }/details`,
 					} );
-					return { fileKey: fileKey, filename: file.filename };
+					return { 
+						fileKey: fileKey, 
+						filename: file.filename,
+						size: file.size 
+					};
 				} )
 			);
 			const filteredFileDetails = fileDetails.filter(
@@ -302,6 +306,16 @@ export default ( { query }: { query: { id: string } } ) => {
 					filteredFileDetails.map( ( fileDetail ) => [
 						fileDetail?.fileKey,
 						fileDetail?.filename,
+					] )
+				),
+			} ) );
+			// Also set the file sizes
+			setFileSizes( ( prev ) => ( {
+				...prev,
+				...Object.fromEntries(
+					filteredFileDetails.map( ( fileDetail ) => [
+						fileDetail?.fileKey,
+						fileDetail?.size,
 					] )
 				),
 			} ) );
