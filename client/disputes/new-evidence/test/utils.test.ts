@@ -1,26 +1,18 @@
 /**
  * External dependencies
  */
-import { formatFileSize, getFileExtension, formatFileNameWithSize } from '../utils';
+import { getFileExtension, formatFileNameWithSize } from '../utils';
 
 describe( 'File utility functions', () => {
-	describe( 'formatFileSize', () => {
-		it( 'should format bytes correctly', () => {
-			expect( formatFileSize( 0 ) ).toBe( '0B' );
-			expect( formatFileSize( 1024 ) ).toBe( '1.0KB' );
-			expect( formatFileSize( 1536 ) ).toBe( '1.5KB' );
-			expect( formatFileSize( 1048576 ) ).toBe( '1.0MB' );
-			expect( formatFileSize( 3145728 ) ).toBe( '3.0MB' );
-		} );
-	} );
-
 	describe( 'getFileExtension', () => {
 		it( 'should extract file extensions correctly', () => {
 			expect( getFileExtension( 'document.pdf' ) ).toBe( '.pdf' );
 			expect( getFileExtension( 'image.jpg' ) ).toBe( '.jpg' );
 			expect( getFileExtension( 'file.PNG' ) ).toBe( '.PNG' );
 			expect( getFileExtension( 'noextension' ) ).toBe( '' );
-			expect( getFileExtension( 'multiple.dots.in.name.txt' ) ).toBe( '.txt' );
+			expect( getFileExtension( 'multiple.dots.in.name.txt' ) ).toBe(
+				'.txt'
+			);
 		} );
 	} );
 
@@ -32,28 +24,39 @@ describe( 'File utility functions', () => {
 		} );
 
 		it( 'should handle long filenames for CSS truncation', () => {
-			const result = formatFileNameWithSize( 
-				'very_long_filename_that_exceeds_twenty_five_characters.pdf', 
-				5242880 
+			const result = formatFileNameWithSize(
+				'very_long_filename_that_exceeds_twenty_five_characters.pdf',
+				5242880
 			);
-			expect( result.namePart ).toBe( 'very_long_filename_that_exceeds_twenty_five_characters' );
+			expect( result.namePart ).toBe(
+				'very_long_filename_that_exceeds_twenty_five_characters'
+			);
 			expect( result.extensionSizePart ).toBe( '.pdf (5MB)' );
 		} );
 
 		it( 'should handle filenames without extensions', () => {
-			const result = formatFileNameWithSize( 'filename_without_extension', 2097152 );
+			const result = formatFileNameWithSize(
+				'filename_without_extension',
+				2097152
+			);
 			expect( result.namePart ).toBe( 'filename_without_extension' );
 			expect( result.extensionSizePart ).toBe( ' (2MB)' );
 		} );
 
 		it( 'should handle filenames with multiple dots', () => {
-			const result = formatFileNameWithSize( 'file.name.with.multiple.dots.jpg', 1572864 );
+			const result = formatFileNameWithSize(
+				'file.name.with.multiple.dots.jpg',
+				1572864
+			);
 			expect( result.namePart ).toBe( 'file.name.with.multiple.dots' );
 			expect( result.extensionSizePart ).toBe( '.jpg (1.5MB)' );
 		} );
 
 		it( 'should handle filenames that are exactly 25 characters', () => {
-			const result = formatFileNameWithSize( 'exactly_twenty_six_chars.pdf', 1048576 );
+			const result = formatFileNameWithSize(
+				'exactly_twenty_six_chars.pdf',
+				1048576
+			);
 			expect( result.namePart ).toBe( 'exactly_twenty_six_chars' );
 			expect( result.extensionSizePart ).toBe( '.pdf (1MB)' );
 		} );
@@ -76,4 +79,4 @@ describe( 'File utility functions', () => {
 			expect( result.extensionSizePart ).toBe( '.txt (0KB)' );
 		} );
 	} );
-} ); 
+} );

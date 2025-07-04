@@ -37,10 +37,20 @@ const FileUploadControl: React.FC< FileUploadControlProps > = ( {
 								{ fileSize ? (
 									<>
 										<div className="wcpay-dispute-evidence-file-upload-control__chip-filename-name">
-											{ formatFileNameWithSize( fileName, fileSize ).namePart }
+											{
+												formatFileNameWithSize(
+													fileName,
+													fileSize
+												).namePart
+											}
 										</div>
 										<div className="wcpay-dispute-evidence-file-upload-control__chip-filename-extension">
-											{ formatFileNameWithSize( fileName, fileSize ).extensionSizePart }
+											{
+												formatFileNameWithSize(
+													fileName,
+													fileSize
+												).extensionSizePart
+											}
 										</div>
 									</>
 								) : (
