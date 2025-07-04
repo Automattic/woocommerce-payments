@@ -1260,10 +1260,7 @@ export default ( { query }: { query: { id: string } } ) => {
 						{ ! readOnly && (
 							<Button
 								variant="tertiary"
-								onClick={ async () => {
-									await doSave( false );
-									setRedirectAfterSave( true );
-								} }
+								onClick={ () => doSave( false ) }
 							>
 								{ __(
 									'Save for later',
