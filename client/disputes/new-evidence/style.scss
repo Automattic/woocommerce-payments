@@ -292,33 +292,26 @@
 	}
 
 	&__chip-filename {
-		text-overflow: ellipsis;
 		color: var( --wp-admin-theme-color );
 		padding-left: 8px;
-		max-width: 200px;
+		white-space: nowrap;
+		display: flex;
+		align-items: center;
+		gap: 0;
+		max-width: 200px; // Default max width for medium screens
+	}
+
+	&__chip-filename-name {
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+		flex-shrink: 1;
+		min-width: 0;
 	}
 
-	// Small screen
-	@media ( max-width: 768px ) {
-		&__chip-filename {
-			max-width: 150px;
-		}
-	}
-
-	// Super small screen
-	@media ( max-width: 480px ) {
-		&__chip-filename {
-			max-width: 100px;
-		}
-	}
-
-	@media ( max-width: 360px ) {
-		&__chip-filename {
-			max-width: 60px;
-		}
+	&__chip-filename-extension {
+		flex-shrink: 0;
+		white-space: nowrap;
 	}
 
 	&__info {
@@ -340,6 +333,31 @@
 		color: var( --Scales-Grays-gray-700, $gray-700 );
 		@include body-sm;
 		margin: 0;
+	}
+
+	// Responsive breakpoints for file chip
+	@media ( max-width: 480px ) {
+		// Small screens: hide extension and size, show only filename with ellipsis
+		&__chip-filename {
+			max-width: 120px;
+		}
+		&__chip-filename-extension {
+			display: none;
+		}
+	}
+
+	@media ( min-width: 481px ) and ( max-width: 768px ) {
+		// Medium screens: show filename with ellipsis and extension+size
+		&__chip-filename {
+			max-width: 160px;
+		}
+	}
+
+	@media ( min-width: 769px ) {
+		// Large screens: show full filename with extension+size
+		&__chip-filename {
+			max-width: 250px;
+		}
 	}
 }
 
