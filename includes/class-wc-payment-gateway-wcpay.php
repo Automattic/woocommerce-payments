@@ -868,7 +868,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return false;
 		}
 
-		if ( 'afterpay_clearpay' === $this->payment_method->get_id() && is_wc_endpoint_url( 'order-pay' ) ) {
+		if ( in_array( $this->payment_method->get_id(), [ 'afterpay_clearpay', 'affirm' ], true ) && is_wc_endpoint_url( 'order-pay' ) ) {
 			$order = wc_get_order( absint( get_query_var( 'order-pay' ) ) );
 			$order = is_a( $order, 'WC_Order' ) ? $order : null;
 
