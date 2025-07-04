@@ -7,7 +7,7 @@ import React, { useState, useEffect, useMemo, useRef } from 'react';
 import apiFetch from '@wordpress/api-fetch';
 import { __, sprintf } from '@wordpress/i18n';
 import { useDispatch } from '@wordpress/data';
-import { chevronLeft, chevronRight, info } from '@wordpress/icons';
+import { chevronLeft, chevronRight } from '@wordpress/icons';
 
 /**
  * Internal dependencies.
@@ -106,7 +106,13 @@ function needsShipping( reason: string | undefined ) {
 }
 
 // --- Confirmation Screen Component ---
-const ConfirmationScreen = ( { query }: { query: { id: string } } ) => {
+const ConfirmationScreen = ( {
+	query,
+	bankName,
+}: {
+	query: { id: string };
+	bankName: string | null;
+} ) => {
 	return (
 		<div className="wcpay-dispute-evidence-confirmation">
 			<div className="wcpay-dispute-evidence-confirmation__wrapper">
@@ -195,24 +201,30 @@ const ConfirmationScreen = ( { query }: { query: { id: string } } ) => {
 					</div>
 
 					{ /* Important notice */ }
-					<div className="wcpay-dispute-evidence-confirmation__notice">
-						<div className="wcpay-dispute-evidence-confirmation__notice-icon">
-							<Icon icon={ info } />
-						</div>
-						<div className="wcpay-dispute-evidence-confirmation__notice-content">
-							<strong>
-								{ __(
-									'The outcome of this dispute will be determined by Chase.',
-									'woocommerce-payments'
-								) }
-							</strong>
-							<br />
-							{ __(
-								'WooPayments has no influence over the decision and is not liable for any chargebacks.',
-								'woocommerce-payments'
-							) }
-						</div>
-					</div>
+					<InlineNotice
+						icon
+						isDismissible={ false }
+						status="info"
+						className="dispute-steps__notice-content"
+					>
+						{ createInterpolateElement(
+							bankName
+								? sprintf(
+										__(
+											'<strong>The outcome of this dispute will be determined by %1$s.</strong> WooPayments has no influence over the decision and is not liable for any chargebacks.',
+											'woocommerce-payments'
+										),
+										bankName
+								  )
+								: __(
+										"<strong>The outcome of this dispute will be determined by the cardholder's bank.</strong> WooPayments has no influence over the decision and is not liable for any chargebacks.",
+										'woocommerce-payments'
+								  ),
+							{
+								strong: <strong />,
+							}
+						) }
+					</InlineNotice>
 
 					{ /* Action buttons */ }
 					<div className="wcpay-dispute-evidence-confirmation__actions">
@@ -1367,7 +1379,10 @@ export default ( { query }: { query: { id: string } } ) => {
 					</Accordion>
 					{ /* Section 2: Stepper or Confirmation */ }
 					{ showConfirmation ? (
-						<ConfirmationScreen query={ query } />
+						<ConfirmationScreen
+							query={ query }
+							bankName={ bankName }
+						/>
 					) : (
 						<div className="wcpay-dispute-evidence-new__stepper-section">
 							<StepperPanel
