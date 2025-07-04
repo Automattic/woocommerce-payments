@@ -227,7 +227,7 @@ const ConfirmationScreen = ( {
 					</InlineNotice>
 
 					{ /* Action buttons */ }
-					<div className="wcpay-dispute-evidence-confirmation__actions">
+					<div className="wcpay-dispute-evidence-new__button-row">
 						<Button
 							variant="secondary"
 							onClick={ () => {
@@ -242,21 +242,23 @@ const ConfirmationScreen = ( {
 								'woocommerce-payments'
 							) }
 						</Button>
-						<Button
-							variant="primary"
-							onClick={ () => {
-								window.location.href = getAdminUrl( {
-									page: 'wc-admin',
-									path: '/payments/disputes/challenge',
-									id: query.id,
-								} );
-							} }
-						>
-							{ __(
-								'View submitted dispute',
-								'woocommerce-payments'
-							) }
-						</Button>
+						<div className="wcpay-dispute-evidence-new__button-group-right">
+							<Button
+								variant="primary"
+								onClick={ () => {
+									window.location.href = getAdminUrl( {
+										page: 'wc-admin',
+										path: '/payments/disputes/challenge',
+										id: query.id,
+									} );
+								} }
+							>
+								{ __(
+									'View submitted dispute',
+									'woocommerce-payments'
+								) }
+							</Button>
+						</div>
 					</div>
 				</div>
 			</div>
