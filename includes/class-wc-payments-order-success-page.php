@@ -196,13 +196,11 @@ class WC_Payments_Order_Success_Page {
 
 		$payment_method = $gateway->get_payment_method( $order );
 
+		/**
+		 * In case of Stripe Link we also end up with the Payment_Method::CARD type, and no way to differentiate it
+		 * at this step. It might be possible from the payment intent if needed.
+		 */
 		if ( $payment_method->get_id() === Payment_Method::CARD ) {
-			// Check if this is a Link payment.
-			$link_payment_method = $gateway->wc_payments_get_payment_method_by_id( Payment_Method::LINK );
-			if ( $link_payment_method && $link_payment_method->get_id() === Payment_Method::LINK ) {
-				return $this->show_link_payment_method_icon( $payment_method );
-			}
-
 			return $this->show_card_payment_method_name( $order, $payment_method );
 		}
 
