@@ -1,15 +1,4 @@
 /**
- * Extracts the file extension from a filename
- *
- * @param filename - The filename to extract extension from
- * @return The file extension (e.g., ".jpg", ".pdf") or empty string if no extension
- */
-export const getFileExtension = ( filename: string ): string => {
-	const lastDotIndex = filename.lastIndexOf( '.' );
-	return lastDotIndex !== -1 ? filename.slice( lastDotIndex ) : '';
-};
-
-/**
  * Formats a file name with size, returning separate parts for CSS-based truncation.
  *
  * @param fileName - The original file name

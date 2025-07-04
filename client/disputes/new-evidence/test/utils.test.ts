@@ -1,21 +1,9 @@
 /**
  * External dependencies
  */
-import { getFileExtension, formatFileNameWithSize } from '../utils';
+import { formatFileNameWithSize } from '../utils';
 
 describe( 'File utility functions', () => {
-	describe( 'getFileExtension', () => {
-		it( 'should extract file extensions correctly', () => {
-			expect( getFileExtension( 'document.pdf' ) ).toBe( '.pdf' );
-			expect( getFileExtension( 'image.jpg' ) ).toBe( '.jpg' );
-			expect( getFileExtension( 'file.PNG' ) ).toBe( '.PNG' );
-			expect( getFileExtension( 'noextension' ) ).toBe( '' );
-			expect( getFileExtension( 'multiple.dots.in.name.txt' ) ).toBe(
-				'.txt'
-			);
-		} );
-	} );
-
 	describe( 'formatFileNameWithSize', () => {
 		it( 'should format short filenames without truncation', () => {
 			const result = formatFileNameWithSize( 'document.pdf', 3145728 );
