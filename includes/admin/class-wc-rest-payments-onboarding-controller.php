@@ -56,14 +56,14 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 				'callback'            => [ $this, 'create_embedded_kyc_session' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 				'args'                => [
-					'progressive'     => [
+					'progressive'         => [
 						'required'    => false,
 						'description' => 'Whether the session is for progressive onboarding.',
 						// phpcs:ignore Squiz.PHP.CommentedOutCode.Found
 						// We expect a boolean (true, false, 0, 1, '0', '1', 'true', or 'false'), but will also accept `yes`/`no`.
 						'type'        => [ 'boolean', 'string' ],
 					],
-					'self_assessment' => [
+					'self_assessment'     => [
 						'required'    => false,
 						'description' => 'The self-assessment data.',
 						'type'        => 'object',
@@ -86,7 +86,7 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 							],
 						],
 					],
-					'capabilities'    => [
+					'capabilities'        => [
 						'description' => 'The capabilities to request and enable for the test-drive account. Leave empty to use the default capabilities.',
 						'type'        => 'object',
 						'default'     => [],
@@ -96,6 +96,12 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 								'type' => 'boolean',
 							],
 						],
+					],
+					'delete_test_account' => [
+						'description' => 'Whether to delete the test account if it exists.',
+						'type'        => 'boolean',
+						'default'     => false,
+						'required'    => false,
 					],
 				],
 			]
@@ -227,11 +233,13 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 		$self_assessment_data = ! empty( $request->get_param( 'self_assessment' ) ) ? wc_clean( wp_unslash( $request->get_param( 'self_assessment' ) ) ) : [];
 		$progressive          = ! empty( $request->get_param( 'progressive' ) ) && filter_var( $request->get_param( 'progressive' ), FILTER_VALIDATE_BOOLEAN );
 		$capabilities         = ! empty( $request->get_param( 'capabilities' ) ) ? wc_clean( wp_unslash( $request->get_param( 'capabilities' ) ) ) : [];
+		$delete_test_account  = ! empty( $request->get_param( 'delete_test_account' ) ) && filter_var( $request->get_param( 'delete_test_account' ), FILTER_VALIDATE_BOOLEAN );
 
 		$account_session = $this->onboarding_service->create_embedded_kyc_session(
 			$self_assessment_data,
 			$progressive,
-			$capabilities
+			$capabilities,
+			$delete_test_account
 		);
 
 		if ( $account_session ) {
