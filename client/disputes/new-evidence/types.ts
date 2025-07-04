@@ -93,4 +93,6 @@ export interface FileUploadControlProps {
 export interface RecommendedDocumentsProps {
 	fields: DocumentField[];
 	readOnly?: boolean;
+	customHeading?: string;
+	customSubheading?: string;
 }

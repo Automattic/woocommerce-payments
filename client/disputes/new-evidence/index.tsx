@@ -754,7 +754,7 @@ export default ( { query }: { query: { id: string } } ) => {
 				content: dispute.created
 					? formatDateTimeFromTimestamp( dispute.created, {
 							separator: ', ',
-							includeTime: true,
+							includeTime: false,
 					  } )
 					: '–',
 			},
@@ -972,6 +972,10 @@ export default ( { query }: { query: { id: string } } ) => {
 					<RecommendedDocuments
 						fields={ recommendedShippingDocumentsFields }
 						readOnly={ readOnly }
+						customSubheading={ __(
+							'We recommend adding the following document(s) to support your case.',
+							'woocommerce-payments'
+						) }
 					/>
 					{ inlineNotice( bankName ) }
 				</>
