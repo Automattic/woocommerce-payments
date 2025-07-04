@@ -891,7 +891,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return false;
 		}
 
-		if ( in_array( $this->payment_method->get_id(), [ 'afterpay_clearpay', 'affirm' ], true ) && is_wc_endpoint_url( 'order-pay' ) ) {
+		if ( in_array( $this->payment_method->get_id(), [ Payment_Method::AFTERPAY, Payment_Method::AFFIRM ], true ) && is_wc_endpoint_url( 'order-pay' ) ) {
 			$order = wc_get_order( absint( get_query_var( 'order-pay' ) ) );
 			$order = is_a( $order, 'WC_Order' ) ? $order : null;
 
@@ -4641,15 +4641,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return $shipping_data;
 		}
 
+		// Afterpay fails if we send more parameters than expected in the
+		// shipping address. This ensures that we only send the name and address
+		// fields, as in get_shipping_data_from_order.
 		$billing_data = $this->order_service->get_billing_data_from_order( $order );
-		// Afterpay fails if we send more parameters than expected in the shipping address.
-		// This ensures that we only send the name and address fields, as in get_shipping_data_from_order.
-		$shipping_data = [
-			'name'    => $billing_data['name'] ?? '',
-			'address' => $billing_data['address'] ?? [],
-		];
-		if ( $check_if_usable( $shipping_data['address'] ) ) {
-			return $shipping_data;
+		if ( $check_if_usable( $billing_data['address'] ) ) {
+			return [
+				'name'    => $billing_data['name'] ?? '',
+				'address' => $billing_data['address'] ?? [],
+			];
 		}
 
 		return null;
