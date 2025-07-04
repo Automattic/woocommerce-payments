@@ -98,9 +98,6 @@ declare const global: {
 				precision: number;
 			};
 		};
-		userLocale: {
-			code: string;
-		};
 	};
 	wooPaymentsPaymentMethodsConfig: Record< string, { title: string } >;
 };
@@ -242,9 +239,6 @@ describe( 'Transactions list', () => {
 					decimalSeparator: '.',
 					precision: 2,
 				},
-			},
-			userLocale: {
-				code: 'en',
 			},
 		};
 
@@ -658,7 +652,7 @@ describe( 'Transactions list', () => {
 					method: 'POST',
 					path: `/wc/v3/payments/transactions/download?user_email=mock%40example.com&deposit_id=po_mock&user_timezone=${ encodeURIComponent(
 						getUserTimeZone()
-					) }&locale=en`,
+					) }&locale=en_US`,
 				} );
 			} );
 		} );
