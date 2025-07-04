@@ -233,12 +233,13 @@ const ConfirmationScreen = ( {
 							onClick={ () => {
 								window.location.href = getAdminUrl( {
 									page: 'wc-admin',
-									path: '/payments/transactions',
+									path: '/payments/disputes',
+									filter: 'awaiting_response',
 								} );
 							} }
 						>
 							{ __(
-								'Return to transactions',
+								'Return to disputes',
 								'woocommerce-payments'
 							) }
 						</Button>
