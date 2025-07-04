@@ -588,9 +588,9 @@ export default ( { query }: { query: { id: string } } ) => {
 				: [],
 		} );
 
-		// Only redirect after submission, not after save
+		// Show confirmation screen for submissions
 		if ( submit ) {
-			setRedirectAfterSave( true );
+			setShowConfirmation( true );
 		}
 	};
 
@@ -874,22 +874,22 @@ export default ( { query }: { query: { id: string } } ) => {
 		setNavigationCleanup( cleanup );
 	}, [ confirmationNavigationCallback, redirectAfterSave, readOnly ] );
 
-	// Redirect after successful submission only
-	// useEffect( () => {
-	// 	if ( redirectAfterSave ) {
-	// 		// Clean up navigation confirmation before redirecting
-	// 		if ( navigationCleanup ) {
-	// 			navigationCleanup();
-	// 		}
+	// Redirect after successful save only
+	useEffect( () => {
+		if ( redirectAfterSave ) {
+			// Clean up navigation confirmation before redirecting
+			if ( navigationCleanup ) {
+				navigationCleanup();
+			}
 
-	// 		const href = getAdminUrl( {
-	// 			page: 'wc-admin',
-	// 			path: '/payments/disputes',
-	// 			filter: 'awaiting_response',
-	// 		} );
-	// 		window.location.replace( href );
-	// 	}
-	// }, [ redirectAfterSave, navigationCleanup ] );
+			const href = getAdminUrl( {
+				page: 'wc-admin',
+				path: '/payments/disputes',
+				filter: 'awaiting_response',
+			} );
+			window.location.replace( href );
+		}
+	}, [ redirectAfterSave, navigationCleanup ] );
 
 	// --- Accordion summary content ---
 	const summaryItems = useMemo( () => {
@@ -1259,7 +1259,10 @@ export default ( { query }: { query: { id: string } } ) => {
 						{ ! readOnly && (
 							<Button
 								variant="tertiary"
-								onClick={ () => doSave( false ) }
+								onClick={ async () => {
+									await doSave( false );
+									setRedirectAfterSave( true );
+								} }
 							>
 								{ __(
 									'Save for later',
