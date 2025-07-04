@@ -421,3 +421,134 @@
 		max-height: none;
 	}
 }
+
+// Confirmation screen section
+.wcpay-dispute-evidence-confirmation {
+	padding: 40px 0;
+	display: flex;
+	justify-content: center;
+	background: #fff;
+
+	&__wrapper {
+		width: 984px;
+		max-width: calc( 100vw - 48px );
+		padding: 24px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 24px;
+	}
+
+	&__content {
+		display: flex;
+		flex-direction: column;
+		max-width: 600px;
+		width: 100%;
+	}
+
+	&__illustration {
+		display: flex;
+		justify-content: center;
+		margin-bottom: 40px;
+	}
+
+	&__illustration-image {
+		width: 145px;
+		height: auto;
+		max-width: 100%;
+	}
+
+	&__title {
+		font-size: var( --xl, 20px );
+		font-style: normal;
+		font-weight: var( --Medium, 500 );
+		line-height: var( --m, 24px );
+		color: var( --Scales-Grays-gray-900, #1e1e1e );
+		margin: 0 0 12px 0;
+		text-align: left;
+	}
+
+	&__subtitle {
+		font-size: var( --m, 13px );
+		font-style: normal;
+		font-weight: var( --Regular, 400 );
+		line-height: var( --s, 20px );
+		color: var( --Scales-Grays-gray-900, #1e1e1e );
+		margin: 0 0 40px 0;
+		text-align: left;
+	}
+
+	&__next-steps {
+		text-align: left;
+		width: 100%;
+		margin-bottom: 24px;
+
+		h3 {
+			font-size: var( --xl, 20px );
+			font-style: normal;
+			font-weight: var( --Medium, 500 );
+			line-height: var( --m, 24px );
+			color: var( --Scales-Grays-gray-900, #1e1e1e );
+			margin: 0 0 12px 0;
+		}
+
+		ul {
+			list-style: none;
+			padding: 0 0 0 8px;
+			margin: 0;
+
+			li {
+				padding-left: 12px;
+				position: relative;
+				font-size: var( --m, 13px );
+				font-style: normal;
+				font-weight: var( --Regular, 400 );
+				line-height: var( --s, 20px );
+				color: var( --Scales-Grays-gray-900, #1e1e1e );
+
+				&::before {
+					content: '•';
+					font-weight: bold;
+					position: absolute;
+					left: 0;
+				}
+
+				a {
+					color: #3858e9;
+					text-decoration: none;
+
+					&:hover {
+						text-decoration: underline;
+					}
+				}
+			}
+		}
+	}
+
+	&__notice {
+		&.wcpay-inline-notice.components-notice {
+			margin-bottom: 48px;
+		}
+	}
+
+	&__actions {
+		display: flex;
+		gap: 16px;
+		justify-content: space-between;
+		flex-wrap: wrap;
+	}
+
+	// Responsive adjustments
+	@media ( max-width: 768px ) {
+		padding: 24px 16px;
+
+		&__title {
+			font-size: 24px;
+		}
+
+		&__actions {
+			flex-direction: column;
+			align-items: center;
+		}
+	}
+}

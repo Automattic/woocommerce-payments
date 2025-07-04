@@ -15,8 +15,6 @@ import { getAdminUrl } from 'wcpay/utils';
 import InlineNotice from 'components/inline-notice';
 import DisputeEvidenceSubmittedIllustration from 'assets/images/dispute-evidence-submitted.svg?asset';
 
-import './style.scss';
-
 interface ConfirmationScreenProps {
 	disputeId: string;
 	bankName: string | null;
@@ -118,7 +116,7 @@ const ConfirmationScreen: React.FC< ConfirmationScreenProps > = ( {
 						icon
 						isDismissible={ false }
 						status="info"
-						className="dispute-steps__notice-content"
+						className="wcpay-dispute-evidence-confirmation__notice"
 					>
 						{ createInterpolateElement(
 							bankName
@@ -140,7 +138,7 @@ const ConfirmationScreen: React.FC< ConfirmationScreenProps > = ( {
 					</InlineNotice>
 
 					{ /* Action buttons */ }
-					<div className="wcpay-dispute-evidence-new__button-row">
+					<div className="wcpay-dispute-evidence-confirmation__actions">
 						<Button
 							variant="secondary"
 							onClick={ () => {
@@ -156,23 +154,21 @@ const ConfirmationScreen: React.FC< ConfirmationScreenProps > = ( {
 								'woocommerce-payments'
 							) }
 						</Button>
-						<div className="wcpay-dispute-evidence-new__button-group-right">
-							<Button
-								variant="primary"
-								onClick={ () => {
-									window.location.href = getAdminUrl( {
-										page: 'wc-admin',
-										path: '/payments/disputes/challenge',
-										id: disputeId,
-									} );
-								} }
-							>
-								{ __(
-									'View submitted dispute',
-									'woocommerce-payments'
-								) }
-							</Button>
-						</div>
+						<Button
+							variant="primary"
+							onClick={ () => {
+								window.location.href = getAdminUrl( {
+									page: 'wc-admin',
+									path: '/payments/disputes/challenge',
+									id: disputeId,
+								} );
+							} }
+						>
+							{ __(
+								'View submitted dispute',
+								'woocommerce-payments'
+							) }
+						</Button>
 					</div>
 				</div>
 			</div>
