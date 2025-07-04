@@ -630,3 +630,5 @@ export function __resetGatewayUPEComponentsElement( paymentMethodType ) {
 		delete gatewayUPEComponents[ paymentMethodType ].upeElement;
 	}
 }
+
+export { isMissingRequiredAddressFieldsForBNPL };
