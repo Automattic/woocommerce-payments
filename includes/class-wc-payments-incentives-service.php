@@ -422,7 +422,7 @@ class WC_Payments_Incentives_Service {
 	 * @return boolean
 	 */
 	private function has_wcpay_account_data(): bool {
-		$account_data = $this->database_cache->get( Database_Cache::ACCOUNT_KEY );
+		$account_data = $this->database_cache->get( Database_Cache::ACCOUNT_KEY, true );
 		if ( ! empty( $account_data['account_id'] ) ) {
 			return true;
 		}

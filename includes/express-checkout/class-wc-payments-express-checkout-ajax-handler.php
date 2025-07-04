@@ -39,12 +39,6 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 	 * @return  void
 	 */
 	public function init() {
-		add_action( 'wc_ajax_wcpay_ece_create_order', [ $this, 'ajax_create_order' ] );
-		add_action( 'wc_ajax_wcpay_ece_pay_for_order', [ $this, 'ajax_pay_for_order' ] );
-		add_action( 'wc_ajax_wcpay_ece_get_shipping_options', [ $this, 'ajax_get_shipping_options' ] );
-		add_action( 'wc_ajax_wcpay_ece_get_cart_details', [ $this, 'ajax_get_cart_details' ] );
-		add_action( 'wc_ajax_wcpay_ece_update_shipping_method', [ $this, 'ajax_update_shipping_method' ] );
-		add_action( 'wc_ajax_wcpay_ece_get_selected_product_data', [ $this, 'ajax_get_selected_product_data' ] );
 		if ( function_exists( 'woocommerce_store_api_register_update_callback' ) ) {
 			woocommerce_store_api_register_update_callback(
 				[
@@ -55,302 +49,17 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			);
 		}
 
-		if ( WC_Payments_Features::is_tokenized_cart_ece_enabled() ) {
-			add_action(
-				'woocommerce_store_api_checkout_update_order_from_request',
-				[
-					$this,
-					'tokenized_cart_set_payment_method_type',
-				],
-				10,
-				2
-			);
-			add_filter( 'rest_pre_dispatch', [ $this, 'tokenized_cart_store_api_address_normalization' ], 10, 3 );
-		}
-	}
-
-	/**
-	 * Create order. Security is handled by WC.
-	 *
-	 * @throws Exception If cart is empty. That is handled within the method.
-	 */
-	public function ajax_create_order() {
-		try {
-			if ( WC()->cart->is_empty() ) {
-				throw new Exception( __( 'Empty cart', 'woocommerce-payments' ) );
-			}
-
-			if ( ! defined( 'WOOCOMMERCE_CHECKOUT' ) ) {
-				define( 'WOOCOMMERCE_CHECKOUT', true );
-			}
-
-			if ( ! defined( 'WCPAY_ECE_CHECKOUT' ) ) {
-				define( 'WCPAY_ECE_CHECKOUT', true );
-			}
-
-			$this->express_checkout_button_helper->normalize_state();
-
-			// In case the state is required, but is missing, add a more descriptive error notice.
-			$this->express_checkout_button_helper->validate_state();
-
-			WC()->checkout()->process_checkout();
-		} catch ( Exception $e ) {
-			Logger::error( 'Failed to process express checkout payment: ' . $e );
-
-			$response = [
-				'result'   => 'error',
-				'messages' => $e->getMessage(),
-			];
-			wp_send_json( $response, 400 );
-		}
-
-		die( 0 );
-	}
-
-	/**
-	 * Handles payment requests on the Pay for Order page.
-	 *
-	 * @throws Exception All exceptions are handled within the method.
-	 */
-	public function ajax_pay_for_order() {
-		check_ajax_referer( 'pay_for_order' );
-
-		try {
-			if (
-				! isset( $_POST['payment_method'] ) || 'woocommerce_payments' !== $_POST['payment_method']
-				|| ! isset( $_POST['order'] ) || ! intval( $_POST['order'] )
-				|| ! isset( $_POST['wcpay-payment-method'] ) || empty( $_POST['wcpay-payment-method'] )
-			) {
-				// Incomplete request.
-				throw new Exception( __( 'Invalid request', 'woocommerce-payments' ) );
-			}
-
-			// Set up an environment, similar to core checkout.
-			wc_maybe_define_constant( 'WOOCOMMERCE_CHECKOUT', true );
-			wc_set_time_limit( 0 );
-
-			// Load the order.
-			$order_id = intval( $_POST['order'] );
-			$order    = wc_get_order( $order_id );
-
-			if ( ! is_a( $order, WC_Order::class ) ) {
-				throw new Exception( __( 'Invalid order!', 'woocommerce-payments' ) );
-			}
-
-			if ( ! $order->needs_payment() ) {
-				throw new Exception( __( 'This order does not require payment!', 'woocommerce-payments' ) );
-			}
-
-			$this->express_checkout_button_helper->add_order_payment_method_title( $order_id );
-
-			// Load the gateway.
-			$all_gateways = WC()->payment_gateways->get_available_payment_gateways();
-			$gateway      = $all_gateways['woocommerce_payments'];
-			$result       = $gateway->process_payment( $order_id );
-
-			// process_payment() should only return `success` or throw an exception.
-			if ( ! is_array( $result ) || ! isset( $result['result'] ) || 'success' !== $result['result'] || ! isset( $result['redirect'] ) ) {
-				throw new Exception( __( 'Unable to determine payment success.', 'woocommerce-payments' ) );
-			}
-
-			// Include the order ID in the result.
-			$result['order_id'] = $order_id;
-
-			$result = apply_filters( 'woocommerce_payment_successful_result', $result, $order_id );
-
-			wp_send_json( $result );
-		} catch ( Exception $e ) {
-			$order_message = isset( $order_id ) ? "order #$order_id" : 'invalid order';
-			Logger::error( 'Failed to process express checkout payment for ' . $order_message . ': ' . $e );
-
-			$result = [
-				'result'   => 'error',
-				'messages' => $e->getMessage(),
-			];
-			wp_send_json( $result, 400 );
-		}
-	}
-
-	/**
-	 * Get shipping options.
-	 *
-	 * @see WC_Cart::get_shipping_packages().
-	 * @see WC_Shipping::calculate_shipping().
-	 * @see WC_Shipping::get_packages().
-	 */
-	public function ajax_get_shipping_options() {
-		check_ajax_referer( 'wcpay-payment-request-shipping', 'security' );
-
-		$shipping_address          = filter_input_array(
-			INPUT_POST,
+		add_action(
+			'woocommerce_store_api_checkout_update_order_from_request',
 			[
-				'country'   => FILTER_SANITIZE_SPECIAL_CHARS,
-				'state'     => FILTER_SANITIZE_SPECIAL_CHARS,
-				'postcode'  => FILTER_SANITIZE_SPECIAL_CHARS,
-				'city'      => FILTER_SANITIZE_SPECIAL_CHARS,
-				'address_1' => FILTER_SANITIZE_SPECIAL_CHARS,
-				'address_2' => FILTER_SANITIZE_SPECIAL_CHARS,
-			]
+				$this,
+				'tokenized_cart_set_payment_method_type',
+			],
+			10,
+			2
 		);
-		$product_view_options      = filter_input_array( INPUT_POST, [ 'is_product_page' => FILTER_SANITIZE_SPECIAL_CHARS ] );
-		$should_show_itemized_view = ! isset( $product_view_options['is_product_page'] ) ? true : filter_var( $product_view_options['is_product_page'], FILTER_VALIDATE_BOOLEAN );
-
-		$data = $this->express_checkout_button_helper->get_shipping_options( $shipping_address, $should_show_itemized_view );
-		wp_send_json( $data );
-	}
-
-	/**
-	 * Get cart details.
-	 */
-	public function ajax_get_cart_details() {
-		check_ajax_referer( 'wcpay-get-cart-details', 'security' );
-
-		if ( ! defined( 'WOOCOMMERCE_CART' ) ) {
-			define( 'WOOCOMMERCE_CART', true );
-		}
-
-		if ( ! defined( 'WOOCOMMERCE_CHECKOUT' ) ) {
-			define( 'WOOCOMMERCE_CHECKOUT', true );
-		}
-
-		WC()->cart->calculate_totals();
-
-		wp_send_json(
-			array_merge(
-				$this->express_checkout_button_helper->build_display_items(),
-				[
-					'needs_shipping' => WC()->cart->needs_shipping(),
-				]
-			)
-		);
-	}
-
-	/**
-	 * Update shipping method.
-	 */
-	public function ajax_update_shipping_method() {
-		check_ajax_referer( 'wcpay-update-shipping-method', 'security' );
-
-		if ( ! defined( 'WOOCOMMERCE_CART' ) ) {
-			define( 'WOOCOMMERCE_CART', true );
-		}
-
-		$shipping_methods = filter_input( INPUT_POST, 'shipping_method', FILTER_DEFAULT, FILTER_REQUIRE_ARRAY );
-		$this->express_checkout_button_helper->update_shipping_method( $shipping_methods );
-
-		WC()->cart->calculate_totals();
-
-		$product_view_options      = filter_input_array( INPUT_POST, [ 'is_product_page' => FILTER_SANITIZE_SPECIAL_CHARS ] );
-		$should_show_itemized_view = ! isset( $product_view_options['is_product_page'] ) ? true : filter_var( $product_view_options['is_product_page'], FILTER_VALIDATE_BOOLEAN );
-
-		$data           = $this->express_checkout_button_helper->build_display_items( $should_show_itemized_view );
-		$data['result'] = 'success';
-
-		wp_send_json( $data );
-	}
-
-	/**
-	 * Gets the selected product data.
-	 *
-	 * @throws Exception If product or stock is unavailable - caught inside function.
-	 */
-	public function ajax_get_selected_product_data() {
-		check_ajax_referer( 'wcpay-get-selected-product-data', 'security' );
-
-		try {
-			$product_id      = isset( $_POST['product_id'] ) ? absint( $_POST['product_id'] ) : false;
-			$qty             = ! isset( $_POST['qty'] ) ? 1 : apply_filters( 'woocommerce_add_to_cart_quantity', absint( $_POST['qty'] ), $product_id );
-			$addon_value     = isset( $_POST['addon_value'] ) ? max( (float) $_POST['addon_value'], 0 ) : 0;
-			$product         = wc_get_product( $product_id );
-			$variation_id    = null;
-			$currency        = get_woocommerce_currency();
-			$is_deposit      = isset( $_POST['wc_deposit_option'] ) ? 'yes' === sanitize_text_field( wp_unslash( $_POST['wc_deposit_option'] ) ) : null;
-			$deposit_plan_id = isset( $_POST['wc_deposit_payment_plan'] ) ? absint( $_POST['wc_deposit_payment_plan'] ) : 0;
-
-			if ( ! is_a( $product, 'WC_Product' ) ) {
-				/* translators: product ID */
-				throw new Exception( sprintf( __( 'Product with the ID (%d) cannot be found.', 'woocommerce-payments' ), $product_id ) );
-			}
-
-			if ( ( 'variable' === $product->get_type() || 'variable-subscription' === $product->get_type() ) && isset( $_POST['attributes'] ) ) {
-				$attributes = wc_clean( wp_unslash( $_POST['attributes'] ) );
-
-				$data_store   = WC_Data_Store::load( 'product' );
-				$variation_id = $data_store->find_matching_product_variation( $product, $attributes );
-
-				if ( ! empty( $variation_id ) ) {
-					$product = wc_get_product( $variation_id );
-				}
-			}
-
-			// Force quantity to 1 if sold individually and check for existing item in cart.
-			if ( $product->is_sold_individually() ) {
-				$qty = apply_filters( 'wcpay_payment_request_add_to_cart_sold_individually_quantity', 1, $qty, $product_id, $variation_id );
-			}
-
-			if ( ! $product->has_enough_stock( $qty ) ) {
-				/* translators: 1: product name 2: quantity in stock */
-				throw new Exception( sprintf( __( 'You cannot add that amount of "%1$s"; to the cart because there is not enough stock (%2$s remaining).', 'woocommerce-payments' ), $product->get_name(), wc_format_stock_quantity_for_display( $product->get_stock_quantity(), $product ) ) );
-			}
-
-			$price = $this->express_checkout_button_helper->get_product_price( $product, $is_deposit, $deposit_plan_id );
-			$total = $qty * $price + $addon_value;
-
-			$quantity_label = 1 < $qty ? ' (x' . $qty . ')' : '';
-
-			$data  = [];
-			$items = [];
-
-			$items[] = [
-				'label'  => $product->get_name() . $quantity_label,
-				'amount' => WC_Payments_Utils::prepare_amount( $total, $currency ),
-			];
-
-			$total_tax = 0;
-			foreach ( $this->express_checkout_button_helper->get_taxes_like_cart( $product, $price ) as $tax ) {
-				$total_tax += $tax;
-
-				$items[] = [
-					'label'   => __( 'Tax', 'woocommerce-payments' ),
-					'amount'  => WC_Payments_Utils::prepare_amount( $tax, $currency ),
-					'pending' => 0 === $tax,
-				];
-			}
-
-			if ( wc_shipping_enabled() && $product->needs_shipping() ) {
-				$items[] = [
-					'label'   => __( 'Shipping', 'woocommerce-payments' ),
-					'amount'  => 0,
-					'pending' => true,
-				];
-
-				$data['shippingOptions'] = [
-					'id'     => 'pending',
-					'label'  => __( 'Pending', 'woocommerce-payments' ),
-					'detail' => '',
-					'amount' => 0,
-				];
-			}
-
-			$data['displayItems'] = $items;
-			$data['total']        = [
-				'label'   => $this->express_checkout_button_helper->get_total_label(),
-				'amount'  => WC_Payments_Utils::prepare_amount( $total + $total_tax, $currency ),
-				'pending' => true,
-			];
-
-			$data['needs_shipping'] = wc_shipping_enabled() && 0 !== wc_get_shipping_method_count( true ) && $product->needs_shipping();
-			$data['currency']       = strtolower( get_woocommerce_currency() );
-			$data['country_code']   = substr( get_option( 'woocommerce_default_country' ), 0, 2 );
-			$data['has_free_trial'] = class_exists( 'WC_Subscriptions_Product' ) ? WC_Subscriptions_Product::get_trial_length( $product ) > 0 : false;
-
-			wp_send_json( $data );
-		} catch ( Exception $e ) {
-			if ( is_a( $e, Invalid_Price_Exception::class ) ) {
-				Logger::log( $e->getMessage() );
-			}
-			wp_send_json( [ 'error' => wp_strip_all_tags( $e->getMessage() ) ], 500 );
-		}
+		add_filter( 'rest_pre_dispatch', [ $this, 'tokenized_cart_store_api_address_normalization' ], 10, 3 );
+		add_filter( 'woocommerce_get_country_locale', [ $this, 'modify_country_locale_for_express_checkout' ], 20 );
 	}
 
 	/**
@@ -508,29 +217,32 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		}
 
 		// This route is used to get shipping rates.
-		// GooglePay/ApplePay might provide us with "trimmed" zip codes.
+		// Google Pay/Apple Pay might provide us with "trimmed" zip codes.
 		// If that's the case, let's temporarily allow to skip the zip code validation, in order to get some shipping rates.
 		$is_update_customer_route = $request->get_route() === '/wc/store/v1/cart/update-customer';
 		if ( $is_update_customer_route ) {
 			add_filter( 'woocommerce_validate_postcode', [ $this, 'maybe_skip_postcode_validation' ], 10, 3 );
 		}
 
-		$request_data = $request->get_json_params();
-		if ( isset( $request_data['shipping_address'] ) ) {
-			$request->set_param( 'shipping_address', $this->transform_ece_address_state_data( $request_data['shipping_address'] ) );
-			// on the "update customer" route, GooglePay/Apple pay might provide redacted postcode data.
+		if ( isset( $request['shipping_address'] ) && is_array( $request['shipping_address'] ) ) {
+			$shipping_address = $request['shipping_address'];
+			$shipping_address = $this->transform_ece_address_state_data( $shipping_address );
+			// on the "update customer" route, Google Pay/Apple Pay might provide redacted postcode data.
 			// we need to modify the zip code to ensure that shipping zone identification still works.
 			if ( $is_update_customer_route ) {
-				$request->set_param( 'shipping_address', $this->transform_ece_address_postcode_data( $request_data['shipping_address'] ) );
+				$shipping_address = $this->transform_ece_address_postcode_data( $shipping_address );
 			}
+			$request->set_param( 'shipping_address', $shipping_address );
 		}
-		if ( isset( $request_data['billing_address'] ) ) {
-			$request->set_param( 'billing_address', $this->transform_ece_address_state_data( $request_data['billing_address'] ) );
-			// on the "update customer" route, GooglePay/Apple pay might provide redacted postcode data.
+		if ( isset( $request['billing_address'] ) && is_array( $request['billing_address'] ) ) {
+			$billing_address = $request['billing_address'];
+			$billing_address = $this->transform_ece_address_state_data( $billing_address );
+			// on the "update customer" route, Google Pay/Apple Pay might provide redacted postcode data.
 			// we need to modify the zip code to ensure that shipping zone identification still works.
 			if ( $is_update_customer_route ) {
-				$request->set_param( 'billing_address', $this->transform_ece_address_postcode_data( $request_data['billing_address'] ) );
+				$billing_address = $this->transform_ece_address_postcode_data( $billing_address );
 			}
+			$request->set_param( 'billing_address', $billing_address );
 		}
 
 		return $response;
@@ -561,9 +273,9 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 	}
 
 	/**
-	 * Transform a GooglePay/ApplePay state address data fields into values that are valid for WooCommerce.
+	 * Transform a Google Pay/Apple Pay state address data fields into values that are valid for WooCommerce.
 	 *
-	 * @param array $address The address to normalize from the GooglePay/ApplePay request.
+	 * @param array $address The address to normalize from the Google Pay/Apple Pay request.
 	 *
 	 * @return array
 	 */
@@ -573,19 +285,149 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			return $address;
 		}
 
-		// States from Apple Pay or Google Pay are in long format, we need their short format..
+		// Due to a bug in Apple Pay, the "Region" part of a Hong Kong address is delivered in
+		// `shipping_postcode`, so we need some special case handling for that. According to
+		// our sources at Apple Pay people will sometimes use the district or even sub-district
+		// for this value. As such we check against all regions, districts, and sub-districts
+		// with both English and Mandarin spelling.
+		//
+		// @reykjalin: The check here is quite elaborate in an attempt to make sure this doesn't break once
+		// Apple Pay fixes the bug that causes address values to be in the wrong place. Because of that the
+		// algorithm becomes:
+		// 1. Use the supplied state if it's valid (in case Apple Pay bug is fixed)
+		// 2. Use the value supplied in the postcode if it's a valid HK region (equivalent to a WC state).
+		// 3. Fall back to the value supplied in the state. This will likely cause a validation error, in
+		// which case a merchant can reach out to us so we can either: 1) add whatever the customer used
+		// as a state to our list of valid states; or 2) let them know the customer must spell the state
+		// in some way that matches our list of valid states.
+		//
+		// @reykjalin: This HK specific sanitazation *should be removed* once Apple Pay fix
+		// the address bug. More info on that in pc4etw-bY-p2.
+		if ( Country_Code::HONG_KONG === $country ) {
+			include_once WCPAY_ABSPATH . 'includes/constants/class-express-checkout-hong-kong-states.php';
+
+			$state = $address['state'] ?? '';
+			if ( ! \WCPay\Constants\Express_Checkout_Hong_Kong_States::is_valid_state( strtolower( $state ) ) ) {
+				$postcode = $address['postcode'] ?? '';
+				if ( strtolower( $postcode ) === 'hongkong' ) {
+					$postcode = 'hong kong';
+				}
+				if ( \WCPay\Constants\Express_Checkout_Hong_Kong_States::is_valid_state( strtolower( $postcode ) ) ) {
+					$address['state'] = $postcode;
+				}
+			}
+		}
+
+		// States from Apple Pay or Google Pay are in long format, we need their short format.
 		$state = $address['state'] ?? '';
 		if ( ! empty( $state ) ) {
-			$address['state'] = $this->express_checkout_button_helper->get_normalized_state( $state, $country );
+			$address['state'] = $this->get_normalized_state( $state, $country );
 		}
 
 		return $address;
 	}
 
 	/**
-	 * Transform a GooglePay/ApplePay postcode address data fields into values that are valid for WooCommerce.
+	 * Gets the normalized state/county field because in some
+	 * cases, the state/county field is formatted differently from
+	 * what WC is expecting and throws an error. An example
+	 * for Ireland, the county dropdown in Chrome shows "Co. Clare" format.
 	 *
-	 * @param array $address The address to normalize from the GooglePay/ApplePay request.
+	 * @param string $state Full state name or an already normalized abbreviation.
+	 * @param string $country Two-letter country code.
+	 *
+	 * @return string Normalized state abbreviation.
+	 */
+	private function get_normalized_state( $state, $country ) {
+		// If it's empty or already normalized, skip.
+		if ( ! $state || $this->is_normalized_state( $state, $country ) ) {
+			return $state;
+		}
+
+		// Try to match state from the Express Checkout API list of states.
+		$state = $this->get_normalized_state_from_ece_states( $state, $country );
+
+		// If it's normalized, return.
+		if ( $this->is_normalized_state( $state, $country ) ) {
+			return $state;
+		}
+
+		// If the above doesn't work, fallback to matching against the list of translated
+		// states from WooCommerce.
+		return $this->get_normalized_state_from_wc_states( $state, $country );
+	}
+
+	/**
+	 * Checks if given state is normalized.
+	 *
+	 * @param string $state State.
+	 * @param string $country Two-letter country code.
+	 *
+	 * @return bool Whether state is normalized or not.
+	 */
+	private function is_normalized_state( $state, $country ) {
+		$wc_states = WC()->countries->get_states( $country );
+		return is_array( $wc_states ) && array_key_exists( $state, $wc_states );
+	}
+
+	/**
+	 * Get normalized state from Express Checkout API dropdown list of states.
+	 *
+	 * @param string $state Full state name or state code.
+	 * @param string $country Two-letter country code.
+	 *
+	 * @return string Normalized state or original state input value.
+	 */
+	private function get_normalized_state_from_ece_states( $state, $country ) {
+		// Include Express Checkout Element API State list for compatibility with WC countries/states.
+		include_once WCPAY_ABSPATH . 'includes/constants/class-express-checkout-element-states.php';
+		$pr_states = \WCPay\Constants\Express_Checkout_Element_States::STATES;
+
+		if ( ! isset( $pr_states[ $country ] ) ) {
+			return $state;
+		}
+
+		foreach ( $pr_states[ $country ] as $wc_state_abbr => $pr_state ) {
+			$sanitized_state_string = $this->express_checkout_button_helper->sanitize_string( $state );
+			// Checks if input state matches with Express Checkout state code (0), name (1) or localName (2).
+			if (
+				( ! empty( $pr_state[0] ) && $sanitized_state_string === $this->express_checkout_button_helper->sanitize_string( $pr_state[0] ) ) ||
+				( ! empty( $pr_state[1] ) && $sanitized_state_string === $this->express_checkout_button_helper->sanitize_string( $pr_state[1] ) ) ||
+				( ! empty( $pr_state[2] ) && $sanitized_state_string === $this->express_checkout_button_helper->sanitize_string( $pr_state[2] ) )
+			) {
+				return $wc_state_abbr;
+			}
+		}
+
+		return $state;
+	}
+
+	/**
+	 * Get normalized state from WooCommerce list of translated states.
+	 *
+	 * @param string $state Full state name or state code.
+	 * @param string $country Two-letter country code.
+	 *
+	 * @return string Normalized state or original state input value.
+	 */
+	private function get_normalized_state_from_wc_states( $state, $country ) {
+		$wc_states = WC()->countries->get_states( $country );
+
+		if ( is_array( $wc_states ) ) {
+			foreach ( $wc_states as $wc_state_abbr => $wc_state_value ) {
+				if ( preg_match( '/' . preg_quote( $wc_state_value, '/' ) . '/i', $state ) ) {
+					return $wc_state_abbr;
+				}
+			}
+		}
+
+		return $state;
+	}
+
+	/**
+	 * Transform a Google Pay/Apple Pay postcode address data fields into values that are valid for WooCommerce.
+	 *
+	 * @param array $address The address to normalize from the Google Pay/Apple Pay request.
 	 *
 	 * @return array
 	 */
@@ -598,9 +440,97 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		// Normalizes postal code in case of redacted data from Apple Pay or Google Pay.
 		$postcode = $address['postcode'] ?? '';
 		if ( ! empty( $postcode ) ) {
-			$address['postcode'] = $this->express_checkout_button_helper->get_normalized_postal_code( $postcode, $country );
+			$address['postcode'] = $this->get_normalized_postal_code( $postcode, $country );
 		}
 
 		return $address;
+	}
+
+	/**
+	 * Normalizes postal code in case of redacted data from Apple Pay.
+	 *
+	 * @param string $postcode Postal code.
+	 * @param string $country Country.
+	 */
+	private function get_normalized_postal_code( $postcode, $country ) {
+		/**
+		 * Currently, Apple Pay truncates the UK and Canadian postal codes to the first few characters respectively
+		 * when passing it back from the shippingcontactselected object. This causes WC to invalidate
+		 * the postal code and not calculate shipping zones correctly.
+		 */
+		if ( Country_Code::UNITED_KINGDOM === $country ) {
+			$cleaned_postcode = substr( preg_replace( '/[^A-Za-z0-9]/', '', $postcode ), 0, 7 );
+			// the minimum length for a GB postcode is 5 (2 characters for the outward code, 3 for the inward code)
+			// if the postcode is not redacted, avoid padding it.
+			if ( strlen( $cleaned_postcode ) >= 5 ) {
+				return $cleaned_postcode;
+			}
+
+			// now, the juicy part: GB postcode units have a variable length, 5 to 7 characters (excluding the space).
+			// they consist of two main parts: the "outward code" and the "inward code".
+			// the "outward code" has a variable length, between two and four characters.
+			// the "inward code" always has 3 characters.
+			// Google Pay/Apple Pay might redact GB postcode units to just the "outward code".
+			// but WC Core expects a full postcode unit to return shipping rates.
+			// since we can't interfere with the rate calculation,
+			// we are padding the (redacted) outward code with `0`s to have a full length postcode unit,
+			// to be used for shipping rates calculations.
+			// Replaces a redacted `N1C` string with something like `N1C000`.
+			return $cleaned_postcode . '000';
+		}
+
+		if ( Country_Code::CANADA === $country ) {
+			// Replaces a redacted string with something like H3B000.
+			return str_pad( preg_replace( '/\s+/', '', $postcode ), 6, '0' );
+		}
+
+		return $postcode;
+	}
+
+	/**
+	 * Modify country locale settings to handle express checkout address requirements.
+	 *
+	 * @param array $locales Array of country locale settings.
+	 * @return array Modified locales array.
+	 */
+	public function modify_country_locale_for_express_checkout( $locales ) {
+		// Only modify locale settings if this is an express checkout AJAX request.
+		if ( ! $this->is_express_checkout_context() ) {
+			return $locales;
+		}
+
+		include_once WCPAY_ABSPATH . 'includes/constants/class-express-checkout-element-states.php';
+
+		// For countries that don't have state fields, make the state field optional.
+		foreach ( \WCPay\Constants\Express_Checkout_Element_States::COUNTRIES_WITHOUT_STATES as $country_code ) {
+			$locales[ $country_code ]['state']['required'] = false;
+		}
+
+		return $locales;
+	}
+
+	/**
+	 * Check if we're in an express checkout context.
+	 *
+	 * @return bool True if we're in an express checkout context, false otherwise.
+	 */
+	private function is_express_checkout_context() {
+		// Only proceed if this is a Store API request.
+		if ( ! WC_Payments_Utils::is_store_api_request() ) {
+			return false;
+		}
+
+		// Check for the 'X-WooPayments-Tokenized-Cart' header using superglobals.
+		if ( 'true' !== sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART'] ?? '' ) ) ) {
+			return false;
+		}
+
+		// Verify the nonce from the 'X-WooPayments-Tokenized-Cart-Nonce' header using superglobals.
+		$nonce = sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_NONCE'] ?? '' ) );
+		if ( ! wp_verify_nonce( $nonce, 'woopayments_tokenized_cart_nonce' ) ) {
+			return false;
+		}
+
+		return true;
 	}
 }

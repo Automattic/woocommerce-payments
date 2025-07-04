@@ -4,7 +4,7 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { Button } from '@wordpress/components';
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 import { useState } from '@wordpress/element';
 import { dispatch } from '@wordpress/data';
 

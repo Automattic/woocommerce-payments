@@ -7,7 +7,7 @@ import {
 	CheckboxControl,
 	Notice,
 	TextControl,
-} from '@wordpress/components';
+} from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies

@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import * as React from 'react';
+import React from 'react';
 import { render, fireEvent } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 
@@ -80,7 +80,9 @@ describe( 'FileUploadControl', () => {
 		const fakeEvent = { target: { files: [ fakeFile ] } };
 
 		// Note: FormFileUpload does not associate file input with label so workaround is required to select it.
-		const input = control.querySelector( 'input[type="file"]' );
+		const input = control.querySelector< HTMLInputElement >(
+			'input[type="file"]'
+		);
 		if ( input !== null ) {
 			fireEvent.change( input, fakeEvent );
 		}
@@ -102,7 +104,9 @@ describe( 'FileUploadControl', () => {
 		} );
 
 		// Note: FormFileUpload does not associate file input with label so workaround is required to select it.
-		const input = control.querySelector( 'input[type="file"]' );
+		const input = control.querySelector< HTMLInputElement >(
+			'input[type="file"]'
+		);
 		if ( input !== null ) {
 			await userEvent.upload( input, file );
 			await userEvent.upload( input, file );

@@ -154,3 +154,14 @@ $gap-small: 12px;
 		}
 	}
 }
+
+.components-snackbar-list {
+	@include breakpoint( '<660px' ) {
+		position: absolute;
+		left: $gap;
+		right: $gap;
+		bottom: 100%;
+		margin-bottom: $gap-small;
+		width: auto;
+	}
+}

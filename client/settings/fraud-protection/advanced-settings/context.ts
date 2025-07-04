@@ -1,13 +1,17 @@
 /**
  * External dependencies
  */
-import { createContext } from 'react';
-import { FraudPreventionSettingsContextType } from '../interfaces';
+import { createContext, Dispatch, SetStateAction } from 'react';
+import { ProtectionSettingsUI } from '../interfaces';
 
-const FraudPreventionSettingsContext = createContext( {
+const FraudPreventionSettingsContext = createContext< {
+	protectionSettingsUI: ProtectionSettingsUI;
+	setProtectionSettingsUI: Dispatch< SetStateAction< ProtectionSettingsUI > >;
+	setIsDirty: Dispatch< SetStateAction< boolean > >;
+} >( {
 	protectionSettingsUI: {},
 	setProtectionSettingsUI: () => null,
 	setIsDirty: () => null,
-} as FraudPreventionSettingsContextType );
+} );
 
 export default FraudPreventionSettingsContext;

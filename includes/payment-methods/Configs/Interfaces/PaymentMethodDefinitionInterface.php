@@ -20,7 +20,7 @@ interface PaymentMethodDefinitionInterface {
 	public static function get_id(): string;
 
 	/**
-	 * Get the keywords for the payment method
+	 * Get the keywords for the payment method. These are used by the duplicates detection service.
 	 *
 	 * @return string[]
 	 */
@@ -42,11 +42,20 @@ interface PaymentMethodDefinitionInterface {
 	public static function get_title( ?string $account_country = null ): string;
 
 	/**
-	 * Get the customer-facing description of the payment method
+	 * Get the title of the payment method for the settings page.
 	 *
+	 * @param string|null $account_country Optional. The merchant's account country.
 	 * @return string
 	 */
-	public static function get_description(): string;
+	public static function get_settings_label( ?string $account_country = null ): string;
+
+	/**
+	 * Get the customer-facing description of the payment method
+	 *
+	 * @param string|null $account_country Optional. The merchant's account country.
+	 * @return string
+	 */
+	public static function get_description( ?string $account_country = null ): string;
 
 	/**
 	 * Is the payment method a BNPL (Buy Now Pay Later) payment method?
@@ -120,9 +129,10 @@ interface PaymentMethodDefinitionInterface {
 	 * Get the URL for the payment method's settings icon
 	 * This icon is used in the payment method settings page.
 	 *
+	 * @param string|null $account_country Optional. The merchant's account country.
 	 * @return string
 	 */
-	public static function get_settings_icon_url(): string;
+	public static function get_settings_icon_url( ?string $account_country = null ): string;
 
 	/**
 	 * Get the testing instructions for the payment method

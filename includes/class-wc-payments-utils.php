@@ -593,13 +593,16 @@ class WC_Payments_Utils {
 			'es-419', // Spanish (Latin America).
 			'et',     // Estonian (Estonia).
 			'fi',     // Finnish (Finland).
+			'fil',    // Filipino (Philippines).
 			'fr',     // French (France).
 			'fr-CA',  // French (Canada).
 			'he',     // Hebrew (Israel).
+			'hr',     // Croatian (Croatia).
 			'hu',     // Hungarian (Hungary).
 			'id',     // Indonesian (Indonesia).
 			'it',     // Italian (Italy).
-			'ja',     // Japanese.
+			'ja',     // Japanese (Japan).
+			'ko',     // Korean (Korea).
 			'lt',     // Lithuanian (Lithuania).
 			'lv',     // Latvian (Latvia).
 			'ms',     // Malay (Malaysia).
@@ -614,8 +617,9 @@ class WC_Payments_Utils {
 			'sk',     // Slovak (Slovakia).
 			'sl',     // Slovenian (Slovenia).
 			'sv',     // Swedish (Sweden).
-			'th',     // Thai.
+			'th',     // Thai (Thailand).
 			'tr',     // Turkish (Turkey).
+			'vi',     // Vietnamese (Vietnam).
 			'zh',     // Chinese Simplified (China).
 			'zh-HK',  // Chinese Traditional (Hong Kong).
 			'zh-TW',  // Chinese Traditional (Taiwan).
@@ -717,6 +721,9 @@ class WC_Payments_Utils {
 
 	/**
 	 * Get the BNPL limits per currency for a specific payment method.
+	 *
+	 * FLAG: PAYMENT_METHODS_LIST
+	 * This can be replaced once all BNPL methods are converted to use definitions.
 	 *
 	 * @param string $payment_method The payment method name ('affirm', 'afterpay_clearpay', or 'klarna').
 	 * @return array The BNPL limits per currency for the specified payment method.
@@ -1350,15 +1357,14 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Block based themes display the cart block even when the cart shortcode is used. has_block() isn't effective
-	 * in this case because it checks the page content for the block, which isn't present.
+	 * Determine if the current page is a cart block.
 	 *
-	 * @return bool
+	 * @return bool True if the current page is a cart block, false otherwise.
 	 *
 	 * @psalm-suppress UndefinedFunction
 	 */
 	public static function is_cart_block(): bool {
-		return has_block( 'woocommerce/cart' ) || ( wp_is_block_theme() && is_cart() );
+		return has_block( 'woocommerce/cart' );
 	}
 
 	/**
@@ -1371,11 +1377,7 @@ class WC_Payments_Utils {
 		if ( isset( $_REQUEST['rest_route'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			$rest_route = sanitize_text_field( $_REQUEST['rest_route'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.NonceVerification
 		} else {
-			// Extract the request path from the request URL.
-			$url_parts    = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-			$request_path = ! empty( $url_parts['path'] ) ? rtrim( $url_parts['path'], '/' ) : '';
-			// Remove the REST API prefix from the request path to end up with the route.
-			$rest_route = str_replace( trailingslashit( rest_get_url_prefix() ), '', $request_path );
+			$rest_route = self::extract_rest_route_from_url();
 		}
 
 		// Bail early if the rest route is empty.
@@ -1392,6 +1394,37 @@ class WC_Payments_Utils {
 
 		// If no match was found, this is not a Store API request.
 		return false;
+	}
+
+	/**
+	 * Extract the REST route from the current request URL.
+	 *
+	 * @return string The REST route, or empty string if not found.
+	 */
+	private static function extract_rest_route_from_url(): string {
+		// Extract the request path from the request URL.
+		$url_parts = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+		if ( empty( $url_parts['path'] ) ) {
+			return '';
+		}
+
+		$request_path = rtrim( $url_parts['path'], '/' );
+		if ( empty( $request_path ) ) {
+			return '';
+		}
+
+		// Remove the REST API prefix from the request path to end up with the route.
+		$rest_prefix = trailingslashit( rest_get_url_prefix() );
+
+		// For multisite subdirectory setups, we need to handle the subdirectory prefix.
+		// Look for the wp-json prefix in the path and extract everything after it.
+		$wp_json_pos = strpos( $request_path, '/' . rtrim( $rest_prefix, '/' ) );
+		if ( false !== $wp_json_pos ) {
+			return substr( $request_path, $wp_json_pos + strlen( $rest_prefix ) );
+		}
+
+		// Fallback: simple prefix replacement for non-multisite cases.
+		return str_replace( $rest_prefix, '', $request_path );
 	}
 
 	/**

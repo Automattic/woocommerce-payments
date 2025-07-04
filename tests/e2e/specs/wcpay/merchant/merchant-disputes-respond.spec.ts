@@ -247,7 +247,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 
 					await expect(
 						merchantPage.getByText(
-							'Good news! You won this dispute'
+							'decided that you won the dispute on'
 						)
 					).toBeVisible();
 				}
@@ -346,7 +346,9 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 					).toBeVisible();
 
 					await expect(
-						merchantPage.getByText( 'This dispute was lost' )
+						merchantPage.getByText(
+							'decided that you lost the dispute'
+						)
 					).toBeVisible();
 				}
 			);

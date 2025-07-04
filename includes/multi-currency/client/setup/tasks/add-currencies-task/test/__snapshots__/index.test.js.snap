@@ -1,6 +1,74 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Multi-Currency enabled currencies list add currencies task renders correctly: snapshot-multi-currency-onboarding 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  font-size: 13px;
+}
+
+.emotion-8 {
+  margin-bottom: calc(4px * 2);
+}
+
+.components-panel__row .emotion-8 {
+  margin-bottom: inherit;
+}
+
+.emotion-50 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-50 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <li
     class="wcpay-wizard-task add-currencies-task is-active"
@@ -56,15 +124,15 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
           .
         </p>
         <div
-          class="components-surface components-card add-currencies-task__currency-selector-wrapper css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+          class="components-surface components-card add-currencies-task__currency-selector-wrapper emotion-0 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Card"
         >
           <div
-            class="css-mgwsf4-View-Content em57xhy0"
+            class="emotion-2 emotion-1"
           >
             <div
-              class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+              class="components-card__body components-card-body emotion-4 emotion-1"
               data-wp-c16t="true"
               data-wp-component="CardBody"
             >
@@ -113,10 +181,10 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
                     data-testid="recommended-currency"
                   >
                     <div
-                      class="components-base-control components-checkbox-control css-wdf2ti-Wrapper ej5x27r4"
+                      class="components-base-control components-checkbox-control emotion-6 emotion-7"
                     >
                       <div
-                        class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+                        class="components-base-control__field emotion-8 emotion-9"
                       >
                         <span
                           class="components-checkbox-control__input-container"
@@ -175,10 +243,10 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
                     data-testid="recommended-currency"
                   >
                     <div
-                      class="components-base-control components-checkbox-control css-wdf2ti-Wrapper ej5x27r4"
+                      class="components-base-control components-checkbox-control emotion-6 emotion-7"
                     >
                       <div
-                        class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+                        class="components-base-control__field emotion-8 emotion-9"
                       >
                         <span
                           class="components-checkbox-control__input-container"
@@ -237,10 +305,10 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
                     data-testid="recommended-currency"
                   >
                     <div
-                      class="components-base-control components-checkbox-control css-wdf2ti-Wrapper ej5x27r4"
+                      class="components-base-control components-checkbox-control emotion-6 emotion-7"
                     >
                       <div
-                        class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+                        class="components-base-control__field emotion-8 emotion-9"
                       >
                         <span
                           class="components-checkbox-control__input-container"
@@ -299,10 +367,10 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
                     data-testid="recommended-currency"
                   >
                     <div
-                      class="components-base-control components-checkbox-control css-wdf2ti-Wrapper ej5x27r4"
+                      class="components-base-control components-checkbox-control emotion-6 emotion-7"
                     >
                       <div
-                        class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+                        class="components-base-control__field emotion-8 emotion-9"
                       >
                         <span
                           class="components-checkbox-control__input-container"
@@ -361,10 +429,10 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
                     data-testid="recommended-currency"
                   >
                     <div
-                      class="components-base-control components-checkbox-control css-wdf2ti-Wrapper ej5x27r4"
+                      class="components-base-control components-checkbox-control emotion-6 emotion-7"
                     >
                       <div
-                        class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+                        class="components-base-control__field emotion-8 emotion-9"
                       >
                         <span
                           class="components-checkbox-control__input-container"
@@ -423,10 +491,10 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
                     data-testid="recommended-currency"
                   >
                     <div
-                      class="components-base-control components-checkbox-control css-wdf2ti-Wrapper ej5x27r4"
+                      class="components-base-control components-checkbox-control emotion-6 emotion-7"
                     >
                       <div
-                        class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+                        class="components-base-control__field emotion-8 emotion-9"
                       >
                         <span
                           class="components-checkbox-control__input-container"
@@ -494,10 +562,10 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
                     class="enabled-currency-checkbox"
                   >
                     <div
-                      class="components-base-control components-checkbox-control css-wdf2ti-Wrapper ej5x27r4"
+                      class="components-base-control components-checkbox-control emotion-6 emotion-7"
                     >
                       <div
-                        class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+                        class="components-base-control__field emotion-8 emotion-9"
                       >
                         <span
                           class="components-checkbox-control__input-container"
@@ -540,10 +608,10 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
                     class="enabled-currency-checkbox"
                   >
                     <div
-                      class="components-base-control components-checkbox-control css-wdf2ti-Wrapper ej5x27r4"
+                      class="components-base-control components-checkbox-control emotion-6 emotion-7"
                     >
                       <div
-                        class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+                        class="components-base-control__field emotion-8 emotion-9"
                       >
                         <span
                           class="components-checkbox-control__input-container"
@@ -586,10 +654,10 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
                     class="enabled-currency-checkbox"
                   >
                     <div
-                      class="components-base-control components-checkbox-control css-wdf2ti-Wrapper ej5x27r4"
+                      class="components-base-control components-checkbox-control emotion-6 emotion-7"
                     >
                       <div
-                        class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+                        class="components-base-control__field emotion-8 emotion-9"
                       >
                         <span
                           class="components-checkbox-control__input-container"
@@ -631,10 +699,10 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
                     class="enabled-currency-checkbox"
                   >
                     <div
-                      class="components-base-control components-checkbox-control css-wdf2ti-Wrapper ej5x27r4"
+                      class="components-base-control components-checkbox-control emotion-6 emotion-7"
                     >
                       <div
-                        class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+                        class="components-base-control__field emotion-8 emotion-9"
                       >
                         <span
                           class="components-checkbox-control__input-container"
@@ -677,10 +745,10 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
                     class="enabled-currency-checkbox"
                   >
                     <div
-                      class="components-base-control components-checkbox-control css-wdf2ti-Wrapper ej5x27r4"
+                      class="components-base-control components-checkbox-control emotion-6 emotion-7"
                     >
                       <div
-                        class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+                        class="components-base-control__field emotion-8 emotion-9"
                       >
                         <span
                           class="components-checkbox-control__input-container"
@@ -725,13 +793,13 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
           </div>
           <div
             aria-hidden="true"
-            class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+            class="components-elevation emotion-50 emotion-1"
             data-wp-c16t="true"
             data-wp-component="Elevation"
           />
           <div
             aria-hidden="true"
-            class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+            class="components-elevation emotion-50 emotion-1"
             data-wp-c16t="true"
             data-wp-component="Elevation"
           />
@@ -749,6 +817,74 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
 `;
 
 exports[`Multi-Currency enabled currencies list currency search works with currency code: snapshot-currency-search-by-code 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  font-size: 13px;
+}
+
+.emotion-8 {
+  margin-bottom: calc(4px * 2);
+}
+
+.components-panel__row .emotion-8 {
+  margin-bottom: inherit;
+}
+
+.emotion-10 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-10 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <li
     class="wcpay-wizard-task add-currencies-task is-active"
@@ -804,15 +940,15 @@ exports[`Multi-Currency enabled currencies list currency search works with curre
           .
         </p>
         <div
-          class="components-surface components-card add-currencies-task__currency-selector-wrapper css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+          class="components-surface components-card add-currencies-task__currency-selector-wrapper emotion-0 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Card"
         >
           <div
-            class="css-mgwsf4-View-Content em57xhy0"
+            class="emotion-2 emotion-1"
           >
             <div
-              class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+              class="components-card__body components-card-body emotion-4 emotion-1"
               data-wp-c16t="true"
               data-wp-component="CardBody"
             >
@@ -858,10 +994,10 @@ exports[`Multi-Currency enabled currencies list currency search works with curre
                     class="enabled-currency-checkbox"
                   >
                     <div
-                      class="components-base-control components-checkbox-control css-wdf2ti-Wrapper ej5x27r4"
+                      class="components-base-control components-checkbox-control emotion-6 emotion-7"
                     >
                       <div
-                        class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+                        class="components-base-control__field emotion-8 emotion-9"
                       >
                         <span
                           class="components-checkbox-control__input-container"
@@ -905,13 +1041,13 @@ exports[`Multi-Currency enabled currencies list currency search works with curre
           </div>
           <div
             aria-hidden="true"
-            class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+            class="components-elevation emotion-10 emotion-1"
             data-wp-c16t="true"
             data-wp-component="Elevation"
           />
           <div
             aria-hidden="true"
-            class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+            class="components-elevation emotion-10 emotion-1"
             data-wp-c16t="true"
             data-wp-component="Elevation"
           />
@@ -929,6 +1065,74 @@ exports[`Multi-Currency enabled currencies list currency search works with curre
 `;
 
 exports[`Multi-Currency enabled currencies list currency search works with currency name: snapshot-currency-search-by-name 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  font-size: 13px;
+}
+
+.emotion-8 {
+  margin-bottom: calc(4px * 2);
+}
+
+.components-panel__row .emotion-8 {
+  margin-bottom: inherit;
+}
+
+.emotion-10 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-10 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <li
     class="wcpay-wizard-task add-currencies-task is-active"
@@ -984,15 +1188,15 @@ exports[`Multi-Currency enabled currencies list currency search works with curre
           .
         </p>
         <div
-          class="components-surface components-card add-currencies-task__currency-selector-wrapper css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+          class="components-surface components-card add-currencies-task__currency-selector-wrapper emotion-0 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Card"
         >
           <div
-            class="css-mgwsf4-View-Content em57xhy0"
+            class="emotion-2 emotion-1"
           >
             <div
-              class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+              class="components-card__body components-card-body emotion-4 emotion-1"
               data-wp-c16t="true"
               data-wp-component="CardBody"
             >
@@ -1038,10 +1242,10 @@ exports[`Multi-Currency enabled currencies list currency search works with curre
                     class="enabled-currency-checkbox"
                   >
                     <div
-                      class="components-base-control components-checkbox-control css-wdf2ti-Wrapper ej5x27r4"
+                      class="components-base-control components-checkbox-control emotion-6 emotion-7"
                     >
                       <div
-                        class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+                        class="components-base-control__field emotion-8 emotion-9"
                       >
                         <span
                           class="components-checkbox-control__input-container"
@@ -1085,13 +1289,13 @@ exports[`Multi-Currency enabled currencies list currency search works with curre
           </div>
           <div
             aria-hidden="true"
-            class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+            class="components-elevation emotion-10 emotion-1"
             data-wp-c16t="true"
             data-wp-component="Elevation"
           />
           <div
             aria-hidden="true"
-            class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+            class="components-elevation emotion-10 emotion-1"
             data-wp-c16t="true"
             data-wp-component="Elevation"
           />
@@ -1109,6 +1313,74 @@ exports[`Multi-Currency enabled currencies list currency search works with curre
 `;
 
 exports[`Multi-Currency enabled currencies list currency search works with currency symbol: snapshot-currency-search-by-symbol 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  font-size: 13px;
+}
+
+.emotion-8 {
+  margin-bottom: calc(4px * 2);
+}
+
+.components-panel__row .emotion-8 {
+  margin-bottom: inherit;
+}
+
+.emotion-10 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-10 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <li
     class="wcpay-wizard-task add-currencies-task is-active"
@@ -1164,15 +1436,15 @@ exports[`Multi-Currency enabled currencies list currency search works with curre
           .
         </p>
         <div
-          class="components-surface components-card add-currencies-task__currency-selector-wrapper css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+          class="components-surface components-card add-currencies-task__currency-selector-wrapper emotion-0 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Card"
         >
           <div
-            class="css-mgwsf4-View-Content em57xhy0"
+            class="emotion-2 emotion-1"
           >
             <div
-              class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+              class="components-card__body components-card-body emotion-4 emotion-1"
               data-wp-c16t="true"
               data-wp-component="CardBody"
             >
@@ -1218,10 +1490,10 @@ exports[`Multi-Currency enabled currencies list currency search works with curre
                     class="enabled-currency-checkbox"
                   >
                     <div
-                      class="components-base-control components-checkbox-control css-wdf2ti-Wrapper ej5x27r4"
+                      class="components-base-control components-checkbox-control emotion-6 emotion-7"
                     >
                       <div
-                        class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+                        class="components-base-control__field emotion-8 emotion-9"
                       >
                         <span
                           class="components-checkbox-control__input-container"
@@ -1281,13 +1553,13 @@ exports[`Multi-Currency enabled currencies list currency search works with curre
           </div>
           <div
             aria-hidden="true"
-            class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+            class="components-elevation emotion-10 emotion-1"
             data-wp-c16t="true"
             data-wp-component="Elevation"
           />
           <div
             aria-hidden="true"
-            class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+            class="components-elevation emotion-10 emotion-1"
             data-wp-c16t="true"
             data-wp-component="Elevation"
           />
@@ -1305,6 +1577,61 @@ exports[`Multi-Currency enabled currencies list currency search works with curre
 `;
 
 exports[`Multi-Currency enabled currencies list should hide recommended currencies section, if all recommended currencies are enabled: snapshot-all-currencies-selected 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(2px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(2px - 1px);
+  border-top-right-radius: calc(2px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(2px - 1px);
+  border-bottom-right-radius: calc(2px - 1px);
+}
+
+.emotion-6 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  border-radius: 2px;
+}
+
+@media ( prefers-reduced-motion: reduce ) {
+  .emotion-6 {
+    transition-duration: 0ms;
+  }
+}
+
 <div>
   <li
     class="wcpay-wizard-task add-currencies-task is-active"
@@ -1369,15 +1696,15 @@ exports[`Multi-Currency enabled currencies list should hide recommended currenci
            to your store.
         </p>
         <div
-          class="components-surface components-card add-currencies-task__currency-selector-wrapper css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+          class="components-surface components-card add-currencies-task__currency-selector-wrapper emotion-0 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Card"
         >
           <div
-            class="css-mgwsf4-View-Content em57xhy0"
+            class="emotion-2 emotion-1"
           >
             <div
-              class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+              class="components-card__body components-card-body emotion-4 emotion-1"
               data-wp-c16t="true"
               data-wp-component="CardBody"
             >
@@ -1430,13 +1757,13 @@ exports[`Multi-Currency enabled currencies list should hide recommended currenci
           </div>
           <div
             aria-hidden="true"
-            class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+            class="components-elevation emotion-6 emotion-1"
             data-wp-c16t="true"
             data-wp-component="Elevation"
           />
           <div
             aria-hidden="true"
-            class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+            class="components-elevation emotion-6 emotion-1"
             data-wp-c16t="true"
             data-wp-component="Elevation"
           />

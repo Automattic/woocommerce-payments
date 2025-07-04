@@ -22,7 +22,6 @@ use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Eps_Payment_Method;
-use WCPay\Payment_Methods\Wechatpay_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\Payment_Methods\Multibanco_Payment_Method;
 use WCPay\WooPay_Tracker;
@@ -380,8 +379,6 @@ class WC_Payments {
 		include_once __DIR__ . '/core/server/request/trait-use-test-mode-only-when-test-mode-onboarding.php';
 		include_once __DIR__ . '/core/server/request/class-generic.php';
 		include_once __DIR__ . '/core/server/request/class-get-intention.php';
-		include_once __DIR__ . '/core/server/request/class-get-reporting-payment-activity.php';
-		include_once __DIR__ . '/core/server/request/class-get-payment-process-factors.php';
 		include_once __DIR__ . '/core/server/request/class-create-intention.php';
 		include_once __DIR__ . '/core/server/request/class-update-intention.php';
 		include_once __DIR__ . '/core/server/request/class-capture-intention.php';
@@ -444,7 +441,7 @@ class WC_Payments {
 		include_once __DIR__ . '/payment-methods/class-klarna-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-multibanco-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-grabpay-payment-method.php';
-		include_once __DIR__ . '/payment-methods/class-wechatpay-payment-method.php';
+		include_once __DIR__ . '/inline-script-payloads/class-woo-payments-payment-methods-config.php';
 		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-button-helper.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-sepa.php';
 		include_once __DIR__ . '/class-wc-payments-status.php';
@@ -471,6 +468,7 @@ class WC_Payments {
 		include_once __DIR__ . '/exceptions/class-order-id-mismatch-exception.php';
 		include_once __DIR__ . '/exceptions/class-rate-limiter-enabled-exception.php';
 		include_once __DIR__ . '/exceptions/class-invalid-address-exception.php';
+		include_once __DIR__ . '/exceptions/class-subscription-mode-mismatch-exception.php';
 		include_once __DIR__ . '/constants/class-base-constant.php';
 		include_once __DIR__ . '/constants/class-country-code.php';
 		include_once __DIR__ . '/constants/class-country-test-cards.php';
@@ -481,6 +479,8 @@ class WC_Payments {
 		include_once __DIR__ . '/constants/class-payment-type.php';
 		include_once __DIR__ . '/constants/class-payment-initiated-by.php';
 		include_once __DIR__ . '/constants/class-intent-status.php';
+		include_once __DIR__ . '/constants/class-refund-status.php';
+		include_once __DIR__ . '/constants/class-refund-failure-reason.php';
 		include_once __DIR__ . '/constants/class-payment-intent-status.php';
 		include_once __DIR__ . '/constants/class-payment-capture-type.php';
 		include_once __DIR__ . '/constants/class-payment-method.php';
@@ -568,6 +568,10 @@ class WC_Payments {
 		self::$customer_service->init_hooks();
 		self::$token_service->init_hooks();
 
+		/**
+		 * FLAG: PAYMENT_METHODS_LIST
+		 * As payment methods are converted to use definitions, they need to be removed from the list below.
+		 */
 		$payment_method_classes = [
 			CC_Payment_Method::class,
 			Bancontact_Payment_Method::class,
@@ -584,7 +588,6 @@ class WC_Payments {
 			Klarna_Payment_Method::class,
 			Multibanco_Payment_Method::class,
 			Grabpay_Payment_Method::class,
-			Wechatpay_Payment_Method::class,
 		];
 
 		$payment_methods = [];
@@ -676,7 +679,6 @@ class WC_Payments {
 		add_filter( 'woocommerce_payment_gateways', [ __CLASS__, 'register_gateway' ] );
 		add_filter( 'option_woocommerce_gateway_order', [ __CLASS__, 'order_woopayments_gateways' ], 2 );
 		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'order_woopayments_gateways' ], 3 );
-		add_filter( 'woocommerce_rest_api_option_permissions', [ __CLASS__, 'add_wcpay_options_to_woocommerce_permissions_list' ], 5 );
 		add_filter( 'woocommerce_admin_get_user_data_fields', [ __CLASS__, 'add_user_data_fields' ] );
 
 		// Add note query support for source.
@@ -742,26 +744,31 @@ class WC_Payments {
 			// Use tracks loader only in admin screens because it relies on WC_Tracks loaded by WC_Admin.
 			include_once WCPAY_ABSPATH . 'includes/admin/tracks/tracks-loader.php';
 
-			include_once __DIR__ . '/admin/class-wc-payments-admin-sections-overwrite.php';
-			$admin_sections_overwrite = new WC_Payments_Admin_Sections_Overwrite( self::get_account_service() );
-			$admin_sections_overwrite->init_hooks();
-
 			$wcpay_status = new WC_Payments_Status( self::get_gateway(), self::get_wc_payments_http(), self::get_account_service() );
 			$wcpay_status->init_hooks();
 
 			$wcpay_order_frt_meta_box = new WCPay\Fraud_Prevention\Order_Fraud_And_Risk_Meta_Box( self::$order_service );
 			$wcpay_order_frt_meta_box->init_hooks();
+
+			// Initialize Stripe Billing deprecation notices.
+			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions-admin-notices.php';
+			$wcpay_subscriptions_admin_notices = new WC_Payments_Subscriptions_Admin_Notices();
+			$wcpay_subscriptions_admin_notices->init_hooks();
 		}
 
 		// Load Stripe Billing subscription integration.
 		include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions.php';
 		WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::$order_service, self::$account, self::$token_service );
 
+		// Add hook to remove Stripe Billing deprecation note when WooCommerce Subscriptions is installed.
+		add_action( 'activated_plugin', [ __CLASS__, 'maybe_remove_stripe_billing_deprecation_note' ], 10, 1 );
+
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '7.9.0', '<' ) ) {
 			add_action( 'woocommerce_onboarding_profile_data_updated', 'WC_Payments_Features::maybe_enable_wcpay_subscriptions_after_onboarding', 10, 2 );
 		}
 
 		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'maybe_disable_wcpay_subscriptions_on_update' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'maybe_update_stripe_billing_deprecation_note' ] );
 
 		add_action( 'rest_api_init', [ __CLASS__, 'init_rest_api' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ __CLASS__, 'set_plugin_activation_timestamp' ] );
@@ -1031,31 +1038,12 @@ class WC_Payments {
 	}
 
 	/**
-	 * Create the HTTP instantiation.
-	 *
-	 * @return WC_Payments_Http_Interface
-	 */
-	private static function get_wc_payments_http() {
-		require_once __DIR__ . '/wc-payment-api/class-wc-payments-http-interface.php';
-		require_once __DIR__ . '/wc-payment-api/class-wc-payments-http.php';
-
-		$http_class = apply_filters( 'wc_payments_http', null );
-
-		if ( ! $http_class instanceof WC_Payments_Http_Interface ) {
-			$http_class = new WC_Payments_Http( new Automattic\Jetpack\Connection\Manager( 'woocommerce-payments' ) );
-			$http_class->init_hooks();
-		}
-
-		return $http_class;
-	}
-
-	/**
 	 * Initialize the REST API controllers.
 	 */
 	public static function init_rest_api() {
 		// Ensures we are not initializing our REST during `rest_preload_api_request`.
-		// When constructors signature changes, in manual update scenarios we were run into fatals.
-		// Those fatals are not critical, but it causes hickups in release process as catches unnecessary attention.
+		// When constructor signatures change, in manual update scenarios we were running into fatals.
+		// Those fatals are not critical, but they cause hiccups in the release process as catches unnecessary attention.
 		if ( function_exists( 'get_current_screen' ) && get_current_screen() ) {
 			return;
 		}
@@ -1111,13 +1099,13 @@ class WC_Payments {
 		$accounts_controller = new WC_REST_Payments_Terminal_Locations_Controller( self::$api_client );
 		$accounts_controller->register_routes();
 
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-reporting-controller.php';
-		$reporting_controller = new WC_REST_Payments_Reporting_Controller( self::$api_client );
-		$reporting_controller->register_routes();
-
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-settings-controller.php';
 		$settings_controller = new WC_REST_Payments_Settings_Controller( self::$api_client, self::get_gateway(), self::$account );
 		$settings_controller->register_routes();
+
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-settings-option-controller.php';
+		$settings_option_controller = new WC_REST_Payments_Settings_Option_Controller( self::$api_client );
+		$settings_option_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-reader-controller.php';
 		$charges_controller = new WC_REST_Payments_Reader_Controller( self::$api_client, self::get_gateway(), self::$in_person_payments_receipts_service );
@@ -1143,10 +1131,6 @@ class WC_Payments {
 		$refunds_controller = new WC_REST_Payments_Refunds_Controller( self::$api_client );
 		$refunds_controller->register_routes();
 
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-survey-controller.php';
-		$survey_controller = new WC_REST_Payments_Survey_Controller( self::get_wc_payments_http() );
-		$survey_controller->register_routes();
-
 		if ( WC_Payments_Features::is_documents_section_enabled() ) {
 			include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-documents-controller.php';
 			$documents_controller = new WC_REST_Payments_Documents_Controller( self::$api_client );
@@ -1158,17 +1142,13 @@ class WC_Payments {
 		}
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-payment-intents-controller.php';
-		$payment_intents_controller = new WC_REST_Payments_Payment_Intents_Controller( self::$api_client );
-		$payment_intents_controller->register_routes();
-
-		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-payment-intents-create-controller.php';
-		$payment_intents_create_controller = new WC_REST_Payments_Payment_Intents_Create_Controller(
+		$payment_intents_controller = new WC_REST_Payments_Payment_Intents_Controller(
 			self::$api_client,
 			self::get_gateway(),
 			wcpay_get_container()->get( OrderService::class ),
 			wcpay_get_container()->get( Level3Service::class )
 		);
-		$payment_intents_create_controller->register_routes();
+		$payment_intents_controller->register_routes();
 
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-authorizations-controller.php';
 		$authorizations_controller = new WC_REST_Payments_Authorizations_Controller( self::$api_client );
@@ -1535,6 +1515,9 @@ class WC_Payments {
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-stripelink.php';
 			WC_Payments_Notes_Set_Up_StripeLink::set_gateway( self::get_gateway() );
 			WC_Payments_Notes_Set_Up_StripeLink::possibly_add_note();
+
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-stripe-billing-deprecation.php';
+			WC_Payments_Notes_Stripe_Billing_Deprecation::possibly_add_note();
 		}
 
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '7.5', '<' ) && get_woocommerce_currency() === 'NOK' ) {
@@ -1598,6 +1581,9 @@ class WC_Payments {
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-set-up-stripelink.php';
 			WC_Payments_Notes_Set_Up_StripeLink::possibly_delete_note();
+
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-stripe-billing-deprecation.php';
+			WC_Payments_Notes_Stripe_Billing_Deprecation::possibly_delete_note();
 		}
 	}
 
@@ -1958,45 +1944,6 @@ class WC_Payments {
 	}
 
 	/**
-	 * Adds WCPay options to Woo Core option allow list.
-	 *
-	 * @param   array $permissions Array containing the permissions.
-	 *
-	 * @return  array              An array containing the modified permissions.
-	 */
-	public static function add_wcpay_options_to_woocommerce_permissions_list( $permissions ) {
-		$wcpay_permissions_list = array_fill_keys(
-			[
-				'wcpay_frt_discover_banner_settings',
-				'wcpay_multi_currency_setup_completed',
-				'woocommerce_dismissed_todo_tasks',
-				'woocommerce_remind_me_later_todo_tasks',
-				'woocommerce_deleted_todo_tasks',
-				'wcpay_fraud_protection_welcome_tour_dismissed',
-				'wcpay_capability_request_dismissed_notices',
-				'wcpay_onboarding_eligibility_modal_dismissed',
-				'wcpay_connection_success_modal_dismissed',
-				'wcpay_next_deposit_notice_dismissed',
-				'wcpay_duplicate_payment_method_notices_dismissed',
-				'wcpay_exit_survey_dismissed',
-				'wcpay_instant_deposit_notice_dismissed',
-				'wcpay_date_format_notice_dismissed',
-			],
-			true
-		);
-
-		if ( is_array( $permissions ) ) {
-			return array_merge(
-				$permissions,
-				$wcpay_permissions_list
-			);
-		}
-
-		return $wcpay_permissions_list;
-	}
-
-
-	/**
 	 * Creates a new request object for a server call.
 	 *
 	 * @param  string $class_name The name of the request class. Must extend WCPay\Core\Server\Request.
@@ -2098,6 +2045,74 @@ class WC_Payments {
 	}
 
 	/**
+	 * Disable the WCPay Subscriptions feature on WooPayments plugin update if it's enabled and the store is no longer eligible.
+	 *
+	 * @see WC_Payments_Features::is_wcpay_subscriptions_eligible() for eligibility criteria.
+	 */
+	public static function maybe_disable_wcpay_subscriptions_on_update() {
+		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() && ( class_exists( 'WC_Subscriptions' ) || ! WC_Payments_Features::is_wcpay_subscriptions_eligible() ) ) {
+			update_option( WC_Payments_Features::WCPAY_SUBSCRIPTIONS_FLAG_NAME, '0' );
+		}
+	}
+
+	/**
+	 * Show error when WooPay opt-in is checked but no phone number was typed.
+	 */
+	public static function maybe_show_woopay_phone_number_error() {
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		if ( isset( $_POST['save_user_in_woopay'] ) && 'true' === $_POST['save_user_in_woopay'] ) {
+            // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			if ( ! isset( $_POST['woopay_user_phone_field'] ) || ! isset( $_POST['woopay_user_phone_field']['no-country-code'] ) || empty( $_POST['woopay_user_phone_field']['no-country-code'] ) ) {
+				wc_add_notice( '<strong>' . __( 'Mobile Number', 'woocommerce-payments' ) . '</strong> ' . __( 'is required to create an WooPay account.', 'woocommerce-payments' ), 'error' );
+			}
+		}
+	}
+
+	/**
+	 * Removes the Stripe Billing deprecation note when WooCommerce Subscriptions is installed.
+	 *
+	 * @param string $plugin The plugin being activated.
+	 */
+	public static function maybe_remove_stripe_billing_deprecation_note( $plugin ) {
+		if ( 'woocommerce-subscriptions/woocommerce-subscriptions.php' === $plugin || 'woocommerce-com-woocommerce-subscriptions/woocommerce-subscriptions.php' === $plugin ) {
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-stripe-billing-deprecation.php';
+			WC_Payments_Notes_Stripe_Billing_Deprecation::possibly_delete_note();
+		}
+	}
+
+	/**
+	 * Update the Stripe Billing deprecation note.
+	 */
+	public static function maybe_update_stripe_billing_deprecation_note() {
+		// If Stripe Billing is not enabled or WooCommerce Subscriptions is active, do not update the note.
+		if ( ! WC_Payments_Features::is_stripe_billing_enabled() || class_exists( 'WC_Subscriptions' ) ) {
+			return;
+		}
+
+		require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-stripe-billing-deprecation.php';
+		WC_Payments_Notes_Stripe_Billing_Deprecation::possibly_update_note();
+	}
+
+	/**
+	 * Create the HTTP instantiation.
+	 *
+	 * @return WC_Payments_Http_Interface
+	 */
+	private static function get_wc_payments_http() {
+		require_once __DIR__ . '/wc-payment-api/class-wc-payments-http-interface.php';
+		require_once __DIR__ . '/wc-payment-api/class-wc-payments-http.php';
+
+		$http_class = apply_filters( 'wc_payments_http', null );
+
+		if ( ! $http_class instanceof WC_Payments_Http_Interface ) {
+			$http_class = new WC_Payments_Http( new Automattic\Jetpack\Connection\Manager( 'woocommerce-payments' ) );
+			$http_class->init_hooks();
+		}
+
+		return $http_class;
+	}
+
+	/**
 	 * Determines whether we should load Stripe Billing integration classes.
 	 *
 	 * Return true when:
@@ -2134,29 +2149,5 @@ class WC_Payments {
 		);
 
 		return (bool) ( is_countable( $result ) ? count( $result ) : 0 );
-	}
-
-	/**
-	 * Disable the WCPay Subscriptions feature on WooPayments plugin update if it's enabled and the store is no longer eligible.
-	 *
-	 * @see WC_Payments_Features::is_wcpay_subscriptions_eligible() for eligibility criteria.
-	 */
-	public static function maybe_disable_wcpay_subscriptions_on_update() {
-		if ( WC_Payments_Features::is_wcpay_subscriptions_enabled() && ( class_exists( 'WC_Subscriptions' ) || ! WC_Payments_Features::is_wcpay_subscriptions_eligible() ) ) {
-			update_option( WC_Payments_Features::WCPAY_SUBSCRIPTIONS_FLAG_NAME, '0' );
-		}
-	}
-
-	/**
-	 * Show error when WooPay opt-in is checked but no phone number was typed.
-	 */
-	public static function maybe_show_woopay_phone_number_error() {
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing
-		if ( isset( $_POST['save_user_in_woopay'] ) && 'true' === $_POST['save_user_in_woopay'] ) {
-			// phpcs:ignore WordPress.Security.NonceVerification.Missing
-			if ( ! isset( $_POST['woopay_user_phone_field'] ) || ! isset( $_POST['woopay_user_phone_field']['no-country-code'] ) || empty( $_POST['woopay_user_phone_field']['no-country-code'] ) ) {
-				wc_add_notice( '<strong>' . __( 'Mobile Number', 'woocommerce-payments' ) . '</strong> ' . __( 'is required to create an WooPay account.', 'woocommerce-payments' ), 'error' );
-			}
-		}
 	}
 }

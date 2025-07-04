@@ -16,30 +16,30 @@ import FraudProtectionRuleToggle from '../rule-toggle';
 const IPAddressMismatchRuleCard: React.FC = () => (
 	<FraudProtectionRuleCard
 		title={ __( 'IP Address Mismatch', 'woocommerce-payments' ) }
-		description={ interpolateComponents( {
-			mixedString: __(
-				"This filter screens for customer's {{ipAddressLink}}IP address{{/ipAddressLink}} to see if it is in a different " +
-					'country than indicated in their billing address.',
-				'woocommerce-payments'
-			),
-			components: {
-				ipAddressLink: (
-					<Link
-						target="_blank"
-						type="external"
-						href="https://simple.wikipedia.org/wiki/IP_address"
-					/>
-				),
-			},
-		} ) }
 		id="ip-address-mismatch"
 	>
 		<FraudProtectionRuleToggle
 			setting={ 'ip_address_mismatch' }
 			label={ __(
-				"Screen transactions where the IP country and billing country don't match",
+				'Enable IP Address Mismatch filter',
 				'woocommerce-payments'
 			) }
+			description={ interpolateComponents( {
+				mixedString: __(
+					"This filter screens for customer's {{ipAddressLink}}IP address{{/ipAddressLink}} to see if it is in a different " +
+						'country than indicated in their billing address. When enabled the payment will be blocked.',
+					'woocommerce-payments'
+				),
+				components: {
+					ipAddressLink: (
+						<Link
+							target="_blank"
+							type="external"
+							href="https://simple.wikipedia.org/wiki/IP_address"
+						/>
+					),
+				},
+			} ) }
 		></FraudProtectionRuleToggle>
 		<FraudProtectionRuleDescription>
 			{ __(

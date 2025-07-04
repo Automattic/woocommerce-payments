@@ -46,14 +46,10 @@ export const trackStepCompleted = ( step: string ): void => {
 	trackedSteps.add( step );
 };
 
-export const trackRedirected = (
-	isPoEligible: boolean,
-	isEmbedded = false
-): void => {
+export const trackRedirected = ( isEmbedded = false ): void => {
 	const urlParams = new URLSearchParams( window.location.search );
 
 	recordEvent( 'wcpay_onboarding_flow_redirected', {
-		is_po_eligible: isPoEligible,
 		is_embedded_onboarding: isEmbedded,
 		elapsed: elapsed( startTime ),
 		source:
@@ -86,9 +82,6 @@ export const trackKycExit = (): void => {
 			urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) || 'unknown',
 	} );
 };
-
-export const trackAccountReset = (): void =>
-	recordEvent( 'wcpay_onboarding_flow_reset' );
 
 export const trackEligibilityModalClosed = (
 	action: 'dismiss' | 'setup_deposits' | 'enable_payments_only',

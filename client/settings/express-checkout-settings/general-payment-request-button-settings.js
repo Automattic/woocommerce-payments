@@ -4,13 +4,16 @@
  */
 import React, { useMemo } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
+// eslint-disable-next-line no-restricted-syntax
 import {
 	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
 	__experimentalNumberControl as NumberControl,
+} from '@wordpress/components';
+import {
 	SelectControl,
 	RadioControl,
 	RangeControl,
-} from '@wordpress/components';
+} from 'wcpay/components/wp-components-wrapped';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { useContext } from '@wordpress/element';

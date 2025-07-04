@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { Card } from '@wordpress/components';
+import { Card } from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies
@@ -12,30 +12,22 @@ import CardBody from '../../card-body';
 
 interface FraudProtectionRuleCardProps {
 	title: string;
-	description: React.ReactNode;
 	id: string;
 }
 
-const FraudProtectionRuleCard: React.FC< FraudProtectionRuleCardProps > = ( {
-	title,
-	description,
-	children,
-	id,
-} ) => {
+const FraudProtectionRuleCard: React.FC< React.PropsWithChildren<
+	FraudProtectionRuleCardProps
+> > = ( { title, children, id } ) => {
 	return (
 		<Card id={ id } className="fraud-protection-rule-card">
-			<CardBody className="fraud-protection-rule-card-header-container">
+			<CardBody>
 				<div>
 					<p className="fraud-protection-rule-card-header">
 						{ title }
 					</p>
-					<p className="fraud-protection-rule-card-description">
-						{ description }
-					</p>
 				</div>
+				{ children }
 			</CardBody>
-			<hr></hr>
-			<CardBody>{ children }</CardBody>
 		</Card>
 	);
 };

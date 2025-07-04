@@ -83,6 +83,7 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 			Link_Payment_Method::class,
 			Affirm_Payment_Method::class,
 			Afterpay_Payment_Method::class,
+			Klarna_Payment_Method::class,
 		];
 
 		foreach ( $payment_method_classes as $payment_method_class ) {
@@ -121,6 +122,52 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 		}
 
 		$this->assertEquals( $expected_result, $payment_method->get_countries() );
+	}
+
+	public function test_klarna_get_countries_with_eu_country_and_eu_currency() {
+		WC_Helper_Site_Currency::$mock_site_currency = 'EUR';
+		$payment_method                              = $this->mock_payment_methods['klarna'];
+
+		$this->mock_wcpay_account->method( 'get_cached_account_data' )->willReturn(
+			[
+				'country' => 'DE',
+			]
+		);
+
+		$this->assertEquals(
+			[
+				'AT',
+				'BE',
+				'FI',
+				'FR',
+				'DE',
+				'IE',
+				'IT',
+				'NL',
+				'ES',
+			],
+			$payment_method->get_countries()
+		);
+		WC_Helper_Site_Currency::$mock_site_currency = '';
+	}
+
+	public function test_klarna_get_countries_with_eu_country_and_non_eu_currency() {
+		WC_Helper_Site_Currency::$mock_site_currency = 'AUD';
+		$payment_method                              = $this->mock_payment_methods['klarna'];
+
+		$this->mock_wcpay_account->method( 'get_cached_account_data' )->willReturn(
+			[
+				'country' => 'IT',
+			]
+		);
+
+		$this->assertEquals(
+			[
+				'NONE_SUPPORTED',
+			],
+			$payment_method->get_countries()
+		);
+		WC_Helper_Site_Currency::$mock_site_currency = '';
 	}
 
 	public function provider_test_get_countries() {

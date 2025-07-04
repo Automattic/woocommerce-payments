@@ -113,42 +113,42 @@ describe( 'Onboarding Form', () => {
 
 	describe( 'OnboardingTextField', () => {
 		it( 'renders component with provided props ', () => {
-			data = { annual_revenue: 'Less than $250k' };
+			data = { country: 'United States' };
 			error.mockReturnValue( 'error message' );
 
-			render( <OnboardingTextField name="annual_revenue" /> );
+			render( <OnboardingTextField name="country" /> );
 
 			const textField = screen.getByLabelText(
-				'What is your estimated annual Ecommerce revenue (USD)?'
+				'Where is your business located?'
 			);
 			const errorMessage = screen.getByText( 'error message' );
 
-			expect( textField ).toHaveValue( 'Less than $250k' );
+			expect( textField ).toHaveValue( 'United States' );
 			expect( errorMessage ).toBeInTheDocument();
 		} );
 
 		it( 'calls setData on change', () => {
-			render( <OnboardingTextField name="annual_revenue" /> );
+			render( <OnboardingTextField name="country" /> );
 
 			const textField = screen.getByLabelText(
-				'What is your estimated annual Ecommerce revenue (USD)?'
+				'Where is your business located?'
 			);
 			textField.focus(); // Workaround for `type` not triggering focus.
-			userEvent.type( textField, 'Less than $250k' );
+			userEvent.type( textField, 'United States' );
 
 			expect( setData ).toHaveBeenCalledWith( {
-				annual_revenue: 'Less than $250k',
+				country: 'United States',
 			} );
 
 			expect( validate ).not.toHaveBeenCalled();
 		} );
 
 		it( 'calls validate on change if touched', () => {
-			touched = { annual_revenue: true };
-			render( <OnboardingTextField name="annual_revenue" /> );
+			touched = { country: true };
+			render( <OnboardingTextField name="country" /> );
 
 			const textField = screen.getByLabelText(
-				'What is your estimated annual Ecommerce revenue (USD)?'
+				'Where is your business located?'
 			);
 			userEvent.type( textField, 'John' );
 
@@ -156,10 +156,10 @@ describe( 'Onboarding Form', () => {
 		} );
 
 		it( 'calls validate on change if not focused', () => {
-			render( <OnboardingTextField name="annual_revenue" /> );
+			render( <OnboardingTextField name="country" /> );
 
 			const textField = screen.getByLabelText(
-				'What is your estimated annual Ecommerce revenue (USD)?'
+				'Where is your business located?'
 			);
 			userEvent.type( textField, 'John' );
 
@@ -167,10 +167,10 @@ describe( 'Onboarding Form', () => {
 		} );
 
 		it( 'calls validate on blur', () => {
-			render( <OnboardingTextField name="annual_revenue" /> );
+			render( <OnboardingTextField name="country" /> );
 
 			const textField = screen.getByLabelText(
-				'What is your estimated annual Ecommerce revenue (USD)?'
+				'Where is your business located?'
 			);
 			userEvent.type( textField, 'John' );
 			userEvent.tab();

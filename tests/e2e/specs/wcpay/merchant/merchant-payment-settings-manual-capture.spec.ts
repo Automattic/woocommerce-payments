@@ -39,6 +39,10 @@ test.describe(
 				.click();
 			await page.getByTestId( 'capture-later-checkbox' ).click();
 			await expect( page.locator( '.wcpay-modal' ) ).not.toBeVisible();
+
+			await expect(
+				page.getByRole( 'checkbox', { name: 'Bancontact' } )
+			).not.toBeDisabled();
 		} );
 
 		test( 'should show the non-card methods disabled when manual capture is enabled', async ( {
@@ -47,12 +51,14 @@ test.describe(
 			await page
 				.getByRole( 'button', { name: 'Enable manual capture' } )
 				.click();
-			const paymentMethodWarningIconElement = await page
-				.getByTestId( 'loadable-checkbox-icon-warning' )
-				.first();
-			await expect( paymentMethodWarningIconElement ).toHaveText(
-				/cannot be enabled at checkout/
-			);
+			await expect(
+				page.getByRole( 'checkbox', { name: 'Bancontact' } )
+			).toBeDisabled();
+			await expect(
+				page.getByText(
+					'Bancontact is not available to your customers when the "manual capture" setting is enabled.'
+				)
+			).toBeVisible();
 		} );
 	}
 );

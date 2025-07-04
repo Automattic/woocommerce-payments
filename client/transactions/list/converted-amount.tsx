@@ -5,9 +5,9 @@
  */
 import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-import { Tooltip as FallbackTooltip } from '@wordpress/components';
+import { Tooltip as FallbackTooltip } from 'wcpay/components/wp-components-wrapped';
 import SyncIcon from 'gridicons/dist/sync';
-import classNames from 'classnames';
+import clsx from 'clsx';
 
 /**
  * Internal dependencies
@@ -78,7 +78,7 @@ const ConvertedAmount = ( {
 
 	return (
 		<div
-			className={ classNames(
+			className={ clsx(
 				'converted-amount',
 				! isUpdatedTooltipAvailable && 'converted-amount--fallback'
 			) }

@@ -22,39 +22,39 @@ import {
 /**
  * Internal dependencies
  */
-import { useTransactions, useTransactionsSummary } from 'data/index';
-import { Transaction } from 'data/transactions/hooks';
-import OrderLink from 'components/order-link';
-import RiskLevel, { calculateRiskMapping } from 'components/risk-level';
-import ClickableCell from 'components/clickable-cell';
-import { getDetailsURL } from 'components/details-link';
-import { displayType } from 'transactions/strings';
-import { depositStatusLabels } from 'deposits/strings';
+import { useTransactions, useTransactionsSummary } from 'wcpay/data';
+import { Transaction } from 'wcpay/data/transactions/hooks';
+import OrderLink from 'wcpay/components/order-link';
+import RiskLevel, { calculateRiskMapping } from 'wcpay/components/risk-level';
+import ClickableCell from 'wcpay/components/clickable-cell';
+import { getDetailsURL } from 'wcpay/components/details-link';
+import { displayType } from 'wcpay/transactions/strings';
+import { depositStatusLabels } from 'wcpay/deposits/strings';
 import { formatStringValue, applyThousandSeparator } from 'wcpay/utils';
 import {
 	formatCurrency,
 	formatExplicitCurrency,
 	formatExportAmount,
 } from 'multi-currency/interface/functions';
-import { getTransactionChannel } from 'utils/charge';
+import { getTransactionChannel } from 'wcpay/utils/charge';
 import Deposit from './deposit';
 import ConvertedAmount from './converted-amount';
-import autocompleter from 'transactions/autocompleter';
+import autocompleter from 'wcpay/transactions/autocompleter';
 import './style.scss';
 import TransactionsFilters from '../filters';
 import Page from '../../components/page';
 import { recordEvent } from 'tracks';
-import DownloadButton from 'components/download-button';
+import DownloadButton from 'wcpay/components/download-button';
 import {
 	getTransactionsCSVRequestURL,
 	transactionsDownloadEndpoint,
 } from '../../data/transactions/resolvers';
 import p24BankList from '../../payment-details/payment-method/p24/bank-list';
-import { HoverTooltip } from 'components/tooltip';
-import { PAYMENT_METHOD_TITLES } from 'wcpay/constants/payment-method';
+import { HoverTooltip } from 'wcpay/components/tooltip';
 import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 import { usePersistedColumnVisibility } from 'wcpay/hooks/use-persisted-table-column-visibility';
 import { useReportExport } from 'wcpay/hooks/use-report-export';
+import { getTransactionPaymentMethodTitle } from 'wcpay/transactions/utils/getTransactionPaymentMethodTitle';
 
 interface TransactionsListProps {
 	depositId?: string;
@@ -81,6 +81,8 @@ interface Column extends TableCardColumn {
 	cellClassName?: string;
 }
 
+// FLAG: PAYMENT_METHODS_LIST
+// If your payment method needs a custom display on the transactions list, you can add it here.
 const getPaymentSourceDetails = ( txn: Transaction ) => {
 	if ( ! txn.source_identifier ) {
 		return <Fragment></Fragment>;
@@ -325,12 +327,12 @@ export const TransactionsList = (
 		const clickable =
 			'financing_payout' !== txn.type &&
 			! ( 'financing_paydown' === txn.type && '' === txn.charge_id )
-				? ( children: JSX.Element | string ) => (
+				? ( children: React.ReactNode ) => (
 						<ClickableCell href={ detailsURL }>
 							{ children }
 						</ClickableCell>
 				  )
-				: ( children: JSX.Element | string ) => children;
+				: ( children: React.ReactNode ) => children;
 
 		const orderUrl = txn.order ? (
 			<OrderLink order={ txn.order } />
@@ -434,6 +436,8 @@ export const TransactionsList = (
 			? depositStatusLabels[ txn.deposit_status ]
 			: '';
 
+		const accountCountry = wcpaySettings?.accountStatus?.country || 'US';
+
 		// Map transaction into table row.
 		const data = {
 			transaction_id: {
@@ -471,15 +475,17 @@ export const TransactionsList = (
 							<span className="payment-method-details-list-item">
 								<HoverTooltip
 									isVisible={ false }
-									content={
-										PAYMENT_METHOD_TITLES[ txn.source ]
-									}
+									content={ getTransactionPaymentMethodTitle(
+										txn.source
+									) }
 								>
 									<span
-										className={ `payment-method__brand payment-method__brand--${ txn.source }` }
-										aria-label={
-											PAYMENT_METHOD_TITLES[ txn.source ]
-										}
+										className={ `payment-method__brand payment-method__brand--${
+											txn.source
+										} account-country--${ accountCountry?.toLowerCase() }` }
+										aria-label={ getTransactionPaymentMethodTitle(
+											txn.source
+										) }
 									/>
 								</HoverTooltip>
 								{ getPaymentSourceDetails( txn ) }

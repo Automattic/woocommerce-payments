@@ -1,8 +1,3 @@
-/**
- * External dependencies
- */
-import { Dispatch, SetStateAction } from 'react';
-
 export interface FraudPreventionSetting {
 	block: boolean;
 	enabled: boolean;
@@ -31,12 +26,6 @@ export type FraudPreventionSettings =
 
 export type ProtectionSettingsUI = Record< string, FraudPreventionSettings >;
 
-export interface FraudPreventionSettingsContextType {
-	protectionSettingsUI: ProtectionSettingsUI;
-	setProtectionSettingsUI: Dispatch< SetStateAction< ProtectionSettingsUI > >;
-	setIsDirty: Dispatch< SetStateAction< boolean > >;
-}
-
 export interface FraudProtectionSettingsSingleCheck {
 	key: string;
 	value: any;
@@ -57,19 +46,6 @@ export interface FraudProtectionRule {
 	key: string;
 	outcome: string;
 	check: FraudProtectionSettingsCheck;
-}
-
-export type CurrentProtectionLevelHook = [ string, ( level: string ) => void ];
-
-export type AdvancedFraudPreventionSettingsHook = [
-	FraudProtectionRule[] | string,
-	( settings: FraudProtectionRule[] ) => void
-];
-
-export interface SettingsHook {
-	isSaving: boolean;
-	isLoading: boolean;
-	saveSettings: () => void;
 }
 
 export function isFraudProtectionSettingsSingleCheck(

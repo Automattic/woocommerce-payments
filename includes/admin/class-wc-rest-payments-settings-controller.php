@@ -9,6 +9,8 @@ use WCPay\Constants\Payment_Method;
 use WCPay\Constants\Country_Code;
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
 use WCPay\Constants\Track_Events;
+use WCPay\Fraud_Prevention\Models\Rule;
+
 defined( 'ABSPATH' ) || exit;
 
 /**
@@ -308,15 +310,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'permission_callback' => [ $this, 'check_permission' ],
 			]
 		);
-		register_rest_route(
-			$this->namespace,
-			'/' . $this->rest_base . '/request-capability',
-			[
-				'methods'             => WP_REST_Server::CREATABLE,
-				'callback'            => [ $this, 'request_capability' ],
-				'permission_callback' => [ $this, 'check_permission' ],
-			]
-		);
 	}
 
 	/**
@@ -613,16 +606,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		);
 
 		$this->request_unrequested_payment_methods( $payment_method_ids_to_enable );
-		$capability_key_map      = $this->wcpay_gateway->get_payment_method_capability_key_map();
-		$payment_method_statuses = $this->wcpay_gateway->get_upe_enabled_payment_method_statuses();
-
-		$payment_method_ids_to_enable = array_filter(
-			$payment_method_ids_to_enable,
-			function ( $payment_method_id_to_enable ) use ( $capability_key_map, $payment_method_statuses ) {
-				$stripe_key = $capability_key_map[ $payment_method_id_to_enable ] ?? null;
-				return array_key_exists( $stripe_key, $payment_method_statuses ) && 'active' === $payment_method_statuses[ $stripe_key ]['status'];
-			}
-		);
 
 		$active_payment_methods   = $this->wcpay_gateway->get_upe_enabled_payment_method_ids();
 		$disabled_payment_methods = array_diff( $active_payment_methods, $payment_method_ids_to_enable );
@@ -650,11 +633,27 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 
 		foreach ( $enabled_payment_methods as $payment_method_id ) {
 			$gateway = WC_Payments::get_payment_gateway_by_id( $payment_method_id );
+			if ( ! $gateway ) {
+				if ( function_exists( 'wc_get_logger' ) ) {
+					$logger = wc_get_logger();
+					/* translators: 1: Payment method ID, 2: Error message */
+					$logger->warning( sprintf( 'Failed to enable payment method %1$s: %2$s', $payment_method_id, 'payment gateway instance not available' ), [ 'source' => 'woopayments' ] );
+				}
+				continue;
+			}
 			$gateway->enable();
 		}
 
 		foreach ( $disabled_payment_methods as $payment_method_id ) {
 			$gateway = WC_Payments::get_payment_gateway_by_id( $payment_method_id );
+			if ( ! $gateway ) {
+				if ( function_exists( 'wc_get_logger' ) ) {
+					$logger = wc_get_logger();
+					/* translators: 1: Payment method ID, 2: Error message */
+					$logger->warning( sprintf( 'Failed to disable payment method %1$s: %2$s', $payment_method_id, 'payment gateway instance not available' ), [ 'source' => 'woopayments' ] );
+				}
+				continue;
+			}
 			$gateway->disable();
 		}
 
@@ -958,6 +957,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 * Updates the settings of fraud protection rules (both settings and level in one function, because they are connected).
 	 *
 	 * @param WP_REST_Request $request Request object.
+	 * @throws InvalidArgumentException If the ruleset configuration is invalid.
 	 */
 	private function update_fraud_protection_settings( WP_REST_Request $request ) {
 		if ( ! $request->has_param( 'current_protection_level' ) || ! $request->has_param( 'advanced_fraud_protection_settings' ) ) {
@@ -983,15 +983,16 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				$ruleset_config = Fraud_Risk_Tools::get_high_protection_settings();
 				break;
 			case 'advanced':
-				$referer                   = $request->get_header( 'referer' );
-				$is_advanced_settings_page = 0 < strpos( $referer, 'fraud-protection' );
-				if ( ! $is_advanced_settings_page ) {
-					// When the button is clicked from the Payments > Settings page, the advanced fraud protection settings shouldn't change.
-					$ruleset_config = get_transient( 'wcpay_fraud_protection_settings' ) ?? [];
-				} else {
-					// When the button is clicked from the Advanced fraud protection settings page, it should change.
-					$ruleset_config = $request->get_param( 'advanced_fraud_protection_settings' );
+				$received_ruleset = $request->get_param( 'advanced_fraud_protection_settings' );
+				if ( ! is_array( $received_ruleset ) ) {
+					throw new InvalidArgumentException( 'Invalid ruleset configuration' );
 				}
+				foreach ( $received_ruleset as $rule ) {
+					if ( ! Rule::validate_array( $rule ) ) {
+						throw new InvalidArgumentException( 'Invalid ruleset configuration' );
+					}
+				}
+				$ruleset_config = $received_ruleset;
 				break;
 		}
 
@@ -1051,29 +1052,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		if ( $request ) {
 			return new WP_REST_Response( [], 200 );
 		}
-	}
-
-	/**
-	 * Request a specific capability.
-	 *
-	 * @param WP_REST_Request $request The request object. Optional. If passed, the function will return a REST response.
-	 *
-	 * @return WP_REST_Response|WP_Error The response object, if this is a REST request.
-	 */
-	public function request_capability( ?WP_REST_Request $request = null ) {
-		$request_result          = null;
-		$id                      = $request->get_param( 'id' );
-		$capability_key_map      = $this->wcpay_gateway->get_payment_method_capability_key_map();
-		$payment_method_statuses = $this->wcpay_gateway->get_upe_enabled_payment_method_statuses();
-		$stripe_key              = $capability_key_map[ $id ] ?? null;
-
-		if ( array_key_exists( $stripe_key, $payment_method_statuses )
-			&& 'unrequested' === $payment_method_statuses[ $stripe_key ]['status'] ) {
-			$request_result = $this->api_client->request_capability( $stripe_key, true );
-			$this->wcpay_gateway->refresh_cached_account_data();
-		}
-
-		return rest_ensure_response( $request_result );
 	}
 
 	/**

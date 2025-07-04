@@ -20,6 +20,7 @@ import {
 const {
 	GITHUB_ACTIONS,
 	GITHUB_REF,
+	GITHUB_HEAD_REF,
 	GITHUB_SHA,
 	GITHUB_REPOSITORY,
 	GITHUB_RUN_ID,
@@ -71,12 +72,19 @@ const initializeSlack = (): SlackParams | undefined => {
 	}
 
 	// Build PR info
-	const refArray = GITHUB_REF.split( '/' );
-	const branch = refArray.pop();
+	const ref = GITHUB_REF || '';
+	let branch = 'unknown';
+	if ( ref.startsWith( 'refs/heads/' ) ) {
+		branch = ref.replace( 'refs/heads/', '' );
+	} else if ( ref.startsWith( 'refs/pull/' ) ) {
+		branch = GITHUB_HEAD_REF || 'pull-request';
+	} else if ( ref.startsWith( 'refs/tags/' ) ) {
+		branch = ref.replace( 'refs/tags/', '' );
+	}
 
 	return {
 		branch,
-		commit: GITHUB_SHA,
+		commit: GITHUB_SHA || '',
 		webUrl: `https://github.com/${ GITHUB_REPOSITORY }/actions/runs/${ GITHUB_RUN_ID }`,
 	};
 };
@@ -135,13 +143,14 @@ export const sendFailedTestMessageToSlack = async ( testName: string ) => {
  * Post a screenshot to a Slack channel for a failed test.
  */
 export const sendFailedTestScreenshotToSlack = async (
-	screenshotOfFailedTest: string
+	screenshotOfFailedTest: string,
+	testName: string
 ) => {
 	if ( ! initializeSlack() ) {
 		return;
 	}
 
-	const filename = 'screenshot_of_failed_test.png';
+	const filename = `screenshot_of_${ testName || 'failed_test' }.png`;
 	const webClient = initializeWeb();
 
 	try {

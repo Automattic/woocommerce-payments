@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { Card } from '@wordpress/components';
+import { Card } from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies
@@ -19,12 +19,10 @@ const FraudProtection: React.FC = () => {
 			<Card className="fraud-protection">
 				<CardBody>
 					<h4>
-						<span id="fraud-protection-card-title">
-							{ __(
-								'Set your payment risk level',
-								'woocommerce-payments'
-							) }
-						</span>
+						{ __(
+							'Set your payment risk level',
+							'woocommerce-payments'
+						) }
 					</h4>
 					<ProtectionLevels />
 				</CardBody>

@@ -5,22 +5,25 @@
  */
 import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
+// eslint-disable-next-line no-restricted-syntax
+import {
+	// @ts-expect-error: Suppressing Module '"@wordpress/components"' has no exported member '__experimentalText'.
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis -- used by TableCard component which we replicate here.
+	__experimentalText as Text,
+} from '@wordpress/components';
 import {
 	Card,
 	CardBody,
 	CardHeader,
 	ExternalLink,
-	// @ts-expect-error: Suppressing Module '"@wordpress/components"' has no exported member '__experimentalText'.
-	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis -- used by TableCard component which we replicate here.
-	__experimentalText as Text,
-} from '@wordpress/components';
+} from 'wcpay/components/wp-components-wrapped';
 import {
 	SummaryListPlaceholder,
 	SummaryList,
 	OrderStatus,
 } from '@woocommerce/components';
 import interpolateComponents from '@automattic/interpolate-components';
-import classNames from 'classnames';
+import clsx from 'clsx';
 
 /**
  * Internal dependencies.
@@ -88,7 +91,7 @@ const SummaryItem: React.FC< SummaryItemProps > = ( {
 			<div className="woocommerce-summary__item-label">{ label }</div>
 			<div className="woocommerce-summary__item-data">
 				<div
-					className={ classNames(
+					className={ clsx(
 						'woocommerce-summary__item-value',
 						valueClass
 					) }
@@ -325,7 +328,6 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 					<DepositOverview deposit={ deposit } />
 				) }
 			</ErrorBoundary>
-
 			{ deposit && (
 				<ErrorBoundary>
 					{ isInstantDeposit ? (

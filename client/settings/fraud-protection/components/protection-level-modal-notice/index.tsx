@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { Notice } from '@wordpress/components';
+import { Notice } from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies

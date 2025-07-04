@@ -163,7 +163,7 @@ describe( 'Disputes list', () => {
 		mockUseSettings.mockReturnValue( {
 			isLoading: false,
 			isSaving: false,
-			saveSettings: ( a ) => a,
+			saveSettings: () => null,
 			isDirty: false,
 		} );
 
