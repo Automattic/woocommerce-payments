@@ -246,23 +246,6 @@ class WC_Payments_Order_Success_Page {
 	}
 
 	/**
-	 * Returns the HTML to add the Link logo to the payment method name on the order received page.
-	 *
-	 * @param WCPay\Payment_Methods\UPE_Payment_Method $payment_method the payment method being shown.
-	 *
-	 * @return string
-	 */
-	public function show_link_payment_method_icon( $payment_method ) {
-		ob_start();
-		?>
-		<div class="wc-payment-gateway-method-logo-wrapper wc-payment-link-logo">
-			<img alt="<?php echo esc_attr( $payment_method->get_title() ); ?>" src="<?php echo esc_url( plugins_url( 'assets/images/payment-methods/link.svg', WCPAY_PLUGIN_FILE ) ); ?>">
-		</div>
-		<?php
-		return ob_get_clean();
-	}
-
-	/**
 	 * Returns the HTML to add the WooPay logo and the last 4 digits of the card used to the
 	 * payment method name on the order received page.
 	 *
