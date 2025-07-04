@@ -1342,7 +1342,19 @@ export default ( { query }: { query: { id: string } } ) => {
 						</Button>
 						<Button
 							variant="primary"
-							onClick={ () => doSave( true ) }
+							onClick={ () => {
+								// Show browser confirmation dialog first
+								const confirmed = window.confirm(
+									__(
+										"Are you sure you're ready to submit this evidence? Evidence submissions are final.",
+										'woocommerce-payments'
+									)
+								);
+
+								if ( confirmed ) {
+									doSave( true );
+								}
+							} }
 						>
 							{ __( 'Submit', 'woocommerce-payments' ) }
 						</Button>
