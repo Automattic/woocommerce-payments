@@ -30,7 +30,7 @@ import {
 	generateCoverLetter,
 	getBusinessDetails,
 } from './cover-letter-generator';
-import { useGetSettings } from 'wcpay/data';
+import { useGetSettings, useDisputeEvidence } from 'wcpay/data';
 import CustomerDetails from './customer-details';
 import ProductDetails from './product-details';
 import RecommendedDocuments from './recommended-documents';
@@ -137,6 +137,7 @@ export default ( { query }: { query: { id: string } } ) => {
 		createErrorNotice,
 		createInfoNotice,
 	} = useDispatch( 'core/notices' );
+	const { updateDispute: updateDisputeInStore } = useDisputeEvidence();
 	const settings = useGetSettings();
 	const bankName = dispute?.charge ? getBankName( dispute.charge ) : null;
 	const [ refundStatus, setRefundStatus ] = useState(
@@ -195,9 +196,44 @@ export default ( { query }: { query: { id: string } } ) => {
 				const savedCoverLetter = d.evidence?.uncategorized_text;
 				if ( savedCoverLetter ) {
 					setCoverLetter( savedCoverLetter );
+					// Create a dispute object with current evidence state for comparison
+					const disputeWithCurrentEvidence = {
+						...d,
+						evidence: {
+							...d.evidence,
+							product_description:
+								d.evidence?.product_description || '',
+							receipt: d.evidence?.receipt || '',
+							customer_communication:
+								d.evidence?.customer_communication || '',
+							customer_signature:
+								d.evidence?.customer_signature || '',
+							refund_policy: d.evidence?.refund_policy || '',
+							duplicate_charge_documentation:
+								d.evidence?.duplicate_charge_documentation ||
+								'',
+							shipping_documentation:
+								d.evidence?.shipping_documentation || '',
+							service_documentation:
+								d.evidence?.service_documentation || '',
+							cancellation_policy:
+								d.evidence?.cancellation_policy || '',
+							access_activity_log:
+								d.evidence?.access_activity_log || '',
+							uncategorized_file:
+								d.evidence?.uncategorized_file || '',
+							shipping_carrier:
+								d.evidence?.shipping_carrier || '',
+							shipping_date: d.evidence?.shipping_date || '',
+							shipping_tracking_number:
+								d.evidence?.shipping_tracking_number || '',
+							shipping_address:
+								d.evidence?.shipping_address || '',
+						},
+					};
 					// Only mark as manually edited if it differs from what would be auto-generated
 					const generatedContent = generateCoverLetter(
-						d,
+						disputeWithCurrentEvidence,
 						getBusinessDetails(),
 						settings,
 						bankName,
@@ -276,17 +312,49 @@ export default ( { query }: { query: { id: string } } ) => {
 
 	// Update cover letter when evidence changes
 	useEffect( () => {
-		if ( ! dispute || ! settings || isCoverLetterManuallyEdited ) return;
+		if ( ! dispute || ! settings ) return;
+
+		// Create a dispute object with current evidence state for generation
+		const disputeWithCurrentEvidence = {
+			...dispute,
+			evidence: {
+				...dispute.evidence,
+				product_description: productDescription,
+				receipt: evidence.receipt,
+				customer_communication: evidence.customer_communication,
+				customer_signature: evidence.customer_signature,
+				refund_policy: evidence.refund_policy,
+				duplicate_charge_documentation:
+					evidence.duplicate_charge_documentation,
+				shipping_documentation: evidence.shipping_documentation,
+				service_documentation: evidence.service_documentation,
+				cancellation_policy: evidence.cancellation_policy,
+				access_activity_log: evidence.access_activity_log,
+				uncategorized_file: evidence.uncategorized_file,
+				shipping_carrier: shippingCarrier,
+				shipping_date: shippingDate,
+				shipping_tracking_number: shippingTrackingNumber,
+				shipping_address: shippingAddress,
+			},
+		};
 
 		const generatedCoverLetter = generateCoverLetter(
-			dispute,
+			disputeWithCurrentEvidence,
 			getBusinessDetails(),
 			settings,
 			bankName,
 			refundStatus,
 			duplicateStatus
 		);
-		setCoverLetter( generatedCoverLetter );
+
+		// Only auto-update if not manually edited, or if the current content matches what was previously generated
+		if (
+			! isCoverLetterManuallyEdited ||
+			coverLetter === generatedCoverLetter
+		) {
+			setCoverLetter( generatedCoverLetter );
+			setIsCoverLetterManuallyEdited( false );
+		}
 	}, [
 		dispute,
 		settings,
@@ -300,6 +368,7 @@ export default ( { query }: { query: { id: string } } ) => {
 		shippingAddress,
 		refundStatus,
 		duplicateStatus,
+		coverLetter,
 	] );
 
 	// --- Step logic ---
@@ -318,6 +387,62 @@ export default ( { query }: { query: { id: string } } ) => {
 		Object.values( isUploading ).some( Boolean );
 
 	// --- Save/submit logic ---
+	const handleSaveSuccess = ( submit: boolean ) => {
+		const message = submit
+			? __( 'Evidence submitted!', 'woocommerce-payments' )
+			: __( 'Evidence saved!', 'woocommerce-payments' );
+
+		recordEvent(
+			submit
+				? 'wcpay_dispute_submit_evidence_success'
+				: 'wcpay_dispute_save_evidence_success'
+		);
+
+		createSuccessNotice( message, {
+			id: submit
+				? 'evidence-submitted'
+				: `evidence-saved-${ dispute.id }`,
+			actions: submit
+				? [
+						{
+							label: __(
+								'View submitted evidence',
+								'woocommerce-payments'
+							),
+							url: getAdminUrl( {
+								page: 'wc-admin',
+								path: '/payments/disputes/challenge',
+								id: query.id,
+							} ),
+						},
+				  ]
+				: [],
+		} );
+
+		// Only redirect after submission, not after save
+		if ( submit ) {
+			setRedirectAfterSave( true );
+		}
+	};
+
+	const handleSaveError = ( err: any, submit: boolean ) => {
+		recordEvent(
+			submit
+				? 'wcpay_dispute_submit_evidence_failed'
+				: 'wcpay_dispute_save_evidence_failed'
+		);
+
+		const message = submit
+			? __( 'Failed to submit evidence. (%s)', 'woocommerce-payments' )
+			: __( 'Failed to save evidence. (%s)', 'woocommerce-payments' );
+		createErrorNotice(
+			sprintf(
+				message,
+				err instanceof Error ? err.message : String( err )
+			)
+		);
+	};
+
 	const doSave = async ( submit: boolean ) => {
 		// Prevent submit if upload is in progress
 		if ( isUploadingEvidence() ) {
@@ -335,32 +460,6 @@ export default ( { query }: { query: { id: string } } ) => {
 				submit
 					? 'wcpay_dispute_submit_evidence_clicked'
 					: 'wcpay_dispute_save_evidence_clicked'
-			);
-
-			createSuccessNotice(
-				submit
-					? __( 'Evidence submitted!', 'woocommerce-payments' )
-					: __( 'Evidence saved!', 'woocommerce-payments' ),
-				{
-					id: submit
-						? 'evidence-submitted'
-						: `evidence-saved-${ dispute.id }`,
-					actions: submit
-						? [
-								{
-									label: __(
-										'View submitted evidence',
-										'woocommerce-payments'
-									),
-									url: getAdminUrl( {
-										page: 'wc-admin',
-										path: '/payments/disputes/challenge',
-										id: query.id,
-									} ),
-								},
-						  ]
-						: [],
-				}
 			);
 
 			// Only include file keys in the evidence object if they have a non-empty value
@@ -406,33 +505,11 @@ export default ( { query }: { query: { id: string } } ) => {
 			} );
 
 			setDispute( updatedDispute );
-
-			recordEvent(
-				submit
-					? 'wcpay_dispute_submit_evidence_success'
-					: 'wcpay_dispute_save_evidence_success'
-			);
-
-			setRedirectAfterSave( true );
+			setEvidence( {} );
+			handleSaveSuccess( submit );
+			updateDisputeInStore( updatedDispute as any );
 		} catch ( err ) {
-			recordEvent(
-				submit
-					? 'wcpay_dispute_submit_evidence_failed'
-					: 'wcpay_dispute_save_evidence_failed'
-			);
-
-			const message = submit
-				? __(
-						'Failed to submit evidence. (%s)',
-						'woocommerce-payments'
-				  )
-				: __( 'Failed to save evidence. (%s)', 'woocommerce-payments' );
-			createErrorNotice(
-				sprintf(
-					message,
-					err instanceof Error ? err.message : String( err )
-				)
-			);
+			handleSaveError( err, submit );
 		}
 	};
 
@@ -610,27 +687,40 @@ export default ( { query }: { query: { id: string } } ) => {
 	};
 
 	// --- Navigation warning ---
-	const pristine = useMemo(
-		() =>
-			JSON.stringify( evidence ) ===
-			JSON.stringify( dispute?.evidence || {} ),
-		[ evidence, dispute ]
-	);
 	const confirmationNavigationCallback = useConfirmNavigation( () => {
-		if ( pristine || redirectAfterSave || readOnly ) return;
+		if ( redirectAfterSave || readOnly ) return;
 		return __(
 			'There are unsaved changes on this page. Are you sure you want to leave and discard the unsaved changes?',
 			'woocommerce-payments'
 		);
 	} );
+
+	// Store the cleanup function from the navigation confirmation
+	const [ navigationCleanup, setNavigationCleanup ] = useState<
+		( () => void ) | null
+	>( null );
+
 	useEffect( () => {
-		confirmationNavigationCallback();
-	}, [
-		pristine,
-		confirmationNavigationCallback,
-		redirectAfterSave,
-		readOnly,
-	] );
+		const cleanup = confirmationNavigationCallback();
+		setNavigationCleanup( cleanup );
+	}, [ confirmationNavigationCallback, redirectAfterSave, readOnly ] );
+
+	// Redirect after successful submission only
+	useEffect( () => {
+		if ( redirectAfterSave ) {
+			// Clean up navigation confirmation before redirecting
+			if ( navigationCleanup ) {
+				navigationCleanup();
+			}
+
+			const href = getAdminUrl( {
+				page: 'wc-admin',
+				path: '/payments/disputes',
+				filter: 'awaiting_response',
+			} );
+			window.location.replace( href );
+		}
+	}, [ redirectAfterSave, navigationCleanup ] );
 
 	// --- Accordion summary content ---
 	const summaryItems = useMemo( () => {
@@ -909,10 +999,41 @@ export default ( { query }: { query: { id: string } } ) => {
 								return;
 							}
 
+							// Create a dispute object with current evidence state for generation
+							const disputeWithCurrentEvidence = {
+								...dispute,
+								evidence: {
+									...dispute.evidence,
+									product_description: productDescription,
+									receipt: evidence.receipt,
+									customer_communication:
+										evidence.customer_communication,
+									customer_signature:
+										evidence.customer_signature,
+									refund_policy: evidence.refund_policy,
+									duplicate_charge_documentation:
+										evidence.duplicate_charge_documentation,
+									shipping_documentation:
+										evidence.shipping_documentation,
+									service_documentation:
+										evidence.service_documentation,
+									cancellation_policy:
+										evidence.cancellation_policy,
+									access_activity_log:
+										evidence.access_activity_log,
+									uncategorized_file:
+										evidence.uncategorized_file,
+									shipping_carrier: shippingCarrier,
+									shipping_date: shippingDate,
+									shipping_tracking_number: shippingTrackingNumber,
+									shipping_address: shippingAddress,
+								},
+							};
+
 							// If the value is empty, regenerate the content
 							if ( newValue.trim() === '' ) {
 								const generatedContent = generateCoverLetter(
-									dispute,
+									disputeWithCurrentEvidence,
 									getBusinessDetails(),
 									settings,
 									bankName,
@@ -926,7 +1047,7 @@ export default ( { query }: { query: { id: string } } ) => {
 
 							// Compare with what would be auto-generated
 							const generatedContent = generateCoverLetter(
-								dispute,
+								disputeWithCurrentEvidence,
 								getBusinessDetails(),
 								settings,
 								bankName,
