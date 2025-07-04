@@ -199,7 +199,7 @@ class WC_Payments_Order_Success_Page {
 		if ( $payment_method->get_id() === Payment_Method::CARD ) {
 			// Check if this is a Link payment.
 			$link_payment_method = $gateway->wc_payments_get_payment_method_by_id( Payment_Method::LINK );
-			if ( $link_payment_method && $link_payment_method->get_title() === $payment_method_title ) {
+			if ( $link_payment_method && $link_payment_method->get_id() === Payment_Method::LINK ) {
 				return $this->show_link_payment_method_icon( $payment_method );
 			}
 
@@ -258,7 +258,7 @@ class WC_Payments_Order_Success_Page {
 		ob_start();
 		?>
 		<div class="wc-payment-gateway-method-logo-wrapper wc-payment-link-logo">
-			<img alt="<?php echo esc_attr( $payment_method->get_title() ); ?>" src="<?php echo esc_url_raw( plugins_url( 'assets/images/payment-methods/link.svg', WCPAY_PLUGIN_FILE ) ); ?>">
+			<img alt="<?php echo esc_attr( $payment_method->get_title() ); ?>" src="<?php echo esc_url( plugins_url( 'assets/images/payment-methods/link.svg', WCPAY_PLUGIN_FILE ) ); ?>">
 		</div>
 		<?php
 		return ob_get_clean();
