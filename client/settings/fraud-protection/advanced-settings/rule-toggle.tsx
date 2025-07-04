@@ -3,7 +3,10 @@
  */
 import React, { useContext } from 'react';
 import { __ } from '@wordpress/i18n';
-import { ToggleControl, RadioControl } from '@wordpress/components';
+import {
+	ToggleControl,
+	RadioControl,
+} from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies
@@ -15,6 +18,7 @@ import { FraudPreventionSettings } from '../interfaces';
 interface FraudProtectionRuleToggleProps {
 	setting: string;
 	label: string;
+	description: React.ReactNode;
 }
 
 export const filterActions = {
@@ -33,23 +37,6 @@ const radioOptions = [
 	},
 ];
 
-const helpTextMapping = {
-	unchecked: __( 'When enabled, the payment will be blocked.' ),
-	[ filterActions.REVIEW ]: __(
-		'The payment method will not be charged until you review and approve the transaction.'
-	),
-	[ filterActions.BLOCK ]: __( 'The payment will be blocked.' ),
-};
-
-export const getHelpText = (
-	toggleState: boolean,
-	filterAction: string
-): string => {
-	if ( ! toggleState ) return helpTextMapping.unchecked;
-
-	return helpTextMapping[ filterAction ];
-};
-
 const getFilterAction = (
 	settingUI: FraudPreventionSettings,
 	isFRTReviewFeatureActive: boolean
@@ -59,11 +46,9 @@ const getFilterAction = (
 	return settingUI.block ? filterActions.BLOCK : filterActions.REVIEW;
 };
 
-const FraudProtectionRuleToggle: React.FC< FraudProtectionRuleToggleProps > = ( {
-	setting,
-	label,
-	children,
-} ) => {
+const FraudProtectionRuleToggle: React.FC< React.PropsWithChildren<
+	FraudProtectionRuleToggleProps
+> > = ( { setting, label, description, children } ) => {
 	const {
 		protectionSettingsUI,
 		setProtectionSettingsUI,
@@ -101,17 +86,17 @@ const FraudProtectionRuleToggle: React.FC< FraudProtectionRuleToggleProps > = ( 
 	// Render view.
 	return (
 		<div className="fraud-protection-rule-toggle">
-			<strong>
-				{ __( 'Enable filtering', 'woocommerce-payments' ) }
-			</strong>
 			<ToggleControl
 				label={ label }
 				key={ setting }
-				help={ getHelpText( settingUI?.enabled, filterAction ) }
 				checked={ settingUI?.enabled }
 				className="fraud-protection-rule-toggle-toggle"
 				onChange={ handleEnableToggleChange }
 			/>
+
+			<div className="fraud-protection-rule-toggle-description">
+				{ description }
+			</div>
 
 			{ settingUI?.enabled && (
 				<div>

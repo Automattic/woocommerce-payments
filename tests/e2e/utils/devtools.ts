@@ -4,13 +4,14 @@
 import { Page, expect } from '@playwright/test';
 
 const goToDevToolsSettings = ( page: Page ) =>
-	page.goto( 'wp-admin/admin.php?page=wcpaydev', {
+	page.goto( '/wp-admin/admin.php?page=wcpaydev', {
 		waitUntil: 'load',
 	} );
 
 const saveDevToolsSettings = async ( page: Page ) => {
 	await page.getByRole( 'button', { name: 'Save Changes' } ).click();
-	expect( page.getByText( /Settings saved/ ) ).toBeVisible();
+	await page.waitForLoadState( 'networkidle' );
+	await expect( page.getByText( /Settings saved/ ) ).toBeVisible();
 };
 
 const getIsCardTestingProtectionEnabled = ( page: Page ) =>

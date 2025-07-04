@@ -149,6 +149,16 @@ class WooPay_Utilities {
 	}
 
 	/**
+	 * Sanitizes an intent ID by stripping everything by underscores, characters and digits.
+	 *
+	 * @param string $intent_id ID of the intent.
+	 * @return string Sanitized value.
+	 */
+	public static function sanitize_intent_id( string $intent_id ) {
+		return preg_replace( '/[^\w_]+/', '', $intent_id );
+	}
+
+	/**
 	 * Get if WooPay is available on the store country.
 	 *
 	 * @return boolean

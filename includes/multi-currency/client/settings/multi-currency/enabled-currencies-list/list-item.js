@@ -2,9 +2,9 @@
 /**
  * External dependencies
  */
-import classNames from 'classnames';
+import clsx from 'clsx';
 import { __, sprintf } from '@wordpress/i18n';
-import { Button } from '@wordpress/components';
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 
 /**
  * Internal dependencies
@@ -40,7 +40,7 @@ const EnabledCurrenciesListItem = ( {
 	};
 
 	return (
-		<li className={ classNames( 'enabled-currency', id ) }>
+		<li className={ clsx( 'enabled-currency', id ) }>
 			<div className="enabled-currency__container">
 				<div className="enabled-currency__flag">
 					{ flag !== '' ? (

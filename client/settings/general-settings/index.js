@@ -3,7 +3,7 @@
  */
 import React, { useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-import { Card, CheckboxControl } from '@wordpress/components';
+import { Card, CheckboxControl } from 'wcpay/components/wp-components-wrapped';
 import interpolateComponents from '@automattic/interpolate-components';
 
 /**

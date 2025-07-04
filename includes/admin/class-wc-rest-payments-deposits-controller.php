@@ -141,11 +141,13 @@ class WC_REST_Payments_Deposits_Controller extends WC_Payments_REST_Controller {
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_deposits_export( $request ) {
-		$user_email = $request->get_param( 'user_email' );
-		$locale     = $request->get_param( 'locale' );
-		$filters    = $this->get_deposits_filters( $request );
+		$user_email   = $request->get_param( 'user_email' );
+		$wpcom_locale = WC_Payments_Utils::convert_to_server_locale(
+			$request->get_param( 'locale' )
+		);
+		$filters      = $this->get_deposits_filters( $request );
 
-		return $this->forward_request( 'get_deposits_export', [ $filters, $user_email, $locale ] );
+		return $this->forward_request( 'get_deposits_export', [ $filters, $user_email, $wpcom_locale ] );
 	}
 
 	/**

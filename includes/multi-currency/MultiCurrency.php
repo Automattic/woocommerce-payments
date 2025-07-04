@@ -95,13 +95,6 @@ class MultiCurrency {
 	protected $frontend_currencies;
 
 	/**
-	 * BackendCurrencies instance.
-	 *
-	 * @var BackendCurrencies
-	 */
-	protected $backend_currencies;
-
-	/**
 	 * StorefrontIntegration instance.
 	 *
 	 * @var StorefrontIntegration
@@ -225,7 +218,6 @@ class MultiCurrency {
 			add_filter( 'woocommerce_get_settings_pages', [ $this, 'init_settings_pages' ] );
 			// Enqueue the scripts after the main WC_Payments_Admin does.
 			add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_scripts' ], 20 );
-			add_action( 'admin_head', [ $this, 'set_client_format_and_rounding_precision' ] );
 		}
 
 		add_action( 'init', [ $this, 'init' ] );
@@ -294,15 +286,13 @@ class MultiCurrency {
 
 		$this->frontend_prices     = new FrontendPrices( $this, $this->compatibility );
 		$this->frontend_currencies = new FrontendCurrencies( $this, $this->localization_service, $this->utils, $this->compatibility );
-		$this->backend_currencies  = new BackendCurrencies( $this, $this->localization_service );
 		$this->tracking            = new Tracking( $this );
 
-		// Init all of the hooks.
+		// Init all the hooks.
 		$admin_notices->init_hooks();
 		$user_settings->init_hooks();
 		$this->frontend_prices->init_hooks();
 		$this->frontend_currencies->init_hooks();
-		$this->backend_currencies->init_hooks();
 		$this->tracking->init_hooks();
 
 		add_action( 'woocommerce_order_refunded', [ $this, 'add_order_meta_on_refund' ], 50, 2 );
@@ -430,15 +420,17 @@ class MultiCurrency {
 
 	/**
 	 * Gets and caches the data for the currency rates from the server.
-	 * Will be returned as an array with three keys, 'currencies' (the currencies), 'expires' (the expiry time)
-	 * and 'updated' (when this data was fetched from the API).
+	 * Will be returned as an array with two keys:
+	 * - 'currencies' (the currencies)
+	 * - 'updated' (when this data was fetched from the API).
 	 *
 	 * @return ?array
 	 */
 	public function get_cached_currencies() {
-		$cached_data = $this->cache->get( MultiCurrencyCacheInterface::CURRENCIES_KEY );
-		// If connection to server cannot be established, or if payment provider is not connected, or if the account is rejected, return expired data or null.
+		// If connection to server cannot be established, payment provider is not connected, or the account is rejected,
+		// return any data we have cached (expired or not) or null.
 		if ( ! $this->payments_api_client->is_server_connected() || ! $this->payments_account->is_provider_connected() || $this->payments_account->is_account_rejected() ) {
+			$cached_data = $this->cache->get( MultiCurrencyCacheInterface::CURRENCIES_KEY, true );
 			return $cached_data ?? null;
 		}
 
@@ -1101,37 +1093,6 @@ class MultiCurrency {
 	}
 
 	/**
-	 * Apply client order currency format and reduces the rounding precision to 2.
-	 *
-	 * @return  void
-	 */
-	public function set_client_format_and_rounding_precision() {
-		$screen = get_current_screen();
-		if ( in_array( $screen->id, [ 'shop_order', 'woocommerce_page_wc-orders' ], true ) ) :
-			$order = wc_get_order();
-			if ( ! $order ) {
-				return;
-			}
-			$currency                     = $order->get_currency();
-			$currency_format_num_decimals = $this->backend_currencies->get_price_decimals( $currency );
-			$currency_format_decimal_sep  = $this->backend_currencies->get_price_decimal_separator( $currency );
-			$currency_format_thousand_sep = $this->backend_currencies->get_price_thousand_separator( $currency );
-			$currency_format              = str_replace( [ '%1$s', '%2$s', '&nbsp;' ], [ '%s', '%v', ' ' ], $this->backend_currencies->get_woocommerce_price_format( $currency ) );
-
-			$rounding_precision = wc_get_price_decimals() ?? wc_get_rounding_precision();
-			?>
-		<script>
-		woocommerce_admin_meta_boxes.currency_format_num_decimals = <?php echo (int) $currency_format_num_decimals; ?>;
-		woocommerce_admin_meta_boxes.currency_format_decimal_sep = '<?php echo esc_attr( $currency_format_decimal_sep ); ?>';
-		woocommerce_admin_meta_boxes.currency_format_thousand_sep = '<?php echo esc_attr( $currency_format_thousand_sep ); ?>';
-		woocommerce_admin_meta_boxes.currency_format = '<?php echo esc_attr( $currency_format ); ?>';
-		woocommerce_admin_meta_boxes.rounding_precision = <?php echo (int) $rounding_precision; ?>;
-		</script>
-			<?php
-			endif;
-	}
-
-	/**
 	 * Load script with all required dependencies.
 	 *
 	 * @param string $handler Script handler.
@@ -1370,21 +1331,7 @@ class MultiCurrency {
 	 * @return string The formatted amount.
 	 */
 	public function get_backend_formatted_wc_price( float $amount, array $args = [] ): string {
-		// Return early if MC isn't enabled or merchant has a single currency.
-		if ( ! self::has_additional_currencies_enabled() || ! WC_Payments_Features::is_customer_multi_currency_enabled() ) {
-			return wc_price( $amount, $args );
-		}
-
-		$has_filter = has_filter( 'wc_price_args', [ $this->backend_currencies, 'build_wc_price_args' ] );
-		if ( false !== $has_filter ) {
-			return wc_price( $amount, $args );
-		}
-
-		add_filter( 'wc_price_args', [ $this->backend_currencies, 'build_wc_price_args' ], 50 );
-		$price = wc_price( $amount, $args );
-		remove_filter( 'wc_price_args', [ $this->backend_currencies, 'build_wc_price_args' ], 50 );
-
-		return $price;
+		return wc_price( $amount, $args );
 	}
 
 	/**
@@ -1454,15 +1401,17 @@ class MultiCurrency {
 		$available_currencies = [];
 
 		$currencies = $this->get_account_available_currencies();
-		$cache_data = $this->get_cached_currencies();
+		if ( ! empty( $currencies ) ) {
+			$cache_data = $this->get_cached_currencies();
 
-		foreach ( $currencies as $currency_code ) {
-			$currency_rate = $cache_data['currencies'][ $currency_code ] ?? 1.0;
-			$update_time   = $cache_data['updated'] ?? null;
-			$new_currency  = new Currency( $this->localization_service, $currency_code, $currency_rate, $update_time );
+			foreach ( $currencies as $currency_code ) {
+				$currency_rate = $cache_data['currencies'][ $currency_code ] ?? 1.0;
+				$update_time   = $cache_data['updated'] ?? null;
+				$new_currency  = new Currency( $this->localization_service, $currency_code, $currency_rate, $update_time );
 
-			// Add this to our list of available currencies.
-			$available_currencies[ $new_currency->get_name() ] = $new_currency;
+				// Add this to our list of available currencies.
+				$available_currencies[ $new_currency->get_name() ] = $new_currency;
+			}
 		}
 
 		ksort( $available_currencies );

@@ -7,10 +7,10 @@ import React from 'react';
 import { recordEvent } from 'tracks';
 import { _n, __, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
-import { Button } from '@wordpress/components';
+import { Button } from 'wcpay/components/wp-components-wrapped';
 import { TableCard, Link } from '@woocommerce/components';
 import { onQueryChange, getQuery, getHistory } from '@woocommerce/navigation';
-import classNames from 'classnames';
+import clsx from 'clsx';
 import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 
 /**
@@ -51,7 +51,7 @@ const getHeaders = ( sortColumn?: string ): DisputesTableHeader[] => [
 		key: 'details',
 		label: '',
 		required: true,
-		cellClassName: classNames( 'info-button', {
+		cellClassName: clsx( 'info-button', {
 			'is-sorted': sortColumn === 'amount',
 		} ),
 		isLeftAligned: true,
@@ -264,10 +264,7 @@ export const DisputesList = (): JSX.Element => {
 			status: {
 				value: dispute.status,
 				display: clickable(
-					<DisputeStatusChip
-						status={ dispute.status }
-						dueBy={ dispute.due_by }
-					/>
+					<DisputeStatusChip status={ dispute.status } />
 				),
 			},
 			reason: {
@@ -351,13 +348,13 @@ export const DisputesList = (): JSX.Element => {
 		const { page, path, ...params } = getQuery();
 		const userEmail = wcpaySettings.currentUserEmail;
 
+		const locale = wcSettings.locale.userLocale;
 		recordEvent( 'wcpay_csv_export_click', {
 			row_type: 'disputes',
 			source: path,
 			exported_row_count: disputesSummary.count,
 		} );
 
-		const userLocale = wcpaySettings.userLocale.code;
 		const {
 			date_before: dateBefore,
 			date_after: dateAfter,
@@ -370,7 +367,7 @@ export const DisputesList = (): JSX.Element => {
 
 		const exportRequestURL = getDisputesCSVRequestURL( {
 			userEmail,
-			userLocale,
+			locale,
 			dateAfter,
 			dateBefore,
 			dateBetween,

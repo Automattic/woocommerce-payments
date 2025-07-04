@@ -54,3 +54,35 @@
 		flex: 1 1 auto;
 	}
 }
+
+body {
+	&.woocommerce-payments-checkout-section {
+		.settings-section {
+			&:not( &:last-child ) {
+				margin-bottom: 50px;
+			}
+		}
+		.settings-section__controls {
+			padding-top: 24px;
+			padding-bottom: 24px;
+
+			.components-card__header {
+				&.components-card-header {
+					&.payment-methods__header {
+						padding-left: 0;
+					}
+				}
+			}
+		}
+	}
+}
+
+@media ( max-width: 800px ) {
+	body {
+		&.woocommerce-payments-checkout-section {
+			.settings-section__details {
+				max-width: 100%;
+			}
+		}
+	}
+}

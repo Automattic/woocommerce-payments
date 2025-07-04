@@ -10,10 +10,10 @@
  * External Dependencies
  */
 import React from 'react';
-import { Button } from '@wordpress/components';
+import { Button } from 'wcpay/components/wp-components-wrapped';
 import { check, chevronDown, Icon } from '@wordpress/icons';
 import { useCallback } from '@wordpress/element';
-import classNames from 'classnames';
+import clsx from 'clsx';
 import { __, sprintf } from '@wordpress/i18n';
 import { useSelect, UseSelectState } from 'downshift';
 
@@ -130,7 +130,7 @@ function CustomSelectControl< ItemType extends Item >( {
 	} );
 
 	const onKeyDownHandler = useCallback(
-		( e ) => {
+		( e: any ) => {
 			e.stopPropagation();
 			menuProps?.onKeyDown?.( e );
 		},
@@ -145,7 +145,7 @@ function CustomSelectControl< ItemType extends Item >( {
 	}
 	return (
 		<div
-			className={ classNames(
+			className={ clsx(
 				'wcpay components-custom-select-control',
 				className
 			) }
@@ -166,7 +166,7 @@ function CustomSelectControl< ItemType extends Item >( {
 					'aria-label': label,
 					'aria-labelledby': undefined,
 					'aria-describedby': getDescribedBy(),
-					className: classNames(
+					className: clsx(
 						'components-custom-select-control__button',
 						{ placeholder: ! itemString }
 					),
@@ -191,7 +191,7 @@ function CustomSelectControl< ItemType extends Item >( {
 								item,
 								index,
 								key: item.key,
-								className: classNames(
+								className: clsx(
 									item.className,
 									'components-custom-select-control__item',
 									{

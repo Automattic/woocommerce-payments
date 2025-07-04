@@ -1,14 +1,14 @@
 /**
  * External dependencies
  */
-import * as React from 'react';
+import React from 'react';
 import { __ } from '@wordpress/i18n';
 import {
 	BaseControl,
 	Button,
 	DropZone,
 	FormFileUpload,
-} from '@wordpress/components';
+} from 'wcpay/components/wp-components-wrapped';
 import CheckmarkIcon from 'gridicons/dist/checkmark';
 import ImageIcon from 'gridicons/dist/image';
 import AddOutlineIcon from 'gridicons/dist/add-outline';

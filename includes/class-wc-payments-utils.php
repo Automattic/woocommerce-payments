@@ -593,13 +593,16 @@ class WC_Payments_Utils {
 			'es-419', // Spanish (Latin America).
 			'et',     // Estonian (Estonia).
 			'fi',     // Finnish (Finland).
+			'fil',    // Filipino (Philippines).
 			'fr',     // French (France).
 			'fr-CA',  // French (Canada).
 			'he',     // Hebrew (Israel).
+			'hr',     // Croatian (Croatia).
 			'hu',     // Hungarian (Hungary).
 			'id',     // Indonesian (Indonesia).
 			'it',     // Italian (Italy).
-			'ja',     // Japanese.
+			'ja',     // Japanese (Japan).
+			'ko',     // Korean (Korea).
 			'lt',     // Lithuanian (Lithuania).
 			'lv',     // Latvian (Latvia).
 			'ms',     // Malay (Malaysia).
@@ -614,8 +617,9 @@ class WC_Payments_Utils {
 			'sk',     // Slovak (Slovakia).
 			'sl',     // Slovenian (Slovenia).
 			'sv',     // Swedish (Sweden).
-			'th',     // Thai.
+			'th',     // Thai (Thailand).
 			'tr',     // Turkish (Turkey).
+			'vi',     // Vietnamese (Vietnam).
 			'zh',     // Chinese Simplified (China).
 			'zh-HK',  // Chinese Traditional (Hong Kong).
 			'zh-TW',  // Chinese Traditional (Taiwan).
@@ -717,6 +721,9 @@ class WC_Payments_Utils {
 
 	/**
 	 * Get the BNPL limits per currency for a specific payment method.
+	 *
+	 * FLAG: PAYMENT_METHODS_LIST
+	 * This can be replaced once all BNPL methods are converted to use definitions.
 	 *
 	 * @param string $payment_method The payment method name ('affirm', 'afterpay_clearpay', or 'klarna').
 	 * @return array The BNPL limits per currency for the specified payment method.
@@ -1270,74 +1277,31 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Returns language data: english name and native name
+	 * Converts a WP locale to a wpcom-compatible language code.
 	 *
-	 * @param string $language Language code.
+	 * @see Automattic\Jetpack\Jetpack_Mu_Wpcom\Common::get_iso_639_locale() for similar logic.
+	 * @see https://translate.wordpress.com/projects/wpcom/ for the current state of wpcom translations.
 	 *
-	 * @return array
+	 * @param string $wp_locale a WordPress locale code to be converted e.g. "en_US", "pt_BR".
+	 * @return string language code compatible with wpcom e.g. "en", "pt-br".
 	 */
-	public static function get_language_data( $language ) {
-		require_once ABSPATH . 'wp-admin/includes/translation-install.php';
+	public static function convert_to_server_locale( string $wp_locale ): string {
+		$wp_locale_lowercase                    = strtolower( $wp_locale );
+		$region_specific_wpcom_language_codes   = [ 'pt_br', 'pt-br', 'zh_tw', 'zh-tw', 'zh_cn', 'zh-cn' ];
+		$is_region_specific_wpcom_language_code = in_array( $wp_locale_lowercase, $region_specific_wpcom_language_codes, true );
 
-		$translations = wp_get_available_translations();
+		$language_code = $is_region_specific_wpcom_language_code ?
+			// If it is a region-specific language code, we replace the underscore with a dash, e.g. 'pt_br' => 'pt-br'.
+			str_replace( '_', '-', $wp_locale_lowercase ) :
+			// Otherwise, we remove the country code and return only the language code, e.g. 'nl_NL' => 'nl'.
+			preg_replace( '/([-_].*)$/i', '', $wp_locale_lowercase );
 
-		if ( isset( $translations[ $language ] ) ) {
-			return [
-				'code'         => self::convert_to_server_locale( $language ),
-				'english_name' => $translations[ $language ]['english_name'] ?? $language,
-				'native_name'  => $translations[ $language ]['native_name'] ?? $language,
-			];
+		if ( empty( $language_code ) ) {
+			// If the language code is empty, we return 'en' as a fallback.
+			return 'en';
 		}
 
-		return [
-			'code'         => 'en_US',
-			'english_name' => 'English (United States)',
-			'native_name'  => 'English (United States)',
-		];
-	}
-
-	/**
-	 * Converts a locale to the server supported languages.
-	 *
-	 * @param string $locale The locale to convert.
-	 *
-	 * @return string Closest locale supported ('en' if NONE)
-	 */
-	public static function convert_to_server_locale( string $locale ): string {
-		$supported = [
-			'ar',     // Arabic.
-			'de',     // German (Germany).
-			'es',     // Spanish (Spain).
-			'fr',     // French (France).
-			'he',     // Hebrew (Israel).
-			'id',     // Indonesian (Indonesia).
-			'it',     // Italian (Italy).
-			'ja',     // Japanese.
-			'ko',     // Korean.
-			'nl',     // Dutch (Netherlands).
-			'pt-br',  // Portuguese (Brazil).
-			'ru',     // Russian (Russia).
-			'sv',     // Swedish (Sweden).
-			'tr',     // Turkish (Turkey).
-			'zh-cn',  // Simplified, Singapore).
-			'zh-tw',  // Chinese Traditional (Taiwan).
-		];
-
-		// Replace '-' with '_' (used in WordPress).
-		$locale = str_replace( '_', '-', $locale );
-
-		if ( in_array( $locale, $supported, true ) ) {
-			return $locale;
-		}
-
-		// Remove the country code and try with that.
-		$base_locale = substr( $locale, 0, 2 );
-		if ( in_array( $base_locale, $supported, true ) ) {
-			return $base_locale;
-		}
-
-		// Return 'en_US' to match the default site language.
-		return 'en_US';
+		return $language_code;
 	}
 
 	/**
@@ -1350,15 +1314,14 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Block based themes display the cart block even when the cart shortcode is used. has_block() isn't effective
-	 * in this case because it checks the page content for the block, which isn't present.
+	 * Determine if the current page is a cart block.
 	 *
-	 * @return bool
+	 * @return bool True if the current page is a cart block, false otherwise.
 	 *
 	 * @psalm-suppress UndefinedFunction
 	 */
 	public static function is_cart_block(): bool {
-		return has_block( 'woocommerce/cart' ) || ( wp_is_block_theme() && is_cart() );
+		return has_block( 'woocommerce/cart' );
 	}
 
 	/**
@@ -1371,11 +1334,7 @@ class WC_Payments_Utils {
 		if ( isset( $_REQUEST['rest_route'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			$rest_route = sanitize_text_field( $_REQUEST['rest_route'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.NonceVerification
 		} else {
-			// Extract the request path from the request URL.
-			$url_parts    = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-			$request_path = ! empty( $url_parts['path'] ) ? rtrim( $url_parts['path'], '/' ) : '';
-			// Remove the REST API prefix from the request path to end up with the route.
-			$rest_route = str_replace( trailingslashit( rest_get_url_prefix() ), '', $request_path );
+			$rest_route = self::extract_rest_route_from_url();
 		}
 
 		// Bail early if the rest route is empty.
@@ -1392,6 +1351,37 @@ class WC_Payments_Utils {
 
 		// If no match was found, this is not a Store API request.
 		return false;
+	}
+
+	/**
+	 * Extract the REST route from the current request URL.
+	 *
+	 * @return string The REST route, or empty string if not found.
+	 */
+	private static function extract_rest_route_from_url(): string {
+		// Extract the request path from the request URL.
+		$url_parts = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+		if ( empty( $url_parts['path'] ) ) {
+			return '';
+		}
+
+		$request_path = rtrim( $url_parts['path'], '/' );
+		if ( empty( $request_path ) ) {
+			return '';
+		}
+
+		// Remove the REST API prefix from the request path to end up with the route.
+		$rest_prefix = trailingslashit( rest_get_url_prefix() );
+
+		// For multisite subdirectory setups, we need to handle the subdirectory prefix.
+		// Look for the wp-json prefix in the path and extract everything after it.
+		$wp_json_pos = strpos( $request_path, '/' . rtrim( $rest_prefix, '/' ) );
+		if ( false !== $wp_json_pos ) {
+			return substr( $request_path, $wp_json_pos + strlen( $rest_prefix ) );
+		}
+
+		// Fallback: simple prefix replacement for non-multisite cases.
+		return str_replace( $rest_prefix, '', $request_path );
 	}
 
 	/**

@@ -23,12 +23,14 @@ class WC_Payments_Onboarding_Service {
 	const TEST_MODE_OPTION                           = 'wcpay_onboarding_test_mode';
 	const ONBOARDING_ELIGIBILITY_MODAL_OPTION        = 'wcpay_onboarding_eligibility_modal_dismissed';
 	const ONBOARDING_CONNECTION_SUCCESS_MODAL_OPTION = 'wcpay_connection_success_modal_dismissed';
+	const ONBOARDING_INIT_IN_PROGRESS_TRANSIENT      = 'wcpay_onboarding_init_in_progress';
 
 	// Onboarding flow sources.
 	// We use these to identify the originating place for the current onboarding flow.
 	// This should be very sticky as opposed to the `from` value which is meant to represent the immediately previous step.
 	const SOURCE_WCADMIN_PAYMENT_TASK               = 'wcadmin-payment-task';
 	const SOURCE_WCADMIN_SETTINGS_PAGE              = 'wcadmin-settings-page';
+	const SOURCE_WCADMIN_NOX_IN_CONTEXT             = 'wcadmin-nox-in-context';
 	const SOURCE_WCADMIN_INCENTIVE_PAGE             = 'wcadmin-incentive-page';
 	const SOURCE_WCPAY_CONNECT_PAGE                 = 'wcpay-connect-page';
 	const SOURCE_WCPAY_OVERVIEW_PAGE                = 'wcpay-overview-page';
@@ -39,7 +41,6 @@ class WC_Payments_Onboarding_Service {
 	const SOURCE_WCPAY_UPDATE_BUSINESS_DETAILS_TASK = 'wcpay-update-business-details-task';
 	const SOURCE_WCPAY_PO_BANK_ACCOUNT_TASK         = 'wcpay-po-bank-account-task';
 	const SOURCE_WCPAY_RECONNECT_WPCOM_TASK         = 'wcpay-reconnect-wpcom-task';
-	const SOURCE_WCPAY_ADD_APMS_TASK                = 'wcpay-add-apms-task';
 	const SOURCE_WCPAY_GO_LIVE_TASK                 = 'wcpay-go-live-task';
 	const SOURCE_WCPAY_FINISH_SETUP_TOOL            = 'wcpay-finish-setup-tool';
 	const SOURCE_WCPAY_PAYOUT_FAILURE_NOTICE        = 'wcpay-payout-failure-notice';
@@ -50,6 +51,7 @@ class WC_Payments_Onboarding_Service {
 	// Woo core places.
 	const FROM_WCADMIN_PAYMENTS_TASK     = 'WCADMIN_PAYMENT_TASK';
 	const FROM_WCADMIN_PAYMENTS_SETTINGS = 'WCADMIN_PAYMENT_SETTINGS';
+	const FROM_WCADMIN_NOX_IN_CONTEXT    = 'WCADMIN_NOX_IN_CONTEXT';
 	const FROM_WCADMIN_INCENTIVE         = 'WCADMIN_PAYMENT_INCENTIVE';
 	// WooPayments places.
 	const FROM_CONNECT_PAGE      = 'WCPAY_CONNECT';
@@ -68,6 +70,10 @@ class WC_Payments_Onboarding_Service {
 	const FROM_WPCOM_CONNECTION = 'WPCOM_CONNECTION';
 	const FROM_STRIPE           = 'STRIPE';
 	const FROM_STRIPE_EMBEDDED  = 'STRIPE_EMBEDDED';
+	const FROM_REFERRAL         = 'REFERRAL';
+
+	const TRACKS_EVENT_ONBOARDING_RESET           = 'wcpay_onboarding_flow_reset';
+	const TRACKS_EVENT_TEST_DRIVE_ACCOUNT_DISABLE = 'wcpay_onboarding_test_account_disable';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -245,21 +251,53 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
+	 * Checks if the WooPay capabilities should be enabled by default based on the capabilities list.
+	 *
+	 * @param bool  $default_value Whether WooPay should be enabled by default.
+	 * @param array $capabilities The capabilities list.
+	 *
+	 * @return bool Whether WooPay should be enabled by default.
+	 */
+	public function should_enable_woopay( bool $default_value, array $capabilities ): bool {
+		// The capabilities has `_payments` suffix.
+		$woopay_capability = 'woopay_payments';
+
+		// If the capabilities list is empty, we should return the default value.
+		if ( empty( $capabilities ) ) {
+			return $default_value;
+		}
+
+		// Return the value from the capabilities list.
+		return ! empty( $capabilities[ $woopay_capability ] );
+	}
+
+	/**
 	 * Retrieve the embedded KYC session and handle initial account creation (if necessary).
 	 *
 	 * Will return the session key used to initialise the embedded onboarding session.
 	 *
 	 * @param array   $self_assessment_data Self assessment data.
 	 * @param boolean $progressive Whether the onboarding is progressive.
+	 * @param array   $capabilities Optional. List keyed by capabilities IDs (payment methods) with boolean values
+	 *                             indicating whether the capability should be requested when the account is created
+	 *                             and enabled in the settings.
 	 *
 	 * @return array Session data.
 	 *
 	 * @throws API_Exception|Exception
 	 */
-	public function create_embedded_kyc_session( array $self_assessment_data, bool $progressive = false ): array {
+	public function create_embedded_kyc_session( array $self_assessment_data, bool $progressive = false, array $capabilities = [] ): array {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			return [];
 		}
+
+		if ( $this->is_onboarding_init_in_progress() ) {
+			Logger::warning( 'Duplicate onboarding attempt detected.' );
+			// We can't allow multiple onboarding initializations to happen at the same time.
+			throw new Exception( __( 'Onboarding initialization is already in progress. Please wait for it to finish.', 'woocommerce-payments' ) );
+		}
+
+		$this->set_onboarding_init_in_progress();
 
 		$setup_mode = WC_Payments::mode()->is_live() ? 'live' : 'test';
 
@@ -274,7 +312,7 @@ class WC_Payments_Onboarding_Service {
 		$account_data   = $this->get_account_data(
 			$setup_mode,
 			$self_assessment_data,
-			$this->get_capabilities_from_request()
+			$capabilities
 		);
 		$actioned_notes = self::get_actioned_notes();
 
@@ -286,8 +324,7 @@ class WC_Payments_Onboarding_Service {
 		 * @see self::update_enabled_payment_methods_ids
 		 * ==================
 		 */
-		$capabilities = $this->get_capabilities_from_request();
-		$gateway      = WC_Payments::get_gateway();
+		$gateway = WC_Payments::get_gateway();
 
 		// Activate enabled Payment Methods IDs.
 		if ( ! empty( $capabilities ) ) {
@@ -301,12 +338,17 @@ class WC_Payments_Onboarding_Service {
 				WC_Payments_Utils::array_filter_recursive( $user_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
 				WC_Payments_Utils::array_filter_recursive( $account_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
 				$actioned_notes,
-				$progressive
+				$progressive,
+				$this->get_referral_code()
 			);
 		} catch ( API_Exception $e ) {
+			$this->clear_onboarding_init_in_progress();
+
 			// If we fail to create the session, return an empty array.
 			return [];
 		}
+
+		$this->clear_onboarding_init_in_progress();
 
 		// Set the embedded KYC in progress flag.
 		$this->set_embedded_kyc_in_progress();
@@ -317,6 +359,11 @@ class WC_Payments_Onboarding_Service {
 			filter_var( $account_session['woopay_enabled_by_default'] ?? false, FILTER_VALIDATE_BOOLEAN ),
 			DAY_IN_SECONDS
 		);
+
+		// If we have a new account, clear the account cache to force a refresh.
+		if ( ! empty( $account_session['account_created'] ) ) {
+			WC_Payments::get_account_service()->clear_cache();
+		}
 
 		return [
 			'clientSecret'   => $account_session['client_secret'] ?? '',
@@ -357,6 +404,10 @@ class WC_Payments_Onboarding_Service {
 
 		// Clear the embedded KYC in progress option, since the onboarding flow is now complete.
 		$this->clear_embedded_kyc_in_progress();
+
+		// Clear the account cache to make sure the account data is fresh
+		// and not depend on webhooks that might not have been received yet.
+		WC_Payments::get_account_service()->clear_cache();
 
 		return [
 			'success'           => $success,
@@ -407,6 +458,37 @@ class WC_Payments_Onboarding_Service {
 		}
 
 		return $business_types;
+	}
+
+	/**
+	 * Check whether an onboarding initialization is in progress.
+	 *
+	 * This only relates to the initial account creation, not the full KYC flow.
+	 *
+	 * @return bool Whether an onboarding flow is in progress.
+	 */
+	public function is_onboarding_init_in_progress(): bool {
+		return filter_var( get_transient( self::ONBOARDING_INIT_IN_PROGRESS_TRANSIENT ), FILTER_VALIDATE_BOOLEAN );
+	}
+
+	/**
+	 * Mark the onboarding initialization as in progress.
+	 *
+	 * This only relates to the initial account creation, not the full KYC flow.
+	 *
+	 * @return void
+	 */
+	public function set_onboarding_init_in_progress(): void {
+		set_transient( self::ONBOARDING_INIT_IN_PROGRESS_TRANSIENT, 'yes', 3 * MINUTE_IN_SECONDS );
+	}
+
+	/**
+	 * Clear the onboarding initialization in progress transient.
+	 *
+	 * @return void
+	 */
+	public function clear_onboarding_init_in_progress(): void {
+		delete_transient( self::ONBOARDING_INIT_IN_PROGRESS_TRANSIENT );
 	}
 
 	/**
@@ -510,7 +592,7 @@ class WC_Payments_Onboarding_Service {
 					'country'       => $self_assessment_data['country'] ?? null,
 					'email'         => $self_assessment_data['email'] ?? null,
 					'business_name' => $self_assessment_data['business_name'] ?? null,
-					'url'           => $self_assessment_data['url'] ?? null,
+					'url'           => $self_assessment_data['site'] ?? null,
 					'mcc'           => $self_assessment_data['mcc'] ?? null,
 					'business_type' => $business_type,
 					'company'       => [
@@ -520,10 +602,6 @@ class WC_Payments_Onboarding_Service {
 						'first_name' => $self_assessment_data['individual']['first_name'] ?? null,
 						'last_name'  => $self_assessment_data['individual']['last_name'] ?? null,
 						'phone'      => $self_assessment_data['phone'] ?? null,
-					],
-					'store'         => [
-						'annual_revenue'    => $self_assessment_data['annual_revenue'] ?? null,
-						'go_live_timeframe' => $self_assessment_data['go_live_timeframe'] ?? null,
 					],
 				]
 			);
@@ -572,6 +650,270 @@ class WC_Payments_Onboarding_Service {
 			'referer'           => isset( $_SERVER['HTTP_REFERER'] ) ? esc_url_raw( wp_unslash( $_SERVER['HTTP_REFERER'] ) ) : '',
 			'onboarding_source' => self::get_source(),
 		];
+	}
+
+	/**
+	 * Initialize a test-drive account.
+	 *
+	 * Note: This is a subset of the WC_Payments_Account::maybe_handle_onboarding method.
+	 *
+	 * @param string $country      The country code to use for the account.
+	 *                             This is a ISO 3166-1 alpha-2 country code.
+	 * @param array  $capabilities Optional. List keyed by capabilities IDs (payment methods) with boolean values
+	 *                             indicating whether the capability should be requested when the account is created
+	 *                             and enabled in the settings.
+	 *
+	 * @return bool Whether the account was created.
+	 * @throws API_Exception When the API request fails.
+	 * @throws Exception When an onboarding initialization is already in progress.
+	 */
+	public function init_test_drive_account( string $country, array $capabilities = [] ): bool {
+		if ( ! $this->payments_api_client->is_server_connected() ) {
+			throw new Exception( __( 'Your store is not connected to WordPress.com. Please connect it first.', 'woocommerce-payments' ) );
+		}
+
+		if ( $this->is_onboarding_init_in_progress() ) {
+			// We can't allow multiple onboarding initializations to happen at the same time.
+			throw new Exception( __( 'Onboarding initialization is already in progress. Please wait for it to finish.', 'woocommerce-payments' ) );
+		}
+
+		// Since there should be no Stripe KYC needed, make sure we start with a clean state.
+		delete_transient( WC_Payments_Account::ONBOARDING_STATE_TRANSIENT );
+		delete_option( WC_Payments_Account::EMBEDDED_KYC_IN_PROGRESS_OPTION );
+
+		$this->set_onboarding_init_in_progress();
+
+		$current_user = get_userdata( get_current_user_id() );
+
+		// Make sure the onboarding test mode DB flag is set.
+		self::set_test_mode( true );
+
+		$site_data    = [
+			'site_username' => wp_get_current_user()->user_login,
+			'site_locale'   => get_locale(),
+		];
+		$user_data    = $this->get_onboarding_user_data();
+		$account_data = $this->get_account_data(
+			'test_drive',
+			[
+				'business_type' => 'individual',
+				'country'       => $country,
+				'individual'    => [
+					'first_name' => $current_user->first_name ?? null,
+					'last_name'  => $current_user->last_name ?? null,
+				],
+			],
+			$capabilities
+		);
+
+		// Attempt to create the account.
+		$onboarding_data = $this->payments_api_client->get_onboarding_data(
+			false,
+			WC_Payments_Account::get_connect_url(),
+			$site_data,
+			WC_Payments_Utils::array_filter_recursive( $user_data ),
+			WC_Payments_Utils::array_filter_recursive( $account_data ),
+			self::get_actioned_notes(),
+		);
+
+		// Store the 'woopay_enabled_by_default' flag in a transient, to be enabled later respecting
+		// the WooPay capability value from the request.
+		$should_enable_woopay = $this->should_enable_woopay(
+			filter_var( $onboarding_data['woopay_enabled_by_default'] ?? false, FILTER_VALIDATE_BOOLEAN ),
+			$capabilities
+		);
+
+		if ( $should_enable_woopay ) {
+			set_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT, true, DAY_IN_SECONDS );
+		}
+
+		// Our platform will respond with a URL set to false if the account was created and
+		// no further action is needed - which is the case for test-drive accounts.
+		$account_created = isset( $onboarding_data['url'] ) && false === $onboarding_data['url'];
+		if ( $account_created ) {
+			// Set the gateway options.
+			$gateway = WC_Payments::get_gateway();
+			$gateway->update_option( 'enabled', 'yes' );
+			$gateway->update_option( 'test_mode', empty( $onboarding_data['is_live'] ) ? 'yes' : 'no' );
+
+			// Handle the payment methods settings.
+			if ( ! empty( $capabilities ) ) {
+				$this->update_enabled_payment_methods_ids( $gateway, $capabilities );
+			}
+
+			// Store a state after completing KYC for tracks. This is stored temporarily in option because
+			// user might not have agreed to TOS yet.
+			update_option( '_wcpay_onboarding_stripe_connected', [ 'is_existing_stripe_account' => true ] );
+		}
+
+		$this->clear_onboarding_init_in_progress();
+
+		// Clear the account cache to force a refresh.
+		WC_Payments::get_account_service()->clear_cache();
+
+		return $account_created;
+	}
+
+	/**
+	 * Reset the current onboarding state.
+	 *
+	 * This means:
+	 * - delete the currently connected Stripe account - if possible!
+	 * - reset the onboarding flags, options, and caches.
+	 *
+	 * @param array $context Context for the reset onboarding request.
+	 *              - 'from' (string) The source of the request.
+	 *              - 'source' (string) The source of the onboarding flow.
+	 *
+	 * @return bool Whether the onboarding was reset successfully.
+	 *
+	 * @throws API_Exception When the platform API request fails or is not successful.
+	 */
+	public function reset_onboarding( array $context ): bool {
+		if ( ! $this->payments_api_client->is_server_connected() ) {
+			throw new Exception( __( 'Your store is not connected to WordPress.com. Please connect it first.', 'woocommerce-payments' ) );
+		}
+
+		// If the account does not exist, there's nothing to reset.
+		if ( ! WC_Payments::get_account_service()->is_stripe_connected() ) {
+			throw new API_Exception( __( 'Failed to reset the account: account does not exist.', 'woocommerce-payments' ), 'wcpay-onboarding-account-error', 400 );
+		}
+
+		// Immediately change the account cache to avoid API requests during the time it takes for
+		// the Transact Platform to actually delete the account.
+		WC_Payments::get_account_service()->overwrite_cache_with_no_account();
+		// Delete the currently connected Stripe account, in the onboarding mode we are currently in.
+		$test_mode_onboarding = self::is_test_mode_enabled();
+		$result               = $this->payments_api_client->delete_account( $test_mode_onboarding );
+		if ( ! isset( $result['result'] ) || 'success' !== $result['result'] ) {
+			WC_Payments::get_account_service()->refresh_account_data();
+			throw new API_Exception( __( 'Failed to delete account.', 'woocommerce-payments' ), 'wcpay-onboarding-account-error', 400 );
+		}
+
+		$this->cleanup_on_account_reset();
+		delete_transient( WC_Payments_Account::ONBOARDING_TEST_DRIVE_SETTINGS_FOR_LIVE_ACCOUNT );
+
+		// Track onboarding reset.
+		$event_properties = [
+			'mode'   => $test_mode_onboarding ? 'test' : 'live',
+			'from'   => ! empty( $context['from'] ) ? sanitize_text_field( $context['from'] ) : '',
+			'source' => ! empty( $context['source'] ) ? sanitize_text_field( $context['source'] ) : '',
+		];
+
+		$this->tracks_event(
+			self::TRACKS_EVENT_ONBOARDING_RESET,
+			$event_properties
+		);
+
+		return true;
+	}
+
+	/**
+	 * Disable the Test Drive account.
+	 *
+	 * This means:
+	 * - preserve the currently connected Stripe test drive account settings.
+	 * - delete the currently connected Stripe test drive account.
+	 * - cleanup the gateway state for a fresh onboarding flow.
+	 *
+	 * @param array $context Context for the disable test drive account request.
+	 *              - 'from' (string) The source of the request.
+	 *              - 'source' (string) The source of the onboarding flow.
+	 *
+	 * @return bool Whether the test drive account was disabled successfully.
+	 *
+	 * @throws API_Exception When the platform API request fails or is not successful.
+	 */
+	public function disable_test_drive_account( array $context ): bool {
+		if ( ! $this->payments_api_client->is_server_connected() ) {
+			throw new Exception( __( 'Your store is not connected to WordPress.com. Please connect it first.', 'woocommerce-payments' ) );
+		}
+
+		// If the account does not exist, there's nothing to disable.
+		if ( ! WC_Payments::get_account_service()->is_stripe_connected() ) {
+			throw new API_Exception( __( 'Failed to activate the account: account does not exist.', 'woocommerce-payments' ), 'wcpay-onboarding-account-error', 400 );
+		}
+
+		// If the test mode onboarding is not enabled, we don't need to do anything.
+		if ( ! self::is_test_mode_enabled() ) {
+			return false;
+		}
+
+		// If the test mode onboarding is enabled:
+		// - Delete the current account;
+		// - Cleanup the gateway state for a fresh onboarding flow.
+		try {
+			// If we're in test mode and dealing with a test-drive account,
+			// we need to collect the test drive settings before we delete the test-drive account,
+			// and apply those settings to the live account.
+			WC_Payments::get_account_service()->save_test_drive_settings();
+
+			// Immediately change the account cache to avoid API requests during the time it takes for
+			// the Transact Platform to actually delete the account.
+			WC_Payments::get_account_service()->overwrite_cache_with_no_account();
+			// Delete the currently connected Stripe account.
+			$this->payments_api_client->delete_account( true );
+		} catch ( API_Exception $e ) {
+			WC_Payments::get_account_service()->refresh_account_data();
+			throw new API_Exception( __( 'Failed to disable test drive account.', 'woocommerce-payments' ), 'wcpay-onboarding-account-error', 400 );
+		}
+
+		$this->cleanup_on_account_reset();
+
+		// Track disabling test drive account.
+		$event_properties = [
+			'mode'   => self::is_test_mode_enabled() ? 'test' : 'live',
+			'from'   => ! empty( $context['from'] ) ? sanitize_text_field( $context['from'] ) : '',
+			'source' => ! empty( $context['source'] ) ? sanitize_text_field( $context['source'] ) : '',
+		];
+
+		$this->tracks_event(
+			self::TRACKS_EVENT_TEST_DRIVE_ACCOUNT_DISABLE,
+			$event_properties
+		);
+
+		return true;
+	}
+
+	/**
+	 * Sets things up for a fresh onboarding flow.
+	 *
+	 * @return void
+	 */
+	public function cleanup_on_account_reset() {
+		$gateway = WC_Payments::get_gateway();
+		$gateway->update_option( 'enabled', 'no' );
+		$gateway->update_option( 'test_mode', 'no' );
+
+		update_option( '_wcpay_onboarding_stripe_connected', [] );
+		update_option( self::TEST_MODE_OPTION, 'no' );
+
+		// Discard any ongoing onboarding session.
+		delete_transient( WC_Payments_Account::ONBOARDING_STATE_TRANSIENT );
+		delete_option( WC_Payments_Account::EMBEDDED_KYC_IN_PROGRESS_OPTION );
+		delete_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT );
+		$this->clear_onboarding_init_in_progress();
+
+		// Clear the cache to avoid stale data.
+		WC_Payments::get_account_service()->clear_cache();
+	}
+
+	/**
+	 * Cleanup onboarding flow data after the account is onboarded.
+	 *
+	 * This is to avoid keeping unnecessary data in the database.
+	 * We focus on data stores in DB options. Transients have a limited lifetime and will be cleaned up automatically.
+	 *
+	 * @return void
+	 */
+	public function cleanup_on_account_onboarded() {
+		// Delete the onboarding fields data since it is used only during the initial onboarding.
+		// Delete it by prefix since it can have entries suffixed with the user locale.
+		$this->database_cache->delete_by_prefix( Database_Cache::ONBOARDING_FIELDS_DATA_KEY );
+
+		$this->database_cache->delete( Database_Cache::BUSINESS_TYPES_KEY );
+		// Delete it by prefix since it can have entries suffixed with the user locale.
+		$this->database_cache->delete_by_prefix( Database_Cache::RECOMMENDED_PAYMENT_METHODS );
 	}
 
 	/**
@@ -762,6 +1104,7 @@ class WC_Payments_Onboarding_Service {
 			[
 				self::FROM_WCADMIN_PAYMENTS_TASK,
 				self::FROM_WCADMIN_PAYMENTS_SETTINGS,
+				self::FROM_WCADMIN_NOX_IN_CONTEXT,
 				self::FROM_WCADMIN_INCENTIVE,
 				self::FROM_CONNECT_PAGE,
 				self::FROM_OVERVIEW_PAGE,
@@ -789,6 +1132,10 @@ class WC_Payments_Onboarding_Service {
 		if ( false !== strpos( $referer, 'page=wc-settings&tab=checkout' ) ) {
 			return self::FROM_WCADMIN_PAYMENTS_SETTINGS;
 		}
+		if ( false !== strpos( $referer, 'page=wc-settings&tab=checkout' ) &&
+			false !== strpos( $referer, 'path=/woopayments/onboarding' ) ) {
+			return self::FROM_WCADMIN_NOX_IN_CONTEXT;
+		}
 		if ( false !== strpos( $referer, 'path=/wc-pay-welcome-page' ) ) {
 			return self::FROM_WCADMIN_INCENTIVE;
 		}
@@ -801,7 +1148,8 @@ class WC_Payments_Onboarding_Service {
 		if ( false !== strpos( $referer, 'path=/payments/onboarding' ) ) {
 			return self::FROM_ONBOARDING_WIZARD;
 		}
-		if ( false !== strpos( $referer, 'path=/payments/deposits' ) || false !== strpos( $referer, 'path=/payments/payouts' ) ) {
+		if ( false !== strpos( $referer, 'path=/payments/deposits' ) ||
+			false !== strpos( $referer, 'path=/payments/payouts' ) ) {
 			return self::FROM_PAYOUTS;
 		}
 		if ( false !== strpos( $referer, 'wordpress.com' ) ) {
@@ -836,6 +1184,7 @@ class WC_Payments_Onboarding_Service {
 		$valid_sources = [
 			self::SOURCE_WCADMIN_PAYMENT_TASK,
 			self::SOURCE_WCADMIN_SETTINGS_PAGE,
+			self::SOURCE_WCADMIN_NOX_IN_CONTEXT,
 			self::SOURCE_WCADMIN_INCENTIVE_PAGE,
 			self::SOURCE_WCPAY_CONNECT_PAGE,
 			self::SOURCE_WCPAY_OVERVIEW_PAGE,
@@ -846,7 +1195,6 @@ class WC_Payments_Onboarding_Service {
 			self::SOURCE_WCPAY_UPDATE_BUSINESS_DETAILS_TASK,
 			self::SOURCE_WCPAY_PO_BANK_ACCOUNT_TASK,
 			self::SOURCE_WCPAY_RECONNECT_WPCOM_TASK,
-			self::SOURCE_WCPAY_ADD_APMS_TASK,
 			self::SOURCE_WCPAY_GO_LIVE_TASK,
 			self::SOURCE_WCPAY_FINISH_SETUP_TOOL,
 			self::SOURCE_WCPAY_PAYOUT_FAILURE_NOTICE,
@@ -890,6 +1238,8 @@ class WC_Payments_Onboarding_Service {
 				return self::SOURCE_WCADMIN_PAYMENT_TASK;
 			case self::FROM_WCADMIN_PAYMENTS_SETTINGS:
 				return self::SOURCE_WCADMIN_SETTINGS_PAGE;
+			case self::FROM_WCADMIN_NOX_IN_CONTEXT:
+				return self::SOURCE_WCADMIN_NOX_IN_CONTEXT;
 			case self::FROM_WCADMIN_INCENTIVE:
 				return self::SOURCE_WCADMIN_INCENTIVE_PAGE;
 			default:
@@ -909,6 +1259,8 @@ class WC_Payments_Onboarding_Service {
 			case self::FROM_SETTINGS:
 			case self::FROM_WCADMIN_PAYMENTS_SETTINGS:
 				return self::SOURCE_WCADMIN_SETTINGS_PAGE;
+			case self::FROM_WCADMIN_NOX_IN_CONTEXT:
+				return self::SOURCE_WCADMIN_NOX_IN_CONTEXT;
 			case self::FROM_WCADMIN_INCENTIVE:
 				return self::SOURCE_WCADMIN_INCENTIVE_PAGE;
 			case self::FROM_CONNECT_PAGE:
@@ -961,6 +1313,12 @@ class WC_Payments_Onboarding_Service {
 				]
 			)
 		) ) {
+			// Discriminate between the settings page and the NOX in-context onboarding.
+			if ( ! empty( $referer_params['path'] ) &&
+				0 === strpos( $referer_params['path'], '/woopayments/onboarding' ) ) {
+				return self::SOURCE_WCADMIN_NOX_IN_CONTEXT;
+			}
+
 			return self::SOURCE_WCADMIN_SETTINGS_PAGE;
 		}
 		if ( 2 === count(
@@ -1084,16 +1442,50 @@ class WC_Payments_Onboarding_Service {
 			}
 		}
 
-		// If WooPay is enabled, update the gateway option.
+		// Update gateway option with the WooPay capability.
 		if ( ! empty( $capabilities['woopay'] ) ) {
 			$gateway->update_is_woopay_enabled( true );
+		} else {
+			$gateway->update_is_woopay_enabled( false );
 		}
 
-		// If Apple Pay and Google Pay are disabled update the gateway option,
-		// otherwise they are enabled by default.
-		if ( empty( $capabilities['apple_google'] ) ) {
+		// Update gateway option with the Apple/Google Pay capability.
+		if ( ! empty( $capabilities['apple_google'] ) || ( ! empty( $capabilities['apple_pay'] ) || ! empty( $capabilities['google_pay'] ) ) ) {
+			$gateway->update_option( 'payment_request', 'yes' );
+		} else {
 			$gateway->update_option( 'payment_request', 'no' );
 		}
+	}
+
+	/**
+	 * Given a referral code, normalize it and store it in a transient.
+	 *
+	 * @param string $referral_code The referral code to normalize and store.
+	 *
+	 * @return string The normalized referral code.
+	 */
+	public function normalize_and_store_referral_code( string $referral_code ): string {
+		$normalized = trim( strtolower( substr( $referral_code, 0, 50 ) ) );
+		if ( empty( $normalized ) ) {
+			return '';
+		}
+		set_transient( 'woopayments_referral_code', $normalized, 30 * DAY_IN_SECONDS );
+		return $normalized;
+	}
+
+	/**
+	 * Get the referral code from the transient.
+	 *
+	 * @return string|null The referral code or null if not found.
+	 */
+	public function get_referral_code(): ?string {
+		$value = get_transient( 'woopayments_referral_code' );
+
+		if ( empty( $value ) ) {
+			return null;
+		}
+
+		return $value;
 	}
 
 	/**
@@ -1117,5 +1509,40 @@ class WC_Payments_Onboarding_Service {
 				return ! in_array( $payment_method, $excluded_methods, true );
 			}
 		);
+	}
+
+	/**
+	 * Send a Tracks event.
+	 *
+	 * By default Woo adds `url`, `blog_lang`, `blog_id`, `store_id`, `products_count`, and `wc_version`
+	 * properties to every event.
+	 *
+	 * @todo This is a duplicate of the one in the WC_Payments_Account class. When we refactor the onboarding logic out of the WC_Payments_Account class we should consider a proper place for this method.
+	 *
+	 * @param string $name       The event name.
+	 * @param array  $properties Optional. The event custom properties.
+	 *
+	 * @return void
+	 */
+	private function tracks_event( string $name, array $properties = [] ) {
+		if ( ! function_exists( 'wc_admin_record_tracks_event' ) ) {
+			return;
+		}
+
+		// Add default properties to every event.
+		$properties = array_merge(
+			$properties,
+			[
+				'is_test_mode'      => WC_Payments::mode()->is_test(),
+				'jetpack_connected' => $this->payments_api_client->is_server_connected(),
+				'wcpay_version'     => WCPAY_VERSION_NUMBER,
+				'woo_country_code'  => WC()->countries->get_base_country(),
+			],
+			WC_Payments::get_account_service()->get_tracking_info() ?? []
+		);
+
+		wc_admin_record_tracks_event( $name, $properties );
+
+		Logger::info( 'Tracks event: ' . $name . ' with data: ' . wp_json_encode( WC_Payments_Utils::redact_array( $properties, [ 'woo_country_code' ] ) ) );
 	}
 }

@@ -219,3 +219,37 @@ export const getChargeChannel = (
 
 	return __( 'Online store', 'woocommerce-payments' );
 };
+
+/**
+ * Returns the bank name for a charge.
+ *
+ * @param {Charge} charge - The charge to get the bank name for.
+ *
+ * @return {string | null} The bank name for the charge.
+ */
+export const getBankName = ( charge: Charge ): string | null => {
+	const { payment_method_details: paymentMethodDetails } = charge;
+	const methodType = paymentMethodDetails?.type?.toLowerCase();
+
+	// For card payments, get the issuer from card details
+	if ( methodType === 'card' && paymentMethodDetails?.type === 'card' ) {
+		// Type assertion is safe here because we've checked the type
+		const cardDetails = paymentMethodDetails.card as {
+			issuer?: string;
+		};
+		return cardDetails.issuer || null;
+	}
+
+	// For BNPL (affirm, afterpay_clearpay, klarna) disputes are all handled directly through the BNPL provider.
+	// For example, with an Affirm dispute, the `issuer` is actually Affirm
+	switch ( methodType ) {
+		case 'affirm':
+			return 'Affirm';
+		case 'afterpay_clearpay':
+			return 'Afterpay / Clearpay';
+		case 'klarna':
+			return 'Klarna';
+		default:
+			return null;
+	}
+};

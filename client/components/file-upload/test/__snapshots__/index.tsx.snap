@@ -1,15 +1,33 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`FileUploadControl renders default file upload control 1`] = `
+.emotion-0 {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  font-size: 13px;
+}
+
+.emotion-2 {
+  margin-bottom: calc(4px * 2);
+}
+
+.components-panel__row .emotion-2 {
+  margin-bottom: inherit;
+}
+
+.emotion-4 {
+  display: inline-block;
+  margin-bottom: calc(4px * 2);
+}
+
 <div>
   <div
-    class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
+    class="components-base-control emotion-0 emotion-1"
   >
     <div
-      class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+      class="components-base-control__field emotion-2 emotion-3"
     >
       <label
-        class="components-base-control__label css-eweeby-StyledLabel-labelStyles ej5x27r2"
+        class="components-base-control__label emotion-4 emotion-5"
         for="form-file-upload-base-control-field_key"
       >
         Upload file
@@ -59,15 +77,33 @@ exports[`FileUploadControl renders default file upload control 1`] = `
 `;
 
 exports[`FileUploadControl renders disabled state 1`] = `
+.emotion-0 {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  font-size: 13px;
+}
+
+.emotion-2 {
+  margin-bottom: calc(4px * 2);
+}
+
+.components-panel__row .emotion-2 {
+  margin-bottom: inherit;
+}
+
+.emotion-4 {
+  display: inline-block;
+  margin-bottom: calc(4px * 2);
+}
+
 <div>
   <div
-    class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
+    class="components-base-control emotion-0 emotion-1"
   >
     <div
-      class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+      class="components-base-control__field emotion-2 emotion-3"
     >
       <label
-        class="components-base-control__label css-eweeby-StyledLabel-labelStyles ej5x27r2"
+        class="components-base-control__label emotion-4 emotion-5"
         for="form-file-upload-base-control-field_key"
       >
         Upload file
@@ -122,15 +158,33 @@ exports[`FileUploadControl renders disabled state 1`] = `
 `;
 
 exports[`FileUploadControl renders loading state 1`] = `
+.emotion-0 {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  font-size: 13px;
+}
+
+.emotion-2 {
+  margin-bottom: calc(4px * 2);
+}
+
+.components-panel__row .emotion-2 {
+  margin-bottom: inherit;
+}
+
+.emotion-4 {
+  display: inline-block;
+  margin-bottom: calc(4px * 2);
+}
+
 <div>
   <div
-    class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
+    class="components-base-control emotion-0 emotion-1"
   >
     <div
-      class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+      class="components-base-control__field emotion-2 emotion-3"
     >
       <label
-        class="components-base-control__label css-eweeby-StyledLabel-labelStyles ej5x27r2"
+        class="components-base-control__label emotion-4 emotion-5"
         for="form-file-upload-base-control-field_key"
       >
         Upload file
@@ -181,15 +235,33 @@ exports[`FileUploadControl renders loading state 1`] = `
 `;
 
 exports[`FileUploadControl renders upload done state 1`] = `
+.emotion-0 {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  font-size: 13px;
+}
+
+.emotion-2 {
+  margin-bottom: calc(4px * 2);
+}
+
+.components-panel__row .emotion-2 {
+  margin-bottom: inherit;
+}
+
+.emotion-4 {
+  display: inline-block;
+  margin-bottom: calc(4px * 2);
+}
+
 <div>
   <div
-    class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
+    class="components-base-control emotion-0 emotion-1"
   >
     <div
-      class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+      class="components-base-control__field emotion-2 emotion-3"
     >
       <label
-        class="components-base-control__label css-eweeby-StyledLabel-labelStyles ej5x27r2"
+        class="components-base-control__label emotion-4 emotion-5"
         for="form-file-upload-base-control-field_key"
       >
         Upload file
@@ -262,15 +334,33 @@ exports[`FileUploadControl renders upload done state 1`] = `
 `;
 
 exports[`FileUploadControl renders upload failed state 1`] = `
+.emotion-0 {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  font-size: 13px;
+}
+
+.emotion-2 {
+  margin-bottom: calc(4px * 2);
+}
+
+.components-panel__row .emotion-2 {
+  margin-bottom: inherit;
+}
+
+.emotion-4 {
+  display: inline-block;
+  margin-bottom: calc(4px * 2);
+}
+
 <div>
   <div
-    class="components-base-control css-wdf2ti-Wrapper ej5x27r4"
+    class="components-base-control emotion-0 emotion-1"
   >
     <div
-      class="components-base-control__field css-10urnh1-StyledField-deprecatedMarginField ej5x27r3"
+      class="components-base-control__field emotion-2 emotion-3"
     >
       <label
-        class="components-base-control__label css-eweeby-StyledLabel-labelStyles ej5x27r2"
+        class="components-base-control__label emotion-4 emotion-5"
         for="form-file-upload-base-control-field_key"
       >
         Upload file

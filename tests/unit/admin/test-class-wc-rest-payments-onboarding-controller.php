@@ -64,84 +64,7 @@ class WC_REST_Payments_Onboarding_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( [ 'data' => $mock_business_types ], $response->get_data() );
 	}
 
-	public function test_get_progressive_onboarding_eligible() {
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_onboarding_po_eligible' )
-			->willReturn(
-				[
-					'result' => 'eligible',
-					'data'   => [],
-				]
-			);
-
-		$request = new WP_REST_Request( 'POST' );
-		$request->set_body_params(
-			[
-				'business'        => [
-					'country' => Country_Code::UNITED_STATES,
-					'type'    => 'company',
-					'mcc'     => 'most_popular__software_services',
-				],
-				'store'           => [
-					'annual_revenue'    => 'less_than_250k',
-					'go_live_timeframe' => 'within_1month',
-				],
-				'woo_store_stats' => [],
-			]
-		);
-
-		$response = $this->controller->get_progressive_onboarding_eligible( $request );
-		$this->assertSame( 200, $response->status );
-		$this->assertSame(
-			[
-				'result' => 'eligible',
-				'data'   => [],
-			],
-			$response->get_data()
-		);
-	}
-
-	public function test_get_progressive_onboarding_not_eligible() {
-		$this->mock_api_client
-			->expects( $this->once() )
-			->method( 'get_onboarding_po_eligible' )
-			->willReturn(
-				[
-					'result' => 'not_eligible',
-					'data'   => [],
-				]
-			);
-
-		$request = new WP_REST_Request( 'POST' );
-		$request->set_body_params(
-			[
-
-				'business'        => [
-					'country' => Country_Code::UNITED_STATES,
-					'type'    => 'company',
-					'mcc'     => 'most_popular__software_services',
-				],
-				'store'           => [
-					'annual_revenue'    => 'from_1m_to_20m',
-					'go_live_timeframe' => 'from_1_to_3months', // Fails because of the go live timeframe.
-				],
-				'woo_store_stats' => [],
-			]
-		);
-
-		$response = $this->controller->get_progressive_onboarding_eligible( $request );
-		$this->assertSame( 200, $response->status );
-		$this->assertSame(
-			[
-				'result' => 'not_eligible',
-				'data'   => [],
-			],
-			$response->get_data()
-		);
-	}
-
-	public function test_get_embedded_kyc_session() {
+	public function test_create_embedded_kyc_session() {
 		$kyc_session = [
 			'clientSecret'   => 'accs_secret__XXX',
 			'expiresAt'      => time() + 120,
@@ -158,15 +81,15 @@ class WC_REST_Payments_Onboarding_Controller_Test extends WCPAY_UnitTestCase {
 				$kyc_session
 			);
 
-		$request = new WP_REST_Request( 'GET' );
-		$request->set_query_params(
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_body_params(
 			[
 				'progressive'         => true,
 				'create_live_account' => true,
 			]
 		);
 
-		$response = $this->controller->get_embedded_kyc_session( $request );
+		$response = $this->controller->create_embedded_kyc_session( $request );
 		$this->assertSame( 200, $response->status );
 		$this->assertSame(
 			array_merge(

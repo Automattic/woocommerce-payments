@@ -19,7 +19,7 @@ declare global {
 			isAuthAndCaptureEnabled: boolean;
 			paymentTimeline: boolean;
 			isDisputeIssuerEvidenceEnabled: boolean;
-			isPaymentOverviewWidgetEnabled?: boolean;
+			isNewEvidenceSubmissionFormEnabled: boolean;
 			multiCurrency?: boolean;
 		};
 		accountFees: Record< string, any >;
@@ -110,11 +110,9 @@ declare global {
 			isComplete: boolean;
 			isEligibilityModalDismissed: boolean;
 		};
-		enabledPaymentMethods: string[];
 		dismissedDuplicateNotices: PaymentMethodToPluginsMap;
 		accountDefaultCurrency: string;
 		isFRTReviewFeatureActive: boolean;
-		frtDiscoverBannerSettings: string;
 		onboardingFieldsData?: {
 			business_types: Country[];
 			mccs_display_tree: MccsDisplayTreeItem[];
@@ -134,33 +132,11 @@ declare global {
 		isWooPayStoreCountryAvailable: boolean;
 		isSubscriptionsPluginActive: boolean;
 		isStripeBillingEligible: boolean;
-		capabilityRequestNotices: Record< string, boolean >;
 		storeName: string;
 		isNextDepositNoticeDismissed: boolean;
 		isInstantDepositNoticeDismissed: boolean;
 		isConnectionSuccessModalDismissed: boolean;
-		userLocale: {
-			/**
-			 * The locale of the current user profile, represented as a locale code supported by transact-platform-server.
-			 *
-			 * @example 'es' // Spanish
-			 *
-			 * @see WC_Payments_Utils::convert_locale_to_language_code
-			 */
-			code: string;
-			/**
-			 * The English name of the locale.
-			 *
-			 * @example 'Spanish'
-			 */
-			english_name: string;
-			/**
-			 * The native name of the locale.
-			 *
-			 * @example 'Español'
-			 */
-			native_name: string;
-		};
+		isWCReactifySettingsFeatureEnabled: boolean;
 		trackingInfo?: {
 			hosting_provider: string;
 		};
@@ -173,16 +149,21 @@ declare global {
 
 	const wooPaymentsPaymentMethodDefinitions: Record<
 		string,
+		PaymentMethodServerDefinition
+	>;
+
+	const wooPaymentsPaymentMethodsConfig: Record<
+		string,
 		{
-			id: string;
-			stripe_key: string;
+			isReusable: boolean;
+			isBnpl: boolean;
 			title: string;
-			description: string;
-			settings_icon_url: string;
-			currencies: string[];
-			allows_manual_capture: boolean;
-			allows_pay_later: boolean;
-			accepts_only_domestic_payment: boolean;
+			icon: string;
+			darkIcon: string;
+			showSaveOption: boolean;
+			countries: string[];
+			testingInstructions: string;
+			forceNetworkSavedCards: boolean;
 		}
 	>;
 
@@ -221,6 +202,10 @@ declare global {
 					woocommerce_all_except_countries: string[];
 					woocommerce_specific_allowed_countries: string[];
 					woocommerce_default_country: string;
+					woocommerce_store_address: string;
+					woocommerce_store_address_2: string;
+					woocommerce_store_city: string;
+					woocommerce_store_postcode: string;
 				};
 			};
 			siteVisibilitySettings: {
@@ -248,6 +233,7 @@ declare global {
 			userLocale: string;
 		};
 		siteTitle: string;
+		wcVersion: string;
 	};
 
 	const wcpayPluginSettings: {
@@ -275,5 +261,6 @@ declare global {
 		wcTracks: typeof wcTracks;
 		wcSettings: typeof wcSettings;
 		wcpayPluginSettings?: typeof wcpayPluginSettings;
+		wooPaymentsPaymentMethodsConfig?: typeof wooPaymentsPaymentMethodsConfig;
 	}
 }

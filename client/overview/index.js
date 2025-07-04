@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React, { useEffect, useState } from 'react';
-import { Card, Notice } from '@wordpress/components';
+import { Card, Notice } from 'wcpay/components/wp-components-wrapped';
 import { getQuery } from '@woocommerce/navigation';
 import { __, sprintf } from '@wordpress/i18n';
 import { dispatch } from '@wordpress/data';
@@ -20,10 +20,8 @@ import ActiveLoanSummary from 'components/active-loan-summary';
 import ConnectionSuccessModal from './modal/connection-success';
 import DepositsOverview from 'components/deposits-overview';
 import ErrorBoundary from 'components/error-boundary';
-import FRTDiscoverabilityBanner from 'components/fraud-risk-tools-banner';
 import JetpackIdcNotice from 'components/jetpack-idc-notice';
 import Page from 'components/page';
-import PaymentActivity from 'wcpay/components/payment-activity';
 import Welcome from 'components/welcome';
 import { TestModeNotice } from 'components/test-mode-notice';
 import InboxNotifications from './inbox-notifications';
@@ -67,8 +65,6 @@ const OverviewPage = () => {
 		accountStatus,
 		accountStatus: { progressiveOnboarding },
 		accountLoans: { has_active_loan: hasActiveLoan },
-		enabledPaymentMethods,
-		featureFlags: { isPaymentOverviewWidgetEnabled },
 		overviewTasksVisibility,
 		wpcomReconnectUrl,
 	} = wcpaySettings;
@@ -120,7 +116,6 @@ const OverviewPage = () => {
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
 		activeDisputes,
-		enabledPaymentMethods,
 		showGetVerifyBankAccountTask,
 	} );
 	const tasks =
@@ -336,10 +331,6 @@ const OverviewPage = () => {
 						} ) }
 					</BannerNotice>
 				) }
-			<ErrorBoundary>
-				<FRTDiscoverabilityBanner />
-			</ErrorBoundary>
-
 			{ ! accountRejected && ! accountUnderReview && (
 				<ErrorBoundary>
 					<Welcome />
@@ -397,15 +388,6 @@ const OverviewPage = () => {
 							<AccountBalances />
 						</ErrorBoundary>
 					</Card>
-
-					{
-						/* Show Payment Activity widget only when feature flag is set. To be removed before go live */
-						isPaymentOverviewWidgetEnabled && (
-							<ErrorBoundary>
-								<PaymentActivity />
-							</ErrorBoundary>
-						)
-					}
 
 					<DepositsOverview />
 				</ErrorBoundary>

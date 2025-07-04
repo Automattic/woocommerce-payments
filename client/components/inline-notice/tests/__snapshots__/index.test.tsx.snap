@@ -1,6 +1,41 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Info InlineNotices renders with dismiss 1`] = `
+.emotion-0 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-0>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-0>* {
+  min-width: 0;
+}
+
+.emotion-2 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
 <div>
   <div
     class="wcpay-inline-notice wcpay-inline-info-notice wcpaytest-notice components-notice is-info is-dismissible"
@@ -9,12 +44,12 @@ exports[`Info InlineNotices renders with dismiss 1`] = `
       class="components-notice__content"
     >
       <div
-        class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+        class="components-flex emotion-0 emotion-1"
         data-wp-c16t="true"
         data-wp-component="Flex"
       >
         <div
-          class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+          class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-2 emotion-1"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
@@ -48,6 +83,41 @@ exports[`Info InlineNotices renders with dismiss 1`] = `
 `;
 
 exports[`Info InlineNotices renders with dismiss and icon 1`] = `
+.emotion-0 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-0>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-0>* {
+  min-width: 0;
+}
+
+.emotion-2 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
 <div>
   <div
     class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info is-dismissible"
@@ -56,12 +126,12 @@ exports[`Info InlineNotices renders with dismiss and icon 1`] = `
       class="components-notice__content"
     >
       <div
-        class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+        class="components-flex emotion-0 emotion-1"
         data-wp-c16t="true"
         data-wp-component="Flex"
       >
         <div
-          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon emotion-2 emotion-1"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
@@ -80,7 +150,7 @@ exports[`Info InlineNotices renders with dismiss and icon 1`] = `
           </svg>
         </div>
         <div
-          class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+          class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-2 emotion-1"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
@@ -114,6 +184,68 @@ exports[`Info InlineNotices renders with dismiss and icon 1`] = `
 `;
 
 exports[`Info InlineNotices renders with dismiss and icon and actions 1`] = `
+.emotion-0 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-0>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-0>* {
+  min-width: 0;
+}
+
+.emotion-2 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+.emotion-6 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: baseline;
+  -webkit-box-align: baseline;
+  -ms-flex-align: baseline;
+  align-items: baseline;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-6>*+*:not( marquee ) {
+  margin-left: calc(4px * 4);
+}
+
+.emotion-6>* {
+  min-width: 0;
+}
+
 <div>
   <div
     class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info is-dismissible"
@@ -122,12 +254,12 @@ exports[`Info InlineNotices renders with dismiss and icon and actions 1`] = `
       class="components-notice__content"
     >
       <div
-        class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+        class="components-flex emotion-0 emotion-1"
         data-wp-c16t="true"
         data-wp-component="Flex"
       >
         <div
-          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon emotion-2 emotion-1"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
@@ -146,13 +278,13 @@ exports[`Info InlineNotices renders with dismiss and icon and actions 1`] = `
           </svg>
         </div>
         <div
-          class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+          class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-2 emotion-1"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
           Test notice content
           <div
-            class="components-flex wcpay-inline-notice__content__actions css-azptjn-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+            class="components-flex wcpay-inline-notice__content__actions emotion-6 emotion-1"
             data-wp-c16t="true"
             data-wp-component="Flex"
           >
@@ -198,6 +330,41 @@ exports[`Info InlineNotices renders with dismiss and icon and actions 1`] = `
 `;
 
 exports[`Info InlineNotices renders with no status and custom icon 1`] = `
+.emotion-0 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-0>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-0>* {
+  min-width: 0;
+}
+
+.emotion-2 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
 <div>
   <div
     class="wcpay-inline-notice wcpay-inline-undefined-notice components-notice is-info is-dismissible"
@@ -206,12 +373,12 @@ exports[`Info InlineNotices renders with no status and custom icon 1`] = `
       class="components-notice__content"
     >
       <div
-        class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+        class="components-flex emotion-0 emotion-1"
         data-wp-c16t="true"
         data-wp-component="Flex"
       >
         <div
-          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-undefined-notice__icon css-mw3lhz-View-Item-sx-Base em57xhy0"
+          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-undefined-notice__icon emotion-2 emotion-1"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
@@ -230,7 +397,7 @@ exports[`Info InlineNotices renders with no status and custom icon 1`] = `
           </svg>
         </div>
         <div
-          class="components-flex-item wcpay-inline-notice__content wcpay-inline-undefined-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+          class="components-flex-item wcpay-inline-notice__content wcpay-inline-undefined-notice__content emotion-2 emotion-1"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
@@ -264,6 +431,41 @@ exports[`Info InlineNotices renders with no status and custom icon 1`] = `
 `;
 
 exports[`Info InlineNotices renders without dismiss and icon 1`] = `
+.emotion-0 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-0>*+*:not( marquee ) {
+  margin-left: calc(4px * 2);
+}
+
+.emotion-0>* {
+  min-width: 0;
+}
+
+.emotion-2 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
 <div>
   <div
     class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info"
@@ -272,12 +474,12 @@ exports[`Info InlineNotices renders without dismiss and icon 1`] = `
       class="components-notice__content"
     >
       <div
-        class="components-flex css-bmzg3m-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+        class="components-flex emotion-0 emotion-1"
         data-wp-c16t="true"
         data-wp-component="Flex"
       >
         <div
-          class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content css-mw3lhz-View-Item-sx-Base em57xhy0"
+          class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-2 emotion-1"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >

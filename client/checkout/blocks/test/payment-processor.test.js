@@ -113,7 +113,7 @@ describe( 'PaymentProcessor', () => {
 				} }
 				fingerprint=""
 				shouldSavePayment={ false }
-				upeMethods={ { card: 'woocommerce_payments' } }
+				upeMethods={ { card: { gatewayId: 'woocommerce_payments' } } }
 				onLoadError={ jest.fn() }
 			/>
 		);
@@ -143,7 +143,9 @@ describe( 'PaymentProcessor', () => {
 					} }
 					fingerprint=""
 					shouldSavePayment={ false }
-					upeMethods={ { card: 'woocommerce_payments' } }
+					upeMethods={ {
+						card: { gatewayId: 'woocommerce_payments' },
+					} }
 				/>
 			);
 		} );
@@ -179,7 +181,9 @@ describe( 'PaymentProcessor', () => {
 					} }
 					fingerprint=""
 					shouldSavePayment={ false }
-					upeMethods={ { card: 'woocommerce_payments' } }
+					upeMethods={ {
+						card: { gatewayId: 'woocommerce_payments' },
+					} }
 				/>
 			);
 		} );
@@ -225,7 +229,9 @@ describe( 'PaymentProcessor', () => {
 					} }
 					fingerprint=""
 					shouldSavePayment={ false }
-					upeMethods={ { card: 'woocommerce_payments' } }
+					upeMethods={ {
+						card: { gatewayId: 'woocommerce_payments' },
+					} }
 				/>
 			);
 		} );

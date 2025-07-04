@@ -2,14 +2,14 @@
  * External dependencies
  */
 import React from 'react';
-import { Modal, Button } from '@wordpress/components';
-import { useDispatch } from '@wordpress/data';
+import { Modal, Button } from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies
  */
 import './style.scss';
 import strings from './strings';
+import { saveOption } from 'wcpay/data/settings/actions';
 
 /**
  * A modal component displayed when a live account is successfully connected.
@@ -18,15 +18,12 @@ export const ConnectionSuccessModal = () => {
 	const [ isDismissed, setIsDismissed ] = React.useState(
 		wcpaySettings.isConnectionSuccessModalDismissed
 	);
-	const { updateOptions } = useDispatch( 'wc/admin/options' );
 
 	const onDismiss = async () => {
 		setIsDismissed( true );
 
 		// Update the option to mark the modal as dismissed.
-		await updateOptions( {
-			wcpay_connection_success_modal_dismissed: true,
-		} );
+		saveOption( 'wcpay_connection_success_modal_dismissed', true );
 	};
 
 	return (

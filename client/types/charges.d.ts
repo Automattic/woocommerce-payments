@@ -3,6 +3,7 @@
  */
 import { BalanceTransaction } from './balance-transactions';
 import { Dispute } from './disputes';
+import PAYMENT_METHOD_IDS from 'wcpay/constants/payment-method';
 
 interface ChargeBillingDetails {
 	email: null | string;
@@ -19,6 +20,17 @@ interface ChargeBillingDetails {
 	formatted_address?: string;
 }
 
+interface Level3LineItem {
+	product_description: string;
+	product_name: string;
+	quantity: number;
+	unit_cost: number;
+}
+
+interface Level3Data {
+	line_items: Level3LineItem[];
+}
+
 interface ChargeRefund {
 	balance_transaction: BalanceTransaction;
 }
@@ -27,25 +39,11 @@ interface ChargeRefunds {
 	data: ChargeRefund[];
 }
 
-export interface PaymentMethodDetails {
-	card?: any;
-	grabpay?: any;
-	type:
-		| 'affirm'
-		| 'afterpay_clearpay'
-		| 'au_becs_debit'
-		| 'bancontact'
-		| 'card'
-		| 'card_present'
-		| 'eps'
-		| 'giropay'
-		| 'ideal'
-		| 'klarna'
-		| 'grabpay'
-		| 'p24'
-		| 'sepa_debit'
-		| 'sofort';
-}
+export type PaymentMethodDetails = {
+	[ T in PAYMENT_METHOD_IDS ]: {
+		type: T;
+	} & Record< T, Record< string, unknown > >;
+}[ PAYMENT_METHOD_IDS ];
 
 export type OutcomeRiskLevel =
 	| 'normal'
@@ -89,6 +87,7 @@ export interface Charge {
 	status: string;
 	reader_model?: string;
 	platform?: string;
+	level3?: Level3Data;
 }
 
 export interface ChargeAmounts {

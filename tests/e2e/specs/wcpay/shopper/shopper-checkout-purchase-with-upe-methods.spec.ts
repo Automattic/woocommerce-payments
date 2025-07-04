@@ -32,11 +32,12 @@ import { config } from '../../../config/default';
 import { goToCheckout } from '../../../utils/shopper-navigation';
 
 test.describe(
-	'Enable UPE with deferred intent creation',
+	'Local payment method checkout with card testing',
 	{ tag: '@critical' },
 	() => {
 		let wasMultiCurrencyEnabled = false;
 		let merchantPage: Page, shopperPage: Page;
+
 		test.beforeAll( async ( { browser } ) => {
 			// Open browsers.
 			merchantPage = ( await getMerchant( browser ) ).merchantPage;
@@ -78,11 +79,13 @@ test.describe(
 							await enableCardTestingProtection( merchantPage );
 						}
 					} );
+
 					test.afterAll( async () => {
 						if ( ctpEnabled ) {
 							await disableCardTestingProtection( merchantPage );
 						}
 					} );
+
 					test( 'should successfully place order with Bancontact', async () => {
 						await addToCartFromShopPage( shopperPage );
 						await goToCheckout( shopperPage );

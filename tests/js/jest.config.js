@@ -19,6 +19,7 @@ module.exports = {
 		'^@woocommerce/blocks-registry$':
 			'<rootDir>/tests/js/woocommerce-blocks-registry',
 		'^uuid$': require.resolve( 'uuid' ),
+		'^jest-utils(.*)$': '<rootDir>/tests/js/utilities$1',
 	},
 	globalSetup: '<rootDir>/tests/js/jest-global-setup.js',
 	setupFiles: [
@@ -30,6 +31,7 @@ module.exports = {
 	setupFilesAfterEnv: [
 		'<rootDir>/node_modules/@wordpress/jest-preset-default/scripts/setup-test-framework.js',
 		'<rootDir>/tests/js/jest-extensions-setup.js',
+		'<rootDir>/tests/js/jest-msw-setup.js',
 	],
 	preset: '@wordpress/jest-preset-default',
 	testMatch: [
@@ -60,5 +62,6 @@ module.exports = {
 	transformIgnorePatterns: [
 		'node_modules/(?!(@woocommerce/.+)|gridicons|@automattic/components/|@automattic/material-design-icons/)',
 	],
+	snapshotSerializers: [ '@emotion/jest/serializer' ],
 	verbose: true,
 };

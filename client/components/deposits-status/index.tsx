@@ -38,9 +38,10 @@ const getIntervalType = ( interval: DepositsIntervals ): string => {
 	}
 };
 
-const DepositsStatusEnabled: React.FC< DepositsStatusProps > = ( props ) => {
-	const { iconSize, interval } = props;
-
+const DepositsStatusEnabled: React.FC< DepositsStatusProps > = ( {
+	iconSize,
+	interval,
+} ) => {
 	const description = getIntervalType( interval );
 	return (
 		<span className={ 'account-status__info__green' }>
@@ -50,9 +51,9 @@ const DepositsStatusEnabled: React.FC< DepositsStatusProps > = ( props ) => {
 	);
 };
 
-const DepositsStatusDisabled: React.FC< DepositsStatusProps > = ( props ) => {
-	const { iconSize } = props;
-
+const DepositsStatusDisabled: React.FC< DepositsStatusProps > = ( {
+	iconSize,
+} ) => {
 	return (
 		<span className={ 'account-status__info__red' }>
 			<GridiconNotice size={ iconSize } />
@@ -61,12 +62,12 @@ const DepositsStatusDisabled: React.FC< DepositsStatusProps > = ( props ) => {
 	);
 };
 
-const DepositsStatusSuspended: React.FC< DepositsStatusProps > = ( props ) => {
-	const { iconSize } = props;
-
+const DepositsStatusSuspended: React.FC< DepositsStatusProps > = ( {
+	iconSize,
+} ) => {
 	const description =
 		/* translators: <a> - suspended accounts FAQ URL */
-		__( 'Temporarily suspended', 'woocommerce-payments' );
+		__( 'Under Review', 'woocommerce-payments' );
 
 	return (
 		<span className={ 'account-status__info__yellow' }>
@@ -84,7 +85,7 @@ const DepositsStatusSuspended: React.FC< DepositsStatusProps > = ( props ) => {
 						/* translators: 1: WooPayments */
 						__(
 							// eslint-disable-next-line max-len
-							'After the information review, your account was temporarily suspended. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+							'While the account is under review payouts may remain suspended. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 							'woocommerce-payments'
 						),
 						'WooPayments'
@@ -109,9 +110,9 @@ const DepositsStatusSuspended: React.FC< DepositsStatusProps > = ( props ) => {
 	);
 };
 
-const DepositsStatusPending: React.FC< DepositsStatusProps > = ( props ) => {
-	const { iconSize } = props;
-
+const DepositsStatusPending: React.FC< DepositsStatusProps > = ( {
+	iconSize,
+} ) => {
 	return (
 		<span className={ 'account-status__info__gray' }>
 			<GridiconNotice size={ iconSize } />
@@ -133,12 +134,8 @@ const DepositsStatus: React.FC< Props > = ( {
 	status,
 	interval,
 	accountStatus,
-	poEnabled,
-	poComplete,
 	iconSize,
 } ) => {
-	const isPoInProgress = poEnabled && ! poComplete;
-
 	if ( status === 'blocked' || accountStatus === 'under_review' ) {
 		return (
 			<DepositsStatusSuspended
@@ -146,7 +143,7 @@ const DepositsStatus: React.FC< Props > = ( {
 				interval={ interval }
 			/>
 		);
-	} else if ( accountStatus === 'pending_verification' || isPoInProgress ) {
+	} else if ( accountStatus === 'pending_verification' ) {
 		return (
 			<DepositsStatusPending
 				iconSize={ iconSize }

@@ -14,11 +14,15 @@ import request from 'wcpay/checkout/utils/request';
 import { getConfig } from 'utils/checkout';
 import useExpressCheckoutProductHandler from '../use-express-checkout-product-handler';
 
-jest.mock( 'wcpay/checkout/utils/request', () => ( {
-	__esModule: true,
-	default: jest.fn( () => Promise.resolve( {} ) ),
+jest.mock( 'wcpay/checkout/utils/request', () =>
+	jest.fn( () => Promise.resolve( {} ) )
+);
+jest.mock( 'wcpay/checkout/woopay/express-button/utils', () => ( {
+	showErrorMessage: () => null,
 } ) );
-
+jest.mock( 'wcpay/checkout/woopay/connect/woopay-connect-iframe', () => ( {
+	WooPayConnectIframe: () => null,
+} ) );
 jest.mock( 'utils/checkout', () => ( {
 	getConfig: jest.fn(),
 } ) );
@@ -68,7 +72,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		theme: 'dark',
 	};
 	const mockRequest = jest.fn().mockResolvedValue( true );
-	const mockAddToCart = jest.fn().mockResolvedValue( true );
+	const mockAddToCart = jest.fn().mockResolvedValue( {} );
 	const api = new WCPayAPI( {}, mockRequest );
 
 	beforeEach( () => {

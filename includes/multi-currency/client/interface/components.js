@@ -1,13 +1,12 @@
 /**
  * Dependencies from WooPayments to MCCY.
  */
-// wcpay/additional-methods-setup/*
-export { default as CollapsibleBody } from 'wcpay/additional-methods-setup/wizard/collapsible-body';
-export { default as Wizard } from 'wcpay/additional-methods-setup/wizard/wrapper';
-export { default as WizardTask } from 'wcpay/additional-methods-setup/wizard/task';
-export { default as WizardTaskItem } from 'wcpay/additional-methods-setup/wizard/task-item';
-export { default as WizardTaskList } from 'wcpay/additional-methods-setup/wizard/task-list';
 // wcpay/components/*
+export { default as CollapsibleBody } from 'wcpay/components/wizard/collapsible-body';
+export { default as Wizard } from 'wcpay/components/wizard/wrapper';
+export { default as WizardTask } from 'wcpay/components/wizard/task';
+export { default as WizardTaskItem } from 'wcpay/components/wizard/task-item';
+export { default as WizardTaskList } from 'wcpay/components/wizard/task-list';
 export { default as ConfirmationModal } from 'wcpay/components/confirmation-modal';
 export { default as Page } from 'wcpay/components/page';
 export { LoadableBlock } from 'wcpay/components/loadable';

@@ -10,7 +10,7 @@ import {
 	CardHeader,
 	FlexBlock,
 	FlexItem,
-} from '@wordpress/components';
+} from 'wcpay/components/wp-components-wrapped';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -118,10 +118,6 @@ const AccountStatusDetails = ( props ) => {
 					status={ accountStatus.deposits?.status }
 					interval={ accountStatus.deposits?.interval }
 					accountStatus={ accountStatus.status }
-					poEnabled={ accountStatus.progressiveOnboarding.isEnabled }
-					poComplete={
-						accountStatus.progressiveOnboarding.isComplete
-					}
 					iconSize={ 24 }
 				/>
 			</AccountStatusItem>

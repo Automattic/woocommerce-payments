@@ -32,17 +32,16 @@ const expressCheckoutButtonUi = {
 
 	renderButton: ( eceButton ) => {
 		if ( get$Container()?.length ) {
-			expressCheckoutButtonUi.showContainer();
 			eceButton.mount( expressCheckoutElementId );
 		}
 	},
 
 	hideContainer: () => {
-		get$Container().hide();
+		get$Container().removeClass( 'is-ready' ).hide();
 	},
 
 	showContainer: () => {
-		get$Container().show();
+		get$Container().addClass( 'is-ready' ).show();
 	},
 };
 

@@ -10,6 +10,10 @@ project.properties
 *.sublime-project
 *.sublime-workspace
 .sublimelinterrc
+.cursor/
+.claude/
+.zed/
+.phpactor.json
 
 # Bundle
 dist

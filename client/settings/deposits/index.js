@@ -4,7 +4,11 @@
 import React, { useContext } from 'react';
 import { select } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
-import { Card, SelectControl, ExternalLink } from '@wordpress/components';
+import {
+	Card,
+	SelectControl,
+	ExternalLink,
+} from 'wcpay/components/wp-components-wrapped';
 import interpolateComponents from '@automattic/interpolate-components';
 
 /**

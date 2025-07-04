@@ -5,7 +5,11 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Timeline } from '@woocommerce/components';
-import { Card, CardBody, CardHeader } from '@wordpress/components';
+import {
+	Card,
+	CardBody,
+	CardHeader,
+} from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies
@@ -16,22 +20,26 @@ import Loadable, { LoadableBlock } from 'components/loadable';
 
 import './style.scss';
 
-const PaymentDetailsTimeline = ( { paymentIntentId } ) => {
+const PaymentDetailsTimeline = ( {
+	paymentIntentId,
+	bankName,
+	shouldUseBundledComponents,
+} ) => {
 	const { timeline, timelineError, isLoading } = useTimeline(
 		paymentIntentId
 	);
 
-	const items = mapTimelineEvents( timeline );
+	const items = mapTimelineEvents( timeline, bankName );
 
 	return (
-		<Card size="large">
-			<CardHeader>
+		<Card useBundledComponent={ shouldUseBundledComponents } size="large">
+			<CardHeader useBundledComponent={ shouldUseBundledComponents }>
 				<Loadable
 					isLoading={ isLoading }
 					value={ __( 'Timeline', 'woocommerce-payments' ) }
 				/>
 			</CardHeader>
-			<CardBody>
+			<CardBody useBundledComponent={ shouldUseBundledComponents }>
 				<LoadableBlock isLoading={ isLoading } numLines={ 3 }>
 					{ timelineError instanceof Error ? (
 						__(

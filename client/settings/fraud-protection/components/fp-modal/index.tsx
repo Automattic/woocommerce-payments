@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { Button, Modal } from '@wordpress/components';
+import { Button, Modal } from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies

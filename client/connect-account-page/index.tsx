@@ -11,7 +11,7 @@ import {
 	CardBody,
 	Panel,
 	PanelBody,
-} from '@wordpress/components';
+} from 'wcpay/components/wp-components-wrapped';
 import apiFetch from '@wordpress/api-fetch';
 import { addQueryArgs } from '@wordpress/url';
 import { Loader } from '@woocommerce/onboarding';
@@ -36,8 +36,8 @@ import WooLogo from 'assets/images/woo-logo.svg?asset';
 import { sanitizeHTML } from 'wcpay/utils/sanitize';
 import { isInTestModeOnboarding } from 'wcpay/utils';
 import ResetAccountModal from 'wcpay/overview/modal/reset-account';
-import { trackAccountReset } from 'wcpay/onboarding/tracking';
 import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
+import { decodeEntities } from '@wordpress/html-entities';
 
 interface AccountData {
 	status: string;
@@ -414,8 +414,6 @@ const ConnectAccountPage: React.FC = () => {
 	};
 
 	const handleReset = () => {
-		trackAccountReset();
-
 		window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
 			'wcpay-reset-account': 'true',
 			from: 'WCPAY_CONNECT',
@@ -481,7 +479,9 @@ const ConnectAccountPage: React.FC = () => {
 				>
 					<div
 						// eslint-disable-next-line react/no-danger
-						dangerouslySetInnerHTML={ sanitizeHTML( errorMessage ) }
+						dangerouslySetInnerHTML={ sanitizeHTML(
+							decodeEntities( errorMessage )
+						) }
 					></div>
 				</BannerNotice>
 			) }
