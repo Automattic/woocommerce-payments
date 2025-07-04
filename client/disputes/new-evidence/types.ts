@@ -69,6 +69,7 @@ export interface DocumentField {
 	label: string;
 	description: string | null;
 	fileName?: string;
+	fileSize?: number;
 	onFileChange: ( key: string, file: File ) => Promise< void >;
 	onFileRemove: () => Promise< void >;
 	uploaded?: boolean;
@@ -78,6 +79,7 @@ export interface DocumentField {
 
 export interface FileUploadControlProps {
 	fileName?: string;
+	fileSize?: number;
 	description: string | null;
 	onFileChange: ( file: File ) => void;
 	onFileRemove: () => void;
