@@ -8,6 +8,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { __, sprintf } from '@wordpress/i18n';
 import { useDispatch } from '@wordpress/data';
 import { chevronLeft, chevronRight } from '@wordpress/icons';
+import HelpOutlineIcon from 'gridicons/dist/help-outline';
 
 /**
  * Internal dependencies.
@@ -743,7 +744,7 @@ export default ( { query }: { query: { id: string } } ) => {
 				content: dispute.created
 					? formatDateTimeFromTimestamp( dispute.created, {
 							separator: ', ',
-							includeTime: true,
+							includeTime: false,
 					  } )
 					: '–',
 			},
@@ -754,6 +755,7 @@ export default ( { query }: { query: { id: string } } ) => {
 						{ reasons[ disputeReason ]?.display || disputeReason }
 						{ disputeReasonSummary.length > 0 && (
 							<ClickTooltip
+								buttonIcon={ <HelpOutlineIcon /> }
 								buttonLabel={ __(
 									'Learn more',
 									'woocommerce-payments'
@@ -961,6 +963,10 @@ export default ( { query }: { query: { id: string } } ) => {
 					<RecommendedDocuments
 						fields={ recommendedShippingDocumentsFields }
 						readOnly={ readOnly }
+						customSubheading={ __(
+							'We recommend adding the following document(s) to support your case.',
+							'woocommerce-payments'
+						) }
 					/>
 					{ inlineNotice( bankName ) }
 				</>

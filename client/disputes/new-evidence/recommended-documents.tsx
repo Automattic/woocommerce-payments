@@ -13,17 +13,21 @@ import { DocumentField, RecommendedDocumentsProps } from './types';
 const RecommendedDocuments: React.FC< RecommendedDocumentsProps > = ( {
 	fields,
 	readOnly = false,
+	customHeading,
+	customSubheading,
 } ) => {
 	return (
 		<section className="wcpay-dispute-evidence-recommended-documents">
 			<h3 className="wcpay-dispute-evidence-recommended-documents__heading">
-				{ __( 'Recommended documents', 'woocommerce-payments' ) }
+				{ customHeading ||
+					__( 'Recommended documents', 'woocommerce-payments' ) }
 			</h3>
 			<div className="wcpay-dispute-evidence-recommended-documents__subheading">
-				{ __(
-					'While optional, we strongly recommend providing as many of these documents as possible. The following file types are supported: PDF, JPEG, and PNG.',
-					'woocommerce-payments'
-				) }
+				{ customSubheading ||
+					__(
+						'While optional, we strongly recommend providing as many of these documents as possible. The following file types are supported: PDF, JPEG, and PNG.',
+						'woocommerce-payments'
+					) }
 			</div>
 			<ul className="wcpay-dispute-evidence-recommended-documents__list">
 				{ fields.map( ( field: DocumentField ) => (
