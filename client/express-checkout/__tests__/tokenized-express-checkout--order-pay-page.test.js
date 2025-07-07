@@ -4,7 +4,12 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import $ from 'jquery';
 import { recordUserEvent } from 'tracks';
-import apiFetch from '@wordpress/api-fetch';
+import { rest } from 'msw';
+
+/**
+ * Internal dependencies
+ */
+import { server } from 'jest-utils/msw-server';
 
 jest.mock( 'tracks', () => ( {
 	recordUserEvent: jest.fn(),
@@ -13,89 +18,138 @@ jest.mock( 'lodash', () => ( {
 	debounce: jest.fn( ( callback ) => callback ),
 } ) );
 
-jest.mock( '@wordpress/api-fetch', () => ( {
-	__esModule: true,
-	default: jest.fn( () => Promise.resolve() ),
-} ) );
-
 describe( 'Tokenized Express Checkout Element - Pay-for-order page logic', () => {
 	let stripeElementMock, stripeInstance;
+	const requestListener = jest.fn().mockReturnValue( null );
+
 	beforeEach( () => {
-		apiFetch.mockReset();
-		apiFetch.mockImplementation( async () =>
-			Promise.resolve( {
-				id: 999,
-				status: 'pending',
-				items: [
-					{
-						key: 'wc_order_fAk3nUmB3R',
-						id: 1,
-						quantity: 2,
-						name: 'Cap',
-						sku: 'woo-cap',
-						prices: {
-							price: '1500',
-							regular_price: '1700',
-							sale_price: '1500',
-							price_range: null,
-							currency_code: 'EUR',
-							currency_symbol: '\u20ac',
-							currency_minor_unit: 2,
-							currency_decimal_separator: ',',
-							currency_thousand_separator: '.',
-							currency_prefix: '\u20ac',
-							currency_suffix: '',
-							raw_prices: {
-								precision: 6,
-								price: '15000000',
-								regular_price: '17000000',
-								sale_price: '15000000',
+		requestListener.mockClear();
+		server.events.on( 'request:start', requestListener );
+		server.use(
+			rest.get( '/wc/store/v1/order/:id', ( req, res, ctx ) => {
+				return res(
+					ctx.json( {
+						id: req.params.id,
+						status: 'pending',
+						items: [
+							{
+								key: 'wc_order_fAk3nUmB3R',
+								id: 1,
+								quantity: 2,
+								name: 'Cap',
+								sku: 'woo-cap',
+								prices: {
+									price: '1500',
+									regular_price: '1700',
+									sale_price: '1500',
+									price_range: null,
+									currency_code: 'EUR',
+									currency_symbol: '\u20ac',
+									currency_minor_unit: 2,
+									currency_decimal_separator: ',',
+									currency_thousand_separator: '.',
+									currency_prefix: '\u20ac',
+									currency_suffix: '',
+									raw_prices: {
+										precision: 6,
+										price: '15000000',
+										regular_price: '17000000',
+										sale_price: '15000000',
+									},
+								},
+								totals: {
+									line_subtotal: '3200',
+									line_subtotal_tax: '160',
+									line_total: '3200',
+									line_total_tax: '160',
+									currency_code: 'EUR',
+									currency_symbol: '\u20ac',
+									currency_minor_unit: 2,
+									currency_decimal_separator: ',',
+									currency_thousand_separator: '.',
+									currency_prefix: '\u20ac',
+									currency_suffix: '',
+								},
 							},
-						},
-						totals: {
-							line_subtotal: '3200',
-							line_subtotal_tax: '160',
-							line_total: '3200',
-							line_total_tax: '160',
-							currency_code: 'EUR',
-							currency_symbol: '\u20ac',
-							currency_minor_unit: 2,
-							currency_decimal_separator: ',',
-							currency_thousand_separator: '.',
-							currency_prefix: '\u20ac',
-							currency_suffix: '',
-						},
-					},
-					{
-						key: 'wc_order_fAk3nUmB3R',
-						id: 2,
-						quantity: 1,
-						name: 'T-Shirt',
-						sku: 'woo-tshirt',
-						prices: {
-							price: '1700',
-							regular_price: '1700',
-							sale_price: '1700',
-							price_range: null,
-							currency_code: 'EUR',
-							currency_symbol: '\u20ac',
-							currency_minor_unit: 2,
-							currency_decimal_separator: ',',
-							currency_thousand_separator: '.',
-							currency_prefix: '\u20ac',
-							currency_suffix: '',
-							raw_prices: {
-								precision: 6,
-								price: '17000000',
-								regular_price: '17000000',
-								sale_price: '17000000',
+							{
+								key: 'wc_order_fAk3nUmB3R',
+								id: 2,
+								quantity: 1,
+								name: 'T-Shirt',
+								sku: 'woo-tshirt',
+								prices: {
+									price: '1700',
+									regular_price: '1700',
+									sale_price: '1700',
+									price_range: null,
+									currency_code: 'EUR',
+									currency_symbol: '\u20ac',
+									currency_minor_unit: 2,
+									currency_decimal_separator: ',',
+									currency_thousand_separator: '.',
+									currency_prefix: '\u20ac',
+									currency_suffix: '',
+									raw_prices: {
+										precision: 6,
+										price: '17000000',
+										regular_price: '17000000',
+										sale_price: '17000000',
+									},
+								},
+								totals: {
+									line_subtotal: '1800',
+									line_subtotal_tax: '90',
+									line_total: '1800',
+									line_total_tax: '90',
+									currency_code: 'EUR',
+									currency_symbol: '\u20ac',
+									currency_minor_unit: 2,
+									currency_decimal_separator: ',',
+									currency_thousand_separator: '.',
+									currency_prefix: '\u20ac',
+									currency_suffix: '',
+								},
+								catalog_visibility: 'visible',
 							},
-						},
+						],
+						coupons: [],
+						fees: [
+							{
+								key: 3,
+								name: '$10.00 fee',
+								totals: {
+									total: '1000',
+									total_tax: '50',
+									currency_code: 'EUR',
+									currency_symbol: '\u20ac',
+									currency_minor_unit: 2,
+									currency_decimal_separator: ',',
+									currency_thousand_separator: '.',
+									currency_prefix: '\u20ac',
+									currency_suffix: '',
+								},
+							},
+						],
 						totals: {
-							line_subtotal: '1800',
-							line_subtotal_tax: '90',
-							line_total: '1800',
-							line_total_tax: '90',
+							subtotal: '5000',
+							total_discount: '0',
+							total_shipping: '200',
+							total_fees: '1000',
+							total_tax: '310',
+							total_refund: '0',
+							total_price: '6510',
+							total_items: '5000',
+							total_items_tax: '300',
+							total_fees_tax: '50',
+							total_discount_tax: '0',
+							total_shipping_tax: '10',
+							tax_lines: [
+								{
+									name: 'Global Tax rate',
+									price: '300',
+									rate: '5',
+								},
+							],
 							currency_code: 'EUR',
 							currency_symbol: '\u20ac',
 							currency_minor_unit: 2,
@@ -104,83 +158,36 @@ describe( 'Tokenized Express Checkout Element - Pay-for-order page logic', () =>
 							currency_prefix: '\u20ac',
 							currency_suffix: '',
 						},
-						catalog_visibility: 'visible',
-					},
-				],
-				coupons: [],
-				fees: [
-					{
-						key: 3,
-						name: '$10.00 fee',
-						totals: {
-							total: '1000',
-							total_tax: '50',
-							currency_code: 'EUR',
-							currency_symbol: '\u20ac',
-							currency_minor_unit: 2,
-							currency_decimal_separator: ',',
-							currency_thousand_separator: '.',
-							currency_prefix: '\u20ac',
-							currency_suffix: '',
+						shipping_address: {
+							first_name: 'Fake',
+							last_name: 'User',
+							company: '',
+							address_1: '',
+							address_2: '',
+							city: 'Bruges',
+							state: '',
+							postcode: '8000',
+							country: 'BE',
+							phone: '',
 						},
-					},
-				],
-				totals: {
-					subtotal: '5000',
-					total_discount: '0',
-					total_shipping: '200',
-					total_fees: '1000',
-					total_tax: '310',
-					total_refund: '0',
-					total_price: '6510',
-					total_items: '5000',
-					total_items_tax: '300',
-					total_fees_tax: '50',
-					total_discount_tax: '0',
-					total_shipping_tax: '10',
-					tax_lines: [
-						{
-							name: 'Global Tax rate',
-							price: '300',
-							rate: '5',
+						billing_address: {
+							first_name: 'Fake',
+							last_name: 'User',
+							company: '',
+							address_1: '',
+							address_2: '',
+							city: 'Bruges',
+							state: '',
+							postcode: '8000',
+							country: 'BE',
+							email: 'cheese@toast.com',
+							phone: '',
 						},
-					],
-					currency_code: 'EUR',
-					currency_symbol: '\u20ac',
-					currency_minor_unit: 2,
-					currency_decimal_separator: ',',
-					currency_thousand_separator: '.',
-					currency_prefix: '\u20ac',
-					currency_suffix: '',
-				},
-				shipping_address: {
-					first_name: 'Fake',
-					last_name: 'User',
-					company: '',
-					address_1: '',
-					address_2: '',
-					city: 'Bruges',
-					state: '',
-					postcode: '8000',
-					country: 'BE',
-					phone: '',
-				},
-				billing_address: {
-					first_name: 'Fake',
-					last_name: 'User',
-					company: '',
-					address_1: '',
-					address_2: '',
-					city: 'Bruges',
-					state: '',
-					postcode: '8000',
-					country: 'BE',
-					email: 'cheese@toast.com',
-					phone: '',
-				},
-				needs_payment: true,
-				needs_shipping: true,
-				errors: [],
+						needs_payment: true,
+						needs_shipping: true,
+						errors: [],
+					} )
+				);
 			} )
 		);
 		// ensuring jQuery is available globally.
@@ -249,6 +256,8 @@ describe( 'Tokenized Express Checkout Element - Pay-for-order page logic', () =>
 
 	afterEach( () => {
 		delete global.Stripe;
+		server.events.removeListener( 'request:start', requestListener );
+		server.resetHandlers();
 	} );
 
 	it( 'should not initialize Stripe if there is no publishable key', async () => {
@@ -263,7 +272,7 @@ describe( 'Tokenized Express Checkout Element - Pay-for-order page logic', () =>
 		expect(
 			screen.getByTestId( 'wcpay-express-checkout-element' )
 		).not.toBeVisible();
-		expect( apiFetch ).not.toHaveBeenCalled();
+		expect( requestListener ).not.toHaveBeenCalled();
 	} );
 
 	it( 'should track the initialization', async () => {
@@ -272,13 +281,18 @@ describe( 'Tokenized Express Checkout Element - Pay-for-order page logic', () =>
 		} );
 
 		// waiting for the API call to be completed.
-		await waitFor( () => expect( apiFetch ).toHaveBeenCalled() );
+		await waitFor( () => expect( requestListener ).toHaveBeenCalled() );
 
-		expect( apiFetch ).toHaveBeenCalledWith(
+		expect( requestListener ).toHaveBeenCalled();
+		expect( requestListener ).toHaveBeenLastCalledWith(
 			expect.objectContaining( {
 				method: 'GET',
-				path:
-					'/wc/store/v1/order/999?key=wc_order_fAk3nUmB3R&billing_email=cheese%40toast.com',
+				// `url` is an URL object, so it's kinda nested
+				url: expect.objectContaining( {
+					href: expect.stringContaining(
+						'/wc/store/v1/order/999?key=wc_order_fAk3nUmB3R&billing_email=cheese%40toast.com'
+					),
+				} ),
 			} )
 		);
 

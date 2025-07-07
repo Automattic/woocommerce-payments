@@ -740,11 +740,7 @@ exports[`mapTimelineEvents single currency events formats dispute_lost events 1`
       <strong>
         Dispute lost.
       </strong>
-       
-      <strong>
-        The bank
-      </strong>
-       decided that you lost the dispute.
+       Your customer's bank reviewed the evidence and decided in the customer's favor.
     </React.Fragment>,
     "icon": <CrossIcon
       className="is-error"

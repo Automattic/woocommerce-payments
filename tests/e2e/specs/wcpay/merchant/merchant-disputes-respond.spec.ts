@@ -123,9 +123,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 
 					// Check the dispute details footer
 					expect(
-						merchantPage.getByText(
-							'This dispute was accepted and lost'
-						)
+						merchantPage.getByText( 'You accepted this dispute on' )
 					).toBeVisible();
 				}
 			);
@@ -247,7 +245,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 
 					await expect(
 						merchantPage.getByText(
-							'decided that you won the dispute on'
+							"Good news — you've won this dispute!"
 						)
 					).toBeVisible();
 				}
@@ -347,7 +345,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 
 					await expect(
 						merchantPage.getByText(
-							'decided that you lost the dispute'
+							"Unfortunately, you've lost this dispute"
 						)
 					).toBeVisible();
 				}

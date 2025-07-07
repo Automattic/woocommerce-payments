@@ -7,7 +7,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { TableCard, TableCardColumn } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
-import { Button } from '@wordpress/components';
+import { Button } from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies

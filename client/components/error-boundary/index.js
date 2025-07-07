@@ -1,9 +1,13 @@
 /**
- * WordPress dependencies
+ * External dependencies
  */
 import { Component } from '@wordpress/element';
 import { __ } from '@wordpress/i18n';
-import InlineNotice from 'components/inline-notice';
+
+/**
+ * Internal dependencies
+ */
+import InlineNotice from 'wcpay/components/inline-notice';
 
 class ErrorBoundary extends Component {
 	constructor() {

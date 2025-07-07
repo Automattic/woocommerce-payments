@@ -19,7 +19,6 @@ declare global {
 			isAuthAndCaptureEnabled: boolean;
 			paymentTimeline: boolean;
 			isDisputeIssuerEvidenceEnabled: boolean;
-			isPaymentOverviewWidgetEnabled?: boolean;
 			isNewEvidenceSubmissionFormEnabled: boolean;
 			multiCurrency?: boolean;
 		};
@@ -138,28 +137,6 @@ declare global {
 		isInstantDepositNoticeDismissed: boolean;
 		isConnectionSuccessModalDismissed: boolean;
 		isWCReactifySettingsFeatureEnabled: boolean;
-		userLocale: {
-			/**
-			 * The locale of the current user profile, represented as a locale code supported by transact-platform-server.
-			 *
-			 * @example 'es' // Spanish
-			 *
-			 * @see WC_Payments_Utils::convert_locale_to_language_code
-			 */
-			code: string;
-			/**
-			 * The English name of the locale.
-			 *
-			 * @example 'Spanish'
-			 */
-			english_name: string;
-			/**
-			 * The native name of the locale.
-			 *
-			 * @example 'Español'
-			 */
-			native_name: string;
-		};
 		trackingInfo?: {
 			hosting_provider: string;
 		};
@@ -225,6 +202,10 @@ declare global {
 					woocommerce_all_except_countries: string[];
 					woocommerce_specific_allowed_countries: string[];
 					woocommerce_default_country: string;
+					woocommerce_store_address: string;
+					woocommerce_store_address_2: string;
+					woocommerce_store_city: string;
+					woocommerce_store_postcode: string;
 				};
 			};
 			siteVisibilitySettings: {

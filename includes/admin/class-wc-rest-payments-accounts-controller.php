@@ -47,11 +47,9 @@ class WC_REST_Payments_Accounts_Controller extends WC_Payments_REST_Controller {
 	/**
 	 * Get account details via API.
 	 *
-	 * @param WP_REST_Request $request Request object.
-	 *
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public function get_account_data( $request ) {
+	public function get_account_data() {
 		$account = WC_Payments::get_account_service()->get_cached_account_data();
 		if ( [] === $account ) {
 			$default_currency = get_woocommerce_currency();
@@ -91,11 +89,9 @@ class WC_REST_Payments_Accounts_Controller extends WC_Payments_REST_Controller {
 	/**
 	 * Create an account embedded session via the API.
 	 *
-	 * @param WP_REST_Request $request Request object.
-	 *
 	 * @return WP_Error|WP_REST_Response
 	 */
-	public function create_embedded_account_session( WP_REST_Request $request ) {
+	public function create_embedded_account_session() {
 		$account_session = WC_Payments::get_account_service()->create_embedded_account_session();
 
 		if ( $account_session ) {

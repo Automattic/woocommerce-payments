@@ -78,9 +78,6 @@ declare const global: {
 			country: string;
 		};
 		dateFormat: string;
-		userLocale: {
-			code: string;
-		};
 	};
 };
 
@@ -144,9 +141,6 @@ describe( 'Deposits list', () => {
 				},
 			},
 			dateFormat: 'M j Y',
-			userLocale: {
-				code: 'en',
-			},
 		};
 	} );
 
@@ -297,7 +291,7 @@ describe( 'Deposits list', () => {
 				expect( mockApiFetch ).toHaveBeenCalledWith( {
 					method: 'POST',
 					path:
-						'/wc/v3/payments/deposits/download?user_email=mock%40example.com&locale=en',
+						'/wc/v3/payments/deposits/download?user_email=mock%40example.com&locale=en_US',
 				} );
 			} );
 		} );

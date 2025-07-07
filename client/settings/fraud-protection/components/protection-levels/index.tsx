@@ -5,7 +5,7 @@ import React, { useEffect, useRef } from 'react';
 import { __ } from '@wordpress/i18n';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import { useState } from '@wordpress/element';
-import { Button } from '@wordpress/components';
+import { Button } from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies

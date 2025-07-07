@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-chore: update @stripe/connect-js @stripe/react-connect-js @stripe/react-stripe-js @stripe/stripe-js dependencies

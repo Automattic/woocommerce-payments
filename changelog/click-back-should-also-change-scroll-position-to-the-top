@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Step back should also scroll the page to the top

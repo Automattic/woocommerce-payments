@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React, { useState } from 'react';
-import { Button } from '@wordpress/components';
+import { Button } from 'wcpay/components/wp-components-wrapped';
 import { __, sprintf } from '@wordpress/i18n';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 

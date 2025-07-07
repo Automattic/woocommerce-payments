@@ -32,9 +32,11 @@ declare module '@woocommerce/components' {
 		href: string;
 		children?: React.ReactNode;
 		type?: string;
+		tabIndex?: string;
 		target?: string;
 		rel?: string;
 		onClick?: ( ...props: any ) => any;
+		className?: string;
 	};
 	const Link: ( props: LinkParams ) => JSX.Element;
 

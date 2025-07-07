@@ -4,7 +4,7 @@
 import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { TableCardColumn, TableCardBodyColumn } from '@woocommerce/components';
-import { Button } from '@wordpress/components';
+import { Button } from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies
@@ -79,7 +79,7 @@ export const getRiskReviewListRowContent = (
 		includeTime: true,
 	} );
 
-	const clickable = ( children: JSX.Element | string ) => (
+	const clickable = ( children: React.ReactNode ) => (
 		<ClickableCell href={ detailsURL }>{ children }</ClickableCell>
 	);
 

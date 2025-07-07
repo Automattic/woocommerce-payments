@@ -8,7 +8,7 @@ import {
 	CheckboxControl,
 	Notice,
 	TextControl,
-} from '@wordpress/components';
+} from 'wcpay/components/wp-components-wrapped';
 import { __, sprintf } from '@wordpress/i18n';
 import React, { useContext, useState } from 'react';
 import apiFetch from '@wordpress/api-fetch';

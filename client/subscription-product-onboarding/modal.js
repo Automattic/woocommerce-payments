@@ -3,7 +3,9 @@
  */
 import React from 'react';
 
-import { Button, Icon, Modal } from '@wordpress/components';
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
+import { Icon } from 'wcpay/components/wp-components-wrapped/components/icon';
+import { Modal } from 'wcpay/components/wp-components-wrapped/components/modal';
 import {
 	createInterpolateElement,
 	useEffect,

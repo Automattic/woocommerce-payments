@@ -6,7 +6,7 @@ import { isMatchWith } from 'lodash';
 import { sprintf, __ } from '@wordpress/i18n';
 import { Link } from '@woocommerce/components';
 import { LoadableBlock } from 'wcpay/components/loadable';
-import { Button, Notice } from '@wordpress/components';
+import { Button, Notice } from 'wcpay/components/wp-components-wrapped';
 import { dispatch } from '@wordpress/data';
 
 /**

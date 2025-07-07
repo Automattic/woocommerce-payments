@@ -46,37 +46,39 @@ class FrontendPrices {
 	 * @return void
 	 */
 	public function init_hooks() {
-		if ( ! is_admin() && ! defined( 'DOING_CRON' ) && ! Utils::is_admin_api_request() ) {
-			// Simple product price hooks.
-			add_filter( 'woocommerce_product_get_price', [ $this, 'get_product_price_string' ], 99, 2 );
-			add_filter( 'woocommerce_product_get_regular_price', [ $this, 'get_product_price_string' ], 99, 2 );
-			add_filter( 'woocommerce_product_get_sale_price', [ $this, 'get_product_price_string' ], 99, 2 );
-
-			// Variation price hooks.
-			add_filter( 'woocommerce_product_variation_get_price', [ $this, 'get_product_price_string' ], 99, 2 );
-			add_filter( 'woocommerce_product_variation_get_regular_price', [ $this, 'get_product_price_string' ], 99, 2 );
-			add_filter( 'woocommerce_product_variation_get_sale_price', [ $this, 'get_product_price_string' ], 99, 2 );
-
-			// Variation price range hooks.
-			add_filter( 'woocommerce_variation_prices', [ $this, 'get_variation_price_range' ], 99 );
-			add_filter( 'woocommerce_get_variation_prices_hash', [ $this, 'add_exchange_rate_to_variation_prices_hash' ], 99 );
-
-			// Shipping methods hooks.
-			add_action( 'init', [ $this, 'register_free_shipping_filters' ], 99 );
-			add_filter( 'woocommerce_shipping_method_add_rate_args', [ $this, 'convert_shipping_method_rate_cost' ], 99 );
-
-			// Coupon hooks.
-			add_filter( 'woocommerce_coupon_get_amount', [ $this, 'get_coupon_amount' ], 99, 2 );
-			add_filter( 'woocommerce_coupon_get_minimum_amount', [ $this, 'get_coupon_min_max_amount' ], 99 );
-			add_filter( 'woocommerce_coupon_get_maximum_amount', [ $this, 'get_coupon_min_max_amount' ], 99 );
-
-			// Order hooks.
-			add_filter( 'woocommerce_new_order', [ $this, 'add_order_meta' ], 99, 2 );
-
-			// Price Filter Hooks.
-			add_filter( 'rest_post_dispatch', [ $this, 'maybe_modify_price_ranges_rest_response' ], 10, 3 );
-			add_filter( 'query_loop_block_query_vars', [ $this, 'maybe_modify_price_ranges_query_var' ], 10, 3 );
+		if ( defined( 'DOING_CRON' ) || is_admin() || Utils::is_admin_api_request() ) {
+			return;
 		}
+
+		// Simple product price hooks.
+		add_filter( 'woocommerce_product_get_price', [ $this, 'get_product_price_string' ], 99, 2 );
+		add_filter( 'woocommerce_product_get_regular_price', [ $this, 'get_product_price_string' ], 99, 2 );
+		add_filter( 'woocommerce_product_get_sale_price', [ $this, 'get_product_price_string' ], 99, 2 );
+
+		// Variation price hooks.
+		add_filter( 'woocommerce_product_variation_get_price', [ $this, 'get_product_price_string' ], 99, 2 );
+		add_filter( 'woocommerce_product_variation_get_regular_price', [ $this, 'get_product_price_string' ], 99, 2 );
+		add_filter( 'woocommerce_product_variation_get_sale_price', [ $this, 'get_product_price_string' ], 99, 2 );
+
+		// Variation price range hooks.
+		add_filter( 'woocommerce_variation_prices', [ $this, 'get_variation_price_range' ], 99 );
+		add_filter( 'woocommerce_get_variation_prices_hash', [ $this, 'add_exchange_rate_to_variation_prices_hash' ], 99 );
+
+		// Shipping methods hooks.
+		add_action( 'init', [ $this, 'register_free_shipping_filters' ], 99 );
+		add_filter( 'woocommerce_shipping_method_add_rate_args', [ $this, 'convert_shipping_method_rate_cost' ], 99 );
+
+		// Coupon hooks.
+		add_filter( 'woocommerce_coupon_get_amount', [ $this, 'get_coupon_amount' ], 99, 2 );
+		add_filter( 'woocommerce_coupon_get_minimum_amount', [ $this, 'get_coupon_min_max_amount' ], 99 );
+		add_filter( 'woocommerce_coupon_get_maximum_amount', [ $this, 'get_coupon_min_max_amount' ], 99 );
+
+		// Order hooks.
+		add_filter( 'woocommerce_new_order', [ $this, 'add_order_meta' ], 99, 2 );
+
+		// Price Filter Hooks.
+		add_filter( 'rest_post_dispatch', [ $this, 'maybe_modify_price_ranges_rest_response' ], 10, 3 );
+		add_filter( 'query_loop_block_query_vars', [ $this, 'maybe_modify_price_ranges_query_var' ], 10, 3 );
 	}
 
 	/**

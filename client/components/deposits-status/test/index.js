@@ -54,7 +54,7 @@ describe( 'DepositsStatus', () => {
 			}
 		);
 
-		expect( await findByText( /Temporarily suspended/i ) ).toBeVisible();
+		expect( await findByText( /Under Review/i ) ).toBeVisible();
 		expect( depositsStatus ).toMatchSnapshot();
 	} );
 
@@ -67,7 +67,7 @@ describe( 'DepositsStatus', () => {
 			}
 		);
 
-		expect( await findByText( /Temporarily suspended/i ) ).toBeVisible();
+		expect( await findByText( /Under Review/i ) ).toBeVisible();
 		expect( depositsStatus ).toMatchSnapshot();
 	} );
 

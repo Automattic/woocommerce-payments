@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Decouple the accordion component from the dispute details screen.

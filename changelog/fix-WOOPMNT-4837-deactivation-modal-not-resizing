@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Adjusted deactivation modal behavior to correctly resize when its content updates.

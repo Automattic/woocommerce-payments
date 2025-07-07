@@ -5,7 +5,7 @@ HTMLOptionsCollection [
   <option
     value="warning_needs_response"
   >
-    Inquiry: Needs response
+    Inquiry: Response needed
   </option>,
   <option
     value="warning_under_review"
@@ -20,7 +20,7 @@ HTMLOptionsCollection [
   <option
     value="needs_response"
   >
-    Needs response
+    Response needed
   </option>,
   <option
     value="under_review"
