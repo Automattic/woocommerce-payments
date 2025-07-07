@@ -1,5 +1,0 @@
-Significance: patch
-Type: dev
-Comment: update: ensure @wordpress/components are imported from `wcpay/components/wp-components-wrapped` instead of being used directly
-
-
