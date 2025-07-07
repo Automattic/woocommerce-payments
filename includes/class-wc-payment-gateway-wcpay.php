@@ -4609,6 +4609,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$wc_locale_data = WC()->countries->get_country_locale();
 
 		$check_if_usable = function ( array $address ) use ( $wc_locale_data ): bool {
+			if ( ! isset( $address['country'] ) ) {
+				return false;
+			}
 			if ( $address['country'] && isset( $wc_locale_data[ $address['country'] ] ) ) {
 				$country_locale_data = $wc_locale_data[ $address['country'] ];
 				$fields_to_check     = [
