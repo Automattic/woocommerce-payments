@@ -24,7 +24,6 @@ class WC_Payments_Onboarding_Service {
 	const ONBOARDING_ELIGIBILITY_MODAL_OPTION        = 'wcpay_onboarding_eligibility_modal_dismissed';
 	const ONBOARDING_CONNECTION_SUCCESS_MODAL_OPTION = 'wcpay_connection_success_modal_dismissed';
 	const ONBOARDING_INIT_IN_PROGRESS_TRANSIENT      = 'wcpay_onboarding_init_in_progress';
-
 	const ONBOARDING_MIGRATE_TO_LIVE_TRANSIENT       = 'wcpay_onboarding_migrate_to_live';
 
 	// Onboarding flow sources.
