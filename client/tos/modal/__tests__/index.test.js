@@ -11,7 +11,7 @@ import apiFetch from '@wordpress/api-fetch';
 /**
  * Internal dependencies
  */
-import TosModal from '../';
+import TosModal from '..';
 
 jest.mock( '@wordpress/api-fetch', () => ( {
 	__esModule: true,

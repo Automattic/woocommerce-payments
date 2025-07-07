@@ -8,14 +8,8 @@ import ReactDOM from 'react-dom';
 
 import TosModal from './modal';
 import showTosNotice from './disabled-notice';
-import { maybeTrackStripeConnected } from './request.js';
-import { WordPressComponentsContext } from 'wcpay/wordpress-components-context/context';
-
-if ( wcpay_tos_settings.tosAgreementRequired ) {
-	renderTosModal();
-} else {
-	maybeTrackStripeConnected();
-}
+import { maybeTrackStripeConnected } from './request';
+import UnbundledWpComponentsProvider from 'wcpay/wordpress-components-context/unbundled-wp-components-provider';
 
 if ( wcpay_tos_settings.tosAgreementDeclined ) {
 	/**
@@ -36,9 +30,15 @@ function renderTosModal() {
 	container.id = 'wcpay-tos-container';
 	document.body.appendChild( container );
 	ReactDOM.render(
-		<WordPressComponentsContext.Provider value={ wp.components }>
+		<UnbundledWpComponentsProvider>
 			<TosModal />
-		</WordPressComponentsContext.Provider>,
+		</UnbundledWpComponentsProvider>,
 		container
 	);
+}
+
+if ( wcpay_tos_settings.tosAgreementRequired ) {
+	renderTosModal();
+} else {
+	maybeTrackStripeConnected();
 }
