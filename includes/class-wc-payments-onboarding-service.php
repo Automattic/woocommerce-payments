@@ -936,8 +936,6 @@ class WC_Payments_Onboarding_Service {
 			// Third, disable the test drive account.
 			$this->disable_test_drive_account( $context );
 
-			// Upon finishing, remove the lock, and refresh the account cache.
-			WC_Payments::get_account_service()->refresh_account_data();
 
 			// Fourth, create an embedded KYC session.
 			$this->create_embedded_kyc_session( $self_assessment_data, false, $capabilities );
@@ -946,6 +944,9 @@ class WC_Payments_Onboarding_Service {
 		} finally {
 			// Clear the migration transient.
 			$this->clear_onboarding_migrate_to_live_in_progress();
+
+			// Refresh the account cache.
+			WC_Payments::get_account_service()->refresh_account_data();
 		}
 
 		return true;
