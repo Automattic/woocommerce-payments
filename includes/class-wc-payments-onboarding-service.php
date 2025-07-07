@@ -920,11 +920,11 @@ class WC_Payments_Onboarding_Service {
 				throw new API_Exception( __( 'Failed to migrate the account: account does not exist.', 'woocommerce-payments' ), 'wcpay-onboarding-account-error', 400 );
 			}
 
-			$account_data = WC_Payments::get_account_service()->get_cached_account_data();
-			$capabilities = array_map(function($status) {
+			$cached_account_data = WC_Payments::get_account_service()->get_cached_account_data();
+			$capabilities        = array_map(function($status) {
 				// Consider 'active' status as true, all other statuses as false
 				return $status === 'active';
-			}, $account_data['capabilities'] ?? []);
+			}, $cached_account_data['capabilities'] ?? []);
 
 			// First, set the migration transient.
 			$this->set_onboarding_migrate_to_live_in_progress();
@@ -932,13 +932,11 @@ class WC_Payments_Onboarding_Service {
 			// Second, disconnect the account by inserting an empty array into the account cache.
 			WC_Payments::get_account_service()->overwrite_cache_with_no_account();
 
-			// TODO: Call the Transact Platform to do the deletion, migration, and live account creation.
-			// Third, disable the test drive account.
+			// Third, disable the test drive account and save account settings for the live account.
 			$this->disable_test_drive_account( $context );
 
-
-			// Fourth, create an embedded KYC session.
-			$this->create_embedded_kyc_session( $self_assessment_data, false, $capabilities );
+			// Fourth, create an embedded KYC session using data saved while disabling the test-drive account.
+			$account_session = $this->create_embedded_kyc_session( $self_assessment_data, false, $capabilities );
 		} catch ( Exception $e ) {
 			throw new API_Exception( __( 'Failed to migrate the account.', 'woocommerce-payments' ), 'wcpay-onboarding-account-error', 400 );
 		} finally {
@@ -949,7 +947,7 @@ class WC_Payments_Onboarding_Service {
 			WC_Payments::get_account_service()->refresh_account_data();
 		}
 
-		return true;
+		return $account_session;
 	}
 
 	/**
