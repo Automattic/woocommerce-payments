@@ -404,10 +404,10 @@ describe( 'PaymentDetailsSummary', () => {
 			selector: '.wcpay-accordion__title-content',
 		} );
 
-		screen.getByText( /Reach out to your customer/i, {
+		screen.getByText( /Contact your customer/i, {
 			selector: '.dispute-steps__item-name',
 		} );
-		screen.getByText( /Pursue a dispute withdrawal/i, {
+		screen.getByText( /Ask for the dispute to be withdrawn/i, {
 			selector: '.dispute-steps__item-name',
 		} );
 		screen.getByText( /Challenge or accept the dispute/i, {
@@ -419,11 +419,12 @@ describe( 'PaymentDetailsSummary', () => {
 			{ selector: '.dispute-steps__item-description' }
 		);
 		screen.getByText(
-			/See if the customer will withdraw their dispute\./i,
+			/If you've managed to resolve the issue with your customer, help them with the withdrawal of their dispute\./i,
 			{ selector: '.dispute-steps__item-description' }
 		);
 		screen.getByText(
-			/Challenge the dispute if you consider the claim to be invalid\./i,
+			// eslint-disable-next-line max-len
+			/Disagree with the dispute\? You can challenge it with the customer's bank\. Otherwise, accept it to close the case — the order amount and dispute fee won't be refunded\./i,
 			{ selector: '.dispute-steps__item-description' }
 		);
 		screen.getByRole( 'link', { name: /Email customer/i } );
@@ -685,7 +686,7 @@ describe( 'PaymentDetailsSummary', () => {
 		charge.dispute.metadata.__evidence_submitted_at = '1693400000';
 		renderCharge( charge );
 
-		screen.getByText( /decided that you won the dispute/i, {
+		screen.getByText( /Good news — you've won this dispute/i, {
 			ignore: '.a11y-speak-region',
 		} );
 		screen.getByRole( 'button', { name: /View dispute details/i } );
@@ -718,9 +719,12 @@ describe( 'PaymentDetailsSummary', () => {
 
 		renderCharge( charge );
 
-		screen.getByText( /You submitted evidence for this dispute/i, {
-			ignore: '.a11y-speak-region',
-		} );
+		screen.getByText(
+			/The customer's bank is currently reviewing the evidence you submitted/i,
+			{
+				ignore: '.a11y-speak-region',
+			}
+		);
 		screen.getByRole( 'button', { name: /View submitted evidence/i } );
 
 		// No actions or steps rendered
@@ -754,7 +758,7 @@ describe( 'PaymentDetailsSummary', () => {
 
 		renderCharge( charge );
 
-		screen.getByText( /This dispute was accepted/i, {
+		screen.getByText( /You accepted this dispute/i, {
 			ignore: '.a11y-speak-region',
 		} );
 		// Check for the correct fee amount
@@ -793,7 +797,7 @@ describe( 'PaymentDetailsSummary', () => {
 
 		renderCharge( charge );
 
-		screen.getByText( /decided that you lost the dispute/i, {
+		screen.getByText( /Unfortunately, you've lost this dispute/i, {
 			ignore: '.a11y-speak-region',
 		} );
 		// Check for the correct fee amount
@@ -847,7 +851,7 @@ describe( 'PaymentDetailsSummary', () => {
 		screen.getByRole( 'link', {
 			name: /Email customer/i,
 		} );
-		screen.getByText( /Submit evidence /i );
+		screen.getByText( /Submit evidence or issue a refund/i );
 
 		// Actions
 		screen.getByRole( 'button', {

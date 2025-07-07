@@ -41,8 +41,7 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 	const dueByDate = formatDateTimeFromTimestamp(
 		dispute.evidence_details?.due_by ?? 0,
 		{
-			separator: ' ',
-			includeTime: true,
+			customFormat: 'g:i A \\o\\n F j, Y',
 		}
 	);
 
@@ -62,16 +61,16 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 		noticeText = bankName
 			? sprintf(
 					__(
-						'<strong>%1$s</strong> Submit the evidence to <strong>%2$s</strong> by <strong>%3$s</strong> if you believe the claim to be invalid, or issue a refund.',
+						"<strong>%1$s</strong> If you believe this is incorrect, you have until <strong>%2$s to submit evidence to your customer's bank, %3$s.</strong> Alternatively, you can issue a refund.",
 						'woocommerce-payments'
 					),
 					shopperDisputeReason,
-					bankName,
-					dueByDate
+					dueByDate,
+					bankName
 			  )
 			: sprintf(
 					__(
-						"<strong>%1$s</strong> Submit the evidence to <strong>Cardholder's bank</strong> by <strong>%2$s</strong> if you believe the claim to be invalid, or issue a refund.",
+						"<strong>%1$s</strong> If you believe this is incorrect, you have until <strong>%2$s to submit evidence to your customer's bank.</strong> Alternatively, you can issue a refund.",
 						'woocommerce-payments'
 					),
 					shopperDisputeReason,
@@ -84,16 +83,16 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 		noticeText = bankName
 			? sprintf(
 					__(
-						'<strong>%1$s</strong> Challenge the dispute with <strong>%2$s</strong> by <strong>%3$s</strong> if you believe the claim to be invalid, or accept to forfeit the funds and pay the dispute fee.',
+						"<strong>%1$s</strong> If you believe this is incorrect, you have until <strong>%2$s to challenge the dispute with your customer's bank, %3$s.</strong> If you accept the dispute, you will forfeit the funds and pay the dispute fee.",
 						'woocommerce-payments'
 					),
 					shopperDisputeReason,
-					bankName,
-					dueByDate
+					dueByDate,
+					bankName
 			  )
 			: sprintf(
 					__(
-						"<strong>%1$s</strong> Challenge the dispute with <strong>Cardholder's bank</strong> by <strong>%2$s</strong> if you believe the claim to be invalid, or accept to forfeit the funds and pay the dispute fee.",
+						"<strong>%1$s</strong> If you believe this is incorrect, you have until <strong>%2$s to challenge the dispute with your customer's bank.</strong> If you accept the dispute, you will forfeit the funds and pay the dispute fee.",
 						'woocommerce-payments'
 					),
 					shopperDisputeReason,
