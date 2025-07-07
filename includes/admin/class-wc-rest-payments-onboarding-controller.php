@@ -416,11 +416,15 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 		$self_assessment_data = ! empty( $request->get_param( 'self_assessment' ) ) ? wc_clean( wp_unslash( $request->get_param( 'self_assessment' ) ) ) : [];
 
 		try {
-			$result = $this->onboarding_service->migrate_test_drive_account_to_live( $context );
+			$account_session = $this->onboarding_service->migrate_test_drive_account_to_live( $context, $self_assessment_data );
 		} catch ( Exception $e ) {
 			return new WP_Error( self::RESULT_BAD_REQUEST, $e->getMessage(), [ 'status' => 400 ] );
 		}
 
-		return rest_ensure_response( [ 'success' => $result ] );
+		if ( $account_session ) {
+			$account_session['locale'] = get_user_locale();
+		}
+
+		return rest_ensure_response( $account_session );
 	}
 }
