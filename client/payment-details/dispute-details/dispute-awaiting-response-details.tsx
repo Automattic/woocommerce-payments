@@ -239,9 +239,17 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 		isDisputeAcceptRequestPending,
 	} );
 
+	/**
+	 * The following cases cannot be defended:
+	 * - Klarna inquiries
+	 * - Visa Compliance disputes (require confirmation of a specific fee)
+	 */
 	const isDefendable = ! (
-		paymentMethod === 'klarna' && isInquiry( dispute.status )
-	); // Only Klarna inquires are not defendable
+		( paymentMethod === 'klarna' && isInquiry( dispute.status ) ) ||
+		( dispute?.enhanced_eligibility_types || [] ).includes(
+			'visa_compliance'
+		)
+	);
 
 	const challengeButtonDefaultText = isInquiry( dispute.status )
 		? __( 'Submit evidence', 'woocommerce-payments' )

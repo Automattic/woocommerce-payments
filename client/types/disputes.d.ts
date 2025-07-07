@@ -110,6 +110,7 @@ export interface Dispute {
 	 */
 	balance_transactions: BalanceTransaction[];
 	payment_intent: string;
+	enhanced_eligibility_types?: string[];
 }
 
 export interface CachedDispute {
