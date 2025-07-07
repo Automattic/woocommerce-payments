@@ -4,6 +4,7 @@
 import React from 'react';
 import { __ } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
 
 /**
  * Internal dependencies
@@ -20,16 +21,12 @@ const TestModeNotice = (): JSX.Element => {
 				),
 				components: {
 					learnMoreLink: (
-						<a
-							target="_blank"
-							href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/"
-							rel="noopener noreferrer"
-						>
+						<ExternalLink href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/">
 							{ __(
 								'Learn more about test mode',
 								'woocommerce-payments'
 							) }
-						</a>
+						</ExternalLink>
 					),
 				},
 			} ) }

@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React, { useState } from 'react';
-import { Button, CardDivider } from '@wordpress/components';
+import { Button, CardDivider } from 'wcpay/components/wp-components-wrapped';
 import { addQueryArgs } from '@wordpress/url';
 
 /**

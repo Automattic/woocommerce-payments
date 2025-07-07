@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix preselected Payment Methods ignored during account creation via KYC session.

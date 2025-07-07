@@ -2,7 +2,12 @@
  * External dependencies
  */
 import React, { useState } from 'react';
-import { Card, CardBody, CardHeader, Flex } from '@wordpress/components';
+import {
+	Card,
+	CardBody,
+	CardHeader,
+	Flex,
+} from 'wcpay/components/wp-components-wrapped';
 import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 import { Link } from '@woocommerce/components';

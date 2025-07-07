@@ -3,7 +3,12 @@
  */
 import React, { useEffect } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Button, Flex, FlexItem, Modal } from '@wordpress/components';
+import {
+	Button,
+	Flex,
+	FlexItem,
+	Modal,
+} from 'wcpay/components/wp-components-wrapped';
 import {
 	Icon,
 	commentContent,

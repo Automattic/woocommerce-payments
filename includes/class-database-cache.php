@@ -8,6 +8,7 @@
 namespace WCPay;
 
 use WCPay\MultiCurrency\Interfaces\MultiCurrencyCacheInterface;
+use WCPay\MultiCurrency\Utils;
 
 defined( 'ABSPATH' ) || exit; // block direct access.
 
@@ -397,17 +398,28 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 						// Attempt to refresh the data quickly if the last fetch was an error.
 						$ttl = 2 * MINUTE_IN_SECONDS;
 					} else {
-						// If the data was fetched successfully, fetch it every 2h.
+						// If the data was fetched successfully, cache it for 2h.
 						$ttl = 2 * HOUR_IN_SECONDS;
 					}
 				} else {
-					// Non-admin requests should always refresh only after 24h since the last fetch.
+					// For performance reasons, non-admin requests should use cached data for longer (24h).
 					$ttl = DAY_IN_SECONDS;
 				}
 				break;
 			case self::CURRENCIES_KEY:
-				// Refresh the errored currencies quickly, otherwise cache for 6h.
-				$ttl = $cache_contents['errored'] ? 2 * MINUTE_IN_SECONDS : 6 * HOUR_IN_SECONDS;
+				if ( defined( 'DOING_CRON' ) || is_admin() || Utils::is_admin_api_request() ) {
+					// Fetches triggered from the admin panel should be more frequent.
+					if ( $cache_contents['errored'] ) {
+						// Attempt to refresh the data quickly if the last fetch was an error.
+						$ttl = 2 * MINUTE_IN_SECONDS;
+					} else {
+						// If the data was fetched successfully, cache it for 3h.
+						$ttl = 3 * HOUR_IN_SECONDS;
+					}
+				} else {
+					// For performance reasons, non-admin requests should use cached data for longer (12h).
+					$ttl = 12 * HOUR_IN_SECONDS;
+				}
 				break;
 			case self::BUSINESS_TYPES_KEY:
 			case self::ONBOARDING_FIELDS_DATA_KEY:
@@ -418,7 +430,7 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 				$ttl = $cache_contents['data']['ttl'] ?? HOUR_IN_SECONDS * 6;
 				break;
 			case self::CONNECT_INCENTIVE_KEY . '_has_orders':
-				// If has orders, cache for 90 days since it won't change.
+				// If the store has orders, cache for 90 days since it won't change.
 				// If no orders, cache for an hour to check again soon.
 				$ttl = $cache_contents['data'] ? DAY_IN_SECONDS * 90 : HOUR_IN_SECONDS;
 				break;

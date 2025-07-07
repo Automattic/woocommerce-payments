@@ -1065,14 +1065,17 @@ class WC_Payments_Order_Service {
 		return $billing_details;
 	}
 
+
 	/**
 	 * Creates an "authorization cancelled" order note if not already present.
 	 *
 	 * @param WC_Order $order The order.
+	 * @param string   $intent_id The ID of the intent associated with this order.
+	 * @param string   $charge_id The charge ID related to the intent/order.
 	 * @return boolean        True if the note was added, false otherwise.
 	 */
-	public function post_unique_capture_cancelled_note( $order ) {
-		$note = $this->generate_capture_cancelled_note();
+	public function post_unique_capture_cancelled_note( $order, $intent_id, $charge_id ): bool {
+		$note = $this->generate_capture_cancelled_note( $intent_id, $charge_id );
 		if ( ! $this->order_note_exists( $order, $note ) ) {
 			$order->add_order_note( $note );
 			return true;
@@ -1106,7 +1109,7 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	private function mark_payment_capture_cancelled( $order, $intent_data ) {
-		if ( false === $this->post_unique_capture_cancelled_note( $order ) ) {
+		if ( false === $this->post_unique_capture_cancelled_note( $order, $intent_data['intent_id'], $intent_data['charge_id'] ) ) {
 			$this->complete_order_processing( $order );
 			return;
 		}
@@ -1339,7 +1342,7 @@ class WC_Payments_Order_Service {
 							$request->set_hook_args( $order );
 							$intent = $request->send();
 
-							$this->post_unique_capture_cancelled_note( $order );
+							$this->post_unique_capture_cancelled_note( $order, $intent_id, $charge->get_id() );
 					}
 
 					$this->set_intention_status_for_order( $order, $intent->get_status() );
@@ -1764,15 +1767,25 @@ class WC_Payments_Order_Service {
 	/**
 	 * Generates the capture cancelled order note.
 	 *
+	 * @param string $intent_id The ID of the intent associated with this order.
+	 * @param string $charge_id The charge ID related to the intent/order.
+	 *
 	 * @return string
 	 */
-	private function generate_capture_cancelled_note(): string {
-		$note = WC_Payments_Utils::esc_interpolated_html(
-			__( 'Payment authorization was successfully <strong>cancelled</strong>.', 'woocommerce-payments' ),
-			[ 'strong' => '<strong>' ]
-		);
+	private function generate_capture_cancelled_note( $intent_id, $charge_id ): string {
+		$transaction_url = WC_Payments_Utils::compose_transaction_url( $intent_id, $charge_id );
 
-		return $note;
+		return sprintf(
+			WC_Payments_Utils::esc_interpolated_html(
+				/* translators: %1: transaction ID of the payment */
+				__( 'Payment authorization was successfully <strong>cancelled</strong> (<a>%1$s</a>).', 'woocommerce-payments' ),
+				[
+					'strong' => '<strong>',
+					'a'      => ! empty( $transaction_url ) ? '<a href="' . $transaction_url . '" target="_blank" rel="noopener noreferrer">' : '<code>',
+				]
+			),
+			WC_Payments_Utils::get_transaction_url_id( $intent_id, $charge_id )
+		);
 	}
 
 	/**

@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { BaseControl, Notice } from '@wordpress/components';
+import { BaseControl, Notice } from 'wcpay/components/wp-components-wrapped';
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect, useRef } from 'react';
 

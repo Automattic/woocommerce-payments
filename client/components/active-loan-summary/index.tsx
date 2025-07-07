@@ -10,7 +10,7 @@ import {
 	Flex,
 	FlexBlock,
 	FlexItem,
-} from '@wordpress/components';
+} from 'wcpay/components/wp-components-wrapped';
 import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 
