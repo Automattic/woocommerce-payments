@@ -1024,13 +1024,15 @@ const mapEventToTimelineItems = ( event, bankName = null ) => {
 						bankName
 							? sprintf(
 									__(
-										'<strong>Dispute lost.</strong> <strong>%s</strong> decided that you lost the dispute.',
+										// eslint-disable-next-line max-len
+										"<strong>Dispute lost.</strong> Your customer's bank, <strong>%s</strong>, reviewed the evidence and decided in the customer's favor.",
 										'woocommerce-payments'
 									),
 									bankName
 							  )
 							: __(
-									'<strong>Dispute lost.</strong> <strong>The bank</strong> decided that you lost the dispute.',
+									// eslint-disable-next-line max-len
+									"<strong>Dispute lost.</strong> Your customer's bank reviewed the evidence and decided in the customer's favor.",
 									'woocommerce-payments'
 							  ),
 						{

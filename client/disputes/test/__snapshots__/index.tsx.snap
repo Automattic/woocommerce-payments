@@ -539,7 +539,7 @@ exports[`Disputes list renders correctly 1`] = `
                       <span
                         class="chip chip-alert"
                       >
-                        Needs response
+                        Response needed
                       </span>
                     </a>
                   </td>
@@ -793,7 +793,7 @@ exports[`Disputes list renders correctly 1`] = `
                       <span
                         class="chip chip-alert"
                       >
-                        Needs response
+                        Response needed
                       </span>
                     </a>
                   </td>

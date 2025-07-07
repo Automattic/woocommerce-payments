@@ -41,16 +41,16 @@ const DisputeUnderReviewFooter: React.FC< {
 							? sprintf(
 									/* Translators: %1$s - bank name, %2$s - formatted date, <a> - link to documentation page */
 									__(
-										'You submitted evidence for this dispute on %1$s. <strong>%2$s</strong> is reviewing the case, which can take 60 days or more. You will be alerted when they make their final decision. <a>Learn more about the dispute process</a>.',
+										"<strong>The customer's bank, %1$s, is currently reviewing the evidence you submitted on %2$s.</strong> This process can sometimes take more than 60 days — we'll let you know once a decision has been made. <a>Learn more about the dispute process.</a>",
 										'woocommerce-payments'
 									),
-									submissionDateFormatted,
-									bankName
+									bankName,
+									submissionDateFormatted
 							  )
 							: sprintf(
 									/* Translators: %s - formatted date, <a> - link to documentation page */
 									__(
-										'You submitted evidence for this dispute on %s. The <strong>cardholder’s bank</strong> is reviewing the case, which can take 60 days or more. You will be alerted when they make their final decision. <a>Learn more about the dispute process</a>.',
+										"<strong>The customer's bank is currently reviewing the evidence you submitted on %1$s.</strong> This process can sometimes take more than 60 days — we'll let you know once a decision has been made. <a>Learn more about the dispute process.</a>",
 										'woocommerce-payments'
 									),
 									submissionDateFormatted
@@ -119,7 +119,7 @@ const DisputeWonFooter: React.FC< {
 							? sprintf(
 									/* Translators: %1$s - bank name, %2$s - formatted date, <a> - link to documentation page */
 									__(
-										'Good news! <strong>%1$s</strong> decided that you won the dispute on %2$s. The disputed amount and the dispute fee have been credited back to your account. <a>Learn more about preventing disputes</a>.',
+										"<strong>Good news — you've won this dispute! The customer's bank, %1$s, reached this decision on %2$s.</strong> Your account has been credited with the disputed amount and fee. <a>Learn more about preventing disputes.</a>",
 										'woocommerce-payments'
 									),
 									bankName,
@@ -128,7 +128,7 @@ const DisputeWonFooter: React.FC< {
 							: sprintf(
 									/* Translators: %s - formatted date, <a> - link to documentation page */
 									__(
-										'Good news! The <strong>cardholder’s bank</strong> decided that you won the dispute on %s. The disputed amount and the dispute fee have been credited back to your account. <a>Learn more about preventing disputes</a>.',
+										"<strong>Good news — you've won this dispute! The customer's bank reached this decision on %1$s.</strong> Your account has been credited with the disputed amount and fee. <a>Learn more about preventing disputes.</a>",
 										'woocommerce-payments'
 									),
 									closedDateFormatted
@@ -208,7 +208,7 @@ const DisputeLostFooter: React.FC< {
 		messagePrefix = sprintf(
 			/* Translators: %1$s - formatted date */
 			__(
-				'This dispute was accepted and lost on %1$s.',
+				'<strong>You accepted this dispute on %1$s.</strong>',
 				'woocommerce-payments'
 			),
 			closedDateFormatted
@@ -228,7 +228,7 @@ const DisputeLostFooter: React.FC< {
 			messagePrefix = sprintf(
 				/* Translators: %1$s - bank name, %2$s - formatted date */
 				__(
-					'<strong>%1$s</strong> decided that you lost the dispute on %2$s.',
+					"<strong>Unfortunately, you've lost this dispute. The customer's bank, %1$s, reached this decision on %2$s.</strong>",
 					'woocommerce-payments'
 				),
 				bankName,
@@ -238,7 +238,7 @@ const DisputeLostFooter: React.FC< {
 			messagePrefix = sprintf(
 				/* Translators: %s - formatted date */
 				__(
-					'The <strong>cardholder’s bank</strong> decided that you lost the dispute on %s',
+					"<strong>Unfortunately, you've lost this dispute. The customer's bank reached this decision on %1$s.</strong>",
 					'woocommerce-payments'
 				),
 				closedDateFormatted
@@ -257,7 +257,7 @@ const DisputeLostFooter: React.FC< {
 						sprintf(
 							/* Translators: %1$s – the formatted dispute fee amount, <a> - link to documentation page */
 							__(
-								'The %1$s fee has been deducted from your account, and the disputed amount returned to the cardholder. <a>Learn more about preventing disputes</a>.',
+								'The %1$s fee has been deducted from your account, and the disputed amount has been returned to your customer. <a>Learn more about preventing disputes</a>.',
 								'woocommerce-payments'
 							),
 							disputeFeeFormatted
