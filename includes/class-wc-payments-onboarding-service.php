@@ -910,8 +910,10 @@ class WC_Payments_Onboarding_Service {
 	 * @param array $context Context for the migrate test drive account to live request.
 	 *              - 'from' (string) The source of the request.
 	 *              - 'source' (string) The source of the onboarding flow.
+	 * @param array $self_assessment_data Self assessment data.
+	 * @return array The account session.
 	 */
-	public function migrate_test_drive_account_to_live( array $context ): bool {
+	public function migrate_test_drive_account_to_live( array $context, array $self_assessment_data ): array {
 		try {
 			// If the account does not exist, there's nothing to migrate.
 			if ( ! WC_Payments::get_account_service()->is_stripe_connected() ) {

@@ -413,6 +413,8 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 			'source' => $request->get_param( 'source' ) ?? '',
 		];
 
+		$self_assessment_data = ! empty( $request->get_param( 'self_assessment' ) ) ? wc_clean( wp_unslash( $request->get_param( 'self_assessment' ) ) ) : [];
+
 		try {
 			$result = $this->onboarding_service->migrate_test_drive_account_to_live( $context );
 		} catch ( Exception $e ) {
