@@ -25,6 +25,8 @@ class WC_Payments_Onboarding_Service {
 	const ONBOARDING_CONNECTION_SUCCESS_MODAL_OPTION = 'wcpay_connection_success_modal_dismissed';
 	const ONBOARDING_INIT_IN_PROGRESS_TRANSIENT      = 'wcpay_onboarding_init_in_progress';
 
+	const ONBOARDING_MIGRATE_TO_LIVE_TRANSIENT       = 'wcpay_onboarding_migrate_to_live';
+
 	// Onboarding flow sources.
 	// We use these to identify the originating place for the current onboarding flow.
 	// This should be very sticky as opposed to the `from` value which is meant to represent the immediately previous step.
@@ -496,6 +498,33 @@ class WC_Payments_Onboarding_Service {
 		delete_transient( self::ONBOARDING_INIT_IN_PROGRESS_TRANSIENT );
 	}
 
+	/**
+	 * Check whether the onboarding migration to live is in progress.
+	 *
+	 * @return bool Whether the onboarding migration to live is in progress.
+	 */
+	public function is_onboarding_migrate_to_live_in_progress(): bool {
+		return filter_var( get_transient( self::ONBOARDING_MIGRATE_TO_LIVE_TRANSIENT ), FILTER_VALIDATE_BOOLEAN );
+	}
+
+	/**
+	 * Mark the onboarding migration to live as in progress.
+	 *
+	 * @return void
+	 */
+	public function set_onboarding_migrate_to_live_in_progress(): void {
+		// Default to 3 minutes expiration in case the migration takes longer than expected, or errored.
+		set_transient( self::ONBOARDING_MIGRATE_TO_LIVE_TRANSIENT, 'yes', 3 * MINUTE_IN_SECONDS );
+	}
+
+	/**
+	 * Clear the onboarding migration to live in progress transient.
+	 *
+	 * @return void
+	 */
+	public function clear_onboarding_migrate_to_live_in_progress(): void {
+		delete_transient( self::ONBOARDING_MIGRATE_TO_LIVE_TRANSIENT );
+	}
 	/**
 	 * Check whether the business types fetched from the cache are valid.
 	 *
