@@ -910,6 +910,41 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
+	 * Migrate test-drive account to live account.
+	 *
+	 * @param array $context Context for the migrate test drive account to live request.
+	 *              - 'from' (string) The source of the request.
+	 *              - 'source' (string) The source of the onboarding flow.
+	 */
+	public function migrate_test_drive_account_to_live( array $context ): bool {
+		try {
+			// If the account does not exist, there's nothing to migrate.
+			if ( ! WC_Payments::get_account_service()->is_stripe_connected() ) {
+				throw new API_Exception( __( 'Failed to migrate the account: account does not exist.', 'woocommerce-payments' ), 'wcpay-onboarding-account-error', 400 );
+			}
+
+			// First, set the migration transient.
+			$this->set_onboarding_migrate_to_live_in_progress();
+
+			// Second, disconnect the account by inserting an empty array into the account cache.
+			WC_Payments::get_account_service()->overwrite_cache_with_no_account();
+
+			// TODO: Call the Transact Platform to do the deletion, migration, and live account creation.
+
+			// Upon finishing, remove the lock, and refresh the account cache.
+			WC_Payments::get_account_service()->refresh_account_data();
+
+		} catch ( Exception $e ) {
+			throw new API_Exception( __( 'Failed to migrate the account.', 'woocommerce-payments' ), 'wcpay-onboarding-account-error', 400 );
+		} finally {
+			// Clear the migration transient.
+			$this->clear_onboarding_migrate_to_live_in_progress();
+		}
+
+		return true;
+	}
+
+	/**
 	 * Sets things up for a fresh onboarding flow.
 	 *
 	 * @return void
