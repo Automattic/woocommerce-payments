@@ -35,7 +35,7 @@ exports[`DisputeStatusChip renders needs_response status 1`] = `
   <span
     class="chip chip-alert"
   >
-    Needs response
+    Response needed
   </span>
 </div>
 `;
@@ -65,7 +65,7 @@ exports[`DisputeStatusChip renders warning_needs_response status 1`] = `
   <span
     class="chip chip-alert"
   >
-    Inquiry: Needs response
+    Inquiry: Response needed
   </span>
 </div>
 `;

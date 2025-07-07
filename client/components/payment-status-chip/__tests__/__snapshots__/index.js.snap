@@ -45,7 +45,7 @@ exports[`PaymentStatusChip renders disputed_needs_response status 1`] = `
   <span
     class="chip chip-warning"
   >
-    Disputed: Needs response
+    Disputed: Response needed
   </span>
 </div>
 `;
@@ -75,7 +75,7 @@ exports[`PaymentStatusChip renders disputed_warning_needs_response status 1`] = 
   <span
     class="chip chip-warning"
   >
-    Inquiry: Needs response
+    Inquiry: Response needed
   </span>
 </div>
 `;

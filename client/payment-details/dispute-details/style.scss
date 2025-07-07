@@ -38,25 +38,13 @@
 		}
 
 		.dispute-summary-row {
+			font-size: 13px;
+			font-weight: 400;
+
 			margin-top: 40px;
 
 			@media screen and ( max-width: $break-small ) {
 				margin-top: 24px;
-			}
-
-			&__response-date {
-				display: flex;
-				align-items: center;
-				gap: var( --grid-unit-05, 4px );
-				flex-wrap: wrap;
-				&--warning {
-					color: $alert-red;
-					font-weight: 700;
-				}
-				&--urgent {
-					font-weight: 700;
-					color: $alert-red;
-				}
 			}
 		}
 
@@ -224,7 +212,8 @@
 		&__response-date {
 			&--urgent {
 				color: var( --Gutenberg-Alert-Red, #cc1818 );
-				font-weight: 700;
+				font-weight: 600;
+				font-size: 13px;
 			}
 		}
 	}
@@ -267,6 +256,7 @@
 }
 
 .transaction-details-dispute-footer {
+	color: $gray-700;
 	background-color: #f2f4f5;
 
 	&__actions {

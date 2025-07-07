@@ -5029,31 +5029,7 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
                 <span
                   class="woocommerce-list__item-content"
                 >
-                  Sep 19, 2019, 5:24pm
-                </span>
-              </div>
-            </div>
-          </li>
-          <li
-            class="woocommerce-list__item"
-          >
-            <div
-              class="woocommerce-list__item-inner"
-            >
-              <div
-                class="woocommerce-list__item-text"
-              >
-                <span
-                  class="woocommerce-list__item-title"
-                >
-                  Sales channel
-                </span>
-                <span
-                  class="woocommerce-list__item-content"
-                >
-                  <span>
-                    Online store
-                  </span>
+                  September 19, 2019 5:24 PM
                 </span>
               </div>
             </div>
@@ -5191,19 +5167,17 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
-            Good news! The 
             <strong>
-              cardholder’s bank
+              Good news — you've won this dispute! The customer's bank reached this decision on -.
             </strong>
-             decided that you won the dispute on -. The disputed amount and the dispute fee have been credited back to your account. 
+             Your account has been credited with the disputed amount and fee. 
             <a
               href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
               rel="noopener noreferrer"
               target="_blank"
             >
-              Learn more about preventing disputes
+              Learn more about preventing disputes.
             </a>
-            .
           </div>
           <div
             class="components-flex-item transaction-details-dispute-footer__actions emotion-16 emotion-1"
