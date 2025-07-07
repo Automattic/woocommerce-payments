@@ -95,4 +95,5 @@ export interface RecommendedDocumentsProps {
 	readOnly?: boolean;
 	customHeading?: string;
 	customSubheading?: string;
+	showHelperLink?: boolean;
 }

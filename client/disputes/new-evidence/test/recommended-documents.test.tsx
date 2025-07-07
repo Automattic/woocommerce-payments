@@ -31,6 +31,20 @@ jest.mock( 'wcpay/components/wp-components-wrapped', () => {
 	};
 } );
 
+// Mock the specific ExternalLink component
+jest.mock(
+	'wcpay/components/wp-components-wrapped/components/external-link',
+	() => {
+		return {
+			ExternalLink: ( { href, children }: any ) => (
+				<a href={ href } data-testid="external-link">
+					{ children }
+				</a>
+			),
+		};
+	}
+);
+
 describe( 'RecommendedDocuments', () => {
 	const fields = [
 		{
@@ -83,5 +97,87 @@ describe( 'RecommendedDocuments', () => {
 		const removeButtons = screen.getAllByLabelText( /Remove file/i );
 		fireEvent.click( removeButtons[ 0 ] );
 		expect( fields[ 1 ].onFileRemove ).toHaveBeenCalled();
+	} );
+
+	describe( 'helper link functionality', () => {
+		it( 'does not show helper link by default', () => {
+			render( <RecommendedDocuments fields={ fields } /> );
+			expect(
+				screen.queryByTestId( 'external-link' )
+			).not.toBeInTheDocument();
+			expect(
+				screen.queryByText( 'Learn more about documents' )
+			).not.toBeInTheDocument();
+		} );
+
+		it( 'shows helper link when showHelperLink is true', () => {
+			render(
+				<RecommendedDocuments
+					fields={ fields }
+					showHelperLink={ true }
+				/>
+			);
+			const helperLink = screen.getByTestId( 'external-link' );
+			expect( helperLink ).toBeInTheDocument();
+			expect( helperLink ).toHaveTextContent(
+				'Learn more about documents'
+			);
+		} );
+
+		it( 'hides helper link when showHelperLink is false', () => {
+			render(
+				<RecommendedDocuments
+					fields={ fields }
+					showHelperLink={ false }
+				/>
+			);
+			expect(
+				screen.queryByTestId( 'external-link' )
+			).not.toBeInTheDocument();
+			expect(
+				screen.queryByText( 'Learn more about documents' )
+			).not.toBeInTheDocument();
+		} );
+
+		it( 'renders helper link with correct href', () => {
+			render(
+				<RecommendedDocuments
+					fields={ fields }
+					showHelperLink={ true }
+				/>
+			);
+			const helperLink = screen.getByTestId( 'external-link' );
+			expect( helperLink ).toHaveAttribute(
+				'href',
+				'https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#challenge-or-accept'
+			);
+		} );
+
+		it( 'renders helper link with correct text content', () => {
+			render(
+				<RecommendedDocuments
+					fields={ fields }
+					showHelperLink={ true }
+				/>
+			);
+			expect(
+				screen.getByText( 'Learn more about documents' )
+			).toBeInTheDocument();
+		} );
+
+		it( 'renders helper link in the correct container', () => {
+			render(
+				<RecommendedDocuments
+					fields={ fields }
+					showHelperLink={ true }
+				/>
+			);
+			const helperLinkContainer = screen
+				.getByTestId( 'external-link' )
+				.closest(
+					'.wcpay-dispute-evidence-recommended-documents__helper-link'
+				);
+			expect( helperLinkContainer ).toBeInTheDocument();
+		} );
 	} );
 } );
