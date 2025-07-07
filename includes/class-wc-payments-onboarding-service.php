@@ -283,13 +283,12 @@ class WC_Payments_Onboarding_Service {
 	 * @param array   $capabilities Optional. List keyed by capabilities IDs (payment methods) with boolean values
 	 *                             indicating whether the capability should be requested when the account is created
 	 *                             and enabled in the settings.
-	 * @param boolean $delete_test_account Whether to delete the test account before creating an embedded KYC session.
 	 *
 	 * @return array Session data.
 	 *
 	 * @throws API_Exception|Exception
 	 */
-	public function create_embedded_kyc_session( array $self_assessment_data, bool $progressive = false, array $capabilities = [], bool $delete_test_account = false ): array {
+	public function create_embedded_kyc_session( array $self_assessment_data, bool $progressive = false, array $capabilities = [] ): array {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			return [];
 		}
@@ -332,10 +331,6 @@ class WC_Payments_Onboarding_Service {
 		// Activate enabled Payment Methods IDs.
 		if ( ! empty( $capabilities ) ) {
 			$this->update_enabled_payment_methods_ids( $gateway, $capabilities );
-		}
-
-		if ( $delete_test_account ) {
-			$this->payments_api_client->delete_account( true );
 		}
 
 		try {
