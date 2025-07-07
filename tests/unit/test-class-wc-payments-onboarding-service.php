@@ -31,14 +31,14 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Mock Database_Cache
 	 *
-	 * @var MockObject
+	 * @var Database_Cache|MockObject
 	 */
 	private $mock_database_cache;
 
 	/**
 	 * Mock WC_Payments_Session_Service
 	 *
-	 * @var MockObject
+	 * @var WC_Payments_Session_Service|MockObject
 	 */
 	private $mock_session_service;
 
@@ -641,5 +641,195 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 				],
 			],
 		];
+	}
+
+	/**
+	 * Test successful migration from test drive account to live account.
+	 */
+	public function test_migrate_test_drive_account_to_live_success() {
+		// Arrange.
+		$context = [
+			'from'   => 'test_from',
+			'source' => 'test_source',
+		];
+		$self_assessment_data = [
+			'business_type' => 'individual',
+		];
+		$capabilities = [
+			'card_payments' => true,
+			'transfers' => false,
+		];
+
+		// Mock account service methods
+		$mock_account = $this->createMock( WC_Payments_Account::class );
+		WC_Payments::set_account_service( $mock_account );
+
+		$mock_account->expects( $this->once() )
+			->method( 'is_stripe_connected' )
+			->willReturn( true );
+
+		$mock_account->expects( $this->once() )
+			->method( 'get_cached_account_data' )
+			->willReturn([
+				'capabilities' => [
+					'card_payments' => 'active',
+					'transfers' => 'inactive',
+				],
+			]);
+
+		$mock_account->expects( $this->once() )
+			->method( 'overwrite_cache_with_no_account' );
+
+		// Mock expected account session response
+		$expected_account_session = [
+			'client_secret' => 'test_secret',
+			'expires_at' => time() + 3600,
+			'account_id' => 'acct_test123',
+			'is_live' => true,
+		];
+
+		// Mock create_embedded_kyc_session
+		$this->mock_api_client
+			->method( 'initialize_onboarding_embedded_kyc' )
+			->willReturn( $expected_account_session );
+
+		// Act.
+		$result = $this->onboarding_service->migrate_test_drive_account_to_live( $context, $self_assessment_data );
+
+		// Assert.
+		$this->assertEquals( $expected_account_session['client_secret'], $result['clientSecret'] );
+		$this->assertEquals( $expected_account_session['expires_at'], $result['expiresAt'] );
+		$this->assertEquals( $expected_account_session['account_id'], $result['accountId'] );
+		$this->assertEquals( $expected_account_session['is_live'], $result['isLive'] );
+		$this->assertFalse( $this->onboarding_service->is_onboarding_migrate_to_live_in_progress() );
+	}
+
+	/**
+	 * Test migration failure when no account exists.
+	 */
+	public function test_migrate_test_drive_account_to_live_no_account() {
+		// Arrange.
+		$context = [
+			'from'   => 'test_from',
+			'source' => 'test_source',
+		];
+		$self_assessment_data = [];
+
+		// Mock account service methods
+		$mock_account = $this->createMock( WC_Payments_Account::class );
+		$mock_account->expects( $this->once() )
+			->method( 'is_stripe_connected' )
+			->willReturn( false );
+
+		WC_Payments::set_account_service( $mock_account );
+
+		// Assert.
+		$this->expectException( API_Exception::class );
+		$this->expectExceptionMessage( 'Failed to migrate the account: account does not exist.' );
+
+		// Act.
+		$this->onboarding_service->migrate_test_drive_account_to_live( $context, $self_assessment_data );
+	}
+
+	/**
+	 * Test migration failure during the process.
+	 */
+	public function test_migrate_test_drive_account_to_live_failure() {
+		// Arrange.
+		$context = [
+			'from'   => 'test_from',
+			'source' => 'test_source',
+		];
+		$self_assessment_data = [];
+
+		// Mock account service methods
+		$mock_account = $this->createMock( WC_Payments_Account::class );
+		WC_Payments::set_account_service( $mock_account );
+
+		$mock_account->expects( $this->once() )
+			->method( 'is_stripe_connected' )
+			->willReturn( true );
+
+		$mock_account->expects( $this->once() )
+			->method( 'get_cached_account_data' )
+			->willReturn([
+				'capabilities' => [
+					'card_payments' => 'active',
+				],
+			]);
+
+		$mock_account->expects( $this->once() )
+			->method( 'overwrite_cache_with_no_account' )
+			->willThrowException( new Exception( 'Test error' ) );
+
+		// Assert.
+		$this->expectException( API_Exception::class );
+		$this->expectExceptionMessage( 'Failed to migrate the account.' );
+
+		// Act.
+		$this->onboarding_service->migrate_test_drive_account_to_live( $context, $self_assessment_data );
+
+		// Verify migration flag is cleared even on failure
+		$this->assertFalse( $this->onboarding_service->is_onboarding_migrate_to_live_in_progress() );
+	}
+
+	/**
+	 * Test that capabilities are correctly mapped from account data.
+	 */
+	public function test_migrate_test_drive_account_to_live_capabilities_mapping() {
+		// Arrange.
+		$context = [
+			'from'   => 'test_from',
+			'source' => 'test_source',
+		];
+		$self_assessment_data = [];
+
+		// Mock account service methods
+		$mock_account = $this->createMock( WC_Payments_Account::class );
+		WC_Payments::set_account_service( $mock_account );
+
+		$mock_account->expects( $this->once() )
+			->method( 'is_stripe_connected' )
+			->willReturn( true );
+
+		$mock_account->expects( $this->once() )
+			->method( 'get_cached_account_data' )
+			->willReturn([
+				'capabilities' => [
+					'card_payments' => 'active',
+					'transfers' => 'inactive',
+					'sepa_debit_payments' => 'pending',
+					'sofort_payments' => 'active',
+				],
+			]);
+
+		$mock_account->expects( $this->once() )
+			->method( 'overwrite_cache_with_no_account' );
+
+		// Mock expected account session response with mapped capabilities
+		$expected_account_session = [
+			'client_secret' => 'test_secret',
+			'expires_at' => time() + 3600,
+			'account_id' => 'acct_test123',
+			'is_live' => true,
+		];
+
+		// Mock create_embedded_kyc_session and verify capabilities are correctly mapped
+		$this->mock_api_client
+			->method( 'initialize_onboarding_embedded_kyc' )
+			->willReturnCallback(function($data, $progressive, $capabilities) use ($expected_account_session) {
+				// Verify capabilities are correctly mapped from status to boolean
+				$this->assertEquals(true, $capabilities['card_payments']);
+				$this->assertEquals(false, $capabilities['transfers']);
+				$this->assertEquals(false, $capabilities['sepa_debit_payments']);
+				$this->assertEquals(true, $capabilities['sofort_payments']);
+				return $expected_account_session;
+			});
+
+		// Act.
+		$result = $this->onboarding_service->migrate_test_drive_account_to_live( $context, $self_assessment_data );
+
+		// Assert basic response
+		$this->assertEquals( $expected_account_session['client_secret'], $result['clientSecret'] );
 	}
 }
