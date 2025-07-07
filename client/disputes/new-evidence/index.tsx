@@ -440,7 +440,7 @@ export default ( { query }: { query: { id: string } } ) => {
 		);
 	};
 
-	const doSave = async ( submit: boolean ) => {
+	const doSave = async ( submit: boolean, notify = true ) => {
 		// Prevent submit if upload is in progress
 		if ( isUploadingEvidence() ) {
 			createInfoNotice(
@@ -502,7 +502,9 @@ export default ( { query }: { query: { id: string } } ) => {
 			} );
 
 			setDispute( updatedDispute );
-			handleSaveSuccess( submit );
+			if ( notify ) {
+				handleSaveSuccess( submit );
+			}
 			updateDisputeInStore( updatedDispute as any );
 
 			if ( submit ) {
@@ -523,7 +525,7 @@ export default ( { query }: { query: { id: string } } ) => {
 	const handleStepChange = async ( newStep: number ) => {
 		// Only save if not in readOnly mode
 		if ( ! readOnly ) {
-			await doSave( false );
+			await doSave( false, false );
 		}
 		// Update step
 		setCurrentStep( newStep );
