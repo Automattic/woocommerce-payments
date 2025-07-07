@@ -204,7 +204,7 @@
 	&__heading {
 		@include heading-md;
 		color: var( --Scales-Grays-gray-900, $gray-900 );
-		margin-bottom: 16px;
+		margin-bottom: 8px;
 	}
 
 	&__field-group {
