@@ -7,7 +7,7 @@ import interpolateComponents from '@automattic/interpolate-components';
 import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 import { Notice } from 'wcpay/components/wp-components-wrapped/components/notice';
 import { Modal } from 'wcpay/components/wp-components-wrapped/components/modal';
-import { Link } from '@woocommerce/components';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
 import { addQueryArgs } from '@wordpress/url';
 
 /**
@@ -21,13 +21,7 @@ import {
 import './style.scss';
 
 const TosLink = ( props ) => (
-	<Link
-		{ ...props }
-		href="https://wordpress.com/tos"
-		target="_blank"
-		rel="noopener noreferrer"
-		type="external"
-	/>
+	<ExternalLink { ...props } href="https://wordpress.com/tos" />
 );
 
 const TosModalUI = ( { onAccept, onDecline, isBusy, hasError } ) => {

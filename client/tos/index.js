@@ -9,6 +9,7 @@ import ReactDOM from 'react-dom';
 import TosModal from './modal';
 import showTosNotice from './disabled-notice';
 import { maybeTrackStripeConnected } from './request.js';
+import { WordPressComponentsContext } from 'wcpay/wordpress-components-context/context';
 
 if ( wcpay_tos_settings.tosAgreementRequired ) {
 	renderTosModal();
@@ -34,5 +35,10 @@ function renderTosModal() {
 	const container = document.createElement( 'div' );
 	container.id = 'wcpay-tos-container';
 	document.body.appendChild( container );
-	ReactDOM.render( <TosModal />, container );
+	ReactDOM.render(
+		<WordPressComponentsContext.Provider value={ wp.components }>
+			<TosModal />
+		</WordPressComponentsContext.Provider>,
+		container
+	);
 }
