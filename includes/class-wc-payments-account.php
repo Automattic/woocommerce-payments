@@ -2327,6 +2327,12 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			return [];
 		}
 
+		// Check if there's an ongoing migration to live payments.
+		if ( $this->onboarding_service->is_onboarding_migrate_to_live_in_progress() ) {
+			// Return empty array to indicate no account is connected yet.
+			return [];
+		}
+
 		$refreshed = false;
 
 		$account = $this->database_cache->get_or_add(
