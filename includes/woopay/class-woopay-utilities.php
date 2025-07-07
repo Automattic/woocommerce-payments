@@ -52,6 +52,15 @@ class WooPay_Utilities {
 			return false;
 		}
 
+		return $this->should_enable_woopay_on_guest_checkout();
+	}
+
+	/**
+	 * Check conditions to determine if WooPay should be enabled for guest checkout.
+	 *
+	 * @return bool  True if WooPay should be enabled, false otherwise.
+	 */
+	public function should_enable_woopay_on_guest_checkout(): bool {
 		if ( ! is_user_logged_in() ) {
 			// If there's a subscription product in the cart and the customer isn't logged in we
 			// should not enable WooPay since that situation is currently not supported.

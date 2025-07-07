@@ -191,6 +191,62 @@ class WooPay_Utilities_Test extends WCPAY_UnitTestCase {
 		unset( $_POST['save_user_in_woopay'] );
 	}
 
+	/**
+	 * WooPay should be enabled for guest checkout when user is logged in.
+	 *
+	 * @return void
+	 */
+	public function test_should_enable_woopay_on_guest_checkout_logged_in() {
+		wp_set_current_user( 1 );
+
+		$woopay_utilities = new WooPay_Utilities();
+
+		$this->assertTrue( $woopay_utilities->should_enable_woopay_on_guest_checkout() );
+	}
+
+	/**
+	 * WooPay should be enabled for guest checkout when user is not logged in and guest checkout is enabled.
+	 *
+	 * @return void
+	 */
+	public function test_should_enable_woopay_on_guest_checkout_logged_out_guest_enabled() {
+		wp_set_current_user( 0 );
+		update_option( 'woocommerce_enable_guest_checkout', 'yes' );
+
+		$woopay_utilities = new WooPay_Utilities();
+
+		$this->assertTrue( $woopay_utilities->should_enable_woopay_on_guest_checkout() );
+	}
+
+	/**
+	 * WooPay should be disabled for guest checkout when user is not logged in and guest checkout is disabled.
+	 *
+	 * @return void
+	 */
+	public function test_should_enable_woopay_on_guest_checkout_logged_out_guest_disabled() {
+		wp_set_current_user( 0 );
+		update_option( 'woocommerce_enable_guest_checkout', 'no' );
+
+		$woopay_utilities = new WooPay_Utilities();
+
+		$this->assertFalse( $woopay_utilities->should_enable_woopay_on_guest_checkout() );
+	}
+
+	/**
+	 * WooPay should be disabled for guest checkout when user is not logged in and cart contains subscription.
+	 *
+	 * @return void
+	 */
+	public function test_should_enable_woopay_on_guest_checkout_logged_out_has_subscription() {
+		wp_set_current_user( 0 );
+		update_option( 'woocommerce_enable_guest_checkout', 'yes' );
+		WC_Subscriptions_Cart::set_cart_contains_subscription( true );
+
+		$woopay_utilities = new WooPay_Utilities();
+
+		$this->assertFalse( $woopay_utilities->should_enable_woopay_on_guest_checkout() );
+	}
+
 	private function clean_up_should_enable_woopay_tests() {
 		remove_filter( 'woocommerce_is_checkout', '__return_true' );
 		wp_set_current_user( 0 );
