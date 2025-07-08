@@ -927,7 +927,7 @@ export default ( { query }: { query: { id: string } } ) => {
 					<RecommendedDocuments
 						fields={ recommendedDocumentsFields }
 						readOnly={ readOnly }
-						showHelperLink={ true }
+						hasHelperLink={ true }
 					/>
 					{ inlineNotice( bankName ) }
 				</>

@@ -16,7 +16,7 @@ const RecommendedDocuments: React.FC< RecommendedDocumentsProps > = ( {
 	readOnly = false,
 	customHeading,
 	customSubheading,
-	showHelperLink = false,
+	hasHelperLink = false,
 } ) => {
 	return (
 		<section className="wcpay-dispute-evidence-recommended-documents">
@@ -31,7 +31,7 @@ const RecommendedDocuments: React.FC< RecommendedDocumentsProps > = ( {
 						'woocommerce-payments'
 					) }
 			</div>
-			{ showHelperLink && (
+			{ hasHelperLink && (
 				<div className="wcpay-dispute-evidence-recommended-documents__helper-link">
 					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#challenge-or-accept">
 						{ __(

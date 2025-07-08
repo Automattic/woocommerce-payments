@@ -95,11 +95,11 @@ describe( 'RecommendedDocuments', () => {
 			).not.toBeInTheDocument();
 		} );
 
-		it( 'shows helper link when showHelperLink is true', () => {
+		it( 'shows helper link when hasHelperLink is true', () => {
 			render(
 				<RecommendedDocuments
 					fields={ fields }
-					showHelperLink={ true }
+					hasHelperLink={ true }
 				/>
 			);
 			const helperLink = screen.getByRole( 'link', {
@@ -108,11 +108,11 @@ describe( 'RecommendedDocuments', () => {
 			expect( helperLink ).toBeInTheDocument();
 		} );
 
-		it( 'hides helper link when showHelperLink is false', () => {
+		it( 'hides helper link when hasHelperLink is false', () => {
 			render(
 				<RecommendedDocuments
 					fields={ fields }
-					showHelperLink={ false }
+					hasHelperLink={ false }
 				/>
 			);
 			expect(
@@ -126,7 +126,7 @@ describe( 'RecommendedDocuments', () => {
 			render(
 				<RecommendedDocuments
 					fields={ fields }
-					showHelperLink={ true }
+					hasHelperLink={ true }
 				/>
 			);
 			const helperLink = screen.getByRole( 'link', {
@@ -142,7 +142,7 @@ describe( 'RecommendedDocuments', () => {
 			render(
 				<RecommendedDocuments
 					fields={ fields }
-					showHelperLink={ true }
+					hasHelperLink={ true }
 				/>
 			);
 			expect(
@@ -154,7 +154,7 @@ describe( 'RecommendedDocuments', () => {
 			render(
 				<RecommendedDocuments
 					fields={ fields }
-					showHelperLink={ true }
+					hasHelperLink={ true }
 				/>
 			);
 			const helperLink = screen.getByRole( 'link', {
