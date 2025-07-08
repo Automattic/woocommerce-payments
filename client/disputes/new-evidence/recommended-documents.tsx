@@ -9,12 +9,14 @@ import { __ } from '@wordpress/i18n';
  */
 import FileUploadControl from './file-upload-control';
 import { DocumentField, RecommendedDocumentsProps } from './types';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
 
 const RecommendedDocuments: React.FC< RecommendedDocumentsProps > = ( {
 	fields,
 	readOnly = false,
 	customHeading,
 	customSubheading,
+	hasHelperLink = false,
 } ) => {
 	return (
 		<section className="wcpay-dispute-evidence-recommended-documents">
@@ -29,6 +31,16 @@ const RecommendedDocuments: React.FC< RecommendedDocumentsProps > = ( {
 						'woocommerce-payments'
 					) }
 			</div>
+			{ hasHelperLink && (
+				<div className="wcpay-dispute-evidence-recommended-documents__helper-link">
+					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#challenge-or-accept">
+						{ __(
+							'Learn more about documents',
+							'woocommerce-payments'
+						) }
+					</ExternalLink>
+				</div>
+			) }
 			<ul className="wcpay-dispute-evidence-recommended-documents__list">
 				{ fields.map( ( field: DocumentField ) => (
 					<li
