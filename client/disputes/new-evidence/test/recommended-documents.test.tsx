@@ -31,20 +31,6 @@ jest.mock( 'wcpay/components/wp-components-wrapped', () => {
 	};
 } );
 
-// Mock the specific ExternalLink component
-jest.mock(
-	'wcpay/components/wp-components-wrapped/components/external-link',
-	() => {
-		return {
-			ExternalLink: ( { href, children }: any ) => (
-				<a href={ href } data-testid="external-link">
-					{ children }
-				</a>
-			),
-		};
-	}
-);
-
 describe( 'RecommendedDocuments', () => {
 	const fields = [
 		{
@@ -103,10 +89,9 @@ describe( 'RecommendedDocuments', () => {
 		it( 'does not show helper link by default', () => {
 			render( <RecommendedDocuments fields={ fields } /> );
 			expect(
-				screen.queryByTestId( 'external-link' )
-			).not.toBeInTheDocument();
-			expect(
-				screen.queryByText( 'Learn more about documents' )
+				screen.queryByRole( 'link', {
+					name: /Learn more about documents/i,
+				} )
 			).not.toBeInTheDocument();
 		} );
 
@@ -117,11 +102,10 @@ describe( 'RecommendedDocuments', () => {
 					showHelperLink={ true }
 				/>
 			);
-			const helperLink = screen.getByTestId( 'external-link' );
+			const helperLink = screen.getByRole( 'link', {
+				name: /Learn more about documents/i,
+			} );
 			expect( helperLink ).toBeInTheDocument();
-			expect( helperLink ).toHaveTextContent(
-				'Learn more about documents'
-			);
 		} );
 
 		it( 'hides helper link when showHelperLink is false', () => {
@@ -132,10 +116,9 @@ describe( 'RecommendedDocuments', () => {
 				/>
 			);
 			expect(
-				screen.queryByTestId( 'external-link' )
-			).not.toBeInTheDocument();
-			expect(
-				screen.queryByText( 'Learn more about documents' )
+				screen.queryByRole( 'link', {
+					name: /Learn more about documents/i,
+				} )
 			).not.toBeInTheDocument();
 		} );
 
@@ -146,7 +129,9 @@ describe( 'RecommendedDocuments', () => {
 					showHelperLink={ true }
 				/>
 			);
-			const helperLink = screen.getByTestId( 'external-link' );
+			const helperLink = screen.getByRole( 'link', {
+				name: /Learn more about documents/i,
+			} );
 			expect( helperLink ).toHaveAttribute(
 				'href',
 				'https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#challenge-or-accept'
@@ -172,11 +157,12 @@ describe( 'RecommendedDocuments', () => {
 					showHelperLink={ true }
 				/>
 			);
-			const helperLinkContainer = screen
-				.getByTestId( 'external-link' )
-				.closest(
-					'.wcpay-dispute-evidence-recommended-documents__helper-link'
-				);
+			const helperLink = screen.getByRole( 'link', {
+				name: /Learn more about documents/i,
+			} );
+			const helperLinkContainer = helperLink.closest(
+				'.wcpay-dispute-evidence-recommended-documents__helper-link'
+			);
 			expect( helperLinkContainer ).toBeInTheDocument();
 		} );
 	} );
