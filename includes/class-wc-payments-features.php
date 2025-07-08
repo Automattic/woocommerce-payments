@@ -204,9 +204,8 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_documents_section_enabled() {
-		$account              = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
-		$is_documents_enabled = is_array( $account ) && ( $account['is_documents_enabled'] ?? false );
-		return '1' === get_option( '_wcpay_feature_documents', $is_documents_enabled ? '1' : '0' );
+		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
+		return is_array( $account ) && ( $account['is_documents_enabled'] ?? false );
 	}
 
 	/**
