@@ -672,7 +672,7 @@ class WC_Payments_Admin {
 			'all'
 		);
 
-		WC_Payments::register_script_with_dependencies( 'WCPAY_PLUGINS_PAGE', 'dist/plugins-page', [ 'wp-api-request' ] );
+		WC_Payments::register_script_with_dependencies( 'WCPAY_PLUGINS_PAGE', 'dist/plugins-page', [ 'wp-api-request', 'wp-components' ] );
 		wp_set_script_translations( 'WCPAY_PLUGINS_PAGE', 'woocommerce-payments' );
 
 		WC_Payments_Utils::register_style(

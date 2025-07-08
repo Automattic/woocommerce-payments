@@ -414,21 +414,6 @@ export default ( { query }: { query: { id: string } } ) => {
 			id: submit
 				? 'evidence-submitted'
 				: `evidence-saved-${ dispute.id }`,
-			actions: submit
-				? [
-						{
-							label: __(
-								'View submitted evidence',
-								'woocommerce-payments'
-							),
-							url: getAdminUrl( {
-								page: 'wc-admin',
-								path: '/payments/disputes/challenge',
-								id: query.id,
-							} ),
-						},
-				  ]
-				: [],
 		} );
 
 		// Only redirect after submission, not after save
@@ -455,7 +440,7 @@ export default ( { query }: { query: { id: string } } ) => {
 		);
 	};
 
-	const doSave = async ( submit: boolean ) => {
+	const doSave = async ( submit: boolean, notify = true ) => {
 		// Prevent submit if upload is in progress
 		if ( isUploadingEvidence() ) {
 			createInfoNotice(
@@ -517,7 +502,9 @@ export default ( { query }: { query: { id: string } } ) => {
 			} );
 
 			setDispute( updatedDispute );
-			handleSaveSuccess( submit );
+			if ( notify ) {
+				handleSaveSuccess( submit );
+			}
 			updateDisputeInStore( updatedDispute as any );
 
 			if ( submit ) {
@@ -538,7 +525,7 @@ export default ( { query }: { query: { id: string } } ) => {
 	const handleStepChange = async ( newStep: number ) => {
 		// Only save if not in readOnly mode
 		if ( ! readOnly ) {
-			await doSave( false );
+			await doSave( false, false );
 		}
 		// Update step
 		setCurrentStep( newStep );
@@ -731,12 +718,12 @@ export default ( { query }: { query: { id: string } } ) => {
 
 			const href = getAdminUrl( {
 				page: 'wc-admin',
-				path: '/payments/disputes',
-				filter: 'awaiting_response',
+				path: '/payments/disputes/details',
+				id: dispute?.id,
 			} );
 			window.location.replace( href );
 		}
-	}, [ redirectAfterSave, navigationCleanup ] );
+	}, [ redirectAfterSave, navigationCleanup, dispute?.id ] );
 
 	// --- Accordion summary content ---
 	const summaryItems = useMemo( () => {
