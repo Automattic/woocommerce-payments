@@ -4974,7 +4974,7 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata with
                   class="woocommerce-list__item-content"
                 >
                   <span>
-                    Tap to Pay on iPhone
+                    Tap to Pay on Android
                   </span>
                 </span>
               </div>
