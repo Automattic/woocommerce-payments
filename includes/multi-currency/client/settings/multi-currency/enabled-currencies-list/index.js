@@ -4,7 +4,9 @@
  */
 import React from 'react';
 import { sprintf, __ } from '@wordpress/i18n';
-import { Card, CardBody, CardDivider } from '@wordpress/components';
+import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
+import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
+import { CardDivider } from 'wcpay/components/wp-components-wrapped/components/card-divider';
 import { createInterpolateElement } from '@wordpress/element';
 
 /**

@@ -84,7 +84,7 @@ const formatQueryFilters = ( query ) => ( {
 	],
 	status_is: query.statusIs,
 	status_is_not: query.statusIsNot,
-	locale: query.userLocale,
+	locale: query.locale,
 } );
 
 export const payoutsDownloadEndpoint = `${ NAMESPACE }/deposits/download`;

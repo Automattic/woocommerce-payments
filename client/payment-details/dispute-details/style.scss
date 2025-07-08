@@ -38,25 +38,13 @@
 		}
 
 		.dispute-summary-row {
+			font-size: 13px;
+			font-weight: 400;
+
 			margin-top: 40px;
 
 			@media screen and ( max-width: $break-small ) {
 				margin-top: 24px;
-			}
-
-			&__response-date {
-				display: flex;
-				align-items: center;
-				gap: var( --grid-unit-05, 4px );
-				flex-wrap: wrap;
-				&--warning {
-					color: $alert-red;
-					font-weight: 700;
-				}
-				&--urgent {
-					font-weight: 700;
-					color: $alert-red;
-				}
 			}
 		}
 
@@ -121,7 +109,7 @@
 		display: flex;
 		align-items: center;
 		padding: 16px 0 16px;
-		border-bottom: 1px solid var( --Scales-Grays-gray-200, #e0e0e0 );
+		border-bottom: 1px solid $gray-100;
 
 		&:first-child {
 			padding: 12px 0 16px;
@@ -157,6 +145,7 @@
 				width: 24px;
 				height: 24px;
 				color: var( --Scales-Grays-gray-700, #757575 );
+				fill: currentColor;
 			}
 		}
 
@@ -219,6 +208,16 @@
 		}
 	}
 
+	&__steps {
+		&__response-date {
+			&--urgent {
+				color: var( --Gutenberg-Alert-Red, #cc1818 );
+				font-weight: 600;
+				font-size: 13px;
+			}
+		}
+	}
+
 	&__notice {
 		.dispute-steps__notice-content {
 			.components-notice__content {
@@ -257,6 +256,7 @@
 }
 
 .transaction-details-dispute-footer {
+	color: $gray-700;
 	background-color: #f2f4f5;
 
 	&__actions {

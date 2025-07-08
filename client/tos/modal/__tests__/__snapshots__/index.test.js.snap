@@ -1,0 +1,185 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ToS modal should render ToS modal 1`] = `
+.emotion-2 {
+  width: 1em;
+  height: 1em;
+  margin: 0;
+  vertical-align: middle;
+  fill: currentColor;
+}
+
+<div
+  aria-labelledby="components-modal-header-0"
+  class="components-modal__frame woocommerce-payments__tos-modal"
+  role="dialog"
+  tabindex="-1"
+>
+  <div
+    class="components-modal__content"
+    role="document"
+  >
+    <div
+      class="components-modal__header"
+    >
+      <div
+        class="components-modal__header-heading-container"
+      >
+        <h1
+          class="components-modal__header-heading"
+          id="components-modal-header-0"
+        >
+          WooPayments: Terms of Service
+        </h1>
+      </div>
+    </div>
+    <div
+      class="woocommerce-payments__tos-wrapper"
+    >
+      <div
+        class="woocommerce-payments__tos-modal-message"
+      >
+        To continue using WooPayments, please review and agree to our 
+        <a
+          class="components-external-link"
+          href="https://wordpress.com/tos"
+          rel="external noreferrer noopener"
+          target="_blank"
+        >
+          Terms of Service
+          <span
+            class="components-visually-hidden emotion-0 emotion-1"
+            data-wp-c16t="true"
+            data-wp-component="VisuallyHidden"
+            style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+          >
+            (opens in a new tab)
+          </span>
+          <svg
+            aria-hidden="true"
+            class="components-external-link__icon emotion-2 emotion-3"
+            focusable="false"
+            height="24"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
+            />
+          </svg>
+        </a>
+        . By clicking “Accept” you agree to the Terms of Service.
+      </div>
+      <div
+        class="woocommerce-payments__tos-footer"
+      >
+        <button
+          class="components-button is-secondary"
+          type="button"
+        >
+          Decline
+        </button>
+        <button
+          class="components-button is-primary"
+          type="button"
+        >
+          Accept
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
+exports[`ToS modal should render disable plugin modal on decline 1`] = `
+.emotion-2 {
+  width: 1em;
+  height: 1em;
+  margin: 0;
+  vertical-align: middle;
+  fill: currentColor;
+}
+
+<div
+  aria-labelledby="components-modal-header-3"
+  class="components-modal__frame woocommerce-payments__tos-modal"
+  role="dialog"
+  tabindex="-1"
+>
+  <div
+    class="components-modal__content"
+    role="document"
+  >
+    <div
+      class="components-modal__header"
+    >
+      <div
+        class="components-modal__header-heading-container"
+      >
+        <h1
+          class="components-modal__header-heading"
+          id="components-modal-header-3"
+        >
+          Disable WooPayments
+        </h1>
+      </div>
+    </div>
+    <div
+      class="woocommerce-payments__tos-wrapper"
+    >
+      <div
+        class="woocommerce-payments__tos-modal-message"
+      >
+        By declining our 
+        <a
+          class="components-external-link"
+          href="https://wordpress.com/tos"
+          rel="external noreferrer noopener"
+          target="_blank"
+        >
+          Terms of Service
+          <span
+            class="components-visually-hidden emotion-0 emotion-1"
+            data-wp-c16t="true"
+            data-wp-component="VisuallyHidden"
+            style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+          >
+            (opens in a new tab)
+          </span>
+          <svg
+            aria-hidden="true"
+            class="components-external-link__icon emotion-2 emotion-3"
+            focusable="false"
+            height="24"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
+            />
+          </svg>
+        </a>
+        , you’ll no longer be able to capture credit card payments using WooPayments. Your previous transaction and payout data will still be available.
+      </div>
+      <div
+        class="woocommerce-payments__tos-footer"
+      >
+        <button
+          class="components-button is-tertiary"
+          type="button"
+        >
+          Back
+        </button>
+        <button
+          class="components-button is-primary"
+          type="button"
+        >
+          Disable
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+`;

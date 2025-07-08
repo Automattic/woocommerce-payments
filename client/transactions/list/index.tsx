@@ -596,8 +596,8 @@ export const TransactionsList = (
 			exported_row_count: transactionsSummary.count,
 		} );
 
+		const locale = wcSettings.locale.userLocale;
 		const userEmail = wcpaySettings.currentUserEmail;
-		const userLocale = wcpaySettings.userLocale.code;
 		const depositId = props.depositId;
 
 		const {
@@ -624,7 +624,7 @@ export const TransactionsList = (
 
 		const exportRequestURL = getTransactionsCSVRequestURL( {
 			userEmail,
-			userLocale,
+			locale,
 			dateAfter,
 			dateBefore,
 			dateBetween,

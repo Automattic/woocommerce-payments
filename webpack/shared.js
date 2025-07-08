@@ -21,8 +21,7 @@ module.exports = {
 			checkout: './client/checkout/classic/event-handlers.js',
 			'express-checkout': './client/express-checkout/index.js',
 			'subscription-edit-page': './client/subscription-edit-page.js',
-			tos: './client/tos/index.js',
-			'payment-gateways': './client/payment-gateways/index.js',
+			tos: './client/tos/index.tsx',
 			'multi-currency': './includes/multi-currency/client/index.js',
 			'multi-currency-switcher-block':
 				'./includes/multi-currency/client/blocks/currency-switcher.js',

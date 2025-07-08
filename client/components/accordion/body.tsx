@@ -3,9 +3,6 @@
  */
 import clsx from 'clsx';
 import React, { useEffect, useRef, useState, forwardRef } from 'react';
-/**
- * WordPress dependencies
- */
 import { useMergeRefs } from '@wordpress/compose';
 
 /**

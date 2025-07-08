@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+update: multi-currency widget to use WP components bundled within the WP installation

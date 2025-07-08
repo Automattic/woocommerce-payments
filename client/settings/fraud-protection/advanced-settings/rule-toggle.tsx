@@ -3,7 +3,10 @@
  */
 import React, { useContext } from 'react';
 import { __ } from '@wordpress/i18n';
-import { ToggleControl, RadioControl } from '@wordpress/components';
+import {
+	ToggleControl,
+	RadioControl,
+} from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies

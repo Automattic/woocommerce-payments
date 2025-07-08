@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+update: ensure `wp-components-wrapped` has individually exported components

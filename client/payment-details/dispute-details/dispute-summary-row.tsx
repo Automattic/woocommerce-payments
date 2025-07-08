@@ -40,7 +40,7 @@ const DisputeSummaryRow: React.FC< Props > = ( { dispute } ) => {
 			content: dispute.created
 				? formatDateTimeFromTimestamp( dispute.created, {
 						separator: ', ',
-						includeTime: true,
+						includeTime: false,
 				  } )
 				: '–',
 		},

@@ -307,6 +307,102 @@ describe( 'Cover Letter Generator', () => {
 			);
 		} );
 
+		it( 'should generate body for credit not processed dispute with refund issued', () => {
+			const attachmentsList = '• Test Attachment';
+			const creditNotProcessedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'credit_not_processed' as DisputeReason,
+			};
+			const coverLetterDataWithRefundStatus = {
+				...mockCoverLetterData,
+				refundStatus: 'refund_has_been_issued',
+			};
+			const result = generateBody(
+				coverLetterDataWithRefundStatus,
+				creditNotProcessedDispute,
+				attachmentsList
+			);
+			expect( result ).toContain( 'dp_123' );
+			expect( result ).toContain( 'ch_123' );
+			expect( result ).toContain( 'John Doe' );
+			expect( result ).toContain( 'was refunded on' );
+			expect( result ).toContain( '10.00 USD' );
+			expect( result ).toContain(
+				"The refund was processed through our payment provider and should be visible on the customer's statement within 7 - 10 business days."
+			);
+		} );
+
+		it( 'should generate body for credit not processed dispute with refund not owed', () => {
+			const attachmentsList = '• Test Attachment';
+			const creditNotProcessedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'credit_not_processed' as DisputeReason,
+			};
+			const coverLetterDataWithRefundStatus = {
+				...mockCoverLetterData,
+				refundStatus: 'refund_was_not_owed',
+			};
+			const result = generateBody(
+				coverLetterDataWithRefundStatus,
+				creditNotProcessedDispute,
+				attachmentsList
+			);
+			expect( result ).toContain( 'dp_123' );
+			expect( result ).toContain( 'ch_123' );
+			expect( result ).toContain(
+				'The customer requested a refund outside of the eligible window outlined in our refund policy, which was clearly presented on the website and on the order confirmation.'
+			);
+		} );
+
+		it( 'should generate body for credit not processed dispute with missing refund status', () => {
+			const attachmentsList = '• Test Attachment';
+			const creditNotProcessedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'credit_not_processed' as DisputeReason,
+			};
+			const coverLetterDataWithoutRefundStatus = {
+				...mockCoverLetterData,
+				refundStatus: undefined,
+			};
+			const result = generateBody(
+				coverLetterDataWithoutRefundStatus,
+				creditNotProcessedDispute,
+				attachmentsList
+			);
+			expect( result ).toContain( 'dp_123' );
+			expect( result ).toContain( 'ch_123' );
+			expect( result ).toContain(
+				'The customer requested a refund outside of the eligible window outlined in our refund policy, which was clearly presented on the website and on the order confirmation.'
+			);
+		} );
+
+		it( 'should generate complete cover letter for general dispute', () => {
+			const generalDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'general' as DisputeReason,
+			};
+			const result = generateCoverLetter(
+				generalDispute,
+				mockAccountDetails,
+				mockSettings,
+				'Test Bank'
+			);
+			expect( result ).toContain( 'Test Store' );
+			expect( result ).toContain(
+				'123 Main St, Suite 100, Test City, TS 12345 US'
+			);
+			expect( result ).toContain( 'test@example.com' );
+			expect( result ).toContain( 'Test Bank' );
+			expect( result ).toContain( 'dp_123' );
+			expect( result ).toContain( 'ch_123' );
+			expect( result ).toContain( 'John Doe' );
+			expect( result ).toContain( 'Test Product' );
+			expect( result ).toContain( 'ordered Test Product on' );
+			expect( result ).toContain( 'and received it on' );
+			expect( result ).toContain( 'Dear Dispute Resolution Team,' );
+			expect( result ).toContain( 'Thank you,' );
+		} );
+
 		it( 'should generate body for non-product-not-received dispute', () => {
 			const disputeWithDifferentReason = {
 				...mockDispute,
@@ -334,6 +430,102 @@ describe( 'Cover Letter Generator', () => {
 				attachmentsList
 			);
 			expect( result ).toContain( '<Customer Name>' );
+		} );
+
+		it( 'should generate body for subscription canceled dispute', () => {
+			const attachmentsList = '• Test Attachment';
+			const subscriptionCanceledDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'subscription_canceled' as DisputeReason,
+			};
+			const result = generateBody(
+				mockCoverLetterData,
+				subscriptionCanceledDispute,
+				attachmentsList
+			);
+			expect( result ).toContain( 'dp_123' );
+			expect( result ).toContain( 'ch_123' );
+			expect( result ).toContain( 'John Doe' );
+			expect( result ).toContain( 'Test Product' );
+			expect( result ).toContain( 'subscribed to' );
+			expect( result ).toContain(
+				"and was billed according to the terms accepted at the time of signup. The customer's account remained active and no cancellation was recorded prior to the billing date."
+			);
+		} );
+
+		it( 'should generate body for duplicate dispute with is_duplicate status', () => {
+			const attachmentsList = '• Test Attachment';
+			const duplicateDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'duplicate' as DisputeReason,
+			};
+			const coverLetterDataWithDuplicateStatus = {
+				...mockCoverLetterData,
+				duplicateStatus: 'is_duplicate',
+			};
+			const result = generateBody(
+				coverLetterDataWithDuplicateStatus,
+				duplicateDispute,
+				attachmentsList
+			);
+			expect( result ).toContain( 'dp_123' );
+			expect( result ).toContain( 'ch_123' );
+			expect( result ).toContain(
+				'was a duplicate of a previous transaction'
+			);
+			expect( result ).toContain(
+				'A refund has already been issued to the customer on'
+			);
+			expect( result ).toContain( '10.00 USD' );
+			expect( result ).toContain(
+				"This refund should be visible on the customer's statement within 7 - 10 business days."
+			);
+		} );
+
+		it( 'should generate body for duplicate dispute with is_not_duplicate status', () => {
+			const attachmentsList = '• Test Attachment';
+			const duplicateDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'duplicate' as DisputeReason,
+			};
+			const coverLetterDataWithDuplicateStatus = {
+				...mockCoverLetterData,
+				duplicateStatus: 'is_not_duplicate',
+			};
+			const result = generateBody(
+				coverLetterDataWithDuplicateStatus,
+				duplicateDispute,
+				attachmentsList
+			);
+			expect( result ).toContain( 'dp_123' );
+			expect( result ).toContain( 'ch_123' );
+			expect( result ).toContain( 'placed two distinct orders' );
+			expect( result ).toContain(
+				'Both transactions were legitimate, fulfilled independently, and are not duplicates'
+			);
+		} );
+
+		it( 'should generate body for duplicate dispute with missing duplicate status', () => {
+			const attachmentsList = '• Test Attachment';
+			const duplicateDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'duplicate' as DisputeReason,
+			};
+			const coverLetterDataWithoutDuplicateStatus = {
+				...mockCoverLetterData,
+				duplicateStatus: undefined,
+			};
+			const result = generateBody(
+				coverLetterDataWithoutDuplicateStatus,
+				duplicateDispute,
+				attachmentsList
+			);
+			expect( result ).toContain( 'dp_123' );
+			expect( result ).toContain( 'ch_123' );
+			expect( result ).toContain( 'placed two distinct orders' );
+			expect( result ).toContain(
+				'Both transactions were legitimate, fulfilled independently, and are not duplicates'
+			);
 		} );
 	} );
 
@@ -424,6 +616,161 @@ describe( 'Cover Letter Generator', () => {
 				'Test Bank'
 			);
 			expect( result ).toContain( '<Transaction Date>' );
+		} );
+
+		it( 'should generate cover letter for credit not processed dispute with refund issued', () => {
+			const creditNotProcessedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'credit_not_processed' as DisputeReason,
+			};
+			const result = generateCoverLetter(
+				creditNotProcessedDispute,
+				mockAccountDetails,
+				mockSettings,
+				'Test Bank',
+				'refund_has_been_issued'
+			);
+			expect( result ).toContain( 'Test Store' );
+			expect( result ).toContain( 'Test Bank' );
+			expect( result ).toContain( 'dp_123' );
+			expect( result ).toContain( 'ch_123' );
+			expect( result ).toContain( 'John Doe' );
+			expect( result ).toContain( 'was refunded on' );
+			expect( result ).toContain( '10.00 USD' );
+		} );
+
+		it( 'should generate cover letter for credit not processed dispute with refund not owed', () => {
+			const creditNotProcessedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'credit_not_processed' as DisputeReason,
+			};
+			const result = generateCoverLetter(
+				creditNotProcessedDispute,
+				mockAccountDetails,
+				mockSettings,
+				'Test Bank',
+				'refund_was_not_owed'
+			);
+			expect( result ).toContain( 'Test Store' );
+			expect( result ).toContain( 'Test Bank' );
+			expect( result ).toContain( 'dp_123' );
+			expect( result ).toContain( 'ch_123' );
+			expect( result ).toContain(
+				'The customer requested a refund outside of the eligible window outlined in our refund policy, which was clearly presented on the website and on the order confirmation.'
+			);
+		} );
+
+		it( 'should handle credit not processed dispute with missing refund status', () => {
+			const creditNotProcessedDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'credit_not_processed' as DisputeReason,
+			};
+			const result = generateCoverLetter(
+				creditNotProcessedDispute,
+				mockAccountDetails,
+				mockSettings,
+				'Test Bank'
+			);
+			expect( result ).toContain( 'Test Store' );
+			expect( result ).toContain( 'Test Bank' );
+			expect( result ).toContain( 'dp_123' );
+			expect( result ).toContain( 'ch_123' );
+			expect( result ).toContain(
+				'The customer requested a refund outside of the eligible window outlined in our refund policy, which was clearly presented on the website and on the order confirmation.'
+			);
+		} );
+
+		it( 'should generate cover letter for subscription canceled dispute', () => {
+			const subscriptionCanceledDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'subscription_canceled' as DisputeReason,
+			};
+			const result = generateCoverLetter(
+				subscriptionCanceledDispute,
+				mockAccountDetails,
+				mockSettings,
+				'Test Bank'
+			);
+			expect( result ).toContain( 'Test Store' );
+			expect( result ).toContain( 'Test Bank' );
+			expect( result ).toContain( 'dp_123' );
+			expect( result ).toContain( 'ch_123' );
+			expect( result ).toContain( 'John Doe' );
+			expect( result ).toContain( 'Test Product' );
+			expect( result ).toContain( 'subscribed to' );
+			expect( result ).toContain(
+				"and was billed according to the terms accepted at the time of signup. The customer's account remained active and no cancellation was recorded prior to the billing date."
+			);
+		} );
+
+		it( 'should generate cover letter for duplicate dispute with is_duplicate status', () => {
+			const duplicateDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'duplicate' as DisputeReason,
+			};
+			const result = generateCoverLetter(
+				duplicateDispute,
+				mockAccountDetails,
+				mockSettings,
+				'Test Bank',
+				undefined,
+				'is_duplicate'
+			);
+			expect( result ).toContain( 'Test Store' );
+			expect( result ).toContain( 'Test Bank' );
+			expect( result ).toContain( 'dp_123' );
+			expect( result ).toContain( 'ch_123' );
+			expect( result ).toContain(
+				'was a duplicate of a previous transaction'
+			);
+			expect( result ).toContain(
+				'A refund has already been issued to the customer on'
+			);
+			expect( result ).toContain( '10.00 USD' );
+		} );
+
+		it( 'should generate cover letter for duplicate dispute with is_not_duplicate status', () => {
+			const duplicateDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'duplicate' as DisputeReason,
+			};
+			const result = generateCoverLetter(
+				duplicateDispute,
+				mockAccountDetails,
+				mockSettings,
+				'Test Bank',
+				undefined,
+				'is_not_duplicate'
+			);
+			expect( result ).toContain( 'Test Store' );
+			expect( result ).toContain( 'Test Bank' );
+			expect( result ).toContain( 'dp_123' );
+			expect( result ).toContain( 'ch_123' );
+			expect( result ).toContain( 'placed two distinct orders' );
+			expect( result ).toContain(
+				'Both transactions were legitimate, fulfilled independently, and are not duplicates'
+			);
+		} );
+
+		it( 'should handle duplicate dispute with missing duplicate status', () => {
+			const duplicateDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'duplicate' as DisputeReason,
+			};
+			const result = generateCoverLetter(
+				duplicateDispute,
+				mockAccountDetails,
+				mockSettings,
+				'Test Bank'
+			);
+			expect( result ).toContain( 'Test Store' );
+			expect( result ).toContain( 'Test Bank' );
+			expect( result ).toContain( 'dp_123' );
+			expect( result ).toContain( 'ch_123' );
+			expect( result ).toContain( 'placed two distinct orders' );
+			expect( result ).toContain(
+				'Both transactions were legitimate, fulfilled independently, and are not duplicates'
+			);
 		} );
 	} );
 } );

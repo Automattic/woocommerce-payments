@@ -173,6 +173,60 @@ const composePaymentSummaryItems = ( {
 		},
 	].filter( isValueTruthy );
 
+const composePaymentSummaryItemsForDispute = ( {
+	charge = {} as Charge,
+}: {
+	charge: Charge;
+} ): HorizontalListItem[] =>
+	[
+		{
+			title: __( 'Date', 'woocommerce-payments' ),
+			content: charge.created
+				? formatDateTimeFromTimestamp( charge.created, {
+						customFormat: 'F j, Y g:i A',
+				  } )
+				: '–',
+		},
+		{
+			title: __( 'Customer', 'woocommerce-payments' ),
+			content: (
+				<CustomerLink
+					billing_details={ charge.billing_details }
+					order_details={ charge.order }
+				/>
+			),
+		},
+		{
+			title: __( 'Order', 'woocommerce-payments' ),
+			content: <OrderLink order={ charge.order } />,
+		},
+		wcpaySettings.isSubscriptionsActive && {
+			title: __( 'Subscription', 'woocommerce-payments' ),
+			content: charge.order?.subscriptions?.length ? (
+				charge.order.subscriptions.map( ( subscription, i, all ) => [
+					<OrderLink key={ i } order={ subscription } />,
+					i !== all.length - 1 && ', ',
+				] )
+			) : (
+				<OrderLink order={ null } />
+			),
+		},
+		{
+			title: __( 'Payment method', 'woocommerce-payments' ),
+			content: (
+				<PaymentMethodDetails
+					payment={ charge.payment_method_details }
+				/>
+			),
+		},
+		{
+			title: __( 'Risk evaluation', 'woocommerce-payments' ),
+			content: charge.outcome?.risk_level
+				? riskMappings[ charge.outcome.risk_level ]
+				: '–',
+		},
+	].filter( isValueTruthy );
+
 const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	charge = {} as Charge,
 	metadata = {},
@@ -642,10 +696,16 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 			<CardBody useBundledComponent={ shouldUseBundledComponents }>
 				<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
 					<HorizontalList
-						items={ composePaymentSummaryItems( {
-							charge,
-							metadata,
-						} ) }
+						items={
+							charge.dispute
+								? composePaymentSummaryItemsForDispute( {
+										charge,
+								  } )
+								: composePaymentSummaryItems( {
+										charge,
+										metadata,
+								  } )
+						}
 					/>
 				</LoadableBlock>
 			</CardBody>

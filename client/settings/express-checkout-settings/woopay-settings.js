@@ -5,18 +5,18 @@
 import React from 'react';
 import clsx from 'clsx';
 import { __ } from '@wordpress/i18n';
-import {
-	Card,
-	CheckboxControl,
-	TextareaControl,
-	ExternalLink,
-} from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
 import { Link } from '@woocommerce/components';
 
 /**
  * Internal dependencies
  */
+import {
+	Card,
+	CheckboxControl,
+	TextareaControl,
+	ExternalLink,
+} from 'wcpay/components/wp-components-wrapped';
 import CardBody from '../card-body';
 import WooPayFileUpload from './file-upload';
 import WooPayPreview from './woopay-preview';
