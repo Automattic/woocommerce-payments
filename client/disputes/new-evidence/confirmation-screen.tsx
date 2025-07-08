@@ -43,14 +43,14 @@ const ConfirmationScreen: React.FC< ConfirmationScreenProps > = ( {
 					{ /* Main success message */ }
 					<h2 className="wcpay-dispute-evidence-confirmation__title">
 						{ __(
-							"You did it! The form is in the bank's hands",
+							'Your response has been sent to the bank for review',
 							'woocommerce-payments'
 						) }
 					</h2>
 
 					<p className="wcpay-dispute-evidence-confirmation__subtitle">
 						{ __(
-							'Thank you for taking the time and submitting the dispute.',
+							'Thanks for taking the time to submit your dispute response',
 							'woocommerce-payments'
 						) }
 					</p>
@@ -63,14 +63,14 @@ const ConfirmationScreen: React.FC< ConfirmationScreenProps > = ( {
 						<ul>
 							<li>
 								{ __(
-									"It might take a few days for the cardholder's bank to review your dispute",
+									'The cardholder’s bank is now reviewing your response — this can take several weeks, and in some cases up to 2–3 months',
 									'woocommerce-payments'
 								) }
 							</li>
 							<li>
 								{ createInterpolateElement(
 									__(
-										"Once reviewed, you'll receive an email or you can check back regularly on <disputesPageLink>Disputes page</disputesPageLink>",
+										'You’ll get an email when there’s an update, or you can check the status anytime on your <disputesPageLink>Disputes page</disputesPageLink>',
 										'woocommerce-payments'
 									),
 									{
@@ -93,7 +93,7 @@ const ConfirmationScreen: React.FC< ConfirmationScreenProps > = ( {
 							<li>
 								{ createInterpolateElement(
 									__(
-										'Still unsure or need more information? <learnMoreLink>Learn more about disputes</learnMoreLink>',
+										'Want to know more about how disputes work? <learnMoreLink>Learn more about disputes</learnMoreLink>',
 										'woocommerce-payments'
 									),
 									{
