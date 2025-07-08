@@ -131,10 +131,10 @@ const getBaseDispute = () => ( {
 	status: 'needs_response',
 } );
 
-const getBaseMetadata = () => ( {
-	platform: 'ios',
+const createTapToPayMetadata = ( readerModel, platform ) => ( {
+	platform,
 	reader_id: 'APPLEBUILTINSIMULATOR-1',
-	reader_model: 'COTS_DEVICE',
+	reader_model: readerModel,
 } );
 
 function renderCharge( charge, metadata = {}, isLoading = false, props = {} ) {
@@ -254,9 +254,33 @@ describe( 'PaymentDetailsSummary', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 
-	test( 'renders the Tap to Pay channel from metadata', () => {
+	test( 'renders the Tap to Pay channel from metadata with ios COTS_DEVICE', () => {
 		const charge = getBaseCharge();
-		const metadata = getBaseMetadata();
+		const metadata = createTapToPayMetadata( 'COTS_DEVICE', 'ios' );
+
+		expect( renderCharge( charge, metadata ) ).toMatchSnapshot();
+	} );
+
+	test( 'renders the Tap to Pay channel from metadata with Android COTS_DEVICE', () => {
+		const charge = getBaseCharge();
+		const metadata = createTapToPayMetadata( 'COTS_DEVICE', 'android' );
+
+		expect( renderCharge( charge, metadata ) ).toMatchSnapshot();
+	} );
+
+	test( 'renders the Tap to Pay channel from metadata with ios TAP_TO_PAY_DEVICE', () => {
+		const charge = getBaseCharge();
+		const metadata = createTapToPayMetadata( 'TAP_TO_PAY_DEVICE', 'ios' );
+
+		expect( renderCharge( charge, metadata ) ).toMatchSnapshot();
+	} );
+
+	test( 'renders the Tap to Pay channel from metadata with android TAP_TO_PAY_DEVICE', () => {
+		const charge = getBaseCharge();
+		const metadata = createTapToPayMetadata(
+			'TAP_TO_PAY_DEVICE',
+			'android'
+		);
 
 		expect( renderCharge( charge, metadata ) ).toMatchSnapshot();
 	} );
@@ -1003,6 +1027,53 @@ describe( 'PaymentDetailsSummary', () => {
 			renderCharge( { ...getBaseCharge(), captured: false } );
 			expect(
 				screen.queryByLabelText( 'Transaction actions' )
+			).not.toBeInTheDocument();
+		} );
+	} );
+
+	describe( 'isTapToPay function', () => {
+		test( 'returns true for COTS_DEVICE', () => {
+			const charge = getBaseCharge();
+			const metadata = createTapToPayMetadata( 'COTS_DEVICE', 'ios' );
+
+			const container = renderCharge( charge, metadata );
+
+			// Check that Tap to Pay channel is rendered
+			expect( container ).toMatchSnapshot();
+			expect(
+				screen.getByText( /Tap to Pay on iPhone/i )
+			).toBeInTheDocument();
+		} );
+
+		test( 'returns true for TAP_TO_PAY_DEVICE', () => {
+			const charge = getBaseCharge();
+			const metadata = createTapToPayMetadata(
+				'TAP_TO_PAY_DEVICE',
+				'android'
+			);
+
+			const container = renderCharge( charge, metadata );
+
+			// Check that Tap to Pay channel is rendered
+			expect( container ).toMatchSnapshot();
+			expect(
+				screen.getByText( /Tap to Pay on Android/i )
+			).toBeInTheDocument();
+		} );
+
+		test( 'returns false for other device models', () => {
+			const charge = getBaseCharge();
+			const metadata = createTapToPayMetadata(
+				'SOME_OTHER_DEVICE',
+				'ios'
+			);
+
+			const container = renderCharge( charge, metadata );
+
+			// Check that regular channel is rendered instead of Tap to Pay
+			expect( container ).toMatchSnapshot();
+			expect(
+				screen.queryByText( /Tap to Pay/i )
 			).not.toBeInTheDocument();
 		} );
 	} );
