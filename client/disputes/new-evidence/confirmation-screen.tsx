@@ -43,14 +43,14 @@ const ConfirmationScreen: React.FC< ConfirmationScreenProps > = ( {
 					{ /* Main success message */ }
 					<h2 className="wcpay-dispute-evidence-confirmation__title">
 						{ __(
-							'Your response has been sent to the bank for review',
+							'Thanks for sharing your response!',
 							'woocommerce-payments'
 						) }
 					</h2>
 
 					<p className="wcpay-dispute-evidence-confirmation__subtitle">
 						{ __(
-							'Thanks for taking the time to submit your dispute response',
+							"Your evidence has been sent to the cardholder's bank for review.",
 							'woocommerce-payments'
 						) }
 					</p>
@@ -58,19 +58,19 @@ const ConfirmationScreen: React.FC< ConfirmationScreenProps > = ( {
 					{ /* What's next section */ }
 					<div className="wcpay-dispute-evidence-confirmation__next-steps">
 						<h3>
-							{ __( "What's next?", 'woocommerce-payments' ) }
+							{ __( 'What’s next?', 'woocommerce-payments' ) }
 						</h3>
 						<ul>
 							<li>
 								{ __(
-									'The cardholder’s bank is now reviewing your response — this can take several weeks, and in some cases up to 2–3 months',
+									'The cardholder’s bank will review your response. Please be patient — this usually takes a few weeks, but in some cases it can take up to 3 months.',
 									'woocommerce-payments'
 								) }
 							</li>
 							<li>
 								{ createInterpolateElement(
 									__(
-										'You’ll get an email when there’s an update, or you can check the status anytime on your <disputesPageLink>Disputes page</disputesPageLink>',
+										"You'll be informed of any updates via email, or you can check the status of your case at any time in your <disputesPageLink>Disputes area</disputesPageLink>.",
 										'woocommerce-payments'
 									),
 									{
@@ -93,7 +93,7 @@ const ConfirmationScreen: React.FC< ConfirmationScreenProps > = ( {
 							<li>
 								{ createInterpolateElement(
 									__(
-										'Want to know more about how disputes work? <learnMoreLink>Learn more about disputes</learnMoreLink>',
+										'Want to know more about how disputes work? <learnMoreLink>Check out our resources</learnMoreLink>',
 										'woocommerce-payments'
 									),
 									{
