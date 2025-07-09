@@ -286,7 +286,7 @@ class WC_Payments_Onboarding_Service {
 	 *
 	 * @throws API_Exception|Exception
 	 */
-	public function create_embedded_kyc_session( array $self_assessment_data, bool $progressive = false, array $capabilities = [] ): array {
+	public function create_embedded_kyc_session( array $self_assessment_data, bool $progressive = false, array $capabilities = [], bool $migrate_to_live = false ): array {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			return [];
 		}
@@ -339,7 +339,8 @@ class WC_Payments_Onboarding_Service {
 				WC_Payments_Utils::array_filter_recursive( $account_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
 				$actioned_notes,
 				$progressive,
-				$this->get_referral_code()
+				$this->get_referral_code(),
+				$migrate_to_live
 			);
 		} catch ( API_Exception $e ) {
 			$this->clear_onboarding_init_in_progress();
