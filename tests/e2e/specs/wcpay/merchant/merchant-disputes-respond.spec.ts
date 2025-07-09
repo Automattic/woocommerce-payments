@@ -237,7 +237,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 					).toBeVisible();
 
 					await merchantPage
-						.getByLabel( 'PRODUCT DESCRIPTION' )
+						.getByLabel( 'COVER LETTER' )
 						.fill( 'winning_evidence' );
 
 					// Click the submit button
@@ -357,7 +357,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 					).toBeVisible();
 
 					await merchantPage
-						.getByLabel( 'PRODUCT DESCRIPTION' )
+						.getByLabel( 'COVER LETTER' )
 						.fill( 'losing_evidence' );
 
 					// Click the submit button
