@@ -446,9 +446,40 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			}
 		);
 
-		await merchantPage
-			.getByTestId( 'dispute-challenge-product-type-selector' )
-			.selectOption( 'offline_service' );
+		// wait for the customer details to be visible
+		await test.step(
+			'Wait for the customer details to be visible',
+			async () => {
+				await expect(
+					merchantPage.getByText( 'Customer details', {
+						exact: true,
+					} )
+				).toBeVisible();
+			}
+		);
+
+		await test.step(
+			'Confirm we are on the challenge dispute page',
+			async () => {
+				await expect(
+					merchantPage.getByText( "Let's gather the basics", {
+						exact: true,
+					} )
+				).toBeVisible();
+			}
+		);
+
+		await test.step(
+			'Fill in the product type and product description',
+			async () => {
+				await merchantPage
+					.getByTestId( 'dispute-challenge-product-type-selector' )
+					.selectOption( 'offline_service' );
+				await merchantPage
+					.getByLabel( 'PRODUCT DESCRIPTION' )
+					.fill( 'my product description' );
+			}
+		);
 
 		await test.step( 'Save the dispute challenge for later', async () => {
 			await merchantPage
@@ -458,11 +489,13 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 				.click();
 		} );
 
+		await test.step( 'Go back to the payment details page', async () => {
+			await merchantPage.goto( paymentDetailsLink );
+		} );
+
 		await test.step(
 			'Navigate to the payment details screen and click the challenge dispute button',
 			async () => {
-				await merchantPage.goto( paymentDetailsLink );
-
 				await merchantPage
 					.getByTestId( 'challenge-dispute-button' )
 					.click();
@@ -491,7 +524,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 					merchantPage.getByTestId(
 						'dispute-challenge-product-type-selector'
 					)
-				).toHaveValue( 'offline_service', { timeout: 40000 } );
+				).toHaveValue( 'offline_service' );
 			}
 		);
 	} );
