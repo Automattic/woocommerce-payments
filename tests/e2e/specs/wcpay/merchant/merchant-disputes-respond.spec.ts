@@ -463,6 +463,14 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			'Verify the previously selected challenge product type is saved',
 			async () => {
 				await expect(
+					merchantPage
+						.getByTestId(
+							'dispute-challenge-product-type-selector'
+						)
+						.waitFor( { state: 'visible' } )
+				);
+
+				await expect(
 					merchantPage.getByTestId(
 						'dispute-challenge-product-type-selector'
 					)
