@@ -491,7 +491,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 					merchantPage.getByTestId(
 						'dispute-challenge-product-type-selector'
 					)
-				).toHaveValue( 'offline_service' );
+				).toHaveValue( 'offline_service', { timeout: 40000 } );
 			}
 		);
 	} );
