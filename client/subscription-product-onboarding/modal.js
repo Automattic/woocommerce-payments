@@ -7,7 +7,7 @@ import { Button } from 'wcpay/components/wp-components-wrapped/components/button
 import { Icon } from 'wcpay/components/wp-components-wrapped/components/icon';
 import { Modal } from 'wcpay/components/wp-components-wrapped/components/modal';
 import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
-import { WordPressComponentsContext } from 'wcpay/wordpress-components-context/context';
+import UnbundledWpComponentsProvider from 'wcpay/wordpress-components-context/unbundled-wp-components-provider';
 import {
 	createInterpolateElement,
 	useEffect,
@@ -130,13 +130,13 @@ const SubscriptionProductOnboardingModal = () => {
 	}
 
 	return (
-		<WordPressComponentsContext.Provider value={ wp.components }>
+		<UnbundledWpComponentsProvider>
 			<SubscriptionProductOnboardingModalContent
 				onRequestClose={ () => {
 					setOpen( false );
 				} }
 			/>
-		</WordPressComponentsContext.Provider>
+		</UnbundledWpComponentsProvider>
 	);
 };
 
