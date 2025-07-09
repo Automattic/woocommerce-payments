@@ -97,6 +97,12 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 							],
 						],
 					],
+					'migrate_to_live' => [
+						'required'    => false,
+						'description' => 'Whether to migrate the account to live.',
+						'type'        => 'boolean',
+						'default'     => false,
+					],
 				],
 			]
 		);
@@ -227,11 +233,13 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 		$self_assessment_data = ! empty( $request->get_param( 'self_assessment' ) ) ? wc_clean( wp_unslash( $request->get_param( 'self_assessment' ) ) ) : [];
 		$progressive          = ! empty( $request->get_param( 'progressive' ) ) && filter_var( $request->get_param( 'progressive' ), FILTER_VALIDATE_BOOLEAN );
 		$capabilities         = ! empty( $request->get_param( 'capabilities' ) ) ? wc_clean( wp_unslash( $request->get_param( 'capabilities' ) ) ) : [];
+		$migrate_to_live      = ! empty( $request->get_param( 'migrate_to_live' ) ) && filter_var( $request->get_param( 'migrate_to_live' ), FILTER_VALIDATE_BOOLEAN );
 
 		$account_session = $this->onboarding_service->create_embedded_kyc_session(
 			$self_assessment_data,
 			$progressive,
-			$capabilities
+			$capabilities,
+			$migrate_to_live
 		);
 
 		if ( $account_session ) {
