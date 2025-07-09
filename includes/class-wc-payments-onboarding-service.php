@@ -24,7 +24,6 @@ class WC_Payments_Onboarding_Service {
 	const ONBOARDING_ELIGIBILITY_MODAL_OPTION        = 'wcpay_onboarding_eligibility_modal_dismissed';
 	const ONBOARDING_CONNECTION_SUCCESS_MODAL_OPTION = 'wcpay_connection_success_modal_dismissed';
 	const ONBOARDING_INIT_IN_PROGRESS_TRANSIENT      = 'wcpay_onboarding_init_in_progress';
-	const ONBOARDING_MIGRATE_TO_LIVE_TRANSIENT       = 'wcpay_onboarding_migrate_to_live';
 
 	// Onboarding flow sources.
 	// We use these to identify the originating place for the current onboarding flow.
@@ -493,33 +492,6 @@ class WC_Payments_Onboarding_Service {
 	}
 
 	/**
-	 * Check whether the onboarding migration to live is in progress.
-	 *
-	 * @return bool Whether the onboarding migration to live is in progress.
-	 */
-	public function is_onboarding_migrate_to_live_in_progress(): bool {
-		return filter_var( get_transient( self::ONBOARDING_MIGRATE_TO_LIVE_TRANSIENT ), FILTER_VALIDATE_BOOLEAN );
-	}
-
-	/**
-	 * Mark the onboarding migration to live as in progress.
-	 *
-	 * @return void
-	 */
-	public function set_onboarding_migrate_to_live_in_progress(): void {
-		// Default to 3 minutes expiration in case the migration takes longer than expected, or errored.
-		set_transient( self::ONBOARDING_MIGRATE_TO_LIVE_TRANSIENT, 'yes', 3 * MINUTE_IN_SECONDS );
-	}
-
-	/**
-	 * Clear the onboarding migration to live in progress transient.
-	 *
-	 * @return void
-	 */
-	public function clear_onboarding_migrate_to_live_in_progress(): void {
-		delete_transient( self::ONBOARDING_MIGRATE_TO_LIVE_TRANSIENT );
-	}
-	/**
 	 * Check whether the business types fetched from the cache are valid.
 	 *
 	 * @param array|bool|string $business_types The business types returned from the cache.
@@ -901,52 +873,6 @@ class WC_Payments_Onboarding_Service {
 		);
 
 		return true;
-	}
-
-	/**
-	 * Migrate test-drive account to live account.
-	 *
-	 * @param array $context Context for the migrate test drive account to live request.
-	 *              - 'from' (string) The source of the request.
-	 *              - 'source' (string) The source of the onboarding flow.
-	 * @param array $self_assessment_data Self assessment data.
-	 * @return array The account session.
-	 */
-	public function migrate_test_drive_account_to_live( array $context, array $self_assessment_data ): array {
-		try {
-			// If the account does not exist, there's nothing to migrate.
-			if ( ! WC_Payments::get_account_service()->is_stripe_connected() ) {
-				throw new API_Exception( __( 'Failed to migrate the account: account does not exist.', 'woocommerce-payments' ), 'wcpay-onboarding-account-error', 400 );
-			}
-
-			$cached_account_data = WC_Payments::get_account_service()->get_cached_account_data();
-			$capabilities        = array_map(function($status) {
-				// Consider 'active' status as true, all other statuses as false
-				return $status === 'active';
-			}, $cached_account_data['capabilities'] ?? []);
-
-			// First, set the migration transient.
-			$this->set_onboarding_migrate_to_live_in_progress();
-
-			// Second, disconnect the account by inserting an empty array into the account cache.
-			WC_Payments::get_account_service()->overwrite_cache_with_no_account();
-
-			// Third, disable the test drive account and save account settings for the live account.
-			$this->disable_test_drive_account( $context );
-
-			// Fourth, create an embedded KYC session using data saved while disabling the test-drive account.
-			$account_session = $this->create_embedded_kyc_session( $self_assessment_data, false, $capabilities );
-		} catch ( Exception $e ) {
-			throw new API_Exception( __( 'Failed to migrate the account.', 'woocommerce-payments' ), 'wcpay-onboarding-account-error', 400 );
-		} finally {
-			// Clear the migration transient.
-			$this->clear_onboarding_migrate_to_live_in_progress();
-
-			// Refresh the account cache.
-			WC_Payments::get_account_service()->refresh_account_data();
-		}
-
-		return $account_session;
 	}
 
 	/**
