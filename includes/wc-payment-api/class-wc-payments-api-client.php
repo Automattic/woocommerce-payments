@@ -1107,7 +1107,8 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		array $account_data = [],
 		array $actioned_notes = [],
 		bool $progressive = false,
-		?string $referral_code = null
+		?string $referral_code = null,
+		?bool $migrate_to_live = false
 	): array {
 		$request_args = apply_filters(
 			'wc_payments_get_onboarding_data_args',
@@ -1118,6 +1119,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 				'actioned_notes'      => $actioned_notes,
 				'create_live_account' => $live_account,
 				'progressive'         => $progressive,
+				'migrate_to_live'     => $migrate_to_live,
 			]
 		);
 
