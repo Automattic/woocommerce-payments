@@ -194,6 +194,10 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 							exact: true,
 						} )
 					).toBeVisible();
+
+					await merchantPage
+						.getByLabel( 'PRODUCT DESCRIPTION' )
+						.fill( 'my product description' );
 				}
 			);
 
@@ -236,6 +240,18 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 						} )
 					).toBeVisible();
 
+					// wait cover letter to load with content and replace with new content
+					await merchantPage
+						.getByLabel( 'COVER LETTER' )
+						.waitFor( { state: 'visible', timeout: 5000 } );
+
+					// Check existing content
+					await expect(
+						merchantPage.getByLabel( 'COVER LETTER' )
+					).toContainText( 'WooPayments', {
+						timeout: 5000,
+					} );
+
 					await merchantPage
 						.getByLabel( 'COVER LETTER' )
 						.fill( 'winning_evidence' );
@@ -252,15 +268,10 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			await test.step(
 				'Wait for the redirect to the dispute details page and confirm the dispute status is Won',
 				async () => {
-					// Wait for the redirect to complete
-					await merchantPage.waitForURL(
-						/\/payments\/disputes\/details/
-					);
-
 					await expect(
-						merchantPage.getByText( 'Disputed: Won', {
-							exact: true,
-						} )
+						merchantPage
+							.locator( '.payment-details-summary__status' )
+							.filter( { hasText: 'Disputed: Won' } )
 					).toBeVisible();
 
 					await expect(
@@ -356,6 +367,18 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 						} )
 					).toBeVisible();
 
+					// wait cover letter to load with content and replace with new content
+					await merchantPage
+						.getByLabel( 'COVER LETTER' )
+						.waitFor( { state: 'visible', timeout: 5000 } );
+
+					// Check existing content
+					await expect(
+						merchantPage.getByLabel( 'COVER LETTER' )
+					).toContainText( 'WooPayments', {
+						timeout: 5000,
+					} );
+
 					await merchantPage
 						.getByLabel( 'COVER LETTER' )
 						.fill( 'losing_evidence' );
@@ -372,15 +395,10 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			await test.step(
 				'Wait for the redirect to the dispute details page and confirm the dispute status is Lost',
 				async () => {
-					// Wait for the redirect to complete
-					await merchantPage.waitForURL(
-						/\/payments\/disputes\/details/
-					);
-
 					await expect(
-						merchantPage.getByText( 'Disputed: Lost', {
-							exact: true,
-						} )
+						merchantPage
+							.locator( '.payment-details-summary__status' )
+							.filter( { hasText: 'Disputed: Lost' } )
 					).toBeVisible();
 
 					await expect(
