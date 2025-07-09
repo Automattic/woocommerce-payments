@@ -214,28 +214,6 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 				],
 			]
 		);
-
-		register_rest_route(
-			$this->namespace,
-			'/' . $this->rest_base . '/test_drive_account/migrate_to_live',
-			[
-				'methods'             => WP_REST_Server::CREATABLE,
-				'callback'            => [ $this, 'migrate_test_drive_account_to_live' ],
-				'permission_callback' => [ $this, 'check_permission' ],
-				'args'                => [
-					'source' => [
-						'required'    => false,
-						'description' => 'The very first entry point the merchant entered our onboarding flow.',
-						'type'        => 'string',
-					],
-					'from'   => [
-						'required'    => false,
-						'description' => 'The previous step in the onboarding flow leading the merchant to arrive at the current step.',
-						'type'        => 'string',
-					],
-				],
-			]
-		);
 	}
 
 	/**
@@ -398,33 +376,5 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 		}
 
 		return rest_ensure_response( [ 'success' => $result ] );
-	}
-
-	/**
-	 * Migrate test-drive account to live account.
-	 *
-	 * @param WP_REST_Request $request Request object.
-	 *
-	 * @return WP_REST_Response|WP_Error
-	 */
-	public function migrate_test_drive_account_to_live( WP_REST_Request $request ) {
-		$context = [
-			'from'   => $request->get_param( 'from' ) ?? '',
-			'source' => $request->get_param( 'source' ) ?? '',
-		];
-
-		$self_assessment_data = ! empty( $request->get_param( 'self_assessment' ) ) ? wc_clean( wp_unslash( $request->get_param( 'self_assessment' ) ) ) : [];
-
-		try {
-			$account_session = $this->onboarding_service->migrate_test_drive_account_to_live( $context, $self_assessment_data );
-		} catch ( Exception $e ) {
-			return new WP_Error( self::RESULT_BAD_REQUEST, $e->getMessage(), [ 'status' => 400 ] );
-		}
-
-		if ( $account_session ) {
-			$account_session['locale'] = get_user_locale();
-		}
-
-		return rest_ensure_response( $account_session );
 	}
 }
