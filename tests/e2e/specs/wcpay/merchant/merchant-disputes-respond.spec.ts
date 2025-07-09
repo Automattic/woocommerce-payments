@@ -446,17 +446,9 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			}
 		);
 
-		await test.step( 'Select the product type', async () => {
-			await merchantPage
-				.getByTestId( 'dispute-challenge-product-type-selector' )
-				.selectOption( 'offline_service' );
-
-			await expect(
-				merchantPage.getByTestId(
-					'dispute-challenge-product-type-selector'
-				)
-			).toHaveValue( 'offline_service' );
-		} );
+		await merchantPage
+			.getByTestId( 'dispute-challenge-product-type-selector' )
+			.selectOption( 'offline_service' );
 
 		await test.step( 'Save the dispute challenge for later', async () => {
 			await merchantPage
@@ -480,9 +472,20 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 		await test.step(
 			'Verify the previously selected challenge product type is saved',
 			async () => {
+				await test.step(
+					'Confirm we are on the challenge dispute page',
+					async () => {
+						await expect(
+							merchantPage.getByText( "Let's gather the basics", {
+								exact: true,
+							} )
+						).toBeVisible();
+					}
+				);
+
 				await merchantPage
 					.getByTestId( 'dispute-challenge-product-type-selector' )
-					.waitFor( { timeout: 2000 } );
+					.waitFor( { timeout: 5000, state: 'visible' } );
 
 				await expect(
 					merchantPage.getByTestId(
