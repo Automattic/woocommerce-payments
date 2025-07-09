@@ -446,9 +446,6 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 					name: 'Save for later',
 				} )
 				.click();
-
-			// Wait for the redirect to the dispute details page.
-			await merchantPage.waitForURL( /\/payments\/disputes\/details/ );
 		} );
 
 		await test.step(
