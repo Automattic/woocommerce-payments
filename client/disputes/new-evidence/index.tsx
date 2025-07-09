@@ -8,6 +8,7 @@ import apiFetch from '@wordpress/api-fetch';
 import { __, sprintf } from '@wordpress/i18n';
 import { useDispatch } from '@wordpress/data';
 import { chevronLeft, chevronRight } from '@wordpress/icons';
+import HelpOutlineIcon from 'gridicons/dist/help-outline';
 
 /**
  * Internal dependencies.
@@ -121,9 +122,6 @@ export default ( { query }: { query: { id: string } } ) => {
 	const [ shippingAddress, setShippingAddress ] = useState( '' );
 	const [ isUploading, setIsUploading ] = useState<
 		Record< string, boolean >
-	>( {} );
-	const [ uploadingErrors, setUploadingErrors ] = useState<
-		Record< string, string >
 	>( {} );
 	const [ fileSizes, setFileSizes ] = useState< Record< string, number > >(
 		{}
@@ -290,7 +288,11 @@ export default ( { query }: { query: { id: string } } ) => {
 					const file: any = await apiFetch( {
 						path: `/wc/v3/payments/file/${ fileId }/details`,
 					} );
-					return { fileKey: fileKey, filename: file.filename };
+					return {
+						fileKey: fileKey,
+						filename: file.filename,
+						size: file.size,
+					};
 				} )
 			);
 			const filteredFileDetails = fileDetails.filter(
@@ -302,6 +304,16 @@ export default ( { query }: { query: { id: string } } ) => {
 					filteredFileDetails.map( ( fileDetail ) => [
 						fileDetail?.fileKey,
 						fileDetail?.filename,
+					] )
+				),
+			} ) );
+			// Also set the file sizes
+			setFileSizes( ( prev ) => ( {
+				...prev,
+				...Object.fromEntries(
+					filteredFileDetails.map( ( fileDetail ) => [
+						fileDetail?.fileKey,
+						fileDetail?.size,
 					] )
 				),
 			} ) );
@@ -402,21 +414,6 @@ export default ( { query }: { query: { id: string } } ) => {
 			id: submit
 				? 'evidence-submitted'
 				: `evidence-saved-${ dispute.id }`,
-			actions: submit
-				? [
-						{
-							label: __(
-								'View submitted evidence',
-								'woocommerce-payments'
-							),
-							url: getAdminUrl( {
-								page: 'wc-admin',
-								path: '/payments/disputes/challenge',
-								id: query.id,
-							} ),
-						},
-				  ]
-				: [],
 		} );
 
 		// Only redirect after submission, not after save
@@ -443,7 +440,7 @@ export default ( { query }: { query: { id: string } } ) => {
 		);
 	};
 
-	const doSave = async ( submit: boolean ) => {
+	const doSave = async ( submit: boolean, notify = true ) => {
 		// Prevent submit if upload is in progress
 		if ( isUploadingEvidence() ) {
 			createInfoNotice(
@@ -505,7 +502,9 @@ export default ( { query }: { query: { id: string } } ) => {
 			} );
 
 			setDispute( updatedDispute );
-			handleSaveSuccess( submit );
+			if ( notify ) {
+				handleSaveSuccess( submit );
+			}
 			updateDisputeInStore( updatedDispute as any );
 
 			if ( submit ) {
@@ -526,7 +525,7 @@ export default ( { query }: { query: { id: string } } ) => {
 	const handleStepChange = async ( newStep: number ) => {
 		// Only save if not in readOnly mode
 		if ( ! readOnly ) {
-			await doSave( false );
+			await doSave( false, false );
 		}
 		// Update step
 		setCurrentStep( newStep );
@@ -637,7 +636,6 @@ export default ( { query }: { query: { id: string } } ) => {
 
 		// Set request status for UI.
 		setIsUploading( ( prev ) => ( { ...prev, [ key ]: true } ) );
-		setUploadingErrors( ( prev ) => ( { ...prev, [ key ]: '' } ) );
 
 		// Force reload evidence components.
 		setEvidence( ( e: any ) => ( { ...e, [ key ]: '' } ) );
@@ -669,10 +667,13 @@ export default ( { query }: { query: { id: string } } ) => {
 				message: err instanceof Error ? err.message : String( err ),
 			} );
 
-			setUploadingErrors( ( prev ) => ( {
-				...prev,
-				[ key ]: err instanceof Error ? err.message : String( err ),
-			} ) );
+			// Display error as WordPress admin notice
+			createErrorNotice(
+				sprintf(
+					__( 'Failed to upload file. (%s)', 'woocommerce-payments' ),
+					err instanceof Error ? err.message : String( err )
+				)
+			);
 
 			// Force reload evidence components.
 			setEvidence( ( e: any ) => ( { ...e, [ key ]: '' } ) );
@@ -683,7 +684,6 @@ export default ( { query }: { query: { id: string } } ) => {
 
 	const doRemoveFile = ( key: string ) => {
 		setEvidence( ( e: any ) => ( { ...e, [ key ]: '' } ) );
-		setUploadingErrors( ( prev ) => ( { ...prev, [ key ]: '' } ) );
 		setFileSizes( ( prev ) => ( { ...prev, [ key ]: 0 } ) );
 		// Remove the file name from the uploaded files.
 		setUploadedFiles( ( prev ) => ( { ...prev, [ key ]: '' } ) );
@@ -718,12 +718,12 @@ export default ( { query }: { query: { id: string } } ) => {
 
 			const href = getAdminUrl( {
 				page: 'wc-admin',
-				path: '/payments/disputes',
-				filter: 'awaiting_response',
+				path: '/payments/disputes/details',
+				id: dispute?.id,
 			} );
 			window.location.replace( href );
 		}
-	}, [ redirectAfterSave, navigationCleanup ] );
+	}, [ redirectAfterSave, navigationCleanup, dispute?.id ] );
 
 	// --- Accordion summary content ---
 	const summaryItems = useMemo( () => {
@@ -742,7 +742,7 @@ export default ( { query }: { query: { id: string } } ) => {
 				content: dispute.created
 					? formatDateTimeFromTimestamp( dispute.created, {
 							separator: ', ',
-							includeTime: true,
+							includeTime: false,
 					  } )
 					: '–',
 			},
@@ -753,6 +753,7 @@ export default ( { query }: { query: { id: string } } ) => {
 						{ reasons[ disputeReason ]?.display || disputeReason }
 						{ disputeReasonSummary.length > 0 && (
 							<ClickTooltip
+								buttonIcon={ <HelpOutlineIcon /> }
 								buttonLabel={ __(
 									'Learn more',
 									'woocommerce-payments'
@@ -814,9 +815,9 @@ export default ( { query }: { query: { id: string } } ) => {
 			label: field.label,
 			description: field.description,
 			fileName: uploadedFiles[ field.key ] || evidence[ field.key ] || '',
+			fileSize: fileSizes[ field.key ] || 0,
 			uploaded: !! evidence[ field.key ],
 			isLoading: isUploading[ field.key ] || false,
-			error: uploadingErrors[ field.key ] || '',
 			onFileChange: ( key: string, file: File ) =>
 				readOnly
 					? Promise.resolve()
@@ -836,9 +837,9 @@ export default ( { query }: { query: { id: string } } ) => {
 			label: field.label,
 			description: field.description,
 			fileName: uploadedFiles[ field.key ] || evidence[ field.key ] || '',
+			fileSize: fileSizes[ field.key ] || 0,
 			uploaded: !! evidence[ field.key ],
 			isLoading: isUploading[ field.key ] || false,
-			error: uploadingErrors[ field.key ] || '',
 			onFileChange: ( key: string, file: File ) =>
 				readOnly
 					? Promise.resolve()
@@ -926,6 +927,7 @@ export default ( { query }: { query: { id: string } } ) => {
 					<RecommendedDocuments
 						fields={ recommendedDocumentsFields }
 						readOnly={ readOnly }
+						hasHelperLink={ true }
 					/>
 					{ inlineNotice( bankName ) }
 				</>
@@ -960,6 +962,10 @@ export default ( { query }: { query: { id: string } } ) => {
 					<RecommendedDocuments
 						fields={ recommendedShippingDocumentsFields }
 						readOnly={ readOnly }
+						customSubheading={ __(
+							'We recommend adding the following document(s) to support your case.',
+							'woocommerce-payments'
+						) }
 					/>
 					{ inlineNotice( bankName ) }
 				</>
