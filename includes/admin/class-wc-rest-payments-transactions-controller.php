@@ -171,14 +171,12 @@ class WC_REST_Payments_Transactions_Controller extends WC_Payments_REST_Controll
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_transactions_export( $request ) {
-		$user_email   = $request->get_param( 'user_email' );
-		$deposit_id   = $request->get_param( 'deposit_id' );
-		$wpcom_locale = WC_Payments_Utils::convert_to_server_locale(
-			$request->get_param( 'locale' )
-		);
-		$filters      = $this->get_transactions_filters( $request );
+		$user_email = $request->get_param( 'user_email' );
+		$deposit_id = $request->get_param( 'deposit_id' );
+		$locale     = $request->get_param( 'locale' );
+		$filters    = $this->get_transactions_filters( $request );
 
-		return $this->forward_request( 'get_transactions_export', [ $filters, $user_email, $deposit_id, $wpcom_locale ] );
+		return $this->forward_request( 'get_transactions_export', [ $filters, $user_email, $deposit_id, $locale ] );
 	}
 
 	/**
