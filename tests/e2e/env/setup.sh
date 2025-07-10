@@ -237,6 +237,7 @@ cli wp option set woocommerce_currency "USD"
 cli wp option set woocommerce_product_type "both"
 cli wp option set woocommerce_allow_tracking "no"
 cli wp option set woocommerce_enable_signup_and_login_from_checkout "yes"
+cli wp option set woocommerce_currency_pos "left"
 
 echo "Deactivating Coming Soon mode in WooCommerce..."
 cli wp option set woocommerce_coming_soon "no"

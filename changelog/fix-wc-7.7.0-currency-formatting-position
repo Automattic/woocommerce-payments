@@ -1,0 +1,5 @@
+Significance: patch
+Type: fix
+Comment: fix: e2e tests on WC 7.7.0 for currency formatting
+
+
