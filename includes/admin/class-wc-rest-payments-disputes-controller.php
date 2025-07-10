@@ -166,13 +166,11 @@ class WC_REST_Payments_Disputes_Controller extends WC_Payments_REST_Controller {
 	 * @param WP_REST_Request $request Full data about the request.
 	 */
 	public function get_disputes_export( $request ) {
-		$user_email   = $request->get_param( 'user_email' );
-		$wpcom_locale = WC_Payments_Utils::convert_to_server_locale(
-			$request->get_param( 'locale' )
-		);
-		$filters      = $this->get_disputes_filters( $request );
+		$user_email = $request->get_param( 'user_email' );
+		$locale     = $request->get_param( 'locale' );
+		$filters    = $this->get_disputes_filters( $request );
 
-		return $this->forward_request( 'get_disputes_export', [ $filters, $user_email, $wpcom_locale ] );
+		return $this->forward_request( 'get_disputes_export', [ $filters, $user_email, $locale ] );
 	}
 
 	/**
