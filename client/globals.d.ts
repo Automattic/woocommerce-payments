@@ -6,6 +6,18 @@ import { PaymentMethodToPluginsMap } from './components/duplicate-notice';
 import { WCPayExpressCheckoutParams } from './express-checkout/utils';
 
 declare global {
+	interface TosSettingsStripeConnected {
+		is_existing_stripe_account: boolean;
+	}
+
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	const wcpay_tos_settings: {
+		settingsUrl: string;
+		tosAgreementDeclined: '' | '1';
+		tosAgreementRequired: '' | '1';
+		trackStripeConnected: TosSettingsStripeConnected | '';
+	};
+
 	const wcpaySettings: {
 		version: string;
 		connectUrl: string;

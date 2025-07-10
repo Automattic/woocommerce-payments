@@ -27,7 +27,6 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 
 	const FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING = [
 		'_wcpay_feature_customer_multi_currency' => 'multiCurrency',
-		'_wcpay_feature_documents'               => 'documents',
 		'_wcpay_feature_auth_and_capture'        => 'isAuthAndCaptureEnabled',
 	];
 

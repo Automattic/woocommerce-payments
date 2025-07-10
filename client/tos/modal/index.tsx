@@ -1,13 +1,13 @@
 /**
  * External dependencies
  */
+import React, { ComponentProps, useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-import { useState } from '@wordpress/element';
 import interpolateComponents from '@automattic/interpolate-components';
 import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 import { Notice } from 'wcpay/components/wp-components-wrapped/components/notice';
 import { Modal } from 'wcpay/components/wp-components-wrapped/components/modal';
-import { Link } from '@woocommerce/components';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
 import { addQueryArgs } from '@wordpress/url';
 
 /**
@@ -17,20 +17,24 @@ import { getPaymentMethodsUrl } from 'utils';
 import {
 	makeTosAcceptanceRequest,
 	maybeTrackStripeConnected,
-} from '../request.js';
+} from '../request';
 import './style.scss';
 
-const TosLink = ( props ) => (
-	<Link
-		{ ...props }
-		href="https://wordpress.com/tos"
-		target="_blank"
-		rel="noopener noreferrer"
-		type="external"
-	/>
+const TosLink = ( props: ComponentProps< typeof ExternalLink > ) => (
+	<ExternalLink { ...props } href="https://wordpress.com/tos" />
 );
 
-const TosModalUI = ( { onAccept, onDecline, isBusy, hasError } ) => {
+const TosModalUI = ( {
+	onAccept,
+	onDecline,
+	isBusy,
+	hasError,
+}: {
+	onAccept: () => void;
+	onDecline: () => void;
+	isBusy: boolean;
+	hasError: boolean;
+} ) => {
 	const title = sprintf(
 		/* translators: %s: WooPayments */
 		__( '%s: Terms of Service', 'woocommerce-payments' ),
@@ -92,7 +96,17 @@ const TosModalUI = ( { onAccept, onDecline, isBusy, hasError } ) => {
 	);
 };
 
-const DisableModalUI = ( { onDisable, onCancel, isBusy, hasError } ) => {
+const DisableModalUI = ( {
+	onDisable,
+	onCancel,
+	isBusy,
+	hasError,
+}: {
+	onDisable: () => void;
+	onCancel: () => void;
+	isBusy: boolean;
+	hasError: boolean;
+} ) => {
 	const title = sprintf(
 		/* translators: %s: WooPayments */
 		__( 'Disable %s', 'woocommerce-payments' ),
@@ -186,7 +200,7 @@ const TosModal = () => {
 			setIsBusy( true );
 			await makeTosAcceptanceRequest( { accept: false } );
 			closeDisableModal();
-			window.location = addQueryArgs( getPaymentMethodsUrl(), {
+			window.location.href = addQueryArgs( getPaymentMethodsUrl(), {
 				'tos-disabled': 1,
 			} );
 		} catch ( err ) {

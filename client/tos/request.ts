@@ -6,7 +6,11 @@
 import apiFetch from '@wordpress/api-fetch';
 import { isEnabled, recordEvent } from 'tracks';
 
-export const makeTosAcceptanceRequest = async ( { accept } ) =>
+export const makeTosAcceptanceRequest = async ( {
+	accept,
+}: {
+	accept: boolean;
+} ) =>
 	apiFetch( {
 		path: '/wc/v3/payments/tos',
 		method: 'POST',
