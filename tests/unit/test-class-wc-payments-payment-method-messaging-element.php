@@ -67,7 +67,7 @@ class WC_Payments_Payment_Method_Messaging_Element_Test extends WCPAY_UnitTestCa
 	}
 
 	private function get_script_data() {
-		// this returns a string with value `var wcpayStripeSiteMessaging = {[...]};".
+		// this returns a string with value `var wcpayStripeSiteMessaging = {[...]};`.
 		// but we just need the object within this string, so we can parse it through `json_decode`.
 		$script_data_string = wp_scripts()->get_data( 'WCPAY_PRODUCT_DETAILS', 'data' );
 
