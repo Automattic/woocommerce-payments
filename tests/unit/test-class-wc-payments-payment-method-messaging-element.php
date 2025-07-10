@@ -75,7 +75,7 @@ class WC_Payments_Payment_Method_Messaging_Element_Test extends WCPAY_UnitTestCa
 		$start_pos = strpos( $script_data_string, '{' );
 		$end_pos   = strrpos( $script_data_string, '}' );
 
-		// extracting the substring within the parenthesis.
+		// extracting the substring within the braces.
 		$json_substring = substr( $script_data_string, $start_pos, ( $end_pos - $start_pos ) + 1 );
 
 		// now we got the associative array back!
