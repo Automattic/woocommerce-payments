@@ -462,21 +462,15 @@
 	}
 
 	&__title {
-		font-size: var( --xl, 20px );
-		font-style: normal;
-		font-weight: var( --Medium, 500 );
-		line-height: var( --m, 24px );
-		color: var( --Scales-Grays-gray-900, #1e1e1e );
+		@include heading-xl;
+		color: var( --Scales-Grays-gray-900, $gray-900 );
 		margin: 0 0 12px 0;
 		text-align: left;
 	}
 
 	&__subtitle {
-		font-size: var( --m, 13px );
-		font-style: normal;
-		font-weight: var( --Regular, 400 );
-		line-height: var( --s, 20px );
-		color: var( --Scales-Grays-gray-900, #1e1e1e );
+		@include body-md;
+		color: var( --Scales-Grays-gray-900, $gray-900 );
 		margin: 0 0 40px 0;
 		text-align: left;
 	}
@@ -487,11 +481,8 @@
 		margin-bottom: 24px;
 
 		h3 {
-			font-size: var( --xl, 20px );
-			font-style: normal;
-			font-weight: var( --Medium, 500 );
-			line-height: var( --m, 24px );
-			color: var( --Scales-Grays-gray-900, #1e1e1e );
+			@include heading-xl;
+			color: var( --Scales-Grays-gray-900, $gray-900 );
 			margin: 0 0 12px 0;
 		}
 
@@ -503,11 +494,8 @@
 			li {
 				padding-left: 12px;
 				position: relative;
-				font-size: var( --m, 13px );
-				font-style: normal;
-				font-weight: var( --Regular, 400 );
-				line-height: var( --s, 20px );
-				color: var( --Scales-Grays-gray-900, #1e1e1e );
+				@include body-md;
+				color: var( --Scales-Grays-gray-900, $gray-900 );
 
 				&::before {
 					content: '•';
