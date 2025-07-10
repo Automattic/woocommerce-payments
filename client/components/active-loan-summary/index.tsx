@@ -18,7 +18,7 @@ import { createInterpolateElement } from '@wordpress/element';
  * Internal dependencies.
  */
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
-import Loadable from 'components/loadable';
+import Loadable from 'wcpay/components/loadable';
 import { useActiveLoanSummary } from 'wcpay/data';
 import { getAdminUrl } from 'wcpay/utils';
 

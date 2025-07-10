@@ -7,7 +7,7 @@ import { render } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import ProtectionLevels from '../index';
+import ProtectionLevels from '..';
 import { FraudProtectionRule } from 'wcpay/settings/fraud-protection/interfaces';
 
 declare const global: {

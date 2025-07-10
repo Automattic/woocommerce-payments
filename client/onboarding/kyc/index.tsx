@@ -7,7 +7,7 @@ import React, { useEffect } from 'react';
  * Internal dependencies
  */
 import WooLogo from 'assets/images/woo-logo.svg';
-import Page from 'components/page';
+import Page from 'wcpay/components/page';
 import { OnboardingContextProvider } from 'onboarding/context';
 import EmbeddedKyc from 'onboarding/steps/embedded-kyc';
 import { getConnectUrl } from 'utils';

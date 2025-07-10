@@ -7,7 +7,7 @@ import user from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import OnboardingLocationCheckModal from '../index';
+import OnboardingLocationCheckModal from '..';
 
 // Mocks, needed for invoking the modal rendering
 const countriesMock = [

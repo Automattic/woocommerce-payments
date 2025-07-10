@@ -10,7 +10,7 @@ import userEvent from '@testing-library/user-event';
  */
 import { woopayPaymentMethod } from '..';
 
-jest.mock( 'utils/checkout', () => ( {
+jest.mock( 'wcpay/utils/checkout', () => ( {
 	getConfig: jest.fn(),
 } ) );
 

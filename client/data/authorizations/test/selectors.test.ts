@@ -7,7 +7,7 @@ import type { Query } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import { getResourceId } from 'utils/data';
+import { getResourceId } from 'wcpay/utils/data';
 import {
 	getAuthorization,
 	getAuthorizations,

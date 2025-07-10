@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies.
  */
-import Page from 'components/page';
+import Page from 'wcpay/components/page';
 import ReadersList from './list';
 import { TabPanel } from 'wcpay/components/wp-components-wrapped';
 

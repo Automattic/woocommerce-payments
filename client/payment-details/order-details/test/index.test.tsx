@@ -90,7 +90,7 @@ const chargeFromOrderMock = {
 	status: 'pending',
 };
 
-jest.mock( 'data/index', () => ( {
+jest.mock( 'wcpay/data', () => ( {
 	useChargeFromOrder: jest.fn(),
 	useAuthorization: jest.fn(),
 	useTimeline: jest.fn(),

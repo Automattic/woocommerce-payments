@@ -13,7 +13,7 @@ import { Button } from 'wcpay/components/wp-components-wrapped';
  * Internal dependencies
  */
 import { displayType } from 'documents/strings';
-import { Document, useDocuments, useDocumentsSummary } from 'data/index';
+import { Document, useDocuments, useDocumentsSummary } from 'wcpay/data';
 import './style.scss';
 import DocumentsFilters from '../filters';
 import Page from '../../components/page';

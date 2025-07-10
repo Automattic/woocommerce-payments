@@ -18,7 +18,7 @@ import {
 	formatAccountFeesDescription,
 	getCurrentBaseFee,
 	getTransactionsPaymentMethodName,
-} from 'utils/account-fees';
+} from 'wcpay/utils/account-fees';
 import { CardDivider } from 'wcpay/components/wp-components-wrapped';
 import './styles.scss';
 

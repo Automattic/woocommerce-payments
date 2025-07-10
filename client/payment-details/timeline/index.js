@@ -16,7 +16,7 @@ import {
  */
 import { useTimeline } from 'wcpay/data';
 import mapTimelineEvents from './map-events';
-import Loadable, { LoadableBlock } from 'components/loadable';
+import Loadable, { LoadableBlock } from 'wcpay/components/loadable';
 
 import './style.scss';
 

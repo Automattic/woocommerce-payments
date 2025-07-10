@@ -5,7 +5,7 @@ import { __ } from '@wordpress/i18n';
 import { getConfig } from 'wcpay/utils/checkout';
 import { recordUserEvent, getTracksIdentity } from 'tracks';
 import request from '../utils/request';
-import { buildAjaxURL } from 'utils/express-checkout';
+import { buildAjaxURL } from 'wcpay/utils/express-checkout';
 import { getAppearance } from 'checkout/upe-styles';
 import {
 	getTargetElement,

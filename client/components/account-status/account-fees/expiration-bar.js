@@ -3,7 +3,7 @@
 /**
  * Internal dependencies
  */
-import ProgressBar from 'components/progress-bar';
+import ProgressBar from 'wcpay/components/progress-bar';
 import { formatCurrency } from 'multi-currency/interface/functions';
 
 const ExpirationBar = ( {

@@ -10,7 +10,7 @@ import user from '@testing-library/user-event';
  */
 import Welcome from '..';
 import { useCurrentWpUser } from '../hooks';
-import { useAllDepositsOverviews } from 'data';
+import { useAllDepositsOverviews } from 'wcpay/data';
 import { useSelectedCurrency } from 'overview/hooks';
 import type { Overview } from 'types/account-overview';
 

@@ -10,8 +10,8 @@ import { Icon, currencyDollar } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
-import BlockEmbedIcon from 'components/icons/block-embed';
-import BlockPostAuthorIcon from 'components/icons/block-post-author';
+import BlockEmbedIcon from 'wcpay/components/icons/block-embed';
+import BlockPostAuthorIcon from 'wcpay/components/icons/block-post-author';
 import './style.scss';
 import { recordEvent } from 'wcpay/tracks';
 

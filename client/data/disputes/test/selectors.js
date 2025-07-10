@@ -3,7 +3,7 @@
 /**
  * Internal dependencies
  */
-import { getResourceId } from 'utils/data';
+import { getResourceId } from 'wcpay/utils/data';
 import { getDispute, getDisputes, getDisputesSummary } from '../selectors';
 
 // Sections in initial state are empty.

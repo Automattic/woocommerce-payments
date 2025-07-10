@@ -6,9 +6,9 @@ import React from 'react';
 /**
  * Internal dependencies
  */
-import Page from 'components/page';
+import Page from 'wcpay/components/page';
 import DocumentsList from './list';
-import { TestModeNotice } from 'components/test-mode-notice';
+import { TestModeNotice } from 'wcpay/components/test-mode-notice';
 import { MaybeShowMerchantFeedbackPrompt } from 'wcpay/merchant-feedback-prompt';
 export const DocumentsPage = (): JSX.Element => {
 	return (

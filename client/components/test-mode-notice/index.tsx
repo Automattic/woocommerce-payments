@@ -7,7 +7,7 @@ import { __, _n, sprintf } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { getPaymentSettingsUrl, isInTestMode } from 'utils';
+import { getPaymentSettingsUrl, isInTestMode } from 'wcpay/utils';
 import BannerNotice from '../banner-notice';
 import interpolateComponents from '@automattic/interpolate-components';
 import { Link } from '@woocommerce/components';

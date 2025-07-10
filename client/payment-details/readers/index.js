@@ -16,9 +16,9 @@ import { TableCard } from '@woocommerce/components';
  * Internal dependencies
  */
 import { useCardReaderStats } from 'wcpay/data';
-import { TestModeNotice } from 'components/test-mode-notice';
-import Page from 'components/page';
-import DownloadButton from 'components/download-button';
+import { TestModeNotice } from 'wcpay/components/test-mode-notice';
+import Page from 'wcpay/components/page';
+import DownloadButton from 'wcpay/components/download-button';
 import {
 	formatExplicitCurrency,
 	formatExportAmount,

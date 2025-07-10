@@ -10,14 +10,13 @@ import { addQueryArgs } from '@wordpress/url';
 /**
  * Internal dependencies.
  */
-import Page from 'components/page';
+import Page from 'wcpay/components/page';
 import interpolateComponents from '@automattic/interpolate-components';
 import { __ } from '@wordpress/i18n';
-import { TestModeNotice } from 'components/test-mode-notice';
-import BannerNotice from 'components/banner-notice';
-import DepositSchedule from 'components/deposits-overview/deposit-schedule';
-import { useAllDepositsOverviews } from 'data';
-import { useSettings } from 'wcpay/data';
+import { TestModeNotice } from 'wcpay/components/test-mode-notice';
+import BannerNotice from 'wcpay/components/banner-notice';
+import DepositSchedule from 'wcpay/components/deposits-overview/deposit-schedule';
+import { useAllDepositsOverviews, useSettings } from 'wcpay/data';
 import DepositsList from './list';
 import { hasAutomaticScheduledDeposits } from 'wcpay/deposits/utils';
 import { recordEvent } from 'wcpay/tracks';

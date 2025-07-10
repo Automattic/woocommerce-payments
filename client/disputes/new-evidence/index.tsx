@@ -13,20 +13,20 @@ import HelpOutlineIcon from 'gridicons/dist/help-outline';
 /**
  * Internal dependencies.
  */
-import useConfirmNavigation from 'utils/use-confirm-navigation';
+import useConfirmNavigation from 'wcpay/utils/use-confirm-navigation';
 import { recordEvent } from 'tracks';
-import { TestModeNotice } from 'components/test-mode-notice';
-import ErrorBoundary from 'components/error-boundary';
-import Paragraphs from 'components/paragraphs';
+import { TestModeNotice } from 'wcpay/components/test-mode-notice';
+import ErrorBoundary from 'wcpay/components/error-boundary';
+import Paragraphs from 'wcpay/components/paragraphs';
 import { reasons } from 'wcpay/disputes/strings';
-import OrderLink from 'components/order-link';
+import OrderLink from 'wcpay/components/order-link';
 import DisputeNotice from 'payment-details/dispute-details/dispute-notice';
 import DisputeDueByDate from 'payment-details/dispute-details/dispute-due-by-date';
-import { ClickTooltip } from 'components/tooltip';
-import { HorizontalList } from 'components/horizontal-list';
+import { ClickTooltip } from 'wcpay/components/tooltip';
+import { HorizontalList } from 'wcpay/components/horizontal-list';
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
-import { getBankName } from 'utils/charge';
+import { getBankName } from 'wcpay/utils/charge';
 import {
 	generateCoverLetter,
 	getBusinessDetails,
@@ -35,7 +35,7 @@ import { useGetSettings, useDisputeEvidence } from 'wcpay/data';
 import CustomerDetails from './customer-details';
 import ProductDetails from './product-details';
 import RecommendedDocuments from './recommended-documents';
-import InlineNotice from 'components/inline-notice';
+import InlineNotice from 'wcpay/components/inline-notice';
 import ShippingDetails from './shipping-details';
 import CoverLetter from './cover-letter';
 import { Button, HorizontalRule } from 'wcpay/components/wp-components-wrapped';

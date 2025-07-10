@@ -7,7 +7,7 @@ import { useEffect } from 'react';
  * Internal dependencies
  */
 
-import { useStepperContext } from 'components/stepper';
+import { useStepperContext } from 'wcpay/components/stepper';
 import { useOnboardingContext } from './context';
 import { OnboardingFields } from './types';
 import { recordEvent } from 'tracks';

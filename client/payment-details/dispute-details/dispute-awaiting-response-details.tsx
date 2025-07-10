@@ -36,7 +36,7 @@ import {
 	InquirySteps,
 	NotDefendableInquirySteps,
 } from './dispute-steps';
-import InlineNotice from 'components/inline-notice';
+import InlineNotice from 'wcpay/components/inline-notice';
 import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
 import './style.scss';
 

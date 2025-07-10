@@ -17,7 +17,7 @@ import {
  * Internal dependencies
  */
 import { recordEvent } from 'tracks';
-import { updateWoocommerceUserMeta } from 'utils/update-woocommerce-user-meta';
+import { updateWoocommerceUserMeta } from 'wcpay/utils/update-woocommerce-user-meta';
 import './index.scss';
 
 const INBOX_QUERY = {

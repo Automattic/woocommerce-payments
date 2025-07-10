@@ -14,7 +14,7 @@ import CheckoutPageSaveUser from '../checkout-page-save-user';
 import useWooPayUser from '../../hooks/use-woopay-user';
 import useSelectedPaymentMethod from '../../hooks/use-selected-payment-method';
 import request from '../../../../checkout/utils/request';
-import { getConfig } from 'utils/checkout';
+import { getConfig } from 'wcpay/utils/checkout';
 import { useDispatch } from '@wordpress/data';
 
 const jQueryMock = ( selector ) => {
@@ -43,7 +43,7 @@ const jQueryMock = ( selector ) => {
 
 jest.mock( '../../hooks/use-woopay-user', () => jest.fn() );
 jest.mock( '../../hooks/use-selected-payment-method', () => jest.fn() );
-jest.mock( 'utils/checkout', () => ( {
+jest.mock( 'wcpay/utils/checkout', () => ( {
 	getConfig: jest.fn(),
 } ) );
 jest.mock(

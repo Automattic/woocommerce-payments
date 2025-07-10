@@ -12,7 +12,7 @@ import { __, sprintf } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { useAllDepositsOverviews } from 'data';
+import { useAllDepositsOverviews } from 'wcpay/data';
 import { useCurrentWpUser } from './hooks';
 import { CurrencySelect } from './currency-select';
 import './style.scss';

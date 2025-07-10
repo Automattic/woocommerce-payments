@@ -20,7 +20,7 @@ import {
 	FlexItem,
 } from 'wcpay/components/wp-components-wrapped';
 import { TimelineItem } from 'wcpay/data/timeline/types';
-import Loadable, { LoadableBlock } from 'components/loadable';
+import Loadable, { LoadableBlock } from 'wcpay/components/loadable';
 import { formatCurrency } from 'multi-currency/interface/functions';
 import { useTransactionAmounts } from './hooks';
 import FeesBreakdown from './fees-breakdown';

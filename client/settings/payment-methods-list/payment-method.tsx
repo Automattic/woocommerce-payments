@@ -10,7 +10,7 @@ import { CheckboxControl } from 'wcpay/components/wp-components-wrapped';
  * Internal dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { HoverTooltip } from 'components/tooltip';
+import { HoverTooltip } from 'wcpay/components/tooltip';
 import { FeeStructure } from 'wcpay/types/fees';
 import {
 	formatMethodFeesDescription,

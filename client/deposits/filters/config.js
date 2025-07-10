@@ -7,7 +7,7 @@ import { getSetting } from '@woocommerce/settings';
 /**
  * Internal dependencies
  */
-import { depositStatusLabels } from 'deposits/strings';
+import { depositStatusLabels } from 'wcpay/deposits/strings';
 
 const depositStatusOptions = Object.entries( depositStatusLabels )
 	// Ignore the 'deducted' status, which is only a display status and not to be used in filters.

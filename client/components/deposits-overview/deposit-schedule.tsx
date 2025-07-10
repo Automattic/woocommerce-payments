@@ -10,7 +10,7 @@ import HelpOutlineIcon from 'gridicons/dist/help-outline';
 /**
  * Internal dependencies
  */
-import { ClickTooltip } from 'components/tooltip';
+import { ClickTooltip } from 'wcpay/components/tooltip';
 import {
 	hasAutomaticScheduledDeposits,
 	getDepositMonthlyAnchorLabel,

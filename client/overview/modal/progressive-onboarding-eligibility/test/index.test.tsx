@@ -8,7 +8,7 @@ import user from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import ProgressiveOnboardingEligibilityModal from '../index';
+import ProgressiveOnboardingEligibilityModal from '..';
 
 jest.mock( 'wcpay/data/settings/actions', () => ( {
 	saveOption: jest.fn(),

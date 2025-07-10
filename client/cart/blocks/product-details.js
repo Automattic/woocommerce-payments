@@ -12,7 +12,7 @@ import { select } from '@wordpress/data';
  */
 import { getAppearance, getFontRulesFromPage } from 'wcpay/checkout/upe-styles';
 import { useStripeAsync } from 'wcpay/hooks/use-stripe-async';
-import { getUPEConfig } from 'utils/checkout';
+import { getUPEConfig } from 'wcpay/utils/checkout';
 import WCPayAPI from '../../checkout/api';
 import request from '../../checkout/utils/request';
 import { useEffect, useState } from 'react';

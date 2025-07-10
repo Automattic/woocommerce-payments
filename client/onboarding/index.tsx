@@ -6,9 +6,9 @@ import React, { useEffect } from 'react';
 /**
  * Internal dependencies
  */
-import Page from 'components/page';
+import Page from 'wcpay/components/page';
 import { OnboardingContextProvider } from './context';
-import { Stepper } from 'components/stepper';
+import { Stepper } from 'wcpay/components/stepper';
 import { getMccFromIndustry } from 'onboarding/utils';
 import { OnboardingForm } from './form';
 import Step from './step';

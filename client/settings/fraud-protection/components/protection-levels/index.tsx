@@ -16,10 +16,10 @@ import {
 	useSettings,
 	useGetSettings,
 } from 'wcpay/data';
-import { FraudProtectionHelpText, BasicFraudProtectionModal } from '../index';
+import { FraudProtectionHelpText, BasicFraudProtectionModal } from '..';
 import { getAdminUrl } from 'wcpay/utils';
 import { ProtectionLevel } from '../../advanced-settings/constants';
-import InlineNotice from 'components/inline-notice';
+import InlineNotice from 'wcpay/components/inline-notice';
 import { recordEvent } from 'tracks';
 
 const ProtectionLevels: React.FC = () => {

@@ -7,7 +7,7 @@ import { render } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import FraudProtectionHelpText from '../index';
+import FraudProtectionHelpText from '..';
 
 describe( 'FraudProtectionHelpText', () => {
 	it( 'renders standard level help text when level prop equals standard', () => {

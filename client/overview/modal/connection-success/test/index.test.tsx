@@ -8,7 +8,7 @@ import user from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import ConnectionSuccessModal from '../index';
+import ConnectionSuccessModal from '..';
 
 jest.mock( 'wcpay/data/settings/actions', () => ( {
 	saveOption: jest.fn(),

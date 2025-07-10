@@ -8,7 +8,7 @@ import type { Query } from '@woocommerce/navigation';
 /**
  * Internal dependencies
  */
-import { getResourceId } from 'utils/data';
+import { getResourceId } from 'wcpay/utils/data';
 import { ApiError } from 'wcpay/types/errors';
 import {
 	AuthorizationsSummary,

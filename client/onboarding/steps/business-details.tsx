@@ -7,7 +7,7 @@ import React from 'react';
  * Internal dependencies
  */
 import { useOnboardingContext } from '../context';
-import { Item } from 'components/custom-select-control';
+import { Item } from 'wcpay/components/custom-select-control';
 import { OnboardingFields } from '../types';
 import { OnboardingGroupedSelectField, OnboardingSelectField } from '../form';
 import {

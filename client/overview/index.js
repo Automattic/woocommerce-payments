@@ -14,21 +14,21 @@ import { Link } from '@woocommerce/components';
 /**
  * Internal dependencies.
  */
-import AccountBalances from 'components/account-balances';
-import AccountStatus from 'components/account-status';
-import ActiveLoanSummary from 'components/active-loan-summary';
+import AccountBalances from 'wcpay/components/account-balances';
+import AccountStatus from 'wcpay/components/account-status';
+import ActiveLoanSummary from 'wcpay/components/active-loan-summary';
 import ConnectionSuccessModal from './modal/connection-success';
-import DepositsOverview from 'components/deposits-overview';
-import ErrorBoundary from 'components/error-boundary';
-import JetpackIdcNotice from 'components/jetpack-idc-notice';
-import Page from 'components/page';
-import Welcome from 'components/welcome';
-import { TestModeNotice } from 'components/test-mode-notice';
+import DepositsOverview from 'wcpay/components/deposits-overview';
+import ErrorBoundary from 'wcpay/components/error-boundary';
+import JetpackIdcNotice from 'wcpay/components/jetpack-idc-notice';
+import Page from 'wcpay/components/page';
+import Welcome from 'wcpay/components/welcome';
+import { TestModeNotice } from 'wcpay/components/test-mode-notice';
 import InboxNotifications from './inbox-notifications';
 import ProgressiveOnboardingEligibilityModal from './modal/progressive-onboarding-eligibility';
 import TaskList from './task-list';
 import { getTasks, taskSort } from './task-list/tasks';
-import { useDisputes, useGetSettings, useSettings } from 'data';
+import { useDisputes, useGetSettings, useSettings } from 'wcpay/data';
 import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
 import './style.scss';
 import BannerNotice from 'wcpay/components/banner-notice';

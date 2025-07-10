@@ -29,8 +29,8 @@ import {
 } from '../../data';
 import './style.scss';
 import { recordEvent } from 'tracks';
-import InlineNotice from 'components/inline-notice';
-import { DepositFailureNotice } from 'components/deposits-overview/deposit-notices';
+import InlineNotice from 'wcpay/components/inline-notice';
+import { DepositFailureNotice } from 'wcpay/components/deposits-overview/deposit-notices';
 
 const daysOfWeek = [
 	{ label: __( 'Monday', 'woocommerce-payments' ), value: 'monday' },

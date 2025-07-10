@@ -7,7 +7,7 @@ import { render } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import { updateWoocommerceUserMeta } from 'utils/update-woocommerce-user-meta';
+import { updateWoocommerceUserMeta } from 'wcpay/utils/update-woocommerce-user-meta';
 import InboxPanel from '..';
 
 jest.mock( '@wordpress/data', () => ( {
@@ -40,7 +40,7 @@ jest.mock( '@woocommerce/experimental', () => {
 	};
 } );
 
-jest.mock( 'utils/update-woocommerce-user-meta', () => ( {
+jest.mock( 'wcpay/utils/update-woocommerce-user-meta', () => ( {
 	__esModule: true,
 	updateWoocommerceUserMeta: jest.fn(),
 } ) );

@@ -9,8 +9,8 @@ import { Button } from 'wcpay/components/wp-components-wrapped';
 /**
  * Internal dependencies
  */
-import { getDetailsURL } from 'components/details-link';
-import ClickableCell from 'components/clickable-cell';
+import { getDetailsURL } from 'wcpay/components/details-link';
+import ClickableCell from 'wcpay/components/clickable-cell';
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import { recordEvent } from 'tracks';
 import TransactionStatusPill from 'wcpay/components/transaction-status-pill';

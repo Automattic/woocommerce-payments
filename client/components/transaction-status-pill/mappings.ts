@@ -4,7 +4,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import type { PillType } from 'components/pill';
+import type { PillType } from 'wcpay/components/pill';
 
 export type TransactionStatus = 'allow' | 'review' | 'block';
 type TransactionStatusMapping = Record<

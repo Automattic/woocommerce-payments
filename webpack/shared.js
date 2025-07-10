@@ -111,7 +111,6 @@ module.exports = {
 	resolve: {
 		extensions: [ '.ts', '.tsx', '.json', '.js', '.jsx' ],
 		modules: [
-			path.join( process.cwd(), 'client' ),
 			path.join( process.cwd(), 'includes/multi-currency/client' ),
 			'node_modules',
 		],

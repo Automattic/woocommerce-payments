@@ -6,7 +6,7 @@ import React from 'react';
 /**
  * Internal dependencies
  */
-import { useStepperContext } from 'components/stepper';
+import { useStepperContext } from 'wcpay/components/stepper';
 import { OnboardingSteps } from './types';
 import { useTrackAbandoned } from './tracking';
 import strings from './strings';
