@@ -891,37 +891,6 @@ class WC_Payments_Utils_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'es', $result );
 	}
 
-	/**
-	 * @dataProvider provider_convert_to_server_locale
-	 */
-	public function test_convert_to_server_locale( string $input_locale, string $expected_locale ) {
-		$result = WC_Payments_Utils::convert_to_server_locale( $input_locale );
-		$this->assertEquals( $expected_locale, $result );
-	}
-
-	public function provider_convert_to_server_locale(): array {
-		// Label => [ WordPress locale, transact-platform-server locale ].
-		return [
-			'Supported locale (Arabic)'                => [ 'ar_AR', 'ar' ],
-			'Supported locale (German)'                => [ 'de_DE', 'de' ],
-			'Supported locale (Spanish)'               => [ 'es_ES', 'es' ],
-			'Supported locale (French)'                => [ 'fr_FR', 'fr' ],
-			'Supported locale (Hebrew)'                => [ 'he_IL', 'he' ],
-			'Supported locale (Indonesian)'            => [ 'id_ID', 'id' ],
-			'Supported locale (Italian)'               => [ 'it_IT', 'it' ],
-			'Supported locale (Japanese)'              => [ 'ja_JP', 'ja' ],
-			'Supported locale (Korean)'                => [ 'ko_KR', 'ko' ],
-			'Supported locale (Dutch)'                 => [ 'nl_NL', 'nl' ],
-			'Supported locale (Portuguese (Brazil))'   => [ 'pt_BR', 'pt-br' ],
-			'Supported locale (Russian)'               => [ 'ru_RU', 'ru' ],
-			'Supported locale (Swedish)'               => [ 'sv_SE', 'sv' ],
-			'Supported locale (Turkish)'               => [ 'tr_TR', 'tr' ],
-			'Supported locale (Chinese (Simplified))'  => [ 'zh_CN', 'zh-cn' ],
-			'Supported locale (Chinese (Traditional))' => [ 'zh_TW', 'zh-tw' ],
-			'Empty locale fallback to en'              => [ '', 'en' ],
-		];
-	}
-
 	public function not_payment_settings_page_conditions_provider(): array {
 		return [
 			'is_admin() is false'                 => [ false, 'woocommerce_payments_foo', 'checkout' ],

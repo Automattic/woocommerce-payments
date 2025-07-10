@@ -43,6 +43,7 @@ const ProductDetails: React.FC< ProductDetailsProps > = ( {
 					label={ __( 'PRODUCT TYPE', 'woocommerce-payments' ) }
 					value={ productType }
 					onChange={ onProductTypeChange }
+					data-testid={ 'dispute-challenge-product-type-selector' }
 					options={ [
 						{
 							label: __(
