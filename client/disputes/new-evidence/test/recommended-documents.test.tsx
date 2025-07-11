@@ -86,15 +86,6 @@ describe( 'RecommendedDocuments', () => {
 	} );
 
 	describe( 'helper link functionality', () => {
-		it( 'does not show helper link by default', () => {
-			render( <RecommendedDocuments fields={ fields } /> );
-			expect(
-				screen.queryByRole( 'link', {
-					name: /Learn more about documents/i,
-				} )
-			).not.toBeInTheDocument();
-		} );
-
 		it( 'renders helper link with correct href and text', () => {
 			render( <RecommendedDocuments fields={ fields } /> );
 			const helperLink = screen.getByRole( 'link', {
