@@ -175,72 +175,103 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			} );
 
 			await test.step(
-				'Confirm the expected challenge form sections are visible',
+				'Confirm the expected stepper steps are visible',
 				async () => {
 					await expect(
-						merchantPage.getByText( 'General evidence', {
+						merchantPage.getByText( 'Purchase info', {
 							exact: true,
 						} )
 					).toBeVisible();
 
 					await expect(
-						merchantPage.getByText( 'Shipping information', {
+						merchantPage.getByText( 'Shipping details', {
 							exact: true,
 						} )
 					).toBeVisible();
 
 					await expect(
-						merchantPage
-							.getByText( 'Additional details', {
-								exact: true,
-							} )
-							.first()
+						merchantPage.getByText( 'Review', {
+							exact: true,
+						} )
 					).toBeVisible();
+
+					await merchantPage
+						.getByLabel( 'PRODUCT DESCRIPTION' )
+						.fill( 'my product description' );
 				}
 			);
 
 			await test.step(
-				'Fill in the additional details field with the `winning_evidence` text',
+				'Navigate to the next step (Shipping details)',
 				async () => {
 					await merchantPage
-						.getByLabel( 'Additional details' )
-						.fill( 'winning_evidence' );
+						.getByRole( 'button', {
+							name: 'Next',
+						} )
+						.click();
 				}
 			);
 
 			await test.step(
-				'Submit the evidence and accept the dialog',
+				'Confirm we are on the shipping details step',
 				async () => {
-					// Prepare to accept the dialog before clicking the submit button
-					merchantPage.on( 'dialog', ( dialog ) => dialog.accept() );
+					await expect(
+						merchantPage.getByText( 'Add your shipping details', {
+							exact: true,
+						} )
+					).toBeVisible();
+				}
+			);
+
+			await test.step( 'Navigate to the review step', async () => {
+				await merchantPage
+					.getByRole( 'button', {
+						name: 'Next',
+					} )
+					.click();
+			} );
+
+			await test.step(
+				'Confirm we are on the review step and submit the evidence',
+				async () => {
+					await expect(
+						merchantPage.getByText( 'Review your cover letter', {
+							exact: true,
+						} )
+					).toBeVisible();
+
+					// wait cover letter to load with content and replace with new content
+					await merchantPage
+						.getByLabel( 'COVER LETTER' )
+						.waitFor( { state: 'visible', timeout: 5000 } );
+
+					// Check existing content
+					await expect(
+						merchantPage.getByLabel( 'COVER LETTER' )
+					).toContainText( 'WooPayments', {
+						timeout: 5000,
+					} );
+
+					await merchantPage
+						.getByLabel( 'COVER LETTER' )
+						.fill( 'winning_evidence' );
 
 					// Click the submit button
 					await merchantPage
 						.getByRole( 'button', {
-							name: 'Submit evidence',
+							name: 'Submit',
 						} )
 						.click();
-
-					// Wait for the dispute list page to load.
-					await expect(
-						merchantPage
-							.getByRole( 'heading', {
-								name: 'Disputes',
-							} )
-							.first()
-					).toBeVisible();
 				}
 			);
 
 			await test.step(
-				'Navigate to the payment details screen and confirm the dispute status is Won',
+				'Wait for the redirect to the dispute details page and confirm the dispute status is Won',
 				async () => {
-					await merchantPage.goto( paymentDetailsLink );
-
 					await expect(
-						merchantPage.getByText( 'Disputed: Won', {
-							exact: true,
-						} )
+						merchantPage
+							.locator( '.payment-details-summary__status' )
+							.filter( { hasText: 'Disputed: Won' } )
 					).toBeVisible();
 
 					await expect(
@@ -252,7 +283,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			);
 
 			await test.step(
-				'Confirm dispute action buttons are not present anymore since the dispute has been accepted',
+				'Confirm dispute action buttons are not present anymore since the dispute has been submitted',
 				async () => {
 					await expect(
 						merchantPage.getByTestId( 'challenge-dispute-button' )
@@ -298,49 +329,76 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			} );
 
 			await test.step(
-				'Fill in the additional details field with the `losing_evidence` text',
+				'Navigate to the next step (Shipping details)',
 				async () => {
 					await merchantPage
-						.getByLabel( 'Additional details', {
-							exact: true,
+						.getByRole( 'button', {
+							name: 'Next',
 						} )
-						.fill( 'losing_evidence' );
+						.click();
 				}
 			);
 
 			await test.step(
-				'Submit the evidence and accept the dialog',
+				'Confirm we are on the shipping details step',
 				async () => {
-					// Prepare to accept the dialog before clicking the submit button
-					merchantPage.on( 'dialog', ( dialog ) => dialog.accept() );
-
-					// Click the submit button
-					await merchantPage
-						.getByRole( 'button', {
-							name: 'Submit evidence',
-						} )
-						.click();
-
-					// Wait for the dispute list page to load.
 					await expect(
-						merchantPage
-							.getByRole( 'heading', {
-								name: 'Disputes',
-							} )
-							.first()
+						merchantPage.getByText( 'Add your shipping details', {
+							exact: true,
+						} )
 					).toBeVisible();
 				}
 			);
 
-			await test.step(
-				'Navigate to the payment details screen and confirm the dispute status is Lost',
-				async () => {
-					await merchantPage.goto( paymentDetailsLink );
+			await test.step( 'Navigate to the review step', async () => {
+				await merchantPage
+					.getByRole( 'button', {
+						name: 'Next',
+					} )
+					.click();
+			} );
 
+			await test.step(
+				'Confirm we are on the review step and submit the evidence',
+				async () => {
 					await expect(
-						merchantPage.getByText( 'Disputed: Lost', {
+						merchantPage.getByText( 'Review your cover letter', {
 							exact: true,
 						} )
+					).toBeVisible();
+
+					// wait cover letter to load with content and replace with new content
+					await merchantPage
+						.getByLabel( 'COVER LETTER' )
+						.waitFor( { state: 'visible', timeout: 5000 } );
+
+					// Check existing content
+					await expect(
+						merchantPage.getByLabel( 'COVER LETTER' )
+					).toContainText( 'WooPayments', {
+						timeout: 5000,
+					} );
+
+					await merchantPage
+						.getByLabel( 'COVER LETTER' )
+						.fill( 'losing_evidence' );
+
+					// Click the submit button
+					await merchantPage
+						.getByRole( 'button', {
+							name: 'Submit',
+						} )
+						.click();
+				}
+			);
+
+			await test.step(
+				'Wait for the redirect to the dispute details page and confirm the dispute status is Lost',
+				async () => {
+					await expect(
+						merchantPage
+							.locator( '.payment-details-summary__status' )
+							.filter( { hasText: 'Disputed: Lost' } )
 					).toBeVisible();
 
 					await expect(
@@ -352,7 +410,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			);
 
 			await test.step(
-				'Confirm dispute action buttons are not present anymore since the dispute has been accepted',
+				'Confirm dispute action buttons are not present anymore since the dispute has been submitted',
 				async () => {
 					await expect(
 						merchantPage.getByTestId( 'challenge-dispute-button' )
@@ -388,17 +446,40 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			}
 		);
 
-		await test.step( 'Select the product type', async () => {
-			await merchantPage
-				.getByTestId( 'dispute-challenge-product-type-selector' )
-				.selectOption( 'offline_service' );
+		// wait for the customer details to be visible
+		await test.step(
+			'Wait for the customer details to be visible',
+			async () => {
+				await expect(
+					merchantPage.getByText( 'Customer details', {
+						exact: true,
+					} )
+				).toBeVisible();
+			}
+		);
 
-			await expect(
-				merchantPage.getByTestId(
-					'dispute-challenge-product-type-selector'
-				)
-			).toHaveValue( 'offline_service' );
-		} );
+		await test.step(
+			'Confirm we are on the challenge dispute page',
+			async () => {
+				await expect(
+					merchantPage.getByText( "Let's gather the basics", {
+						exact: true,
+					} )
+				).toBeVisible();
+			}
+		);
+
+		await test.step(
+			'Fill in the product type and product description',
+			async () => {
+				await merchantPage
+					.getByTestId( 'dispute-challenge-product-type-selector' )
+					.selectOption( 'offline_service' );
+				await merchantPage
+					.getByLabel( 'PRODUCT DESCRIPTION' )
+					.fill( 'my product description' );
+			}
+		);
 
 		await test.step( 'Save the dispute challenge for later', async () => {
 			await merchantPage
@@ -406,22 +487,15 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 					name: 'Save for later',
 				} )
 				.click();
+		} );
 
-			// Wait for the redirect to the dispute list page.
-			await expect(
-				merchantPage
-					.getByRole( 'heading', {
-						name: 'Disputes',
-					} )
-					.first()
-			).toBeVisible();
+		await test.step( 'Go back to the payment details page', async () => {
+			await merchantPage.goto( paymentDetailsLink );
 		} );
 
 		await test.step(
 			'Navigate to the payment details screen and click the challenge dispute button',
 			async () => {
-				await merchantPage.goto( paymentDetailsLink );
-
 				await merchantPage
 					.getByTestId( 'challenge-dispute-button' )
 					.click();
@@ -431,6 +505,21 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 		await test.step(
 			'Verify the previously selected challenge product type is saved',
 			async () => {
+				await test.step(
+					'Confirm we are on the challenge dispute page',
+					async () => {
+						await expect(
+							merchantPage.getByText( "Let's gather the basics", {
+								exact: true,
+							} )
+						).toBeVisible();
+					}
+				);
+
+				await merchantPage
+					.getByTestId( 'dispute-challenge-product-type-selector' )
+					.waitFor( { timeout: 5000, state: 'visible' } );
+
 				await expect(
 					merchantPage.getByTestId(
 						'dispute-challenge-product-type-selector'
