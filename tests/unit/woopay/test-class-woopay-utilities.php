@@ -211,11 +211,18 @@ class WooPay_Utilities_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_should_enable_woopay_on_guest_checkout_logged_out_guest_enabled() {
 		wp_set_current_user( 0 );
-		update_option( 'woocommerce_enable_guest_checkout', 'yes' );
+		add_filter(
+			'pre_option_woocommerce_enable_guest_checkout',
+			function () {
+				return 'yes';
+			}
+		);
 
 		$woopay_utilities = new WooPay_Utilities();
 
 		$this->assertTrue( $woopay_utilities->should_enable_woopay_on_guest_checkout() );
+
+		remove_all_filters( 'pre_option_woocommerce_enable_guest_checkout' );
 	}
 
 	/**
@@ -225,11 +232,18 @@ class WooPay_Utilities_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_should_enable_woopay_on_guest_checkout_logged_out_guest_disabled() {
 		wp_set_current_user( 0 );
-		update_option( 'woocommerce_enable_guest_checkout', 'no' );
+		add_filter(
+			'pre_option_woocommerce_enable_guest_checkout',
+			function () {
+				return 'no';
+			}
+		);
 
 		$woopay_utilities = new WooPay_Utilities();
 
 		$this->assertFalse( $woopay_utilities->should_enable_woopay_on_guest_checkout() );
+
+		remove_all_filters( 'pre_option_woocommerce_enable_guest_checkout' );
 	}
 
 	/**
@@ -239,12 +253,20 @@ class WooPay_Utilities_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_should_enable_woopay_on_guest_checkout_logged_out_has_subscription_with_enable_guest_checkout_enabled() {
 		wp_set_current_user( 0 );
-		update_option( 'woocommerce_enable_guest_checkout', 'yes' );
+		add_filter(
+			'pre_option_woocommerce_enable_guest_checkout',
+			function () {
+				return 'yes';
+			}
+		);
+
 		WC_Subscriptions_Cart::set_cart_contains_subscription( true );
 
 		$woopay_utilities = new WooPay_Utilities();
 
 		$this->assertFalse( $woopay_utilities->should_enable_woopay_on_guest_checkout() );
+
+		remove_all_filters( 'pre_option_woocommerce_enable_guest_checkout' );
 	}
 
 	private function clean_up_should_enable_woopay_tests() {
