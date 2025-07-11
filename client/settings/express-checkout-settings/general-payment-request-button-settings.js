@@ -166,7 +166,7 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 		isWooPayFeatureFlagEnabled;
 
 	return (
-		<CardBody>
+		<CardBody className="wcpay-card-body">
 			{ showWarning && (
 				<>
 					<InlineNotice
@@ -206,6 +206,7 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 				value={ buttonType }
 				options={ buttonActionOptions }
 				onChange={ setButtonType }
+				__nextHasNoMarginBottom
 			/>
 			<h4>{ __( 'Button size', 'woocommerce-payments' ) }</h4>
 			<RadioControl
@@ -259,6 +260,7 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 					min={ 0 }
 					withInputField={ false }
 					onChange={ setRadius }
+					__nextHasNoMarginBottom
 				/>
 			</div>
 			<p className="payment-method-settings__option-help-text">

@@ -48,6 +48,7 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 						) }
 						checked={ isPaymentRequestEnabled }
 						onChange={ updateIsPaymentRequestEnabled }
+						__nextHasNoMarginBottom
 					/>
 				</div>
 				<div className="express-checkout__text-container">

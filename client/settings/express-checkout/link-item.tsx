@@ -64,6 +64,7 @@ const LinkExpressCheckoutItem = (): React.ReactElement | null => {
 						disabled={ isWooPayEnabled }
 						checked={ isStripeLinkEnabled }
 						onChange={ updateStripeLinkCheckout }
+						__nextHasNoMarginBottom
 					/>
 				</div>
 				<div className="express-checkout__text-container">

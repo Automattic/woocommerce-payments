@@ -17,8 +17,13 @@ export const makeWrappedComponent = <
 ) =>
 	React.forwardRef<
 		any,
-		ComponentProps< T > & { useBundledComponent?: boolean }
+		ComponentProps< T > & {
+			useBundledComponent?: boolean;
+			// eslint-disable-next-line @typescript-eslint/naming-convention
+			__nextHasNoMarginBottom?: boolean;
+		}
 	>( ( props, ref ) => {
+		// eslint-disable-next-line @typescript-eslint/naming-convention
 		const { useBundledComponent, ...rest } = props;
 		const context = useContext( WordPressComponentsContext );
 

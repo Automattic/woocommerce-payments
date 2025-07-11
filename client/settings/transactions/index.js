@@ -61,7 +61,7 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 
 	return (
 		<Card className="transactions">
-			<CardBody>
+			<CardBody className="wcpay-card-body">
 				<h4>
 					{ __( 'Transaction preferences', 'woocommerce-payments' ) }
 				</h4>
@@ -77,6 +77,7 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 							'Card details are stored in our platform, not on your store.',
 						'woocommerce-payments'
 					) }
+					__nextHasNoMarginBottom
 				/>
 				<ManualCaptureControl></ManualCaptureControl>
 				<h4>{ __( 'Customer statements', 'woocommerce-payments' ) }</h4>
@@ -114,6 +115,7 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 						onChange={ setAccountStatementDescriptor }
 						maxLength={ ACCOUNT_STATEMENT_MAX_LENGTH }
 						data-testid={ 'store-name-bank-statement' }
+						__nextHasNoMarginBottom
 					/>
 					<span className="input-help-text" aria-hidden="true">
 						{ `${ accountStatementDescriptor.length } / ${ ACCOUNT_STATEMENT_MAX_LENGTH }` }
@@ -141,6 +143,7 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 									data-testid={
 										'store-name-bank-statement-kanji'
 									}
+									__nextHasNoMarginBottom
 								/>
 								<span
 									className="input-help-text"
@@ -170,6 +173,7 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 									data-testid={
 										'store-name-bank-statement-kana'
 									}
+									__nextHasNoMarginBottom
 								/>
 								<span
 									className="input-help-text"

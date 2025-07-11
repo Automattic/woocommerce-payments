@@ -26,7 +26,7 @@ const GeneralSettings = () => {
 	return (
 		<>
 			<Card>
-				<CardBody>
+				<CardBody className="wcpay-card-body">
 					<EnableWooPaymentsCheckbox />
 					{ ! isTestModeOnboarding && (
 						<>
@@ -79,6 +79,7 @@ const GeneralSettings = () => {
 										),
 									},
 								} ) }
+								__nextHasNoMarginBottom
 							/>
 						</>
 					) }
