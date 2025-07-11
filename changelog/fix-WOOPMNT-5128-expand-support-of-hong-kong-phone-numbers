@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Support numbers starting from 4, 7, 8 for Hong Kong phones.

@@ -21,15 +21,14 @@ class WC_Payments_Features {
 	 *   - The next version of WooPayments.
 	 *   - The flag to be deleted.
 	 */
-	const WCPAY_SUBSCRIPTIONS_FLAG_NAME          = '_wcpay_feature_subscriptions';
-	const STRIPE_BILLING_FLAG_NAME               = '_wcpay_feature_stripe_billing';
-	const WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME      = '_wcpay_feature_woopay_express_checkout';
-	const WOOPAY_FIRST_PARTY_AUTH_FLAG_NAME      = '_wcpay_feature_woopay_first_party_auth';
-	const WOOPAY_DIRECT_CHECKOUT_FLAG_NAME       = '_wcpay_feature_woopay_direct_checkout';
-	const AUTH_AND_CAPTURE_FLAG_NAME             = '_wcpay_feature_auth_and_capture';
-	const DISPUTE_ISSUER_EVIDENCE                = '_wcpay_feature_dispute_issuer_evidence';
-	const WOOPAY_GLOBAL_THEME_SUPPORT_FLAG_NAME  = '_wcpay_feature_woopay_global_theme_support';
-	const NEW_EVIDENCE_SUBMISSION_FORM_FLAG_NAME = '_wcpay_feature_new_evidence_submission_form';
+	const WCPAY_SUBSCRIPTIONS_FLAG_NAME         = '_wcpay_feature_subscriptions';
+	const STRIPE_BILLING_FLAG_NAME              = '_wcpay_feature_stripe_billing';
+	const WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME     = '_wcpay_feature_woopay_express_checkout';
+	const WOOPAY_FIRST_PARTY_AUTH_FLAG_NAME     = '_wcpay_feature_woopay_first_party_auth';
+	const WOOPAY_DIRECT_CHECKOUT_FLAG_NAME      = '_wcpay_feature_woopay_direct_checkout';
+	const AUTH_AND_CAPTURE_FLAG_NAME            = '_wcpay_feature_auth_and_capture';
+	const DISPUTE_ISSUER_EVIDENCE               = '_wcpay_feature_dispute_issuer_evidence';
+	const WOOPAY_GLOBAL_THEME_SUPPORT_FLAG_NAME = '_wcpay_feature_woopay_global_theme_support';
 
 	/**
 	 * Indicates whether card payments are enabled for this (Stripe) account.
@@ -204,9 +203,8 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_documents_section_enabled() {
-		$account              = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
-		$is_documents_enabled = is_array( $account ) && ( $account['is_documents_enabled'] ?? false );
-		return '1' === get_option( '_wcpay_feature_documents', $is_documents_enabled ? '1' : '0' );
+		$account = WC_Payments::get_database_cache()->get( WCPay\Database_Cache::ACCOUNT_KEY, true );
+		return is_array( $account ) && ( $account['is_documents_enabled'] ?? false );
 	}
 
 	/**
@@ -343,15 +341,6 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether the new evidence submission form feature is enabled.
-	 *
-	 * @return bool
-	 */
-	public static function is_new_evidence_submission_form_enabled(): bool {
-		return '1' === get_option( self::NEW_EVIDENCE_SUBMISSION_FORM_FLAG_NAME, '0' );
-	}
-
-	/**
 	 * Returns feature flags as an array suitable for display on the front-end.
 	 *
 	 * @return bool[]
@@ -359,13 +348,12 @@ class WC_Payments_Features {
 	public static function to_array() {
 		return array_filter(
 			[
-				'multiCurrency'                      => self::is_customer_multi_currency_enabled(),
-				'woopay'                             => self::is_woopay_eligible(),
-				'documents'                          => self::is_documents_section_enabled(),
-				'woopayExpressCheckout'              => self::is_woopay_express_checkout_enabled(),
-				'isAuthAndCaptureEnabled'            => self::is_auth_and_capture_enabled(),
-				'isDisputeIssuerEvidenceEnabled'     => self::is_dispute_issuer_evidence_enabled(),
-				'isNewEvidenceSubmissionFormEnabled' => self::is_new_evidence_submission_form_enabled(),
+				'multiCurrency'                  => self::is_customer_multi_currency_enabled(),
+				'woopay'                         => self::is_woopay_eligible(),
+				'documents'                      => self::is_documents_section_enabled(),
+				'woopayExpressCheckout'          => self::is_woopay_express_checkout_enabled(),
+				'isAuthAndCaptureEnabled'        => self::is_auth_and_capture_enabled(),
+				'isDisputeIssuerEvidenceEnabled' => self::is_dispute_issuer_evidence_enabled(),
 			]
 		);
 	}

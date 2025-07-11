@@ -373,7 +373,7 @@ const getRecommendedShippingDocumentFields = (): Array<
 			key: DOCUMENT_FIELD_KEYS.SHIPPING_DOCUMENTATION,
 			label: __( 'Proof of shipping', 'woocommerce-payments' ),
 			description: __(
-				'A copy of the shipment receipt or label.',
+				'A receipt from the shipping carrier or a tracking number, for example.',
 				'woocommerce-payments'
 			),
 			order: 0,

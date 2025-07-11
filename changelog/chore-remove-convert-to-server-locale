@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Remove conversion to the server locale, as it is done on the server.

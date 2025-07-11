@@ -6,6 +6,18 @@ import { PaymentMethodToPluginsMap } from './components/duplicate-notice';
 import { WCPayExpressCheckoutParams } from './express-checkout/utils';
 
 declare global {
+	interface TosSettingsStripeConnected {
+		is_existing_stripe_account: boolean;
+	}
+
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	const wcpay_tos_settings: {
+		settingsUrl: string;
+		tosAgreementDeclined: '' | '1';
+		tosAgreementRequired: '' | '1';
+		trackStripeConnected: TosSettingsStripeConnected | '';
+	};
+
 	const wcpaySettings: {
 		version: string;
 		connectUrl: string;
@@ -19,7 +31,6 @@ declare global {
 			isAuthAndCaptureEnabled: boolean;
 			paymentTimeline: boolean;
 			isDisputeIssuerEvidenceEnabled: boolean;
-			isNewEvidenceSubmissionFormEnabled: boolean;
 			multiCurrency?: boolean;
 		};
 		accountFees: Record< string, any >;
@@ -137,28 +148,6 @@ declare global {
 		isInstantDepositNoticeDismissed: boolean;
 		isConnectionSuccessModalDismissed: boolean;
 		isWCReactifySettingsFeatureEnabled: boolean;
-		userLocale: {
-			/**
-			 * The locale of the current user profile, represented as a locale code supported by transact-platform-server.
-			 *
-			 * @example 'es' // Spanish
-			 *
-			 * @see WC_Payments_Utils::convert_locale_to_language_code
-			 */
-			code: string;
-			/**
-			 * The English name of the locale.
-			 *
-			 * @example 'Spanish'
-			 */
-			english_name: string;
-			/**
-			 * The native name of the locale.
-			 *
-			 * @example 'Español'
-			 */
-			native_name: string;
-		};
 		trackingInfo?: {
 			hosting_provider: string;
 		};
