@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useEffect } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 
@@ -24,6 +24,10 @@ const ConfirmationScreen: React.FC< ConfirmationScreenProps > = ( {
 	disputeId,
 	bankName,
 } ) => {
+	useEffect( () => {
+		window.scrollTo( { top: 0, behavior: 'smooth' } );
+	}, [] );
+
 	return (
 		<div className="wcpay-dispute-evidence-confirmation">
 			<div className="wcpay-dispute-evidence-confirmation__wrapper">
