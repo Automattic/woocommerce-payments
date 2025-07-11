@@ -14,6 +14,11 @@ import ConfirmationScreen from '../confirmation-screen';
 delete ( window as any ).location;
 ( window as any ).location = { href: '' };
 
+// Mock window.scrollTo - Jest environment doesn't have this method implemented
+Object.defineProperty( window, 'scrollTo', {
+	value: jest.fn(),
+} );
+
 // Note: Using real ExternalLink component to test actual behavior
 
 describe( 'ConfirmationScreen', () => {
@@ -48,7 +53,7 @@ describe( 'ConfirmationScreen', () => {
 
 			// Action buttons
 			expect(
-				screen.getByRole( 'button', { name: 'Return to disputes' } )
+				screen.getByRole( 'button', { name: 'Return to transactions' } )
 			).toBeInTheDocument();
 			expect(
 				screen.getByRole( 'button', { name: 'View submitted dispute' } )
@@ -174,11 +179,11 @@ describe( 'ConfirmationScreen', () => {
 	} );
 
 	describe( 'Button interactions', () => {
-		it( 'navigates to disputes list when "Return to disputes" is clicked', () => {
+		it( 'navigates to disputes list when "Return to transactions" is clicked', () => {
 			render( <ConfirmationScreen { ...baseProps } /> );
 
 			const returnButton = screen.getByRole( 'button', {
-				name: 'Return to disputes',
+				name: 'Return to transactions',
 			} );
 			fireEvent.click( returnButton );
 
