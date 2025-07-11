@@ -33,6 +33,7 @@ class WC_Payments_Address_Provider extends AbstractAutomatticAddressProvider {
 		$this->id                  = 'woocommerce_payments';
 		$this->name                = __( 'WooCommerce Payments', 'woocommerce-payments' );
 		$this->payments_api_client = $payments_api_client;
+		parent::__construct();
 	}
 
 
@@ -49,7 +50,6 @@ class WC_Payments_Address_Provider extends AbstractAutomatticAddressProvider {
 	public function get_address_service_jwt() {
 		try {
 			$response = $this->payments_api_client->get_address_autocomplete_token();
-
 			if ( is_array( $response ) && isset( $response['token'] ) ) {
 				return $response['token'];
 			}
