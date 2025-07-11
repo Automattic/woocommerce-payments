@@ -9,7 +9,8 @@ import { __ } from '@wordpress/i18n';
  */
 import { TestModeNotice } from '../../components/test-mode-notice';
 import Page from '../../components/page';
-import { Card, CardBody } from 'wcpay/components/wp-components-wrapped';
+import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
+import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
 import ErrorBoundary from '../../components/error-boundary';
 import PaymentDetailsSummary from '../summary';
 import PaymentDetailsTimeline from '../timeline';
@@ -59,8 +60,6 @@ const PaymentDetails: React.FC< PaymentDetailsProps > = ( {
 
 	const bankName = charge ? getBankName( charge ) : null;
 
-	const shouldUseBundledComponents = ! charge?.dispute;
-
 	return (
 		<Page maxWidth={ 1032 } className="wcpay-payment-details">
 			<MaybeShowMerchantFeedbackPrompt />
@@ -77,9 +76,6 @@ const PaymentDetails: React.FC< PaymentDetailsProps > = ( {
 			{ showTimeline && wcpaySettings.featureFlags.paymentTimeline && (
 				<ErrorBoundary>
 					<PaymentDetailsTimeline
-						shouldUseBundledComponents={
-							shouldUseBundledComponents
-						}
 						paymentIntentId={ id }
 						bankName={ bankName }
 					/>

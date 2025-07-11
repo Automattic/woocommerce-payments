@@ -311,17 +311,11 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 
 	const [ isRefundModalOpen, setIsRefundModalOpen ] = useState( false );
 
-	const shouldUseBundledComponents = ! charge?.dispute;
-
 	const bankName = getBankName( charge );
 	return (
-		<Card useBundledComponent={ shouldUseBundledComponents }>
-			<CardBody useBundledComponent={ shouldUseBundledComponents }>
-				<Flex
-					direction="row"
-					align="start"
-					useBundledComponent={ shouldUseBundledComponents }
-				>
+		<Card>
+			<CardBody>
+				<Flex direction="row" align="start">
 					<div className="payment-details-summary">
 						<div className="payment-details-summary__section">
 							<div className="payment-details-summary__amount-wrapper">
@@ -614,9 +608,6 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								placeholder={ moreVertical }
 							>
 								<DropdownMenu
-									useBundledComponent={
-										shouldUseBundledComponents
-									}
 									icon={ moreVertical }
 									label={ __(
 										'Transaction actions',
@@ -628,16 +619,9 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 									className="refund-controls__dropdown-menu"
 								>
 									{ ( { onClose } ) => (
-										<MenuGroup
-											useBundledComponent={
-												shouldUseBundledComponents
-											}
-										>
+										<MenuGroup>
 											{ ! isPartiallyRefunded && (
 												<MenuItem
-													useBundledComponent={
-														shouldUseBundledComponents
-													}
 													onClick={ () => {
 														setIsRefundModalOpen(
 															true
@@ -660,9 +644,6 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 											) }
 											{ isPartiallyRefundable && (
 												<MenuItem
-													useBundledComponent={
-														shouldUseBundledComponents
-													}
 													onClick={ () => {
 														recordEvent(
 															'payments_transactions_details_partial_refund',
@@ -692,8 +673,8 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 					</div>
 				</Flex>
 			</CardBody>
-			<CardDivider useBundledComponent={ shouldUseBundledComponents } />
-			<CardBody useBundledComponent={ shouldUseBundledComponents }>
+			<CardDivider />
+			<CardBody>
 				<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
 					<HorizontalList
 						items={
@@ -758,7 +739,6 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 				! authorization.captured && (
 					<Loadable isLoading={ isLoading } placeholder="">
 						<CardNotice
-							useBundledComponent={ shouldUseBundledComponents }
 							actions={
 								! isFraudOutcomeReview ? (
 									<CaptureAuthorizationButton
