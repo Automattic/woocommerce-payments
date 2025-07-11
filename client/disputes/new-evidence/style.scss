@@ -378,6 +378,14 @@
 	}
 }
 
+.wcpay-accordion {
+	.wcpay-inline-notice.components-notice {
+		.components-notice__content {
+			font-size: 14px;
+		}
+	}
+}
+
 @media print {
 	.wcpay-dispute-evidence-cover-letter {
 		max-width: 700px;
