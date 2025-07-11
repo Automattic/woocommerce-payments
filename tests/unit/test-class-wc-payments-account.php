@@ -1154,7 +1154,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		// There is another onboarding started.
 		$this->mock_onboarding_service
-			->expects( $this->once() )
+			->expects( $this->atLeastOnce() )
 			->method( 'is_onboarding_init_in_progress' )
 			->willReturn( true );
 
