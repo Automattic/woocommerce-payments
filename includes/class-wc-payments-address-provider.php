@@ -1,0 +1,87 @@
+<?php
+/**
+ * Class WC_Payments_Address_Provider
+ *
+ * @package WooCommerce\Payments
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
+
+use Automattic\WooCommerce\Internal\AddressProvider\AbstractAutomatticAddressProvider;
+use WCPay\Exceptions\API_Exception;
+use WCPay\Logger;
+
+/**
+ * Address provider implementation for WooCommerce Payments.
+ */
+class WC_Payments_Address_Provider extends AbstractAutomatticAddressProvider {
+	/**
+	 * Client for making requests to the WooCommerce Payments API
+	 *
+	 * @var WC_Payments_API_Client
+	 */
+	protected $payments_api_client;
+
+	/**
+	 * Constructor.
+	 *
+	 * @param WC_Payments_API_Client $payments_api_client The API client for making requests.
+	 */
+	public function __construct( WC_Payments_API_Client $payments_api_client ) {
+		$this->id                  = 'woocommerce_payments';
+		$this->name                = __( 'WooCommerce Payments', 'woocommerce-payments' );
+		$this->payments_api_client = $payments_api_client;
+	}
+
+
+	/**
+	 * Get address service JWT token from the WCPay server.
+	 *
+	 * This method calls the address-autocomplete-token endpoint to retrieve
+	 * a JWT token for address autocomplete services.
+	 *
+	 * Caching and retries and backoff logic is handled by the parent class, if you must override that without fixing it upstream, you should also override `load_jwt`.
+	 *
+	 * @return string|WP_Error The JWT token on success, WP_Error on failure.
+	 */
+	public function get_address_service_jwt() {
+		try {
+			$response = $this->payments_api_client->get_address_autocomplete_token();
+
+			if ( is_array( $response ) && isset( $response['token'] ) ) {
+				return $response['token'];
+			}
+
+			Logger::error( 'Address service JWT response missing token: ' . wp_json_encode( $response ) );
+			return new WP_Error(
+				'wcpay_address_service_no_token',
+				__( 'No JWT token received from address service.', 'woocommerce-payments' )
+			);
+
+		} catch ( API_Exception $e ) {
+			Logger::error( 'Failed to get address service JWT: ' . $e->getMessage() );
+			return new WP_Error(
+				'wcpay_address_service_api_error',
+				__( 'Failed to retrieve address service token.', 'woocommerce-payments' ),
+				[ 'status' => $e->get_http_code() ]
+			);
+		} catch ( Exception $e ) {
+			Logger::error( 'Unexpected error getting address service JWT: ' . $e->getMessage() );
+			return new WP_Error(
+				'wcpay_address_service_error',
+				__( 'An unexpected error occurred while retrieving the address service token.', 'woocommerce-payments' )
+			);
+		}
+	}
+
+	/**
+	 * Whether the address provider can send frontend telemetry data.
+	 *
+	 * @return bool True if telemetry is allowed, false otherwise.
+	 */
+	public function can_telemetry() {
+		return true;
+	}
+}
