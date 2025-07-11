@@ -154,7 +154,7 @@ const ConfirmationScreen: React.FC< ConfirmationScreenProps > = ( {
 							} }
 						>
 							{ __(
-								'Return to disputes',
+								'Return to transactions',
 								'woocommerce-payments'
 							) }
 						</Button>
