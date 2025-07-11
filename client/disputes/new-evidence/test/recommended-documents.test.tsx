@@ -95,40 +95,8 @@ describe( 'RecommendedDocuments', () => {
 			).not.toBeInTheDocument();
 		} );
 
-		it( 'shows helper link when hasHelperLink is true', () => {
-			render(
-				<RecommendedDocuments
-					fields={ fields }
-					hasHelperLink={ true }
-				/>
-			);
-			const helperLink = screen.getByRole( 'link', {
-				name: /Learn more about documents/i,
-			} );
-			expect( helperLink ).toBeInTheDocument();
-		} );
-
-		it( 'hides helper link when hasHelperLink is false', () => {
-			render(
-				<RecommendedDocuments
-					fields={ fields }
-					hasHelperLink={ false }
-				/>
-			);
-			expect(
-				screen.queryByRole( 'link', {
-					name: /Learn more about documents/i,
-				} )
-			).not.toBeInTheDocument();
-		} );
-
-		it( 'renders helper link with correct href', () => {
-			render(
-				<RecommendedDocuments
-					fields={ fields }
-					hasHelperLink={ true }
-				/>
-			);
+		it( 'renders helper link with correct href and text', () => {
+			render( <RecommendedDocuments fields={ fields } /> );
 			const helperLink = screen.getByRole( 'link', {
 				name: /Learn more about documents/i,
 			} );
@@ -136,27 +104,14 @@ describe( 'RecommendedDocuments', () => {
 				'href',
 				'https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#challenge-or-accept'
 			);
-		} );
 
-		it( 'renders helper link with correct text content', () => {
-			render(
-				<RecommendedDocuments
-					fields={ fields }
-					hasHelperLink={ true }
-				/>
-			);
 			expect(
 				screen.getByText( 'Learn more about documents' )
 			).toBeInTheDocument();
 		} );
 
 		it( 'renders helper link in the correct container', () => {
-			render(
-				<RecommendedDocuments
-					fields={ fields }
-					hasHelperLink={ true }
-				/>
-			);
+			render( <RecommendedDocuments fields={ fields } /> );
 			const helperLink = screen.getByRole( 'link', {
 				name: /Learn more about documents/i,
 			} );

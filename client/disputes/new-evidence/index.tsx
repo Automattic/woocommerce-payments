@@ -927,7 +927,6 @@ export default ( { query }: { query: { id: string } } ) => {
 					<RecommendedDocuments
 						fields={ recommendedDocumentsFields }
 						readOnly={ readOnly }
-						hasHelperLink
 					/>
 					{ inlineNotice( bankName ) }
 				</>
@@ -962,7 +961,6 @@ export default ( { query }: { query: { id: string } } ) => {
 					<RecommendedDocuments
 						fields={ recommendedShippingDocumentsFields }
 						readOnly={ readOnly }
-						hasHelperLink
 					/>
 					{ inlineNotice( bankName ) }
 				</>
