@@ -281,6 +281,7 @@ class WC_Payments_Onboarding_Service {
 	 * @param array   $capabilities Optional. List keyed by capabilities IDs (payment methods) with boolean values
 	 *                             indicating whether the capability should be requested when the account is created
 	 *                             and enabled in the settings.
+	 * @param bool    $migrate_to_live Whether to migrate the account to live.
 	 *
 	 * @return array Session data.
 	 *

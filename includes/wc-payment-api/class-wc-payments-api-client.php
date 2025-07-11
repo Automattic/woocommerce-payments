@@ -1095,6 +1095,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 * @param array   $actioned_notes Actioned notes to be sent.
 	 * @param bool    $progressive Whether progressive onboarding should be enabled for this onboarding.
 	 * @param ?string $referral_code Referral code to be used for onboarding.
+	 * @param ?bool   $migrate_to_live Whether to migrate the account to live.
 	 *
 	 * @return array
 	 *
