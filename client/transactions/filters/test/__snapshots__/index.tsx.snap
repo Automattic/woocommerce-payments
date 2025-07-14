@@ -172,5 +172,10 @@ HTMLOptionsCollection [
   >
     Loan repayment
   </option>,
+  <option
+    value="fee_refund"
+  >
+    Fee refund
+  </option>,
 ]
 `;
