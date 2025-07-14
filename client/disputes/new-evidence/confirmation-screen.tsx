@@ -149,12 +149,11 @@ const ConfirmationScreen: React.FC< ConfirmationScreenProps > = ( {
 								window.location.href = getAdminUrl( {
 									page: 'wc-admin',
 									path: '/payments/disputes',
-									filter: 'awaiting_response',
 								} );
 							} }
 						>
 							{ __(
-								'Return to transactions',
+								'Return to disputes',
 								'woocommerce-payments'
 							) }
 						</Button>
