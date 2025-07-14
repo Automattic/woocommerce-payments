@@ -1628,7 +1628,7 @@ class MultiCurrency {
 	 * @return void
 	 */
 	private function register_admin_scripts() {
-		$this->register_script_with_dependencies( 'WCPAY_MULTI_CURRENCY_SETTINGS', 'dist/multi-currency', [ 'WCPAY_ADMIN_SETTINGS' ] );
+		$this->register_script_with_dependencies( 'WCPAY_MULTI_CURRENCY_SETTINGS', 'dist/multi-currency', [ 'WCPAY_ADMIN_SETTINGS', 'wp-components' ] );
 
 		wp_register_style(
 			'WCPAY_MULTI_CURRENCY_SETTINGS',
