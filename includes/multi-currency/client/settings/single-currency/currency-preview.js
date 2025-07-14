@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { __ } from '@wordpress/i18n';
 import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
 import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
@@ -20,52 +20,28 @@ const CurrencyPreview = ( {
 	charmValue,
 } ) => {
 	const [ baseValue, setBaseValue ] = useState( 20.0 );
-	const [ calculatedValue, setCalculatedValue ] = useState( '0' );
 
-	const calculateCurrencyConversion = useCallback(
-		( value ) => {
-			const amount = parseFloat( value.toString().replace( /,/g, '.' ) );
-			const converted =
-				amount *
-				parseFloat( currencyRate ? currencyRate : targetCurrency.rate );
-			const rounded = parseFloat( roundingValue )
-				? Math.ceil( converted / parseFloat( roundingValue ) ) *
-				  parseFloat( roundingValue )
-				: converted;
-			const charmed = rounded + parseFloat( charmValue );
-			return isNaN( charmed )
-				? __( 'Please enter a valid number', 'woocommerce-payments' )
-				: formatCurrency(
-						isZeroDecimalCurrency( targetCurrency.code )
-							? charmed
-							: charmed * 100,
-						targetCurrency.code,
-						null,
-						true
-				  );
-		},
-		[ charmValue, currencyRate, roundingValue, targetCurrency ]
-	);
-
-	useEffect( () => {
-		if ( targetCurrency ) {
-			const initialCalculation = calculateCurrencyConversion( baseValue );
-			setCalculatedValue( initialCalculation );
-		}
-	}, [
-		calculateCurrencyConversion,
-		baseValue,
-		targetCurrency,
-		roundingValue,
-		charmValue,
-		currencyRate,
-	] );
-
-	const handleTextControlChange = ( value ) => {
-		setBaseValue( value );
-		const calculatedNewValue = calculateCurrencyConversion( value );
-		setCalculatedValue( calculatedNewValue );
-	};
+	const calculatedValue = useMemo( () => {
+		const amount = parseFloat( baseValue.toString().replace( /,/g, '.' ) );
+		const converted =
+			amount *
+			parseFloat( currencyRate ? currencyRate : targetCurrency.rate );
+		const rounded = parseFloat( roundingValue )
+			? Math.ceil( converted / parseFloat( roundingValue ) ) *
+			  parseFloat( roundingValue )
+			: converted;
+		const charmed = rounded + parseFloat( charmValue );
+		return isNaN( charmed )
+			? __( 'Please enter a valid number', 'woocommerce-payments' )
+			: formatCurrency(
+					isZeroDecimalCurrency( targetCurrency.code )
+						? charmed
+						: charmed * 100,
+					targetCurrency.code,
+					null,
+					true
+			  );
+	}, [ baseValue, charmValue, currencyRate, roundingValue, targetCurrency ] );
 
 	return (
 		<Card className="single-currency-settings-preview-wrapper">
@@ -77,7 +53,7 @@ const CurrencyPreview = ( {
 							prefix={ storeCurrency.symbol }
 							data-testid="store_currency_value"
 							value={ baseValue.toString() }
-							onChange={ handleTextControlChange }
+							onChange={ setBaseValue }
 						/>
 					) : (
 						<TextControlWithAffixes
@@ -85,7 +61,7 @@ const CurrencyPreview = ( {
 							suffix={ storeCurrency.symbol }
 							data-testid="store_currency_value"
 							value={ baseValue.toString() }
-							onChange={ handleTextControlChange }
+							onChange={ setBaseValue }
 						/>
 					) }
 				</div>
