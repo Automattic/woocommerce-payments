@@ -20,7 +20,7 @@ const CurrencyPreview = ( {
 	charmValue,
 } ) => {
 	const [ baseValue, setBaseValue ] = useState( 20.0 );
-	const [ calculatedValue, setCalculatedValue ] = useState( 0 );
+	const [ calculatedValue, setCalculatedValue ] = useState( '0' );
 
 	const calculateCurrencyConversion = useCallback(
 		( value ) => {
@@ -68,38 +68,38 @@ const CurrencyPreview = ( {
 	};
 
 	return (
-		<div className={ 'single-currency-settings-preview-wrapper' }>
-			<Card>
-				<CardBody>
-					<div>
-						<h4>{ storeCurrency.name }</h4>
-						{ storeCurrency.symbol_position === 'left' ? (
-							<TextControlWithAffixes
-								prefix={ storeCurrency.symbol }
-								data-testid="store_currency_value"
-								value={ baseValue.toString() }
-								onChange={ handleTextControlChange }
-							/>
-						) : (
-							<TextControlWithAffixes
-								suffix={ storeCurrency.symbol }
-								data-testid="store_currency_value"
-								value={ baseValue.toString() }
-								onChange={ handleTextControlChange }
-							/>
-						) }
-					</div>
-					<div>
-						<h4>{ targetCurrency && targetCurrency.name }</h4>
-						<div>
-							<strong data-testid="calculated_value">
-								{ calculatedValue }
-							</strong>
-						</div>
-					</div>
-				</CardBody>
-			</Card>
-		</div>
+		<Card className="single-currency-settings-preview-wrapper">
+			<CardBody className="wcpay-card-body">
+				<div>
+					{ storeCurrency.symbol_position === 'left' ? (
+						<TextControlWithAffixes
+							label={ storeCurrency.name }
+							prefix={ storeCurrency.symbol }
+							data-testid="store_currency_value"
+							value={ baseValue.toString() }
+							onChange={ handleTextControlChange }
+						/>
+					) : (
+						<TextControlWithAffixes
+							label={ storeCurrency.name }
+							suffix={ storeCurrency.symbol }
+							data-testid="store_currency_value"
+							value={ baseValue.toString() }
+							onChange={ handleTextControlChange }
+						/>
+					) }
+				</div>
+				<div>
+					<TextControlWithAffixes
+						data-testid="calculated_value"
+						label={ targetCurrency && targetCurrency.name }
+						value={ calculatedValue }
+						onChange={ () => null }
+						disabled
+					/>
+				</div>
+			</CardBody>
+		</Card>
 	);
 };
 

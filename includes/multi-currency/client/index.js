@@ -10,38 +10,22 @@ import ReactDOM from 'react-dom';
 import MultiCurrencySettings from './settings/multi-currency';
 import SingleCurrencySettings from './settings/single-currency';
 import MultiCurrencySettingsContext from './context';
+import UnbundledWpComponentsProvider from 'wcpay/wordpress-components-context/unbundled-wp-components-provider';
 
 const MultiCurrencySettingsPage = () => {
-	const [
-		isSingleCurrencyScreenOpen,
-		setSingleCurrencyScreenOpen,
-	] = useState( false );
-
 	const [
 		currencyCodeToShowSettingsFor,
 		setCurrencyCodeToShowSettingsFor,
 	] = useState( null );
 
-	const handleOpenSingleCurrencySettings = ( code ) => {
-		setCurrencyCodeToShowSettingsFor( code );
-		setSingleCurrencyScreenOpen( true );
-	};
-
-	const handleCloseSingleCurrencySettings = () => {
-		setSingleCurrencyScreenOpen( false );
-		setCurrencyCodeToShowSettingsFor( null );
-	};
-
 	return (
 		<MultiCurrencySettingsContext.Provider
 			value={ {
-				isSingleCurrencyScreenOpen: isSingleCurrencyScreenOpen,
-				currencyCodeToShowSettingsFor: currencyCodeToShowSettingsFor,
-				openSingleCurrencySettings: handleOpenSingleCurrencySettings,
-				closeSingleCurrencySettings: handleCloseSingleCurrencySettings,
+				currencyCodeToShowSettingsFor,
+				setCurrencyCodeToShowSettingsFor,
 			} }
 		>
-			{ ! isSingleCurrencyScreenOpen ? (
+			{ ! currencyCodeToShowSettingsFor ? (
 				<MultiCurrencySettings />
 			) : (
 				<SingleCurrencySettings />
@@ -51,6 +35,8 @@ const MultiCurrencySettingsPage = () => {
 };
 
 ReactDOM.render(
-	<MultiCurrencySettingsPage />,
+	<UnbundledWpComponentsProvider>
+		<MultiCurrencySettingsPage />
+	</UnbundledWpComponentsProvider>,
 	document.querySelector( '#wcpay_multi_currency_settings_container' )
 );
