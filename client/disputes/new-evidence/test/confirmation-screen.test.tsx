@@ -53,7 +53,7 @@ describe( 'ConfirmationScreen', () => {
 
 			// Action buttons
 			expect(
-				screen.getByRole( 'button', { name: 'Return to transactions' } )
+				screen.getByRole( 'button', { name: 'Return to disputes' } )
 			).toBeInTheDocument();
 			expect(
 				screen.getByRole( 'button', { name: 'View submitted dispute' } )
@@ -183,12 +183,12 @@ describe( 'ConfirmationScreen', () => {
 			render( <ConfirmationScreen { ...baseProps } /> );
 
 			const returnButton = screen.getByRole( 'button', {
-				name: 'Return to transactions',
+				name: 'Return to disputes',
 			} );
 			fireEvent.click( returnButton );
 
 			expect( ( window as any ).location.href ).toBe(
-				'admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes&filter=awaiting_response'
+				'admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes'
 			);
 		} );
 
