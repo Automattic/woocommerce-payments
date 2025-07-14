@@ -853,13 +853,13 @@ export default ( { query }: { query: { id: string } } ) => {
 				bankNameValue
 					? sprintf(
 							__(
-								'<strong>WooPayments does not determine the outcome of the dispute process</strong> and is not liable for any chargebacks. <strong>%1$s</strong> makes the decision in this process.',
+								'<strong>The outcome of this dispute will be determined by %1$s.</strong> WooPayments has no influence over the decision and is not liable for any chargebacks.',
 								'woocommerce-payments'
 							),
 							bankNameValue
 					  )
 					: __(
-							"<strong>WooPayments does not determine the outcome of the dispute process</strong> and is not liable for any chargebacks. The cardholder's bank makes the decision in this process.",
+							"<strong>The outcome of this dispute will be determined by the cardholder's bank.</strong> WooPayments has no influence over the decision and is not liable for any chargebacks.",
 							'woocommerce-payments'
 					  ),
 				{
