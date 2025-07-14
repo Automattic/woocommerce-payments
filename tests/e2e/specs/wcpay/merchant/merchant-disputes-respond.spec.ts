@@ -152,7 +152,10 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 
 			const orderId = await createDisputedOrder( browser );
 
-			await goToPaymentDetailsForOrder( merchantPage, orderId );
+			const paymentDetailsLink = await goToPaymentDetailsForOrder(
+				merchantPage,
+				orderId
+			);
 
 			await test.step(
 				'Click the challenge dispute button to navigate to the challenge dispute page',
@@ -331,7 +334,10 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 
 			const orderId = await createDisputedOrder( browser );
 
-			await goToPaymentDetailsForOrder( merchantPage, orderId );
+			const paymentDetailsLink = await goToPaymentDetailsForOrder(
+				merchantPage,
+				orderId
+			);
 
 			await test.step(
 				'Click the challenge dispute button to navigate to the challenge dispute page',
