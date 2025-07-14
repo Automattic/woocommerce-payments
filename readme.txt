@@ -87,6 +87,46 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 
 == Changelog ==
 
+= 9.7.0-test-2 - unreleased =
+* Add - Add Credit not processed logic for the new evidence submission form.
+* Add - Add external help link to the recomended documents section.
+* Add - Add logic for Duplicate chargeback reason for the new evidence submission form.
+* Add - Add logic for subscription cancelled for the new evidence form.
+* Add - Add new transaction type fee_refund
+* Add - File name should show size the extension
+* Add - New evidence flow for the "General" dispute type.
+* Fix - Adjusted deactivation modal behavior to correctly resize when its content updates.
+* Fix - Fix - Remove unwanted animations and improve styling consistency on dispute evidence pages.
+* Fix - Fix: Allow multiple authorization cancellations on the same order.
+* Fix - fix: remove BNPLs from PMME when BNPL method is not active
+* Fix - Fix border color of some items.
+* Fix - Fix copy for the documents section and fix the font size of the content inside the accordion on top.
+* Fix - Fix filename issue on the new evidence submission form.
+* Fix - Fix margin of the shipping details title on the evidence submission form.
+* Fix - Fix spacings on the envidence submission form
+* Fix - Fix vertical UI shift when uploading a file
+* Fix - Improve the cover letter save behavior.
+* Fix - Provide correct language code when requesting CSV exports in a region-specific language
+* Fix - Remove unnecessary gap
+* Fix - Step back should also scroll the page to the top
+* Fix - Support numbers starting from 4, 7, 8 for Hong Kong phones.
+* Update - Disallow challenging the Visa compliance disputes.
+* Update - Improve multicurrency caching and use new API endpoint.
+* Update - Redirect merchant to the dispute detail screen
+* Update - Redirects to the dispute list after save.
+* Update - Removes the feature flag for the new evidence submission form.
+* Update - update: deactivation survey to use WP components bundled within the WP installation
+* Update - update: multi-currency widget to use WP components bundled within the WP installation
+* Update - update: order page assets with wp components
+* Update - update: removed the payment gateways confirmation dialog
+* Update - update: TOS agreement dialog to use WP Components bundled within the WP installation
+* Update - Update copy for disputes
+* Dev - Prevent "Evidence saved" toast from appearing multiple times.
+* Dev - Remove conversion to the server locale, as it is done on the server.
+* Dev - Remove feature flag _wcpay_feature_documents
+* Dev - Remove old evidence submission code
+* Dev - update: ensure `wp-components-wrapped` has individually exported components
+
 = 9.6.0 - 2025-07-02 =
 * Add - Add cover letter for the new evidence submission screen for Product Unacceptable chargeback reason
 * Add - Added a URL parameter to allow merchants to access the VAT details modal.

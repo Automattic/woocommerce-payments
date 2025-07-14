@@ -1,4 +1,0 @@
-Significance: minor
-Type: update
-
-Improve multicurrency caching and use new API endpoint.
