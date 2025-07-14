@@ -40,6 +40,8 @@ const ProductDetails: React.FC< ProductDetailsProps > = ( {
 			</div>
 			<div className="wcpay-dispute-evidence-product-details__field-group">
 				<SelectControl
+					__nextHasNoMarginBottom
+					__next40pxDefaultSize
 					label={ __( 'PRODUCT TYPE', 'woocommerce-payments' ) }
 					value={ productType }
 					onChange={ onProductTypeChange }
@@ -79,6 +81,7 @@ const ProductDetails: React.FC< ProductDetailsProps > = ( {
 			</div>
 			<div className="wcpay-dispute-evidence-product-details__field-group">
 				<TextareaControl
+					__nextHasNoMarginBottom
 					label={ __(
 						'PRODUCT DESCRIPTION',
 						'woocommerce-payments'
