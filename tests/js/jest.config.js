@@ -29,7 +29,6 @@ module.exports = {
 		'<rootDir>/tests/js/jest-test-file-setup.js',
 	],
 	setupFilesAfterEnv: [
-		'<rootDir>/tests/js/jest-console-setup.js',
 		'<rootDir>/node_modules/@wordpress/jest-preset-default/scripts/setup-test-framework.js',
 		'<rootDir>/tests/js/jest-extensions-setup.js',
 		'<rootDir>/tests/js/jest-msw-setup.js',
