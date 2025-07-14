@@ -4,16 +4,6 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import {
-	CardDivider,
-	DropdownMenu,
-	MenuGroup,
-	MenuItem,
-	Card,
-	CardBody,
-	Flex,
-	CardNotice,
-} from 'wcpay/components/wp-components-wrapped';
 import { moreVertical } from '@wordpress/icons';
 import moment from 'moment';
 import React, { useContext, useState } from 'react';
@@ -24,6 +14,14 @@ import _ from 'lodash';
 /**
  * Internal dependencies.
  */
+import { CardDivider } from 'wcpay/components/wp-components-wrapped/components/card-divider';
+import { DropdownMenu } from 'wcpay/components/wp-components-wrapped/components/dropdown-menu';
+import { MenuGroup } from 'wcpay/components/wp-components-wrapped/components/menu-group';
+import { MenuItem } from 'wcpay/components/wp-components-wrapped/components/menu-item';
+import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
+import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
+import { Flex } from 'wcpay/components/wp-components-wrapped/components/flex';
+import { CardNotice } from 'wcpay/components/wp-components-wrapped/components/card-notice';
 import {
 	getChargeAmounts,
 	getChargeStatus,
@@ -68,6 +66,7 @@ import {
 	formatDateTimeFromString,
 	formatDateTimeFromTimestamp,
 } from 'wcpay/utils/date-time';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
 
 declare const window: any;
 
@@ -770,12 +769,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								),
 								{
 									a: (
-										// eslint-disable-next-line jsx-a11y/anchor-has-content, react/jsx-no-target-blank
-										<a
-											href="https://woocommerce.com/document/woopayments/settings-guide/authorize-and-capture/#capturing-authorized-orders"
-											target="_blank"
-											rel="noreferer"
-										/>
+										<ExternalLink href="https://woocommerce.com/document/woopayments/settings-guide/authorize-and-capture/#capturing-authorized-orders" />
 									),
 								}
 							) }{ ' ' }
