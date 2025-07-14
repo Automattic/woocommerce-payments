@@ -927,7 +927,6 @@ export default ( { query }: { query: { id: string } } ) => {
 					<RecommendedDocuments
 						fields={ recommendedDocumentsFields }
 						readOnly={ readOnly }
-						hasHelperLink={ true }
 					/>
 					{ inlineNotice( bankName ) }
 				</>
@@ -962,10 +961,6 @@ export default ( { query }: { query: { id: string } } ) => {
 					<RecommendedDocuments
 						fields={ recommendedShippingDocumentsFields }
 						readOnly={ readOnly }
-						customSubheading={ __(
-							'We recommend adding the following document(s) to support your case.',
-							'woocommerce-payments'
-						) }
 					/>
 					{ inlineNotice( bankName ) }
 				</>
