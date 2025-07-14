@@ -116,7 +116,7 @@ class WC_Payments_Payment_Request_Session_Handler_Test extends WCPAY_UnitTestCas
 		$this->assertEquals( 'cart_data', $unserialized_data['cart_key'] );
 		$this->assertArrayHasKey( 'wp_woocommerce_session_' . COOKIEHASH, $this->cookies_jar );
 
-		list( $cookie_customer_id ) = explode( '||', $this->cookies_jar[ 'wp_woocommerce_session_' . COOKIEHASH ] );
+		list( $cookie_customer_id ) = explode( '|', $this->cookies_jar[ 'wp_woocommerce_session_' . COOKIEHASH ] );
 		$this->assertNotEquals( $session_id, $cookie_customer_id );
 		$this->assertEquals( $session_handler->get_customer_id(), $cookie_customer_id );
 	}
