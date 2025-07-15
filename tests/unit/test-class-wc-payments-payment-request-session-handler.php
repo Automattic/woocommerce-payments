@@ -69,7 +69,7 @@ class WC_Payments_Payment_Request_Session_Handler_Test extends WCPAY_UnitTestCas
 		$cookie_hash = hash_hmac( 'md5', $to_hash, wp_hash( $to_hash ) );
 
 		$_COOKIE[ 'wp_woocommerce_session_' . COOKIEHASH ] = implode(
-			'||',
+			'|',
 			[
 				$customer_id,
 				$session_expiration,
@@ -116,7 +116,7 @@ class WC_Payments_Payment_Request_Session_Handler_Test extends WCPAY_UnitTestCas
 		$this->assertEquals( 'cart_data', $unserialized_data['cart_key'] );
 		$this->assertArrayHasKey( 'wp_woocommerce_session_' . COOKIEHASH, $this->cookies_jar );
 
-		list( $cookie_customer_id ) = explode( '||', $this->cookies_jar[ 'wp_woocommerce_session_' . COOKIEHASH ] );
+		list( $cookie_customer_id ) = explode( '|', $this->cookies_jar[ 'wp_woocommerce_session_' . COOKIEHASH ] );
 		$this->assertNotEquals( $session_id, $cookie_customer_id );
 		$this->assertEquals( $session_handler->get_customer_id(), $cookie_customer_id );
 	}
@@ -160,7 +160,7 @@ class WC_Payments_Payment_Request_Session_Handler_Test extends WCPAY_UnitTestCas
 		$this->assertEquals( 'cart_data', $unserialized_data['cart_key'] );
 		$this->assertArrayHasKey( 'wp_woocommerce_session_' . COOKIEHASH, $this->cookies_jar );
 
-		list( $cookie_customer_id ) = explode( '||', $this->cookies_jar[ 'wp_woocommerce_session_' . COOKIEHASH ] );
+		list( $cookie_customer_id ) = explode( '|', $this->cookies_jar[ 'wp_woocommerce_session_' . COOKIEHASH ] );
 		$this->assertNotEquals( $session_id, $cookie_customer_id );
 		$this->assertEquals( $session_handler->get_customer_id(), $cookie_customer_id );
 	}
