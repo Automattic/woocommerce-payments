@@ -18,7 +18,6 @@ export const makeWrappedComponent = <
 	React.forwardRef<
 		any,
 		ComponentProps< T > & {
-			useBundledComponent?: boolean;
 			// eslint-disable-next-line @typescript-eslint/naming-convention
 			__nextHasNoMarginBottom?: boolean;
 			// eslint-disable-next-line @typescript-eslint/naming-convention
@@ -33,7 +32,6 @@ export const makeWrappedComponent = <
 
 		// eslint-disable-next-line @typescript-eslint/naming-convention
 		const {
-			useBundledComponent,
 			// eslint-disable-next-line @typescript-eslint/naming-convention
 			__nextHasNoMarginBottom,
 			// eslint-disable-next-line @typescript-eslint/naming-convention
@@ -42,7 +40,7 @@ export const makeWrappedComponent = <
 		} = props;
 		const context = useContext( WordPressComponentsContext );
 
-		if ( ! context || useBundledComponent ) {
+		if ( ! context ) {
 			// @ts-expect-error: the type of props is not always well-defined, ignoring the error.
 			return <BundledComponent { ...rest } ref={ ref } />;
 		}
