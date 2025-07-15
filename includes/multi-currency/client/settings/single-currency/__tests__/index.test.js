@@ -127,10 +127,8 @@ useStoreSettings.mockReturnValue( {
 } );
 
 const containerContext = {
-	isSingleCurrencyScreenOpen: true,
 	currencyCodeToShowSettingsFor: 'EUR',
-	openSingleCurrencySettings: jest.fn(),
-	closeSingleCurrencySettings: jest.fn(),
+	setCurrencyCodeToShowSettingsFor: jest.fn(),
 };
 
 const getContainer = () => {
@@ -191,7 +189,7 @@ describe( 'Single currency settings screen', () => {
 				value: '10',
 			},
 		} );
-		expect( screen.getByTestId( 'calculated_value' ) ).toHaveTextContent(
+		expect( screen.getByTestId( 'calculated_value' ) ).toHaveValue(
 			'€9.00'
 		);
 		// Manual Rate calculation.
@@ -203,7 +201,7 @@ describe( 'Single currency settings screen', () => {
 			},
 		} );
 
-		expect( screen.getByTestId( 'calculated_value' ) ).toHaveTextContent(
+		expect( screen.getByTestId( 'calculated_value' ) ).toHaveValue(
 			'€20.00'
 		);
 
@@ -213,7 +211,7 @@ describe( 'Single currency settings screen', () => {
 			},
 		} );
 
-		expect( screen.getByTestId( 'calculated_value' ) ).toHaveTextContent(
+		expect( screen.getByTestId( 'calculated_value' ) ).toHaveValue(
 			'€18.00'
 		);
 
@@ -221,7 +219,7 @@ describe( 'Single currency settings screen', () => {
 		fireEvent.change( screen.getByTestId( 'price_rounding' ), {
 			target: { value: '0.5' },
 		} );
-		expect( screen.getByTestId( 'calculated_value' ) ).toHaveTextContent(
+		expect( screen.getByTestId( 'calculated_value' ) ).toHaveValue(
 			'€17.50'
 		);
 
@@ -229,7 +227,7 @@ describe( 'Single currency settings screen', () => {
 		fireEvent.change( screen.getByTestId( 'price_charm' ), {
 			target: { value: '-0.05' },
 		} );
-		expect( screen.getByTestId( 'calculated_value' ) ).toHaveTextContent(
+		expect( screen.getByTestId( 'calculated_value' ) ).toHaveValue(
 			'€17.45'
 		);
 

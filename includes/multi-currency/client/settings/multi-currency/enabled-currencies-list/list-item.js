@@ -12,16 +12,18 @@ import { Button } from 'wcpay/components/wp-components-wrapped/components/button
 import DeleteButton from './delete-button';
 import MultiCurrencySettingsContext from 'multi-currency/context';
 import { useContext } from 'react';
+import { useDefaultCurrency } from 'multi-currency/data';
 
 const EnabledCurrenciesListItem = ( {
 	currency: { code, flag, id, is_default: isDefault, name, symbol, rate },
-	defaultCurrency: {
-		code: defaultCode,
-		is_zero_decimal: isDefaultZeroDecimal,
-	},
 	onDeleteClick,
 } ) => {
-	const { openSingleCurrencySettings } = useContext(
+	const {
+		code: defaultCode,
+		is_zero_decimal: isDefaultZeroDecimal,
+	} = useDefaultCurrency();
+
+	const { setCurrencyCodeToShowSettingsFor } = useContext(
 		MultiCurrencySettingsContext
 	);
 
@@ -64,7 +66,7 @@ const EnabledCurrenciesListItem = ( {
 					<Button
 						isLink
 						onClick={ () => {
-							openSingleCurrencySettings( code );
+							setCurrencyCodeToShowSettingsFor( code );
 						} }
 						aria-label={ sprintf(
 							__(
