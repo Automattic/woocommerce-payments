@@ -38,7 +38,12 @@ import RecommendedDocuments from './recommended-documents';
 import InlineNotice from 'components/inline-notice';
 import ShippingDetails from './shipping-details';
 import CoverLetter from './cover-letter';
-import { Button, HorizontalRule } from 'wcpay/components/wp-components-wrapped';
+import {
+	Button,
+	HorizontalRule,
+	Icon,
+	ExternalLink,
+} from 'wcpay/components/wp-components-wrapped';
 import { getAdminUrl } from 'wcpay/utils';
 import { StepperPanel } from 'wcpay/components/stepper';
 import {
@@ -58,6 +63,7 @@ import { RecommendedDocument } from './types';
 import './style.scss';
 import RefundStatus from './refund-status';
 import DuplicateStatus from './duplicate-status';
+import ConfirmationScreen from './confirmation-screen';
 
 // --- Utility: Determine if shipping is required for a given reason ---
 const ReasonsNeedShipping = [
@@ -107,7 +113,6 @@ export default ( { query }: { query: { id: string } } ) => {
 	const [ productType, setProductType ] = useState< string >( '' );
 	const [ currentStep, setCurrentStep ] = useState( 0 );
 	const [ isAccordionOpen, setIsAccordionOpen ] = useState( true );
-	const [ redirectAfterSave, setRedirectAfterSave ] = useState( false );
 	const [ productDescription, setProductDescription ] = useState( '' );
 	const [ coverLetter, setCoverLetter ] = useState( '' );
 	const [
@@ -147,6 +152,7 @@ export default ( { query }: { query: { id: string } } ) => {
 	const stepHeadingRefs = useRef< {
 		[ key: number ]: HTMLHeadingElement | null;
 	} >( {} );
+	const [ showConfirmation, setShowConfirmation ] = useState( false );
 
 	// --- Data loading ---
 	useEffect( () => {
@@ -416,9 +422,9 @@ export default ( { query }: { query: { id: string } } ) => {
 				: `evidence-saved-${ dispute.id }`,
 		} );
 
-		// Only redirect after submission, not after save
+		// Show confirmation screen for submissions
 		if ( submit ) {
-			setRedirectAfterSave( true );
+			setShowConfirmation( true );
 		}
 	};
 
@@ -691,7 +697,7 @@ export default ( { query }: { query: { id: string } } ) => {
 
 	// --- Navigation warning ---
 	const confirmationNavigationCallback = useConfirmNavigation( () => {
-		if ( redirectAfterSave || readOnly ) return;
+		if ( showConfirmation || readOnly ) return;
 		return __(
 			'There are unsaved changes on this page. Are you sure you want to leave and discard the unsaved changes?',
 			'woocommerce-payments'
@@ -706,24 +712,7 @@ export default ( { query }: { query: { id: string } } ) => {
 	useEffect( () => {
 		const cleanup = confirmationNavigationCallback();
 		setNavigationCleanup( cleanup );
-	}, [ confirmationNavigationCallback, redirectAfterSave, readOnly ] );
-
-	// Redirect after successful submission only
-	useEffect( () => {
-		if ( redirectAfterSave ) {
-			// Clean up navigation confirmation before redirecting
-			if ( navigationCleanup ) {
-				navigationCleanup();
-			}
-
-			const href = getAdminUrl( {
-				page: 'wc-admin',
-				path: '/payments/disputes/details',
-				id: dispute?.id,
-			} );
-			window.location.replace( href );
-		}
-	}, [ redirectAfterSave, navigationCleanup, dispute?.id ] );
+	}, [ confirmationNavigationCallback, readOnly ] );
 
 	// --- Accordion summary content ---
 	const summaryItems = useMemo( () => {
@@ -864,13 +853,13 @@ export default ( { query }: { query: { id: string } } ) => {
 				bankNameValue
 					? sprintf(
 							__(
-								'<strong>WooPayments does not determine the outcome of the dispute process</strong> and is not liable for any chargebacks. <strong>%1$s</strong> makes the decision in this process.',
+								'<strong>The outcome of this dispute will be determined by %1$s.</strong> WooPayments has no influence over the decision and is not liable for any chargebacks.',
 								'woocommerce-payments'
 							),
 							bankNameValue
 					  )
 					: __(
-							"<strong>WooPayments does not determine the outcome of the dispute process</strong> and is not liable for any chargebacks. The cardholder's bank makes the decision in this process.",
+							"<strong>The outcome of this dispute will be determined by the cardholder's bank.</strong> WooPayments has no influence over the decision and is not liable for any chargebacks.",
 							'woocommerce-payments'
 					  ),
 				{
@@ -1173,7 +1162,19 @@ export default ( { query }: { query: { id: string } } ) => {
 						</Button>
 						<Button
 							variant="primary"
-							onClick={ () => doSave( true ) }
+							onClick={ () => {
+								// Show browser confirmation dialog first
+								const confirmed = window.confirm(
+									__(
+										"Are you sure you're ready to submit this evidence? Evidence submissions are final.",
+										'woocommerce-payments'
+									)
+								);
+
+								if ( confirmed ) {
+									doSave( true );
+								}
+							} }
 						>
 							{ __( 'Submit', 'woocommerce-payments' ) }
 						</Button>
@@ -1214,21 +1215,28 @@ export default ( { query }: { query: { id: string } } ) => {
 							</AccordionRow>
 						</AccordionBody>
 					</Accordion>
-					{ /* Section 2: Stepper */ }
-					<div className="wcpay-dispute-evidence-new__stepper-section">
-						<StepperPanel
-							steps={ panelHeadings }
-							currentStep={ currentStep }
-							onStepClick={ ( stepIndex ) => {
-								handleStepChange( stepIndex );
-							} }
+					{ /* Section 2: Stepper or Confirmation */ }
+					{ showConfirmation ? (
+						<ConfirmationScreen
+							disputeId={ query.id }
+							bankName={ bankName }
 						/>
-						<HorizontalRule className="wcpay-dispute-evidence-new__stepper-divider" />
-						<div className="wcpay-dispute-evidence-new__stepper-content">
-							{ renderStepContent() }
-							{ renderButtons() }
+					) : (
+						<div className="wcpay-dispute-evidence-new__stepper-section">
+							<StepperPanel
+								steps={ panelHeadings }
+								currentStep={ currentStep }
+								onStepClick={ ( stepIndex ) => {
+									handleStepChange( stepIndex );
+								} }
+							/>
+							<HorizontalRule className="wcpay-dispute-evidence-new__stepper-divider" />
+							<div className="wcpay-dispute-evidence-new__stepper-content">
+								{ renderStepContent() }
+								{ renderButtons() }
+							</div>
 						</div>
-					</div>
+					) }
 				</div>
 			</ErrorBoundary>
 		</Page>
