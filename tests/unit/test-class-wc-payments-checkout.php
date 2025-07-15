@@ -110,7 +110,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 
 		$this->mock_woopay_utilities = $this->createMock( WooPay_Utilities::class );
 		$this->mock_woopay_utilities = $this->getMockBuilder( WooPay_Utilities::class )
-			->onlyMethods( [ 'should_enable_woopay', 'should_enable_woopay_on_cart_or_checkout' ] )
+			->onlyMethods( [ 'should_enable_woopay', 'should_enable_woopay_on_guest_checkout' ] )
 			->disableOriginalConstructor()
 			->getMock();
 		$this->mock_wcpay_account    = $this->createMock( WC_Payments_Account::class );
@@ -240,7 +240,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 			->willReturn( [] );
 
 		$this->mock_woopay_utilities->method( 'should_enable_woopay' )->willReturn( true );
-		$this->mock_woopay_utilities->method( 'should_enable_woopay_on_cart_or_checkout' )->willReturn( true );
+		$this->mock_woopay_utilities->method( 'should_enable_woopay_on_guest_checkout' )->willReturn( true );
 
 		$is_woopay_enabled = $this->system_under_test->get_payment_fields_js_config()['isWooPayEnabled'];
 		$this->assertTrue( $is_woopay_enabled );
@@ -253,7 +253,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 			->willReturn( [] );
 
 		$this->mock_woopay_utilities->method( 'should_enable_woopay' )->willReturn( false );
-		$this->mock_woopay_utilities->method( 'should_enable_woopay_on_cart_or_checkout' )->willReturn( true );
+		$this->mock_woopay_utilities->method( 'should_enable_woopay_on_guest_checkout' )->willReturn( true );
 
 		$is_woopay_enabled = $this->system_under_test->get_payment_fields_js_config()['isWooPayEnabled'];
 		$this->assertFalse( $is_woopay_enabled );
@@ -266,7 +266,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 			->willReturn( [] );
 
 		$this->mock_woopay_utilities->method( 'should_enable_woopay' )->willReturn( true );
-		$this->mock_woopay_utilities->method( 'should_enable_woopay_on_cart_or_checkout' )->willReturn( false );
+		$this->mock_woopay_utilities->method( 'should_enable_woopay_on_guest_checkout' )->willReturn( false );
 
 		$is_woopay_enabled = $this->system_under_test->get_payment_fields_js_config()['isWooPayEnabled'];
 		$this->assertFalse( $is_woopay_enabled );
