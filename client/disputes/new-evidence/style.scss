@@ -98,6 +98,10 @@
 	&__button-group-right .components-button + .components-button {
 		margin-left: 8px;
 	}
+
+	.dispute-steps__notice-content {
+		font-size: 14px;
+	}
 }
 
 // Customer details section
@@ -430,5 +434,134 @@
 		transform: none;
 		opacity: 1;
 		max-height: none;
+	}
+}
+
+// Confirmation screen section
+.wcpay-dispute-evidence-confirmation {
+	padding: 40px 0;
+	display: flex;
+	justify-content: center;
+	background: #fff;
+
+	&__wrapper {
+		width: 984px;
+		max-width: calc( 100vw - 48px );
+		padding: 24px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 24px;
+	}
+
+	&__content {
+		display: flex;
+		flex-direction: column;
+		max-width: 600px;
+		width: 100%;
+	}
+
+	&__illustration {
+		display: flex;
+		justify-content: center;
+		margin-bottom: 40px;
+	}
+
+	&__illustration-image {
+		width: 180px;
+		height: auto;
+		max-width: 100%;
+	}
+
+	&__title {
+		@include heading-xl;
+		color: var( --Scales-Grays-gray-900, $gray-900 );
+		margin: 0 0 12px 0;
+		text-align: left;
+	}
+
+	&__subtitle {
+		@include body-md;
+		color: var( --Scales-Grays-gray-900, $gray-900 );
+		margin: 0 0 40px 0;
+		text-align: left;
+	}
+
+	&__next-steps {
+		text-align: left;
+		width: 100%;
+		margin-bottom: 24px;
+
+		h3 {
+			@include heading-xl;
+			color: var( --Scales-Grays-gray-900, $gray-900 );
+			margin: 0 0 12px 0;
+		}
+
+		ul {
+			list-style: none;
+			padding: 0 0 0 8px;
+			margin: 0;
+
+			li {
+				padding-left: 12px;
+				position: relative;
+				@include body-md;
+				color: var( --Scales-Grays-gray-900, $gray-900 );
+
+				&::before {
+					content: '•';
+					font-weight: bold;
+					position: absolute;
+					left: 0;
+				}
+
+				a {
+					color: #3858e9;
+					text-decoration: none;
+
+					&:hover {
+						text-decoration: underline;
+					}
+				}
+			}
+		}
+	}
+
+	&__notice {
+		&.wcpay-inline-notice.components-notice {
+			margin-bottom: 48px;
+		}
+	}
+
+	&__actions {
+		display: flex;
+		gap: 16px;
+		justify-content: space-between;
+		flex-wrap: wrap;
+	}
+
+	// Responsive adjustments
+	@media ( max-width: 768px ) {
+		padding: 24px 16px;
+
+		&__title {
+			font-size: 24px;
+		}
+
+		&__actions {
+			flex-direction: column-reverse;
+			gap: 12px;
+			width: 100%;
+
+			.components-button {
+				width: 100%;
+				justify-content: center;
+			}
+
+			.components-button + .components-button {
+				margin-left: 0;
+			}
+		}
 	}
 }
