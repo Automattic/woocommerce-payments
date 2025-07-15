@@ -20,8 +20,6 @@ import { ConfirmationModal } from 'multi-currency/interface/components';
 import Search from 'multi-currency/components/search';
 import './style.scss';
 
-// TODO: This works when saving, but list does not refresh.
-// TODO: Should we reset selected currencies on modal close?
 const EnabledCurrenciesModal = ( { className } ) => {
 	const availableCurrencies = useAvailableCurrencies();
 	const availableCurrencyCodes = Object.keys( availableCurrencies );

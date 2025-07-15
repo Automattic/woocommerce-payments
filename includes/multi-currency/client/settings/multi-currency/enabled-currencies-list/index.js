@@ -3,7 +3,8 @@
  * External dependencies
  */
 import React from 'react';
-import { sprintf, __ } from '@wordpress/i18n';
+import { __ } from '@wordpress/i18n';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
 import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
 import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
 import { CardDivider } from 'wcpay/components/wp-components-wrapped/components/card-divider';
@@ -13,11 +14,7 @@ import { createInterpolateElement } from '@wordpress/element';
  * Internal dependencies
  */
 import './style.scss';
-import {
-	useCurrencies,
-	useDefaultCurrency,
-	useEnabledCurrencies,
-} from 'multi-currency/data';
+import { useCurrencies, useEnabledCurrencies } from 'multi-currency/data';
 
 import EnabledCurrenciesList from './list';
 import EnabledCurrenciesListItem from './list-item';
@@ -25,43 +22,29 @@ import EnabledCurrenciesListItemPlaceholder from './list-item-placeholder';
 import EnabledCurrenciesModal from './modal';
 import { SettingsSection } from 'multi-currency/interface/components';
 
-const EnabledCurrenciesSettingsDescription = () => {
-	const LEARN_MORE_URL =
-		'https://woocommerce.com/document/woopayments/currencies/multi-currency-setup/#enabled-currencies';
-
-	return (
-		<>
-			<h2>{ __( 'Enabled currencies', 'woocommerce-payments' ) }</h2>
-			<p>
-				{ createInterpolateElement(
-					sprintf(
-						__(
-							'Accept payments in multiple currencies. Prices are converted ' +
-								'based on exchange rates and rounding rules. <learnMoreLink>' +
-								'Learn more</learnMoreLink>',
-							'woocommerce-payments'
-						),
-						LEARN_MORE_URL
+const EnabledCurrenciesSettingsDescription = () => (
+	<>
+		<h2>{ __( 'Enabled currencies', 'woocommerce-payments' ) }</h2>
+		<p>
+			{ createInterpolateElement(
+				__(
+					'Accept payments in multiple currencies. Prices are converted ' +
+						'based on exchange rates and rounding rules. <learnMoreLink>' +
+						'Learn more</learnMoreLink>',
+					'woocommerce-payments'
+				),
+				{
+					learnMoreLink: (
+						<ExternalLink href="https://woocommerce.com/document/woopayments/currencies/multi-currency-setup/#enabled-currencies" />
 					),
-					{
-						learnMoreLink: (
-							// eslint-disable-next-line jsx-a11y/anchor-has-content
-							<a
-								href={ LEARN_MORE_URL }
-								target={ '_blank' }
-								rel={ 'noreferrer' }
-							/>
-						),
-					}
-				) }
-			</p>
-		</>
-	);
-};
+				}
+			) }
+		</p>
+	</>
+);
 
 const EnabledCurrencies = () => {
 	const { isLoading } = useCurrencies();
-	const defaultCurrency = useDefaultCurrency();
 	const {
 		enabledCurrencies,
 		submitEnabledCurrenciesUpdate,
@@ -81,7 +64,7 @@ const EnabledCurrencies = () => {
 	return (
 		<SettingsSection
 			description={ EnabledCurrenciesSettingsDescription }
-			className={ 'multi-currency-settings-enabled-currencies-section' }
+			className="multi-currency-settings-enabled-currencies-section"
 		>
 			<Card className={ `${ classBase }__enabled-currencies` }>
 				<CardBody
@@ -100,7 +83,6 @@ const EnabledCurrencies = () => {
 								<EnabledCurrenciesListItem
 									key={ enabledCurrencies[ code ].id }
 									currency={ enabledCurrencies[ code ] }
-									defaultCurrency={ defaultCurrency }
 									onDeleteClick={
 										enabledCurrencies[ code ].is_default
 											? undefined
@@ -113,7 +95,7 @@ const EnabledCurrencies = () => {
 								<EnabledCurrenciesListItemPlaceholder
 									key={ 'loadable-placeholder-' + i }
 									isLoading={ 1 }
-								></EnabledCurrenciesListItemPlaceholder>
+								/>
 							) ) }
 					</EnabledCurrenciesList>
 				</CardBody>
