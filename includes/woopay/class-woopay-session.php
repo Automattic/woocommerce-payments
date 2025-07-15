@@ -31,7 +31,7 @@ use WP_REST_Request;
  */
 class WooPay_Session {
 
-	const STORE_API_NAMESPACE_PATTERN = '@^wc/store(/v[\d]+)?$@';
+	const STORE_API_NAMESPACE_PATTERN = '@^(wc/store(/v[\d]+)?|store-api)$@';
 
 	const WOOPAY_SESSION_KEY = 'woopay-user-data';
 
