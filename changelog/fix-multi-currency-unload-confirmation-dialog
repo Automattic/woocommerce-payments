@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: ensure the confirmation dialog doesn't show up on the multi-currency UI
