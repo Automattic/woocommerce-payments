@@ -5,18 +5,6 @@
  */
 import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-// eslint-disable-next-line no-restricted-syntax
-import {
-	// @ts-expect-error: Suppressing Module '"@wordpress/components"' has no exported member '__experimentalText'.
-	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis -- used by TableCard component which we replicate here.
-	__experimentalText as Text,
-} from '@wordpress/components';
-import {
-	Card,
-	CardBody,
-	CardHeader,
-	ExternalLink,
-} from 'wcpay/components/wp-components-wrapped';
 import {
 	SummaryListPlaceholder,
 	SummaryList,
@@ -28,6 +16,11 @@ import clsx from 'clsx';
 /**
  * Internal dependencies.
  */
+import { Text } from 'wcpay/components/wp-components-wrapped/components/text';
+import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
+import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
+import { CardHeader } from 'wcpay/components/wp-components-wrapped/components/card-header';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
 import type { CachedDeposit } from 'types/deposits';
 import { useDeposit } from 'data';
 import TransactionsList from 'transactions/list';
