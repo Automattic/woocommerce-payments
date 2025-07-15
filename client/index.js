@@ -124,7 +124,11 @@ addFilter(
 			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
-			container: TransactionsPage,
+			container: () => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<TransactionsPage />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/transactions',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
