@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Change copy to avoid leaving words alone.
