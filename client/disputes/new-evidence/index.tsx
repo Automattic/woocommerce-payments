@@ -1076,6 +1076,7 @@ export default ( { query }: { query: { id: string } } ) => {
 								id: dispute?.id,
 							} ) )
 						}
+						__next40pxDefaultSize
 					>
 						{ __( 'Cancel', 'woocommerce-payments' ) }
 					</Button>
@@ -1084,6 +1085,7 @@ export default ( { query }: { query: { id: string } } ) => {
 							<Button
 								variant="tertiary"
 								onClick={ () => doSave( false ) }
+								__next40pxDefaultSize
 							>
 								{ __(
 									'Save for later',
@@ -1098,6 +1100,7 @@ export default ( { query }: { query: { id: string } } ) => {
 							}
 							icon={ chevronRight }
 							iconPosition="right"
+							__next40pxDefaultSize
 						>
 							{ __( 'Next', 'woocommerce-payments' ) }
 						</Button>
@@ -1113,6 +1116,7 @@ export default ( { query }: { query: { id: string } } ) => {
 						onClick={ () => handleStepBack( currentStep - 1 ) }
 						icon={ chevronLeft }
 						iconPosition="left"
+						__next40pxDefaultSize
 					>
 						{ __( 'Back', 'woocommerce-payments' ) }
 					</Button>
@@ -1121,6 +1125,7 @@ export default ( { query }: { query: { id: string } } ) => {
 							<Button
 								variant="tertiary"
 								onClick={ () => doSave( false ) }
+								__next40pxDefaultSize
 							>
 								{ __(
 									'Save for later',
@@ -1135,6 +1140,7 @@ export default ( { query }: { query: { id: string } } ) => {
 							onClick={ () =>
 								handleStepChange( currentStep + 1 )
 							}
+							__next40pxDefaultSize
 						>
 							{ __( 'Next', 'woocommerce-payments' ) }
 						</Button>
@@ -1149,6 +1155,7 @@ export default ( { query }: { query: { id: string } } ) => {
 					icon={ chevronLeft }
 					iconPosition="left"
 					onClick={ () => handleStepBack( currentStep - 1 ) }
+					__next40pxDefaultSize
 				>
 					{ __( 'Back', 'woocommerce-payments' ) }
 				</Button>
@@ -1157,6 +1164,7 @@ export default ( { query }: { query: { id: string } } ) => {
 						<Button
 							variant="tertiary"
 							onClick={ () => doSave( false ) }
+							__next40pxDefaultSize
 						>
 							{ __( 'Save for later', 'woocommerce-payments' ) }
 						</Button>
@@ -1175,6 +1183,7 @@ export default ( { query }: { query: { id: string } } ) => {
 									doSave( true );
 								}
 							} }
+							__next40pxDefaultSize
 						>
 							{ __( 'Submit', 'woocommerce-payments' ) }
 						</Button>
