@@ -34,8 +34,14 @@ export const makeWrappedComponent = <
 		const context = useContext( WordPressComponentsContext );
 
 		if ( ! context || useBundledComponent ) {
-			// @ts-expect-error: the type of props is not always well-defined, ignoring the error.
-			return <BundledComponent { ...rest } ref={ ref } />;
+			return (
+				// @ts-expect-error: the type of props is not always well-defined, ignoring the error.
+				<BundledComponent
+					{ ...rest }
+					ref={ ref }
+					data-wcpay-bundled-wp-component="true"
+				/>
+			);
 		}
 
 		const ContextComponent = context[

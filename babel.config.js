@@ -8,6 +8,10 @@ module.exports = {
 		production: {
 			plugins: [
 				[
+					'react-remove-properties',
+					{ properties: [ 'data-wcpay-bundled-wp-component' ] },
+				],
+				[
 					'@wordpress/babel-plugin-makepot',
 					{
 						output: 'languages/woocommerce-payments-client.pot',
