@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState, useCallback } from 'react';
 import { dateI18n } from '@wordpress/date';
 import { sprintf, __ } from '@wordpress/i18n';
 import moment from 'moment';
@@ -18,7 +18,6 @@ import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
 import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
 import { SelectControl } from 'wcpay/components/wp-components-wrapped/components/select-control';
 import { TextControl } from 'wcpay/components/wp-components-wrapped/components/text-control';
-import clsx from 'clsx';
 import {
 	decimalCurrencyCharmOptions,
 	decimalCurrencyRoundingOptions,
@@ -39,6 +38,30 @@ import {
 } from 'multi-currency/interface/components';
 import interpolateComponents from '@automattic/interpolate-components';
 
+const CurrencyPreviewDescription = ( {
+	storeCurrency,
+	targetCurrency,
+	isLoading,
+} ) => (
+	<>
+		<h2>{ __( 'Preview', 'woocommerce-payments' ) }</h2>
+		<p>
+			{ ! isLoading
+				? sprintf(
+						__(
+							'Enter a price in your default currency (%s) to ' +
+								'see it converted to %s using the ' +
+								'exchange rate and formatting rules above.',
+							'woocommerce-payments'
+						),
+						storeCurrency,
+						targetCurrency
+				  )
+				: '' }
+		</p>
+	</>
+);
+
 const CurrencySettingsDescription = () => (
 	<>
 		<h2>{ __( 'Currency settings', 'woocommerce-payments' ) }</h2>
@@ -57,9 +80,9 @@ const SingleCurrencySettings = () => {
 	const {
 		currencyCodeToShowSettingsFor: currency,
 		setCurrencyCodeToShowSettingsFor,
+		setIsCurrentScreenDirty: setIsDirty,
+		isCurrentScreenDirty: isDirty,
 	} = useContext( MultiCurrencySettingsContext );
-
-	const [ isDirty, setIsDirty ] = useState( false );
 
 	const { currencies } = useCurrencies();
 	const { enabledCurrencies } = useEnabledCurrencies();
@@ -132,25 +155,6 @@ const SingleCurrencySettings = () => {
 				moment.unix( targetCurrency.last_updated ).toISOString()
 		  )
 		: '';
-	const CurrencyPreviewDescription = () => (
-		<>
-			<h2>{ __( 'Preview', 'woocommerce-payments' ) }</h2>
-			<p>
-				{ ! isLoading
-					? sprintf(
-							__(
-								'Enter a price in your default currency (%s) to ' +
-									'see it converted to %s using the ' +
-									'exchange rate and formatting rules above.',
-								'woocommerce-payments'
-							),
-							storeCurrency.name,
-							targetCurrency.name
-					  )
-					: '' }
-			</p>
-		</>
-	);
 
 	const saveSingleCurrencySettings = () => {
 		setIsSaving( true );
@@ -171,6 +175,17 @@ const SingleCurrencySettings = () => {
 		setIsSaving( false );
 		setIsDirty( false );
 	};
+
+	const currencyPreviewDescription = useCallback(
+		() => (
+			<CurrencyPreviewDescription
+				storeCurrency={ storeCurrency.name }
+				targetCurrency={ targetCurrency.name }
+				isLoading={ isLoading }
+			/>
+		),
+		[ storeCurrency.name, targetCurrency.name, isLoading ]
+	);
 
 	return (
 		<div className="single-currency-settings">
@@ -410,7 +425,7 @@ const SingleCurrencySettings = () => {
 						</Card>
 					</LoadableBlock>
 				</SettingsSection>
-				<SettingsSection description={ CurrencyPreviewDescription }>
+				<SettingsSection description={ currencyPreviewDescription }>
 					<LoadableBlock isLoading={ isLoading } numLines={ 8 }>
 						<CurrencyPreview
 							className="single-currency-settings-currency-preview"

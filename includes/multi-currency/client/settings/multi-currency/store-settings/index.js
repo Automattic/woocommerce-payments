@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
 import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
@@ -19,6 +19,7 @@ import {
 	SettingsSection,
 } from 'multi-currency/interface/components';
 import PreviewModal from 'multi-currency/components/preview-modal';
+import MultiCurrencySettingsContext from 'multi-currency/context';
 
 const StoreSettingsDescription = () => (
 	<>
@@ -60,7 +61,10 @@ const StoreSettings = () => {
 
 	const [ isPreviewModalOpen, setPreviewModalOpen ] = useState( false );
 
-	const [ isDirty, setIsDirty ] = useState( false );
+	const {
+		setIsCurrentScreenDirty: setIsDirty,
+		isCurrentScreenDirty: isDirty,
+	} = useContext( MultiCurrencySettingsContext );
 
 	useEffect( () => {
 		if ( Object.keys( storeSettings ).length ) {
