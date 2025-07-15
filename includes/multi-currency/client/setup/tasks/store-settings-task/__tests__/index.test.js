@@ -11,6 +11,7 @@ import { useCurrencies, useStoreSettings } from 'multi-currency/data';
 import { useSettings, useMultiCurrency } from 'multi-currency/interface/data';
 import { WizardTaskContext } from 'multi-currency/interface/functions';
 import StoreSettingsTask from '..';
+import MultiCurrencySettingsContext from 'multi-currency/context';
 
 jest.mock( 'multi-currency/data', () => ( {
 	useStoreSettings: jest.fn(),
@@ -62,7 +63,14 @@ const createContainer = () => {
 		<WizardTaskContext.Provider
 			value={ { isActive: true, setCompleted: setCompletedMock } }
 		>
-			<StoreSettingsTask />
+			<MultiCurrencySettingsContext.Provider
+				value={ {
+					setIsCurrentScreenDirty: () => null,
+					isCurrentScreenDirty: true,
+				} }
+			>
+				<StoreSettingsTask />
+			</MultiCurrencySettingsContext.Provider>
 		</WizardTaskContext.Provider>
 	);
 	return container;

@@ -9,6 +9,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
  */
 import { useStoreSettings } from 'multi-currency/data';
 import StoreSettings from '..';
+import MultiCurrencySettingsContext from 'multi-currency/context';
 
 jest.mock( 'multi-currency/data', () => ( {
 	useStoreSettings: jest.fn(),
@@ -29,7 +30,13 @@ useStoreSettings.mockReturnValue( {
 } );
 
 const createContainer = () => {
-	const { container } = render( <StoreSettings /> );
+	const { container } = render(
+		<MultiCurrencySettingsContext.Provider
+			value={ { setIsCurrentScreenDirty: () => null } }
+		>
+			<StoreSettings />
+		</MultiCurrencySettingsContext.Provider>
+	);
 	return container;
 };
 
@@ -60,7 +67,7 @@ describe( 'Multi-Currency store settings', () => {
 		} );
 	} );
 
-	test( 'store settings button is diabled by default', () => {
+	test( 'store settings button is disabled by default', () => {
 		createContainer();
 		expect(
 			screen.getByRole( 'button', { name: /Save changes/ } )

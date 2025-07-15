@@ -129,6 +129,8 @@ useStoreSettings.mockReturnValue( {
 const containerContext = {
 	currencyCodeToShowSettingsFor: 'EUR',
 	setCurrencyCodeToShowSettingsFor: jest.fn(),
+	isCurrentScreenDirty: false,
+	setIsCurrentScreenDirty: jest.fn(),
 };
 
 const getContainer = () => {
