@@ -126,6 +126,7 @@ const StoreSettingsTask = () => {
 								'Automatically switch customers to their local currency if it has been enabled',
 								'woocommerce-payments'
 							) }
+							__nextHasNoMarginBottom
 						/>
 						<div className="multi-currency-settings-task__description">
 							{ __(
@@ -145,6 +146,7 @@ const StoreSettingsTask = () => {
 										'Add a currency switcher to the Storefront theme on breadcrumb section.',
 										'woocommerce-payments'
 									) }
+									__nextHasNoMarginBottom
 								/>
 								<div className="multi-currency-settings-task__description">
 									{ __(
@@ -168,7 +170,7 @@ const StoreSettingsTask = () => {
 					isBusy={ isPending || isSaving }
 					disabled={ isPending || isSaving }
 					onClick={ handlePreviewModalOpenClick }
-					className={ 'multi-currency-setup-preview-button' }
+					className="multi-currency-setup-preview-button"
 					variant="tertiary"
 				>
 					{ __( 'Preview', 'woocommerce-payments' ) }

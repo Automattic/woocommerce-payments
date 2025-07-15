@@ -89,7 +89,7 @@ class WC_Payments_WooPay_Direct_Checkout {
 			return;
 		}
 
-		if ( ! $this->woopay_utilities->should_enable_woopay_on_cart_or_checkout() ) {
+		if ( ! $this->woopay_utilities->should_enable_woopay_on_guest_checkout() ) {
 			return;
 		}
 
