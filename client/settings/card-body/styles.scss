@@ -48,7 +48,11 @@
 		display: flex;
 	}
 
-	.components-base-control__help {
-		margin-top: unset;
+	.components-checkbox-control {
+		input[type='checkbox'] {
+			&:checked:disabled {
+				opacity: 0.3;
+			}
+		}
 	}
 }
