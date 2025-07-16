@@ -152,7 +152,10 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 
 			const orderId = await createDisputedOrder( browser );
 
-			await goToPaymentDetailsForOrder( merchantPage, orderId );
+			const paymentDetailsLink = await goToPaymentDetailsForOrder(
+				merchantPage,
+				orderId
+			);
 
 			await test.step(
 				'Click the challenge dispute button to navigate to the challenge dispute page',
@@ -253,6 +256,14 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 						.getByLabel( 'COVER LETTER' )
 						.fill( 'winning_evidence' );
 
+					// Handle the confirmation dialog that appears when clicking Submit
+					merchantPage.on( 'dialog', async ( dialog ) => {
+						expect( dialog.message() ).toContain(
+							"Are you sure you're ready to submit this evidence?"
+						);
+						await dialog.accept();
+					} );
+
 					// Click the submit button
 					await merchantPage
 						.getByRole( 'button', {
@@ -263,8 +274,28 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			);
 
 			await test.step(
-				'Wait for the redirect to the dispute details page and confirm the dispute status is Won',
+				'Wait for the confirmation screen to appear',
 				async () => {
+					await expect(
+						merchantPage.getByText(
+							'Thanks for sharing your response!'
+						)
+					).toBeVisible();
+
+					await expect(
+						merchantPage.getByText(
+							"Your evidence has been sent to the cardholder's bank for review."
+						)
+					).toBeVisible();
+				}
+			);
+
+			await test.step(
+				'Navigate back to payment details and confirm the dispute status is Won',
+				async () => {
+					// Navigate back to the payment details page
+					await merchantPage.goto( paymentDetailsLink );
+
 					await expect(
 						merchantPage
 							.locator( '.payment-details-summary__status' )
@@ -303,7 +334,10 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 
 			const orderId = await createDisputedOrder( browser );
 
-			await goToPaymentDetailsForOrder( merchantPage, orderId );
+			const paymentDetailsLink = await goToPaymentDetailsForOrder(
+				merchantPage,
+				orderId
+			);
 
 			await test.step(
 				'Click the challenge dispute button to navigate to the challenge dispute page',
@@ -377,6 +411,14 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 						.getByLabel( 'COVER LETTER' )
 						.fill( 'losing_evidence' );
 
+					// Handle the confirmation dialog that appears when clicking Submit
+					merchantPage.on( 'dialog', async ( dialog ) => {
+						expect( dialog.message() ).toContain(
+							"Are you sure you're ready to submit this evidence?"
+						);
+						await dialog.accept();
+					} );
+
 					// Click the submit button
 					await merchantPage
 						.getByRole( 'button', {
@@ -387,8 +429,28 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			);
 
 			await test.step(
-				'Wait for the redirect to the dispute details page and confirm the dispute status is Lost',
+				'Wait for the confirmation screen to appear',
 				async () => {
+					await expect(
+						merchantPage.getByText(
+							'Thanks for sharing your response!'
+						)
+					).toBeVisible();
+
+					await expect(
+						merchantPage.getByText(
+							"Your evidence has been sent to the cardholder's bank for review."
+						)
+					).toBeVisible();
+				}
+			);
+
+			await test.step(
+				'Navigate back to payment details and confirm the dispute status is Lost',
+				async () => {
+					// Navigate back to the payment details page
+					await merchantPage.goto( paymentDetailsLink );
+
 					await expect(
 						merchantPage
 							.locator( '.payment-details-summary__status' )

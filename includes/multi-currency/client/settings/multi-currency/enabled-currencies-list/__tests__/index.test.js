@@ -186,10 +186,8 @@ useEnabledCurrencies.mockReturnValue( {
 } );
 
 const containerContext = {
-	isSingleCurrencyScreenOpen: false,
 	currencyCodeToShowSettingsFor: null,
-	openSingleCurrencySettings: jest.fn(),
-	closeSingleCurrencySettings: jest.fn(),
+	setCurrencyCodeToShowSettingsFor: jest.fn(),
 };
 
 const getContainer = () => {

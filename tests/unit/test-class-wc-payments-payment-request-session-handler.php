@@ -27,6 +27,12 @@ class WC_Payments_Payment_Request_Session_Handler_Test extends WCPAY_UnitTestCas
 	private $cookies_jar = [];
 
 	/**
+	 * The separator used by the WC_Session_Handler, which changes between WC versions.
+	 * @var string
+	 */
+	private $cookies_separator = '||';
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -37,6 +43,9 @@ class WC_Payments_Payment_Request_Session_Handler_Test extends WCPAY_UnitTestCas
 		wp_logout();
 		// emptying the cookies that would otherwise have been set by `wp_logout`.
 		$this->cookies_jar = [];
+		if ( version_compare( WC_VERSION, '10.0.0', '>=' ) ) {
+			$this->cookies_separator = '|';
+		}
 	}
 
 	public function tear_down() {
@@ -65,11 +74,11 @@ class WC_Payments_Payment_Request_Session_Handler_Test extends WCPAY_UnitTestCas
 	private function __create_fake_session_cookie( $customer_id ) {
 		$session_expiration = time() + HOUR_IN_SECONDS;
 
-		$to_hash     = $customer_id . '|' . $session_expiration;
+		$to_hash     = $customer_id . $this->cookies_separator . $session_expiration;
 		$cookie_hash = hash_hmac( 'md5', $to_hash, wp_hash( $to_hash ) );
 
 		$_COOKIE[ 'wp_woocommerce_session_' . COOKIEHASH ] = implode(
-			'||',
+			$this->cookies_separator,
 			[
 				$customer_id,
 				$session_expiration,
@@ -116,7 +125,7 @@ class WC_Payments_Payment_Request_Session_Handler_Test extends WCPAY_UnitTestCas
 		$this->assertEquals( 'cart_data', $unserialized_data['cart_key'] );
 		$this->assertArrayHasKey( 'wp_woocommerce_session_' . COOKIEHASH, $this->cookies_jar );
 
-		list( $cookie_customer_id ) = explode( '||', $this->cookies_jar[ 'wp_woocommerce_session_' . COOKIEHASH ] );
+		list( $cookie_customer_id ) = explode( $this->cookies_separator, $this->cookies_jar[ 'wp_woocommerce_session_' . COOKIEHASH ] );
 		$this->assertNotEquals( $session_id, $cookie_customer_id );
 		$this->assertEquals( $session_handler->get_customer_id(), $cookie_customer_id );
 	}
@@ -160,7 +169,7 @@ class WC_Payments_Payment_Request_Session_Handler_Test extends WCPAY_UnitTestCas
 		$this->assertEquals( 'cart_data', $unserialized_data['cart_key'] );
 		$this->assertArrayHasKey( 'wp_woocommerce_session_' . COOKIEHASH, $this->cookies_jar );
 
-		list( $cookie_customer_id ) = explode( '||', $this->cookies_jar[ 'wp_woocommerce_session_' . COOKIEHASH ] );
+		list( $cookie_customer_id ) = explode( $this->cookies_separator, $this->cookies_jar[ 'wp_woocommerce_session_' . COOKIEHASH ] );
 		$this->assertNotEquals( $session_id, $cookie_customer_id );
 		$this->assertEquals( $session_handler->get_customer_id(), $cookie_customer_id );
 	}

@@ -12,9 +12,12 @@ import moment from 'moment';
  */
 import CurrencyPreview from './currency-preview';
 import './style.scss';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
 import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
 import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
+import { SelectControl } from 'wcpay/components/wp-components-wrapped/components/select-control';
+import { TextControl } from 'wcpay/components/wp-components-wrapped/components/text-control';
 import clsx from 'clsx';
 import {
 	decimalCurrencyCharmOptions,
@@ -34,16 +37,29 @@ import {
 	SettingsLayout,
 	SettingsSection,
 } from 'multi-currency/interface/components';
+import interpolateComponents from '@automattic/interpolate-components';
+
+const CurrencySettingsDescription = () => (
+	<>
+		<h2>{ __( 'Currency settings', 'woocommerce-payments' ) }</h2>
+		<p>
+			{ __(
+				'Choose between automatic or manual exchange ' +
+					'rates and modify formatting rules to refine the ' +
+					'display of your prices.',
+				'woocommerce-payments'
+			) }
+		</p>
+	</>
+);
 
 const SingleCurrencySettings = () => {
 	const {
-		currencyCodeToShowSettingsFor,
-		closeSingleCurrencySettings,
+		currencyCodeToShowSettingsFor: currency,
+		setCurrencyCodeToShowSettingsFor,
 	} = useContext( MultiCurrencySettingsContext );
 
 	const [ isDirty, setIsDirty ] = useState( false );
-
-	const currency = currencyCodeToShowSettingsFor;
 
 	const { currencies } = useCurrencies();
 	const { enabledCurrencies } = useEnabledCurrencies();
@@ -116,21 +132,6 @@ const SingleCurrencySettings = () => {
 				moment.unix( targetCurrency.last_updated ).toISOString()
 		  )
 		: '';
-
-	const CurrencySettingsDescription = () => (
-		<>
-			<h2>{ __( 'Currency settings', 'woocommerce-payments' ) }</h2>
-			<p>
-				{ __(
-					'Choose between automatic or manual exchange ' +
-						'rates and modify formatting rules to refine the ' +
-						'display of your prices.',
-					'woocommerce-payments'
-				) }
-			</p>
-		</>
-	);
-
 	const CurrencyPreviewDescription = () => (
 		<>
 			<h2>{ __( 'Preview', 'woocommerce-payments' ) }</h2>
@@ -172,12 +173,14 @@ const SingleCurrencySettings = () => {
 	};
 
 	return (
-		<div className={ 'single-currency-settings' }>
+		<div className="single-currency-settings">
 			<SettingsLayout>
-				<h2 className={ 'single-currency-settings-breadcrumb' }>
+				<h2 className="single-currency-settings-breadcrumb">
 					<Button
 						isLink
-						onClick={ () => closeSingleCurrencySettings() }
+						onClick={ () =>
+							setCurrencyCodeToShowSettingsFor( null )
+						}
 					>
 						{ __( 'Enabled currencies', 'woocommerce-payments' ) }
 					</Button>{ ' ' }
@@ -186,39 +189,24 @@ const SingleCurrencySettings = () => {
 				</h2>
 				<SettingsSection description={ CurrencySettingsDescription }>
 					<LoadableBlock isLoading={ isLoading } numLines={ 33 }>
-						<Card
-							className={
-								'single-currency-settings-currency-settings'
-							}
-						>
-							<CardBody>
-								<h3>
+						<Card className="single-currency-settings-currency-settings">
+							<CardBody className="wcpay-card-body">
+								<h4>
 									{ __(
 										'Exchange rate',
 										'woocommerce-payments'
 									) }
-								</h3>
+								</h4>
 								<fieldset>
 									<ul>
 										<li>
-											<label htmlFor="single-currency-settings__automatic_rate_radio">
-												<div
-													className={
-														'single-currency-settings-radio-wrapper'
-													}
-												>
+											<div>
+												<div className="single-currency-settings-radio-wrapper">
 													<input
-														name={
-															'wcpay_multi_currency_exchange_rate_aud'
-														}
-														id={
-															'single-currency-settings__automatic_rate_radio'
-														}
-														value={ 'automatic' }
-														type={ 'radio' }
-														className={
-															'exchange-rate-selector'
-														}
+														name="wcpay_multi_currency_exchange_rate_aud"
+														id="single-currency-settings__automatic_rate_radio"
+														value="automatic"
+														type="radio"
 														checked={
 															exchangeRateType ===
 															'automatic'
@@ -230,19 +218,14 @@ const SingleCurrencySettings = () => {
 															setIsDirty( true );
 														} }
 													/>
-													<h4>
+													<label htmlFor="single-currency-settings__automatic_rate_radio">
 														{ __(
 															'Fetch rates automatically',
 															'woocommerce-payments'
 														) }
-													</h4>
+													</label>
 												</div>
-												<p
-													className={ clsx(
-														'single-currency-settings-description',
-														'single-currency-settings-description-inset'
-													) }
-												>
+												<p className="single-currency-settings-radio__help">
 													{ targetCurrency.last_updated
 														? sprintf(
 																__(
@@ -258,31 +241,16 @@ const SingleCurrencySettings = () => {
 																'Error - Unable to fetch automatic rate for this currency'
 														  ) }
 												</p>
-											</label>
+											</div>
 										</li>
 										<li>
-											<label
-												htmlFor={
-													'single-currency-settings__manual_rate_radio'
-												}
-											>
-												<div
-													className={
-														'single-currency-settings-radio-wrapper'
-													}
-												>
+											<div>
+												<div className="single-currency-settings-radio-wrapper">
 													<input
-														name={
-															'wcpay_multi_currency_exchange_rate_aud'
-														}
-														id={
-															'single-currency-settings__manual_rate_radio'
-														}
-														value={ 'manual' }
-														type={ 'radio' }
-														className={
-															'exchange-rate-selector'
-														}
+														name="wcpay_multi_currency_exchange_rate_aud"
+														id="single-currency-settings__manual_rate_radio"
+														value="manual"
+														type="radio"
 														checked={
 															exchangeRateType ===
 															'manual'
@@ -299,212 +267,142 @@ const SingleCurrencySettings = () => {
 															setIsDirty( true );
 														} }
 													/>
-													<h4>
+													<label htmlFor="single-currency-settings__manual_rate_radio">
 														{ __(
 															'Manual',
 															'woocommerce-payments'
 														) }
-													</h4>
+													</label>
 												</div>
-												<p
-													className={ clsx(
-														'single-currency-settings-description',
-														'single-currency-settings-description-inset'
-													) }
-												>
+												<p className="single-currency-settings-radio__help">
 													{ __(
 														'Enter your fixed rate of exchange',
 														'woocommerce-payments'
 													) }
 												</p>
-											</label>
+											</div>
 										</li>
-										{ exchangeRateType === 'manual' ? (
+										{ exchangeRateType === 'manual' && (
 											<li>
-												<h4>
-													{ __(
+												<TextControl
+													data-testid="manual_rate_input"
+													label={ __(
 														'Manual Rate',
 														'woocommerce-payments'
 													) }
-												</h4>
-												<input
-													type="text"
-													data-testid={
-														'manual_rate_input'
-													}
-													defaultValue={
+													help={ __(
+														'Enter the manual rate you would like to use. Must be a positive number.',
+														'woocommerce-payments'
+													) }
+													value={
 														manualRate
 															? manualRate
 															: targetCurrency.rate
 													}
-													onChange={ ( event ) => {
+													onChange={ ( value ) => {
 														setManualRate(
-															event.target.value.replace(
+															value.replace(
 																/,/g,
 																'.'
 															)
 														);
 														setIsDirty( true );
 													} }
+													__nextHasNoMarginBottom
 												/>
-												<p
-													className={
-														'single-currency-settings-description'
-													}
-												>
-													{ __(
-														'Enter the manual rate you would like to use. Must be a positive number.',
-														'woocommerce-payments'
-													) }
-												</p>
 											</li>
-										) : (
-											''
 										) }
 									</ul>
 								</fieldset>
-								<h3>
+								<h4>
 									{ __(
 										'Formatting rules',
 										'woocommerce-payments'
 									) }
-								</h3>
+								</h4>
 								<fieldset>
 									<ul>
 										<li>
-											<h4>
-												{ __(
+											<SelectControl
+												data-testid="price_rounding"
+												label={ __(
 													'Price rounding',
 													'woocommerce-payments'
 												) }
-											</h4>
-											{ /* eslint-disable jsx-a11y/no-onchange */ }
-											<select
+												help={ interpolateComponents( {
+													mixedString: sprintf(
+														__(
+															"Make your %s prices consistent by rounding them up after they're converted. {{learnMoreLink}}Learn more{{/learnMoreLink}}",
+															'woocommerce-payments'
+														),
+														targetCurrency.code
+													),
+													components: {
+														learnMoreLink: (
+															<ExternalLink href="https://woocommerce.com/document/woopayments/currencies/multi-currency-setup/#price-rounding" />
+														),
+													},
+												} ) }
 												value={ parseFloat(
 													priceRoundingType
 												) }
-												data-testid={ 'price_rounding' }
-												onChange={ ( event ) => {
+												onChange={ ( value ) => {
 													setPriceRoundingType(
-														event.target.value
+														value
 													);
 													setIsDirty( true );
 												} }
-											>
-												{ /* eslint-enable jsx-a11y/no-onchange */ }
-												{ Object.keys(
+												options={ Object.keys(
 													targetCurrencyRoundingOptions
-												).map( ( value ) => {
-													return (
-														<option
-															value={ parseFloat(
-																value
-															) }
-															key={ value }
-														>
-															{
-																targetCurrencyRoundingOptions[
-																	value
-																]
-															}
-														</option>
-													);
-												} ) }
-											</select>
-											<p
-												className={
-													'single-currency-settings-description'
-												}
-											>
-												{ sprintf(
-													__(
-														"Make your %s prices consistent by rounding them up after they're converted.",
-														'woocommerce-payments'
-													),
-													targetCurrency.code
-												) }
-												<Button
-													isLink
-													onClick={ () => {
-														open(
-															/* eslint-disable-next-line max-len */
-															'https://woocommerce.com/document/woopayments/currencies/multi-currency-setup/#price-rounding',
-															'_blank'
-														);
-													} }
-												>
-													{ __(
-														'Learn more',
-														'woocommerce-payments'
-													) }
-												</Button>
-											</p>
+												).map( ( value ) => ( {
+													value: parseFloat( value ),
+													label:
+														targetCurrencyRoundingOptions[
+															value
+														],
+												} ) ) }
+												__nextHasNoMarginBottom
+											/>
 										</li>
 										<li>
-											<h4>
-												{ __(
+											<SelectControl
+												data-testid="price_charm"
+												label={ __(
 													'Charm pricing',
 													'woocommerce-payments'
 												) }
-											</h4>
-											{ /* eslint-disable jsx-a11y/no-onchange */ }
-											<select
+												help={ interpolateComponents( {
+													mixedString: sprintf(
+														__(
+															'Reduce the converted price for a specific amount. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+															'woocommerce-payments'
+														),
+														targetCurrency.code
+													),
+													components: {
+														learnMoreLink: (
+															<ExternalLink href="https://woocommerce.com/document/woopayments/currencies/multi-currency-setup/#charm-pricing" />
+														),
+													},
+												} ) }
 												value={ parseFloat(
 													priceCharmType
 												) }
-												data-testid={ 'price_charm' }
-												onChange={ ( event ) => {
-													setPriceCharmType(
-														event.target.value
-													);
+												onChange={ ( value ) => {
+													setPriceCharmType( value );
 													setIsDirty( true );
 												} }
-											>
-												{ /* eslint-enable jsx-a11y/no-onchange */ }
-												{ Object.keys(
+												options={ Object.keys(
 													targetCurrencyCharmOptions
-												).map( ( value ) => {
-													return (
-														<option
-															value={ parseFloat(
-																value
-															) }
-															key={ value }
-														>
-															{
-																targetCurrencyCharmOptions[
-																	value
-																]
-															}
-														</option>
-													);
-												} ) }
-											</select>
-											<p
-												className={
-													'single-currency-settings-description'
-												}
-											>
-												{ __(
-													'Reduce the converted price for a specific amount',
-													'woocommerce-payments'
-												) }
-												<Button
-													isLink
-													onClick={ () => {
-														open(
-															/* eslint-disable-next-line max-len */
-															'https://woocommerce.com/document/woopayments/currencies/multi-currency-setup/#charm-pricing',
-															'_blank'
-														);
-													} }
-												>
-													{ __(
-														'Learn more',
-														'woocommerce-payments'
-													) }
-												</Button>
-											</p>
+												).map( ( value ) => ( {
+													value: parseFloat( value ),
+													label:
+														targetCurrencyCharmOptions[
+															value
+														],
+												} ) ) }
+												__nextHasNoMarginBottom
+											/>
 										</li>
 									</ul>
 								</fieldset>
@@ -515,9 +413,7 @@ const SingleCurrencySettings = () => {
 				<SettingsSection description={ CurrencyPreviewDescription }>
 					<LoadableBlock isLoading={ isLoading } numLines={ 8 }>
 						<CurrencyPreview
-							className={
-								'single-currency-settings-currency-preview'
-							}
+							className="single-currency-settings-currency-preview"
 							storeCurrency={ storeCurrency }
 							targetCurrency={ targetCurrency }
 							currencyRate={
