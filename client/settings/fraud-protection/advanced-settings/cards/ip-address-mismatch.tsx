@@ -37,6 +37,7 @@ const IPAddressMismatchRuleCard: React.FC = () => (
 				},
 			} ) }
 		/>
+
 		<FraudProtectionRuleDescription>
 			{ __(
 				'Fraudulent transactions often use fake addresses to place orders. If the IP address seems to be in ' +

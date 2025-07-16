@@ -158,6 +158,7 @@ const OrderItemsThresholdRuleCard: React.FC = () => (
 		>
 			<OrderItemsThresholdCustomForm setting="order_items_threshold" />
 		</FraudProtectionRuleToggle>
+
 		<FraudProtectionRuleDescription>
 			{ __(
 				'An unusually high item count, compared to the average for your business, can indicate potential fraudulent activity.',

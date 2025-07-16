@@ -164,6 +164,7 @@ const PurchasePriceThresholdRuleCard: React.FC = () => (
 		>
 			<PurchasePriceThresholdCustomForm setting="purchase_price_threshold" />
 		</FraudProtectionRuleToggle>
+
 		<FraudProtectionRuleDescription>
 			{ __(
 				'An unusually high purchase amount, compared to the average for your business, ' +

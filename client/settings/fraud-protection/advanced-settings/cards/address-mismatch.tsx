@@ -28,6 +28,7 @@ const AddressMismatchRuleCard: React.FC = () => (
 				'woocommerce-payments'
 			) }
 		/>
+
 		<FraudProtectionRuleDescription>
 			{ __(
 				'There are legitimate reasons for a billing/shipping mismatch with a customer purchase, ' +
