@@ -12,8 +12,6 @@ import { __ } from '@wordpress/i18n';
 import { useEffect, renderToString } from '@wordpress/element';
 import { speak } from '@wordpress/a11y';
 import clsx from 'clsx';
-import { Icon } from 'wcpay/components/wp-components-wrapped/components/icon';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 import { check, info } from '@wordpress/icons';
 import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 import NoticeIcon from 'gridicons/dist/notice';
@@ -22,6 +20,8 @@ import CloseIcon from 'gridicons/dist/cross-small';
 /**
  * Internal dependencies.
  */
+import { Icon } from 'wcpay/components/wp-components-wrapped/components/icon';
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 import './style.scss';
 
 const statusIconMap = {
