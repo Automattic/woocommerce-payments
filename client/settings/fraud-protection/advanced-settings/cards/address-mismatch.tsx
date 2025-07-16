@@ -17,7 +17,7 @@ const AddressMismatchRuleCard: React.FC = () => (
 		id="address-mismatch-card"
 	>
 		<FraudProtectionRuleToggle
-			setting={ 'address_mismatch' }
+			setting="address_mismatch"
 			label={ __(
 				'Enable Address Mismatch filter',
 				'woocommerce-payments'

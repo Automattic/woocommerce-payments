@@ -90,13 +90,11 @@ const FraudProtectionRuleToggle: React.FC< React.PropsWithChildren<
 				label={ label }
 				key={ setting }
 				checked={ settingUI?.enabled }
+				help={ description }
 				className="fraud-protection-rule-toggle-toggle"
 				onChange={ handleEnableToggleChange }
+				__nextHasNoMarginBottom
 			/>
-
-			<div className="fraud-protection-rule-toggle-description">
-				{ description }
-			</div>
 
 			{ settingUI?.enabled && (
 				<div>
@@ -115,6 +113,7 @@ const FraudProtectionRuleToggle: React.FC< React.PropsWithChildren<
 								options={ radioOptions }
 								selected={ filterAction }
 								onChange={ handleBlockToggleChange }
+								__nextHasNoMarginBottom
 							/>
 						</div>
 					) }

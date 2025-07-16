@@ -40,7 +40,7 @@ const FraudProtectionHelpText: React.FC< FraudProtectionHelpTextProps > = ( {
 	level,
 } ) => {
 	return (
-		<p className={ 'fraud-protection__text--help-text' }>
+		<p className="fraud-protection__text--help-text">
 			{ getFraudProtectionLevelText( level ) }
 		</p>
 	);

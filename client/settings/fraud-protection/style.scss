@@ -179,7 +179,6 @@ body {
 	}
 
 	&-rule-toggle {
-		margin-bottom: 24px !important; // override due to very high logic applied for .wcpay-card-body > *
 		strong {
 			font-size: 13px;
 			font-weight: 600;
@@ -187,26 +186,10 @@ body {
 			color: #1e1e1e;
 			display: block;
 		}
-		&-description {
-			padding-left: 40px;
-			font-size: 12px;
-			color: #757575;
-		}
 		&-toggle {
-			label {
-				padding-left: 8px;
-				line-height: 21px;
-				font-size: 13px;
-				color: #1d2327;
-			}
-
 			.components-base-control__field {
 				align-items: center;
 				display: flex;
-			}
-
-			.components-base-control__help {
-				line-height: 16px;
 			}
 		}
 
@@ -259,16 +242,6 @@ body {
 
 	&-rule-card {
 		margin-bottom: 24px;
-		&-header-container {
-			padding: 16px 24px;
-		}
-		&-header {
-			margin: 0 0 24px 0;
-			font-size: 14px;
-			line-height: 20px;
-			font-weight: 600;
-			color: #1e1e1e;
-		}
 	}
 
 	&__help-icon {

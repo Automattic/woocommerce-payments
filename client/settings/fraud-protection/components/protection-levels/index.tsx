@@ -127,12 +127,7 @@ const ProtectionLevels: React.FC = () => {
 	return (
 		<>
 			{ 'error' === advancedFraudProtectionSettings && (
-				<InlineNotice
-					icon
-					status="error"
-					isDismissible={ false }
-					className={ '' }
-				>
+				<InlineNotice icon status="error" isDismissible={ false }>
 					{ __(
 						'There was an error retrieving your fraud protection settings. Please refresh the page to try again.',
 						'woocommerce-payments'

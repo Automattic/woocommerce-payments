@@ -75,8 +75,8 @@ const OrderItemsThresholdCustomForm: React.FC< OrderItemsThresholdCustomFormProp
 						) }
 					</label>
 					<TextControl
-						id={ 'fraud-protection-order-items-minimum' }
-						placeholder={ '0' }
+						id="fraud-protection-order-items-minimum"
+						placeholder="0"
 						value={ minItemsCount }
 						type="number"
 						onChange={ handleInputChange( 'min_items' ) }
@@ -99,8 +99,8 @@ const OrderItemsThresholdCustomForm: React.FC< OrderItemsThresholdCustomFormProp
 						) }
 					</label>
 					<TextControl
-						id={ 'fraud-protection-order-items-maximum' }
-						placeholder={ '0' }
+						id="fraud-protection-order-items-maximum"
+						placeholder="0"
 						type="number"
 						value={ maxItemsCount }
 						onChange={ handleInputChange( 'max_items' ) }
@@ -119,7 +119,7 @@ const OrderItemsThresholdCustomForm: React.FC< OrderItemsThresholdCustomFormProp
 			{ isItemRangeEmpty && (
 				<div className="fraud-protection-rule-toggle-children-notice">
 					<br />
-					<FraudProtectionRuleCardNotice type={ 'warning' }>
+					<FraudProtectionRuleCardNotice type="warning">
 						{ __(
 							'An item range must be set for this filter to take effect.',
 							'woocommerce-payments'
@@ -130,7 +130,7 @@ const OrderItemsThresholdCustomForm: React.FC< OrderItemsThresholdCustomFormProp
 			{ isMinGreaterThanMax ? (
 				<div className="fraud-protection-rule-toggle-children-notice">
 					<br />
-					<FraudProtectionRuleCardNotice type={ 'error' }>
+					<FraudProtectionRuleCardNotice type="error">
 						{ __(
 							'Maximum item count must be greater than the minimum item count.',
 							'woocommerce-payments'
@@ -147,7 +147,7 @@ const OrderItemsThresholdRuleCard: React.FC = () => (
 		id="order-items-threshold-card"
 	>
 		<FraudProtectionRuleToggle
-			setting={ 'order_items_threshold' }
+			setting="order_items_threshold"
 			label={ __(
 				'Enable Order Items Threshold filter',
 				'woocommerce-payments'
@@ -158,9 +158,7 @@ const OrderItemsThresholdRuleCard: React.FC = () => (
 				'woocommerce-payments'
 			) }
 		>
-			<OrderItemsThresholdCustomForm
-				setting={ 'order_items_threshold' }
-			/>
+			<OrderItemsThresholdCustomForm setting="order_items_threshold" />
 		</FraudProtectionRuleToggle>
 		<FraudProtectionRuleDescription>
 			{ __(

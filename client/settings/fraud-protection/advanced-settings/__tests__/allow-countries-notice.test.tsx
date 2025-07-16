@@ -66,7 +66,7 @@ describe( 'Allowed countries rule card notice tests', () => {
 
 		const container = render(
 			<FraudPreventionSettingsContext.Provider value={ mockContext }>
-				<AllowedCountriesNotice setting={ 'test_key' } />
+				<AllowedCountriesNotice setting="test_key" />
 			</FraudPreventionSettingsContext.Provider>
 		);
 		expect( container ).toMatchSnapshot();
@@ -85,7 +85,7 @@ describe( 'Allowed countries rule card notice tests', () => {
 
 		const container = render(
 			<FraudPreventionSettingsContext.Provider value={ mockContext }>
-				<AllowedCountriesNotice setting={ 'test_key' } />
+				<AllowedCountriesNotice setting="test_key" />
 			</FraudPreventionSettingsContext.Provider>
 		);
 		expect( container ).toMatchSnapshot();
@@ -104,7 +104,7 @@ describe( 'Allowed countries rule card notice tests', () => {
 
 		const container = render(
 			<FraudPreventionSettingsContext.Provider value={ mockContext }>
-				<AllowedCountriesNotice setting={ 'test_key' } />
+				<AllowedCountriesNotice setting="test_key" />
 			</FraudPreventionSettingsContext.Provider>
 		);
 		expect( container ).toMatchSnapshot();
@@ -123,7 +123,7 @@ describe( 'Allowed countries rule card notice tests', () => {
 
 		const container = render(
 			<FraudPreventionSettingsContext.Provider value={ mockContext }>
-				<AllowedCountriesNotice setting={ 'test_key' } />
+				<AllowedCountriesNotice setting="test_key" />
 			</FraudPreventionSettingsContext.Provider>
 		);
 		expect( container ).toMatchSnapshot();
@@ -143,7 +143,7 @@ describe( 'Allowed countries rule card notice tests', () => {
 
 		const container = render(
 			<FraudPreventionSettingsContext.Provider value={ mockContext }>
-				<AllowedCountriesNotice setting={ 'test_key' } />
+				<AllowedCountriesNotice setting="test_key" />
 			</FraudPreventionSettingsContext.Provider>
 		);
 		expect( container ).toMatchSnapshot();

@@ -61,9 +61,9 @@ describe( 'Fraud protection rule toggle tests', () => {
 		const container = render(
 			<FraudPreventionSettingsContext.Provider value={ mockContext }>
 				<FraudProtectionRuleToggle
-					setting={ 'test_rule' }
-					label={ 'Test rule toggle' }
-					description={ 'Test rule toggle description' }
+					setting="test_rule"
+					label="Test rule toggle"
+					description="Test rule toggle description"
 				>
 					test content
 				</FraudProtectionRuleToggle>
@@ -85,9 +85,9 @@ describe( 'Fraud protection rule toggle tests', () => {
 		const container = render(
 			<FraudPreventionSettingsContext.Provider value={ mockContext }>
 				<FraudProtectionRuleToggle
-					setting={ 'test_rule' }
-					label={ 'Test rule toggle' }
-					description={ 'Test rule toggle description' }
+					setting="test_rule"
+					label="Test rule toggle"
+					description="Test rule toggle description"
 				>
 					test content
 				</FraudProtectionRuleToggle>
@@ -106,9 +106,9 @@ describe( 'Fraud protection rule toggle tests', () => {
 		const container = render(
 			<FraudPreventionSettingsContext.Provider value={ mockContext }>
 				<FraudProtectionRuleToggle
-					setting={ 'test_rule' }
-					label={ 'Test rule toggle' }
-					description={ 'Test rule toggle description' }
+					setting="test_rule"
+					label="Test rule toggle"
+					description="Test rule toggle description"
 				>
 					test content
 				</FraudProtectionRuleToggle>
@@ -127,9 +127,9 @@ describe( 'Fraud protection rule toggle tests', () => {
 		const container = render(
 			<FraudPreventionSettingsContext.Provider value={ mockContext }>
 				<FraudProtectionRuleToggle
-					setting={ 'test_rule' }
-					label={ 'Test rule toggle' }
-					description={ 'Test rule toggle description' }
+					setting="test_rule"
+					label="Test rule toggle"
+					description="Test rule toggle description"
 				>
 					test content
 				</FraudProtectionRuleToggle>
