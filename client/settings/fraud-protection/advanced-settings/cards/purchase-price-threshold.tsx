@@ -84,7 +84,7 @@ const PurchasePriceThresholdCustomForm: React.FC< PurchasePriceThresholdCustomFo
 
 	return (
 		<div className="fraud-protection-rule-toggle-children-container">
-			<strong>Limits</strong>
+			<strong>{ __( 'Limits', 'woocommerce-components' ) }</strong>
 			<div className="fraud-protection-rule-toggle-children-horizontal-form">
 				<div className="fraud-protection-rule-toggle-children-vertical-form">
 					<AmountInput
