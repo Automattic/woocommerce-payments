@@ -90,6 +90,7 @@ const AccountStatusDetails = ( props ) => {
 						}
 						href={ accountLink }
 						target={ '_blank' }
+						__next40pxDefaultSize
 					>
 						{ __( 'Edit details', 'woocommerce-payments' ) }
 					</Button>

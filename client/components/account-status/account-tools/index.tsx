@@ -40,6 +40,7 @@ export const AccountTools = () => {
 					<Button
 						variant={ 'secondary' }
 						onClick={ () => setModalVisible( true ) }
+						__next40pxDefaultSize
 					>
 						{ strings.reset }
 					</Button>

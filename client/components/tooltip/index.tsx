@@ -4,13 +4,13 @@
 import React, { useState, useRef } from 'react';
 import clsx from 'clsx';
 import { noop } from 'lodash';
-import { Icon } from 'wcpay/components/wp-components-wrapped';
 // eslint-disable-next-line no-restricted-syntax
-import { Icon as IconType } from '@wordpress/components';
+import type { Icon as IconType } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
+import { Icon } from 'wcpay/components/wp-components-wrapped/components/icon';
 import TooltipBase, { TooltipBaseProps } from './tooltip-base';
 
 type TooltipProps = TooltipBaseProps & {
