@@ -207,6 +207,7 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 				options={ buttonActionOptions }
 				onChange={ setButtonType }
 				__nextHasNoMarginBottom
+				__next40pxDefaultSize
 			/>
 			<h4>{ __( 'Button size', 'woocommerce-payments' ) }</h4>
 			<RadioControl
@@ -261,6 +262,7 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 					withInputField={ false }
 					onChange={ setRadius }
 					__nextHasNoMarginBottom
+					__next40pxDefaultSize
 				/>
 			</div>
 			<p className="payment-method-settings__option-help-text">

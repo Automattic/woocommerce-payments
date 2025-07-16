@@ -115,6 +115,7 @@ const CustomizeDepositSchedule = () => {
 					onChange={ handleIntervalChange }
 					options={ depositIntervalsOptions }
 					__nextHasNoMarginBottom
+					__next40pxDefaultSize
 				/>
 				{ depositScheduleInterval === 'monthly' && (
 					<SelectControl
@@ -123,6 +124,7 @@ const CustomizeDepositSchedule = () => {
 						onChange={ setDepositScheduleMonthlyAnchor }
 						options={ monthlyAnchors }
 						__nextHasNoMarginBottom
+						__next40pxDefaultSize
 					/>
 				) }
 				{ depositScheduleInterval === 'weekly' && (
@@ -132,6 +134,7 @@ const CustomizeDepositSchedule = () => {
 						onChange={ setDepositScheduleWeeklyAnchor }
 						options={ daysOfWeek }
 						__nextHasNoMarginBottom
+						__next40pxDefaultSize
 					/>
 				) }
 			</div>
