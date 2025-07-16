@@ -303,9 +303,7 @@ exports[`Fraud protection rule toggle tests renders correctly when enabled 1`] =
           </p>
         </div>
       </div>
-      <div>
-        test content
-      </div>
+      test content
     </div>
   </body>,
   "container": .emotion-0 {
@@ -372,9 +370,7 @@ exports[`Fraud protection rule toggle tests renders correctly when enabled 1`] =
         </p>
       </div>
     </div>
-    <div>
-      test content
-    </div>
+    test content
   </div>,
   "debug": [Function],
   "findAllByAltText": [Function],
@@ -522,9 +518,7 @@ exports[`Fraud protection rule toggle tests renders correctly when enabled and b
           </p>
         </div>
       </div>
-      <div>
-        test content
-      </div>
+      test content
     </div>
   </body>,
   "container": .emotion-0 {
@@ -591,9 +585,7 @@ exports[`Fraud protection rule toggle tests renders correctly when enabled and b
         </p>
       </div>
     </div>
-    <div>
-      test content
-    </div>
+    test content
   </div>,
   "debug": [Function],
   "findAllByAltText": [Function],

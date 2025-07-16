@@ -377,7 +377,6 @@ exports[`International billing address card renders correctly when enabled 1`] =
             </p>
           </div>
         </div>
-        <div />
         <div
           class="fraud-protection-rule-description"
         >
@@ -581,7 +580,6 @@ exports[`International billing address card renders correctly when enabled and c
             </p>
           </div>
         </div>
-        <div />
         <div
           class="fraud-protection-rule-description"
         >

@@ -216,7 +216,6 @@ exports[`International IP address card renders correctly when enabled 1`] = `
             </p>
           </div>
         </div>
-        <div />
         <div
           class="fraud-protection-rule-description"
         >
@@ -506,7 +505,6 @@ exports[`International IP address card renders correctly when enabled and checke
             </p>
           </div>
         </div>
-        <div />
         <div
           class="fraud-protection-rule-description"
         >
