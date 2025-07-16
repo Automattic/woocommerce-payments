@@ -33,3 +33,4 @@ export { TextControl } from './components/text-control';
 export { TextareaControl } from './components/textarea-control';
 export { ToggleControl } from './components/toggle-control';
 export { Tooltip } from './components/tooltip';
+export { Text } from './components/text';

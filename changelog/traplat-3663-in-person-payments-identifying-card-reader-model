@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Accept TAP_TO_PAY_DEVICE as a valid card reader model to consider a transaction as TTP.
