@@ -55,7 +55,7 @@ exports[`Fraud protection rule toggle tests renders correctly when disabled 1`] 
         class="fraud-protection-rule-toggle"
       >
         <div
-          class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-0 emotion-1"
+          class="components-base-control components-toggle-control emotion-0 emotion-1"
         >
           <div
             class="components-base-control__field emotion-2 emotion-3"
@@ -120,7 +120,7 @@ exports[`Fraud protection rule toggle tests renders correctly when disabled 1`] 
       class="fraud-protection-rule-toggle"
     >
       <div
-        class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-0 emotion-1"
+        class="components-base-control components-toggle-control emotion-0 emotion-1"
       >
         <div
           class="components-base-control__field emotion-2 emotion-3"
@@ -266,7 +266,7 @@ exports[`Fraud protection rule toggle tests renders correctly when enabled 1`] =
         class="fraud-protection-rule-toggle"
       >
         <div
-          class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-0 emotion-1"
+          class="components-base-control components-toggle-control emotion-0 emotion-1"
         >
           <div
             class="components-base-control__field emotion-2 emotion-3"
@@ -302,9 +302,9 @@ exports[`Fraud protection rule toggle tests renders correctly when enabled 1`] =
             Test rule toggle description
           </p>
         </div>
-        <div>
-          test content
-        </div>
+      </div>
+      <div>
+        test content
       </div>
     </div>
   </body>,
@@ -335,7 +335,7 @@ exports[`Fraud protection rule toggle tests renders correctly when enabled 1`] =
       class="fraud-protection-rule-toggle"
     >
       <div
-        class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-0 emotion-1"
+        class="components-base-control components-toggle-control emotion-0 emotion-1"
       >
         <div
           class="components-base-control__field emotion-2 emotion-3"
@@ -371,9 +371,9 @@ exports[`Fraud protection rule toggle tests renders correctly when enabled 1`] =
           Test rule toggle description
         </p>
       </div>
-      <div>
-        test content
-      </div>
+    </div>
+    <div>
+      test content
     </div>
   </div>,
   "debug": [Function],
@@ -485,7 +485,7 @@ exports[`Fraud protection rule toggle tests renders correctly when enabled and b
         class="fraud-protection-rule-toggle"
       >
         <div
-          class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-0 emotion-1"
+          class="components-base-control components-toggle-control emotion-0 emotion-1"
         >
           <div
             class="components-base-control__field emotion-2 emotion-3"
@@ -521,9 +521,9 @@ exports[`Fraud protection rule toggle tests renders correctly when enabled and b
             Test rule toggle description
           </p>
         </div>
-        <div>
-          test content
-        </div>
+      </div>
+      <div>
+        test content
       </div>
     </div>
   </body>,
@@ -554,7 +554,7 @@ exports[`Fraud protection rule toggle tests renders correctly when enabled and b
       class="fraud-protection-rule-toggle"
     >
       <div
-        class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-0 emotion-1"
+        class="components-base-control components-toggle-control emotion-0 emotion-1"
       >
         <div
           class="components-base-control__field emotion-2 emotion-3"
@@ -590,9 +590,9 @@ exports[`Fraud protection rule toggle tests renders correctly when enabled and b
           Test rule toggle description
         </p>
       </div>
-      <div>
-        test content
-      </div>
+    </div>
+    <div>
+      test content
     </div>
   </div>,
   "debug": [Function],

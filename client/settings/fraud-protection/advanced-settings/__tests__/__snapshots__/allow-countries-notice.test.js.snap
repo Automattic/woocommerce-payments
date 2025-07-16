@@ -66,7 +66,7 @@ exports[`Allowed countries rule card notice tests renders correctly when countri
     </div>
     <div>
       <div
-        class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
+        class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info"
       >
         <div
           class="components-notice__content"
@@ -149,7 +149,7 @@ exports[`Allowed countries rule card notice tests renders correctly when countri
 
 <div>
     <div
-      class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
+      class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info"
     >
       <div
         class="components-notice__content"
@@ -314,7 +314,7 @@ exports[`Allowed countries rule card notice tests renders correctly when countri
     </div>
     <div>
       <div
-        class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
+        class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info"
       >
         <div
           class="components-notice__content"
@@ -397,7 +397,7 @@ exports[`Allowed countries rule card notice tests renders correctly when countri
 
 <div>
     <div
-      class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
+      class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info"
     >
       <div
         class="components-notice__content"
@@ -562,7 +562,7 @@ exports[`Allowed countries rule card notice tests renders correctly when specifi
     </div>
     <div>
       <div
-        class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
+        class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info"
       >
         <div
           class="components-notice__content"
@@ -645,7 +645,7 @@ exports[`Allowed countries rule card notice tests renders correctly when specifi
 
 <div>
     <div
-      class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
+      class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info"
     >
       <div
         class="components-notice__content"
@@ -810,7 +810,7 @@ exports[`Allowed countries rule card notice tests renders correctly when specifi
     </div>
     <div>
       <div
-        class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
+        class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info"
       >
         <div
           class="components-notice__content"
@@ -893,7 +893,7 @@ exports[`Allowed countries rule card notice tests renders correctly when specifi
 
 <div>
     <div
-      class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
+      class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info"
     >
       <div
         class="components-notice__content"
@@ -1058,7 +1058,7 @@ exports[`Allowed countries rule card notice tests renders html entities correctl
     </div>
     <div>
       <div
-        class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
+        class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info"
       >
         <div
           class="components-notice__content"
@@ -1141,7 +1141,7 @@ exports[`Allowed countries rule card notice tests renders html entities correctl
 
 <div>
     <div
-      class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
+      class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info"
     >
       <div
         class="components-notice__content"

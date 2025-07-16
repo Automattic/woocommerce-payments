@@ -123,6 +123,28 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
   fill: currentColor;
 }
 
+.emotion-94 {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.emotion-94 *,
+.emotion-94 *::before,
+.emotion-94 *::after {
+  box-sizing: inherit;
+}
+
+.emotion-98 {
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  text-transform: uppercase;
+  display: inline-block;
+  margin-bottom: calc(4px * 2);
+  padding: 0;
+}
+
 <body>
     <p
       class="a11y-speak-intro-text"
@@ -254,7 +276,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                       class="fraud-protection-rule-toggle"
                     >
                       <div
-                        class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-10 emotion-11"
+                        class="components-base-control components-toggle-control emotion-10 emotion-11"
                       >
                         <div
                           class="components-base-control__field emotion-12 emotion-13"
@@ -336,7 +358,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                       class="fraud-protection-rule-toggle"
                     >
                       <div
-                        class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-10 emotion-11"
+                        class="components-base-control components-toggle-control emotion-10 emotion-11"
                       >
                         <div
                           class="components-base-control__field emotion-12 emotion-13"
@@ -419,7 +441,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                       </p>
                     </div>
                     <div
-                      class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
+                      class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info"
                     >
                       <div
                         class="components-notice__content"
@@ -499,7 +521,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                       class="fraud-protection-rule-toggle"
                     >
                       <div
-                        class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-10 emotion-11"
+                        class="components-base-control components-toggle-control emotion-10 emotion-11"
                       >
                         <div
                           class="components-base-control__field emotion-12 emotion-13"
@@ -611,7 +633,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                       class="fraud-protection-rule-toggle"
                     >
                       <div
-                        class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-10 emotion-11"
+                        class="components-base-control components-toggle-control emotion-10 emotion-11"
                       >
                         <div
                           class="components-base-control__field emotion-12 emotion-13"
@@ -693,7 +715,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                       class="fraud-protection-rule-toggle"
                     >
                       <div
-                        class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-10 emotion-11"
+                        class="components-base-control components-toggle-control emotion-10 emotion-11"
                       >
                         <div
                           class="components-base-control__field emotion-12 emotion-13"
@@ -728,131 +750,153 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                           This filter compares the purchase price of an order to the minimum and maximum purchase amounts that you specify. When enabled the payment will be blocked.
                         </p>
                       </div>
-                      <div>
+                    </div>
+                    <div>
+                      <div
+                        class="fraud-protection-rule-toggle-children-container"
+                      >
+                        <strong>
+                          Limits
+                        </strong>
                         <div
-                          class="fraud-protection-rule-toggle-children-container"
+                          class="fraud-protection-rule-toggle-children-horizontal-form"
                         >
-                          <strong>
-                            Limits
-                          </strong>
                           <div
-                            class="fraud-protection-rule-toggle-children-horizontal-form"
+                            class="fraud-protection-rule-toggle-children-vertical-form"
                           >
-                            <div
-                              class="fraud-protection-rule-toggle-children-vertical-form"
-                            >
-                              <label
-                                for="fraud-protection-purchase-price-minimum"
-                              >
-                                Minimum purchase price
-                              </label>
+                            <div>
                               <div
-                                class="components-base-control components-amount-input__container"
+                                class="components-base-control wcpay-components-amount-input with-value emotion-94 emotion-11"
                               >
                                 <div
-                                  class="components-base-control__field components-amount-input__input_container"
+                                  class="components-base-control__field emotion-12 emotion-13"
                                 >
-                                  <span
-                                    class="components-amount-input__prefix"
+                                  <label
+                                    class="components-base-control__label emotion-98 emotion-99"
+                                    for="inspector-text-control-with-affixes-0"
                                   >
-                                    $
-                                  </span>
-                                  <input
-                                    class="components-text-control__input components-amount-input__input"
-                                    data-testid="amount-input"
-                                    id="fraud-protection-purchase-price-minimum"
-                                    placeholder="0.00"
-                                    value="10"
-                                  />
+                                    Minimum purchase price
+                                  </label>
+                                  <div
+                                    class="text-control-with-affixes text-control-with-prefix"
+                                  >
+                                    <span
+                                      class="text-control-with-affixes__prefix"
+                                      id="inspector-text-control-with-affixes-0__prefix"
+                                    >
+                                      $
+                                    </span>
+                                    <input
+                                      aria-describedby="inspector-text-control-with-affixes-0__help inspector-text-control-with-affixes-0__prefix"
+                                      class="components-text-control__input"
+                                      data-testid="amount-input"
+                                      id="inspector-text-control-with-affixes-0"
+                                      placeholder="0.00"
+                                      type="text"
+                                      value="10"
+                                    />
+                                  </div>
                                 </div>
-                                <span
-                                  class="components-amount-input__help_text"
+                                <p
+                                  class="components-base-control__help emotion-14 emotion-15"
+                                  id="inspector-text-control-with-affixes-0__help"
                                 >
                                   Leave blank for no limit
-                                </span>
-                              </div>
-                            </div>
-                            <div
-                              class="fraud-protection-rule-toggle-children-vertical-form"
-                            >
-                              <label
-                                for="fraud-protection-purchase-price-maximum"
-                              >
-                                Maximum purchase price
-                              </label>
-                              <div
-                                class="components-base-control components-amount-input__container"
-                              >
-                                <div
-                                  class="components-base-control__field components-amount-input__input_container"
-                                >
-                                  <span
-                                    class="components-amount-input__prefix"
-                                  >
-                                    $
-                                  </span>
-                                  <input
-                                    class="components-text-control__input components-amount-input__input"
-                                    data-testid="amount-input"
-                                    id="fraud-protection-purchase-price-maximum"
-                                    placeholder="0.00"
-                                    value="1"
-                                  />
-                                </div>
-                                <span
-                                  class="components-amount-input__help_text"
-                                >
-                                  Leave blank for no limit
-                                </span>
+                                </p>
                               </div>
                             </div>
                           </div>
                           <div
-                            class="fraud-protection-rule-toggle-children-notice"
+                            class="fraud-protection-rule-toggle-children-vertical-form"
                           >
-                            <br />
-                            <div
-                              class="wcpay-inline-notice wcpay-inline-error-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-error components-notice is-error"
-                            >
+                            <div>
                               <div
-                                class="components-notice__content"
+                                class="components-base-control wcpay-components-amount-input with-value emotion-94 emotion-11"
                               >
                                 <div
-                                  class="components-flex emotion-0 emotion-1"
-                                  data-wp-c16t="true"
-                                  data-wp-component="Flex"
+                                  class="components-base-control__field emotion-12 emotion-13"
                                 >
-                                  <div
-                                    class="components-flex-item wcpay-inline-notice__icon wcpay-inline-error-notice__icon emotion-2 emotion-1"
-                                    data-wp-c16t="true"
-                                    data-wp-component="FlexItem"
+                                  <label
+                                    class="components-base-control__label emotion-98 emotion-99"
+                                    for="inspector-text-control-with-affixes-1"
                                   >
-                                    <svg
-                                      class="gridicon gridicons-notice-outline"
-                                      height="24"
-                                      viewBox="0 0 24 24"
-                                      width="24"
-                                      xmlns="http://www.w3.org/2000/svg"
+                                    Maximum purchase price
+                                  </label>
+                                  <div
+                                    class="text-control-with-affixes text-control-with-prefix"
+                                  >
+                                    <span
+                                      class="text-control-with-affixes__prefix"
+                                      id="inspector-text-control-with-affixes-1__prefix"
                                     >
-                                      <g>
-                                        <path
-                                          d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                                        />
-                                      </g>
-                                    </svg>
-                                  </div>
-                                  <div
-                                    class="components-flex-item wcpay-inline-notice__content wcpay-inline-error-notice__content emotion-2 emotion-1"
-                                    data-wp-c16t="true"
-                                    data-wp-component="FlexItem"
-                                  >
-                                    Maximum purchase price must be greater than the minimum purchase price.
+                                      $
+                                    </span>
+                                    <input
+                                      aria-describedby="inspector-text-control-with-affixes-1__help inspector-text-control-with-affixes-1__prefix"
+                                      class="components-text-control__input"
+                                      data-testid="amount-input"
+                                      id="inspector-text-control-with-affixes-1"
+                                      placeholder="0.00"
+                                      type="text"
+                                      value="1"
+                                    />
                                   </div>
                                 </div>
-                                <div
-                                  class="components-notice__actions"
-                                />
+                                <p
+                                  class="components-base-control__help emotion-14 emotion-15"
+                                  id="inspector-text-control-with-affixes-1__help"
+                                >
+                                  Leave blank for no limit
+                                </p>
                               </div>
+                            </div>
+                          </div>
+                        </div>
+                        <div
+                          class="fraud-protection-rule-toggle-children-notice"
+                        >
+                          <br />
+                          <div
+                            class="wcpay-inline-notice wcpay-inline-error-notice components-notice is-error"
+                          >
+                            <div
+                              class="components-notice__content"
+                            >
+                              <div
+                                class="components-flex emotion-0 emotion-1"
+                                data-wp-c16t="true"
+                                data-wp-component="Flex"
+                              >
+                                <div
+                                  class="components-flex-item wcpay-inline-notice__icon wcpay-inline-error-notice__icon emotion-2 emotion-1"
+                                  data-wp-c16t="true"
+                                  data-wp-component="FlexItem"
+                                >
+                                  <svg
+                                    class="gridicon gridicons-notice-outline"
+                                    height="24"
+                                    viewBox="0 0 24 24"
+                                    width="24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                  >
+                                    <g>
+                                      <path
+                                        d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                                      />
+                                    </g>
+                                  </svg>
+                                </div>
+                                <div
+                                  class="components-flex-item wcpay-inline-notice__content wcpay-inline-error-notice__content emotion-2 emotion-1"
+                                  data-wp-c16t="true"
+                                  data-wp-component="FlexItem"
+                                >
+                                  Maximum purchase price must be greater than the minimum purchase price.
+                                </div>
+                              </div>
+                              <div
+                                class="components-notice__actions"
+                              />
                             </div>
                           </div>
                         </div>
@@ -904,7 +948,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                       class="fraud-protection-rule-toggle"
                     >
                       <div
-                        class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-10 emotion-11"
+                        class="components-base-control components-toggle-control emotion-10 emotion-11"
                       >
                         <div
                           class="components-base-control__field emotion-12 emotion-13"
@@ -983,7 +1027,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                       CVC Verification
                     </h4>
                     <div
-                      class="wcpay-inline-notice wcpay-inline-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+                      class="wcpay-inline-notice wcpay-inline-warning-notice components-notice is-warning"
                     >
                       <div
                         class="components-notice__content"
@@ -1215,6 +1259,28 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
   fill: currentColor;
 }
 
+.emotion-94 {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.emotion-94 *,
+.emotion-94 *::before,
+.emotion-94 *::after {
+  box-sizing: inherit;
+}
+
+.emotion-98 {
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  text-transform: uppercase;
+  display: inline-block;
+  margin-bottom: calc(4px * 2);
+  padding: 0;
+}
+
 <div>
     <div>
       <div
@@ -1320,7 +1386,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                     class="fraud-protection-rule-toggle"
                   >
                     <div
-                      class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-10 emotion-11"
+                      class="components-base-control components-toggle-control emotion-10 emotion-11"
                     >
                       <div
                         class="components-base-control__field emotion-12 emotion-13"
@@ -1402,7 +1468,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                     class="fraud-protection-rule-toggle"
                   >
                     <div
-                      class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-10 emotion-11"
+                      class="components-base-control components-toggle-control emotion-10 emotion-11"
                     >
                       <div
                         class="components-base-control__field emotion-12 emotion-13"
@@ -1485,7 +1551,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                     </p>
                   </div>
                   <div
-                    class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
+                    class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info"
                   >
                     <div
                       class="components-notice__content"
@@ -1565,7 +1631,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                     class="fraud-protection-rule-toggle"
                   >
                     <div
-                      class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-10 emotion-11"
+                      class="components-base-control components-toggle-control emotion-10 emotion-11"
                     >
                       <div
                         class="components-base-control__field emotion-12 emotion-13"
@@ -1677,7 +1743,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                     class="fraud-protection-rule-toggle"
                   >
                     <div
-                      class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-10 emotion-11"
+                      class="components-base-control components-toggle-control emotion-10 emotion-11"
                     >
                       <div
                         class="components-base-control__field emotion-12 emotion-13"
@@ -1759,7 +1825,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                     class="fraud-protection-rule-toggle"
                   >
                     <div
-                      class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-10 emotion-11"
+                      class="components-base-control components-toggle-control emotion-10 emotion-11"
                     >
                       <div
                         class="components-base-control__field emotion-12 emotion-13"
@@ -1794,131 +1860,153 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                         This filter compares the purchase price of an order to the minimum and maximum purchase amounts that you specify. When enabled the payment will be blocked.
                       </p>
                     </div>
-                    <div>
+                  </div>
+                  <div>
+                    <div
+                      class="fraud-protection-rule-toggle-children-container"
+                    >
+                      <strong>
+                        Limits
+                      </strong>
                       <div
-                        class="fraud-protection-rule-toggle-children-container"
+                        class="fraud-protection-rule-toggle-children-horizontal-form"
                       >
-                        <strong>
-                          Limits
-                        </strong>
                         <div
-                          class="fraud-protection-rule-toggle-children-horizontal-form"
+                          class="fraud-protection-rule-toggle-children-vertical-form"
                         >
-                          <div
-                            class="fraud-protection-rule-toggle-children-vertical-form"
-                          >
-                            <label
-                              for="fraud-protection-purchase-price-minimum"
-                            >
-                              Minimum purchase price
-                            </label>
+                          <div>
                             <div
-                              class="components-base-control components-amount-input__container"
+                              class="components-base-control wcpay-components-amount-input with-value emotion-94 emotion-11"
                             >
                               <div
-                                class="components-base-control__field components-amount-input__input_container"
+                                class="components-base-control__field emotion-12 emotion-13"
                               >
-                                <span
-                                  class="components-amount-input__prefix"
+                                <label
+                                  class="components-base-control__label emotion-98 emotion-99"
+                                  for="inspector-text-control-with-affixes-0"
                                 >
-                                  $
-                                </span>
-                                <input
-                                  class="components-text-control__input components-amount-input__input"
-                                  data-testid="amount-input"
-                                  id="fraud-protection-purchase-price-minimum"
-                                  placeholder="0.00"
-                                  value="10"
-                                />
+                                  Minimum purchase price
+                                </label>
+                                <div
+                                  class="text-control-with-affixes text-control-with-prefix"
+                                >
+                                  <span
+                                    class="text-control-with-affixes__prefix"
+                                    id="inspector-text-control-with-affixes-0__prefix"
+                                  >
+                                    $
+                                  </span>
+                                  <input
+                                    aria-describedby="inspector-text-control-with-affixes-0__help inspector-text-control-with-affixes-0__prefix"
+                                    class="components-text-control__input"
+                                    data-testid="amount-input"
+                                    id="inspector-text-control-with-affixes-0"
+                                    placeholder="0.00"
+                                    type="text"
+                                    value="10"
+                                  />
+                                </div>
                               </div>
-                              <span
-                                class="components-amount-input__help_text"
+                              <p
+                                class="components-base-control__help emotion-14 emotion-15"
+                                id="inspector-text-control-with-affixes-0__help"
                               >
                                 Leave blank for no limit
-                              </span>
-                            </div>
-                          </div>
-                          <div
-                            class="fraud-protection-rule-toggle-children-vertical-form"
-                          >
-                            <label
-                              for="fraud-protection-purchase-price-maximum"
-                            >
-                              Maximum purchase price
-                            </label>
-                            <div
-                              class="components-base-control components-amount-input__container"
-                            >
-                              <div
-                                class="components-base-control__field components-amount-input__input_container"
-                              >
-                                <span
-                                  class="components-amount-input__prefix"
-                                >
-                                  $
-                                </span>
-                                <input
-                                  class="components-text-control__input components-amount-input__input"
-                                  data-testid="amount-input"
-                                  id="fraud-protection-purchase-price-maximum"
-                                  placeholder="0.00"
-                                  value="1"
-                                />
-                              </div>
-                              <span
-                                class="components-amount-input__help_text"
-                              >
-                                Leave blank for no limit
-                              </span>
+                              </p>
                             </div>
                           </div>
                         </div>
                         <div
-                          class="fraud-protection-rule-toggle-children-notice"
+                          class="fraud-protection-rule-toggle-children-vertical-form"
                         >
-                          <br />
-                          <div
-                            class="wcpay-inline-notice wcpay-inline-error-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-error components-notice is-error"
-                          >
+                          <div>
                             <div
-                              class="components-notice__content"
+                              class="components-base-control wcpay-components-amount-input with-value emotion-94 emotion-11"
                             >
                               <div
-                                class="components-flex emotion-0 emotion-1"
-                                data-wp-c16t="true"
-                                data-wp-component="Flex"
+                                class="components-base-control__field emotion-12 emotion-13"
                               >
-                                <div
-                                  class="components-flex-item wcpay-inline-notice__icon wcpay-inline-error-notice__icon emotion-2 emotion-1"
-                                  data-wp-c16t="true"
-                                  data-wp-component="FlexItem"
+                                <label
+                                  class="components-base-control__label emotion-98 emotion-99"
+                                  for="inspector-text-control-with-affixes-1"
                                 >
-                                  <svg
-                                    class="gridicon gridicons-notice-outline"
-                                    height="24"
-                                    viewBox="0 0 24 24"
-                                    width="24"
-                                    xmlns="http://www.w3.org/2000/svg"
+                                  Maximum purchase price
+                                </label>
+                                <div
+                                  class="text-control-with-affixes text-control-with-prefix"
+                                >
+                                  <span
+                                    class="text-control-with-affixes__prefix"
+                                    id="inspector-text-control-with-affixes-1__prefix"
                                   >
-                                    <g>
-                                      <path
-                                        d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                                      />
-                                    </g>
-                                  </svg>
-                                </div>
-                                <div
-                                  class="components-flex-item wcpay-inline-notice__content wcpay-inline-error-notice__content emotion-2 emotion-1"
-                                  data-wp-c16t="true"
-                                  data-wp-component="FlexItem"
-                                >
-                                  Maximum purchase price must be greater than the minimum purchase price.
+                                    $
+                                  </span>
+                                  <input
+                                    aria-describedby="inspector-text-control-with-affixes-1__help inspector-text-control-with-affixes-1__prefix"
+                                    class="components-text-control__input"
+                                    data-testid="amount-input"
+                                    id="inspector-text-control-with-affixes-1"
+                                    placeholder="0.00"
+                                    type="text"
+                                    value="1"
+                                  />
                                 </div>
                               </div>
-                              <div
-                                class="components-notice__actions"
-                              />
+                              <p
+                                class="components-base-control__help emotion-14 emotion-15"
+                                id="inspector-text-control-with-affixes-1__help"
+                              >
+                                Leave blank for no limit
+                              </p>
                             </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div
+                        class="fraud-protection-rule-toggle-children-notice"
+                      >
+                        <br />
+                        <div
+                          class="wcpay-inline-notice wcpay-inline-error-notice components-notice is-error"
+                        >
+                          <div
+                            class="components-notice__content"
+                          >
+                            <div
+                              class="components-flex emotion-0 emotion-1"
+                              data-wp-c16t="true"
+                              data-wp-component="Flex"
+                            >
+                              <div
+                                class="components-flex-item wcpay-inline-notice__icon wcpay-inline-error-notice__icon emotion-2 emotion-1"
+                                data-wp-c16t="true"
+                                data-wp-component="FlexItem"
+                              >
+                                <svg
+                                  class="gridicon gridicons-notice-outline"
+                                  height="24"
+                                  viewBox="0 0 24 24"
+                                  width="24"
+                                  xmlns="http://www.w3.org/2000/svg"
+                                >
+                                  <g>
+                                    <path
+                                      d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                                    />
+                                  </g>
+                                </svg>
+                              </div>
+                              <div
+                                class="components-flex-item wcpay-inline-notice__content wcpay-inline-error-notice__content emotion-2 emotion-1"
+                                data-wp-c16t="true"
+                                data-wp-component="FlexItem"
+                              >
+                                Maximum purchase price must be greater than the minimum purchase price.
+                              </div>
+                            </div>
+                            <div
+                              class="components-notice__actions"
+                            />
                           </div>
                         </div>
                       </div>
@@ -1970,7 +2058,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                     class="fraud-protection-rule-toggle"
                   >
                     <div
-                      class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-10 emotion-11"
+                      class="components-base-control components-toggle-control emotion-10 emotion-11"
                     >
                       <div
                         class="components-base-control__field emotion-12 emotion-13"
@@ -2049,7 +2137,7 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                     CVC Verification
                   </h4>
                   <div
-                    class="wcpay-inline-notice wcpay-inline-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+                    class="wcpay-inline-notice wcpay-inline-warning-notice components-notice is-warning"
                   >
                     <div
                       class="components-notice__content"
@@ -2450,7 +2538,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                       class="fraud-protection-rule-toggle"
                     >
                       <div
-                        class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-10 emotion-11"
+                        class="components-base-control components-toggle-control emotion-10 emotion-11"
                       >
                         <div
                           class="components-base-control__field emotion-12 emotion-13"
@@ -2532,7 +2620,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                       class="fraud-protection-rule-toggle"
                     >
                       <div
-                        class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-10 emotion-11"
+                        class="components-base-control components-toggle-control emotion-10 emotion-11"
                       >
                         <div
                           class="components-base-control__field emotion-12 emotion-13"
@@ -2615,7 +2703,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                       </p>
                     </div>
                     <div
-                      class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
+                      class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info"
                     >
                       <div
                         class="components-notice__content"
@@ -2695,7 +2783,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                       class="fraud-protection-rule-toggle"
                     >
                       <div
-                        class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-10 emotion-11"
+                        class="components-base-control components-toggle-control emotion-10 emotion-11"
                       >
                         <div
                           class="components-base-control__field emotion-12 emotion-13"
@@ -2807,7 +2895,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                       class="fraud-protection-rule-toggle"
                     >
                       <div
-                        class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-10 emotion-11"
+                        class="components-base-control components-toggle-control emotion-10 emotion-11"
                       >
                         <div
                           class="components-base-control__field emotion-12 emotion-13"
@@ -2889,7 +2977,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                       class="fraud-protection-rule-toggle"
                     >
                       <div
-                        class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-10 emotion-11"
+                        class="components-base-control components-toggle-control emotion-10 emotion-11"
                       >
                         <div
                           class="components-base-control__field emotion-12 emotion-13"
@@ -2971,7 +3059,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                       class="fraud-protection-rule-toggle"
                     >
                       <div
-                        class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-10 emotion-11"
+                        class="components-base-control components-toggle-control emotion-10 emotion-11"
                       >
                         <div
                           class="components-base-control__field emotion-12 emotion-13"
@@ -3050,7 +3138,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                       CVC Verification
                     </h4>
                     <div
-                      class="wcpay-inline-notice wcpay-inline-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+                      class="wcpay-inline-notice wcpay-inline-warning-notice components-notice is-warning"
                     >
                       <div
                         class="components-notice__content"
@@ -3370,7 +3458,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                     class="fraud-protection-rule-toggle"
                   >
                     <div
-                      class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-10 emotion-11"
+                      class="components-base-control components-toggle-control emotion-10 emotion-11"
                     >
                       <div
                         class="components-base-control__field emotion-12 emotion-13"
@@ -3452,7 +3540,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                     class="fraud-protection-rule-toggle"
                   >
                     <div
-                      class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-10 emotion-11"
+                      class="components-base-control components-toggle-control emotion-10 emotion-11"
                     >
                       <div
                         class="components-base-control__field emotion-12 emotion-13"
@@ -3535,7 +3623,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                     </p>
                   </div>
                   <div
-                    class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
+                    class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info"
                   >
                     <div
                       class="components-notice__content"
@@ -3615,7 +3703,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                     class="fraud-protection-rule-toggle"
                   >
                     <div
-                      class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-10 emotion-11"
+                      class="components-base-control components-toggle-control emotion-10 emotion-11"
                     >
                       <div
                         class="components-base-control__field emotion-12 emotion-13"
@@ -3727,7 +3815,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                     class="fraud-protection-rule-toggle"
                   >
                     <div
-                      class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-10 emotion-11"
+                      class="components-base-control components-toggle-control emotion-10 emotion-11"
                     >
                       <div
                         class="components-base-control__field emotion-12 emotion-13"
@@ -3809,7 +3897,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                     class="fraud-protection-rule-toggle"
                   >
                     <div
-                      class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-10 emotion-11"
+                      class="components-base-control components-toggle-control emotion-10 emotion-11"
                     >
                       <div
                         class="components-base-control__field emotion-12 emotion-13"
@@ -3891,7 +3979,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                     class="fraud-protection-rule-toggle"
                   >
                     <div
-                      class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-10 emotion-11"
+                      class="components-base-control components-toggle-control emotion-10 emotion-11"
                     >
                       <div
                         class="components-base-control__field emotion-12 emotion-13"
@@ -3970,7 +4058,7 @@ exports[`Advanced fraud protection settings renders an error message when settin
                     CVC Verification
                   </h4>
                   <div
-                    class="wcpay-inline-notice wcpay-inline-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+                    class="wcpay-inline-notice wcpay-inline-warning-notice components-notice is-warning"
                   >
                     <div
                       class="components-notice__content"
@@ -4340,7 +4428,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                     class="fraud-protection-rule-toggle"
                   >
                     <div
-                      class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+                      class="components-base-control components-toggle-control emotion-6 emotion-7"
                     >
                       <div
                         class="components-base-control__field emotion-8 emotion-9"
@@ -4422,7 +4510,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                     class="fraud-protection-rule-toggle"
                   >
                     <div
-                      class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+                      class="components-base-control components-toggle-control emotion-6 emotion-7"
                     >
                       <div
                         class="components-base-control__field emotion-8 emotion-9"
@@ -4505,7 +4593,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                     </p>
                   </div>
                   <div
-                    class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
+                    class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info"
                   >
                     <div
                       class="components-notice__content"
@@ -4585,7 +4673,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                     class="fraud-protection-rule-toggle"
                   >
                     <div
-                      class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+                      class="components-base-control components-toggle-control emotion-6 emotion-7"
                     >
                       <div
                         class="components-base-control__field emotion-8 emotion-9"
@@ -4697,7 +4785,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                     class="fraud-protection-rule-toggle"
                   >
                     <div
-                      class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+                      class="components-base-control components-toggle-control emotion-6 emotion-7"
                     >
                       <div
                         class="components-base-control__field emotion-8 emotion-9"
@@ -4779,7 +4867,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                     class="fraud-protection-rule-toggle"
                   >
                     <div
-                      class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+                      class="components-base-control components-toggle-control emotion-6 emotion-7"
                     >
                       <div
                         class="components-base-control__field emotion-8 emotion-9"
@@ -4861,7 +4949,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                     class="fraud-protection-rule-toggle"
                   >
                     <div
-                      class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+                      class="components-base-control components-toggle-control emotion-6 emotion-7"
                     >
                       <div
                         class="components-base-control__field emotion-8 emotion-9"
@@ -4940,7 +5028,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                     CVC Verification
                   </h4>
                   <div
-                    class="wcpay-inline-notice wcpay-inline-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+                    class="wcpay-inline-notice wcpay-inline-warning-notice components-notice is-warning"
                   >
                     <div
                       class="components-notice__content"
@@ -5227,7 +5315,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                   class="fraud-protection-rule-toggle"
                 >
                   <div
-                    class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+                    class="components-base-control components-toggle-control emotion-6 emotion-7"
                   >
                     <div
                       class="components-base-control__field emotion-8 emotion-9"
@@ -5309,7 +5397,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                   class="fraud-protection-rule-toggle"
                 >
                   <div
-                    class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+                    class="components-base-control components-toggle-control emotion-6 emotion-7"
                   >
                     <div
                       class="components-base-control__field emotion-8 emotion-9"
@@ -5392,7 +5480,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                   </p>
                 </div>
                 <div
-                  class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
+                  class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info"
                 >
                   <div
                     class="components-notice__content"
@@ -5472,7 +5560,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                   class="fraud-protection-rule-toggle"
                 >
                   <div
-                    class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+                    class="components-base-control components-toggle-control emotion-6 emotion-7"
                   >
                     <div
                       class="components-base-control__field emotion-8 emotion-9"
@@ -5584,7 +5672,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                   class="fraud-protection-rule-toggle"
                 >
                   <div
-                    class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+                    class="components-base-control components-toggle-control emotion-6 emotion-7"
                   >
                     <div
                       class="components-base-control__field emotion-8 emotion-9"
@@ -5666,7 +5754,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                   class="fraud-protection-rule-toggle"
                 >
                   <div
-                    class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+                    class="components-base-control components-toggle-control emotion-6 emotion-7"
                   >
                     <div
                       class="components-base-control__field emotion-8 emotion-9"
@@ -5748,7 +5836,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                   class="fraud-protection-rule-toggle"
                 >
                   <div
-                    class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+                    class="components-base-control components-toggle-control emotion-6 emotion-7"
                   >
                     <div
                       class="components-base-control__field emotion-8 emotion-9"
@@ -5827,7 +5915,7 @@ exports[`Advanced fraud protection settings renders correctly 1`] = `
                   CVC Verification
                 </h4>
                 <div
-                  class="wcpay-inline-notice wcpay-inline-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+                  class="wcpay-inline-notice wcpay-inline-warning-notice components-notice is-warning"
                 >
                   <div
                     class="components-notice__content"
@@ -6115,6 +6203,28 @@ exports[`Advanced fraud protection settings saves settings when there are no val
   min-width: 0;
 }
 
+.emotion-90 {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.emotion-90 *,
+.emotion-90 *::before,
+.emotion-90 *::after {
+  box-sizing: inherit;
+}
+
+.emotion-94 {
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  text-transform: uppercase;
+  display: inline-block;
+  margin-bottom: calc(4px * 2);
+  padding: 0;
+}
+
 <body>
     <p
       class="a11y-speak-intro-text"
@@ -6204,7 +6314,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                       class="fraud-protection-rule-toggle"
                     >
                       <div
-                        class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+                        class="components-base-control components-toggle-control emotion-6 emotion-7"
                       >
                         <div
                           class="components-base-control__field emotion-8 emotion-9"
@@ -6286,7 +6396,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                       class="fraud-protection-rule-toggle"
                     >
                       <div
-                        class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+                        class="components-base-control components-toggle-control emotion-6 emotion-7"
                       >
                         <div
                           class="components-base-control__field emotion-8 emotion-9"
@@ -6369,7 +6479,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                       </p>
                     </div>
                     <div
-                      class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
+                      class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info"
                     >
                       <div
                         class="components-notice__content"
@@ -6449,7 +6559,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                       class="fraud-protection-rule-toggle"
                     >
                       <div
-                        class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+                        class="components-base-control components-toggle-control emotion-6 emotion-7"
                       >
                         <div
                           class="components-base-control__field emotion-8 emotion-9"
@@ -6561,7 +6671,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                       class="fraud-protection-rule-toggle"
                     >
                       <div
-                        class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+                        class="components-base-control components-toggle-control emotion-6 emotion-7"
                       >
                         <div
                           class="components-base-control__field emotion-8 emotion-9"
@@ -6643,7 +6753,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                       class="fraud-protection-rule-toggle"
                     >
                       <div
-                        class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+                        class="components-base-control components-toggle-control emotion-6 emotion-7"
                       >
                         <div
                           class="components-base-control__field emotion-8 emotion-9"
@@ -6678,82 +6788,104 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                           This filter compares the purchase price of an order to the minimum and maximum purchase amounts that you specify. When enabled the payment will be blocked.
                         </p>
                       </div>
-                      <div>
+                    </div>
+                    <div>
+                      <div
+                        class="fraud-protection-rule-toggle-children-container"
+                      >
+                        <strong>
+                          Limits
+                        </strong>
                         <div
-                          class="fraud-protection-rule-toggle-children-container"
+                          class="fraud-protection-rule-toggle-children-horizontal-form"
                         >
-                          <strong>
-                            Limits
-                          </strong>
                           <div
-                            class="fraud-protection-rule-toggle-children-horizontal-form"
+                            class="fraud-protection-rule-toggle-children-vertical-form"
                           >
-                            <div
-                              class="fraud-protection-rule-toggle-children-vertical-form"
-                            >
-                              <label
-                                for="fraud-protection-purchase-price-minimum"
-                              >
-                                Minimum purchase price
-                              </label>
+                            <div>
                               <div
-                                class="components-base-control components-amount-input__container"
+                                class="components-base-control wcpay-components-amount-input with-value emotion-90 emotion-7"
                               >
                                 <div
-                                  class="components-base-control__field components-amount-input__input_container"
+                                  class="components-base-control__field emotion-8 emotion-9"
                                 >
-                                  <span
-                                    class="components-amount-input__prefix"
+                                  <label
+                                    class="components-base-control__label emotion-94 emotion-95"
+                                    for="inspector-text-control-with-affixes-2"
                                   >
-                                    $
-                                  </span>
-                                  <input
-                                    class="components-text-control__input components-amount-input__input"
-                                    data-testid="amount-input"
-                                    id="fraud-protection-purchase-price-minimum"
-                                    placeholder="0.00"
-                                    value="1"
-                                  />
+                                    Minimum purchase price
+                                  </label>
+                                  <div
+                                    class="text-control-with-affixes text-control-with-prefix"
+                                  >
+                                    <span
+                                      class="text-control-with-affixes__prefix"
+                                      id="inspector-text-control-with-affixes-2__prefix"
+                                    >
+                                      $
+                                    </span>
+                                    <input
+                                      aria-describedby="inspector-text-control-with-affixes-2__help inspector-text-control-with-affixes-2__prefix"
+                                      class="components-text-control__input"
+                                      data-testid="amount-input"
+                                      id="inspector-text-control-with-affixes-2"
+                                      placeholder="0.00"
+                                      type="text"
+                                      value="1"
+                                    />
+                                  </div>
                                 </div>
-                                <span
-                                  class="components-amount-input__help_text"
+                                <p
+                                  class="components-base-control__help emotion-10 emotion-11"
+                                  id="inspector-text-control-with-affixes-2__help"
                                 >
                                   Leave blank for no limit
-                                </span>
+                                </p>
                               </div>
                             </div>
-                            <div
-                              class="fraud-protection-rule-toggle-children-vertical-form"
-                            >
-                              <label
-                                for="fraud-protection-purchase-price-maximum"
-                              >
-                                Maximum purchase price
-                              </label>
+                          </div>
+                          <div
+                            class="fraud-protection-rule-toggle-children-vertical-form"
+                          >
+                            <div>
                               <div
-                                class="components-base-control components-amount-input__container"
+                                class="components-base-control wcpay-components-amount-input with-value emotion-90 emotion-7"
                               >
                                 <div
-                                  class="components-base-control__field components-amount-input__input_container"
+                                  class="components-base-control__field emotion-8 emotion-9"
                                 >
-                                  <span
-                                    class="components-amount-input__prefix"
+                                  <label
+                                    class="components-base-control__label emotion-94 emotion-95"
+                                    for="inspector-text-control-with-affixes-3"
                                   >
-                                    $
-                                  </span>
-                                  <input
-                                    class="components-text-control__input components-amount-input__input"
-                                    data-testid="amount-input"
-                                    id="fraud-protection-purchase-price-maximum"
-                                    placeholder="0.00"
-                                    value="10"
-                                  />
+                                    Maximum purchase price
+                                  </label>
+                                  <div
+                                    class="text-control-with-affixes text-control-with-prefix"
+                                  >
+                                    <span
+                                      class="text-control-with-affixes__prefix"
+                                      id="inspector-text-control-with-affixes-3__prefix"
+                                    >
+                                      $
+                                    </span>
+                                    <input
+                                      aria-describedby="inspector-text-control-with-affixes-3__help inspector-text-control-with-affixes-3__prefix"
+                                      class="components-text-control__input"
+                                      data-testid="amount-input"
+                                      id="inspector-text-control-with-affixes-3"
+                                      placeholder="0.00"
+                                      type="text"
+                                      value="10"
+                                    />
+                                  </div>
                                 </div>
-                                <span
-                                  class="components-amount-input__help_text"
+                                <p
+                                  class="components-base-control__help emotion-10 emotion-11"
+                                  id="inspector-text-control-with-affixes-3__help"
                                 >
                                   Leave blank for no limit
-                                </span>
+                                </p>
                               </div>
                             </div>
                           </div>
@@ -6806,7 +6938,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                       class="fraud-protection-rule-toggle"
                     >
                       <div
-                        class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+                        class="components-base-control components-toggle-control emotion-6 emotion-7"
                       >
                         <div
                           class="components-base-control__field emotion-8 emotion-9"
@@ -6885,7 +7017,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                       CVC Verification
                     </h4>
                     <div
-                      class="wcpay-inline-notice wcpay-inline-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+                      class="wcpay-inline-notice wcpay-inline-warning-notice components-notice is-warning"
                     >
                       <div
                         class="components-notice__content"
@@ -7118,6 +7250,28 @@ exports[`Advanced fraud protection settings saves settings when there are no val
   min-width: 0;
 }
 
+.emotion-90 {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.emotion-90 *,
+.emotion-90 *::before,
+.emotion-90 *::after {
+  box-sizing: inherit;
+}
+
+.emotion-94 {
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  text-transform: uppercase;
+  display: inline-block;
+  margin-bottom: calc(4px * 2);
+  padding: 0;
+}
+
 <div>
     <div>
       <div
@@ -7181,7 +7335,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                     class="fraud-protection-rule-toggle"
                   >
                     <div
-                      class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+                      class="components-base-control components-toggle-control emotion-6 emotion-7"
                     >
                       <div
                         class="components-base-control__field emotion-8 emotion-9"
@@ -7263,7 +7417,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                     class="fraud-protection-rule-toggle"
                   >
                     <div
-                      class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+                      class="components-base-control components-toggle-control emotion-6 emotion-7"
                     >
                       <div
                         class="components-base-control__field emotion-8 emotion-9"
@@ -7346,7 +7500,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                     </p>
                   </div>
                   <div
-                    class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
+                    class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info"
                   >
                     <div
                       class="components-notice__content"
@@ -7426,7 +7580,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                     class="fraud-protection-rule-toggle"
                   >
                     <div
-                      class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+                      class="components-base-control components-toggle-control emotion-6 emotion-7"
                     >
                       <div
                         class="components-base-control__field emotion-8 emotion-9"
@@ -7538,7 +7692,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                     class="fraud-protection-rule-toggle"
                   >
                     <div
-                      class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+                      class="components-base-control components-toggle-control emotion-6 emotion-7"
                     >
                       <div
                         class="components-base-control__field emotion-8 emotion-9"
@@ -7620,7 +7774,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                     class="fraud-protection-rule-toggle"
                   >
                     <div
-                      class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+                      class="components-base-control components-toggle-control emotion-6 emotion-7"
                     >
                       <div
                         class="components-base-control__field emotion-8 emotion-9"
@@ -7655,82 +7809,104 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                         This filter compares the purchase price of an order to the minimum and maximum purchase amounts that you specify. When enabled the payment will be blocked.
                       </p>
                     </div>
-                    <div>
+                  </div>
+                  <div>
+                    <div
+                      class="fraud-protection-rule-toggle-children-container"
+                    >
+                      <strong>
+                        Limits
+                      </strong>
                       <div
-                        class="fraud-protection-rule-toggle-children-container"
+                        class="fraud-protection-rule-toggle-children-horizontal-form"
                       >
-                        <strong>
-                          Limits
-                        </strong>
                         <div
-                          class="fraud-protection-rule-toggle-children-horizontal-form"
+                          class="fraud-protection-rule-toggle-children-vertical-form"
                         >
-                          <div
-                            class="fraud-protection-rule-toggle-children-vertical-form"
-                          >
-                            <label
-                              for="fraud-protection-purchase-price-minimum"
-                            >
-                              Minimum purchase price
-                            </label>
+                          <div>
                             <div
-                              class="components-base-control components-amount-input__container"
+                              class="components-base-control wcpay-components-amount-input with-value emotion-90 emotion-7"
                             >
                               <div
-                                class="components-base-control__field components-amount-input__input_container"
+                                class="components-base-control__field emotion-8 emotion-9"
                               >
-                                <span
-                                  class="components-amount-input__prefix"
+                                <label
+                                  class="components-base-control__label emotion-94 emotion-95"
+                                  for="inspector-text-control-with-affixes-2"
                                 >
-                                  $
-                                </span>
-                                <input
-                                  class="components-text-control__input components-amount-input__input"
-                                  data-testid="amount-input"
-                                  id="fraud-protection-purchase-price-minimum"
-                                  placeholder="0.00"
-                                  value="1"
-                                />
+                                  Minimum purchase price
+                                </label>
+                                <div
+                                  class="text-control-with-affixes text-control-with-prefix"
+                                >
+                                  <span
+                                    class="text-control-with-affixes__prefix"
+                                    id="inspector-text-control-with-affixes-2__prefix"
+                                  >
+                                    $
+                                  </span>
+                                  <input
+                                    aria-describedby="inspector-text-control-with-affixes-2__help inspector-text-control-with-affixes-2__prefix"
+                                    class="components-text-control__input"
+                                    data-testid="amount-input"
+                                    id="inspector-text-control-with-affixes-2"
+                                    placeholder="0.00"
+                                    type="text"
+                                    value="1"
+                                  />
+                                </div>
                               </div>
-                              <span
-                                class="components-amount-input__help_text"
+                              <p
+                                class="components-base-control__help emotion-10 emotion-11"
+                                id="inspector-text-control-with-affixes-2__help"
                               >
                                 Leave blank for no limit
-                              </span>
+                              </p>
                             </div>
                           </div>
-                          <div
-                            class="fraud-protection-rule-toggle-children-vertical-form"
-                          >
-                            <label
-                              for="fraud-protection-purchase-price-maximum"
-                            >
-                              Maximum purchase price
-                            </label>
+                        </div>
+                        <div
+                          class="fraud-protection-rule-toggle-children-vertical-form"
+                        >
+                          <div>
                             <div
-                              class="components-base-control components-amount-input__container"
+                              class="components-base-control wcpay-components-amount-input with-value emotion-90 emotion-7"
                             >
                               <div
-                                class="components-base-control__field components-amount-input__input_container"
+                                class="components-base-control__field emotion-8 emotion-9"
                               >
-                                <span
-                                  class="components-amount-input__prefix"
+                                <label
+                                  class="components-base-control__label emotion-94 emotion-95"
+                                  for="inspector-text-control-with-affixes-3"
                                 >
-                                  $
-                                </span>
-                                <input
-                                  class="components-text-control__input components-amount-input__input"
-                                  data-testid="amount-input"
-                                  id="fraud-protection-purchase-price-maximum"
-                                  placeholder="0.00"
-                                  value="10"
-                                />
+                                  Maximum purchase price
+                                </label>
+                                <div
+                                  class="text-control-with-affixes text-control-with-prefix"
+                                >
+                                  <span
+                                    class="text-control-with-affixes__prefix"
+                                    id="inspector-text-control-with-affixes-3__prefix"
+                                  >
+                                    $
+                                  </span>
+                                  <input
+                                    aria-describedby="inspector-text-control-with-affixes-3__help inspector-text-control-with-affixes-3__prefix"
+                                    class="components-text-control__input"
+                                    data-testid="amount-input"
+                                    id="inspector-text-control-with-affixes-3"
+                                    placeholder="0.00"
+                                    type="text"
+                                    value="10"
+                                  />
+                                </div>
                               </div>
-                              <span
-                                class="components-amount-input__help_text"
+                              <p
+                                class="components-base-control__help emotion-10 emotion-11"
+                                id="inspector-text-control-with-affixes-3__help"
                               >
                                 Leave blank for no limit
-                              </span>
+                              </p>
                             </div>
                           </div>
                         </div>
@@ -7783,7 +7959,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                     class="fraud-protection-rule-toggle"
                   >
                     <div
-                      class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+                      class="components-base-control components-toggle-control emotion-6 emotion-7"
                     >
                       <div
                         class="components-base-control__field emotion-8 emotion-9"
@@ -7862,7 +8038,7 @@ exports[`Advanced fraud protection settings saves settings when there are no val
                     CVC Verification
                   </h4>
                   <div
-                    class="wcpay-inline-notice wcpay-inline-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+                    class="wcpay-inline-notice wcpay-inline-warning-notice components-notice is-warning"
                   >
                     <div
                       class="components-notice__content"

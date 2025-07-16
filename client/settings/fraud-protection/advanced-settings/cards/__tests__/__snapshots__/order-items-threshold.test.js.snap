@@ -100,7 +100,7 @@ exports[`Order items threshold card renders correctly 1`] = `
           class="fraud-protection-rule-toggle"
         >
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+            class="components-base-control components-toggle-control emotion-6 emotion-7"
           >
             <div
               class="components-base-control__field emotion-8 emotion-9"
@@ -217,7 +217,12 @@ exports[`Order items threshold card renders correctly when enabled 1`] = `
   margin-bottom: revert;
 }
 
-.emotion-24 {
+.emotion-16 {
+  display: inline-block;
+  margin-bottom: calc(4px * 2);
+}
+
+.emotion-28 {
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -236,15 +241,15 @@ exports[`Order items threshold card renders correctly when enabled 1`] = `
   width: 100%;
 }
 
-.emotion-24>*+*:not( marquee ) {
+.emotion-28>*+*:not( marquee ) {
   margin-left: calc(4px * 2);
 }
 
-.emotion-24>* {
+.emotion-28>* {
   min-width: 0;
 }
 
-.emotion-26 {
+.emotion-30 {
   display: block;
   max-height: 100%;
   max-width: 100%;
@@ -252,7 +257,7 @@ exports[`Order items threshold card renders correctly when enabled 1`] = `
   min-width: 0;
 }
 
-.emotion-30 {
+.emotion-34 {
   background: transparent;
   display: block;
   margin: 0!important;
@@ -272,7 +277,7 @@ exports[`Order items threshold card renders correctly when enabled 1`] = `
 }
 
 @media ( prefers-reduced-motion: reduce ) {
-  .emotion-30 {
+  .emotion-34 {
     transition-duration: 0ms;
   }
 }
@@ -299,7 +304,7 @@ exports[`Order items threshold card renders correctly when enabled 1`] = `
           class="fraud-protection-rule-toggle"
         >
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+            class="components-base-control components-toggle-control emotion-6 emotion-7"
           >
             <div
               class="components-base-control__field emotion-8 emotion-9"
@@ -335,129 +340,130 @@ exports[`Order items threshold card renders correctly when enabled 1`] = `
               This filter compares the amount of items in an order to the minimum and maximum counts that you specify. When enabled the payment will be blocked.
             </p>
           </div>
-          <div>
+        </div>
+        <div>
+          <div
+            class="fraud-protection-rule-toggle-children-container"
+          >
+            <strong>
+              Limits
+            </strong>
             <div
-              class="fraud-protection-rule-toggle-children-container"
+              class="fraud-protection-rule-toggle-children-horizontal-form"
             >
-              <strong>
-                Limits
-              </strong>
               <div
-                class="fraud-protection-rule-toggle-children-horizontal-form"
+                class="fraud-protection-rule-toggle-children-vertical-form"
               >
                 <div
-                  class="fraud-protection-rule-toggle-children-vertical-form"
+                  class="components-base-control emotion-6 emotion-7"
                 >
-                  <label
-                    for="fraud-protection-order-items-minimum"
-                  >
-                    Minimum items per order
-                  </label>
                   <div
-                    class="components-base-control emotion-6 emotion-7"
+                    class="components-base-control__field emotion-8 emotion-9"
                   >
-                    <div
-                      class="components-base-control__field emotion-8 emotion-9"
+                    <label
+                      class="components-base-control__label emotion-16 emotion-17"
+                      for="inspector-text-control-0"
                     >
-                      <input
-                        aria-describedby="inspector-text-control-0__help"
-                        class="components-text-control__input"
-                        id="fraud-protection-order-items-minimum"
-                        min="1"
-                        placeholder="0"
-                        step="1"
-                        type="number"
-                        value=""
-                      />
-                    </div>
-                    <p
-                      class="components-base-control__help emotion-10 emotion-11"
-                      id="inspector-text-control-0__help"
-                    >
-                      Leave blank for no limit
-                    </p>
+                      Minimum items per order
+                    </label>
+                    <input
+                      aria-describedby="inspector-text-control-0__help"
+                      class="components-text-control__input"
+                      id="fraud-protection-order-items-minimum"
+                      min="1"
+                      placeholder="0"
+                      step="1"
+                      type="number"
+                      value=""
+                    />
                   </div>
-                </div>
-                <div
-                  class="fraud-protection-rule-toggle-children-vertical-form"
-                >
-                  <label
-                    for="fraud-protection-order-items-maximum"
+                  <p
+                    class="components-base-control__help emotion-10 emotion-11"
+                    id="inspector-text-control-0__help"
                   >
-                    Maximum items per order
-                  </label>
-                  <div
-                    class="components-base-control emotion-6 emotion-7"
-                  >
-                    <div
-                      class="components-base-control__field emotion-8 emotion-9"
-                    >
-                      <input
-                        aria-describedby="inspector-text-control-1__help"
-                        class="components-text-control__input"
-                        id="fraud-protection-order-items-maximum"
-                        min="1"
-                        placeholder="0"
-                        step="1"
-                        type="number"
-                        value=""
-                      />
-                    </div>
-                    <p
-                      class="components-base-control__help emotion-10 emotion-11"
-                      id="inspector-text-control-1__help"
-                    >
-                      Leave blank for no limit
-                    </p>
-                  </div>
+                    Leave blank for no limit
+                  </p>
                 </div>
               </div>
               <div
-                class="fraud-protection-rule-toggle-children-notice"
+                class="fraud-protection-rule-toggle-children-vertical-form"
               >
-                <br />
                 <div
-                  class="wcpay-inline-notice wcpay-inline-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+                  class="components-base-control emotion-6 emotion-7"
                 >
                   <div
-                    class="components-notice__content"
+                    class="components-base-control__field emotion-8 emotion-9"
                   >
-                    <div
-                      class="components-flex emotion-24 emotion-1"
-                      data-wp-c16t="true"
-                      data-wp-component="Flex"
+                    <label
+                      class="components-base-control__label emotion-16 emotion-17"
+                      for="inspector-text-control-1"
                     >
-                      <div
-                        class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon emotion-26 emotion-1"
-                        data-wp-c16t="true"
-                        data-wp-component="FlexItem"
-                      >
-                        <svg
-                          class="gridicon gridicons-notice-outline"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          width="24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <g>
-                            <path
-                              d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                            />
-                          </g>
-                        </svg>
-                      </div>
-                      <div
-                        class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content emotion-26 emotion-1"
-                        data-wp-c16t="true"
-                        data-wp-component="FlexItem"
-                      >
-                        An item range must be set for this filter to take effect.
-                      </div>
-                    </div>
-                    <div
-                      class="components-notice__actions"
+                      Maximum items per order
+                    </label>
+                    <input
+                      aria-describedby="inspector-text-control-1__help"
+                      class="components-text-control__input"
+                      id="fraud-protection-order-items-maximum"
+                      min="1"
+                      placeholder="0"
+                      step="1"
+                      type="number"
+                      value=""
                     />
                   </div>
+                  <p
+                    class="components-base-control__help emotion-10 emotion-11"
+                    id="inspector-text-control-1__help"
+                  >
+                    Leave blank for no limit
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div
+              class="fraud-protection-rule-toggle-children-notice"
+            >
+              <div
+                class="wcpay-inline-notice wcpay-inline-warning-notice components-notice is-warning"
+              >
+                <div
+                  class="components-notice__content"
+                >
+                  <div
+                    class="components-flex emotion-28 emotion-1"
+                    data-wp-c16t="true"
+                    data-wp-component="Flex"
+                  >
+                    <div
+                      class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon emotion-30 emotion-1"
+                      data-wp-c16t="true"
+                      data-wp-component="FlexItem"
+                    >
+                      <svg
+                        class="gridicon gridicons-notice-outline"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <g>
+                          <path
+                            d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                          />
+                        </g>
+                      </svg>
+                    </div>
+                    <div
+                      class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content emotion-30 emotion-1"
+                      data-wp-c16t="true"
+                      data-wp-component="FlexItem"
+                    >
+                      An item range must be set for this filter to take effect.
+                    </div>
+                  </div>
+                  <div
+                    class="components-notice__actions"
+                  />
                 </div>
               </div>
             </div>
@@ -477,13 +483,13 @@ exports[`Order items threshold card renders correctly when enabled 1`] = `
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation emotion-30 emotion-1"
+      class="components-elevation emotion-34 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation emotion-30 emotion-1"
+      class="components-elevation emotion-34 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -544,7 +550,12 @@ exports[`Order items threshold card renders correctly when enabled and checked 1
   margin-bottom: revert;
 }
 
-.emotion-24 {
+.emotion-16 {
+  display: inline-block;
+  margin-bottom: calc(4px * 2);
+}
+
+.emotion-28 {
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -563,15 +574,15 @@ exports[`Order items threshold card renders correctly when enabled and checked 1
   width: 100%;
 }
 
-.emotion-24>*+*:not( marquee ) {
+.emotion-28>*+*:not( marquee ) {
   margin-left: calc(4px * 2);
 }
 
-.emotion-24>* {
+.emotion-28>* {
   min-width: 0;
 }
 
-.emotion-26 {
+.emotion-30 {
   display: block;
   max-height: 100%;
   max-width: 100%;
@@ -579,7 +590,7 @@ exports[`Order items threshold card renders correctly when enabled and checked 1
   min-width: 0;
 }
 
-.emotion-30 {
+.emotion-34 {
   background: transparent;
   display: block;
   margin: 0!important;
@@ -599,7 +610,7 @@ exports[`Order items threshold card renders correctly when enabled and checked 1
 }
 
 @media ( prefers-reduced-motion: reduce ) {
-  .emotion-30 {
+  .emotion-34 {
     transition-duration: 0ms;
   }
 }
@@ -626,7 +637,7 @@ exports[`Order items threshold card renders correctly when enabled and checked 1
           class="fraud-protection-rule-toggle"
         >
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+            class="components-base-control components-toggle-control emotion-6 emotion-7"
           >
             <div
               class="components-base-control__field emotion-8 emotion-9"
@@ -662,129 +673,130 @@ exports[`Order items threshold card renders correctly when enabled and checked 1
               This filter compares the amount of items in an order to the minimum and maximum counts that you specify. When enabled the payment will be blocked.
             </p>
           </div>
-          <div>
+        </div>
+        <div>
+          <div
+            class="fraud-protection-rule-toggle-children-container"
+          >
+            <strong>
+              Limits
+            </strong>
             <div
-              class="fraud-protection-rule-toggle-children-container"
+              class="fraud-protection-rule-toggle-children-horizontal-form"
             >
-              <strong>
-                Limits
-              </strong>
               <div
-                class="fraud-protection-rule-toggle-children-horizontal-form"
+                class="fraud-protection-rule-toggle-children-vertical-form"
               >
                 <div
-                  class="fraud-protection-rule-toggle-children-vertical-form"
+                  class="components-base-control emotion-6 emotion-7"
                 >
-                  <label
-                    for="fraud-protection-order-items-minimum"
-                  >
-                    Minimum items per order
-                  </label>
                   <div
-                    class="components-base-control emotion-6 emotion-7"
+                    class="components-base-control__field emotion-8 emotion-9"
                   >
-                    <div
-                      class="components-base-control__field emotion-8 emotion-9"
+                    <label
+                      class="components-base-control__label emotion-16 emotion-17"
+                      for="inspector-text-control-2"
                     >
-                      <input
-                        aria-describedby="inspector-text-control-2__help"
-                        class="components-text-control__input"
-                        id="fraud-protection-order-items-minimum"
-                        min="1"
-                        placeholder="0"
-                        step="1"
-                        type="number"
-                        value=""
-                      />
-                    </div>
-                    <p
-                      class="components-base-control__help emotion-10 emotion-11"
-                      id="inspector-text-control-2__help"
-                    >
-                      Leave blank for no limit
-                    </p>
+                      Minimum items per order
+                    </label>
+                    <input
+                      aria-describedby="inspector-text-control-2__help"
+                      class="components-text-control__input"
+                      id="fraud-protection-order-items-minimum"
+                      min="1"
+                      placeholder="0"
+                      step="1"
+                      type="number"
+                      value=""
+                    />
                   </div>
-                </div>
-                <div
-                  class="fraud-protection-rule-toggle-children-vertical-form"
-                >
-                  <label
-                    for="fraud-protection-order-items-maximum"
+                  <p
+                    class="components-base-control__help emotion-10 emotion-11"
+                    id="inspector-text-control-2__help"
                   >
-                    Maximum items per order
-                  </label>
-                  <div
-                    class="components-base-control emotion-6 emotion-7"
-                  >
-                    <div
-                      class="components-base-control__field emotion-8 emotion-9"
-                    >
-                      <input
-                        aria-describedby="inspector-text-control-3__help"
-                        class="components-text-control__input"
-                        id="fraud-protection-order-items-maximum"
-                        min="1"
-                        placeholder="0"
-                        step="1"
-                        type="number"
-                        value=""
-                      />
-                    </div>
-                    <p
-                      class="components-base-control__help emotion-10 emotion-11"
-                      id="inspector-text-control-3__help"
-                    >
-                      Leave blank for no limit
-                    </p>
-                  </div>
+                    Leave blank for no limit
+                  </p>
                 </div>
               </div>
               <div
-                class="fraud-protection-rule-toggle-children-notice"
+                class="fraud-protection-rule-toggle-children-vertical-form"
               >
-                <br />
                 <div
-                  class="wcpay-inline-notice wcpay-inline-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+                  class="components-base-control emotion-6 emotion-7"
                 >
                   <div
-                    class="components-notice__content"
+                    class="components-base-control__field emotion-8 emotion-9"
                   >
-                    <div
-                      class="components-flex emotion-24 emotion-1"
-                      data-wp-c16t="true"
-                      data-wp-component="Flex"
+                    <label
+                      class="components-base-control__label emotion-16 emotion-17"
+                      for="inspector-text-control-3"
                     >
-                      <div
-                        class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon emotion-26 emotion-1"
-                        data-wp-c16t="true"
-                        data-wp-component="FlexItem"
-                      >
-                        <svg
-                          class="gridicon gridicons-notice-outline"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          width="24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <g>
-                            <path
-                              d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
-                            />
-                          </g>
-                        </svg>
-                      </div>
-                      <div
-                        class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content emotion-26 emotion-1"
-                        data-wp-c16t="true"
-                        data-wp-component="FlexItem"
-                      >
-                        An item range must be set for this filter to take effect.
-                      </div>
-                    </div>
-                    <div
-                      class="components-notice__actions"
+                      Maximum items per order
+                    </label>
+                    <input
+                      aria-describedby="inspector-text-control-3__help"
+                      class="components-text-control__input"
+                      id="fraud-protection-order-items-maximum"
+                      min="1"
+                      placeholder="0"
+                      step="1"
+                      type="number"
+                      value=""
                     />
                   </div>
+                  <p
+                    class="components-base-control__help emotion-10 emotion-11"
+                    id="inspector-text-control-3__help"
+                  >
+                    Leave blank for no limit
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div
+              class="fraud-protection-rule-toggle-children-notice"
+            >
+              <div
+                class="wcpay-inline-notice wcpay-inline-warning-notice components-notice is-warning"
+              >
+                <div
+                  class="components-notice__content"
+                >
+                  <div
+                    class="components-flex emotion-28 emotion-1"
+                    data-wp-c16t="true"
+                    data-wp-component="Flex"
+                  >
+                    <div
+                      class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon emotion-30 emotion-1"
+                      data-wp-c16t="true"
+                      data-wp-component="FlexItem"
+                    >
+                      <svg
+                        class="gridicon gridicons-notice-outline"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <g>
+                          <path
+                            d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+                          />
+                        </g>
+                      </svg>
+                    </div>
+                    <div
+                      class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content emotion-30 emotion-1"
+                      data-wp-c16t="true"
+                      data-wp-component="FlexItem"
+                    >
+                      An item range must be set for this filter to take effect.
+                    </div>
+                  </div>
+                  <div
+                    class="components-notice__actions"
+                  />
                 </div>
               </div>
             </div>
@@ -804,13 +816,13 @@ exports[`Order items threshold card renders correctly when enabled and checked 1
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation emotion-30 emotion-1"
+      class="components-elevation emotion-34 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation emotion-30 emotion-1"
+      class="components-elevation emotion-34 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -918,7 +930,7 @@ exports[`Order items threshold card renders like disabled when checked, but not 
           class="fraud-protection-rule-toggle"
         >
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+            class="components-base-control components-toggle-control emotion-6 emotion-7"
           >
             <div
               class="components-base-control__field emotion-8 emotion-9"

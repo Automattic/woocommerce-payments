@@ -143,7 +143,7 @@ exports[`International IP address card renders correctly when enabled 1`] = `
           class="fraud-protection-rule-toggle"
         >
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+            class="components-base-control components-toggle-control emotion-6 emotion-7"
           >
             <div
               class="components-base-control__field emotion-8 emotion-9"
@@ -215,8 +215,8 @@ exports[`International IP address card renders correctly when enabled 1`] = `
               . When enabled the payment will be blocked.
             </p>
           </div>
-          <div />
         </div>
+        <div />
         <div
           class="fraud-protection-rule-description"
         >
@@ -228,7 +228,7 @@ exports[`International IP address card renders correctly when enabled 1`] = `
           </p>
         </div>
         <div
-          class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
+          class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info"
         >
           <div
             class="components-notice__content"
@@ -433,7 +433,7 @@ exports[`International IP address card renders correctly when enabled and checke
           class="fraud-protection-rule-toggle"
         >
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+            class="components-base-control components-toggle-control emotion-6 emotion-7"
           >
             <div
               class="components-base-control__field emotion-8 emotion-9"
@@ -505,8 +505,8 @@ exports[`International IP address card renders correctly when enabled and checke
               . When enabled the payment will be blocked.
             </p>
           </div>
-          <div />
         </div>
+        <div />
         <div
           class="fraud-protection-rule-description"
         >
@@ -518,7 +518,7 @@ exports[`International IP address card renders correctly when enabled and checke
           </p>
         </div>
         <div
-          class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
+          class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info"
         >
           <div
             class="components-notice__content"
@@ -690,7 +690,7 @@ exports[`International IP address card renders correctly when woocommerce_allowe
           International IP Address
         </h4>
         <div
-          class="wcpay-inline-notice wcpay-inline-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+          class="wcpay-inline-notice wcpay-inline-warning-notice components-notice is-warning"
         >
           <div
             class="components-notice__content"
@@ -903,7 +903,7 @@ exports[`International IP address card renders correctly when woocommerce_allowe
           class="fraud-protection-rule-toggle"
         >
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+            class="components-base-control components-toggle-control emotion-6 emotion-7"
           >
             <div
               class="components-base-control__field emotion-8 emotion-9"
@@ -986,7 +986,7 @@ exports[`International IP address card renders correctly when woocommerce_allowe
           </p>
         </div>
         <div
-          class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
+          class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info"
         >
           <div
             class="components-notice__content"
@@ -1191,7 +1191,7 @@ exports[`International IP address card renders correctly when woocommerce_allowe
           class="fraud-protection-rule-toggle"
         >
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+            class="components-base-control components-toggle-control emotion-6 emotion-7"
           >
             <div
               class="components-base-control__field emotion-8 emotion-9"
@@ -1274,7 +1274,7 @@ exports[`International IP address card renders correctly when woocommerce_allowe
           </p>
         </div>
         <div
-          class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
+          class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info"
         >
           <div
             class="components-notice__content"
@@ -1479,7 +1479,7 @@ exports[`International IP address card renders like disabled when checked, but n
           class="fraud-protection-rule-toggle"
         >
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+            class="components-base-control components-toggle-control emotion-6 emotion-7"
           >
             <div
               class="components-base-control__field emotion-8 emotion-9"
@@ -1562,7 +1562,7 @@ exports[`International IP address card renders like disabled when checked, but n
           </p>
         </div>
         <div
-          class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
+          class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info"
         >
           <div
             class="components-notice__content"

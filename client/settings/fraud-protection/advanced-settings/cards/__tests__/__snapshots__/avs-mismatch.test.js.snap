@@ -100,7 +100,7 @@ exports[`AVS mismatch card renders correctly when AVS check is disabled 1`] = `
           class="fraud-protection-rule-toggle"
         >
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+            class="components-base-control components-toggle-control emotion-6 emotion-7"
           >
             <div
               class="components-base-control__field emotion-8 emotion-9"
@@ -264,7 +264,7 @@ exports[`AVS mismatch card renders correctly when AVS check is enabled 1`] = `
           class="fraud-protection-rule-toggle"
         >
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+            class="components-base-control components-toggle-control emotion-6 emotion-7"
           >
             <div
               class="components-base-control__field emotion-8 emotion-9"

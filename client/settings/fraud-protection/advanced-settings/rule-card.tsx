@@ -7,7 +7,7 @@ import { Card } from 'wcpay/components/wp-components-wrapped';
 /**
  * Internal dependencies
  */
-import './../style.scss';
+import './rule-card.scss';
 import CardBody from '../../card-body';
 
 interface FraudProtectionRuleCardProps {

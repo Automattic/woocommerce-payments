@@ -40,7 +40,7 @@ const CVCVerificationRuleCard: React.FC = () => {
 							},
 					  } )
 					: __(
-							'This filter is disabled, and can not be modified.',
+							'This filter is disabled, and cannot be modified.',
 							'woocommerce-payments'
 					  ) }
 			</FraudProtectionRuleCardNotice>

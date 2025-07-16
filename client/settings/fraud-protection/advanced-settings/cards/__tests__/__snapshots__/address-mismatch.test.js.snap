@@ -100,7 +100,7 @@ exports[`Address mismatch card renders correctly 1`] = `
           class="fraud-protection-rule-toggle"
         >
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+            class="components-base-control components-toggle-control emotion-6 emotion-7"
           >
             <div
               class="components-base-control__field emotion-8 emotion-9"
@@ -264,7 +264,7 @@ exports[`Address mismatch card renders correctly when enabled 1`] = `
           class="fraud-protection-rule-toggle"
         >
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+            class="components-base-control components-toggle-control emotion-6 emotion-7"
           >
             <div
               class="components-base-control__field emotion-8 emotion-9"
@@ -300,8 +300,8 @@ exports[`Address mismatch card renders correctly when enabled 1`] = `
               This filter screens for differences between the shipping information and the billing information (country). When enabled the payment will be blocked.
             </p>
           </div>
-          <div />
         </div>
+        <div />
         <div
           class="fraud-protection-rule-description"
         >
@@ -430,7 +430,7 @@ exports[`Address mismatch card renders correctly when enabled and checked 1`] = 
           class="fraud-protection-rule-toggle"
         >
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+            class="components-base-control components-toggle-control emotion-6 emotion-7"
           >
             <div
               class="components-base-control__field emotion-8 emotion-9"
@@ -466,8 +466,8 @@ exports[`Address mismatch card renders correctly when enabled and checked 1`] = 
               This filter screens for differences between the shipping information and the billing information (country). When enabled the payment will be blocked.
             </p>
           </div>
-          <div />
         </div>
+        <div />
         <div
           class="fraud-protection-rule-description"
         >
@@ -596,7 +596,7 @@ exports[`Address mismatch card renders like disabled when checked, but not enabl
           class="fraud-protection-rule-toggle"
         >
           <div
-            class="components-base-control components-toggle-control fraud-protection-rule-toggle-toggle emotion-6 emotion-7"
+            class="components-base-control components-toggle-control emotion-6 emotion-7"
           >
             <div
               class="components-base-control__field emotion-8 emotion-9"

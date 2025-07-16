@@ -110,7 +110,7 @@ exports[`CVC verification card renders correctly when CVC check is disabled 1`] 
           CVC Verification
         </h4>
         <div
-          class="wcpay-inline-notice wcpay-inline-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+          class="wcpay-inline-notice wcpay-inline-warning-notice components-notice is-warning"
         >
           <div
             class="components-notice__content"
@@ -144,7 +144,7 @@ exports[`CVC verification card renders correctly when CVC check is disabled 1`] 
                 data-wp-c16t="true"
                 data-wp-component="FlexItem"
               >
-                This filter is disabled, and can not be modified.
+                This filter is disabled, and cannot be modified.
               </div>
             </div>
             <div
@@ -298,7 +298,7 @@ exports[`CVC verification card renders correctly when CVC check is enabled 1`] =
           CVC Verification
         </h4>
         <div
-          class="wcpay-inline-notice wcpay-inline-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+          class="wcpay-inline-notice wcpay-inline-warning-notice components-notice is-warning"
         >
           <div
             class="components-notice__content"

@@ -16,11 +16,13 @@ import {
 	useSettings,
 	useGetSettings,
 } from 'wcpay/data';
-import { FraudProtectionHelpText, BasicFraudProtectionModal } from '..';
+import FraudProtectionHelpText from './fp-help-text';
+import BasicFraudProtectionModal from './fp-modal';
 import { getAdminUrl } from 'wcpay/utils';
-import { ProtectionLevel } from '../../advanced-settings/constants';
+import { ProtectionLevel } from '../advanced-settings/constants';
 import InlineNotice from 'wcpay/components/inline-notice';
 import { recordEvent } from 'tracks';
+import './styles.scss';
 
 const ProtectionLevels: React.FC = () => {
 	const [ isBasicModalOpen, setBasicModalOpen ] = useState( false );
@@ -170,11 +172,12 @@ const ProtectionLevels: React.FC = () => {
 								className="fraud-protection__help-icon"
 								onClick={ handleBasicModalOpen }
 							/>
-							<BasicFraudProtectionModal
-								level={ ProtectionLevel.BASIC }
-								isBasicModalOpen={ isBasicModalOpen }
-								setBasicModalOpen={ setBasicModalOpen }
-							/>
+							{ isBasicModalOpen && (
+								<BasicFraudProtectionModal
+									level={ ProtectionLevel.BASIC }
+									setBasicModalOpen={ setBasicModalOpen }
+								/>
+							) }
 						</div>
 						<FraudProtectionHelpText
 							level={ ProtectionLevel.BASIC }

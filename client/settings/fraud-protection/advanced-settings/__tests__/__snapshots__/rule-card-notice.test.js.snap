@@ -66,7 +66,7 @@ exports[`Fraud protection rule card notice tests renders error box correctly 1`]
     />
     <div>
       <div
-        class="wcpay-inline-notice wcpay-inline-error-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-error components-notice is-error"
+        class="wcpay-inline-notice wcpay-inline-error-notice components-notice is-error"
       >
         <div
           class="components-notice__content"
@@ -147,7 +147,7 @@ exports[`Fraud protection rule card notice tests renders error box correctly 1`]
 
 <div>
     <div
-      class="wcpay-inline-notice wcpay-inline-error-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-error components-notice is-error"
+      class="wcpay-inline-notice wcpay-inline-error-notice components-notice is-error"
     >
       <div
         class="components-notice__content"
@@ -310,7 +310,7 @@ exports[`Fraud protection rule card notice tests renders info box correctly 1`] 
     </div>
     <div>
       <div
-        class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
+        class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info"
       >
         <div
           class="components-notice__content"
@@ -390,7 +390,7 @@ exports[`Fraud protection rule card notice tests renders info box correctly 1`] 
 
 <div>
     <div
-      class="wcpay-inline-notice wcpay-inline-info-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-info components-notice is-info"
+      class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info"
     >
       <div
         class="components-notice__content"
@@ -552,7 +552,7 @@ exports[`Fraud protection rule card notice tests renders warning box correctly 1
     </div>
     <div>
       <div
-        class="wcpay-inline-notice wcpay-inline-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+        class="wcpay-inline-notice wcpay-inline-warning-notice components-notice is-warning"
       >
         <div
           class="components-notice__content"
@@ -633,7 +633,7 @@ exports[`Fraud protection rule card notice tests renders warning box correctly 1
 
 <div>
     <div
-      class="wcpay-inline-notice wcpay-inline-warning-notice fraud-protection-rule-card-notice fraud-protection-rule-card-notice-warning components-notice is-warning"
+      class="wcpay-inline-notice wcpay-inline-warning-notice components-notice is-warning"
     >
       <div
         class="components-notice__content"

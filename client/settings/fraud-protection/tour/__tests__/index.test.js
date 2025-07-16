@@ -7,15 +7,7 @@ import { render, act } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import FraudProtectionTour from './';
-
-declare const global: {
-	wcpaySettings: {
-		fraudProtection: {
-			isWelcomeTourDismissed: boolean;
-		};
-	};
-};
+import FraudProtectionTour from '..';
 
 jest.mock( '@woocommerce/components', () => ( {
 	TourKit: () => <div data-testid="tour-kit" />,
@@ -32,7 +24,7 @@ jest.mock( '@wordpress/data', () => ( {
 } ) );
 
 describe( 'FraudProtectionTour', () => {
-	let mockIntersectionObserver: jest.Mock;
+	let mockIntersectionObserver;
 
 	beforeEach( () => {
 		global.wcpaySettings = {

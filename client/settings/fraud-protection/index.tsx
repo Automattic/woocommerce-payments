@@ -9,7 +9,7 @@ import { Card } from 'wcpay/components/wp-components-wrapped';
  * Internal dependencies
  */
 import CardBody from '../card-body';
-import { ProtectionLevels } from './components';
+import ProtectionLevels from './protection-levels';
 import './style.scss';
 import FraudProtectionTour from './tour';
 

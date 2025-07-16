@@ -87,14 +87,12 @@ const PurchasePriceThresholdCustomForm: React.FC< PurchasePriceThresholdCustomFo
 			<strong>Limits</strong>
 			<div className="fraud-protection-rule-toggle-children-horizontal-form">
 				<div className="fraud-protection-rule-toggle-children-vertical-form">
-					<label htmlFor="fraud-protection-purchase-price-minimum">
-						{ __(
+					<AmountInput
+						id="fraud-protection-purchase-price-minimum"
+						label={ __(
 							'Minimum purchase price',
 							'woocommerce-payments'
 						) }
-					</label>
-					<AmountInput
-						id="fraud-protection-purchase-price-minimum"
 						prefix={ currencySymbol }
 						placeholder="0.00"
 						value={ minAmount.toString() }
@@ -106,14 +104,12 @@ const PurchasePriceThresholdCustomForm: React.FC< PurchasePriceThresholdCustomFo
 					/>
 				</div>
 				<div className="fraud-protection-rule-toggle-children-vertical-form">
-					<label htmlFor="fraud-protection-purchase-price-maximum">
-						{ __(
+					<AmountInput
+						id="fraud-protection-purchase-price-maximum"
+						label={ __(
 							'Maximum purchase price',
 							'woocommerce-payments'
 						) }
-					</label>
-					<AmountInput
-						id="fraud-protection-purchase-price-maximum"
 						prefix={ currencySymbol }
 						placeholder="0.00"
 						value={ maxAmount.toString() }
