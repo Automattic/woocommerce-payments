@@ -131,10 +131,10 @@ const getBaseDispute = () => ( {
 	status: 'needs_response',
 } );
 
-const getBaseMetadata = () => ( {
-	platform: 'ios',
+const createTapToPayMetadata = ( readerModel, platform ) => ( {
+	platform,
 	reader_id: 'APPLEBUILTINSIMULATOR-1',
-	reader_model: 'COTS_DEVICE',
+	reader_model: readerModel,
 } );
 
 function renderCharge( charge, metadata = {}, isLoading = false, props = {} ) {
@@ -254,9 +254,19 @@ describe( 'PaymentDetailsSummary', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 
-	test( 'renders the Tap to Pay channel from metadata', () => {
+	test( 'renders the Tap to Pay channel from metadata with ios COTS_DEVICE', () => {
 		const charge = getBaseCharge();
-		const metadata = getBaseMetadata();
+		const metadata = createTapToPayMetadata( 'COTS_DEVICE', 'ios' );
+
+		expect( renderCharge( charge, metadata ) ).toMatchSnapshot();
+	} );
+
+	test( 'renders the Tap to Pay channel from metadata with android TAP_TO_PAY_DEVICE', () => {
+		const charge = getBaseCharge();
+		const metadata = createTapToPayMetadata(
+			'TAP_TO_PAY_DEVICE',
+			'android'
+		);
 
 		expect( renderCharge( charge, metadata ) ).toMatchSnapshot();
 	} );

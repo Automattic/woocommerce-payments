@@ -87,7 +87,7 @@ const placeholderValues = {
 };
 
 const isTapToPay = ( model: string ) => {
-	return model === 'COTS_DEVICE';
+	return model === 'COTS_DEVICE' || model === 'TAP_TO_PAY_DEVICE';
 };
 
 const getTapToPayChannel = ( platform: string ) => {
