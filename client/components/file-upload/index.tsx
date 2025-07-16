@@ -69,6 +69,7 @@ export const FileUploadControl = ( {
 			id={ `form-file-upload-base-control-${ field.key }` }
 			label={ field.label }
 			help={ help }
+			__nextHasNoMarginBottom
 		>
 			<DropZone
 				onFilesDrop={ ( files: Array< File > ) =>
@@ -142,6 +143,7 @@ export const UploadedReadOnly = ( {
 		<BaseControl
 			id={ `form-file-upload-base-control-${ field.key }` }
 			label={ field.label }
+			__nextHasNoMarginBottom
 		>
 			<FileUploadPreview
 				fileName={

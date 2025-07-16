@@ -34,6 +34,7 @@ const DebugMode = () => {
 				disabled={ isDevModeEnabled }
 				checked={ isDevModeEnabled || isLoggingChecked }
 				onChange={ setIsLoggingChecked }
+				__nextHasNoMarginBottom
 			/>
 		</>
 	);

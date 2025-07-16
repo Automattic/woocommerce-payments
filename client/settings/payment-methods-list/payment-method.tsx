@@ -134,6 +134,7 @@ const PaymentMethod = ( {
 						checked={ enabledMethodIds.includes( id ) }
 						disabled={ ! isActionable || locked }
 						onChange={ handleChange }
+						__nextHasNoMarginBottom
 					/>
 				</div>
 				<div className="payment-method__text-container">

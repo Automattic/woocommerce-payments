@@ -76,6 +76,7 @@ const SupportPhoneInput = ( { setInputVallid } ) => {
 				) }
 				label={ labelText }
 				id="account-business-support-phone-input"
+				__nextHasNoMarginBottom
 			>
 				<PhoneNumberInput
 					onValueChange={ setSupportPhone }

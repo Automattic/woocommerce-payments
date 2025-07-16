@@ -85,6 +85,7 @@ const ManualCaptureControl = (): JSX.Element => {
 							: '' }
 					</span>
 				}
+				__nextHasNoMarginBottom
 			/>
 			{ isStripeBillingEnabled && (
 				<InlineNotice status="warning" isDismissible={ false } icon>

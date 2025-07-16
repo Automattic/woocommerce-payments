@@ -57,6 +57,7 @@ const WooPayExpressCheckoutItem = (): React.ReactElement | null => {
 						disabled={ isStripeLinkEnabled }
 						onChange={ updateIsWooPayEnabled }
 						data-testid="woopay-toggle"
+						__nextHasNoMarginBottom
 					/>
 				</div>
 				<div className="express-checkout__text-container">
