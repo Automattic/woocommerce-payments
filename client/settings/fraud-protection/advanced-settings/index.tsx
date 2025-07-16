@@ -70,15 +70,16 @@ const AdvancedFraudSettingsDescription = () => (
 	</>
 );
 
-interface BreadcrumbProps {
-	showNewBackLink: boolean;
-}
-
 // Temporary solution until we have wider header redesign.
-const Breadcrumb = ( props: BreadcrumbProps ): JSX.Element => {
+const Breadcrumb = (): JSX.Element => {
+	const showNewBackLink = isVersionGreaterOrEqual(
+		window.wcSettings.wcVersion,
+		'9.8.3'
+	);
+
 	return (
 		<>
-			{ props.showNewBackLink && (
+			{ showNewBackLink ? (
 				<h2 className="fraud-protection-header-breadcrumb">
 					<small>
 						<Link
@@ -89,7 +90,7 @@ const Breadcrumb = ( props: BreadcrumbProps ): JSX.Element => {
 								section: 'woocommerce_payments',
 							} ) }
 						>
-							<span className="dashicons dashicons-arrow-left-alt2"></span>
+							<span className="dashicons dashicons-arrow-left-alt2" />
 						</Link>
 					</small>
 					{ __(
@@ -97,9 +98,8 @@ const Breadcrumb = ( props: BreadcrumbProps ): JSX.Element => {
 						'woocommerce-payments'
 					) }
 				</h2>
-			) }
-			{ ! props.showNewBackLink && (
-				<h2 className="fraud-protection-header-breadcrumb-old">
+			) : (
+				<h2 className="fraud-protection-header-breadcrumb-legacy">
 					{ __(
 						'Advanced fraud protection',
 						'woocommerce-payments'
@@ -305,11 +305,6 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 		advancedFraudProtectionSettings,
 	] );
 
-	const showNewBackLink = isVersionGreaterOrEqual(
-		window.wcSettings.wcVersion,
-		'9.8.3'
-	);
-
 	return (
 		<FraudPreventionSettingsContext.Provider
 			value={ {
@@ -318,7 +313,7 @@ const FraudProtectionAdvancedSettingsPage: React.FC = () => {
 				setIsDirty,
 			} }
 		>
-			<Breadcrumb showNewBackLink={ showNewBackLink } />
+			<Breadcrumb />
 			<SettingsLayout>
 				<SettingsSection
 					description={ AdvancedFraudSettingsDescription }
