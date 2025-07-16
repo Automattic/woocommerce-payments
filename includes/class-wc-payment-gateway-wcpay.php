@@ -3816,7 +3816,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		// Determine the customer adding the payment method, create one if we don't have one already.
-		$user        = wp_get_current_user();
+		$user = wp_get_current_user();
+		if ( ! $user->ID ) {
+			throw new Add_Payment_Method_Exception(
+				__( 'Only logged-in user can add a new payment method', 'woocommerce-payments' ),
+				'invalid_logged_in_user'
+			);
+		}
+
 		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
 		if ( null === $customer_id ) {
 			$customer_data = WC_Payments_Customer_Service::map_customer_data( null, new WC_Customer( $user->ID ) );

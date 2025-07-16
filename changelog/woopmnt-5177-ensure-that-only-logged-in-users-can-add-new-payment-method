@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Tighten that only logged-in user can add a new payment method
