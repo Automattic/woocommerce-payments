@@ -2,12 +2,6 @@
  * External dependencies
  */
 import React, { useState } from 'react';
-import {
-	Card,
-	CardBody,
-	CardHeader,
-	Flex,
-} from 'wcpay/components/wp-components-wrapped';
 import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 import { Link } from '@woocommerce/components';
@@ -15,6 +9,10 @@ import { Link } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
+import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
+import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
+import { CardHeader } from 'wcpay/components/wp-components-wrapped/components/card-header';
+import { Flex } from 'wcpay/components/wp-components-wrapped/components/flex';
 import type * as AccountOverview from 'wcpay/types/account-overview';
 import BalanceBlock from './balance-block';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';

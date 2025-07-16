@@ -12,6 +12,7 @@ import { __ } from '@wordpress/i18n';
 import { ClickTooltip } from 'components/tooltip';
 import { documentationUrls, fundLabelStrings } from './strings';
 import InlineNotice from 'components/inline-notice';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
 
 type TotalBalanceTooltipProps = {
 	balance: number;
@@ -132,10 +133,7 @@ export const AvailableBalanceTooltip: React.FC< AvailableBalanceTooltipProps > =
 								),
 								components: {
 									discoverWhyLink: (
-										// eslint-disable-next-line jsx-a11y/anchor-has-content
-										<a
-											rel="external noopener noreferrer"
-											target="_blank"
+										<ExternalLink
 											href={
 												documentationUrls.negativeBalance
 											}

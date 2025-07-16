@@ -85,7 +85,11 @@ addFilter(
 		} );
 
 		pages.push( {
-			container: OverviewPage,
+			container: () => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<OverviewPage />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/overview',
 			wpOpenMenu: menuID,
 			breadcrumbs: [ rootLink, __( 'Overview', 'woocommerce-payments' ) ],
