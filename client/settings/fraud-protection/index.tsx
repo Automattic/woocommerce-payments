@@ -10,7 +10,6 @@ import { Card } from 'wcpay/components/wp-components-wrapped';
  */
 import CardBody from '../card-body';
 import ProtectionLevels from './protection-levels';
-import './style.scss';
 import FraudProtectionTour from './tour';
 
 const FraudProtection: React.FC = () => {
