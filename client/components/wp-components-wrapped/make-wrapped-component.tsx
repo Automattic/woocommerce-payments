@@ -53,8 +53,8 @@ export const makeWrappedComponent = <
 			<ContextComponent
 				{ ...rest }
 				ref={ ref }
-				__nextHasNoMarginBottom={ __nextHasNoMarginBottom || undefined }
-				__next40pxDefaultSize={ __next40pxDefaultSize || undefined }
+				__nextHasNoMarginBottom={ __nextHasNoMarginBottom }
+				__next40pxDefaultSize={ __next40pxDefaultSize }
 			/>
 		);
 	} );
