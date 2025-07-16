@@ -55,7 +55,7 @@ const FraudProtectionRuleToggle: React.FC< React.PropsWithChildren<
 		setIsDirty,
 	} = useContext( FraudPreventionSettingsContext );
 
-	const { isFRTReviewFeatureActive } = wcpaySettings;
+	const { isFRTReviewFeatureActive } = wcpaySettings.featureFlags;
 
 	const settingUI = protectionSettingsUI?.[ setting ];
 	const filterAction = getFilterAction( settingUI, isFRTReviewFeatureActive );
@@ -97,10 +97,9 @@ const FraudProtectionRuleToggle: React.FC< React.PropsWithChildren<
 			/>
 
 			{ settingUI?.enabled && (
-				<div>
-					{ children }
-
-					{ !! isFRTReviewFeatureActive && (
+				<>
+					<div>{ children }</div>
+					{ Boolean( isFRTReviewFeatureActive ) && (
 						<div className="fraud-protection-rule-toggle-block">
 							<strong>
 								{ __(
@@ -117,7 +116,7 @@ const FraudProtectionRuleToggle: React.FC< React.PropsWithChildren<
 							/>
 						</div>
 					) }
-				</div>
+				</>
 			) }
 		</div>
 	);

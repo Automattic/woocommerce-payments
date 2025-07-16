@@ -7,16 +7,9 @@ import { render } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import ProtectionLevels from '../index';
-import { FraudProtectionRule } from 'wcpay/settings/fraud-protection/interfaces';
+import ProtectionLevels from '..';
 
-declare const global: {
-	wcpaySettings: {
-		isMultiCurrencyEnabled: string;
-	};
-};
-
-let mockFraudProtectionRule: FraudProtectionRule[] | string = [];
+let mockFraudProtectionRule = [];
 
 jest.mock( 'wcpay/data', () => ( {
 	...jest.requireActual( 'wcpay/data' ),

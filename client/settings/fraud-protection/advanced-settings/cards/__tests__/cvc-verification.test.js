@@ -9,17 +9,6 @@ import { render } from '@testing-library/react';
 import FraudPreventionSettingsContext from '../../context';
 import CVCVerificationRuleCard from '../cvc-verification';
 
-declare const global: {
-	wcpaySettings: {
-		accountStatus: {
-			fraudProtection: {
-				declineOnCVCFailure: boolean;
-			};
-		};
-		isFRTReviewFeatureActive?: boolean;
-	};
-};
-
 describe( 'CVC verification card', () => {
 	test( 'renders correctly when CVC check is enabled', () => {
 		const settings = {
@@ -34,7 +23,9 @@ describe( 'CVC verification card', () => {
 					declineOnCVCFailure: true,
 				},
 			},
-			isFRTReviewFeatureActive: false,
+			featureFlags: {
+				isFRTReviewFeatureActive: false,
+			},
 		};
 		const setSettings = jest.fn();
 		const contextValue = {
@@ -52,6 +43,7 @@ describe( 'CVC verification card', () => {
 			/For security, this filter is enabled and cannot be modified/i
 		);
 	} );
+
 	test( 'renders correctly when CVC check is disabled', () => {
 		const settings = {
 			cvc_verification: {
@@ -64,6 +56,9 @@ describe( 'CVC verification card', () => {
 				fraudProtection: {
 					declineOnCVCFailure: false,
 				},
+			},
+			featureFlags: {
+				isFRTReviewFeatureActive: false,
 			},
 		};
 		const setSettings = jest.fn();

@@ -10,18 +10,13 @@ import FraudPreventionSettingsContext from '../../context';
 import OrderItemsThresholdRuleCard, {
 	OrderItemsThresholdValidation,
 } from '../order-items-threshold';
-import { FraudPreventionOrderItemsThresholdSetting } from 'wcpay/settings/fraud-protection/interfaces';
-
-declare const global: {
-	wcpaySettings: {
-		isFRTReviewFeatureActive: boolean;
-	};
-};
 
 describe( 'Order items threshold card', () => {
 	beforeEach( () => {
 		global.wcpaySettings = {
-			isFRTReviewFeatureActive: false,
+			featureFlags: {
+				isFRTReviewFeatureActive: false,
+			},
 		};
 	} );
 
@@ -31,7 +26,7 @@ describe( 'Order items threshold card', () => {
 			block: false,
 			min_items: null,
 			max_items: null,
-		} as FraudPreventionOrderItemsThresholdSetting,
+		},
 	};
 	const setSettings = jest.fn();
 	const contextValue = {
@@ -39,6 +34,7 @@ describe( 'Order items threshold card', () => {
 		setProtectionSettingsUI: setSettings,
 		setIsDirty: jest.fn(),
 	};
+
 	test( 'renders correctly', () => {
 		const { container } = render(
 			<FraudPreventionSettingsContext.Provider value={ contextValue }>
@@ -47,6 +43,7 @@ describe( 'Order items threshold card', () => {
 		);
 		expect( container ).toMatchSnapshot();
 	} );
+
 	test( 'renders correctly when enabled', () => {
 		settings.order_items_threshold.enabled = true;
 		const { container } = render(
@@ -56,6 +53,7 @@ describe( 'Order items threshold card', () => {
 		);
 		expect( container ).toMatchSnapshot();
 	} );
+
 	test( 'renders correctly when enabled and checked', () => {
 		settings.order_items_threshold.enabled = true;
 		settings.order_items_threshold.block = true;
@@ -66,6 +64,7 @@ describe( 'Order items threshold card', () => {
 		);
 		expect( container ).toMatchSnapshot();
 	} );
+
 	test( 'renders like disabled when checked, but not enabled', () => {
 		settings.order_items_threshold.enabled = false;
 		settings.order_items_threshold.block = true;
@@ -76,6 +75,7 @@ describe( 'Order items threshold card', () => {
 		);
 		expect( container ).toMatchSnapshot();
 	} );
+
 	test( 'renders warning when both fields are empty', () => {
 		settings.order_items_threshold.enabled = true;
 		settings.order_items_threshold.block = true;
@@ -93,6 +93,7 @@ describe( 'Order items threshold card', () => {
 			)
 		).toBeInTheDocument();
 	} );
+
 	test( "doesn't render warning when only min items field is filled", () => {
 		settings.order_items_threshold.enabled = true;
 		settings.order_items_threshold.block = true;
@@ -112,6 +113,7 @@ describe( 'Order items threshold card', () => {
 			)
 		).not.toBeInTheDocument();
 	} );
+
 	test( "doesn't render warning when only max items field is filled", () => {
 		settings.order_items_threshold.enabled = true;
 		settings.order_items_threshold.block = true;
@@ -131,6 +133,7 @@ describe( 'Order items threshold card', () => {
 			)
 		).not.toBeInTheDocument();
 	} );
+
 	test( "doesn't render warning when both fields are filled", () => {
 		settings.order_items_threshold.enabled = true;
 		settings.order_items_threshold.block = true;
@@ -150,6 +153,7 @@ describe( 'Order items threshold card', () => {
 			)
 		).not.toBeInTheDocument();
 	} );
+
 	test( 'renders error when min items is greater than max items', () => {
 		settings.order_items_threshold.enabled = true;
 		settings.order_items_threshold.block = true;
@@ -191,6 +195,7 @@ describe( 'Order items threshold card', () => {
 		expect( validationResult ).toBe( true );
 		expect( setValidationError.mock.calls.length ).toBe( 0 );
 	} );
+
 	test( 'validation returns true when `max_amount` is set', () => {
 		settings.order_items_threshold.enabled = true;
 		settings.order_items_threshold.block = false;
@@ -204,6 +209,7 @@ describe( 'Order items threshold card', () => {
 		expect( validationResult ).toBe( true );
 		expect( setValidationError.mock.calls.length ).toBe( 0 );
 	} );
+
 	test( 'validation returns true when both are set', () => {
 		settings.order_items_threshold.enabled = true;
 		settings.order_items_threshold.block = false;
@@ -217,6 +223,7 @@ describe( 'Order items threshold card', () => {
 		expect( validationResult ).toBe( true );
 		expect( setValidationError.mock.calls.length ).toBe( 0 );
 	} );
+
 	test( 'validation returns true when setting is not enabled', () => {
 		settings.order_items_threshold.enabled = false;
 		settings.order_items_threshold.block = false;
@@ -230,6 +237,7 @@ describe( 'Order items threshold card', () => {
 		expect( validationResult ).toBe( true );
 		expect( setValidationError.mock.calls.length ).toBe( 0 );
 	} );
+
 	test( 'validation returns false when amounts are not set', () => {
 		settings.order_items_threshold.enabled = true;
 		settings.order_items_threshold.block = false;
@@ -246,6 +254,7 @@ describe( 'Order items threshold card', () => {
 			'An item range must be set for the "Order Item Threshold" filter.'
 		);
 	} );
+
 	test( 'validation returns false when min amount is greater than max amount', () => {
 		settings.order_items_threshold.enabled = true;
 		settings.order_items_threshold.block = false;

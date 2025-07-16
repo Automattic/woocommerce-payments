@@ -43,27 +43,9 @@ body {
 				margin-top: 2em;
 			}
 		}
-		&-error-notice .components-notice {
-			filter: drop-shadow( 0 2px 6px rgba( 0, 0, 0, 0.05 ) );
-			margin: 0 0 24px;
-			background: #fff;
-			padding: 12px 16px 16px 16px;
-			.components-notice__content {
-				margin: 0;
-				font-size: 13px;
-				line-height: 19.5px;
-			}
-			svg {
-				width: 16px;
-				height: 16px;
-				stroke: #000;
-			}
-			button.components-notice__dismiss {
-				min-width: auto;
-				height: 24px;
-				width: 24px;
-				padding: 0;
-			}
+
+		&-error-notice {
+			margin-bottom: 24px;
 		}
 
 		&__footer {
@@ -185,17 +167,6 @@ body {
 			line-height: 16px;
 			color: #1e1e1e;
 			display: block;
-		}
-		&-toggle {
-			.components-base-control__field {
-				align-items: center;
-				display: flex;
-			}
-		}
-
-		strong,
-		&-toggle > div {
-			margin: 0 0 8px;
 		}
 
 		&-block {

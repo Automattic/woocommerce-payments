@@ -16,6 +16,15 @@ exports[`Fraud protection rule toggle tests renders correctly when disabled 1`] 
   margin-bottom: inherit;
 }
 
+.emotion-4 {
+  margin-top: calc(4px * 2);
+  margin-bottom: 0;
+  font-size: 12px;
+  font-style: normal;
+  color: #757575;
+  margin-bottom: revert;
+}
+
 <body>
     <p
       class="a11y-speak-intro-text"
@@ -55,6 +64,7 @@ exports[`Fraud protection rule toggle tests renders correctly when disabled 1`] 
               class="components-form-toggle"
             >
               <input
+                aria-describedby="inspector-toggle-control-0__help"
                 class="components-form-toggle__input"
                 id="inspector-toggle-control-0"
                 type="checkbox"
@@ -73,11 +83,12 @@ exports[`Fraud protection rule toggle tests renders correctly when disabled 1`] 
               Test rule toggle
             </label>
           </div>
-        </div>
-        <div
-          class="fraud-protection-rule-toggle-description"
-        >
-          Test rule toggle description
+          <p
+            class="components-base-control__help emotion-4 emotion-5"
+            id="inspector-toggle-control-0__help"
+          >
+            Test rule toggle description
+          </p>
         </div>
       </div>
     </div>
@@ -95,6 +106,15 @@ exports[`Fraud protection rule toggle tests renders correctly when disabled 1`] 
   margin-bottom: inherit;
 }
 
+.emotion-4 {
+  margin-top: calc(4px * 2);
+  margin-bottom: 0;
+  font-size: 12px;
+  font-style: normal;
+  color: #757575;
+  margin-bottom: revert;
+}
+
 <div>
     <div
       class="fraud-protection-rule-toggle"
@@ -109,6 +129,7 @@ exports[`Fraud protection rule toggle tests renders correctly when disabled 1`] 
             class="components-form-toggle"
           >
             <input
+              aria-describedby="inspector-toggle-control-0__help"
               class="components-form-toggle__input"
               id="inspector-toggle-control-0"
               type="checkbox"
@@ -127,11 +148,12 @@ exports[`Fraud protection rule toggle tests renders correctly when disabled 1`] 
             Test rule toggle
           </label>
         </div>
-      </div>
-      <div
-        class="fraud-protection-rule-toggle-description"
-      >
-        Test rule toggle description
+        <p
+          class="components-base-control__help emotion-4 emotion-5"
+          id="inspector-toggle-control-0__help"
+        >
+          Test rule toggle description
+        </p>
       </div>
     </div>
   </div>,
@@ -205,6 +227,15 @@ exports[`Fraud protection rule toggle tests renders correctly when enabled 1`] =
   margin-bottom: inherit;
 }
 
+.emotion-4 {
+  margin-top: calc(4px * 2);
+  margin-bottom: 0;
+  font-size: 12px;
+  font-style: normal;
+  color: #757575;
+  margin-bottom: revert;
+}
+
 <body>
     <p
       class="a11y-speak-intro-text"
@@ -244,6 +275,7 @@ exports[`Fraud protection rule toggle tests renders correctly when enabled 1`] =
               class="components-form-toggle is-checked"
             >
               <input
+                aria-describedby="inspector-toggle-control-1__help"
                 checked=""
                 class="components-form-toggle__input"
                 id="inspector-toggle-control-1"
@@ -263,11 +295,12 @@ exports[`Fraud protection rule toggle tests renders correctly when enabled 1`] =
               Test rule toggle
             </label>
           </div>
-        </div>
-        <div
-          class="fraud-protection-rule-toggle-description"
-        >
-          Test rule toggle description
+          <p
+            class="components-base-control__help emotion-4 emotion-5"
+            id="inspector-toggle-control-1__help"
+          >
+            Test rule toggle description
+          </p>
         </div>
         <div>
           test content
@@ -288,6 +321,15 @@ exports[`Fraud protection rule toggle tests renders correctly when enabled 1`] =
   margin-bottom: inherit;
 }
 
+.emotion-4 {
+  margin-top: calc(4px * 2);
+  margin-bottom: 0;
+  font-size: 12px;
+  font-style: normal;
+  color: #757575;
+  margin-bottom: revert;
+}
+
 <div>
     <div
       class="fraud-protection-rule-toggle"
@@ -302,6 +344,7 @@ exports[`Fraud protection rule toggle tests renders correctly when enabled 1`] =
             class="components-form-toggle is-checked"
           >
             <input
+              aria-describedby="inspector-toggle-control-1__help"
               checked=""
               class="components-form-toggle__input"
               id="inspector-toggle-control-1"
@@ -321,11 +364,12 @@ exports[`Fraud protection rule toggle tests renders correctly when enabled 1`] =
             Test rule toggle
           </label>
         </div>
-      </div>
-      <div
-        class="fraud-protection-rule-toggle-description"
-      >
-        Test rule toggle description
+        <p
+          class="components-base-control__help emotion-4 emotion-5"
+          id="inspector-toggle-control-1__help"
+        >
+          Test rule toggle description
+        </p>
       </div>
       <div>
         test content
@@ -402,6 +446,15 @@ exports[`Fraud protection rule toggle tests renders correctly when enabled and b
   margin-bottom: inherit;
 }
 
+.emotion-4 {
+  margin-top: calc(4px * 2);
+  margin-bottom: 0;
+  font-size: 12px;
+  font-style: normal;
+  color: #757575;
+  margin-bottom: revert;
+}
+
 <body>
     <p
       class="a11y-speak-intro-text"
@@ -441,6 +494,7 @@ exports[`Fraud protection rule toggle tests renders correctly when enabled and b
               class="components-form-toggle is-checked"
             >
               <input
+                aria-describedby="inspector-toggle-control-2__help"
                 checked=""
                 class="components-form-toggle__input"
                 id="inspector-toggle-control-2"
@@ -460,11 +514,12 @@ exports[`Fraud protection rule toggle tests renders correctly when enabled and b
               Test rule toggle
             </label>
           </div>
-        </div>
-        <div
-          class="fraud-protection-rule-toggle-description"
-        >
-          Test rule toggle description
+          <p
+            class="components-base-control__help emotion-4 emotion-5"
+            id="inspector-toggle-control-2__help"
+          >
+            Test rule toggle description
+          </p>
         </div>
         <div>
           test content
@@ -485,6 +540,15 @@ exports[`Fraud protection rule toggle tests renders correctly when enabled and b
   margin-bottom: inherit;
 }
 
+.emotion-4 {
+  margin-top: calc(4px * 2);
+  margin-bottom: 0;
+  font-size: 12px;
+  font-style: normal;
+  color: #757575;
+  margin-bottom: revert;
+}
+
 <div>
     <div
       class="fraud-protection-rule-toggle"
@@ -499,6 +563,7 @@ exports[`Fraud protection rule toggle tests renders correctly when enabled and b
             class="components-form-toggle is-checked"
           >
             <input
+              aria-describedby="inspector-toggle-control-2__help"
               checked=""
               class="components-form-toggle__input"
               id="inspector-toggle-control-2"
@@ -518,11 +583,12 @@ exports[`Fraud protection rule toggle tests renders correctly when enabled and b
             Test rule toggle
           </label>
         </div>
-      </div>
-      <div
-        class="fraud-protection-rule-toggle-description"
-      >
-        Test rule toggle description
+        <p
+          class="components-base-control__help emotion-4 emotion-5"
+          id="inspector-toggle-control-2__help"
+        >
+          Test rule toggle description
+        </p>
       </div>
       <div>
         test content

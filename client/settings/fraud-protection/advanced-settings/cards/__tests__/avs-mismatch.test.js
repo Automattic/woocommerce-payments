@@ -9,17 +9,6 @@ import { render } from '@testing-library/react';
 import FraudPreventionSettingsContext from '../../context';
 import AVSMismatchRuleCard from '../avs-mismatch';
 
-declare const global: {
-	wcpaySettings: {
-		accountStatus: {
-			fraudProtection: {
-				declineOnAVSFailure: boolean;
-			};
-		};
-		isFRTReviewFeatureActive?: boolean;
-	};
-};
-
 describe( 'AVS mismatch card', () => {
 	test( 'renders correctly when AVS check is enabled', () => {
 		const settings = {
@@ -34,7 +23,9 @@ describe( 'AVS mismatch card', () => {
 					declineOnAVSFailure: true,
 				},
 			},
-			isFRTReviewFeatureActive: false,
+			featureFlags: {
+				isFRTReviewFeatureActive: false,
+			},
 		};
 		const setSettings = jest.fn();
 		const contextValue = {
@@ -49,6 +40,7 @@ describe( 'AVS mismatch card', () => {
 		);
 		expect( container ).toMatchSnapshot();
 	} );
+
 	test( 'renders correctly when AVS check is disabled', () => {
 		const settings = {
 			avs_mismatch: {
@@ -61,6 +53,9 @@ describe( 'AVS mismatch card', () => {
 				fraudProtection: {
 					declineOnAVSFailure: false,
 				},
+			},
+			featureFlags: {
+				isFRTReviewFeatureActive: false,
 			},
 		};
 		const setSettings = jest.fn();

@@ -6,30 +6,20 @@ import { render } from '@testing-library/react';
 /**
  * Internal dependencies
  */
+import AddressMismatchRuleCard from '../address-mismatch';
 import FraudPreventionSettingsContext from '../../context';
-import IPAddressMismatchRuleCard from '../ip-address-mismatch';
 
-declare const global: {
-	wcSettings: {
-		admin: {
-			preloadSettings: {
-				general: {
-					woocommerce_allowed_countries: string;
-					woocommerce_all_except_countries: string[];
-					woocommerce_specific_allowed_countries: string[];
-				};
-			};
+describe( 'Address mismatch card', () => {
+	beforeEach( () => {
+		global.wcpaySettings = {
+			featureFlags: {
+				isFRTReviewFeatureActive: false,
+			},
 		};
-	};
+	} );
 
-	wcpaySettings: {
-		isFRTReviewFeatureActive: boolean;
-	};
-};
-
-describe( 'International billing address card', () => {
 	const settings = {
-		ip_address_mismatch: {
+		address_mismatch: {
 			enabled: false,
 			block: false,
 		},
@@ -40,53 +30,46 @@ describe( 'International billing address card', () => {
 		setProtectionSettingsUI: setSettings,
 		setIsDirty: jest.fn(),
 	};
-	global.wcSettings = {
-		admin: {
-			preloadSettings: {
-				general: {
-					woocommerce_allowed_countries: 'all',
-					woocommerce_all_except_countries: [],
-					woocommerce_specific_allowed_countries: [],
-				},
-			},
-		},
-	};
-	global.wcpaySettings = {
-		isFRTReviewFeatureActive: false,
-	};
+
 	test( 'renders correctly', () => {
+		settings.address_mismatch.enabled = false;
+		settings.address_mismatch.block = false;
 		const { container } = render(
 			<FraudPreventionSettingsContext.Provider value={ contextValue }>
-				<IPAddressMismatchRuleCard />
+				<AddressMismatchRuleCard />
 			</FraudPreventionSettingsContext.Provider>
 		);
 		expect( container ).toMatchSnapshot();
 	} );
+
 	test( 'renders correctly when enabled', () => {
-		settings.ip_address_mismatch.enabled = true;
+		settings.address_mismatch.enabled = true;
+		settings.address_mismatch.block = false;
 		const { container } = render(
 			<FraudPreventionSettingsContext.Provider value={ contextValue }>
-				<IPAddressMismatchRuleCard />
+				<AddressMismatchRuleCard />
 			</FraudPreventionSettingsContext.Provider>
 		);
 		expect( container ).toMatchSnapshot();
 	} );
+
 	test( 'renders correctly when enabled and checked', () => {
-		settings.ip_address_mismatch.enabled = true;
-		settings.ip_address_mismatch.block = true;
+		settings.address_mismatch.enabled = true;
+		settings.address_mismatch.block = true;
 		const { container } = render(
 			<FraudPreventionSettingsContext.Provider value={ contextValue }>
-				<IPAddressMismatchRuleCard />
+				<AddressMismatchRuleCard />
 			</FraudPreventionSettingsContext.Provider>
 		);
 		expect( container ).toMatchSnapshot();
 	} );
+
 	test( 'renders like disabled when checked, but not enabled', () => {
-		settings.ip_address_mismatch.enabled = false;
-		settings.ip_address_mismatch.block = true;
+		settings.address_mismatch.enabled = false;
+		settings.address_mismatch.block = true;
 		const { container } = render(
 			<FraudPreventionSettingsContext.Provider value={ contextValue }>
-				<IPAddressMismatchRuleCard />
+				<AddressMismatchRuleCard />
 			</FraudPreventionSettingsContext.Provider>
 		);
 		expect( container ).toMatchSnapshot();

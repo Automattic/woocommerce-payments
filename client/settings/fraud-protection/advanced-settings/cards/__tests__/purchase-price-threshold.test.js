@@ -10,27 +10,6 @@ import FraudPreventionSettingsContext from '../../context';
 import PurchasePriceThresholdRuleCard, {
 	PurchasePriceThresholdValidation,
 } from '../purchase-price-threshold';
-import { FraudPreventionPurchasePriceThresholdSetting } from 'wcpay/settings/fraud-protection/interfaces';
-
-declare const global: {
-	wcpaySettings: {
-		storeCurrency: string;
-		connect: {
-			country: string;
-		};
-		currencyData: {
-			[ key: string ]: {
-				code: string;
-				symbol: string;
-				symbolPosition: string;
-				thousandSeparator: string;
-				decimalSeparator: string;
-				precision: number;
-			};
-		};
-		isFRTReviewFeatureActive?: boolean;
-	};
-};
 
 describe( 'Purchase price threshold card', () => {
 	beforeEach( () => {
@@ -49,7 +28,9 @@ describe( 'Purchase price threshold card', () => {
 					precision: 2,
 				},
 			},
-			isFRTReviewFeatureActive: false,
+			featureFlags: {
+				isFRTReviewFeatureActive: false,
+			},
 		};
 	} );
 
@@ -59,7 +40,7 @@ describe( 'Purchase price threshold card', () => {
 			block: false,
 			min_amount: null,
 			max_amount: null,
-		} as FraudPreventionPurchasePriceThresholdSetting,
+		},
 	};
 	const setSettings = jest.fn();
 	const contextValue = {
@@ -67,6 +48,7 @@ describe( 'Purchase price threshold card', () => {
 		setProtectionSettingsUI: setSettings,
 		setIsDirty: jest.fn(),
 	};
+
 	test( 'renders correctly', () => {
 		const { container } = render(
 			<FraudPreventionSettingsContext.Provider value={ contextValue }>
@@ -75,6 +57,7 @@ describe( 'Purchase price threshold card', () => {
 		);
 		expect( container ).toMatchSnapshot();
 	} );
+
 	test( 'renders correctly when enabled', () => {
 		settings.purchase_price_threshold.enabled = true;
 		const { container } = render(
@@ -84,6 +67,7 @@ describe( 'Purchase price threshold card', () => {
 		);
 		expect( container ).toMatchSnapshot();
 	} );
+
 	test( 'renders correctly when enabled and checked', () => {
 		settings.purchase_price_threshold.enabled = true;
 		settings.purchase_price_threshold.block = true;
@@ -94,6 +78,7 @@ describe( 'Purchase price threshold card', () => {
 		);
 		expect( container ).toMatchSnapshot();
 	} );
+
 	test( 'renders like disabled when checked, but not enabled', () => {
 		settings.purchase_price_threshold.enabled = false;
 		settings.purchase_price_threshold.block = true;
@@ -104,6 +89,7 @@ describe( 'Purchase price threshold card', () => {
 		);
 		expect( container ).toMatchSnapshot();
 	} );
+
 	test( 'renders warning when both fields are empty', () => {
 		settings.purchase_price_threshold.enabled = true;
 		settings.purchase_price_threshold.block = true;
@@ -121,6 +107,7 @@ describe( 'Purchase price threshold card', () => {
 			)
 		).toBeInTheDocument();
 	} );
+
 	test( "doesn't render warning when only min items field is filled", () => {
 		settings.purchase_price_threshold.enabled = true;
 		settings.purchase_price_threshold.block = true;
@@ -140,6 +127,7 @@ describe( 'Purchase price threshold card', () => {
 			)
 		).not.toBeInTheDocument();
 	} );
+
 	test( "doesn't render warning when only max items field is filled", () => {
 		settings.purchase_price_threshold.enabled = true;
 		settings.purchase_price_threshold.block = true;
@@ -159,6 +147,7 @@ describe( 'Purchase price threshold card', () => {
 			)
 		).not.toBeInTheDocument();
 	} );
+
 	test( "doesn't render warning when both fields are filled", () => {
 		settings.purchase_price_threshold.enabled = true;
 		settings.purchase_price_threshold.block = true;
@@ -178,6 +167,7 @@ describe( 'Purchase price threshold card', () => {
 			)
 		).not.toBeInTheDocument();
 	} );
+
 	test( 'renders error when min items is greater than max items', () => {
 		settings.purchase_price_threshold.enabled = true;
 		settings.purchase_price_threshold.block = true;
@@ -202,6 +192,7 @@ describe( 'Purchase price threshold card', () => {
 			)
 		).toBeInTheDocument();
 	} );
+
 	test( 'validation returns true when `min_amount` is set', () => {
 		settings.purchase_price_threshold.enabled = true;
 		settings.purchase_price_threshold.block = false;
@@ -215,6 +206,7 @@ describe( 'Purchase price threshold card', () => {
 		expect( validationResult ).toBe( true );
 		expect( setValidationError.mock.calls.length ).toBe( 0 );
 	} );
+
 	test( 'validation returns true when `max_amount` is set', () => {
 		settings.purchase_price_threshold.enabled = true;
 		settings.purchase_price_threshold.block = false;
@@ -228,6 +220,7 @@ describe( 'Purchase price threshold card', () => {
 		expect( validationResult ).toBe( true );
 		expect( setValidationError.mock.calls.length ).toBe( 0 );
 	} );
+
 	test( 'validation returns true when both are set', () => {
 		settings.purchase_price_threshold.enabled = true;
 		settings.purchase_price_threshold.block = false;
@@ -241,6 +234,7 @@ describe( 'Purchase price threshold card', () => {
 		expect( validationResult ).toBe( true );
 		expect( setValidationError.mock.calls.length ).toBe( 0 );
 	} );
+
 	test( 'validation returns true when setting is not enabled', () => {
 		settings.purchase_price_threshold.enabled = false;
 		settings.purchase_price_threshold.block = false;
@@ -254,6 +248,7 @@ describe( 'Purchase price threshold card', () => {
 		expect( validationResult ).toBe( true );
 		expect( setValidationError.mock.calls.length ).toBe( 0 );
 	} );
+
 	test( 'validation returns false when amounts are not set', () => {
 		settings.purchase_price_threshold.enabled = true;
 		settings.purchase_price_threshold.block = false;
@@ -270,6 +265,7 @@ describe( 'Purchase price threshold card', () => {
 			'A price range must be set for the "Purchase Price threshold" filter.'
 		);
 	} );
+
 	test( 'validation returns false when min amount is greater than max amount', () => {
 		settings.purchase_price_threshold.enabled = true;
 		settings.purchase_price_threshold.block = false;

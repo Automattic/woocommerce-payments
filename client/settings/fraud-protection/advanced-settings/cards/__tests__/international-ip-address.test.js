@@ -9,27 +9,6 @@ import { render } from '@testing-library/react';
 import FraudPreventionSettingsContext from '../../context';
 import InternationalIPAddressRuleCard from '../international-ip-address';
 
-declare const global: {
-	wcSettings: {
-		admin: {
-			preloadSettings: {
-				general: {
-					woocommerce_allowed_countries: string;
-					woocommerce_all_except_countries: string[];
-					woocommerce_specific_allowed_countries: string[];
-				};
-			};
-		};
-		countries: {
-			[ key: string ]: string;
-		};
-	};
-
-	wcpaySettings: {
-		isFRTReviewFeatureActive: boolean;
-	};
-};
-
 describe( 'International IP address card', () => {
 	const settings = {
 		international_ip_address: {
@@ -60,8 +39,11 @@ describe( 'International IP address card', () => {
 		},
 	};
 	global.wcpaySettings = {
-		isFRTReviewFeatureActive: false,
+		featureFlags: {
+			isFRTReviewFeatureActive: false,
+		},
 	};
+
 	test( 'renders correctly when woocommerce_allowed_countries is all', () => {
 		const { container } = render(
 			<FraudPreventionSettingsContext.Provider value={ contextValue }>
@@ -70,6 +52,7 @@ describe( 'International IP address card', () => {
 		);
 		expect( container ).toMatchSnapshot();
 	} );
+
 	test( 'renders correctly when woocommerce_allowed_countries is specific', () => {
 		global.wcSettings.admin.preloadSettings.general.woocommerce_allowed_countries =
 			'specific';
@@ -84,6 +67,7 @@ describe( 'International IP address card', () => {
 		);
 		expect( container ).toMatchSnapshot();
 	} );
+
 	test( 'renders correctly when woocommerce_allowed_countries is all_except', () => {
 		global.wcSettings.admin.preloadSettings.general.woocommerce_allowed_countries =
 			'all_except';
@@ -98,6 +82,7 @@ describe( 'International IP address card', () => {
 		);
 		expect( container ).toMatchSnapshot();
 	} );
+
 	test( 'renders correctly when enabled', () => {
 		global.wcSettings.admin.preloadSettings.general.woocommerce_allowed_countries =
 			'specific';
@@ -113,6 +98,7 @@ describe( 'International IP address card', () => {
 		);
 		expect( container ).toMatchSnapshot();
 	} );
+
 	test( 'renders correctly when enabled and checked', () => {
 		global.wcSettings.admin.preloadSettings.general.woocommerce_allowed_countries =
 			'specific';
@@ -129,6 +115,7 @@ describe( 'International IP address card', () => {
 		);
 		expect( container ).toMatchSnapshot();
 	} );
+
 	test( 'renders like disabled when checked, but not enabled', () => {
 		global.wcSettings.admin.preloadSettings.general.woocommerce_allowed_countries =
 			'specific';

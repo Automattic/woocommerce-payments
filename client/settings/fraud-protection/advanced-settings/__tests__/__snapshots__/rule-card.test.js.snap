@@ -94,17 +94,13 @@ exports[`Fraud protection rule card tests renders correctly 1`] = `
           class="emotion-2 emotion-1"
         >
           <div
-            class="components-card__body components-card-body wcpay-card-body emotion-4 emotion-1"
+            class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
             data-wp-c16t="true"
             data-wp-component="CardBody"
           >
-            <div>
-              <p
-                class="fraud-protection-rule-card-header"
-              >
-                test title
-              </p>
-            </div>
+            <h4>
+              test title
+            </h4>
             test content
           </div>
         </div>
@@ -189,17 +185,13 @@ exports[`Fraud protection rule card tests renders correctly 1`] = `
         class="emotion-2 emotion-1"
       >
         <div
-          class="components-card__body components-card-body wcpay-card-body emotion-4 emotion-1"
+          class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
           data-wp-c16t="true"
           data-wp-component="CardBody"
         >
-          <div>
-            <p
-              class="fraud-protection-rule-card-header"
-            >
-              test title
-            </p>
-          </div>
+          <h4>
+            test title
+          </h4>
           test content
         </div>
       </div>
