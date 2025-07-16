@@ -116,6 +116,7 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 						maxLength={ ACCOUNT_STATEMENT_MAX_LENGTH }
 						data-testid={ 'store-name-bank-statement' }
 						__nextHasNoMarginBottom
+						__next40pxDefaultSize
 					/>
 					<span className="input-help-text" aria-hidden="true">
 						{ `${ accountStatementDescriptor.length } / ${ ACCOUNT_STATEMENT_MAX_LENGTH }` }
