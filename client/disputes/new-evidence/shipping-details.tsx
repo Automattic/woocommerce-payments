@@ -39,7 +39,7 @@ const ShippingDetails: React.FC< ShippingDetailsProps > = ( {
 			</h3>
 			<div className="wcpay-dispute-evidence-shipping-details__subheading">
 				{ __(
-					'Please check that all of the prefilled information is accurate and complete any empty fields.',
+					'Please ensure all prefilled information is correct and complete any missing details.',
 					'woocommerce-payments'
 				) }
 			</div>

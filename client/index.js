@@ -96,7 +96,11 @@ addFilter(
 		} );
 
 		pages.push( {
-			container: DepositsPage,
+			container: ( { query } ) => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<DepositsPage query={ query } />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/payouts',
 			wpOpenMenu: menuID,
 			breadcrumbs: [ rootLink, __( 'Payouts', 'woocommerce-payments' ) ],
@@ -106,7 +110,11 @@ addFilter(
 			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
-			container: DepositDetailsPage,
+			container: ( { query } ) => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<DepositDetailsPage query={ query } />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/payouts/details',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
