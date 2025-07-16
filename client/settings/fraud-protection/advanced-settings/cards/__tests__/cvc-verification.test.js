@@ -74,7 +74,7 @@ describe( 'CVC verification card', () => {
 		);
 		expect( container ).toMatchSnapshot();
 		expect( container ).toHaveTextContent(
-			/This filter is disabled, and can not be modified/i
+			/This filter is disabled, and cannot be modified/i
 		);
 	} );
 } );
