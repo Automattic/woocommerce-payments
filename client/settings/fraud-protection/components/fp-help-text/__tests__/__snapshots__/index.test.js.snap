@@ -1,0 +1,21 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`FraudProtectionHelpText renders high level help text when level prop equals high 1`] = `
+<div>
+  <p
+    class="fraud-protection__text--help-text"
+  >
+    Offers the highest level of filtering for stores, but may catch some legitimate transactions.
+  </p>
+</div>
+`;
+
+exports[`FraudProtectionHelpText renders standard level help text when level prop equals standard 1`] = `
+<div>
+  <p
+    class="fraud-protection__text--help-text"
+  >
+    Provides a standard level of filtering that's suitable for most businesses.
+  </p>
+</div>
+`;
