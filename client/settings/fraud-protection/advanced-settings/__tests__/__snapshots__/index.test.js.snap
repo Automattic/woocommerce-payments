@@ -855,7 +855,6 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                         <div
                           class="fraud-protection-rule-toggle-children-notice"
                         >
-                          <br />
                           <div
                             class="wcpay-inline-notice wcpay-inline-error-notice components-notice is-error"
                           >
@@ -1965,7 +1964,6 @@ exports[`Advanced fraud protection settings doesn't save when there's a validati
                       <div
                         class="fraud-protection-rule-toggle-children-notice"
                       >
-                        <br />
                         <div
                           class="wcpay-inline-notice wcpay-inline-error-notice components-notice is-error"
                         >
