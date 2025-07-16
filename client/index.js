@@ -186,7 +186,11 @@ addFilter(
 		} );
 
 		pages.push( {
-			container: RedirectToTransactionDetails,
+			container: ( { query } ) => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<RedirectToTransactionDetails query={ query } />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/disputes/details',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
