@@ -145,6 +145,7 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 										'store-name-bank-statement-kanji'
 									}
 									__nextHasNoMarginBottom
+									__next40pxDefaultSize
 								/>
 								<span
 									className="input-help-text"
@@ -175,6 +176,7 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 										'store-name-bank-statement-kana'
 									}
 									__nextHasNoMarginBottom
+									__next40pxDefaultSize
 								/>
 								<span
 									className="input-help-text"
