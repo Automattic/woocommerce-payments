@@ -89,6 +89,8 @@ const OrderItemsThresholdCustomForm: React.FC< OrderItemsThresholdCustomFormProp
 						) }
 						min="1"
 						step="1"
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
 					/>
 				</div>
 				<div className="fraud-protection-rule-toggle-children-vertical-form">
@@ -113,6 +115,8 @@ const OrderItemsThresholdCustomForm: React.FC< OrderItemsThresholdCustomFormProp
 						) }
 						min="1"
 						step="1"
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
 					/>
 				</div>
 			</div>

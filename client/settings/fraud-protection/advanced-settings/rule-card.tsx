@@ -20,7 +20,7 @@ const FraudProtectionRuleCard: React.FC< React.PropsWithChildren<
 > > = ( { title, children, id } ) => {
 	return (
 		<Card id={ id } className="fraud-protection-rule-card">
-			<CardBody>
+			<CardBody className="wcpay-card-body">
 				<div>
 					<p className="fraud-protection-rule-card-header">
 						{ title }

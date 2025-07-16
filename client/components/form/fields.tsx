@@ -59,7 +59,11 @@ const makeField = (
 
 export const TextField = forwardRef< HTMLInputElement, TextFieldProps >(
 	( props, ref ) => {
-		return makeField( TextControl, props, ref );
+		return makeField(
+			TextControl,
+			{ ...props, __nextHasNoMarginBottom: true },
+			ref
+		);
 	}
 );
 
