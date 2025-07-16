@@ -99,7 +99,7 @@ const FraudProtectionRuleToggle: React.FC< React.PropsWithChildren<
 
 			{ settingUI?.enabled && (
 				<>
-					<div>{ children }</div>
+					{ children }
 					{ Boolean( isFRTReviewFeatureActive ) && (
 						<div>
 							<strong>

@@ -52,6 +52,7 @@ const AmountInput: React.FC< AmountInputProps > = ( {
 
 	return (
 		<TextControlWithAffixes
+			id={ id }
 			className="wcpay-components-amount-input"
 			label={ label }
 			prefix={ prefix }

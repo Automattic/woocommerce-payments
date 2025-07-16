@@ -7,6 +7,10 @@
 			max-width: 492px;
 		}
 
+		&-horizontal-form + &-notice {
+			margin-top: 13px;
+		}
+
 		&-vertical-form {
 			display: flex;
 			flex: 1;

@@ -1,4 +1,12 @@
 .wcpay-components-amount-input {
+	.components-base-control__field {
+		margin-bottom: 0;
+	}
+
+	p {
+		margin-bottom: 0;
+	}
+
 	.text-control-with-affixes__prefix {
 		line-height: 16px;
 		display: flex;
