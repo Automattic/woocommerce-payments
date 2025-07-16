@@ -276,6 +276,7 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 								min={ 6 }
 								max={ 48 }
 								__nextHasNoMarginBottom
+								__next40pxDefaultSize
 							/>
 							<RangeControl
 								label={ __(
@@ -288,6 +289,7 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 								max={ 3 }
 								step={ 0.1 }
 								__nextHasNoMarginBottom
+								__next40pxDefaultSize
 							/>
 						</PanelBody>
 						<PanelBody
