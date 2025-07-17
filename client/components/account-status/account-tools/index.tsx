@@ -2,7 +2,6 @@
  * External dependencies
  */
 import React, { useState } from 'react';
-import { Button, CardDivider } from 'wcpay/components/wp-components-wrapped';
 import { addQueryArgs } from '@wordpress/url';
 
 /**
@@ -12,6 +11,8 @@ import strings from './strings';
 import './styles.scss';
 import ResetAccountModal from 'wcpay/overview/modal/reset-account';
 import { isInTestModeOnboarding } from 'wcpay/utils';
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
+import { CardDivider } from 'wcpay/components/wp-components-wrapped/components/card-divider';
 
 const handleReset = () => {
 	window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
@@ -39,6 +40,7 @@ export const AccountTools = () => {
 					<Button
 						variant={ 'secondary' }
 						onClick={ () => setModalVisible( true ) }
+						__next40pxDefaultSize
 					>
 						{ strings.reset }
 					</Button>

@@ -4,16 +4,17 @@
  * External dependencies
  */
 import React, { useEffect, useState } from 'react';
-import { Card, Notice } from 'wcpay/components/wp-components-wrapped';
 import { getQuery } from '@woocommerce/navigation';
 import { __, sprintf } from '@wordpress/i18n';
 import { dispatch } from '@wordpress/data';
 import interpolateComponents from '@automattic/interpolate-components';
-import { Link } from '@woocommerce/components';
 
 /**
  * Internal dependencies.
  */
+import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
+import { Notice } from 'wcpay/components/wp-components-wrapped/components/notice';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
 import AccountBalances from 'components/account-balances';
 import AccountStatus from 'components/account-status';
 import ActiveLoanSummary from 'components/active-loan-summary';
@@ -317,14 +318,10 @@ const OverviewPage = () => {
 							components: {
 								seeDetailsLink: (
 									// eslint-disable-next-line jsx-a11y/anchor-has-content
-									<Link
+									<ExternalLink
 										href={
-											// eslint-disable-next-line max-len
 											'https://woocommerce.com/document/woopayments/startup-guide/#requirements'
 										}
-										target="_blank"
-										rel="noreferrer"
-										type="external"
 									/>
 								),
 							},
