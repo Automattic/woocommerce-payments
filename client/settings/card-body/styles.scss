@@ -5,6 +5,7 @@
 	}
 
 	h4 {
+		@include heading-md;
 		margin-top: 0;
 		margin-bottom: 1em;
 	}

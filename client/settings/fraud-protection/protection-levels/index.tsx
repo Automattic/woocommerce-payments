@@ -183,7 +183,6 @@ const ProtectionLevels: React.FC = () => {
 							level={ ProtectionLevel.BASIC }
 						/>
 					</li>
-					<hr className="fraud-protection__list-divider" />
 					<li className="fraud-protection__advanced-level-container">
 						<label htmlFor="fraud-protection-level-select_advanced-level">
 							<div className="fraud-protection-radio-wrapper">

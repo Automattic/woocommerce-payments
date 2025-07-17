@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { BaseControl, Notice } from 'wcpay/components/wp-components-wrapped';
+import { BaseControl } from 'wcpay/components/wp-components-wrapped';
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect, useRef } from 'react';
 
@@ -14,6 +14,8 @@ import {
 	useTestModeOnboarding,
 } from 'wcpay/data';
 import PhoneNumberInput from 'wcpay/settings/phone-input';
+import InlineNotice from 'wcpay/components/inline-notice';
+import './styles.scss';
 
 const SupportPhoneInput = ( { setInputVallid } ) => {
 	const [ supportPhone, setSupportPhone ] = useAccountBusinessSupportPhone();
@@ -64,12 +66,12 @@ const SupportPhoneInput = ( { setInputVallid } ) => {
 	return (
 		<>
 			{ supportPhoneError && (
-				<Notice status="error" isDismissible={ false }>
+				<InlineNotice status="error" isDismissible={ false }>
 					<span>{ supportPhoneError }</span>
-				</Notice>
+				</InlineNotice>
 			) }
 			<BaseControl
-				className="settings__account-business-support-phone-input no-top-margin"
+				className="wcpay-settings__account-business-support-phone-input"
 				help={ __(
 					'This may be visible on receipts, invoices, and automated emails from your store.',
 					'woocommerce-payments'
