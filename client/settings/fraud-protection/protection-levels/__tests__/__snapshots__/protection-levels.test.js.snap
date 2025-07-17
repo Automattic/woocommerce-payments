@@ -45,9 +45,6 @@ exports[`ProtectionLevels renders 1`] = `
           Provides the base level of platform protection.
         </p>
       </li>
-      <hr
-        class="fraud-protection__list-divider"
-      />
       <li
         class="fraud-protection__advanced-level-container"
       >
@@ -212,9 +209,6 @@ exports[`ProtectionLevels renders an error message when settings can not be fetc
           Provides the base level of platform protection.
         </p>
       </li>
-      <hr
-        class="fraud-protection__list-divider"
-      />
       <li
         class="fraud-protection__advanced-level-container"
       >
@@ -300,9 +294,6 @@ exports[`ProtectionLevels renders with the advanced fraud protection settings se
           Provides the base level of platform protection.
         </p>
       </li>
-      <hr
-        class="fraud-protection__list-divider"
-      />
       <li
         class="fraud-protection__advanced-level-container"
       >
