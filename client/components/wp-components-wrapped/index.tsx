@@ -20,6 +20,7 @@ export { MenuGroup } from './components/menu-group';
 export { MenuItem } from './components/menu-item';
 export { Modal } from './components/modal';
 export { Notice } from './components/notice';
+export { NumberControl } from './components/number-control';
 export { Panel } from './components/panel';
 export { PanelBody } from './components/panel-body';
 export { Popover } from './components/popover';

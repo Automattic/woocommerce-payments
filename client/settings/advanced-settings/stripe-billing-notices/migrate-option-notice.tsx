@@ -4,7 +4,7 @@
 import React, { useContext, useState } from 'react';
 import InlineNotice from 'wcpay/components/inline-notice';
 import { __, _n, sprintf } from '@wordpress/i18n';
-import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
 import interpolateComponents from '@automattic/interpolate-components';
 import { useEffect } from '@wordpress/element';
 
