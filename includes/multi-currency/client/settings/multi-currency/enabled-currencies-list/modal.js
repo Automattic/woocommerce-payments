@@ -145,12 +145,14 @@ const EnabledCurrenciesModal = ( { className } ) => {
 							<Button
 								isSecondary
 								onClick={ handleAddSelectedCancelClick }
+								__next40pxDefaultSize
 							>
 								{ __( 'Cancel', 'woocommerce-payments' ) }
 							</Button>
 							<Button
 								isPrimary
 								onClick={ handleAddSelectedClick }
+								__next40pxDefaultSize
 							>
 								{ __(
 									'Update selected',
@@ -208,6 +210,7 @@ const EnabledCurrenciesModal = ( { className } ) => {
 				className={ className }
 				onClick={ handleEnabledCurrenciesAddButtonClick }
 				data-testid="enabled-currencies-add-button"
+				__next40pxDefaultSize
 			>
 				{ __( 'Add/remove currencies', 'woocommerce-payments' ) }
 			</Button>
