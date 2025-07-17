@@ -82,58 +82,6 @@ const GeneralSettings = () => {
 							/>
 						</>
 					) }
-					{ isTestModeOnboarding && (
-						<InlineNotice
-							status="warning"
-							isDismissible={ false }
-							actions={ [
-								{
-									label: __(
-										'Set up payments',
-										'woocommerce-payments'
-									),
-									variant: 'secondary',
-									onClick: () => {
-										recordEvent(
-											'wcpay_settings_setup_live_payments_click',
-											{
-												source: 'wcadmin-settings-page',
-											}
-										);
-
-										setModalVisible( true );
-									},
-								},
-							] }
-							className="wcpay-general-settings__notice"
-						>
-							<span>
-								{ interpolateComponents( {
-									mixedString: sprintf(
-										/* translators: %s: WooPayments */
-										__(
-											'{{b}}%1$s is in sandbox mode.{{/b}} You need to set up a live %1$s account before ' +
-												'you can accept real transactions. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
-											'woocommerce-payments'
-										),
-										'WooPayments'
-									),
-									components: {
-										b: <b />,
-										learnMoreLink: (
-											// eslint-disable-next-line jsx-a11y/anchor-has-content
-											<a
-												target="_blank"
-												rel="noreferrer"
-												// eslint-disable-next-line max-len
-												href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/"
-											/>
-										),
-									},
-								} ) }
-							</span>
-						</InlineNotice>
-					) }
 				</CardBody>
 			</Card>
 			{ modalVisible && (
