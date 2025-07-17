@@ -121,7 +121,7 @@ export const LogoPopover: React.FC< React.PropsWithChildren<
 			role="dialog"
 			aria-label={ __(
 				'Supported Credit Card Brands',
-				'woocommerce-payment'
+				'woocommerce-payments'
 			) }
 			data-testid={ dataTestId }
 		>
