@@ -11,7 +11,6 @@ import interpolateComponents from '@automattic/interpolate-components';
  */
 import { useTestMode, useTestModeOnboarding } from 'wcpay/data';
 import CardBody from '../card-body';
-import InlineNotice from 'wcpay/components/inline-notice';
 import SetupLivePaymentsModal from 'wcpay/components/sandbox-mode-switch-to-live-notice/modal';
 import TestModeConfirmationModal from './test-mode-confirm-modal';
 import EnableWooPaymentsCheckbox from './enable-woopayments-checkbox';
@@ -24,7 +23,13 @@ const GeneralSettings = () => {
 	const [ testModeModalVisible, setTestModeModalVisible ] = useState( false );
 
 	useEffect( () => {
-		const handleActivatePayments = () => setModalVisible( true );
+		const handleActivatePayments = () => {
+			recordEvent( 'wcpay_settings_setup_live_payments_click', {
+				source: 'wcadmin-settings-page',
+			} );
+
+			setModalVisible( true );
+		};
 
 		document.addEventListener(
 			'wcpay:activate_payments',
