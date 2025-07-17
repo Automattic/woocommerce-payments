@@ -3,7 +3,6 @@
  */
 import React, { useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-import { addQueryArgs } from '@wordpress/url';
 import { Button, Modal } from 'wcpay/components/wp-components-wrapped';
 import { Icon, currencyDollar } from '@wordpress/icons';
 
@@ -35,11 +34,10 @@ const SetupLivePaymentsModal: React.FC< Props > = ( {
 			source,
 		} );
 
-		window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
-			'wcpay-disable-onboarding-test-mode': 'true',
-			from,
-			source: 'wcpay-setup-live-payments', // Overwrite any existing source because we are starting over.
-		} );
+		const url = new URL( window.location.href );
+		url.search =
+			'?page=wc-settings&tab=checkout&path=/woopayments/onboarding';
+		window.location.href = url.toString();
 	};
 
 	const trackAndClose = () => {
