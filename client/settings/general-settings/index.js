@@ -1,8 +1,8 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
-import { __, sprintf } from '@wordpress/i18n';
+import React, { useState, useEffect } from 'react';
+import { __ } from '@wordpress/i18n';
 import { Card, CheckboxControl } from 'wcpay/components/wp-components-wrapped';
 import interpolateComponents from '@automattic/interpolate-components';
 
@@ -22,6 +22,22 @@ const GeneralSettings = () => {
 	const [ modalVisible, setModalVisible ] = useState( false );
 	const isTestModeOnboarding = useTestModeOnboarding();
 	const [ testModeModalVisible, setTestModeModalVisible ] = useState( false );
+
+	useEffect( () => {
+		const handleActivatePayments = () => setModalVisible( true );
+
+		document.addEventListener(
+			'wcpay:activate_payments',
+			handleActivatePayments
+		);
+
+		return () => {
+			document.removeEventListener(
+				'wcpay:activate_payments',
+				handleActivatePayments
+			);
+		};
+	}, [] );
 
 	return (
 		<>
