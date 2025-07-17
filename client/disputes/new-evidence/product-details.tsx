@@ -34,7 +34,7 @@ const ProductDetails: React.FC< ProductDetailsProps > = ( {
 			</h3>
 			<div className="wcpay-dispute-evidence-product-details__subheading">
 				{ __(
-					'Please check the correct product type has been selected and the description is accurate.',
+					'Please ensure the product type and description have been entered accurately.',
 					'woocommerce-payments'
 				) }
 			</div>

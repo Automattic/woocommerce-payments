@@ -71,7 +71,7 @@ const WooPaySettings = ( { section } ) => {
 			} ) }
 		>
 			{ section === 'enable' && (
-				<CardBody>
+				<CardBody className="wcpay-card-body">
 					{ showIncompatibilityNotice && (
 						<WooPayIncompatibilityNotice />
 					) }
@@ -130,6 +130,7 @@ const WooPaySettings = ( { section } ) => {
 								  } )
 							/* eslint-enable jsx-a11y/anchor-has-content */
 						}
+						__nextHasNoMarginBottom
 					/>
 					<h4>
 						{ __(
@@ -152,6 +153,7 @@ const WooPaySettings = ( { section } ) => {
 									'Checkout Page',
 									'woocommerce-payments'
 								) }
+								__nextHasNoMarginBottom
 							/>
 						</li>
 						<li>
@@ -168,6 +170,7 @@ const WooPaySettings = ( { section } ) => {
 									'Product Page',
 									'woocommerce-payments'
 								) }
+								__nextHasNoMarginBottom
 							/>
 						</li>
 						<li>
@@ -182,6 +185,7 @@ const WooPaySettings = ( { section } ) => {
 									'Cart Page',
 									'woocommerce-payments'
 								) }
+								__nextHasNoMarginBottom
 							/>
 						</li>
 					</ul>
@@ -189,7 +193,7 @@ const WooPaySettings = ( { section } ) => {
 			) }
 
 			{ section === 'appearance' && (
-				<CardBody className="woopay-settings__appearance-card-settings">
+				<CardBody className="wcpay-card-body woopay-settings__appearance-card-settings">
 					<div className="woopay-settings__custom-message-wrapper">
 						<h4>
 							{ __( 'Checkout logo', 'woocommerce-payments' ) }
@@ -255,6 +259,7 @@ const WooPaySettings = ( { section } ) => {
 											),
 										},
 									} ) }
+									__nextHasNoMarginBottom
 								/>
 							</div>
 						</div>
@@ -292,13 +297,14 @@ const WooPaySettings = ( { section } ) => {
 							} ) }
 							value={ woopayCustomMessage }
 							onChange={ setWooPayCustomMessage }
+							__nextHasNoMarginBottom
 						/>
 					</div>
 				</CardBody>
 			) }
 
 			{ section === 'appearance' && (
-				<CardBody className="woopay-settings__appearance-card-preview">
+				<CardBody className="wcpay-card-body woopay-settings__appearance-card-preview">
 					<div className="woopay-settings__preview">
 						<h4>
 							{ __(
