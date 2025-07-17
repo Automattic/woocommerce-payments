@@ -19,6 +19,7 @@ use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Payment_Method;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Duplicates_Detection_Service;
+use WCPay\Exceptions\Add_Payment_Method_Exception;
 use WCPay\Exceptions\Amount_Too_Small_Exception;
 use WCPay\Exceptions\API_Exception;
 use WCPay\Exceptions\Invalid_Address_Exception;
@@ -207,10 +208,17 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	private $wp_query_query_vars_backup;
 
 	/**
+	 * Previous user ID.
+	 * @var int
+	 */
+	private $previous_user_id;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
 		parent::set_up();
+		$this->previous_user_id = get_current_user_id();
 
 		$this->mock_api_client = $this
 			->getMockBuilder( 'WC_Payments_API_Client' )
@@ -302,6 +310,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	 */
 	public function tear_down() {
 		parent::tear_down();
+		wp_set_current_user( $this->previous_user_id );
 
 		delete_option( 'woocommerce_woocommerce_payments_settings' );
 
@@ -2194,7 +2203,17 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'error', $result['result'] );
 	}
 
+	public function test_create_and_confirm_setup_intent_for_non_logged_in_user() {
+		wp_set_current_user( 0 );
+		$_POST = [ 'wcpay-payment-method' => 'pm_mock' ];
+		$this->expectException( Add_Payment_Method_Exception::class );
+		$this->expectExceptionMessage( 'Only logged-in user can add a new payment method' );
+
+		$this->card_gateway->create_and_confirm_setup_intent();
+	}
+
 	public function test_create_and_confirm_setup_intent_existing_customer() {
+		wp_set_current_user( 1 );
 		$_POST = [ 'wcpay-payment-method' => 'pm_mock' ];
 
 		$this->mock_customer_service
@@ -2230,6 +2249,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_create_and_confirm_setup_intent_no_customer() {
+		wp_set_current_user( 1 );
 		$_POST = [ 'wcpay-payment-method' => 'pm_mock' ];
 
 		$this->mock_customer_service
