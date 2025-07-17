@@ -1178,7 +1178,10 @@ export default ( { query }: { query: { id: string } } ) => {
 					{ /* Section 1: Accordion */ }
 					<Accordion highDensity>
 						<AccordionBody
-							title="Challenge dispute"
+							title={ __(
+								'Challenge dispute',
+								'woocommerce-payments'
+							) }
 							opened={ isAccordionOpen }
 							onToggle={ setIsAccordionOpen }
 						>

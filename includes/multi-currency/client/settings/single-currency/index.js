@@ -238,7 +238,8 @@ const SingleCurrencySettings = () => {
 																formattedLastUpdatedDateTime
 														  )
 														: __(
-																'Error - Unable to fetch automatic rate for this currency'
+																'Error - Unable to fetch automatic rate for this currency',
+																'woocommerce-payments'
 														  ) }
 												</p>
 											</div>
