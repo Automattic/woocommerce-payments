@@ -13,6 +13,7 @@ import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
 import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
 import { CheckboxControl } from 'wcpay/components/wp-components-wrapped/components/checkbox-control';
 import { Flex } from 'wcpay/components/wp-components-wrapped/components/flex';
+import { FlexItem } from 'wcpay/components/wp-components-wrapped/components/flex-item';
 import {
 	CollapsibleBody,
 	WizardTaskItem,
@@ -21,9 +22,7 @@ import { WizardTaskContext } from 'multi-currency/interface/functions';
 import { useSettings, useMultiCurrency } from 'multi-currency/interface/data';
 import PreviewModal from 'multi-currency/components/preview-modal';
 import './index.scss';
-
 import { useStoreSettings } from 'multi-currency/data';
-import { FlexItem } from 'wcpay/components/wp-components-wrapped';
 
 const StoreSettingsTask = () => {
 	const { storeSettings, submitStoreSettingsUpdate } = useStoreSettings();
