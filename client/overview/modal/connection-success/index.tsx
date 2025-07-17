@@ -2,11 +2,12 @@
  * External dependencies
  */
 import React from 'react';
-import { Modal, Button } from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies
  */
+import { Modal } from 'wcpay/components/wp-components-wrapped/components/modal';
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 import './style.scss';
 import strings from './strings';
 import { saveOption } from 'wcpay/data/settings/actions';
@@ -44,6 +45,7 @@ export const ConnectionSuccessModal = () => {
 							isBusy={ false }
 							disabled={ false }
 							onClick={ onDismiss }
+							__next40pxDefaultSize
 						>
 							{ strings.button }
 						</Button>
