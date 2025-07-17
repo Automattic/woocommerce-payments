@@ -72,6 +72,20 @@ class WC_Payments_Admin_Settings {
 					</a>
 				</p>
 			</div>
+			<script type="text/javascript">
+				// We dispatch an event to trigger the modal.
+				// The listener is in the general-settings.js file.
+				document.addEventListener( 'DOMContentLoaded', function() {
+					var activateButton = document.getElementById( 'wcpay-activate-payments-button' );
+					if ( ! activateButton ) {
+						return;
+					}
+					activateButton.addEventListener( 'click', function( e ) {
+						e.preventDefault();
+						document.dispatchEvent( new CustomEvent( 'wcpay:activate_payments' ) );
+					} );
+				} );
+			</script>
 			<?php
 		}
 	}
