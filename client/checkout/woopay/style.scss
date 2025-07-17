@@ -150,6 +150,8 @@
 	box-sizing: content-box;
 	text-align: center;
 	font-size: 1.25em;
+	top: initial;
+	left: initial;
 
 	&::after {
 		content: ' ';
