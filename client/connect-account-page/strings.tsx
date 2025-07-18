@@ -77,7 +77,7 @@ export default {
 	},
 	sandboxModeNotice: interpolateComponents( {
 		mixedString: __(
-			'Sandbox mode is enabled, only test accounts will be created. If you want to process live transactions, please {{learnMoreLink}}disable it{{/learnMoreLink}}.',
+			'Test mode is enabled, only test accounts will be created. If you want to process live transactions, please {{learnMoreLink}}disable it{{/learnMoreLink}}.',
 			'woocommerce-payments'
 		),
 		components: {
