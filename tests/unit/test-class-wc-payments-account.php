@@ -235,10 +235,13 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		// Assert.
 		$this->mock_redirect_service
 			->expects( $this->once() )
-			->method( 'redirect_to_nox_flow' )
+			->method( 'redirect_to_connect_page' )
 			->with(
+				'Connection to WordPress.com failed. Please connect to WordPress.com to start using WooPayments.',
 				WC_Payments_Onboarding_Service::FROM_WPCOM_CONNECTION,
-				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE
+				[
+					'source' => WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE,
+				]
 			);
 
 		// Act.
@@ -1163,7 +1166,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		// Assert.
 		$this->mock_redirect_service
 			->expects( $this->atLeastOnce() )
-			->method( 'redirect_to_nox_flow' );
+			->method( 'redirect_to_connect_page' );
 
 		$this->mock_api_client
 			->expects( $this->never() )

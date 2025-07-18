@@ -1476,10 +1476,16 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 						);
 					}
 
-					// Redirect to the NOX flow to complete WPCOM/Jetpack connection.
-					$this->redirect_service->redirect_to_nox_flow(
+					$this->redirect_service->redirect_to_connect_page(
+						sprintf(
+						/* translators: %s: WooPayments */
+							__( 'Connection to WordPress.com failed. Please connect to WordPress.com to start using %s.', 'woocommerce-payments' ),
+							'WooPayments'
+						),
 						WC_Payments_Onboarding_Service::FROM_WPCOM_CONNECTION,
-						$onboarding_source
+						[
+							'source' => $onboarding_source,
+						]
 					);
 
 					return;
@@ -1578,9 +1584,13 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				);
 			} catch ( API_Exception $e ) {
 				Logger::error( 'Init Jetpack connection failed. ' . $e->getMessage() );
-				$this->redirect_service->redirect_to_nox_flow(
+				$this->redirect_service->redirect_to_connect_page(
+				/* translators: %s: error message. */
+					sprintf( __( 'There was a problem connecting your store to WordPress.com: "%s"', 'woocommerce-payments' ), $e->getMessage() ),
 					WC_Payments_Onboarding_Service::FROM_WPCOM_CONNECTION,
-					$onboarding_source
+					[
+						'source' => $onboarding_source,
+					]
 				);
 				return;
 			}
@@ -1618,7 +1628,9 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				// Prevent duplicate requests to start the onboarding flow.
 				if ( $this->onboarding_service->is_onboarding_init_in_progress() ) {
 					Logger::warning( 'Duplicate onboarding attempt detected.' );
-					$this->redirect_service->redirect_to_nox_flow();
+					$this->redirect_service->redirect_to_connect_page(
+						__( 'There was a duplicate attempt to initiate account setup. Please wait a few seconds and try again.', 'woocommerce-payments' )
+					);
 					return;
 				}
 
@@ -1671,9 +1683,13 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 						],
 						self::get_connect_url( $wcpay_connect_param ) // Instruct Jetpack to return here (connect link).
 					);
-					$this->redirect_service->redirect_to_nox_flow(
-						$from,
-						$onboarding_source
+					$this->redirect_service->redirect_to_connect_page(
+						sprintf(
+						/* translators: 1: anchor opening markup 2: closing anchor markup */
+							__( 'Another account setup session is already in progress. Please finish it or %1$sclick here to start again%2$s.', 'woocommerce-payments' ),
+							'<a href="' . esc_url( $confirmation_url ) . '">',
+							'</a>'
+						)
 					);
 					return;
 				}
@@ -1718,9 +1734,16 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				$this->clear_cache();
 
 				Logger::error( 'Init Stripe onboarding failed. ' . $e->getMessage() );
-				$this->redirect_service->redirect_to_nox_flow(
+				$this->redirect_service->redirect_to_connect_page(
+					sprintf(
+					/* translators: %s: WooPayments. */
+						__( 'There was a problem setting up your %s account. Please try again.', 'woocommerce-payments' ),
+						'WooPayments'
+					),
 					null,
-					$onboarding_source
+					[
+						'source' => $onboarding_source,
+					]
 				);
 				return;
 			}
@@ -1736,7 +1759,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			if ( $this->is_stripe_connected() && $this->has_working_jetpack_connection() ) {
 				$this->redirect_service->redirect_to_overview_page();
 			} else {
-				$this->redirect_service->redirect_to_nox_flow( null, $onboarding_source );
+				$this->redirect_service->redirect_to_connect_page( null, null, [ 'source' => $onboarding_source ] );
 			}
 			return;
 		}
