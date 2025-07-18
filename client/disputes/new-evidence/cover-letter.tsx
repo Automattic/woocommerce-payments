@@ -8,10 +8,8 @@ import { external } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
-import {
-	TextareaControl,
-	Button,
-} from 'wcpay/components/wp-components-wrapped';
+import { TextareaControl } from 'wcpay/components/wp-components-wrapped/components/textarea-control';
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 import type { CoverLetterProps } from './types';
 
 const CoverLetter: React.FC< CoverLetterProps > = ( {

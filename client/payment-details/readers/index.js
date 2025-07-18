@@ -3,7 +3,8 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { Card, CardBody } from 'wcpay/components/wp-components-wrapped';
+import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
+import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
 import { getQuery } from '@woocommerce/navigation';
 import {
 	downloadCSVFile,
