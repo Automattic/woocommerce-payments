@@ -125,9 +125,9 @@ describe( 'ExpressCheckoutSettings', () => {
 		);
 
 		expect(
-			screen.queryByRole( 'heading', {
-				name: 'Enable Apple Pay and Google Pay on selected pages',
-			} )
+			screen.queryByText(
+				'Enable Apple Pay and Google Pay on selected pages'
+			)
 		).toBeInTheDocument();
 	} );
 
@@ -142,13 +142,13 @@ describe( 'ExpressCheckoutSettings', () => {
 		expect( label ).toBeInTheDocument();
 	} );
 
-	test( 'renders WooPay express button appearance settings if feature flag is enabled and confirm its first heading', () => {
+	test( 'renders WooPay express button appearance settings if feature flag is enabled and confirm its first input', () => {
 		renderWithSettingsProvider(
 			<ExpressCheckoutSettings methodId="woopay" />
 		);
 
 		expect(
-			screen.queryByRole( 'heading', {
+			screen.queryByRole( 'combobox', {
 				name: 'Call to action',
 			} )
 		).toBeInTheDocument();
