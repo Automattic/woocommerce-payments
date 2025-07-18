@@ -138,21 +138,13 @@ describe( 'PaymentRequestSettings', () => {
 			<PaymentRequestSettings section="general" />
 		);
 
-		// confirm settings headings
+		// confirm settings labels
 		expect(
-			screen.queryByRole( 'heading', { name: 'Call to action' } )
+			screen.queryByRole( 'combobox', { name: 'Call to action' } )
 		).toBeInTheDocument();
-		expect(
-			screen.queryByRole( 'heading', { name: 'Button size' } )
-		).toBeInTheDocument();
-
-		expect(
-			screen.queryByRole( 'heading', { name: 'Theme' } )
-		).toBeInTheDocument();
-
-		expect(
-			screen.queryByRole( 'heading', { name: 'Preview' } )
-		).toBeInTheDocument();
+		expect( screen.queryByText( 'Button size' ) ).toBeInTheDocument();
+		expect( screen.queryByText( 'Theme' ) ).toBeInTheDocument();
+		expect( screen.queryByText( 'Preview' ) ).toBeInTheDocument();
 
 		// confirm radio button groups displayed
 		const [ sizeRadio, themeRadio ] = screen.queryAllByRole( 'radio' );
