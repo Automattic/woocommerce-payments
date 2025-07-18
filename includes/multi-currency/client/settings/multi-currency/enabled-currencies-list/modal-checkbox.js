@@ -3,9 +3,14 @@
  * External dependencies
  */
 import React from 'react';
-import { CheckboxControl } from 'wcpay/components/wp-components-wrapped/components/checkbox-control';
+
 import { useCallback } from '@wordpress/element';
 import interpolateComponents from '@automattic/interpolate-components';
+
+/**
+ * Internal dependencies
+ */
+import { CheckboxControl } from 'wcpay/components/wp-components-wrapped/components/checkbox-control';
 
 const EnabledCurrenciesModalCheckbox = ( {
 	onChange,

@@ -236,7 +236,11 @@ addFilter(
 		} );
 
 		pages.push( {
-			container: MultiCurrencySetupPage,
+			container: () => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<MultiCurrencySetupPage />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/multi-currency-setup',
 			wpOpenMenu: menuID,
 			breadcrumbs: [

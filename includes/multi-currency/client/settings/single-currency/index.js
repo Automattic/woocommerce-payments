@@ -18,7 +18,7 @@ import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
 import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
 import { SelectControl } from 'wcpay/components/wp-components-wrapped/components/select-control';
 import { TextControl } from 'wcpay/components/wp-components-wrapped/components/text-control';
-import clsx from 'clsx';
+import { RadioControl } from 'wcpay/components/wp-components-wrapped/components/radio-control';
 import {
 	decimalCurrencyCharmOptions,
 	decimalCurrencyRoundingOptions,
@@ -181,6 +181,7 @@ const SingleCurrencySettings = () => {
 						onClick={ () =>
 							setCurrencyCodeToShowSettingsFor( null )
 						}
+						__next40pxDefaultSize
 					>
 						{ __( 'Enabled currencies', 'woocommerce-payments' ) }
 					</Button>{ ' ' }
@@ -197,90 +198,63 @@ const SingleCurrencySettings = () => {
 										'woocommerce-payments'
 									) }
 								</h4>
+
 								<fieldset>
 									<ul>
 										<li>
-											<div>
-												<div className="single-currency-settings-radio-wrapper">
-													<input
-														name="wcpay_multi_currency_exchange_rate_aud"
-														id="single-currency-settings__automatic_rate_radio"
-														value="automatic"
-														type="radio"
-														checked={
-															exchangeRateType ===
-															'automatic'
-														}
-														onChange={ () => {
-															setExchangeRateType(
-																'automatic'
-															);
-															setIsDirty( true );
-														} }
-													/>
-													<label htmlFor="single-currency-settings__automatic_rate_radio">
-														{ __(
+											<RadioControl
+												onChange={ ( value ) => {
+													setExchangeRateType(
+														value
+													);
+													setIsDirty( true );
+													if ( value === 'manual' ) {
+														setManualRate(
+															manualRate
+																? manualRate
+																: targetCurrency.rate
+														);
+													}
+												} }
+												options={ [
+													{
+														description: __(
+															targetCurrency.last_updated
+																? sprintf(
+																		__(
+																			'Current rate: 1 %s = %s %s (Last updated: %s)',
+																			'woocommerce-payments'
+																		),
+																		storeCurrency.code,
+																		targetCurrency.rate,
+																		targetCurrency.code,
+																		formattedLastUpdatedDateTime
+																  )
+																: __(
+																		'Error - Unable to fetch automatic rate for this currency'
+																  ),
+															'woocommerce-payments'
+														),
+														label: __(
 															'Fetch rates automatically',
 															'woocommerce-payments'
-														) }
-													</label>
-												</div>
-												<p className="single-currency-settings-radio__help">
-													{ targetCurrency.last_updated
-														? sprintf(
-																__(
-																	'Current rate: 1 %s = %s %s (Last updated: %s)',
-																	'woocommerce-payments'
-																),
-																storeCurrency.code,
-																targetCurrency.rate,
-																targetCurrency.code,
-																formattedLastUpdatedDateTime
-														  )
-														: __(
-																'Error - Unable to fetch automatic rate for this currency'
-														  ) }
-												</p>
-											</div>
-										</li>
-										<li>
-											<div>
-												<div className="single-currency-settings-radio-wrapper">
-													<input
-														name="wcpay_multi_currency_exchange_rate_aud"
-														id="single-currency-settings__manual_rate_radio"
-														value="manual"
-														type="radio"
-														checked={
-															exchangeRateType ===
-															'manual'
-														}
-														onChange={ () => {
-															setExchangeRateType(
-																'manual'
-															);
-															setManualRate(
-																manualRate
-																	? manualRate
-																	: targetCurrency.rate
-															);
-															setIsDirty( true );
-														} }
-													/>
-													<label htmlFor="single-currency-settings__manual_rate_radio">
-														{ __(
+														),
+														value: 'automatic',
+													},
+													{
+														description: __(
+															'Enter your fixed rate of exchange',
+															'woocommerce-payments'
+														),
+														label: __(
 															'Manual',
 															'woocommerce-payments'
-														) }
-													</label>
-												</div>
-												<p className="single-currency-settings-radio__help">
-													{ __(
-														'Enter your fixed rate of exchange',
-														'woocommerce-payments'
-													) }
-												</p>
-											</div>
+														),
+														value: 'manual',
+													},
+												] }
+												selected={ exchangeRateType }
+											/>
 										</li>
 										{ exchangeRateType === 'manual' && (
 											<li>
@@ -309,6 +283,7 @@ const SingleCurrencySettings = () => {
 														setIsDirty( true );
 													} }
 													__nextHasNoMarginBottom
+													__next40pxDefaultSize
 												/>
 											</li>
 										) }
@@ -362,6 +337,7 @@ const SingleCurrencySettings = () => {
 														],
 												} ) ) }
 												__nextHasNoMarginBottom
+												__next40pxDefaultSize
 											/>
 										</li>
 										<li>
@@ -402,6 +378,7 @@ const SingleCurrencySettings = () => {
 														],
 												} ) ) }
 												__nextHasNoMarginBottom
+												__next40pxDefaultSize
 											/>
 										</li>
 									</ul>
@@ -432,6 +409,7 @@ const SingleCurrencySettings = () => {
 						isBusy={ isSaving }
 						disabled={ isSaving || ! isDirty }
 						onClick={ saveSingleCurrencySettings }
+						__next40pxDefaultSize
 					>
 						{ __( 'Save changes', 'woocommerce-payments' ) }
 					</Button>

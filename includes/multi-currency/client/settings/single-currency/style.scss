@@ -35,42 +35,6 @@
 						&:last-child {
 							margin: 0;
 						}
-
-						.single-currency-settings-radio-wrapper {
-							display: flex;
-							align-items: center;
-							height: 20px;
-						}
-
-						input[type='radio'] {
-							margin: 0 10px 0 0;
-							width: 20px;
-							height: 20px;
-							border-color: #000;
-
-							&:checked {
-								background-color: #3582c4;
-								border-color: #3582c4;
-
-								&::before {
-									content: '';
-									border-radius: 50%;
-									width: 8px;
-									height: 8px;
-									margin: 5px;
-									background-color: #fff;
-									line-height: 1.14285714;
-								}
-							}
-						}
-
-						.single-currency-settings-radio__help {
-							margin: 0;
-							font-size: 13px;
-							line-height: 16px;
-							color: #7e7e7e;
-							padding-left: 30px;
-						}
 					}
 				}
 			}
