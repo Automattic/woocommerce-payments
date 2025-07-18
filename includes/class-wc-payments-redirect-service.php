@@ -130,7 +130,7 @@ class WC_Payments_Redirect_Service {
 	 */
 	public function redirect_to_nox_flow( ?string $from = null, ?string $source = null ): void {
 		// If the WC Admin version is less than 9.5, redirect to the Connect page instead.
-		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '9.5', '<' ) ) {
+		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '9.9.3', '<' ) ) {
 			$this->redirect_to_connect_page( null, $from, [ 'source' => $source ] );
 		}
 
