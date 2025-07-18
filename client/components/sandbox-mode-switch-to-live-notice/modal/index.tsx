@@ -3,7 +3,7 @@
  */
 import React, { useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-import { addQueryArgs } from '@wordpress/url';
+import { getConnectUrl } from 'utils';
 import { Button, Modal } from 'wcpay/components/wp-components-wrapped';
 import { Icon, currencyDollar } from '@wordpress/icons';
 
@@ -35,11 +35,10 @@ const SetupLivePaymentsModal: React.FC< Props > = ( {
 			source,
 		} );
 
-		window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
-			'wcpay-disable-onboarding-test-mode': 'true',
+		window.location.href = getConnectUrl(
 			from,
-			source: 'wcpay-setup-live-payments', // Overwrite any existing source because we are starting over.
-		} );
+			'wcpay-setup-live-payments'
+		);
 	};
 
 	const trackAndClose = () => {
