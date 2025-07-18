@@ -95,44 +95,30 @@ const buttonActionOptions = [
 	},
 ];
 
-const makeButtonThemeText = ( string ) =>
-	interpolateComponents( {
-		mixedString: string,
-		components: {
-			br: <br />,
-			helpText: (
-				<span className="payment-method-settings__option-help-text" />
-			),
-		},
-	} );
-
 const buttonThemeOptions = [
 	{
-		label: makeButtonThemeText(
-			__(
-				'Dark {{br/}}{{helpText}}Recommended for white or light-colored backgrounds with high contrast.{{/helpText}}',
-				'woocommerce-payments'
-			)
-		),
+		label: __( 'Dark', 'woocommerce-payments' ),
 		value: 'dark',
+		description: __(
+			'Recommended for white or light-colored backgrounds with high contrast.',
+			'woocommerce-payments'
+		),
 	},
 	{
-		label: makeButtonThemeText(
-			__(
-				'Light {{br/}}{{helpText}}Recommended for dark or colored backgrounds with high contrast.{{/helpText}}',
-				'woocommerce-payments'
-			)
-		),
+		label: __( 'Light', 'woocommerce-payments' ),
 		value: 'light',
+		description: __(
+			'Recommended for dark or colored backgrounds with high contrast.',
+			'woocommerce-payments'
+		),
 	},
 	{
-		label: makeButtonThemeText(
-			__(
-				'Outline {{br/}}{{helpText}}Recommended for white or light-colored backgrounds with insufficient contrast.{{/helpText}}',
-				'woocommerce-payments'
-			)
-		),
+		label: __( 'Outline', 'woocommerce-payments' ),
 		value: 'light-outline',
+		description: __(
+			'Recommended for white or light-colored backgrounds with insufficient contrast.',
+			'woocommerce-payments'
+		),
 	},
 ];
 
@@ -194,7 +180,6 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 					</InlineNotice>
 				</>
 			) }
-			<h4>{ __( 'Call to action', 'woocommerce-payments' ) }</h4>
 			<SelectControl
 				className="payment-method-settings__cta-selection"
 				label={ __( 'Call to action', 'woocommerce-payments' ) }
@@ -202,21 +187,20 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 					'Select a button label that fits best with the flow of purchase or payment experience on your store.',
 					'woocommerce-payments'
 				) }
-				hideLabelFromVision
 				value={ buttonType }
 				options={ buttonActionOptions }
 				onChange={ setButtonType }
 				__nextHasNoMarginBottom
 				__next40pxDefaultSize
 			/>
-			<h4>{ __( 'Button size', 'woocommerce-payments' ) }</h4>
 			<RadioControl
+				label={ __( 'Button size', 'woocommerce-payments' ) }
 				selected={ size }
 				options={ buttonSizeOptions }
 				onChange={ setSize }
 			/>
-			<h4>{ __( 'Theme', 'woocommerce-payments' ) }</h4>
 			<RadioControl
+				label={ __( 'Theme', 'woocommerce-payments' ) }
 				selected={ theme }
 				options={ buttonThemeOptions }
 				onChange={ setTheme }

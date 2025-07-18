@@ -9,7 +9,11 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import CardBody from '../card-body';
-import { Card, CheckboxControl } from 'wcpay/components/wp-components-wrapped';
+import {
+	Card,
+	CheckboxControl,
+	BaseControl,
+} from 'wcpay/components/wp-components-wrapped';
 import GeneralPaymentRequestButtonSettings from './general-payment-request-button-settings';
 import {
 	usePaymentRequestEnabledSettings,
@@ -60,67 +64,75 @@ const PaymentRequestSettings = ( { section } ) => {
 						) }
 						__nextHasNoMarginBottom
 					/>
-					<h4>
-						{ __(
+					<BaseControl
+						__next40pxDefaultSize
+						__nextHasNoMarginBottom
+						label={ __(
 							'Enable Apple Pay and Google Pay on selected pages',
 							'woocommerce-payments'
 						) }
-					</h4>
-					<ul className="payment-request-settings__location">
-						<li>
-							<CheckboxControl
-								disabled={ ! isPaymentRequestEnabled }
-								checked={
-									isPaymentRequestEnabled &&
-									paymentRequestLocations.includes(
+						id="wcpay-payment-request-settings-location"
+					>
+						<ul className="payment-request-settings__location">
+							<li>
+								<CheckboxControl
+									disabled={ ! isPaymentRequestEnabled }
+									checked={
+										isPaymentRequestEnabled &&
+										paymentRequestLocations.includes(
+											'checkout'
+										)
+									}
+									onChange={ makeLocationChangeHandler(
 										'checkout'
-									)
-								}
-								onChange={ makeLocationChangeHandler(
-									'checkout'
-								) }
-								label={ __(
-									'Checkout Page',
-									'woocommerce-payments'
-								) }
-								__nextHasNoMarginBottom
-							/>
-						</li>
-						<li>
-							<CheckboxControl
-								disabled={ ! isPaymentRequestEnabled }
-								checked={
-									isPaymentRequestEnabled &&
-									paymentRequestLocations.includes(
+									) }
+									label={ __(
+										'Checkout Page',
+										'woocommerce-payments'
+									) }
+									__nextHasNoMarginBottom
+								/>
+							</li>
+							<li>
+								<CheckboxControl
+									disabled={ ! isPaymentRequestEnabled }
+									checked={
+										isPaymentRequestEnabled &&
+										paymentRequestLocations.includes(
+											'product'
+										)
+									}
+									onChange={ makeLocationChangeHandler(
 										'product'
-									)
-								}
-								onChange={ makeLocationChangeHandler(
-									'product'
-								) }
-								label={ __(
-									'Product Page',
-									'woocommerce-payments'
-								) }
-								__nextHasNoMarginBottom
-							/>
-						</li>
-						<li>
-							<CheckboxControl
-								disabled={ ! isPaymentRequestEnabled }
-								checked={
-									isPaymentRequestEnabled &&
-									paymentRequestLocations.includes( 'cart' )
-								}
-								onChange={ makeLocationChangeHandler( 'cart' ) }
-								label={ __(
-									'Cart Page',
-									'woocommerce-payments'
-								) }
-								__nextHasNoMarginBottom
-							/>
-						</li>
-					</ul>
+									) }
+									label={ __(
+										'Product Page',
+										'woocommerce-payments'
+									) }
+									__nextHasNoMarginBottom
+								/>
+							</li>
+							<li>
+								<CheckboxControl
+									disabled={ ! isPaymentRequestEnabled }
+									checked={
+										isPaymentRequestEnabled &&
+										paymentRequestLocations.includes(
+											'cart'
+										)
+									}
+									onChange={ makeLocationChangeHandler(
+										'cart'
+									) }
+									label={ __(
+										'Cart Page',
+										'woocommerce-payments'
+									) }
+									__nextHasNoMarginBottom
+								/>
+							</li>
+						</ul>
+					</BaseControl>
 				</CardBody>
 			) }
 
