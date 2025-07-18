@@ -64,6 +64,7 @@ const PaymentRequestSettings = ( { section } ) => {
 						) }
 						__nextHasNoMarginBottom
 					/>
+					{ /* eslint-disable-next-line @wordpress/no-base-control-with-label-without-id */ }
 					<BaseControl
 						__next40pxDefaultSize
 						__nextHasNoMarginBottom
@@ -71,7 +72,6 @@ const PaymentRequestSettings = ( { section } ) => {
 							'Enable Apple Pay and Google Pay on selected pages',
 							'woocommerce-payments'
 						) }
-						id="wcpay-payment-request-settings-location"
 					>
 						<ul className="payment-request-settings__location">
 							<li>

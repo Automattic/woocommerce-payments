@@ -261,16 +261,22 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 					/>
 				</div>
 			</BaseControl>
-			<h4>{ __( 'Preview', 'woocommerce-payments' ) }</h4>
-			<div className="payment-method-settings__option-help-text">
-				{ __(
-					'See the preview of enabled express payment buttons.',
-					'woocommerce-payments'
-				) }
-			</div>
-			<Elements stripe={ stripePromise }>
-				<PaymentRequestButtonPreview />
-			</Elements>
+			{ /* eslint-disable-next-line @wordpress/no-base-control-with-label-without-id */ }
+			<BaseControl
+				label={ __( 'Preview', 'woocommerce-payments' ) }
+				__next40pxDefaultSize
+				__nextHasNoMarginBottom
+			>
+				<div className="payment-method-settings__option-help-text">
+					{ __(
+						'See the preview of enabled express payment buttons.',
+						'woocommerce-payments'
+					) }
+				</div>
+				<Elements stripe={ stripePromise }>
+					<PaymentRequestButtonPreview />
+				</Elements>
+			</BaseControl>
 		</CardBody>
 	);
 };

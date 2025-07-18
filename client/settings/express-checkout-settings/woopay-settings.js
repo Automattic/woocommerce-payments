@@ -133,63 +133,69 @@ const WooPaySettings = ( { section } ) => {
 						}
 						__nextHasNoMarginBottom
 					/>
-					<h4>
-						{ __(
+					{ /* eslint-disable-next-line @wordpress/no-base-control-with-label-without-id */ }
+					<BaseControl
+						__next40pxDefaultSize
+						__nextHasNoMarginBottom
+						label={ __(
 							'Enable WooPay button on selected pages',
 							'woocommerce-payments'
 						) }
-					</h4>
-					<ul className="payment-request-settings__location">
-						<li>
-							<CheckboxControl
-								disabled={ ! isWooPayEnabled }
-								checked={
-									isWooPayEnabled &&
-									woopayLocations.includes( 'checkout' )
-								}
-								onChange={ makeLocationChangeHandler(
-									'checkout'
-								) }
-								label={ __(
-									'Checkout Page',
-									'woocommerce-payments'
-								) }
-								__nextHasNoMarginBottom
-							/>
-						</li>
-						<li>
-							<CheckboxControl
-								disabled={ ! isWooPayEnabled }
-								checked={
-									isWooPayEnabled &&
-									woopayLocations.includes( 'product' )
-								}
-								onChange={ makeLocationChangeHandler(
-									'product'
-								) }
-								label={ __(
-									'Product Page',
-									'woocommerce-payments'
-								) }
-								__nextHasNoMarginBottom
-							/>
-						</li>
-						<li>
-							<CheckboxControl
-								disabled={ ! isWooPayEnabled }
-								checked={
-									isWooPayEnabled &&
-									woopayLocations.includes( 'cart' )
-								}
-								onChange={ makeLocationChangeHandler( 'cart' ) }
-								label={ __(
-									'Cart Page',
-									'woocommerce-payments'
-								) }
-								__nextHasNoMarginBottom
-							/>
-						</li>
-					</ul>
+					>
+						<ul className="payment-request-settings__location">
+							<li>
+								<CheckboxControl
+									disabled={ ! isWooPayEnabled }
+									checked={
+										isWooPayEnabled &&
+										woopayLocations.includes( 'checkout' )
+									}
+									onChange={ makeLocationChangeHandler(
+										'checkout'
+									) }
+									label={ __(
+										'Checkout Page',
+										'woocommerce-payments'
+									) }
+									__nextHasNoMarginBottom
+								/>
+							</li>
+							<li>
+								<CheckboxControl
+									disabled={ ! isWooPayEnabled }
+									checked={
+										isWooPayEnabled &&
+										woopayLocations.includes( 'product' )
+									}
+									onChange={ makeLocationChangeHandler(
+										'product'
+									) }
+									label={ __(
+										'Product Page',
+										'woocommerce-payments'
+									) }
+									__nextHasNoMarginBottom
+								/>
+							</li>
+							<li>
+								<CheckboxControl
+									disabled={ ! isWooPayEnabled }
+									checked={
+										isWooPayEnabled &&
+										woopayLocations.includes( 'cart' )
+									}
+									onChange={ makeLocationChangeHandler(
+										'cart'
+									) }
+									label={ __(
+										'Cart Page',
+										'woocommerce-payments'
+									) }
+									__nextHasNoMarginBottom
+								/>
+							</li>
+						</ul>
+					</BaseControl>
 				</CardBody>
 			) }
 

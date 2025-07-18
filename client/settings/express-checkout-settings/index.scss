@@ -22,10 +22,6 @@
 		padding: 16px;
 	}
 
-	&__preview-help-text {
-		font-style: italic;
-	}
-
 	&__icons {
 		display: flex;
 		align-items: flex-start;
@@ -260,24 +256,21 @@
 	}
 }
 
+.wcpay-express-checkout__enable {
+	.payment-request-settings__location {
+		margin: 0;
+	}
+}
+
 .woopay-settings--appearance {
 	background-color: #0000 !important;
 	box-shadow: none !important;
 }
 
-.payment-request-settings {
-	&__location {
-		margin-bottom: 26px;
-	}
-}
-
 .payment-method-settings {
 	&__option-help-text {
 		color: #757575;
-	}
-
-	&__preview-help-text {
-		color: #757575;
+		margin-bottom: 1em;
 	}
 
 	&__preview {
