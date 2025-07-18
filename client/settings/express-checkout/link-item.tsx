@@ -3,15 +3,13 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import {
-	Button,
-	CheckboxControl,
-} from 'wcpay/components/wp-components-wrapped';
 import interpolateComponents from '@automattic/interpolate-components';
 
 /**
  * Internal dependencies
  */
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
+import { CheckboxControl } from 'wcpay/components/wp-components-wrapped/components/checkbox-control';
 import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
