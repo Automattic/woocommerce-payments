@@ -60,17 +60,6 @@
 		display: inline-flex;
 		align-items: center;
 	}
-	&__custom-message-wrapper {
-		position: relative;
-
-		.components-base-control__field .components-text-control__input {
-			padding-right: 70px;
-		}
-
-		.components-textarea-control__input {
-			font-size: 0.8125rem;
-		}
-	}
 
 	&__update-store-logo {
 		display: flex;

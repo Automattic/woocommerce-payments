@@ -16,6 +16,7 @@ import {
 	CheckboxControl,
 	TextareaControl,
 	ExternalLink,
+	BaseControl,
 } from 'wcpay/components/wp-components-wrapped';
 import CardBody from '../card-body';
 import WooPayFileUpload from './file-upload';
@@ -194,26 +195,21 @@ const WooPaySettings = ( { section } ) => {
 
 			{ section === 'appearance' && (
 				<CardBody className="wcpay-card-body woopay-settings__appearance-card-settings">
-					<div className="woopay-settings__custom-message-wrapper">
-						<WooPayFileUpload
-							fieldKey="woopay-store-logo"
-							label={ __(
-								'Checkout logo',
-								'woocommerce-payments'
-							) }
-							accept="image/png, image/jpeg"
-							disabled={ false }
-							help={ __(
-								'Upload a custom logo. Upload a horizontal image with a white' +
-									' or transparent background for best results. Use a PNG or JPG' +
-									' image format. Recommended width: 512 pixels minimum.',
-								'woocommerce-payments'
-							) }
-							purpose="business_logo"
-							fileID={ woopayStoreLogo }
-							updateFileID={ setWooPayStoreLogo }
-						/>
-					</div>
+					<WooPayFileUpload
+						fieldKey="woopay-store-logo"
+						label={ __( 'Checkout logo', 'woocommerce-payments' ) }
+						accept="image/png, image/jpeg"
+						disabled={ false }
+						help={ __(
+							'Upload a custom logo. Upload a horizontal image with a white' +
+								' or transparent background for best results. Use a PNG or JPG' +
+								' image format. Recommended width: 512 pixels minimum.',
+							'woocommerce-payments'
+						) }
+						purpose="business_logo"
+						fileID={ woopayStoreLogo }
+						updateFileID={ setWooPayStoreLogo }
+					/>
 					{ wcpaySettings.isWooPayGlobalThemeSupportEligible && (
 						<div className="woopay-global-theme-support">
 							<h4>
@@ -265,21 +261,20 @@ const WooPaySettings = ( { section } ) => {
 							</div>
 						</div>
 					) }
-					<div className="woopay-settings__custom-message-wrapper">
-						<TextareaControl
-							label={ __(
-								'Checkout policies',
+					<TextareaControl
+						label={ __(
+							'Checkout policies',
+							'woocommerce-payments'
+						) }
+						help={ interpolateComponents( {
+							mixedString: __(
+								'Override the default {{privacyLink}}privacy policy{{/privacyLink}}' +
+									' and {{termsLink}}terms of service{{/termsLink}},' +
+									' or add custom text to WooPay checkout. {{learnMoreLink}}Learn more{{/learnMoreLink}}.',
 								'woocommerce-payments'
-							) }
-							help={ interpolateComponents( {
-								mixedString: __(
-									'Override the default {{privacyLink}}privacy policy{{/privacyLink}}' +
-										' and {{termsLink}}terms of service{{/termsLink}},' +
-										' or add custom text to WooPay checkout. {{learnMoreLink}}Learn more{{/learnMoreLink}}.',
-									'woocommerce-payments'
-								),
-								// prettier-ignore
-								components: {
+							),
+							// prettier-ignore
+							components: {
 									/* eslint-disable prettier/prettier */
 									privacyLink: window.wcSettings?.storePages?.privacy?.permalink ?
 										<Link href={ window.wcSettings.storePages.privacy.permalink } type="external" /> :
@@ -293,30 +288,25 @@ const WooPaySettings = ( { section } ) => {
 										<ExternalLink href="https://woocommerce.com/document/woopay-merchant-documentation/#checkout-appearance" />
 									),
 								}
-							} ) }
-							value={ woopayCustomMessage }
-							onChange={ setWooPayCustomMessage }
-							__nextHasNoMarginBottom
-						/>
-					</div>
-				</CardBody>
-			) }
-
-			{ section === 'appearance' && (
-				<CardBody className="wcpay-card-body woopay-settings__appearance-card-preview">
-					<div className="woopay-settings__preview">
-						<h4>
-							{ __(
-								'Preview of checkout',
-								'woocommerce-payments'
-							) }
-						</h4>
+						} ) }
+						value={ woopayCustomMessage }
+						onChange={ setWooPayCustomMessage }
+						__nextHasNoMarginBottom
+					/>
+					{ /* eslint-disable-next-line @wordpress/no-base-control-with-label-without-id */ }
+					<BaseControl
+						className="woopay-settings__preview"
+						label={ __(
+							'Preview of checkout',
+							'woocommerce-payments'
+						) }
+					>
 						<WooPayPreview
 							storeName={ wcSettings.siteTitle }
 							storeLogo={ woopayStoreLogo }
 							customMessage={ woopayCustomMessage }
 						/>
-					</div>
+					</BaseControl>
 				</CardBody>
 			) }
 
