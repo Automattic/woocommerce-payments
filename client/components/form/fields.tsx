@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React, { ComponentProps, forwardRef } from 'react';
-import { TextControl } from 'wcpay/components/wp-components-wrapped';
+import { TextControl } from 'wcpay/components/wp-components-wrapped/components/text-control';
 import clsx from 'clsx';
 
 /**

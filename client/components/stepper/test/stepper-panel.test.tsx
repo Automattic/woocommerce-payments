@@ -10,7 +10,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { StepperPanel } from '../stepper-panel';
 
 // Mock the Icon component to avoid dependency on WordPress icons
-jest.mock( 'wcpay/components/wp-components-wrapped', () => ( {
+jest.mock( 'wcpay/components/wp-components-wrapped/components/icon', () => ( {
 	Icon: ( { size }: { size: number } ) => (
 		<span data-testid="mock-icon">icon-{ size }</span>
 	),

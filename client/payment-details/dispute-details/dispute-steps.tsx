@@ -6,7 +6,8 @@
 import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
-import { Icon, Button } from 'wcpay/components/wp-components-wrapped';
+import { Icon } from 'wcpay/components/wp-components-wrapped/components/icon';
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 import { envelope, comment, page } from '@wordpress/icons';
 
 /**

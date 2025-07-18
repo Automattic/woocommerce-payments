@@ -7,7 +7,7 @@ import React from 'react';
 import { recordEvent } from 'tracks';
 import { _n, __, sprintf } from '@wordpress/i18n';
 import moment from 'moment';
-import { Button } from 'wcpay/components/wp-components-wrapped';
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 import { TableCard, Link } from '@woocommerce/components';
 import { onQueryChange, getQuery, getHistory } from '@woocommerce/navigation';
 import clsx from 'clsx';

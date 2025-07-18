@@ -10,26 +10,29 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import RecommendedDocuments from '../recommended-documents';
 
 // Mock FormFileUpload to directly render an input for testing
-jest.mock( 'wcpay/components/wp-components-wrapped', () => {
-	const original = jest.requireActual(
-		'wcpay/components/wp-components-wrapped'
-	);
-	return {
-		...original,
-		FormFileUpload: ( { onChange, render: renderProp }: any ) => (
-			<>
-				<input
-					aria-label="Upload file"
-					type="file"
-					onChange={ onChange }
-					data-testid="mock-upload-input"
-				/>
-				{ /* eslint-disable-next-line @typescript-eslint/no-empty-function */ }
-				{ renderProp( { openFileDialog: () => {} } ) }
-			</>
-		),
-	};
-} );
+jest.mock(
+	'wcpay/components/wp-components-wrapped/components/form-file-upload',
+	() => {
+		const original = jest.requireActual(
+			'wcpay/components/wp-components-wrapped/components/form-file-upload'
+		);
+		return {
+			...original,
+			FormFileUpload: ( { onChange, render: renderProp }: any ) => (
+				<>
+					<input
+						aria-label="Upload file"
+						type="file"
+						onChange={ onChange }
+						data-testid="mock-upload-input"
+					/>
+					{ /* eslint-disable-next-line @typescript-eslint/no-empty-function */ }
+					{ renderProp( { openFileDialog: () => {} } ) }
+				</>
+			),
+		};
+	}
+);
 
 describe( 'RecommendedDocuments', () => {
 	const fields = [

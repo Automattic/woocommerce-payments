@@ -1,7 +1,8 @@
 /**
  * External dependencies
  */
-import { TextControl, Notice } from 'wcpay/components/wp-components-wrapped';
+import { TextControl } from 'wcpay/components/wp-components-wrapped/components/text-control';
+import { Notice } from 'wcpay/components/wp-components-wrapped/components/notice';
 import { __ } from '@wordpress/i18n';
 
 /**
