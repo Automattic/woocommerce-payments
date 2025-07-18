@@ -3,7 +3,7 @@
  */
 import React, { useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-import { getConnectUrl } from 'utils';
+import { getAdminUrl } from 'utils';
 import { Button, Modal } from 'wcpay/components/wp-components-wrapped';
 import { Icon, currencyDollar } from '@wordpress/icons';
 
@@ -35,10 +35,13 @@ const SetupLivePaymentsModal: React.FC< Props > = ( {
 			source,
 		} );
 
-		window.location.href = getConnectUrl(
-			from,
-			'wcpay-setup-live-payments'
-		);
+		window.location.href = getAdminUrl( {
+			page: 'wc-settings',
+			tab: 'checkout',
+			path: '/woopayments/onboarding',
+			source: 'wcpay-setup-live-payments',
+			from: from,
+		} );
 	};
 
 	const trackAndClose = () => {
