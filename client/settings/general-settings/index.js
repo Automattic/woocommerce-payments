@@ -1,8 +1,8 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
-import { __, sprintf } from '@wordpress/i18n';
+import React, { useState, useEffect } from 'react';
+import { __ } from '@wordpress/i18n';
 import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
 import { CheckboxControl } from 'wcpay/components/wp-components-wrapped/components/checkbox-control';
 import interpolateComponents from '@automattic/interpolate-components';
@@ -12,7 +12,6 @@ import interpolateComponents from '@automattic/interpolate-components';
  */
 import { useTestMode, useTestModeOnboarding } from 'wcpay/data';
 import CardBody from '../card-body';
-import InlineNotice from 'wcpay/components/inline-notice';
 import SetupLivePaymentsModal from 'wcpay/components/sandbox-mode-switch-to-live-notice/modal';
 import TestModeConfirmationModal from './test-mode-confirm-modal';
 import EnableWooPaymentsCheckbox from './enable-woopayments-checkbox';
@@ -23,6 +22,28 @@ const GeneralSettings = () => {
 	const [ modalVisible, setModalVisible ] = useState( false );
 	const isTestModeOnboarding = useTestModeOnboarding();
 	const [ testModeModalVisible, setTestModeModalVisible ] = useState( false );
+
+	useEffect( () => {
+		const handleActivatePayments = () => {
+			recordEvent( 'wcpay_settings_setup_live_payments_click', {
+				source: 'wcadmin-settings-page',
+			} );
+
+			setModalVisible( true );
+		};
+
+		document.addEventListener(
+			'wcpay:activate_payments',
+			handleActivatePayments
+		);
+
+		return () => {
+			document.removeEventListener(
+				'wcpay:activate_payments',
+				handleActivatePayments
+			);
+		};
+	}, [] );
 
 	return (
 		<>
@@ -83,58 +104,6 @@ const GeneralSettings = () => {
 								__nextHasNoMarginBottom
 							/>
 						</>
-					) }
-					{ isTestModeOnboarding && (
-						<InlineNotice
-							status="warning"
-							isDismissible={ false }
-							actions={ [
-								{
-									label: __(
-										'Set up payments',
-										'woocommerce-payments'
-									),
-									variant: 'secondary',
-									onClick: () => {
-										recordEvent(
-											'wcpay_settings_setup_live_payments_click',
-											{
-												source: 'wcadmin-settings-page',
-											}
-										);
-
-										setModalVisible( true );
-									},
-								},
-							] }
-							className="wcpay-general-settings__notice"
-						>
-							<span>
-								{ interpolateComponents( {
-									mixedString: sprintf(
-										/* translators: %s: WooPayments */
-										__(
-											'{{b}}%1$s is in sandbox mode.{{/b}} You need to set up a live %1$s account before ' +
-												'you can accept real transactions. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
-											'woocommerce-payments'
-										),
-										'WooPayments'
-									),
-									components: {
-										b: <b />,
-										learnMoreLink: (
-											// eslint-disable-next-line jsx-a11y/anchor-has-content
-											<a
-												target="_blank"
-												rel="noreferrer"
-												// eslint-disable-next-line max-len
-												href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/"
-											/>
-										),
-									},
-								} ) }
-							</span>
-						</InlineNotice>
 					) }
 				</CardBody>
 			</Card>
