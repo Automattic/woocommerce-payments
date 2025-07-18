@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React from 'react';
-import { Modal } from 'wcpay/components/wp-components-wrapped';
+import { Modal } from 'wcpay/components/wp-components-wrapped/components/modal';
 import { __ } from '@wordpress/i18n';
 
 /**

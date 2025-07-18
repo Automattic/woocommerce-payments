@@ -9,11 +9,9 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import CardBody from '../card-body';
-import {
-	Card,
-	CheckboxControl,
-	BaseControl,
-} from 'wcpay/components/wp-components-wrapped';
+import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
+import { CheckboxControl } from 'wcpay/components/wp-components-wrapped/components/checkbox-control';
+import { BaseControl } from 'wcpay/components/wp-components-wrapped/components/base-control';
 import GeneralPaymentRequestButtonSettings from './general-payment-request-button-settings';
 import {
 	usePaymentRequestEnabledSettings,

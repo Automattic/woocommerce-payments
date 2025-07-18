@@ -3,11 +3,6 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import {
-	Button,
-	DropZone,
-	FormFileUpload,
-} from 'wcpay/components/wp-components-wrapped';
 import CheckmarkIcon from 'gridicons/dist/checkmark';
 import ImageIcon from 'gridicons/dist/image';
 import AddOutlineIcon from 'gridicons/dist/add-outline';
@@ -16,6 +11,10 @@ import TrashIcon from 'gridicons/dist/trash';
 /**
  * Internal dependencies.
  */
+import { BaseControl } from 'wcpay/components/wp-components-wrapped/components/base-control';
+import { DropZone } from 'wcpay/components/wp-components-wrapped/components/drop-zone';
+import { FormFileUpload } from 'wcpay/components/wp-components-wrapped/components/form-file-upload';
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 import FileUploadError from './upload-error';
 import FileUploadPreview from './preview';
 

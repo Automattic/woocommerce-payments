@@ -7,7 +7,7 @@ import React from 'react';
  * Internal dependencies
  */
 import './styles.scss';
-import { CardFooter } from 'wcpay/components/wp-components-wrapped';
+import { CardFooter } from 'wcpay/components/wp-components-wrapped/components/card-footer';
 
 interface CardNoticeProps {
 	children: React.ReactNode;

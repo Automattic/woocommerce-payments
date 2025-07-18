@@ -4,16 +4,14 @@
 import React, { useContext } from 'react';
 import { select } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
-import {
-	Card,
-	SelectControl,
-	ExternalLink,
-} from 'wcpay/components/wp-components-wrapped';
 import interpolateComponents from '@automattic/interpolate-components';
 
 /**
  * Internal dependencies
  */
+import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
+import { SelectControl } from 'wcpay/components/wp-components-wrapped/components/select-control';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
 import { STORE_NAME } from 'wcpay/data/constants';
 import { getDepositMonthlyAnchorLabel } from 'wcpay/deposits/utils';
 import WCPaySettingsContext from '../wcpay-settings-context';
