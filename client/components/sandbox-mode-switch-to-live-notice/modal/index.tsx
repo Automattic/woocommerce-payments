@@ -4,7 +4,8 @@
 import React, { useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
-import { Button, Modal } from 'wcpay/components/wp-components-wrapped';
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
+import { Modal } from 'wcpay/components/wp-components-wrapped/components/modal';
 import { Icon, currencyDollar } from '@wordpress/icons';
 
 /**

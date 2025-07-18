@@ -7,7 +7,7 @@ import { check } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
-import { Icon } from 'wcpay/components/wp-components-wrapped';
+import { Icon } from 'wcpay/components/wp-components-wrapped/components/icon';
 import './style.scss';
 import clsx from 'clsx';
 

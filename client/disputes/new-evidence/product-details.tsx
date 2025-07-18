@@ -7,10 +7,8 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import {
-	SelectControl,
-	TextareaControl,
-} from 'wcpay/components/wp-components-wrapped';
+import { SelectControl } from 'wcpay/components/wp-components-wrapped/components/select-control';
+import { TextareaControl } from 'wcpay/components/wp-components-wrapped/components/textarea-control';
 
 interface ProductDetailsProps {
 	productType: string;

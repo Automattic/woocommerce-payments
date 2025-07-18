@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React, { useState } from 'react';
-import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
 import { addQueryArgs } from '@wordpress/url';
 
 /**

@@ -11,7 +11,7 @@ import { useState } from '@wordpress/element';
  * Internal dependencies
  */
 import './style.scss';
-import { Button } from 'wcpay/components/wp-components-wrapped';
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 import { formatCurrency } from 'multi-currency/interface/functions';
 import InstantPayoutModal from './modal';
 import { useInstantDeposit } from 'wcpay/data';

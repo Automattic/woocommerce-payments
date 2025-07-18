@@ -4,7 +4,8 @@
  * External dependencies
  */
 import React from 'react';
-import { Button, ExternalLink } from 'wcpay/components/wp-components-wrapped';
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
 import { __ } from '@wordpress/i18n';
 
 /**

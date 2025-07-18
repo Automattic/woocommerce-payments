@@ -2,13 +2,6 @@
  * External dependencies
  */
 import React from 'react';
-import {
-	CardBody,
-	CardDivider,
-	Flex,
-	FlexItem,
-	Icon,
-} from 'wcpay/components/wp-components-wrapped';
 import { calendar } from '@wordpress/icons';
 import { Link } from '@woocommerce/components';
 import { __ } from '@wordpress/i18n';
@@ -16,6 +9,11 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies.
  */
+import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
+import { CardDivider } from 'wcpay/components/wp-components-wrapped/components/card-divider';
+import { Flex } from 'wcpay/components/wp-components-wrapped/components/flex';
+import { FlexItem } from 'wcpay/components/wp-components-wrapped/components/flex-item';
+import { Icon } from 'wcpay/components/wp-components-wrapped/components/icon';
 import './style.scss';
 import DepositStatusChip from 'components/deposit-status-chip';
 import { getDepositDate } from 'deposits/utils';

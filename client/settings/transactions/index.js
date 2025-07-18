@@ -2,16 +2,14 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import {
-	Card,
-	CheckboxControl,
-	Notice,
-	TextControl,
-} from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies
  */
+import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
+import { CheckboxControl } from 'wcpay/components/wp-components-wrapped/components/checkbox-control';
+import { Notice } from 'wcpay/components/wp-components-wrapped/components/notice';
+import { TextControl } from 'wcpay/components/wp-components-wrapped/components/text-control';
 import CardBody from '../card-body';
 import {
 	useAccountStatementDescriptor,

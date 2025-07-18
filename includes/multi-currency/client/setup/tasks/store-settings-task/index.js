@@ -2,16 +2,18 @@
  * External dependencies
  */
 import React, { useContext, useState, useEffect } from 'react';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
-import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
-import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
-import { CheckboxControl } from 'wcpay/components/wp-components-wrapped/components/checkbox-control';
 import { __ } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 
 /**
  * Internal dependencies
  */
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
+import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
+import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
+import { CheckboxControl } from 'wcpay/components/wp-components-wrapped/components/checkbox-control';
+import { Flex } from 'wcpay/components/wp-components-wrapped/components/flex';
+import { FlexItem } from 'wcpay/components/wp-components-wrapped/components/flex-item';
 import {
 	CollapsibleBody,
 	WizardTaskItem,
@@ -20,7 +22,6 @@ import { WizardTaskContext } from 'multi-currency/interface/functions';
 import { useSettings, useMultiCurrency } from 'multi-currency/interface/data';
 import PreviewModal from 'multi-currency/components/preview-modal';
 import './index.scss';
-
 import { useStoreSettings } from 'multi-currency/data';
 
 const StoreSettingsTask = () => {
@@ -118,44 +119,51 @@ const StoreSettingsTask = () => {
 				</p>
 				<Card className="multi-currency-settings-task__wrapper">
 					<CardBody>
-						<CheckboxControl
-							checked={ isAutomaticSwitchEnabledValue }
-							onChange={ handleIsAutomaticSwitchEnabledClick }
-							data-testid={ 'enable_auto_currency' }
-							label={ __(
-								'Automatically switch customers to their local currency if it has been enabled',
-								'woocommerce-payments'
-							) }
-							__nextHasNoMarginBottom
-						/>
-						<div className="multi-currency-settings-task__description">
-							{ __(
-								'Customers will be notified via store alert banner.',
-								'woocommerce-payments'
-							) }
-						</div>
-						{ storeSettings.site_theme === 'Storefront' ? (
-							<>
+						{ /* gap 4 = 16px */ }
+						<Flex direction="column" gap={ 4 }>
+							<FlexItem>
 								<CheckboxControl
-									checked={ isStorefrontSwitcherEnabledValue }
+									checked={ isAutomaticSwitchEnabledValue }
 									onChange={
-										handleIsStorefrontSwitcherEnabledClick
+										handleIsAutomaticSwitchEnabledClick
 									}
-									data-testid={ 'enable_storefront_switcher' }
+									data-testid={ 'enable_auto_currency' }
 									label={ __(
-										'Add a currency switcher to the Storefront theme on breadcrumb section.',
+										'Automatically switch customers to their local currency if it has been enabled',
+										'woocommerce-payments'
+									) }
+									help={ __(
+										'Customers will be notified via store alert banner.',
 										'woocommerce-payments'
 									) }
 									__nextHasNoMarginBottom
 								/>
-								<div className="multi-currency-settings-task__description">
-									{ __(
-										'A currency switcher is also available in your widgets.',
-										'woocommerce-payments'
-									) }
-								</div>
-							</>
-						) : null }
+							</FlexItem>
+							{ storeSettings.site_theme === 'Storefront' ? (
+								<FlexItem>
+									<CheckboxControl
+										checked={
+											isStorefrontSwitcherEnabledValue
+										}
+										onChange={
+											handleIsStorefrontSwitcherEnabledClick
+										}
+										data-testid={
+											'enable_storefront_switcher'
+										}
+										label={ __(
+											'Add a currency switcher to the Storefront theme on breadcrumb section.',
+											'woocommerce-payments'
+										) }
+										help={ __(
+											'A currency switcher is also available in your widgets.',
+											'woocommerce-payments'
+										) }
+										__nextHasNoMarginBottom
+									/>
+								</FlexItem>
+							) : null }
+						</Flex>
 					</CardBody>
 				</Card>
 				<Button
@@ -163,6 +171,7 @@ const StoreSettingsTask = () => {
 					disabled={ isPending || isSaving }
 					onClick={ handleContinueClick }
 					variant="primary"
+					__next40pxDefaultSize
 				>
 					{ __( 'Continue', 'woocommerce-payments' ) }
 				</Button>
@@ -172,6 +181,7 @@ const StoreSettingsTask = () => {
 					onClick={ handlePreviewModalOpenClick }
 					className="multi-currency-setup-preview-button"
 					variant="tertiary"
+					__next40pxDefaultSize
 				>
 					{ __( 'Preview', 'woocommerce-payments' ) }
 				</Button>
