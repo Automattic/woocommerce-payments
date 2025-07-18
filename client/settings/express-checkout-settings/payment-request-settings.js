@@ -44,7 +44,7 @@ const PaymentRequestSettings = ( { section } ) => {
 	return (
 		<Card>
 			{ section === 'enable' && (
-				<CardBody>
+				<CardBody className="wcpay-card-body">
 					<GooglePayTestModeCompatibilityNotice />
 					<CheckboxControl
 						checked={ isPaymentRequestEnabled }
@@ -58,6 +58,7 @@ const PaymentRequestSettings = ( { section } ) => {
 								'will be able to pay with their respective choice of Wallet.',
 							'woocommerce-payments'
 						) }
+						__nextHasNoMarginBottom
 					/>
 					<h4>
 						{ __(
@@ -82,6 +83,7 @@ const PaymentRequestSettings = ( { section } ) => {
 									'Checkout Page',
 									'woocommerce-payments'
 								) }
+								__nextHasNoMarginBottom
 							/>
 						</li>
 						<li>
@@ -100,6 +102,7 @@ const PaymentRequestSettings = ( { section } ) => {
 									'Product Page',
 									'woocommerce-payments'
 								) }
+								__nextHasNoMarginBottom
 							/>
 						</li>
 						<li>
@@ -114,6 +117,7 @@ const PaymentRequestSettings = ( { section } ) => {
 									'Cart Page',
 									'woocommerce-payments'
 								) }
+								__nextHasNoMarginBottom
 							/>
 						</li>
 					</ul>

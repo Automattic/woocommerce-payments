@@ -187,7 +187,7 @@ const WooPayFileUpload: React.FunctionComponent< WooPayFileUploadProps > = ( {
 				</div>
 			</div>
 
-			<BaseControl id={ 'test' } help={ help }>
+			<BaseControl id="test" help={ help } __nextHasNoMarginBottom>
 				{ ' ' }
 			</BaseControl>
 		</div>

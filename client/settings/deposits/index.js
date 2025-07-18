@@ -114,6 +114,8 @@ const CustomizeDepositSchedule = () => {
 					value={ depositScheduleInterval }
 					onChange={ handleIntervalChange }
 					options={ depositIntervalsOptions }
+					__nextHasNoMarginBottom
+					__next40pxDefaultSize
 				/>
 				{ depositScheduleInterval === 'monthly' && (
 					<SelectControl
@@ -121,6 +123,8 @@ const CustomizeDepositSchedule = () => {
 						value={ depositScheduleMonthlyAnchor }
 						onChange={ setDepositScheduleMonthlyAnchor }
 						options={ monthlyAnchors }
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
 					/>
 				) }
 				{ depositScheduleInterval === 'weekly' && (
@@ -129,6 +133,8 @@ const CustomizeDepositSchedule = () => {
 						value={ depositScheduleWeeklyAnchor }
 						onChange={ setDepositScheduleWeeklyAnchor }
 						options={ daysOfWeek }
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
 					/>
 				) }
 			</div>
@@ -223,7 +229,7 @@ const Deposits = () => {
 
 	return (
 		<Card className="deposits">
-			<CardBody>
+			<CardBody className="wcpay-card-body">
 				<h4>{ __( 'Payout schedule', 'woocommerce-payments' ) }</h4>
 
 				<DepositsSchedule />
