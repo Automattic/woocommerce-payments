@@ -51,20 +51,13 @@ const EmbeddedKyc: React.FC< Props > = ( {
 				);
 			} else {
 				window.location.href = getConnectUrl(
-					{
-						...response.params,
-						'wcpay-connection-error': '1',
-					},
 					'WCPAY_ONBOARDING_WIZARD'
 				);
 			}
 		} catch ( error ) {
 			window.location.href = getConnectUrl(
-				{
-					'wcpay-connection-error': '1',
-					source: urlSource,
-				},
-				'WCPAY_ONBOARDING_WIZARD'
+				'WCPAY_ONBOARDING_WIZARD',
+				urlSource
 			);
 		}
 	};
@@ -103,11 +96,8 @@ const EmbeddedKyc: React.FC< Props > = ( {
 								label: 'Cancel',
 								variant: 'link',
 								url: getConnectUrl(
-									{
-										'wcpay-connection-error': '1',
-										source: urlSource,
-									},
-									'WCPAY_ONBOARDING_WIZARD'
+									'WCPAY_ONBOARDING_WIZARD',
+									urlSource
 								),
 							},
 						] }

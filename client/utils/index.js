@@ -99,19 +99,22 @@ export const getDocumentUrl = ( documentId ) => {
 	);
 };
 
-export const getConnectUrl = ( urlParams, from ) => {
-	// Ensure urlParams is an object.
-	const queryParams = typeof urlParams === 'object' ? urlParams : {};
-
-	const baseParams = {
-		page: 'wc-admin',
-		path: '/payments/connect',
-		source: queryParams.source?.replace( /[^\w-]+/g, '' ) || 'unknown',
+/**
+ * Returns the URL to the NOX onboarding flow.
+ *
+ * @param {string} from The context from which the NOX flow is accessed (e.g., 'WCPAY_SETTINGS').
+ * @param {string} source The source where the onboarding flow is initiated (e.g., 'wcadmin-settings-page').
+ *
+ * @return {string} The URL to the NOX flow.
+ */
+export const getConnectUrl = ( from = '', source = 'unknown' ) => {
+	const params = {
+		page: 'wc-settings',
+		tab: 'checkout',
+		path: '/woopayments/onboarding',
+		source: source,
 		from: from,
 	};
-
-	// Merge queryParams and baseParams into baseParams, ensuring baseParams takes precedence.
-	const params = { ...queryParams, ...baseParams };
 
 	return getAdminUrl( params );
 };

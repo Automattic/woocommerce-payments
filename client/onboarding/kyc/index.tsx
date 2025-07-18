@@ -25,12 +25,8 @@ const OnboardingKycPage: React.FC = () => {
 
 		// Let the connect logic determine where the merchant should end up.
 		window.location.href = getConnectUrl(
-			{
-				source:
-					urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) ||
-					'unknown',
-			},
-			'WCPAY_ONBOARDING_KYC'
+			'WCPAY_ONBOARDING_KYC',
+			urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) || 'unknown'
 		);
 	};
 
