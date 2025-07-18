@@ -81,6 +81,7 @@ const SupportPhoneInput = ( { setInputVallid } ) => {
 				__nextHasNoMarginBottom
 			>
 				<PhoneNumberInput
+					id="account-business-support-phone-input"
 					onValueChange={ setSupportPhone }
 					value={ supportPhone }
 					onValidationChange={ setPhoneValidity }
