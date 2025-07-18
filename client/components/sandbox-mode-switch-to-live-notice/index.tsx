@@ -64,7 +64,7 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 							<ClickTooltip
 								buttonIcon={ <HelpOutlineIcon /> }
 								buttonLabel={ __(
-									'Learn more about sandbox mode',
+									'Learn more about test accounts',
 									'woocommerce-payments'
 								) }
 								maxWidth={ '250px' }

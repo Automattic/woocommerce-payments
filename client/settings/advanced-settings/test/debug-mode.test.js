@@ -51,12 +51,9 @@ describe( 'DebugMode', () => {
 		render( <DebugMode /> );
 
 		const loggingCheckbox = screen.queryByRole( 'checkbox', {
-			name: 'Sandbox mode is active so logging is on by default.',
+			name: 'Log error messages (defaulted on for test accounts)',
 		} );
 
-		expect(
-			screen.queryByText( 'Log error messages' )
-		).not.toBeInTheDocument();
 		expect( loggingCheckbox ).toBeChecked();
 		expect( loggingCheckbox ).toBeDisabled();
 	} );
