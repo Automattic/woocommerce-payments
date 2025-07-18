@@ -17,7 +17,7 @@ const FraudProtection: React.FC = () => {
 	return (
 		<>
 			<Card className="fraud-protection">
-				<CardBody>
+				<CardBody className="wcpay-card-body">
 					<h4>
 						{ __(
 							'Set your payment risk level',

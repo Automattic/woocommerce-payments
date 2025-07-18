@@ -85,7 +85,11 @@ addFilter(
 		} );
 
 		pages.push( {
-			container: OverviewPage,
+			container: () => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<OverviewPage />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/overview',
 			wpOpenMenu: menuID,
 			breadcrumbs: [ rootLink, __( 'Overview', 'woocommerce-payments' ) ],
@@ -96,7 +100,11 @@ addFilter(
 		} );
 
 		pages.push( {
-			container: DepositsPage,
+			container: ( { query } ) => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<DepositsPage query={ query } />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/payouts',
 			wpOpenMenu: menuID,
 			breadcrumbs: [ rootLink, __( 'Payouts', 'woocommerce-payments' ) ],
@@ -106,7 +114,11 @@ addFilter(
 			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
-			container: DepositDetailsPage,
+			container: ( { query } ) => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<DepositDetailsPage query={ query } />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/payouts/details',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
@@ -124,7 +136,11 @@ addFilter(
 			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
-			container: TransactionsPage,
+			container: () => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<TransactionsPage />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/transactions',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
@@ -174,7 +190,11 @@ addFilter(
 		} );
 
 		pages.push( {
-			container: RedirectToTransactionDetails,
+			container: ( { query } ) => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<RedirectToTransactionDetails query={ query } />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/disputes/details',
 			wpOpenMenu: menuID,
 			breadcrumbs: [

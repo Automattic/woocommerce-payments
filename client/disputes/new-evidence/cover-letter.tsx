@@ -111,6 +111,7 @@ const CoverLetter: React.FC< CoverLetterProps > = ( {
 				rows={ 30 }
 				className="wcpay-dispute-evidence-cover-letter__textarea"
 				readOnly={ readOnly }
+				__nextHasNoMarginBottom
 			/>
 			<Button
 				className="wcpay-dispute-evidence-cover-letter__print"
@@ -119,6 +120,7 @@ const CoverLetter: React.FC< CoverLetterProps > = ( {
 				iconPosition="right"
 				iconSize={ 24 }
 				icon={ external }
+				__next40pxDefaultSize
 			>
 				{ __( 'Preview cover letter', 'woocommerce-payments' ) }
 			</Button>

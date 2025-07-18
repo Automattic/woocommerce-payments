@@ -54,6 +54,7 @@ const WCPaySubscriptionsToggle = () => {
 			} ) }
 			checked={ isWCPaySubscriptionsEnabled }
 			onChange={ handleWCPaySubscriptionsStatusChange }
+			__nextHasNoMarginBottom
 		/>
 	) : null;
 };

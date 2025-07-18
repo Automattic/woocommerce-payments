@@ -2,19 +2,17 @@
  * External dependencies
  */
 import React, { useState } from 'react';
-import {
-	Card,
-	CardBody,
-	CardHeader,
-	Flex,
-} from 'wcpay/components/wp-components-wrapped';
 import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
-import { Link } from '@woocommerce/components';
 
 /**
  * Internal dependencies
  */
+import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
+import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
+import { CardHeader } from 'wcpay/components/wp-components-wrapped/components/card-header';
+import { Flex } from 'wcpay/components/wp-components-wrapped/components/flex';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
 import type * as AccountOverview from 'wcpay/types/account-overview';
 import BalanceBlock from './balance-block';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
@@ -209,11 +207,10 @@ const AccountBalances: React.FC = () => {
 											components: {
 												strong: <strong />,
 												learnMoreLink: (
-													<Link
-														href="https://woocommerce.com/document/woopayments/payouts/instant-payouts/"
-														target="_blank"
-														rel="noreferrer"
-														type="external"
+													<ExternalLink
+														href={
+															'https://woocommerce.com/document/woopayments/payouts/instant-payouts/'
+														}
 													/>
 												),
 											},

@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+ensure payments and transactions pages uses wp components that come with the WP installation.

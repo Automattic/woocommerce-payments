@@ -60,6 +60,7 @@ const EnableWooPaymentsCheckbox = () => {
 					),
 					'WooPayments'
 				) }
+				__nextHasNoMarginBottom
 			/>
 			{ isConfirmationModalVisible && (
 				<DisableConfirmationModal

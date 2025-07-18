@@ -102,7 +102,7 @@ exports[`CVC verification card renders correctly when CVC check is disabled 1`] 
       class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -286,7 +286,7 @@ exports[`CVC verification card renders correctly when CVC check is enabled 1`] =
       class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >

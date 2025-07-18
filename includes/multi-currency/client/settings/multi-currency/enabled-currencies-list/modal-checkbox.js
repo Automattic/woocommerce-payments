@@ -49,6 +49,7 @@ const EnabledCurrenciesModalCheckbox = ( {
 						),
 					},
 				} ) }
+				__nextHasNoMarginBottom
 			/>
 		</li>
 	);
