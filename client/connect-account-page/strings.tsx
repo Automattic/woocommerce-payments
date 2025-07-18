@@ -25,7 +25,7 @@ export default {
 			'Finish business details verifications',
 			'woocommerce-payments'
 		),
-		sandbox: __( 'Enable test mode', 'woocommerce-payments' ),
+		sandbox: __( 'Create test account', 'woocommerce-payments' ),
 		reset: __( 'Reset account', 'woocommerce-payments' ),
 	},
 	heading: ( firstName?: string ): string =>
@@ -69,7 +69,7 @@ export default {
 		description: sprintf(
 			/* translators: %s: WooPayments */
 			__(
-				'This option will set up %s in test mode using test data. When you’re ready to launch your store, switching to live payments is easy.',
+				'This option will set up a %s test account using test data. When you’re ready to launch your store, switching to live payments is easy.',
 				'woocommerce-payments'
 			),
 			'WooPayments'
