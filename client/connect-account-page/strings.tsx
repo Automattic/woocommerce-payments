@@ -69,7 +69,7 @@ export default {
 		description: sprintf(
 			/* translators: %s: WooPayments */
 			__(
-				'This option will set up %s in test account mode. You can use our test data to set up. When you’re ready to launch your store, switching to live payments is easy.',
+				'This option will set up %s in test mode using test data. When you’re ready to launch your store, switching to live payments is easy.',
 				'woocommerce-payments'
 			),
 			'WooPayments'
