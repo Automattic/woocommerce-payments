@@ -4,13 +4,14 @@
 import React, { useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
-import { Button, Modal } from 'wcpay/components/wp-components-wrapped';
 import { Icon, store, currencyDollar } from '@wordpress/icons';
 import interpolateComponents from '@automattic/interpolate-components';
 
 /**
  * Internal dependencies
  */
+import { Modal } from 'wcpay/components/wp-components-wrapped/components/modal';
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 import { trackEligibilityModalClosed } from 'onboarding/tracking';
 import ConfettiAnimation from 'components/confetti-animation';
 import { saveOption } from 'wcpay/data/settings/actions';
@@ -122,10 +123,18 @@ const ProgressiveOnboardingEligibilityModal: React.FC = () => {
 				</div>
 			</div>
 			<div className="wcpay-progressive-onboarding-eligibility-modal__footer">
-				<Button variant="secondary" onClick={ handleSetup }>
+				<Button
+					variant="secondary"
+					onClick={ handleSetup }
+					__next40pxDefaultSize
+				>
 					{ __( 'Set up payouts', 'woocommerce-payments' ) }
 				</Button>
-				<Button variant="primary" onClick={ handlePaymentsOnly }>
+				<Button
+					variant="primary"
+					onClick={ handlePaymentsOnly }
+					__next40pxDefaultSize
+				>
 					{ __( 'Start selling', 'woocommerce-payments' ) }
 				</Button>
 			</div>
