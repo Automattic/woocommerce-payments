@@ -121,6 +121,32 @@ class WC_Payments_Redirect_Service {
 	}
 
 	/**
+	 * Immediately redirect to the NOX page.
+	 *
+	 * Note that this function immediately ends the execution.
+	 *
+	 * @param string|null $from   Optional. Location of the redirect.
+	 * @param string|null $source Optional. Where the merchant entered the onboarding flow.
+	 */
+	public function redirect_to_nox_flow( ?string $from = null, ?string $source = null ): void {
+		$params = [
+			'page' => 'wc-settings',
+			'tab'  => 'checkout',
+			'path' => '/woopayments/onboarding',
+		];
+
+		if ( ! empty( $from ) ) {
+			$params['from'] = $from;
+		}
+
+		if ( ! empty( $source ) ) {
+			$params['source'] = $source;
+		}
+
+		$this->redirect_to( admin_url( add_query_arg( $params, 'admin.php' ) ) );
+	}
+
+	/**
 	 * Immediately redirect to the Connect page.
 	 *
 	 * Note that this function immediately ends the execution.
