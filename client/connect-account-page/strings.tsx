@@ -25,7 +25,7 @@ export default {
 			'Finish business details verifications',
 			'woocommerce-payments'
 		),
-		sandbox: __( 'Enable test account', 'woocommerce-payments' ),
+		sandbox: __( 'Enable test mode', 'woocommerce-payments' ),
 		reset: __( 'Reset account', 'woocommerce-payments' ),
 	},
 	heading: ( firstName?: string ): string =>
