@@ -360,8 +360,8 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					->with(
 						$this->logicalAnd(
 							$this->logicalOr(
-								$this->stringContains( 'page=wc-settings&tab=checkout&path=/woopayments/onboarding' ),
-								$this->stringContains( 'page=wc-settings&tab=checkout&path=%2Fwoopayments%2Fonboarding' )
+								$this->stringContains( 'page=wc-admin&path=/payments/connect' ),
+								$this->stringContains( 'page=wc-admin&path=%2Fpayments%2Fconnect' )
 							),
 							$this->stringContains( 'source=' . $onboarding_source ),
 							$this->logicalNot( $this->stringContains( 'from=' . $onboarding_from ) )

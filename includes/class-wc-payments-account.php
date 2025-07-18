@@ -1541,9 +1541,19 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				// Redirect merchants coming from settings page to the connect page only if $redirect_to_settings_page is false.
 				|| ( WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_SETTINGS === $from && ! $redirect_to_settings_page )
 			) {
-				$this->redirect_service->redirect_to_nox_flow(
+				$this->redirect_service->redirect_to_connect_page(
+					! empty( $_GET['wcpay-connection-error'] ) ? sprintf(
+					/* translators: 1: WooPayments. */
+						__( 'Please <b>complete your %1$s setup</b> to process transactions.', 'woocommerce-payments' ),
+						'WooPayments'
+					) : null,
 					null, // Do not carry over the `from` value to avoid redirect loops.
-					$onboarding_source
+					[
+						'promo'                       => ! empty( $incentive_id ) ? $incentive_id : false,
+						'progressive'                 => $progressive ? 'true' : false,
+						'collect_payout_requirements' => $collect_payout_requirements ? 'true' : false,
+						'source'                      => $onboarding_source,
+					]
 				);
 				return;
 			}
