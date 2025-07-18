@@ -312,6 +312,10 @@
 		gap: $gap;
 		margin-block-end: 0;
 
+		.components-base-control {
+			margin-bottom: 0 !important;
+		}
+
 		&__slider {
 			flex-grow: 1;
 		}
