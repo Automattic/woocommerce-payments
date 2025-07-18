@@ -70,18 +70,6 @@
 		.components-textarea-control__input {
 			font-size: 0.8125rem;
 		}
-
-		.input-help-text {
-			position: absolute;
-			right: 10px;
-			top: 42px;
-			font-size: 12px;
-			color: #757575;
-
-			@media ( min-width: 783px ) {
-				top: 38px;
-			}
-		}
 	}
 
 	&__update-store-logo {

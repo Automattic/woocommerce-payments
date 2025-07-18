@@ -195,11 +195,12 @@ const WooPaySettings = ( { section } ) => {
 			{ section === 'appearance' && (
 				<CardBody className="wcpay-card-body woopay-settings__appearance-card-settings">
 					<div className="woopay-settings__custom-message-wrapper">
-						<h4>
-							{ __( 'Checkout logo', 'woocommerce-payments' ) }
-						</h4>
 						<WooPayFileUpload
 							fieldKey="woopay-store-logo"
+							label={ __(
+								'Checkout logo',
+								'woocommerce-payments'
+							) }
 							accept="image/png, image/jpeg"
 							disabled={ false }
 							help={ __(
@@ -265,13 +266,11 @@ const WooPaySettings = ( { section } ) => {
 						</div>
 					) }
 					<div className="woopay-settings__custom-message-wrapper">
-						<h4>
-							{ __(
+						<TextareaControl
+							label={ __(
 								'Checkout policies',
 								'woocommerce-payments'
 							) }
-						</h4>
-						<TextareaControl
 							help={ interpolateComponents( {
 								mixedString: __(
 									'Override the default {{privacyLink}}privacy policy{{/privacyLink}}' +
