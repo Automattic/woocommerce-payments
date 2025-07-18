@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, act } from '@testing-library/react';
 
 /**
  * Internal dependencies
@@ -142,4 +142,20 @@ describe( 'GeneralSettings', () => {
 			expectation.toBeInTheDocument();
 		}
 	);
+
+	it( 'show the modal when the appropriate event is dispatched', () => {
+		render( <GeneralSettings /> );
+
+		act( () => {
+			document.dispatchEvent(
+				new CustomEvent( 'wcpay:activate_payments' )
+			);
+		} );
+
+		expect(
+			screen.queryByText(
+				"Before continuing, please make sure that you're aware of the following:"
+			)
+		).toBeInTheDocument();
+	} );
 } );

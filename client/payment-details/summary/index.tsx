@@ -66,7 +66,7 @@ import {
 	formatDateTimeFromString,
 	formatDateTimeFromTimestamp,
 } from 'wcpay/utils/date-time';
-import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
 
 declare const window: any;
 

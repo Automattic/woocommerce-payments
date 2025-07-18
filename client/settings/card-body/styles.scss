@@ -42,12 +42,6 @@
 		max-width: none;
 	}
 
-	// spacing in the "Express checkouts" settings page
-	.components-radio-control__option {
-		align-items: center;
-		display: flex;
-	}
-
 	.components-checkbox-control {
 		input[type='checkbox'] {
 			&:checked:disabled {

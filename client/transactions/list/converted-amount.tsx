@@ -5,7 +5,7 @@
  */
 import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-import { Tooltip as FallbackTooltip } from 'wcpay/components/wp-components-wrapped';
+import { Tooltip as FallbackTooltip } from 'wcpay/components/wp-components-wrapped/components/tooltip';
 import SyncIcon from 'gridicons/dist/sync';
 import clsx from 'clsx';
 

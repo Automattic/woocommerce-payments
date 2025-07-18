@@ -4,16 +4,14 @@
 import React, { useEffect } from 'react';
 import { __ } from '@wordpress/i18n';
 import { getHistory } from '@woocommerce/navigation';
-import {
-	Spinner,
-	Icon,
-	Flex,
-	FlexItem,
-} from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies.
  */
+import { Spinner } from 'wcpay/components/wp-components-wrapped/components/spinner';
+import { Icon } from 'wcpay/components/wp-components-wrapped/components/icon';
+import { Flex } from 'wcpay/components/wp-components-wrapped/components/flex';
+import { FlexItem } from 'wcpay/components/wp-components-wrapped/components/flex-item';
 import Page from 'components/page';
 import { useDispute } from 'data/index';
 import { Charge } from 'wcpay/types/charges';
