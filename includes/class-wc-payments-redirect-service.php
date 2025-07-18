@@ -129,6 +129,11 @@ class WC_Payments_Redirect_Service {
 	 * @param string|null $source Optional. Where the merchant entered the onboarding flow.
 	 */
 	public function redirect_to_nox_flow( ?string $from = null, ?string $source = null ): void {
+		// If the WC Admin version is less than 9.5, redirect to the Connect page instead.
+		if ( defined( 'WC_ADMIN_VERSION_NUMBER' ) && version_compare( WC_ADMIN_VERSION_NUMBER, '9.5', '<' ) ) {
+			$this->redirect_to_connect_page( null, $from, [ 'source' => $source ] );
+		}
+
 		$params = [
 			'page' => 'wc-settings',
 			'tab'  => 'checkout',
