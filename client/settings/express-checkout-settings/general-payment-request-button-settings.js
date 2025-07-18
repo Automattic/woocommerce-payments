@@ -13,6 +13,7 @@ import {
 	SelectControl,
 	RadioControl,
 	RangeControl,
+	BaseControl,
 } from 'wcpay/components/wp-components-wrapped';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
@@ -205,56 +206,61 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 				options={ buttonThemeOptions }
 				onChange={ setTheme }
 			/>
-			<h4>{ __( 'Border radius', 'woocommerce-payments' ) }</h4>
-			<div className="payment-method-settings__border-radius">
-				<NumberControl
-					label={ __(
-						/* translators: Label for a number input, hidden from view. Intended for accessibility. */
-						'Border radius, number input',
-						'woocommerce-payments'
-					) }
-					hideLabelFromVision
-					isPressEnterToChange={ true }
-					value={ radius }
-					max={ 30 }
-					min={ 0 }
-					hideHTMLArrows
-					onChange={ ( value ) => {
-						if ( typeof value === 'string' ) {
-							setRadius( parseInt( value, 10 ) );
-						} else {
-							setRadius( value );
-						}
-					} }
-					suffix={
-						<div className="payment-method-settings__border-radius__number-control__suffix">
-							px
-						</div>
-					}
-				/>
-				<RangeControl
-					label={ __(
-						/* translators: Label for an input slider, hidden from view. Intended for accessibility. */
-						'Border radius, slider',
-						'woocommerce-payments'
-					) }
-					hideLabelFromVision
-					className="payment-method-settings__border-radius__slider"
-					value={ radius }
-					max={ 30 }
-					min={ 0 }
-					withInputField={ false }
-					onChange={ setRadius }
-					__nextHasNoMarginBottom
-					__next40pxDefaultSize
-				/>
-			</div>
-			<p className="payment-method-settings__option-help-text">
-				{ __(
+			<BaseControl
+				id="wcpay-payment-request-settings-border-radius"
+				label={ __( 'Border radius', 'woocommerce-payments' ) }
+				help={ __(
 					'Controls the corner roundness of express payment buttons.',
 					'woocommerce-payments'
 				) }
-			</p>
+				__next40pxDefaultSize
+				__nextHasNoMarginBottom
+			>
+				<div className="payment-method-settings__border-radius">
+					<NumberControl
+						label={ __(
+							/* translators: Label for a number input, hidden from view. Intended for accessibility. */
+							'Border radius, number input',
+							'woocommerce-payments'
+						) }
+						id="wcpay-payment-request-settings-border-radius"
+						hideLabelFromVision
+						isPressEnterToChange={ true }
+						value={ radius }
+						max={ 30 }
+						min={ 0 }
+						hideHTMLArrows
+						onChange={ ( value ) => {
+							if ( typeof value === 'string' ) {
+								setRadius( parseInt( value, 10 ) );
+							} else {
+								setRadius( value );
+							}
+						} }
+						suffix={
+							<div className="payment-method-settings__border-radius__number-control__suffix">
+								px
+							</div>
+						}
+					/>
+					<RangeControl
+						label={ __(
+							/* translators: Label for an input slider, hidden from view. Intended for accessibility. */
+							'Border radius, slider',
+							'woocommerce-payments'
+						) }
+						hideLabelFromVision
+						className="payment-method-settings__border-radius__slider"
+						value={ radius }
+						max={ 30 }
+						min={ 0 }
+						withInputField={ false }
+						onChange={ setRadius }
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
+					/>
+				</div>
+			</BaseControl>
 			<h4>{ __( 'Preview', 'woocommerce-payments' ) }</h4>
 			<div className="payment-method-settings__option-help-text">
 				{ __(
