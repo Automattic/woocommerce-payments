@@ -270,7 +270,7 @@ describe( 'Multi-Currency enabled currencies list', () => {
 					name: /add\/remove currencies/i,
 				} )
 			);
-			userEvent.type( screen.getByRole( 'textbox' ), 'dollar' );
+			userEvent.type( screen.getByRole( 'searchbox' ), 'dollar' );
 			userEvent.click(
 				screen.getByRole( 'button', {
 					name,

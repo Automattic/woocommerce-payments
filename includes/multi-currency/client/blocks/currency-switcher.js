@@ -15,6 +15,7 @@ import { __ } from '@wordpress/i18n';
 import { CheckboxControl } from 'wcpay/components/wp-components-wrapped/components/checkbox-control';
 import { PanelBody } from 'wcpay/components/wp-components-wrapped/components/panel-body';
 import { RangeControl } from 'wcpay/components/wp-components-wrapped/components/range-control';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
 import { registerBlockType } from '@wordpress/blocks';
 import {
 	ColorPaletteControl,
@@ -211,18 +212,16 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 								'woocommerce-payments'
 							) }
 						>
-							<a
+							<ExternalLink
 								href={
 									'/wp-admin/admin.php?page=wc-settings&tab=wcpay_multi_currency'
 								}
-								target="_blank"
-								rel="noreferrer"
 							>
 								{ __(
 									'Adjust and edit your Multi-Currency settings',
 									'woocommerce-payments'
 								) }
-							</a>
+							</ExternalLink>
 						</PanelBody>
 						<PanelBody
 							title={ __( 'Layout', 'woocommerce-payments' ) }
@@ -264,6 +263,7 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 								min={ 1 }
 								max={ 20 }
 								__nextHasNoMarginBottom
+								__next40pxDefaultSize
 							/>
 						</PanelBody>
 						<PanelBody
@@ -276,6 +276,7 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 								min={ 6 }
 								max={ 48 }
 								__nextHasNoMarginBottom
+								__next40pxDefaultSize
 							/>
 							<RangeControl
 								label={ __(
@@ -288,6 +289,7 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 								max={ 3 }
 								step={ 0.1 }
 								__nextHasNoMarginBottom
+								__next40pxDefaultSize
 							/>
 						</PanelBody>
 						<PanelBody

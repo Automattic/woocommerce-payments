@@ -44,7 +44,7 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
   margin-bottom: inherit;
 }
 
-.emotion-11 {
+.emotion-15 {
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -72,15 +72,15 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
   flex-direction: column;
 }
 
-.emotion-11>*+*:not( marquee ) {
+.emotion-15>*+*:not( marquee ) {
   margin-top: 0;
 }
 
-.emotion-11>* {
+.emotion-15>* {
   min-height: 0;
 }
 
-.emotion-14 {
+.emotion-18 {
   display: block;
   max-height: 100%;
   max-width: 100%;
@@ -90,7 +90,7 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
   max-width: calc( 100% - 10px );
 }
 
-.emotion-17 {
+.emotion-21 {
   color: #1e1e1e;
   line-height: 1.2;
   margin: 0;
@@ -98,7 +98,7 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
   font-weight: normal;
 }
 
-.emotion-17.emotion-17.emotion-17 {
+.emotion-21.emotion-21.emotion-21 {
   box-sizing: border-box;
   color: currentColor;
   display: block;
@@ -115,7 +115,7 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
   white-space: nowrap;
 }
 
-.emotion-19 {
+.emotion-23 {
   -webkit-align-items: center;
   -webkit-box-align: center;
   -ms-flex-align: center;
@@ -134,7 +134,7 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
   width: 100%;
 }
 
-.emotion-21.emotion-21.emotion-21 {
+.emotion-25.emotion-25.emotion-25 {
   -webkit-appearance: none;
   -moz-appearance: none;
   -ms-appearance: none;
@@ -157,12 +157,12 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
 }
 
 @media ( min-width: 600px ) {
-  .emotion-21.emotion-21.emotion-21 {
+  .emotion-25.emotion-25.emotion-25 {
     font-size: 13px;
   }
 }
 
-.emotion-23 {
+.emotion-27 {
   -webkit-align-items: center;
   -webkit-box-align: center;
   -ms-flex-align: center;
@@ -177,7 +177,7 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
   display: flex;
 }
 
-.emotion-25 {
+.emotion-29 {
   -webkit-align-items: center;
   -webkit-box-align: center;
   -ms-flex-align: center;
@@ -195,11 +195,11 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
   right: 0;
 }
 
-.emotion-25 svg {
+.emotion-29 svg {
   display: block;
 }
 
-.emotion-27.emotion-27.emotion-27 {
+.emotion-31.emotion-31.emotion-31 {
   box-sizing: border-box;
   border-radius: inherit;
   bottom: 0;
@@ -216,7 +216,7 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
   padding-left: 2px;
 }
 
-.emotion-29 {
+.emotion-33 {
   margin-top: calc(4px * 2);
   margin-bottom: 0;
   font-size: 12px;
@@ -225,7 +225,7 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
   margin-bottom: revert;
 }
 
-.emotion-33 {
+.emotion-37 {
   width: 1em;
   height: 1em;
   margin: 0;
@@ -233,7 +233,7 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
   fill: currentColor;
 }
 
-.emotion-64 {
+.emotion-68 {
   background: transparent;
   display: block;
   margin: 0!important;
@@ -253,24 +253,24 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
 }
 
 @media ( prefers-reduced-motion: reduce ) {
-  .emotion-64 {
+  .emotion-68 {
     transition-duration: 0ms;
   }
 }
 
-.emotion-74 {
+.emotion-78 {
   font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
   font-size: 13px;
   box-sizing: border-box;
 }
 
-.emotion-74 *,
-.emotion-74 *::before,
-.emotion-74 *::after {
+.emotion-78 *,
+.emotion-78 *::before,
+.emotion-78 *::after {
   box-sizing: inherit;
 }
 
-.emotion-78 {
+.emotion-82 {
   font-size: 11px;
   font-weight: 500;
   line-height: 1.4;
@@ -340,52 +340,46 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
                 <fieldset>
                   <ul>
                     <li>
-                      <div>
+                      <div
+                        class="components-base-control components-radio-control emotion-6 emotion-7"
+                      >
                         <div
-                          class="single-currency-settings-radio-wrapper"
+                          class="components-base-control__field emotion-8 emotion-9"
                         >
-                          <input
-                            checked=""
-                            id="single-currency-settings__automatic_rate_radio"
-                            name="wcpay_multi_currency_exchange_rate_aud"
-                            type="radio"
-                            value="automatic"
-                          />
-                          <label
-                            for="single-currency-settings__automatic_rate_radio"
+                          <div
+                            class="components-radio-control__option"
                           >
-                            Fetch rates automatically
-                          </label>
-                        </div>
-                        <p
-                          class="single-currency-settings-radio__help"
-                        >
-                          Current rate: 1 USD = 0.826381 EUR (Last updated: Sep 24, 2021 1:14AM)
-                        </p>
-                      </div>
-                    </li>
-                    <li>
-                      <div>
-                        <div
-                          class="single-currency-settings-radio-wrapper"
-                        >
-                          <input
-                            id="single-currency-settings__manual_rate_radio"
-                            name="wcpay_multi_currency_exchange_rate_aud"
-                            type="radio"
-                            value="manual"
-                          />
-                          <label
-                            for="single-currency-settings__manual_rate_radio"
+                            <input
+                              checked=""
+                              class="components-radio-control__input"
+                              id="inspector-radio-control-0-0"
+                              name="inspector-radio-control-0"
+                              type="radio"
+                              value="automatic"
+                            />
+                            <label
+                              for="inspector-radio-control-0-0"
+                            >
+                              Fetch rates automatically
+                            </label>
+                          </div>
+                          <div
+                            class="components-radio-control__option"
                           >
-                            Manual
-                          </label>
+                            <input
+                              class="components-radio-control__input"
+                              id="inspector-radio-control-0-1"
+                              name="inspector-radio-control-0"
+                              type="radio"
+                              value="manual"
+                            />
+                            <label
+                              for="inspector-radio-control-0-1"
+                            >
+                              Manual
+                            </label>
+                          </div>
                         </div>
-                        <p
-                          class="single-currency-settings-radio__help"
-                        >
-                          Enter your fixed rate of exchange
-                        </p>
                       </div>
                     </li>
                   </ul>
@@ -403,17 +397,17 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
                           class="components-base-control__field emotion-8 emotion-9"
                         >
                           <div
-                            class="components-flex components-select-control emotion-10 emotion-11 emotion-1"
+                            class="components-flex components-select-control emotion-14 emotion-15 emotion-1"
                             data-wp-c16t="true"
                             data-wp-component="Flex"
                           >
                             <div
-                              class="components-flex-item emotion-13 emotion-14 emotion-1"
+                              class="components-flex-item emotion-17 emotion-18 emotion-1"
                               data-wp-c16t="true"
                               data-wp-component="FlexItem"
                             >
                               <label
-                                class="components-truncate components-text components-input-control__label emotion-16 emotion-17 emotion-1"
+                                class="components-truncate components-text components-input-control__label emotion-20 emotion-21 emotion-1"
                                 data-wp-c16t="true"
                                 data-wp-component="Text"
                                 for="inspector-select-control-0"
@@ -422,11 +416,11 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
                               </label>
                             </div>
                             <div
-                              class="components-input-control__container emotion-19 emotion-20"
+                              class="components-input-control__container emotion-23 emotion-24"
                             >
                               <select
                                 aria-describedby="inspector-select-control-0__help"
-                                class="components-select-control__input emotion-21 emotion-22"
+                                class="components-select-control__input emotion-25 emotion-26"
                                 data-testid="price_rounding"
                                 id="inspector-select-control-0"
                               >
@@ -462,10 +456,10 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
                                 </option>
                               </select>
                               <span
-                                class="components-input-control__suffix emotion-23 emotion-24"
+                                class="components-input-control__suffix emotion-27 emotion-28"
                               >
                                 <div
-                                  class="emotion-25 emotion-26"
+                                  class="emotion-29 emotion-30"
                                 >
                                   <svg
                                     aria-hidden="true"
@@ -483,13 +477,13 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
                               </span>
                               <div
                                 aria-hidden="true"
-                                class="components-input-control__backdrop emotion-27 emotion-28"
+                                class="components-input-control__backdrop emotion-31 emotion-32"
                               />
                             </div>
                           </div>
                         </div>
                         <p
-                          class="components-base-control__help emotion-29 emotion-30"
+                          class="components-base-control__help emotion-33 emotion-34"
                           id="inspector-select-control-0__help"
                         >
                           Make your EUR prices consistent by rounding them up after they're converted. 
@@ -501,7 +495,7 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
                           >
                             Learn more
                             <span
-                              class="components-visually-hidden emotion-31 emotion-1"
+                              class="components-visually-hidden emotion-35 emotion-1"
                               data-wp-c16t="true"
                               data-wp-component="VisuallyHidden"
                               style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
@@ -510,7 +504,7 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
                             </span>
                             <svg
                               aria-hidden="true"
-                              class="components-external-link__icon emotion-33 emotion-34"
+                              class="components-external-link__icon emotion-37 emotion-38"
                               focusable="false"
                               height="24"
                               viewBox="0 0 24 24"
@@ -533,17 +527,17 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
                           class="components-base-control__field emotion-8 emotion-9"
                         >
                           <div
-                            class="components-flex components-select-control emotion-10 emotion-11 emotion-1"
+                            class="components-flex components-select-control emotion-14 emotion-15 emotion-1"
                             data-wp-c16t="true"
                             data-wp-component="Flex"
                           >
                             <div
-                              class="components-flex-item emotion-13 emotion-14 emotion-1"
+                              class="components-flex-item emotion-17 emotion-18 emotion-1"
                               data-wp-c16t="true"
                               data-wp-component="FlexItem"
                             >
                               <label
-                                class="components-truncate components-text components-input-control__label emotion-16 emotion-17 emotion-1"
+                                class="components-truncate components-text components-input-control__label emotion-20 emotion-21 emotion-1"
                                 data-wp-c16t="true"
                                 data-wp-component="Text"
                                 for="inspector-select-control-1"
@@ -552,11 +546,11 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
                               </label>
                             </div>
                             <div
-                              class="components-input-control__container emotion-19 emotion-20"
+                              class="components-input-control__container emotion-23 emotion-24"
                             >
                               <select
                                 aria-describedby="inspector-select-control-1__help"
-                                class="components-select-control__input emotion-21 emotion-22"
+                                class="components-select-control__input emotion-25 emotion-26"
                                 data-testid="price_charm"
                                 id="inspector-select-control-1"
                               >
@@ -577,10 +571,10 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
                                 </option>
                               </select>
                               <span
-                                class="components-input-control__suffix emotion-23 emotion-24"
+                                class="components-input-control__suffix emotion-27 emotion-28"
                               >
                                 <div
-                                  class="emotion-25 emotion-26"
+                                  class="emotion-29 emotion-30"
                                 >
                                   <svg
                                     aria-hidden="true"
@@ -598,13 +592,13 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
                               </span>
                               <div
                                 aria-hidden="true"
-                                class="components-input-control__backdrop emotion-27 emotion-28"
+                                class="components-input-control__backdrop emotion-31 emotion-32"
                               />
                             </div>
                           </div>
                         </div>
                         <p
-                          class="components-base-control__help emotion-29 emotion-30"
+                          class="components-base-control__help emotion-33 emotion-34"
                           id="inspector-select-control-1__help"
                         >
                           Reduce the converted price for a specific amount. 
@@ -616,7 +610,7 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
                           >
                             Learn more
                             <span
-                              class="components-visually-hidden emotion-31 emotion-1"
+                              class="components-visually-hidden emotion-35 emotion-1"
                               data-wp-c16t="true"
                               data-wp-component="VisuallyHidden"
                               style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
@@ -625,7 +619,7 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
                             </span>
                             <svg
                               aria-hidden="true"
-                              class="components-external-link__icon emotion-33 emotion-34"
+                              class="components-external-link__icon emotion-37 emotion-38"
                               focusable="false"
                               height="24"
                               viewBox="0 0 24 24"
@@ -646,13 +640,13 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
             </div>
             <div
               aria-hidden="true"
-              class="components-elevation emotion-64 emotion-1"
+              class="components-elevation emotion-68 emotion-1"
               data-wp-c16t="true"
               data-wp-component="Elevation"
             />
             <div
               aria-hidden="true"
-              class="components-elevation emotion-64 emotion-1"
+              class="components-elevation emotion-68 emotion-1"
               data-wp-c16t="true"
               data-wp-component="Elevation"
             />
@@ -691,13 +685,13 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
                 <div>
                   <div>
                     <div
-                      class="components-base-control with-value emotion-74 emotion-7"
+                      class="components-base-control with-value emotion-78 emotion-7"
                     >
                       <div
                         class="components-base-control__field emotion-8 emotion-9"
                       >
                         <label
-                          class="components-base-control__label emotion-78 emotion-79"
+                          class="components-base-control__label emotion-82 emotion-83"
                           for="inspector-text-control-with-affixes-0"
                         >
                           United States (US) dollar
@@ -727,13 +721,13 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
                 <div>
                   <div>
                     <div
-                      class="components-base-control with-value emotion-74 emotion-7"
+                      class="components-base-control with-value emotion-78 emotion-7"
                     >
                       <div
                         class="components-base-control__field emotion-8 emotion-9"
                       >
                         <label
-                          class="components-base-control__label emotion-78 emotion-79"
+                          class="components-base-control__label emotion-82 emotion-83"
                           for="inspector-text-control-with-affixes-1"
                         >
                           Euro
@@ -759,13 +753,13 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
             </div>
             <div
               aria-hidden="true"
-              class="components-elevation emotion-64 emotion-1"
+              class="components-elevation emotion-68 emotion-1"
               data-wp-c16t="true"
               data-wp-component="Elevation"
             />
             <div
               aria-hidden="true"
-              class="components-elevation emotion-64 emotion-1"
+              class="components-elevation emotion-68 emotion-1"
               data-wp-c16t="true"
               data-wp-component="Elevation"
             />
