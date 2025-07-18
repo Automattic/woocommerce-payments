@@ -78,7 +78,9 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 					__nextHasNoMarginBottom
 				/>
 				<ManualCaptureControl></ManualCaptureControl>
-				<h4>{ __( 'Customer statements', 'woocommerce-payments' ) }</h4>
+				<h4 className="is-subsection-heading">
+					{ __( 'Customer statements', 'woocommerce-payments' ) }
+				</h4>
 				<p className="transactions-customer-details">
 					{ __(
 						"Edit the way your store name appears on your customers' bank statements.",
