@@ -824,7 +824,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	 * @param string|null $error_message Optional error message to show in a notice.
 	 */
 	public function redirect_to_onboarding_welcome_page( $error_message = null ) {
-		$this->redirect_service->redirect_to_connect_page( $error_message );
+		$this->redirect_service->redirect_to_nox_flow();
 	}
 
 	/**
@@ -1415,10 +1415,9 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				}
 
 				// Otherwise, when we reset the account we want to always go the Connect page. Redirect immediately!
-				$this->redirect_service->redirect_to_connect_page(
-					null,
+				$this->redirect_service->redirect_to_nox_flow(
 					WC_Payments_Onboarding_Service::FROM_RESET_ACCOUNT,
-					[ 'source' => $onboarding_source ]
+					$onboarding_source
 				);
 				return;
 			} elseif ( ! empty( $_GET['wcpay-disable-onboarding-test-mode'] ) && 'true' === $_GET['wcpay-disable-onboarding-test-mode'] ) {
@@ -1847,8 +1846,9 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	public function get_provider_onboarding_page_url(): string {
 		return add_query_arg(
 			[
-				'page' => 'wc-admin',
-				'path' => '/payments/connect',
+				'page' => 'wc-settings',
+				'tab'  => 'checkout',
+				'path' => '/woopayments/onboarding',
 			],
 			admin_url( 'admin.php' )
 		);
