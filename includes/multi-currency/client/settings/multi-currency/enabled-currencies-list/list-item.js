@@ -4,11 +4,11 @@
  */
 import clsx from 'clsx';
 import { __, sprintf } from '@wordpress/i18n';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 
 /**
  * Internal dependencies
  */
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 import DeleteButton from './delete-button';
 import MultiCurrencySettingsContext from 'multi-currency/context';
 import { useContext } from 'react';
@@ -77,6 +77,7 @@ const EnabledCurrenciesListItem = ( {
 							name
 						) }
 						className="enabled-currency__action edit"
+						__next40pxDefaultSize
 					>
 						{ __( 'manage', 'woocommerce-payments' ) }
 					</Button>

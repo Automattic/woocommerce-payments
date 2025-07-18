@@ -1,7 +1,8 @@
 /**
  * External dependencies
  */
-import { BaseControl, Notice } from 'wcpay/components/wp-components-wrapped';
+import { BaseControl } from 'wcpay/components/wp-components-wrapped/components/base-control';
+import { Notice } from 'wcpay/components/wp-components-wrapped/components/notice';
 import { __ } from '@wordpress/i18n';
 import { useState, useEffect, useRef } from 'react';
 
@@ -57,7 +58,7 @@ const SupportPhoneInput = ( { setInputVallid } ) => {
 	let labelText = __( 'Support phone number', 'woocommerce-payments' );
 	if ( isTestModeOnboarding ) {
 		labelText += __(
-			' (+1 0000000000 can be used in sandbox mode)',
+			' (+1 0000000000 can be used for test accounts)',
 			'woocommerce-payments'
 		);
 	}

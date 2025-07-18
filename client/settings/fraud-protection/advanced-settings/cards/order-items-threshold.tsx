@@ -3,7 +3,7 @@
  */
 import React, { useContext, useMemo, Dispatch, SetStateAction } from 'react';
 import { __ } from '@wordpress/i18n';
-import { TextControl } from 'wcpay/components/wp-components-wrapped';
+import { TextControl } from 'wcpay/components/wp-components-wrapped/components/text-control';
 
 /**
  * Internal dependencies

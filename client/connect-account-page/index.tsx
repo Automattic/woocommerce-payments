@@ -5,13 +5,6 @@
  */
 import React, { useEffect, useState, useRef } from 'react';
 import { render } from '@wordpress/element';
-import {
-	Button,
-	Card,
-	CardBody,
-	Panel,
-	PanelBody,
-} from 'wcpay/components/wp-components-wrapped';
 import apiFetch from '@wordpress/api-fetch';
 import { addQueryArgs } from '@wordpress/url';
 import { Loader } from '@woocommerce/onboarding';
@@ -20,6 +13,11 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
+import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
+import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
+import { Panel } from 'wcpay/components/wp-components-wrapped/components/panel';
+import { PanelBody } from 'wcpay/components/wp-components-wrapped/components/panel-body';
 import { recordEvent } from 'tracks';
 import Page from 'components/page';
 import BannerNotice from 'components/banner-notice';
