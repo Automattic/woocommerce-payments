@@ -860,11 +860,10 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			return false;
 		}
 
-		// Redirect to Connect page.
-		$this->redirect_service->redirect_to_connect_page(
-			null,
+		// Redirect to NOX onboarding flow.
+		$this->redirect_service->redirect_to_nox_flow(
 			WC_Payments_Onboarding_Service::FROM_PLUGIN_ACTIVATION,
-			[ 'source' => WC_Payments_Onboarding_Service::get_source() ]
+			WC_Payments_Onboarding_Service::get_source()
 		);
 
 		return true;
