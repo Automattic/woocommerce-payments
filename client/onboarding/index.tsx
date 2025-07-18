@@ -23,8 +23,9 @@ const OnboardingStepper = () => {
 		const urlParams = new URLSearchParams( window.location.search );
 
 		window.location.href = getAdminUrl( {
-			page: 'wc-admin',
-			path: '/payments/connect',
+			page: 'wc-settings',
+			tab: 'checkout',
+			path: '/woopayments/onboarding/business_verification',
 			source:
 				urlParams.get( 'source' )?.replace( /[^\w-]+/g, '' ) ||
 				'unknown',
