@@ -3,7 +3,7 @@
  */
 import React, { useEffect, useRef } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Modal } from 'wcpay/components/wp-components-wrapped';
+import { Modal } from 'wcpay/components/wp-components-wrapped/components/modal';
 import { dispatch } from '@wordpress/data';
 import interpolateComponents from '@automattic/interpolate-components';
 

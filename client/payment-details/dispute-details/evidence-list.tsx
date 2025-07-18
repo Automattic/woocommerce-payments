@@ -7,7 +7,8 @@ import React from 'react';
 import { __ } from '@wordpress/i18n';
 import apiFetch from '@wordpress/api-fetch';
 import { useDispatch } from '@wordpress/data';
-import { Button, PanelBody } from 'wcpay/components/wp-components-wrapped';
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
+import { PanelBody } from 'wcpay/components/wp-components-wrapped/components/panel-body';
 import { Icon, page } from '@wordpress/icons';
 
 /**

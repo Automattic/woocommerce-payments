@@ -4,15 +4,13 @@
  */
 import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-import {
-	Card,
-	CardBody,
-	CardDivider,
-} from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies
  */
+import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
+import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
+import { CardDivider } from 'wcpay/components/wp-components-wrapped/components/card-divider';
 import SettingsSection from 'wcpay/settings/settings-section';
 import SettingsLayout from 'wcpay/settings/settings-layout';
 import LoadableSettingsSection from 'wcpay/settings/loadable-settings-section';

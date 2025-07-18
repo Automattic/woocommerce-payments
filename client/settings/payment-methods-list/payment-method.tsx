@@ -4,7 +4,7 @@
  */
 import clsx from 'clsx';
 import React, { useContext } from 'react';
-import { CheckboxControl } from 'wcpay/components/wp-components-wrapped';
+import { CheckboxControl } from 'wcpay/components/wp-components-wrapped/components/checkbox-control';
 
 /**
  * Internal dependencies

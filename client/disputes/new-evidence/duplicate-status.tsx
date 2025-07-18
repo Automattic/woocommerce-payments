@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { RadioControl } from 'wcpay/components/wp-components-wrapped';
+import { RadioControl } from 'wcpay/components/wp-components-wrapped/components/radio-control';
 
 interface DuplicateStatusProps {
 	duplicateStatus: string;
