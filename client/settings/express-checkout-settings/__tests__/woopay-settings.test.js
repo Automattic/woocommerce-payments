@@ -148,7 +148,7 @@ describe( 'WooPaySettings', () => {
 
 		// confirm settings headings
 		expect(
-			screen.queryByRole( 'heading', {
+			screen.queryByRole( 'textbox', {
 				name: 'Checkout policies',
 			} )
 		).toBeInTheDocument();
