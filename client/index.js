@@ -71,7 +71,11 @@ addFilter(
 		} );
 
 		pages.push( {
-			container: OnboardingKycPage,
+			container: () => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<OnboardingKycPage />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/onboarding/kyc',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
