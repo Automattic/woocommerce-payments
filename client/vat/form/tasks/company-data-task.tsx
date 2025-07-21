@@ -100,12 +100,16 @@ export const CompanyDataTask = ( {
 					label={ __( 'Business name', 'woocommerce-payments' ) }
 					value={ companyName }
 					onChange={ setCompanyName }
+					__nextHasNoMarginBottom
+					__next40pxDefaultSize
 				/>
 
 				<TextareaControl
 					label={ __( 'Address', 'woocommerce-payments' ) }
 					value={ companyAddress }
 					onChange={ setCompanyAddress }
+					__nextHasNoMarginBottom
+					__next40pxDefaultSize
 				/>
 
 				<Button
@@ -113,6 +117,7 @@ export const CompanyDataTask = ( {
 					disabled={ isConfirmButtonDisabled || isLoading }
 					isBusy={ isLoading }
 					onClick={ submit }
+					__next40pxDefaultSize
 				>
 					{ __( 'Confirm', 'woocommerce-payments' ) }
 				</Button>
