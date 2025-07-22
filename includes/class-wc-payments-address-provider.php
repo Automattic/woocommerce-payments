@@ -9,11 +9,17 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+if ( ! class_exists( 'Automattic\\WooCommerce\\Internal\\AddressProvider\\AbstractAutomatticAddressProvider' ) ) {
+	return;
+}
+
 use Automattic\WooCommerce\Internal\AddressProvider\AbstractAutomatticAddressProvider;
 use WCPay\Logger;
 
 /**
  * Address provider implementation for WooCommerce Payments.
+ *
+ * @psalm-suppress UndefinedClass
  */
 class WC_Payments_Address_Provider extends AbstractAutomatticAddressProvider {
 	/**
