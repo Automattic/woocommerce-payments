@@ -10,7 +10,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use Automattic\WooCommerce\Internal\AddressProvider\AbstractAutomatticAddressProvider;
-use WCPay\Exceptions\API_Exception;
 use WCPay\Logger;
 
 /**
@@ -50,24 +49,8 @@ class WC_Payments_Address_Provider extends AbstractAutomatticAddressProvider {
 	public function get_address_service_jwt() {
 		try {
 			$response = $this->payments_api_client->get_address_autocomplete_token();
-			if ( is_array( $response ) && isset( $response['token'] ) ) {
-				return $response['token'];
-			}
-
-			Logger::error( 'Address service JWT response missing token: ' . wp_json_encode( $response ) );
-			return new WP_Error(
-				'wcpay_address_service_no_token',
-				__( 'No JWT token received from address service.', 'woocommerce-payments' )
-			);
-
-		} catch ( API_Exception $e ) {
-			Logger::error( 'Failed to get address service JWT: ' . $e->getMessage() );
-			return new WP_Error(
-				'wcpay_address_service_api_error',
-				__( 'Failed to retrieve address service token.', 'woocommerce-payments' ),
-				[ 'status' => $e->get_http_code() ]
-			);
-		} catch ( Exception $e ) {
+			return $response['token'];
+		} catch ( \Exception $e ) {
 			Logger::error( 'Unexpected error getting address service JWT: ' . $e->getMessage() );
 			return new WP_Error(
 				'wcpay_address_service_error',
