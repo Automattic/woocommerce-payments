@@ -1,18 +1,3 @@
-/* Cart button spinner fix - temporary location */
-.wc-block-cart__submit-button {
-	.wc-block-components-button__text {
-		position: relative !important;
-
-		.wc-block-components-spinner::after {
-			/* Fix spinner positioning - center it properly */
-			position: absolute !important;
-			top: 50% !important;
-			left: 50% !important;
-			margin: -0.5em 0 0 -0.5em !important;
-		}
-	}
-}
-
 .wcpay-express-checkout-wrapper {
 	width: 100%;
 	clear: both;

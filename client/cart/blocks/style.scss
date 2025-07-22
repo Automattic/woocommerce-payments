@@ -1,0 +1,28 @@
+/**
+ * Cart Blocks Styles
+ *
+ * This file contains styles specific to WooCommerce cart blocks
+ * and WCPay integrations within the cart context.
+ */
+
+/**
+ * Fix for cart submit button spinner alignment
+ *
+ */
+.wc-block-cart__submit-button .wc-block-components-button__text {
+	position: relative;
+
+	.wc-block-components-spinner {
+		/* Override the base style's top/left: initial */
+		top: 0;
+		left: 0;
+
+		&::after {
+			/* Ensure proper centering - this should match the base style */
+			position: absolute;
+			top: 50%;
+			left: 50%;
+			margin: -0.5em 0 0 -0.5em;
+		}
+	}
+}
