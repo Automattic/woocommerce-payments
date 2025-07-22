@@ -57,7 +57,11 @@ addFilter(
 		} );
 
 		pages.push( {
-			container: OnboardingPage,
+			container: () => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<OnboardingPage />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/onboarding',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
