@@ -876,20 +876,23 @@ class WC_Payments {
 	/**
 	 * Add the WooCommerce Payments address autocomplete provider, but only if a WCPay gateway is enabled.
 	 *
+	 * @psalm-suppress MissingDependency
+	 *
 	 * @param array $providers The address providers.
 	 * @return array The address providers.
 	 */
 	public static function add_address_provider( $providers ) {
-		if ( ! class_exists( 'Automattic\WooCommerce\Internal\AddressProvider\AbstractAutomatticAddressProvider' ) ) {
-			return $providers;
-		}
-
 		// Only enable address provider integration if a WCPay gateway is enabled.
 		if ( ! self::get_gateway()->is_enabled() ) {
 			return $providers;
 		}
 
+		if ( ! class_exists( 'Automattic\WooCommerce\Internal\AddressProvider\AbstractAutomatticAddressProvider' ) ) {
+			return $providers;
+		}
+
 		include_once __DIR__ . '/class-wc-payments-address-provider.php';
+
 		$providers[] = new WC_Payments_Address_Provider( self::$api_client );
 
 		return $providers;
