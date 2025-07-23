@@ -43,7 +43,7 @@ class WC_Payments_Admin_Settings_Test extends WCPAY_UnitTestCase {
 		$this->payments_admin_settings->display_test_mode_notice();
 		$result = ob_get_clean();
 
-		$this->assertStringNotContainsString( 'Test mode active', $result );
+		$this->assertStringNotContainsString( 'You are using a test account.', $result );
 	}
 
 	public function test_it_renders_test_mode_notice() {
@@ -53,7 +53,7 @@ class WC_Payments_Admin_Settings_Test extends WCPAY_UnitTestCase {
 		$this->payments_admin_settings->display_test_mode_notice();
 		$result = ob_get_clean();
 
-		$this->assertStringContainsStringIgnoringCase( 'Test mode active', $result );
+		$this->assertStringContainsStringIgnoringCase( 'You are using a test account.', $result );
 	}
 
 	public function test_it_adds_plugin_links() {

@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+Make the card reaaders page use the wp.components available in the WordPress installation.
