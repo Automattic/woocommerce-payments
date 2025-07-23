@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix: Spinner alignment in the "Proceed to Checkout" button of the cart page.
