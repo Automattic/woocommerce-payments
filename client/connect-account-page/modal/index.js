@@ -8,20 +8,11 @@ import interpolateComponents from '@automattic/interpolate-components';
  */
 import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 import { Modal } from 'wcpay/components/wp-components-wrapped/components/modal';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
 import { __, sprintf } from '@wordpress/i18n';
-import { Link, List } from '@woocommerce/components';
+import { List } from '@woocommerce/components';
 import { useState } from '@wordpress/element';
 import './style.scss';
-
-const LearnMoreLink = ( props ) => (
-	<Link
-		{ ...props }
-		href="https://woocommerce.com/document/woopayments/compatibility/countries/"
-		target="_blank"
-		rel="noopener noreferrer"
-		type="external"
-	/>
-);
 
 const OnboardingLocationCheckModal = ( {
 	countries,
@@ -60,7 +51,9 @@ const OnboardingLocationCheckModal = ( {
 			'WooPayments'
 		),
 		components: {
-			link: <LearnMoreLink />,
+			link: (
+				<ExternalLink href="https://woocommerce.com/document/woopayments/compatibility/countries/" />
+			),
 			list: <List items={ countries } />,
 		},
 	} );
@@ -80,17 +73,19 @@ const OnboardingLocationCheckModal = ( {
 				</div>
 				<div className="woocommerce-payments__onboarding_location_check-footer">
 					<Button
-						isSecondary
+						variant="secondary"
 						onClick={ handleConfirmedRequest }
 						isBusy={ isProcessingContinue }
+						__next40pxDefaultSize
 					>
 						{ __( 'Continue', 'woocommerce-payments' ) }
 					</Button>
 
 					<Button
-						isPrimary
+						variant="primary"
 						onClick={ handleDeclinedRequest }
 						disabled={ isProcessingContinue }
+						__next40pxDefaultSize
 					>
 						{ __( 'Cancel', 'woocommerce-payments' ) }
 					</Button>
