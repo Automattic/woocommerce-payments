@@ -4,13 +4,13 @@
  * External dependencies
  */
 import React, { useContext } from 'react';
-import { TabPanel } from 'wcpay/components/wp-components-wrapped';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
+import { TabPanel } from 'wcpay/components/wp-components-wrapped/components/tab-panel';
 import Page from 'components/page';
 import TransactionsList from './list';
 import { TestModeNotice } from 'components/test-mode-notice';

@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { TextControl } from 'wcpay/components/wp-components-wrapped';
+import { TextControl } from 'wcpay/components/wp-components-wrapped/components/text-control';
 
 interface ShippingDetailsProps {
 	shippingCarrier: string;
@@ -39,12 +39,14 @@ const ShippingDetails: React.FC< ShippingDetailsProps > = ( {
 			</h3>
 			<div className="wcpay-dispute-evidence-shipping-details__subheading">
 				{ __(
-					'Please check that all of the prefilled information is accurate and complete any empty fields.',
+					'Please ensure all prefilled information is correct and complete any missing details.',
 					'woocommerce-payments'
 				) }
 			</div>
 			<div className="wcpay-dispute-evidence-shipping-details__field-group">
 				<TextControl
+					__nextHasNoMarginBottom
+					__next40pxDefaultSize
 					label={ __( 'SHIPPING CARRIER', 'woocommerce-payments' ) }
 					onChange={ onShippingCarrierChange }
 					value={ shippingCarrier }
@@ -53,6 +55,8 @@ const ShippingDetails: React.FC< ShippingDetailsProps > = ( {
 			</div>
 			<div className="wcpay-dispute-evidence-shipping-details__field-group">
 				<TextControl
+					__nextHasNoMarginBottom
+					__next40pxDefaultSize
 					label={ __( 'SHIPPING DATE', 'woocommerce-payments' ) }
 					onChange={ onShippingDateChange }
 					type="date"
@@ -68,6 +72,8 @@ const ShippingDetails: React.FC< ShippingDetailsProps > = ( {
 			</div>
 			<div className="wcpay-dispute-evidence-shipping-details__field-group">
 				<TextControl
+					__nextHasNoMarginBottom
+					__next40pxDefaultSize
 					label={ __( 'TRACKING NUMBER', 'woocommerce-payments' ) }
 					onChange={ onShippingTrackingNumberChange }
 					value={ shippingTrackingNumber }
@@ -76,6 +82,8 @@ const ShippingDetails: React.FC< ShippingDetailsProps > = ( {
 			</div>
 			<div className="wcpay-dispute-evidence-shipping-details__field-group">
 				<TextControl
+					__nextHasNoMarginBottom
+					__next40pxDefaultSize
 					label={ __( 'SHIPPING ADDRESS', 'woocommerce-payments' ) }
 					onChange={ onShippingAddressChange }
 					value={ shippingAddress.replace( /\n/g, ' ' ) }

@@ -112,7 +112,7 @@ describe( 'SupportPhoneInput', () => {
 
 		fireEvent.change(
 			screen.getByLabelText(
-				'Support phone number (+1 0000000000 can be used in sandbox mode)'
+				'Support phone number (+1 0000000000 can be used for test accounts)'
 			),
 			{
 				target: { value: '+6580000000' },
@@ -123,7 +123,7 @@ describe( 'SupportPhoneInput', () => {
 		).toBeNull();
 		fireEvent.change(
 			screen.getByLabelText(
-				'Support phone number (+1 0000000000 can be used in sandbox mode)'
+				'Support phone number (+1 0000000000 can be used for test accounts)'
 			),
 			{
 				target: { value: '+6580500000' },
@@ -134,7 +134,7 @@ describe( 'SupportPhoneInput', () => {
 		).toBeNull();
 		fireEvent.change(
 			screen.getByLabelText(
-				'Support phone number (+1 0000000000 can be used in sandbox mode)'
+				'Support phone number (+1 0000000000 can be used for test accounts)'
 			),
 			{
 				target: { value: '+6580700000' },
@@ -145,7 +145,7 @@ describe( 'SupportPhoneInput', () => {
 		).toBeNull();
 		fireEvent.change(
 			screen.getByLabelText(
-				'Support phone number (+1 0000000000 can be used in sandbox mode)'
+				'Support phone number (+1 0000000000 can be used for test accounts)'
 			),
 			{
 				target: { value: '+6580800000' },
@@ -156,7 +156,7 @@ describe( 'SupportPhoneInput', () => {
 		).toBeNull();
 		fireEvent.change(
 			screen.getByLabelText(
-				'Support phone number (+1 0000000000 can be used in sandbox mode)'
+				'Support phone number (+1 0000000000 can be used for test accounts)'
 			),
 			{
 				target: { value: '+6580900000' },
@@ -167,7 +167,56 @@ describe( 'SupportPhoneInput', () => {
 		).toBeNull();
 	} );
 
-	it( 'in sandbox mode, allow all 0s number', async () => {
+	it( 'Hong Kong phone number validation special cases - starting with 4, 7, 8', async () => {
+		useAccountBusinessSupportPhone.mockReturnValue( [
+			'+85221234567', // test phone number.
+			jest.fn(),
+		] );
+		useTestModeOnboarding.mockReturnValue( true );
+
+		const { container } = render( <SupportPhoneInput /> );
+		expect(
+			container.querySelector( '.components-notice.is-error' )
+		).toBeNull();
+
+		fireEvent.change(
+			screen.getByLabelText(
+				'Support phone number (+1 0000000000 can be used for test accounts)'
+			),
+			{
+				target: { value: '+85241234567' },
+			}
+		);
+		expect(
+			container.querySelector( '.components-notice.is-error' )
+		).toBeNull();
+
+		fireEvent.change(
+			screen.getByLabelText(
+				'Support phone number (+1 0000000000 can be used for test accounts)'
+			),
+			{
+				target: { value: '+85271234567' },
+			}
+		);
+		expect(
+			container.querySelector( '.components-notice.is-error' )
+		).toBeNull();
+
+		fireEvent.change(
+			screen.getByLabelText(
+				'Support phone number (+1 0000000000 can be used for test accounts)'
+			),
+			{
+				target: { value: '+85281234567' },
+			}
+		);
+		expect(
+			container.querySelector( '.components-notice.is-error' )
+		).toBeNull();
+	} );
+
+	it( 'for test accounts, allow all 0s number', async () => {
 		useAccountBusinessSupportPhone.mockReturnValue( [
 			'+10000000000', // test phone number.
 			jest.fn(),

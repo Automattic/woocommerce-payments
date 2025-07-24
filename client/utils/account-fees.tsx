@@ -15,7 +15,7 @@ import { formatFee } from 'utils/fees';
 import React from 'react';
 import { BaseFee, DiscountFee, FeeStructure } from 'wcpay/types/fees';
 import { createInterpolateElement } from '@wordpress/element';
-import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
 import PAYMENT_METHOD_IDS from 'constants/payment-method';
 
 const countryFeeStripeDocsBaseLink =

@@ -3,7 +3,7 @@
 	flex-flow: column;
 
 	&:not( &:last-child ) {
-		margin-bottom: 24px;
+		margin-bottom: 50px;
 	}
 
 	@include breakpoint( '>800px' ) {
@@ -13,11 +13,12 @@
 	&__details {
 		flex: 0 1 auto;
 		margin-bottom: 24px;
-		max-width: 328px;
+		max-width: 100%;
 
 		@include breakpoint( '>800px' ) {
 			flex: 0 0 33%;
 			margin: 0 24px 0 0;
+			max-width: 328px;
 		}
 
 		h2 {
@@ -52,37 +53,14 @@
 
 	&__controls {
 		flex: 1 1 auto;
-	}
-}
 
-body {
-	&.woocommerce-payments-checkout-section {
-		.settings-section {
-			&:not( &:last-child ) {
-				margin-bottom: 50px;
-			}
+		.components-base-control:not( :last-child ) {
+			margin-bottom: 16px;
 		}
-		.settings-section__controls {
-			padding-top: 24px;
-			padding-bottom: 24px;
 
-			.components-card__header {
-				&.components-card-header {
-					&.payment-methods__header {
-						padding-left: 0;
-					}
-				}
-			}
-		}
-	}
-}
-
-@media ( max-width: 800px ) {
-	body {
-		&.woocommerce-payments-checkout-section {
-			.settings-section__details {
-				max-width: 100%;
-			}
+		.components-base-control + h4,
+		.components-radio-control + h4 {
+			margin-top: 24px;
 		}
 	}
 }

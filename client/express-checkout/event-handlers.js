@@ -143,17 +143,24 @@ export const onConfirmHandler = async (
 			);
 		}
 
-		const confirmationRequest = api.confirmIntent(
-			orderResponse.payment_result.redirect_url
-		);
+		// Extract redirect URL from payment_details if redirect_url is empty
+		let redirectUrl = orderResponse.payment_result.redirect_url;
+		if ( ! redirectUrl ) {
+			const redirectDetail = orderResponse.payment_result.payment_details?.find(
+				( detail ) => detail.key === 'redirect'
+			);
+			redirectUrl = redirectDetail?.value || '';
+		}
+
+		const confirmationRequest = api.confirmIntent( redirectUrl );
 
 		// `true` means there is no intent to confirm.
 		if ( confirmationRequest === true ) {
-			completePayment( orderResponse.payment_result.redirect_url );
-		} else {
-			const redirectUrl = await confirmationRequest;
-
 			completePayment( redirectUrl );
+		} else {
+			const authenticatedRedirectUrl = await confirmationRequest;
+
+			completePayment( authenticatedRedirectUrl );
 		}
 	} catch ( e ) {
 		// API errors are not parsed, so we need to do it ourselves.

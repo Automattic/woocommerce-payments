@@ -9,7 +9,7 @@ import React from 'react';
  * Internal dependencies
  */
 import CardNotice from '../';
-import { Button } from 'wcpay/components/wp-components-wrapped';
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 
 describe( 'CardNotice component', () => {
 	test( 'should render child', () => {

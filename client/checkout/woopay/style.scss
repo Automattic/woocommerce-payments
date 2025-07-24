@@ -24,6 +24,21 @@
 	}
 }
 
+/* Fix for address form email field spinner alignment */
+.wc-block-components-address-form__email {
+	position: relative;
+
+	.wc-block-components-spinner {
+		/* Override the base style's top/left: initial */
+		top: 50%;
+		left: auto;
+		right: 10px;
+		width: 24px;
+		height: 24px;
+		transform: translateY( -50% );
+	}
+}
+
 .woopay-login-session-iframe {
 	width: 100%;
 	height: 100vh;
@@ -150,6 +165,8 @@
 	box-sizing: content-box;
 	text-align: center;
 	font-size: 1.25em;
+	top: initial;
+	left: initial;
 
 	&::after {
 		content: ' ';

@@ -3,19 +3,18 @@
 /**
  * External dependencies
  */
-import {
-	Button,
-	Card,
-	CardBody,
-	CardHeader,
-	FlexBlock,
-	FlexItem,
-} from 'wcpay/components/wp-components-wrapped';
 import { __ } from '@wordpress/i18n';
+import { addQueryArgs } from '@wordpress/url';
 
 /**
  * Internal dependencies
  */
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
+import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
+import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
+import { CardHeader } from 'wcpay/components/wp-components-wrapped/components/card-header';
+import { FlexBlock } from 'wcpay/components/wp-components-wrapped/components/flex-block';
+import { FlexItem } from 'wcpay/components/wp-components-wrapped/components/flex-item';
 import AccountFees from './account-fees';
 import AccountStatusItem from './account-status-item';
 import DepositsStatus from 'components/deposits-status';
@@ -25,7 +24,6 @@ import './style.scss';
 import './shared.scss';
 import { AccountTools } from './account-tools';
 import { recordEvent } from 'wcpay/tracks';
-import { addQueryArgs } from '@wordpress/url';
 
 const AccountStatusCard = ( props ) => {
 	const { title, children, value } = props;
@@ -92,6 +90,7 @@ const AccountStatusDetails = ( props ) => {
 						}
 						href={ accountLink }
 						target={ '_blank' }
+						__next40pxDefaultSize
 					>
 						{ __( 'Edit details', 'woocommerce-payments' ) }
 					</Button>

@@ -6,6 +6,8 @@ import React from 'react';
 import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 import { Icon } from 'wcpay/components/wp-components-wrapped/components/icon';
 import { Modal } from 'wcpay/components/wp-components-wrapped/components/modal';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
+import UnbundledWpComponentsProvider from 'wcpay/wordpress-components-context/unbundled-wp-components-provider';
 import {
 	createInterpolateElement,
 	useEffect,
@@ -87,14 +89,7 @@ const SubscriptionProductOnboardingModalContent = ( {
 						'woocommerce-payments'
 					),
 					{
-						a: (
-							// eslint-disable-next-line jsx-a11y/anchor-has-content
-							<a
-								href="https://wordpress.com/tos/"
-								target="_blank"
-								rel="noreferrer"
-							/>
-						),
+						a: <ExternalLink href="https://wordpress.com/tos/" />,
 					}
 				) }
 			</p>
@@ -135,11 +130,13 @@ const SubscriptionProductOnboardingModal = () => {
 	}
 
 	return (
-		<SubscriptionProductOnboardingModalContent
-			onRequestClose={ () => {
-				setOpen( false );
-			} }
-		/>
+		<UnbundledWpComponentsProvider>
+			<SubscriptionProductOnboardingModalContent
+				onRequestClose={ () => {
+					setOpen( false );
+				} }
+			/>
+		</UnbundledWpComponentsProvider>
 	);
 };
 

@@ -3,7 +3,7 @@
  */
 import React, { useContext, useMemo, Dispatch, SetStateAction } from 'react';
 import { __ } from '@wordpress/i18n';
-import { TextControl } from 'wcpay/components/wp-components-wrapped';
+import { TextControl } from 'wcpay/components/wp-components-wrapped/components/text-control';
 
 /**
  * Internal dependencies
@@ -89,6 +89,8 @@ const OrderItemsThresholdCustomForm: React.FC< OrderItemsThresholdCustomFormProp
 						) }
 						min="1"
 						step="1"
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
 					/>
 				</div>
 				<div className="fraud-protection-rule-toggle-children-vertical-form">
@@ -113,6 +115,8 @@ const OrderItemsThresholdCustomForm: React.FC< OrderItemsThresholdCustomFormProp
 						) }
 						min="1"
 						step="1"
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
 					/>
 				</div>
 			</div>

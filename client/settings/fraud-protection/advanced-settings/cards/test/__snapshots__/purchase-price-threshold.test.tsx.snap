@@ -80,7 +80,7 @@ exports[`Purchase price threshold card renders correctly 1`] = `
       class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -272,7 +272,7 @@ exports[`Purchase price threshold card renders correctly when enabled 1`] = `
       class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -594,7 +594,7 @@ exports[`Purchase price threshold card renders correctly when enabled and checke
       class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -881,7 +881,7 @@ exports[`Purchase price threshold card renders like disabled when checked, but n
       class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body wcpay-card-body emotion-4 emotion-1"
+        class="components-card__body components-card-body wcpay-card-body wcpay-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >

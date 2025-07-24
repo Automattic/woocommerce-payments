@@ -1,7 +1,8 @@
 /**
  * External dependencies
  */
-import { TextControl, Notice } from 'wcpay/components/wp-components-wrapped';
+import { TextControl } from 'wcpay/components/wp-components-wrapped/components/text-control';
+import { Notice } from 'wcpay/components/wp-components-wrapped/components/notice';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -48,6 +49,8 @@ const SupportEmailInput = ( { setInputVallid } ) => {
 				value={ supportEmail }
 				onChange={ setSupportEmail }
 				data-testid={ 'account-business-support-email-input' }
+				__nextHasNoMarginBottom
+				__next40pxDefaultSize
 			/>
 		</>
 	);

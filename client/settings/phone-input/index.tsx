@@ -63,6 +63,25 @@ const PhoneNumberInput = ( {
 				return true;
 			}
 		}
+
+		// Special case for Hong Kong: the latest HK Telecom numbers have adopted new numbers starting with 4.
+		// Numbers starting from 7 and 8 also can be mobile numbers (as well as pager numbers and forwarding service).
+		if (
+			'852' === instance.getSelectedCountryData().dialCode &&
+			! instance.isValidNumber()
+		) {
+			if ( 12 !== instance.getNumber().length ) {
+				return false;
+			}
+
+			if (
+				[ '4', '7', '8' ].includes(
+					instance.getNumber().substr( 4, 1 )
+				)
+			) {
+				return true;
+			}
+		}
 		return instance.isValidNumber();
 	};
 

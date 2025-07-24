@@ -8,10 +8,8 @@ import { external } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
-import {
-	TextareaControl,
-	Button,
-} from 'wcpay/components/wp-components-wrapped';
+import { TextareaControl } from 'wcpay/components/wp-components-wrapped/components/textarea-control';
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 import type { CoverLetterProps } from './types';
 
 const CoverLetter: React.FC< CoverLetterProps > = ( {
@@ -111,6 +109,7 @@ const CoverLetter: React.FC< CoverLetterProps > = ( {
 				rows={ 30 }
 				className="wcpay-dispute-evidence-cover-letter__textarea"
 				readOnly={ readOnly }
+				__nextHasNoMarginBottom
 			/>
 			<Button
 				className="wcpay-dispute-evidence-cover-letter__print"
@@ -119,6 +118,7 @@ const CoverLetter: React.FC< CoverLetterProps > = ( {
 				iconPosition="right"
 				iconSize={ 24 }
 				icon={ external }
+				__next40pxDefaultSize
 			>
 				{ __( 'Preview cover letter', 'woocommerce-payments' ) }
 			</Button>

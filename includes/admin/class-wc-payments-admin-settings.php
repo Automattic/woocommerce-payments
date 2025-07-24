@@ -55,16 +55,37 @@ class WC_Payments_Admin_Settings {
 			?>
 			<div id="wcpay-test-mode-notice" class="notice notice-warning">
 				<p>
-					<b><?php esc_html_e( 'Test mode active: ', 'woocommerce-payments' ); ?></b>
+					<b><?php esc_html_e( 'You are using a test account. ', 'woocommerce-payments' ); ?></b>
 					<?php
 						printf(
-							/* translators: %s: WooPayments */
-							esc_html__( "All transactions are simulated. Customers can't make real purchases through %s.", 'woocommerce-payments' ),
-							'WooPayments'
+							wp_kses_post(
+								/* translators: %s: URL to learn more */
+								__( 'Provide additional details about your business so you can begin accepting real payments. <a href="%s" target="_blank" rel="noreferrer noopener">Learn more</a>', 'woocommerce-payments' ),
+							),
+							esc_url( 'https://woocommerce.com/document/woopayments/startup-guide/#sign-up-process' )
 						);
 					?>
 				</p>
+				<p>
+					<a id="wcpay-activate-payments-button" href="#" class="button button-secondary">
+						<?php esc_html_e( 'Activate payments', 'woocommerce-payments' ); ?>
+					</a>
+				</p>
 			</div>
+			<script type="text/javascript">
+				// We dispatch an event to trigger the modal.
+				// The listener is in the general-settings/index.js file.
+				document.addEventListener( 'DOMContentLoaded', function() {
+					var activateButton = document.getElementById( 'wcpay-activate-payments-button' );
+					if ( ! activateButton ) {
+						return;
+					}
+					activateButton.addEventListener( 'click', function( e ) {
+						e.preventDefault();
+						document.dispatchEvent( new CustomEvent( 'wcpay:activate_payments' ) );
+					} );
+				} );
+			</script>
 			<?php
 		}
 	}

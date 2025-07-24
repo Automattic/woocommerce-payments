@@ -3,21 +3,19 @@
  */
 import React, { useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
-import {
-	Button,
-	Flex,
-	FlexItem,
-	SnackbarList,
-} from 'wcpay/components/wp-components-wrapped';
-// eslint-disable-next-line no-restricted-syntax
-import { NoticeList } from '@wordpress/components';
 import { Icon, thumbsUp, thumbsDown } from '@wordpress/icons';
 import { useSelect } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
+// eslint-disable-next-line no-restricted-syntax
+import type { NoticeList } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
+import { Flex } from 'wcpay/components/wp-components-wrapped/components/flex';
+import { FlexItem } from 'wcpay/components/wp-components-wrapped/components/flex-item';
+import { SnackbarList } from 'wcpay/components/wp-components-wrapped/components/snackbar-list';
 import { recordEvent } from 'wcpay/tracks';
 import { PositiveFeedbackModal } from './positive-modal';
 import { NegativeFeedbackModal } from './negative-modal';
@@ -126,6 +124,7 @@ const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
 											showPositiveFeedbackModal();
 											dismissPrompt();
 										} }
+										__next40pxDefaultSize
 									>
 										<Icon
 											icon={ thumbsUp }
@@ -153,6 +152,7 @@ const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
 											showNegativeFeedbackModal();
 											dismissPrompt();
 										} }
+										__next40pxDefaultSize
 									>
 										<Icon
 											icon={ thumbsDown }

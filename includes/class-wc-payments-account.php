@@ -824,7 +824,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	 * @param string|null $error_message Optional error message to show in a notice.
 	 */
 	public function redirect_to_onboarding_welcome_page( $error_message = null ) {
-		$this->redirect_service->redirect_to_connect_page( $error_message );
+		$this->redirect_service->redirect_to_nox_flow();
 	}
 
 	/**
@@ -860,11 +860,10 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			return false;
 		}
 
-		// Redirect to Connect page.
-		$this->redirect_service->redirect_to_connect_page(
-			null,
+		// Redirect to NOX onboarding flow.
+		$this->redirect_service->redirect_to_nox_flow(
 			WC_Payments_Onboarding_Service::FROM_PLUGIN_ACTIVATION,
-			[ 'source' => WC_Payments_Onboarding_Service::get_source() ]
+			WC_Payments_Onboarding_Service::get_source()
 		);
 
 		return true;
@@ -895,7 +894,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 		// Return and redirect early if the code is invalid.
 		if ( empty( $referral_code ) ) {
-			$this->redirect_service->redirect_to_connect_page();
+			$this->redirect_service->redirect_to_nox_flow();
 			return;
 		}
 
@@ -908,8 +907,8 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			]
 		);
 
-		// Redirect to the connect page.
-		$this->redirect_service->redirect_to_connect_page( null, WC_Payments_Onboarding_Service::FROM_REFERRAL );
+		// Redirect to the NOX flow.
+		$this->redirect_service->redirect_to_nox_flow( WC_Payments_Onboarding_Service::FROM_REFERRAL );
 	}
 
 	/**
@@ -936,16 +935,11 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			return false;
 		}
 
-		// If everything is NOT in good working condition, redirect to Payments Connect page.
+		// If everything is NOT in good working condition, redirect to the NOX flow.
 		if ( ! $this->has_working_jetpack_connection() || ! $this->is_stripe_account_valid() ) {
-			$this->redirect_service->redirect_to_connect_page(
-				sprintf(
-				/* translators: 1: WooPayments. */
-					__( 'Please <b>complete your %1$s setup</b> to process transactions.', 'woocommerce-payments' ),
-					'WooPayments'
-				),
+			$this->redirect_service->redirect_to_nox_flow(
 				WC_Payments_Onboarding_Service::FROM_WCADMIN_PAYMENTS_SETTINGS,
-				[ 'source' => WC_Payments_Onboarding_Service::SOURCE_WCADMIN_SETTINGS_PAGE ]
+				WC_Payments_Onboarding_Service::SOURCE_WCADMIN_SETTINGS_PAGE
 			);
 			return true;
 		}
@@ -998,14 +992,10 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				);
 			}
 
-			$this->redirect_service->redirect_to_connect_page(
-				sprintf(
-				/* translators: %s: WooPayments */
-					__( 'Please connect to WordPress.com to start using %s.', 'woocommerce-payments' ),
-					'WooPayments'
-				),
+			// Redirect to the NOX flow.
+			$this->redirect_service->redirect_to_nox_flow(
 				WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD,
-				[ 'source' => $onboarding_source ]
+				$onboarding_source
 			);
 			return true;
 		}
@@ -1025,10 +1015,10 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 		// Merchants with an invalid Stripe account, need to go to the Stripe KYC, not our onboarding wizard.
 		if ( ! $this->is_stripe_account_valid() ) {
-			$this->redirect_service->redirect_to_connect_page(
-				null,
+			// Redirect to the NOX flow to continue the Stripe KYC onboarding.
+			$this->redirect_service->redirect_to_nox_flow(
 				WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD,
-				[ 'source' => $onboarding_source ]
+				$onboarding_source
 			);
 			return true;
 		}
@@ -1150,19 +1140,11 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			return false;
 		}
 
-		// If everything is NOT in good working condition, redirect to Payments Connect page.
+		// If everything is NOT in good working condition, redirect to the NOX flow to complete connection.
 		if ( ! $this->has_working_jetpack_connection() || ! $this->is_stripe_account_valid() ) {
-			$this->redirect_service->redirect_to_connect_page(
-				sprintf(
-				/* translators: 1: WooPayments. */
-					__( 'Please <b>complete your %1$s setup</b> to process transactions.', 'woocommerce-payments' ),
-					'WooPayments'
-				),
+			$this->redirect_service->redirect_to_nox_flow(
 				WC_Payments_Onboarding_Service::FROM_OVERVIEW_PAGE,
-				[
-					'test_mode' => ( ! empty( $_GET['test_mode'] ) && wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) ? 'true' : false,
-					'source'    => WC_Payments_Onboarding_Service::get_source(),
-				]
+				WC_Payments_Onboarding_Service::get_source()
 			);
 			return true;
 		}
@@ -1365,15 +1347,11 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			// Make changes to account data as instructed by action GET params.
 			// This needs to happen early because we need to make things "not OK" for the rest of the logic.
 			if ( ! empty( $_GET['wcpay-reset-account'] ) && 'true' === $_GET['wcpay-reset-account'] ) {
-				// If the account does not exist, there's nothing to reset. Redirect the merchant to the connect page with error message.
+				// If the account does not exist, there's nothing to reset. Redirect the merchant to the NOX flow where the error will be shown.
 				if ( ! $this->is_stripe_connected() ) {
-					$this->redirect_service->redirect_to_connect_page(
-						'Failed to reset the account: account does not exist.',
+					$this->redirect_service->redirect_to_nox_flow(
 						$from,
-						[
-							'wcpay-reset-account-error' => '1',
-							'source'                    => $onboarding_source,
-						]
+						$onboarding_source
 					);
 					return;
 				}
@@ -1416,22 +1394,17 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				}
 
 				// Otherwise, when we reset the account we want to always go the Connect page. Redirect immediately!
-				$this->redirect_service->redirect_to_connect_page(
-					null,
+				$this->redirect_service->redirect_to_nox_flow(
 					WC_Payments_Onboarding_Service::FROM_RESET_ACCOUNT,
-					[ 'source' => $onboarding_source ]
+					$onboarding_source
 				);
 				return;
 			} elseif ( ! empty( $_GET['wcpay-disable-onboarding-test-mode'] ) && 'true' === $_GET['wcpay-disable-onboarding-test-mode'] ) {
-				// If the account does not exist, redirect the merchant to the connect page with error message.
+				// If the account does not exist, redirect the merchant to the NOX flow where the error will be shown.
 				if ( ! $this->is_stripe_connected() ) {
-					$this->redirect_service->redirect_to_connect_page(
-						'Failed to activate the account: account does not exist.',
+					$this->redirect_service->redirect_to_nox_flow(
 						$from,
-						[
-							'wcpay-reset-account-error' => '1',
-							'source'                    => $onboarding_source,
-						]
+						$onboarding_source
 					);
 					return;
 				}
@@ -1554,7 +1527,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				return;
 			}
 
-			// Handle the specific from places that need to go to the Connect page first and start onboarding from there.
+			// Handle the specific from places that need to go to the NOX flow and start onboarding from there.
 			if (
 				in_array(
 					$from,
@@ -1848,8 +1821,9 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	public function get_provider_onboarding_page_url(): string {
 		return add_query_arg(
 			[
-				'page' => 'wc-admin',
-				'path' => '/payments/connect',
+				'page' => 'wc-settings',
+				'tab'  => 'checkout',
+				'path' => '/woopayments/onboarding',
 			],
 			admin_url( 'admin.php' )
 		);

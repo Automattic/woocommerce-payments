@@ -3,12 +3,6 @@
 /**
  * External dependencies
  */
-import {
-	Button,
-	CheckboxControl,
-	Notice,
-	TextControl,
-} from 'wcpay/components/wp-components-wrapped';
 import { __, sprintf } from '@wordpress/i18n';
 import React, { useContext, useState } from 'react';
 import apiFetch from '@wordpress/api-fetch';
@@ -16,6 +10,10 @@ import apiFetch from '@wordpress/api-fetch';
 /**
  * Internal dependencies
  */
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
+import { CheckboxControl } from 'wcpay/components/wp-components-wrapped/components/checkbox-control';
+import { Notice } from 'wcpay/components/wp-components-wrapped/components/notice';
+import { TextControl } from 'wcpay/components/wp-components-wrapped/components/text-control';
 import CollapsibleBody from 'wcpay/components/wizard/collapsible-body';
 import WizardTaskItem from 'wcpay/components/wizard/task-item';
 import WizardTaskContext from 'wcpay/components/wizard/task/context';

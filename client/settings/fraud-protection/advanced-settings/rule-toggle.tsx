@@ -3,14 +3,12 @@
  */
 import React, { useContext } from 'react';
 import { __ } from '@wordpress/i18n';
-import {
-	ToggleControl,
-	RadioControl,
-} from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies
  */
+import { ToggleControl } from 'wcpay/components/wp-components-wrapped/components/toggle-control';
+import { RadioControl } from 'wcpay/components/wp-components-wrapped/components/radio-control';
 import './../style.scss';
 import FraudPreventionSettingsContext from './context';
 import { FraudPreventionSettings } from '../interfaces';

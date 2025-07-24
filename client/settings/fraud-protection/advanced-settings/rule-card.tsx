@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { Card } from 'wcpay/components/wp-components-wrapped';
+import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
 
 /**
  * Internal dependencies
@@ -20,7 +20,7 @@ const FraudProtectionRuleCard: React.FC< React.PropsWithChildren<
 > > = ( { title, children, id } ) => {
 	return (
 		<Card id={ id } className="fraud-protection-rule-card">
-			<CardBody>
+			<CardBody className="wcpay-card-body">
 				<div>
 					<p className="fraud-protection-rule-card-header">
 						{ title }
