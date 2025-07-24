@@ -336,9 +336,9 @@ export const addToCartFromShopPage = async (
 
 export const selectPaymentMethod = async (
 	page: Page,
-	paymentMethod = 'Cards'
+	paymentMethod = 'Card'
 ) => {
-	await page.getByText( paymentMethod ).click();
+	await page.getByText( paymentMethod, { exact: true } ).click();
 };
 
 /**
@@ -542,7 +542,7 @@ export const addSavedCard = async (
 ) => {
 	await page.getByRole( 'link', { name: 'Add payment method' } ).click();
 	await page.waitForLoadState( 'networkidle' );
-	await page.getByText( 'Cards', { exact: true } ).click();
+	await page.getByText( 'Card', { exact: true } ).click();
 	const frameHandle = page.getByTitle( 'Secure payment input frame' );
 	const stripeFrame = frameHandle.contentFrame();
 

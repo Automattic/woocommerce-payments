@@ -625,7 +625,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$afterpay_method   = $this->payment_methods['afterpay_clearpay'];
 		$grabpay_method    = $this->payment_methods['grabpay'];
 		$this->assertEquals( 'card', $card_method->get_id() );
-		$this->assertEquals( 'Cards', $card_method->get_title() );
+		$this->assertEquals( 'Card', $card_method->get_title() );
 		$this->assertEquals( 'Visa debit card', $card_method->get_title( 'US', $mock_visa_details ) );
 		$this->assertEquals( 'Mastercard credit card', $card_method->get_title( 'US', $mock_mastercard_details ) );
 		$this->assertTrue( $card_method->is_enabled_at_checkout( 'US' ) );

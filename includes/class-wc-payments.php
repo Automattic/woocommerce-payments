@@ -1885,6 +1885,15 @@ class WC_Payments {
 		if ( WC_Payments_Utils::is_cart_block() ) {
 			self::register_script_with_dependencies( 'WCPAY_CART_BLOCK', 'dist/cart-block', [ 'wc-cart-block-frontend' ] );
 			wp_enqueue_script( 'WCPAY_CART_BLOCK' );
+
+			// Enqueue cart block styles.
+			WC_Payments_Utils::enqueue_style(
+				'WCPAY_CART_BLOCK',
+				plugins_url( 'dist/cart-block.css', WCPAY_PLUGIN_FILE ),
+				[],
+				self::get_file_version( 'dist/cart-block.css' ),
+				'all'
+			);
 		}
 	}
 
