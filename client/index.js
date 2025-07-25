@@ -293,7 +293,13 @@ addFilter(
 		} );
 		if ( wcpaySettings && wcpaySettings.featureFlags.documents ) {
 			pages.push( {
-				container: DocumentsPage,
+				container: () => (
+					<WordPressComponentsContext.Provider
+						value={ wp.components }
+					>
+						<DocumentsPage />
+					</WordPressComponentsContext.Provider>
+				),
 				path: '/payments/documents',
 				wpOpenMenu: menuID,
 				breadcrumbs: [
