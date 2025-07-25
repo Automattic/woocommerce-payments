@@ -267,7 +267,11 @@ addFilter(
 			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
-			container: CapitalPage,
+			container: () => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<CapitalPage />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/loans',
 			wpOpenMenu: menuID,
 			breadcrumbs: [

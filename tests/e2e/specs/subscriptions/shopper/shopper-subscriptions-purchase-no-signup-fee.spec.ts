@@ -94,7 +94,7 @@ describeif( shouldRunSubscriptionsTests )(
 				.replace( '#', '' );
 
 			const transactionPageLink = await merchantPage
-				.getByText( 'Payment via Cards', { exact: false } )
+				.getByText( 'Payment via Card', { exact: false } )
 				.getByRole( 'link', { name: /pi_.+/ } )
 				.getAttribute( 'href' );
 

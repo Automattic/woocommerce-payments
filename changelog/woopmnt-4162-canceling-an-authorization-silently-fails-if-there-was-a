@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix: Allow multiple authorization cancellations on the same order.
