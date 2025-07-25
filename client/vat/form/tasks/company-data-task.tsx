@@ -97,6 +97,7 @@ export const CompanyDataTask = ( {
 		>
 			<CollapsibleBody>
 				<TextControl
+					className="wcpay-company-data-task__text-control"
 					label={ __( 'Business name', 'woocommerce-payments' ) }
 					value={ companyName }
 					onChange={ setCompanyName }
@@ -105,6 +106,7 @@ export const CompanyDataTask = ( {
 				/>
 
 				<TextareaControl
+					className="wcpay-company-data-task__textarea-control"
 					label={ __( 'Address', 'woocommerce-payments' ) }
 					value={ companyAddress }
 					onChange={ setCompanyAddress }

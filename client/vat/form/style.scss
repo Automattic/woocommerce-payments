@@ -2,3 +2,25 @@
 	margin: 0;
 	margin-top: 15px;
 }
+
+// This matches the styling of the VatNumberTask component before __nextHasNoMarginBottom was added in a few internal components.
+.wcpay-vat-number-task {
+	&__checkbox {
+		margin-bottom: 16px;
+	}
+
+	&__text-control {
+		margin-bottom: 16px;
+	}
+}
+
+// This matches the styling of the CompanyDataTask component before __nextHasNoMarginBottom was added in a few internal components.
+.wcpay-company-data-task {
+	&__text-control {
+		margin-bottom: 16px;
+	}
+
+	&__textarea-control {
+		margin-bottom: 16px;
+	}
+}
