@@ -168,6 +168,7 @@ const ActiveLoanSummary = (): JSX.Element => {
 								filter: 'advanced',
 								loan_id_is: getActiveLoanId(),
 							} ) }
+							__next40pxDefaultSize
 						>
 							{ __(
 								'View transactions',

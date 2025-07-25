@@ -2,12 +2,12 @@
  * External dependencies
  */
 import React from 'react';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 import { isEmpty, mapValues } from 'lodash';
 
 /**
  * Internal dependencies
  */
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 import { useStepperContext } from 'components/stepper';
 import { Item as SelectItem } from 'components/custom-select-control';
 import { ListItem as GroupedSelectItem } from 'components/grouped-select-control';
@@ -51,6 +51,7 @@ export const OnboardingForm: React.FC< { children?: React.ReactNode } > = ( {
 				variant={ 'primary' }
 				type="submit"
 				className="stepper__cta"
+				__next40pxDefaultSize
 			>
 				{ strings.continue }
 			</Button>
