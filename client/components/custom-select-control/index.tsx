@@ -10,7 +10,6 @@
  * External Dependencies
  */
 import React from 'react';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 import { check, chevronDown, Icon } from '@wordpress/icons';
 import { useCallback } from '@wordpress/element';
 import clsx from 'clsx';
@@ -20,6 +19,7 @@ import { useSelect, UseSelectState } from 'downshift';
 /**
  * Internal Dependencies
  */
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 import './style.scss';
 
 export interface Item {
@@ -172,6 +172,7 @@ function CustomSelectControl< ItemType extends Item >( {
 					),
 					name,
 				} ) }
+				__next40pxDefaultSize
 			>
 				<span className="components-custom-select-control__button-value">
 					{ itemString || placeholder }

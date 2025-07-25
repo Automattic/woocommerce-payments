@@ -57,7 +57,11 @@ addFilter(
 		} );
 
 		pages.push( {
-			container: OnboardingPage,
+			container: () => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<OnboardingPage />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/onboarding',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
@@ -71,7 +75,11 @@ addFilter(
 		} );
 
 		pages.push( {
-			container: OnboardingKycPage,
+			container: () => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<OnboardingKycPage />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/onboarding/kyc',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
@@ -267,7 +275,11 @@ addFilter(
 			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
-			container: CapitalPage,
+			container: () => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<CapitalPage />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/loans',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
