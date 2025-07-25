@@ -4,13 +4,17 @@
  */
 import React, { useMemo, useState } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
-import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
 import { TextControlWithAffixes } from '@woocommerce/components';
 import {
 	formatCurrency,
 	isZeroDecimalCurrency,
 } from 'multi-currency/utils/currency';
+
+/**
+ * Internal dependencies
+ */
+import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
+import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
 
 const CurrencyPreview = ( {
 	storeCurrency,

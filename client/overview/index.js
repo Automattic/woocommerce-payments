@@ -181,7 +181,7 @@ const OverviewPage = () => {
 	if ( ! isTestDriveSuccessDisplayed && isSandboxOnboardedSuccessful ) {
 		dispatch( 'core/notices' ).createSuccessNotice(
 			__(
-				'Success! You can start using WooPayments in sandbox mode.',
+				'Success! You can start using WooPayments in test mode.',
 				'woocommerce-payments'
 			)
 		);

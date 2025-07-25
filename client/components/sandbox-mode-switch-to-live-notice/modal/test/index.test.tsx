@@ -14,6 +14,16 @@ jest.mock( '@wordpress/data', () => ( {
 	useDispatch: jest.fn().mockReturnValue( { updateOptions: jest.fn() } ),
 } ) );
 
+// Mock the getAdminUrl utility to return an absolute URL
+jest.mock( 'utils', () => ( {
+	getAdminUrl: jest.fn(
+		( args: Record< string, any > ) =>
+			`http://localhost/wp-admin/admin.php?${ new URLSearchParams(
+				args
+			).toString() }`
+	),
+} ) );
+
 declare const global: {
 	wcpaySettings: {
 		connectUrl: string;
@@ -63,7 +73,7 @@ describe( 'Setup Live Payments Modal', () => {
 		);
 
 		expect( window.location.href ).toBe(
-			`https://wcpay.test/connect?wcpay-disable-onboarding-test-mode=true&from=bogus&source=wcpay-setup-live-payments`
+			`http://localhost/wp-admin/admin.php?page=wc-settings&tab=checkout&path=%2Fwoopayments%2Fonboarding&source=wcpay-setup-live-payments&from=bogus`
 		);
 	} );
 } );

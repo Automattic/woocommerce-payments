@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { Button } from 'wcpay/components/wp-components-wrapped';
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 import { __ } from '@wordpress/i18n';
 
 /**

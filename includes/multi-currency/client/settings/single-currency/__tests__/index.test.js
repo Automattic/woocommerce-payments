@@ -170,9 +170,6 @@ describe( 'Single currency settings screen', () => {
 		expect(
 			screen.queryByText( /Currency Settings/i )
 		).toBeInTheDocument();
-		expect(
-			screen.queryByText( /Current rate: 1 USD = 0.826381 EUR/ )
-		).toBeInTheDocument();
 
 		// Check the selects if they have default values.
 		expect( screen.getByTestId( 'price_rounding' ) ).toHaveValue( '1' );

@@ -4,11 +4,11 @@
 import React from 'react';
 import { useEffect, useContext } from '@wordpress/element';
 import { __, sprintf } from '@wordpress/i18n';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 
 /**
  * Internal dependencies
  */
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 import {
 	CollapsibleBody,
 	WizardTaskItem,
@@ -67,12 +67,17 @@ const SetupComplete = () => {
 				</p>
 				<br />
 				<div className="setup-complete-task__buttons">
-					<Button href="admin.php?page=wc-admin" isPrimary>
+					<Button
+						href="admin.php?page=wc-admin"
+						variant="primary"
+						__next40pxDefaultSize
+					>
 						{ __( 'Back to home', 'woocommerce-payments' ) }
 					</Button>
 					<Button
 						href="admin.php?page=wc-settings&tab=wcpay_multi_currency"
-						isTertiary
+						variant="tertiary"
+						__next40pxDefaultSize
 					>
 						{ __(
 							'View Multi-Currency settings',

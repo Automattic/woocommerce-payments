@@ -1757,7 +1757,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// Only attempt to use WC_Subscriptions_Change_Payment_Gateway if it exists.
 				if ( class_exists( 'WC_Subscriptions_Change_Payment_Gateway' ) ) {
 					// Update the payment method for subscription if the payment intent is not requiring action.
-					WC_Subscriptions_Change_Payment_Gateway::update_payment_method( $order, $payment_information->get_payment_method() );
+					WC_Subscriptions_Change_Payment_Gateway::update_payment_method( $order, $this->id );
 				}
 
 				// Because this new payment does not require action/confirmation, remove this filter so that WC_Subscriptions_Change_Payment_Gateway proceeds to update all subscriptions if flagged.

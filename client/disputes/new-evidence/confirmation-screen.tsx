@@ -10,7 +10,8 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { Button, ExternalLink } from 'wcpay/components/wp-components-wrapped';
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
 import { getAdminUrl } from 'wcpay/utils';
 import InlineNotice from 'components/inline-notice';
 import DisputeEvidenceSubmittedIllustration from 'assets/images/dispute-evidence-submitted.svg?asset';
@@ -102,7 +103,7 @@ const ConfirmationScreen: React.FC< ConfirmationScreenProps > = ( {
 									),
 									{
 										learnMoreLink: (
-											<ExternalLink href="https://woocommerce.com/document/payments/disputes/">
+											<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#how-they-work">
 												{ __(
 													'Learn more about disputes',
 													'woocommerce-payments'

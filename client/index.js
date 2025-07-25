@@ -236,7 +236,11 @@ addFilter(
 		} );
 
 		pages.push( {
-			container: MultiCurrencySetupPage,
+			container: () => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<MultiCurrencySetupPage />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/multi-currency-setup',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
@@ -246,7 +250,11 @@ addFilter(
 			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
-			container: CardReadersPage,
+			container: () => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<CardReadersPage />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/card-readers',
 			wpOpenMenu: menuID,
 			breadcrumbs: [

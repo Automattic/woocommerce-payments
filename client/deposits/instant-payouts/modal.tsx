@@ -4,7 +4,8 @@
  * External dependencies
  */
 import React from 'react';
-import { Button, Modal } from 'wcpay/components/wp-components-wrapped';
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
+import { Modal } from 'wcpay/components/wp-components-wrapped/components/modal';
 import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 

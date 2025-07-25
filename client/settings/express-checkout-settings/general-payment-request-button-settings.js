@@ -4,16 +4,6 @@
  */
 import React, { useMemo } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-// eslint-disable-next-line no-restricted-syntax
-import {
-	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
-	__experimentalNumberControl as NumberControl,
-} from '@wordpress/components';
-import {
-	SelectControl,
-	RadioControl,
-	RangeControl,
-} from 'wcpay/components/wp-components-wrapped';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { useContext } from '@wordpress/element';
@@ -21,6 +11,10 @@ import { useContext } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import { SelectControl } from 'wcpay/components/wp-components-wrapped/components/select-control';
+import { RadioControl } from 'wcpay/components/wp-components-wrapped/components/radio-control';
+import { RangeControl } from 'wcpay/components/wp-components-wrapped/components/range-control';
+import { NumberControl } from 'wcpay/components/wp-components-wrapped/components/number-control';
 import CardBody from '../card-body';
 import PaymentRequestButtonPreview from './payment-request-button-preview';
 import interpolateComponents from '@automattic/interpolate-components';

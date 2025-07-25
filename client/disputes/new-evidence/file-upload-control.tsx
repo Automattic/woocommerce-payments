@@ -8,7 +8,8 @@ import { closeSmall, cloudUpload } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
-import { Button, FormFileUpload } from 'wcpay/components/wp-components-wrapped';
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
+import { FormFileUpload } from 'wcpay/components/wp-components-wrapped/components/form-file-upload';
 import { FileUploadControlProps } from './types';
 import { formatFileNameWithSize } from './utils';
 
