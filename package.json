@@ -1,6 +1,6 @@
 {
   "name": "woocommerce-payments",
-  "version": "9.6.0",
+  "version": "9.7.0",
   "main": "webpack.config.js",
   "author": "Automattic",
   "license": "GPL-3.0-or-later",
@@ -151,7 +151,6 @@
     "babel-loader": "8.2.2",
     "chalk": "4.1.2",
     "clsx": "2.1.1",
-    "config": "3.3.6",
     "core-js": "3.9.0",
     "crypto-browserify": "3.12.1",
     "css-loader": "6.3.0",

@@ -68,7 +68,8 @@ export default class ExpressCheckoutCartApi {
 
 	/**
 	 * Creates an order from the cart object.
-	 * See https://github.com/woocommerce/woocommerce/blob/trunk/plugins/woocommerce/src/StoreApi/docs/checkout.md#process-order-and-payment
+	 * See https://github.com/woocommerce/woocommerce/blob/trunk/docs/apis/store-api/
+	 * resources-endpoints/checkout.md#process-order-and-payment
 	 *
 	 * @param {{
 	 *          billing_address: Object,
