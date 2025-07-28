@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+update: ensure Google Pay/Apple Pay can check out w/ LT addresses
