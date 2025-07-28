@@ -5,7 +5,7 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
+import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -26,6 +26,8 @@ const DownloadButton: React.FunctionComponent< React.PropsWithChildren<
 		disabled={ isDisabled }
 		onClick={ onClick }
 		isBusy={ isBusy }
+		// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
+		__next40pxDefaultSize
 	>
 		<svg
 			xmlns="http://www.w3.org/2000/svg"

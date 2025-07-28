@@ -6,12 +6,12 @@
 import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
+import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import './style.scss';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 import { formatCurrency } from 'multi-currency/interface/functions';
 import InstantPayoutModal from './modal';
 import { useInstantDeposit } from 'wcpay/data';
@@ -46,9 +46,10 @@ const InstantPayoutButton: React.FC< InstantPayoutButtonProps > = ( {
 	return (
 		<>
 			<Button
-				isPrimary
+				variant="primary"
 				disabled={ buttonDisabled }
 				onClick={ () => setModalOpen( true ) }
+				// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 				__next40pxDefaultSize
 			>
 				{ sprintf(

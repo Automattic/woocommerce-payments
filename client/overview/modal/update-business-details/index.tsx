@@ -3,13 +3,11 @@
  */
 import React, { useState } from 'react';
 import { sprintf } from '@wordpress/i18n';
+import { Button, Modal, Notice } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
-import { Modal } from 'wcpay/components/wp-components-wrapped/components/modal';
-import { Notice } from 'wcpay/components/wp-components-wrapped/components/notice';
 import strings from './strings';
 import './index.scss';
 import { recordEvent } from 'wcpay/tracks';
@@ -84,6 +82,7 @@ const UpdateBusinessDetailsModal = ( {
 						<Button
 							variant={ 'secondary' }
 							onClick={ closeModal }
+							// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 							__next40pxDefaultSize
 						>
 							{ strings.cancel }
@@ -92,6 +91,7 @@ const UpdateBusinessDetailsModal = ( {
 						<Button
 							variant={ 'primary' }
 							onClick={ openAccountLink }
+							// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 							__next40pxDefaultSize
 						>
 							{ strings.updateBusinessDetails }

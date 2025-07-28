@@ -4,8 +4,7 @@
 import React, { useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { getAdminUrl } from 'utils';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
-import { Modal } from 'wcpay/components/wp-components-wrapped/components/modal';
+import { Button, Modal } from '@wordpress/components';
 import { Icon, currencyDollar } from '@wordpress/icons';
 
 /**
@@ -119,6 +118,8 @@ const SetupLivePaymentsModal: React.FC< Props > = ( {
 					isBusy={ isSubmitted }
 					disabled={ isSubmitted }
 					onClick={ handleSetup }
+					// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
+					__next40pxDefaultSize
 				>
 					{ __( 'Activate payments', 'woocommerce-payments' ) }
 				</Button>

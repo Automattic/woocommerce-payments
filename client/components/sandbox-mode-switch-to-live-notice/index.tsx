@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React, { useState } from 'react';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
+import { Button } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 
@@ -105,7 +105,12 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 							/>
 						),
 						switchToLiveLink: (
-							<Button variant="link" onClick={ handleCtaClick } />
+							<Button
+								variant="link"
+								onClick={ handleCtaClick }
+								// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
+								__next40pxDefaultSize
+							/>
 						),
 					},
 				} ) }

@@ -6,12 +6,11 @@ import { __, sprintf } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
 import { Icon, store, currencyDollar } from '@wordpress/icons';
 import interpolateComponents from '@automattic/interpolate-components';
+import { Modal, Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import { Modal } from 'wcpay/components/wp-components-wrapped/components/modal';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 import { trackEligibilityModalClosed } from 'onboarding/tracking';
 import ConfettiAnimation from 'components/confetti-animation';
 import { saveOption } from 'wcpay/data/settings/actions';
@@ -126,6 +125,7 @@ const ProgressiveOnboardingEligibilityModal: React.FC = () => {
 				<Button
 					variant="secondary"
 					onClick={ handleSetup }
+					// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 					__next40pxDefaultSize
 				>
 					{ __( 'Set up payouts', 'woocommerce-payments' ) }
@@ -133,6 +133,7 @@ const ProgressiveOnboardingEligibilityModal: React.FC = () => {
 				<Button
 					variant="primary"
 					onClick={ handlePaymentsOnly }
+					// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 					__next40pxDefaultSize
 				>
 					{ __( 'Start selling', 'woocommerce-payments' ) }
