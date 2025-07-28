@@ -3,11 +3,11 @@
  */
 import React from 'react';
 import { isEmpty, mapValues } from 'lodash';
+import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 import { useStepperContext } from 'components/stepper';
 import { Item as SelectItem } from 'components/custom-select-control';
 import { ListItem as GroupedSelectItem } from 'components/grouped-select-control';
@@ -51,6 +51,7 @@ export const OnboardingForm: React.FC< { children?: React.ReactNode } > = ( {
 				variant={ 'primary' }
 				type="submit"
 				className="stepper__cta"
+				// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 				__next40pxDefaultSize
 			>
 				{ strings.continue }
