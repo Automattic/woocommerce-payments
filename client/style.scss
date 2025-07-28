@@ -171,3 +171,24 @@ img {
 		}
 	}
 }
+
+/**
+ * Fix for linear gradient overlay that doesn't disappear on resize.
+ * The issue is that the `is-scrollable-right` class is not being removed
+ * when the viewport is resized back to a larger size.
+ */
+.woocommerce-payments-page {
+	// Force hide the gradient overlay on larger viewports where tables shouldn't be scrollable
+	@media screen and ( min-width: 960px ) {
+		.woocommerce-table__table.is-scrollable-right::after {
+			opacity: 0 !important;
+		}
+	}
+
+	// Additional breakpoint for very large screens
+	@media screen and ( min-width: 1200px ) {
+		.woocommerce-table__table.is-scrollable-right::after {
+			opacity: 0 !important;
+		}
+	}
+}
