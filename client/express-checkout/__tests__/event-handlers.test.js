@@ -475,5 +475,83 @@ describe( 'Express checkout event handlers', () => {
 			);
 			expect( completePayment ).not.toHaveBeenCalled();
 		} );
+
+		it( 'should extract redirect URL from payment_details when redirect_url is empty for 3DS authentication', async () => {
+			const threeDSRedirectUrl =
+				'#wcpay-confirm-pi:123:pi_1234567890abcdef_secret_test1234567890abcdef:fake_nonce';
+
+			cartApiPlaceOrderMock.mockResolvedValue( {
+				order_id: 123,
+				status: 'pending',
+				order_key: 'wc_order_test123',
+				order_number: '123',
+				customer_note: '',
+				customer_id: 1,
+				billing_address: {
+					first_name: 'Card',
+					last_name: 'Holder Name',
+					country: 'US',
+					address_1: '123 Main St',
+					address_2: 'Apt 4B',
+					city: 'New York',
+					state: 'NY',
+					postcode: '10001',
+					company: 'Some Company',
+					email: 'john.doe@example.com',
+					phone: '1234567890',
+				},
+				shipping_address: {
+					first_name: 'Card',
+					last_name: 'Holder Name',
+					country: 'US',
+					address_1: '123 Main St',
+					address_2: 'Apt 4B',
+					city: 'New York',
+					state: 'NY',
+					postcode: '10001',
+					company: 'Some Company',
+					phone: '1234567890',
+				},
+				payment_method: 'woocommerce_payments',
+				payment_result: {
+					payment_status: 'success',
+					payment_details: [
+						{
+							key: 'result',
+							value: 'success',
+						},
+						{
+							key: 'redirect',
+							value: threeDSRedirectUrl,
+						},
+						{
+							key: 'payment_method',
+							value: 'pm_test1234567890abcdef',
+						},
+					],
+					redirect_url: '', // Empty redirect_url - this is the bug scenario
+				},
+				additional_fields: [],
+				extensions: {},
+			} );
+
+			api.confirmIntent.mockResolvedValue( true );
+
+			await onConfirmHandler(
+				api,
+				stripe,
+				elements,
+				completePayment,
+				abortPayment,
+				event
+			);
+
+			expect( cartApiPlaceOrderMock ).toHaveBeenCalled();
+			expect( api.confirmIntent ).toHaveBeenCalledWith(
+				threeDSRedirectUrl
+			);
+			expect( completePayment ).toHaveBeenCalled();
+			expect( abortPayment ).not.toHaveBeenCalled();
+		} );
 	} );
 } );

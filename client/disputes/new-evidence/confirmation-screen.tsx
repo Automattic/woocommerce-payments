@@ -103,7 +103,7 @@ const ConfirmationScreen: React.FC< ConfirmationScreenProps > = ( {
 									),
 									{
 										learnMoreLink: (
-											<ExternalLink href="https://woocommerce.com/document/payments/disputes/">
+											<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#how-they-work">
 												{ __(
 													'Learn more about disputes',
 													'woocommerce-payments'

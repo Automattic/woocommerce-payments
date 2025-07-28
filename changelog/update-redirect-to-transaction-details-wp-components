@@ -1,4 +1,0 @@
-Significance: patch
-Type: update
-
-update: RedirectToTransactionDetails to use Gutenberg components that come with the WP installation
