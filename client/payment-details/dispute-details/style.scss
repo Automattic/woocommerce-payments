@@ -134,7 +134,7 @@
 			height: 44px;
 			border-radius: var( --radius-s, 2px );
 			padding: 10px;
-			border: 1px solid rgba( 0, 0, 0, 0.1 );
+			border: 1px solid $gray-200;
 			margin-right: 12px;
 
 			@media screen and ( max-width: $break-small ) {
