@@ -37,8 +37,7 @@ import RecommendedDocuments from './recommended-documents';
 import InlineNotice from 'components/inline-notice';
 import ShippingDetails from './shipping-details';
 import CoverLetter from './cover-letter';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
-import { HorizontalRule } from 'wcpay/components/wp-components-wrapped/components/horizontal-rule';
+import { Button, HorizontalRule } from '@wordpress/components';
 import { getAdminUrl } from 'wcpay/utils';
 import { StepperPanel } from 'wcpay/components/stepper';
 import {
@@ -1052,6 +1051,7 @@ export default ( { query }: { query: { id: string } } ) => {
 								id: dispute?.id,
 							} ) )
 						}
+						// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 						__next40pxDefaultSize
 					>
 						{ __( 'Cancel', 'woocommerce-payments' ) }
@@ -1061,6 +1061,7 @@ export default ( { query }: { query: { id: string } } ) => {
 							<Button
 								variant="tertiary"
 								onClick={ () => doSave( false ) }
+								// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 								__next40pxDefaultSize
 							>
 								{ __(
@@ -1076,6 +1077,7 @@ export default ( { query }: { query: { id: string } } ) => {
 							}
 							icon={ chevronRight }
 							iconPosition="right"
+							// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 							__next40pxDefaultSize
 						>
 							{ __( 'Next', 'woocommerce-payments' ) }
@@ -1092,6 +1094,7 @@ export default ( { query }: { query: { id: string } } ) => {
 						onClick={ () => handleStepBack( currentStep - 1 ) }
 						icon={ chevronLeft }
 						iconPosition="left"
+						// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 						__next40pxDefaultSize
 					>
 						{ __( 'Back', 'woocommerce-payments' ) }
@@ -1101,6 +1104,7 @@ export default ( { query }: { query: { id: string } } ) => {
 							<Button
 								variant="tertiary"
 								onClick={ () => doSave( false ) }
+								// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 								__next40pxDefaultSize
 							>
 								{ __(
@@ -1116,6 +1120,7 @@ export default ( { query }: { query: { id: string } } ) => {
 							onClick={ () =>
 								handleStepChange( currentStep + 1 )
 							}
+							// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 							__next40pxDefaultSize
 						>
 							{ __( 'Next', 'woocommerce-payments' ) }
@@ -1131,6 +1136,7 @@ export default ( { query }: { query: { id: string } } ) => {
 					icon={ chevronLeft }
 					iconPosition="left"
 					onClick={ () => handleStepBack( currentStep - 1 ) }
+					// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 					__next40pxDefaultSize
 				>
 					{ __( 'Back', 'woocommerce-payments' ) }
@@ -1140,6 +1146,7 @@ export default ( { query }: { query: { id: string } } ) => {
 						<Button
 							variant="tertiary"
 							onClick={ () => doSave( false ) }
+							// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 							__next40pxDefaultSize
 						>
 							{ __( 'Save for later', 'woocommerce-payments' ) }
@@ -1159,6 +1166,7 @@ export default ( { query }: { query: { id: string } } ) => {
 									doSave( true );
 								}
 							} }
+							// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 							__next40pxDefaultSize
 						>
 							{ __( 'Submit', 'woocommerce-payments' ) }

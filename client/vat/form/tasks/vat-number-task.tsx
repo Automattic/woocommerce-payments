@@ -10,10 +10,12 @@ import apiFetch from '@wordpress/api-fetch';
 /**
  * Internal dependencies
  */
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
-import { CheckboxControl } from 'wcpay/components/wp-components-wrapped/components/checkbox-control';
-import { Notice } from 'wcpay/components/wp-components-wrapped/components/notice';
-import { TextControl } from 'wcpay/components/wp-components-wrapped/components/text-control';
+import {
+	Button,
+	CheckboxControl,
+	Notice,
+	TextControl,
+} from '@wordpress/components';
 import CollapsibleBody from 'wcpay/components/wizard/collapsible-body';
 import WizardTaskItem from 'wcpay/components/wizard/task-item';
 import WizardTaskContext from 'wcpay/components/wizard/task/context';
@@ -230,6 +232,7 @@ export const VatNumberTask = ( {
 						getVatTaxIDName()
 					) }
 					help={ getVatTaxIDRequirementHint() }
+					// @ts-expect-error: __nextHasNoMarginBottom is not a prop defined in the WP CheckboxControl component.
 					__nextHasNoMarginBottom
 				/>
 				{ isVatRegistered && (
@@ -241,16 +244,17 @@ export const VatNumberTask = ( {
 						help={ getVatTaxIDValidationHint() }
 						value={ vatNumber }
 						onChange={ setVatNumber }
+						// @ts-expect-error: __nextHasNoMarginBottom is not a prop defined in the WP TextControl component.
 						__nextHasNoMarginBottom
-						__next40pxDefaultSize
 					/>
 				) }
 
 				<Button
-					isPrimary
+					variant="primary"
 					disabled={ isVatButtonDisabled || isLoading }
 					isBusy={ isLoading }
 					onClick={ submit }
+					// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 					__next40pxDefaultSize
 				>
 					{ __( 'Continue', 'woocommerce-payments' ) }

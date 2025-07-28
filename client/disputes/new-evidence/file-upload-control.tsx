@@ -8,8 +8,7 @@ import { closeSmall, cloudUpload } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
-import { FormFileUpload } from 'wcpay/components/wp-components-wrapped/components/form-file-upload';
+import { Button, FormFileUpload } from '@wordpress/components';
 import { FileUploadControlProps } from './types';
 import { formatFileNameWithSize } from './utils';
 
@@ -68,6 +67,8 @@ const FileUploadControl: React.FC< FileUploadControlProps > = ( {
 									'woocommerce-payments'
 								) }
 								variant="tertiary"
+								// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
+								__next40pxDefaultSize
 							/>
 						</div>
 					) : null }

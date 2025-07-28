@@ -8,8 +8,7 @@ import { external } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
-import { TextareaControl } from 'wcpay/components/wp-components-wrapped/components/textarea-control';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
+import { TextareaControl, Button } from '@wordpress/components';
 import type { CoverLetterProps } from './types';
 
 const CoverLetter: React.FC< CoverLetterProps > = ( {
@@ -109,6 +108,7 @@ const CoverLetter: React.FC< CoverLetterProps > = ( {
 				rows={ 30 }
 				className="wcpay-dispute-evidence-cover-letter__textarea"
 				readOnly={ readOnly }
+				// @ts-expect-error: __nextHasNoMarginBottom is not a prop defined in the WP TextareaControl component.
 				__nextHasNoMarginBottom
 			/>
 			<Button
@@ -118,6 +118,7 @@ const CoverLetter: React.FC< CoverLetterProps > = ( {
 				iconPosition="right"
 				iconSize={ 24 }
 				icon={ external }
+				// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 				__next40pxDefaultSize
 			>
 				{ __( 'Preview cover letter', 'woocommerce-payments' ) }

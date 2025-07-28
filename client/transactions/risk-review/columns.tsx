@@ -8,7 +8,7 @@ import { TableCardColumn, TableCardBodyColumn } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
+import { Button } from '@wordpress/components';
 import { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
@@ -114,9 +114,11 @@ export const getRiskReviewListRowContent = (
 		action: {
 			display: (
 				<Button
-					isSecondary
+					variant="secondary"
 					href={ detailsURL }
 					onClick={ handleActionButtonClick }
+					// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
+					__next40pxDefaultSize
 				>
 					{ __( 'Review' ) }
 				</Button>

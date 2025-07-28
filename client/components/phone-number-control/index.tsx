@@ -3,7 +3,7 @@
  * External dependencies
  */
 import React, { useState, useRef, useLayoutEffect } from 'react';
-import { BaseControl } from 'wcpay/components/wp-components-wrapped/components/base-control';
+import { BaseControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import clsx from 'clsx';
 import 'intl-tel-input';
@@ -74,7 +74,12 @@ const PhoneNumberControl: React.FC< Props > = ( {
 	};
 
 	return (
-		<BaseControl id={ id } { ...rest } __nextHasNoMarginBottom>
+		<BaseControl
+			id={ id }
+			{ ...rest }
+			// @ts-expect-error: __nextHasNoMarginBottom is not a prop defined in the WP BaseControl component.
+			__nextHasNoMarginBottom
+		>
 			<div
 				className={ clsx(
 					'wcpay-component-phone-number-control',

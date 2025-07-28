@@ -10,8 +10,7 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
-import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
+import { Button, ExternalLink } from '@wordpress/components';
 import { getAdminUrl } from 'wcpay/utils';
 import InlineNotice from 'components/inline-notice';
 import DisputeEvidenceSubmittedIllustration from 'assets/images/dispute-evidence-submitted.svg?asset';

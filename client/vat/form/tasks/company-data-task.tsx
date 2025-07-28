@@ -10,10 +10,12 @@ import apiFetch from '@wordpress/api-fetch';
 /**
  * Internal dependencies
  */
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
-import { Notice } from 'wcpay/components/wp-components-wrapped/components/notice';
-import { TextareaControl } from 'wcpay/components/wp-components-wrapped/components/textarea-control';
-import { TextControl } from 'wcpay/components/wp-components-wrapped/components/text-control';
+import {
+	Button,
+	Notice,
+	TextareaControl,
+	TextControl,
+} from '@wordpress/components';
 import CollapsibleBody from 'wcpay/components/wizard/collapsible-body';
 import WizardTaskItem from 'wcpay/components/wizard/task-item';
 import WizardTaskContext from 'wcpay/components/wizard/task/context';
@@ -101,6 +103,7 @@ export const CompanyDataTask = ( {
 					label={ __( 'Business name', 'woocommerce-payments' ) }
 					value={ companyName }
 					onChange={ setCompanyName }
+					// @ts-expect-error: __nextHasNoMarginBottom is not a prop defined in the WP TextControl component.
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
 				/>
@@ -110,15 +113,17 @@ export const CompanyDataTask = ( {
 					label={ __( 'Address', 'woocommerce-payments' ) }
 					value={ companyAddress }
 					onChange={ setCompanyAddress }
+					// @ts-expect-error: __nextHasNoMarginBottom is not a prop defined in the WP TextareaControl component.
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
 				/>
 
 				<Button
-					isPrimary
+					variant="primary"
 					disabled={ isConfirmButtonDisabled || isLoading }
 					isBusy={ isLoading }
 					onClick={ submit }
+					// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 					__next40pxDefaultSize
 				>
 					{ __( 'Confirm', 'woocommerce-payments' ) }
