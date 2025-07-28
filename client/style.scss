@@ -181,14 +181,14 @@ img {
 	// Force hide the gradient overlay on larger viewports where tables shouldn't be scrollable
 	@media screen and ( min-width: 960px ) {
 		.woocommerce-table__table.is-scrollable-right::after {
-			opacity: 0 !important;
+			opacity: 0;
 		}
 	}
 
 	// Additional breakpoint for very large screens
 	@media screen and ( min-width: 1200px ) {
 		.woocommerce-table__table.is-scrollable-right::after {
-			opacity: 0 !important;
+			opacity: 0;
 		}
 	}
 }
