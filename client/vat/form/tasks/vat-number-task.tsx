@@ -218,6 +218,7 @@ export const VatNumberTask = ( {
 
 			<CollapsibleBody>
 				<CheckboxControl
+					className="wcpay-vat-number-task__checkbox"
 					checked={ isVatRegistered }
 					onChange={ setVatRegistered }
 					label={ sprintf(
@@ -229,15 +230,19 @@ export const VatNumberTask = ( {
 						getVatTaxIDName()
 					) }
 					help={ getVatTaxIDRequirementHint() }
+					__nextHasNoMarginBottom
 				/>
 				{ isVatRegistered && (
 					// Note: this TextControl is heavily parameterised to support different regions (VAT vs GST vs Corporate Number).
 					// Long term, if we implement a dedicated WizardTaskItem component for each tax region, then this component will be simpler.
 					<TextControl
+						className="wcpay-vat-number-task__text-control"
 						label={ getVatTaxIDName() }
 						help={ getVatTaxIDValidationHint() }
 						value={ vatNumber }
 						onChange={ setVatNumber }
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
 					/>
 				) }
 
@@ -246,6 +251,7 @@ export const VatNumberTask = ( {
 					disabled={ isVatButtonDisabled || isLoading }
 					isBusy={ isLoading }
 					onClick={ submit }
+					__next40pxDefaultSize
 				>
 					{ __( 'Continue', 'woocommerce-payments' ) }
 				</Button>

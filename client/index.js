@@ -57,7 +57,11 @@ addFilter(
 		} );
 
 		pages.push( {
-			container: OnboardingPage,
+			container: () => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<OnboardingPage />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/onboarding',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
@@ -71,7 +75,11 @@ addFilter(
 		} );
 
 		pages.push( {
-			container: OnboardingKycPage,
+			container: () => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<OnboardingKycPage />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/onboarding/kyc',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
@@ -250,7 +258,11 @@ addFilter(
 			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
-			container: CardReadersPage,
+			container: () => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<CardReadersPage />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/card-readers',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
@@ -263,7 +275,11 @@ addFilter(
 			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
-			container: CapitalPage,
+			container: () => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<CapitalPage />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/loans',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
@@ -277,7 +293,13 @@ addFilter(
 		} );
 		if ( wcpaySettings && wcpaySettings.featureFlags.documents ) {
 			pages.push( {
-				container: DocumentsPage,
+				container: () => (
+					<WordPressComponentsContext.Provider
+						value={ wp.components }
+					>
+						<DocumentsPage />
+					</WordPressComponentsContext.Provider>
+				),
 				path: '/payments/documents',
 				wpOpenMenu: menuID,
 				breadcrumbs: [

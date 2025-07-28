@@ -97,15 +97,21 @@ export const CompanyDataTask = ( {
 		>
 			<CollapsibleBody>
 				<TextControl
+					className="wcpay-company-data-task__text-control"
 					label={ __( 'Business name', 'woocommerce-payments' ) }
 					value={ companyName }
 					onChange={ setCompanyName }
+					__nextHasNoMarginBottom
+					__next40pxDefaultSize
 				/>
 
 				<TextareaControl
+					className="wcpay-company-data-task__textarea-control"
 					label={ __( 'Address', 'woocommerce-payments' ) }
 					value={ companyAddress }
 					onChange={ setCompanyAddress }
+					__nextHasNoMarginBottom
+					__next40pxDefaultSize
 				/>
 
 				<Button
@@ -113,6 +119,7 @@ export const CompanyDataTask = ( {
 					disabled={ isConfirmButtonDisabled || isLoading }
 					isBusy={ isLoading }
 					onClick={ submit }
+					__next40pxDefaultSize
 				>
 					{ __( 'Confirm', 'woocommerce-payments' ) }
 				</Button>

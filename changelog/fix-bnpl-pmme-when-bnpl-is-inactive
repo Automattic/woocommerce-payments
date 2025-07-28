@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-fix: remove BNPLs from PMME when BNPL method is not active
