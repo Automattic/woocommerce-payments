@@ -32,6 +32,7 @@ module.exports = {
 		'<rootDir>/node_modules/@wordpress/jest-preset-default/scripts/setup-test-framework.js',
 		'<rootDir>/tests/js/jest-extensions-setup.js',
 		'<rootDir>/tests/js/jest-msw-setup.js',
+		'<rootDir>/tests/js/jest-button-props-setup.js',
 	],
 	preset: '@wordpress/jest-preset-default',
 	testMatch: [
