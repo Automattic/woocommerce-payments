@@ -89,7 +89,7 @@ jobs:
           DEV_VERSION: ${{ steps.get-dev-version.outputs.DEV_VERSION }}
         run: |
           # Plugin data is passed as a JSON object.
-          PLUGIN_DATA="{}"          
+          PLUGIN_DATA="{}"
           PLUGIN_DATA=$( jq -c --arg slug "woocommerce-payments" --arg ver "$DEV_VERSION" '.[ $slug ] = { version: $ver }' <<<"$PLUGIN_DATA" )
           echo "plugin-data=$PLUGIN_DATA" >> $GITHUB_OUTPUT
 
