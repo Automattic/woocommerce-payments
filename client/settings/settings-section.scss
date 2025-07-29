@@ -3,7 +3,7 @@
 	flex-flow: column;
 
 	&:not( &:last-child ) {
-		margin-bottom: 60px;
+		margin-bottom: 70px;
 	}
 
 	@include breakpoint( '>800px' ) {
