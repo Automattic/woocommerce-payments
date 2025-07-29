@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix: Linear gradient overlay on tables does not disappear on resize
