@@ -55,7 +55,7 @@ jobs:
         run: |
           DEV_SUFFIX_VERSION="${GITHUB_RUN_ID}-g$(git rev-parse --short HEAD)"
           DEV_VERSION="${CURRENT_VERSION}-${DEV_SUFFIX_VERSION}"
-          echo "Dev Version: $DEV_VERSION" >> $GITHUB_STEP_SUMMARY          
+          echo "Dev Version: $DEV_VERSION" >> $GITHUB_STEP_SUMMARY
           echo "DEV_VERSION=$DEV_VERSION" >> $GITHUB_OUTPUT
 
       - name: "Bump dev version"
