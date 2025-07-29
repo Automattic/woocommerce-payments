@@ -1,5 +1,6 @@
 name: Build live branch when develop updated
 on:
+  workflow_dispatch:
   push:
     branches:
       - develop
