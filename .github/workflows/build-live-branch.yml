@@ -86,7 +86,7 @@ jobs:
       - name: "Get plugin data for Jetpack Beta Builder"
         id: get-plugin-data
         env:
-          DEV_VERSION: ${{ steps.get-dev-version.outputs.DEV_VERSION }}          
+          DEV_VERSION: ${{ steps.get-dev-version.outputs.DEV_VERSION }}
         run: |
           # Plugin data is passed as a JSON object.
           PLUGIN_DATA="{}"          
