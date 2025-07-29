@@ -232,13 +232,11 @@ const Deposits = () => {
 
 				<DepositsSchedule />
 
-				<h4 className="is-subsection-heading">
-					{ __( 'Payout bank account', 'woocommerce-payments' ) }
-				</h4>
+				<h4>{ __( 'Payout bank account', 'woocommerce-payments' ) }</h4>
 				{ hasErroredExternalAccount ? (
 					<DepositFailureNotice updateAccountLink={ accountLink } />
 				) : (
-					<p className="deposits__bank-information-help">
+					<p>
 						{ __(
 							'Manage and update your bank account information to receive payouts.',
 							'woocommerce-payments'
