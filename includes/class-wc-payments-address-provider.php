@@ -71,6 +71,7 @@ class WC_Payments_Address_Provider extends AbstractAutomatticAddressProvider {
 	 * @return bool True if telemetry is allowed, false otherwise.
 	 */
 	public function can_telemetry() {
-		return true;
+		// We defer to the global Woo setting.
+		return WC_Site_Tracking::is_tracking_enabled();
 	}
 }
