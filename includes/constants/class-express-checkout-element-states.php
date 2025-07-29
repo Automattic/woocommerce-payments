@@ -1186,6 +1186,7 @@ class Express_Checkout_Element_States {
 		Country_Code::KENYA,
 		Country_Code::LAOS,
 		Country_Code::LIBERIA,
+		Country_Code::LITHUANIA,
 		Country_Code::MOLDOVA,
 		Country_Code::NAMIBIA,
 		Country_Code::NEPAL,
