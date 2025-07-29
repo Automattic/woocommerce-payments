@@ -19,7 +19,6 @@ import {
 	CardBody,
 	Flex,
 	ExternalLink,
-	// @ts-expect-error: CardNotice is not defined in the WP Components dev version.
 	CardNotice,
 } from '@wordpress/components';
 

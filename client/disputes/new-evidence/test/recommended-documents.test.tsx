@@ -77,7 +77,9 @@ describe( 'RecommendedDocuments', () => {
 	it( 'calls upload/remove handlers', () => {
 		render( <RecommendedDocuments fields={ fields } /> );
 		// Simulate file upload for first field
-		const fileInput = screen.getAllByTestId( 'mock-upload-input' )[ 0 ];
+		const fileInput = screen.getAllByTestId(
+			'form-file-upload-input'
+		)[ 0 ];
 		fireEvent.change( fileInput, {
 			target: { files: [ new File( [ '' ], 'test.pdf' ) ] },
 		} );

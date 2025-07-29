@@ -19,6 +19,7 @@ declare module '@wordpress/components' {
 	export const GradientPicker: ComponentType< React.PropsWithChildren<
 		any
 	> >;
+	export const CardNotice: ComponentType< React.PropsWithChildren< any > >;
 
 	// Extend the Button component to include __next40pxDefaultSize property
 	export namespace Button {

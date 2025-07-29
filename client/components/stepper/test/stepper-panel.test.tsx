@@ -9,13 +9,6 @@ import { render, screen, fireEvent } from '@testing-library/react';
  */
 import { StepperPanel } from '../stepper-panel';
 
-// Mock the Icon component to avoid dependency on WordPress icons
-jest.mock( 'wcpay/components/wp-components-wrapped/components/icon', () => ( {
-	Icon: ( { size }: { size: number } ) => (
-		<span data-testid="mock-icon">icon-{ size }</span>
-	),
-} ) );
-
 describe( 'StepperPanel', () => {
 	it( 'renders all step labels', () => {
 		const steps = [ 'Step 1', 'Step 2', 'Step 3' ];
@@ -41,11 +34,14 @@ describe( 'StepperPanel', () => {
 		expect( step3 ).not.toHaveClass( 'complete' );
 	} );
 
-	it( 'renders a mock icon for completed steps', () => {
+	it( 'renders an icon for completed steps', () => {
 		const steps = [ 'A', 'B' ];
 		render( <StepperPanel steps={ steps } currentStep={ 1 } /> );
-		// The first step should have the icon
-		expect( screen.getByTestId( 'mock-icon' ) ).toBeInTheDocument();
+		// The first step should have an SVG icon (check icon)
+		const svgElement = document.querySelector(
+			'.stepper-step.complete svg'
+		);
+		expect( svgElement ).toBeInTheDocument();
 	} );
 
 	it( 'renders step numbers for incomplete steps', () => {
