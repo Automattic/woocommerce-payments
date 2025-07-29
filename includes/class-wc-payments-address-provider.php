@@ -60,7 +60,7 @@ class WC_Payments_Address_Provider extends AbstractAutomatticAddressProvider {
 			Logger::error( 'Unexpected error getting address service JWT: ' . $e->getMessage() );
 			return new WP_Error(
 				'wcpay_address_service_error',
-				__( 'An unexpected error occurred while retrieving the address service token.', 'woocommerce-payments' )
+				'An unexpected error occurred while retrieving the address service token.'
 			);
 		}
 	}
