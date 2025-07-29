@@ -14,31 +14,12 @@
  *    type definitions but not actually available in the `@wordpress/components`
  *    package, causing undefined component errors.
  *
- * 3. **Test Environment Compatibility**: The WordPress component library is designed
- *    for production environments and may not handle test scenarios gracefully.
- *
  * **How it works:**
  *
  * This setup overrides React.createElement to intercept component creation and:
  * - Filter out problematic WordPress component props before they reach the DOM
  * - Provide mock implementations for missing components
  * - Ensure tests run without React warnings or undefined component errors
- *
- * **Why this approach:**
- *
- * Instead of mocking entire modules (which can be complex and brittle), this
- * approach uses React.createElement override to handle specific cases. This is:
- * - More targeted and less likely to break other functionality
- * - Easier to maintain and debug
- * - More performant than module-level mocking
- *
- * **Usage:**
- *
- * This file is automatically loaded by Jest via the setupFilesAfterEnv configuration
- * in jest.config.js. No additional setup is required in individual test files.
- *
- * **Maintained by:** WooCommerce Payments team
- * **Last updated:** 2024
  */
 
 const React = require( 'react' );
