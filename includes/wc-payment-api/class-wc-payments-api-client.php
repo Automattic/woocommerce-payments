@@ -83,6 +83,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	const FRAUD_RULESET_API            = 'fraud_ruleset';
 	const COMPATIBILITY_API            = 'compatibility';
 	const RECOMMENDED_PAYMENT_METHODS  = 'payment_methods/recommended';
+	const ADDRESS_AUTOCOMPLETE_TOKEN   = 'address-autocomplete-token';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -2161,6 +2162,20 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		);
 	}
 
+	/**
+	 * Get the address autocomplete token.
+	 *
+	 * @return array The address autocomplete token.
+	 *
+	 * @throws API_Exception - If not connected or request failed.
+	 */
+	public function get_address_autocomplete_token() {
+		return $this->request(
+			[],
+			self::ADDRESS_AUTOCOMPLETE_TOKEN,
+			self::POST,
+		);
+	}
 	/**
 	 * Sends a request object.
 	 *

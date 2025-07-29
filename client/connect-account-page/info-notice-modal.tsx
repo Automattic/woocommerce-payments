@@ -4,14 +4,14 @@
  * External dependencies
  */
 import React, { useState } from 'react';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
-import { Modal } from 'wcpay/components/wp-components-wrapped/components/modal';
-import { Notice } from 'wcpay/components/wp-components-wrapped/components/notice';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
+import { Modal } from 'wcpay/components/wp-components-wrapped/components/modal';
+import { Notice } from 'wcpay/components/wp-components-wrapped/components/notice';
 import { recordEvent } from 'tracks';
 import TipBox from 'components/tip-box';
 import strings from './strings';
@@ -42,6 +42,7 @@ const InfoNoticeModal: React.FC = () => {
 							);
 							setModalOpen( true );
 						} }
+						__next40pxDefaultSize
 					>
 						{ strings.infoNotice.button }
 					</Button>
@@ -94,7 +95,11 @@ const InfoNoticeModal: React.FC = () => {
 					</div>
 					<hr />
 					<div className="connect-account-page__info-modal__footer">
-						<Button variant="primary" onClick={ handleModalClose }>
+						<Button
+							variant="primary"
+							onClick={ handleModalClose }
+							__next40pxDefaultSize
+						>
 							{ __( 'Got it', 'woocommerce-payments' ) }
 						</Button>
 					</div>
