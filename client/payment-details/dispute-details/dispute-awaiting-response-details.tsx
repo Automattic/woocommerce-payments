@@ -361,7 +361,6 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 											}
 										);
 									} }
-									// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 									__next40pxDefaultSize
 								>
 									{ hasStagedEvidence
@@ -388,7 +387,6 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 								);
 								setModalOpen( true );
 							} }
-							// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 							__next40pxDefaultSize
 						>
 							{ disputeAcceptAction.acceptButtonLabel }
@@ -433,7 +431,6 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 											isDisputeAcceptRequestPending
 										}
 										onClick={ handleModalClose }
-										// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 										__next40pxDefaultSize
 									>
 										{ __(
@@ -469,7 +466,6 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 												doAccept();
 											}
 										} }
-										// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 										__next40pxDefaultSize
 									>
 										{ disputeAcceptAction.modalButtonLabel }

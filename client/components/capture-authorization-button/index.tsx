@@ -50,7 +50,6 @@ const CaptureAuthorizationButton: React.FC< React.PropsWithChildren<
 			} }
 			isBusy={ isLoading && isCaptureRequested } // Button should be in busy state when the capture is requested
 			disabled={ ( isLoading && isCaptureRequested ) || isRequesting } // Button should be disabled when the capture is requested
-			// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 			__next40pxDefaultSize
 		>
 			{ children || __( 'Capture', 'woocommerce-payments' ) }

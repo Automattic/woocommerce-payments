@@ -82,7 +82,6 @@ const UpdateBusinessDetailsModal = ( {
 						<Button
 							variant={ 'secondary' }
 							onClick={ closeModal }
-							// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 							__next40pxDefaultSize
 						>
 							{ strings.cancel }
@@ -91,7 +90,6 @@ const UpdateBusinessDetailsModal = ( {
 						<Button
 							variant={ 'primary' }
 							onClick={ openAccountLink }
-							// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 							__next40pxDefaultSize
 						>
 							{ strings.updateBusinessDetails }

@@ -49,7 +49,6 @@ const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 						onClick={ onConfirm }
 						variant="primary"
 						isDestructive
-						// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 						__next40pxDefaultSize
 					>
 						Disable
@@ -57,7 +56,6 @@ const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 					<Button
 						onClick={ onClose }
 						variant="secondary"
-						// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 						__next40pxDefaultSize
 					>
 						Cancel

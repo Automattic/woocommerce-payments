@@ -125,7 +125,6 @@ const ProgressiveOnboardingEligibilityModal: React.FC = () => {
 				<Button
 					variant="secondary"
 					onClick={ handleSetup }
-					// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 					__next40pxDefaultSize
 				>
 					{ __( 'Set up payouts', 'woocommerce-payments' ) }
@@ -133,7 +132,6 @@ const ProgressiveOnboardingEligibilityModal: React.FC = () => {
 				<Button
 					variant="primary"
 					onClick={ handlePaymentsOnly }
-					// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 					__next40pxDefaultSize
 				>
 					{ __( 'Start selling', 'woocommerce-payments' ) }

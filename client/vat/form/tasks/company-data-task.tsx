@@ -123,7 +123,6 @@ export const CompanyDataTask = ( {
 					disabled={ isConfirmButtonDisabled || isLoading }
 					isBusy={ isLoading }
 					onClick={ submit }
-					// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 					__next40pxDefaultSize
 				>
 					{ __( 'Confirm', 'woocommerce-payments' ) }

@@ -40,7 +40,6 @@ const InfoNoticeModal: React.FC = () => {
 							);
 							setModalOpen( true );
 						} }
-						// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 						__next40pxDefaultSize
 					>
 						{ strings.infoNotice.button }
@@ -97,7 +96,6 @@ const InfoNoticeModal: React.FC = () => {
 						<Button
 							variant="primary"
 							onClick={ handleModalClose }
-							// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 							__next40pxDefaultSize
 						>
 							{ __( 'Got it', 'woocommerce-payments' ) }

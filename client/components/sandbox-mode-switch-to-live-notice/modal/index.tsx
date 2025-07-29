@@ -118,7 +118,6 @@ const SetupLivePaymentsModal: React.FC< Props > = ( {
 					isBusy={ isSubmitted }
 					disabled={ isSubmitted }
 					onClick={ handleSetup }
-					// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 					__next40pxDefaultSize
 				>
 					{ __( 'Activate payments', 'woocommerce-payments' ) }

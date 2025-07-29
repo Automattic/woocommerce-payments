@@ -186,7 +186,6 @@ const BannerNotice: React.FC< React.PropsWithChildren< Props > > = ( {
 					) }
 					onClick={ handleRemove }
 					showTooltip={ false }
-					// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 					__next40pxDefaultSize
 				/>
 			) }

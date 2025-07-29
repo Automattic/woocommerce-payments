@@ -108,7 +108,6 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 							<Button
 								variant="link"
 								onClick={ handleCtaClick }
-								// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 								__next40pxDefaultSize
 							/>
 						),

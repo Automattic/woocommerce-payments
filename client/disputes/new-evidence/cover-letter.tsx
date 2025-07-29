@@ -118,7 +118,6 @@ const CoverLetter: React.FC< CoverLetterProps > = ( {
 				iconPosition="right"
 				iconSize={ 24 }
 				icon={ external }
-				// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 				__next40pxDefaultSize
 			>
 				{ __( 'Preview cover letter', 'woocommerce-payments' ) }

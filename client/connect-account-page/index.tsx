@@ -579,7 +579,6 @@ const ConnectAccountPage: React.FC = () => {
 									isSubmitted || isAccountSetupSessionError
 								}
 								onClick={ handleSetup }
-								// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 								__next40pxDefaultSize
 							>
 								{ ctaLabel }
@@ -595,7 +594,6 @@ const ConnectAccountPage: React.FC = () => {
 											onClick={ () =>
 												setModalVisible( true )
 											}
-											// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 											__next40pxDefaultSize
 										>
 											{ strings.button.reset }
@@ -630,7 +628,6 @@ const ConnectAccountPage: React.FC = () => {
 										isBusy={ isTestDriveModeSubmitted }
 										disabled={ isTestDriveModeSubmitted }
 										onClick={ handleSetupTestDriveMode }
-										// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 										__next40pxDefaultSize
 									>
 										{ strings.button.sandbox }

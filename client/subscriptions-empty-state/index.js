@@ -69,7 +69,6 @@ const ActionButtons = () => {
 					);
 					setIsFinishingSetup( true );
 				} }
-				// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 				__next40pxDefaultSize
 			>
 				{ __( 'Finish setup', 'woocommerce-payments' ) }
@@ -85,7 +84,6 @@ const ActionButtons = () => {
 					);
 					setIsCreatingProduct( true );
 				} }
-				// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 				__next40pxDefaultSize
 			>
 				{ __( 'Create subscription product', 'woocommerce-payments' ) }

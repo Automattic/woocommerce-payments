@@ -62,7 +62,6 @@ const RefundModal: React.FC< RefundModalProps > = ( {
 					<Button
 						onClick={ handleModalCancel }
 						variant="secondary"
-						// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 						__next40pxDefaultSize
 					>
 						{ __( 'Cancel', 'woocommerce-payments' ) }
@@ -72,7 +71,6 @@ const RefundModal: React.FC< RefundModalProps > = ( {
 						variant="primary"
 						isBusy={ isRefundInProgress }
 						disabled={ isRefundInProgress }
-						// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 						__next40pxDefaultSize
 					>
 						{ __( 'Refund transaction', 'woocommerce-payments' ) }

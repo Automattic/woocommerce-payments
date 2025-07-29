@@ -58,7 +58,6 @@ const ResetAccountModal: React.FC< Props > = ( props: Props ) => {
 						setSubmitted( false );
 						onDismiss();
 					} }
-					// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 					__next40pxDefaultSize
 				>
 					{ strings.cancel }
@@ -72,7 +71,6 @@ const ResetAccountModal: React.FC< Props > = ( props: Props ) => {
 						setSubmitted( true );
 						onSubmit();
 					} }
-					// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 					__next40pxDefaultSize
 				>
 					{ strings.reset }

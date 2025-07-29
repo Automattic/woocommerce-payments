@@ -254,7 +254,6 @@ export const VatNumberTask = ( {
 					disabled={ isVatButtonDisabled || isLoading }
 					isBusy={ isLoading }
 					onClick={ submit }
-					// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 					__next40pxDefaultSize
 				>
 					{ __( 'Continue', 'woocommerce-payments' ) }

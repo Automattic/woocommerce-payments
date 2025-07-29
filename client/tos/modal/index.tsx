@@ -80,7 +80,6 @@ const TosModalUI = ( {
 						variant="secondary"
 						onClick={ onDecline }
 						disabled={ isBusy }
-						// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 						__next40pxDefaultSize
 					>
 						{ __( 'Decline', 'woocommerce-payments' ) }
@@ -90,7 +89,6 @@ const TosModalUI = ( {
 						variant="primary"
 						onClick={ onAccept }
 						isBusy={ isBusy }
-						// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 						__next40pxDefaultSize
 					>
 						{ __( 'Accept', 'woocommerce-payments' ) }
@@ -162,7 +160,6 @@ const DisableModalUI = ( {
 						variant="tertiary"
 						onClick={ onCancel }
 						isBusy={ isBusy }
-						// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 						__next40pxDefaultSize
 					>
 						{ __( 'Back', 'woocommerce-payments' ) }
@@ -172,7 +169,6 @@ const DisableModalUI = ( {
 						variant="primary"
 						onClick={ onDisable }
 						isBusy={ isBusy }
-						// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 						__next40pxDefaultSize
 					>
 						{ __( 'Disable', 'woocommerce-payments' ) }

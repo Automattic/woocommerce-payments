@@ -49,7 +49,6 @@ const InstantPayoutButton: React.FC< InstantPayoutButtonProps > = ( {
 				variant="primary"
 				disabled={ buttonDisabled }
 				onClick={ () => setModalOpen( true ) }
-				// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 				__next40pxDefaultSize
 			>
 				{ sprintf(

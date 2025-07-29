@@ -51,7 +51,6 @@ export const OnboardingForm: React.FC< { children?: React.ReactNode } > = ( {
 				variant={ 'primary' }
 				type="submit"
 				className="stepper__cta"
-				// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 				__next40pxDefaultSize
 			>
 				{ strings.continue }
