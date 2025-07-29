@@ -11,7 +11,7 @@ import type { ComponentType } from 'react';
 // On this module, merge these with whatever @wordpress/components already exports
 declare module '@wordpress/components' {
 	/**
-	 * Any component that lives on wp.components but isn’t in the package’s types.
+	 * Any component that lives on wp.components but isn't in the package's types.
 	 * You can declare as many as you need here.
 	 */
 	export const Line: ComponentType< React.PropsWithChildren< any > >;
@@ -19,6 +19,19 @@ declare module '@wordpress/components' {
 	export const GradientPicker: ComponentType< React.PropsWithChildren<
 		any
 	> >;
+
+	// Extend the Button component to include __next40pxDefaultSize property
+	export namespace Button {
+		interface ButtonProps {
+			/**
+			 * Whether to use the 40px default size for the button.
+			 * This is a WordPress component prop that controls button height.
+			 * Note: This prop should not be passed to the DOM in test environments.
+			 */
+			// eslint-disable-next-line @typescript-eslint/naming-convention
+			__next40pxDefaultSize?: boolean;
+		}
+	}
 	// …etc…
 }
 
