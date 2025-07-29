@@ -118,8 +118,9 @@
 	&__row {
 		display: flex;
 		align-items: flex-start;
-		gap: 32px;
+		gap: 24px 32px;
 		margin-bottom: 24px;
+		flex-wrap: wrap;
 	}
 
 	&__row > div {
@@ -134,7 +135,7 @@
 
 		& > span {
 			color: var( --Scales-Grays-gray-700, $gray-700 );
-			@include body-md;
+			@include body-sm;
 		}
 	}
 
@@ -145,9 +146,13 @@
 		@include heading-s;
 	}
 
+	&__link,
+	&__ip-address {
+		@include body-sm;
+	}
+
 	&__link {
 		color: var( --wp-admin-theme-color );
-		@include body-sm;
 		text-decoration: underline;
 		word-break: break-all;
 	}
@@ -172,6 +177,7 @@
 		&__row {
 			flex-direction: column;
 			gap: 8px;
+			margin-bottom: 8px;
 		}
 		&__row > div {
 			min-width: 0;
