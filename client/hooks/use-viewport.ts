@@ -7,7 +7,7 @@
  * External dependencies
  */
 import { useState, useEffect } from 'react';
-import { debounce, throttle } from 'lodash';
+import { throttle } from 'lodash';
 
 /**
  * Internal dependencies
@@ -42,7 +42,7 @@ export function useViewport(): UseViewportReturn {
 			setViewportSize( getViewportSize() );
 		};
 
-		const throttledHandleResize = debounce( handleResize, debounceTime );
+		const throttledHandleResize = throttle( handleResize, debounceTime );
 
 		// Add event listener
 		window.addEventListener( 'resize', throttledHandleResize );

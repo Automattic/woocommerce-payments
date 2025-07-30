@@ -85,15 +85,13 @@ describe( 'useViewport', () => {
 		} );
 
 		// Wait for the debounce to complete
-		setTimeout( () => {
-			expect( result.current ).toEqual( {
-				viewportSize: { width: 800, height: 600 },
-				isVerySmallMobile: false,
-				isMobile: false,
-				isTablet: true,
-				isDesktop: false,
-			} );
-		}, 300 );
+		expect( result.current ).toEqual( {
+			viewportSize: { width: 800, height: 600 },
+			isVerySmallMobile: false,
+			isMobile: false,
+			isTablet: true,
+			isDesktop: false,
+		} );
 	} );
 
 	it( 'should handle very small mobile screens', () => {
