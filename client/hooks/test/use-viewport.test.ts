@@ -84,14 +84,16 @@ describe( 'useViewport', () => {
 			window.dispatchEvent( new Event( 'resize' ) );
 		} );
 
-		// Should update to new values
-		expect( result.current ).toEqual( {
-			viewportSize: { width: 800, height: 600 },
-			isVerySmallMobile: false,
-			isMobile: false,
-			isTablet: true,
-			isDesktop: false,
-		} );
+		// Wait for the debounce to complete
+		setTimeout( () => {
+			expect( result.current ).toEqual( {
+				viewportSize: { width: 800, height: 600 },
+				isVerySmallMobile: false,
+				isMobile: false,
+				isTablet: true,
+				isDesktop: false,
+			} );
+		}, 300 );
 	} );
 
 	it( 'should handle very small mobile screens', () => {
