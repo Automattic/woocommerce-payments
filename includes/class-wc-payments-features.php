@@ -354,6 +354,7 @@ class WC_Payments_Features {
 				'woopayExpressCheckout'          => self::is_woopay_express_checkout_enabled(),
 				'isAuthAndCaptureEnabled'        => self::is_auth_and_capture_enabled(),
 				'isDisputeIssuerEvidenceEnabled' => self::is_dispute_issuer_evidence_enabled(),
+				'isFRTReviewFeatureActive'       => self::is_frt_review_feature_active(),
 			]
 		);
 	}
