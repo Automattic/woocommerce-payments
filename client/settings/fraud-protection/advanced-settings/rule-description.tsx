@@ -7,7 +7,7 @@ import React from 'react';
 /**
  * Internal dependencies
  */
-import './../style.scss';
+import './rule-description.scss';
 
 const FraudProtectionRuleDescription: React.FC< {
 	children?: React.ReactNode;
