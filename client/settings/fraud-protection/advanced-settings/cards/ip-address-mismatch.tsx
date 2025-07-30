@@ -4,7 +4,7 @@
 import React from 'react';
 import { __ } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
-import { Link } from '@woocommerce/components';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
 
 /**
  * Internal dependencies
@@ -19,7 +19,7 @@ const IPAddressMismatchRuleCard: React.FC = () => (
 		id="ip-address-mismatch"
 	>
 		<FraudProtectionRuleToggle
-			setting={ 'ip_address_mismatch' }
+			setting="ip_address_mismatch"
 			label={ __(
 				'Enable IP Address Mismatch filter',
 				'woocommerce-payments'
@@ -32,15 +32,12 @@ const IPAddressMismatchRuleCard: React.FC = () => (
 				),
 				components: {
 					ipAddressLink: (
-						<Link
-							target="_blank"
-							type="external"
-							href="https://simple.wikipedia.org/wiki/IP_address"
-						/>
+						<ExternalLink href="https://simple.wikipedia.org/wiki/IP_address" />
 					),
 				},
 			} ) }
-		></FraudProtectionRuleToggle>
+		/>
+
 		<FraudProtectionRuleDescription>
 			{ __(
 				'Fraudulent transactions often use fake addresses to place orders. If the IP address seems to be in ' +
