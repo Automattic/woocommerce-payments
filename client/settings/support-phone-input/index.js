@@ -75,7 +75,7 @@ const SupportPhoneInput = ( { setInputVallid } ) => {
 							<>
 								<br />
 								{ __(
-									' (+1 0000000000 can be used for test accounts)',
+									'(+1 0000000000 can be used for test accounts)',
 									'woocommerce-payments'
 								) }
 							</>
