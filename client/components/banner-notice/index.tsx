@@ -7,7 +7,6 @@
  * External dependencies
  */
 import React, { ComponentProps } from 'react';
-
 import { __ } from '@wordpress/i18n';
 import { useEffect, renderToString } from '@wordpress/element';
 import { speak } from '@wordpress/a11y';

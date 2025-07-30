@@ -577,6 +577,7 @@ const ConnectAccountPage: React.FC = () => {
 									isSubmitted || isAccountSetupSessionError
 								}
 								onClick={ handleSetup }
+								__next40pxDefaultSize
 							>
 								{ ctaLabel }
 							</Button>
@@ -591,6 +592,7 @@ const ConnectAccountPage: React.FC = () => {
 											onClick={ () =>
 												setModalVisible( true )
 											}
+											__next40pxDefaultSize
 										>
 											{ strings.button.reset }
 										</Button>
@@ -624,6 +626,7 @@ const ConnectAccountPage: React.FC = () => {
 										isBusy={ isTestDriveModeSubmitted }
 										disabled={ isTestDriveModeSubmitted }
 										onClick={ handleSetupTestDriveMode }
+										__next40pxDefaultSize
 									>
 										{ strings.button.sandbox }
 									</Button>

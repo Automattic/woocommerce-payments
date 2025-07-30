@@ -46,7 +46,11 @@ addFilter(
 			: __( 'Connect', 'woocommerce-payments' );
 
 		pages.push( {
-			container: ConnectAccountPage,
+			container: () => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<ConnectAccountPage />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/connect',
 			wpOpenMenu: menuID,
 			breadcrumbs: [ rootLink, connectionPageTitle ],
