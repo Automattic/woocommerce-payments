@@ -884,6 +884,7 @@ class WC_Payments_Onboarding_Service {
 		$gateway = WC_Payments::get_gateway();
 		$gateway->update_option( 'enabled', 'no' );
 		$gateway->update_option( 'test_mode', 'no' );
+		$gateway->update_option( 'upe_enabled_payment_method_ids', [ 'card' ] );
 
 		update_option( '_wcpay_onboarding_stripe_connected', [] );
 		update_option( self::TEST_MODE_OPTION, 'no' );
