@@ -51,7 +51,7 @@ class WC_Payments_Admin_Settings {
 	 * Add notice explaining test mode when it's enabled.
 	 */
 	public function display_test_mode_notice() {
-		if ( WC_Payments::mode()->is_test() ) {
+		if ( WC_Payments::mode()->is_test_mode_onboarding() ) {
 			?>
 			<div id="wcpay-test-mode-notice" class="notice notice-warning">
 				<p>
