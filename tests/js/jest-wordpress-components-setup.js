@@ -109,25 +109,22 @@ React.createElement = function ( type, props, ...children ) {
 		return MockCardNotice( props, ...children );
 	}
 
-	// Filter out __next40pxDefaultSize prop from Button components
-	// This prop is used by WordPress for button sizing but should not be passed to DOM
-	if (
-		type &&
-		( type.displayName === 'Button' ||
-			( typeof type === 'function' && type.name === 'Button' ) ||
-			( props && props.__next40pxDefaultSize ) )
-	) {
-		const { __next40pxDefaultSize, ...restProps } = props || {};
-		return originalCreateElement( type, restProps, ...children );
+	// Create a new props object to avoid mutating the original
+	const cleanProps = { ...props };
+
+	// Filter out WordPress-specific props that should not be passed to DOM
+	if ( cleanProps ) {
+		// Remove __nextHasNoMarginBottom prop from any component
+		if ( cleanProps.__nextHasNoMarginBottom !== undefined ) {
+			delete cleanProps.__nextHasNoMarginBottom;
+		}
+
+		// Remove __next40pxDefaultSize prop from any component
+		if ( cleanProps.__next40pxDefaultSize !== undefined ) {
+			delete cleanProps.__next40pxDefaultSize;
+		}
 	}
 
-	// Filter out __nextHasNoMarginBottom prop from any component
-	// This prop is used by WordPress for margin control but should not be passed to DOM
-	if ( props && props.__nextHasNoMarginBottom ) {
-		const { __nextHasNoMarginBottom, ...restProps } = props;
-		return originalCreateElement( type, restProps, ...children );
-	}
-
-	// For all other cases, use the original React.createElement
-	return originalCreateElement( type, props, ...children );
+	// For all other cases, use the original React.createElement with cleaned props
+	return originalCreateElement( type, cleanProps, ...children );
 };
