@@ -304,7 +304,10 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 				'Navigate back to payment details and confirm the dispute status is Won',
 				async () => {
 					// Navigate back to the payment details page
-					await merchantPage.goto( paymentDetailsLink );
+					await merchantPage.goto( paymentDetailsLink, {
+						waitUntil: 'domcontentloaded',
+						timeout: 30000,
+					} );
 
 					await expect(
 						merchantPage
@@ -469,7 +472,10 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 				'Navigate back to payment details and confirm the dispute status is Lost',
 				async () => {
 					// Navigate back to the payment details page
-					await merchantPage.goto( paymentDetailsLink );
+					await merchantPage.goto( paymentDetailsLink, {
+						waitUntil: 'domcontentloaded',
+						timeout: 30000,
+					} );
 
 					await expect(
 						merchantPage
