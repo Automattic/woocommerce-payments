@@ -1,0 +1,119 @@
+name: Build live branch when develop updated
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - develop
+    paths-ignore:
+      - '.cursor/**'
+      - '.github/**'
+      - '!.github/workflows/build-live-branch.yml'
+      - '.husky/**'
+      - '.bin/**'
+      - 'docker/**'
+      - 'docs/**'
+      - 'tasks/**'
+      - 'tests/**'
+      - '**/tests/**'
+      - 'wordpress-org-assets/**'
+      - '**/changelog/**'
+      - '**/changelog.txt'
+      - '**/readme.txt'
+      - '.gitignore'
+      - 'CODEOWNERS'
+      - '**/*.md'
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+  build:
+    if: github.repository_owner == 'automattic' && github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v4
+
+      - name: "Set up repository"
+        uses: ./.github/actions/setup-repo
+
+      - name: "Get current version"
+        id: current-version
+        run: |
+          VERSION=$(jq '.version' package.json -r)
+          echo "Current version found: $VERSION" >> $GITHUB_STEP_SUMMARY
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: "Get dev version"
+        id: get-dev-version
+        env:
+          CURRENT_VERSION: ${{ steps.current-version.outputs.VERSION }}
+        run: |
+          DEV_SUFFIX_VERSION="${GITHUB_RUN_ID}-g$(git rev-parse --short HEAD)"
+          DEV_VERSION="${CURRENT_VERSION}-${DEV_SUFFIX_VERSION}"
+          echo "Dev Version: $DEV_VERSION" >> $GITHUB_STEP_SUMMARY
+          echo "DEV_VERSION=$DEV_VERSION" >> $GITHUB_OUTPUT
+
+      - name: "Bump dev version"
+        id: bump-dev-version
+        env:
+          DEV_VERSION: ${{ steps.get-dev-version.outputs.DEV_VERSION }}
+        run: |
+          # 'Version' header in woocommerce-payments.php
+          sed -i "s/^ \* Version: .*$/ * Version: $DEV_VERSION/" woocommerce-payments.php
+
+          # 'version' field in package.json
+          sed -ri 's/("version": )".*"/\1"'${DEV_VERSION}'"/' package.json
+
+          # 'Stable tag' header in readme.txt;
+          sed -i "s/^Stable tag: .*$/Stable tag: $DEV_VERSION/" readme.txt
+
+      - name: "Build the plugin"
+        id: build_plugin
+        uses: ./.github/actions/build
+
+      - name: "Update the structure of artifacts for Jetpack Beta Builder" 
+        run: |
+          cd release
+          mv woocommerce-payments woocommerce-payments-dev
+          zip -q -r "woocommerce-payments-dev.zip" "woocommerce-payments-dev/"
+          rm -fR "woocommerce-payments-dev"
+
+      - name: "Get plugin data for Jetpack Beta Builder"
+        id: get-plugin-data
+        env:
+          DEV_VERSION: ${{ steps.get-dev-version.outputs.DEV_VERSION }}
+        run: |
+          # Plugin data is passed as a JSON object.
+          PLUGIN_DATA="{}"
+          PLUGIN_DATA=$( jq -c --arg slug "woocommerce-payments" --arg ver "$DEV_VERSION" '.[ $slug ] = { version: $ver }' <<<"$PLUGIN_DATA" )
+          echo "plugin-data=$PLUGIN_DATA" >> $GITHUB_OUTPUT
+
+      - name: "Upload the zip file as an artifact"
+        uses: actions/upload-artifact@v4
+        if: steps.get-plugin-data.outputs.plugin-data != '{}'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          name: plugins
+          path: release
+          # Only need to retain for a day since the beta builder slurps it up to distribute.
+          retention-days: 1
+
+      - name: "Inform Jetpack Beta Builder webhook"
+        if: steps.get-plugin-data.outputs.plugin-data != '{}'
+        env:
+          SECRET: ${{ secrets.WCPAYBETA_SECRET }}
+          PLUGIN_DATA: ${{ steps.get-plugin-data.outputs.plugin-data }}
+        run: |
+          curl -v --fail -L \
+            --url "https://betadownload.jetpack.me/gh-action.php?run_id=$GITHUB_RUN_ID&commit=$GITHUB_SHA" \
+            --form-string "repo=$GITHUB_REPOSITORY" \
+            --form-string "branch=${GITHUB_REF#refs/heads/}" \
+            --form-string "plugins=$PLUGIN_DATA" \
+            --form-string "secret=$SECRET"
