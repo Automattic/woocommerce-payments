@@ -169,6 +169,16 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			);
 
 			await test.step( 'Select the product type', async () => {
+				// wait for the dispute to the loaded.
+				await expect(
+					merchantPage.getByText(
+						'The cardholder claims this is an unauthorized transaction.',
+						{
+							exact: true,
+						}
+					)
+				).toBeVisible();
+
 				await merchantPage
 					.getByTestId( 'dispute-challenge-product-type-selector' )
 					.selectOption( 'physical_product' );
@@ -351,6 +361,16 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			);
 
 			await test.step( 'Select the product type', async () => {
+				// wait for the dispute to the loaded.
+				await expect(
+					merchantPage.getByText(
+						'The cardholder claims this is an unauthorized transaction.',
+						{
+							exact: true,
+						}
+					)
+				).toBeVisible();
+
 				await merchantPage
 					.getByTestId( 'dispute-challenge-product-type-selector' )
 					.selectOption( 'physical_product' );

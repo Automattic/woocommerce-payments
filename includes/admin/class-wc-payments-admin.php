@@ -987,7 +987,6 @@ class WC_Payments_Admin {
 			'currencyData'                       => $currency_data,
 			'restUrl'                            => get_rest_url( null, '' ), // rest url to concatenate when merchant use Plain permalinks.
 			'siteLogoUrl'                        => $site_logo_url,
-			'isFRTReviewFeatureActive'           => WC_Payments_Features::is_frt_review_feature_active(),
 			'fraudProtection'                    => [
 				'isWelcomeTourDismissed' => WC_Payments_Features::is_fraud_protection_welcome_tour_dismissed(),
 			],
