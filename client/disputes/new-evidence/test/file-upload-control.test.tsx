@@ -17,29 +17,6 @@ jest.mock( 'wcpay/hooks/use-viewport', () => ( {
 import { useViewport } from 'wcpay/hooks/use-viewport';
 
 // Mock FormFileUpload to directly render an input for testing
-jest.mock(
-	'@wordpress/components',
-	() => {
-		const original = jest.requireActual(
-			'@wordpress/components'
-		);
-		return {
-			...original,
-			FormFileUpload: ( { onChange, render: renderProp }: any ) => (
-				<>
-					<input
-						aria-label="Upload file"
-						type="file"
-						onChange={ onChange }
-						data-testid="mock-upload-input"
-					/>
-					{ /* eslint-disable-next-line @typescript-eslint/no-empty-function */ }
-					{ renderProp( { openFileDialog: () => {} } ) }
-				</>
-			),
-		};
-	}
-);
 
 describe( 'FileUploadControl', () => {
 	const mockUseViewport = useViewport as jest.MockedFunction<

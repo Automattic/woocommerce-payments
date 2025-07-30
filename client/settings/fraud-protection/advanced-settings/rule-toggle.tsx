@@ -90,6 +90,7 @@ const FraudProtectionRuleToggle: React.FC< React.PropsWithChildren<
 					checked={ settingUI?.enabled }
 					help={ description }
 					onChange={ handleEnableToggleChange }
+					// @ts-expect-error: __nextHasNoMarginBottom is not a valid prop for ToggleControl
 					__nextHasNoMarginBottom
 				/>
 			</div>
@@ -110,7 +111,6 @@ const FraudProtectionRuleToggle: React.FC< React.PropsWithChildren<
 								options={ radioOptions }
 								selected={ filterAction }
 								onChange={ handleBlockToggleChange }
-								__nextHasNoMarginBottom
 							/>
 						</div>
 					) }

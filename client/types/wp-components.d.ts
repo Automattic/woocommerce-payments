@@ -53,6 +53,16 @@ declare module '@wordpress/components' {
 			__nextHasNoMarginBottom?: boolean;
 		}
 	}
+	export namespace ToggleControl {
+		interface ToggleControlProps {
+			/**
+			 * Whether to use the 40px default size for the toggle control.
+			 * This is a WordPress component prop that controls toggle control height.
+			 */
+			// eslint-disable-next-line @typescript-eslint/naming-convention
+			__nextHasNoMarginBottom?: boolean;
+		}
+	}
 	// …etc…
 }
 
