@@ -46,7 +46,11 @@ addFilter(
 			: __( 'Connect', 'woocommerce-payments' );
 
 		pages.push( {
-			container: ConnectAccountPage,
+			container: () => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<ConnectAccountPage />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/connect',
 			wpOpenMenu: menuID,
 			breadcrumbs: [ rootLink, connectionPageTitle ],
@@ -314,7 +318,13 @@ addFilter(
 		}
 		if ( wcpaySettings ) {
 			pages.push( {
-				container: FraudProtectionAdvancedSettingsPage,
+				container: () => (
+					<WordPressComponentsContext.Provider
+						value={ wp.components }
+					>
+						<FraudProtectionAdvancedSettingsPage />
+					</WordPressComponentsContext.Provider>
+				),
 				path: '/payments/fraud-protection',
 				wpOpenMenu: menuID,
 				breadcrumbs: [ rootLink, 'Settings' ], // to align with the WooPayments settings pages.
