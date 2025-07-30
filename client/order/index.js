@@ -12,7 +12,6 @@ import { isAwaitingResponse, isUnderReview } from 'wcpay/disputes/utils';
 import TestModeNotice from './test-mode-notice';
 import DisputedOrderNoticeHandler from 'wcpay/components/disputed-order-notice';
 import getStatusChangeStrategy from './order-status-change-strategies';
-import { WordPressComponentsContext } from 'wcpay/wordpress-components-context/context';
 
 function disableWooOrderRefundButton( disputeStatus ) {
 	const refundButton = document.querySelector( 'button.refund-items' );
@@ -113,23 +112,13 @@ jQuery( function ( $ ) {
 
 		ReactDOM.render(
 			<>
-				{ testMode && (
-					<WordPressComponentsContext.Provider
-						value={ wp.components }
-					>
-						<TestModeNotice />
-					</WordPressComponentsContext.Provider>
-				) }
+				{ testMode && <TestModeNotice /> }
 
 				{ chargeId && orderTestModeMatch && (
-					<WordPressComponentsContext.Provider
-						value={ wp.components }
-					>
-						<DisputedOrderNoticeHandler
-							chargeId={ chargeId }
-							onDisableOrderRefund={ disableWooOrderRefundButton }
-						/>
-					</WordPressComponentsContext.Provider>
+					<DisputedOrderNoticeHandler
+						chargeId={ chargeId }
+						onDisableOrderRefund={ disableWooOrderRefundButton }
+					/>
 				) }
 			</>,
 			container

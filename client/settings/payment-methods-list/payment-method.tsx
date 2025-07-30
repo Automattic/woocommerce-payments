@@ -4,7 +4,7 @@
  */
 import clsx from 'clsx';
 import React, { useContext } from 'react';
-import { CheckboxControl } from 'wcpay/components/wp-components-wrapped/components/checkbox-control';
+import { CheckboxControl } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -134,6 +134,7 @@ const PaymentMethod = ( {
 						checked={ enabledMethodIds.includes( id ) }
 						disabled={ ! isActionable || locked }
 						onChange={ handleChange }
+						// @ts-expect-error: __nextHasNoMarginBottom is not a prop defined in the WP CheckboxControl component.
 						__nextHasNoMarginBottom
 					/>
 				</div>

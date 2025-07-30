@@ -4,7 +4,6 @@
 import React from 'react';
 
 import { Button, Icon, Modal, ExternalLink } from '@wordpress/components';
-import UnbundledWpComponentsProvider from 'wcpay/wordpress-components-context/unbundled-wp-components-provider';
 import {
 	createInterpolateElement,
 	useEffect,
@@ -30,14 +29,13 @@ const FinishSetupButton = () => {
 			disabled={ isFinishingSetup }
 			href={ connectUrl }
 			isBusy={ isFinishingSetup }
-			isPrimary
+			variant="primary"
 			onClick={ () => {
 				recordEvent(
 					'wcpay_subscriptions_account_not_connected_product_modal_finish_setup'
 				);
 				setIsFinishingSetup( true );
 			} }
-			// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 			__next40pxDefaultSize
 		>
 			{ __( 'Finish setup', 'woocommerce-payments' ) }
@@ -129,13 +127,11 @@ const SubscriptionProductOnboardingModal = () => {
 	}
 
 	return (
-		<UnbundledWpComponentsProvider>
-			<SubscriptionProductOnboardingModalContent
-				onRequestClose={ () => {
-					setOpen( false );
-				} }
-			/>
-		</UnbundledWpComponentsProvider>
+		<SubscriptionProductOnboardingModalContent
+			onRequestClose={ () => {
+				setOpen( false );
+			} }
+		/>
 	);
 };
 

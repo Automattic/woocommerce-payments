@@ -4,11 +4,11 @@
 import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { TableCardColumn, TableCardBodyColumn } from '@woocommerce/components';
+import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import { Button } from '@wordpress/components';
 import { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
@@ -117,7 +117,7 @@ export const getRiskReviewListRowContent = (
 					variant="secondary"
 					href={ detailsURL }
 					onClick={ handleActionButtonClick }
-					// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
+					// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component when it is using the `href` prop.
 					__next40pxDefaultSize
 				>
 					{ __( 'Review' ) }

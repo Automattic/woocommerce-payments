@@ -33,6 +33,26 @@ declare module '@wordpress/components' {
 			__next40pxDefaultSize?: boolean;
 		}
 	}
+	export namespace TextControl {
+		interface TextControlProps {
+			/**
+			 * Whether to use the 40px default size for the textarea.
+			 * This is a WordPress component prop that controls textarea height.
+			 */
+			// eslint-disable-next-line @typescript-eslint/naming-convention
+			__nextHasNoMarginBottom?: boolean;
+		}
+	}
+	export namespace TextareaControl {
+		interface TextareaControlProps {
+			/**
+			 * Whether to use the 40px default size for the textarea.
+			 * This is a WordPress component prop that controls textarea height.
+			 */
+			// eslint-disable-next-line @typescript-eslint/naming-convention
+			__nextHasNoMarginBottom?: boolean;
+		}
+	}
 	// …etc…
 }
 

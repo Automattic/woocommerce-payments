@@ -11,8 +11,7 @@ import { useContext } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
-import { CheckboxControl } from 'wcpay/components/wp-components-wrapped/components/checkbox-control';
+import { Button, CheckboxControl } from '@wordpress/components';
 import {
 	useEnabledPaymentMethodIds,
 	useWooPayEnabledSettings,
@@ -55,6 +54,7 @@ const WooPayExpressCheckoutItem = (): React.ReactElement | null => {
 						disabled={ isStripeLinkEnabled }
 						onChange={ updateIsWooPayEnabled }
 						data-testid="woopay-toggle"
+						// @ts-expect-error: __nextHasNoMarginBottom is not a prop defined in the WP CheckboxControl component.
 						__nextHasNoMarginBottom
 					/>
 				</div>

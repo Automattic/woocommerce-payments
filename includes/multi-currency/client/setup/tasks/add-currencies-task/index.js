@@ -9,10 +9,7 @@ import _ from 'lodash';
 /**
  * Internal dependencies
  */
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
-import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
-import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
-import { SearchControl } from 'wcpay/components/wp-components-wrapped/components/search-control';
+import { Button, Card, CardBody, SearchControl } from '@wordpress/components';
 import { WizardTaskContext } from 'multi-currency/interface/functions';
 import {
 	CollapsibleBody,

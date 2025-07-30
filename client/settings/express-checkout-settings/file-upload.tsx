@@ -14,8 +14,7 @@ import clsx from 'clsx';
 /**
  * Internal dependencies
  */
-import { BaseControl } from 'wcpay/components/wp-components-wrapped/components/base-control';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
+import { BaseControl, Button } from '@wordpress/components';
 import { FileUploadControl } from 'wcpay/components/file-upload';
 
 interface WooPayFileUploadProps {
@@ -188,7 +187,12 @@ const WooPayFileUpload: React.FunctionComponent< WooPayFileUploadProps > = ( {
 				</div>
 			</div>
 
-			<BaseControl id="test" help={ help } __nextHasNoMarginBottom>
+			<BaseControl
+				id="test"
+				help={ help }
+				// @ts-expect-error: __nextHasNoMarginBottom is not a prop defined in the WP BaseControl component.
+				__nextHasNoMarginBottom
+			>
 				{ ' ' }
 			</BaseControl>
 		</div>

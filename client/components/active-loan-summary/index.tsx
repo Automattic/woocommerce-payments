@@ -162,7 +162,7 @@ const ActiveLoanSummary = (): JSX.Element => {
 				<FlexItem>
 					{ getActiveLoanId() && (
 						<Button
-							isLink
+							variant="link"
 							href={ getAdminUrl( {
 								page: 'wc-admin',
 								path: '/payments/transactions',
@@ -170,7 +170,7 @@ const ActiveLoanSummary = (): JSX.Element => {
 								filter: 'advanced',
 								loan_id_is: getActiveLoanId(),
 							} ) }
-							// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
+							// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component when it is using the `href` prop.
 							__next40pxDefaultSize
 						>
 							{ __(

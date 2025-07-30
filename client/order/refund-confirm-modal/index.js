@@ -102,7 +102,6 @@ const RefundConfirmationModal = ( {
 							<Button
 								variant="secondary"
 								onClick={ handleRefundCancel }
-								// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 								__next40pxDefaultSize
 							>
 								{ __( 'Cancel', 'woocommerce-payments' ) }
@@ -110,7 +109,6 @@ const RefundConfirmationModal = ( {
 							<Button
 								variant="primary"
 								onClick={ handleRefundConfirm }
-								// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component.
 								__next40pxDefaultSize
 							>
 								{ sprintf(

@@ -7,8 +7,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { SelectControl } from 'wcpay/components/wp-components-wrapped/components/select-control';
-import { TextareaControl } from 'wcpay/components/wp-components-wrapped/components/textarea-control';
+import { SelectControl, TextareaControl } from '@wordpress/components';
 
 interface ProductDetailsProps {
 	productType: string;
@@ -38,6 +37,7 @@ const ProductDetails: React.FC< ProductDetailsProps > = ( {
 			</div>
 			<div className="wcpay-dispute-evidence-product-details__field-group">
 				<SelectControl
+					// @ts-expect-error: __nextHasNoMarginBottom is not a prop defined in the WP SelectControl component.
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
 					label={ __( 'PRODUCT TYPE', 'woocommerce-payments' ) }
@@ -79,6 +79,7 @@ const ProductDetails: React.FC< ProductDetailsProps > = ( {
 			</div>
 			<div className="wcpay-dispute-evidence-product-details__field-group">
 				<TextareaControl
+					// @ts-expect-error: __nextHasNoMarginBottom is not a prop defined in the WP TextareaControl component.
 					__nextHasNoMarginBottom
 					label={ __(
 						'PRODUCT DESCRIPTION',
