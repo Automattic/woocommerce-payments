@@ -7,6 +7,7 @@
  * External dependencies
  */
 import { useState, useEffect } from 'react';
+import { debounce, throttle } from 'lodash';
 
 /**
  * Internal dependencies
@@ -27,6 +28,8 @@ export interface UseViewportReturn {
 	isDesktop: boolean;
 }
 
+const debounceTime = 300;
+
 /**
  * Hook to get current viewport information
  * Updates when window is resized
@@ -39,12 +42,14 @@ export function useViewport(): UseViewportReturn {
 			setViewportSize( getViewportSize() );
 		};
 
+		const throttledHandleResize = debounce( handleResize, debounceTime );
+
 		// Add event listener
-		window.addEventListener( 'resize', handleResize );
+		window.addEventListener( 'resize', throttledHandleResize );
 
 		// Cleanup
 		return () => {
-			window.removeEventListener( 'resize', handleResize );
+			window.removeEventListener( 'resize', throttledHandleResize );
 		};
 	}, [] );
 
