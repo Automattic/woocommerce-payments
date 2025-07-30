@@ -1,15 +1,13 @@
 /**
  * External dependencies
  */
-import {
-	CheckboxControl,
-	ExternalLink,
-} from 'wcpay/components/wp-components-wrapped';
 import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
+import { CheckboxControl } from 'wcpay/components/wp-components-wrapped/components/checkbox-control';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
 import { useWCPaySubscriptions } from 'wcpay/data';
 import interpolateComponents from '@automattic/interpolate-components';
 
@@ -54,6 +52,7 @@ const WCPaySubscriptionsToggle = () => {
 			} ) }
 			checked={ isWCPaySubscriptionsEnabled }
 			onChange={ handleWCPaySubscriptionsStatusChange }
+			__nextHasNoMarginBottom
 		/>
 	) : null;
 };

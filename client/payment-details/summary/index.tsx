@@ -66,7 +66,7 @@ import {
 	formatDateTimeFromString,
 	formatDateTimeFromTimestamp,
 } from 'wcpay/utils/date-time';
-import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
 
 declare const window: any;
 
@@ -87,7 +87,7 @@ const placeholderValues = {
 };
 
 const isTapToPay = ( model: string ) => {
-	return model === 'COTS_DEVICE';
+	return model === 'COTS_DEVICE' || model === 'TAP_TO_PAY_DEVICE';
 };
 
 const getTapToPayChannel = ( platform: string ) => {

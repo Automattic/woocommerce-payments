@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Reset the enabled payment methods to default value on account reset.

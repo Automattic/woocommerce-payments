@@ -46,7 +46,11 @@ addFilter(
 			: __( 'Connect', 'woocommerce-payments' );
 
 		pages.push( {
-			container: ConnectAccountPage,
+			container: () => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<ConnectAccountPage />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/connect',
 			wpOpenMenu: menuID,
 			breadcrumbs: [ rootLink, connectionPageTitle ],
@@ -57,7 +61,11 @@ addFilter(
 		} );
 
 		pages.push( {
-			container: OnboardingPage,
+			container: () => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<OnboardingPage />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/onboarding',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
@@ -71,7 +79,11 @@ addFilter(
 		} );
 
 		pages.push( {
-			container: OnboardingKycPage,
+			container: () => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<OnboardingKycPage />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/onboarding/kyc',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
@@ -85,7 +97,11 @@ addFilter(
 		} );
 
 		pages.push( {
-			container: OverviewPage,
+			container: () => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<OverviewPage />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/overview',
 			wpOpenMenu: menuID,
 			breadcrumbs: [ rootLink, __( 'Overview', 'woocommerce-payments' ) ],
@@ -96,7 +112,11 @@ addFilter(
 		} );
 
 		pages.push( {
-			container: DepositsPage,
+			container: ( { query } ) => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<DepositsPage query={ query } />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/payouts',
 			wpOpenMenu: menuID,
 			breadcrumbs: [ rootLink, __( 'Payouts', 'woocommerce-payments' ) ],
@@ -106,7 +126,11 @@ addFilter(
 			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
-			container: DepositDetailsPage,
+			container: ( { query } ) => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<DepositDetailsPage query={ query } />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/payouts/details',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
@@ -178,7 +202,11 @@ addFilter(
 		} );
 
 		pages.push( {
-			container: RedirectToTransactionDetails,
+			container: ( { query } ) => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<RedirectToTransactionDetails query={ query } />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/disputes/details',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
@@ -220,7 +248,11 @@ addFilter(
 		} );
 
 		pages.push( {
-			container: MultiCurrencySetupPage,
+			container: () => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<MultiCurrencySetupPage />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/multi-currency-setup',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
@@ -230,7 +262,11 @@ addFilter(
 			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
-			container: CardReadersPage,
+			container: () => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<CardReadersPage />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/card-readers',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
@@ -243,7 +279,11 @@ addFilter(
 			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
-			container: CapitalPage,
+			container: () => (
+				<WordPressComponentsContext.Provider value={ wp.components }>
+					<CapitalPage />
+				</WordPressComponentsContext.Provider>
+			),
 			path: '/payments/loans',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
@@ -257,7 +297,13 @@ addFilter(
 		} );
 		if ( wcpaySettings && wcpaySettings.featureFlags.documents ) {
 			pages.push( {
-				container: DocumentsPage,
+				container: () => (
+					<WordPressComponentsContext.Provider
+						value={ wp.components }
+					>
+						<DocumentsPage />
+					</WordPressComponentsContext.Provider>
+				),
 				path: '/payments/documents',
 				wpOpenMenu: menuID,
 				breadcrumbs: [
@@ -272,7 +318,13 @@ addFilter(
 		}
 		if ( wcpaySettings ) {
 			pages.push( {
-				container: FraudProtectionAdvancedSettingsPage,
+				container: () => (
+					<WordPressComponentsContext.Provider
+						value={ wp.components }
+					>
+						<FraudProtectionAdvancedSettingsPage />
+					</WordPressComponentsContext.Provider>
+				),
 				path: '/payments/fraud-protection',
 				wpOpenMenu: menuID,
 				breadcrumbs: [ rootLink, 'Settings' ], // to align with the WooPayments settings pages.

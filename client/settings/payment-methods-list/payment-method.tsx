@@ -4,7 +4,7 @@
  */
 import clsx from 'clsx';
 import React, { useContext } from 'react';
-import { CheckboxControl } from 'wcpay/components/wp-components-wrapped';
+import { CheckboxControl } from 'wcpay/components/wp-components-wrapped/components/checkbox-control';
 
 /**
  * Internal dependencies
@@ -134,6 +134,7 @@ const PaymentMethod = ( {
 						checked={ enabledMethodIds.includes( id ) }
 						disabled={ ! isActionable || locked }
 						onChange={ handleChange }
+						__nextHasNoMarginBottom
 					/>
 				</div>
 				<div className="payment-method__text-container">

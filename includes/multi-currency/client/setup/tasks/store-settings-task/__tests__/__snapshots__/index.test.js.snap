@@ -32,19 +32,63 @@ exports[`Multi-Currency store settings store settings task renders correctly: sn
 }
 
 .emotion-6 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: normal;
+  -webkit-box-align: normal;
+  -ms-flex-align: normal;
+  align-items: normal;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  height: 100%;
+}
+
+.emotion-6>*+*:not( marquee ) {
+  margin-top: calc(4px * 4);
+}
+
+.emotion-6>* {
+  min-height: 0;
+}
+
+.emotion-8 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+  display: block;
+}
+
+.emotion-10 {
   font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
   font-size: 13px;
 }
 
-.emotion-8 {
+.emotion-12 {
   margin-bottom: calc(4px * 2);
 }
 
-.components-panel__row .emotion-8 {
+.components-panel__row .emotion-12 {
   margin-bottom: inherit;
 }
 
 .emotion-14 {
+  margin-top: calc(4px * 2);
+  margin-bottom: 0;
+  font-size: 12px;
+  font-style: normal;
+  color: #757575;
+  margin-bottom: revert;
+}
+
+.emotion-24 {
   background: transparent;
   display: block;
   margin: 0!important;
@@ -64,7 +108,7 @@ exports[`Multi-Currency store settings store settings task renders correctly: sn
 }
 
 @media ( prefers-reduced-motion: reduce ) {
-  .emotion-14 {
+  .emotion-24 {
     transition-duration: 0ms;
   }
 }
@@ -135,76 +179,98 @@ exports[`Multi-Currency store settings store settings task renders correctly: sn
               data-wp-component="CardBody"
             >
               <div
-                class="components-base-control components-checkbox-control emotion-6 emotion-7"
+                class="components-flex emotion-6 emotion-1"
+                data-wp-c16t="true"
+                data-wp-component="Flex"
               >
                 <div
-                  class="components-base-control__field emotion-8 emotion-9"
+                  class="components-flex-item emotion-8 emotion-1"
+                  data-wp-c16t="true"
+                  data-wp-component="FlexItem"
                 >
-                  <span
-                    class="components-checkbox-control__input-container"
+                  <div
+                    class="components-base-control components-checkbox-control emotion-10 emotion-11"
                   >
-                    <input
-                      class="components-checkbox-control__input"
-                      data-testid="enable_auto_currency"
-                      id="inspector-checkbox-control-0"
-                      type="checkbox"
-                      value="1"
-                    />
-                  </span>
-                  <label
-                    class="components-checkbox-control__label"
-                    for="inspector-checkbox-control-0"
-                  >
-                    Automatically switch customers to their local currency if it has been enabled
-                  </label>
+                    <div
+                      class="components-base-control__field emotion-12 emotion-13"
+                    >
+                      <span
+                        class="components-checkbox-control__input-container"
+                      >
+                        <input
+                          aria-describedby="inspector-checkbox-control-0__help"
+                          class="components-checkbox-control__input"
+                          data-testid="enable_auto_currency"
+                          id="inspector-checkbox-control-0"
+                          type="checkbox"
+                          value="1"
+                        />
+                      </span>
+                      <label
+                        class="components-checkbox-control__label"
+                        for="inspector-checkbox-control-0"
+                      >
+                        Automatically switch customers to their local currency if it has been enabled
+                      </label>
+                    </div>
+                    <p
+                      class="components-base-control__help emotion-14 emotion-15"
+                      id="inspector-checkbox-control-0__help"
+                    >
+                      Customers will be notified via store alert banner.
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div
-                class="multi-currency-settings-task__description"
-              >
-                Customers will be notified via store alert banner.
-              </div>
-              <div
-                class="components-base-control components-checkbox-control emotion-6 emotion-7"
-              >
                 <div
-                  class="components-base-control__field emotion-8 emotion-9"
+                  class="components-flex-item emotion-8 emotion-1"
+                  data-wp-c16t="true"
+                  data-wp-component="FlexItem"
                 >
-                  <span
-                    class="components-checkbox-control__input-container"
+                  <div
+                    class="components-base-control components-checkbox-control emotion-10 emotion-11"
                   >
-                    <input
-                      class="components-checkbox-control__input"
-                      data-testid="enable_storefront_switcher"
-                      id="inspector-checkbox-control-1"
-                      type="checkbox"
-                      value="1"
-                    />
-                  </span>
-                  <label
-                    class="components-checkbox-control__label"
-                    for="inspector-checkbox-control-1"
-                  >
-                    Add a currency switcher to the Storefront theme on breadcrumb section.
-                  </label>
+                    <div
+                      class="components-base-control__field emotion-12 emotion-13"
+                    >
+                      <span
+                        class="components-checkbox-control__input-container"
+                      >
+                        <input
+                          aria-describedby="inspector-checkbox-control-1__help"
+                          class="components-checkbox-control__input"
+                          data-testid="enable_storefront_switcher"
+                          id="inspector-checkbox-control-1"
+                          type="checkbox"
+                          value="1"
+                        />
+                      </span>
+                      <label
+                        class="components-checkbox-control__label"
+                        for="inspector-checkbox-control-1"
+                      >
+                        Add a currency switcher to the Storefront theme on breadcrumb section.
+                      </label>
+                    </div>
+                    <p
+                      class="components-base-control__help emotion-14 emotion-15"
+                      id="inspector-checkbox-control-1__help"
+                    >
+                      A currency switcher is also available in your widgets.
+                    </p>
+                  </div>
                 </div>
-              </div>
-              <div
-                class="multi-currency-settings-task__description"
-              >
-                A currency switcher is also available in your widgets.
               </div>
             </div>
           </div>
           <div
             aria-hidden="true"
-            class="components-elevation emotion-14 emotion-1"
+            class="components-elevation emotion-24 emotion-1"
             data-wp-c16t="true"
             data-wp-component="Elevation"
           />
           <div
             aria-hidden="true"
-            class="components-elevation emotion-14 emotion-1"
+            class="components-elevation emotion-24 emotion-1"
             data-wp-c16t="true"
             data-wp-component="Elevation"
           />

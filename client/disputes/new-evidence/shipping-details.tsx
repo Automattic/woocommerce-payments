@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { TextControl } from 'wcpay/components/wp-components-wrapped';
+import { TextControl } from 'wcpay/components/wp-components-wrapped/components/text-control';
 
 interface ShippingDetailsProps {
 	shippingCarrier: string;
@@ -39,7 +39,7 @@ const ShippingDetails: React.FC< ShippingDetailsProps > = ( {
 			</h3>
 			<div className="wcpay-dispute-evidence-shipping-details__subheading">
 				{ __(
-					'Please check that all of the prefilled information is accurate and complete any empty fields.',
+					'Please ensure all prefilled information is correct and complete any missing details.',
 					'woocommerce-payments'
 				) }
 			</div>

@@ -2,15 +2,13 @@
  * External dependencies
  */
 import React, { useState } from 'react';
-import {
-	Button,
-	CardDivider,
-	Modal,
-} from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies
  */
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
+import { CardDivider } from 'wcpay/components/wp-components-wrapped/components/card-divider';
+import { Modal } from 'wcpay/components/wp-components-wrapped/components/modal';
 import './style.scss';
 import strings from './strings';
 import { isInTestModeOnboarding } from 'utils';
@@ -62,6 +60,7 @@ const ResetAccountModal: React.FC< Props > = ( props: Props ) => {
 						setSubmitted( false );
 						onDismiss();
 					} }
+					__next40pxDefaultSize
 				>
 					{ strings.cancel }
 				</Button>
@@ -74,6 +73,7 @@ const ResetAccountModal: React.FC< Props > = ( props: Props ) => {
 						setSubmitted( true );
 						onSubmit();
 					} }
+					__next40pxDefaultSize
 				>
 					{ strings.reset }
 				</Button>

@@ -2,16 +2,14 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import {
-	Card,
-	CheckboxControl,
-	Notice,
-	TextControl,
-} from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies
  */
+import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
+import { CheckboxControl } from 'wcpay/components/wp-components-wrapped/components/checkbox-control';
+import { Notice } from 'wcpay/components/wp-components-wrapped/components/notice';
+import { TextControl } from 'wcpay/components/wp-components-wrapped/components/text-control';
 import CardBody from '../card-body';
 import {
 	useAccountStatementDescriptor,
@@ -61,7 +59,7 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 
 	return (
 		<Card className="transactions">
-			<CardBody>
+			<CardBody className="wcpay-card-body">
 				<h4>
 					{ __( 'Transaction preferences', 'woocommerce-payments' ) }
 				</h4>
@@ -77,6 +75,7 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 							'Card details are stored in our platform, not on your store.',
 						'woocommerce-payments'
 					) }
+					__nextHasNoMarginBottom
 				/>
 				<ManualCaptureControl></ManualCaptureControl>
 				<h4>{ __( 'Customer statements', 'woocommerce-payments' ) }</h4>
@@ -114,6 +113,8 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 						onChange={ setAccountStatementDescriptor }
 						maxLength={ ACCOUNT_STATEMENT_MAX_LENGTH }
 						data-testid={ 'store-name-bank-statement' }
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
 					/>
 					<span className="input-help-text" aria-hidden="true">
 						{ `${ accountStatementDescriptor.length } / ${ ACCOUNT_STATEMENT_MAX_LENGTH }` }
@@ -141,6 +142,8 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 									data-testid={
 										'store-name-bank-statement-kanji'
 									}
+									__nextHasNoMarginBottom
+									__next40pxDefaultSize
 								/>
 								<span
 									className="input-help-text"
@@ -170,6 +173,8 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 									data-testid={
 										'store-name-bank-statement-kana'
 									}
+									__nextHasNoMarginBottom
+									__next40pxDefaultSize
 								/>
 								<span
 									className="input-help-text"

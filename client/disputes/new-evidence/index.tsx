@@ -13,7 +13,6 @@ import HelpOutlineIcon from 'gridicons/dist/help-outline';
 /**
  * Internal dependencies.
  */
-import useConfirmNavigation from 'utils/use-confirm-navigation';
 import { recordEvent } from 'tracks';
 import { TestModeNotice } from 'components/test-mode-notice';
 import ErrorBoundary from 'components/error-boundary';
@@ -38,12 +37,8 @@ import RecommendedDocuments from './recommended-documents';
 import InlineNotice from 'components/inline-notice';
 import ShippingDetails from './shipping-details';
 import CoverLetter from './cover-letter';
-import {
-	Button,
-	HorizontalRule,
-	Icon,
-	ExternalLink,
-} from 'wcpay/components/wp-components-wrapped';
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
+import { HorizontalRule } from 'wcpay/components/wp-components-wrapped/components/horizontal-rule';
 import { getAdminUrl } from 'wcpay/utils';
 import { StepperPanel } from 'wcpay/components/stepper';
 import {
@@ -694,25 +689,6 @@ export default ( { query }: { query: { id: string } } ) => {
 		// Remove the file name from the uploaded files.
 		setUploadedFiles( ( prev ) => ( { ...prev, [ key ]: '' } ) );
 	};
-
-	// --- Navigation warning ---
-	const confirmationNavigationCallback = useConfirmNavigation( () => {
-		if ( showConfirmation || readOnly ) return;
-		return __(
-			'There are unsaved changes on this page. Are you sure you want to leave and discard the unsaved changes?',
-			'woocommerce-payments'
-		);
-	} );
-
-	// Store the cleanup function from the navigation confirmation
-	const [ navigationCleanup, setNavigationCleanup ] = useState<
-		( () => void ) | null
-	>( null );
-
-	useEffect( () => {
-		const cleanup = confirmationNavigationCallback();
-		setNavigationCleanup( cleanup );
-	}, [ confirmationNavigationCallback, readOnly ] );
 
 	// --- Accordion summary content ---
 	const summaryItems = useMemo( () => {

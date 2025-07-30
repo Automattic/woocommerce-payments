@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React, { useState, useEffect, useRef } from 'react';
-import { Popover } from 'wcpay/components/wp-components-wrapped';
+import { Popover } from 'wcpay/components/wp-components-wrapped/components/popover';
 
 /**
  * Internal dependencies

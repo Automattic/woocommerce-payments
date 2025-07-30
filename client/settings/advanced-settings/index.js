@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { Card } from 'wcpay/components/wp-components-wrapped';
+import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
 
 /**
  * Internal dependencies
@@ -18,7 +18,7 @@ const AdvancedSettings = () => {
 	return (
 		<>
 			<Card>
-				<CardBody>
+				<CardBody className="wcpay-card-body">
 					<MultiCurrencyToggle />
 					{ wcpaySettings.isSubscriptionsActive &&
 					wcpaySettings.isStripeBillingEligible ? (

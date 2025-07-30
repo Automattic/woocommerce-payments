@@ -14,7 +14,8 @@ import clsx from 'clsx';
 /**
  * Internal dependencies
  */
-import { BaseControl, Button } from 'wcpay/components/wp-components-wrapped';
+import { BaseControl } from 'wcpay/components/wp-components-wrapped/components/base-control';
+import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 import { FileUploadControl } from 'wcpay/components/file-upload';
 
 interface WooPayFileUploadProps {
@@ -187,7 +188,7 @@ const WooPayFileUpload: React.FunctionComponent< WooPayFileUploadProps > = ( {
 				</div>
 			</div>
 
-			<BaseControl id={ 'test' } help={ help }>
+			<BaseControl id="test" help={ help } __nextHasNoMarginBottom>
 				{ ' ' }
 			</BaseControl>
 		</div>

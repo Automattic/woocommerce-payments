@@ -7,10 +7,8 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import {
-	SelectControl,
-	TextareaControl,
-} from 'wcpay/components/wp-components-wrapped';
+import { SelectControl } from 'wcpay/components/wp-components-wrapped/components/select-control';
+import { TextareaControl } from 'wcpay/components/wp-components-wrapped/components/textarea-control';
 
 interface ProductDetailsProps {
 	productType: string;
@@ -34,7 +32,7 @@ const ProductDetails: React.FC< ProductDetailsProps > = ( {
 			</h3>
 			<div className="wcpay-dispute-evidence-product-details__subheading">
 				{ __(
-					'Please check the correct product type has been selected and the description is accurate.',
+					'Please ensure the product type and description have been entered accurately.',
 					'woocommerce-payments'
 				) }
 			</div>

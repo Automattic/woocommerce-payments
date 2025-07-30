@@ -3,15 +3,13 @@
  */
 import React, { useContext } from 'react';
 import { __ } from '@wordpress/i18n';
-import {
-	ToggleControl,
-	RadioControl,
-} from 'wcpay/components/wp-components-wrapped';
 
 /**
  * Internal dependencies
  */
-import './../style.scss';
+import './rule-toggle.scss';
+import { ToggleControl } from 'wcpay/components/wp-components-wrapped/components/toggle-control';
+import { RadioControl } from 'wcpay/components/wp-components-wrapped/components/radio-control';
 import FraudPreventionSettingsContext from './context';
 import { FraudPreventionSettings } from '../interfaces';
 
@@ -55,7 +53,7 @@ const FraudProtectionRuleToggle: React.FC< React.PropsWithChildren<
 		setIsDirty,
 	} = useContext( FraudPreventionSettingsContext );
 
-	const { isFRTReviewFeatureActive } = wcpaySettings;
+	const { isFRTReviewFeatureActive } = wcpaySettings.featureFlags;
 
 	const settingUI = protectionSettingsUI?.[ setting ];
 	const filterAction = getFilterAction( settingUI, isFRTReviewFeatureActive );
@@ -85,25 +83,23 @@ const FraudProtectionRuleToggle: React.FC< React.PropsWithChildren<
 
 	// Render view.
 	return (
-		<div className="fraud-protection-rule-toggle">
-			<ToggleControl
-				label={ label }
-				key={ setting }
-				checked={ settingUI?.enabled }
-				className="fraud-protection-rule-toggle-toggle"
-				onChange={ handleEnableToggleChange }
-			/>
-
-			<div className="fraud-protection-rule-toggle-description">
-				{ description }
+		<>
+			<div className="fraud-protection-rule-toggle">
+				<ToggleControl
+					label={ label }
+					key={ setting }
+					checked={ settingUI?.enabled }
+					help={ description }
+					onChange={ handleEnableToggleChange }
+					__nextHasNoMarginBottom
+				/>
 			</div>
 
 			{ settingUI?.enabled && (
-				<div>
+				<>
 					{ children }
-
-					{ !! isFRTReviewFeatureActive && (
-						<div className="fraud-protection-rule-toggle-block">
+					{ Boolean( isFRTReviewFeatureActive ) && (
+						<div>
 							<strong>
 								{ __(
 									'Filter action',
@@ -115,12 +111,13 @@ const FraudProtectionRuleToggle: React.FC< React.PropsWithChildren<
 								options={ radioOptions }
 								selected={ filterAction }
 								onChange={ handleBlockToggleChange }
+								__nextHasNoMarginBottom
 							/>
 						</div>
 					) }
-				</div>
+				</>
 			) }
-		</div>
+		</>
 	);
 };
 

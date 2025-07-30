@@ -1,31 +1,70 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Amount input renders correctly 1`] = `
+.emotion-0 {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.emotion-0 *,
+.emotion-0 *::before,
+.emotion-0 *::after {
+  box-sizing: inherit;
+}
+
+.emotion-2 {
+  margin-bottom: calc(4px * 2);
+}
+
+.components-panel__row .emotion-2 {
+  margin-bottom: inherit;
+}
+
+.emotion-4 {
+  margin-top: calc(4px * 2);
+  margin-bottom: 0;
+  font-size: 12px;
+  font-style: normal;
+  color: #757575;
+  margin-bottom: revert;
+}
+
 <div>
-  <div
-    class="components-base-control components-amount-input__container"
-  >
+  <div>
     <div
-      class="components-base-control__field components-amount-input__input_container"
+      class="components-base-control wcpay-components-amount-input empty emotion-0 emotion-1"
     >
-      <span
-        class="components-amount-input__prefix"
+      <div
+        class="components-base-control__field emotion-2 emotion-3"
       >
-        test_prefix
-      </span>
-      <input
-        class="components-text-control__input components-amount-input__input"
-        data-testid="amount-input"
-        id="test_id"
-        placeholder="test_placeholder"
-        value=""
-      />
+        <div
+          class="text-control-with-affixes text-control-with-prefix"
+        >
+          <span
+            class="text-control-with-affixes__prefix"
+            id="inspector-text-control-with-affixes-0__prefix"
+          >
+            test_prefix
+          </span>
+          <input
+            aria-describedby="inspector-text-control-with-affixes-0__help inspector-text-control-with-affixes-0__prefix"
+            class="components-text-control__input"
+            data-testid="amount-input"
+            id="test_id"
+            placeholder="test_placeholder"
+            type="text"
+            value=""
+          />
+        </div>
+      </div>
+      <p
+        class="components-base-control__help emotion-4 emotion-5"
+        id="inspector-text-control-with-affixes-0__help"
+      >
+        this is a helptext
+      </p>
     </div>
-    <span
-      class="components-amount-input__help_text"
-    >
-      this is a helptext
-    </span>
   </div>
 </div>
 `;
