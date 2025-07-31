@@ -59,7 +59,7 @@ describe( 'Tax details modal', () => {
 		).toMatchSnapshot();
 	} );
 
-	it( 'should close when clicking on the dismiss button', () => {
+	it( 'should close when clicking on the dismiss button', async () => {
 		let isModalOpen = true;
 		const setModalOpen = ( value: boolean ) => ( isModalOpen = value );
 		const { rerender } = render(
@@ -70,7 +70,7 @@ describe( 'Tax details modal', () => {
 			/>
 		);
 
-		user.click( screen.getByRole( 'button', { name: 'Close dialog' } ) );
+		await user.click( screen.getByRole( 'button', { name: 'Close dialog' } ) );
 
 		// The isModalOpen prop should have changed, so we need to force a rerender.
 		rerender(

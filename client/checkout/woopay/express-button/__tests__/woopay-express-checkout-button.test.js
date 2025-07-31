@@ -189,7 +189,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		const expressButton = screen.queryByRole( 'button', {
 			name: 'WooPay',
 		} );
-		userEvent.click( expressButton );
+		await userEvent.click( expressButton );
 
 		await waitFor( () => {
 			expect( request ).toHaveBeenCalledWith( 'woopay.url', {
@@ -203,7 +203,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		} );
 	} );
 
-	test( 'call `expressCheckoutIframe` on button click when `isPreview` is false', () => {
+	test( 'call `expressCheckoutIframe` on button click when `isPreview` is false', async () => {
 		getConfig.mockImplementation( ( v ) => {
 			return v === 'isWoopayFirstPartyAuthEnabled' ? false : 'foo';
 		} );
@@ -220,7 +220,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		const expressButton = screen.queryByRole( 'button', {
 			name: 'WooPay',
 		} );
-		userEvent.click( expressButton );
+		await userEvent.click( expressButton );
 
 		expect( expressCheckoutIframe ).toHaveBeenCalledWith(
 			api,
@@ -243,7 +243,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 		const expressButton = screen.queryByRole( 'button', {
 			name: 'WooPay',
 		} );
-		userEvent.click( expressButton );
+		await userEvent.click( expressButton );
 
 		await waitFor( () => {
 			expect( request ).not.toHaveBeenCalled();
@@ -268,7 +268,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 			} );
 		} );
 
-		test( 'should show an alert when clicking the button when add to cart button is disabled', () => {
+		test( 'should show an alert when clicking the button when add to cart button is disabled', async () => {
 			getConfig.mockImplementation( ( v ) => {
 				return v === 'isWoopayFirstPartyAuthEnabled' ? false : 'foo';
 			} );
@@ -297,7 +297,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 				name: 'WooPay',
 			} );
 
-			userEvent.click( expressButton );
+			await userEvent.click( expressButton );
 
 			expect( window.alert ).toBeCalledWith(
 				'Please select your product options before proceeding.'
@@ -328,7 +328,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 				name: 'WooPay',
 			} );
 
-			userEvent.click( expressButton );
+			await userEvent.click( expressButton );
 
 			expect( mockAddToCart ).toHaveBeenCalled();
 
@@ -363,7 +363,7 @@ describe( 'WoopayExpressCheckoutButton', () => {
 				name: 'WooPay',
 			} );
 
-			userEvent.click( expressButton );
+			await userEvent.click( expressButton );
 
 			expect( mockAddToCart ).not.toHaveBeenCalled();
 

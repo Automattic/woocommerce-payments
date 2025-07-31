@@ -72,21 +72,21 @@ describe( 'Grouped Select Control', () => {
 		expect( select ).toHaveTextContent( 'Option 1' );
 	} );
 
-	it( 'shows only the first group options', () => {
+	it( 'shows only the first group options', async () => {
 		renderControl();
 
 		const select = screen.getByRole( 'button' );
-		userEvent.click( select );
+		await userEvent.click( select );
 
 		expect( screen.getByText( 'Option 1' ) ).toBeInTheDocument();
 		expect( screen.queryByText( 'Option 3' ) ).not.toBeInTheDocument();
 	} );
 
-	it( 'toggles group visibility on click', () => {
+	it( 'toggles group visibility on click', async () => {
 		renderControl();
 
 		const select = screen.getByRole( 'button' );
-		userEvent.click( select );
+		await userEvent.click( select );
 
 		const group1 = screen.getByRole( 'option', { name: 'Group 1' } );
 		const group2 = screen.getByRole( 'option', { name: 'Group 2' } );
@@ -94,21 +94,21 @@ describe( 'Grouped Select Control', () => {
 		expect( screen.getByText( 'Option 1' ) ).toBeInTheDocument();
 		expect( screen.queryByText( 'Option 3' ) ).not.toBeInTheDocument();
 
-		userEvent.click( group1 );
+		await userEvent.click( group1 );
 		expect( screen.queryByText( 'Option 1' ) ).not.toBeInTheDocument();
 
-		userEvent.click( group2 );
+		await userEvent.click( group2 );
 		expect( screen.getByText( 'Option 3' ) ).toBeInTheDocument();
 	} );
 
-	it( 'calls onChange callback when an option is selected', () => {
+	it( 'calls onChange callback when an option is selected', async () => {
 		renderControl();
 
 		const select = screen.getByRole( 'button' );
-		userEvent.click( select );
+		await userEvent.click( select );
 
 		const option = screen.getByRole( 'option', { name: 'Option 1' } );
-		userEvent.click( option );
+		await userEvent.click( option );
 
 		expect( onChange ).toHaveBeenCalledWith(
 			expect.objectContaining( {
@@ -117,51 +117,51 @@ describe( 'Grouped Select Control', () => {
 		);
 	} );
 
-	it( 'filters options by name', () => {
+	it( 'filters options by name', async () => {
 		renderControl( { searchable: true } );
 
 		const select = screen.getByRole( 'button' );
-		userEvent.click( select );
+		await userEvent.click( select );
 
 		const input = screen.getByRole( 'textbox' );
 
-		userEvent.type( input, '1' );
+		await userEvent.type( input, '1' );
 		expect( screen.getByText( 'Option 1' ) ).toBeInTheDocument();
 		expect( screen.queryByText( 'Option 2' ) ).not.toBeInTheDocument();
 	} );
 
-	it( 'filters options by context', () => {
+	it( 'filters options by context', async () => {
 		renderControl( { searchable: true } );
 
 		const select = screen.getByRole( 'button' );
-		userEvent.click( select );
+		await userEvent.click( select );
 
 		const input = screen.getByRole( 'textbox' );
 
-		userEvent.type( input, 'z' );
+		await userEvent.type( input, 'z' );
 		expect( screen.queryByText( 'Option 1' ) ).not.toBeInTheDocument();
 		expect( screen.getByText( 'Option 5' ) ).toBeInTheDocument();
 	} );
 
-	it( 'restores visibility state after clearing search', () => {
+	it( 'restores visibility state after clearing search', async () => {
 		renderControl( { searchable: true } );
 
 		const select = screen.getByRole( 'button' );
-		userEvent.click( select );
+		await userEvent.click( select );
 
 		const group1 = screen.getByRole( 'option', { name: 'Group 1' } );
 		const group2 = screen.getByRole( 'option', { name: 'Group 2' } );
-		userEvent.click( group1 );
-		userEvent.click( group2 );
+		await userEvent.click( group1 );
+		await userEvent.click( group2 );
 		expect( screen.queryByText( 'Option 1' ) ).not.toBeInTheDocument();
 		expect( screen.queryByText( 'Option 3' ) ).toBeInTheDocument();
 
 		const input = screen.getByRole( 'textbox' );
-		userEvent.type( input, 'z' );
+		await userEvent.type( input, 'z' );
 		expect( screen.queryByText( 'Option 5' ) ).toBeInTheDocument();
 		expect( screen.queryByText( 'Option 3' ) ).not.toBeInTheDocument();
 
-		userEvent.clear( input );
+		await userEvent.clear( input );
 
 		expect( screen.queryByText( 'Option 5' ) ).not.toBeInTheDocument();
 		expect( screen.queryByText( 'Option 3' ) ).toBeInTheDocument();

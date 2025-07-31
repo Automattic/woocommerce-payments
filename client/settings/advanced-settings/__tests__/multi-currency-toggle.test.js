@@ -31,7 +31,7 @@ describe( 'MultiCurrencyToggle', () => {
 
 	it.each( [ [ true ], [ false ] ] )(
 		'updates Multi-Currency enabled state to %s when toggling checkbox',
-		( isEnabled ) => {
+		async ( isEnabled ) => {
 			const updateIsMultiCurrencyEnabledMock = jest.fn();
 			useMultiCurrency.mockReturnValue( [
 				isEnabled,
@@ -44,7 +44,7 @@ describe( 'MultiCurrencyToggle', () => {
 				'Enable Multi-Currency'
 			);
 
-			userEvent.click( enableMultiCurrencyCheckbox );
+			await userEvent.click( enableMultiCurrencyCheckbox );
 			expect( updateIsMultiCurrencyEnabledMock ).toHaveBeenCalledWith(
 				! isEnabled
 			);
