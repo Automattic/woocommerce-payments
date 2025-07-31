@@ -165,7 +165,6 @@ const BannerNotice: React.FC< React.PropsWithChildren< Props > > = ( {
 										onClick={ url ? undefined : onClick }
 										className={ buttonCustomClasses }
 										target={ urlTarget }
-										// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component when it is using the `href` prop.
 										__next40pxDefaultSize
 									>
 										{ label }

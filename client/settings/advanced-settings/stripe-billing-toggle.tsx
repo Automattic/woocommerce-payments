@@ -61,7 +61,6 @@ const StripeBillingToggle: React.FC< Props > = ( { onChange } ) => {
 				},
 			} ) }
 			data-testid={ 'stripe-billing-toggle' }
-			// @ts-expect-error: __nextHasNoMarginBottom is not a prop defined in the WP CheckboxControl component.
 			__nextHasNoMarginBottom
 		/>
 	);

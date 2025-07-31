@@ -74,12 +74,7 @@ const PhoneNumberControl: React.FC< Props > = ( {
 	};
 
 	return (
-		<BaseControl
-			id={ id }
-			{ ...rest }
-			// @ts-expect-error: __nextHasNoMarginBottom is not a prop defined in the WP BaseControl component.
-			__nextHasNoMarginBottom
-		>
+		<BaseControl id={ id } { ...rest } __nextHasNoMarginBottom>
 			<div
 				className={ clsx(
 					'wcpay-component-phone-number-control',

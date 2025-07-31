@@ -103,7 +103,6 @@ export const CompanyDataTask = ( {
 					label={ __( 'Business name', 'woocommerce-payments' ) }
 					value={ companyName }
 					onChange={ setCompanyName }
-					// @ts-expect-error: __nextHasNoMarginBottom is not a prop defined in the WP TextControl component.
 					__nextHasNoMarginBottom
 				/>
 
@@ -112,7 +111,6 @@ export const CompanyDataTask = ( {
 					label={ __( 'Address', 'woocommerce-payments' ) }
 					value={ companyAddress }
 					onChange={ setCompanyAddress }
-					// @ts-expect-error: __nextHasNoMarginBottom is not a prop defined in the WP TextareaControl component.
 					__nextHasNoMarginBottom
 				/>
 

@@ -69,7 +69,6 @@ export const FileUploadControl = ( {
 			id={ `form-file-upload-base-control-${ field.key }` }
 			label={ field.label }
 			help={ help }
-			// @ts-expect-error: __nextHasNoMarginBottom is not a prop defined in the WP BaseControl component.
 			__nextHasNoMarginBottom
 		>
 			<DropZone
@@ -145,7 +144,6 @@ export const UploadedReadOnly = ( {
 		<BaseControl
 			id={ `form-file-upload-base-control-${ field.key }` }
 			label={ field.label }
-			// @ts-expect-error: __nextHasNoMarginBottom is not a prop defined in the WP BaseControl component.
 			__nextHasNoMarginBottom
 		>
 			<FileUploadPreview

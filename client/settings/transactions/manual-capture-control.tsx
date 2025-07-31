@@ -81,7 +81,6 @@ const ManualCaptureControl = (): JSX.Element => {
 							: '' }
 					</span>
 				}
-				// @ts-expect-error: __nextHasNoMarginBottom is not a prop defined in the WP CheckboxControl component.
 				__nextHasNoMarginBottom
 			/>
 			{ isStripeBillingEnabled && (

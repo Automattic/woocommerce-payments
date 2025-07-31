@@ -232,7 +232,6 @@ export const VatNumberTask = ( {
 						getVatTaxIDName()
 					) }
 					help={ getVatTaxIDRequirementHint() }
-					// @ts-expect-error: __nextHasNoMarginBottom is not a prop defined in the WP CheckboxControl component.
 					__nextHasNoMarginBottom
 				/>
 				{ isVatRegistered && (
@@ -244,7 +243,6 @@ export const VatNumberTask = ( {
 						help={ getVatTaxIDValidationHint() }
 						value={ vatNumber }
 						onChange={ setVatNumber }
-						// @ts-expect-error: __nextHasNoMarginBottom is not a prop defined in the WP TextControl component.
 						__nextHasNoMarginBottom
 					/>
 				) }

@@ -108,7 +108,6 @@ const CoverLetter: React.FC< CoverLetterProps > = ( {
 				rows={ 30 }
 				className="wcpay-dispute-evidence-cover-letter__textarea"
 				readOnly={ readOnly }
-				// @ts-expect-error: __nextHasNoMarginBottom is not a prop defined in the WP TextareaControl component.
 				__nextHasNoMarginBottom
 			/>
 			<Button

@@ -54,7 +54,6 @@ const WooPayExpressCheckoutItem = (): React.ReactElement | null => {
 						disabled={ isStripeLinkEnabled }
 						onChange={ updateIsWooPayEnabled }
 						data-testid="woopay-toggle"
-						// @ts-expect-error: __nextHasNoMarginBottom is not a prop defined in the WP CheckboxControl component.
 						__nextHasNoMarginBottom
 					/>
 				</div>

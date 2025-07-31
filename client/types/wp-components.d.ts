@@ -19,11 +19,10 @@ declare module '@wordpress/components' {
 	export const GradientPicker: ComponentType< React.PropsWithChildren<
 		any
 	> >;
-	export const CardNotice: ComponentType< React.PropsWithChildren< any > >;
 
 	// Extend the Button component to include __next40pxDefaultSize property
 	export namespace Button {
-		interface ButtonProps {
+		interface BaseProps {
 			/**
 			 * Whether to use the 40px default size for the button.
 			 * This is a WordPress component prop that controls button height.
@@ -34,17 +33,19 @@ declare module '@wordpress/components' {
 		}
 	}
 	export namespace TextControl {
-		interface TextControlProps {
+		interface Props {
 			/**
 			 * Whether to use the 40px default size for the textarea.
 			 * This is a WordPress component prop that controls textarea height.
 			 */
 			// eslint-disable-next-line @typescript-eslint/naming-convention
 			__nextHasNoMarginBottom?: boolean;
+			// eslint-disable-next-line @typescript-eslint/naming-convention
+			__next40pxDefaultSize?: boolean;
 		}
 	}
 	export namespace TextareaControl {
-		interface TextareaControlProps {
+		interface Props {
 			/**
 			 * Whether to use the 40px default size for the textarea.
 			 * This is a WordPress component prop that controls textarea height.
@@ -54,13 +55,35 @@ declare module '@wordpress/components' {
 		}
 	}
 	export namespace ToggleControl {
-		interface ToggleControlProps {
+		interface Props {
 			/**
 			 * Whether to use the 40px default size for the toggle control.
 			 * This is a WordPress component prop that controls toggle control height.
 			 */
 			// eslint-disable-next-line @typescript-eslint/naming-convention
 			__nextHasNoMarginBottom?: boolean;
+		}
+	}
+	export namespace BaseControl {
+		interface ControlProps {
+			/**
+			 * Whether to use the 40px default size for the base control.
+			 * This is a WordPress component prop that controls base control height.
+			 */
+			// eslint-disable-next-line @typescript-eslint/naming-convention
+			__nextHasNoMarginBottom?: boolean;
+		}
+	}
+	export namespace SelectControl {
+		interface Option {
+			/**
+			 * Whether to use the 40px default size for the select control.
+			 * This is a WordPress component prop that controls select control height.
+			 */
+			// eslint-disable-next-line @typescript-eslint/naming-convention
+			__nextHasNoMarginBottom?: boolean;
+			// eslint-disable-next-line @typescript-eslint/naming-convention
+			__next40pxDefaultSize?: boolean;
 		}
 	}
 	// …etc…
