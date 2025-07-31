@@ -86,8 +86,6 @@
     "@woocommerce/number": "2.4.0",
     "@woocommerce/onboarding": "3.5.0",
     "canvas-confetti": "1.9.2",
-    "compare-versions": "6.1.1",
-    "debug": "4.3.5",
     "intl-tel-input": "17.0.15",
     "lodash": "4.17.21",
     "validator": "13.12.0"
@@ -118,7 +116,6 @@
     "@woocommerce/components": "12.3.0",
     "@woocommerce/csv-export": "1.10.0",
     "@woocommerce/currency": "4.3.0",
-    "@woocommerce/date": "4.2.0",
     "@woocommerce/dependency-extraction-webpack-plugin": "2.2.0",
     "@woocommerce/eslint-plugin": "1.1.0",
     "@woocommerce/experimental": "3.3.0",
