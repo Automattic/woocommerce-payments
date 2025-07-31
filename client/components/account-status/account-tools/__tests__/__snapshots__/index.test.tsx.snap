@@ -36,7 +36,7 @@ exports[`AccountTools should render in test/sandbox mode onboarding 1`] = `
       class="account-tools__actions"
     >
       <button
-        class="components-button is-secondary"
+        class="components-button is-next-40px-default-size is-secondary"
         type="button"
       >
         Reset account

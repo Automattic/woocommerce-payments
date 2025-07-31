@@ -5,7 +5,7 @@
  */
 import React from 'react';
 import { act, render, screen } from '@testing-library/react';
-import { userEvent as user } from 'jest-utils/user-event-timers';
+import user from '@testing-library/user-event';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 
 /**
@@ -50,14 +50,6 @@ describe( 'Documents filters', () => {
 
 	describe( 'when filtering by date', () => {
 		let ruleSelector: HTMLElement;
-
-		beforeAll( () => {
-			jest.useFakeTimers();
-		} );
-
-		afterAll( () => {
-			jest.useRealTimers();
-		} );
 
 		beforeEach( async () => {
 			await addAdvancedFilter( 'Date' );

@@ -1,12 +1,12 @@
 /**
  * External dependencies
  */
-import { screen } from '@testing-library/react';
+import { screen, act } from '@testing-library/react';
 
 /**
  * Internal dependencies
  */
-import '../index';
+import '..';
 import { getConfig } from 'utils/checkout';
 
 jest.mock( 'utils/checkout', () => ( {
@@ -29,25 +29,29 @@ describe( 'renderWooPayExpressButton', () => {
 		getConfig.mockReturnValue( 'foo' );
 	} );
 
-	test( 'render the button component in placeholder', () => {
+	test( 'render the button component in placeholder', async () => {
 		document.body.appendChild( expressButtonContainer );
 
 		// trigger window load.
-		window.dispatchEvent( new Event( 'load' ) );
+		act( () => {
+			window.dispatchEvent( new Event( 'load' ) );
+		} );
 
 		expect(
-			screen.queryByText( 'WooPay Express Button' )
+			await screen.findByText( 'WooPay Express Button' )
 		).toBeInTheDocument();
 	} );
 
-	test( 'should not render the express button component if placeholder is absent', () => {
+	test( 'should not render the express button component if placeholder is absent', async () => {
 		document.body.removeChild( expressButtonContainer );
 
 		// trigger window load.
-		window.dispatchEvent( new Event( 'load' ) );
+		act( () => {
+			window.dispatchEvent( new Event( 'load' ) );
+		} );
 
 		expect(
-			screen.queryByText( 'WooPay Express Button' )
+			await screen.findByText( 'WooPay Express Button' )
 		).not.toBeInTheDocument();
 	} );
 } );

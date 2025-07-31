@@ -71,7 +71,7 @@ describe( 'Transactions filters', () => {
 		jest.useRealTimers();
 	} );
 
-	beforeEach( () => {
+	beforeEach( async () => {
 		// the query string is preserved across tests, so we need to reset it
 		updateQueryString( {}, '/', {} );
 
@@ -117,14 +117,14 @@ describe( 'Transactions filters', () => {
 	describe( 'when filtering by date', () => {
 		let ruleSelector: HTMLElement;
 
-		beforeEach( () => {
+		beforeEach( async () => {
 			await addAdvancedFilter( 'Date' );
 			ruleSelector = screen.getByRole( 'combobox', {
 				name: /transaction date filter/i,
 			} );
 		} );
 
-		test( 'should filter by before', () => {
+		test( 'should filter by before', async () => {
 			await user.selectOptions( ruleSelector, 'before' );
 
 			await user.type(
@@ -136,7 +136,7 @@ describe( 'Transactions filters', () => {
 			expect( getQuery().date_before ).toEqual( '2020-04-29' );
 		} );
 
-		test( 'should filter by after', () => {
+		test( 'should filter by after', async () => {
 			await user.selectOptions( ruleSelector, 'after' );
 
 			await user.type(
@@ -148,7 +148,7 @@ describe( 'Transactions filters', () => {
 			expect( getQuery().date_after ).toEqual( '2020-04-29' );
 		} );
 
-		test( 'should filter by between', () => {
+		test( 'should filter by between', async () => {
 			await user.selectOptions( ruleSelector, 'between' );
 
 			const dateInputs = screen.getAllByRole( 'textbox', {
@@ -168,7 +168,7 @@ describe( 'Transactions filters', () => {
 	describe( 'when filtering by type', () => {
 		let ruleSelector: HTMLElement;
 
-		beforeEach( () => {
+		beforeEach( async () => {
 			await addAdvancedFilter( 'Type' );
 			ruleSelector = screen.getByRole( 'combobox', {
 				name: /transaction type filter/i,
