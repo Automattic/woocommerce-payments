@@ -9,31 +9,6 @@ import { render, screen, fireEvent } from '@testing-library/react';
  */
 import RecommendedDocuments from '../recommended-documents';
 
-// Mock FormFileUpload to directly render an input for testing
-jest.mock(
-	'wcpay/components/wp-components-wrapped/components/form-file-upload',
-	() => {
-		const original = jest.requireActual(
-			'wcpay/components/wp-components-wrapped/components/form-file-upload'
-		);
-		return {
-			...original,
-			FormFileUpload: ( { onChange, render: renderProp }: any ) => (
-				<>
-					<input
-						aria-label="Upload file"
-						type="file"
-						onChange={ onChange }
-						data-testid="mock-upload-input"
-					/>
-					{ /* eslint-disable-next-line @typescript-eslint/no-empty-function */ }
-					{ renderProp( { openFileDialog: () => {} } ) }
-				</>
-			),
-		};
-	}
-);
-
 describe( 'RecommendedDocuments', () => {
 	const fields = [
 		{
@@ -77,7 +52,9 @@ describe( 'RecommendedDocuments', () => {
 	it( 'calls upload/remove handlers', () => {
 		render( <RecommendedDocuments fields={ fields } /> );
 		// Simulate file upload for first field
-		const fileInput = screen.getAllByTestId( 'mock-upload-input' )[ 0 ];
+		const fileInput = screen.getAllByTestId(
+			'form-file-upload-input'
+		)[ 0 ];
 		fireEvent.change( fileInput, {
 			target: { files: [ new File( [ '' ], 'test.pdf' ) ] },
 		} );

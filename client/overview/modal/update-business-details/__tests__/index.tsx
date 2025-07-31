@@ -11,8 +11,9 @@ import UpdateBusinessDetailsModal from '..';
 
 // Utility function for accessing the modal content in assertions
 const modalContent = () => {
-	const selector = '.wcpay-update-business-details-modal';
-	return document.body.querySelector( selector );
+	return document.body.querySelector(
+		'.wcpay-update-business-details-modal'
+	);
 };
 
 const mockErrorMessages = [
@@ -32,7 +33,7 @@ describe( 'Overview: update business details modal', () => {
 		render(
 			<UpdateBusinessDetailsModal
 				errorMessages={ mockErrorMessages }
-				accountStatus={ 'restricted' }
+				accountStatus="restricted"
 				accountLink={ mockAccountLink }
 			/>
 		);
@@ -44,7 +45,7 @@ describe( 'Overview: update business details modal', () => {
 		render(
 			<UpdateBusinessDetailsModal
 				errorMessages={ mockErrorMessages }
-				accountStatus={ 'restricted_soon' }
+				accountStatus="restricted_soon"
 				accountLink={ mockAccountLink }
 				currentDeadline={ mockCurrentDeadline }
 			/>
@@ -57,7 +58,7 @@ describe( 'Overview: update business details modal', () => {
 		render(
 			<UpdateBusinessDetailsModal
 				errorMessages={ mockErrorMessages }
-				accountStatus={ 'restricted_soon' }
+				accountStatus="restricted_soon"
 				accountLink={ mockAccountLink }
 			/>
 		);

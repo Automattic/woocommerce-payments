@@ -81,19 +81,11 @@ const UpdateBusinessDetailsModal = ( {
 					</div>
 					<hr />
 					<div className="wcpay-update-business-details-modal__footer">
-						<Button
-							variant={ 'secondary' }
-							onClick={ closeModal }
-							__next40pxDefaultSize
-						>
+						<Button variant="secondary" onClick={ closeModal }>
 							{ strings.cancel }
 						</Button>
 
-						<Button
-							variant={ 'primary' }
-							onClick={ openAccountLink }
-							__next40pxDefaultSize
-						>
+						<Button variant="primary" onClick={ openAccountLink }>
 							{ strings.updateBusinessDetails }
 						</Button>
 					</div>

@@ -21,7 +21,6 @@ import { MenuItem } from 'wcpay/components/wp-components-wrapped/components/menu
 import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
 import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
 import { Flex } from 'wcpay/components/wp-components-wrapped/components/flex';
-import { CardNotice } from 'wcpay/components/wp-components-wrapped/components/card-notice';
 import {
 	getChargeAmounts,
 	getChargeStatus,
@@ -29,6 +28,7 @@ import {
 	isOnHoldByFraudTools,
 	getBankName,
 } from 'utils/charge';
+import CardNotice from 'wcpay/components/card-notice';
 import isValueTruthy from 'utils/is-value-truthy';
 import PaymentStatusChip from 'components/payment-status-chip';
 import PaymentMethodDetails from 'components/payment-method-details';
