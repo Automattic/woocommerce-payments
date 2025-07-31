@@ -15,7 +15,8 @@ import {
 	SelectControl,
 	RadioControl,
 	RangeControl,
-	NumberControl,
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
+	__experimentalNumberControl as NumberControl,
 } from '@wordpress/components';
 import CardBody from '../card-body';
 import PaymentRequestButtonPreview from './payment-request-button-preview';
