@@ -586,7 +586,7 @@ class WC_Payments_Admin {
 
 		$this->add_menu_notification_badge();
 		$this->add_disputes_notification_badge();
-		if ( \WC_Payments_Features::is_auth_and_capture_enabled() && $this->wcpay_gateway->get_option( 'manual_capture' ) === 'yes' ) {
+		if ( $this->wcpay_gateway->get_option( 'manual_capture' ) === 'yes' ) {
 			$this->add_transactions_notification_badge();
 		}
 	}

@@ -173,9 +173,6 @@ describe( 'PaymentDetailsSummary', () => {
 			connect: {
 				country: 'US',
 			},
-			featureFlags: {
-				isAuthAndCaptureEnabled: true,
-			},
 			currencyData: {
 				US: {
 					code: 'USD',

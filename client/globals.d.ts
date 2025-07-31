@@ -28,7 +28,6 @@ declare global {
 			woopay: boolean;
 			documents: boolean;
 			woopayExpressCheckout: boolean;
-			isAuthAndCaptureEnabled: boolean;
 			paymentTimeline: boolean;
 			isDisputeIssuerEvidenceEnabled: boolean;
 			multiCurrency?: boolean;
