@@ -1,6 +1,6 @@
 /* global jQuery */
 
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import React from 'react';
 import { __ } from '@wordpress/i18n';
 
@@ -111,7 +111,8 @@ jQuery( function ( $ ) {
 			return;
 		}
 
-		ReactDOM.render(
+		const root = createRoot( container );
+		root.render(
 			<>
 				{ testMode && (
 					<WordPressComponentsContext.Provider
@@ -131,8 +132,7 @@ jQuery( function ( $ ) {
 						/>
 					</WordPressComponentsContext.Provider>
 				) }
-			</>,
-			container
+			</>
 		);
 	}
 } );

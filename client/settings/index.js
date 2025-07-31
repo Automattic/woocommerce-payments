@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 
 /**
  * Internal dependencies
@@ -22,15 +22,15 @@ const settingsContainer = document.getElementById(
 	'wcpay-account-settings-container'
 );
 if ( settingsContainer ) {
-	ReactDOM.render(
+	const root = createRoot( settingsContainer );
+	root.render(
 		<UnbundledWpComponentsProvider>
 			<WCPaySettingsContext.Provider value={ wcpaySettings }>
 				<ErrorBoundary>
 					<SettingsManager />
 				</ErrorBoundary>
 			</WCPaySettingsContext.Provider>
-		</UnbundledWpComponentsProvider>,
-		settingsContainer
+		</UnbundledWpComponentsProvider>
 	);
 }
 
@@ -39,15 +39,14 @@ const expressCheckoutSettingsContainer = document.getElementById(
 );
 if ( expressCheckoutSettingsContainer ) {
 	const methodId = expressCheckoutSettingsContainer.dataset.methodId;
-
-	ReactDOM.render(
+	const expressRoot = createRoot( expressCheckoutSettingsContainer );
+	expressRoot.render(
 		<UnbundledWpComponentsProvider>
 			<WCPaySettingsContext.Provider value={ wcpaySettings }>
 				<ErrorBoundary>
 					<ExpressCheckoutSettings methodId={ methodId } />
 				</ErrorBoundary>
 			</WCPaySettingsContext.Provider>
-		</UnbundledWpComponentsProvider>,
-		expressCheckoutSettingsContainer
+		</UnbundledWpComponentsProvider>
 	);
 }

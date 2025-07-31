@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React, { ComponentProps, useEffect, useState } from 'react';
-import ReactDOM from 'react-dom';
+import { createPortal } from 'react-dom';
 import { Icon, thumbsUp, thumbsDown } from '@wordpress/icons';
 import { useSelect } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
@@ -50,7 +50,7 @@ const WCFooterPortal = ( { children }: { children: React.ReactNode } ) => {
 		return null;
 	}
 
-	return ReactDOM.createPortal( children, portalRoot );
+	return createPortal( children, portalRoot );
 };
 
 interface MerchantFeedbackPromptProps {

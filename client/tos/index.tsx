@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 
 import TosModal from './modal';
 import showTosNotice from './disabled-notice';
@@ -29,11 +29,11 @@ function renderTosModal() {
 	const container = document.createElement( 'div' );
 	container.id = 'wcpay-tos-container';
 	document.body.appendChild( container );
-	ReactDOM.render(
+	const root = createRoot( container );
+	root.render(
 		<UnbundledWpComponentsProvider>
 			<TosModal />
-		</UnbundledWpComponentsProvider>,
-		container
+		</UnbundledWpComponentsProvider>
 	);
 }
 
