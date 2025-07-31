@@ -33,6 +33,7 @@ const AccordionTitle = forwardRef<
 						'is-md': md,
 						'is-lg': lg,
 					} ) }
+					// @ts-expect-error: not sure
 					ref={ ref }
 					{ ...props }
 				>

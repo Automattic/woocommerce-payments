@@ -32,6 +32,7 @@ const IPAddressMismatchRuleCard: React.FC = () => (
 				),
 				components: {
 					ipAddressLink: (
+						// @ts-expect-error: children is provided when interpolating the component
 						<ExternalLink href="https://simple.wikipedia.org/wiki/IP_address" />
 					),
 				},

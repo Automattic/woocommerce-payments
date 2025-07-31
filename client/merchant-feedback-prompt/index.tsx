@@ -10,7 +10,6 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-// eslint-disable-next-line no-duplicate-imports
 import {
 	Button,
 	Flex,
@@ -102,6 +101,7 @@ const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
 					{
 						id: 'wcpay-merchant-feedback-prompt',
 						className: 'wcpay-merchant-feedback-prompt',
+						// @ts-expect-error: content can receive a JSX element, not just a string
 						content: (
 							<Flex
 								gap={ 3 }
