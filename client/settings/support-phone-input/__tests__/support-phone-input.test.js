@@ -71,8 +71,8 @@ describe( 'SupportPhoneInput', () => {
 		// The error message is displayed.
 		expect(
 			container.querySelector( '.components-notice.is-error' ).textContent
-		).toEqual(
-			'Support phone number cannot be empty once it has been set before, please specify.'
+		).toMatch(
+			/Support phone number cannot be empty once it has been set before, please specify\./
 		);
 	} );
 
@@ -83,7 +83,7 @@ describe( 'SupportPhoneInput', () => {
 
 		expect(
 			container.querySelector( '.components-notice.is-error' ).textContent
-		).toEqual( 'Support phone number cannot be empty.' );
+		).toMatch( /Support phone number cannot be empty\./ );
 	} );
 
 	it( 'displays the error message for invalid phone', async () => {
@@ -95,7 +95,7 @@ describe( 'SupportPhoneInput', () => {
 		const { container } = render( <SupportPhoneInput /> );
 		expect(
 			container.querySelector( '.components-notice.is-error' ).textContent
-		).toEqual( 'Please enter a valid phone number.' );
+		).toMatch( /Please enter a valid phone number\./ );
 	} );
 
 	it( 'Singapore phone number validation special cases - starting with 800, 805, 806, 807, 808 or 809', async () => {

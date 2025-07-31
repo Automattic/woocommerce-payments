@@ -99,7 +99,7 @@ const RefundModal: React.FC< RefundModalProps > = ( {
 					'Select a reason (Optional)',
 					'woocommerce-payments'
 				) }
-				selected={ reason }
+				selected={ reason || undefined }
 				options={ [
 					{
 						label: __( 'Duplicate order', 'woocommerce-payments' ),

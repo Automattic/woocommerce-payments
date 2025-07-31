@@ -19,7 +19,6 @@ import {
 	CardBody,
 	Flex,
 	ExternalLink,
-	CardNotice,
 } from '@wordpress/components';
 
 /**
@@ -32,6 +31,7 @@ import {
 	isOnHoldByFraudTools,
 	getBankName,
 } from 'utils/charge';
+import CardNotice from 'wcpay/components/card-notice';
 import isValueTruthy from 'utils/is-value-truthy';
 import PaymentStatusChip from 'components/payment-status-chip';
 import PaymentMethodDetails from 'components/payment-method-details';

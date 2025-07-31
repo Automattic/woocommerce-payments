@@ -96,7 +96,7 @@ const PaymentMethod = ( {
 	const {
 		isActionable,
 		notice,
-		noticeType = 'warning',
+		noticeType = 'warning' as const,
 	} = usePaymentMethodAvailability( id );
 	const [ enabledMethodIds ] = useEnabledPaymentMethodIds();
 
