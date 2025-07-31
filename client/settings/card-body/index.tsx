@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useContext, ComponentProps } from 'react';
+import React, { ComponentProps } from 'react';
 import { CardBody } from '@wordpress/components';
 import clsx from 'clsx';
 

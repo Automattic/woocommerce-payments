@@ -14,8 +14,10 @@ const WORDPRESS_COMPONENT_PROPS = [
  * Suppresses console warnings about WordPress component props
  */
 function suppressWordPressPropWarnings() {
+	// eslint-disable-next-line no-console
 	const originalConsoleError = console.error;
 
+	// eslint-disable-next-line no-console
 	console.error = function ( ...args ) {
 		// Check if this is a WordPress component prop warning
 		const message = args[ 0 ];
