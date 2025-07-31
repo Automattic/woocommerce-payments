@@ -4,7 +4,7 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
+import { Card } from '@wordpress/components';
 
 /**
  * Internal dependencies

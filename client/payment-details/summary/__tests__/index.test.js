@@ -373,10 +373,16 @@ describe( 'PaymentDetailsSummary', () => {
 			).not.toBeInTheDocument();
 
 			expect(
-				screen.getByText(
-					/Approving this transaction will capture the charge./
-				)
-			).toBeInTheDocument();
+				screen.getAllByText( ( content, element ) => {
+					return (
+						element.textContent.includes( 'You must' ) &&
+						element.textContent.includes( 'capture' ) &&
+						element.textContent.includes(
+							'this charge within the next'
+						)
+					);
+				} ).length
+			).toBeGreaterThan( 0 );
 
 			expect( container ).toMatchSnapshot();
 		} );

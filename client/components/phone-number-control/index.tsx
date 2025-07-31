@@ -3,7 +3,7 @@
  * External dependencies
  */
 import React, { useState, useRef, useLayoutEffect } from 'react';
-import { BaseControl } from 'wcpay/components/wp-components-wrapped/components/base-control';
+import { BaseControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import clsx from 'clsx';
 import 'intl-tel-input';

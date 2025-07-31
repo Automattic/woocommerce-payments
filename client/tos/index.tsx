@@ -9,7 +9,6 @@ import { createRoot } from 'react-dom/client';
 import TosModal from './modal';
 import showTosNotice from './disabled-notice';
 import { maybeTrackStripeConnected } from './request';
-import UnbundledWpComponentsProvider from 'wcpay/wordpress-components-context/unbundled-wp-components-provider';
 
 if ( wcpay_tos_settings.tosAgreementDeclined ) {
 	/**
@@ -30,11 +29,7 @@ function renderTosModal() {
 	container.id = 'wcpay-tos-container';
 	document.body.appendChild( container );
 	const root = createRoot( container );
-	root.render(
-		<UnbundledWpComponentsProvider>
-			<TosModal />
-		</UnbundledWpComponentsProvider>
-	);
+	root.render( <TosModal /> );
 }
 
 if ( wcpay_tos_settings.tosAgreementRequired ) {

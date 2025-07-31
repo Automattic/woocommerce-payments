@@ -4,12 +4,12 @@
  */
 import { render } from '@testing-library/react';
 import React from 'react';
+import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import CardNotice from '../';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 
 describe( 'CardNotice component', () => {
 	test( 'should render child', () => {

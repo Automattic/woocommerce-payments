@@ -11,10 +11,12 @@ import { Link } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
-import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
-import { CheckboxControl } from 'wcpay/components/wp-components-wrapped/components/checkbox-control';
-import { TextareaControl } from 'wcpay/components/wp-components-wrapped/components/textarea-control';
-import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
+import {
+	Card,
+	CheckboxControl,
+	TextareaControl,
+	ExternalLink,
+} from '@wordpress/components';
 import CardBody from '../card-body';
 import WooPayFileUpload from './file-upload';
 import WooPayPreview from './woopay-preview';

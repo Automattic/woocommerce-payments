@@ -10,7 +10,6 @@ import { createRoot } from 'react-dom/client';
 import MultiCurrencySettings from './settings/multi-currency';
 import SingleCurrencySettings from './settings/single-currency';
 import MultiCurrencySettingsContext from './context';
-import UnbundledWpComponentsProvider from 'wcpay/wordpress-components-context/unbundled-wp-components-provider';
 
 const MultiCurrencySettingsPage = () => {
 	const [
@@ -38,8 +37,4 @@ const container = document.querySelector(
 	'#wcpay_multi_currency_settings_container'
 );
 const root = createRoot( container );
-root.render(
-	<UnbundledWpComponentsProvider>
-		<MultiCurrencySettingsPage />
-	</UnbundledWpComponentsProvider>
-);
+root.render( <MultiCurrencySettingsPage /> );

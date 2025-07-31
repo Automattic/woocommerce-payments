@@ -2,12 +2,11 @@
  * External dependencies
  */
 import React from 'react';
+import { Modal, Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import { Modal } from 'wcpay/components/wp-components-wrapped/components/modal';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 import './style.scss';
 import strings from './strings';
 import { saveOption } from 'wcpay/data/settings/actions';

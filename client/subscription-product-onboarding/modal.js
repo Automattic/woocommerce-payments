@@ -3,11 +3,7 @@
  */
 import React from 'react';
 
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
-import { Icon } from 'wcpay/components/wp-components-wrapped/components/icon';
-import { Modal } from 'wcpay/components/wp-components-wrapped/components/modal';
-import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
-import UnbundledWpComponentsProvider from 'wcpay/wordpress-components-context/unbundled-wp-components-provider';
+import { Button, Icon, Modal, ExternalLink } from '@wordpress/components';
 import {
 	createInterpolateElement,
 	useEffect,
@@ -33,13 +29,14 @@ const FinishSetupButton = () => {
 			disabled={ isFinishingSetup }
 			href={ connectUrl }
 			isBusy={ isFinishingSetup }
-			isPrimary
+			variant="primary"
 			onClick={ () => {
 				recordEvent(
 					'wcpay_subscriptions_account_not_connected_product_modal_finish_setup'
 				);
 				setIsFinishingSetup( true );
 			} }
+			__next40pxDefaultSize
 		>
 			{ __( 'Finish setup', 'woocommerce-payments' ) }
 		</Button>
@@ -130,13 +127,11 @@ const SubscriptionProductOnboardingModal = () => {
 	}
 
 	return (
-		<UnbundledWpComponentsProvider>
-			<SubscriptionProductOnboardingModalContent
-				onRequestClose={ () => {
-					setOpen( false );
-				} }
-			/>
-		</UnbundledWpComponentsProvider>
+		<SubscriptionProductOnboardingModalContent
+			onRequestClose={ () => {
+				setOpen( false );
+			} }
+		/>
 	);
 };
 

@@ -145,16 +145,12 @@ module.exports = {
 			injectPolyfill: true,
 			requestToExternal( request ) {
 				switch ( request ) {
-					case '@wordpress/components':
-						return null;
 					case 'wp-mediaelement':
 						return [ 'wp', 'mediaelement' ];
 				}
 			},
 			requestToHandle( request ) {
 				switch ( request ) {
-					case '@wordpress/components':
-						return null;
 					case 'wp-mediaelement':
 						return 'wp-mediaelement';
 				}

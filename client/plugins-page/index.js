@@ -9,7 +9,6 @@ import { createRoot } from 'react-dom/client';
  */
 import PluginDisableSurvey from './deactivation-survey';
 import { saveOption } from 'wcpay/data/settings/actions';
-import { WordPressComponentsContext } from 'wcpay/wordpress-components-context/context';
 
 const PluginsPage = () => {
 	const [ modalOpen, setModalOpen ] = useState( false );
@@ -101,8 +100,4 @@ const PluginsPage = () => {
 
 const container = document.querySelector( '#woopayments-plugins-page-app' );
 const root = createRoot( container );
-root.render(
-	<WordPressComponentsContext.Provider value={ wp.components }>
-		<PluginsPage />
-	</WordPressComponentsContext.Provider>
-);
+root.render( <PluginsPage /> );
