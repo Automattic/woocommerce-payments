@@ -123,6 +123,7 @@ const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
 											showPositiveFeedbackModal();
 											dismissPrompt();
 										} }
+										__next40pxDefaultSize
 									>
 										<Icon
 											icon={ thumbsUp }
@@ -150,6 +151,7 @@ const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
 											showNegativeFeedbackModal();
 											dismissPrompt();
 										} }
+										__next40pxDefaultSize
 									>
 										<Icon
 											icon={ thumbsDown }

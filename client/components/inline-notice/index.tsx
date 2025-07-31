@@ -3,7 +3,13 @@
  */
 import React, { ComponentProps } from 'react';
 // eslint-disable-next-line no-restricted-syntax
-import { Flex, FlexItem, Icon, Notice, Button } from '@wordpress/components';
+import {
+	Flex as BundledWordPressComponentsFlex,
+	FlexItem as BundledWordPressComponentsFlexItem,
+	Icon as BundledWordPressComponentsIcon,
+	Notice as BundledWordPressComponentsNotice,
+	Button as BundledWordPressComponentsButton,
+} from '@wordpress/components';
 
 import clsx from 'clsx';
 import CheckmarkIcon from 'gridicons/dist/checkmark';
@@ -14,9 +20,10 @@ import InfoOutlineIcon from 'gridicons/dist/info-outline';
  * Internal dependencies.
  */
 import './styles.scss';
+import { WordPressComponentsContext } from 'wcpay/wordpress-components-context/context';
 
 type ExtendedAction = NonNullable<
-	ComponentProps< typeof Notice >[ 'actions' ]
+	ComponentProps< typeof BundledWordPressComponentsNotice >[ 'actions' ]
 >[ number ] & {
 	isBusy?: boolean;
 	disabled?: boolean;
@@ -39,16 +46,20 @@ interface InlineNoticeProps {
 	 *
 	 * @default undefined
 	 */
-	buttonVariant?: ComponentProps< typeof Button >[ 'variant' ];
+	buttonVariant?: ComponentProps<
+		typeof BundledWordPressComponentsButton
+	>[ 'variant' ];
 }
 
 /**
  * Renders a banner notice.
  */
 function InlineNotice(
-	props: InlineNoticeProps & ComponentProps< typeof Notice >
+	props: InlineNoticeProps &
+		ComponentProps< typeof BundledWordPressComponentsNotice >
 ): JSX.Element {
 	const { icon, actions, children, buttonVariant, ...noticeProps } = props;
+	const context = React.useContext( WordPressComponentsContext );
 
 	// Add the default class name to the notice.
 	noticeProps.className = clsx(
@@ -88,6 +99,23 @@ function InlineNotice(
 			);
 		}
 
+		if ( ! context ) {
+			return (
+				<BundledWordPressComponentsButton
+					key={ index }
+					className={ actionClass }
+					onClick={ action.onClick }
+					isBusy={ action.isBusy ?? false }
+					disabled={ action.disabled ?? false }
+					variant={ buttonVariant }
+				>
+					{ action.label }
+				</BundledWordPressComponentsButton>
+			);
+		}
+
+		const { Button } = context;
+
 		return (
 			<Button
 				key={ index }
@@ -101,6 +129,45 @@ function InlineNotice(
 			</Button>
 		);
 	} );
+
+	if ( ! context ) {
+		return (
+			<BundledWordPressComponentsNotice { ...noticeProps }>
+				<BundledWordPressComponentsFlex
+					align="center"
+					justify="flex-start"
+				>
+					{ iconToDisplay && (
+						<BundledWordPressComponentsFlexItem
+							className={ `wcpay-inline-notice__icon wcpay-inline-${ noticeProps.status }-notice__icon` }
+						>
+							<BundledWordPressComponentsIcon
+								icon={ iconToDisplay }
+								size={ 24 }
+							/>
+						</BundledWordPressComponentsFlexItem>
+					) }
+					<BundledWordPressComponentsFlexItem
+						className={ `wcpay-inline-notice__content wcpay-inline-${ noticeProps.status }-notice__content` }
+					>
+						{ children }
+						{ mappedActions && (
+							<BundledWordPressComponentsFlex
+								className="wcpay-inline-notice__content__actions"
+								align="baseline"
+								justify="flex-start"
+								gap={ 4 }
+							>
+								{ mappedActions }
+							</BundledWordPressComponentsFlex>
+						) }
+					</BundledWordPressComponentsFlexItem>
+				</BundledWordPressComponentsFlex>
+			</BundledWordPressComponentsNotice>
+		);
+	}
+
+	const { Notice, Flex, FlexItem, Icon } = context;
 
 	return (
 		<Notice { ...noticeProps }>
