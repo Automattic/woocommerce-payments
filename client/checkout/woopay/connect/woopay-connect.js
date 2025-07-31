@@ -2,7 +2,7 @@
  * Internal dependencies
  */
 import { WooPayConnectIframe } from 'wcpay/checkout/woopay/connect/woopay-connect-iframe';
-import { createRoot } from 'react-dom/client';
+import ReactDOM from 'react-dom';
 import { getConfig } from 'wcpay/utils/checkout';
 import {
 	INJECTED_STATE,
@@ -110,8 +110,7 @@ class WoopayConnect {
 			self.listeners.getIframePostMessageCallback = resolve;
 		} );
 
-		const root = createRoot( hiddenDiv );
-		root.render( <WooPayConnectIframe /> );
+		ReactDOM.render( <WooPayConnectIframe />, hiddenDiv );
 	}
 
 	/**
