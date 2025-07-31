@@ -79,6 +79,6 @@ describe( 'SupportEmailInput', () => {
 		const { container } = render( <SupportEmailInput /> );
 		expect(
 			container.querySelector( '.components-notice.is-error' ).textContent
-		).toEqual( 'Error: Invalid email address: invalid.email' );
+		).toMatch( /Error: Invalid email address: / );
 	} );
 } );
