@@ -232,7 +232,7 @@ describe( 'MerchantFeedbackPrompt', () => {
 		window.wcTracks.isEnabled = true;
 
 		// First render
-		const { rerender } = render( <MaybeShowMerchantFeedbackPrompt /> );
+		render( <MaybeShowMerchantFeedbackPrompt /> );
 
 		// Click the No button
 		const noButton = screen.getByText( 'No', {
@@ -244,9 +244,6 @@ describe( 'MerchantFeedbackPrompt', () => {
 		expect( recordEvent ).toHaveBeenCalledWith(
 			'wcpay_merchant_feedback_prompt_no_click'
 		);
-
-		// Re-render the component to verify it's no longer shown
-		rerender( <MaybeShowMerchantFeedbackPrompt /> );
 
 		// The prompt should no longer be rendered
 		expect(

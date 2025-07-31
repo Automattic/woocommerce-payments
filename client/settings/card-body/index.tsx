@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useContext } from 'react';
+import React, { useContext, ComponentProps } from 'react';
 import { CardBody as BundledWordPressComponentsCardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
 import clsx from 'clsx';
 
@@ -15,9 +15,11 @@ interface WcpayCardBodyProps {
 	className?: string;
 }
 
-const WcpayCardBody: React.FC< React.PropsWithChildren<
-	WcpayCardBodyProps
-> > = ( { className, ...props } ): JSX.Element => {
+const WcpayCardBody = ( {
+	className,
+	...props
+}: WcpayCardBodyProps &
+	ComponentProps< typeof BundledWordPressComponentsCardBody > ) => {
 	const context = useContext( WordPressComponentsContext );
 
 	// including the woopayments-specific styles only for the "bundled" CardBody component.

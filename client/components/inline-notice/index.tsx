@@ -15,32 +15,40 @@ import clsx from 'clsx';
 import CheckmarkIcon from 'gridicons/dist/checkmark';
 import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 import InfoOutlineIcon from 'gridicons/dist/info-outline';
-import { Action } from 'wcpay/types/notices';
 
 /**
  * Internal dependencies.
  */
 import './styles.scss';
-import ButtonVariant = BundledWordPressComponentsButton.ButtonVariant;
 import { WordPressComponentsContext } from 'wcpay/wordpress-components-context/context';
+
+type ExtendedAction = NonNullable<
+	ComponentProps< typeof BundledWordPressComponentsNotice >[ 'actions' ]
+>[ number ] & {
+	isBusy?: boolean;
+	disabled?: boolean;
+};
 
 interface InlineNoticeProps {
 	/**
 	 * Whether to display the default icon based on status prop or the icon to display.
-	 * Supported values are: boolean, JSX.Element and `undefined`.
+	 * Supported values are: boolean, JSX.Element, and `undefined`.
 	 *
 	 * @default undefined
 	 */
 	icon?: boolean | JSX.Element;
 
-	actions?: readonly Action[] | undefined;
+	actions?: readonly ExtendedAction[];
+
 	/**
 	 * Allows more control over the button variant.
 	 * Accepted values are 'primary', 'secondary', 'tertiary', and 'link'.
 	 *
 	 * @default undefined
 	 */
-	buttonVariant?: ButtonVariant;
+	buttonVariant?: ComponentProps<
+		typeof BundledWordPressComponentsButton
+	>[ 'variant' ];
 }
 
 /**
