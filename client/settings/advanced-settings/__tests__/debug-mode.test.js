@@ -22,7 +22,7 @@ describe( 'DebugMode', () => {
 		jest.clearAllMocks();
 	} );
 
-	it( 'toggles the logging checkbox', () => {
+	it( 'toggles the logging checkbox', async () => {
 		const setDebugLogMock = jest.fn();
 		useDebugLog.mockReturnValue( [ false, setDebugLogMock ] );
 
@@ -40,7 +40,7 @@ describe( 'DebugMode', () => {
 		expect( loggingCheckbox ).not.toBeChecked();
 		expect( setDebugLogMock ).not.toHaveBeenCalled();
 
-		userEvent.click( loggingCheckbox );
+		await userEvent.click( loggingCheckbox );
 
 		expect( setDebugLogMock ).toHaveBeenCalledWith( true );
 	} );

@@ -53,19 +53,19 @@ function renderCustomSelectControl(
 }
 
 describe( 'CustomSelectControl', () => {
-	test( 'renders options', () => {
+	test( 'renders options', async () => {
 		const {
 			container: onboardingSelectControl,
 		} = renderCustomSelectControl();
 
-		user.click( screen.getByRole( 'button' ) );
+		await user.click( screen.getByRole( 'button' ) );
 
 		expect( onboardingSelectControl ).toMatchSnapshot();
 	} );
 } );
 
 describe( 'CustomSelectControl', () => {
-	test( 'renders options with custom children', () => {
+	test( 'renders options with custom children', async () => {
 		const {
 			container: onboardingSelectControl,
 		} = renderCustomSelectControl( undefined, ( item ) => (
@@ -75,7 +75,7 @@ describe( 'CustomSelectControl', () => {
 			</>
 		) );
 
-		user.click( screen.getByRole( 'button' ) );
+		await user.click( screen.getByRole( 'button' ) );
 
 		expect( onboardingSelectControl ).toMatchSnapshot();
 	} );

@@ -58,35 +58,35 @@ describe( 'Phone Number Control', () => {
 		expect( selectElement ).toHaveDisplayValue( 'US' );
 	} );
 
-	it( 'calls onChange when input value changes', () => {
+	it( 'calls onChange when input value changes', async () => {
 		render( <PhoneNumberControl value="" onChange={ onChange } /> );
 
 		const input = screen.getByRole( 'textbox' );
-		userEvent.type( input, '1234567890' );
+		await userEvent.type( input, '1234567890' );
 
 		expect( onChange ).toHaveBeenCalledTimes( 10 );
-		expect( onChange ).toHaveBeenCalledWith( '+11234567890', 'US' );
+		expect( onChange ).toHaveBeenLastCalledWith( '+11234567890', 'US' );
 	} );
 
-	it( 'calls onChange when country code select value changes', () => {
+	it( 'calls onChange when country code select value changes', async () => {
 		render( <PhoneNumberControl value="" onChange={ onChange } /> );
 		const select = screen.getByRole( 'combobox' );
-		userEvent.selectOptions( select, 'ES' );
+		await userEvent.selectOptions( select, 'ES' );
 		expect( onChange ).toHaveBeenCalledTimes( 1 );
 		expect( onChange ).toHaveBeenCalledWith( '+34', 'ES' );
 	} );
 
-	it( 'focus input on select change', () => {
+	it( 'focus input on select change', async () => {
 		render( <PhoneNumberControl value="" onChange={ onChange } /> );
 
 		const input = screen.getByRole( 'textbox' );
 		const select = screen.getByRole( 'combobox' );
-		userEvent.selectOptions( select, 'CA' );
+		await userEvent.selectOptions( select, 'CA' );
 
 		expect( input ).toHaveFocus();
 	} );
 
-	it( 'calls onKeyDown when input is focused and key is pressed', () => {
+	it( 'calls onKeyDown when input is focused and key is pressed', async () => {
 		render(
 			<PhoneNumberControl
 				value=""
@@ -96,7 +96,7 @@ describe( 'Phone Number Control', () => {
 		);
 
 		const input = screen.getByRole( 'textbox' );
-		userEvent.type( input, '1234567890' );
+		await userEvent.type( input, '1234567890' );
 		fireEvent.keyDown( input, {
 			key: 'Enter',
 			code: 'Enter',
@@ -107,17 +107,17 @@ describe( 'Phone Number Control', () => {
 		expect( onKeyDown ).toHaveBeenCalledTimes( 11 );
 	} );
 
-	it( 'toggles focused class as expected', () => {
+	it( 'toggles focused class as expected', async () => {
 		render( <PhoneNumberControl value="" onChange={ onChange } /> );
 		const input = screen.getByRole( 'textbox' );
 		const control = input.parentElement;
 
-		userEvent.click( input );
+		await userEvent.click( input );
 		fireEvent.focus( input ); // Workaround for onFocus event not firing with jsdom <16.3.0
 		expect( input ).toHaveFocus();
 		expect( control ).toHaveClass( 'focused' );
 
-		userEvent.tab();
+		await userEvent.tab();
 		fireEvent.focusOut( input ); // Workaround for onFocus event not firing with jsdom <16.3.0
 		expect( input ).not.toHaveFocus();
 		expect( control ).not.toHaveClass( 'focused' );

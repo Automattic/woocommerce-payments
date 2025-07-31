@@ -156,7 +156,7 @@ describe( 'Welcome and Currency Select', () => {
 		getByText( expectedGreeting );
 	} );
 
-	test( 'renders the currency select control if multiple deposit currencies', () => {
+	test( 'renders the currency select control if multiple deposit currencies', async () => {
 		mockUseAllDepositsOverviews.mockReturnValue( {
 			overviews: {
 				account: null,
@@ -183,7 +183,7 @@ describe( 'Welcome and Currency Select', () => {
 		const selectControl = getByRole( 'button', { name: /currency/i } );
 		expect( selectControl ).toHaveTextContent( /usd/i );
 
-		user.click( getByRole( 'button' ) );
+		await user.click( getByRole( 'button' ) );
 
 		// Currency options should be visible.
 		getByRole( 'option', { name: 'USD $' } );
@@ -191,7 +191,7 @@ describe( 'Welcome and Currency Select', () => {
 		getByRole( 'option', { name: 'NOK kr' } );
 
 		// Select a currency.
-		user.click( getByRole( 'option', { name: 'NOK kr' } ) );
+		await user.click( getByRole( 'option', { name: 'NOK kr' } ) );
 		expect( mockSetSelectedCurrency ).toHaveBeenCalledWith( 'nok' );
 	} );
 

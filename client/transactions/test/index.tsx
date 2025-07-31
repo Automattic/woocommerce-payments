@@ -89,7 +89,6 @@ declare const global: {
 	wcpaySettings: {
 		featureFlags: {
 			customSearch: boolean;
-			isAuthAndCaptureEnabled: boolean;
 		};
 		zeroDecimalCurrencies: string[];
 		connect: {
@@ -142,7 +141,6 @@ describe( 'TransactionsPage', () => {
 		global.wcpaySettings = {
 			featureFlags: {
 				customSearch: true,
-				isAuthAndCaptureEnabled: true,
 			},
 			zeroDecimalCurrencies: [],
 			connect: {

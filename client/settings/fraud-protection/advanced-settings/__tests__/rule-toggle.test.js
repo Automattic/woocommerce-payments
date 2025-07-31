@@ -109,7 +109,7 @@ describe( 'Fraud protection rule toggle tests', () => {
 		expect( container.queryByText( 'test content' ) ).toBeInTheDocument();
 	} );
 
-	test( 'calls the toggle enable function when clicking in the label', () => {
+	test( 'calls the toggle enable function when clicking in the label', async () => {
 		mockContext.protectionSettingsUI.test_rule.enabled = false;
 
 		const container = render(
@@ -125,7 +125,7 @@ describe( 'Fraud protection rule toggle tests', () => {
 		);
 
 		const activationToggle = container.getByLabelText( 'Test rule toggle' );
-		userEvent.click( activationToggle );
+		await userEvent.click( activationToggle );
 
 		expect( mockContext.setProtectionSettingsUI ).toHaveBeenCalled();
 	} );
