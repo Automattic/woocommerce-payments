@@ -5,7 +5,7 @@
  */
 import React from 'react';
 import { act, render, screen } from '@testing-library/react';
-import user from '@testing-library/user-event';
+import { userEvent as user } from 'jest-utils/user-event-timers';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 
 /**
@@ -30,9 +30,9 @@ jest.mock( 'tracks', () => ( {
 	},
 } ) );
 
-function addAdvancedFilter( filter: string ) {
-	user.click( screen.getByRole( 'button', { name: /Add a Filter/i } ) );
-	user.click( screen.getByRole( 'button', { name: filter } ) );
+async function addAdvancedFilter( filter: string ) {
+	await user.click( screen.getByRole( 'button', { name: /Add a Filter/i } ) );
+	await user.click( screen.getByRole( 'button', { name: filter } ) );
 }
 
 const storeCurrencies = [ 'eur', 'usd' ];
@@ -92,10 +92,10 @@ describe( 'Transactions filters', () => {
 		);
 
 		// select advanced filter view
-		user.click(
+		await user.click(
 			screen.getByRole( 'button', { name: /All transactions/i } )
 		);
-		user.click(
+		await user.click(
 			screen.getByRole( 'button', { name: /Advanced filters/i } )
 		);
 		rerender(
@@ -118,45 +118,45 @@ describe( 'Transactions filters', () => {
 		let ruleSelector: HTMLElement;
 
 		beforeEach( () => {
-			addAdvancedFilter( 'Date' );
+			await addAdvancedFilter( 'Date' );
 			ruleSelector = screen.getByRole( 'combobox', {
 				name: /transaction date filter/i,
 			} );
 		} );
 
 		test( 'should filter by before', () => {
-			user.selectOptions( ruleSelector, 'before' );
+			await user.selectOptions( ruleSelector, 'before' );
 
-			user.type(
+			await user.type(
 				screen.getByRole( 'textbox', { name: /Choose a date/i } ),
 				'04/29/2020'
 			);
-			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
+			await user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().date_before ).toEqual( '2020-04-29' );
 		} );
 
 		test( 'should filter by after', () => {
-			user.selectOptions( ruleSelector, 'after' );
+			await user.selectOptions( ruleSelector, 'after' );
 
-			user.type(
+			await user.type(
 				screen.getByRole( 'textbox', { name: /Choose a date/i } ),
 				'04/29/2020'
 			);
-			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
+			await user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().date_after ).toEqual( '2020-04-29' );
 		} );
 
 		test( 'should filter by between', () => {
-			user.selectOptions( ruleSelector, 'between' );
+			await user.selectOptions( ruleSelector, 'between' );
 
 			const dateInputs = screen.getAllByRole( 'textbox', {
 				name: /Choose a date/i,
 			} );
-			user.type( dateInputs[ 0 ], '04/19/2020' );
-			user.type( dateInputs[ 1 ], '04/29/2020' );
-			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
+			await user.type( dateInputs[ 0 ], '04/19/2020' );
+			await user.type( dateInputs[ 1 ], '04/29/2020' );
+			await user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().date_between ).toEqual( [
 				'2020-04-19',
@@ -169,7 +169,7 @@ describe( 'Transactions filters', () => {
 		let ruleSelector: HTMLElement;
 
 		beforeEach( () => {
-			addAdvancedFilter( 'Type' );
+			await addAdvancedFilter( 'Type' );
 			ruleSelector = screen.getByRole( 'combobox', {
 				name: /transaction type filter/i,
 			} );
@@ -182,41 +182,41 @@ describe( 'Transactions filters', () => {
 			expect( typeSelect.options ).toMatchSnapshot();
 		} );
 
-		test( 'should filter by is', () => {
-			user.selectOptions( ruleSelector, 'is' );
+		test( 'should filter by is', async () => {
+			await user.selectOptions( ruleSelector, 'is' );
 
 			// need to include $ in name, otherwise "Select a transaction type filter" is also matched.
-			user.selectOptions(
+			await user.selectOptions(
 				screen.getByRole( 'combobox', { name: /transaction type$/i } ),
 				'charge'
 			);
-			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
+			await user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().type_is ).toEqual( 'charge' );
 		} );
 
-		test( 'should filter by is_not', () => {
-			user.selectOptions( ruleSelector, 'is_not' );
+		test( 'should filter by is_not', async () => {
+			await user.selectOptions( ruleSelector, 'is_not' );
 
 			// need to include $ in name, otherwise "Select a transaction type filter" is also matched.
-			user.selectOptions(
+			await user.selectOptions(
 				screen.getByRole( 'combobox', { name: /transaction type$/i } ),
 				'dispute'
 			);
-			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
+			await user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().type_is_not ).toEqual( 'dispute' );
 		} );
 
-		test( 'should filter by refund', () => {
-			user.selectOptions( ruleSelector, 'is' );
+		test( 'should filter by refund', async () => {
+			await user.selectOptions( ruleSelector, 'is' );
 
 			// need to include $ in name, otherwise "Select a transaction type filter" is also matched.
-			user.selectOptions(
+			await user.selectOptions(
 				screen.getByRole( 'combobox', { name: /transaction type$/i } ),
 				'refund'
 			);
-			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
+			await user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().type_is ).toEqual( 'refund' );
 		} );
@@ -225,8 +225,8 @@ describe( 'Transactions filters', () => {
 	describe( 'when filtering by customer currency', () => {
 		let ruleSelector: HTMLElement;
 
-		beforeEach( () => {
-			addAdvancedFilter( 'Customer currency' );
+		beforeEach( async () => {
+			await addAdvancedFilter( 'Customer currency' );
 			ruleSelector = screen.getByRole( 'combobox', {
 				name: /transaction customer currency filter/i,
 			} );
@@ -239,30 +239,30 @@ describe( 'Transactions filters', () => {
 			expect( typeSelect.options ).toMatchSnapshot();
 		} );
 
-		test( 'should filter by is', () => {
-			user.selectOptions( ruleSelector, 'is' );
+		test( 'should filter by is', async () => {
+			await user.selectOptions( ruleSelector, 'is' );
 
-			user.selectOptions(
+			await user.selectOptions(
 				screen.getByRole( 'combobox', {
 					name: /Select a customer currency/i,
 				} ),
 				'eur'
 			);
-			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
+			await user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().customer_currency_is ).toEqual( 'eur' );
 		} );
 
-		test( 'should filter by is_not', () => {
-			user.selectOptions( ruleSelector, 'is_not' );
+		test( 'should filter by is_not', async () => {
+			await user.selectOptions( ruleSelector, 'is_not' );
 
-			user.selectOptions(
+			await user.selectOptions(
 				screen.getByRole( 'combobox', {
 					name: /Select a customer currency/i,
 				} ),
 				'eur'
 			);
-			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
+			await user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().customer_currency_is_not ).toEqual( 'eur' );
 		} );
@@ -271,8 +271,8 @@ describe( 'Transactions filters', () => {
 	describe( 'when filtering by payment method', () => {
 		let ruleSelector: HTMLElement;
 
-		beforeEach( () => {
-			addAdvancedFilter( 'Payment method' );
+		beforeEach( async () => {
+			await addAdvancedFilter( 'Payment method' );
 			ruleSelector = screen.getByRole( 'combobox', {
 				name: /payment method filter/i,
 			} );
@@ -285,30 +285,30 @@ describe( 'Transactions filters', () => {
 			expect( typeSelect.options ).toMatchSnapshot();
 		} );
 
-		test( 'should filter by is', () => {
-			user.selectOptions( ruleSelector, 'is' );
+		test( 'should filter by is', async () => {
+			await user.selectOptions( ruleSelector, 'is' );
 
-			user.selectOptions(
+			await user.selectOptions(
 				screen.getByRole( 'combobox', {
 					name: /Select a payment method$/i,
 				} ),
 				'visa'
 			);
-			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
+			await user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().source_is ).toEqual( 'visa' );
 		} );
 
-		test( 'should filter by is_not', () => {
-			user.selectOptions( ruleSelector, 'is_not' );
+		test( 'should filter by is_not', async () => {
+			await user.selectOptions( ruleSelector, 'is_not' );
 
-			user.selectOptions(
+			await user.selectOptions(
 				screen.getByRole( 'combobox', {
 					name: /Select a payment method$/i,
 				} ),
 				'visa'
 			);
-			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
+			await user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().source_is_not ).toEqual( 'visa' );
 		} );
@@ -317,8 +317,8 @@ describe( 'Transactions filters', () => {
 	describe( 'when filtering by source device', () => {
 		let ruleSelector: HTMLElement;
 
-		beforeEach( () => {
-			addAdvancedFilter( 'Device Type' );
+		beforeEach( async () => {
+			await addAdvancedFilter( 'Device Type' );
 			ruleSelector = screen.getByRole( 'combobox', {
 				name: /transaction device type filter/i,
 			} );
@@ -331,32 +331,32 @@ describe( 'Transactions filters', () => {
 			expect( typeSelect.options ).toMatchSnapshot();
 		} );
 
-		test( 'should filter by is', () => {
-			user.selectOptions( ruleSelector, 'is' );
+		test( 'should filter by is', async () => {
+			await user.selectOptions( ruleSelector, 'is' );
 
 			// need to include $ in name, otherwise "Select a transaction type filter" is also matched.
-			user.selectOptions(
+			await user.selectOptions(
 				screen.getByRole( 'combobox', {
 					name: /transaction device type$/i,
 				} ),
 				'ios'
 			);
-			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
+			await user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().source_device_is ).toEqual( 'ios' );
 		} );
 
-		test( 'should filter by is_not', () => {
-			user.selectOptions( ruleSelector, 'is_not' );
+		test( 'should filter by is_not', async () => {
+			await user.selectOptions( ruleSelector, 'is_not' );
 
 			// need to include $ in name, otherwise "Select a transaction type filter" is also matched.
-			user.selectOptions(
+			await user.selectOptions(
 				screen.getByRole( 'combobox', {
 					name: /transaction device type$/i,
 				} ),
 				'android'
 			);
-			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
+			await user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().source_device_is_not ).toEqual( 'android' );
 		} );
@@ -365,8 +365,8 @@ describe( 'Transactions filters', () => {
 	describe( 'when filtering by channel', () => {
 		let ruleSelector: HTMLElement;
 
-		beforeEach( () => {
-			addAdvancedFilter( 'Sales channel' );
+		beforeEach( async () => {
+			await addAdvancedFilter( 'Sales channel' );
 			ruleSelector = screen.getByRole( 'combobox', {
 				name: /transaction sales channel filter/i,
 			} );
@@ -379,31 +379,31 @@ describe( 'Transactions filters', () => {
 			expect( typeSelect.options ).toMatchSnapshot();
 		} );
 
-		test( 'should filter by is', () => {
-			user.selectOptions( ruleSelector, 'is' );
+		test( 'should filter by is', async () => {
+			await user.selectOptions( ruleSelector, 'is' );
 
-			user.selectOptions(
+			await user.selectOptions(
 				screen.getByRole( 'combobox', {
 					name: /transaction sales channel$/i,
 				} ),
 				'online'
 			);
-			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
+			await user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().channel_is ).toEqual( 'online' );
 		} );
 
-		test( 'should filter by is_not', () => {
-			user.selectOptions( ruleSelector, 'is_not' );
+		test( 'should filter by is_not', async () => {
+			await user.selectOptions( ruleSelector, 'is_not' );
 
 			// need to include $ in name, otherwise "Select a transaction type filter" is also matched.
-			user.selectOptions(
+			await user.selectOptions(
 				screen.getByRole( 'combobox', {
 					name: /transaction sales channel$/i,
 				} ),
 				'in_person'
 			);
-			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
+			await user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().channel_is_not ).toEqual( 'in_person' );
 		} );
@@ -412,8 +412,8 @@ describe( 'Transactions filters', () => {
 	describe( 'when filtering by customer country', () => {
 		let ruleSelector: HTMLElement;
 
-		beforeEach( () => {
-			addAdvancedFilter( 'Customer Country' );
+		beforeEach( async () => {
+			await addAdvancedFilter( 'Customer Country' );
 			ruleSelector = screen.getByRole( 'combobox', {
 				name: /transaction customer country filter/i,
 			} );
@@ -426,32 +426,32 @@ describe( 'Transactions filters', () => {
 			expect( typeSelect.options ).toMatchSnapshot();
 		} );
 
-		test( 'should filter by is', () => {
-			user.selectOptions( ruleSelector, 'is' );
+		test( 'should filter by is', async () => {
+			await user.selectOptions( ruleSelector, 'is' );
 
 			// need to include $ in name, otherwise "Select a transaction type filter" is also matched.
-			user.selectOptions(
+			await user.selectOptions(
 				screen.getByRole( 'combobox', {
 					name: /transaction customer country$/i,
 				} ),
 				'US'
 			);
-			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
+			await user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().customer_country_is ).toEqual( 'US' );
 		} );
 
-		test( 'should filter by is_not', () => {
-			user.selectOptions( ruleSelector, 'is_not' );
+		test( 'should filter by is_not', async () => {
+			await user.selectOptions( ruleSelector, 'is_not' );
 
 			// need to include $ in name, otherwise "Select a transaction type filter" is also matched.
-			user.selectOptions(
+			await user.selectOptions(
 				screen.getByRole( 'combobox', {
 					name: /transaction customer country$/i,
 				} ),
 				'CA'
 			);
-			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
+			await user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().customer_country_is_not ).toEqual( 'CA' );
 		} );
@@ -460,8 +460,8 @@ describe( 'Transactions filters', () => {
 	describe( 'when filtering by risk level', () => {
 		let ruleSelector: HTMLElement;
 
-		beforeEach( () => {
-			addAdvancedFilter( 'Risk Level' );
+		beforeEach( async () => {
+			await addAdvancedFilter( 'Risk Level' );
 			ruleSelector = screen.getByRole( 'combobox', {
 				name: /transaction Risk level filter/i,
 			} );
@@ -474,32 +474,32 @@ describe( 'Transactions filters', () => {
 			expect( typeSelect.options ).toMatchSnapshot();
 		} );
 
-		test( 'should filter by is', () => {
-			user.selectOptions( ruleSelector, 'is' );
+		test( 'should filter by is', async () => {
+			await user.selectOptions( ruleSelector, 'is' );
 
 			// need to include $ in name, otherwise "Select a transaction type filter" is also matched.
-			user.selectOptions(
+			await user.selectOptions(
 				screen.getByRole( 'combobox', {
 					name: /transaction Risk level$/i,
 				} ),
 				'0'
 			);
-			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
+			await user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().risk_level_is ).toEqual( '0' );
 		} );
 
-		test( 'should filter by is_not', () => {
-			user.selectOptions( ruleSelector, 'is_not' );
+		test( 'should filter by is_not', async () => {
+			await user.selectOptions( ruleSelector, 'is_not' );
 
 			// need to include $ in name, otherwise "Select a transaction type filter" is also matched.
-			user.selectOptions(
+			await user.selectOptions(
 				screen.getByRole( 'combobox', {
 					name: /transaction Risk level$/i,
 				} ),
 				'1'
 			);
-			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
+			await user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().risk_level_is_not ).toEqual( '1' );
 		} );

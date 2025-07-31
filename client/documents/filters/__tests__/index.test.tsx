@@ -5,7 +5,7 @@
  */
 import React from 'react';
 import { act, render, screen } from '@testing-library/react';
-import user from '@testing-library/user-event';
+import { userEvent as user } from 'jest-utils/user-event-timers';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 
 /**
@@ -19,21 +19,23 @@ jest.mock( '@woocommerce/settings', () => ( {
 	getSetting: jest.fn( ( key ) => ( key === 'wcVersion' ? 7.8 : '' ) ),
 } ) );
 
-function addAdvancedFilter( filter: string ) {
-	user.click( screen.getByRole( 'button', { name: /Add a Filter/i } ) );
-	user.click( screen.getByRole( 'button', { name: filter } ) );
+async function addAdvancedFilter( filter: string ) {
+	await user.click( screen.getByRole( 'button', { name: /Add a Filter/i } ) );
+	await user.click( screen.getByRole( 'button', { name: filter } ) );
 }
 
 describe( 'Documents filters', () => {
-	beforeEach( () => {
+	beforeEach( async () => {
 		// the query string is preserved across tests, so we need to reset it
 		updateQueryString( {}, '/', {} );
 
 		const { rerender } = render( <DocumentsFilters /> );
 
 		// select advanced filter view
-		user.click( screen.getByRole( 'button', { name: /All documents/i } ) );
-		user.click(
+		await user.click(
+			screen.getByRole( 'button', { name: /All documents/i } )
+		);
+		await user.click(
 			screen.getByRole( 'button', { name: /Advanced filters/i } )
 		);
 		rerender( <DocumentsFilters /> );
@@ -57,46 +59,46 @@ describe( 'Documents filters', () => {
 			jest.useRealTimers();
 		} );
 
-		beforeEach( () => {
-			addAdvancedFilter( 'Date' );
+		beforeEach( async () => {
+			await addAdvancedFilter( 'Date' );
 			ruleSelector = screen.getByRole( 'combobox', {
 				name: /document date filter/i,
 			} );
 		} );
 
-		test( 'should filter by before', () => {
-			user.selectOptions( ruleSelector, 'before' );
+		test( 'should filter by before', async () => {
+			await user.selectOptions( ruleSelector, 'before' );
 
-			user.type(
+			await user.type(
 				screen.getByRole( 'textbox', { name: /Choose a date/i } ),
 				'04/29/2020'
 			);
-			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
+			await user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().date_before ).toEqual( '2020-04-29' );
 		} );
 
-		test( 'should filter by after', () => {
-			user.selectOptions( ruleSelector, 'after' );
+		test( 'should filter by after', async () => {
+			await user.selectOptions( ruleSelector, 'after' );
 
-			user.type(
+			await user.type(
 				screen.getByRole( 'textbox', { name: /Choose a date/i } ),
 				'04/29/2020'
 			);
-			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
+			await user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().date_after ).toEqual( '2020-04-29' );
 		} );
 
-		test( 'should filter by between', () => {
-			user.selectOptions( ruleSelector, 'between' );
+		test( 'should filter by between', async () => {
+			await user.selectOptions( ruleSelector, 'between' );
 
 			const dateInputs = screen.getAllByRole( 'textbox', {
 				name: /Choose a date/i,
 			} );
-			user.type( dateInputs[ 0 ], '04/19/2020' );
-			user.type( dateInputs[ 1 ], '04/29/2020' );
-			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
+			await user.type( dateInputs[ 0 ], '04/19/2020' );
+			await user.type( dateInputs[ 1 ], '04/29/2020' );
+			await user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().date_between ).toEqual( [
 				'2020-04-19',
@@ -108,8 +110,8 @@ describe( 'Documents filters', () => {
 	describe( 'when filtering by type', () => {
 		let ruleSelector: HTMLElement;
 
-		beforeEach( () => {
-			addAdvancedFilter( 'Type' );
+		beforeEach( async () => {
+			await addAdvancedFilter( 'Type' );
 			ruleSelector = screen.getByRole( 'combobox', {
 				name: /document type filter/i,
 			} );
@@ -122,28 +124,28 @@ describe( 'Documents filters', () => {
 			expect( typeSelect.options ).toMatchSnapshot();
 		} );
 
-		test( 'should filter by is', () => {
-			user.selectOptions( ruleSelector, 'is' );
+		test( 'should filter by is', async () => {
+			await user.selectOptions( ruleSelector, 'is' );
 
 			// need to include $ in name, otherwise "Select a document type filter" is also matched.
-			user.selectOptions(
+			await user.selectOptions(
 				screen.getByRole( 'combobox', { name: /document type$/i } ),
 				'vat_invoice'
 			);
-			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
+			await user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().type_is ).toEqual( 'vat_invoice' );
 		} );
 
-		test( 'should filter by is_not', () => {
-			user.selectOptions( ruleSelector, 'is_not' );
+		test( 'should filter by is_not', async () => {
+			await user.selectOptions( ruleSelector, 'is_not' );
 
 			// need to include $ in name, otherwise "Select a document type filter" is also matched.
-			user.selectOptions(
+			await user.selectOptions(
 				screen.getByRole( 'combobox', { name: /document type$/i } ),
 				'vat_invoice'
 			);
-			user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
+			await user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().type_is_not ).toEqual( 'vat_invoice' );
 		} );

@@ -5,7 +5,7 @@
  */
 import React from 'react';
 import { render, screen, act, fireEvent } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
+import { userEvent } from 'jest-utils/user-event-timers';
 
 /**
  * Internal dependencies
@@ -61,7 +61,7 @@ describe( 'HoverTooltip', () => {
 		expect( handleHideMock ).not.toHaveBeenCalled();
 	} );
 
-	it( 'renders its content when clicked', () => {
+	it( 'renders its content when clicked', async () => {
 		const handleHideMock = jest.fn();
 		render(
 			<HoverTooltip content="Tooltip content" onHide={ handleHideMock }>
@@ -75,14 +75,14 @@ describe( 'HoverTooltip', () => {
 			screen.queryByText( 'Tooltip content' )
 		).not.toBeInTheDocument();
 
-		userEvent.click( screen.getByText( 'Trigger element' ) );
+		await userEvent.click( screen.getByText( 'Trigger element' ) );
 
 		jest.runAllTimers();
 
 		expect( screen.queryByText( 'Tooltip content' ) ).toBeInTheDocument();
 		expect( handleHideMock ).not.toHaveBeenCalled();
 
-		userEvent.click( screen.getByText( 'Trigger element' ) );
+		await userEvent.click( screen.getByText( 'Trigger element' ) );
 		jest.runAllTimers();
 
 		expect( handleHideMock ).toHaveBeenCalled();
@@ -169,7 +169,7 @@ describe( 'ClickTooltip', () => {
 		expect( handleHideMock ).not.toHaveBeenCalled();
 	} );
 
-	it( 'renders and hides its content when clicked', () => {
+	it( 'renders and hides its content when clicked', async () => {
 		const handleHideMock = jest.fn();
 		render(
 			<ClickTooltip content="Tooltip content" onHide={ handleHideMock }>
@@ -183,21 +183,14 @@ describe( 'ClickTooltip', () => {
 			screen.queryByText( 'Tooltip content' )
 		).not.toBeInTheDocument();
 
-		act( () => {
-			userEvent.click( screen.getByText( 'Trigger element' ) );
-			jest.runAllTimers();
-		} );
+		await userEvent.click( screen.getByText( 'Trigger element' ) );
+		jest.runAllTimers();
 
 		expect( screen.queryByText( 'Tooltip content' ) ).toBeInTheDocument();
 		expect( handleHideMock ).not.toHaveBeenCalled();
 
-		act( () => {
-			userEvent.click( screen.getByText( 'Trigger element' ) );
-		} );
-
-		act( () => {
-			jest.runAllTimers();
-		} );
+		await userEvent.click( screen.getByText( 'Trigger element' ) );
+		jest.runAllTimers();
 
 		expect(
 			screen.queryByText( 'Tooltip content' )
@@ -238,7 +231,7 @@ describe( 'ClickTooltip', () => {
 		expect( handleHideMock ).not.toHaveBeenCalled();
 	} );
 
-	it( `correctly navigates to link in tooltip content via keyboard navigation`, () => {
+	it( `correctly navigates to link in tooltip content via keyboard navigation`, async () => {
 		const handleHideMock = jest.fn();
 		render(
 			<ClickTooltip
@@ -260,16 +253,14 @@ describe( 'ClickTooltip', () => {
 			screen.queryByText( 'Tooltip content' )
 		).not.toBeInTheDocument();
 
-		act( () => {
-			userEvent.click( screen.getByText( 'Trigger element' ) );
-			fireEvent.focus( screen.getByText( 'Trigger element' ) );
-			jest.runAllTimers();
-		} );
+		await userEvent.click( screen.getByText( 'Trigger element' ) );
+		fireEvent.focus( screen.getByText( 'Trigger element' ) );
+		jest.runAllTimers();
 
 		expect( screen.queryByText( 'Tooltip content' ) ).toBeInTheDocument();
 		expect( handleHideMock ).not.toHaveBeenCalled();
 
-		userEvent.tab();
+		await userEvent.tab();
 
 		expect(
 			screen.getAllByRole( 'link', { name: 'Link' } )[ 0 ]
@@ -331,7 +322,7 @@ describe( 'Tooltips', () => {
 		jest.runAllTimers();
 	};
 
-	it( 'asks other tooltips to hide when a tooltip is opened', () => {
+	it( 'asks other tooltips to hide when a tooltip is opened', async () => {
 		setupTooltips();
 
 		const assertTooltipsVisibility = ( {
@@ -357,40 +348,32 @@ describe( 'Tooltips', () => {
 		assertTooltipsVisibility( { visibleTooltip: undefined } );
 
 		// opening the first tooltip, no need to call any hide handlers
-		act( () => {
-			userEvent.click( screen.getByText( 'Open tooltip 0' ) );
-			jest.runAllTimers();
-		} );
+		await userEvent.click( screen.getByText( 'Open tooltip 0' ) );
+		jest.runAllTimers();
 		assertTooltipsVisibility( { visibleTooltip: 0 } );
 		expect( tooltips[ 0 ].handleHideMock ).not.toHaveBeenCalled();
 		expect( tooltips[ 1 ].handleHideMock ).not.toHaveBeenCalled();
 		expect( tooltips[ 2 ].handleHideMock ).not.toHaveBeenCalled();
 
 		// opening the second tooltip, the first tooltip should not be visible
-		act( () => {
-			userEvent.click( screen.getByText( 'Open tooltip 1' ) );
-			jest.runAllTimers();
-		} );
+		await userEvent.click( screen.getByText( 'Open tooltip 1' ) );
+		jest.runAllTimers();
 		assertTooltipsVisibility( { visibleTooltip: 1 } );
 		expect( tooltips[ 0 ].handleHideMock ).toHaveBeenCalled();
 		expect( tooltips[ 1 ].handleHideMock ).not.toHaveBeenCalled();
 		expect( tooltips[ 2 ].handleHideMock ).not.toHaveBeenCalled();
 
 		// opening the third tooltip, the second tooltip should not be visible
-		act( () => {
-			userEvent.click( screen.getByText( 'Open tooltip 2' ) );
-			jest.runAllTimers();
-		} );
+		await userEvent.click( screen.getByText( 'Open tooltip 2' ) );
+		jest.runAllTimers();
 		assertTooltipsVisibility( { visibleTooltip: 2 } );
 		expect( tooltips[ 0 ].handleHideMock ).toHaveBeenCalled();
 		expect( tooltips[ 1 ].handleHideMock ).toHaveBeenCalled();
 		expect( tooltips[ 2 ].handleHideMock ).not.toHaveBeenCalled();
 
 		// opening the first tooltip, the third tooltip should not be visible
-		act( () => {
-			userEvent.click( screen.getByText( 'Open tooltip 0' ) );
-			jest.runAllTimers();
-		} );
+		await userEvent.click( screen.getByText( 'Open tooltip 0' ) );
+		jest.runAllTimers();
 		assertTooltipsVisibility( { visibleTooltip: 0 } );
 		expect( tooltips[ 0 ].handleHideMock ).toHaveBeenCalled();
 		expect( tooltips[ 1 ].handleHideMock ).toHaveBeenCalled();
