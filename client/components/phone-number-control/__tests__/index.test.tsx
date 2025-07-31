@@ -58,7 +58,7 @@ describe( 'Phone Number Control', () => {
 		expect( selectElement ).toHaveDisplayValue( 'US' );
 	} );
 
-	it.skip( 'calls onChange when input value changes', async () => {
+	it( 'calls onChange when input value changes', async () => {
 		render( <PhoneNumberControl value="" onChange={ onChange } /> );
 
 		const input = screen.getByRole( 'textbox' );
