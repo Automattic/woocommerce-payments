@@ -34,6 +34,7 @@ exports[`Review fraud outcome transactions columns should render the column corr
   },
   {
     "display": <ForwardRef(Button)
+      __next40pxDefaultSize={true}
       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock"
       onClick={[Function]}
       variant="secondary"
