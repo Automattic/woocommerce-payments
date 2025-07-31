@@ -386,7 +386,7 @@ exports[`Documents list renders correctly 1`] = `
                     class="woocommerce-table__item is-numeric"
                   >
                     <button
-                      class="components-button documents-list__download-button is-link"
+                      class="components-button documents-list__download-button is-next-40px-default-size is-link"
                       type="button"
                     >
                       Download
@@ -414,7 +414,7 @@ exports[`Documents list renders correctly 1`] = `
                     class="woocommerce-table__item is-numeric"
                   >
                     <button
-                      class="components-button documents-list__download-button is-link"
+                      class="components-button documents-list__download-button is-next-40px-default-size is-link"
                       type="button"
                     >
                       Download
@@ -854,7 +854,7 @@ exports[`Documents list renders table summary only when the documents summary da
                     class="woocommerce-table__item is-numeric"
                   >
                     <button
-                      class="components-button documents-list__download-button is-link"
+                      class="components-button documents-list__download-button is-next-40px-default-size is-link"
                       type="button"
                     >
                       Download
@@ -882,7 +882,7 @@ exports[`Documents list renders table summary only when the documents summary da
                     class="woocommerce-table__item is-numeric"
                   >
                     <button
-                      class="components-button documents-list__download-button is-link"
+                      class="components-button documents-list__download-button is-next-40px-default-size is-link"
                       type="button"
                     >
                       Download

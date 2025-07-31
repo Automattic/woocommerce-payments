@@ -227,7 +227,7 @@ exports[`Disputes list renders correctly 1`] = `
             class="woocommerce-table__actions"
           >
             <button
-              class="components-button woocommerce-table__download-button"
+              class="components-button woocommerce-table__download-button is-next-40px-default-size"
               type="button"
             >
               <svg

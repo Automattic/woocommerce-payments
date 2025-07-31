@@ -3,12 +3,13 @@
 exports[`ConvertedAmount renders an amount with conversion icon and tooltip 1`] = `
 <div>
   <div
-    class="converted-amount converted-amount--fallback"
+    class="converted-amount"
   >
     <span
       class="conversion-indicator"
       data-testid="conversion-indicator"
       style="height: 18px; width: 18px;"
+      tabindex="0"
     >
       <svg
         class="gridicon gridicons-sync"
