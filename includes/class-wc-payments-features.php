@@ -343,6 +343,7 @@ class WC_Payments_Features {
 				'documents'                      => self::is_documents_section_enabled(),
 				'woopayExpressCheckout'          => self::is_woopay_express_checkout_enabled(),
 				'isDisputeIssuerEvidenceEnabled' => self::is_dispute_issuer_evidence_enabled(),
+				'isFRTReviewFeatureActive'       => self::is_frt_review_feature_active(),
 			]
 		);
 	}

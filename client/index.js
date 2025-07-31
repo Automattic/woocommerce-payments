@@ -318,7 +318,13 @@ addFilter(
 		}
 		if ( wcpaySettings ) {
 			pages.push( {
-				container: FraudProtectionAdvancedSettingsPage,
+				container: () => (
+					<WordPressComponentsContext.Provider
+						value={ wp.components }
+					>
+						<FraudProtectionAdvancedSettingsPage />
+					</WordPressComponentsContext.Provider>
+				),
 				path: '/payments/fraud-protection',
 				wpOpenMenu: menuID,
 				breadcrumbs: [ rootLink, 'Settings' ], // to align with the WooPayments settings pages.

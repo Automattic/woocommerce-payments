@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { Link } from '@woocommerce/components';
+import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
 import interpolateComponents from '@automattic/interpolate-components';
 
 /**
@@ -26,7 +26,7 @@ const InternationalIPAddressRuleCard: React.FC = () => {
 			id="international-ip-address-card"
 		>
 			{ supportsAllCountries && (
-				<FraudProtectionRuleCardNotice type={ 'warning' }>
+				<FraudProtectionRuleCardNotice type="warning">
 					{ __(
 						"This filter is disabled because you're currently selling to all countries.",
 						'woocommerce-payments'
@@ -35,7 +35,7 @@ const InternationalIPAddressRuleCard: React.FC = () => {
 			) }
 			{ ! supportsAllCountries && (
 				<FraudProtectionRuleToggle
-					setting={ 'international_ip_address' }
+					setting="international_ip_address"
 					label={ __(
 						'Enable International IP Address filter',
 						'woocommerce-payments'
@@ -48,11 +48,7 @@ const InternationalIPAddressRuleCard: React.FC = () => {
 						),
 						components: {
 							ipAddressLink: (
-								<Link
-									target="_blank"
-									type="external"
-									href="https://simple.wikipedia.org/wiki/IP_address"
-								/>
+								<ExternalLink href="https://simple.wikipedia.org/wiki/IP_address" />
 							),
 							supportedCountriesLink: (
 								// eslint-disable-next-line jsx-a11y/anchor-has-content
@@ -65,7 +61,7 @@ const InternationalIPAddressRuleCard: React.FC = () => {
 							),
 						},
 					} ) }
-				></FraudProtectionRuleToggle>
+				/>
 			) }
 			<FraudProtectionRuleDescription>
 				{ __(
@@ -75,9 +71,7 @@ const InternationalIPAddressRuleCard: React.FC = () => {
 				) }
 			</FraudProtectionRuleDescription>
 			{ ! supportsAllCountries && (
-				<AllowedCountriesNotice
-					setting={ 'international_ip_address' }
-				/>
+				<AllowedCountriesNotice setting="international_ip_address" />
 			) }
 		</FraudProtectionRuleCard>
 	);
