@@ -9,8 +9,7 @@ import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
  * Internal dependencies
  */
 import CardBody from '../card-body';
-import { ProtectionLevels } from './components';
-import './style.scss';
+import ProtectionLevels from './protection-levels';
 import FraudProtectionTour from './tour';
 
 const FraudProtection: React.FC = () => {
