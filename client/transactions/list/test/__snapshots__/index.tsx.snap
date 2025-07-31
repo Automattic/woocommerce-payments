@@ -845,7 +845,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                       tabindex="-1"
                     >
                       <div
-                        class="converted-amount converted-amount--fallback"
+                        class="converted-amount"
                       >
                         <span
                           class="conversion-indicator"
@@ -1990,7 +1990,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                       tabindex="-1"
                     >
                       <div
-                        class="converted-amount converted-amount--fallback"
+                        class="converted-amount"
                       >
                         <span
                           class="conversion-indicator"
@@ -2958,7 +2958,7 @@ exports[`Transactions list renders correctly when filtered by payout 1`] = `
                       tabindex="-1"
                     >
                       <div
-                        class="converted-amount converted-amount--fallback"
+                        class="converted-amount"
                       >
                         <span
                           class="conversion-indicator"
@@ -3991,7 +3991,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                       tabindex="-1"
                     >
                       <div
-                        class="converted-amount converted-amount--fallback"
+                        class="converted-amount"
                       >
                         <span
                           class="conversion-indicator"
@@ -5184,7 +5184,7 @@ exports[`Transactions list when not filtered by payout renders correctly 1`] = `
                       tabindex="-1"
                     >
                       <div
-                        class="converted-amount converted-amount--fallback"
+                        class="converted-amount"
                       >
                         <span
                           class="conversion-indicator"
@@ -6371,7 +6371,7 @@ exports[`Transactions list when not filtered by payout renders table summary onl
                       tabindex="-1"
                     >
                       <div
-                        class="converted-amount converted-amount--fallback"
+                        class="converted-amount"
                       >
                         <span
                           class="conversion-indicator"

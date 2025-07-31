@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { Component } from '@wordpress/element';
+import React, { Component } from 'react';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -9,26 +9,38 @@ import { __ } from '@wordpress/i18n';
  */
 import InlineNotice from 'wcpay/components/inline-notice';
 
-class ErrorBoundary extends Component {
-	constructor() {
-		super( ...arguments );
+interface ErrorBoundaryProps {
+	children: any;
+	onError?: ( error: Error, errorInfo: any ) => void;
+}
+
+interface ErrorBoundaryState {
+	error: Error | null;
+}
+
+export default class ErrorBoundary extends Component<
+	ErrorBoundaryProps,
+	ErrorBoundaryState
+> {
+	constructor( props: ErrorBoundaryProps ) {
+		super( props );
 
 		this.state = {
 			error: null,
 		};
 	}
 
-	static getDerivedStateFromError( error ) {
+	static getDerivedStateFromError( error: Error ): { error: Error } {
 		return { error };
 	}
 
-	componentDidCatch( error, info ) {
+	componentDidCatch( error: Error, info: any ): void {
 		if ( this.props.onError ) {
 			this.props.onError( error, info );
 		}
 	}
 
-	render() {
+	render(): any {
 		if ( ! this.state.error ) {
 			return this.props.children;
 		}
@@ -45,5 +57,3 @@ class ErrorBoundary extends Component {
 		);
 	}
 }
-
-export default ErrorBoundary;

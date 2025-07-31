@@ -3,7 +3,7 @@
 exports[`ConvertedAmount renders an amount with conversion icon and tooltip 1`] = `
 <div>
   <div
-    class="converted-amount converted-amount--fallback"
+    class="converted-amount"
   >
     <span
       class="conversion-indicator"
@@ -32,7 +32,7 @@ exports[`ConvertedAmount renders an amount with conversion icon and tooltip 1`] 
 exports[`ConvertedAmount renders an amount with conversion icon and tooltip 2`] = `
 <div>
   <div
-    class="converted-amount converted-amount--fallback"
+    class="converted-amount"
   >
     <span
       class="conversion-indicator"
