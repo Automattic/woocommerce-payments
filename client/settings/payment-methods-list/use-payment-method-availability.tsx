@@ -89,7 +89,7 @@ const usePaymentMethodAvailability = ( id: string ) => {
 				),
 				components: {
 					learnMoreLink: (
-						// eslint-disable-next-line jsx-a11y/anchor-has-content
+						// @ts-expect-error: children is provided when interpolating the component
 						<ExternalLink
 							title={ __(
 								'Learn more about enabling payment methods',
@@ -171,7 +171,7 @@ const usePaymentMethodAvailability = ( id: string ) => {
 				),
 				components: {
 					contactSupportLink: (
-						// eslint-disable-next-line jsx-a11y/anchor-has-content
+						// @ts-expect-error: children is provided when interpolating the component
 						<ExternalLink
 							title={ __(
 								'Contact Support',
@@ -184,7 +184,7 @@ const usePaymentMethodAvailability = ( id: string ) => {
 					),
 				},
 			} ),
-			noticeType: 'error',
+			noticeType: 'error' as const,
 		};
 	}
 

@@ -87,7 +87,6 @@ const OrderItemsThresholdCustomForm: React.FC< OrderItemsThresholdCustomFormProp
 						) }
 						min="1"
 						step="1"
-						// @ts-expect-error: __nextHasNoMarginBottom is not a prop defined in the WP TextControl component.
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
 					/>
@@ -112,7 +111,6 @@ const OrderItemsThresholdCustomForm: React.FC< OrderItemsThresholdCustomFormProp
 						) }
 						min="1"
 						step="1"
-						// @ts-expect-error: __nextHasNoMarginBottom is not a prop defined in the WP TextControl component.
 						__nextHasNoMarginBottom
 						__next40pxDefaultSize
 					/>

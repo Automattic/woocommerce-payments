@@ -96,7 +96,7 @@ const PaymentMethod = ( {
 	const {
 		isActionable,
 		notice,
-		noticeType = 'warning',
+		noticeType = 'warning' as const,
 	} = usePaymentMethodAvailability( id );
 	const [ enabledMethodIds ] = useEnabledPaymentMethodIds();
 
@@ -134,7 +134,6 @@ const PaymentMethod = ( {
 						checked={ enabledMethodIds.includes( id ) }
 						disabled={ ! isActionable || locked }
 						onChange={ handleChange }
-						// @ts-expect-error: __nextHasNoMarginBottom is not a prop defined in the WP CheckboxControl component.
 						__nextHasNoMarginBottom
 					/>
 				</div>

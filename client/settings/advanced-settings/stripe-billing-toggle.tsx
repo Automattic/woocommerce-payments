@@ -56,12 +56,12 @@ const StripeBillingToggle: React.FC< Props > = ( { onChange } ) => {
 				components: {
 					learnMoreLink: (
 						// eslint-disable-next-line max-len
+						// @ts-expect-error: children is provided when interpolating the component
 						<ExternalLink href="https://woocommerce.com/document/woopayments/subscriptions/stripe-billing/" />
 					),
 				},
 			} ) }
 			data-testid={ 'stripe-billing-toggle' }
-			// @ts-expect-error: __nextHasNoMarginBottom is not a prop defined in the WP CheckboxControl component.
 			__nextHasNoMarginBottom
 		/>
 	);

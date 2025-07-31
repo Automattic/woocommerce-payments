@@ -89,11 +89,11 @@ describe( 'Deposits', () => {
 			</WCPaySettingsContext.Provider>
 		);
 
-		const manageLink = screen.getByText( /Manage in Stripe/ );
+		const manageLink = screen.getByRole( 'link', {
+			name: /Manage in Stripe/,
+		} );
 		expect( manageLink ).toBeInTheDocument();
-		expect( manageLink ).toHaveTextContent(
-			'Manage in Stripe(opens in a new tab)'
-		);
+		expect( manageLink ).toHaveTextContent( 'Manage in Stripe↗' );
 		expect( manageLink.href ).toContain( '/account-link' );
 	} );
 

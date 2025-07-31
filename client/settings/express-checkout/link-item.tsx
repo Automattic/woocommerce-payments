@@ -61,7 +61,6 @@ const LinkExpressCheckoutItem = (): React.ReactElement | null => {
 						disabled={ isWooPayEnabled }
 						checked={ isStripeLinkEnabled }
 						onChange={ updateStripeLinkCheckout }
-						// @ts-expect-error: __nextHasNoMarginBottom is not a prop defined in the WP CheckboxControl component.
 						__nextHasNoMarginBottom
 					/>
 				</div>

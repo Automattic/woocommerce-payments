@@ -45,7 +45,6 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 						) }
 						checked={ isPaymentRequestEnabled }
 						onChange={ updateIsPaymentRequestEnabled }
-						// @ts-expect-error: __nextHasNoMarginBottom is not a prop defined in the WP CheckboxControl component.
 						__nextHasNoMarginBottom
 					/>
 				</div>

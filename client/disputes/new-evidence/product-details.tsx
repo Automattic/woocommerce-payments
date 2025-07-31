@@ -37,7 +37,6 @@ const ProductDetails: React.FC< ProductDetailsProps > = ( {
 			</div>
 			<div className="wcpay-dispute-evidence-product-details__field-group">
 				<SelectControl
-					// @ts-expect-error: __nextHasNoMarginBottom is not a prop defined in the WP SelectControl component.
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
 					label={ __( 'PRODUCT TYPE', 'woocommerce-payments' ) }
@@ -79,7 +78,6 @@ const ProductDetails: React.FC< ProductDetailsProps > = ( {
 			</div>
 			<div className="wcpay-dispute-evidence-product-details__field-group">
 				<TextareaControl
-					// @ts-expect-error: __nextHasNoMarginBottom is not a prop defined in the WP TextareaControl component.
 					__nextHasNoMarginBottom
 					label={ __(
 						'PRODUCT DESCRIPTION',

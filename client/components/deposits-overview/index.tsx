@@ -219,7 +219,6 @@ const DepositsOverview: React.FC = () => {
 									'wcpay_overview_deposits_change_schedule_click'
 								)
 							}
-							// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component when it is using the `href` prop.
 							__next40pxDefaultSize
 						>
 							{ __(

@@ -45,7 +45,6 @@ const ShippingDetails: React.FC< ShippingDetailsProps > = ( {
 			</div>
 			<div className="wcpay-dispute-evidence-shipping-details__field-group">
 				<TextControl
-					// @ts-expect-error: __nextHasNoMarginBottom is not a prop defined in the WP TextControl component.
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
 					label={ __( 'SHIPPING CARRIER', 'woocommerce-payments' ) }
@@ -56,7 +55,6 @@ const ShippingDetails: React.FC< ShippingDetailsProps > = ( {
 			</div>
 			<div className="wcpay-dispute-evidence-shipping-details__field-group">
 				<TextControl
-					// @ts-expect-error: __nextHasNoMarginBottom is not a prop defined in the WP TextControl component.
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
 					label={ __( 'SHIPPING DATE', 'woocommerce-payments' ) }
@@ -74,7 +72,6 @@ const ShippingDetails: React.FC< ShippingDetailsProps > = ( {
 			</div>
 			<div className="wcpay-dispute-evidence-shipping-details__field-group">
 				<TextControl
-					// @ts-expect-error: __nextHasNoMarginBottom is not a prop defined in the WP TextControl component.
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
 					label={ __( 'TRACKING NUMBER', 'woocommerce-payments' ) }
@@ -85,7 +82,6 @@ const ShippingDetails: React.FC< ShippingDetailsProps > = ( {
 			</div>
 			<div className="wcpay-dispute-evidence-shipping-details__field-group">
 				<TextControl
-					// @ts-expect-error: __nextHasNoMarginBottom is not a prop defined in the WP TextControl component.
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
 					label={ __( 'SHIPPING ADDRESS', 'woocommerce-payments' ) }

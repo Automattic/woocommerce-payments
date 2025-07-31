@@ -170,7 +170,6 @@ const ActiveLoanSummary = (): JSX.Element => {
 								filter: 'advanced',
 								loan_id_is: getActiveLoanId(),
 							} ) }
-							// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP Button component when it is using the `href` prop.
 							__next40pxDefaultSize
 						>
 							{ __(

@@ -19,7 +19,6 @@ import {
 	CardBody,
 	Flex,
 	ExternalLink,
-	CardNotice,
 } from '@wordpress/components';
 
 /**
@@ -32,6 +31,7 @@ import {
 	isOnHoldByFraudTools,
 	getBankName,
 } from 'utils/charge';
+import CardNotice from 'wcpay/components/card-notice';
 import isValueTruthy from 'utils/is-value-truthy';
 import PaymentStatusChip from 'components/payment-status-chip';
 import PaymentMethodDetails from 'components/payment-method-details';
@@ -771,6 +771,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 								),
 								{
 									a: (
+										// @ts-expect-error: children is provided when interpolating the component
 										<ExternalLink href="https://woocommerce.com/document/woopayments/settings-guide/authorize-and-capture/#capturing-authorized-orders" />
 									),
 								}

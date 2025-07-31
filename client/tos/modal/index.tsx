@@ -47,7 +47,10 @@ const TosModalUI = ( {
 			),
 			'WooPayments'
 		),
-		components: { link: <TosLink /> },
+		components: {
+			// @ts-expect-error: the link already has href
+			link: <TosLink />,
+		},
 	} );
 
 	return (

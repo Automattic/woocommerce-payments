@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState } from 'react';
+import React, { ComponentProps, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { Icon, thumbsUp, thumbsDown } from '@wordpress/icons';
 import { useSelect } from '@wordpress/data';
@@ -76,10 +76,9 @@ const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
 	showNegativeFeedbackModal,
 } ) => {
 	// Get the core notices, which we'll use to ensure we're not rendering the prompt if there are other notices being displayed.
-	const coreNotices = useSelect(
-		( select ) =>
-			select( 'core/notices' ).getNotices() as NoticeList.Notice[]
-	);
+	const coreNotices = useSelect<
+		ComponentProps< typeof NoticeList >[ 'notices' ]
+	>( ( select ) => select( 'core/notices' ).getNotices() );
 
 	// Only render the prompt if there are no core notices.
 	const shouldShowPrompt = coreNotices?.length === 0;
@@ -103,6 +102,7 @@ const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
 					{
 						id: 'wcpay-merchant-feedback-prompt',
 						className: 'wcpay-merchant-feedback-prompt',
+						// @ts-expect-error: content can receive a JSX element, not just a string
 						content: (
 							<Flex
 								gap={ 3 }

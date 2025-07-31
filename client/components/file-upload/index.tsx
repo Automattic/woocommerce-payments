@@ -69,7 +69,6 @@ export const FileUploadControl = ( {
 			id={ `form-file-upload-base-control-${ field.key }` }
 			label={ field.label }
 			help={ help }
-			// @ts-expect-error: __nextHasNoMarginBottom is not a prop defined in the WP BaseControl component.
 			__nextHasNoMarginBottom
 		>
 			<DropZone
@@ -131,34 +130,6 @@ export const FileUploadControl = ( {
 					/>
 				) : null }
 			</div>
-		</BaseControl>
-	);
-};
-
-// Hide upload button and show file name for cases like submitted dispute form
-export const UploadedReadOnly = ( {
-	field,
-	fileName,
-	showPreview,
-}: FileUploadControlProps ): JSX.Element => {
-	return (
-		<BaseControl
-			id={ `form-file-upload-base-control-${ field.key }` }
-			label={ field.label }
-			// @ts-expect-error: __nextHasNoMarginBottom is not a prop defined in the WP BaseControl component.
-			__nextHasNoMarginBottom
-		>
-			<FileUploadPreview
-				fileName={
-					fileName
-						? `: ${ fileName }`
-						: __(
-								': Evidence file was not uploaded',
-								'woocommerce-payments'
-						  )
-				}
-				showPreview={ showPreview }
-			/>
 		</BaseControl>
 	);
 };

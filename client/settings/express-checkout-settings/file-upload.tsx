@@ -187,12 +187,7 @@ const WooPayFileUpload: React.FunctionComponent< WooPayFileUploadProps > = ( {
 				</div>
 			</div>
 
-			<BaseControl
-				id="test"
-				help={ help }
-				// @ts-expect-error: __nextHasNoMarginBottom is not a prop defined in the WP BaseControl component.
-				__nextHasNoMarginBottom
-			>
+			<BaseControl id="test" help={ help } __nextHasNoMarginBottom>
 				{ ' ' }
 			</BaseControl>
 		</div>
