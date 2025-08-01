@@ -51,6 +51,11 @@ declare const global: {
 };
 
 describe( 'Deposit overview', () => {
+	beforeAll( () => {
+		jest.spyOn( console, 'error' ).mockImplementation( () => null );
+		jest.spyOn( console, 'warn' ).mockImplementation( () => null );
+	} );
+
 	beforeEach( () => {
 		jest.clearAllMocks();
 		global.wcpaySettings = {

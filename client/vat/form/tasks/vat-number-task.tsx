@@ -244,6 +244,7 @@ export const VatNumberTask = ( {
 						value={ vatNumber }
 						onChange={ setVatNumber }
 						__nextHasNoMarginBottom
+						__next40pxDefaultSize
 					/>
 				) }
 

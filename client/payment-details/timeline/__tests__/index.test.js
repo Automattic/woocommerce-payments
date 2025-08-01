@@ -14,6 +14,11 @@ jest.mock( 'wcpay/data', () => ( {
 } ) );
 
 describe( 'PaymentDetailsTimeline', () => {
+	beforeAll( () => {
+		jest.spyOn( console, 'error' ).mockImplementation( () => null );
+		jest.spyOn( console, 'warn' ).mockImplementation( () => null );
+	} );
+
 	beforeEach( () => {
 		jest.clearAllMocks();
 		global.wcpaySettings = {

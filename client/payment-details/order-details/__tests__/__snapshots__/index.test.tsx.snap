@@ -259,12 +259,10 @@ exports[`Order details page should match the snapshot - Charge without payment i
                 <div
                   class="payment-details-summary__breakdown"
                 >
-                  
                   <p>
                     Fees: 
                     -$0.00
                   </p>
-                  
                   <p>
                     Net: 
                     $15.00

@@ -51,6 +51,18 @@ jest.mock( '@wordpress/data', () => ( {
 	withSelect: jest.fn( () => jest.fn() ),
 } ) );
 
+jest.mock( '@woocommerce/navigation', () => ( {
+	onQueryChange: jest.fn(),
+	getNewPath: jest.fn(),
+	getPersistedQuery: jest.fn(),
+	getHistory: jest.fn( () => ( {
+		push: jest.fn(),
+	} ) ),
+	navigateTo: jest.fn(),
+	addHistoryListener: jest.fn(),
+	removeHistoryListener: jest.fn(),
+} ) );
+
 const mockUseAuthorization = useAuthorization;
 
 const getBaseCharge = () => ( {
@@ -684,9 +696,10 @@ describe( 'PaymentDetailsSummary', () => {
 			name: /Challenge dispute/,
 		} );
 
-		challengeButton.click();
-
-		expect( window.location.href ).toContain(
+		// Check that the button is wrapped in a link with the correct href
+		const challengeLink = challengeButton.closest( 'a' );
+		expect( challengeLink ).toHaveAttribute(
+			'href',
 			`admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=${ charge.dispute.id }`
 		);
 	} );
@@ -998,9 +1011,15 @@ describe( 'PaymentDetailsSummary', () => {
 			expect( screen.getByText( 'Refund in full' ) ).toBeInTheDocument();
 		} );
 
-		test( 'Refund in full option is not available when an amount has been refunded', () => {
-			renderCharge( { ...getBaseCharge(), amount_refunded: 42 } );
-			fireEvent.click( screen.getByLabelText( 'Transaction actions' ) );
+		test( 'Refund in full option is not available when an amount has been refunded', async () => {
+			await act( async () => {
+				renderCharge( { ...getBaseCharge(), amount_refunded: 42 } );
+			} );
+			await act( async () => {
+				await userEvent.click(
+					screen.getByLabelText( 'Transaction actions' )
+				);
+			} );
 			expect(
 				screen.queryByText( 'Refund in full' )
 			).not.toBeInTheDocument();

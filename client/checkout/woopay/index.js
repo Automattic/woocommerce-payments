@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 
 /**
  * External dependencies
@@ -49,10 +49,8 @@ const renderSaveUserSection = () => {
 			}
 		}
 
-		ReactDOM.render(
-			<CheckoutPageSaveUser isBlocksCheckout={ true } />,
-			checkoutPageSaveUserContainer
-		);
+		const root = createRoot( checkoutPageSaveUserContainer );
+		root.render( <CheckoutPageSaveUser isBlocksCheckout={ true } /> );
 	} else {
 		const checkoutPageSaveUserContainer = document.createElement( 'div' );
 		checkoutPageSaveUserContainer.className =
@@ -69,10 +67,8 @@ const renderSaveUserSection = () => {
 				placeOrderButton
 			);
 
-			ReactDOM.render(
-				<CheckoutPageSaveUser isBlocksCheckout={ false } />,
-				checkoutPageSaveUserContainer
-			);
+			const root = createRoot( checkoutPageSaveUserContainer );
+			root.render( <CheckoutPageSaveUser isBlocksCheckout={ false } /> );
 		}
 	}
 };

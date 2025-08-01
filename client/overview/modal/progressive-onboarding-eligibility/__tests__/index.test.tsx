@@ -65,7 +65,7 @@ describe( 'Progressive Onboarding Eligibility Modal', () => {
 		).not.toBeInTheDocument();
 	} );
 
-	it( 'calls `handleSetup` when setup button is clicked', () => {
+	it( 'calls `handleSetup` when setup button is clicked', async () => {
 		global.wcpaySettings = {
 			connectUrl: 'https://wcpay.test/connect',
 			progressiveOnboarding: {
@@ -81,7 +81,7 @@ describe( 'Progressive Onboarding Eligibility Modal', () => {
 
 		render( <ProgressiveOnboardingEligibilityModal /> );
 
-		user.click(
+		await user.click(
 			screen.getByRole( 'button', {
 				name: 'Set up payouts',
 			} )

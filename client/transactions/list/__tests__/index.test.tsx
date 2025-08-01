@@ -589,7 +589,7 @@ describe( 'Transactions list', () => {
 
 			const { getByRole } = render( <TransactionsList /> );
 
-			getByRole( 'button', { name: 'Export' } ).click();
+			await user.click( getByRole( 'button', { name: 'Export' } ) );
 
 			expect( window.confirm ).toHaveBeenCalledTimes( 1 );
 			expect( window.confirm ).toHaveBeenCalledWith(
@@ -612,7 +612,7 @@ describe( 'Transactions list', () => {
 
 			const { getByRole } = render( <TransactionsList /> );
 
-			getByRole( 'button', { name: 'Export' } ).click();
+			await user.click( getByRole( 'button', { name: 'Export' } ) );
 
 			expect( window.confirm ).toHaveBeenCalledTimes( 1 );
 			expect( window.confirm ).toHaveBeenCalledWith(
@@ -644,7 +644,7 @@ describe( 'Transactions list', () => {
 				<TransactionsList depositId="po_mock" />
 			);
 
-			getByRole( 'button', { name: 'Export' } ).click();
+			await user.click( getByRole( 'button', { name: 'Export' } ) );
 
 			await waitFor( () => {
 				expect( mockApiFetch ).toHaveBeenCalledTimes( 1 );
