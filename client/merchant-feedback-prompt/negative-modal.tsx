@@ -3,7 +3,7 @@
  */
 import React, { useEffect, useRef } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Modal } from '@wordpress/components';
+import { ExternalLink, Modal } from '@wordpress/components';
 import { dispatch } from '@wordpress/data';
 import interpolateComponents from '@automattic/interpolate-components';
 
@@ -12,7 +12,6 @@ import interpolateComponents from '@automattic/interpolate-components';
  */
 import { recordEvent } from 'wcpay/tracks';
 import './style.scss';
-import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
 
 interface NegativeFeedbackModalProps {
 	onRequestClose: () => void;
