@@ -1099,7 +1099,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 				$this->isType( 'array' ), // User data.
 				$this->isType( 'array' ), // Account data.
 				$this->isType( 'array' ), // Actioned notes.
-				true, // Progressive onboarding.
 				false // Collect payout requirements.
 			)
 			->willReturn( [ 'url' => false ] ); // This means that an account already exits on the platform.
