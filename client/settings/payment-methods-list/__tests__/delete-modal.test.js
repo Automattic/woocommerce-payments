@@ -50,21 +50,21 @@ describe( 'Activation Modal', () => {
 		).toBeInTheDocument();
 	} );
 
-	it( 'triggers the onClose event on close button click', () => {
+	it( 'triggers the onClose event on close button click', async () => {
 		renderDeleteModal();
 		const closeButton = screen.queryByRole( 'button', { name: 'Cancel' } );
 		expect( mockOnClose ).not.toBeCalled();
-		user.click( closeButton );
+		await user.click( closeButton );
 		expect( mockOnClose ).toBeCalled();
 	} );
 
-	it( 'triggers the onConfirmClose event on confirm button click', () => {
+	it( 'triggers the onConfirmClose event on confirm button click', async () => {
 		renderDeleteModal();
 		const confirmButton = screen.queryByRole( 'button', {
 			name: 'Remove',
 		} );
 		expect( mockOnConfirm ).not.toBeCalled();
-		user.click( confirmButton );
+		await user.click( confirmButton );
 		expect( mockOnConfirm ).toBeCalled();
 	} );
 } );

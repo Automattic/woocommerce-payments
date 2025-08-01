@@ -57,21 +57,21 @@ describe( 'Activation Modal', () => {
 		expect( screen.queryByText( 'person.tax_id' ) ).not.toBeInTheDocument();
 	} );
 
-	it( 'triggers the onClose event on close button click', () => {
+	it( 'triggers the onClose event on close button click', async () => {
 		renderActivationModal( [] );
 		const closeButton = screen.queryByRole( 'button', { name: 'Cancel' } );
 		expect( mockOnClose ).not.toBeCalled();
-		user.click( closeButton );
+		await user.click( closeButton );
 		expect( mockOnClose ).toBeCalled();
 	} );
 
-	it( 'triggers the onConfirmClose event on confirm button click', () => {
+	it( 'triggers the onConfirmClose event on confirm button click', async () => {
 		renderActivationModal( [] );
 		const confirmButton = screen.queryByRole( 'button', {
 			name: 'Continue',
 		} );
 		expect( mockOnConfirm ).not.toBeCalled();
-		user.click( confirmButton );
+		await user.click( confirmButton );
 		expect( mockOnConfirm ).toBeCalled();
 	} );
 } );

@@ -171,7 +171,7 @@ const usePaymentMethodAvailability = ( id: string ) => {
 					),
 				},
 			} ),
-			noticeType: 'error',
+			noticeType: 'error' as const,
 		};
 	}
 
