@@ -26,7 +26,6 @@ module.exports = {
 		require.resolve(
 			'@wordpress/jest-preset-default/scripts/setup-globals.js'
 		),
-		'<rootDir>/tests/js/react-18-polyfill.js',
 		'<rootDir>/tests/js/jest-test-file-setup.js',
 	],
 	setupFilesAfterEnv: [

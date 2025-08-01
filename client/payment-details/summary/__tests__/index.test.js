@@ -51,18 +51,6 @@ jest.mock( '@wordpress/data', () => ( {
 	withSelect: jest.fn( () => jest.fn() ),
 } ) );
 
-jest.mock( '@woocommerce/navigation', () => ( {
-	onQueryChange: jest.fn(),
-	getNewPath: jest.fn(),
-	getPersistedQuery: jest.fn(),
-	getHistory: jest.fn( () => ( {
-		push: jest.fn(),
-	} ) ),
-	navigateTo: jest.fn(),
-	addHistoryListener: jest.fn(),
-	removeHistoryListener: jest.fn(),
-} ) );
-
 const mockUseAuthorization = useAuthorization;
 
 const getBaseCharge = () => ( {
@@ -696,7 +684,6 @@ describe( 'PaymentDetailsSummary', () => {
 			name: /Challenge dispute/,
 		} );
 
-		// Check that the button is wrapped in a link with the correct href
 		const challengeLink = challengeButton.closest( 'a' );
 		expect( challengeLink ).toHaveAttribute(
 			'href',
@@ -1015,11 +1002,9 @@ describe( 'PaymentDetailsSummary', () => {
 			await act( async () => {
 				renderCharge( { ...getBaseCharge(), amount_refunded: 42 } );
 			} );
-			await act( async () => {
-				await userEvent.click(
-					screen.getByLabelText( 'Transaction actions' )
-				);
-			} );
+			await userEvent.click(
+				screen.getByLabelText( 'Transaction actions' )
+			);
 			expect(
 				screen.queryByText( 'Refund in full' )
 			).not.toBeInTheDocument();
