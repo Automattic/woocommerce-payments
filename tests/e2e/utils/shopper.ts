@@ -352,8 +352,10 @@ export const selectPaymentMethod = async (
 	const maxRetries = 3;
 	for ( let attempt = 1; attempt <= maxRetries; attempt++ ) {
 		try {
+			// Use a more robust locator that handles mixed content in labels
+			// Look for the label containing the payment method text
 			const paymentMethodElement = page
-				.getByText( paymentMethod, { exact: true } )
+				.locator( `label:has-text("${ paymentMethod }")` )
 				.first();
 
 			// Wait for the element to be visible and stable
