@@ -47,6 +47,7 @@ jobs:
     strategy:
       fail-fast:     false
       matrix:
+        wc_version:   [ 'latest', 'rc' ]
         test_groups:   [ 'wcpay', 'subscriptions' ] # [TODO] Unskip blocks tests after investigating constant failures.
         test_branches: [ 'merchant', 'shopper' ]
 
@@ -54,7 +55,7 @@ jobs:
 
     env:
       E2E_WP_VERSION: 'latest'
-      E2E_WC_VERSION: 'latest'
+      E2E_WC_VERSION: ${{ matrix.wc_version }}
       E2E_GROUP:  ${{ matrix.test_groups }}
       E2E_BRANCH: ${{ matrix.test_branches }}
 
