@@ -61,7 +61,6 @@ const OverviewPageError = () => {
 const OverviewPage = () => {
 	const {
 		accountStatus,
-		accountStatus: { progressiveOnboarding },
 		accountLoans: { has_active_loan: hasActiveLoan },
 		overviewTasksVisibility,
 		wpcomReconnectUrl,
@@ -71,10 +70,6 @@ const OverviewPage = () => {
 	const [ showUpdateDetailsTask, setShowUpdateDetailsTask ] = useState(
 		false
 	);
-	const [
-		showGetVerifyBankAccountTask,
-		setShowGetVerifyBankAccountTask,
-	] = useState( false );
 
 	const [
 		stripeNotificationsBannerErrorMessage,
@@ -114,7 +109,6 @@ const OverviewPage = () => {
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
 		activeDisputes,
-		showGetVerifyBankAccountTask,
 	} );
 	const tasks =
 		Array.isArray( tasksUnsorted ) && tasksUnsorted.sort( taskSort );
@@ -142,14 +136,11 @@ const OverviewPage = () => {
 		queryParams[ 'wcpay-reset-account-error' ] === '1';
 	const showTaskList =
 		! accountRejected && ! accountUnderReview && tasks.length > 0;
-	const isPoDisabledOrCompleted =
-		! progressiveOnboarding.isEnabled || progressiveOnboarding.isComplete;
 	const showConnectionSuccessModal =
 		showConnectionSuccess &&
 		! isTestModeOnboarding &&
 		paymentsEnabled &&
-		depositsEnabled &&
-		isPoDisabledOrCompleted;
+		depositsEnabled;
 
 	const activeAccountFees = Object.entries( wcpaySettings.accountFees )
 		.map( ( [ key, value ] ) => {
@@ -187,7 +178,6 @@ const OverviewPage = () => {
 	useEffect( () => {
 		if ( stripeNotificationsBannerErrorMessage ) {
 			setShowUpdateDetailsTask( true );
-			setShowGetVerifyBankAccountTask( true );
 			setStripeComponentLoading( false );
 		}
 	}, [ stripeNotificationsBannerErrorMessage ] );
