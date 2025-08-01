@@ -7,7 +7,6 @@ import { screen, act } from '@testing-library/react';
  * Internal dependencies
  */
 import '..';
-import { getConfig } from 'utils/checkout';
 
 jest.mock( 'utils/checkout', () => ( {
 	getConfig: jest.fn(),
@@ -26,15 +25,18 @@ describe( 'renderWooPayExpressButton', () => {
 	expressButtonContainer.setAttribute( 'id', 'wcpay-woopay-button' );
 
 	beforeEach( () => {
-		getConfig.mockReturnValue( 'foo' );
+		document.body.innerHTML = '';
 	} );
 
 	test( 'render the button component in placeholder', async () => {
 		document.body.appendChild( expressButtonContainer );
 
 		// trigger window load.
-		act( () => {
+		await act( async () => {
 			window.dispatchEvent( new Event( 'load' ) );
+
+			// giving React some time to render
+			await new Promise( ( resolve ) => setTimeout( resolve, 0 ) );
 		} );
 
 		expect(
@@ -43,15 +45,18 @@ describe( 'renderWooPayExpressButton', () => {
 	} );
 
 	test( 'should not render the express button component if placeholder is absent', async () => {
-		document.body.removeChild( expressButtonContainer );
+		// Don't add the container to the DOM, so it's absent
 
 		// trigger window load.
-		act( () => {
+		await act( async () => {
 			window.dispatchEvent( new Event( 'load' ) );
+
+			// giving React some time to render
+			await new Promise( ( resolve ) => setTimeout( resolve, 0 ) );
 		} );
 
 		expect(
-			await screen.findByText( 'WooPay Express Button' )
+			screen.queryByText( 'WooPay Express Button' )
 		).not.toBeInTheDocument();
 	} );
 } );
