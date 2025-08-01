@@ -427,24 +427,6 @@ class WC_Payments_Admin {
 		}
 
 		if ( $should_render_full_menu ) {
-			// Only register if details are submitted and the account is PO.
-			if ( $this->account->is_stripe_connected()
-				&& $this->account->is_details_submitted()
-				&& $this->account->is_progressive_onboarding_in_progress()
-			) {
-				$this->admin_child_pages['wc-payments-onboarding-kyc'] = [
-					'id'         => 'wc-payments-onboarding-kyc',
-					'title'      => __( 'Continue onboarding', 'woocommerce-payments' ),
-					'parent'     => 'wc-payments',
-					'path'       => '/payments/onboarding/kyc',
-					'capability' => 'manage_woocommerce',
-					'nav_args'   => [
-						'parent' => 'wc-payments',
-						'order'  => 50,
-					],
-				];
-			}
-
 			if ( $this->account->is_card_present_eligible() && $this->account->has_card_readers_available() ) {
 				$this->admin_child_pages['wc-payments-card-readers'] = [
 					'id'       => 'wc-payments-card-readers',
