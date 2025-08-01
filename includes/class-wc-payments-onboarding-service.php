@@ -275,17 +275,16 @@ class WC_Payments_Onboarding_Service {
 	 *
 	 * Will return the session key used to initialise the embedded onboarding session.
 	 *
-	 * @param array   $self_assessment_data Self assessment data.
-	 * @param boolean $progressive Whether the onboarding is progressive.
-	 * @param array   $capabilities Optional. List keyed by capabilities IDs (payment methods) with boolean values
-	 *                             indicating whether the capability should be requested when the account is created
-	 *                             and enabled in the settings.
+	 * @param array $self_assessment_data Self assessment data.
+	 * @param array $capabilities Optional. List keyed by capabilities IDs (payment methods) with boolean values
+	 *                           indicating whether the capability should be requested when the account is created
+	 *                           and enabled in the settings.
 	 *
 	 * @return array Session data.
 	 *
 	 * @throws API_Exception|Exception
 	 */
-	public function create_embedded_kyc_session( array $self_assessment_data, bool $progressive = false, array $capabilities = [] ): array {
+	public function create_embedded_kyc_session( array $self_assessment_data, array $capabilities = [] ): array {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			return [];
 		}
@@ -337,7 +336,6 @@ class WC_Payments_Onboarding_Service {
 				WC_Payments_Utils::array_filter_recursive( $user_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
 				WC_Payments_Utils::array_filter_recursive( $account_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
 				$actioned_notes,
-				$progressive,
 				$this->get_referral_code()
 			);
 		} catch ( API_Exception $e ) {
