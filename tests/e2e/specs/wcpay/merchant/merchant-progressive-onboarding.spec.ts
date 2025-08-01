@@ -7,8 +7,8 @@ import { test, expect } from '@playwright/test';
  * Internal dependencies
  */
 import { useMerchant } from '../../../utils/helpers';
-import * as devtools from '../../../utils/devtools';
 import { goToConnect } from '../../../utils/merchant-navigation';
+import { runWpCli } from '../../../utils/wp-cli';
 
 test.describe(
 	'Admin merchant progressive onboarding',
@@ -16,14 +16,12 @@ test.describe(
 	() => {
 		useMerchant();
 
-		test.beforeAll( async ( { browser } ) => {
-			const page = await browser.newPage();
-			await devtools.enableActAsDisconnectedFromWCPay( page );
+		test.beforeAll( async () => {
+			await runWpCli( 'wp option set wcpaydev_force_disconnected 1' );
 		} );
 
-		test.afterAll( async ( { browser } ) => {
-			const page = await browser.newPage();
-			await devtools.disableActAsDisconnectedFromWCPay( page );
+		test.afterAll( async () => {
+			await runWpCli( 'wp option delete wcpaydev_force_disconnected' );
 		} );
 
 		test( 'should pass merchant flow without any errors', async ( {
