@@ -8,7 +8,7 @@ import { render } from '@testing-library/react';
  * Internal dependencies
  */
 import { isInTestMode } from 'utils';
-import { TestModeNotice } from '../index';
+import { TestModeNotice } from '..';
 
 declare const global: {
 	wcSettings: { countries: Record< string, string > };

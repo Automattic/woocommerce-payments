@@ -8,7 +8,7 @@ import user from '@testing-library/user-event';
 /**
  * Internal dependencies
  */
-import SetupLivePaymentsModal from '../index';
+import SetupLivePaymentsModal from '..';
 
 jest.mock( '@wordpress/data', () => ( {
 	useDispatch: jest.fn().mockReturnValue( { updateOptions: jest.fn() } ),
