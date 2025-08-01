@@ -12,7 +12,7 @@ import moment from 'moment';
  */
 import PaymentDetailsSummary from '../';
 import { useAuthorization } from 'wcpay/data';
-import { paymentIntentMock } from 'wcpay/data/payment-intents/test/hooks';
+import { paymentIntentMock } from 'wcpay/data/payment-intents/__tests__/hooks.test';
 
 // Mock dateI18n
 jest.mock( '@wordpress/date', () => ( {

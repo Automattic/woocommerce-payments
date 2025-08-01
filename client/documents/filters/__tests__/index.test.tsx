@@ -25,6 +25,11 @@ async function addAdvancedFilter( filter: string ) {
 }
 
 describe( 'Documents filters', () => {
+	beforeAll( () => {
+		jest.spyOn( console, 'error' ).mockImplementation( () => null );
+		jest.spyOn( console, 'warn' ).mockImplementation( () => null );
+	} );
+
 	beforeEach( async () => {
 		// the query string is preserved across tests, so we need to reset it
 		updateQueryString( {}, '/', {} );
@@ -53,7 +58,7 @@ describe( 'Documents filters', () => {
 
 		beforeEach( async () => {
 			await addAdvancedFilter( 'Date' );
-			ruleSelector = screen.getByRole( 'combobox', {
+			ruleSelector = await screen.findByRole( 'combobox', {
 				name: /document date filter/i,
 			} );
 		} );

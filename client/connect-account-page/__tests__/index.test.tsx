@@ -39,6 +39,11 @@ const mockedIcentive = {
 };
 
 describe( 'ConnectAccountPage', () => {
+	beforeAll( () => {
+		jest.spyOn( console, 'error' ).mockImplementation( () => null );
+		jest.spyOn( console, 'warn' ).mockImplementation( () => null );
+	} );
+
 	beforeEach( () => {
 		Object.defineProperty( window, 'location', {
 			value: {
@@ -55,6 +60,9 @@ describe( 'ConnectAccountPage', () => {
 			isWooPayStoreCountryAvailable: false,
 			isJetpackConnected: true,
 		};
+
+		// Clear any previous API fetch mocks
+		jest.clearAllMocks();
 	} );
 
 	test( 'should render correctly', () => {
