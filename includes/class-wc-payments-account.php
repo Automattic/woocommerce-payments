@@ -1156,11 +1156,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 					$args         = $_GET;
 					$args['type'] = 'complete_kyc_link';
 
-					// Allow progressive onboarding accounts to continue onboarding without payout collection.
-					if ( $this->is_progressive_onboarding_in_progress() ) {
-						$args['is_progressive_onboarding'] = $this->is_progressive_onboarding_in_progress() ?? false;
-					}
-
 					$this->redirect_service->redirect_to_account_link( $args );
 				}
 
@@ -1253,7 +1248,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		if ( isset( $_GET['wcpay-connect'] ) && check_admin_referer( 'wcpay-connect' ) ) {
 			$wcpay_connect_param         = sanitize_text_field( wp_unslash( $_GET['wcpay-connect'] ) );
 			$incentive_id                = ! empty( $_GET['promo'] ) ? sanitize_text_field( wp_unslash( $_GET['promo'] ) ) : '';
-			$progressive                 = ! empty( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
 			$collect_payout_requirements = ! empty( $_GET['collect_payout_requirements'] ) && 'true' === $_GET['collect_payout_requirements'];
 			$create_test_drive_account   = ! empty( $_GET['test_drive'] ) && 'true' === $_GET['test_drive'];
 			$redirect_to_settings_page   = ! empty( $_GET['redirect_to_settings_page'] ) && 'true' === $_GET['redirect_to_settings_page'];
@@ -1518,7 +1512,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 					null, // Do not carry over the `from` value to avoid redirect loops.
 					[
 						'promo'                       => ! empty( $incentive_id ) ? $incentive_id : false,
-						'progressive'                 => $progressive ? 'true' : false,
 						'collect_payout_requirements' => $collect_payout_requirements ? 'true' : false,
 						'source'                      => $onboarding_source,
 					]
@@ -1543,7 +1536,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 					add_query_arg(
 						[
 							'promo'                       => ! empty( $incentive_id ) ? $incentive_id : false,
-							'progressive'                 => $progressive ? 'true' : false,
 							'collect_payout_requirements' => $collect_payout_requirements ? 'true' : false,
 							'test_mode'                   => $should_onboard_in_test_mode ? 'true' : false,
 							'test_drive'                  => $create_test_drive_account ? 'true' : false,
@@ -1650,7 +1642,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 					$confirmation_url = add_query_arg(
 						[
 							'promo'                       => ! empty( $incentive_id ) ? $incentive_id : false,
-							'progressive'                 => $progressive ? 'true' : false,
 							'collect_payout_requirements' => $collect_payout_requirements ? 'true' : false,
 							'test_drive'                  => $create_test_drive_account ? 'true' : false,
 							'test_mode'                   => ( ! empty( $_GET['test_mode'] ) && wc_clean( wp_unslash( $_GET['test_mode'] ) ) ) ? 'true' : false,
@@ -1680,7 +1671,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 					$wcpay_connect_param,
 					[
 						'promo'                       => ! empty( $incentive_id ) ? $incentive_id : false,
-						'progressive'                 => $progressive ? 'true' : false,
 						'collect_payout_requirements' => $collect_payout_requirements ? 'true' : false,
 						'source'                      => $onboarding_source,
 						'from'                        => WC_Payments_Onboarding_Service::FROM_STRIPE,
@@ -1986,8 +1976,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		if ( ! in_array( $setup_mode, [ 'live', 'test', 'test_drive' ], true ) ) {
 			$setup_mode = 'live';
 		}
-		// Flags to enable progressive onboarding and collect payout requirements.
-		$progressive                 = ! empty( $_GET['progressive'] ) && 'true' === $_GET['progressive'];
+		// Flag to collect payout requirements.
 		$collect_payout_requirements = ! empty( $_GET['collect_payout_requirements'] ) && 'true' === $_GET['collect_payout_requirements'];
 
 		// Make sure the onboarding test mode DB flag is set.
@@ -1996,10 +1985,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		if ( ! $collect_payout_requirements ) {
 			// Clear onboarding related account options if this is an initial onboarding attempt.
 			WC_Payments_Onboarding_Service::clear_account_options();
-		} else {
-			// Since we assume user has already either gotten here from the eligibility modal,
-			// or has already dismissed it, we should set the modal as dismissed so it doesn't display again.
-			WC_Payments_Onboarding_Service::set_onboarding_eligibility_modal_dismissed();
 		}
 
 		/*
@@ -2052,7 +2037,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			WC_Payments_Utils::array_filter_recursive( $user_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
 			WC_Payments_Utils::array_filter_recursive( $account_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
 			WC_Payments_Onboarding_Service::get_actioned_notes(),
-			$progressive,
 			$collect_payout_requirements,
 			$this->onboarding_service->get_referral_code()
 		);
