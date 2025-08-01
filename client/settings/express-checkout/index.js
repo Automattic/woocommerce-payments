@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
+import { Card } from '@wordpress/components';
 
 /**
  * Internal dependencies

@@ -8,13 +8,11 @@ import { getQuery } from '@woocommerce/navigation';
 import { __, sprintf } from '@wordpress/i18n';
 import { dispatch } from '@wordpress/data';
 import interpolateComponents from '@automattic/interpolate-components';
+import { Card, Notice, ExternalLink } from '@wordpress/components';
 
 /**
  * Internal dependencies.
  */
-import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
-import { Notice } from 'wcpay/components/wp-components-wrapped/components/notice';
-import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
 import AccountBalances from 'components/account-balances';
 import AccountStatus from 'components/account-status';
 import ActiveLoanSummary from 'components/active-loan-summary';

@@ -5,14 +5,11 @@ import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { Link } from '@woocommerce/components';
 import { createInterpolateElement } from '@wordpress/element';
+import { Button, CardFooter, Flex, FlexItem } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
-import { CardFooter } from 'wcpay/components/wp-components-wrapped/components/card-footer';
-import { Flex } from 'wcpay/components/wp-components-wrapped/components/flex';
-import { FlexItem } from 'wcpay/components/wp-components-wrapped/components/flex-item';
 import type { Dispute } from 'wcpay/types/disputes';
 import { recordEvent } from 'tracks';
 import { getAdminUrl } from 'wcpay/utils';

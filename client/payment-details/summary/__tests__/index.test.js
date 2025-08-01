@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import moment from 'moment';
@@ -12,8 +12,7 @@ import moment from 'moment';
  */
 import PaymentDetailsSummary from '../';
 import { useAuthorization } from 'wcpay/data';
-import { paymentIntentMock } from 'wcpay/data/payment-intents/test/hooks';
-import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
+import { paymentIntentMock } from 'wcpay/data/payment-intents/__tests__/hooks.test';
 
 // Mock dateI18n
 jest.mock( '@wordpress/date', () => ( {
@@ -139,14 +138,12 @@ const createTapToPayMetadata = ( readerModel, platform ) => ( {
 
 function renderCharge( charge, metadata = {}, isLoading = false, props = {} ) {
 	const { container } = render(
-		<WCPaySettingsContext.Provider value={ global.wcpaySettings }>
-			<PaymentDetailsSummary
-				charge={ charge }
-				metadata={ metadata }
-				isLoading={ isLoading }
-				{ ...props }
-			/>
-		</WCPaySettingsContext.Provider>
+		<PaymentDetailsSummary
+			charge={ charge }
+			metadata={ metadata }
+			isLoading={ isLoading }
+			{ ...props }
+		/>
 	);
 	return container;
 }
@@ -173,9 +170,6 @@ describe( 'PaymentDetailsSummary', () => {
 			connect: {
 				country: 'US',
 			},
-			featureFlags: {
-				isAuthAndCaptureEnabled: true,
-			},
 			currencyData: {
 				US: {
 					code: 'USD',
@@ -196,6 +190,9 @@ describe( 'PaymentDetailsSummary', () => {
 			},
 			dateFormat: 'M j, Y',
 			timeFormat: 'g:ia',
+			featureFlags: {
+				isDisputeIssuerEvidenceEnabled: false,
+			},
 		};
 
 		// mock Date.now that moment library uses to get current date for testing purposes
@@ -376,10 +373,16 @@ describe( 'PaymentDetailsSummary', () => {
 			).not.toBeInTheDocument();
 
 			expect(
-				screen.getByText(
-					/Approving this transaction will capture the charge./
-				)
-			).toBeInTheDocument();
+				screen.getAllByText( ( content, element ) => {
+					return (
+						element.textContent.includes( 'You must' ) &&
+						element.textContent.includes( 'capture' ) &&
+						element.textContent.includes(
+							'this charge within the next'
+						)
+					);
+				} ).length
+			).toBeGreaterThan( 0 );
 
 			expect( container ).toMatchSnapshot();
 		} );
@@ -526,7 +529,7 @@ describe( 'PaymentDetailsSummary', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 
-	test( 'renders the fee breakdown tooltip of a disputed charge', () => {
+	test( 'renders the fee breakdown tooltip of a disputed charge', async () => {
 		const charge = {
 			...getBaseCharge(),
 			currency: 'jpy',
@@ -558,7 +561,7 @@ describe( 'PaymentDetailsSummary', () => {
 		const tooltipButton = screen.getByRole( 'button', {
 			name: /Fee breakdown/i,
 		} );
-		userEvent.click( tooltipButton );
+		await userEvent.click( tooltipButton );
 
 		// Check fee breakdown calculated correctly
 		const tooltipContent = screen.getByRole( 'tooltip' );
@@ -633,7 +636,7 @@ describe( 'PaymentDetailsSummary', () => {
 		} );
 	} );
 
-	test( 'correctly renders the accept dispute modal and accepts', () => {
+	test( 'correctly renders the accept dispute modal and accepts', async () => {
 		const charge = getBaseCharge();
 		charge.disputed = true;
 		charge.dispute = getBaseDispute();
@@ -646,7 +649,7 @@ describe( 'PaymentDetailsSummary', () => {
 		} );
 
 		// Open the modal
-		openModalButton.click();
+		await userEvent.click( openModalButton );
 
 		screen.getByRole( 'heading', {
 			name: /Accept the dispute?/,
@@ -663,7 +666,7 @@ describe( 'PaymentDetailsSummary', () => {
 		} );
 
 		// Accept the dispute
-		acceptButton.click();
+		await userEvent.click( acceptButton );
 
 		expect( mockDisputeDoAccept ).toHaveBeenCalledTimes( 1 );
 	} );
@@ -1009,8 +1012,10 @@ describe( 'PaymentDetailsSummary', () => {
 			expect( screen.getByText( 'Partial refund' ) ).toBeInTheDocument();
 		} );
 
-		test( 'Refund control menu is not visible when charge is not captured', () => {
-			renderCharge( { ...getBaseCharge(), captured: false } );
+		test( 'Refund control menu is not visible when charge is not captured', async () => {
+			await act( async () => {
+				renderCharge( { ...getBaseCharge(), captured: false } );
+			} );
 			expect(
 				screen.queryByLabelText( 'Transaction actions' )
 			).not.toBeInTheDocument();

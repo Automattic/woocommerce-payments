@@ -8,11 +8,13 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
-import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
-import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
-import { CheckboxControl } from 'wcpay/components/wp-components-wrapped/components/checkbox-control';
-import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
+import {
+	Button,
+	Card,
+	CardBody,
+	CheckboxControl,
+	ExternalLink,
+} from '@wordpress/components';
 import { useStoreSettings } from 'multi-currency/data';
 import {
 	LoadableBlock,

@@ -3,14 +3,13 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
+import { Card, CardBody } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import { TestModeNotice } from '../../components/test-mode-notice';
 import Page from '../../components/page';
-import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
-import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
 import ErrorBoundary from '../../components/error-boundary';
 import PaymentDetailsSummary from '../summary';
 import PaymentDetailsTimeline from '../timeline';

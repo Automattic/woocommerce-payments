@@ -6,12 +6,11 @@ import { __, sprintf } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
 import { Icon, store, currencyDollar } from '@wordpress/icons';
 import interpolateComponents from '@automattic/interpolate-components';
+import { Modal, Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import { Modal } from 'wcpay/components/wp-components-wrapped/components/modal';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 import { trackEligibilityModalClosed } from 'onboarding/tracking';
 import ConfettiAnimation from 'components/confetti-animation';
 import { saveOption } from 'wcpay/data/settings/actions';

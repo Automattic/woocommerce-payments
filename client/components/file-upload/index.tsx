@@ -7,14 +7,11 @@ import CheckmarkIcon from 'gridicons/dist/checkmark';
 import ImageIcon from 'gridicons/dist/image';
 import AddOutlineIcon from 'gridicons/dist/add-outline';
 import TrashIcon from 'gridicons/dist/trash';
+import { DropZone, FormFileUpload, Button } from '@wordpress/components';
 
 /**
  * Internal dependencies.
  */
-import { BaseControl } from 'wcpay/components/wp-components-wrapped/components/base-control';
-import { DropZone } from 'wcpay/components/wp-components-wrapped/components/drop-zone';
-import { FormFileUpload } from 'wcpay/components/wp-components-wrapped/components/form-file-upload';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 import FileUploadError from './upload-error';
 import FileUploadPreview from './preview';
 
@@ -85,7 +82,6 @@ export const FileUploadControl = ( {
 			/>
 			<div className="file-upload">
 				<FormFileUpload
-					id={ fieldKey }
 					accept={ accept }
 					onChange={ (
 						event: React.ChangeEvent< HTMLInputElement >
