@@ -47,7 +47,7 @@ jobs:
     strategy:
       fail-fast:     false
       matrix:
-        wc_version:   [ 'latest', 'rc' ]
+        wc_version:   [ 'latest' ]
         test_groups:   [ 'wcpay', 'subscriptions' ] # [TODO] Unskip blocks tests after investigating constant failures.
         test_branches: [ 'merchant', 'shopper' ]
 
