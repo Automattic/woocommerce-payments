@@ -348,35 +348,29 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		}
 
 		return [
-			'email'                 => $account['email'] ?? '',
-			'country'               => $account['country'] ?? Country_Code::UNITED_STATES,
-			'status'                => $account['status'],
-			'created'               => $account['created'] ?? '',
-			'testDrive'             => $account['is_test_drive'] ?? false,
-			'isLive'                => $account['is_live'] ?? false,
-			'paymentsEnabled'       => $account['payments_enabled'],
-			'detailsSubmitted'      => $account['details_submitted'] ?? true,
-			'deposits'              => $account['deposits'] ?? [],
-			'currentDeadline'       => $account['current_deadline'] ?? false,
-			'pastDue'               => $account['has_overdue_requirements'] ?? false,
+			'email'               => $account['email'] ?? '',
+			'country'             => $account['country'] ?? Country_Code::UNITED_STATES,
+			'status'              => $account['status'],
+			'created'             => $account['created'] ?? '',
+			'testDrive'           => $account['is_test_drive'] ?? false,
+			'isLive'              => $account['is_live'] ?? false,
+			'paymentsEnabled'     => $account['payments_enabled'],
+			'detailsSubmitted'    => $account['details_submitted'] ?? true,
+			'deposits'            => $account['deposits'] ?? [],
+			'currentDeadline'     => $account['current_deadline'] ?? false,
+			'pastDue'             => $account['has_overdue_requirements'] ?? false,
 			// Test-drive accounts don't have access to the Stripe dashboard.
-			'accountLink'           => empty( $account['is_test_drive'] ) ? $this->get_login_url() : false,
-			'hasSubmittedVatData'   => $account['has_submitted_vat_data'] ?? false,
-			'requirements'          => [
+			'accountLink'         => empty( $account['is_test_drive'] ) ? $this->get_login_url() : false,
+			'hasSubmittedVatData' => $account['has_submitted_vat_data'] ?? false,
+			'requirements'        => [
 				'errors' => $account['requirements']['errors'] ?? [],
 			],
-			'progressiveOnboarding' => [
-				'isEnabled'            => $account['progressive_onboarding']['is_enabled'] ?? false,
-				'isComplete'           => $account['progressive_onboarding']['is_complete'] ?? false,
-				'tpv'                  => (int) ( $account['progressive_onboarding']['tpv'] ?? 0 ),
-				'firstTransactionDate' => $account['progressive_onboarding']['first_transaction_date'] ?? null,
-			],
-			'fraudProtection'       => [
+			'fraudProtection'     => [
 				'declineOnAVSFailure' => $account['fraud_mitigation_settings']['avs_check_enabled'] ?? null,
 				'declineOnCVCFailure' => $account['fraud_mitigation_settings']['cvc_check_enabled'] ?? null,
 			],
 			// Campaigns are temporary flags that are used to enable/disable features for a limited time.
-			'campaigns'             => [
+			'campaigns'           => [
 				// The flag for the WordPress.org merchant review campaign in 2025. Eligibility is determined per-account on transact-platform-server.
 				'wporgReview2025' => $account['eligibility_wporg_review_campaign_2025'] ?? false,
 			],
@@ -601,32 +595,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	public function get_fees(): array {
 		$account = $this->get_cached_account_data();
 		return ! empty( $account ) && isset( $account['fees'] ) ? $account['fees'] : [];
-	}
-
-	/**
-	 * Get the progressive onboarding details needed on the frontend.
-	 *
-	 * @return array Progressive Onboarding details.
-	 */
-	public function get_progressive_onboarding_details(): array {
-		$account = $this->get_cached_account_data();
-		return [
-			'isEnabled'                   => $account['progressive_onboarding']['is_enabled'] ?? false,
-			'isComplete'                  => $account['progressive_onboarding']['is_complete'] ?? false,
-			'isNewFlowEnabled'            => WC_Payments_Utils::should_use_new_onboarding_flow(),
-			'isEligibilityModalDismissed' => get_option( WC_Payments_Onboarding_Service::ONBOARDING_ELIGIBILITY_MODAL_OPTION, false ),
-		];
-	}
-
-	/**
-	 * Determine whether Progressive Onboarding is in progress for this account.
-	 *
-	 * @return boolean
-	 */
-	public function is_progressive_onboarding_in_progress(): bool {
-		$account = $this->get_cached_account_data();
-		return ( $account['progressive_onboarding']['is_enabled'] ?? false )
-			&& ! ( $account['progressive_onboarding']['is_complete'] ?? false );
 	}
 
 	/**
