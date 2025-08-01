@@ -72,13 +72,7 @@ const AccountStatusDetails = ( props ) => {
 				{ __( 'Account details', 'woocommerce-payments' ) }
 			</FlexItem>
 			<FlexBlock className={ 'account-status' }>
-				<StatusChip
-					accountStatus={ accountStatus.status }
-					poEnabled={ accountStatus.progressiveOnboarding.isEnabled }
-					poComplete={
-						accountStatus.progressiveOnboarding.isComplete
-					}
-				/>
+				<StatusChip accountStatus={ accountStatus.status } />
 			</FlexBlock>
 			{ accountLink && (
 				<FlexItem className={ 'edit-details' }>
