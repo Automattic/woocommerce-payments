@@ -10,17 +10,20 @@ import React, { useContext, useState } from 'react';
 import { createInterpolateElement } from '@wordpress/element';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import _ from 'lodash';
+import {
+	CardDivider,
+	DropdownMenu,
+	MenuGroup,
+	MenuItem,
+	Card,
+	CardBody,
+	Flex,
+	ExternalLink,
+} from '@wordpress/components';
 
 /**
  * Internal dependencies.
  */
-import { CardDivider } from 'wcpay/components/wp-components-wrapped/components/card-divider';
-import { DropdownMenu } from 'wcpay/components/wp-components-wrapped/components/dropdown-menu';
-import { MenuGroup } from 'wcpay/components/wp-components-wrapped/components/menu-group';
-import { MenuItem } from 'wcpay/components/wp-components-wrapped/components/menu-item';
-import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
-import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
-import { Flex } from 'wcpay/components/wp-components-wrapped/components/flex';
 import {
 	getChargeAmounts,
 	getChargeStatus,
@@ -66,7 +69,6 @@ import {
 	formatDateTimeFromString,
 	formatDateTimeFromTimestamp,
 } from 'wcpay/utils/date-time';
-import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
 
 declare const window: any;
 

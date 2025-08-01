@@ -4,11 +4,11 @@
 import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { TableCardColumn, TableCardBodyColumn } from '@woocommerce/components';
+import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 import { getDetailsURL } from 'components/details-link';
 import ClickableCell from 'components/clickable-cell';
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
@@ -114,9 +114,10 @@ export const getRiskReviewListRowContent = (
 		action: {
 			display: (
 				<Button
-					isSecondary
+					variant="secondary"
 					href={ detailsURL }
 					onClick={ handleActionButtonClick }
+					__next40pxDefaultSize
 				>
 					{ __( 'Review' ) }
 				</Button>

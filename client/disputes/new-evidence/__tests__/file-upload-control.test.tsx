@@ -17,29 +17,6 @@ jest.mock( 'wcpay/hooks/use-viewport', () => ( {
 import { useViewport } from 'wcpay/hooks/use-viewport';
 
 // Mock FormFileUpload to directly render an input for testing
-jest.mock(
-	'wcpay/components/wp-components-wrapped/components/form-file-upload',
-	() => {
-		const original = jest.requireActual(
-			'wcpay/components/wp-components-wrapped/components/form-file-upload'
-		);
-		return {
-			...original,
-			FormFileUpload: ( { onChange, render: renderProp }: any ) => (
-				<>
-					<input
-						aria-label="Upload file"
-						type="file"
-						onChange={ onChange }
-						data-testid="mock-upload-input"
-					/>
-					{ /* eslint-disable-next-line @typescript-eslint/no-empty-function */ }
-					{ renderProp( { openFileDialog: () => {} } ) }
-				</>
-			),
-		};
-	}
-);
 
 describe( 'FileUploadControl', () => {
 	const mockUseViewport = useViewport as jest.MockedFunction<
@@ -89,7 +66,7 @@ describe( 'FileUploadControl', () => {
 
 	it( 'calls onFileChange when file is selected', () => {
 		render( <FileUploadControl { ...baseProps } /> );
-		const fileInput = screen.getByTestId( 'mock-upload-input' );
+		const fileInput = screen.getByTestId( 'form-file-upload-input' );
 		fireEvent.change( fileInput, {
 			target: { files: [ new File( [ '' ], 'test.pdf' ) ] },
 		} );

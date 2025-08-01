@@ -4,6 +4,13 @@
 import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { getHistory } from '@woocommerce/navigation';
+import {
+	Button,
+	Card,
+	CardBody,
+	CardFooter,
+	CardHeader,
+} from '@wordpress/components';
 
 /**
  * Internal dependencies.
@@ -25,11 +32,6 @@ import {
 } from './deposit-notices';
 import { hasAutomaticScheduledDeposits } from 'wcpay/deposits/utils';
 import useRecentDeposits from './hooks';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
-import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
-import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
-import { CardFooter } from 'wcpay/components/wp-components-wrapped/components/card-footer';
-import { CardHeader } from 'wcpay/components/wp-components-wrapped/components/card-header';
 import './style.scss';
 
 const DepositsOverview: React.FC = () => {

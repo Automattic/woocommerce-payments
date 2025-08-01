@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
+import { Button } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 
@@ -45,10 +45,19 @@ const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 			onRequestClose={ onClose }
 			actions={
 				<>
-					<Button onClick={ onConfirm } isPrimary isDestructive>
+					<Button
+						onClick={ onConfirm }
+						variant="primary"
+						isDestructive
+						__next40pxDefaultSize
+					>
 						Disable
 					</Button>
-					<Button onClick={ onClose } isSecondary>
+					<Button
+						onClick={ onClose }
+						variant="secondary"
+						__next40pxDefaultSize
+					>
 						Cancel
 					</Button>
 				</>

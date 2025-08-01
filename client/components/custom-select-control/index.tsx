@@ -15,11 +15,7 @@ import { useCallback } from '@wordpress/element';
 import clsx from 'clsx';
 import { __, sprintf } from '@wordpress/i18n';
 import { useSelect, UseSelectState } from 'downshift';
-
-/**
- * Internal Dependencies
- */
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
+import { Button } from '@wordpress/components';
 import './style.scss';
 
 export interface Item {

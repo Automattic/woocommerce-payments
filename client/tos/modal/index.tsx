@@ -4,10 +4,7 @@
 import React, { ComponentProps, useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
-import { Notice } from 'wcpay/components/wp-components-wrapped/components/notice';
-import { Modal } from 'wcpay/components/wp-components-wrapped/components/modal';
-import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
+import { Button, Notice, Modal, ExternalLink } from '@wordpress/components';
 import { addQueryArgs } from '@wordpress/url';
 
 /**
@@ -80,14 +77,20 @@ const TosModalUI = ( {
 				</div>
 				<div className="woocommerce-payments__tos-footer">
 					<Button
-						isSecondary
+						variant="secondary"
 						onClick={ onDecline }
 						disabled={ isBusy }
+						__next40pxDefaultSize
 					>
 						{ __( 'Decline', 'woocommerce-payments' ) }
 					</Button>
 
-					<Button isPrimary onClick={ onAccept } isBusy={ isBusy }>
+					<Button
+						variant="primary"
+						onClick={ onAccept }
+						isBusy={ isBusy }
+						__next40pxDefaultSize
+					>
 						{ __( 'Accept', 'woocommerce-payments' ) }
 					</Button>
 				</div>
@@ -153,11 +156,21 @@ const DisableModalUI = ( {
 					{ message }
 				</div>
 				<div className="woocommerce-payments__tos-footer">
-					<Button isTertiary onClick={ onCancel } isBusy={ isBusy }>
+					<Button
+						variant="tertiary"
+						onClick={ onCancel }
+						isBusy={ isBusy }
+						__next40pxDefaultSize
+					>
 						{ __( 'Back', 'woocommerce-payments' ) }
 					</Button>
 
-					<Button isPrimary onClick={ onDisable } isBusy={ isBusy }>
+					<Button
+						variant="primary"
+						onClick={ onDisable }
+						isBusy={ isBusy }
+						__next40pxDefaultSize
+					>
 						{ __( 'Disable', 'woocommerce-payments' ) }
 					</Button>
 				</div>

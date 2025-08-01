@@ -8,9 +8,7 @@ import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { CheckboxControl } from 'wcpay/components/wp-components-wrapped/components/checkbox-control';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
-import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
+import { CheckboxControl, Button, ExternalLink } from '@wordpress/components';
 import {
 	useManualCapture,
 	useCardPresentEligible,

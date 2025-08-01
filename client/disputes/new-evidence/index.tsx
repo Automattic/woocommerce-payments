@@ -37,8 +37,7 @@ import RecommendedDocuments from './recommended-documents';
 import InlineNotice from 'components/inline-notice';
 import ShippingDetails from './shipping-details';
 import CoverLetter from './cover-letter';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
-import { HorizontalRule } from 'wcpay/components/wp-components-wrapped/components/horizontal-rule';
+import { Button, HorizontalRule } from '@wordpress/components';
 import { getAdminUrl } from 'wcpay/utils';
 import { StepperPanel } from 'wcpay/components/stepper';
 import {

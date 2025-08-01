@@ -4,11 +4,11 @@
 import React, { useState, useRef, ComponentProps } from 'react';
 import clsx from 'clsx';
 import { noop } from 'lodash';
+import { Icon } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import { Icon } from 'wcpay/components/wp-components-wrapped/components/icon';
 import TooltipBase from './tooltip-base';
 
 type TooltipProps = ComponentProps< typeof TooltipBase > & {
