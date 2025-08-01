@@ -39,11 +39,6 @@ const mockedIcentive = {
 };
 
 describe( 'ConnectAccountPage', () => {
-	beforeAll( () => {
-		jest.spyOn( console, 'error' ).mockImplementation( () => null );
-		jest.spyOn( console, 'warn' ).mockImplementation( () => null );
-	} );
-
 	beforeEach( () => {
 		Object.defineProperty( window, 'location', {
 			value: {
@@ -149,6 +144,8 @@ describe( 'ConnectAccountPage', () => {
 	} );
 
 	test( 'should prompt unsupported countries', async () => {
+		jest.spyOn( console, 'error' ).mockImplementation( () => null );
+		jest.spyOn( console, 'warn' ).mockImplementation( () => null );
 		global.wcpaySettings = {
 			connectUrl: '/wcpay-connect-url',
 			connect: {
