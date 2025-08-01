@@ -15,6 +15,7 @@ import { ChargeBillingDetails } from 'wcpay/types/charges';
 const CustomerLink = ( props: {
 	billing_details: null | ChargeBillingDetails;
 	order_details: null | OrderDetails;
+	className?: string;
 } ): JSX.Element => {
 	// Depending on the transaction chanel, charge billing details might be missing, and we have to rely on order for those.
 	const name =
@@ -32,7 +33,11 @@ const CustomerLink = ( props: {
 			search: [ email ? `${ name } (${ email })` : name ],
 		} );
 
-		return <Link href={ url }>{ name }</Link>;
+		return (
+			<Link href={ url } className={ props.className }>
+				{ name }
+			</Link>
+		);
 	}
 
 	return <>&ndash;</>;

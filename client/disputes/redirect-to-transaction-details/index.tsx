@@ -8,10 +8,7 @@ import { getHistory } from '@woocommerce/navigation';
 /**
  * Internal dependencies.
  */
-import { Spinner } from 'wcpay/components/wp-components-wrapped/components/spinner';
-import { Icon } from 'wcpay/components/wp-components-wrapped/components/icon';
-import { Flex } from 'wcpay/components/wp-components-wrapped/components/flex';
-import { FlexItem } from 'wcpay/components/wp-components-wrapped/components/flex-item';
+import { Spinner, Icon, Flex, FlexItem } from '@wordpress/components';
 import Page from 'components/page';
 import { useDispute } from 'data/index';
 import { Charge } from 'wcpay/types/charges';
@@ -50,7 +47,6 @@ const RedirectToTransactionDetails: React.FC< { query: { id: string } } > = ( {
 				{ error ? (
 					<>
 						<FlexItem>
-							{ /* @ts-expect-error: type is not a prop defined in the WP Icon component. */ }
 							<Icon icon={ warning } type="warning" size={ 32 } />
 						</FlexItem>
 						<FlexItem>

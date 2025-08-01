@@ -10,7 +10,7 @@ import { __, _n, sprintf } from '@wordpress/i18n';
 import { getPaymentSettingsUrl, isInTestMode } from 'utils';
 import BannerNotice from '../banner-notice';
 import interpolateComponents from '@automattic/interpolate-components';
-import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
+import { ExternalLink } from '@wordpress/components';
 import { recordEvent } from 'wcpay/tracks';
 
 type CurrentPage =

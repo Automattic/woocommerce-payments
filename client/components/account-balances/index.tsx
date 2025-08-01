@@ -4,15 +4,17 @@
 import React, { useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
+import {
+	Card,
+	CardBody,
+	CardHeader,
+	Flex,
+	ExternalLink,
+} from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
-import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
-import { CardHeader } from 'wcpay/components/wp-components-wrapped/components/card-header';
-import { Flex } from 'wcpay/components/wp-components-wrapped/components/flex';
-import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
 import type * as AccountOverview from 'wcpay/types/account-overview';
 import BalanceBlock from './balance-block';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';

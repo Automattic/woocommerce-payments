@@ -44,6 +44,7 @@ const CustomerDetails: React.FC< CustomerDetailsProps > = ( { dispute } ) => {
 					</div>
 					{ name !== '-' ? (
 						<CustomerLink
+							className="wcpay-dispute-evidence-customer-details__link"
 							billing_details={ charge?.billing_details || null }
 							order_details={ charge?.order || null }
 						/>
@@ -55,7 +56,9 @@ const CustomerDetails: React.FC< CustomerDetailsProps > = ( { dispute } ) => {
 					<div className="wcpay-dispute-evidence-customer-details__label">
 						{ __( 'PHONE', 'woocommerce-payments' ) }
 					</div>
-					<span>{ phone }</span>
+					<span className="wcpay-dispute-evidence-customer-details__phone-number">
+						{ phone }
+					</span>
 				</div>
 				<div>
 					<div className="wcpay-dispute-evidence-customer-details__label">
@@ -76,7 +79,9 @@ const CustomerDetails: React.FC< CustomerDetailsProps > = ( { dispute } ) => {
 					<div className="wcpay-dispute-evidence-customer-details__label">
 						{ __( 'IP ADDRESS', 'woocommerce-payments' ) }
 					</div>
-					<span>{ ip }</span>
+					<span className="wcpay-dispute-evidence-customer-details__ip-address">
+						{ ip }
+					</span>
 				</div>
 			</div>
 			<div className="wcpay-dispute-evidence-customer-details__billing">

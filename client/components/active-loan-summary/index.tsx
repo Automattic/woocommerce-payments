@@ -4,17 +4,19 @@
 import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
+import {
+	Button,
+	Card,
+	CardBody,
+	CardHeader,
+	Flex,
+	FlexBlock,
+	FlexItem,
+} from '@wordpress/components';
 
 /**
  * Internal dependencies.
  */
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
-import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
-import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
-import { CardHeader } from 'wcpay/components/wp-components-wrapped/components/card-header';
-import { Flex } from 'wcpay/components/wp-components-wrapped/components/flex';
-import { FlexBlock } from 'wcpay/components/wp-components-wrapped/components/flex-block';
-import { FlexItem } from 'wcpay/components/wp-components-wrapped/components/flex-item';
 import { formatExplicitCurrency } from 'multi-currency/interface/functions';
 import Loadable from 'components/loadable';
 import { useActiveLoanSummary } from 'wcpay/data';
@@ -160,7 +162,7 @@ const ActiveLoanSummary = (): JSX.Element => {
 				<FlexItem>
 					{ getActiveLoanId() && (
 						<Button
-							isLink
+							variant="link"
 							href={ getAdminUrl( {
 								page: 'wc-admin',
 								path: '/payments/transactions',

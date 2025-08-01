@@ -13,13 +13,15 @@ import { Link } from '@woocommerce/components';
 /**
  * Internal dependencies
  */
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
-import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
-import { Flex } from 'wcpay/components/wp-components-wrapped/components/flex';
-import { FlexItem } from 'wcpay/components/wp-components-wrapped/components/flex-item';
-import { Icon } from 'wcpay/components/wp-components-wrapped/components/icon';
-import { Modal } from 'wcpay/components/wp-components-wrapped/components/modal';
-import { HorizontalRule } from 'wcpay/components/wp-components-wrapped/components/horizontal-rule';
+import {
+	Button,
+	ExternalLink,
+	Flex,
+	FlexItem,
+	Icon,
+	Modal,
+	HorizontalRule,
+} from '@wordpress/components';
 import type { Dispute } from 'wcpay/types/disputes';
 import type { ChargeBillingDetails } from 'wcpay/types/charges';
 import { recordEvent } from 'tracks';
@@ -359,6 +361,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 											}
 										);
 									} }
+									__next40pxDefaultSize
 								>
 									{ hasStagedEvidence
 										? __(
@@ -384,6 +387,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 								);
 								setModalOpen( true );
 							} }
+							__next40pxDefaultSize
 						>
 							{ disputeAcceptAction.acceptButtonLabel }
 						</Button>
@@ -427,6 +431,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 											isDisputeAcceptRequestPending
 										}
 										onClick={ handleModalClose }
+										__next40pxDefaultSize
 									>
 										{ __(
 											'Cancel',
@@ -461,6 +466,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 												doAccept();
 											}
 										} }
+										__next40pxDefaultSize
 									>
 										{ disputeAcceptAction.modalButtonLabel }
 									</Button>

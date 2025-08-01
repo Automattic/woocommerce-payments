@@ -9,10 +9,12 @@ import { createInterpolateElement } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
-import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
-import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
-import { CardDivider } from 'wcpay/components/wp-components-wrapped/components/card-divider';
+import {
+	ExternalLink,
+	Card,
+	CardBody,
+	CardDivider,
+} from '@wordpress/components';
 import './style.scss';
 import { useCurrencies, useEnabledCurrencies } from 'multi-currency/data';
 import EnabledCurrenciesList from './list';

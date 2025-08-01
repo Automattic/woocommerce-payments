@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
+import { ExternalLink } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
 
 /**

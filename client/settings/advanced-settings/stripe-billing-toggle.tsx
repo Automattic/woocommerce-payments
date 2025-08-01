@@ -8,8 +8,7 @@ import interpolateComponents from '@automattic/interpolate-components';
 /**
  * Internal dependencies
  */
-import { CheckboxControl } from 'wcpay/components/wp-components-wrapped/components/checkbox-control';
-import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
+import { CheckboxControl, ExternalLink } from '@wordpress/components';
 import StripeBillingMigrationNoticeContext from './stripe-billing-notices/context';
 
 interface Props {

@@ -5,6 +5,7 @@ import React from 'react';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import interpolateComponents from '@automattic/interpolate-components';
 import { __ } from '@wordpress/i18n';
+import { ExternalLink } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -12,7 +13,6 @@ import { __ } from '@wordpress/i18n';
 import { ClickTooltip } from 'components/tooltip';
 import { documentationUrls, fundLabelStrings } from './strings';
 import InlineNotice from 'components/inline-notice';
-import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
 
 type TotalBalanceTooltipProps = {
 	balance: number;
