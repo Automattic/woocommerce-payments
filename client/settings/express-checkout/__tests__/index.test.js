@@ -79,7 +79,7 @@ describe( 'ExpressCheckout', () => {
 			</WCPaySettingsContext.Provider>
 		);
 
-		userEvent.click( screen.getByLabelText( 'WooPay' ) );
+		await userEvent.click( screen.getByLabelText( 'WooPay' ) );
 
 		expect( updateIsWooPayEnabledHandler ).toHaveBeenCalledWith( false );
 	} );

@@ -6,7 +6,7 @@ import { screen } from '@testing-library/react';
 /**
  * Internal dependencies
  */
-import '../index';
+import '..';
 import { getConfig } from 'utils/checkout';
 
 jest.mock( 'utils/checkout', () => ( {
