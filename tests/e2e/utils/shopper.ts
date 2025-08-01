@@ -339,7 +339,8 @@ export const selectPaymentMethod = async (
 	paymentMethod = 'Card'
 ) => {
 	// Wait for the page to be stable before attempting to select payment method
-	await page.waitForLoadState( 'networkidle' );
+	// Use a more reliable approach than networkidle which can timeout
+	await page.waitForLoadState( 'domcontentloaded' );
 
 	// Ensure UI is not blocked
 	await isUIUnblocked( page );
