@@ -205,6 +205,11 @@ const getMockTransactions: () => Transaction[] = () => [
 ];
 
 describe( 'Transactions list', () => {
+	beforeAll( () => {
+		jest.spyOn( console, 'error' ).mockImplementation( () => null );
+		jest.spyOn( console, 'warn' ).mockImplementation( () => null );
+	} );
+
 	beforeEach( () => {
 		jest.clearAllMocks();
 

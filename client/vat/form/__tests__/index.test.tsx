@@ -93,6 +93,11 @@ describe( 'VAT form', () => {
 } );
 
 describe( 'VAT form', () => {
+	beforeAll( () => {
+		jest.spyOn( console, 'error' ).mockImplementation( () => null );
+		jest.spyOn( console, 'warn' ).mockImplementation( () => null );
+	} );
+
 	beforeEach( () => {
 		global.wcpaySettings = {
 			accountStatus: { country: 'GB' },
