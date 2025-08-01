@@ -45,8 +45,6 @@ describe( 'renderWooPayExpressButton', () => {
 	} );
 
 	test( 'should not render the express button component if placeholder is absent', async () => {
-		// Don't add the container to the DOM, so it's absent
-
 		// trigger window load.
 		await act( async () => {
 			window.dispatchEvent( new Event( 'load' ) );
