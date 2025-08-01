@@ -290,7 +290,6 @@ const WooPaySettings = ( { section } ) => {
 										<span />,
 									/* eslint-enable prettier/prettier */
 									learnMoreLink: (
-
 										// eslint-disable-next-line max-len
 										<ExternalLink href="https://woocommerce.com/document/woopay-merchant-documentation/#checkout-appearance" />
 									),

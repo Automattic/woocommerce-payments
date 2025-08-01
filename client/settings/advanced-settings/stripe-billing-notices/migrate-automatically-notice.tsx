@@ -85,7 +85,6 @@ const MigrateAutomaticallyNotice: React.FC< Props > = ( {
 				components: {
 					learnMoreLink: (
 						// eslint-disable-next-line max-len
-
 						<ExternalLink href="https://woocommerce.com/document/woopayments/subscriptions/stripe-billing/#disabling" />
 					),
 				},

@@ -13,7 +13,7 @@ import {
 import interpolateComponents from '@automattic/interpolate-components';
 import clsx from 'clsx';
 import {
-	// @ts-expect-error it exists
+	// @ts-expect-error: Suppressing Module '"@wordpress/components"' has no exported member '__experimentalText'.
 	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
 	__experimentalText as Text,
 	Card,

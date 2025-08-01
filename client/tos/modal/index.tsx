@@ -47,9 +47,7 @@ const TosModalUI = ( {
 			),
 			'WooPayments'
 		),
-		components: {
-			link: <TosLink />,
-		},
+		components: { link: <TosLink /> },
 	} );
 
 	return (
@@ -128,9 +126,7 @@ const DisableModalUI = ( {
 			),
 			'WooPayments'
 		),
-		components: {
-			link: <TosLink />,
-		},
+		components: { link: <TosLink /> },
 	} );
 
 	return (

@@ -56,7 +56,6 @@ const StripeBillingToggle: React.FC< Props > = ( { onChange } ) => {
 				components: {
 					learnMoreLink: (
 						// eslint-disable-next-line max-len
-
 						<ExternalLink href="https://woocommerce.com/document/woopayments/subscriptions/stripe-billing/" />
 					),
 				},
