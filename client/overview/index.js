@@ -24,7 +24,6 @@ import Page from 'components/page';
 import Welcome from 'components/welcome';
 import { TestModeNotice } from 'components/test-mode-notice';
 import InboxNotifications from './inbox-notifications';
-import ProgressiveOnboardingEligibilityModal from './modal/progressive-onboarding-eligibility';
 import TaskList from './task-list';
 import { getTasks, taskSort } from './task-list/tasks';
 import { useDisputes, useGetSettings, useSettings } from 'data';
@@ -141,10 +140,6 @@ const OverviewPage = () => {
 		queryParams[ 'wcpay-server-link-error' ] === '1';
 	const showResetAccountError =
 		queryParams[ 'wcpay-reset-account-error' ] === '1';
-	const showProgressiveOnboardingEligibilityModal =
-		showConnectionSuccess &&
-		progressiveOnboarding.isEnabled &&
-		! progressiveOnboarding.isComplete;
 	const showTaskList =
 		! accountRejected && ! accountUnderReview && tasks.length > 0;
 	const isPoDisabledOrCompleted =
@@ -401,11 +396,6 @@ const OverviewPage = () => {
 			{ ! accountRejected && ! accountUnderReview && (
 				<ErrorBoundary>
 					<InboxNotifications />
-				</ErrorBoundary>
-			) }
-			{ showProgressiveOnboardingEligibilityModal && (
-				<ErrorBoundary>
-					<ProgressiveOnboardingEligibilityModal />
 				</ErrorBoundary>
 			) }
 			{ showConnectionSuccessModal && (
