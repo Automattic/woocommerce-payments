@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Fix: enhances the robustness of the selectPaymentMethod method in end-to-end tests
