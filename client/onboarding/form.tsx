@@ -73,6 +73,7 @@ export const OnboardingTextField: React.FC<
 
 	return (
 		<TextField
+			__next40pxDefaultSize
 			ref={ inputRef as any }
 			label={ strings.fields[ name ] }
 			value={ data[ name ] || '' }

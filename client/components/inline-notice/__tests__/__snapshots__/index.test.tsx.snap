@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Info InlineNotices renders with dismiss 1`] = `
-.emotion-0 {
+.emotion-2 {
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -13,6 +13,7 @@ exports[`Info InlineNotices renders with dismiss 1`] = `
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: start;
   -ms-flex-pack: start;
   -webkit-justify-content: flex-start;
@@ -20,15 +21,11 @@ exports[`Info InlineNotices renders with dismiss 1`] = `
   width: 100%;
 }
 
-.emotion-0>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
-}
-
-.emotion-0>* {
+.emotion-2>* {
   min-width: 0;
 }
 
-.emotion-2 {
+.emotion-4 {
   display: block;
   max-height: 100%;
   max-width: 100%;
@@ -41,15 +38,23 @@ exports[`Info InlineNotices renders with dismiss 1`] = `
     class="wcpay-inline-notice wcpay-inline-info-notice wcpaytest-notice components-notice is-info is-dismissible"
   >
     <div
+      class="components-visually-hidden emotion-0 emotion-1"
+      data-wp-c16t="true"
+      data-wp-component="VisuallyHidden"
+      style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+    >
+      Information notice
+    </div>
+    <div
       class="components-notice__content"
     >
       <div
-        class="components-flex emotion-0 emotion-1"
+        class="components-flex emotion-2 emotion-1"
         data-wp-c16t="true"
         data-wp-component="Flex"
       >
         <div
-          class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-2 emotion-1"
+          class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-4 emotion-1"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
@@ -61,8 +66,8 @@ exports[`Info InlineNotices renders with dismiss 1`] = `
       />
     </div>
     <button
-      aria-label="Dismiss this notice"
-      class="components-button components-notice__dismiss has-icon"
+      aria-label="Close"
+      class="components-button components-notice__dismiss is-small has-icon"
       type="button"
     >
       <svg
@@ -74,7 +79,7 @@ exports[`Info InlineNotices renders with dismiss 1`] = `
         xmlns="http://www.w3.org/2000/svg"
       >
         <path
-          d="M13 11.8l6.1-6.3-1-1-6.1 6.2-6.1-6.2-1 1 6.1 6.3-6.5 6.7 1 1 6.5-6.6 6.5 6.6 1-1z"
+          d="m13.06 12 6.47-6.47-1.06-1.06L12 10.94 5.53 4.47 4.47 5.53 10.94 12l-6.47 6.47 1.06 1.06L12 13.06l6.47 6.47 1.06-1.06L13.06 12Z"
         />
       </svg>
     </button>
@@ -83,7 +88,7 @@ exports[`Info InlineNotices renders with dismiss 1`] = `
 `;
 
 exports[`Info InlineNotices renders with dismiss and icon 1`] = `
-.emotion-0 {
+.emotion-2 {
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -95,6 +100,7 @@ exports[`Info InlineNotices renders with dismiss and icon 1`] = `
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: start;
   -ms-flex-pack: start;
   -webkit-justify-content: flex-start;
@@ -102,15 +108,11 @@ exports[`Info InlineNotices renders with dismiss and icon 1`] = `
   width: 100%;
 }
 
-.emotion-0>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
-}
-
-.emotion-0>* {
+.emotion-2>* {
   min-width: 0;
 }
 
-.emotion-2 {
+.emotion-4 {
   display: block;
   max-height: 100%;
   max-width: 100%;
@@ -123,15 +125,23 @@ exports[`Info InlineNotices renders with dismiss and icon 1`] = `
     class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info is-dismissible"
   >
     <div
+      class="components-visually-hidden emotion-0 emotion-1"
+      data-wp-c16t="true"
+      data-wp-component="VisuallyHidden"
+      style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+    >
+      Information notice
+    </div>
+    <div
       class="components-notice__content"
     >
       <div
-        class="components-flex emotion-0 emotion-1"
+        class="components-flex emotion-2 emotion-1"
         data-wp-c16t="true"
         data-wp-component="Flex"
       >
         <div
-          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon emotion-2 emotion-1"
+          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon emotion-4 emotion-1"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
@@ -150,7 +160,7 @@ exports[`Info InlineNotices renders with dismiss and icon 1`] = `
           </svg>
         </div>
         <div
-          class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-2 emotion-1"
+          class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-4 emotion-1"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
@@ -162,8 +172,8 @@ exports[`Info InlineNotices renders with dismiss and icon 1`] = `
       />
     </div>
     <button
-      aria-label="Dismiss this notice"
-      class="components-button components-notice__dismiss has-icon"
+      aria-label="Close"
+      class="components-button components-notice__dismiss is-small has-icon"
       type="button"
     >
       <svg
@@ -175,7 +185,7 @@ exports[`Info InlineNotices renders with dismiss and icon 1`] = `
         xmlns="http://www.w3.org/2000/svg"
       >
         <path
-          d="M13 11.8l6.1-6.3-1-1-6.1 6.2-6.1-6.2-1 1 6.1 6.3-6.5 6.7 1 1 6.5-6.6 6.5 6.6 1-1z"
+          d="m13.06 12 6.47-6.47-1.06-1.06L12 10.94 5.53 4.47 4.47 5.53 10.94 12l-6.47 6.47 1.06 1.06L12 13.06l6.47 6.47 1.06-1.06L13.06 12Z"
         />
       </svg>
     </button>
@@ -184,7 +194,7 @@ exports[`Info InlineNotices renders with dismiss and icon 1`] = `
 `;
 
 exports[`Info InlineNotices renders with dismiss and icon and actions 1`] = `
-.emotion-0 {
+.emotion-2 {
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -196,6 +206,7 @@ exports[`Info InlineNotices renders with dismiss and icon and actions 1`] = `
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: start;
   -ms-flex-pack: start;
   -webkit-justify-content: flex-start;
@@ -203,15 +214,11 @@ exports[`Info InlineNotices renders with dismiss and icon and actions 1`] = `
   width: 100%;
 }
 
-.emotion-0>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
-}
-
-.emotion-0>* {
+.emotion-2>* {
   min-width: 0;
 }
 
-.emotion-2 {
+.emotion-4 {
   display: block;
   max-height: 100%;
   max-width: 100%;
@@ -219,7 +226,7 @@ exports[`Info InlineNotices renders with dismiss and icon and actions 1`] = `
   min-width: 0;
 }
 
-.emotion-6 {
+.emotion-8 {
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -231,6 +238,7 @@ exports[`Info InlineNotices renders with dismiss and icon and actions 1`] = `
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 4);
   -webkit-box-pack: start;
   -ms-flex-pack: start;
   -webkit-justify-content: flex-start;
@@ -238,11 +246,7 @@ exports[`Info InlineNotices renders with dismiss and icon and actions 1`] = `
   width: 100%;
 }
 
-.emotion-6>*+*:not( marquee ) {
-  margin-left: calc(4px * 4);
-}
-
-.emotion-6>* {
+.emotion-8>* {
   min-width: 0;
 }
 
@@ -251,15 +255,23 @@ exports[`Info InlineNotices renders with dismiss and icon and actions 1`] = `
     class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info is-dismissible"
   >
     <div
+      class="components-visually-hidden emotion-0 emotion-1"
+      data-wp-c16t="true"
+      data-wp-component="VisuallyHidden"
+      style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+    >
+      Information notice
+    </div>
+    <div
       class="components-notice__content"
     >
       <div
-        class="components-flex emotion-0 emotion-1"
+        class="components-flex emotion-2 emotion-1"
         data-wp-c16t="true"
         data-wp-component="Flex"
       >
         <div
-          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon emotion-2 emotion-1"
+          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon emotion-4 emotion-1"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
@@ -278,13 +290,13 @@ exports[`Info InlineNotices renders with dismiss and icon and actions 1`] = `
           </svg>
         </div>
         <div
-          class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-2 emotion-1"
+          class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-4 emotion-1"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
           Test notice content
           <div
-            class="components-flex wcpay-inline-notice__content__actions emotion-6 emotion-1"
+            class="components-flex wcpay-inline-notice__content__actions emotion-8 emotion-1"
             data-wp-c16t="true"
             data-wp-component="Flex"
           >
@@ -308,8 +320,8 @@ exports[`Info InlineNotices renders with dismiss and icon and actions 1`] = `
       />
     </div>
     <button
-      aria-label="Dismiss this notice"
-      class="components-button components-notice__dismiss has-icon"
+      aria-label="Close"
+      class="components-button components-notice__dismiss is-small has-icon"
       type="button"
     >
       <svg
@@ -321,7 +333,7 @@ exports[`Info InlineNotices renders with dismiss and icon and actions 1`] = `
         xmlns="http://www.w3.org/2000/svg"
       >
         <path
-          d="M13 11.8l6.1-6.3-1-1-6.1 6.2-6.1-6.2-1 1 6.1 6.3-6.5 6.7 1 1 6.5-6.6 6.5 6.6 1-1z"
+          d="m13.06 12 6.47-6.47-1.06-1.06L12 10.94 5.53 4.47 4.47 5.53 10.94 12l-6.47 6.47 1.06 1.06L12 13.06l6.47 6.47 1.06-1.06L13.06 12Z"
         />
       </svg>
     </button>
@@ -330,7 +342,7 @@ exports[`Info InlineNotices renders with dismiss and icon and actions 1`] = `
 `;
 
 exports[`Info InlineNotices renders with no status and custom icon 1`] = `
-.emotion-0 {
+.emotion-2 {
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -342,6 +354,7 @@ exports[`Info InlineNotices renders with no status and custom icon 1`] = `
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: start;
   -ms-flex-pack: start;
   -webkit-justify-content: flex-start;
@@ -349,15 +362,11 @@ exports[`Info InlineNotices renders with no status and custom icon 1`] = `
   width: 100%;
 }
 
-.emotion-0>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
-}
-
-.emotion-0>* {
+.emotion-2>* {
   min-width: 0;
 }
 
-.emotion-2 {
+.emotion-4 {
   display: block;
   max-height: 100%;
   max-width: 100%;
@@ -370,15 +379,23 @@ exports[`Info InlineNotices renders with no status and custom icon 1`] = `
     class="wcpay-inline-notice wcpay-inline-undefined-notice components-notice is-info is-dismissible"
   >
     <div
+      class="components-visually-hidden emotion-0 emotion-1"
+      data-wp-c16t="true"
+      data-wp-component="VisuallyHidden"
+      style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+    >
+      Information notice
+    </div>
+    <div
       class="components-notice__content"
     >
       <div
-        class="components-flex emotion-0 emotion-1"
+        class="components-flex emotion-2 emotion-1"
         data-wp-c16t="true"
         data-wp-component="Flex"
       >
         <div
-          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-undefined-notice__icon emotion-2 emotion-1"
+          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-undefined-notice__icon emotion-4 emotion-1"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
@@ -397,7 +414,7 @@ exports[`Info InlineNotices renders with no status and custom icon 1`] = `
           </svg>
         </div>
         <div
-          class="components-flex-item wcpay-inline-notice__content wcpay-inline-undefined-notice__content emotion-2 emotion-1"
+          class="components-flex-item wcpay-inline-notice__content wcpay-inline-undefined-notice__content emotion-4 emotion-1"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
@@ -409,8 +426,8 @@ exports[`Info InlineNotices renders with no status and custom icon 1`] = `
       />
     </div>
     <button
-      aria-label="Dismiss this notice"
-      class="components-button components-notice__dismiss has-icon"
+      aria-label="Close"
+      class="components-button components-notice__dismiss is-small has-icon"
       type="button"
     >
       <svg
@@ -422,7 +439,7 @@ exports[`Info InlineNotices renders with no status and custom icon 1`] = `
         xmlns="http://www.w3.org/2000/svg"
       >
         <path
-          d="M13 11.8l6.1-6.3-1-1-6.1 6.2-6.1-6.2-1 1 6.1 6.3-6.5 6.7 1 1 6.5-6.6 6.5 6.6 1-1z"
+          d="m13.06 12 6.47-6.47-1.06-1.06L12 10.94 5.53 4.47 4.47 5.53 10.94 12l-6.47 6.47 1.06 1.06L12 13.06l6.47 6.47 1.06-1.06L13.06 12Z"
         />
       </svg>
     </button>
@@ -431,7 +448,7 @@ exports[`Info InlineNotices renders with no status and custom icon 1`] = `
 `;
 
 exports[`Info InlineNotices renders without dismiss and icon 1`] = `
-.emotion-0 {
+.emotion-2 {
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -443,6 +460,7 @@ exports[`Info InlineNotices renders without dismiss and icon 1`] = `
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: start;
   -ms-flex-pack: start;
   -webkit-justify-content: flex-start;
@@ -450,15 +468,11 @@ exports[`Info InlineNotices renders without dismiss and icon 1`] = `
   width: 100%;
 }
 
-.emotion-0>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
-}
-
-.emotion-0>* {
+.emotion-2>* {
   min-width: 0;
 }
 
-.emotion-2 {
+.emotion-4 {
   display: block;
   max-height: 100%;
   max-width: 100%;
@@ -471,15 +485,23 @@ exports[`Info InlineNotices renders without dismiss and icon 1`] = `
     class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info"
   >
     <div
+      class="components-visually-hidden emotion-0 emotion-1"
+      data-wp-c16t="true"
+      data-wp-component="VisuallyHidden"
+      style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+    >
+      Information notice
+    </div>
+    <div
       class="components-notice__content"
     >
       <div
-        class="components-flex emotion-0 emotion-1"
+        class="components-flex emotion-2 emotion-1"
         data-wp-c16t="true"
         data-wp-component="Flex"
       >
         <div
-          class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-2 emotion-1"
+          class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-4 emotion-1"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >

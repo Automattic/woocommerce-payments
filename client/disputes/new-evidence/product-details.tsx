@@ -38,7 +38,6 @@ const ProductDetails: React.FC< ProductDetailsProps > = ( {
 			<div className="wcpay-dispute-evidence-product-details__field-group">
 				<SelectControl
 					__nextHasNoMarginBottom
-					// @ts-expect-error: __next40pxDefaultSize is not a prop defined in the WP SelectControl component.
 					__next40pxDefaultSize
 					label={ __( 'PRODUCT TYPE', 'woocommerce-payments' ) }
 					value={ productType }

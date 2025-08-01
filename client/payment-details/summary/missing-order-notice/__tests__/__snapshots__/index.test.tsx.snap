@@ -13,6 +13,7 @@ exports[`MissingOrderNotice it renders correctly 1`] = `
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: justify;
   -webkit-justify-content: space-between;
   justify-content: space-between;
@@ -21,10 +22,6 @@ exports[`MissingOrderNotice it renders correctly 1`] = `
   box-sizing: border-box;
   border-color: rgba(0, 0, 0, 0.1);
   padding: calc(4px * 4) calc(4px * 6);
-}
-
-.emotion-0>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
 }
 
 .emotion-0>* {
@@ -36,13 +33,13 @@ exports[`MissingOrderNotice it renders correctly 1`] = `
 }
 
 .emotion-0:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-0:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 <div>

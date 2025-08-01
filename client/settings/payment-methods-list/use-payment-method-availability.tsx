@@ -89,6 +89,7 @@ const usePaymentMethodAvailability = ( id: string ) => {
 				),
 				components: {
 					learnMoreLink: (
+						// @ts-expect-error: children is provided when interpolating the component
 						<ExternalLink
 							title={ __(
 								'Learn more about enabling payment methods',
@@ -170,6 +171,7 @@ const usePaymentMethodAvailability = ( id: string ) => {
 				),
 				components: {
 					contactSupportLink: (
+						// @ts-expect-error: children is provided when interpolating the component
 						<ExternalLink
 							title={ __(
 								'Contact Support',
