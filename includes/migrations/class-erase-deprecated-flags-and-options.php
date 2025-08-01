@@ -61,5 +61,6 @@ class Erase_Deprecated_Flags_And_Options {
 		delete_option( '_wcpay_feature_platform_checkout' );
 		delete_option( '_wcpay_feature_capital' );
 		delete_option( 'wcpay_capability_request_dismissed_notices' );
+		delete_option( 'wcpay_onboarding_eligibility_modal_dismissed' );
 	}
 }

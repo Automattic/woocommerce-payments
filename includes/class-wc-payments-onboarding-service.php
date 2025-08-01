@@ -21,7 +21,6 @@ use WCPay\Logger;
 class WC_Payments_Onboarding_Service {
 
 	const TEST_MODE_OPTION                           = 'wcpay_onboarding_test_mode';
-	const ONBOARDING_ELIGIBILITY_MODAL_OPTION        = 'wcpay_onboarding_eligibility_modal_dismissed';
 	const ONBOARDING_CONNECTION_SUCCESS_MODAL_OPTION = 'wcpay_connection_success_modal_dismissed';
 	const ONBOARDING_INIT_IN_PROGRESS_TRANSIENT      = 'wcpay_onboarding_init_in_progress';
 
@@ -1004,17 +1003,7 @@ class WC_Payments_Onboarding_Service {
 	 * @return void
 	 */
 	public static function clear_account_options(): void {
-		delete_option( self::ONBOARDING_ELIGIBILITY_MODAL_OPTION );
 		delete_option( self::ONBOARDING_CONNECTION_SUCCESS_MODAL_OPTION );
-	}
-
-	/**
-	 * Set the onboarding eligibility modal dismissed option to true.
-	 *
-	 * @return void
-	 */
-	public static function set_onboarding_eligibility_modal_dismissed(): void {
-		update_option( self::ONBOARDING_ELIGIBILITY_MODAL_OPTION, true );
 	}
 
 	/**
