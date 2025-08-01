@@ -160,7 +160,7 @@ const BannerNotice: React.FC< React.PropsWithChildren< Props > > = ( {
 								return (
 									<Button
 										key={ index }
-											href={ url }
+										href={ url }
 										variant={ computedVariant }
 										onClick={ url ? undefined : onClick }
 										className={ buttonCustomClasses }
