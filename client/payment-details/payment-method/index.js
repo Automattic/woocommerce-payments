@@ -3,9 +3,7 @@
 /**
  * External dependencies
  */
-import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
-import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
-import { CardHeader } from 'wcpay/components/wp-components-wrapped/components/card-header';
+import { Card, CardBody, CardHeader } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**

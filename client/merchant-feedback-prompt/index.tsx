@@ -1,21 +1,23 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState } from 'react';
+import React, { ComponentProps, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { Icon, thumbsUp, thumbsDown } from '@wordpress/icons';
 import { useSelect } from '@wordpress/data';
 import { __ } from '@wordpress/i18n';
 // eslint-disable-next-line no-restricted-syntax
-import type { NoticeList } from '@wordpress/components';
-
 /**
  * Internal dependencies
  */
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
-import { Flex } from 'wcpay/components/wp-components-wrapped/components/flex';
-import { FlexItem } from 'wcpay/components/wp-components-wrapped/components/flex-item';
-import { SnackbarList } from 'wcpay/components/wp-components-wrapped/components/snackbar-list';
+// eslint-disable-next-line no-duplicate-imports
+import {
+	Button,
+	Flex,
+	FlexItem,
+	SnackbarList,
+	NoticeList,
+} from '@wordpress/components';
 import { recordEvent } from 'wcpay/tracks';
 import { PositiveFeedbackModal } from './positive-modal';
 import { NegativeFeedbackModal } from './negative-modal';
@@ -74,10 +76,9 @@ const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
 	showNegativeFeedbackModal,
 } ) => {
 	// Get the core notices, which we'll use to ensure we're not rendering the prompt if there are other notices being displayed.
-	const coreNotices = useSelect(
-		( select ) =>
-			select( 'core/notices' ).getNotices() as NoticeList.Notice[]
-	);
+	const coreNotices = useSelect<
+		ComponentProps< typeof NoticeList >[ 'notices' ]
+	>( ( select ) => select( 'core/notices' ).getNotices() );
 
 	// Only render the prompt if there are no core notices.
 	const shouldShowPrompt = coreNotices?.length === 0;

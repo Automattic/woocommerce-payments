@@ -262,21 +262,21 @@ describe( 'Multi-Currency enabled currencies list', () => {
 		window.multiCurrencyPaymentMethodsMap = undefined;
 	} );
 
-	test( 'Modal should clear search term on cancel and update selected', () => {
+	test( 'Modal should clear search term on cancel and update selected', async () => {
 		for ( const name of [ /cancel/i, /update selected/i ] ) {
 			getContainer();
-			userEvent.click(
+			await userEvent.click(
 				screen.getByRole( 'button', {
 					name: /add\/remove currencies/i,
 				} )
 			);
-			userEvent.type( screen.getByRole( 'searchbox' ), 'dollar' );
-			userEvent.click(
+			await userEvent.type( screen.getByRole( 'searchbox' ), 'dollar' );
+			await userEvent.click(
 				screen.getByRole( 'button', {
 					name,
 				} )
 			);
-			userEvent.click(
+			await userEvent.click(
 				screen.getByRole( 'button', {
 					name: /add\/remove currencies/i,
 				} )

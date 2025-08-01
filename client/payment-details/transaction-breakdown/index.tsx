@@ -6,17 +6,19 @@
 import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { find } from 'lodash';
+import {
+	Card,
+	CardBody,
+	CardHeader,
+	CardFooter,
+	Flex,
+	FlexItem,
+} from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import { useTimeline } from 'wcpay/data';
-import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
-import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
-import { CardHeader } from 'wcpay/components/wp-components-wrapped/components/card-header';
-import { CardFooter } from 'wcpay/components/wp-components-wrapped/components/card-footer';
-import { Flex } from 'wcpay/components/wp-components-wrapped/components/flex';
-import { FlexItem } from 'wcpay/components/wp-components-wrapped/components/flex-item';
 import { TimelineItem } from 'wcpay/data/timeline/types';
 import Loadable, { LoadableBlock } from 'components/loadable';
 import { formatCurrency } from 'multi-currency/interface/functions';

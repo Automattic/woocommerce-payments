@@ -4,10 +4,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-
-/**
- * Internal dependencies
- */
+import { CardDivider } from '@wordpress/components';
 import ExpirationBar from './expiration-bar';
 import ExpirationDescription from './expiration-description';
 import {
@@ -19,7 +16,6 @@ import {
 	getCurrentBaseFee,
 	getTransactionsPaymentMethodName,
 } from 'utils/account-fees';
-import { CardDivider } from 'wcpay/components/wp-components-wrapped/components/card-divider';
 import './styles.scss';
 
 const AccountFee = ( props ) => {

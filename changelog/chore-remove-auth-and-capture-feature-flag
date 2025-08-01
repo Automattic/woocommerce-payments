@@ -1,0 +1,5 @@
+Significance: patch
+Type: dev
+Comment: chore: remove unused _wcpay_feature_auth_and_capture feature flag, it has been enabled for a few years, now
+
+

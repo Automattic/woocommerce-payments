@@ -15,12 +15,7 @@ import { check, info } from '@wordpress/icons';
 import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 import NoticeIcon from 'gridicons/dist/notice';
 import CloseIcon from 'gridicons/dist/cross-small';
-
-/**
- * Internal dependencies.
- */
-import { Icon } from 'wcpay/components/wp-components-wrapped/components/icon';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
+import { Icon, Button } from '@wordpress/components';
 import './style.scss';
 
 const statusIconMap = {
@@ -136,7 +131,6 @@ const BannerNotice: React.FC< React.PropsWithChildren< Props > > = ( {
 			{ iconToDisplay && (
 				<Icon
 					icon={ iconToDisplay }
-					// @ts-expect-error: className is not a prop defined in the WP Icon component.
 					className="wcpay-banner-notice__icon"
 				/>
 			) }

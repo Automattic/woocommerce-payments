@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React, { ComponentProps } from 'react';
-import { Modal } from 'wcpay/components/wp-components-wrapped/components/modal';
+import { Modal } from '@wordpress/components';
 import clsx from 'clsx';
 import { HorizontalRule } from '@wordpress/primitives';
 

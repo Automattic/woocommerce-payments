@@ -14,8 +14,7 @@ import clsx from 'clsx';
 /**
  * Internal dependencies
  */
-import { BaseControl } from 'wcpay/components/wp-components-wrapped/components/base-control';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
+import { BaseControl, Button } from '@wordpress/components';
 import { FileUploadControl } from 'wcpay/components/file-upload';
 
 interface WooPayFileUploadProps {

@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+As of this change, we stop bundling WordPress Components in favor of using the wp.components available in the WordPress installation.

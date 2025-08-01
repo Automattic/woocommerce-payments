@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { TextControl } from 'wcpay/components/wp-components-wrapped/components/text-control';
+import { TextControl } from '@wordpress/components';
 
 interface ShippingDetailsProps {
 	shippingCarrier: string;

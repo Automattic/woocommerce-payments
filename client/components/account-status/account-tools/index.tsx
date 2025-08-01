@@ -3,6 +3,7 @@
  */
 import React, { useState } from 'react';
 import { addQueryArgs } from '@wordpress/url';
+import { Button, CardDivider } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -11,8 +12,6 @@ import strings from './strings';
 import './styles.scss';
 import ResetAccountModal from 'wcpay/overview/modal/reset-account';
 import { isInTestModeOnboarding } from 'wcpay/utils';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
-import { CardDivider } from 'wcpay/components/wp-components-wrapped/components/card-divider';
 
 const handleReset = () => {
 	window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
