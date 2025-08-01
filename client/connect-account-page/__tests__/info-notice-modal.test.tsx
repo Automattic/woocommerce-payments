@@ -18,7 +18,7 @@ declare const global: {
 };
 
 describe( 'Connect Account Page – Info Notice Modal', () => {
-	test( 'renders correctly when opened', () => {
+	test( 'renders correctly when opened', async () => {
 		global.wcpaySettings = {
 			isWooPayStoreCountryAvailable: true,
 			isJetpackConnected: true,
@@ -29,7 +29,7 @@ describe( 'Connect Account Page – Info Notice Modal', () => {
 		const enableDeposits = screen.getByRole( 'button', {
 			name: /enable payouts./i,
 		} );
-		userEvent.click( enableDeposits );
+		await userEvent.click( enableDeposits );
 
 		const modalContent = document.querySelector(
 			'.components-modal__content'
