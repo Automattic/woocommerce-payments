@@ -20,8 +20,6 @@ import { HoverTooltip, ClickTooltip } from '..';
 
 describe( 'HoverTooltip', () => {
 	beforeAll( () => {
-		jest.spyOn( console, 'error' ).mockImplementation( () => null );
-		jest.spyOn( console, 'warn' ).mockImplementation( () => null );
 		jest.useFakeTimers();
 	} );
 
@@ -282,11 +280,6 @@ describe( 'ClickTooltip', () => {
 } );
 
 describe( 'Tooltips', () => {
-	beforeAll( () => {
-		jest.spyOn( console, 'error' ).mockImplementation( () => null );
-		jest.spyOn( console, 'warn' ).mockImplementation( () => null );
-	} );
-
 	beforeEach( () => {
 		jest.useFakeTimers();
 	} );
