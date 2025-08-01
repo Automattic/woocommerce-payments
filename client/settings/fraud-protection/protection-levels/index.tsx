@@ -209,7 +209,7 @@ const ProtectionLevels: React.FC = () => {
 							/>
 						</label>
 						<Button
-								href={ getAdminUrl( {
+							href={ getAdminUrl( {
 								page: 'wc-admin',
 								path: '/payments/fraud-protection',
 							} ) }
