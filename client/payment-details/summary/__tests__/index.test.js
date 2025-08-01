@@ -13,7 +13,6 @@ import moment from 'moment';
 import PaymentDetailsSummary from '../';
 import { useAuthorization } from 'wcpay/data';
 import { paymentIntentMock } from 'wcpay/data/payment-intents/test/hooks';
-import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
 
 // Mock dateI18n
 jest.mock( '@wordpress/date', () => ( {
@@ -139,14 +138,12 @@ const createTapToPayMetadata = ( readerModel, platform ) => ( {
 
 function renderCharge( charge, metadata = {}, isLoading = false, props = {} ) {
 	const { container } = render(
-		<WCPaySettingsContext.Provider value={ global.wcpaySettings }>
-			<PaymentDetailsSummary
-				charge={ charge }
-				metadata={ metadata }
-				isLoading={ isLoading }
-				{ ...props }
-			/>
-		</WCPaySettingsContext.Provider>
+		<PaymentDetailsSummary
+			charge={ charge }
+			metadata={ metadata }
+			isLoading={ isLoading }
+			{ ...props }
+		/>
 	);
 	return container;
 }
@@ -173,9 +170,6 @@ describe( 'PaymentDetailsSummary', () => {
 			connect: {
 				country: 'US',
 			},
-			featureFlags: {
-				isAuthAndCaptureEnabled: true,
-			},
 			currencyData: {
 				US: {
 					code: 'USD',
@@ -196,6 +190,9 @@ describe( 'PaymentDetailsSummary', () => {
 			},
 			dateFormat: 'M j, Y',
 			timeFormat: 'g:ia',
+			featureFlags: {
+				isDisputeIssuerEvidenceEnabled: false,
+			},
 		};
 
 		// mock Date.now that moment library uses to get current date for testing purposes
@@ -376,10 +373,16 @@ describe( 'PaymentDetailsSummary', () => {
 			).not.toBeInTheDocument();
 
 			expect(
-				screen.getByText(
-					/Approving this transaction will capture the charge./
-				)
-			).toBeInTheDocument();
+				screen.getAllByText( ( content, element ) => {
+					return (
+						element.textContent.includes( 'You must' ) &&
+						element.textContent.includes( 'capture' ) &&
+						element.textContent.includes(
+							'this charge within the next'
+						)
+					);
+				} ).length
+			).toBeGreaterThan( 0 );
 
 			expect( container ).toMatchSnapshot();
 		} );

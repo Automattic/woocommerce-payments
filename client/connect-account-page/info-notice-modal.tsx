@@ -5,13 +5,11 @@
  */
 import React, { useState } from 'react';
 import { __ } from '@wordpress/i18n';
+import { Button, Modal, Notice } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
-import { Modal } from 'wcpay/components/wp-components-wrapped/components/modal';
-import { Notice } from 'wcpay/components/wp-components-wrapped/components/notice';
 import { recordEvent } from 'tracks';
 import TipBox from 'components/tip-box';
 import strings from './strings';

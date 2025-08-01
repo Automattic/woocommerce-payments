@@ -26,7 +26,6 @@ class WC_Payments_Features {
 	const WOOPAY_EXPRESS_CHECKOUT_FLAG_NAME     = '_wcpay_feature_woopay_express_checkout';
 	const WOOPAY_FIRST_PARTY_AUTH_FLAG_NAME     = '_wcpay_feature_woopay_first_party_auth';
 	const WOOPAY_DIRECT_CHECKOUT_FLAG_NAME      = '_wcpay_feature_woopay_direct_checkout';
-	const AUTH_AND_CAPTURE_FLAG_NAME            = '_wcpay_feature_auth_and_capture';
 	const DISPUTE_ISSUER_EVIDENCE               = '_wcpay_feature_dispute_issuer_evidence';
 	const WOOPAY_GLOBAL_THEME_SUPPORT_FLAG_NAME = '_wcpay_feature_woopay_global_theme_support';
 
@@ -251,15 +250,6 @@ class WC_Payments_Features {
 	}
 
 	/**
-	 * Checks whether Auth & Capture (uncaptured transactions tab, capture from payment details page) is enabled.
-	 *
-	 * @return bool
-	 */
-	public static function is_auth_and_capture_enabled() {
-		return '1' === get_option( self::AUTH_AND_CAPTURE_FLAG_NAME, '1' );
-	}
-
-	/**
 	 * Checks whether the Fraud and Risk Tools feature flag is enabled.
 	 *
 	 * @return  bool
@@ -352,8 +342,8 @@ class WC_Payments_Features {
 				'woopay'                         => self::is_woopay_eligible(),
 				'documents'                      => self::is_documents_section_enabled(),
 				'woopayExpressCheckout'          => self::is_woopay_express_checkout_enabled(),
-				'isAuthAndCaptureEnabled'        => self::is_auth_and_capture_enabled(),
 				'isDisputeIssuerEvidenceEnabled' => self::is_dispute_issuer_evidence_enabled(),
+				'isFRTReviewFeatureActive'       => self::is_frt_review_feature_active(),
 			]
 		);
 	}

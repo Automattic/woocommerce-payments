@@ -17,7 +17,7 @@ import PAYMENT_METHOD_IDS from 'wcpay/constants/payment-method';
 import { getMissingCurrenciesTooltipMessage } from 'multi-currency/utils/missing-currencies-message';
 import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
-import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
+import { ExternalLink } from '@wordpress/components';
 import { ChipType } from 'wcpay/components/chip';
 
 const documentationTypeMap = {

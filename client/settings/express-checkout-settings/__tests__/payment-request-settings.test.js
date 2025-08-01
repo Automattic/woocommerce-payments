@@ -107,7 +107,7 @@ describe( 'PaymentRequestSettings', () => {
 		expect( enableCheckbox ).toBeInTheDocument();
 	} );
 
-	it( 'triggers the hooks when the enable setting is being interacted with', () => {
+	it( 'triggers the hooks when the enable setting is being interacted with', async () => {
 		const updateIsPaymentRequestEnabledHandler = jest.fn();
 
 		usePaymentRequestEnabledSettings.mockReturnValue(
@@ -127,7 +127,7 @@ describe( 'PaymentRequestSettings', () => {
 		expect( screen.getByLabelText( 'Product Page' ) ).toBeChecked();
 		expect( screen.getByLabelText( 'Cart Page' ) ).toBeChecked();
 
-		userEvent.click( screen.getByLabelText( /Enable Apple Pay/ ) );
+		await userEvent.click( screen.getByLabelText( /Enable Apple Pay/ ) );
 		expect( updateIsPaymentRequestEnabledHandler ).toHaveBeenCalledWith(
 			false
 		);
@@ -170,7 +170,7 @@ describe( 'PaymentRequestSettings', () => {
 		expect( screen.getByLabelText( /Dark/ ) ).toBeChecked();
 	} );
 
-	it( 'triggers the hooks when the enabled settings are being interacted with', () => {
+	it( 'triggers the hooks when the enabled settings are being interacted with', async () => {
 		const updatePaymentRequestLocationsHandler = jest.fn();
 		usePaymentRequestLocations.mockReturnValue(
 			getMockPaymentRequestLocations(
@@ -186,23 +186,23 @@ describe( 'PaymentRequestSettings', () => {
 
 		expect( updatePaymentRequestLocationsHandler ).not.toHaveBeenCalled();
 
-		userEvent.click( screen.getByLabelText( /Checkout/ ) );
+		await userEvent.click( screen.getByLabelText( /Checkout/ ) );
 		expect(
 			updatePaymentRequestLocationsHandler
 		).toHaveBeenLastCalledWith( [ 'checkout' ] );
 
-		userEvent.click( screen.getByLabelText( /Product Page/ ) );
+		await userEvent.click( screen.getByLabelText( /Product Page/ ) );
 		expect(
 			updatePaymentRequestLocationsHandler
 		).toHaveBeenLastCalledWith( [ 'product' ] );
 
-		userEvent.click( screen.getByLabelText( /Cart/ ) );
+		await userEvent.click( screen.getByLabelText( /Cart/ ) );
 		expect(
 			updatePaymentRequestLocationsHandler
 		).toHaveBeenLastCalledWith( [ 'cart' ] );
 	} );
 
-	it( 'triggers the hooks when the general settings are being interacted with', () => {
+	it( 'triggers the hooks when the general settings are being interacted with', async () => {
 		const setButtonTypeMock = jest.fn();
 		const setButtonSizeMock = jest.fn();
 		const setButtonThemeMock = jest.fn();
@@ -228,10 +228,10 @@ describe( 'PaymentRequestSettings', () => {
 		expect( setButtonSizeMock ).not.toHaveBeenCalled();
 		expect( setButtonThemeMock ).not.toHaveBeenCalled();
 
-		userEvent.click( screen.getByLabelText( /Light/ ) );
+		await userEvent.click( screen.getByLabelText( /Light/ ) );
 		expect( setButtonThemeMock ).toHaveBeenCalledWith( 'light' );
 
-		userEvent.selectOptions(
+		await userEvent.selectOptions(
 			screen.getByRole( 'combobox', {
 				name: 'Call to action',
 			} ),
@@ -242,7 +242,7 @@ describe( 'PaymentRequestSettings', () => {
 			expect.anything()
 		);
 
-		userEvent.click( screen.getByLabelText( 'Large (55 px)' ) );
+		await userEvent.click( screen.getByLabelText( 'Large (55 px)' ) );
 		expect( setButtonSizeMock ).toHaveBeenCalledWith( 'large' );
 	} );
 
@@ -263,17 +263,17 @@ describe( 'PaymentRequestSettings', () => {
 		);
 
 		// Uncheck each checkbox, and verify them what kind of action should have been called
-		userEvent.click( screen.getByText( 'Product Page' ) );
+		await userEvent.click( screen.getByText( 'Product Page' ) );
 		expect(
 			updatePaymentRequestLocationsHandler
 		).toHaveBeenLastCalledWith( [ 'checkout', 'cart' ] );
 
-		userEvent.click( screen.getByText( 'Checkout Page' ) );
+		await userEvent.click( screen.getByText( 'Checkout Page' ) );
 		expect(
 			updatePaymentRequestLocationsHandler
 		).toHaveBeenLastCalledWith( [ 'product', 'cart' ] );
 
-		userEvent.click( screen.getByText( 'Cart Page' ) );
+		await userEvent.click( screen.getByText( 'Cart Page' ) );
 		expect(
 			updatePaymentRequestLocationsHandler
 		).toHaveBeenLastCalledWith( [ 'checkout', 'product' ] );

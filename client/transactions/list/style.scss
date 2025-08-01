@@ -15,13 +15,6 @@ $space-header-item: 12px;
 			margin-right: 6px;
 			fill: $studio-gray-30;
 		}
-
-		&--fallback {
-			.components-popover__content {
-				position: relative;
-				top: -( $gap * 2 ); // Positioning the tooltip in a higher position to avoid having it cropped by the bottom of the table
-			}
-		}
 	}
 
 	// slight adjustment to align header items with sorting button to account for icon width

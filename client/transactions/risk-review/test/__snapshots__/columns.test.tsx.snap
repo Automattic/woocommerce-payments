@@ -33,13 +33,14 @@ exports[`Review fraud outcome transactions columns should render the column corr
     "value": "review",
   },
   {
-    "display": <ForwardRef
+    "display": <ForwardRef(Button)
+      __next40pxDefaultSize={true}
       href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock"
-      isSecondary={true}
       onClick={[Function]}
+      variant="secondary"
     >
       Review
-    </ForwardRef>,
+    </ForwardRef(Button)>,
   },
 ]
 `;

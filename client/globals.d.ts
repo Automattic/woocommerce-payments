@@ -28,10 +28,10 @@ declare global {
 			woopay: boolean;
 			documents: boolean;
 			woopayExpressCheckout: boolean;
-			isAuthAndCaptureEnabled: boolean;
 			paymentTimeline: boolean;
 			isDisputeIssuerEvidenceEnabled: boolean;
 			multiCurrency?: boolean;
+			isFRTReviewFeatureActive: boolean;
 		};
 		accountFees: Record< string, any >;
 		fraudServices: unknown[];
@@ -123,7 +123,6 @@ declare global {
 		};
 		dismissedDuplicateNotices: PaymentMethodToPluginsMap;
 		accountDefaultCurrency: string;
-		isFRTReviewFeatureActive: boolean;
 		onboardingFieldsData?: {
 			business_types: Country[];
 			mccs_display_tree: MccsDisplayTreeItem[];

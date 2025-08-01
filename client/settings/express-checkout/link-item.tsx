@@ -8,8 +8,7 @@ import interpolateComponents from '@automattic/interpolate-components';
 /**
  * Internal dependencies
  */
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
-import { CheckboxControl } from 'wcpay/components/wp-components-wrapped/components/checkbox-control';
+import { Button, CheckboxControl } from '@wordpress/components';
 import {
 	useEnabledPaymentMethodIds,
 	useGetAvailablePaymentMethodIds,
