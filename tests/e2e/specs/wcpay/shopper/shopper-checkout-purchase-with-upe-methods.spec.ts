@@ -98,6 +98,13 @@ test.describe(
 							ctpEnabled
 						);
 						await shopperPage.getByText( 'Bancontact' ).click();
+
+						// Wait for the Bancontact payment method to be actually selected
+						await shopperPage.waitForSelector(
+							'#payment_method_woocommerce_payments_bancontact:checked',
+							{ timeout: 10000 }
+						);
+
 						await focusPlaceOrderButton( shopperPage );
 						await placeOrder( shopperPage );
 						await shopperPage
