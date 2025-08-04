@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { act } from 'react';
 import { Elements, ExpressCheckoutElement } from '@stripe/react-stripe-js';
 
 /**
@@ -68,15 +68,24 @@ describe( 'checkPaymentMethodIsAvailable', () => {
 
 	it( 'should return the same result for subsequent calls with identical cart contents', async () => {
 		// the two cart objects are two different objects, but they have the same contents.
-		const result1Promise = checkPaymentMethodIsAvailable(
-			'applePay',
-			createCart( '100.00', 'USD' ),
-			mockApi
-		);
+		let result1Promise;
+		act( () => {
+			result1Promise = checkPaymentMethodIsAvailable(
+				'applePay',
+				createCart( '100.00', 'USD' ),
+				mockApi
+			);
+		} );
 
 		// advancing the timers to trigger the `setTimeout`.
-		jest.runAllTimers();
-		const result1 = await result1Promise;
+		act( () => {
+			jest.runAllTimers();
+		} );
+
+		let result1;
+		await act( async () => {
+			result1 = await result1Promise;
+		} );
 
 		const result2Promise = checkPaymentMethodIsAvailable(
 			'applePay',
@@ -100,21 +109,37 @@ describe( 'checkPaymentMethodIsAvailable', () => {
 		onReadySpy.mockClear();
 
 		// the two cart objects are two different objects with different contents
-		const result1Promise = checkPaymentMethodIsAvailable(
-			'applePay',
-			createCart( '150.00', 'USD' ),
-			mockApi
-		);
-		jest.runAllTimers();
-		const result1 = await result1Promise;
+		let result1Promise;
+		act( () => {
+			result1Promise = checkPaymentMethodIsAvailable(
+				'applePay',
+				createCart( '150.00', 'USD' ),
+				mockApi
+			);
+		} );
+		act( () => {
+			jest.runAllTimers();
+		} );
+		let result1;
+		await act( async () => {
+			result1 = await result1Promise;
+		} );
 
-		const result2Promise = checkPaymentMethodIsAvailable(
-			'applePay',
-			createCart( '250.00', 'USD' ),
-			mockApi
-		);
-		jest.runAllTimers();
-		const result2 = await result2Promise;
+		let result2Promise;
+		act( () => {
+			result2Promise = checkPaymentMethodIsAvailable(
+				'applePay',
+				createCart( '250.00', 'USD' ),
+				mockApi
+			);
+		} );
+		act( () => {
+			jest.runAllTimers();
+		} );
+		let result2;
+		await act( async () => {
+			result2 = await result2Promise;
+		} );
 
 		expect( result1 ).toBe( true );
 		expect( result2 ).toBe( true );
@@ -129,21 +154,37 @@ describe( 'checkPaymentMethodIsAvailable', () => {
 
 		const cart = createCart( '80.00', 'EUR' );
 
-		const applePayPromise = checkPaymentMethodIsAvailable(
-			'applePay',
-			cart,
-			mockApi
-		);
-		jest.runAllTimers();
-		const applePayResult = await applePayPromise;
+		let applePayPromise;
+		act( () => {
+			applePayPromise = checkPaymentMethodIsAvailable(
+				'applePay',
+				cart,
+				mockApi
+			);
+		} );
+		act( () => {
+			jest.runAllTimers();
+		} );
+		let applePayResult;
+		await act( async () => {
+			applePayResult = await applePayPromise;
+		} );
 
-		const googlePayPromise = checkPaymentMethodIsAvailable(
-			'googlePay',
-			cart,
-			mockApi
-		);
-		jest.runAllTimers();
-		const googlePayResult = await googlePayPromise;
+		let googlePayPromise;
+		act( () => {
+			googlePayPromise = checkPaymentMethodIsAvailable(
+				'googlePay',
+				cart,
+				mockApi
+			);
+		} );
+		act( () => {
+			jest.runAllTimers();
+		} );
+		let googlePayResult;
+		await act( async () => {
+			googlePayResult = await googlePayPromise;
+		} );
 
 		expect( applePayResult ).toBe( true );
 		expect( googlePayResult ).toBe( true );
@@ -164,13 +205,21 @@ describe( 'checkPaymentMethodIsAvailable', () => {
 			return <div data-testid="express-checkout-element" />;
 		} );
 
-		const resultPromise = checkPaymentMethodIsAvailable(
-			'applePay',
-			createCart( '300.00', 'AUD' ),
-			mockApi
-		);
-		jest.runAllTimers();
-		const result = await resultPromise;
+		let resultPromise;
+		act( () => {
+			resultPromise = checkPaymentMethodIsAvailable(
+				'applePay',
+				createCart( '300.00', 'AUD' ),
+				mockApi
+			);
+		} );
+		act( () => {
+			jest.runAllTimers();
+		} );
+		let result;
+		await act( async () => {
+			result = await resultPromise;
+		} );
 
 		expect( result ).toBe( false );
 	} );
