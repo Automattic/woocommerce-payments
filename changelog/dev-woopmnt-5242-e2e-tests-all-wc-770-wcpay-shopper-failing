@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-Fix E2E test failured due to Bancontact payment method selection during checkout
