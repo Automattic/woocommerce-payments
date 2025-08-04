@@ -3,9 +3,28 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { act } from 'react';
 import { render, screen } from '@testing-library/react';
 import user from '@testing-library/user-event';
+
+// Mock ResizeObserver for modal components - comprehensive setup
+class MockResizeObserver {
+	observe() {}
+	unobserve() {}
+	disconnect() {}
+}
+
+// Set up ResizeObserver mock in multiple places to ensure it's available
+global.ResizeObserver = MockResizeObserver;
+global.window = global.window || {};
+global.window.ResizeObserver = MockResizeObserver;
+
+// Ensure it's available on window in JSDOM environment
+Object.defineProperty( window, 'ResizeObserver', {
+	writable: true,
+	configurable: true,
+	value: MockResizeObserver,
+} );
 
 /**
  * Internal dependencies
@@ -54,8 +73,10 @@ describe( 'Activation Modal', () => {
 		renderDeleteModal();
 		const closeButton = screen.queryByRole( 'button', { name: 'Cancel' } );
 		expect( mockOnClose ).not.toBeCalled();
-		await user.click( closeButton );
-		expect( mockOnClose ).toBeCalled();
+		await act( async () => {
+			await user.click( closeButton );
+		} );
+		expect( mockOnClose ).toHaveBeenCalled();
 	} );
 
 	it( 'triggers the onConfirmClose event on confirm button click', async () => {
@@ -63,8 +84,10 @@ describe( 'Activation Modal', () => {
 		const confirmButton = screen.queryByRole( 'button', {
 			name: 'Remove',
 		} );
-		expect( mockOnConfirm ).not.toBeCalled();
-		await user.click( confirmButton );
-		expect( mockOnConfirm ).toBeCalled();
+		expect( mockOnConfirm ).not.toHaveBeenCalled();
+		await act( async () => {
+			await user.click( confirmButton );
+		} );
+		expect( mockOnConfirm ).toHaveBeenCalled();
 	} );
 } );

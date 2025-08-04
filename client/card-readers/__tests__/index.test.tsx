@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { render, screen } from '@testing-library/react';
-import React from 'react';
+import React, { act } from 'react';
 
 /**
  * Internal dependencies
@@ -10,8 +10,10 @@ import React from 'react';
 import ConnectedReaders from '..';
 
 describe( 'CardReadersSettings', () => {
-	it( 'Card Readers tabs renders', () => {
-		render( <ConnectedReaders /> );
+	it( 'Card Readers tabs renders', async () => {
+		await act( async () => {
+			render( <ConnectedReaders /> );
+		} );
 
 		expect( screen.queryByText( 'Connected readers' ) ).toBeInTheDocument();
 	} );
