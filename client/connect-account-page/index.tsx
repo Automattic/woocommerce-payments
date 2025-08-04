@@ -4,7 +4,6 @@
  * External dependencies
  */
 import React, { useEffect, useState, useRef } from 'react';
-import { render } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import { addQueryArgs } from '@wordpress/url';
 import { Loader } from '@woocommerce/onboarding';
@@ -38,6 +37,7 @@ import { isInTestModeOnboarding } from 'wcpay/utils';
 import ResetAccountModal from 'wcpay/overview/modal/reset-account';
 import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
 import { decodeEntities } from '@wordpress/html-entities';
+import { createRoot } from 'react-dom/client';
 
 interface AccountData {
 	status: string;
@@ -370,13 +370,14 @@ const ConnectAccountPage: React.FC = () => {
 
 		const container = document.createElement( 'div' );
 		container.id = 'wcpay-onboarding-location-check-container';
-		render(
+
+		const root = createRoot( container );
+		root.render(
 			<OnboardingLocationCheckModal
 				countries={ countries }
 				onDeclined={ handleModalDeclined }
 				onConfirmed={ handleModalConfirmed }
-			/>,
-			container
+			/>
 		);
 		document.body.appendChild( container );
 	};
