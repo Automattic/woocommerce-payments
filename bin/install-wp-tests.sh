@@ -191,9 +191,9 @@ install_woocommerce() {
 	WC_INSTALL_EXTRA=''
 	INSTALLED_WC_VERSION=$(wp plugin get woocommerce --field=version)
 
-	if [[ $WC_VERSION == 'beta' ]]; then
+	if [[ $WC_VERSION == 'beta' ]] || [[ $WC_VERSION == 'rc' ]]; then
 		# Get the latest non-trunk version number from the .org repo. This will usually be the latest release, beta, or rc.
-		WC_VERSION=$(curl https://api.wordpress.org/plugins/info/1.0/woocommerce.json | jq -r '.versions | with_entries(select(.key|match("beta";"i"))) | keys[-1]' --sort-keys)
+		WC_VERSION=$(curl https://api.wordpress.org/plugins/info/1.0/woocommerce.json | jq -r '.versions | with_entries(select(.key|match("'$WC_VERSION'";"i"))) | keys | sort_by( . | split("-")[0] | split(".") | map(tonumber) ) | last' --sort-keys)
 	fi
 
 	if [[ -n $INSTALLED_WC_VERSION ]] && [[ $WC_VERSION == 'latest' ]]; then
