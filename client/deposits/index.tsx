@@ -133,7 +133,10 @@ const DepositFailureNotice: React.FC = () => {
 							}
 							href={ accountLink }
 						>
-							{ __( 'update your bank account details', 'woocommerce-payments' ) }
+							{ __(
+								'update your bank account details',
+								'woocommerce-payments'
+							) }
 						</ExternalLink>
 					),
 				},
