@@ -60,8 +60,8 @@ describe( 'Setup Live Payments Modal', () => {
 
 		render(
 			<SetupLivePaymentsModal
-				from="bogus"
-				source="bogus-again"
+				from="somewhere"
+				source="bogus-source"
 				onClose={ () => jest.fn() }
 			/>
 		);
@@ -73,7 +73,7 @@ describe( 'Setup Live Payments Modal', () => {
 		);
 
 		expect( window.location.href ).toBe(
-			`http://localhost/wp-admin/admin.php?page=wc-settings&tab=checkout&path=%2Fwoopayments%2Fonboarding&source=wcpay-setup-live-payments&from=bogus`
+			`http://localhost/wp-admin/admin.php?page=wc-settings&tab=checkout&path=%2Fwoopayments%2Fonboarding&source=bogus-source&from=wcpay-setup-live-payments`
 		);
 	} );
 } );
