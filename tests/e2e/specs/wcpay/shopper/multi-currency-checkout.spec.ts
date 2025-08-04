@@ -6,7 +6,7 @@ import { test, expect, Page } from '@playwright/test';
  * Internal dependencies
  */
 import { config } from '../../../config/default';
-import { getMerchant, getShopper } from '../../../utils/helpers';
+import { getMerchant, getShopper, isUIUnblocked } from '../../../utils/helpers';
 import {
 	activateMulticurrency,
 	addCurrency,
@@ -153,6 +153,9 @@ test.describe( 'Multi-currency checkout', () => {
 				config.addresses[ 'upe-customer' ].billing.be
 			);
 			await expect( shopperPage.getByText( 'Bancontact' ) ).toBeVisible();
+
+			// Ensure UI is not blocked before clicking
+			await isUIUnblocked( shopperPage );
 
 			// Shopper checkout with Bancontact.
 			await shopperPage.getByText( 'Bancontact' ).click();
