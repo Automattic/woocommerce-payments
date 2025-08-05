@@ -39,7 +39,6 @@ exports[`FileUploadControl renders default file upload control 1`] = `
         type="file"
       />
     </div>
-    
   </div>
 </div>
 `;
@@ -133,7 +132,6 @@ exports[`FileUploadControl renders loading state 1`] = `
         type="file"
       />
     </div>
-    
   </div>
 </div>
 `;

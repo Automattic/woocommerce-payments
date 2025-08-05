@@ -258,7 +258,24 @@
 
 .wcpay-express-checkout__enable {
 	.payment-request-settings__location {
-		margin: 0;
+		margin: 0 0 0 24px;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 8px;
+	}
+	.wcpay-payment-request-settings__enable,
+	.wcpay-woopay-settings__enable {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 12px;
+
+		// Override the margin-bottom from settings-section.scss
+		.components-radio-control:not( :last-child ),
+		.components-base-control:not( :last-child ) {
+			margin-bottom: 0;
+		}
 	}
 }
 

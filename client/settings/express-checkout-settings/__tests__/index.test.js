@@ -114,21 +114,9 @@ describe( 'ExpressCheckoutSettings', () => {
 		);
 
 		const label = screen.getByRole( 'checkbox', {
-			name: 'Enable Apple Pay / Google Pay',
+			name: 'Enable Apple Pay / Google Pay as express payment buttons',
 		} );
 		expect( label ).toBeInTheDocument();
-	} );
-
-	test( 'renders payment request general setting and confirm its first heading', () => {
-		renderWithSettingsProvider(
-			<ExpressCheckoutSettings methodId="payment_request" />
-		);
-
-		expect(
-			screen.queryByText(
-				'Enable Apple Pay and Google Pay on selected pages'
-			)
-		).toBeInTheDocument();
 	} );
 
 	test( 'renders woopay settings and confirm its checkbox label', () => {
