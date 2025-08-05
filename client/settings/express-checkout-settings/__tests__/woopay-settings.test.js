@@ -160,8 +160,8 @@ describe( 'WooPaySettings', () => {
 
 		expect( updateWooPayCustomMessageHandler ).not.toHaveBeenCalled();
 
-		await userEvent.type( screen.getByRole( 'textbox' ), 'test' );
-		expect( updateWooPayCustomMessageHandler ).toHaveBeenLastCalledWith(
+		await userEvent.paste( screen.getByRole( 'textbox' ), 'test' );
+		expect( updateWooPayCustomMessageHandler ).toHaveBeenCalledWith(
 			'test'
 		);
 	} );

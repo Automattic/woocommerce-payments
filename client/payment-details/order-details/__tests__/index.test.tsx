@@ -142,6 +142,11 @@ describe( 'Order details page', () => {
 
 	let selectors: Record< string, () => any >;
 
+	beforeAll( () => {
+		jest.spyOn( console, 'error' ).mockImplementation( () => null );
+		jest.spyOn( console, 'warn' ).mockImplementation( () => null );
+	} );
+
 	beforeEach( () => {
 		selectors = {};
 

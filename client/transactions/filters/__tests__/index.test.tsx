@@ -5,7 +5,7 @@
  */
 import React from 'react';
 import { act, render, screen } from '@testing-library/react';
-import user from '@testing-library/user-event';
+import { userEvent as user } from 'jest-utils/user-event-timers';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 
 /**
@@ -64,6 +64,8 @@ global.wooPaymentsPaymentMethodsConfig = {
 
 describe( 'Transactions filters', () => {
 	beforeAll( () => {
+		jest.spyOn( console, 'error' ).mockImplementation( () => null );
+		jest.spyOn( console, 'warn' ).mockImplementation( () => null );
 		jest.useFakeTimers();
 	} );
 
@@ -134,6 +136,11 @@ describe( 'Transactions filters', () => {
 			await user.click( screen.getByRole( 'link', { name: /Filter/ } ) );
 
 			expect( getQuery().date_before ).toEqual( '2020-04-29' );
+
+			expect( console ).toHaveWarnedWith(
+				'wp.date.__experimentalGetSettings is deprecated since version 6.1. Please use wp.date.getSettings instead.'
+			);
+			expect( console ).toHaveErrored();
 		} );
 
 		test( 'should filter by after', async () => {

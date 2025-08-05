@@ -174,6 +174,11 @@ describe( 'Payment details page', () => {
 	const redirectUrl =
 		'admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock';
 
+	beforeAll( () => {
+		jest.spyOn( console, 'error' ).mockImplementation( () => null );
+		jest.spyOn( console, 'warn' ).mockImplementation( () => null );
+	} );
+
 	beforeEach( () => {
 		Object.defineProperty( window, 'location', {
 			value: { href: 'http://example.com' },

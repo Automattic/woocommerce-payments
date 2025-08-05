@@ -5,7 +5,6 @@
  */
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 
 /**
  * Internal dependencies
@@ -90,7 +89,7 @@ describe( 'FileUploadControl', () => {
 		);
 	} );
 
-	test( 'triggers onFileChange two times when selecting the same file again', async () => {
+	test( 'triggers onFileChange two times when selecting the same file again', () => {
 		const { container: control } = render(
 			<FileUploadControl { ...baseProps } />
 		);
@@ -102,8 +101,8 @@ describe( 'FileUploadControl', () => {
 		// Note: FormFileUpload does not associate file input with label so workaround is required to select it.
 		const input = control.querySelector( 'input[type="file"]' );
 		if ( input !== null ) {
-			await userEvent.upload( input, file );
-			await userEvent.upload( input, file );
+			fireEvent.change( input, { target: { files: [ file ] } } );
+			fireEvent.change( input, { target: { files: [ file ] } } );
 		}
 
 		expect( baseProps.onFileChange ).toHaveBeenNthCalledWith(

@@ -207,7 +207,6 @@ exports[`Payment details page should match the snapshot - Charge query param 1`]
                 <div
                   class="payment-details-summary__breakdown"
                 >
-                  
                   <p>
                     <span
                       aria-busy="true"
@@ -216,7 +215,6 @@ exports[`Payment details page should match the snapshot - Charge query param 1`]
                       Fee amount
                     </span>
                   </p>
-                  
                   <p>
                     <span
                       aria-busy="true"
@@ -878,12 +876,10 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
                 <div
                   class="payment-details-summary__breakdown"
                 >
-                  
                   <p>
                     Fees: 
                     -$74.00
                   </p>
-                  
                   <p>
                     Net: 
                     $1,426.00

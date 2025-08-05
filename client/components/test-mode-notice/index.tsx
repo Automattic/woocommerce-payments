@@ -85,7 +85,7 @@ const getNoticeContent = (
 							strong: <strong />,
 							learnMoreLink: (
 								// Link content is in the format string above. Consider disabling jsx-a11y/anchor-has-content.
-								// eslint-disable-next-line jsx-a11y/anchor-has-content
+
 								<ExternalLink
 									href={
 										'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/'
