@@ -28,12 +28,8 @@ const documentationTypeMap = {
 };
 
 const getDocumentationUrlForDisabledPaymentMethod = (
-	paymentMethodId: string,
-	isPoInProgress = false
+	paymentMethodId: string
 ): string => {
-	if ( isPoInProgress ) {
-		return 'https://woocommerce.com/document/woopayments/startup-guide/gradual-signup/#additional-payment-methods';
-	}
 	if ( methodsConfiguration?.[ paymentMethodId ]?.allows_pay_later ) {
 		return documentationTypeMap.BNPLS;
 	}
@@ -56,9 +52,6 @@ const usePaymentMethodAvailability = ( id: string ) => {
 	const [ enabledPaymentMethods ] = useEnabledPaymentMethodIds();
 	const [ isManualCaptureEnabled ] = useManualCapture();
 
-	const isPoEnabled = wcpaySettings?.progressiveOnboarding?.isEnabled;
-	const isPoComplete = wcpaySettings?.progressiveOnboarding?.isComplete;
-
 	const {
 		stripe_key: stripeKey,
 		currencies,
@@ -71,12 +64,7 @@ const usePaymentMethodAvailability = ( id: string ) => {
 		requirements: [],
 	};
 
-	// We want to show a tooltip if PO is enabled and not yet complete. (We make an exception to not show this for card payments).
-	const isPoInProgress = isPoEnabled && ! isPoComplete;
-	if (
-		upeCapabilityStatuses.INACTIVE === status ||
-		( isPoInProgress && upeCapabilityStatuses.UNREQUESTED === status )
-	) {
+	if ( upeCapabilityStatuses.INACTIVE === status ) {
 		return {
 			isActionable: false,
 			chip: __( 'More information needed', 'woocommerce-payments' ),
@@ -96,8 +84,7 @@ const usePaymentMethodAvailability = ( id: string ) => {
 								'woocommerce-payments'
 							) }
 							href={ getDocumentationUrlForDisabledPaymentMethod(
-								id,
-								isPoInProgress
+								id
 							) }
 						/>
 					),

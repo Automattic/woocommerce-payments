@@ -95,10 +95,6 @@ describe( 'Overview page', () => {
 					status: 'enabled',
 					interval: 'weekly',
 				},
-				progressiveOnboarding: {
-					isComplete: false,
-					isEnabled: false,
-				},
 			},
 			accountFees: {
 				base: {
@@ -255,45 +251,9 @@ describe( 'Overview page', () => {
 		).toBeVisible();
 	} );
 
-	it( 'displays ProgressiveOnboardingEligibilityModal if showProgressiveOnboardingEligibilityModal is true', () => {
+	it( 'displays ConnectionSuccessModal', () => {
 		getQuery.mockReturnValue( { 'wcpay-connection-success': '1' } );
 
-		global.wcpaySettings.accountStatus.progressiveOnboarding.isEnabled = true;
-
-		render( <OverviewPage /> );
-
-		expect(
-			screen.getByText( "You're ready to accept payments!" )
-		).toBeInTheDocument();
-	} );
-
-	it( 'does not displays ProgressiveOnboardingEligibilityModal if showProgressiveOnboardingEligibilityModal is false', () => {
-		const query = () => screen.queryByText( 'You’re ready to sell.' );
-
-		render( <OverviewPage /> );
-
-		expect( query() ).not.toBeInTheDocument();
-
-		getQuery.mockReturnValue( { 'wcpay-connection-success': '1' } );
-
-		render( <OverviewPage /> );
-
-		expect( query() ).not.toBeInTheDocument();
-
-		global.wcpaySettings.accountStatus.progressiveOnboarding = {
-			isEnabled: true,
-			isComplete: true,
-		};
-
-		render( <OverviewPage /> );
-
-		expect( query() ).not.toBeInTheDocument();
-	} );
-
-	it( 'displays ConnectionSuccessModal if progressiveOnboarding is not enabled', () => {
-		getQuery.mockReturnValue( { 'wcpay-connection-success': '1' } );
-
-		global.wcpaySettings.accountStatus.progressiveOnboarding.isEnabled = false;
 		global.wcpaySettings.testModeOnboarding = false;
 
 		render( <OverviewPage /> );
@@ -303,25 +263,10 @@ describe( 'Overview page', () => {
 		).toBeInTheDocument();
 	} );
 
-	it( 'displays ConnectionSuccessModal if progressiveOnboarding is enabled and complete', () => {
-		getQuery.mockReturnValue( { 'wcpay-connection-success': '1' } );
-
-		global.wcpaySettings.accountStatus.progressiveOnboarding.isEnabled = true;
-		global.wcpaySettings.accountStatus.progressiveOnboarding.isComplete = true;
-		global.wcpaySettings.testModeOnboarding = false;
-
-		render( <OverviewPage /> );
-
-		expect(
-			screen.getByText( "You're ready to accept payments!" )
-		).toBeInTheDocument();
-	} );
-
-	it( 'does not displays ConnectionSuccessModal connection success false', () => {
+	it( 'does not displays ConnectionSuccessModal when no query param', () => {
 		const query = () =>
 			screen.queryByText( "You're ready to accept payments!" );
 
-		global.wcpaySettings.accountStatus.progressiveOnboarding.isEnabled = false;
 		global.wcpaySettings.testModeOnboarding = false;
 
 		render( <OverviewPage /> );
@@ -329,12 +274,11 @@ describe( 'Overview page', () => {
 		expect( query() ).not.toBeInTheDocument();
 	} );
 
-	it( 'does not displays ConnectionSuccessModal if testModeOnboarding is false', () => {
+	it( 'does not displays ConnectionSuccessModal when testModeOnboarding', () => {
 		const query = () =>
 			screen.queryByText( "You're ready to accept payments!" );
 		getQuery.mockReturnValue( { 'wcpay-connection-success': '1' } );
 
-		global.wcpaySettings.accountStatus.progressiveOnboarding.isEnabled = false;
 		global.wcpaySettings.testModeOnboarding = true;
 
 		render( <OverviewPage /> );
