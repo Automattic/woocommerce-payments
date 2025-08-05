@@ -49,10 +49,6 @@ describe( 'AccountStatus', () => {
 					status: 'enabled',
 					interval: 'weekly',
 				},
-				progressiveOnboarding: {
-					isEnabled: false,
-					isComplete: false,
-				},
 			},
 			[
 				{
@@ -89,10 +85,6 @@ describe( 'AccountStatus', () => {
 				deposits: {
 					status: 'enabled',
 					interval: 'weekly',
-				},
-				progressiveOnboarding: {
-					isEnabled: false,
-					isComplete: false,
 				},
 			},
 			[
@@ -132,10 +124,6 @@ describe( 'AccountStatus', () => {
 				deposits: {
 					status: 'enabled',
 					interval: 'weekly',
-				},
-				progressiveOnboarding: {
-					isEnabled: false,
-					isComplete: false,
 				},
 			},
 			[
@@ -219,31 +207,12 @@ describe( 'StatusChip', () => {
 		expect( statusChip ).toMatchSnapshot();
 	} );
 
-	test( 'renders pending verification status for progressive onboarding', () => {
-		const { container: statusChip } = renderStatusChip(
-			'pending_verification',
-			true,
-			false
-		);
-		expect( statusChip ).toMatchSnapshot();
-	} );
-
 	test( 'renders unknown status', () => {
 		const { container: statusChip } = renderStatusChip( 'foobar' );
 		expect( statusChip ).toMatchSnapshot();
 	} );
 
-	function renderStatusChip(
-		accountStatus,
-		poEnabled = false,
-		poComplete = false
-	) {
-		return render(
-			<StatusChip
-				accountStatus={ accountStatus }
-				poEnabled={ poEnabled }
-				poComplete={ poComplete }
-			/>
-		);
+	function renderStatusChip( accountStatus ) {
+		return render( <StatusChip accountStatus={ accountStatus } /> );
 	}
 } );

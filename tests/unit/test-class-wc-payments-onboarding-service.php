@@ -174,7 +174,7 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 		delete_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT );
 
 		// Act.
-		$result = $this->onboarding_service->create_embedded_kyc_session( [], false );
+		$result = $this->onboarding_service->create_embedded_kyc_session( [] );
 
 		// Assert.
 		$this->assertEquals( $expected_account_session['client_secret'], $result['clientSecret'] );
@@ -195,7 +195,7 @@ class WC_Payments_Onboarding_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn( false );
 
 		// Act.
-		$result = $this->onboarding_service->create_embedded_kyc_session( [], false );
+		$result = $this->onboarding_service->create_embedded_kyc_session( [] );
 
 		// Assert.
 		$this->assertEmpty( $result );
