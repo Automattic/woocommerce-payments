@@ -1173,13 +1173,14 @@ class Express_Checkout_Element_States {
 	 * @see https://github.com/google/libaddressinput/wiki/AddressValidationMetadata
 	 */
 	const COUNTRIES_WITHOUT_STATES = [
+		Country_Code::ALGERIA,
 		Country_Code::ANGOLA,
 		Country_Code::BANGLADESH,
-		Country_Code::BULGARIA,
 		Country_Code::BENIN,
 		Country_Code::BOLIVIA,
+		Country_Code::BULGARIA,
+		Country_Code::CROATIA,
 		Country_Code::DOMINICAN_REPUBLIC,
-		Country_Code::ALGERIA,
 		Country_Code::GHANA,
 		Country_Code::GUATEMALA,
 		Country_Code::HUNGARY,
@@ -1193,9 +1194,9 @@ class Express_Checkout_Element_States {
 		Country_Code::PAKISTAN,
 		Country_Code::PARAGUAY,
 		Country_Code::ROMANIA,
+		Country_Code::SOUTH_AFRICA,
 		Country_Code::TANZANIA,
 		Country_Code::UGANDA,
-		Country_Code::SOUTH_AFRICA,
 		Country_Code::ZAMBIA,
 	];
 }

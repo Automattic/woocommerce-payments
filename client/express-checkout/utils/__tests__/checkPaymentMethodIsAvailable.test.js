@@ -18,6 +18,11 @@ describe( 'checkPaymentMethodIsAvailable', () => {
 	let mockApi;
 	let onReadySpy;
 
+	beforeAll( () => {
+		jest.spyOn( console, 'error' ).mockImplementation( () => null );
+		jest.spyOn( console, 'warn' ).mockImplementation( () => null );
+	} );
+
 	beforeEach( () => {
 		jest.useFakeTimers();
 		mockApi = {

@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import { fireEvent, render, screen, within } from '@testing-library/react';
+import { fireEvent, render, screen, within, act } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 import moment from 'moment';
@@ -12,7 +12,7 @@ import moment from 'moment';
  */
 import PaymentDetailsSummary from '../';
 import { useAuthorization } from 'wcpay/data';
-import { paymentIntentMock } from 'wcpay/data/payment-intents/test/hooks';
+import { paymentIntentMock } from 'wcpay/data/payment-intents/__tests__/hooks.test';
 
 // Mock dateI18n
 jest.mock( '@wordpress/date', () => ( {
@@ -529,7 +529,7 @@ describe( 'PaymentDetailsSummary', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 
-	test( 'renders the fee breakdown tooltip of a disputed charge', () => {
+	test( 'renders the fee breakdown tooltip of a disputed charge', async () => {
 		const charge = {
 			...getBaseCharge(),
 			currency: 'jpy',
@@ -561,7 +561,7 @@ describe( 'PaymentDetailsSummary', () => {
 		const tooltipButton = screen.getByRole( 'button', {
 			name: /Fee breakdown/i,
 		} );
-		userEvent.click( tooltipButton );
+		await userEvent.click( tooltipButton );
 
 		// Check fee breakdown calculated correctly
 		const tooltipContent = screen.getByRole( 'tooltip' );
@@ -636,7 +636,7 @@ describe( 'PaymentDetailsSummary', () => {
 		} );
 	} );
 
-	test( 'correctly renders the accept dispute modal and accepts', () => {
+	test( 'correctly renders the accept dispute modal and accepts', async () => {
 		const charge = getBaseCharge();
 		charge.disputed = true;
 		charge.dispute = getBaseDispute();
@@ -649,7 +649,7 @@ describe( 'PaymentDetailsSummary', () => {
 		} );
 
 		// Open the modal
-		openModalButton.click();
+		await userEvent.click( openModalButton );
 
 		screen.getByRole( 'heading', {
 			name: /Accept the dispute?/,
@@ -666,7 +666,7 @@ describe( 'PaymentDetailsSummary', () => {
 		} );
 
 		// Accept the dispute
-		acceptButton.click();
+		await userEvent.click( acceptButton );
 
 		expect( mockDisputeDoAccept ).toHaveBeenCalledTimes( 1 );
 	} );
@@ -684,9 +684,9 @@ describe( 'PaymentDetailsSummary', () => {
 			name: /Challenge dispute/,
 		} );
 
-		challengeButton.click();
-
-		expect( window.location.href ).toContain(
+		const challengeLink = challengeButton.closest( 'a' );
+		expect( challengeLink ).toHaveAttribute(
+			'href',
 			`admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=${ charge.dispute.id }`
 		);
 	} );
@@ -998,9 +998,13 @@ describe( 'PaymentDetailsSummary', () => {
 			expect( screen.getByText( 'Refund in full' ) ).toBeInTheDocument();
 		} );
 
-		test( 'Refund in full option is not available when an amount has been refunded', () => {
-			renderCharge( { ...getBaseCharge(), amount_refunded: 42 } );
-			fireEvent.click( screen.getByLabelText( 'Transaction actions' ) );
+		test( 'Refund in full option is not available when an amount has been refunded', async () => {
+			await act( async () => {
+				renderCharge( { ...getBaseCharge(), amount_refunded: 42 } );
+			} );
+			await userEvent.click(
+				screen.getByLabelText( 'Transaction actions' )
+			);
 			expect(
 				screen.queryByText( 'Refund in full' )
 			).not.toBeInTheDocument();
@@ -1012,8 +1016,10 @@ describe( 'PaymentDetailsSummary', () => {
 			expect( screen.getByText( 'Partial refund' ) ).toBeInTheDocument();
 		} );
 
-		test( 'Refund control menu is not visible when charge is not captured', () => {
-			renderCharge( { ...getBaseCharge(), captured: false } );
+		test( 'Refund control menu is not visible when charge is not captured', async () => {
+			await act( async () => {
+				renderCharge( { ...getBaseCharge(), captured: false } );
+			} );
 			expect(
 				screen.queryByLabelText( 'Transaction actions' )
 			).not.toBeInTheDocument();
