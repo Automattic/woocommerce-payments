@@ -2,8 +2,8 @@ name: "Release - Code freeze"
 
 # This action will run according to the cron schedule or when triggered manually
 on:
-  schedule:
-    - cron: '0 12 * * 0' # Run at 1200 UTC on Sundays.
+  # schedule:
+    # - cron: '0 18 * * 3' # Run at 1800 UTC on Wednesdays.
   workflow_dispatch:
     inputs:
       skipSlackPing:
