@@ -312,6 +312,7 @@ const WooPaySettings = ( { section } ) => {
 							'Preview of checkout',
 							'woocommerce-payments'
 						) }
+						__nextHasNoMarginBottom
 					>
 						<WooPayPreview
 							storeName={ wcSettings.siteTitle }

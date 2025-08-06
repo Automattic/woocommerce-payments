@@ -239,6 +239,7 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 								px
 							</div>
 						}
+						__next40pxDefaultSize
 					/>
 					<RangeControl
 						label={ __(

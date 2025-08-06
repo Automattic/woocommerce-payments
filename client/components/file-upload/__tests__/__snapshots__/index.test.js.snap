@@ -5,7 +5,34 @@ exports[`FileUploadControl renders default file upload control 1`] = `
   <div
     class="components-drop-zone"
     data-is-drop-zone="true"
-  />
+  >
+    <div
+      class="components-drop-zone__content"
+    >
+      <div
+        class="components-drop-zone__content-inner"
+      >
+        <svg
+          aria-hidden="true"
+          class="components-drop-zone__content-icon"
+          focusable="false"
+          height="24"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M18.5 15v3.5H13V6.7l4.5 4.1 1-1.1-6.2-5.8-5.8 5.8 1 1.1 4-4v11.7h-6V15H4v5h16v-5z"
+          />
+        </svg>
+        <span
+          class="components-drop-zone__content-text"
+        >
+          Drop files to upload
+        </span>
+      </div>
+    </div>
+  </div>
   <div
     class="file-upload"
   >
@@ -48,7 +75,34 @@ exports[`FileUploadControl renders disabled state 1`] = `
   <div
     class="components-drop-zone"
     data-is-drop-zone="true"
-  />
+  >
+    <div
+      class="components-drop-zone__content"
+    >
+      <div
+        class="components-drop-zone__content-inner"
+      >
+        <svg
+          aria-hidden="true"
+          class="components-drop-zone__content-icon"
+          focusable="false"
+          height="24"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M18.5 15v3.5H13V6.7l4.5 4.1 1-1.1-6.2-5.8-5.8 5.8 1 1.1 4-4v11.7h-6V15H4v5h16v-5z"
+          />
+        </svg>
+        <span
+          class="components-drop-zone__content-text"
+        >
+          Drop files to upload
+        </span>
+      </div>
+    </div>
+  </div>
   <div
     class="file-upload"
   >
@@ -97,7 +151,34 @@ exports[`FileUploadControl renders loading state 1`] = `
   <div
     class="components-drop-zone"
     data-is-drop-zone="true"
-  />
+  >
+    <div
+      class="components-drop-zone__content"
+    >
+      <div
+        class="components-drop-zone__content-inner"
+      >
+        <svg
+          aria-hidden="true"
+          class="components-drop-zone__content-icon"
+          focusable="false"
+          height="24"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M18.5 15v3.5H13V6.7l4.5 4.1 1-1.1-6.2-5.8-5.8 5.8 1 1.1 4-4v11.7h-6V15H4v5h16v-5z"
+          />
+        </svg>
+        <span
+          class="components-drop-zone__content-text"
+        >
+          Drop files to upload
+        </span>
+      </div>
+    </div>
+  </div>
   <div
     class="file-upload"
   >
@@ -141,7 +222,34 @@ exports[`FileUploadControl renders upload done state 1`] = `
   <div
     class="components-drop-zone"
     data-is-drop-zone="true"
-  />
+  >
+    <div
+      class="components-drop-zone__content"
+    >
+      <div
+        class="components-drop-zone__content-inner"
+      >
+        <svg
+          aria-hidden="true"
+          class="components-drop-zone__content-icon"
+          focusable="false"
+          height="24"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M18.5 15v3.5H13V6.7l4.5 4.1 1-1.1-6.2-5.8-5.8 5.8 1 1.1 4-4v11.7h-6V15H4v5h16v-5z"
+          />
+        </svg>
+        <span
+          class="components-drop-zone__content-text"
+        >
+          Drop files to upload
+        </span>
+      </div>
+    </div>
+  </div>
   <div
     class="file-upload"
   >
@@ -208,7 +316,34 @@ exports[`FileUploadControl renders upload failed state 1`] = `
   <div
     class="components-drop-zone"
     data-is-drop-zone="true"
-  />
+  >
+    <div
+      class="components-drop-zone__content"
+    >
+      <div
+        class="components-drop-zone__content-inner"
+      >
+        <svg
+          aria-hidden="true"
+          class="components-drop-zone__content-icon"
+          focusable="false"
+          height="24"
+          viewBox="0 0 24 24"
+          width="24"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path
+            d="M18.5 15v3.5H13V6.7l4.5 4.1 1-1.1-6.2-5.8-5.8 5.8 1 1.1 4-4v11.7h-6V15H4v5h16v-5z"
+          />
+        </svg>
+        <span
+          class="components-drop-zone__content-text"
+        >
+          Drop files to upload
+        </span>
+      </div>
+    </div>
+  </div>
   <div
     class="file-upload"
   >
