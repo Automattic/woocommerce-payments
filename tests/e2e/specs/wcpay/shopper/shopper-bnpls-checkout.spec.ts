@@ -67,7 +67,7 @@ test.describe( 'BNPL checkout', { tag: '@critical' }, () => {
 					);
 
 					await shopperPage
-						.getByRole( 'button', { name: 'Add to cart' } )
+						.locator( '.single_add_to_cart_button' )
 						.click();
 					await shopperPage.waitForLoadState( 'domcontentloaded' );
 					await expect(

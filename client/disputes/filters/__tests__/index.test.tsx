@@ -33,6 +33,11 @@ async function addCurrencyFilter( filter: string ) {
 }
 
 describe( 'Dispute filters', () => {
+	beforeAll( () => {
+		jest.spyOn( console, 'error' ).mockImplementation( () => null );
+		jest.spyOn( console, 'warn' ).mockImplementation( () => null );
+	} );
+
 	// Waiting for the microtask queue to be flushed to prevent "TypeError: Cannot read properties of null (reading 'documentElement')"
 	// See https://github.com/floating-ui/floating-ui/issues/1908 and https://floating-ui.com/docs/react#testing
 	afterEach( async () => {
@@ -110,6 +115,11 @@ describe( 'Dispute filters', () => {
 				);
 
 				expect( getQuery().date_before ).toEqual( '2020-04-29' );
+
+				expect( console ).toHaveWarnedWith(
+					'wp.date.__experimentalGetSettings is deprecated since version 6.1. Please use wp.date.getSettings instead.'
+				);
+				expect( console ).toHaveErrored();
 			} );
 
 			test( 'should filter by after', async () => {

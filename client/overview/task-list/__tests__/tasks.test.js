@@ -119,9 +119,6 @@ describe( 'getTasks()', () => {
 				currentDeadline: 1620857083,
 				pastDue: false,
 				accountLink: 'http://example.com',
-				progressiveOnboarding: {
-					isEnabled: false,
-				},
 				detailsSubmitted: true,
 			},
 			zeroDecimalCurrencies: [],
@@ -383,9 +380,6 @@ describe( 'getTasks()', () => {
 				currentDeadline: 1620857083,
 				pastDue: false,
 				accountLink: 'http://example.com',
-				progressiveOnboarding: {
-					isEnabled: false,
-				},
 			},
 			activeDisputes: mockActiveDisputes.slice( 0, 2 ),
 		} );
@@ -424,35 +418,6 @@ describe( 'getTasks()', () => {
 			] )
 		);
 	} );
-
-	it( 'should include the po task', () => {
-		global.wcpaySettings = {
-			accountStatus: {
-				status: 'restricted_soon',
-				detailsSubmitted: true,
-				progressiveOnboarding: {
-					isEnabled: true,
-					isComplete: false,
-					tpv: 10000,
-					firstTransactionDate: '2023-02-02',
-				},
-				created: '2022-01-31',
-			},
-		};
-		const actual = getTasks( {} );
-
-		expect( actual ).toEqual(
-			expect.arrayContaining( [
-				expect.objectContaining( {
-					key: 'verify-bank-details-po',
-					completed: false,
-					level: 3,
-					title:
-						'Verify your bank account to start receiving payouts',
-				} ),
-			] )
-		);
-	} );
 } );
 
 describe( 'taskSort()', () => {
@@ -466,9 +431,6 @@ describe( 'taskSort()', () => {
 				currentDeadline: 1620857083,
 				pastDue: false,
 				accountLink: 'http://example.com',
-				progressiveOnboarding: {
-					isEnabled: false,
-				},
 			},
 			zeroDecimalCurrencies: [],
 			connect: {
@@ -491,7 +453,7 @@ describe( 'taskSort()', () => {
 		// roll it back
 		Date.now = () => new Date();
 	} );
-	it( 'should sort the tasks without po', () => {
+	it( 'should sort the tasks', () => {
 		const unsortedTasks = getTasks( {
 			activeDisputes: mockActiveDisputes,
 		} );
@@ -513,44 +475,6 @@ describe( 'taskSort()', () => {
 				key: 'dispute-resolution-task-dp_1-dp_2-dp_3',
 				completed: false,
 				level: 1,
-			} )
-		);
-	} );
-
-	it( 'should sort the tasks with po', () => {
-		global.wcpaySettings = {
-			accountStatus: {
-				status: 'restricted_soon',
-				detailsSubmitted: true,
-				progressiveOnboarding: {
-					isEnabled: true,
-					isComplete: false,
-					tpv: 10000,
-					firstTransactionDate: '2023-02-02',
-				},
-				created: '2022-01-31',
-			},
-		};
-		const unsortedTasks = getTasks( {} );
-		unsortedTasks.unshift( {
-			key: 'test-element',
-			completed: true,
-			level: 3,
-		} );
-		expect( unsortedTasks[ 0 ] ).toEqual(
-			expect.objectContaining( {
-				key: 'test-element',
-				completed: true,
-				level: 3,
-			} )
-		);
-		const sortedTasks = unsortedTasks.sort( taskSort );
-		expect( sortedTasks[ 0 ] ).toEqual(
-			expect.objectContaining( {
-				key: 'verify-bank-details-po',
-				completed: false,
-				level: 3,
-				title: 'Verify your bank account to start receiving payouts',
 			} )
 		);
 	} );

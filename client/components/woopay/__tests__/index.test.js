@@ -89,7 +89,7 @@ describe( 'woopayPaymentMethod', () => {
 		expect( buyNowButton ).not.toBeDisabled();
 
 		// Let's click it. It should be disabled and initWooPay should be called.
-		userEvent.click( buyNowButton );
+		await userEvent.click( buyNowButton );
 		expect( buyNowButton ).toBeDisabled();
 		expect( apiMock.initWooPay ).toHaveBeenCalledTimes( 1 );
 

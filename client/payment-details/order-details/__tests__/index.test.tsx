@@ -16,6 +16,29 @@ import { STORE_NAME } from 'wcpay/data/constants';
 import { useAuthorization, useChargeFromOrder, useTimeline } from 'wcpay/data';
 import { ApiError } from 'wcpay/types/errors';
 
+// Suppress React 18 deprecation warnings from external @woocommerce/components
+// eslint-disable-next-line no-console
+const originalError = console.error;
+beforeAll( () => {
+	// eslint-disable-next-line no-console
+	console.error = ( ...args ) => {
+		// Suppress React 18 defaultProps deprecation warnings from external components
+		if (
+			args[ 0 ] &&
+			typeof args[ 0 ] === 'string' &&
+			args[ 0 ].includes( 'Support for defaultProps will be removed' )
+		) {
+			return;
+		}
+		originalError.call( console, ...args );
+	};
+} );
+
+afterAll( () => {
+	// eslint-disable-next-line no-console
+	console.error = originalError;
+} );
+
 declare const global: {
 	wcSettings: { countries: Record< string, string > };
 	wcpaySettings: {
@@ -141,6 +164,11 @@ describe( 'Order details page', () => {
 		'admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions%2Fdetails&id=pi_mock';
 
 	let selectors: Record< string, () => any >;
+
+	beforeAll( () => {
+		jest.spyOn( console, 'error' ).mockImplementation( () => null );
+		jest.spyOn( console, 'warn' ).mockImplementation( () => null );
+	} );
 
 	beforeEach( () => {
 		selectors = {};

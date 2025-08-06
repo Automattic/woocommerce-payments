@@ -12,6 +12,25 @@ import user from '@testing-library/user-event';
  */
 import ConfirmPaymentMethodActivationModal from '../activation-modal';
 
+// Mock ResizeObserver for modal components - comprehensive setup
+class MockResizeObserver {
+	observe() {}
+	unobserve() {}
+	disconnect() {}
+}
+
+// Set up ResizeObserver mock in multiple places to ensure it's available
+global.ResizeObserver = MockResizeObserver;
+global.window = global.window || {};
+global.window.ResizeObserver = MockResizeObserver;
+
+// Ensure it's available on window in JSDOM environment
+Object.defineProperty( window, 'ResizeObserver', {
+	writable: true,
+	configurable: true,
+	value: MockResizeObserver,
+} );
+
 const mockOnClose = jest.fn();
 const mockOnConfirm = jest.fn();
 

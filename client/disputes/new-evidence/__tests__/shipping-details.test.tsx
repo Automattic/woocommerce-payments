@@ -19,15 +19,6 @@ describe( 'ShippingDetails', () => {
 		},
 	};
 
-	beforeAll( () => {
-		// eslint-disable-next-line @typescript-eslint/no-empty-function
-		jest.spyOn( console, 'error' ).mockImplementation( () => {} );
-	} );
-	afterAll( () => {
-		// eslint-disable-next-line no-console
-		( console.error as jest.Mock ).mockRestore();
-	} );
-
 	it( 'renders all shipping fields', () => {
 		render(
 			<ShippingDetails

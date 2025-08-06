@@ -5,7 +5,6 @@
  */
 import React from 'react';
 import { render, fireEvent } from '@testing-library/react';
-import userEvent from '@testing-library/user-event';
 
 /**
  * Internal dependencies
@@ -94,7 +93,7 @@ describe( 'FileUploadControl', () => {
 		);
 	} );
 
-	test( 'triggers onFileChange two times when selecting the same file again', async () => {
+	test( 'triggers onFileChange two times when selecting the same file again', () => {
 		const { container: control } = render(
 			<FileUploadControl { ...props } />
 		);
@@ -108,10 +107,11 @@ describe( 'FileUploadControl', () => {
 			'input[type="file"]'
 		);
 		if ( input !== null ) {
-			await userEvent.upload( input, file );
-			await userEvent.upload( input, file );
+			fireEvent.change( input, { target: { files: [ file ] } } );
+			fireEvent.change( input, { target: { files: [ file ] } } );
 		}
 
+		expect( props.onFileChange ).toHaveBeenCalledTimes( 2 );
 		expect( props.onFileChange ).toHaveBeenNthCalledWith(
 			2,
 			field.key,

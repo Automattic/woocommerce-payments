@@ -39,8 +39,8 @@ const SetupLivePaymentsModal: React.FC< Props > = ( {
 			page: 'wc-settings',
 			tab: 'checkout',
 			path: '/woopayments/onboarding',
-			source: 'wcpay-setup-live-payments',
-			from: from,
+			source,
+			from: 'wcpay-setup-live-payments',
 		} );
 	};
 

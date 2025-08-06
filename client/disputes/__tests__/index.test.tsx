@@ -12,7 +12,7 @@ import userEvent from '@testing-library/user-event';
  */
 import DisputesList from '..';
 import { useDisputes, useDisputesSummary, useSettings } from 'data';
-import React from 'react';
+import React, { act } from 'react';
 import {
 	CachedDispute,
 	DisputeReason,
@@ -28,6 +28,7 @@ jest.mock( '@wordpress/data', () => ( {
 	dispatch: jest.fn( () => ( {
 		setIsMatching: jest.fn(),
 		onLoad: jest.fn(),
+		onHistoryChange: jest.fn(),
 	} ) ),
 	registerStore: jest.fn(),
 	select: jest.fn(),
@@ -301,7 +302,11 @@ describe( 'Disputes list', () => {
 
 			const { getByRole } = render( <DisputesList /> );
 
-			await userEvent.click( getByRole( 'button', { name: 'Export' } ) );
+			await act( async () => {
+				await userEvent.click(
+					getByRole( 'button', { name: 'Export' } )
+				);
+			} );
 
 			expect( window.confirm ).toHaveBeenCalledTimes( 1 );
 			expect( window.confirm ).toHaveBeenCalledWith(
