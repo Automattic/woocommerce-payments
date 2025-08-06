@@ -74,6 +74,7 @@ const ManualCaptureControl = (): JSX.Element => {
 									),
 									components: {
 										a: (
+											// @ts-expect-error: children is provided when interpolating the component
 											<ExternalLink href="https://woocommerce.com/in-person-payments/" />
 										),
 									},

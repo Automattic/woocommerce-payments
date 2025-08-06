@@ -3,7 +3,7 @@
 exports[`DownloadButton renders a disabled button 1`] = `
 <div>
   <button
-    class="components-button woocommerce-table__download-button"
+    class="components-button woocommerce-table__download-button is-next-40px-default-size"
     disabled=""
     type="button"
   >
@@ -36,7 +36,7 @@ exports[`DownloadButton renders a disabled button 1`] = `
 exports[`DownloadButton renders an active button 1`] = `
 <div>
   <button
-    class="components-button woocommerce-table__download-button"
+    class="components-button woocommerce-table__download-button is-next-40px-default-size"
     type="button"
   >
     <svg

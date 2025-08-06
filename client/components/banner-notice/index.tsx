@@ -160,6 +160,7 @@ const BannerNotice: React.FC< React.PropsWithChildren< Props > > = ( {
 								return (
 									<Button
 										key={ index }
+										// @ts-expect-error: href is a valid prop on Button
 										href={ url }
 										variant={ computedVariant }
 										onClick={ url ? undefined : onClick }

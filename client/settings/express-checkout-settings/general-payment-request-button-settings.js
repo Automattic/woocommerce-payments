@@ -226,7 +226,7 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 						value={ radius }
 						max={ 30 }
 						min={ 0 }
-						hideHTMLArrows
+						spinControls="none"
 						onChange={ ( value ) => {
 							if ( typeof value === 'string' ) {
 								setRadius( parseInt( value, 10 ) );

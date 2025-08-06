@@ -7,7 +7,7 @@ exports[`International IP address card renders correctly when enabled 1`] = `
   position: relative;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
   outline: none;
-  border-radius: calc(2px - 1px);
+  border-radius: calc(8px - 1px);
 }
 
 .emotion-2 {
@@ -22,22 +22,25 @@ exports[`International IP address card renders correctly when enabled 1`] = `
 }
 
 .emotion-4:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-4:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 .emotion-6 {
   font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
   font-size: 13px;
+  box-sizing: border-box;
 }
 
-.emotion-8 {
-  margin-bottom: calc(4px * 2);
+.emotion-6 *,
+.emotion-6 *::before,
+.emotion-6 *::after {
+  box-sizing: inherit;
 }
 
 .components-panel__row .emotion-8 {
@@ -45,23 +48,6 @@ exports[`International IP address card renders correctly when enabled 1`] = `
 }
 
 .emotion-10 {
-  margin-top: calc(4px * 2);
-  margin-bottom: 0;
-  font-size: 12px;
-  font-style: normal;
-  color: #757575;
-  margin-bottom: revert;
-}
-
-.emotion-14 {
-  width: 1em;
-  height: 1em;
-  margin: 0;
-  vertical-align: middle;
-  fill: currentColor;
-}
-
-.emotion-16 {
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -73,6 +59,7 @@ exports[`International IP address card renders correctly when enabled 1`] = `
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: start;
   -ms-flex-pack: start;
   -webkit-justify-content: flex-start;
@@ -80,15 +67,30 @@ exports[`International IP address card renders correctly when enabled 1`] = `
   width: 100%;
 }
 
-.emotion-16>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
-}
-
-.emotion-16>* {
+.emotion-10>* {
   min-width: 0;
 }
 
-.emotion-18 {
+.emotion-12 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
+}
+
+.emotion-14 {
+  margin-top: calc(4px * 2);
+  margin-bottom: 0;
+  font-size: 12px;
+  font-style: normal;
+  color: #757575;
+}
+
+.emotion-20 {
   display: block;
   max-height: 100%;
   max-width: 100%;
@@ -96,7 +98,7 @@ exports[`International IP address card renders correctly when enabled 1`] = `
   min-width: 0;
 }
 
-.emotion-22 {
+.emotion-24 {
   background: transparent;
   display: block;
   margin: 0!important;
@@ -105,19 +107,18 @@ exports[`International IP address card renders correctly when enabled 1`] = `
   will-change: box-shadow;
   border-radius: inherit;
   bottom: 0;
-  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
   opacity: 1;
   left: 0;
   right: 0;
   top: 0;
-  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  border-radius: 2px;
+  border-radius: 8px;
 }
 
-@media ( prefers-reduced-motion: reduce ) {
-  .emotion-22 {
-    transition-duration: 0ms;
+@media not ( prefers-reduced-motion ) {
+  .emotion-24 {
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
   }
 }
 
@@ -148,71 +149,72 @@ exports[`International IP address card renders correctly when enabled 1`] = `
             <div
               class="components-base-control__field emotion-8 emotion-9"
             >
-              <span
-                class="components-form-toggle is-checked"
+              <div
+                class="components-flex components-h-stack emotion-10 emotion-1"
+                data-wp-c16t="true"
+                data-wp-component="HStack"
               >
-                <input
-                  aria-describedby="inspector-toggle-control-2__help"
-                  checked=""
-                  class="components-form-toggle__input"
-                  id="inspector-toggle-control-2"
-                  type="checkbox"
-                />
                 <span
-                  class="components-form-toggle__track"
-                />
-                <span
-                  class="components-form-toggle__thumb"
-                />
-              </span>
-              <label
-                class="components-toggle-control__label"
-                for="inspector-toggle-control-2"
-              >
-                Enable International IP Address filter
-              </label>
+                  class="components-form-toggle is-checked"
+                >
+                  <input
+                    aria-describedby="inspector-toggle-control-2__help"
+                    checked=""
+                    class="components-form-toggle__input"
+                    id="inspector-toggle-control-2"
+                    type="checkbox"
+                  />
+                  <span
+                    class="components-form-toggle__track"
+                  />
+                  <span
+                    class="components-form-toggle__thumb"
+                  />
+                </span>
+                <label
+                  class="components-flex-item components-flex-block components-toggle-control__label emotion-12 emotion-1"
+                  data-wp-c16t="true"
+                  data-wp-component="FlexBlock"
+                  for="inspector-toggle-control-2"
+                >
+                  Enable International IP Address filter
+                </label>
+              </div>
             </div>
             <p
-              class="components-base-control__help emotion-10 emotion-11"
+              class="components-base-control__help emotion-14 emotion-15"
               id="inspector-toggle-control-2__help"
             >
-              This filter screens for 
-              <a
-                class="components-external-link"
-                href="https://simple.wikipedia.org/wiki/IP_address"
-                rel="external noreferrer noopener"
-                target="_blank"
+              <span
+                class="components-toggle-control__help"
               >
-                IP addresses
-                <span
-                  class="components-visually-hidden emotion-12 emotion-1"
-                  data-wp-c16t="true"
-                  data-wp-component="VisuallyHidden"
-                  style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+                This filter screens for 
+                <a
+                  class="components-external-link"
+                  href="https://simple.wikipedia.org/wiki/IP_address"
+                  rel="external noreferrer noopener"
+                  target="_blank"
                 >
-                  (opens in a new tab)
-                </span>
-                <svg
-                  aria-hidden="true"
-                  class="components-external-link__icon emotion-14 emotion-15"
-                  focusable="false"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  width="24"
-                  xmlns="http://www.w3.org/2000/svg"
+                  <span
+                    class="components-external-link__contents"
+                  >
+                    IP addresses
+                  </span>
+                  <span
+                    aria-label="(opens in a new tab)"
+                    class="components-external-link__icon"
+                  >
+                    ↗
+                  </span>
+                </a>
+                 outside of your 
+                <a
+                  href="admin.php?page=wc-settings&tab=general"
                 >
-                  <path
-                    d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
-                  />
-                </svg>
-              </a>
-               outside of your 
-              <a
-                href="admin.php?page=wc-settings&tab=general"
-              >
-                supported countries
-              </a>
-              . When enabled the payment will be blocked.
+                  supported countries
+                </a>
+                . When enabled the payment will be blocked.
+              </span>
             </p>
           </div>
         </div>
@@ -230,15 +232,23 @@ exports[`International IP address card renders correctly when enabled 1`] = `
           class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info"
         >
           <div
+            class="components-visually-hidden emotion-16 emotion-1"
+            data-wp-c16t="true"
+            data-wp-component="VisuallyHidden"
+            style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+          >
+            Information notice
+          </div>
+          <div
             class="components-notice__content"
           >
             <div
-              class="components-flex emotion-16 emotion-1"
+              class="components-flex emotion-10 emotion-1"
               data-wp-c16t="true"
               data-wp-component="Flex"
             >
               <div
-                class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon emotion-18 emotion-1"
+                class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon emotion-20 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="FlexItem"
               >
@@ -256,7 +266,7 @@ exports[`International IP address card renders correctly when enabled 1`] = `
                 </svg>
               </div>
               <div
-                class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-18 emotion-1"
+                class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-20 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="FlexItem"
               >
@@ -275,13 +285,13 @@ exports[`International IP address card renders correctly when enabled 1`] = `
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation emotion-22 emotion-1"
+      class="components-elevation emotion-24 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation emotion-22 emotion-1"
+      class="components-elevation emotion-24 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -296,7 +306,7 @@ exports[`International IP address card renders correctly when enabled and checke
   position: relative;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
   outline: none;
-  border-radius: calc(2px - 1px);
+  border-radius: calc(8px - 1px);
 }
 
 .emotion-2 {
@@ -311,22 +321,25 @@ exports[`International IP address card renders correctly when enabled and checke
 }
 
 .emotion-4:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-4:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 .emotion-6 {
   font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
   font-size: 13px;
+  box-sizing: border-box;
 }
 
-.emotion-8 {
-  margin-bottom: calc(4px * 2);
+.emotion-6 *,
+.emotion-6 *::before,
+.emotion-6 *::after {
+  box-sizing: inherit;
 }
 
 .components-panel__row .emotion-8 {
@@ -334,23 +347,6 @@ exports[`International IP address card renders correctly when enabled and checke
 }
 
 .emotion-10 {
-  margin-top: calc(4px * 2);
-  margin-bottom: 0;
-  font-size: 12px;
-  font-style: normal;
-  color: #757575;
-  margin-bottom: revert;
-}
-
-.emotion-14 {
-  width: 1em;
-  height: 1em;
-  margin: 0;
-  vertical-align: middle;
-  fill: currentColor;
-}
-
-.emotion-16 {
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -362,6 +358,7 @@ exports[`International IP address card renders correctly when enabled and checke
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: start;
   -ms-flex-pack: start;
   -webkit-justify-content: flex-start;
@@ -369,15 +366,30 @@ exports[`International IP address card renders correctly when enabled and checke
   width: 100%;
 }
 
-.emotion-16>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
-}
-
-.emotion-16>* {
+.emotion-10>* {
   min-width: 0;
 }
 
-.emotion-18 {
+.emotion-12 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
+}
+
+.emotion-14 {
+  margin-top: calc(4px * 2);
+  margin-bottom: 0;
+  font-size: 12px;
+  font-style: normal;
+  color: #757575;
+}
+
+.emotion-20 {
   display: block;
   max-height: 100%;
   max-width: 100%;
@@ -385,7 +397,7 @@ exports[`International IP address card renders correctly when enabled and checke
   min-width: 0;
 }
 
-.emotion-22 {
+.emotion-24 {
   background: transparent;
   display: block;
   margin: 0!important;
@@ -394,19 +406,18 @@ exports[`International IP address card renders correctly when enabled and checke
   will-change: box-shadow;
   border-radius: inherit;
   bottom: 0;
-  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
   opacity: 1;
   left: 0;
   right: 0;
   top: 0;
-  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  border-radius: 2px;
+  border-radius: 8px;
 }
 
-@media ( prefers-reduced-motion: reduce ) {
-  .emotion-22 {
-    transition-duration: 0ms;
+@media not ( prefers-reduced-motion ) {
+  .emotion-24 {
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
   }
 }
 
@@ -437,71 +448,72 @@ exports[`International IP address card renders correctly when enabled and checke
             <div
               class="components-base-control__field emotion-8 emotion-9"
             >
-              <span
-                class="components-form-toggle is-checked"
+              <div
+                class="components-flex components-h-stack emotion-10 emotion-1"
+                data-wp-c16t="true"
+                data-wp-component="HStack"
               >
-                <input
-                  aria-describedby="inspector-toggle-control-3__help"
-                  checked=""
-                  class="components-form-toggle__input"
-                  id="inspector-toggle-control-3"
-                  type="checkbox"
-                />
                 <span
-                  class="components-form-toggle__track"
-                />
-                <span
-                  class="components-form-toggle__thumb"
-                />
-              </span>
-              <label
-                class="components-toggle-control__label"
-                for="inspector-toggle-control-3"
-              >
-                Enable International IP Address filter
-              </label>
+                  class="components-form-toggle is-checked"
+                >
+                  <input
+                    aria-describedby="inspector-toggle-control-3__help"
+                    checked=""
+                    class="components-form-toggle__input"
+                    id="inspector-toggle-control-3"
+                    type="checkbox"
+                  />
+                  <span
+                    class="components-form-toggle__track"
+                  />
+                  <span
+                    class="components-form-toggle__thumb"
+                  />
+                </span>
+                <label
+                  class="components-flex-item components-flex-block components-toggle-control__label emotion-12 emotion-1"
+                  data-wp-c16t="true"
+                  data-wp-component="FlexBlock"
+                  for="inspector-toggle-control-3"
+                >
+                  Enable International IP Address filter
+                </label>
+              </div>
             </div>
             <p
-              class="components-base-control__help emotion-10 emotion-11"
+              class="components-base-control__help emotion-14 emotion-15"
               id="inspector-toggle-control-3__help"
             >
-              This filter screens for 
-              <a
-                class="components-external-link"
-                href="https://simple.wikipedia.org/wiki/IP_address"
-                rel="external noreferrer noopener"
-                target="_blank"
+              <span
+                class="components-toggle-control__help"
               >
-                IP addresses
-                <span
-                  class="components-visually-hidden emotion-12 emotion-1"
-                  data-wp-c16t="true"
-                  data-wp-component="VisuallyHidden"
-                  style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+                This filter screens for 
+                <a
+                  class="components-external-link"
+                  href="https://simple.wikipedia.org/wiki/IP_address"
+                  rel="external noreferrer noopener"
+                  target="_blank"
                 >
-                  (opens in a new tab)
-                </span>
-                <svg
-                  aria-hidden="true"
-                  class="components-external-link__icon emotion-14 emotion-15"
-                  focusable="false"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  width="24"
-                  xmlns="http://www.w3.org/2000/svg"
+                  <span
+                    class="components-external-link__contents"
+                  >
+                    IP addresses
+                  </span>
+                  <span
+                    aria-label="(opens in a new tab)"
+                    class="components-external-link__icon"
+                  >
+                    ↗
+                  </span>
+                </a>
+                 outside of your 
+                <a
+                  href="admin.php?page=wc-settings&tab=general"
                 >
-                  <path
-                    d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
-                  />
-                </svg>
-              </a>
-               outside of your 
-              <a
-                href="admin.php?page=wc-settings&tab=general"
-              >
-                supported countries
-              </a>
-              . When enabled the payment will be blocked.
+                  supported countries
+                </a>
+                . When enabled the payment will be blocked.
+              </span>
             </p>
           </div>
         </div>
@@ -519,15 +531,23 @@ exports[`International IP address card renders correctly when enabled and checke
           class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info"
         >
           <div
+            class="components-visually-hidden emotion-16 emotion-1"
+            data-wp-c16t="true"
+            data-wp-component="VisuallyHidden"
+            style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+          >
+            Information notice
+          </div>
+          <div
             class="components-notice__content"
           >
             <div
-              class="components-flex emotion-16 emotion-1"
+              class="components-flex emotion-10 emotion-1"
               data-wp-c16t="true"
               data-wp-component="Flex"
             >
               <div
-                class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon emotion-18 emotion-1"
+                class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon emotion-20 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="FlexItem"
               >
@@ -545,7 +565,7 @@ exports[`International IP address card renders correctly when enabled and checke
                 </svg>
               </div>
               <div
-                class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-18 emotion-1"
+                class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-20 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="FlexItem"
               >
@@ -564,13 +584,13 @@ exports[`International IP address card renders correctly when enabled and checke
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation emotion-22 emotion-1"
+      class="components-elevation emotion-24 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation emotion-22 emotion-1"
+      class="components-elevation emotion-24 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -585,7 +605,7 @@ exports[`International IP address card renders correctly when woocommerce_allowe
   position: relative;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
   outline: none;
-  border-radius: calc(2px - 1px);
+  border-radius: calc(8px - 1px);
 }
 
 .emotion-2 {
@@ -600,16 +620,16 @@ exports[`International IP address card renders correctly when woocommerce_allowe
 }
 
 .emotion-4:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-4:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
-.emotion-6 {
+.emotion-8 {
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -621,6 +641,7 @@ exports[`International IP address card renders correctly when woocommerce_allowe
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: start;
   -ms-flex-pack: start;
   -webkit-justify-content: flex-start;
@@ -628,15 +649,11 @@ exports[`International IP address card renders correctly when woocommerce_allowe
   width: 100%;
 }
 
-.emotion-6>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
-}
-
-.emotion-6>* {
+.emotion-8>* {
   min-width: 0;
 }
 
-.emotion-8 {
+.emotion-10 {
   display: block;
   max-height: 100%;
   max-width: 100%;
@@ -644,7 +661,7 @@ exports[`International IP address card renders correctly when woocommerce_allowe
   min-width: 0;
 }
 
-.emotion-12 {
+.emotion-14 {
   background: transparent;
   display: block;
   margin: 0!important;
@@ -653,19 +670,18 @@ exports[`International IP address card renders correctly when woocommerce_allowe
   will-change: box-shadow;
   border-radius: inherit;
   bottom: 0;
-  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
   opacity: 1;
   left: 0;
   right: 0;
   top: 0;
-  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  border-radius: 2px;
+  border-radius: 8px;
 }
 
-@media ( prefers-reduced-motion: reduce ) {
-  .emotion-12 {
-    transition-duration: 0ms;
+@media not ( prefers-reduced-motion ) {
+  .emotion-14 {
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
   }
 }
 
@@ -691,15 +707,23 @@ exports[`International IP address card renders correctly when woocommerce_allowe
           class="wcpay-inline-notice wcpay-inline-warning-notice components-notice is-warning"
         >
           <div
+            class="components-visually-hidden emotion-6 emotion-1"
+            data-wp-c16t="true"
+            data-wp-component="VisuallyHidden"
+            style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+          >
+            Warning notice
+          </div>
+          <div
             class="components-notice__content"
           >
             <div
-              class="components-flex emotion-6 emotion-1"
+              class="components-flex emotion-8 emotion-1"
               data-wp-c16t="true"
               data-wp-component="Flex"
             >
               <div
-                class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon emotion-8 emotion-1"
+                class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon emotion-10 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="FlexItem"
               >
@@ -718,7 +742,7 @@ exports[`International IP address card renders correctly when woocommerce_allowe
                 </svg>
               </div>
               <div
-                class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content emotion-8 emotion-1"
+                class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content emotion-10 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="FlexItem"
               >
@@ -744,13 +768,13 @@ exports[`International IP address card renders correctly when woocommerce_allowe
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation emotion-12 emotion-1"
+      class="components-elevation emotion-14 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation emotion-12 emotion-1"
+      class="components-elevation emotion-14 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -765,7 +789,7 @@ exports[`International IP address card renders correctly when woocommerce_allowe
   position: relative;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
   outline: none;
-  border-radius: calc(2px - 1px);
+  border-radius: calc(8px - 1px);
 }
 
 .emotion-2 {
@@ -780,22 +804,25 @@ exports[`International IP address card renders correctly when woocommerce_allowe
 }
 
 .emotion-4:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-4:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 .emotion-6 {
   font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
   font-size: 13px;
+  box-sizing: border-box;
 }
 
-.emotion-8 {
-  margin-bottom: calc(4px * 2);
+.emotion-6 *,
+.emotion-6 *::before,
+.emotion-6 *::after {
+  box-sizing: inherit;
 }
 
 .components-panel__row .emotion-8 {
@@ -803,23 +830,6 @@ exports[`International IP address card renders correctly when woocommerce_allowe
 }
 
 .emotion-10 {
-  margin-top: calc(4px * 2);
-  margin-bottom: 0;
-  font-size: 12px;
-  font-style: normal;
-  color: #757575;
-  margin-bottom: revert;
-}
-
-.emotion-14 {
-  width: 1em;
-  height: 1em;
-  margin: 0;
-  vertical-align: middle;
-  fill: currentColor;
-}
-
-.emotion-16 {
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -831,6 +841,7 @@ exports[`International IP address card renders correctly when woocommerce_allowe
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: start;
   -ms-flex-pack: start;
   -webkit-justify-content: flex-start;
@@ -838,15 +849,30 @@ exports[`International IP address card renders correctly when woocommerce_allowe
   width: 100%;
 }
 
-.emotion-16>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
-}
-
-.emotion-16>* {
+.emotion-10>* {
   min-width: 0;
 }
 
-.emotion-18 {
+.emotion-12 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
+}
+
+.emotion-14 {
+  margin-top: calc(4px * 2);
+  margin-bottom: 0;
+  font-size: 12px;
+  font-style: normal;
+  color: #757575;
+}
+
+.emotion-20 {
   display: block;
   max-height: 100%;
   max-width: 100%;
@@ -854,7 +880,7 @@ exports[`International IP address card renders correctly when woocommerce_allowe
   min-width: 0;
 }
 
-.emotion-22 {
+.emotion-24 {
   background: transparent;
   display: block;
   margin: 0!important;
@@ -863,19 +889,18 @@ exports[`International IP address card renders correctly when woocommerce_allowe
   will-change: box-shadow;
   border-radius: inherit;
   bottom: 0;
-  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
   opacity: 1;
   left: 0;
   right: 0;
   top: 0;
-  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  border-radius: 2px;
+  border-radius: 8px;
 }
 
-@media ( prefers-reduced-motion: reduce ) {
-  .emotion-22 {
-    transition-duration: 0ms;
+@media not ( prefers-reduced-motion ) {
+  .emotion-24 {
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
   }
 }
 
@@ -906,70 +931,71 @@ exports[`International IP address card renders correctly when woocommerce_allowe
             <div
               class="components-base-control__field emotion-8 emotion-9"
             >
-              <span
-                class="components-form-toggle"
+              <div
+                class="components-flex components-h-stack emotion-10 emotion-1"
+                data-wp-c16t="true"
+                data-wp-component="HStack"
               >
-                <input
-                  aria-describedby="inspector-toggle-control-1__help"
-                  class="components-form-toggle__input"
-                  id="inspector-toggle-control-1"
-                  type="checkbox"
-                />
                 <span
-                  class="components-form-toggle__track"
-                />
-                <span
-                  class="components-form-toggle__thumb"
-                />
-              </span>
-              <label
-                class="components-toggle-control__label"
-                for="inspector-toggle-control-1"
-              >
-                Enable International IP Address filter
-              </label>
+                  class="components-form-toggle"
+                >
+                  <input
+                    aria-describedby="inspector-toggle-control-1__help"
+                    class="components-form-toggle__input"
+                    id="inspector-toggle-control-1"
+                    type="checkbox"
+                  />
+                  <span
+                    class="components-form-toggle__track"
+                  />
+                  <span
+                    class="components-form-toggle__thumb"
+                  />
+                </span>
+                <label
+                  class="components-flex-item components-flex-block components-toggle-control__label emotion-12 emotion-1"
+                  data-wp-c16t="true"
+                  data-wp-component="FlexBlock"
+                  for="inspector-toggle-control-1"
+                >
+                  Enable International IP Address filter
+                </label>
+              </div>
             </div>
             <p
-              class="components-base-control__help emotion-10 emotion-11"
+              class="components-base-control__help emotion-14 emotion-15"
               id="inspector-toggle-control-1__help"
             >
-              This filter screens for 
-              <a
-                class="components-external-link"
-                href="https://simple.wikipedia.org/wiki/IP_address"
-                rel="external noreferrer noopener"
-                target="_blank"
+              <span
+                class="components-toggle-control__help"
               >
-                IP addresses
-                <span
-                  class="components-visually-hidden emotion-12 emotion-1"
-                  data-wp-c16t="true"
-                  data-wp-component="VisuallyHidden"
-                  style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+                This filter screens for 
+                <a
+                  class="components-external-link"
+                  href="https://simple.wikipedia.org/wiki/IP_address"
+                  rel="external noreferrer noopener"
+                  target="_blank"
                 >
-                  (opens in a new tab)
-                </span>
-                <svg
-                  aria-hidden="true"
-                  class="components-external-link__icon emotion-14 emotion-15"
-                  focusable="false"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  width="24"
-                  xmlns="http://www.w3.org/2000/svg"
+                  <span
+                    class="components-external-link__contents"
+                  >
+                    IP addresses
+                  </span>
+                  <span
+                    aria-label="(opens in a new tab)"
+                    class="components-external-link__icon"
+                  >
+                    ↗
+                  </span>
+                </a>
+                 outside of your 
+                <a
+                  href="admin.php?page=wc-settings&tab=general"
                 >
-                  <path
-                    d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
-                  />
-                </svg>
-              </a>
-               outside of your 
-              <a
-                href="admin.php?page=wc-settings&tab=general"
-              >
-                supported countries
-              </a>
-              . When enabled the payment will be blocked.
+                  supported countries
+                </a>
+                . When enabled the payment will be blocked.
+              </span>
             </p>
           </div>
         </div>
@@ -987,15 +1013,23 @@ exports[`International IP address card renders correctly when woocommerce_allowe
           class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info"
         >
           <div
+            class="components-visually-hidden emotion-16 emotion-1"
+            data-wp-c16t="true"
+            data-wp-component="VisuallyHidden"
+            style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+          >
+            Information notice
+          </div>
+          <div
             class="components-notice__content"
           >
             <div
-              class="components-flex emotion-16 emotion-1"
+              class="components-flex emotion-10 emotion-1"
               data-wp-c16t="true"
               data-wp-component="Flex"
             >
               <div
-                class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon emotion-18 emotion-1"
+                class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon emotion-20 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="FlexItem"
               >
@@ -1013,7 +1047,7 @@ exports[`International IP address card renders correctly when woocommerce_allowe
                 </svg>
               </div>
               <div
-                class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-18 emotion-1"
+                class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-20 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="FlexItem"
               >
@@ -1032,13 +1066,13 @@ exports[`International IP address card renders correctly when woocommerce_allowe
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation emotion-22 emotion-1"
+      class="components-elevation emotion-24 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation emotion-22 emotion-1"
+      class="components-elevation emotion-24 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -1053,7 +1087,7 @@ exports[`International IP address card renders correctly when woocommerce_allowe
   position: relative;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
   outline: none;
-  border-radius: calc(2px - 1px);
+  border-radius: calc(8px - 1px);
 }
 
 .emotion-2 {
@@ -1068,22 +1102,25 @@ exports[`International IP address card renders correctly when woocommerce_allowe
 }
 
 .emotion-4:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-4:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 .emotion-6 {
   font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
   font-size: 13px;
+  box-sizing: border-box;
 }
 
-.emotion-8 {
-  margin-bottom: calc(4px * 2);
+.emotion-6 *,
+.emotion-6 *::before,
+.emotion-6 *::after {
+  box-sizing: inherit;
 }
 
 .components-panel__row .emotion-8 {
@@ -1091,23 +1128,6 @@ exports[`International IP address card renders correctly when woocommerce_allowe
 }
 
 .emotion-10 {
-  margin-top: calc(4px * 2);
-  margin-bottom: 0;
-  font-size: 12px;
-  font-style: normal;
-  color: #757575;
-  margin-bottom: revert;
-}
-
-.emotion-14 {
-  width: 1em;
-  height: 1em;
-  margin: 0;
-  vertical-align: middle;
-  fill: currentColor;
-}
-
-.emotion-16 {
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -1119,6 +1139,7 @@ exports[`International IP address card renders correctly when woocommerce_allowe
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: start;
   -ms-flex-pack: start;
   -webkit-justify-content: flex-start;
@@ -1126,15 +1147,30 @@ exports[`International IP address card renders correctly when woocommerce_allowe
   width: 100%;
 }
 
-.emotion-16>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
-}
-
-.emotion-16>* {
+.emotion-10>* {
   min-width: 0;
 }
 
-.emotion-18 {
+.emotion-12 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
+}
+
+.emotion-14 {
+  margin-top: calc(4px * 2);
+  margin-bottom: 0;
+  font-size: 12px;
+  font-style: normal;
+  color: #757575;
+}
+
+.emotion-20 {
   display: block;
   max-height: 100%;
   max-width: 100%;
@@ -1142,7 +1178,7 @@ exports[`International IP address card renders correctly when woocommerce_allowe
   min-width: 0;
 }
 
-.emotion-22 {
+.emotion-24 {
   background: transparent;
   display: block;
   margin: 0!important;
@@ -1151,19 +1187,18 @@ exports[`International IP address card renders correctly when woocommerce_allowe
   will-change: box-shadow;
   border-radius: inherit;
   bottom: 0;
-  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
   opacity: 1;
   left: 0;
   right: 0;
   top: 0;
-  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  border-radius: 2px;
+  border-radius: 8px;
 }
 
-@media ( prefers-reduced-motion: reduce ) {
-  .emotion-22 {
-    transition-duration: 0ms;
+@media not ( prefers-reduced-motion ) {
+  .emotion-24 {
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
   }
 }
 
@@ -1194,70 +1229,71 @@ exports[`International IP address card renders correctly when woocommerce_allowe
             <div
               class="components-base-control__field emotion-8 emotion-9"
             >
-              <span
-                class="components-form-toggle"
+              <div
+                class="components-flex components-h-stack emotion-10 emotion-1"
+                data-wp-c16t="true"
+                data-wp-component="HStack"
               >
-                <input
-                  aria-describedby="inspector-toggle-control-0__help"
-                  class="components-form-toggle__input"
-                  id="inspector-toggle-control-0"
-                  type="checkbox"
-                />
                 <span
-                  class="components-form-toggle__track"
-                />
-                <span
-                  class="components-form-toggle__thumb"
-                />
-              </span>
-              <label
-                class="components-toggle-control__label"
-                for="inspector-toggle-control-0"
-              >
-                Enable International IP Address filter
-              </label>
+                  class="components-form-toggle"
+                >
+                  <input
+                    aria-describedby="inspector-toggle-control-0__help"
+                    class="components-form-toggle__input"
+                    id="inspector-toggle-control-0"
+                    type="checkbox"
+                  />
+                  <span
+                    class="components-form-toggle__track"
+                  />
+                  <span
+                    class="components-form-toggle__thumb"
+                  />
+                </span>
+                <label
+                  class="components-flex-item components-flex-block components-toggle-control__label emotion-12 emotion-1"
+                  data-wp-c16t="true"
+                  data-wp-component="FlexBlock"
+                  for="inspector-toggle-control-0"
+                >
+                  Enable International IP Address filter
+                </label>
+              </div>
             </div>
             <p
-              class="components-base-control__help emotion-10 emotion-11"
+              class="components-base-control__help emotion-14 emotion-15"
               id="inspector-toggle-control-0__help"
             >
-              This filter screens for 
-              <a
-                class="components-external-link"
-                href="https://simple.wikipedia.org/wiki/IP_address"
-                rel="external noreferrer noopener"
-                target="_blank"
+              <span
+                class="components-toggle-control__help"
               >
-                IP addresses
-                <span
-                  class="components-visually-hidden emotion-12 emotion-1"
-                  data-wp-c16t="true"
-                  data-wp-component="VisuallyHidden"
-                  style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+                This filter screens for 
+                <a
+                  class="components-external-link"
+                  href="https://simple.wikipedia.org/wiki/IP_address"
+                  rel="external noreferrer noopener"
+                  target="_blank"
                 >
-                  (opens in a new tab)
-                </span>
-                <svg
-                  aria-hidden="true"
-                  class="components-external-link__icon emotion-14 emotion-15"
-                  focusable="false"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  width="24"
-                  xmlns="http://www.w3.org/2000/svg"
+                  <span
+                    class="components-external-link__contents"
+                  >
+                    IP addresses
+                  </span>
+                  <span
+                    aria-label="(opens in a new tab)"
+                    class="components-external-link__icon"
+                  >
+                    ↗
+                  </span>
+                </a>
+                 outside of your 
+                <a
+                  href="admin.php?page=wc-settings&tab=general"
                 >
-                  <path
-                    d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
-                  />
-                </svg>
-              </a>
-               outside of your 
-              <a
-                href="admin.php?page=wc-settings&tab=general"
-              >
-                supported countries
-              </a>
-              . When enabled the payment will be blocked.
+                  supported countries
+                </a>
+                . When enabled the payment will be blocked.
+              </span>
             </p>
           </div>
         </div>
@@ -1275,15 +1311,23 @@ exports[`International IP address card renders correctly when woocommerce_allowe
           class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info"
         >
           <div
+            class="components-visually-hidden emotion-16 emotion-1"
+            data-wp-c16t="true"
+            data-wp-component="VisuallyHidden"
+            style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+          >
+            Information notice
+          </div>
+          <div
             class="components-notice__content"
           >
             <div
-              class="components-flex emotion-16 emotion-1"
+              class="components-flex emotion-10 emotion-1"
               data-wp-c16t="true"
               data-wp-component="Flex"
             >
               <div
-                class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon emotion-18 emotion-1"
+                class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon emotion-20 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="FlexItem"
               >
@@ -1301,7 +1345,7 @@ exports[`International IP address card renders correctly when woocommerce_allowe
                 </svg>
               </div>
               <div
-                class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-18 emotion-1"
+                class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-20 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="FlexItem"
               >
@@ -1320,13 +1364,13 @@ exports[`International IP address card renders correctly when woocommerce_allowe
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation emotion-22 emotion-1"
+      class="components-elevation emotion-24 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation emotion-22 emotion-1"
+      class="components-elevation emotion-24 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -1341,7 +1385,7 @@ exports[`International IP address card renders like disabled when checked, but n
   position: relative;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
   outline: none;
-  border-radius: calc(2px - 1px);
+  border-radius: calc(8px - 1px);
 }
 
 .emotion-2 {
@@ -1356,22 +1400,25 @@ exports[`International IP address card renders like disabled when checked, but n
 }
 
 .emotion-4:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-4:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 .emotion-6 {
   font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
   font-size: 13px;
+  box-sizing: border-box;
 }
 
-.emotion-8 {
-  margin-bottom: calc(4px * 2);
+.emotion-6 *,
+.emotion-6 *::before,
+.emotion-6 *::after {
+  box-sizing: inherit;
 }
 
 .components-panel__row .emotion-8 {
@@ -1379,23 +1426,6 @@ exports[`International IP address card renders like disabled when checked, but n
 }
 
 .emotion-10 {
-  margin-top: calc(4px * 2);
-  margin-bottom: 0;
-  font-size: 12px;
-  font-style: normal;
-  color: #757575;
-  margin-bottom: revert;
-}
-
-.emotion-14 {
-  width: 1em;
-  height: 1em;
-  margin: 0;
-  vertical-align: middle;
-  fill: currentColor;
-}
-
-.emotion-16 {
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -1407,6 +1437,7 @@ exports[`International IP address card renders like disabled when checked, but n
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: start;
   -ms-flex-pack: start;
   -webkit-justify-content: flex-start;
@@ -1414,15 +1445,30 @@ exports[`International IP address card renders like disabled when checked, but n
   width: 100%;
 }
 
-.emotion-16>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
-}
-
-.emotion-16>* {
+.emotion-10>* {
   min-width: 0;
 }
 
-.emotion-18 {
+.emotion-12 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
+}
+
+.emotion-14 {
+  margin-top: calc(4px * 2);
+  margin-bottom: 0;
+  font-size: 12px;
+  font-style: normal;
+  color: #757575;
+}
+
+.emotion-20 {
   display: block;
   max-height: 100%;
   max-width: 100%;
@@ -1430,7 +1476,7 @@ exports[`International IP address card renders like disabled when checked, but n
   min-width: 0;
 }
 
-.emotion-22 {
+.emotion-24 {
   background: transparent;
   display: block;
   margin: 0!important;
@@ -1439,19 +1485,18 @@ exports[`International IP address card renders like disabled when checked, but n
   will-change: box-shadow;
   border-radius: inherit;
   bottom: 0;
-  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
   opacity: 1;
   left: 0;
   right: 0;
   top: 0;
-  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  border-radius: 2px;
+  border-radius: 8px;
 }
 
-@media ( prefers-reduced-motion: reduce ) {
-  .emotion-22 {
-    transition-duration: 0ms;
+@media not ( prefers-reduced-motion ) {
+  .emotion-24 {
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
   }
 }
 
@@ -1482,70 +1527,71 @@ exports[`International IP address card renders like disabled when checked, but n
             <div
               class="components-base-control__field emotion-8 emotion-9"
             >
-              <span
-                class="components-form-toggle"
+              <div
+                class="components-flex components-h-stack emotion-10 emotion-1"
+                data-wp-c16t="true"
+                data-wp-component="HStack"
               >
-                <input
-                  aria-describedby="inspector-toggle-control-4__help"
-                  class="components-form-toggle__input"
-                  id="inspector-toggle-control-4"
-                  type="checkbox"
-                />
                 <span
-                  class="components-form-toggle__track"
-                />
-                <span
-                  class="components-form-toggle__thumb"
-                />
-              </span>
-              <label
-                class="components-toggle-control__label"
-                for="inspector-toggle-control-4"
-              >
-                Enable International IP Address filter
-              </label>
+                  class="components-form-toggle"
+                >
+                  <input
+                    aria-describedby="inspector-toggle-control-4__help"
+                    class="components-form-toggle__input"
+                    id="inspector-toggle-control-4"
+                    type="checkbox"
+                  />
+                  <span
+                    class="components-form-toggle__track"
+                  />
+                  <span
+                    class="components-form-toggle__thumb"
+                  />
+                </span>
+                <label
+                  class="components-flex-item components-flex-block components-toggle-control__label emotion-12 emotion-1"
+                  data-wp-c16t="true"
+                  data-wp-component="FlexBlock"
+                  for="inspector-toggle-control-4"
+                >
+                  Enable International IP Address filter
+                </label>
+              </div>
             </div>
             <p
-              class="components-base-control__help emotion-10 emotion-11"
+              class="components-base-control__help emotion-14 emotion-15"
               id="inspector-toggle-control-4__help"
             >
-              This filter screens for 
-              <a
-                class="components-external-link"
-                href="https://simple.wikipedia.org/wiki/IP_address"
-                rel="external noreferrer noopener"
-                target="_blank"
+              <span
+                class="components-toggle-control__help"
               >
-                IP addresses
-                <span
-                  class="components-visually-hidden emotion-12 emotion-1"
-                  data-wp-c16t="true"
-                  data-wp-component="VisuallyHidden"
-                  style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+                This filter screens for 
+                <a
+                  class="components-external-link"
+                  href="https://simple.wikipedia.org/wiki/IP_address"
+                  rel="external noreferrer noopener"
+                  target="_blank"
                 >
-                  (opens in a new tab)
-                </span>
-                <svg
-                  aria-hidden="true"
-                  class="components-external-link__icon emotion-14 emotion-15"
-                  focusable="false"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  width="24"
-                  xmlns="http://www.w3.org/2000/svg"
+                  <span
+                    class="components-external-link__contents"
+                  >
+                    IP addresses
+                  </span>
+                  <span
+                    aria-label="(opens in a new tab)"
+                    class="components-external-link__icon"
+                  >
+                    ↗
+                  </span>
+                </a>
+                 outside of your 
+                <a
+                  href="admin.php?page=wc-settings&tab=general"
                 >
-                  <path
-                    d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
-                  />
-                </svg>
-              </a>
-               outside of your 
-              <a
-                href="admin.php?page=wc-settings&tab=general"
-              >
-                supported countries
-              </a>
-              . When enabled the payment will be blocked.
+                  supported countries
+                </a>
+                . When enabled the payment will be blocked.
+              </span>
             </p>
           </div>
         </div>
@@ -1563,15 +1609,23 @@ exports[`International IP address card renders like disabled when checked, but n
           class="wcpay-inline-notice wcpay-inline-info-notice components-notice is-info"
         >
           <div
+            class="components-visually-hidden emotion-16 emotion-1"
+            data-wp-c16t="true"
+            data-wp-component="VisuallyHidden"
+            style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+          >
+            Information notice
+          </div>
+          <div
             class="components-notice__content"
           >
             <div
-              class="components-flex emotion-16 emotion-1"
+              class="components-flex emotion-10 emotion-1"
               data-wp-c16t="true"
               data-wp-component="Flex"
             >
               <div
-                class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon emotion-18 emotion-1"
+                class="components-flex-item wcpay-inline-notice__icon wcpay-inline-info-notice__icon emotion-20 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="FlexItem"
               >
@@ -1589,7 +1643,7 @@ exports[`International IP address card renders like disabled when checked, but n
                 </svg>
               </div>
               <div
-                class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-18 emotion-1"
+                class="components-flex-item wcpay-inline-notice__content wcpay-inline-info-notice__content emotion-20 emotion-1"
                 data-wp-c16t="true"
                 data-wp-component="FlexItem"
               >
@@ -1608,13 +1662,13 @@ exports[`International IP address card renders like disabled when checked, but n
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation emotion-22 emotion-1"
+      class="components-elevation emotion-24 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation emotion-22 emotion-1"
+      class="components-elevation emotion-24 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />

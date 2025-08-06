@@ -9,6 +9,28 @@ import { render } from '@testing-library/react';
 import PaymentDetailsTimeline from '../';
 import { useTimeline } from 'wcpay/data';
 
+// eslint-disable-next-line no-console
+const originalError = console.error;
+beforeAll( () => {
+	// eslint-disable-next-line no-console
+	console.error = ( ...args ) => {
+		// Suppress React 18 defaultProps deprecation warnings from external components
+		if (
+			args[ 0 ] &&
+			typeof args[ 0 ] === 'string' &&
+			args[ 0 ].includes( 'Support for defaultProps will be removed' )
+		) {
+			return;
+		}
+		originalError.call( console, ...args );
+	};
+} );
+
+afterAll( () => {
+	// eslint-disable-next-line no-console
+	console.error = originalError;
+} );
+
 jest.mock( 'wcpay/data', () => ( {
 	useTimeline: jest.fn(),
 } ) );

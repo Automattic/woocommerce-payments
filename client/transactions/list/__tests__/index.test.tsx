@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { act } from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import user from '@testing-library/user-event';
 import apiFetch from '@wordpress/api-fetch';
@@ -594,7 +594,9 @@ describe( 'Transactions list', () => {
 
 			const { getByRole } = render( <TransactionsList /> );
 
-			await user.click( getByRole( 'button', { name: 'Export' } ) );
+			await act( async () => {
+				await user.click( getByRole( 'button', { name: 'Export' } ) );
+			} );
 
 			expect( window.confirm ).toHaveBeenCalledTimes( 1 );
 			expect( window.confirm ).toHaveBeenCalledWith(
@@ -649,7 +651,9 @@ describe( 'Transactions list', () => {
 				<TransactionsList depositId="po_mock" />
 			);
 
-			await user.click( getByRole( 'button', { name: 'Export' } ) );
+			await act( async () => {
+				await user.click( getByRole( 'button', { name: 'Export' } ) );
+			} );
 
 			await waitFor( () => {
 				expect( mockApiFetch ).toHaveBeenCalledTimes( 1 );

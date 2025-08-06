@@ -50,6 +50,7 @@ const OnboardingLocationCheckModal = ( {
 		),
 		components: {
 			link: (
+				// @ts-expect-error: children is provided when interpolating the component
 				<ExternalLink href="https://woocommerce.com/document/woopayments/compatibility/countries/" />
 			),
 			list: <List items={ countries } />,
