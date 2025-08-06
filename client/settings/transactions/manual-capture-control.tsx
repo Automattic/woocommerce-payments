@@ -4,15 +4,11 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import {
-	CheckboxControl,
-	Button,
-	ExternalLink,
-} from 'wcpay/components/wp-components-wrapped';
 import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import { CheckboxControl, Button, ExternalLink } from '@wordpress/components';
 import {
 	useManualCapture,
 	useCardPresentEligible,
@@ -85,6 +81,7 @@ const ManualCaptureControl = (): JSX.Element => {
 							: '' }
 					</span>
 				}
+				__nextHasNoMarginBottom
 			/>
 			{ isStripeBillingEnabled && (
 				<InlineNotice status="warning" isDismissible={ false } icon>

@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React, { useState } from 'react';
-import { Button } from 'wcpay/components/wp-components-wrapped';
+import { Button } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 
@@ -64,7 +64,7 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 							<ClickTooltip
 								buttonIcon={ <HelpOutlineIcon /> }
 								buttonLabel={ __(
-									'Learn more about sandbox mode',
+									'Learn more about test accounts',
 									'woocommerce-payments'
 								) }
 								maxWidth={ '250px' }
@@ -105,7 +105,11 @@ const SandboxModeSwitchToLiveNotice: React.FC< Props > = ( {
 							/>
 						),
 						switchToLiveLink: (
-							<Button variant="link" onClick={ handleCtaClick } />
+							<Button
+								variant="link"
+								onClick={ handleCtaClick }
+								__next40pxDefaultSize
+							/>
 						),
 					},
 				} ) }

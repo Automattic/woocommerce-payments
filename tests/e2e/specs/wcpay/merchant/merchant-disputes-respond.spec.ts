@@ -111,18 +111,21 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 					await merchantPage
 						.getByTestId( 'accept-dispute-button' )
 						.click();
+
+					// Wait for the network request to complete
+					await merchantPage.waitForLoadState( 'networkidle' );
 				}
 			);
 
 			await test.step(
 				'Wait for the accept request to resolve and observe the lost dispute status',
 				async () => {
-					expect(
+					await expect(
 						merchantPage.getByText( 'Disputed: Lost' )
 					).toBeVisible();
 
 					// Check the dispute details footer
-					expect(
+					await expect(
 						merchantPage.getByText( 'You accepted this dispute on' )
 					).toBeVisible();
 				}
@@ -169,6 +172,16 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			);
 
 			await test.step( 'Select the product type', async () => {
+				// wait for the dispute to the loaded.
+				await expect(
+					merchantPage.getByText(
+						'The cardholder claims this is an unauthorized transaction.',
+						{
+							exact: true,
+						}
+					)
+				).toBeVisible();
+
 				await merchantPage
 					.getByTestId( 'dispute-challenge-product-type-selector' )
 					.selectOption( 'physical_product' );
@@ -256,6 +269,14 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 						.getByLabel( 'COVER LETTER' )
 						.fill( 'winning_evidence' );
 
+					// Handle the confirmation dialog that appears when clicking Submit
+					merchantPage.on( 'dialog', async ( dialog ) => {
+						expect( dialog.message() ).toContain(
+							"Are you sure you're ready to submit this evidence?"
+						);
+						await dialog.accept();
+					} );
+
 					// Click the submit button
 					await merchantPage
 						.getByRole( 'button', {
@@ -266,13 +287,44 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			);
 
 			await test.step(
-				'Wait for the redirect to the dispute details page and confirm the dispute status is Won',
+				'Wait for the confirmation screen to appear',
 				async () => {
 					await expect(
-						merchantPage
-							.locator( '.payment-details-summary__status' )
-							.filter( { hasText: 'Disputed: Won' } )
+						merchantPage.getByText(
+							'Thanks for sharing your response!'
+						)
 					).toBeVisible();
+
+					await expect(
+						merchantPage.getByText(
+							"Your evidence has been sent to the cardholder's bank for review."
+						)
+					).toBeVisible();
+				}
+			);
+
+			await test.step(
+				'Navigate back to payment details and confirm the dispute status is Won',
+				async () => {
+					// Poll for the final status, refreshing the page if needed
+					await expect( async () => {
+						await merchantPage.goto( paymentDetailsLink );
+						await merchantPage.waitForLoadState( 'networkidle' );
+
+						// Check that we're no longer "Under Review"
+						await expect(
+							merchantPage
+								.locator( '.payment-details-summary__status' )
+								.filter( { hasText: 'Disputed: Under Review' } )
+						).not.toBeVisible( { timeout: 2000 } );
+
+						// Confirm we have the "Won" status
+						await expect(
+							merchantPage
+								.locator( '.payment-details-summary__status' )
+								.filter( { hasText: 'Disputed: Won' } )
+						).toBeVisible( { timeout: 2000 } );
+					} ).toPass( { timeout: 60000, intervals: [ 3000 ] } );
 
 					await expect(
 						merchantPage.getByText(
@@ -323,6 +375,16 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			);
 
 			await test.step( 'Select the product type', async () => {
+				// wait for the dispute to the loaded.
+				await expect(
+					merchantPage.getByText(
+						'The cardholder claims this is an unauthorized transaction.',
+						{
+							exact: true,
+						}
+					)
+				).toBeVisible();
+
 				await merchantPage
 					.getByTestId( 'dispute-challenge-product-type-selector' )
 					.selectOption( 'physical_product' );
@@ -383,6 +445,14 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 						.getByLabel( 'COVER LETTER' )
 						.fill( 'losing_evidence' );
 
+					// Handle the confirmation dialog that appears when clicking Submit
+					merchantPage.on( 'dialog', async ( dialog ) => {
+						expect( dialog.message() ).toContain(
+							"Are you sure you're ready to submit this evidence?"
+						);
+						await dialog.accept();
+					} );
+
 					// Click the submit button
 					await merchantPage
 						.getByRole( 'button', {
@@ -393,13 +463,44 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			);
 
 			await test.step(
-				'Wait for the redirect to the dispute details page and confirm the dispute status is Lost',
+				'Wait for the confirmation screen to appear',
 				async () => {
 					await expect(
-						merchantPage
-							.locator( '.payment-details-summary__status' )
-							.filter( { hasText: 'Disputed: Lost' } )
+						merchantPage.getByText(
+							'Thanks for sharing your response!'
+						)
 					).toBeVisible();
+
+					await expect(
+						merchantPage.getByText(
+							"Your evidence has been sent to the cardholder's bank for review."
+						)
+					).toBeVisible();
+				}
+			);
+
+			await test.step(
+				'Navigate back to payment details and confirm the dispute status is Lost',
+				async () => {
+					// Poll for the final status, refreshing the page if needed
+					await expect( async () => {
+						await merchantPage.goto( paymentDetailsLink );
+						await merchantPage.waitForLoadState( 'networkidle' );
+
+						// Check that we're no longer "Under Review"
+						await expect(
+							merchantPage
+								.locator( '.payment-details-summary__status' )
+								.filter( { hasText: 'Disputed: Under Review' } )
+						).not.toBeVisible( { timeout: 2000 } );
+
+						// Confirm we have the "Lost" status
+						await expect(
+							merchantPage
+								.locator( '.payment-details-summary__status' )
+								.filter( { hasText: 'Disputed: Lost' } )
+						).toBeVisible( { timeout: 2000 } );
+					} ).toPass( { timeout: 60000, intervals: [ 3000 ] } );
 
 					await expect(
 						merchantPage.getByText(

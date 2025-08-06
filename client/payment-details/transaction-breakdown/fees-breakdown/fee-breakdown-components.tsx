@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React from 'react';
-import { Flex, FlexItem } from 'wcpay/components/wp-components-wrapped';
+import { Flex, FlexItem } from '@wordpress/components';
 
 /** Internal dependencies */
 import { formatCurrency } from 'multi-currency/interface/functions';

@@ -31,6 +31,8 @@ global.window.wcTracks = {
 	recordEvent: () => null,
 };
 
+global.IS_REACT_ACT_ENVIRONMENT = true;
+
 // Can be removed once a new version of @wordpress/jest-preset-default include it ( >= 10.1.0 )
 global.window.matchMedia = () => ( {
 	matches: false,

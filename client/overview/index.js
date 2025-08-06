@@ -4,12 +4,11 @@
  * External dependencies
  */
 import React, { useEffect, useState } from 'react';
-import { Card, Notice } from 'wcpay/components/wp-components-wrapped';
 import { getQuery } from '@woocommerce/navigation';
 import { __, sprintf } from '@wordpress/i18n';
 import { dispatch } from '@wordpress/data';
 import interpolateComponents from '@automattic/interpolate-components';
-import { Link } from '@woocommerce/components';
+import { Card, Notice, ExternalLink } from '@wordpress/components';
 
 /**
  * Internal dependencies.
@@ -25,7 +24,6 @@ import Page from 'components/page';
 import Welcome from 'components/welcome';
 import { TestModeNotice } from 'components/test-mode-notice';
 import InboxNotifications from './inbox-notifications';
-import ProgressiveOnboardingEligibilityModal from './modal/progressive-onboarding-eligibility';
 import TaskList from './task-list';
 import { getTasks, taskSort } from './task-list/tasks';
 import { useDisputes, useGetSettings, useSettings } from 'data';
@@ -63,7 +61,6 @@ const OverviewPageError = () => {
 const OverviewPage = () => {
 	const {
 		accountStatus,
-		accountStatus: { progressiveOnboarding },
 		accountLoans: { has_active_loan: hasActiveLoan },
 		overviewTasksVisibility,
 		wpcomReconnectUrl,
@@ -73,10 +70,6 @@ const OverviewPage = () => {
 	const [ showUpdateDetailsTask, setShowUpdateDetailsTask ] = useState(
 		false
 	);
-	const [
-		showGetVerifyBankAccountTask,
-		setShowGetVerifyBankAccountTask,
-	] = useState( false );
 
 	const [
 		stripeNotificationsBannerErrorMessage,
@@ -116,7 +109,6 @@ const OverviewPage = () => {
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
 		activeDisputes,
-		showGetVerifyBankAccountTask,
 	} );
 	const tasks =
 		Array.isArray( tasksUnsorted ) && tasksUnsorted.sort( taskSort );
@@ -142,20 +134,13 @@ const OverviewPage = () => {
 		queryParams[ 'wcpay-server-link-error' ] === '1';
 	const showResetAccountError =
 		queryParams[ 'wcpay-reset-account-error' ] === '1';
-	const showProgressiveOnboardingEligibilityModal =
-		showConnectionSuccess &&
-		progressiveOnboarding.isEnabled &&
-		! progressiveOnboarding.isComplete;
 	const showTaskList =
 		! accountRejected && ! accountUnderReview && tasks.length > 0;
-	const isPoDisabledOrCompleted =
-		! progressiveOnboarding.isEnabled || progressiveOnboarding.isComplete;
 	const showConnectionSuccessModal =
 		showConnectionSuccess &&
 		! isTestModeOnboarding &&
 		paymentsEnabled &&
-		depositsEnabled &&
-		isPoDisabledOrCompleted;
+		depositsEnabled;
 
 	const activeAccountFees = Object.entries( wcpaySettings.accountFees )
 		.map( ( [ key, value ] ) => {
@@ -180,7 +165,7 @@ const OverviewPage = () => {
 	if ( ! isTestDriveSuccessDisplayed && isSandboxOnboardedSuccessful ) {
 		dispatch( 'core/notices' ).createSuccessNotice(
 			__(
-				'Success! You can start using WooPayments in sandbox mode.',
+				'Success! You can start using WooPayments in test mode.',
 				'woocommerce-payments'
 			)
 		);
@@ -193,7 +178,6 @@ const OverviewPage = () => {
 	useEffect( () => {
 		if ( stripeNotificationsBannerErrorMessage ) {
 			setShowUpdateDetailsTask( true );
-			setShowGetVerifyBankAccountTask( true );
 			setStripeComponentLoading( false );
 		}
 	}, [ stripeNotificationsBannerErrorMessage ] );
@@ -317,14 +301,10 @@ const OverviewPage = () => {
 							components: {
 								seeDetailsLink: (
 									// eslint-disable-next-line jsx-a11y/anchor-has-content
-									<Link
+									<ExternalLink
 										href={
-											// eslint-disable-next-line max-len
 											'https://woocommerce.com/document/woopayments/startup-guide/#requirements'
 										}
-										target="_blank"
-										rel="noreferrer"
-										type="external"
 									/>
 								),
 							},
@@ -406,11 +386,6 @@ const OverviewPage = () => {
 			{ ! accountRejected && ! accountUnderReview && (
 				<ErrorBoundary>
 					<InboxNotifications />
-				</ErrorBoundary>
-			) }
-			{ showProgressiveOnboardingEligibilityModal && (
-				<ErrorBoundary>
-					<ProgressiveOnboardingEligibilityModal />
 				</ErrorBoundary>
 			) }
 			{ showConnectionSuccessModal && (

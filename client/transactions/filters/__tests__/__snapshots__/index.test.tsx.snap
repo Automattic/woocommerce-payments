@@ -1,0 +1,181 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Transactions filters when filtering by channel should render all types 1`] = `
+HTMLOptionsCollection [
+  <option
+    value="online"
+  >
+    Online store
+  </option>,
+  <option
+    value="in_person"
+  >
+    In-Person
+  </option>,
+  <option
+    value="in_person_pos"
+  >
+    In-Person (POS)
+  </option>,
+]
+`;
+
+exports[`Transactions filters when filtering by customer country should render all types 1`] = `
+HTMLOptionsCollection [
+  <option
+    value="US"
+  >
+    United States of America
+  </option>,
+  <option
+    value="CA"
+  >
+    Canada
+  </option>,
+  <option
+    value="UK"
+  >
+    United Kingdom
+  </option>,
+]
+`;
+
+exports[`Transactions filters when filtering by customer currency should render all types 1`] = `
+HTMLOptionsCollection [
+  <option
+    value="eur"
+  >
+    Euro
+  </option>,
+  <option
+    value="usd"
+  >
+    United States (US) dollar
+  </option>,
+  <option
+    value="gbp"
+  >
+    Pound sterling
+  </option>,
+]
+`;
+
+exports[`Transactions filters when filtering by payment method should render all types 1`] = `
+HTMLOptionsCollection [
+  <option
+    value="visa"
+  >
+    Visa
+  </option>,
+  <option
+    value="mastercard"
+  >
+    Mastercard
+  </option>,
+  <option
+    value="sofort"
+  >
+    Sofort
+  </option>,
+]
+`;
+
+exports[`Transactions filters when filtering by risk level should render all types 1`] = `
+HTMLOptionsCollection [
+  <option
+    value="0"
+  >
+    Normal
+  </option>,
+  <option
+    value="1"
+  >
+    Elevated
+  </option>,
+  <option
+    value="2"
+  >
+    Highest
+  </option>,
+]
+`;
+
+exports[`Transactions filters when filtering by source device should render all types 1`] = `
+HTMLOptionsCollection [
+  <option
+    value="android"
+  >
+    Android
+  </option>,
+  <option
+    value="ios"
+  >
+    iPhone
+  </option>,
+]
+`;
+
+exports[`Transactions filters when filtering by type should render all types 1`] = `
+HTMLOptionsCollection [
+  <option
+    value="charge"
+  >
+    Charge
+  </option>,
+  <option
+    value="payment"
+  >
+    Payment
+  </option>,
+  <option
+    value="payment_failure_refund"
+  >
+    Payment failure refund
+  </option>,
+  <option
+    value="payment_refund"
+  >
+    Payment refund
+  </option>,
+  <option
+    value="refund"
+  >
+    Refund
+  </option>,
+  <option
+    value="refund_failure"
+  >
+    Refund failure
+  </option>,
+  <option
+    value="dispute"
+  >
+    Dispute
+  </option>,
+  <option
+    value="dispute_reversal"
+  >
+    Dispute reversal
+  </option>,
+  <option
+    value="card_reader_fee"
+  >
+    Reader fee
+  </option>,
+  <option
+    value="financing_payout"
+  >
+    Loan disbursement
+  </option>,
+  <option
+    value="financing_paydown"
+  >
+    Loan repayment
+  </option>,
+  <option
+    value="fee_refund"
+  >
+    Fee refund
+  </option>,
+]
+`;

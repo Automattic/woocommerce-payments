@@ -681,6 +681,7 @@ class WC_Payments {
 		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'order_woopayments_gateways' ], 3 );
 		add_filter( 'woocommerce_admin_get_user_data_fields', [ __CLASS__, 'add_user_data_fields' ] );
 
+		add_filter( 'woocommerce_address_providers', [ __CLASS__, 'add_address_provider' ] );
 		// Add note query support for source.
 		add_filter( 'woocommerce_rest_notes_object_query', [ __CLASS__, 'possibly_add_source_to_notes_query' ], 10, 2 );
 		add_filter( 'woocommerce_note_where_clauses', [ __CLASS__, 'possibly_add_note_source_where_clause' ], 10, 2 );
@@ -870,6 +871,31 @@ class WC_Payments {
 		}
 
 		return $gateways;
+	}
+
+	/**
+	 * Add the WooCommerce Payments address autocomplete provider, but only if a WCPay gateway is enabled.
+	 *
+	 * @psalm-suppress MissingDependency
+	 *
+	 * @param array $providers The address providers.
+	 * @return array The address providers.
+	 */
+	public static function add_address_provider( $providers ) {
+		// Only enable address provider integration if a WCPay gateway is enabled.
+		if ( ! self::get_gateway()->is_enabled() ) {
+			return $providers;
+		}
+
+		if ( ! class_exists( 'Automattic\WooCommerce\Internal\AddressProvider\AbstractAutomatticAddressProvider' ) ) {
+			return $providers;
+		}
+
+		include_once __DIR__ . '/class-wc-payments-address-provider.php';
+
+		$providers[] = new WC_Payments_Address_Provider( self::$api_client );
+
+		return $providers;
 	}
 
 	/**
@@ -1885,6 +1911,15 @@ class WC_Payments {
 		if ( WC_Payments_Utils::is_cart_block() ) {
 			self::register_script_with_dependencies( 'WCPAY_CART_BLOCK', 'dist/cart-block', [ 'wc-cart-block-frontend' ] );
 			wp_enqueue_script( 'WCPAY_CART_BLOCK' );
+
+			// Enqueue cart block styles.
+			WC_Payments_Utils::enqueue_style(
+				'WCPAY_CART_BLOCK',
+				plugins_url( 'dist/cart-block.css', WCPAY_PLUGIN_FILE ),
+				[],
+				self::get_file_version( 'dist/cart-block.css' ),
+				'all'
+			);
 		}
 	}
 

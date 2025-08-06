@@ -31,7 +31,6 @@ import OnboardingPage from 'onboarding';
 import OnboardingKycPage from 'onboarding/kyc';
 import FraudProtectionAdvancedSettingsPage from './settings/fraud-protection/advanced-settings';
 import { getTasks } from 'overview/task-list/tasks';
-import { WordPressComponentsContext } from 'wcpay/wordpress-components-context/context';
 
 addFilter(
 	'woocommerce_admin_pages_list',
@@ -137,11 +136,7 @@ addFilter(
 			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
-			container: ( { query } ) => (
-				<WordPressComponentsContext.Provider value={ wp.components }>
-					<PaymentDetailsPage query={ query } />
-				</WordPressComponentsContext.Provider>
-			),
+			container: PaymentDetailsPage,
 			path: '/payments/transactions/details',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
@@ -159,11 +154,7 @@ addFilter(
 			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
-			container: ( { query } ) => (
-				<WordPressComponentsContext.Provider value={ wp.components }>
-					<DisputesPage query={ query } />
-				</WordPressComponentsContext.Provider>
-			),
+			container: DisputesPage,
 			path: '/payments/disputes',
 			wpOpenMenu: menuID,
 			breadcrumbs: [ rootLink, __( 'Disputes', 'woocommerce-payments' ) ],
@@ -193,11 +184,7 @@ addFilter(
 		} );
 
 		pages.push( {
-			container: ( { query } ) => (
-				<WordPressComponentsContext.Provider value={ wp.components }>
-					<DisputeNewEvidencePage query={ query } />
-				</WordPressComponentsContext.Provider>
-			),
+			container: DisputeNewEvidencePage,
 			path: '/payments/disputes/challenge',
 			wpOpenMenu: menuID,
 			breadcrumbs: [

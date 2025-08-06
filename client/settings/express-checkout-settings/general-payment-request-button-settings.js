@@ -4,16 +4,6 @@
  */
 import React, { useMemo } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-// eslint-disable-next-line no-restricted-syntax
-import {
-	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
-	__experimentalNumberControl as NumberControl,
-} from '@wordpress/components';
-import {
-	SelectControl,
-	RadioControl,
-	RangeControl,
-} from 'wcpay/components/wp-components-wrapped';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import { useContext } from '@wordpress/element';
@@ -21,6 +11,13 @@ import { useContext } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import {
+	SelectControl,
+	RadioControl,
+	RangeControl,
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
+	__experimentalNumberControl as NumberControl,
+} from '@wordpress/components';
 import CardBody from '../card-body';
 import PaymentRequestButtonPreview from './payment-request-button-preview';
 import interpolateComponents from '@automattic/interpolate-components';
@@ -166,7 +163,7 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 		isWooPayFeatureFlagEnabled;
 
 	return (
-		<CardBody>
+		<CardBody className="wcpay-card-body">
 			{ showWarning && (
 				<>
 					<InlineNotice
@@ -206,6 +203,8 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 				value={ buttonType }
 				options={ buttonActionOptions }
 				onChange={ setButtonType }
+				__nextHasNoMarginBottom
+				__next40pxDefaultSize
 			/>
 			<h4>{ __( 'Button size', 'woocommerce-payments' ) }</h4>
 			<RadioControl
@@ -259,6 +258,8 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 					min={ 0 }
 					withInputField={ false }
 					onChange={ setRadius }
+					__nextHasNoMarginBottom
+					__next40pxDefaultSize
 				/>
 			</div>
 			<p className="payment-method-settings__option-help-text">

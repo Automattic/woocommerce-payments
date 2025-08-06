@@ -2,8 +2,8 @@
  * External dependencies
  */
 import React, { useState } from 'react';
-import { Button, CardDivider } from 'wcpay/components/wp-components-wrapped';
 import { addQueryArgs } from '@wordpress/url';
+import { Button, CardDivider } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -39,6 +39,7 @@ export const AccountTools = () => {
 					<Button
 						variant={ 'secondary' }
 						onClick={ () => setModalVisible( true ) }
+						__next40pxDefaultSize
 					>
 						{ strings.reset }
 					</Button>

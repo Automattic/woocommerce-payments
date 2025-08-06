@@ -9,6 +9,10 @@ import { backup, edit, lock, arrowRight } from '@wordpress/icons';
 import { useDispatch } from '@wordpress/data';
 import { createInterpolateElement } from '@wordpress/element';
 import { Link } from '@woocommerce/components';
+
+/**
+ * Internal dependencies
+ */
 import {
 	Button,
 	ExternalLink,
@@ -17,11 +21,7 @@ import {
 	Icon,
 	Modal,
 	HorizontalRule,
-} from 'wcpay/components/wp-components-wrapped';
-
-/**
- * Internal dependencies
- */
+} from '@wordpress/components';
 import type { Dispute } from 'wcpay/types/disputes';
 import type { ChargeBillingDetails } from 'wcpay/types/charges';
 import { recordEvent } from 'tracks';
@@ -361,6 +361,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 											}
 										);
 									} }
+									__next40pxDefaultSize
 								>
 									{ hasStagedEvidence
 										? __(
@@ -386,6 +387,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 								);
 								setModalOpen( true );
 							} }
+							__next40pxDefaultSize
 						>
 							{ disputeAcceptAction.acceptButtonLabel }
 						</Button>
@@ -429,6 +431,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 											isDisputeAcceptRequestPending
 										}
 										onClick={ handleModalClose }
+										__next40pxDefaultSize
 									>
 										{ __(
 											'Cancel',
@@ -463,6 +466,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 												doAccept();
 											}
 										} }
+										__next40pxDefaultSize
 									>
 										{ disputeAcceptAction.modalButtonLabel }
 									</Button>

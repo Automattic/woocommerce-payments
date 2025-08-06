@@ -2,15 +2,15 @@
  * External dependencies
  */
 import React from 'react';
+import { __ } from '@wordpress/i18n';
+import { getHistory } from '@woocommerce/navigation';
 import {
 	Button,
 	Card,
 	CardBody,
 	CardFooter,
 	CardHeader,
-} from 'wcpay/components/wp-components-wrapped';
-import { __ } from '@wordpress/i18n';
-import { getHistory } from '@woocommerce/navigation';
+} from '@wordpress/components';
 
 /**
  * Internal dependencies.
@@ -195,6 +195,7 @@ const DepositsOverview: React.FC = () => {
 						<Button
 							variant="secondary"
 							onClick={ navigateToDepositsHistory }
+							__next40pxDefaultSize
 						>
 							{ __(
 								'View full payout history',
@@ -218,6 +219,7 @@ const DepositsOverview: React.FC = () => {
 									'wcpay_overview_deposits_change_schedule_click'
 								)
 							}
+							__next40pxDefaultSize
 						>
 							{ __(
 								'Change payout schedule',

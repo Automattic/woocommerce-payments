@@ -7,7 +7,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { TableCard, TableCardColumn } from '@woocommerce/components';
 import { onQueryChange, getQuery } from '@woocommerce/navigation';
-import { Button } from 'wcpay/components/wp-components-wrapped';
+import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -198,6 +198,7 @@ export const DocumentsList = (): JSX.Element => {
 								document.type
 							)
 						}
+						__next40pxDefaultSize
 					>
 						{ __( 'Download', 'woocommerce-payments' ) }
 					</Button>

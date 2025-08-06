@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { Modal, Button } from 'wcpay/components/wp-components-wrapped';
+import { Modal, Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -44,6 +44,7 @@ export const ConnectionSuccessModal = () => {
 							isBusy={ false }
 							disabled={ false }
 							onClick={ onDismiss }
+							__next40pxDefaultSize
 						>
 							{ strings.button }
 						</Button>

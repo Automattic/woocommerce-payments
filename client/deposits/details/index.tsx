@@ -5,18 +5,6 @@
  */
 import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-// eslint-disable-next-line no-restricted-syntax
-import {
-	// @ts-expect-error: Suppressing Module '"@wordpress/components"' has no exported member '__experimentalText'.
-	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis -- used by TableCard component which we replicate here.
-	__experimentalText as Text,
-} from '@wordpress/components';
-import {
-	Card,
-	CardBody,
-	CardHeader,
-	ExternalLink,
-} from 'wcpay/components/wp-components-wrapped';
 import {
 	SummaryListPlaceholder,
 	SummaryList,
@@ -24,6 +12,15 @@ import {
 } from '@woocommerce/components';
 import interpolateComponents from '@automattic/interpolate-components';
 import clsx from 'clsx';
+import {
+	// @ts-expect-error: Suppressing Module '"@wordpress/components"' has no exported member '__experimentalText'.
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
+	__experimentalText as Text,
+	Card,
+	CardBody,
+	CardHeader,
+	ExternalLink,
+} from '@wordpress/components';
 
 /**
  * Internal dependencies.

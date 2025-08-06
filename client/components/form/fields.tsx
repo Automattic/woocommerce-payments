@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React, { ComponentProps, forwardRef } from 'react';
-import { TextControl } from 'wcpay/components/wp-components-wrapped';
+import { TextControl } from '@wordpress/components';
 import clsx from 'clsx';
 
 /**
@@ -59,7 +59,11 @@ const makeField = (
 
 export const TextField = forwardRef< HTMLInputElement, TextFieldProps >(
 	( props, ref ) => {
-		return makeField( TextControl, props, ref );
+		return makeField(
+			TextControl,
+			{ ...props, __nextHasNoMarginBottom: true },
+			ref
+		);
 	}
 );
 

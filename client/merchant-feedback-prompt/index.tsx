@@ -1,23 +1,22 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState } from 'react';
-import ReactDOM from 'react-dom';
+import React, { ComponentProps, useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { Icon, thumbsUp, thumbsDown } from '@wordpress/icons';
+import { useSelect } from '@wordpress/data';
+import { __ } from '@wordpress/i18n';
+// eslint-disable-next-line no-restricted-syntax
+/**
+ * Internal dependencies
+ */
 import {
 	Button,
 	Flex,
 	FlexItem,
 	SnackbarList,
-} from 'wcpay/components/wp-components-wrapped';
-// eslint-disable-next-line no-restricted-syntax
-import { NoticeList } from '@wordpress/components';
-import { Icon, thumbsUp, thumbsDown } from '@wordpress/icons';
-import { useSelect } from '@wordpress/data';
-import { __ } from '@wordpress/i18n';
-
-/**
- * Internal dependencies
- */
+	NoticeList,
+} from '@wordpress/components';
 import { recordEvent } from 'wcpay/tracks';
 import { PositiveFeedbackModal } from './positive-modal';
 import { NegativeFeedbackModal } from './negative-modal';
@@ -52,7 +51,7 @@ const WCFooterPortal = ( { children }: { children: React.ReactNode } ) => {
 		return null;
 	}
 
-	return ReactDOM.createPortal( children, portalRoot );
+	return createPortal( children, portalRoot );
 };
 
 interface MerchantFeedbackPromptProps {
@@ -76,10 +75,9 @@ const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
 	showNegativeFeedbackModal,
 } ) => {
 	// Get the core notices, which we'll use to ensure we're not rendering the prompt if there are other notices being displayed.
-	const coreNotices = useSelect(
-		( select ) =>
-			select( 'core/notices' ).getNotices() as NoticeList.Notice[]
-	);
+	const coreNotices = useSelect<
+		ComponentProps< typeof NoticeList >[ 'notices' ]
+	>( ( select ) => select( 'core/notices' ).getNotices() );
 
 	// Only render the prompt if there are no core notices.
 	const shouldShowPrompt = coreNotices?.length === 0;
@@ -126,6 +124,7 @@ const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
 											showPositiveFeedbackModal();
 											dismissPrompt();
 										} }
+										__next40pxDefaultSize
 									>
 										<Icon
 											icon={ thumbsUp }
@@ -153,6 +152,7 @@ const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
 											showNegativeFeedbackModal();
 											dismissPrompt();
 										} }
+										__next40pxDefaultSize
 									>
 										<Icon
 											icon={ thumbsDown }

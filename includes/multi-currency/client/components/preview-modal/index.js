@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { Modal } from 'wcpay/components/wp-components-wrapped/components/modal';
+import { Modal } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import { useStoreSettings } from 'multi-currency/data';
 

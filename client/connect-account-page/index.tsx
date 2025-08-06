@@ -5,17 +5,17 @@
  */
 import React, { useEffect, useState, useRef } from 'react';
 import { render } from '@wordpress/element';
+import apiFetch from '@wordpress/api-fetch';
+import { addQueryArgs } from '@wordpress/url';
+import { Loader } from '@woocommerce/onboarding';
+import { __ } from '@wordpress/i18n';
 import {
 	Button,
 	Card,
 	CardBody,
 	Panel,
 	PanelBody,
-} from 'wcpay/components/wp-components-wrapped';
-import apiFetch from '@wordpress/api-fetch';
-import { addQueryArgs } from '@wordpress/url';
-import { Loader } from '@woocommerce/onboarding';
-import { __ } from '@wordpress/i18n';
+} from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -579,6 +579,7 @@ const ConnectAccountPage: React.FC = () => {
 									isSubmitted || isAccountSetupSessionError
 								}
 								onClick={ handleSetup }
+								__next40pxDefaultSize
 							>
 								{ ctaLabel }
 							</Button>
@@ -589,10 +590,11 @@ const ConnectAccountPage: React.FC = () => {
 										.detailsSubmitted ||
 										isInTestModeOnboarding() ) && (
 										<Button
-											variant={ 'tertiary' }
+											variant="tertiary"
 											onClick={ () =>
 												setModalVisible( true )
 											}
+											__next40pxDefaultSize
 										>
 											{ strings.button.reset }
 										</Button>
@@ -626,6 +628,7 @@ const ConnectAccountPage: React.FC = () => {
 										isBusy={ isTestDriveModeSubmitted }
 										disabled={ isTestDriveModeSubmitted }
 										onClick={ handleSetupTestDriveMode }
+										__next40pxDefaultSize
 									>
 										{ strings.button.sandbox }
 									</Button>

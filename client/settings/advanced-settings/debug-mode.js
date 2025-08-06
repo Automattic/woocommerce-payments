@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { CheckboxControl } from 'wcpay/components/wp-components-wrapped';
+import { CheckboxControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -22,7 +22,7 @@ const DebugMode = () => {
 				label={
 					isDevModeEnabled
 						? __(
-								'Sandbox mode is active so logging is on by default.',
+								'Log error messages (defaulted on for test accounts)',
 								'woocommerce-payments'
 						  )
 						: __( 'Log error messages', 'woocommerce-payments' )
@@ -34,6 +34,7 @@ const DebugMode = () => {
 				disabled={ isDevModeEnabled }
 				checked={ isDevModeEnabled || isLoggingChecked }
 				onChange={ setIsLoggingChecked }
+				__nextHasNoMarginBottom
 			/>
 		</>
 	);

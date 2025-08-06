@@ -4,7 +4,7 @@
  * External dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
+import { Button } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 import { dispatch } from '@wordpress/data';
 
@@ -99,10 +99,18 @@ const RefundConfirmationModal = ( {
 					className="refund-confirmation-modal"
 					actions={
 						<>
-							<Button isSecondary onClick={ handleRefundCancel }>
+							<Button
+								variant="secondary"
+								onClick={ handleRefundCancel }
+								__next40pxDefaultSize
+							>
 								{ __( 'Cancel', 'woocommerce-payments' ) }
 							</Button>
-							<Button isPrimary onClick={ handleRefundConfirm }>
+							<Button
+								variant="primary"
+								onClick={ handleRefundConfirm }
+								__next40pxDefaultSize
+							>
 								{ sprintf(
 									__( 'Refund %s', 'woocommerce-payments' ),
 									formattedRefundAmount

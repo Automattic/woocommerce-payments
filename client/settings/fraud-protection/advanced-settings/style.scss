@@ -1,0 +1,69 @@
+// Override body and header for Advanced fraud settings page to be consistent with other settings pages.
+body {
+	&.woocommerce-admin-page__payments_fraud-protection {
+		background: #fff;
+		.wcpay-settings-layout {
+			margin: 40px 0 0;
+			max-width: 1184px;
+		}
+		@media screen and ( max-width: 782px ) {
+			.woocommerce-layout .woocommerce-layout__main {
+				padding-top: 0; // reduce the padding in mobile view (it's too big)
+			}
+		}
+		.woocommerce-layout__header {
+			&-heading {
+				font-size: 16px;
+				padding: 0 0 0 30px;
+			}
+			border-bottom: 1px solid #ddd;
+		}
+		.woocommerce-layout__primary {
+			margin: 24px 0 128px 30px;
+		}
+		#woocommerce-activity-panel {
+			display: none;
+		}
+		.settings-section__details {
+			h2 {
+				margin-top: 0; // align section header and details by reducing h2 margin
+			}
+		}
+	}
+}
+
+.fraud-protection {
+	&-advanced-settings {
+		&-error-notice {
+			margin-bottom: 24px;
+		}
+
+		&__footer {
+			display: flex;
+			justify-content: flex-end;
+
+			> .components-button + .components-button {
+				margin-left: 24px;
+			}
+		}
+	}
+
+	// Have this until further redesign of the breadcrumbs.
+	&-header-breadcrumb {
+		&-legacy {
+			small {
+				margin-left: 0.5em;
+			}
+		}
+		small {
+			margin-right: 0.5em;
+		}
+		a {
+			color: #1d2327;
+			text-decoration: none;
+		}
+		a:hover {
+			color: var( --wp-admin-theme-color, #3858e9 );
+		}
+	}
+}

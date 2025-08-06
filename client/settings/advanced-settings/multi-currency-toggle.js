@@ -1,15 +1,12 @@
 /**
  * External dependencies
  */
-import {
-	CheckboxControl,
-	ExternalLink,
-} from 'wcpay/components/wp-components-wrapped';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
+import { CheckboxControl, ExternalLink } from '@wordpress/components';
 import { useMultiCurrency } from 'wcpay/data';
 import interpolateComponents from '@automattic/interpolate-components';
 
@@ -41,6 +38,7 @@ const MultiCurrencyToggle = () => {
 			checked={ isMultiCurrencyEnabled }
 			onChange={ handleMultiCurrencyStatusChange }
 			data-testid="multi-currency-toggle"
+			__nextHasNoMarginBottom
 		/>
 	);
 };

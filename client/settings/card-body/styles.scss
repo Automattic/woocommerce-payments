@@ -42,14 +42,11 @@
 		max-width: none;
 	}
 
-	// spacing in the "Express checkouts" settings page
-	.components-radio-control__option {
-		margin-bottom: 10px;
-		align-items: center;
-		display: flex;
-	}
-
-	.components-base-control__help {
-		margin-top: unset;
+	.components-checkbox-control {
+		input[type='checkbox'] {
+			&:checked:disabled {
+				opacity: 0.3;
+			}
+		}
 	}
 }

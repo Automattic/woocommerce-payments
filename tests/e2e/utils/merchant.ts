@@ -313,9 +313,7 @@ export const setCurrencyRate = async (
 	rate: string
 ) => {
 	await editCurrency( page, currencyCode );
-	await page
-		.locator( '#single-currency-settings__manual_rate_radio' )
-		.click();
+	await page.getByLabel( 'Manual' ).check();
 	await page.getByTestId( 'manual_rate_input' ).fill( rate );
 	await saveMultiCurrencySettings( page );
 };

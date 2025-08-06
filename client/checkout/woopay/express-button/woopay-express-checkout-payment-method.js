@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { useCallback } from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -29,7 +29,7 @@ const WooPayExpressCheckoutButtonContainer = ( { buttonAttributes } ) => {
 	const onRefChange = useCallback(
 		( node ) => {
 			if ( node ) {
-				const root = ReactDOM.createRoot( node );
+				const root = createRoot( node );
 
 				root.render(
 					<WoopayExpressCheckoutButton

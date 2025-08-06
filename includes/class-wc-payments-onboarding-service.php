@@ -21,7 +21,6 @@ use WCPay\Logger;
 class WC_Payments_Onboarding_Service {
 
 	const TEST_MODE_OPTION                           = 'wcpay_onboarding_test_mode';
-	const ONBOARDING_ELIGIBILITY_MODAL_OPTION        = 'wcpay_onboarding_eligibility_modal_dismissed';
 	const ONBOARDING_CONNECTION_SUCCESS_MODAL_OPTION = 'wcpay_connection_success_modal_dismissed';
 	const ONBOARDING_INIT_IN_PROGRESS_TRANSIENT      = 'wcpay_onboarding_init_in_progress';
 
@@ -276,17 +275,16 @@ class WC_Payments_Onboarding_Service {
 	 *
 	 * Will return the session key used to initialise the embedded onboarding session.
 	 *
-	 * @param array   $self_assessment_data Self assessment data.
-	 * @param boolean $progressive Whether the onboarding is progressive.
-	 * @param array   $capabilities Optional. List keyed by capabilities IDs (payment methods) with boolean values
-	 *                             indicating whether the capability should be requested when the account is created
-	 *                             and enabled in the settings.
+	 * @param array $self_assessment_data Self assessment data.
+	 * @param array $capabilities Optional. List keyed by capabilities IDs (payment methods) with boolean values
+	 *                           indicating whether the capability should be requested when the account is created
+	 *                           and enabled in the settings.
 	 *
 	 * @return array Session data.
 	 *
 	 * @throws API_Exception|Exception
 	 */
-	public function create_embedded_kyc_session( array $self_assessment_data, bool $progressive = false, array $capabilities = [] ): array {
+	public function create_embedded_kyc_session( array $self_assessment_data, array $capabilities = [] ): array {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			return [];
 		}
@@ -338,7 +336,6 @@ class WC_Payments_Onboarding_Service {
 				WC_Payments_Utils::array_filter_recursive( $user_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
 				WC_Payments_Utils::array_filter_recursive( $account_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
 				$actioned_notes,
-				$progressive,
 				$this->get_referral_code()
 			);
 		} catch ( API_Exception $e ) {
@@ -884,6 +881,7 @@ class WC_Payments_Onboarding_Service {
 		$gateway = WC_Payments::get_gateway();
 		$gateway->update_option( 'enabled', 'no' );
 		$gateway->update_option( 'test_mode', 'no' );
+		$gateway->update_option( 'upe_enabled_payment_method_ids', [ 'card' ] );
 
 		update_option( '_wcpay_onboarding_stripe_connected', [] );
 		update_option( self::TEST_MODE_OPTION, 'no' );
@@ -1003,17 +1001,7 @@ class WC_Payments_Onboarding_Service {
 	 * @return void
 	 */
 	public static function clear_account_options(): void {
-		delete_option( self::ONBOARDING_ELIGIBILITY_MODAL_OPTION );
 		delete_option( self::ONBOARDING_CONNECTION_SUCCESS_MODAL_OPTION );
-	}
-
-	/**
-	 * Set the onboarding eligibility modal dismissed option to true.
-	 *
-	 * @return void
-	 */
-	public static function set_onboarding_eligibility_modal_dismissed(): void {
-		update_option( self::ONBOARDING_ELIGIBILITY_MODAL_OPTION, true );
 	}
 
 	/**

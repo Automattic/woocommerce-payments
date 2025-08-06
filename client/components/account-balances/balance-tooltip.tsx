@@ -5,6 +5,7 @@ import React from 'react';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import interpolateComponents from '@automattic/interpolate-components';
 import { __ } from '@wordpress/i18n';
+import { ExternalLink } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -132,10 +133,7 @@ export const AvailableBalanceTooltip: React.FC< AvailableBalanceTooltipProps > =
 								),
 								components: {
 									discoverWhyLink: (
-										// eslint-disable-next-line jsx-a11y/anchor-has-content
-										<a
-											rel="external noopener noreferrer"
-											target="_blank"
+										<ExternalLink
 											href={
 												documentationUrls.negativeBalance
 											}
