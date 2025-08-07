@@ -65,12 +65,17 @@ export const NegativeFeedbackModal: React.FC< NegativeFeedbackModalProps > = ( {
 					{ interpolateComponents( {
 						// translators: {{a}}: placeholders are opening and closing anchor tags.
 						mixedString: __(
-							'Your feedback will be sent to the WooCommerce team. Your personal information is secure and will not be shared with third parties. For more details, please see our {{a}}privacy policy{{/a}}.',
+							'Your feedback will be sent to the WooCommerce team. Your personal information is secure and will not be shared with third parties. For more details, please see our {{a/}}.',
 							'woocommerce-payments'
 						),
 						components: {
 							a: (
-								<ExternalLink href="https://automattic.com/privacy/" />
+								<ExternalLink href="https://automattic.com/privacy/">
+									{ __(
+										'privacy policy',
+										'woocommerce-payments'
+									) }
+								</ExternalLink>
 							),
 						},
 					} ) }
@@ -79,7 +84,7 @@ export const NegativeFeedbackModal: React.FC< NegativeFeedbackModalProps > = ( {
 					{ interpolateComponents( {
 						// translators: {{a}}: placeholders are opening and closing anchor tags.
 						mixedString: __(
-							`Need help with a specific issue? {{a}}Contact our support team{{/a}} for personalized assistance.`,
+							`Need help with a specific issue? {{a/}} for personalized assistance.`,
 							'woocommerce-payments'
 						),
 						components: {
@@ -92,7 +97,12 @@ export const NegativeFeedbackModal: React.FC< NegativeFeedbackModalProps > = ( {
 											'wcpay_merchant_feedback_prompt_negative_modal_contact_support_click'
 										);
 									} }
-								/>
+								>
+									{ __(
+										'Contact our support team',
+										'woocommerce-payments'
+									) }
+								</ExternalLink>
 							),
 						},
 					} ) }
