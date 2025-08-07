@@ -596,7 +596,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			add_action( 'woocommerce_update_order', [ $this, 'schedule_order_tracking' ], 10, 2 );
 			add_action( 'woocommerce_rest_checkout_process_payment_with_context', [ $this, 'setup_payment_error_handler' ], 10, 2 );
-			add_filter( 'wc_order_payment_card_info', [ $this, 'get_card_info' ], 10, 2 );
 
 			add_filter( 'rest_request_before_callbacks', [ $this, 'remove_all_actions_on_preflight_check' ], 10, 3 );
 
@@ -4555,67 +4554,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		return $this->account->get_recommended_payment_methods( $country_code );
-	}
-
-	/**
-	 * Prepare card info for an order.
-	 *
-	 * @param array    $card_info The card info.
-	 * @param WC_Order $order The order.
-	 * @return array The card info.
-	 */
-	public function get_card_info( $card_info, WC_Order $order ) {
-		if ( self::GATEWAY_ID !== $order->get_payment_method() ) {
-			return $card_info;
-		}
-
-		$payment_method_details = $this->order_service->get_payment_method_details( $order );
-		if ( ! $payment_method_details ) {
-			$payment_method_id = $order->get_meta( '_payment_method_id' );
-			if ( ! $payment_method_id ) {
-				return $card_info;
-			}
-
-			try {
-				$payment_method_details = $this->payments_api_client->get_payment_method( $payment_method_id );
-			} catch ( API_Exception $ex ) {
-				Logger::error(
-					sprintf(
-						'Retrieving info for payment method for order %s: %s',
-						$order->get_id(),
-						$ex->getMessage()
-					)
-				);
-
-				return $card_info;
-			}
-
-			// Cache payment method details.
-			$this->order_service->store_payment_method_details( $order, $payment_method_details );
-		}
-
-		$card_info = [];
-
-		if ( isset( $payment_method_details['type'], $payment_method_details[ $payment_method_details['type'] ] ) ) {
-			$details = $payment_method_details[ $payment_method_details['type'] ];
-			switch ( $payment_method_details['type'] ) {
-				case 'card':
-				default:
-					$card_info['brand'] = $details['brand'] ?? '';
-					$card_info['last4'] = $details['last4'] ?? '';
-					break;
-				case 'card_present':
-				case 'interac_present':
-					$card_info['brand']        = $details['brand'] ?? '';
-					$card_info['last4']        = $details['last4'] ?? '';
-					$card_info['account_type'] = $details['receipt']['account_type'] ?? '';
-					$card_info['aid']          = $details['receipt']['dedicated_file_name'] ?? '';
-					$card_info['app_name']     = $details['receipt']['application_preferred_name'] ?? '';
-					break;
-			}
-		}
-
-		return array_map( 'sanitize_text_field', $card_info );
 	}
 
 	/**
