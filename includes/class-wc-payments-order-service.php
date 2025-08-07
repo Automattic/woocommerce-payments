@@ -977,8 +977,7 @@ class WC_Payments_Order_Service {
 		if ( null !== $charge ) {
 			$payment_method_details = $charge->get_payment_method_details();
 			if ( $payment_method_details ) {
-				$order->update_meta_data( '_wcpay_payment_details', wp_json_encode( $payment_method_details ) );
-				$order->save_meta_data();
+				$this->store_payment_method_details( $order, $payment_method_details );
 			}
 		}
 	}
