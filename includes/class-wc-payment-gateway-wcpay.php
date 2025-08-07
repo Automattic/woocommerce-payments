@@ -9,7 +9,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-use Automattic\WooCommerce\Internal\Admin\Settings\Exceptions\ApiException;
 use Automattic\WooCommerce\StoreApi\Payments\PaymentContext;
 use Automattic\WooCommerce\StoreApi\Payments\PaymentResult;
 use WCPay\Constants\Country_Code;
@@ -4579,7 +4578,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			try {
 				$payment_method_details = $this->payments_api_client->get_payment_method( $payment_method_id );
-			} catch ( ApiException $ex ) {
+			} catch ( API_Exception $ex ) {
 				Logger::error(
 					sprintf(
 						'Retrieving info for payment method for order %s: %s',
