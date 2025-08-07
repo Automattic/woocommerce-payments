@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Generate payment method details in WooPayments instead of Woo core, cache them for performance improvements.
