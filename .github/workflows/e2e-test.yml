@@ -50,7 +50,7 @@ jobs:
           RC_VERSION=$(echo "$WC_VERSIONS" | jq -r '.[-1]')  # Last element
 
           # Extract beta version from script output (check if it exists)
-          BETA_VERSION=$(echo "$WC_VERSIONS" | jq -r '.[4]')  # 5th element (0-indexed)
+          BETA_VERSION=$(echo "$SCRIPT_OUTPUT" | grep "Latest beta version:" | cut -d' ' -f4)
 
           # Check if beta version is actually a version (not null or empty)
           if [[ "$BETA_VERSION" == "null" || -z "$BETA_VERSION" ]]; then
