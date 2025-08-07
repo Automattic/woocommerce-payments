@@ -54,13 +54,7 @@ const SupportPhoneInput = ( { setInputVallid } ) => {
 		}
 	}, [ supportPhoneError, setInputVallid ] );
 
-	let labelText = __( 'Support phone number', 'woocommerce-payments' );
-	if ( isTestModeOnboarding ) {
-		labelText += __(
-			' (+1 0000000000 can be used for test accounts)',
-			'woocommerce-payments'
-		);
-	}
+	const labelText = __( 'Support phone number', 'woocommerce-payments' );
 	return (
 		<>
 			{ supportPhoneError && (
@@ -70,10 +64,23 @@ const SupportPhoneInput = ( { setInputVallid } ) => {
 			) }
 			<BaseControl
 				className="settings__account-business-support-phone-input no-top-margin"
-				help={ __(
-					'This may be visible on receipts, invoices, and automated emails from your store.',
-					'woocommerce-payments'
-				) }
+				help={
+					<>
+						{ __(
+							'This may be visible on receipts, invoices, and automated emails from your store.',
+							'woocommerce-payments'
+						) }
+						{ isTestModeOnboarding && (
+							<>
+								<br />
+								{ __(
+									'(+1 0000000000 can be used for test accounts)',
+									'woocommerce-payments'
+								) }
+							</>
+						) }
+					</>
+				}
 				label={ labelText }
 				id="account-business-support-phone-input"
 				__nextHasNoMarginBottom

@@ -110,58 +110,33 @@ describe( 'SupportPhoneInput', () => {
 			container.querySelector( '.components-notice.is-error' )
 		).toBeNull();
 
-		fireEvent.change(
-			screen.getByLabelText(
-				'Support phone number (+1 0000000000 can be used for test accounts)'
-			),
-			{
-				target: { value: '+6580000000' },
-			}
-		);
+		fireEvent.change( screen.getByLabelText( 'Support phone number' ), {
+			target: { value: '+6580000000' },
+		} );
 		expect(
 			container.querySelector( '.components-notice.is-error' )
 		).toBeNull();
-		fireEvent.change(
-			screen.getByLabelText(
-				'Support phone number (+1 0000000000 can be used for test accounts)'
-			),
-			{
-				target: { value: '+6580500000' },
-			}
-		);
+		fireEvent.change( screen.getByLabelText( 'Support phone number' ), {
+			target: { value: '+6580500000' },
+		} );
 		expect(
 			container.querySelector( '.components-notice.is-error' )
 		).toBeNull();
-		fireEvent.change(
-			screen.getByLabelText(
-				'Support phone number (+1 0000000000 can be used for test accounts)'
-			),
-			{
-				target: { value: '+6580700000' },
-			}
-		);
+		fireEvent.change( screen.getByLabelText( 'Support phone number' ), {
+			target: { value: '+6580700000' },
+		} );
 		expect(
 			container.querySelector( '.components-notice.is-error' )
 		).toBeNull();
-		fireEvent.change(
-			screen.getByLabelText(
-				'Support phone number (+1 0000000000 can be used for test accounts)'
-			),
-			{
-				target: { value: '+6580800000' },
-			}
-		);
+		fireEvent.change( screen.getByLabelText( 'Support phone number' ), {
+			target: { value: '+6580800000' },
+		} );
 		expect(
 			container.querySelector( '.components-notice.is-error' )
 		).toBeNull();
-		fireEvent.change(
-			screen.getByLabelText(
-				'Support phone number (+1 0000000000 can be used for test accounts)'
-			),
-			{
-				target: { value: '+6580900000' },
-			}
-		);
+		fireEvent.change( screen.getByLabelText( 'Support phone number' ), {
+			target: { value: '+6580900000' },
+		} );
 		expect(
 			container.querySelector( '.components-notice.is-error' )
 		).toBeNull();
@@ -179,38 +154,23 @@ describe( 'SupportPhoneInput', () => {
 			container.querySelector( '.components-notice.is-error' )
 		).toBeNull();
 
-		fireEvent.change(
-			screen.getByLabelText(
-				'Support phone number (+1 0000000000 can be used for test accounts)'
-			),
-			{
-				target: { value: '+85241234567' },
-			}
-		);
+		fireEvent.change( screen.getByLabelText( 'Support phone number' ), {
+			target: { value: '+85241234567' },
+		} );
 		expect(
 			container.querySelector( '.components-notice.is-error' )
 		).toBeNull();
 
-		fireEvent.change(
-			screen.getByLabelText(
-				'Support phone number (+1 0000000000 can be used for test accounts)'
-			),
-			{
-				target: { value: '+85271234567' },
-			}
-		);
+		fireEvent.change( screen.getByLabelText( 'Support phone number' ), {
+			target: { value: '+85271234567' },
+		} );
 		expect(
 			container.querySelector( '.components-notice.is-error' )
 		).toBeNull();
 
-		fireEvent.change(
-			screen.getByLabelText(
-				'Support phone number (+1 0000000000 can be used for test accounts)'
-			),
-			{
-				target: { value: '+85281234567' },
-			}
-		);
+		fireEvent.change( screen.getByLabelText( 'Support phone number' ), {
+			target: { value: '+85281234567' },
+		} );
 		expect(
 			container.querySelector( '.components-notice.is-error' )
 		).toBeNull();
