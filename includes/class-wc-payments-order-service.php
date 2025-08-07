@@ -162,6 +162,13 @@ class WC_Payments_Order_Service {
 	const WCPAY_MULTIBANCO_URL_META_KEY = '_wcpay_multibanco_url';
 
 	/**
+	 * Meta key for cached payment method details.
+	 *
+	 * @const string
+	 */
+	const PAYMENT_METHOD_DETAILS_META_KEY = '_wcpay_payment_method_details';
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
 	 * @var WC_Payments_API_Client
@@ -2344,6 +2351,32 @@ class WC_Payments_Order_Service {
 			'url'       => $order->get_meta( self::WCPAY_MULTIBANCO_URL_META_KEY ),
 			'expiry'    => $order->get_meta( self::WCPAY_MULTIBANCO_EXPIRY_META_KEY ),
 		];
+	}
+
+	/**
+	 * Store payment method details in the order meta.
+	 *
+	 * @param  WC_Order $order                  The order.
+	 * @param  array    $payment_method_details The payment method details.
+	 * @return void
+	 */
+	public function store_payment_method_details( WC_Order $order, array $payment_method_details ): void {
+		$order->update_meta_data( self::PAYMENT_METHOD_DETAILS_META_KEY, wp_json_encode( $payment_method_details ) );
+		$order->save_meta_data();
+	}
+
+	/**
+	 * Get cached payment method details from the order meta.
+	 *
+	 * @param  WC_Order $order The order.
+	 * @return array           The payment method details.
+	 */
+	public function get_payment_method_details( WC_Order $order ): ?array {
+		$json = $order->get_meta( self::PAYMENT_METHOD_DETAILS_META_KEY );
+		if ( '' === $json ) {
+			return null;
+		}
+		return json_decode( $json, true );
 	}
 
 	/**

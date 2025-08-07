@@ -4569,7 +4569,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return $card_info;
 		}
 
-		$payment_method_details = $order->get_meta( '_wcpay_payment_method_details' );
+		$payment_method_details = $this->order_service->get_payment_method_details( $order );
 		if ( ! $payment_method_details ) {
 			$payment_method_id = $order->get_meta( '_payment_method_id' );
 			if ( ! $payment_method_id ) {
@@ -4591,8 +4591,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			// Cache payment method details.
-			$order->update_meta_data( '_wcpay_payment_method_details', wp_json_encode( $payment_method_details ) );
-			$order->save_meta_data();
+			$this->order_service->store_payment_method_details( $order, $payment_method_details );
 		}
 
 		$card_info = [];
