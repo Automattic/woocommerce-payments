@@ -48,6 +48,7 @@ const Deposit: React.FC< DepositProps > = ( { depositId, dateAvailable } ) => {
 					),
 					components: {
 						learnMoreLink: (
+							// @ts-expect-error: children is provided when interpolating the component
 							<ExternalLink href="https://woocommerce.com/document/woopayments/payouts/payout-schedule/#pending-funds" />
 						),
 					},

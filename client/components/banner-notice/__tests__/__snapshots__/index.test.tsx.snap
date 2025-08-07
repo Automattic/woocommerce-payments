@@ -19,19 +19,19 @@ exports[`BannerNotice should match snapshot 1`] = `
         class="wcpay-banner-notice__actions"
       >
         <a
-          class="components-button is-link"
+          class="components-button is-next-40px-default-size is-link"
           href="https://example.com"
         >
           More information
         </a>
         <button
-          class="components-button is-secondary"
+          class="components-button is-next-40px-default-size is-secondary"
           type="button"
         >
           Cancel
         </button>
         <button
-          class="components-button is-primary"
+          class="components-button is-next-40px-default-size is-primary"
           type="button"
         >
           Submit
@@ -40,7 +40,7 @@ exports[`BannerNotice should match snapshot 1`] = `
     </div>
     <button
       aria-label="Dismiss this notice"
-      class="components-button wcpay-banner-notice__dismiss has-icon"
+      class="components-button wcpay-banner-notice__dismiss is-next-40px-default-size has-icon"
       type="button"
     >
       <svg

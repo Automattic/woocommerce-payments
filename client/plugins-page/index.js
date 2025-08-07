@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React, { useState, useEffect, useCallback } from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 
 /**
  * Internal dependencies
@@ -98,7 +98,6 @@ const PluginsPage = () => {
 	);
 };
 
-ReactDOM.render(
-	<PluginsPage />,
-	document.querySelector( '#woopayments-plugins-page-app' )
-);
+const container = document.querySelector( '#woopayments-plugins-page-app' );
+const root = createRoot( container );
+root.render( <PluginsPage /> );

@@ -316,6 +316,7 @@ const SingleCurrencySettings = () => {
 													),
 													components: {
 														learnMoreLink: (
+															// @ts-expect-error: children is provided when interpolating the component
 															<ExternalLink href="https://woocommerce.com/document/woopayments/currencies/multi-currency-setup/#price-rounding" />
 														),
 													},
@@ -359,6 +360,7 @@ const SingleCurrencySettings = () => {
 													),
 													components: {
 														learnMoreLink: (
+															// @ts-expect-error: children is provided when interpolating the component
 															<ExternalLink href="https://woocommerce.com/document/woopayments/currencies/multi-currency-setup/#charm-pricing" />
 														),
 													},

@@ -3,18 +3,16 @@
 exports[`Onboarding: location check dialog renders correctly when cancel button is clicked 1`] = `null`;
 
 exports[`Onboarding: location check dialog renders correctly when continue button is clicked 1`] = `
-.emotion-2 {
-  width: 1em;
-  height: 1em;
-  margin: 0;
-  vertical-align: middle;
-  fill: currentColor;
+.emotion-0 {
+  margin-bottom: 0;
+  margin-left: calc(4px * 2);
 }
 
 <div
   aria-labelledby="components-modal-header-1"
   class="components-modal__frame woocommerce-payments__onboarding_location_check-modal"
   role="dialog"
+  style="--modal-frame-animation-duration: 200ms;"
   tabindex="-1"
 >
   <div
@@ -34,9 +32,14 @@ exports[`Onboarding: location check dialog renders correctly when continue butto
           WooPayments
         </h1>
       </div>
+      <div
+        class="components-spacer emotion-0 emotion-1"
+        data-wp-c16t="true"
+        data-wp-component="Spacer"
+      />
       <button
-        aria-label="Close dialog"
-        class="components-button has-icon"
+        aria-label="Close"
+        class="components-button is-compact has-icon"
         type="button"
       >
         <svg
@@ -48,105 +51,96 @@ exports[`Onboarding: location check dialog renders correctly when continue butto
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
-            d="M12 13.06l3.712 3.713 1.061-1.06L13.061 12l3.712-3.712-1.06-1.06L12 10.938 8.288 7.227l-1.061 1.06L10.939 12l-3.712 3.712 1.06 1.061L12 13.061z"
+            d="m13.06 12 6.47-6.47-1.06-1.06L12 10.94 5.53 4.47 4.47 5.53 10.94 12l-6.47 6.47 1.06 1.06L12 13.06l6.47 6.47 1.06-1.06L13.06 12Z"
           />
         </svg>
       </button>
     </div>
-    <div
-      class="woocommerce-payments__onboarding_location_check-wrapper"
-    >
+    <div>
       <div
-        class="woocommerce-payments__onboarding_location_check-modal-message"
+        class="woocommerce-payments__onboarding_location_check-wrapper"
       >
-        It appears you're attempting to set up WooPayments from an unsupported country. In order to complete the set up of WooPayments, your store is required to have a business entity in one of the following countries: 
-        <ul
-          class="woocommerce-list"
-          role="menu"
+        <div
+          class="woocommerce-payments__onboarding_location_check-modal-message"
         >
-          <li
-            class="woocommerce-list__item"
+          It appears you're attempting to set up WooPayments from an unsupported country. In order to complete the set up of WooPayments, your store is required to have a business entity in one of the following countries: 
+          <ul
+            class="woocommerce-list"
+            role="menu"
           >
-            <div
-              class="woocommerce-list__item-inner"
+            <li
+              class="woocommerce-list__item"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="woocommerce-list__item-inner"
               >
-                <span
-                  class="woocommerce-list__item-title"
+                <div
+                  class="woocommerce-list__item-text"
                 >
-                  United Kingdom (UK)
-                </span>
+                  <span
+                    class="woocommerce-list__item-title"
+                  >
+                    United Kingdom (UK)
+                  </span>
+                </div>
               </div>
-            </div>
-          </li>
-          <li
-            class="woocommerce-list__item"
-          >
-            <div
-              class="woocommerce-list__item-inner"
+            </li>
+            <li
+              class="woocommerce-list__item"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="woocommerce-list__item-inner"
               >
-                <span
-                  class="woocommerce-list__item-title"
+                <div
+                  class="woocommerce-list__item-text"
                 >
-                  United States (US)
-                </span>
+                  <span
+                    class="woocommerce-list__item-title"
+                  >
+                    United States (US)
+                  </span>
+                </div>
               </div>
-            </div>
-          </li>
-        </ul>
-         
-        <a
-          class="components-external-link"
-          href="https://woocommerce.com/document/woopayments/compatibility/countries/"
-          rel="external noreferrer noopener"
-          target="_blank"
-        >
-          Learn more
-          <span
-            class="components-visually-hidden emotion-0 emotion-1"
-            data-wp-c16t="true"
-            data-wp-component="VisuallyHidden"
-            style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+            </li>
+          </ul>
+           
+          <a
+            class="components-external-link"
+            href="https://woocommerce.com/document/woopayments/compatibility/countries/"
+            rel="external noreferrer noopener"
+            target="_blank"
           >
-            (opens in a new tab)
-          </span>
-          <svg
-            aria-hidden="true"
-            class="components-external-link__icon emotion-2 emotion-3"
-            focusable="false"
-            height="24"
-            viewBox="0 0 24 24"
-            width="24"
-            xmlns="http://www.w3.org/2000/svg"
+            <span
+              class="components-external-link__contents"
+            >
+              Learn more
+            </span>
+            <span
+              aria-label="(opens in a new tab)"
+              class="components-external-link__icon"
+            >
+              ↗
+            </span>
+          </a>
+           about setting up business entities in foreign countries.
+        </div>
+        <div
+          class="woocommerce-payments__onboarding_location_check-footer"
+        >
+          <button
+            class="components-button is-next-40px-default-size is-secondary is-busy"
+            type="button"
           >
-            <path
-              d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
-            />
-          </svg>
-        </a>
-         about setting up business entities in foreign countries.
-      </div>
-      <div
-        class="woocommerce-payments__onboarding_location_check-footer"
-      >
-        <button
-          class="components-button is-secondary is-busy"
-          type="button"
-        >
-          Continue
-        </button>
-        <button
-          class="components-button is-primary"
-          disabled=""
-          type="button"
-        >
-          Cancel
-        </button>
+            Continue
+          </button>
+          <button
+            class="components-button is-next-40px-default-size is-primary"
+            disabled=""
+            type="button"
+          >
+            Cancel
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -154,18 +148,16 @@ exports[`Onboarding: location check dialog renders correctly when continue butto
 `;
 
 exports[`Onboarding: location check dialog renders correctly when opened 1`] = `
-.emotion-2 {
-  width: 1em;
-  height: 1em;
-  margin: 0;
-  vertical-align: middle;
-  fill: currentColor;
+.emotion-0 {
+  margin-bottom: 0;
+  margin-left: calc(4px * 2);
 }
 
 <div
   aria-labelledby="components-modal-header-0"
   class="components-modal__frame woocommerce-payments__onboarding_location_check-modal"
   role="dialog"
+  style="--modal-frame-animation-duration: 200ms;"
   tabindex="-1"
 >
   <div
@@ -185,9 +177,14 @@ exports[`Onboarding: location check dialog renders correctly when opened 1`] = `
           WooPayments
         </h1>
       </div>
+      <div
+        class="components-spacer emotion-0 emotion-1"
+        data-wp-c16t="true"
+        data-wp-component="Spacer"
+      />
       <button
-        aria-label="Close dialog"
-        class="components-button has-icon"
+        aria-label="Close"
+        class="components-button is-compact has-icon"
         type="button"
       >
         <svg
@@ -199,104 +196,95 @@ exports[`Onboarding: location check dialog renders correctly when opened 1`] = `
           xmlns="http://www.w3.org/2000/svg"
         >
           <path
-            d="M12 13.06l3.712 3.713 1.061-1.06L13.061 12l3.712-3.712-1.06-1.06L12 10.938 8.288 7.227l-1.061 1.06L10.939 12l-3.712 3.712 1.06 1.061L12 13.061z"
+            d="m13.06 12 6.47-6.47-1.06-1.06L12 10.94 5.53 4.47 4.47 5.53 10.94 12l-6.47 6.47 1.06 1.06L12 13.06l6.47 6.47 1.06-1.06L13.06 12Z"
           />
         </svg>
       </button>
     </div>
-    <div
-      class="woocommerce-payments__onboarding_location_check-wrapper"
-    >
+    <div>
       <div
-        class="woocommerce-payments__onboarding_location_check-modal-message"
+        class="woocommerce-payments__onboarding_location_check-wrapper"
       >
-        It appears you're attempting to set up WooPayments from an unsupported country. In order to complete the set up of WooPayments, your store is required to have a business entity in one of the following countries: 
-        <ul
-          class="woocommerce-list"
-          role="menu"
+        <div
+          class="woocommerce-payments__onboarding_location_check-modal-message"
         >
-          <li
-            class="woocommerce-list__item"
+          It appears you're attempting to set up WooPayments from an unsupported country. In order to complete the set up of WooPayments, your store is required to have a business entity in one of the following countries: 
+          <ul
+            class="woocommerce-list"
+            role="menu"
           >
-            <div
-              class="woocommerce-list__item-inner"
+            <li
+              class="woocommerce-list__item"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="woocommerce-list__item-inner"
               >
-                <span
-                  class="woocommerce-list__item-title"
+                <div
+                  class="woocommerce-list__item-text"
                 >
-                  United Kingdom (UK)
-                </span>
+                  <span
+                    class="woocommerce-list__item-title"
+                  >
+                    United Kingdom (UK)
+                  </span>
+                </div>
               </div>
-            </div>
-          </li>
-          <li
-            class="woocommerce-list__item"
-          >
-            <div
-              class="woocommerce-list__item-inner"
+            </li>
+            <li
+              class="woocommerce-list__item"
             >
               <div
-                class="woocommerce-list__item-text"
+                class="woocommerce-list__item-inner"
               >
-                <span
-                  class="woocommerce-list__item-title"
+                <div
+                  class="woocommerce-list__item-text"
                 >
-                  United States (US)
-                </span>
+                  <span
+                    class="woocommerce-list__item-title"
+                  >
+                    United States (US)
+                  </span>
+                </div>
               </div>
-            </div>
-          </li>
-        </ul>
-         
-        <a
-          class="components-external-link"
-          href="https://woocommerce.com/document/woopayments/compatibility/countries/"
-          rel="external noreferrer noopener"
-          target="_blank"
-        >
-          Learn more
-          <span
-            class="components-visually-hidden emotion-0 emotion-1"
-            data-wp-c16t="true"
-            data-wp-component="VisuallyHidden"
-            style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+            </li>
+          </ul>
+           
+          <a
+            class="components-external-link"
+            href="https://woocommerce.com/document/woopayments/compatibility/countries/"
+            rel="external noreferrer noopener"
+            target="_blank"
           >
-            (opens in a new tab)
-          </span>
-          <svg
-            aria-hidden="true"
-            class="components-external-link__icon emotion-2 emotion-3"
-            focusable="false"
-            height="24"
-            viewBox="0 0 24 24"
-            width="24"
-            xmlns="http://www.w3.org/2000/svg"
+            <span
+              class="components-external-link__contents"
+            >
+              Learn more
+            </span>
+            <span
+              aria-label="(opens in a new tab)"
+              class="components-external-link__icon"
+            >
+              ↗
+            </span>
+          </a>
+           about setting up business entities in foreign countries.
+        </div>
+        <div
+          class="woocommerce-payments__onboarding_location_check-footer"
+        >
+          <button
+            class="components-button is-next-40px-default-size is-secondary"
+            type="button"
           >
-            <path
-              d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
-            />
-          </svg>
-        </a>
-         about setting up business entities in foreign countries.
-      </div>
-      <div
-        class="woocommerce-payments__onboarding_location_check-footer"
-      >
-        <button
-          class="components-button is-secondary"
-          type="button"
-        >
-          Continue
-        </button>
-        <button
-          class="components-button is-primary"
-          type="button"
-        >
-          Cancel
-        </button>
+            Continue
+          </button>
+          <button
+            class="components-button is-next-40px-default-size is-primary"
+            type="button"
+          >
+            Cancel
+          </button>
+        </div>
       </div>
     </div>
   </div>

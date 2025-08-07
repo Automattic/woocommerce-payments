@@ -2,7 +2,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { act } from 'react';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import apiFetch from '@wordpress/api-fetch';
@@ -92,9 +92,13 @@ describe( 'ConnectAccountPage', () => {
 		global.wcpaySettings.connectIncentive = mockedIcentive;
 		render( <ConnectAccountPage /> );
 
-		await userEvent.click(
-			screen.getByRole( 'button', { name: 'Verify business details' } )
-		);
+		await act( async () => {
+			userEvent.click(
+				screen.getByRole( 'button', {
+					name: 'Verify business details',
+				} )
+			);
+		} );
 
 		await waitFor( () => {
 			expect( apiFetch ).toHaveBeenCalledWith( {
@@ -112,9 +116,13 @@ describe( 'ConnectAccountPage', () => {
 		// mockApiFetch.mockRejectedValueOnce( {} );
 		jest.mocked( apiFetch ).mockRejectedValueOnce( new Error() );
 
-		await userEvent.click(
-			screen.getByRole( 'button', { name: 'Verify business details' } )
-		);
+		await act( async () => {
+			userEvent.click(
+				screen.getByRole( 'button', {
+					name: 'Verify business details',
+				} )
+			);
+		} );
 
 		await waitFor( () => {
 			expect( apiFetch ).toHaveBeenCalled();

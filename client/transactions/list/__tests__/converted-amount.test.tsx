@@ -3,7 +3,8 @@
  * External dependencies
  */
 import React from 'react';
-import { render, fireEvent } from '@testing-library/react';
+import { render } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 
 /**
  * Internal dependencies
@@ -80,7 +81,7 @@ describe( 'ConvertedAmount', () => {
 		expect( conversionIndicator ).toHaveStyle( 'width: 18px' );
 		expect( conversionIndicator ).toHaveStyle( 'height: 18px' );
 
-		fireEvent.mouseEnter( conversionIndicator );
+		await userEvent.hover( conversionIndicator );
 		expect( await findByText( 'Converted from MOK 2.00' ) ).toBeVisible();
 		expect( container ).toMatchSnapshot(); // After tooltip appears.
 

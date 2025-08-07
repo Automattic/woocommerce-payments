@@ -209,6 +209,7 @@ const AccountBalances: React.FC = () => {
 											components: {
 												strong: <strong />,
 												learnMoreLink: (
+													// @ts-expect-error: children is provided when interpolating the component
 													<ExternalLink
 														href={
 															'https://woocommerce.com/document/woopayments/payouts/instant-payouts/'
