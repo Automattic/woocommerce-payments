@@ -46,6 +46,20 @@ get_major_versions_latest() {
     echo "${versions[@]}"
 }
 
+# Function to get the latest RC version from WordPress.org API
+get_latest_rc_version() {
+    curl -s https://api.wordpress.org/plugins/info/1.0/woocommerce.json | \
+    jq -r '.versions | with_entries(select(.key|match("rc";"i"))) | keys | sort_by( . | split("-")[0] | split(".") | map(tonumber) ) | last'
+}
+
+# Function to get the latest beta version from WordPress.org API
+get_latest_beta_version() {
+    local latest_version=$1
+    local major_version=$(echo "$latest_version" | cut -d. -f1)
+    curl -s https://api.wordpress.org/plugins/info/1.0/woocommerce.json | \
+    jq -r --arg major "$major_version" '.versions | with_entries(select(.key | startswith($major + ".") and contains("beta"))) | keys | sort_by( . | split("-")[0] | split(".") | map(tonumber) ) | last'
+}
+
 # Get the latest WooCommerce version
 echo "Fetching latest WooCommerce version..." >&2
 LATEST_WC_VERSION=$(get_latest_wc_version)
@@ -59,6 +73,13 @@ echo "L-1 version: $L1_VERSION" >&2
 MAJOR_VERSIONS=($(get_major_versions_latest "$LATEST_WC_VERSION"))
 echo "Major versions latest stable: ${MAJOR_VERSIONS[*]}" >&2
 
+# Get latest RC and beta versions
+echo "Fetching latest RC and beta versions..." >&2
+LATEST_RC_VERSION=$(get_latest_rc_version)
+LATEST_BETA_VERSION=$(get_latest_beta_version "$LATEST_WC_VERSION")
+echo "Latest RC version: $LATEST_RC_VERSION" >&2
+echo "Latest beta version: $LATEST_BETA_VERSION" >&2
+
 # Build the version array
 VERSIONS=("7.7.0")  # Keep for business reasons (significant TPV)
 
@@ -67,8 +88,19 @@ for version in "${MAJOR_VERSIONS[@]}"; do
     VERSIONS+=("$version")
 done
 
-# Add latest, beta, rc
-VERSIONS+=("latest" "beta" "rc")
+# Add latest, beta, rc (with actual versions)
+VERSIONS+=("latest")
+if [[ -n "$LATEST_BETA_VERSION" && "$LATEST_BETA_VERSION" != "null" ]]; then
+    VERSIONS+=("$LATEST_BETA_VERSION")
+    echo "Including beta version: $LATEST_BETA_VERSION" >&2
+else
+    echo "No beta version available, skipping beta tests" >&2
+fi
+if [[ -n "$LATEST_RC_VERSION" && "$LATEST_RC_VERSION" != "null" ]]; then
+    VERSIONS+=("$LATEST_RC_VERSION")
+else
+    VERSIONS+=("rc")  # Fallback to string if no RC found
+fi
 
 # Convert to JSON array and output only the JSON (no extra whitespace or newlines)
 printf '%s\n' "${VERSIONS[@]}" | jq -R . | jq -s . -c

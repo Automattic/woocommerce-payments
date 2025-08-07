@@ -46,6 +46,18 @@ jobs:
           WC_VERSIONS=$(echo "$SCRIPT_OUTPUT" | tail -n 1)
           L1_VERSION=$(echo "$SCRIPT_OUTPUT" | grep "L-1 version:" | cut -d' ' -f3)
 
+          # Extract RC version from script output (last element in array)
+          RC_VERSION=$(echo "$WC_VERSIONS" | jq -r '.[-1]')  # Last element
+
+          # Extract beta version from script output (check if it exists)
+          BETA_VERSION=$(echo "$WC_VERSIONS" | jq -r '.[4]')  # 5th element (0-indexed)
+
+          # Check if beta version is actually a version (not null or empty)
+          if [[ "$BETA_VERSION" == "null" || -z "$BETA_VERSION" ]]; then
+            BETA_VERSION=""
+            echo "No beta version available" >&2
+          fi
+
           # Validate that we got a proper version
           if [[ -z "$L1_VERSION" ]]; then
             echo "Error: Could not extract L-1 version from script output" >&2
@@ -59,7 +71,29 @@ jobs:
             exit 1
           fi
 
+          # Validate RC and beta versions
+          if [[ -z "$RC_VERSION" || "$RC_VERSION" == "null" ]]; then
+            echo "Error: Could not extract RC version from script output" >&2
+            echo "WC_VERSIONS: $WC_VERSIONS" >&2
+            exit 1
+          fi
+
+          # Only validate beta if it's available
+          if [[ -n "$BETA_VERSION" ]]; then
+            if [[ "$BETA_VERSION" == "null" ]]; then
+              echo "Error: Invalid beta version extracted: $BETA_VERSION" >&2
+              echo "WC_VERSIONS: $WC_VERSIONS" >&2
+              exit 1
+            fi
+          fi
+
           echo "Using L-1 version: $L1_VERSION" >&2
+          echo "Using RC version: $RC_VERSION" >&2
+          if [[ -n "$BETA_VERSION" ]]; then
+            echo "Using beta version: $BETA_VERSION" >&2
+          else
+            echo "No beta version available" >&2
+          fi
 
           # Create optimized matrix with selective PHP version testing
           # Build matrix dynamically based on WC versions
@@ -94,17 +128,19 @@ jobs:
           MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
           MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
 
-          # Add beta with PHP 8.1 only
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"beta\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"beta\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"beta\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"beta\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+          # Add beta with PHP 8.1 only (only if beta version is available)
+          if [[ -n "$BETA_VERSION" ]]; then
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+          fi
 
           # Add rc with PHP 8.2 only
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"rc\",\"php\":\"$PHP_LATEST\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"rc\",\"php\":\"$PHP_LATEST\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"rc\",\"php\":\"$PHP_LATEST\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"rc\",\"php\":\"$PHP_LATEST\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
 
           # Convert array to JSON
           MATRIX_INCLUDE=$(printf '%s\n' "${MATRIX_ENTRIES[@]}" | jq -s . -c)
