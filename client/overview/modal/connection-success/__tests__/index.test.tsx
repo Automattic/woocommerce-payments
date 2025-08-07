@@ -28,22 +28,21 @@ describe( 'Connection Success Modal', () => {
 	it( 'modal is open by default', () => {
 		render( <ConnectionSuccessModal /> );
 
-		const queryHeading = () =>
+		expect(
 			screen.queryByRole( 'heading', {
 				name: "You're ready to accept payments!",
-			} );
-
-		expect( queryHeading() ).toBeInTheDocument();
+			} )
+		).toBeInTheDocument();
 	} );
 
-	it( 'closes modal when dismiss button is clicked', () => {
+	it( 'closes modal when dismiss button is clicked', async () => {
 		global.wcpaySettings = {
 			isConnectionSuccessModalDismissed: false,
 		};
 
 		render( <ConnectionSuccessModal /> );
 
-		user.click(
+		await user.click(
 			screen.getByRole( 'button', {
 				name: 'Dismiss',
 			} )

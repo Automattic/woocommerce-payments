@@ -153,7 +153,7 @@ describe( 'Dismiss click triggers callback', () => {
 			/>
 		);
 
-		await userEvent.click( getByLabelText( 'Dismiss this notice' ) );
+		await userEvent.click( getByLabelText( 'Close' ) );
 		expect( onDismissMock ).toHaveBeenCalled();
 	} );
 } );

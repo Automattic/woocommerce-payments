@@ -68,6 +68,32 @@ jest.mock( '@woocommerce/components', () => ( {
 		) ),
 } ) );
 
+// Mock CSS imports to prevent CSS parsing errors due to RangeControl.
+jest.mock( '../index.scss', () => ( {} ) );
+
+// Suppress CSS parsing errors from components
+// eslint-disable-next-line no-console
+const originalError = console.error;
+beforeAll( () => {
+	// eslint-disable-next-line no-console
+	console.error = ( ...args ) => {
+		// Suppress CSS parsing errors
+		if (
+			args[ 0 ] &&
+			args[ 0 ].message &&
+			args[ 0 ].message.includes( 'Could not parse CSS stylesheet' )
+		) {
+			return;
+		}
+		originalError.call( console, ...args );
+	};
+} );
+
+afterAll( () => {
+	// eslint-disable-next-line no-console
+	console.error = originalError;
+} );
+
 const renderWithSettingsProvider = ( ui ) =>
 	render(
 		<WCPaySettingsContext.Provider value={ global.wcpaySettings }>

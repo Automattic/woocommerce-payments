@@ -104,6 +104,7 @@ export const CompanyDataTask = ( {
 					value={ companyName }
 					onChange={ setCompanyName }
 					__nextHasNoMarginBottom
+					__next40pxDefaultSize
 				/>
 
 				<TextareaControl

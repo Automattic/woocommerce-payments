@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React, { useContext } from 'react';
+import React from 'react';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { __, sprintf } from '@wordpress/i18n';
 

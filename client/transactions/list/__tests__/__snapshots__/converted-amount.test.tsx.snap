@@ -9,6 +9,7 @@ exports[`ConvertedAmount renders an amount with conversion icon and tooltip 1`] 
       class="conversion-indicator"
       data-testid="conversion-indicator"
       style="height: 18px; width: 18px;"
+      tabindex="0"
     >
       <svg
         class="gridicon gridicons-sync"
@@ -35,9 +36,11 @@ exports[`ConvertedAmount renders an amount with conversion icon and tooltip 2`] 
     class="converted-amount"
   >
     <span
+      aria-describedby="tooltip-0"
       class="conversion-indicator"
       data-testid="conversion-indicator"
       style="height: 18px; width: 18px;"
+      tabindex="0"
     >
       <svg
         class="gridicon gridicons-sync"
@@ -52,30 +55,6 @@ exports[`ConvertedAmount renders an amount with conversion icon and tooltip 2`] 
           />
         </g>
       </svg>
-      <span>
-        <div
-          aria-hidden="true"
-          class="components-popover components-tooltip is-without-arrow"
-          data-x-axis="center"
-          data-y-axis="bottom"
-          style="top: 0px; left: 0px;"
-          tabindex="-1"
-        >
-          <div
-            class="components-popover__content"
-          >
-            <div
-              style="position: relative;"
-            >
-              <div
-                aria-hidden="true"
-                style="position: absolute; top: 0px; left: 0px; right: 0px; bottom: 0px; pointer-events: none; opacity: 0; overflow: hidden; z-index: -1;"
-              />
-              Converted from MOK 2.00
-            </div>
-          </div>
-        </div>
-      </span>
     </span>
     $1.00
   </div>

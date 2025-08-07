@@ -134,7 +134,7 @@ describe( 'Onboarding Form', () => {
 				'Where is your business located?'
 			);
 			textField.focus(); // Workaround for `type` not triggering focus.
-			await userEvent.type( textField, 'United States' );
+			await userEvent.paste( textField, 'United States' );
 
 			expect( setData ).toHaveBeenCalledWith( {
 				country: 'United States',
@@ -150,7 +150,7 @@ describe( 'Onboarding Form', () => {
 			const textField = screen.getByLabelText(
 				'Where is your business located?'
 			);
-			await userEvent.type( textField, 'John' );
+			await userEvent.paste( textField, 'John' );
 
 			expect( validate ).toHaveBeenCalledWith( 'John' );
 		} );
@@ -161,7 +161,8 @@ describe( 'Onboarding Form', () => {
 			const textField = screen.getByLabelText(
 				'Where is your business located?'
 			);
-			await userEvent.type( textField, 'John' );
+			// Use fireEvent to change value without auto-focusing
+			fireEvent.change( textField, { target: { value: 'John' } } );
 
 			expect( validate ).toHaveBeenCalledWith( 'John' );
 		} );
@@ -172,7 +173,7 @@ describe( 'Onboarding Form', () => {
 			const textField = screen.getByLabelText(
 				'Where is your business located?'
 			);
-			await userEvent.type( textField, 'John' );
+			await userEvent.paste( textField, 'John' );
 			await userEvent.tab();
 			fireEvent.focusOut( textField ); // Workaround for onFocus event not firing with jsdom <16.3.0
 
