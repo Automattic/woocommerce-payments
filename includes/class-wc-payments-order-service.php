@@ -962,8 +962,18 @@ class WC_Payments_Order_Service {
 		$payment_transaction_id = $payment_transaction['id'] ?? '';
 		$outcome                = $charge ? $charge->get_outcome() : null;
 		$risk_level             = $outcome ? $outcome['risk_level'] : null;
+
 		// next, save it in order meta.
 		$this->attach_intent_info_to_order__legacy( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency, $payment_transaction_id, $risk_level );
+
+		// Store payment method details when available.
+		if ( null !== $charge ) {
+			$payment_method_details = $charge->get_payment_method_details();
+			if ( $payment_method_details ) {
+				$order->update_meta_data( '_wcpay_payment_details', wp_json_encode( $payment_method_details ) );
+				$order->save_meta_data();
+			}
+		}
 	}
 
 	/**
