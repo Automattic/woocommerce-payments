@@ -34,13 +34,21 @@ jobs:
     outputs:
       matrix: ${{ steps.generate_matrix.outputs.matrix }}
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: "Generate matrix"
         id: generate_matrix
         run: |
-          WC_VERSIONS=$( echo "[\"7.7.0\", \"latest\", \"beta\", \"rc\"]" )
-          echo "matrix={\"woocommerce\":$WC_VERSIONS,\"test_groups\":[\"wcpay\", \"subscriptions\"],\"test_branches\":[\"merchant\", \"shopper\"]}" >> $GITHUB_OUTPUT
+          # Use dynamic script to get WooCommerce versions (L-1 policy)
+          WC_VERSIONS=$( .github/scripts/generate-wc-matrix.sh )
 
-  # Run WCPay & subscriptions tests against specific WC versions
+          # PHP versions: 7.4 for older WC, 8.0+ for newer WC
+          PHP_VERSIONS=$( echo "[\"7.4\", \"8.0\", \"8.1\", \"8.2\"]" )
+
+          echo "matrix={\"woocommerce\":$WC_VERSIONS,\"php\":$PHP_VERSIONS,\"test_groups\":[\"wcpay\", \"subscriptions\"],\"test_branches\":[\"merchant\", \"shopper\"]}" >> $GITHUB_OUTPUT
+
+  # Run WCPay & subscriptions tests against specific WC versions with PHP variations
   wcpay-subscriptions-tests:
     runs-on: ubuntu-latest
     needs: generate-matrix
@@ -48,11 +56,12 @@ jobs:
       fail-fast:     false
       matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
 
-    name: WC - ${{ matrix.woocommerce }} | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
+    name: WC - ${{ matrix.woocommerce }} | PHP - ${{ matrix.php }} | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
 
     env:
       E2E_WP_VERSION: 'latest'
       E2E_WC_VERSION: ${{ matrix.woocommerce }}
+      E2E_PHP_VERSION: ${{ matrix.php }}
       E2E_GROUP:  ${{ matrix.test_groups }}
       E2E_BRANCH: ${{ matrix.test_branches }}
       SKIP_WC_BLOCKS_TESTS: 1 # skip running blocks tests
