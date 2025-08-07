@@ -7,7 +7,7 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
   position: relative;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
   outline: none;
-  border-radius: calc(2px - 1px);
+  border-radius: calc(8px - 1px);
 }
 
 .emotion-2 {
@@ -22,29 +22,73 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
 }
 
 .emotion-4:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-4:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 .emotion-6 {
-  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
-  font-size: 13px;
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: calc(4px * 2);
+  padding: 0;
 }
 
 .emotion-8 {
-  margin-bottom: calc(4px * 2);
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: stretch;
+  -webkit-box-align: stretch;
+  -ms-flex-align: stretch;
+  align-items: stretch;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  gap: calc(4px * 3);
+  -webkit-box-pack: center;
+  -ms-flex-pack: center;
+  -webkit-justify-content: center;
+  justify-content: center;
 }
 
-.components-panel__row .emotion-8 {
+.emotion-8>* {
+  min-height: 0;
+}
+
+.emotion-10 {
+  margin-top: calc(4px * 2);
+  margin-bottom: 0;
+  font-size: 12px;
+  font-style: normal;
+  color: #757575;
+}
+
+.emotion-14 {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.emotion-14 *,
+.emotion-14 *::before,
+.emotion-14 *::after {
+  box-sizing: inherit;
+}
+
+.components-panel__row .emotion-16 {
   margin-bottom: inherit;
 }
 
-.emotion-15 {
+.emotion-20 {
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -56,31 +100,30 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
   -webkit-flex-direction: column;
   -ms-flex-direction: column;
   flex-direction: column;
+  gap: calc(4px * 2);
   -webkit-box-pack: justify;
   -webkit-justify-content: space-between;
   justify-content: space-between;
-  height: 100%;
+  box-sizing: border-box;
   position: relative;
   border-radius: 2px;
   padding-top: 0;
-  -webkit-align-items: flex-start;
-  -webkit-box-align: flex-start;
-  -ms-flex-align: flex-start;
-  align-items: flex-start;
-  -webkit-flex-direction: column;
-  -ms-flex-direction: column;
-  flex-direction: column;
+  color: var(--wp-components-color-foreground, #1e1e1e);
+  cursor: pointer;
 }
 
-.emotion-15>*+*:not( marquee ) {
-  margin-top: 0;
-}
-
-.emotion-15>* {
+.emotion-20>* {
   min-height: 0;
 }
 
-.emotion-18 {
+.emotion-20:focus-within:not( :has( :is( .em5sgkm8, .emotion-33 ):focus-within ) ) .emotion-40 {
+  border-color: var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));
+  box-shadow: 0 0 0 0.5px var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));
+  outline: 2px solid transparent;
+  outline-offset: -2px;
+}
+
+.emotion-23 {
   display: block;
   max-height: 100%;
   max-width: 100%;
@@ -90,32 +133,33 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
   max-width: calc( 100% - 10px );
 }
 
-.emotion-21 {
-  color: #1e1e1e;
-  line-height: 1.2;
+.emotion-26 {
+  color: var(--wp-components-color-foreground, #1e1e1e);
+  line-height: 1.4;
   margin: 0;
-  font-size: default;
+  text-wrap: balance;
+  text-wrap: pretty;
+  font-size: calc((13 / 13) * 13px);
   font-weight: normal;
 }
 
-.emotion-21.emotion-21.emotion-21 {
+.emotion-26.emotion-26.emotion-26 {
+  font-size: 11px;
+  font-weight: 500;
+  line-height: 1.4;
+  text-transform: uppercase;
   box-sizing: border-box;
-  color: currentColor;
   display: block;
   padding-top: 0;
   padding-bottom: 0;
   max-width: 100%;
   z-index: 1;
-  margin-top: 0;
-  margin-right: 0;
-  margin-bottom: 8px;
-  margin-left: 0;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.emotion-23 {
+.emotion-28 {
   -webkit-align-items: center;
   -webkit-box-align: center;
   -ms-flex-align: center;
@@ -130,11 +174,11 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
   -ms-flex: 1;
   flex: 1;
   position: relative;
-  background-color: #fff;
+  background-color: var(--wp-components-color-background, #fff);
   width: 100%;
 }
 
-.emotion-25.emotion-25.emotion-25 {
+.emotion-30.emotion-30.emotion-30 {
   -webkit-appearance: none;
   -moz-appearance: none;
   -ms-appearance: none;
@@ -143,26 +187,32 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
   box-sizing: border-box;
   border: none;
   box-shadow: none!important;
-  color: #000;
+  color: currentColor;
+  cursor: inherit;
   display: block;
   font-family: inherit;
   margin: 0;
   width: 100%;
+  max-width: none;
+  white-space: nowrap;
+  text-overflow: ellipsis;
   font-size: 16px;
-  height: 30px;
-  line-height: 1;
-  min-height: 30px;
-  padding-left: 8px;
-  padding-right: 24px;
+  height: 40px;
+  min-height: 40px;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 12px;
+  padding-right: 30px;
+  overflow: hidden;
 }
 
 @media ( min-width: 600px ) {
-  .emotion-25.emotion-25.emotion-25 {
+  .emotion-30.emotion-30.emotion-30 {
     font-size: 13px;
   }
 }
 
-.emotion-27 {
+.emotion-32 {
   -webkit-align-items: center;
   -webkit-box-align: center;
   -ms-flex-align: center;
@@ -177,31 +227,30 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
   display: flex;
 }
 
-.emotion-29 {
-  -webkit-align-items: center;
-  -webkit-box-align: center;
-  -ms-flex-align: center;
-  align-items: center;
-  bottom: 0;
-  box-sizing: border-box;
-  display: -webkit-box;
-  display: -webkit-flex;
-  display: -ms-flexbox;
-  display: flex;
-  padding: 0 4px;
-  pointer-events: none;
+.emotion-35 {
+  -webkit-padding-end: 12px;
+  padding-inline-end: 12px;
   position: absolute;
-  top: 0;
+  pointer-events: none;
   right: 0;
 }
 
-.emotion-29 svg {
-  display: block;
+.emotion-37 {
+  -webkit-margin-end: calc(4px * -1);
+  margin-inline-end: calc(4px * -1);
+  line-height: 0;
 }
 
-.emotion-31.emotion-31.emotion-31 {
+.emotion-37 path {
+  fill: currentColor;
+}
+
+.emotion-39.emotion-39.emotion-39 {
   box-sizing: border-box;
+  border-color: var(--wp-components-color-gray-600, #949494);
   border-radius: inherit;
+  border-style: solid;
+  border-width: 1px;
   bottom: 0;
   left: 0;
   margin: 0;
@@ -210,30 +259,10 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
   position: absolute;
   right: 0;
   top: 0;
-  border-color: #757575;
-  border-style: solid;
-  border-width: 1px;
   padding-left: 2px;
 }
 
-.emotion-33 {
-  margin-top: calc(4px * 2);
-  margin-bottom: 0;
-  font-size: 12px;
-  font-style: normal;
-  color: #757575;
-  margin-bottom: revert;
-}
-
-.emotion-37 {
-  width: 1em;
-  height: 1em;
-  margin: 0;
-  vertical-align: middle;
-  fill: currentColor;
-}
-
-.emotion-68 {
+.emotion-72 {
   background: transparent;
   display: block;
   margin: 0!important;
@@ -242,35 +271,30 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
   will-change: box-shadow;
   border-radius: inherit;
   bottom: 0;
-  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
   opacity: 1;
   left: 0;
   right: 0;
   top: 0;
-  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  border-radius: 2px;
+  border-radius: 8px;
 }
 
-@media ( prefers-reduced-motion: reduce ) {
-  .emotion-68 {
-    transition-duration: 0ms;
+@media not ( prefers-reduced-motion ) {
+  .emotion-72 {
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
   }
 }
 
-.emotion-78 {
-  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
-  font-size: 13px;
-  box-sizing: border-box;
+.emotion-84 {
+  margin-bottom: calc(4px * 2);
 }
 
-.emotion-78 *,
-.emotion-78 *::before,
-.emotion-78 *::after {
-  box-sizing: inherit;
+.components-panel__row .emotion-84 {
+  margin-bottom: inherit;
 }
 
-.emotion-82 {
+.emotion-86 {
   font-size: 11px;
   font-weight: 500;
   line-height: 1.4;
@@ -291,7 +315,7 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
         class="single-currency-settings-breadcrumb"
       >
         <button
-          class="components-button is-link"
+          class="components-button is-next-40px-default-size is-link"
           type="button"
         >
           Enabled currencies
@@ -340,16 +364,23 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
                 <fieldset>
                   <ul>
                     <li>
-                      <div
-                        class="components-base-control components-radio-control emotion-6 emotion-7"
+                      <fieldset
+                        class="components-radio-control"
+                        id="inspector-radio-control-0"
                       >
+                        <legend
+                          class="components-base-control__label emotion-6 emotion-7"
+                        />
                         <div
-                          class="components-base-control__field emotion-8 emotion-9"
+                          class="components-flex components-h-stack components-v-stack components-radio-control__group-wrapper emotion-8 emotion-1"
+                          data-wp-c16t="true"
+                          data-wp-component="VStack"
                         >
                           <div
                             class="components-radio-control__option"
                           >
                             <input
+                              aria-describedby="inspector-radio-control-0-0-option-description"
                               checked=""
                               class="components-radio-control__input"
                               id="inspector-radio-control-0-0"
@@ -358,15 +389,23 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
                               value="automatic"
                             />
                             <label
+                              class="components-radio-control__label"
                               for="inspector-radio-control-0-0"
                             >
                               Fetch rates automatically
                             </label>
+                            <p
+                              class="components-radio-control__option-description emotion-10 emotion-11"
+                              id="inspector-radio-control-0-0-option-description"
+                            >
+                              Current rate: 1 USD = 0.826381 EUR (Last updated: Sep 24, 2021 1:14AM)
+                            </p>
                           </div>
                           <div
                             class="components-radio-control__option"
                           >
                             <input
+                              aria-describedby="inspector-radio-control-0-1-option-description"
                               class="components-radio-control__input"
                               id="inspector-radio-control-0-1"
                               name="inspector-radio-control-0"
@@ -374,13 +413,20 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
                               value="manual"
                             />
                             <label
+                              class="components-radio-control__label"
                               for="inspector-radio-control-0-1"
                             >
                               Manual
                             </label>
+                            <p
+                              class="components-radio-control__option-description emotion-10 emotion-11"
+                              id="inspector-radio-control-0-1-option-description"
+                            >
+                              Enter your fixed rate of exchange
+                            </p>
                           </div>
                         </div>
-                      </div>
+                      </fieldset>
                     </li>
                   </ul>
                 </fieldset>
@@ -391,23 +437,23 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
                   <ul>
                     <li>
                       <div
-                        class="components-base-control emotion-6 emotion-7"
+                        class="components-base-control emotion-14 emotion-15"
                       >
                         <div
-                          class="components-base-control__field emotion-8 emotion-9"
+                          class="components-base-control__field emotion-16 emotion-17"
                         >
                           <div
-                            class="components-flex components-select-control emotion-14 emotion-15 emotion-1"
+                            class="components-flex components-input-base components-select-control emotion-18 emotion-19 emotion-20 emotion-1"
                             data-wp-c16t="true"
-                            data-wp-component="Flex"
+                            data-wp-component="InputBase"
                           >
                             <div
-                              class="components-flex-item emotion-17 emotion-18 emotion-1"
+                              class="components-flex-item emotion-22 emotion-23 emotion-1"
                               data-wp-c16t="true"
                               data-wp-component="FlexItem"
                             >
                               <label
-                                class="components-truncate components-text components-input-control__label emotion-20 emotion-21 emotion-1"
+                                class="components-truncate components-text components-input-control__label emotion-25 emotion-26 emotion-1"
                                 data-wp-c16t="true"
                                 data-wp-component="Text"
                                 for="inspector-select-control-0"
@@ -416,11 +462,11 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
                               </label>
                             </div>
                             <div
-                              class="components-input-control__container emotion-23 emotion-24"
+                              class="components-input-control__container emotion-28 emotion-29"
                             >
                               <select
                                 aria-describedby="inspector-select-control-0__help"
-                                class="components-select-control__input emotion-25 emotion-26"
+                                class="components-select-control__input emotion-30 emotion-31"
                                 data-testid="price_rounding"
                                 id="inspector-select-control-0"
                               >
@@ -456,34 +502,40 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
                                 </option>
                               </select>
                               <span
-                                class="components-input-control__suffix emotion-27 emotion-28"
+                                class="components-input-control__suffix emotion-32 emotion-33"
                               >
                                 <div
-                                  class="emotion-29 emotion-30"
+                                  class="components-input-control-suffix-wrapper emotion-34 emotion-35 emotion-36"
+                                  data-wp-c16t="true"
+                                  data-wp-component="InputControlSuffixWrapper"
                                 >
-                                  <svg
-                                    aria-hidden="true"
-                                    focusable="false"
-                                    height="18"
-                                    viewBox="0 0 24 24"
-                                    width="18"
-                                    xmlns="http://www.w3.org/2000/svg"
+                                  <div
+                                    class="emotion-37 emotion-38"
                                   >
-                                    <path
-                                      d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
-                                    />
-                                  </svg>
+                                    <svg
+                                      aria-hidden="true"
+                                      focusable="false"
+                                      height="18"
+                                      viewBox="0 0 24 24"
+                                      width="18"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                      <path
+                                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                                      />
+                                    </svg>
+                                  </div>
                                 </div>
                               </span>
                               <div
                                 aria-hidden="true"
-                                class="components-input-control__backdrop emotion-31 emotion-32"
+                                class="components-input-control__backdrop emotion-39 emotion-40"
                               />
                             </div>
                           </div>
                         </div>
                         <p
-                          class="components-base-control__help emotion-33 emotion-34"
+                          class="components-base-control__help emotion-10 emotion-11"
                           id="inspector-select-control-0__help"
                         >
                           Make your EUR prices consistent by rounding them up after they're converted. 
@@ -493,51 +545,40 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
                             rel="external noreferrer noopener"
                             target="_blank"
                           >
-                            Learn more
                             <span
-                              class="components-visually-hidden emotion-35 emotion-1"
-                              data-wp-c16t="true"
-                              data-wp-component="VisuallyHidden"
-                              style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+                              class="components-external-link__contents"
                             >
-                              (opens in a new tab)
+                              Learn more
                             </span>
-                            <svg
-                              aria-hidden="true"
-                              class="components-external-link__icon emotion-37 emotion-38"
-                              focusable="false"
-                              height="24"
-                              viewBox="0 0 24 24"
-                              width="24"
-                              xmlns="http://www.w3.org/2000/svg"
+                            <span
+                              aria-label="(opens in a new tab)"
+                              class="components-external-link__icon"
                             >
-                              <path
-                                d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
-                              />
-                            </svg>
+                              ↗
+                            </span>
                           </a>
                         </p>
                       </div>
                     </li>
                     <li>
                       <div
-                        class="components-base-control emotion-6 emotion-7"
+                        class="components-base-control emotion-14 emotion-15"
                       >
                         <div
-                          class="components-base-control__field emotion-8 emotion-9"
+                          class="components-base-control__field emotion-16 emotion-17"
                         >
                           <div
-                            class="components-flex components-select-control emotion-14 emotion-15 emotion-1"
+                            class="components-flex components-input-base components-select-control emotion-18 emotion-19 emotion-20 emotion-1"
                             data-wp-c16t="true"
-                            data-wp-component="Flex"
+                            data-wp-component="InputBase"
                           >
                             <div
-                              class="components-flex-item emotion-17 emotion-18 emotion-1"
+                              class="components-flex-item emotion-22 emotion-23 emotion-1"
                               data-wp-c16t="true"
                               data-wp-component="FlexItem"
                             >
                               <label
-                                class="components-truncate components-text components-input-control__label emotion-20 emotion-21 emotion-1"
+                                class="components-truncate components-text components-input-control__label emotion-25 emotion-26 emotion-1"
                                 data-wp-c16t="true"
                                 data-wp-component="Text"
                                 for="inspector-select-control-1"
@@ -546,11 +587,11 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
                               </label>
                             </div>
                             <div
-                              class="components-input-control__container emotion-23 emotion-24"
+                              class="components-input-control__container emotion-28 emotion-29"
                             >
                               <select
                                 aria-describedby="inspector-select-control-1__help"
-                                class="components-select-control__input emotion-25 emotion-26"
+                                class="components-select-control__input emotion-30 emotion-31"
                                 data-testid="price_charm"
                                 id="inspector-select-control-1"
                               >
@@ -571,34 +612,40 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
                                 </option>
                               </select>
                               <span
-                                class="components-input-control__suffix emotion-27 emotion-28"
+                                class="components-input-control__suffix emotion-32 emotion-33"
                               >
                                 <div
-                                  class="emotion-29 emotion-30"
+                                  class="components-input-control-suffix-wrapper emotion-34 emotion-35 emotion-36"
+                                  data-wp-c16t="true"
+                                  data-wp-component="InputControlSuffixWrapper"
                                 >
-                                  <svg
-                                    aria-hidden="true"
-                                    focusable="false"
-                                    height="18"
-                                    viewBox="0 0 24 24"
-                                    width="18"
-                                    xmlns="http://www.w3.org/2000/svg"
+                                  <div
+                                    class="emotion-37 emotion-38"
                                   >
-                                    <path
-                                      d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
-                                    />
-                                  </svg>
+                                    <svg
+                                      aria-hidden="true"
+                                      focusable="false"
+                                      height="18"
+                                      viewBox="0 0 24 24"
+                                      width="18"
+                                      xmlns="http://www.w3.org/2000/svg"
+                                    >
+                                      <path
+                                        d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                                      />
+                                    </svg>
+                                  </div>
                                 </div>
                               </span>
                               <div
                                 aria-hidden="true"
-                                class="components-input-control__backdrop emotion-31 emotion-32"
+                                class="components-input-control__backdrop emotion-39 emotion-40"
                               />
                             </div>
                           </div>
                         </div>
                         <p
-                          class="components-base-control__help emotion-33 emotion-34"
+                          class="components-base-control__help emotion-10 emotion-11"
                           id="inspector-select-control-1__help"
                         >
                           Reduce the converted price for a specific amount. 
@@ -608,28 +655,17 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
                             rel="external noreferrer noopener"
                             target="_blank"
                           >
-                            Learn more
                             <span
-                              class="components-visually-hidden emotion-35 emotion-1"
-                              data-wp-c16t="true"
-                              data-wp-component="VisuallyHidden"
-                              style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+                              class="components-external-link__contents"
                             >
-                              (opens in a new tab)
+                              Learn more
                             </span>
-                            <svg
-                              aria-hidden="true"
-                              class="components-external-link__icon emotion-37 emotion-38"
-                              focusable="false"
-                              height="24"
-                              viewBox="0 0 24 24"
-                              width="24"
-                              xmlns="http://www.w3.org/2000/svg"
+                            <span
+                              aria-label="(opens in a new tab)"
+                              class="components-external-link__icon"
                             >
-                              <path
-                                d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
-                              />
-                            </svg>
+                              ↗
+                            </span>
                           </a>
                         </p>
                       </div>
@@ -640,13 +676,13 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
             </div>
             <div
               aria-hidden="true"
-              class="components-elevation emotion-68 emotion-1"
+              class="components-elevation emotion-72 emotion-1"
               data-wp-c16t="true"
               data-wp-component="Elevation"
             />
             <div
               aria-hidden="true"
-              class="components-elevation emotion-68 emotion-1"
+              class="components-elevation emotion-72 emotion-1"
               data-wp-c16t="true"
               data-wp-component="Elevation"
             />
@@ -685,13 +721,13 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
                 <div>
                   <div>
                     <div
-                      class="components-base-control with-value emotion-78 emotion-7"
+                      class="components-base-control with-value emotion-14 emotion-15"
                     >
                       <div
-                        class="components-base-control__field emotion-8 emotion-9"
+                        class="components-base-control__field emotion-84 emotion-17"
                       >
                         <label
-                          class="components-base-control__label emotion-82 emotion-83"
+                          class="components-base-control__label emotion-86 emotion-87"
                           for="inspector-text-control-with-affixes-0"
                         >
                           United States (US) dollar
@@ -721,13 +757,13 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
                 <div>
                   <div>
                     <div
-                      class="components-base-control with-value emotion-78 emotion-7"
+                      class="components-base-control with-value emotion-14 emotion-15"
                     >
                       <div
-                        class="components-base-control__field emotion-8 emotion-9"
+                        class="components-base-control__field emotion-84 emotion-17"
                       >
                         <label
-                          class="components-base-control__label emotion-82 emotion-83"
+                          class="components-base-control__label emotion-86 emotion-87"
                           for="inspector-text-control-with-affixes-1"
                         >
                           Euro
@@ -753,13 +789,13 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
             </div>
             <div
               aria-hidden="true"
-              class="components-elevation emotion-68 emotion-1"
+              class="components-elevation emotion-72 emotion-1"
               data-wp-c16t="true"
               data-wp-component="Elevation"
             />
             <div
               aria-hidden="true"
-              class="components-elevation emotion-68 emotion-1"
+              class="components-elevation emotion-72 emotion-1"
               data-wp-c16t="true"
               data-wp-component="Elevation"
             />
@@ -776,7 +812,7 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
           class="settings-section__controls"
         >
           <button
-            class="components-button is-primary"
+            class="components-button is-next-40px-default-size is-primary"
             disabled=""
             type="button"
           >

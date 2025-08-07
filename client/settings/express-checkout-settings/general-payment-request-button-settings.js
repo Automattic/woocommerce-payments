@@ -221,6 +221,7 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 			<h4>{ __( 'Border radius', 'woocommerce-payments' ) }</h4>
 			<div className="payment-method-settings__border-radius">
 				<NumberControl
+					__next40pxDefaultSize
 					label={ __(
 						/* translators: Label for a number input, hidden from view. Intended for accessibility. */
 						'Border radius, number input',
@@ -231,7 +232,7 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 					value={ radius }
 					max={ 30 }
 					min={ 0 }
-					hideHTMLArrows
+					spinControls="none"
 					onChange={ ( value ) => {
 						if ( typeof value === 'string' ) {
 							setRadius( parseInt( value, 10 ) );

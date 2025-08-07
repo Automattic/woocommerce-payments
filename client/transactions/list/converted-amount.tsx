@@ -32,7 +32,7 @@ const ConversionIndicator = ( {
 				__( 'Converted from %s', 'woocommerce-payments' ),
 				formatExplicitCurrency( amount, currency, false, baseCurrency )
 			) }
-			position="bottom center"
+			placement="bottom"
 		>
 			<span
 				className="conversion-indicator"

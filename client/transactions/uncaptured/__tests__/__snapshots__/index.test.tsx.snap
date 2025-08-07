@@ -483,7 +483,7 @@ exports[`Authorizations list renders correctly 1`] = `
                     class="woocommerce-table__item is-left-aligned"
                   >
                     <button
-                      class="components-button is-secondary"
+                      class="components-button is-next-40px-default-size is-secondary"
                       type="button"
                     >
                       Capture
@@ -562,7 +562,7 @@ exports[`Authorizations list renders correctly 1`] = `
                     class="woocommerce-table__item is-left-aligned"
                   >
                     <button
-                      class="components-button is-secondary"
+                      class="components-button is-next-40px-default-size is-secondary"
                       type="button"
                     >
                       Capture

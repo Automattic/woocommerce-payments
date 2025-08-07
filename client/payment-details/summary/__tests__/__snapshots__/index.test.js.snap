@@ -7,7 +7,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
   position: relative;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
   outline: none;
-  border-radius: calc(2px - 1px);
+  border-radius: calc(8px - 1px);
 }
 
 .emotion-2 {
@@ -22,13 +22,13 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
 }
 
 .emotion-4:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-4:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 .emotion-6 {
@@ -43,14 +43,11 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: justify;
   -webkit-justify-content: space-between;
   justify-content: space-between;
   width: 100%;
-}
-
-.emotion-6>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
 }
 
 .emotion-6>* {
@@ -81,6 +78,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: justify;
   -webkit-justify-content: space-between;
   justify-content: space-between;
@@ -89,10 +87,6 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
   box-sizing: border-box;
   border-color: rgba(0, 0, 0, 0.1);
   padding: calc(4px * 4) calc(4px * 6);
-}
-
-.emotion-12>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
 }
 
 .emotion-12>* {
@@ -104,24 +98,16 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
 }
 
 .emotion-12:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-12:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
-.emotion-16 {
-  width: 1em;
-  height: 1em;
-  margin: 0;
-  vertical-align: middle;
-  fill: currentColor;
-}
-
-.emotion-18 {
+.emotion-14 {
   background: transparent;
   display: block;
   margin: 0!important;
@@ -130,19 +116,18 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
   will-change: box-shadow;
   border-radius: inherit;
   bottom: 0;
-  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
   opacity: 1;
   left: 0;
   right: 0;
   top: 0;
-  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  border-radius: 2px;
+  border-radius: 8px;
 }
 
-@media ( prefers-reduced-motion: reduce ) {
-  .emotion-18 {
-    transition-duration: 0ms;
+@media not ( prefers-reduced-motion ) {
+  .emotion-14 {
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
   }
 }
 
@@ -443,28 +428,17 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
               rel="external noreferrer noopener"
               target="_blank"
             >
-              capture
               <span
-                class="components-visually-hidden emotion-14 emotion-1"
-                data-wp-c16t="true"
-                data-wp-component="VisuallyHidden"
-                style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+                class="components-external-link__contents"
               >
-                (opens in a new tab)
+                capture
               </span>
-              <svg
-                aria-hidden="true"
-                class="components-external-link__icon emotion-16 emotion-17"
-                focusable="false"
-                height="24"
-                viewBox="0 0 24 24"
-                width="24"
-                xmlns="http://www.w3.org/2000/svg"
+              <span
+                aria-label="(opens in a new tab)"
+                class="components-external-link__icon"
               >
-                <path
-                  d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
-                />
-              </svg>
+                ↗
+              </span>
             </a>
              this charge within the next
              
@@ -480,7 +454,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
             class="card-notice__button"
           >
             <button
-              class="components-button is-primary"
+              class="components-button is-next-40px-default-size is-primary"
               type="button"
             >
               Capture
@@ -491,13 +465,13 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation emotion-18 emotion-1"
+      class="components-elevation emotion-14 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation emotion-18 emotion-1"
+      class="components-elevation emotion-14 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -512,7 +486,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
   position: relative;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
   outline: none;
-  border-radius: calc(2px - 1px);
+  border-radius: calc(8px - 1px);
 }
 
 .emotion-2 {
@@ -527,13 +501,13 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
 }
 
 .emotion-4:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-4:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 .emotion-6 {
@@ -548,14 +522,11 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: justify;
   -webkit-justify-content: space-between;
   justify-content: space-between;
   width: 100%;
-}
-
-.emotion-6>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
 }
 
 .emotion-6>* {
@@ -586,6 +557,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: justify;
   -webkit-justify-content: space-between;
   justify-content: space-between;
@@ -594,10 +566,6 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
   box-sizing: border-box;
   border-color: rgba(0, 0, 0, 0.1);
   padding: calc(4px * 4) calc(4px * 6);
-}
-
-.emotion-12>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
 }
 
 .emotion-12>* {
@@ -609,24 +577,16 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
 }
 
 .emotion-12:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-12:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
-.emotion-16 {
-  width: 1em;
-  height: 1em;
-  margin: 0;
-  vertical-align: middle;
-  fill: currentColor;
-}
-
-.emotion-18 {
+.emotion-14 {
   background: transparent;
   display: block;
   margin: 0!important;
@@ -635,19 +595,18 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
   will-change: box-shadow;
   border-radius: inherit;
   bottom: 0;
-  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
   opacity: 1;
   left: 0;
   right: 0;
   top: 0;
-  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  border-radius: 2px;
+  border-radius: 8px;
 }
 
-@media ( prefers-reduced-motion: reduce ) {
-  .emotion-18 {
-    transition-duration: 0ms;
+@media not ( prefers-reduced-motion ) {
+  .emotion-14 {
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
   }
 }
 
@@ -715,13 +674,13 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
                 class="payment-details-summary__fraud-outcome-action"
               >
                 <button
-                  class="components-button is-destructive"
+                  class="components-button is-next-40px-default-size is-destructive"
                   type="button"
                 >
                   Block transaction
                 </button>
                 <button
-                  class="components-button is-primary"
+                  class="components-button is-next-40px-default-size is-primary"
                   type="button"
                 >
                   Approve Transaction
@@ -964,28 +923,17 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
               rel="external noreferrer noopener"
               target="_blank"
             >
-              capture
               <span
-                class="components-visually-hidden emotion-14 emotion-1"
-                data-wp-c16t="true"
-                data-wp-component="VisuallyHidden"
-                style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+                class="components-external-link__contents"
               >
-                (opens in a new tab)
+                capture
               </span>
-              <svg
-                aria-hidden="true"
-                class="components-external-link__icon emotion-16 emotion-17"
-                focusable="false"
-                height="24"
-                viewBox="0 0 24 24"
-                width="24"
-                xmlns="http://www.w3.org/2000/svg"
+              <span
+                aria-label="(opens in a new tab)"
+                class="components-external-link__icon"
               >
-                <path
-                  d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
-                />
-              </svg>
+                ↗
+              </span>
             </a>
              this charge within the next
              
@@ -1006,13 +954,13 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation emotion-18 emotion-1"
+      class="components-elevation emotion-14 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation emotion-18 emotion-1"
+      class="components-elevation emotion-14 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -1027,7 +975,7 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
   position: relative;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
   outline: none;
-  border-radius: calc(2px - 1px);
+  border-radius: calc(8px - 1px);
 }
 
 .emotion-2 {
@@ -1042,13 +990,13 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
 }
 
 .emotion-4:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-4:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 .emotion-6 {
@@ -1063,14 +1011,11 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: justify;
   -webkit-justify-content: space-between;
   justify-content: space-between;
   width: 100%;
-}
-
-.emotion-6>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
 }
 
 .emotion-6>* {
@@ -1098,19 +1043,18 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
   will-change: box-shadow;
   border-radius: inherit;
   bottom: 0;
-  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
   opacity: 1;
   left: 0;
   right: 0;
   top: 0;
-  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  border-radius: 2px;
+  border-radius: 8px;
 }
 
-@media ( prefers-reduced-motion: reduce ) {
+@media not ( prefers-reduced-motion ) {
   .emotion-12 {
-    transition-duration: 0ms;
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
   }
 }
 
@@ -1442,7 +1386,7 @@ exports[`PaymentDetailsSummary correctly renders when payment intent is missing 
   position: relative;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
   outline: none;
-  border-radius: calc(2px - 1px);
+  border-radius: calc(8px - 1px);
 }
 
 .emotion-2 {
@@ -1457,13 +1401,13 @@ exports[`PaymentDetailsSummary correctly renders when payment intent is missing 
 }
 
 .emotion-4:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-4:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 .emotion-6 {
@@ -1478,14 +1422,11 @@ exports[`PaymentDetailsSummary correctly renders when payment intent is missing 
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: justify;
   -webkit-justify-content: space-between;
   justify-content: space-between;
   width: 100%;
-}
-
-.emotion-6>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
 }
 
 .emotion-6>* {
@@ -1513,19 +1454,18 @@ exports[`PaymentDetailsSummary correctly renders when payment intent is missing 
   will-change: box-shadow;
   border-radius: inherit;
   bottom: 0;
-  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
   opacity: 1;
   left: 0;
   right: 0;
   top: 0;
-  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  border-radius: 2px;
+  border-radius: 8px;
 }
 
-@media ( prefers-reduced-motion: reduce ) {
+@media not ( prefers-reduced-motion ) {
   .emotion-12 {
-    transition-duration: 0ms;
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
   }
 }
 
@@ -1843,7 +1783,7 @@ exports[`PaymentDetailsSummary order missing notice does not render notice if or
   position: relative;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
   outline: none;
-  border-radius: calc(2px - 1px);
+  border-radius: calc(8px - 1px);
 }
 
 .emotion-2 {
@@ -1858,13 +1798,13 @@ exports[`PaymentDetailsSummary order missing notice does not render notice if or
 }
 
 .emotion-4:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-4:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 .emotion-6 {
@@ -1879,14 +1819,11 @@ exports[`PaymentDetailsSummary order missing notice does not render notice if or
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: justify;
   -webkit-justify-content: space-between;
   justify-content: space-between;
   width: 100%;
-}
-
-.emotion-6>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
 }
 
 .emotion-6>* {
@@ -1914,19 +1851,18 @@ exports[`PaymentDetailsSummary order missing notice does not render notice if or
   will-change: box-shadow;
   border-radius: inherit;
   bottom: 0;
-  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
   opacity: 1;
   left: 0;
   right: 0;
   top: 0;
-  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  border-radius: 2px;
+  border-radius: 8px;
 }
 
-@media ( prefers-reduced-motion: reduce ) {
+@media not ( prefers-reduced-motion ) {
   .emotion-12 {
-    transition-duration: 0ms;
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
   }
 }
 
@@ -2258,7 +2194,7 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
   position: relative;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
   outline: none;
-  border-radius: calc(2px - 1px);
+  border-radius: calc(8px - 1px);
 }
 
 .emotion-2 {
@@ -2273,13 +2209,13 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
 }
 
 .emotion-4:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-4:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 .emotion-6 {
@@ -2294,14 +2230,11 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: justify;
   -webkit-justify-content: space-between;
   justify-content: space-between;
   width: 100%;
-}
-
-.emotion-6>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
 }
 
 .emotion-6>* {
@@ -2332,6 +2265,7 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: justify;
   -webkit-justify-content: space-between;
   justify-content: space-between;
@@ -2340,10 +2274,6 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
   box-sizing: border-box;
   border-color: rgba(0, 0, 0, 0.1);
   padding: calc(4px * 4) calc(4px * 6);
-}
-
-.emotion-12>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
 }
 
 .emotion-12>* {
@@ -2355,13 +2285,13 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
 }
 
 .emotion-12:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-12:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 .emotion-14 {
@@ -2373,19 +2303,18 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
   will-change: box-shadow;
   border-radius: inherit;
   bottom: 0;
-  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
   opacity: 1;
   left: 0;
   right: 0;
   top: 0;
-  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  border-radius: 2px;
+  border-radius: 8px;
 }
 
-@media ( prefers-reduced-motion: reduce ) {
+@media not ( prefers-reduced-motion ) {
   .emotion-14 {
-    transition-duration: 0ms;
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
   }
 }
 
@@ -2708,7 +2637,7 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
             class="card-notice__button"
           >
             <button
-              class="components-button is-primary"
+              class="components-button is-next-40px-default-size is-primary"
               type="button"
             >
               Refund
@@ -2740,7 +2669,7 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
   position: relative;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
   outline: none;
-  border-radius: calc(2px - 1px);
+  border-radius: calc(8px - 1px);
 }
 
 .emotion-2 {
@@ -2755,13 +2684,13 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
 }
 
 .emotion-4:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-4:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 .emotion-6 {
@@ -2776,14 +2705,11 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: justify;
   -webkit-justify-content: space-between;
   justify-content: space-between;
   width: 100%;
-}
-
-.emotion-6>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
 }
 
 .emotion-6>* {
@@ -2811,19 +2737,18 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
   will-change: box-shadow;
   border-radius: inherit;
   bottom: 0;
-  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
   opacity: 1;
   left: 0;
   right: 0;
   top: 0;
-  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  border-radius: 2px;
+  border-radius: 8px;
 }
 
-@media ( prefers-reduced-motion: reduce ) {
+@media not ( prefers-reduced-motion ) {
   .emotion-12 {
-    transition-duration: 0ms;
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
   }
 }
 
@@ -3182,7 +3107,7 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
   position: relative;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
   outline: none;
-  border-radius: calc(2px - 1px);
+  border-radius: calc(8px - 1px);
 }
 
 .emotion-2 {
@@ -3197,13 +3122,13 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
 }
 
 .emotion-4:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-4:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 .emotion-6 {
@@ -3218,14 +3143,11 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: justify;
   -webkit-justify-content: space-between;
   justify-content: space-between;
   width: 100%;
-}
-
-.emotion-6>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
 }
 
 .emotion-6>* {
@@ -3253,19 +3175,18 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
   will-change: box-shadow;
   border-radius: inherit;
   bottom: 0;
-  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
   opacity: 1;
   left: 0;
   right: 0;
   top: 0;
-  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  border-radius: 2px;
+  border-radius: 8px;
 }
 
-@media ( prefers-reduced-motion: reduce ) {
+@media not ( prefers-reduced-motion ) {
   .emotion-12 {
-    transition-duration: 0ms;
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
   }
 }
 
@@ -3576,7 +3497,7 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
   position: relative;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
   outline: none;
-  border-radius: calc(2px - 1px);
+  border-radius: calc(8px - 1px);
 }
 
 .emotion-2 {
@@ -3591,13 +3512,13 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
 }
 
 .emotion-4:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-4:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 .emotion-6 {
@@ -3612,14 +3533,11 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: justify;
   -webkit-justify-content: space-between;
   justify-content: space-between;
   width: 100%;
-}
-
-.emotion-6>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
 }
 
 .emotion-6>* {
@@ -3647,19 +3565,18 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
   will-change: box-shadow;
   border-radius: inherit;
   bottom: 0;
-  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
   opacity: 1;
   left: 0;
   right: 0;
   top: 0;
-  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  border-radius: 2px;
+  border-radius: 8px;
 }
 
-@media ( prefers-reduced-motion: reduce ) {
+@media not ( prefers-reduced-motion ) {
   .emotion-12 {
-    transition-duration: 0ms;
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
   }
 }
 
@@ -3910,7 +3827,7 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
   position: relative;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
   outline: none;
-  border-radius: calc(2px - 1px);
+  border-radius: calc(8px - 1px);
 }
 
 .emotion-2 {
@@ -3925,13 +3842,13 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
 }
 
 .emotion-4:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-4:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 .emotion-6 {
@@ -3946,14 +3863,11 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: justify;
   -webkit-justify-content: space-between;
   justify-content: space-between;
   width: 100%;
-}
-
-.emotion-6>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
 }
 
 .emotion-6>* {
@@ -3981,19 +3895,18 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
   will-change: box-shadow;
   border-radius: inherit;
   bottom: 0;
-  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
   opacity: 1;
   left: 0;
   right: 0;
   top: 0;
-  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  border-radius: 2px;
+  border-radius: 8px;
 }
 
-@media ( prefers-reduced-motion: reduce ) {
+@media not ( prefers-reduced-motion ) {
   .emotion-12 {
-    transition-duration: 0ms;
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
   }
 }
 
@@ -4329,7 +4242,7 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata with
   position: relative;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
   outline: none;
-  border-radius: calc(2px - 1px);
+  border-radius: calc(8px - 1px);
 }
 
 .emotion-2 {
@@ -4344,13 +4257,13 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata with
 }
 
 .emotion-4:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-4:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 .emotion-6 {
@@ -4365,14 +4278,11 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata with
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: justify;
   -webkit-justify-content: space-between;
   justify-content: space-between;
   width: 100%;
-}
-
-.emotion-6>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
 }
 
 .emotion-6>* {
@@ -4400,19 +4310,18 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata with
   will-change: box-shadow;
   border-radius: inherit;
   bottom: 0;
-  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
   opacity: 1;
   left: 0;
   right: 0;
   top: 0;
-  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  border-radius: 2px;
+  border-radius: 8px;
 }
 
-@media ( prefers-reduced-motion: reduce ) {
+@media not ( prefers-reduced-motion ) {
   .emotion-12 {
-    transition-duration: 0ms;
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
   }
 }
 
@@ -4744,7 +4653,7 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata with
   position: relative;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
   outline: none;
-  border-radius: calc(2px - 1px);
+  border-radius: calc(8px - 1px);
 }
 
 .emotion-2 {
@@ -4759,13 +4668,13 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata with
 }
 
 .emotion-4:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-4:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 .emotion-6 {
@@ -4780,14 +4689,11 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata with
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: justify;
   -webkit-justify-content: space-between;
   justify-content: space-between;
   width: 100%;
-}
-
-.emotion-6>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
 }
 
 .emotion-6>* {
@@ -4815,19 +4721,18 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata with
   will-change: box-shadow;
   border-radius: inherit;
   bottom: 0;
-  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
   opacity: 1;
   left: 0;
   right: 0;
   top: 0;
-  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  border-radius: 2px;
+  border-radius: 8px;
 }
 
-@media ( prefers-reduced-motion: reduce ) {
+@media not ( prefers-reduced-motion ) {
   .emotion-12 {
-    transition-duration: 0ms;
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
   }
 }
 
@@ -5159,7 +5064,7 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
   position: relative;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
   outline: none;
-  border-radius: calc(2px - 1px);
+  border-radius: calc(8px - 1px);
 }
 
 .emotion-2 {
@@ -5174,13 +5079,13 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
 }
 
 .emotion-4:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-4:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 .emotion-6 {
@@ -5195,14 +5100,11 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: justify;
   -webkit-justify-content: space-between;
   justify-content: space-between;
   width: 100%;
-}
-
-.emotion-6>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
 }
 
 .emotion-6>* {
@@ -5233,6 +5135,7 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: justify;
   -webkit-justify-content: space-between;
   justify-content: space-between;
@@ -5241,10 +5144,6 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
   box-sizing: border-box;
   border-color: rgba(0, 0, 0, 0.1);
   padding: calc(4px * 4) calc(4px * 6);
-}
-
-.emotion-12>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
 }
 
 .emotion-12>* {
@@ -5256,13 +5155,13 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
 }
 
 .emotion-12:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-12:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 .emotion-14 {
@@ -5277,14 +5176,11 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: justify;
   -webkit-justify-content: space-between;
   justify-content: space-between;
   width: 100%;
-}
-
-.emotion-14>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
 }
 
 .emotion-14>* {
@@ -5308,19 +5204,18 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
   will-change: box-shadow;
   border-radius: inherit;
   bottom: 0;
-  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
   opacity: 1;
   left: 0;
   right: 0;
   top: 0;
-  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  border-radius: 2px;
+  border-radius: 8px;
 }
 
-@media ( prefers-reduced-motion: reduce ) {
+@media not ( prefers-reduced-motion ) {
   .emotion-20 {
-    transition-duration: 0ms;
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
   }
 }
 

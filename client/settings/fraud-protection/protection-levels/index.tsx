@@ -209,6 +209,7 @@ const ProtectionLevels: React.FC = () => {
 							/>
 						</label>
 						<Button
+							// @ts-expect-error: not sure why href should not be declared - it is.
 							href={ getAdminUrl( {
 								page: 'wc-admin',
 								path: '/payments/fraud-protection',

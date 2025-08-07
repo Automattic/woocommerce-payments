@@ -7,7 +7,7 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
   position: relative;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
   outline: none;
-  border-radius: calc(2px - 1px);
+  border-radius: calc(8px - 1px);
 }
 
 .emotion-2 {
@@ -22,29 +22,221 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
 }
 
 .emotion-4:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-4:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
-.emotion-6 {
+.emotion-7 {
   font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
   font-size: 13px;
+  box-sizing: border-box;
 }
 
-.emotion-8 {
-  margin-bottom: calc(4px * 2);
+.emotion-7 *,
+.emotion-7 *::before,
+.emotion-7 *::after {
+  box-sizing: inherit;
 }
 
-.components-panel__row .emotion-8 {
+.emotion-7 input[type='search']::-webkit-search-decoration,
+.emotion-7 input[type='search']::-webkit-search-cancel-button,
+.emotion-7 input[type='search']::-webkit-search-results-button,
+.emotion-7 input[type='search']::-webkit-search-results-decoration {
+  -webkit-appearance: none;
+}
+
+.emotion-7:not( :focus-within ) {
+  --wp-components-color-background: var(--wp-components-color-gray-100, #f0f0f0);
+}
+
+.components-panel__row .emotion-9 {
   margin-bottom: inherit;
 }
 
-.emotion-54 {
+.emotion-12 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: normal;
+  -webkit-box-align: normal;
+  -ms-flex-align: normal;
+  align-items: normal;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  gap: calc(4px * 2);
+  -webkit-box-pack: left;
+  -ms-flex-pack: left;
+  -webkit-justify-content: left;
+  justify-content: left;
+  box-sizing: border-box;
+  position: relative;
+  border-radius: 2px;
+  padding-top: 0;
+}
+
+.emotion-12>* {
+  min-height: 0;
+}
+
+.emotion-12:focus-within:not( :has( :is( .em5sgkm8, .emotion-21 ):focus-within ) ) .emotion-25 {
+  border-color: var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));
+  box-shadow: 0 0 0 0.5px var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));
+  outline: 2px solid transparent;
+  outline-offset: -2px;
+}
+
+.emotion-16 {
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  box-sizing: border-box;
+  border-radius: inherit;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
+  position: relative;
+  background-color: var(--wp-components-color-background, #fff);
+  width: 100%;
+}
+
+.emotion-18.emotion-18.emotion-18 {
+  background-color: transparent;
+  box-sizing: border-box;
+  border: none;
+  box-shadow: none!important;
+  color: var(--wp-components-color-foreground, #1e1e1e);
+  display: block;
+  font-family: inherit;
+  margin: 0;
+  outline: none;
+  width: 100%;
+  font-size: 16px;
+  height: 40px;
+  line-height: 1;
+  min-height: 40px;
+  padding-left: 12px;
+  padding-right: 12px;
+  -webkit-padding-end: calc(4px * 1);
+  padding-inline-end: calc(4px * 1);
+}
+
+@media ( min-width: 600px ) {
+  .emotion-18.emotion-18.emotion-18 {
+    font-size: 13px;
+  }
+}
+
+.emotion-18.emotion-18.emotion-18::-webkit-input-placeholder {
+  color: color-mix(in srgb, var(--wp-components-color-foreground, #1e1e1e), transparent 38%);
+}
+
+.emotion-18.emotion-18.emotion-18::-moz-placeholder {
+  color: color-mix(in srgb, var(--wp-components-color-foreground, #1e1e1e), transparent 38%);
+}
+
+.emotion-18.emotion-18.emotion-18:-ms-input-placeholder {
+  color: color-mix(in srgb, var(--wp-components-color-foreground, #1e1e1e), transparent 38%);
+}
+
+.emotion-18.emotion-18.emotion-18[type='email'],
+.emotion-18.emotion-18.emotion-18[type='url'] {
+  direction: ltr;
+}
+
+.emotion-20 {
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-align-self: stretch;
+  -ms-flex-item-align: stretch;
+  align-self: stretch;
+  box-sizing: border-box;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+.emotion-22 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-padding-end: calc(4px * 2);
+  padding-inline-end: calc(4px * 2);
+}
+
+.emotion-22 svg {
+  fill: currentColor;
+}
+
+.emotion-24.emotion-24.emotion-24 {
+  box-sizing: border-box;
+  border-color: transparent;
+  border-radius: inherit;
+  border-style: solid;
+  border-width: 1px;
+  bottom: 0;
+  left: 0;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  top: 0;
+  padding-left: 2px;
+}
+
+.emotion-26 {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.emotion-26 *,
+.emotion-26 *::before,
+.emotion-26 *::after {
+  box-sizing: inherit;
+}
+
+.emotion-30 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: flex-start;
+  -webkit-box-align: flex-start;
+  -ms-flex-align: flex-start;
+  align-items: flex-start;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  gap: 0;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: start;
+  justify-content: start;
+  width: 100%;
+}
+
+.emotion-30>* {
+  min-width: 0;
+}
+
+.emotion-92 {
   background: transparent;
   display: block;
   margin: 0!important;
@@ -53,19 +245,18 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
   will-change: box-shadow;
   border-radius: inherit;
   bottom: 0;
-  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
   opacity: 1;
   left: 0;
   right: 0;
   top: 0;
-  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  border-radius: 2px;
+  border-radius: 8px;
 }
 
-@media ( prefers-reduced-motion: reduce ) {
-  .emotion-54 {
-    transition-duration: 0ms;
+@media not ( prefers-reduced-motion ) {
+  .emotion-92 {
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
   }
 }
 
@@ -140,37 +331,60 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
                 class="add-currencies-task__search"
               >
                 <div
-                  class="components-base-control components-search-control emotion-6 emotion-7"
+                  class="components-base-control components-input-control components-search-control emotion-6 emotion-7 emotion-8"
                 >
                   <div
-                    class="components-base-control__field emotion-8 emotion-9"
+                    class="components-base-control__field emotion-9 emotion-10"
                   >
                     <div
-                      class="components-search-control__input-wrapper"
+                      class="components-flex components-input-base emotion-11 emotion-12 emotion-1"
+                      data-wp-c16t="true"
+                      data-wp-component="InputBase"
                     >
-                      <input
-                        autocomplete="off"
-                        class="components-search-control__input"
-                        id="components-search-control-0"
-                        placeholder="Search currencies"
-                        type="search"
-                        value=""
-                      />
-                      <div
-                        class="components-search-control__icon"
+                      <label
+                        class="components-visually-hidden emotion-14 emotion-1"
+                        data-wp-c16t="true"
+                        data-wp-component="VisuallyHidden"
+                        for="components-search-control-0"
+                        style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
                       >
-                        <svg
-                          aria-hidden="true"
-                          focusable="false"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          width="24"
-                          xmlns="http://www.w3.org/2000/svg"
+                        Search
+                      </label>
+                      <div
+                        class="components-input-control__container emotion-16 emotion-17"
+                      >
+                        <input
+                          autocomplete="off"
+                          class="components-input-control__input emotion-18 emotion-19"
+                          id="components-search-control-0"
+                          placeholder="Search currencies"
+                          type="search"
+                          value=""
+                        />
+                        <span
+                          class="components-input-control__suffix emotion-20 emotion-21"
                         >
-                          <path
-                            d="M13.5 6C10.5 6 8 8.5 8 11.5c0 1.1.3 2.1.9 3l-3.4 3 1 1.1 3.4-2.9c1 .9 2.2 1.4 3.6 1.4 3 0 5.5-2.5 5.5-5.5C19 8.5 16.5 6 13.5 6zm0 9.5c-2.2 0-4-1.8-4-4s1.8-4 4-4 4 1.8 4 4-1.8 4-4 4z"
-                          />
-                        </svg>
+                          <div
+                            class="emotion-22 emotion-23"
+                          >
+                            <svg
+                              aria-hidden="true"
+                              focusable="false"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              width="24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M13 5c-3.3 0-6 2.7-6 6 0 1.4.5 2.7 1.3 3.7l-3.8 3.8 1.1 1.1 3.8-3.8c1 .8 2.3 1.3 3.7 1.3 3.3 0 6-2.7 6-6S16.3 5 13 5zm0 10.5c-2.5 0-4.5-2-4.5-4.5s2-4.5 4.5-4.5 4.5 2 4.5 4.5-2 4.5-4.5 4.5z"
+                              />
+                            </svg>
+                          </div>
+                        </span>
+                        <div
+                          aria-hidden="true"
+                          class="components-input-control__backdrop emotion-24 emotion-25"
+                        />
                       </div>
                     </div>
                   </div>
@@ -193,60 +407,66 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
                     data-testid="recommended-currency"
                   >
                     <div
-                      class="components-base-control components-checkbox-control emotion-6 emotion-7"
+                      class="components-base-control components-checkbox-control emotion-26 emotion-8"
                     >
                       <div
-                        class="components-base-control__field emotion-8 emotion-9"
+                        class="components-base-control__field emotion-9 emotion-10"
                       >
-                        <span
-                          class="components-checkbox-control__input-container"
+                        <div
+                          class="components-flex components-h-stack emotion-30 emotion-1"
+                          data-wp-c16t="true"
+                          data-wp-component="HStack"
                         >
-                          <input
-                            checked=""
-                            class="components-checkbox-control__input"
-                            code="EUR"
-                            id="inspector-checkbox-control-0"
-                            type="checkbox"
-                            value="1"
-                          />
-                          <svg
-                            aria-hidden="true"
-                            class="components-checkbox-control__checked"
-                            focusable="false"
-                            height="24"
-                            role="presentation"
-                            viewBox="0 0 24 24"
-                            width="24"
-                            xmlns="http://www.w3.org/2000/svg"
+                          <span
+                            class="components-checkbox-control__input-container"
                           >
-                            <path
-                              d="M16.7 7.1l-6.3 8.5-3.3-2.5-.9 1.2 4.5 3.4L17.9 8z"
+                            <input
+                              checked=""
+                              class="components-checkbox-control__input"
+                              code="EUR"
+                              id="inspector-checkbox-control-0"
+                              type="checkbox"
+                              value="1"
                             />
-                          </svg>
-                        </span>
-                        <label
-                          class="components-checkbox-control__label"
-                          for="inspector-checkbox-control-0"
-                        >
-                          <span
-                            class="enabled-currency-checkbox__flag"
+                            <svg
+                              aria-hidden="true"
+                              class="components-checkbox-control__checked"
+                              focusable="false"
+                              height="24"
+                              role="presentation"
+                              viewBox="0 0 24 24"
+                              width="24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M16.7 7.1l-6.3 8.5-3.3-2.5-.9 1.2 4.5 3.4L17.9 8z"
+                              />
+                            </svg>
+                          </span>
+                          <label
+                            class="components-checkbox-control__label"
+                            for="inspector-checkbox-control-0"
                           >
-                            🇪🇺
-                          </span>
-                           
-                          <span>
-                            Euro
-                          </span>
-                           
-                          <span
-                            class="enabled-currency-checkbox__code"
-                          >
-                            (
-                            €
-                             EUR
-                            )
-                          </span>
-                        </label>
+                            <span
+                              class="enabled-currency-checkbox__flag"
+                            >
+                              🇪🇺
+                            </span>
+                             
+                            <span>
+                              Euro
+                            </span>
+                             
+                            <span
+                              class="enabled-currency-checkbox__code"
+                            >
+                              (
+                              €
+                               EUR
+                              )
+                            </span>
+                          </label>
+                        </div>
                       </div>
                     </div>
                   </li>
@@ -255,60 +475,66 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
                     data-testid="recommended-currency"
                   >
                     <div
-                      class="components-base-control components-checkbox-control emotion-6 emotion-7"
+                      class="components-base-control components-checkbox-control emotion-26 emotion-8"
                     >
                       <div
-                        class="components-base-control__field emotion-8 emotion-9"
+                        class="components-base-control__field emotion-9 emotion-10"
                       >
-                        <span
-                          class="components-checkbox-control__input-container"
+                        <div
+                          class="components-flex components-h-stack emotion-30 emotion-1"
+                          data-wp-c16t="true"
+                          data-wp-component="HStack"
                         >
-                          <input
-                            checked=""
-                            class="components-checkbox-control__input"
-                            code="JPY"
-                            id="inspector-checkbox-control-1"
-                            type="checkbox"
-                            value="1"
-                          />
-                          <svg
-                            aria-hidden="true"
-                            class="components-checkbox-control__checked"
-                            focusable="false"
-                            height="24"
-                            role="presentation"
-                            viewBox="0 0 24 24"
-                            width="24"
-                            xmlns="http://www.w3.org/2000/svg"
+                          <span
+                            class="components-checkbox-control__input-container"
                           >
-                            <path
-                              d="M16.7 7.1l-6.3 8.5-3.3-2.5-.9 1.2 4.5 3.4L17.9 8z"
+                            <input
+                              checked=""
+                              class="components-checkbox-control__input"
+                              code="JPY"
+                              id="inspector-checkbox-control-1"
+                              type="checkbox"
+                              value="1"
                             />
-                          </svg>
-                        </span>
-                        <label
-                          class="components-checkbox-control__label"
-                          for="inspector-checkbox-control-1"
-                        >
-                          <span
-                            class="enabled-currency-checkbox__flag"
+                            <svg
+                              aria-hidden="true"
+                              class="components-checkbox-control__checked"
+                              focusable="false"
+                              height="24"
+                              role="presentation"
+                              viewBox="0 0 24 24"
+                              width="24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M16.7 7.1l-6.3 8.5-3.3-2.5-.9 1.2 4.5 3.4L17.9 8z"
+                              />
+                            </svg>
+                          </span>
+                          <label
+                            class="components-checkbox-control__label"
+                            for="inspector-checkbox-control-1"
                           >
-                            🇯🇵
-                          </span>
-                           
-                          <span>
-                            Japanese yen
-                          </span>
-                           
-                          <span
-                            class="enabled-currency-checkbox__code"
-                          >
-                            (
-                            ¥
-                             JPY
-                            )
-                          </span>
-                        </label>
+                            <span
+                              class="enabled-currency-checkbox__flag"
+                            >
+                              🇯🇵
+                            </span>
+                             
+                            <span>
+                              Japanese yen
+                            </span>
+                             
+                            <span
+                              class="enabled-currency-checkbox__code"
+                            >
+                              (
+                              ¥
+                               JPY
+                              )
+                            </span>
+                          </label>
+                        </div>
                       </div>
                     </div>
                   </li>
@@ -317,60 +543,66 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
                     data-testid="recommended-currency"
                   >
                     <div
-                      class="components-base-control components-checkbox-control emotion-6 emotion-7"
+                      class="components-base-control components-checkbox-control emotion-26 emotion-8"
                     >
                       <div
-                        class="components-base-control__field emotion-8 emotion-9"
+                        class="components-base-control__field emotion-9 emotion-10"
                       >
-                        <span
-                          class="components-checkbox-control__input-container"
+                        <div
+                          class="components-flex components-h-stack emotion-30 emotion-1"
+                          data-wp-c16t="true"
+                          data-wp-component="HStack"
                         >
-                          <input
-                            checked=""
-                            class="components-checkbox-control__input"
-                            code="GBP"
-                            id="inspector-checkbox-control-2"
-                            type="checkbox"
-                            value="1"
-                          />
-                          <svg
-                            aria-hidden="true"
-                            class="components-checkbox-control__checked"
-                            focusable="false"
-                            height="24"
-                            role="presentation"
-                            viewBox="0 0 24 24"
-                            width="24"
-                            xmlns="http://www.w3.org/2000/svg"
+                          <span
+                            class="components-checkbox-control__input-container"
                           >
-                            <path
-                              d="M16.7 7.1l-6.3 8.5-3.3-2.5-.9 1.2 4.5 3.4L17.9 8z"
+                            <input
+                              checked=""
+                              class="components-checkbox-control__input"
+                              code="GBP"
+                              id="inspector-checkbox-control-2"
+                              type="checkbox"
+                              value="1"
                             />
-                          </svg>
-                        </span>
-                        <label
-                          class="components-checkbox-control__label"
-                          for="inspector-checkbox-control-2"
-                        >
-                          <span
-                            class="enabled-currency-checkbox__flag"
+                            <svg
+                              aria-hidden="true"
+                              class="components-checkbox-control__checked"
+                              focusable="false"
+                              height="24"
+                              role="presentation"
+                              viewBox="0 0 24 24"
+                              width="24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M16.7 7.1l-6.3 8.5-3.3-2.5-.9 1.2 4.5 3.4L17.9 8z"
+                              />
+                            </svg>
+                          </span>
+                          <label
+                            class="components-checkbox-control__label"
+                            for="inspector-checkbox-control-2"
                           >
-                            🇬🇧
-                          </span>
-                           
-                          <span>
-                            Pound sterling
-                          </span>
-                           
-                          <span
-                            class="enabled-currency-checkbox__code"
-                          >
-                            (
-                            £
-                             GBP
-                            )
-                          </span>
-                        </label>
+                            <span
+                              class="enabled-currency-checkbox__flag"
+                            >
+                              🇬🇧
+                            </span>
+                             
+                            <span>
+                              Pound sterling
+                            </span>
+                             
+                            <span
+                              class="enabled-currency-checkbox__code"
+                            >
+                              (
+                              £
+                               GBP
+                              )
+                            </span>
+                          </label>
+                        </div>
                       </div>
                     </div>
                   </li>
@@ -379,60 +611,66 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
                     data-testid="recommended-currency"
                   >
                     <div
-                      class="components-base-control components-checkbox-control emotion-6 emotion-7"
+                      class="components-base-control components-checkbox-control emotion-26 emotion-8"
                     >
                       <div
-                        class="components-base-control__field emotion-8 emotion-9"
+                        class="components-base-control__field emotion-9 emotion-10"
                       >
-                        <span
-                          class="components-checkbox-control__input-container"
+                        <div
+                          class="components-flex components-h-stack emotion-30 emotion-1"
+                          data-wp-c16t="true"
+                          data-wp-component="HStack"
                         >
-                          <input
-                            checked=""
-                            class="components-checkbox-control__input"
-                            code="AUD"
-                            id="inspector-checkbox-control-3"
-                            type="checkbox"
-                            value="1"
-                          />
-                          <svg
-                            aria-hidden="true"
-                            class="components-checkbox-control__checked"
-                            focusable="false"
-                            height="24"
-                            role="presentation"
-                            viewBox="0 0 24 24"
-                            width="24"
-                            xmlns="http://www.w3.org/2000/svg"
+                          <span
+                            class="components-checkbox-control__input-container"
                           >
-                            <path
-                              d="M16.7 7.1l-6.3 8.5-3.3-2.5-.9 1.2 4.5 3.4L17.9 8z"
+                            <input
+                              checked=""
+                              class="components-checkbox-control__input"
+                              code="AUD"
+                              id="inspector-checkbox-control-3"
+                              type="checkbox"
+                              value="1"
                             />
-                          </svg>
-                        </span>
-                        <label
-                          class="components-checkbox-control__label"
-                          for="inspector-checkbox-control-3"
-                        >
-                          <span
-                            class="enabled-currency-checkbox__flag"
+                            <svg
+                              aria-hidden="true"
+                              class="components-checkbox-control__checked"
+                              focusable="false"
+                              height="24"
+                              role="presentation"
+                              viewBox="0 0 24 24"
+                              width="24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M16.7 7.1l-6.3 8.5-3.3-2.5-.9 1.2 4.5 3.4L17.9 8z"
+                              />
+                            </svg>
+                          </span>
+                          <label
+                            class="components-checkbox-control__label"
+                            for="inspector-checkbox-control-3"
                           >
-                            🇦🇺
-                          </span>
-                           
-                          <span>
-                            Australian dollar
-                          </span>
-                           
-                          <span
-                            class="enabled-currency-checkbox__code"
-                          >
-                            (
-                            $
-                             AUD
-                            )
-                          </span>
-                        </label>
+                            <span
+                              class="enabled-currency-checkbox__flag"
+                            >
+                              🇦🇺
+                            </span>
+                             
+                            <span>
+                              Australian dollar
+                            </span>
+                             
+                            <span
+                              class="enabled-currency-checkbox__code"
+                            >
+                              (
+                              $
+                               AUD
+                              )
+                            </span>
+                          </label>
+                        </div>
                       </div>
                     </div>
                   </li>
@@ -441,60 +679,66 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
                     data-testid="recommended-currency"
                   >
                     <div
-                      class="components-base-control components-checkbox-control emotion-6 emotion-7"
+                      class="components-base-control components-checkbox-control emotion-26 emotion-8"
                     >
                       <div
-                        class="components-base-control__field emotion-8 emotion-9"
+                        class="components-base-control__field emotion-9 emotion-10"
                       >
-                        <span
-                          class="components-checkbox-control__input-container"
+                        <div
+                          class="components-flex components-h-stack emotion-30 emotion-1"
+                          data-wp-c16t="true"
+                          data-wp-component="HStack"
                         >
-                          <input
-                            checked=""
-                            class="components-checkbox-control__input"
-                            code="CAD"
-                            id="inspector-checkbox-control-4"
-                            type="checkbox"
-                            value="1"
-                          />
-                          <svg
-                            aria-hidden="true"
-                            class="components-checkbox-control__checked"
-                            focusable="false"
-                            height="24"
-                            role="presentation"
-                            viewBox="0 0 24 24"
-                            width="24"
-                            xmlns="http://www.w3.org/2000/svg"
+                          <span
+                            class="components-checkbox-control__input-container"
                           >
-                            <path
-                              d="M16.7 7.1l-6.3 8.5-3.3-2.5-.9 1.2 4.5 3.4L17.9 8z"
+                            <input
+                              checked=""
+                              class="components-checkbox-control__input"
+                              code="CAD"
+                              id="inspector-checkbox-control-4"
+                              type="checkbox"
+                              value="1"
                             />
-                          </svg>
-                        </span>
-                        <label
-                          class="components-checkbox-control__label"
-                          for="inspector-checkbox-control-4"
-                        >
-                          <span
-                            class="enabled-currency-checkbox__flag"
+                            <svg
+                              aria-hidden="true"
+                              class="components-checkbox-control__checked"
+                              focusable="false"
+                              height="24"
+                              role="presentation"
+                              viewBox="0 0 24 24"
+                              width="24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M16.7 7.1l-6.3 8.5-3.3-2.5-.9 1.2 4.5 3.4L17.9 8z"
+                              />
+                            </svg>
+                          </span>
+                          <label
+                            class="components-checkbox-control__label"
+                            for="inspector-checkbox-control-4"
                           >
-                            🇨🇦
-                          </span>
-                           
-                          <span>
-                            Canadian dollar
-                          </span>
-                           
-                          <span
-                            class="enabled-currency-checkbox__code"
-                          >
-                            (
-                            $
-                             CAD
-                            )
-                          </span>
-                        </label>
+                            <span
+                              class="enabled-currency-checkbox__flag"
+                            >
+                              🇨🇦
+                            </span>
+                             
+                            <span>
+                              Canadian dollar
+                            </span>
+                             
+                            <span
+                              class="enabled-currency-checkbox__code"
+                            >
+                              (
+                              $
+                               CAD
+                              )
+                            </span>
+                          </label>
+                        </div>
                       </div>
                     </div>
                   </li>
@@ -503,60 +747,66 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
                     data-testid="recommended-currency"
                   >
                     <div
-                      class="components-base-control components-checkbox-control emotion-6 emotion-7"
+                      class="components-base-control components-checkbox-control emotion-26 emotion-8"
                     >
                       <div
-                        class="components-base-control__field emotion-8 emotion-9"
+                        class="components-base-control__field emotion-9 emotion-10"
                       >
-                        <span
-                          class="components-checkbox-control__input-container"
+                        <div
+                          class="components-flex components-h-stack emotion-30 emotion-1"
+                          data-wp-c16t="true"
+                          data-wp-component="HStack"
                         >
-                          <input
-                            checked=""
-                            class="components-checkbox-control__input"
-                            code="INR"
-                            id="inspector-checkbox-control-5"
-                            type="checkbox"
-                            value="1"
-                          />
-                          <svg
-                            aria-hidden="true"
-                            class="components-checkbox-control__checked"
-                            focusable="false"
-                            height="24"
-                            role="presentation"
-                            viewBox="0 0 24 24"
-                            width="24"
-                            xmlns="http://www.w3.org/2000/svg"
+                          <span
+                            class="components-checkbox-control__input-container"
                           >
-                            <path
-                              d="M16.7 7.1l-6.3 8.5-3.3-2.5-.9 1.2 4.5 3.4L17.9 8z"
+                            <input
+                              checked=""
+                              class="components-checkbox-control__input"
+                              code="INR"
+                              id="inspector-checkbox-control-5"
+                              type="checkbox"
+                              value="1"
                             />
-                          </svg>
-                        </span>
-                        <label
-                          class="components-checkbox-control__label"
-                          for="inspector-checkbox-control-5"
-                        >
-                          <span
-                            class="enabled-currency-checkbox__flag"
+                            <svg
+                              aria-hidden="true"
+                              class="components-checkbox-control__checked"
+                              focusable="false"
+                              height="24"
+                              role="presentation"
+                              viewBox="0 0 24 24"
+                              width="24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M16.7 7.1l-6.3 8.5-3.3-2.5-.9 1.2 4.5 3.4L17.9 8z"
+                              />
+                            </svg>
+                          </span>
+                          <label
+                            class="components-checkbox-control__label"
+                            for="inspector-checkbox-control-5"
                           >
-                            🇮🇳
-                          </span>
-                           
-                          <span>
-                            Indian rupee
-                          </span>
-                           
-                          <span
-                            class="enabled-currency-checkbox__code"
-                          >
-                            (
-                            ₹
-                             INR
-                            )
-                          </span>
-                        </label>
+                            <span
+                              class="enabled-currency-checkbox__flag"
+                            >
+                              🇮🇳
+                            </span>
+                             
+                            <span>
+                              Indian rupee
+                            </span>
+                             
+                            <span
+                              class="enabled-currency-checkbox__code"
+                            >
+                              (
+                              ₹
+                               INR
+                              )
+                            </span>
+                          </label>
+                        </div>
                       </div>
                     </div>
                   </li>
@@ -574,45 +824,51 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
                     class="enabled-currency-checkbox"
                   >
                     <div
-                      class="components-base-control components-checkbox-control emotion-6 emotion-7"
+                      class="components-base-control components-checkbox-control emotion-26 emotion-8"
                     >
                       <div
-                        class="components-base-control__field emotion-8 emotion-9"
+                        class="components-base-control__field emotion-9 emotion-10"
                       >
-                        <span
-                          class="components-checkbox-control__input-container"
-                        >
-                          <input
-                            class="components-checkbox-control__input"
-                            code="AED"
-                            id="inspector-checkbox-control-6"
-                            type="checkbox"
-                            value="1"
-                          />
-                        </span>
-                        <label
-                          class="components-checkbox-control__label"
-                          for="inspector-checkbox-control-6"
+                        <div
+                          class="components-flex components-h-stack emotion-30 emotion-1"
+                          data-wp-c16t="true"
+                          data-wp-component="HStack"
                         >
                           <span
-                            class="enabled-currency-checkbox__flag"
+                            class="components-checkbox-control__input-container"
                           >
-                            🇦🇪
+                            <input
+                              class="components-checkbox-control__input"
+                              code="AED"
+                              id="inspector-checkbox-control-6"
+                              type="checkbox"
+                              value="1"
+                            />
                           </span>
-                           
-                          <span>
-                            United Arab Emirates dirham
-                          </span>
-                           
-                          <span
-                            class="enabled-currency-checkbox__code"
+                          <label
+                            class="components-checkbox-control__label"
+                            for="inspector-checkbox-control-6"
                           >
-                            (
-                            د.إ
-                             AED
-                            )
-                          </span>
-                        </label>
+                            <span
+                              class="enabled-currency-checkbox__flag"
+                            >
+                              🇦🇪
+                            </span>
+                             
+                            <span>
+                              United Arab Emirates dirham
+                            </span>
+                             
+                            <span
+                              class="enabled-currency-checkbox__code"
+                            >
+                              (
+                              د.إ
+                               AED
+                              )
+                            </span>
+                          </label>
+                        </div>
                       </div>
                     </div>
                   </li>
@@ -620,45 +876,51 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
                     class="enabled-currency-checkbox"
                   >
                     <div
-                      class="components-base-control components-checkbox-control emotion-6 emotion-7"
+                      class="components-base-control components-checkbox-control emotion-26 emotion-8"
                     >
                       <div
-                        class="components-base-control__field emotion-8 emotion-9"
+                        class="components-base-control__field emotion-9 emotion-10"
                       >
-                        <span
-                          class="components-checkbox-control__input-container"
-                        >
-                          <input
-                            class="components-checkbox-control__input"
-                            code="CDF"
-                            id="inspector-checkbox-control-7"
-                            type="checkbox"
-                            value="1"
-                          />
-                        </span>
-                        <label
-                          class="components-checkbox-control__label"
-                          for="inspector-checkbox-control-7"
+                        <div
+                          class="components-flex components-h-stack emotion-30 emotion-1"
+                          data-wp-c16t="true"
+                          data-wp-component="HStack"
                         >
                           <span
-                            class="enabled-currency-checkbox__flag"
+                            class="components-checkbox-control__input-container"
                           >
-                            🇨🇩
+                            <input
+                              class="components-checkbox-control__input"
+                              code="CDF"
+                              id="inspector-checkbox-control-7"
+                              type="checkbox"
+                              value="1"
+                            />
                           </span>
-                           
-                          <span>
-                            Congolese franc
-                          </span>
-                           
-                          <span
-                            class="enabled-currency-checkbox__code"
+                          <label
+                            class="components-checkbox-control__label"
+                            for="inspector-checkbox-control-7"
                           >
-                            (
-                            Fr
-                             CDF
-                            )
-                          </span>
-                        </label>
+                            <span
+                              class="enabled-currency-checkbox__flag"
+                            >
+                              🇨🇩
+                            </span>
+                             
+                            <span>
+                              Congolese franc
+                            </span>
+                             
+                            <span
+                              class="enabled-currency-checkbox__code"
+                            >
+                              (
+                              Fr
+                               CDF
+                              )
+                            </span>
+                          </label>
+                        </div>
                       </div>
                     </div>
                   </li>
@@ -666,44 +928,50 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
                     class="enabled-currency-checkbox"
                   >
                     <div
-                      class="components-base-control components-checkbox-control emotion-6 emotion-7"
+                      class="components-base-control components-checkbox-control emotion-26 emotion-8"
                     >
                       <div
-                        class="components-base-control__field emotion-8 emotion-9"
+                        class="components-base-control__field emotion-9 emotion-10"
                       >
-                        <span
-                          class="components-checkbox-control__input-container"
-                        >
-                          <input
-                            class="components-checkbox-control__input"
-                            code="DKK"
-                            id="inspector-checkbox-control-8"
-                            type="checkbox"
-                            value="1"
-                          />
-                        </span>
-                        <label
-                          class="components-checkbox-control__label"
-                          for="inspector-checkbox-control-8"
+                        <div
+                          class="components-flex components-h-stack emotion-30 emotion-1"
+                          data-wp-c16t="true"
+                          data-wp-component="HStack"
                         >
                           <span
-                            class="enabled-currency-checkbox__flag"
+                            class="components-checkbox-control__input-container"
                           >
-                            🇩🇰
+                            <input
+                              class="components-checkbox-control__input"
+                              code="DKK"
+                              id="inspector-checkbox-control-8"
+                              type="checkbox"
+                              value="1"
+                            />
                           </span>
-                           
-                          <span>
-                            Danish krone
-                          </span>
-                           
-                          <span
-                            class="enabled-currency-checkbox__code"
+                          <label
+                            class="components-checkbox-control__label"
+                            for="inspector-checkbox-control-8"
                           >
-                            (
-                            DKK
-                            )
-                          </span>
-                        </label>
+                            <span
+                              class="enabled-currency-checkbox__flag"
+                            >
+                              🇩🇰
+                            </span>
+                             
+                            <span>
+                              Danish krone
+                            </span>
+                             
+                            <span
+                              class="enabled-currency-checkbox__code"
+                            >
+                              (
+                              DKK
+                              )
+                            </span>
+                          </label>
+                        </div>
                       </div>
                     </div>
                   </li>
@@ -711,45 +979,51 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
                     class="enabled-currency-checkbox"
                   >
                     <div
-                      class="components-base-control components-checkbox-control emotion-6 emotion-7"
+                      class="components-base-control components-checkbox-control emotion-26 emotion-8"
                     >
                       <div
-                        class="components-base-control__field emotion-8 emotion-9"
+                        class="components-base-control__field emotion-9 emotion-10"
                       >
-                        <span
-                          class="components-checkbox-control__input-container"
-                        >
-                          <input
-                            class="components-checkbox-control__input"
-                            code="BIF"
-                            id="inspector-checkbox-control-9"
-                            type="checkbox"
-                            value="1"
-                          />
-                        </span>
-                        <label
-                          class="components-checkbox-control__label"
-                          for="inspector-checkbox-control-9"
+                        <div
+                          class="components-flex components-h-stack emotion-30 emotion-1"
+                          data-wp-c16t="true"
+                          data-wp-component="HStack"
                         >
                           <span
-                            class="enabled-currency-checkbox__flag"
+                            class="components-checkbox-control__input-container"
                           >
-                            🇧🇮
+                            <input
+                              class="components-checkbox-control__input"
+                              code="BIF"
+                              id="inspector-checkbox-control-9"
+                              type="checkbox"
+                              value="1"
+                            />
                           </span>
-                           
-                          <span>
-                            Burundian franc
-                          </span>
-                           
-                          <span
-                            class="enabled-currency-checkbox__code"
+                          <label
+                            class="components-checkbox-control__label"
+                            for="inspector-checkbox-control-9"
                           >
-                            (
-                            Fr
-                             BIF
-                            )
-                          </span>
-                        </label>
+                            <span
+                              class="enabled-currency-checkbox__flag"
+                            >
+                              🇧🇮
+                            </span>
+                             
+                            <span>
+                              Burundian franc
+                            </span>
+                             
+                            <span
+                              class="enabled-currency-checkbox__code"
+                            >
+                              (
+                              Fr
+                               BIF
+                              )
+                            </span>
+                          </label>
+                        </div>
                       </div>
                     </div>
                   </li>
@@ -757,45 +1031,51 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
                     class="enabled-currency-checkbox"
                   >
                     <div
-                      class="components-base-control components-checkbox-control emotion-6 emotion-7"
+                      class="components-base-control components-checkbox-control emotion-26 emotion-8"
                     >
                       <div
-                        class="components-base-control__field emotion-8 emotion-9"
+                        class="components-base-control__field emotion-9 emotion-10"
                       >
-                        <span
-                          class="components-checkbox-control__input-container"
-                        >
-                          <input
-                            class="components-checkbox-control__input"
-                            code="CLP"
-                            id="inspector-checkbox-control-10"
-                            type="checkbox"
-                            value="1"
-                          />
-                        </span>
-                        <label
-                          class="components-checkbox-control__label"
-                          for="inspector-checkbox-control-10"
+                        <div
+                          class="components-flex components-h-stack emotion-30 emotion-1"
+                          data-wp-c16t="true"
+                          data-wp-component="HStack"
                         >
                           <span
-                            class="enabled-currency-checkbox__flag"
+                            class="components-checkbox-control__input-container"
                           >
-                            🇨🇱
+                            <input
+                              class="components-checkbox-control__input"
+                              code="CLP"
+                              id="inspector-checkbox-control-10"
+                              type="checkbox"
+                              value="1"
+                            />
                           </span>
-                           
-                          <span>
-                            Chilean peso
-                          </span>
-                           
-                          <span
-                            class="enabled-currency-checkbox__code"
+                          <label
+                            class="components-checkbox-control__label"
+                            for="inspector-checkbox-control-10"
                           >
-                            (
-                            $
-                             CLP
-                            )
-                          </span>
-                        </label>
+                            <span
+                              class="enabled-currency-checkbox__flag"
+                            >
+                              🇨🇱
+                            </span>
+                             
+                            <span>
+                              Chilean peso
+                            </span>
+                             
+                            <span
+                              class="enabled-currency-checkbox__code"
+                            >
+                              (
+                              $
+                               CLP
+                              )
+                            </span>
+                          </label>
+                        </div>
                       </div>
                     </div>
                   </li>
@@ -805,19 +1085,19 @@ exports[`Multi-Currency enabled currencies list add currencies task renders corr
           </div>
           <div
             aria-hidden="true"
-            class="components-elevation emotion-54 emotion-1"
+            class="components-elevation emotion-92 emotion-1"
             data-wp-c16t="true"
             data-wp-component="Elevation"
           />
           <div
             aria-hidden="true"
-            class="components-elevation emotion-54 emotion-1"
+            class="components-elevation emotion-92 emotion-1"
             data-wp-c16t="true"
             data-wp-component="Elevation"
           />
         </div>
         <button
-          class="components-button is-primary"
+          class="components-button is-next-40px-default-size is-primary"
           type="button"
         >
           Add 6 currencies
@@ -835,7 +1115,7 @@ exports[`Multi-Currency enabled currencies list currency search works with curre
   position: relative;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
   outline: none;
-  border-radius: calc(2px - 1px);
+  border-radius: calc(8px - 1px);
 }
 
 .emotion-2 {
@@ -850,29 +1130,221 @@ exports[`Multi-Currency enabled currencies list currency search works with curre
 }
 
 .emotion-4:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-4:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
-.emotion-6 {
+.emotion-7 {
   font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
   font-size: 13px;
+  box-sizing: border-box;
 }
 
-.emotion-8 {
-  margin-bottom: calc(4px * 2);
+.emotion-7 *,
+.emotion-7 *::before,
+.emotion-7 *::after {
+  box-sizing: inherit;
 }
 
-.components-panel__row .emotion-8 {
+.emotion-7 input[type='search']::-webkit-search-decoration,
+.emotion-7 input[type='search']::-webkit-search-cancel-button,
+.emotion-7 input[type='search']::-webkit-search-results-button,
+.emotion-7 input[type='search']::-webkit-search-results-decoration {
+  -webkit-appearance: none;
+}
+
+.emotion-7:not( :focus-within ) {
+  --wp-components-color-background: var(--wp-components-color-gray-100, #f0f0f0);
+}
+
+.components-panel__row .emotion-9 {
   margin-bottom: inherit;
 }
 
-.emotion-14 {
+.emotion-12 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: normal;
+  -webkit-box-align: normal;
+  -ms-flex-align: normal;
+  align-items: normal;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  gap: calc(4px * 2);
+  -webkit-box-pack: left;
+  -ms-flex-pack: left;
+  -webkit-justify-content: left;
+  justify-content: left;
+  box-sizing: border-box;
+  position: relative;
+  border-radius: 2px;
+  padding-top: 0;
+}
+
+.emotion-12>* {
+  min-height: 0;
+}
+
+.emotion-12:focus-within:not( :has( :is( .em5sgkm8, .emotion-21 ):focus-within ) ) .emotion-25 {
+  border-color: var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));
+  box-shadow: 0 0 0 0.5px var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));
+  outline: 2px solid transparent;
+  outline-offset: -2px;
+}
+
+.emotion-16 {
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  box-sizing: border-box;
+  border-radius: inherit;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
+  position: relative;
+  background-color: var(--wp-components-color-background, #fff);
+  width: 100%;
+}
+
+.emotion-18.emotion-18.emotion-18 {
+  background-color: transparent;
+  box-sizing: border-box;
+  border: none;
+  box-shadow: none!important;
+  color: var(--wp-components-color-foreground, #1e1e1e);
+  display: block;
+  font-family: inherit;
+  margin: 0;
+  outline: none;
+  width: 100%;
+  font-size: 16px;
+  height: 40px;
+  line-height: 1;
+  min-height: 40px;
+  padding-left: 12px;
+  padding-right: 12px;
+  -webkit-padding-end: calc(4px * 1);
+  padding-inline-end: calc(4px * 1);
+}
+
+@media ( min-width: 600px ) {
+  .emotion-18.emotion-18.emotion-18 {
+    font-size: 13px;
+  }
+}
+
+.emotion-18.emotion-18.emotion-18::-webkit-input-placeholder {
+  color: color-mix(in srgb, var(--wp-components-color-foreground, #1e1e1e), transparent 38%);
+}
+
+.emotion-18.emotion-18.emotion-18::-moz-placeholder {
+  color: color-mix(in srgb, var(--wp-components-color-foreground, #1e1e1e), transparent 38%);
+}
+
+.emotion-18.emotion-18.emotion-18:-ms-input-placeholder {
+  color: color-mix(in srgb, var(--wp-components-color-foreground, #1e1e1e), transparent 38%);
+}
+
+.emotion-18.emotion-18.emotion-18[type='email'],
+.emotion-18.emotion-18.emotion-18[type='url'] {
+  direction: ltr;
+}
+
+.emotion-20 {
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-align-self: stretch;
+  -ms-flex-item-align: stretch;
+  align-self: stretch;
+  box-sizing: border-box;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+.emotion-22 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-padding-end: calc(4px * 2);
+  padding-inline-end: calc(4px * 2);
+}
+
+.emotion-22 svg {
+  fill: currentColor;
+}
+
+.emotion-24.emotion-24.emotion-24 {
+  box-sizing: border-box;
+  border-color: transparent;
+  border-radius: inherit;
+  border-style: solid;
+  border-width: 1px;
+  bottom: 0;
+  left: 0;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  top: 0;
+  padding-left: 2px;
+}
+
+.emotion-26 {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.emotion-26 *,
+.emotion-26 *::before,
+.emotion-26 *::after {
+  box-sizing: inherit;
+}
+
+.emotion-30 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: flex-start;
+  -webkit-box-align: flex-start;
+  -ms-flex-align: flex-start;
+  align-items: flex-start;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  gap: 0;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: start;
+  justify-content: start;
+  width: 100%;
+}
+
+.emotion-30>* {
+  min-width: 0;
+}
+
+.emotion-32 {
   background: transparent;
   display: block;
   margin: 0!important;
@@ -881,19 +1353,18 @@ exports[`Multi-Currency enabled currencies list currency search works with curre
   will-change: box-shadow;
   border-radius: inherit;
   bottom: 0;
-  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
   opacity: 1;
   left: 0;
   right: 0;
   top: 0;
-  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  border-radius: 2px;
+  border-radius: 8px;
 }
 
-@media ( prefers-reduced-motion: reduce ) {
-  .emotion-14 {
-    transition-duration: 0ms;
+@media not ( prefers-reduced-motion ) {
+  .emotion-32 {
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
   }
 }
 
@@ -968,43 +1439,66 @@ exports[`Multi-Currency enabled currencies list currency search works with curre
                 class="add-currencies-task__search"
               >
                 <div
-                  class="components-base-control components-search-control emotion-6 emotion-7"
+                  class="components-base-control components-input-control components-search-control emotion-6 emotion-7 emotion-8"
                 >
                   <div
-                    class="components-base-control__field emotion-8 emotion-9"
+                    class="components-base-control__field emotion-9 emotion-10"
                   >
                     <div
-                      class="components-search-control__input-wrapper"
+                      class="components-flex components-input-base emotion-11 emotion-12 emotion-1"
+                      data-wp-c16t="true"
+                      data-wp-component="InputBase"
                     >
-                      <input
-                        autocomplete="off"
-                        class="components-search-control__input"
-                        id="components-search-control-4"
-                        placeholder="Search currencies"
-                        type="search"
-                        value="DKK"
-                      />
-                      <div
-                        class="components-search-control__icon"
+                      <label
+                        class="components-visually-hidden emotion-14 emotion-1"
+                        data-wp-c16t="true"
+                        data-wp-component="VisuallyHidden"
+                        for="components-search-control-4"
+                        style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
                       >
-                        <button
-                          aria-label="Reset search"
-                          class="components-button has-icon"
-                          type="button"
+                        Search
+                      </label>
+                      <div
+                        class="components-input-control__container emotion-16 emotion-17"
+                      >
+                        <input
+                          autocomplete="off"
+                          class="components-input-control__input emotion-18 emotion-19"
+                          id="components-search-control-4"
+                          placeholder="Search currencies"
+                          type="search"
+                          value="DKK"
+                        />
+                        <span
+                          class="components-input-control__suffix emotion-20 emotion-21"
                         >
-                          <svg
-                            aria-hidden="true"
-                            focusable="false"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            width="24"
-                            xmlns="http://www.w3.org/2000/svg"
+                          <div
+                            class="emotion-22 emotion-23"
                           >
-                            <path
-                              d="M12 13.06l3.712 3.713 1.061-1.06L13.061 12l3.712-3.712-1.06-1.06L12 10.938 8.288 7.227l-1.061 1.06L10.939 12l-3.712 3.712 1.06 1.061L12 13.061z"
-                            />
-                          </svg>
-                        </button>
+                            <button
+                              aria-label="Reset search"
+                              class="components-button is-small has-icon"
+                              type="button"
+                            >
+                              <svg
+                                aria-hidden="true"
+                                focusable="false"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                width="24"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M12 13.06l3.712 3.713 1.061-1.06L13.061 12l3.712-3.712-1.06-1.06L12 10.938 8.288 7.227l-1.061 1.06L10.939 12l-3.712 3.712 1.06 1.061L12 13.061z"
+                                />
+                              </svg>
+                            </button>
+                          </div>
+                        </span>
+                        <div
+                          aria-hidden="true"
+                          class="components-input-control__backdrop emotion-24 emotion-25"
+                        />
                       </div>
                     </div>
                   </div>
@@ -1024,44 +1518,50 @@ exports[`Multi-Currency enabled currencies list currency search works with curre
                     class="enabled-currency-checkbox"
                   >
                     <div
-                      class="components-base-control components-checkbox-control emotion-6 emotion-7"
+                      class="components-base-control components-checkbox-control emotion-26 emotion-8"
                     >
                       <div
-                        class="components-base-control__field emotion-8 emotion-9"
+                        class="components-base-control__field emotion-9 emotion-10"
                       >
-                        <span
-                          class="components-checkbox-control__input-container"
-                        >
-                          <input
-                            class="components-checkbox-control__input"
-                            code="DKK"
-                            id="inspector-checkbox-control-52"
-                            type="checkbox"
-                            value="1"
-                          />
-                        </span>
-                        <label
-                          class="components-checkbox-control__label"
-                          for="inspector-checkbox-control-52"
+                        <div
+                          class="components-flex components-h-stack emotion-30 emotion-1"
+                          data-wp-c16t="true"
+                          data-wp-component="HStack"
                         >
                           <span
-                            class="enabled-currency-checkbox__flag"
+                            class="components-checkbox-control__input-container"
                           >
-                            🇩🇰
+                            <input
+                              class="components-checkbox-control__input"
+                              code="DKK"
+                              id="inspector-checkbox-control-52"
+                              type="checkbox"
+                              value="1"
+                            />
                           </span>
-                           
-                          <span>
-                            Danish krone
-                          </span>
-                           
-                          <span
-                            class="enabled-currency-checkbox__code"
+                          <label
+                            class="components-checkbox-control__label"
+                            for="inspector-checkbox-control-52"
                           >
-                            (
-                            DKK
-                            )
-                          </span>
-                        </label>
+                            <span
+                              class="enabled-currency-checkbox__flag"
+                            >
+                              🇩🇰
+                            </span>
+                             
+                            <span>
+                              Danish krone
+                            </span>
+                             
+                            <span
+                              class="enabled-currency-checkbox__code"
+                            >
+                              (
+                              DKK
+                              )
+                            </span>
+                          </label>
+                        </div>
                       </div>
                     </div>
                   </li>
@@ -1071,19 +1571,19 @@ exports[`Multi-Currency enabled currencies list currency search works with curre
           </div>
           <div
             aria-hidden="true"
-            class="components-elevation emotion-14 emotion-1"
+            class="components-elevation emotion-32 emotion-1"
             data-wp-c16t="true"
             data-wp-component="Elevation"
           />
           <div
             aria-hidden="true"
-            class="components-elevation emotion-14 emotion-1"
+            class="components-elevation emotion-32 emotion-1"
             data-wp-c16t="true"
             data-wp-component="Elevation"
           />
         </div>
         <button
-          class="components-button is-primary"
+          class="components-button is-next-40px-default-size is-primary"
           type="button"
         >
           Add 6 currencies
@@ -1101,7 +1601,7 @@ exports[`Multi-Currency enabled currencies list currency search works with curre
   position: relative;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
   outline: none;
-  border-radius: calc(2px - 1px);
+  border-radius: calc(8px - 1px);
 }
 
 .emotion-2 {
@@ -1116,29 +1616,221 @@ exports[`Multi-Currency enabled currencies list currency search works with curre
 }
 
 .emotion-4:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-4:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
-.emotion-6 {
+.emotion-7 {
   font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
   font-size: 13px;
+  box-sizing: border-box;
 }
 
-.emotion-8 {
-  margin-bottom: calc(4px * 2);
+.emotion-7 *,
+.emotion-7 *::before,
+.emotion-7 *::after {
+  box-sizing: inherit;
 }
 
-.components-panel__row .emotion-8 {
+.emotion-7 input[type='search']::-webkit-search-decoration,
+.emotion-7 input[type='search']::-webkit-search-cancel-button,
+.emotion-7 input[type='search']::-webkit-search-results-button,
+.emotion-7 input[type='search']::-webkit-search-results-decoration {
+  -webkit-appearance: none;
+}
+
+.emotion-7:not( :focus-within ) {
+  --wp-components-color-background: var(--wp-components-color-gray-100, #f0f0f0);
+}
+
+.components-panel__row .emotion-9 {
   margin-bottom: inherit;
 }
 
-.emotion-14 {
+.emotion-12 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: normal;
+  -webkit-box-align: normal;
+  -ms-flex-align: normal;
+  align-items: normal;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  gap: calc(4px * 2);
+  -webkit-box-pack: left;
+  -ms-flex-pack: left;
+  -webkit-justify-content: left;
+  justify-content: left;
+  box-sizing: border-box;
+  position: relative;
+  border-radius: 2px;
+  padding-top: 0;
+}
+
+.emotion-12>* {
+  min-height: 0;
+}
+
+.emotion-12:focus-within:not( :has( :is( .em5sgkm8, .emotion-21 ):focus-within ) ) .emotion-25 {
+  border-color: var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));
+  box-shadow: 0 0 0 0.5px var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));
+  outline: 2px solid transparent;
+  outline-offset: -2px;
+}
+
+.emotion-16 {
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  box-sizing: border-box;
+  border-radius: inherit;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
+  position: relative;
+  background-color: var(--wp-components-color-background, #fff);
+  width: 100%;
+}
+
+.emotion-18.emotion-18.emotion-18 {
+  background-color: transparent;
+  box-sizing: border-box;
+  border: none;
+  box-shadow: none!important;
+  color: var(--wp-components-color-foreground, #1e1e1e);
+  display: block;
+  font-family: inherit;
+  margin: 0;
+  outline: none;
+  width: 100%;
+  font-size: 16px;
+  height: 40px;
+  line-height: 1;
+  min-height: 40px;
+  padding-left: 12px;
+  padding-right: 12px;
+  -webkit-padding-end: calc(4px * 1);
+  padding-inline-end: calc(4px * 1);
+}
+
+@media ( min-width: 600px ) {
+  .emotion-18.emotion-18.emotion-18 {
+    font-size: 13px;
+  }
+}
+
+.emotion-18.emotion-18.emotion-18::-webkit-input-placeholder {
+  color: color-mix(in srgb, var(--wp-components-color-foreground, #1e1e1e), transparent 38%);
+}
+
+.emotion-18.emotion-18.emotion-18::-moz-placeholder {
+  color: color-mix(in srgb, var(--wp-components-color-foreground, #1e1e1e), transparent 38%);
+}
+
+.emotion-18.emotion-18.emotion-18:-ms-input-placeholder {
+  color: color-mix(in srgb, var(--wp-components-color-foreground, #1e1e1e), transparent 38%);
+}
+
+.emotion-18.emotion-18.emotion-18[type='email'],
+.emotion-18.emotion-18.emotion-18[type='url'] {
+  direction: ltr;
+}
+
+.emotion-20 {
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-align-self: stretch;
+  -ms-flex-item-align: stretch;
+  align-self: stretch;
+  box-sizing: border-box;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+.emotion-22 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-padding-end: calc(4px * 2);
+  padding-inline-end: calc(4px * 2);
+}
+
+.emotion-22 svg {
+  fill: currentColor;
+}
+
+.emotion-24.emotion-24.emotion-24 {
+  box-sizing: border-box;
+  border-color: transparent;
+  border-radius: inherit;
+  border-style: solid;
+  border-width: 1px;
+  bottom: 0;
+  left: 0;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  top: 0;
+  padding-left: 2px;
+}
+
+.emotion-26 {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.emotion-26 *,
+.emotion-26 *::before,
+.emotion-26 *::after {
+  box-sizing: inherit;
+}
+
+.emotion-30 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: flex-start;
+  -webkit-box-align: flex-start;
+  -ms-flex-align: flex-start;
+  align-items: flex-start;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  gap: 0;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: start;
+  justify-content: start;
+  width: 100%;
+}
+
+.emotion-30>* {
+  min-width: 0;
+}
+
+.emotion-32 {
   background: transparent;
   display: block;
   margin: 0!important;
@@ -1147,19 +1839,18 @@ exports[`Multi-Currency enabled currencies list currency search works with curre
   will-change: box-shadow;
   border-radius: inherit;
   bottom: 0;
-  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
   opacity: 1;
   left: 0;
   right: 0;
   top: 0;
-  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  border-radius: 2px;
+  border-radius: 8px;
 }
 
-@media ( prefers-reduced-motion: reduce ) {
-  .emotion-14 {
-    transition-duration: 0ms;
+@media not ( prefers-reduced-motion ) {
+  .emotion-32 {
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
   }
 }
 
@@ -1234,43 +1925,66 @@ exports[`Multi-Currency enabled currencies list currency search works with curre
                 class="add-currencies-task__search"
               >
                 <div
-                  class="components-base-control components-search-control emotion-6 emotion-7"
+                  class="components-base-control components-input-control components-search-control emotion-6 emotion-7 emotion-8"
                 >
                   <div
-                    class="components-base-control__field emotion-8 emotion-9"
+                    class="components-base-control__field emotion-9 emotion-10"
                   >
                     <div
-                      class="components-search-control__input-wrapper"
+                      class="components-flex components-input-base emotion-11 emotion-12 emotion-1"
+                      data-wp-c16t="true"
+                      data-wp-component="InputBase"
                     >
-                      <input
-                        autocomplete="off"
-                        class="components-search-control__input"
-                        id="components-search-control-3"
-                        placeholder="Search currencies"
-                        type="search"
-                        value="Danish krone"
-                      />
-                      <div
-                        class="components-search-control__icon"
+                      <label
+                        class="components-visually-hidden emotion-14 emotion-1"
+                        data-wp-c16t="true"
+                        data-wp-component="VisuallyHidden"
+                        for="components-search-control-3"
+                        style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
                       >
-                        <button
-                          aria-label="Reset search"
-                          class="components-button has-icon"
-                          type="button"
+                        Search
+                      </label>
+                      <div
+                        class="components-input-control__container emotion-16 emotion-17"
+                      >
+                        <input
+                          autocomplete="off"
+                          class="components-input-control__input emotion-18 emotion-19"
+                          id="components-search-control-3"
+                          placeholder="Search currencies"
+                          type="search"
+                          value="Danish krone"
+                        />
+                        <span
+                          class="components-input-control__suffix emotion-20 emotion-21"
                         >
-                          <svg
-                            aria-hidden="true"
-                            focusable="false"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            width="24"
-                            xmlns="http://www.w3.org/2000/svg"
+                          <div
+                            class="emotion-22 emotion-23"
                           >
-                            <path
-                              d="M12 13.06l3.712 3.713 1.061-1.06L13.061 12l3.712-3.712-1.06-1.06L12 10.938 8.288 7.227l-1.061 1.06L10.939 12l-3.712 3.712 1.06 1.061L12 13.061z"
-                            />
-                          </svg>
-                        </button>
+                            <button
+                              aria-label="Reset search"
+                              class="components-button is-small has-icon"
+                              type="button"
+                            >
+                              <svg
+                                aria-hidden="true"
+                                focusable="false"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                width="24"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M12 13.06l3.712 3.713 1.061-1.06L13.061 12l3.712-3.712-1.06-1.06L12 10.938 8.288 7.227l-1.061 1.06L10.939 12l-3.712 3.712 1.06 1.061L12 13.061z"
+                                />
+                              </svg>
+                            </button>
+                          </div>
+                        </span>
+                        <div
+                          aria-hidden="true"
+                          class="components-input-control__backdrop emotion-24 emotion-25"
+                        />
                       </div>
                     </div>
                   </div>
@@ -1290,44 +2004,50 @@ exports[`Multi-Currency enabled currencies list currency search works with curre
                     class="enabled-currency-checkbox"
                   >
                     <div
-                      class="components-base-control components-checkbox-control emotion-6 emotion-7"
+                      class="components-base-control components-checkbox-control emotion-26 emotion-8"
                     >
                       <div
-                        class="components-base-control__field emotion-8 emotion-9"
+                        class="components-base-control__field emotion-9 emotion-10"
                       >
-                        <span
-                          class="components-checkbox-control__input-container"
-                        >
-                          <input
-                            class="components-checkbox-control__input"
-                            code="DKK"
-                            id="inspector-checkbox-control-41"
-                            type="checkbox"
-                            value="1"
-                          />
-                        </span>
-                        <label
-                          class="components-checkbox-control__label"
-                          for="inspector-checkbox-control-41"
+                        <div
+                          class="components-flex components-h-stack emotion-30 emotion-1"
+                          data-wp-c16t="true"
+                          data-wp-component="HStack"
                         >
                           <span
-                            class="enabled-currency-checkbox__flag"
+                            class="components-checkbox-control__input-container"
                           >
-                            🇩🇰
+                            <input
+                              class="components-checkbox-control__input"
+                              code="DKK"
+                              id="inspector-checkbox-control-41"
+                              type="checkbox"
+                              value="1"
+                            />
                           </span>
-                           
-                          <span>
-                            Danish krone
-                          </span>
-                           
-                          <span
-                            class="enabled-currency-checkbox__code"
+                          <label
+                            class="components-checkbox-control__label"
+                            for="inspector-checkbox-control-41"
                           >
-                            (
-                            DKK
-                            )
-                          </span>
-                        </label>
+                            <span
+                              class="enabled-currency-checkbox__flag"
+                            >
+                              🇩🇰
+                            </span>
+                             
+                            <span>
+                              Danish krone
+                            </span>
+                             
+                            <span
+                              class="enabled-currency-checkbox__code"
+                            >
+                              (
+                              DKK
+                              )
+                            </span>
+                          </label>
+                        </div>
                       </div>
                     </div>
                   </li>
@@ -1337,19 +2057,19 @@ exports[`Multi-Currency enabled currencies list currency search works with curre
           </div>
           <div
             aria-hidden="true"
-            class="components-elevation emotion-14 emotion-1"
+            class="components-elevation emotion-32 emotion-1"
             data-wp-c16t="true"
             data-wp-component="Elevation"
           />
           <div
             aria-hidden="true"
-            class="components-elevation emotion-14 emotion-1"
+            class="components-elevation emotion-32 emotion-1"
             data-wp-c16t="true"
             data-wp-component="Elevation"
           />
         </div>
         <button
-          class="components-button is-primary"
+          class="components-button is-next-40px-default-size is-primary"
           type="button"
         >
           Add 6 currencies
@@ -1367,7 +2087,7 @@ exports[`Multi-Currency enabled currencies list currency search works with curre
   position: relative;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
   outline: none;
-  border-radius: calc(2px - 1px);
+  border-radius: calc(8px - 1px);
 }
 
 .emotion-2 {
@@ -1382,29 +2102,221 @@ exports[`Multi-Currency enabled currencies list currency search works with curre
 }
 
 .emotion-4:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-4:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
-.emotion-6 {
+.emotion-7 {
   font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
   font-size: 13px;
+  box-sizing: border-box;
 }
 
-.emotion-8 {
-  margin-bottom: calc(4px * 2);
+.emotion-7 *,
+.emotion-7 *::before,
+.emotion-7 *::after {
+  box-sizing: inherit;
 }
 
-.components-panel__row .emotion-8 {
+.emotion-7 input[type='search']::-webkit-search-decoration,
+.emotion-7 input[type='search']::-webkit-search-cancel-button,
+.emotion-7 input[type='search']::-webkit-search-results-button,
+.emotion-7 input[type='search']::-webkit-search-results-decoration {
+  -webkit-appearance: none;
+}
+
+.emotion-7:not( :focus-within ) {
+  --wp-components-color-background: var(--wp-components-color-gray-100, #f0f0f0);
+}
+
+.components-panel__row .emotion-9 {
   margin-bottom: inherit;
 }
 
-.emotion-14 {
+.emotion-12 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: normal;
+  -webkit-box-align: normal;
+  -ms-flex-align: normal;
+  align-items: normal;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  gap: calc(4px * 2);
+  -webkit-box-pack: left;
+  -ms-flex-pack: left;
+  -webkit-justify-content: left;
+  justify-content: left;
+  box-sizing: border-box;
+  position: relative;
+  border-radius: 2px;
+  padding-top: 0;
+}
+
+.emotion-12>* {
+  min-height: 0;
+}
+
+.emotion-12:focus-within:not( :has( :is( .em5sgkm8, .emotion-21 ):focus-within ) ) .emotion-25 {
+  border-color: var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));
+  box-shadow: 0 0 0 0.5px var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));
+  outline: 2px solid transparent;
+  outline-offset: -2px;
+}
+
+.emotion-16 {
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  box-sizing: border-box;
+  border-radius: inherit;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
+  position: relative;
+  background-color: var(--wp-components-color-background, #fff);
+  width: 100%;
+}
+
+.emotion-18.emotion-18.emotion-18 {
+  background-color: transparent;
+  box-sizing: border-box;
+  border: none;
+  box-shadow: none!important;
+  color: var(--wp-components-color-foreground, #1e1e1e);
+  display: block;
+  font-family: inherit;
+  margin: 0;
+  outline: none;
+  width: 100%;
+  font-size: 16px;
+  height: 40px;
+  line-height: 1;
+  min-height: 40px;
+  padding-left: 12px;
+  padding-right: 12px;
+  -webkit-padding-end: calc(4px * 1);
+  padding-inline-end: calc(4px * 1);
+}
+
+@media ( min-width: 600px ) {
+  .emotion-18.emotion-18.emotion-18 {
+    font-size: 13px;
+  }
+}
+
+.emotion-18.emotion-18.emotion-18::-webkit-input-placeholder {
+  color: color-mix(in srgb, var(--wp-components-color-foreground, #1e1e1e), transparent 38%);
+}
+
+.emotion-18.emotion-18.emotion-18::-moz-placeholder {
+  color: color-mix(in srgb, var(--wp-components-color-foreground, #1e1e1e), transparent 38%);
+}
+
+.emotion-18.emotion-18.emotion-18:-ms-input-placeholder {
+  color: color-mix(in srgb, var(--wp-components-color-foreground, #1e1e1e), transparent 38%);
+}
+
+.emotion-18.emotion-18.emotion-18[type='email'],
+.emotion-18.emotion-18.emotion-18[type='url'] {
+  direction: ltr;
+}
+
+.emotion-20 {
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-align-self: stretch;
+  -ms-flex-item-align: stretch;
+  align-self: stretch;
+  box-sizing: border-box;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+.emotion-22 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-padding-end: calc(4px * 2);
+  padding-inline-end: calc(4px * 2);
+}
+
+.emotion-22 svg {
+  fill: currentColor;
+}
+
+.emotion-24.emotion-24.emotion-24 {
+  box-sizing: border-box;
+  border-color: transparent;
+  border-radius: inherit;
+  border-style: solid;
+  border-width: 1px;
+  bottom: 0;
+  left: 0;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  top: 0;
+  padding-left: 2px;
+}
+
+.emotion-26 {
+  font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.emotion-26 *,
+.emotion-26 *::before,
+.emotion-26 *::after {
+  box-sizing: inherit;
+}
+
+.emotion-30 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: flex-start;
+  -webkit-box-align: flex-start;
+  -ms-flex-align: flex-start;
+  align-items: flex-start;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  gap: 0;
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: start;
+  justify-content: start;
+  width: 100%;
+}
+
+.emotion-30>* {
+  min-width: 0;
+}
+
+.emotion-32 {
   background: transparent;
   display: block;
   margin: 0!important;
@@ -1413,19 +2325,18 @@ exports[`Multi-Currency enabled currencies list currency search works with curre
   will-change: box-shadow;
   border-radius: inherit;
   bottom: 0;
-  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
   opacity: 1;
   left: 0;
   right: 0;
   top: 0;
-  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  border-radius: 2px;
+  border-radius: 8px;
 }
 
-@media ( prefers-reduced-motion: reduce ) {
-  .emotion-14 {
-    transition-duration: 0ms;
+@media not ( prefers-reduced-motion ) {
+  .emotion-32 {
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
   }
 }
 
@@ -1500,43 +2411,66 @@ exports[`Multi-Currency enabled currencies list currency search works with curre
                 class="add-currencies-task__search"
               >
                 <div
-                  class="components-base-control components-search-control emotion-6 emotion-7"
+                  class="components-base-control components-input-control components-search-control emotion-6 emotion-7 emotion-8"
                 >
                   <div
-                    class="components-base-control__field emotion-8 emotion-9"
+                    class="components-base-control__field emotion-9 emotion-10"
                   >
                     <div
-                      class="components-search-control__input-wrapper"
+                      class="components-flex components-input-base emotion-11 emotion-12 emotion-1"
+                      data-wp-c16t="true"
+                      data-wp-component="InputBase"
                     >
-                      <input
-                        autocomplete="off"
-                        class="components-search-control__input"
-                        id="components-search-control-5"
-                        placeholder="Search currencies"
-                        type="search"
-                        value="€"
-                      />
-                      <div
-                        class="components-search-control__icon"
+                      <label
+                        class="components-visually-hidden emotion-14 emotion-1"
+                        data-wp-c16t="true"
+                        data-wp-component="VisuallyHidden"
+                        for="components-search-control-5"
+                        style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
                       >
-                        <button
-                          aria-label="Reset search"
-                          class="components-button has-icon"
-                          type="button"
+                        Search
+                      </label>
+                      <div
+                        class="components-input-control__container emotion-16 emotion-17"
+                      >
+                        <input
+                          autocomplete="off"
+                          class="components-input-control__input emotion-18 emotion-19"
+                          id="components-search-control-5"
+                          placeholder="Search currencies"
+                          type="search"
+                          value="€"
+                        />
+                        <span
+                          class="components-input-control__suffix emotion-20 emotion-21"
                         >
-                          <svg
-                            aria-hidden="true"
-                            focusable="false"
-                            height="24"
-                            viewBox="0 0 24 24"
-                            width="24"
-                            xmlns="http://www.w3.org/2000/svg"
+                          <div
+                            class="emotion-22 emotion-23"
                           >
-                            <path
-                              d="M12 13.06l3.712 3.713 1.061-1.06L13.061 12l3.712-3.712-1.06-1.06L12 10.938 8.288 7.227l-1.061 1.06L10.939 12l-3.712 3.712 1.06 1.061L12 13.061z"
-                            />
-                          </svg>
-                        </button>
+                            <button
+                              aria-label="Reset search"
+                              class="components-button is-small has-icon"
+                              type="button"
+                            >
+                              <svg
+                                aria-hidden="true"
+                                focusable="false"
+                                height="24"
+                                viewBox="0 0 24 24"
+                                width="24"
+                                xmlns="http://www.w3.org/2000/svg"
+                              >
+                                <path
+                                  d="M12 13.06l3.712 3.713 1.061-1.06L13.061 12l3.712-3.712-1.06-1.06L12 10.938 8.288 7.227l-1.061 1.06L10.939 12l-3.712 3.712 1.06 1.061L12 13.061z"
+                                />
+                              </svg>
+                            </button>
+                          </div>
+                        </span>
+                        <div
+                          aria-hidden="true"
+                          class="components-input-control__backdrop emotion-24 emotion-25"
+                        />
                       </div>
                     </div>
                   </div>
@@ -1556,60 +2490,66 @@ exports[`Multi-Currency enabled currencies list currency search works with curre
                     class="enabled-currency-checkbox"
                   >
                     <div
-                      class="components-base-control components-checkbox-control emotion-6 emotion-7"
+                      class="components-base-control components-checkbox-control emotion-26 emotion-8"
                     >
                       <div
-                        class="components-base-control__field emotion-8 emotion-9"
+                        class="components-base-control__field emotion-9 emotion-10"
                       >
-                        <span
-                          class="components-checkbox-control__input-container"
+                        <div
+                          class="components-flex components-h-stack emotion-30 emotion-1"
+                          data-wp-c16t="true"
+                          data-wp-component="HStack"
                         >
-                          <input
-                            checked=""
-                            class="components-checkbox-control__input"
-                            code="EUR"
-                            id="inspector-checkbox-control-66"
-                            type="checkbox"
-                            value="1"
-                          />
-                          <svg
-                            aria-hidden="true"
-                            class="components-checkbox-control__checked"
-                            focusable="false"
-                            height="24"
-                            role="presentation"
-                            viewBox="0 0 24 24"
-                            width="24"
-                            xmlns="http://www.w3.org/2000/svg"
+                          <span
+                            class="components-checkbox-control__input-container"
                           >
-                            <path
-                              d="M16.7 7.1l-6.3 8.5-3.3-2.5-.9 1.2 4.5 3.4L17.9 8z"
+                            <input
+                              checked=""
+                              class="components-checkbox-control__input"
+                              code="EUR"
+                              id="inspector-checkbox-control-66"
+                              type="checkbox"
+                              value="1"
                             />
-                          </svg>
-                        </span>
-                        <label
-                          class="components-checkbox-control__label"
-                          for="inspector-checkbox-control-66"
-                        >
-                          <span
-                            class="enabled-currency-checkbox__flag"
+                            <svg
+                              aria-hidden="true"
+                              class="components-checkbox-control__checked"
+                              focusable="false"
+                              height="24"
+                              role="presentation"
+                              viewBox="0 0 24 24"
+                              width="24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M16.7 7.1l-6.3 8.5-3.3-2.5-.9 1.2 4.5 3.4L17.9 8z"
+                              />
+                            </svg>
+                          </span>
+                          <label
+                            class="components-checkbox-control__label"
+                            for="inspector-checkbox-control-66"
                           >
-                            🇪🇺
-                          </span>
-                           
-                          <span>
-                            Euro
-                          </span>
-                           
-                          <span
-                            class="enabled-currency-checkbox__code"
-                          >
-                            (
-                            €
-                             EUR
-                            )
-                          </span>
-                        </label>
+                            <span
+                              class="enabled-currency-checkbox__flag"
+                            >
+                              🇪🇺
+                            </span>
+                             
+                            <span>
+                              Euro
+                            </span>
+                             
+                            <span
+                              class="enabled-currency-checkbox__code"
+                            >
+                              (
+                              €
+                               EUR
+                              )
+                            </span>
+                          </label>
+                        </div>
                       </div>
                     </div>
                   </li>
@@ -1619,19 +2559,19 @@ exports[`Multi-Currency enabled currencies list currency search works with curre
           </div>
           <div
             aria-hidden="true"
-            class="components-elevation emotion-14 emotion-1"
+            class="components-elevation emotion-32 emotion-1"
             data-wp-c16t="true"
             data-wp-component="Elevation"
           />
           <div
             aria-hidden="true"
-            class="components-elevation emotion-14 emotion-1"
+            class="components-elevation emotion-32 emotion-1"
             data-wp-c16t="true"
             data-wp-component="Elevation"
           />
         </div>
         <button
-          class="components-button is-primary"
+          class="components-button is-next-40px-default-size is-primary"
           type="button"
         >
           Add 6 currencies
@@ -1649,7 +2589,7 @@ exports[`Multi-Currency enabled currencies list should hide recommended currenci
   position: relative;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
   outline: none;
-  border-radius: calc(2px - 1px);
+  border-radius: calc(8px - 1px);
 }
 
 .emotion-2 {
@@ -1664,29 +2604,185 @@ exports[`Multi-Currency enabled currencies list should hide recommended currenci
 }
 
 .emotion-4:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-4:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
-.emotion-6 {
+.emotion-7 {
   font-family: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Oxygen-Sans,Ubuntu,Cantarell,'Helvetica Neue',sans-serif;
   font-size: 13px;
+  box-sizing: border-box;
 }
 
-.emotion-8 {
-  margin-bottom: calc(4px * 2);
+.emotion-7 *,
+.emotion-7 *::before,
+.emotion-7 *::after {
+  box-sizing: inherit;
 }
 
-.components-panel__row .emotion-8 {
+.emotion-7 input[type='search']::-webkit-search-decoration,
+.emotion-7 input[type='search']::-webkit-search-cancel-button,
+.emotion-7 input[type='search']::-webkit-search-results-button,
+.emotion-7 input[type='search']::-webkit-search-results-decoration {
+  -webkit-appearance: none;
+}
+
+.emotion-7:not( :focus-within ) {
+  --wp-components-color-background: var(--wp-components-color-gray-100, #f0f0f0);
+}
+
+.components-panel__row .emotion-9 {
   margin-bottom: inherit;
 }
 
-.emotion-10 {
+.emotion-12 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: normal;
+  -webkit-box-align: normal;
+  -ms-flex-align: normal;
+  align-items: normal;
+  -webkit-flex-direction: column;
+  -ms-flex-direction: column;
+  flex-direction: column;
+  gap: calc(4px * 2);
+  -webkit-box-pack: left;
+  -ms-flex-pack: left;
+  -webkit-justify-content: left;
+  justify-content: left;
+  box-sizing: border-box;
+  position: relative;
+  border-radius: 2px;
+  padding-top: 0;
+}
+
+.emotion-12>* {
+  min-height: 0;
+}
+
+.emotion-12:focus-within:not( :has( :is( .em5sgkm8, .emotion-21 ):focus-within ) ) .emotion-25 {
+  border-color: var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));
+  box-shadow: 0 0 0 0.5px var(--wp-components-color-accent, var(--wp-admin-theme-color, #3858e9));
+  outline: 2px solid transparent;
+  outline-offset: -2px;
+}
+
+.emotion-16 {
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  box-sizing: border-box;
+  border-radius: inherit;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-flex: 1;
+  -ms-flex: 1;
+  flex: 1;
+  position: relative;
+  background-color: var(--wp-components-color-background, #fff);
+  width: 100%;
+}
+
+.emotion-18.emotion-18.emotion-18 {
+  background-color: transparent;
+  box-sizing: border-box;
+  border: none;
+  box-shadow: none!important;
+  color: var(--wp-components-color-foreground, #1e1e1e);
+  display: block;
+  font-family: inherit;
+  margin: 0;
+  outline: none;
+  width: 100%;
+  font-size: 16px;
+  height: 40px;
+  line-height: 1;
+  min-height: 40px;
+  padding-left: 12px;
+  padding-right: 12px;
+  -webkit-padding-end: calc(4px * 1);
+  padding-inline-end: calc(4px * 1);
+}
+
+@media ( min-width: 600px ) {
+  .emotion-18.emotion-18.emotion-18 {
+    font-size: 13px;
+  }
+}
+
+.emotion-18.emotion-18.emotion-18::-webkit-input-placeholder {
+  color: color-mix(in srgb, var(--wp-components-color-foreground, #1e1e1e), transparent 38%);
+}
+
+.emotion-18.emotion-18.emotion-18::-moz-placeholder {
+  color: color-mix(in srgb, var(--wp-components-color-foreground, #1e1e1e), transparent 38%);
+}
+
+.emotion-18.emotion-18.emotion-18:-ms-input-placeholder {
+  color: color-mix(in srgb, var(--wp-components-color-foreground, #1e1e1e), transparent 38%);
+}
+
+.emotion-18.emotion-18.emotion-18[type='email'],
+.emotion-18.emotion-18.emotion-18[type='url'] {
+  direction: ltr;
+}
+
+.emotion-20 {
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-align-self: stretch;
+  -ms-flex-item-align: stretch;
+  align-self: stretch;
+  box-sizing: border-box;
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+}
+
+.emotion-22 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-padding-end: calc(4px * 2);
+  padding-inline-end: calc(4px * 2);
+}
+
+.emotion-22 svg {
+  fill: currentColor;
+}
+
+.emotion-24.emotion-24.emotion-24 {
+  box-sizing: border-box;
+  border-color: transparent;
+  border-radius: inherit;
+  border-style: solid;
+  border-width: 1px;
+  bottom: 0;
+  left: 0;
+  margin: 0;
+  padding: 0;
+  pointer-events: none;
+  position: absolute;
+  right: 0;
+  top: 0;
+  padding-left: 2px;
+}
+
+.emotion-26 {
   background: transparent;
   display: block;
   margin: 0!important;
@@ -1695,19 +2791,18 @@ exports[`Multi-Currency enabled currencies list should hide recommended currenci
   will-change: box-shadow;
   border-radius: inherit;
   bottom: 0;
-  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
   opacity: 1;
   left: 0;
   right: 0;
   top: 0;
-  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  border-radius: 2px;
+  border-radius: 8px;
 }
 
-@media ( prefers-reduced-motion: reduce ) {
-  .emotion-10 {
-    transition-duration: 0ms;
+@media not ( prefers-reduced-motion ) {
+  .emotion-26 {
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
   }
 }
 
@@ -1791,37 +2886,60 @@ exports[`Multi-Currency enabled currencies list should hide recommended currenci
                 class="add-currencies-task__search"
               >
                 <div
-                  class="components-base-control components-search-control emotion-6 emotion-7"
+                  class="components-base-control components-input-control components-search-control emotion-6 emotion-7 emotion-8"
                 >
                   <div
-                    class="components-base-control__field emotion-8 emotion-9"
+                    class="components-base-control__field emotion-9 emotion-10"
                   >
                     <div
-                      class="components-search-control__input-wrapper"
+                      class="components-flex components-input-base emotion-11 emotion-12 emotion-1"
+                      data-wp-c16t="true"
+                      data-wp-component="InputBase"
                     >
-                      <input
-                        autocomplete="off"
-                        class="components-search-control__input"
-                        id="components-search-control-8"
-                        placeholder="Search currencies"
-                        type="search"
-                        value=""
-                      />
-                      <div
-                        class="components-search-control__icon"
+                      <label
+                        class="components-visually-hidden emotion-14 emotion-1"
+                        data-wp-c16t="true"
+                        data-wp-component="VisuallyHidden"
+                        for="components-search-control-8"
+                        style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
                       >
-                        <svg
-                          aria-hidden="true"
-                          focusable="false"
-                          height="24"
-                          viewBox="0 0 24 24"
-                          width="24"
-                          xmlns="http://www.w3.org/2000/svg"
+                        Search
+                      </label>
+                      <div
+                        class="components-input-control__container emotion-16 emotion-17"
+                      >
+                        <input
+                          autocomplete="off"
+                          class="components-input-control__input emotion-18 emotion-19"
+                          id="components-search-control-8"
+                          placeholder="Search currencies"
+                          type="search"
+                          value=""
+                        />
+                        <span
+                          class="components-input-control__suffix emotion-20 emotion-21"
                         >
-                          <path
-                            d="M13.5 6C10.5 6 8 8.5 8 11.5c0 1.1.3 2.1.9 3l-3.4 3 1 1.1 3.4-2.9c1 .9 2.2 1.4 3.6 1.4 3 0 5.5-2.5 5.5-5.5C19 8.5 16.5 6 13.5 6zm0 9.5c-2.2 0-4-1.8-4-4s1.8-4 4-4 4 1.8 4 4-1.8 4-4 4z"
-                          />
-                        </svg>
+                          <div
+                            class="emotion-22 emotion-23"
+                          >
+                            <svg
+                              aria-hidden="true"
+                              focusable="false"
+                              height="24"
+                              viewBox="0 0 24 24"
+                              width="24"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                d="M13 5c-3.3 0-6 2.7-6 6 0 1.4.5 2.7 1.3 3.7l-3.8 3.8 1.1 1.1 3.8-3.8c1 .8 2.3 1.3 3.7 1.3 3.3 0 6-2.7 6-6S16.3 5 13 5zm0 10.5c-2.5 0-4.5-2-4.5-4.5s2-4.5 4.5-4.5 4.5 2 4.5 4.5-2 4.5-4.5 4.5z"
+                              />
+                            </svg>
+                          </div>
+                        </span>
+                        <div
+                          aria-hidden="true"
+                          class="components-input-control__backdrop emotion-24 emotion-25"
+                        />
                       </div>
                     </div>
                   </div>
@@ -1847,19 +2965,19 @@ exports[`Multi-Currency enabled currencies list should hide recommended currenci
           </div>
           <div
             aria-hidden="true"
-            class="components-elevation emotion-10 emotion-1"
+            class="components-elevation emotion-26 emotion-1"
             data-wp-c16t="true"
             data-wp-component="Elevation"
           />
           <div
             aria-hidden="true"
-            class="components-elevation emotion-10 emotion-1"
+            class="components-elevation emotion-26 emotion-1"
             data-wp-c16t="true"
             data-wp-component="Elevation"
           />
         </div>
         <button
-          class="components-button is-primary"
+          class="components-button is-next-40px-default-size is-primary"
           type="button"
         >
           Continue

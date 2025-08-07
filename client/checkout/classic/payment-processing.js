@@ -284,6 +284,7 @@ async function createStripePaymentElement(
 		wallets: {
 			applePay: 'never',
 			googlePay: 'never',
+			link: 'never',
 		},
 	} );
 

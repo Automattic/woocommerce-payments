@@ -95,14 +95,6 @@ exports[`Test mode notification Returns valid component for loans page 1`] = `
 `;
 
 exports[`Test mode notification Returns valid component for overview page 1`] = `
-.emotion-2 {
-  width: 1em;
-  height: 1em;
-  margin: 0;
-  vertical-align: middle;
-  fill: currentColor;
-}
-
 <div>
   <div
     class="wcpay-banner-notice is-warning"
@@ -120,28 +112,17 @@ exports[`Test mode notification Returns valid component for overview page 1`] = 
         rel="external noreferrer noopener"
         target="_blank"
       >
-        Learn more
         <span
-          class="components-visually-hidden emotion-0 emotion-1"
-          data-wp-c16t="true"
-          data-wp-component="VisuallyHidden"
-          style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+          class="components-external-link__contents"
         >
-          (opens in a new tab)
+          Learn more
         </span>
-        <svg
-          aria-hidden="true"
-          class="components-external-link__icon emotion-2 emotion-3"
-          focusable="false"
-          height="24"
-          viewBox="0 0 24 24"
-          width="24"
-          xmlns="http://www.w3.org/2000/svg"
+        <span
+          aria-label="(opens in a new tab)"
+          class="components-external-link__icon"
         >
-          <path
-            d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
-          />
-        </svg>
+          ↗
+        </span>
       </a>
     </div>
   </div>
