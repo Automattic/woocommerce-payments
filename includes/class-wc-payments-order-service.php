@@ -162,6 +162,13 @@ class WC_Payments_Order_Service {
 	const WCPAY_MULTIBANCO_URL_META_KEY = '_wcpay_multibanco_url';
 
 	/**
+	 * Meta key for cached payment method details.
+	 *
+	 * @const string
+	 */
+	const PAYMENT_METHOD_DETAILS_META_KEY = '_wcpay_payment_method_details';
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
 	 * @var WC_Payments_API_Client
@@ -962,8 +969,17 @@ class WC_Payments_Order_Service {
 		$payment_transaction_id = $payment_transaction['id'] ?? '';
 		$outcome                = $charge ? $charge->get_outcome() : null;
 		$risk_level             = $outcome ? $outcome['risk_level'] : null;
+
 		// next, save it in order meta.
 		$this->attach_intent_info_to_order__legacy( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency, $payment_transaction_id, $risk_level );
+
+		// Store payment method details when available.
+		if ( null !== $charge ) {
+			$payment_method_details = $charge->get_payment_method_details();
+			if ( $payment_method_details ) {
+				$this->store_payment_method_details( $order, $payment_method_details );
+			}
+		}
 	}
 
 	/**
@@ -2334,6 +2350,32 @@ class WC_Payments_Order_Service {
 			'url'       => $order->get_meta( self::WCPAY_MULTIBANCO_URL_META_KEY ),
 			'expiry'    => $order->get_meta( self::WCPAY_MULTIBANCO_EXPIRY_META_KEY ),
 		];
+	}
+
+	/**
+	 * Store payment method details in the order meta.
+	 *
+	 * @param  WC_Order $order                  The order.
+	 * @param  array    $payment_method_details The payment method details.
+	 * @return void
+	 */
+	public function store_payment_method_details( WC_Order $order, array $payment_method_details ): void {
+		$order->update_meta_data( self::PAYMENT_METHOD_DETAILS_META_KEY, wp_json_encode( $payment_method_details ) );
+		$order->save_meta_data();
+	}
+
+	/**
+	 * Get cached payment method details from the order meta.
+	 *
+	 * @param  WC_Order $order The order.
+	 * @return array           The payment method details.
+	 */
+	public function get_payment_method_details( WC_Order $order ): ?array {
+		$json = $order->get_meta( self::PAYMENT_METHOD_DETAILS_META_KEY );
+		if ( '' === $json ) {
+			return null;
+		}
+		return json_decode( $json, true );
 	}
 
 	/**
