@@ -64,38 +64,47 @@ jobs:
           # Create optimized matrix with selective PHP version testing
           # Build matrix dynamically based on WC versions
 
+          # Define common values to reduce repetition
+          PHP_LEGACY="7.4"
+          PHP_STABLE="8.3"
+          PHP_LATEST="8.4"
+          TEST_GROUPS_WCPAY="wcpay"
+          TEST_GROUPS_SUBSCRIPTIONS="subscriptions"
+          TEST_BRANCHES_MERCHANT="merchant"
+          TEST_BRANCHES_SHOPPER="shopper"
+
           # Initialize empty matrix array
           MATRIX_ENTRIES=()
 
           # Add WC 7.7.0 with PHP 7.4 only (legacy)
-          MATRIX_ENTRIES+=('{"woocommerce":"7.7.0","php":"7.4","test_groups":"wcpay","test_branches":"merchant"}')
-          MATRIX_ENTRIES+=('{"woocommerce":"7.7.0","php":"7.4","test_groups":"wcpay","test_branches":"shopper"}')
-          MATRIX_ENTRIES+=('{"woocommerce":"7.7.0","php":"7.4","test_groups":"subscriptions","test_branches":"merchant"}')
-          MATRIX_ENTRIES+=('{"woocommerce":"7.7.0","php":"7.4","test_groups":"subscriptions","test_branches":"shopper"}')
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
 
           # Add L-1 version with PHP 8.1 only
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"8.1\",\"test_groups\":\"wcpay\",\"test_branches\":\"merchant\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"8.1\",\"test_groups\":\"wcpay\",\"test_branches\":\"shopper\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"8.1\",\"test_groups\":\"subscriptions\",\"test_branches\":\"merchant\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"8.1\",\"test_groups\":\"subscriptions\",\"test_branches\":\"shopper\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
 
           # Add latest with PHP 8.1 only
-          MATRIX_ENTRIES+=('{"woocommerce":"latest","php":"8.1","test_groups":"wcpay","test_branches":"merchant"}')
-          MATRIX_ENTRIES+=('{"woocommerce":"latest","php":"8.1","test_groups":"wcpay","test_branches":"shopper"}')
-          MATRIX_ENTRIES+=('{"woocommerce":"latest","php":"8.1","test_groups":"subscriptions","test_branches":"merchant"}')
-          MATRIX_ENTRIES+=('{"woocommerce":"latest","php":"8.1","test_groups":"subscriptions","test_branches":"shopper"}')
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
 
           # Add beta with PHP 8.1 only
-          MATRIX_ENTRIES+=('{"woocommerce":"beta","php":"8.1","test_groups":"wcpay","test_branches":"merchant"}')
-          MATRIX_ENTRIES+=('{"woocommerce":"beta","php":"8.1","test_groups":"wcpay","test_branches":"shopper"}')
-          MATRIX_ENTRIES+=('{"woocommerce":"beta","php":"8.1","test_groups":"subscriptions","test_branches":"merchant"}')
-          MATRIX_ENTRIES+=('{"woocommerce":"beta","php":"8.1","test_groups":"subscriptions","test_branches":"shopper"}')
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"beta\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"beta\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"beta\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"beta\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
 
           # Add rc with PHP 8.2 only
-          MATRIX_ENTRIES+=('{"woocommerce":"rc","php":"8.2","test_groups":"wcpay","test_branches":"merchant"}')
-          MATRIX_ENTRIES+=('{"woocommerce":"rc","php":"8.2","test_groups":"wcpay","test_branches":"shopper"}')
-          MATRIX_ENTRIES+=('{"woocommerce":"rc","php":"8.2","test_groups":"subscriptions","test_branches":"merchant"}')
-          MATRIX_ENTRIES+=('{"woocommerce":"rc","php":"8.2","test_groups":"subscriptions","test_branches":"shopper"}')
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"rc\",\"php\":\"$PHP_LATEST\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"rc\",\"php\":\"$PHP_LATEST\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"rc\",\"php\":\"$PHP_LATEST\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"rc\",\"php\":\"$PHP_LATEST\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
 
           # Convert array to JSON
           MATRIX_INCLUDE=$(printf '%s\n' "${MATRIX_ENTRIES[@]}" | jq -s . -c)
