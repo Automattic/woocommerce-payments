@@ -70,7 +70,5 @@ done
 # Add latest, beta, rc
 VERSIONS+=("latest" "beta" "rc")
 
-# Convert to JSON array
-WC_VERSIONS_JSON=$(printf '%s\n' "${VERSIONS[@]}" | jq -R . | jq -s .)
-
-echo "$WC_VERSIONS_JSON"
+# Convert to JSON array and output only the JSON (no extra whitespace or newlines)
+printf '%s\n' "${VERSIONS[@]}" | jq -R . | jq -s . -c
