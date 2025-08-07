@@ -73,7 +73,7 @@ jobs:
           MATRIX_ENTRIES+=('{"woocommerce":"7.7.0","php":"7.4","test_groups":"subscriptions","test_branches":"merchant"}')
           MATRIX_ENTRIES+=('{"woocommerce":"7.7.0","php":"7.4","test_groups":"subscriptions","test_branches":"shopper"}')
 
-          # Add L-1 version (9.9.5) with PHP 8.1 only
+          # Add L-1 version with PHP 8.1 only
           MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"8.1\",\"test_groups\":\"wcpay\",\"test_branches\":\"merchant\"}")
           MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"8.1\",\"test_groups\":\"wcpay\",\"test_branches\":\"shopper\"}")
           MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"8.1\",\"test_groups\":\"subscriptions\",\"test_branches\":\"merchant\"}")
