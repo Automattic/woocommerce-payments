@@ -49,7 +49,7 @@ Single JSON object containing versions array and metadata:
 
 The workflow uses an optimized PHP version strategy to reduce job count while maintaining comprehensive coverage:
 
-- **WC 7.7.0**: PHP 7.4 (legacy support)
+- **WC 7.7.0**: PHP 7.3 (legacy support)
 - **WC 9.9.5 (L-1)**: PHP 8.3 (stable)
 - **WC latest**: PHP 8.3 (stable)
 - **WC beta**: PHP 8.3 (stable) - only when available

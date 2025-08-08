@@ -96,7 +96,7 @@ jobs:
           # Build matrix dynamically based on WC versions
 
           # Define common values to reduce repetition
-          PHP_LEGACY="7.4"
+          PHP_LEGACY="7.3"
           PHP_STABLE="8.3"
           PHP_LATEST="8.4"
           TEST_GROUPS_WCPAY="wcpay"
@@ -107,7 +107,7 @@ jobs:
           # Initialize empty matrix array
           MATRIX_ENTRIES=()
 
-          # Add WC 7.7.0 with PHP 7.4 only (legacy)
+          # Add WC 7.7.0 with PHP 7.3 only (legacy)
           MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
           MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
           MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
