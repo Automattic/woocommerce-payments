@@ -83,9 +83,12 @@ echo "Latest beta version: $LATEST_BETA_VERSION" >&2
 # Build the version array
 VERSIONS=("7.7.0")  # Keep for business reasons (significant TPV)
 
-# Add major versions latest stable
+# Add major versions latest stable (excluding current major since we'll use 'latest')
 for version in "${MAJOR_VERSIONS[@]}"; do
-    VERSIONS+=("$version")
+    # Skip the current major version since we'll use 'latest' instead
+    if [[ "$version" != "$LATEST_WC_VERSION" ]]; then
+        VERSIONS+=("$version")
+    fi
 done
 
 # Add latest, beta, rc (with actual versions)
