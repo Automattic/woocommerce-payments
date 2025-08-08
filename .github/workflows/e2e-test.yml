@@ -41,16 +41,13 @@ jobs:
         id: generate_matrix
         run: |
           # Use dynamic script to get WooCommerce versions (L-1 policy)
-          # Run script once and capture both stdout and stderr
-          SCRIPT_OUTPUT=$( .github/scripts/generate-wc-matrix.sh 2>&1 )
-          WC_VERSIONS=$(echo "$SCRIPT_OUTPUT" | tail -n 1)
-          L1_VERSION=$(echo "$SCRIPT_OUTPUT" | grep "L-1 version:" | cut -d' ' -f3)
+          SCRIPT_RESULT=$( .github/scripts/generate-wc-matrix.sh )
 
-          # Extract RC version from script output (last element in array)
-          RC_VERSION=$(echo "$WC_VERSIONS" | jq -r '.[-1]')  # Last element
-
-          # Extract beta version from script output (check if it exists)
-          BETA_VERSION=$(echo "$SCRIPT_OUTPUT" | grep "Latest beta version:" | cut -d' ' -f4)
+          # Extract versions and metadata from JSON
+          WC_VERSIONS=$(echo "$SCRIPT_RESULT" | jq -r '.versions')
+          L1_VERSION=$(echo "$SCRIPT_RESULT" | jq -r '.metadata.l1_version')
+          RC_VERSION=$(echo "$SCRIPT_RESULT" | jq -r '.metadata.rc_version')
+          BETA_VERSION=$(echo "$SCRIPT_RESULT" | jq -r '.metadata.beta_version')
 
           # Check if beta version is actually a version (not null or empty)
           if [[ "$BETA_VERSION" == "null" || -z "$BETA_VERSION" ]]; then
@@ -58,10 +55,10 @@ jobs:
             echo "No beta version available" >&2
           fi
 
-          # Validate that we got a proper version
-          if [[ -z "$L1_VERSION" ]]; then
+          # Validate that we got proper versions
+          if [[ -z "$L1_VERSION" || "$L1_VERSION" == "null" ]]; then
             echo "Error: Could not extract L-1 version from script output" >&2
-            echo "Script output: $SCRIPT_OUTPUT" >&2
+            echo "Script result: $SCRIPT_RESULT" >&2
             exit 1
           fi
 
@@ -71,7 +68,7 @@ jobs:
             exit 1
           fi
 
-          # Validate RC and beta versions
+          # Validate RC version
           if [[ -z "$RC_VERSION" || "$RC_VERSION" == "null" ]]; then
             echo "Error: Could not extract RC version from script output" >&2
             echo "WC_VERSIONS: $WC_VERSIONS" >&2
@@ -79,8 +76,8 @@ jobs:
           fi
 
           # Only validate beta if it's available
-          if [[ -n "$BETA_VERSION" ]]; then
-            if [[ "$BETA_VERSION" == "null" ]]; then
+          if [[ -n "$BETA_VERSION" && "$BETA_VERSION" != "null" ]]; then
+            if [[ ! "$BETA_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+ ]]; then
               echo "Error: Invalid beta version extracted: $BETA_VERSION" >&2
               echo "WC_VERSIONS: $WC_VERSIONS" >&2
               exit 1
@@ -89,7 +86,7 @@ jobs:
 
           echo "Using L-1 version: $L1_VERSION" >&2
           echo "Using RC version: $RC_VERSION" >&2
-          if [[ -n "$BETA_VERSION" ]]; then
+          if [[ -n "$BETA_VERSION" && "$BETA_VERSION" != "null" ]]; then
             echo "Using beta version: $BETA_VERSION" >&2
           else
             echo "No beta version available" >&2

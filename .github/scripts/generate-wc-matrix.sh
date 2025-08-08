@@ -106,4 +106,19 @@ else
 fi
 
 # Convert to JSON array and output only the JSON (no extra whitespace or newlines)
-printf '%s\n' "${VERSIONS[@]}" | jq -R . | jq -s . -c
+# Output a single JSON object with both versions and metadata
+RESULT=$(jq -n \
+  --argjson versions "$(printf '%s\n' "${VERSIONS[@]}" | jq -R . | jq -s .)" \
+  --arg l1_version "$L1_VERSION" \
+  --arg rc_version "$LATEST_RC_VERSION" \
+  --arg beta_version "${LATEST_BETA_VERSION:-null}" \
+  '{
+    versions: $versions,
+    metadata: {
+      l1_version: $l1_version,
+      rc_version: $rc_version,
+      beta_version: $beta_version
+    }
+  }')
+
+echo "$RESULT"

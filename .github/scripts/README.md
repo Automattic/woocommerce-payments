@@ -15,12 +15,23 @@ Generates the WooCommerce version matrix for E2E tests with dynamic version reso
 ```
 
 **Output:**
-JSON array of WooCommerce versions including:
+Single JSON object containing versions array and metadata:
 
-- 7.7.0 (kept for business reasons - significant TPV)
-- L-1 version (latest stable in previous major branch)
-- Latest stable (current major)
-- latest, beta (when available), rc
+```json
+{
+  "versions": [
+    "7.7.0",
+    "9.9.5",
+    "latest",
+    "10.1.0-rc.2"
+  ],
+  "metadata": {
+    "l1_version": "9.9.5",
+    "rc_version": "10.1.0-rc.2",
+    "beta_version": "null"
+  }
+}
+```
 
 **Features:**
 
@@ -28,21 +39,9 @@ JSON array of WooCommerce versions including:
 - Dynamically calculates L-1 version (latest stable in previous major branch)
 - Includes only L-1 and current major versions (skipping intermediate versions)
 - Dynamically resolves beta and RC versions from current major branch
-- Outputs debug information to stderr for version extraction
+- Outputs structured JSON for easy parsing
 - Skips beta versions when not available
-
-**Debug Output (stderr):**
-
-```
-Fetching latest WooCommerce version...
-Latest WC version: 10.0.4
-L-1 version: 9.9.5
-Major versions latest stable: 9.9.5 10.0.4
-Fetching latest RC and beta versions...
-Latest RC version: 10.1.0-rc.2
-Latest beta version: null
-No beta version available, skipping beta tests
-```
+- Provides debug output to stderr for troubleshooting
 
 ## Matrix Generation Strategy
 
@@ -58,9 +57,9 @@ The workflow uses an optimized PHP version strategy to reduce job count while ma
 
 ### Version Resolution
 
-- **L-1 Version**: Dynamically extracted from script stderr output
-- **Beta Version**: Extracted from script stderr, only included when available
-- **RC Version**: Dynamically resolved to actual version number
+- **L-1 Version**: Extracted from JSON metadata
+- **Beta Version**: Extracted from JSON metadata, only included when available
+- **RC Version**: Extracted from JSON metadata
 - **Fallback**: No fallback to string versions (prevents WP-CLI errors)
 
 ## How It Works
@@ -75,22 +74,22 @@ The workflow uses an optimized PHP version strategy to reduce job count while ma
 
 ### Workflow Integration
 
-1. Script runs and outputs both JSON array and debug info
-2. Workflow extracts specific versions from stderr output
+1. Script runs and outputs structured JSON with versions and metadata
+2. Workflow extracts specific versions using standard JSON parsing
 3. Workflow builds optimized matrix with selective PHP version testing
 4. Matrix includes only necessary combinations to reduce job count
 
 ### Version Extraction
 
 ```bash
-# Extract L-1 version from script output
-L1_VERSION=$(echo "$SCRIPT_OUTPUT" | grep "L-1 version:" | cut -d' ' -f3)
+# Get script result
+SCRIPT_RESULT=$( .github/scripts/generate-wc-matrix.sh )
 
-# Extract beta version from script output
-BETA_VERSION=$(echo "$SCRIPT_OUTPUT" | grep "Latest beta version:" | cut -d' ' -f4)
-
-# Extract RC version from JSON array
-RC_VERSION=$(echo "$WC_VERSIONS" | jq -r '.[-1]')
+# Extract versions and metadata using jq
+WC_VERSIONS=$(echo "$SCRIPT_RESULT" | jq -r '.versions')
+L1_VERSION=$(echo "$SCRIPT_RESULT" | jq -r '.metadata.l1_version')
+RC_VERSION=$(echo "$SCRIPT_RESULT" | jq -r '.metadata.rc_version')
+BETA_VERSION=$(echo "$SCRIPT_RESULT" | jq -r '.metadata.beta_version')
 ```
 
 ## Dependencies

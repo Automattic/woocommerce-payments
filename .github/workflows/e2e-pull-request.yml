@@ -55,15 +55,16 @@ jobs:
         id: generate_matrix
         run: |
           # Use dynamic script to get WooCommerce versions (L-1 policy)
-          # Run script once and capture both stdout and stderr
-          SCRIPT_OUTPUT=$( .github/scripts/generate-wc-matrix.sh 2>&1 )
-          WC_VERSIONS=$(echo "$SCRIPT_OUTPUT" | tail -n 1)
-          L1_VERSION=$(echo "$SCRIPT_OUTPUT" | grep "L-1 version:" | cut -d' ' -f3)
+          SCRIPT_RESULT=$( .github/scripts/generate-wc-matrix.sh )
 
-          # Validate that we got a proper version
-          if [[ -z "$L1_VERSION" ]]; then
+          # Extract versions and metadata from JSON
+          WC_VERSIONS=$(echo "$SCRIPT_RESULT" | jq -r '.versions')
+          L1_VERSION=$(echo "$SCRIPT_RESULT" | jq -r '.metadata.l1_version')
+
+          # Validate that we got proper versions
+          if [[ -z "$L1_VERSION" || "$L1_VERSION" == "null" ]]; then
             echo "Error: Could not extract L-1 version from script output" >&2
-            echo "Script output: $SCRIPT_OUTPUT" >&2
+            echo "Script result: $SCRIPT_RESULT" >&2
             exit 1
           fi
 
