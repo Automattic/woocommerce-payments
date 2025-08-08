@@ -15,6 +15,7 @@ import {
 	SelectControl,
 	RadioControl,
 	RangeControl,
+	BaseControl,
 	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
 	__experimentalNumberControl as NumberControl,
 } from '@wordpress/components';
@@ -92,44 +93,30 @@ const buttonActionOptions = [
 	},
 ];
 
-const makeButtonThemeText = ( string ) =>
-	interpolateComponents( {
-		mixedString: string,
-		components: {
-			br: <br />,
-			helpText: (
-				<span className="payment-method-settings__option-help-text" />
-			),
-		},
-	} );
-
 const buttonThemeOptions = [
 	{
-		label: makeButtonThemeText(
-			__(
-				'Dark {{br/}}{{helpText}}Recommended for white or light-colored backgrounds with high contrast.{{/helpText}}',
-				'woocommerce-payments'
-			)
-		),
+		label: __( 'Dark', 'woocommerce-payments' ),
 		value: 'dark',
+		description: __(
+			'Recommended for white or light-colored backgrounds with high contrast.',
+			'woocommerce-payments'
+		),
 	},
 	{
-		label: makeButtonThemeText(
-			__(
-				'Light {{br/}}{{helpText}}Recommended for dark or colored backgrounds with high contrast.{{/helpText}}',
-				'woocommerce-payments'
-			)
-		),
+		label: __( 'Light', 'woocommerce-payments' ),
 		value: 'light',
+		description: __(
+			'Recommended for dark or colored backgrounds with high contrast.',
+			'woocommerce-payments'
+		),
 	},
 	{
-		label: makeButtonThemeText(
-			__(
-				'Outline {{br/}}{{helpText}}Recommended for white or light-colored backgrounds with insufficient contrast.{{/helpText}}',
-				'woocommerce-payments'
-			)
-		),
+		label: __( 'Outline', 'woocommerce-payments' ),
 		value: 'light-outline',
+		description: __(
+			'Recommended for white or light-colored backgrounds with insufficient contrast.',
+			'woocommerce-payments'
+		),
 	},
 ];
 
@@ -191,7 +178,6 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 					</InlineNotice>
 				</>
 			) }
-			<h4>{ __( 'Call to action', 'woocommerce-payments' ) }</h4>
 			<SelectControl
 				className="payment-method-settings__cta-selection"
 				label={ __( 'Call to action', 'woocommerce-payments' ) }
@@ -199,86 +185,96 @@ const GeneralPaymentRequestButtonSettings = ( { type } ) => {
 					'Select a button label that fits best with the flow of purchase or payment experience on your store.',
 					'woocommerce-payments'
 				) }
-				hideLabelFromVision
 				value={ buttonType }
 				options={ buttonActionOptions }
 				onChange={ setButtonType }
 				__nextHasNoMarginBottom
 				__next40pxDefaultSize
 			/>
-			<h4>{ __( 'Button size', 'woocommerce-payments' ) }</h4>
 			<RadioControl
+				label={ __( 'Button size', 'woocommerce-payments' ) }
 				selected={ size }
 				options={ buttonSizeOptions }
 				onChange={ setSize }
 			/>
-			<h4>{ __( 'Theme', 'woocommerce-payments' ) }</h4>
 			<RadioControl
+				label={ __( 'Theme', 'woocommerce-payments' ) }
 				selected={ theme }
 				options={ buttonThemeOptions }
 				onChange={ setTheme }
 			/>
-			<h4>{ __( 'Border radius', 'woocommerce-payments' ) }</h4>
-			<div className="payment-method-settings__border-radius">
-				<NumberControl
-					__next40pxDefaultSize
-					label={ __(
-						/* translators: Label for a number input, hidden from view. Intended for accessibility. */
-						'Border radius, number input',
-						'woocommerce-payments'
-					) }
-					hideLabelFromVision
-					isPressEnterToChange={ true }
-					value={ radius }
-					max={ 30 }
-					min={ 0 }
-					spinControls="none"
-					onChange={ ( value ) => {
-						if ( typeof value === 'string' ) {
-							setRadius( parseInt( value, 10 ) );
-						} else {
-							setRadius( value );
-						}
-					} }
-					suffix={
-						<div className="payment-method-settings__border-radius__number-control__suffix">
-							px
-						</div>
-					}
-				/>
-				<RangeControl
-					label={ __(
-						/* translators: Label for an input slider, hidden from view. Intended for accessibility. */
-						'Border radius, slider',
-						'woocommerce-payments'
-					) }
-					hideLabelFromVision
-					className="payment-method-settings__border-radius__slider"
-					value={ radius }
-					max={ 30 }
-					min={ 0 }
-					withInputField={ false }
-					onChange={ setRadius }
-					__nextHasNoMarginBottom
-					__next40pxDefaultSize
-				/>
-			</div>
-			<p className="payment-method-settings__option-help-text">
-				{ __(
+			<BaseControl
+				id="wcpay-payment-request-settings-border-radius"
+				label={ __( 'Border radius', 'woocommerce-payments' ) }
+				help={ __(
 					'Controls the corner roundness of express payment buttons.',
 					'woocommerce-payments'
 				) }
-			</p>
-			<h4>{ __( 'Preview', 'woocommerce-payments' ) }</h4>
-			<div className="payment-method-settings__option-help-text">
-				{ __(
-					'See the preview of enabled express payment buttons.',
-					'woocommerce-payments'
-				) }
-			</div>
-			<Elements stripe={ stripePromise }>
-				<PaymentRequestButtonPreview />
-			</Elements>
+				__next40pxDefaultSize
+				__nextHasNoMarginBottom
+			>
+				<div className="payment-method-settings__border-radius">
+					<NumberControl
+						label={ __(
+							/* translators: Label for a number input, hidden from view. Intended for accessibility. */
+							'Border radius, number input',
+							'woocommerce-payments'
+						) }
+						id="wcpay-payment-request-settings-border-radius"
+						hideLabelFromVision
+						isPressEnterToChange={ true }
+						value={ radius }
+						max={ 30 }
+						min={ 0 }
+						spinControls="none"
+						onChange={ ( value ) => {
+							if ( typeof value === 'string' ) {
+								setRadius( parseInt( value, 10 ) );
+							} else {
+								setRadius( value );
+							}
+						} }
+						suffix={
+							<div className="payment-method-settings__border-radius__number-control__suffix">
+								px
+							</div>
+						}
+						__next40pxDefaultSize
+					/>
+					<RangeControl
+						label={ __(
+							/* translators: Label for an input slider, hidden from view. Intended for accessibility. */
+							'Border radius, slider',
+							'woocommerce-payments'
+						) }
+						hideLabelFromVision
+						className="payment-method-settings__border-radius__slider"
+						value={ radius }
+						max={ 30 }
+						min={ 0 }
+						withInputField={ false }
+						onChange={ setRadius }
+						__nextHasNoMarginBottom
+						__next40pxDefaultSize
+					/>
+				</div>
+			</BaseControl>
+			{ /* eslint-disable-next-line @wordpress/no-base-control-with-label-without-id */ }
+			<BaseControl
+				label={ __( 'Preview', 'woocommerce-payments' ) }
+				__next40pxDefaultSize
+				__nextHasNoMarginBottom
+			>
+				<div className="payment-method-settings__option-help-text">
+					{ __(
+						'See the preview of enabled express payment buttons.',
+						'woocommerce-payments'
+					) }
+				</div>
+				<Elements stripe={ stripePromise }>
+					<PaymentRequestButtonPreview />
+				</Elements>
+			</BaseControl>
 		</CardBody>
 	);
 };

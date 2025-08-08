@@ -34,7 +34,9 @@ describe( 'WooPayFileUpload', () => {
 		);
 
 		expect(
-			container.firstChild.firstChild.classList.contains( 'has-file' )
+			container
+				.querySelector( '.woopay-settings__update-store-logo' )
+				.classList.contains( 'has-file' )
 		).toBe( true );
 
 		expect(
@@ -59,11 +61,13 @@ describe( 'WooPayFileUpload', () => {
 		);
 
 		expect(
-			container.firstChild.firstChild.classList.contains( 'has-file' )
+			container
+				.querySelector( '.woopay-settings__update-store-logo' )
+				.classList.contains( 'has-file' )
 		).toBe( false );
 
 		expect(
-			screen.queryByRole( 'button', { name: 'Upload custom logo' } )
+			screen.queryByText( 'Upload custom logo' )
 		).toBeInTheDocument();
 
 		expect(

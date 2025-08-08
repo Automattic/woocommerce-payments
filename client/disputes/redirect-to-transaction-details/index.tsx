@@ -2,6 +2,7 @@
  * External dependencies
  */
 import React, { useEffect } from 'react';
+import { __ } from '@wordpress/i18n';
 import { getHistory } from '@woocommerce/navigation';
 
 /**
@@ -50,9 +51,19 @@ const RedirectToTransactionDetails: React.FC< { query: { id: string } } > = ( {
 						</FlexItem>
 						<FlexItem>
 							<div>
-								<b>Error retrieving dispute</b>
+								<b>
+									{ __(
+										'Error retrieving dispute',
+										'woocommerce-payments'
+									) }
+								</b>
 							</div>
-							<div>Please check your network and try again.</div>
+							<div>
+								{ __(
+									'Please check your network and try again.',
+									'woocommerce-payments'
+								) }
+							</div>
 						</FlexItem>
 					</>
 				) : (
@@ -62,9 +73,19 @@ const RedirectToTransactionDetails: React.FC< { query: { id: string } } > = ( {
 						</FlexItem>
 						<FlexItem>
 							<div>
-								<b>One moment please</b>
+								<b>
+									{ __(
+										'One moment please',
+										'woocommerce-payments'
+									) }
+								</b>
 							</div>
-							<div>Redirecting to payment details…</div>
+							<div>
+								{ __(
+									'Redirecting to payment details…',
+									'woocommerce-payments'
+								) }
+							</div>
 						</FlexItem>
 					</>
 				) }

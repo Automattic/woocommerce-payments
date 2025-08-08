@@ -220,23 +220,21 @@ const SingleCurrencySettings = () => {
 												} }
 												options={ [
 													{
-														description: __(
-															targetCurrency.last_updated
-																? sprintf(
-																		__(
-																			'Current rate: 1 %s = %s %s (Last updated: %s)',
-																			'woocommerce-payments'
-																		),
-																		storeCurrency.code,
-																		targetCurrency.rate,
-																		targetCurrency.code,
-																		formattedLastUpdatedDateTime
-																  )
-																: __(
-																		'Error - Unable to fetch automatic rate for this currency'
-																  ),
-															'woocommerce-payments'
-														),
+														description: targetCurrency.last_updated
+															? sprintf(
+																	__(
+																		'Current rate: 1 %s = %s %s (Last updated: %s)',
+																		'woocommerce-payments'
+																	),
+																	storeCurrency.code,
+																	targetCurrency.rate,
+																	targetCurrency.code,
+																	formattedLastUpdatedDateTime
+															  )
+															: __(
+																	'Error - Unable to fetch automatic rate for this currency',
+																	'woocommerce-payments'
+															  ),
 														label: __(
 															'Fetch rates automatically',
 															'woocommerce-payments'

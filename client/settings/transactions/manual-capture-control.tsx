@@ -85,7 +85,7 @@ const ManualCaptureControl = (): JSX.Element => {
 				__nextHasNoMarginBottom
 			/>
 			{ isStripeBillingEnabled && (
-				<InlineNotice status="warning" isDismissible={ false } icon>
+				<InlineNotice status="warning" isDismissible={ false }>
 					{ __(
 						'Manual capture is not available when Stripe Billing is active.',
 						'woocommerce-payments'

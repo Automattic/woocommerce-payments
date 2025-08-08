@@ -42,21 +42,13 @@ addFilter(
 					{
 						value: 'is',
 						/* translators: Sentence fragment, logical, "Is" refers to searching for orders matching a chosen currency. */
-						label: __(
-							'Is',
-							'customer currency',
-							'woocommerce-payments'
-						),
+						label: __( 'Is', 'woocommerce-payments' ),
 					},
 					{
 						value: 'is_not',
 						// eslint-disable-next-line max-len
 						/* translators: Sentence fragment, logical, "Is Not" refers to searching for orders not matching a chosen currency. */
-						label: __(
-							'Is Not',
-							'customer currency',
-							'woocommerce-payments'
-						),
+						label: __( 'Is Not', 'woocommerce-payments' ),
 					},
 				],
 				input: {
