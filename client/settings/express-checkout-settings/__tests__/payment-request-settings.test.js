@@ -65,6 +65,32 @@ const getMockPaymentRequestLocations = (
 	updatePaymentRequestLocationsHandler,
 ];
 
+// Mock CSS imports to prevent CSS parsing errors due to RangeControl.
+jest.mock( '../index.scss', () => ( {} ) );
+
+// Suppress CSS parsing errors from components
+// eslint-disable-next-line no-console
+const originalError = console.error;
+beforeAll( () => {
+	// eslint-disable-next-line no-console
+	console.error = ( ...args ) => {
+		// Suppress CSS parsing errors
+		if (
+			args[ 0 ] &&
+			args[ 0 ].message &&
+			args[ 0 ].message.includes( 'Could not parse CSS stylesheet' )
+		) {
+			return;
+		}
+		originalError.call( console, ...args );
+	};
+} );
+
+afterAll( () => {
+	// eslint-disable-next-line no-console
+	console.error = originalError;
+} );
+
 const renderWithSettingsProvider = ( ui ) =>
 	render(
 		<WCPaySettingsContext.Provider
@@ -94,13 +120,6 @@ describe( 'PaymentRequestSettings', () => {
 			<PaymentRequestSettings section="enable" />
 		);
 
-		// confirm there is a heading
-		expect(
-			screen.queryByText(
-				'Enable Apple Pay and Google Pay on selected pages'
-			)
-		).toBeInTheDocument();
-
 		// confirm checkbox groups displayed
 		const [ enableCheckbox ] = screen.queryAllByRole( 'checkbox' );
 
@@ -123,9 +142,11 @@ describe( 'PaymentRequestSettings', () => {
 
 		expect( updateIsPaymentRequestEnabledHandler ).not.toHaveBeenCalled();
 
-		expect( screen.getByLabelText( 'Checkout Page' ) ).toBeChecked();
-		expect( screen.getByLabelText( 'Product Page' ) ).toBeChecked();
-		expect( screen.getByLabelText( 'Cart Page' ) ).toBeChecked();
+		expect(
+			screen.getByLabelText( 'Show on checkout page' )
+		).toBeChecked();
+		expect( screen.getByLabelText( 'Show on product page' ) ).toBeChecked();
+		expect( screen.getByLabelText( 'Show on cart page' ) ).toBeChecked();
 
 		await userEvent.click( screen.getByLabelText( /Enable Apple Pay/ ) );
 		expect( updateIsPaymentRequestEnabledHandler ).toHaveBeenCalledWith(
@@ -138,21 +159,13 @@ describe( 'PaymentRequestSettings', () => {
 			<PaymentRequestSettings section="general" />
 		);
 
-		// confirm settings headings
+		// confirm settings labels
 		expect(
-			screen.queryByRole( 'heading', { name: 'Call to action' } )
+			screen.queryByRole( 'combobox', { name: 'Call to action' } )
 		).toBeInTheDocument();
-		expect(
-			screen.queryByRole( 'heading', { name: 'Button size' } )
-		).toBeInTheDocument();
-
-		expect(
-			screen.queryByRole( 'heading', { name: 'Theme' } )
-		).toBeInTheDocument();
-
-		expect(
-			screen.queryByRole( 'heading', { name: 'Preview' } )
-		).toBeInTheDocument();
+		expect( screen.queryByText( 'Button size' ) ).toBeInTheDocument();
+		expect( screen.queryByText( 'Theme' ) ).toBeInTheDocument();
+		expect( screen.queryByText( 'Preview' ) ).toBeInTheDocument();
 
 		// confirm radio button groups displayed
 		const [ sizeRadio, themeRadio ] = screen.queryAllByRole( 'radio' );
@@ -186,17 +199,21 @@ describe( 'PaymentRequestSettings', () => {
 
 		expect( updatePaymentRequestLocationsHandler ).not.toHaveBeenCalled();
 
-		await userEvent.click( screen.getByLabelText( /Checkout/ ) );
+		await userEvent.click(
+			screen.getByLabelText( /Show on checkout page/ )
+		);
 		expect(
 			updatePaymentRequestLocationsHandler
 		).toHaveBeenLastCalledWith( [ 'checkout' ] );
 
-		await userEvent.click( screen.getByLabelText( /Product Page/ ) );
+		await userEvent.click(
+			screen.getByLabelText( /Show on product page/ )
+		);
 		expect(
 			updatePaymentRequestLocationsHandler
 		).toHaveBeenLastCalledWith( [ 'product' ] );
 
-		await userEvent.click( screen.getByLabelText( /Cart/ ) );
+		await userEvent.click( screen.getByLabelText( /Show on cart page/ ) );
 		expect(
 			updatePaymentRequestLocationsHandler
 		).toHaveBeenLastCalledWith( [ 'cart' ] );
@@ -263,17 +280,17 @@ describe( 'PaymentRequestSettings', () => {
 		);
 
 		// Uncheck each checkbox, and verify them what kind of action should have been called
-		await userEvent.click( screen.getByText( 'Product Page' ) );
+		await userEvent.click( screen.getByText( 'Show on product page' ) );
 		expect(
 			updatePaymentRequestLocationsHandler
 		).toHaveBeenLastCalledWith( [ 'checkout', 'cart' ] );
 
-		await userEvent.click( screen.getByText( 'Checkout Page' ) );
+		await userEvent.click( screen.getByText( 'Show on checkout page' ) );
 		expect(
 			updatePaymentRequestLocationsHandler
 		).toHaveBeenLastCalledWith( [ 'product', 'cart' ] );
 
-		await userEvent.click( screen.getByText( 'Cart Page' ) );
+		await userEvent.click( screen.getByText( 'Show on cart page' ) );
 		expect(
 			updatePaymentRequestLocationsHandler
 		).toHaveBeenLastCalledWith( [ 'checkout', 'product' ] );

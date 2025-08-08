@@ -3,7 +3,7 @@
 	flex-flow: column;
 
 	&:not( &:last-child ) {
-		margin-bottom: 50px;
+		margin-bottom: 70px;
 	}
 
 	@include breakpoint( '>800px' ) {
@@ -22,8 +22,10 @@
 		}
 
 		h2 {
+			@include heading-lg;
 			font-size: 16px;
 			line-height: 24px;
+			margin-top: 0;
 		}
 
 		p {
@@ -54,13 +56,9 @@
 	&__controls {
 		flex: 1 1 auto;
 
+		.components-radio-control:not( :last-child ),
 		.components-base-control:not( :last-child ) {
-			margin-bottom: 16px;
-		}
-
-		.components-base-control + h4,
-		.components-radio-control + h4 {
-			margin-top: 24px;
+			margin-bottom: 24px;
 		}
 	}
 }

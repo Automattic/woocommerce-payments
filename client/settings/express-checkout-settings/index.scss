@@ -7,15 +7,6 @@
 		color: #757575;
 	}
 
-	&__option-help-text {
-		color: #757575;
-		padding-left: 30px;
-
-		@media ( min-width: 600px ) {
-			padding-left: 26px;
-		}
-	}
-
 	&__cta-selection {
 		.components-base-control__label {
 			// hack until the `hideLabelFromVision` is fixed for radio controls in Gutenberg
@@ -29,10 +20,6 @@
 		border-radius: 3px;
 		background-color: #f0f0f0;
 		padding: 16px;
-	}
-
-	&__preview-help-text {
-		font-style: italic;
 	}
 
 	&__icons {
@@ -68,29 +55,6 @@
 	&__global-theme-label {
 		display: inline-flex;
 		align-items: center;
-	}
-	&__custom-message-wrapper {
-		position: relative;
-
-		.components-base-control__field .components-text-control__input {
-			padding-right: 70px;
-		}
-
-		.components-textarea-control__input {
-			font-size: 0.8125rem;
-		}
-
-		.input-help-text {
-			position: absolute;
-			right: 10px;
-			top: 42px;
-			font-size: 12px;
-			color: #757575;
-
-			@media ( min-width: 783px ) {
-				top: 38px;
-			}
-		}
 	}
 
 	&__update-store-logo {
@@ -292,24 +256,38 @@
 	}
 }
 
+.wcpay-express-checkout__enable {
+	.payment-request-settings__location {
+		margin: 0 0 0 24px;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 8px;
+	}
+	.wcpay-payment-request-settings__enable,
+	.wcpay-woopay-settings__enable {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 12px;
+
+		// Override the margin-bottom from settings-section.scss
+		.components-radio-control:not( :last-child ),
+		.components-base-control:not( :last-child ) {
+			margin-bottom: 0;
+		}
+	}
+}
+
 .woopay-settings--appearance {
 	background-color: #0000 !important;
 	box-shadow: none !important;
 }
 
-.payment-request-settings {
-	&__location {
-		margin-bottom: 26px;
-	}
-}
-
 .payment-method-settings {
 	&__option-help-text {
 		color: #757575;
-	}
-
-	&__preview-help-text {
-		color: #757575;
+		margin-bottom: 1em;
 	}
 
 	&__preview {
@@ -350,6 +328,10 @@
 		display: flex;
 		gap: $gap;
 		margin-block-end: 0;
+
+		.components-base-control {
+			margin-bottom: 0 !important;
+		}
 
 		&__slider {
 			flex-grow: 1;

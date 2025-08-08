@@ -81,7 +81,7 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 				/>
 				<ManualCaptureControl></ManualCaptureControl>
 				<h4>{ __( 'Customer statements', 'woocommerce-payments' ) }</h4>
-				<p className="transactions-customer-details">
+				<p>
 					{ __(
 						"Edit the way your store name appears on your customers' bank statements.",
 						'woocommerce-payments'
@@ -190,8 +190,7 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 				</div>
 
 				<h4>{ __( 'Customer support', 'woocommerce-payments' ) }</h4>
-
-				<p className="transactions-customer-details">
+				<p>
 					{ __(
 						'Provide contact information where customers can reach you for support.',
 						'woocommerce-payments'

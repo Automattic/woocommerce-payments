@@ -78,7 +78,9 @@ const AccountBalances: React.FC = () => {
 
 		return (
 			<Card className="wcpay-account-balances">
-				<CardHeader>Balance</CardHeader>
+				<CardHeader>
+					{ __( 'Balance', 'woocommerce-payments' ) }
+				</CardHeader>
 				<CardBody className="wcpay-account-balances__balances">
 					<BalanceBlock
 						id={ `wcpay-account-balances-${ loadingData.currencyCode }-total` }
@@ -123,7 +125,9 @@ const AccountBalances: React.FC = () => {
 	return (
 		<>
 			<Card className="wcpay-account-balances">
-				<CardHeader>Balance</CardHeader>
+				<CardHeader>
+					{ __( 'Balance', 'woocommerce-payments' ) }
+				</CardHeader>
 				<CardBody className="wcpay-account-balances__balances">
 					<BalanceBlock
 						id={ `wcpay-account-balances-${ selectedOverview.currencyCode }-total` }
@@ -209,6 +213,7 @@ const AccountBalances: React.FC = () => {
 											components: {
 												strong: <strong />,
 												learnMoreLink: (
+													// @ts-expect-error: children is provided when interpolating the component
 													<ExternalLink
 														href={
 															'https://woocommerce.com/document/woopayments/payouts/instant-payouts/'
