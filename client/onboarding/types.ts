@@ -7,6 +7,7 @@ export type OnboardingSteps = 'business' | 'store' | 'embedded' | 'loading';
 export type OnboardingFields = {
 	country?: string;
 	business_type?: string;
+	// eslint-disable-next-line @typescript-eslint/naming-convention
 	'company.structure'?: string;
 	mcc?: string;
 };

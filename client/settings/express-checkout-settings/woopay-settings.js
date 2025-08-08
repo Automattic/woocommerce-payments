@@ -16,6 +16,7 @@ import {
 	CheckboxControl,
 	TextareaControl,
 	ExternalLink,
+	BaseControl,
 } from '@wordpress/components';
 import CardBody from '../card-body';
 import WooPayFileUpload from './file-upload';
@@ -75,144 +76,151 @@ const WooPaySettings = ( { section } ) => {
 					{ showIncompatibilityNotice && (
 						<WooPayIncompatibilityNotice />
 					) }
-					<CheckboxControl
-						checked={ isWooPayEnabled }
-						onChange={ updateIsWooPayEnabled }
-						label={ __( 'Enable WooPay', 'woocommerce-payments' ) }
-						help={
-							/* eslint-disable jsx-a11y/anchor-has-content */
-							isWooPayEnabled
-								? __(
-										'When enabled, customers will be able to checkout using WooPay.',
-										'woocommerce-payments'
-								  )
-								: interpolateComponents( {
-										mixedString: __(
-											/* eslint-disable-next-line max-len */
-											'When enabled, customers will be able to checkout using WooPay. ' +
-												'In order to use {{wooPayLink}}WooPay{{/wooPayLink}}, you must agree to our ' +
-												'{{tosLink}}WooCommerce Terms of Service{{/tosLink}} ' +
-												'and {{privacyLink}}Privacy Policy{{/privacyLink}}. ' +
-												'{{trackingLink}}Click here{{/trackingLink}} to learn more about the ' +
-												'data you will be sharing and opt-out options.',
+					<div className="wcpay-woopay-settings__enable">
+						<CheckboxControl
+							checked={ isWooPayEnabled }
+							onChange={ updateIsWooPayEnabled }
+							label={ __(
+								'Enable WooPay',
+								'woocommerce-payments'
+							) }
+							help={
+								/* eslint-disable jsx-a11y/anchor-has-content */
+								isWooPayEnabled
+									? __(
+											'When enabled, customers will be able to checkout using WooPay.',
 											'woocommerce-payments'
-										),
-										components: {
-											wooPayLink: (
-												<a
-													target="_blank"
-													rel="noreferrer"
-													href="https://woocommerce.com/document/woopay-merchant-documentation/"
-												/>
+									  )
+									: interpolateComponents( {
+											mixedString: __(
+												/* eslint-disable-next-line max-len */
+												'When enabled, customers will be able to checkout using WooPay. ' +
+													'In order to use {{wooPayLink}}WooPay{{/wooPayLink}}, you must agree to our ' +
+													'{{tosLink}}WooCommerce Terms of Service{{/tosLink}} ' +
+													'and {{privacyLink}}Privacy Policy{{/privacyLink}}. ' +
+													'{{trackingLink}}Click here{{/trackingLink}} to learn more about the ' +
+													'data you will be sharing and opt-out options.',
+												'woocommerce-payments'
 											),
-											tosLink: (
-												<a
-													target="_blank"
-													rel="noreferrer"
-													href="https://wordpress.com/tos/"
-												/>
-											),
-											privacyLink: (
-												<a
-													target="_blank"
-													rel="noreferrer"
-													href="https://automattic.com/privacy/"
-												/>
-											),
-											trackingLink: (
-												<a
-													target="_blank"
-													rel="noreferrer"
-													href="https://woocommerce.com/usage-tracking/"
-												/>
-											),
-										},
-								  } )
-							/* eslint-enable jsx-a11y/anchor-has-content */
-						}
-						__nextHasNoMarginBottom
-					/>
-					<h4>
-						{ __(
-							'Enable WooPay button on selected pages',
-							'woocommerce-payments'
-						) }
-					</h4>
-					<ul className="payment-request-settings__location">
-						<li>
-							<CheckboxControl
-								disabled={ ! isWooPayEnabled }
-								checked={
-									isWooPayEnabled &&
-									woopayLocations.includes( 'checkout' )
-								}
-								onChange={ makeLocationChangeHandler(
-									'checkout'
-								) }
-								label={ __(
-									'Checkout Page',
-									'woocommerce-payments'
-								) }
-								__nextHasNoMarginBottom
-							/>
-						</li>
-						<li>
-							<CheckboxControl
-								disabled={ ! isWooPayEnabled }
-								checked={
-									isWooPayEnabled &&
-									woopayLocations.includes( 'product' )
-								}
-								onChange={ makeLocationChangeHandler(
-									'product'
-								) }
-								label={ __(
-									'Product Page',
-									'woocommerce-payments'
-								) }
-								__nextHasNoMarginBottom
-							/>
-						</li>
-						<li>
-							<CheckboxControl
-								disabled={ ! isWooPayEnabled }
-								checked={
-									isWooPayEnabled &&
-									woopayLocations.includes( 'cart' )
-								}
-								onChange={ makeLocationChangeHandler( 'cart' ) }
-								label={ __(
-									'Cart Page',
-									'woocommerce-payments'
-								) }
-								__nextHasNoMarginBottom
-							/>
-						</li>
-					</ul>
+											components: {
+												wooPayLink: (
+													<a
+														target="_blank"
+														rel="noreferrer"
+														href="https://woocommerce.com/document/woopay-merchant-documentation/"
+													/>
+												),
+												tosLink: (
+													<a
+														target="_blank"
+														rel="noreferrer"
+														href="https://wordpress.com/tos/"
+													/>
+												),
+												privacyLink: (
+													<a
+														target="_blank"
+														rel="noreferrer"
+														href="https://automattic.com/privacy/"
+													/>
+												),
+												trackingLink: (
+													<a
+														target="_blank"
+														rel="noreferrer"
+														href="https://woocommerce.com/usage-tracking/"
+													/>
+												),
+											},
+									  } )
+								/* eslint-enable jsx-a11y/anchor-has-content */
+							}
+							__nextHasNoMarginBottom
+						/>
+						{ /* eslint-disable-next-line @wordpress/no-base-control-with-label-without-id */ }
+						<BaseControl
+							__next40pxDefaultSize
+							__nextHasNoMarginBottom
+						>
+							<ul className="payment-request-settings__location">
+								<li>
+									<CheckboxControl
+										disabled={ ! isWooPayEnabled }
+										checked={
+											isWooPayEnabled &&
+											woopayLocations.includes(
+												'product'
+											)
+										}
+										onChange={ makeLocationChangeHandler(
+											'product'
+										) }
+										label={ __(
+											'Show on product page',
+											'woocommerce-payments'
+										) }
+										__nextHasNoMarginBottom
+									/>
+								</li>
+								<li>
+									<CheckboxControl
+										disabled={ ! isWooPayEnabled }
+										checked={
+											isWooPayEnabled &&
+											woopayLocations.includes( 'cart' )
+										}
+										onChange={ makeLocationChangeHandler(
+											'cart'
+										) }
+										label={ __(
+											'Show on cart page',
+											'woocommerce-payments'
+										) }
+										__nextHasNoMarginBottom
+									/>
+								</li>
+								<li>
+									<CheckboxControl
+										disabled={ ! isWooPayEnabled }
+										checked={
+											isWooPayEnabled &&
+											woopayLocations.includes(
+												'checkout'
+											)
+										}
+										onChange={ makeLocationChangeHandler(
+											'checkout'
+										) }
+										label={ __(
+											'Show on checkout page',
+											'woocommerce-payments'
+										) }
+										__nextHasNoMarginBottom
+									/>
+								</li>
+							</ul>
+						</BaseControl>
+					</div>
 				</CardBody>
 			) }
 
 			{ section === 'appearance' && (
 				<CardBody className="wcpay-card-body woopay-settings__appearance-card-settings">
-					<div className="woopay-settings__custom-message-wrapper">
-						<h4>
-							{ __( 'Checkout logo', 'woocommerce-payments' ) }
-						</h4>
-						<WooPayFileUpload
-							fieldKey="woopay-store-logo"
-							accept="image/png, image/jpeg"
-							disabled={ false }
-							help={ __(
-								'Upload a custom logo. Upload a horizontal image with a white' +
-									' or transparent background for best results. Use a PNG or JPG' +
-									' image format. Recommended width: 512 pixels minimum.',
-								'woocommerce-payments'
-							) }
-							purpose="business_logo"
-							fileID={ woopayStoreLogo }
-							updateFileID={ setWooPayStoreLogo }
-						/>
-					</div>
+					<WooPayFileUpload
+						fieldKey="woopay-store-logo"
+						label={ __( 'Checkout logo', 'woocommerce-payments' ) }
+						accept="image/png, image/jpeg"
+						disabled={ false }
+						help={ __(
+							'Upload a custom logo. Upload a horizontal image with a white' +
+								' or transparent background for best results. Use a PNG or JPG' +
+								' image format. Recommended width: 512 pixels minimum.',
+							'woocommerce-payments'
+						) }
+						purpose="business_logo"
+						fileID={ woopayStoreLogo }
+						updateFileID={ setWooPayStoreLogo }
+					/>
 					{ wcpaySettings.isWooPayGlobalThemeSupportEligible && (
 						<div className="woopay-global-theme-support">
 							<h4>
@@ -264,23 +272,20 @@ const WooPaySettings = ( { section } ) => {
 							</div>
 						</div>
 					) }
-					<div className="woopay-settings__custom-message-wrapper">
-						<h4>
-							{ __(
-								'Checkout policies',
+					<TextareaControl
+						label={ __(
+							'Checkout policies',
+							'woocommerce-payments'
+						) }
+						help={ interpolateComponents( {
+							mixedString: __(
+								'Override the default {{privacyLink}}privacy policy{{/privacyLink}}' +
+									' and {{termsLink}}terms of service{{/termsLink}},' +
+									' or add custom text to WooPay checkout. {{learnMoreLink}}Learn more{{/learnMoreLink}}.',
 								'woocommerce-payments'
-							) }
-						</h4>
-						<TextareaControl
-							help={ interpolateComponents( {
-								mixedString: __(
-									'Override the default {{privacyLink}}privacy policy{{/privacyLink}}' +
-										' and {{termsLink}}terms of service{{/termsLink}},' +
-										' or add custom text to WooPay checkout. {{learnMoreLink}}Learn more{{/learnMoreLink}}.',
-									'woocommerce-payments'
-								),
-								// prettier-ignore
-								components: {
+							),
+							// prettier-ignore
+							components: {
 									/* eslint-disable prettier/prettier */
 									privacyLink: window.wcSettings?.storePages?.privacy?.permalink ?
 										<Link href={ window.wcSettings.storePages.privacy.permalink } type="external" /> :
@@ -290,34 +295,31 @@ const WooPaySettings = ( { section } ) => {
 										<span />,
 									/* eslint-enable prettier/prettier */
 									learnMoreLink: (
+										// @ts-expect-error: children is provided when interpolating the component
 										// eslint-disable-next-line max-len
 										<ExternalLink href="https://woocommerce.com/document/woopay-merchant-documentation/#checkout-appearance" />
 									),
 								}
-							} ) }
-							value={ woopayCustomMessage }
-							onChange={ setWooPayCustomMessage }
-							__nextHasNoMarginBottom
-						/>
-					</div>
-				</CardBody>
-			) }
-
-			{ section === 'appearance' && (
-				<CardBody className="wcpay-card-body woopay-settings__appearance-card-preview">
-					<div className="woopay-settings__preview">
-						<h4>
-							{ __(
-								'Preview of checkout',
-								'woocommerce-payments'
-							) }
-						</h4>
+						} ) }
+						value={ woopayCustomMessage }
+						onChange={ setWooPayCustomMessage }
+						__nextHasNoMarginBottom
+					/>
+					{ /* eslint-disable-next-line @wordpress/no-base-control-with-label-without-id */ }
+					<BaseControl
+						className="woopay-settings__preview"
+						label={ __(
+							'Preview of checkout',
+							'woocommerce-payments'
+						) }
+						__nextHasNoMarginBottom
+					>
 						<WooPayPreview
 							storeName={ wcSettings.siteTitle }
 							storeLogo={ woopayStoreLogo }
 							customMessage={ woopayCustomMessage }
 						/>
-					</div>
+					</BaseControl>
 				</CardBody>
 			) }
 

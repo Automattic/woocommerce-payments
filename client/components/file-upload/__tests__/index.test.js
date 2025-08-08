@@ -10,19 +10,14 @@ import { render, fireEvent } from '@testing-library/react';
  * Internal dependencies
  */
 import { FileUploadControl } from 'components/file-upload';
-import type { FileUploadControlProps } from 'wcpay/types/disputes';
 
 describe( 'FileUploadControl', () => {
-	let props: FileUploadControlProps;
-	const field = {
-		key: 'field_key',
-		label: 'Upload file',
-		type: 'file',
-	};
 	const accept = '.pdf, image/png, image/jpeg';
+	let baseProps;
+
 	beforeEach( () => {
-		props = {
-			field,
+		baseProps = {
+			fieldKey: 'field_key',
 			accept,
 			isDone: false,
 			isLoading: false,
@@ -33,69 +28,70 @@ describe( 'FileUploadControl', () => {
 			onFileRemove: jest.fn(),
 		};
 
-		( global as any ).wcpaySettings = {
+		global.wcpaySettings = {
 			restUrl: 'http://example.com/wp-json/',
 		};
 	} );
 
 	test( 'renders default file upload control', () => {
 		const { container: control } = render(
-			<FileUploadControl { ...props } />
+			<FileUploadControl { ...baseProps } />
 		);
 		expect( control ).toMatchSnapshot();
 	} );
 
 	test( 'renders loading state', () => {
-		props.isLoading = true;
 		const { container: control } = render(
-			<FileUploadControl { ...props } />
+			<FileUploadControl { ...baseProps } isLoading={ true } />
 		);
 		expect( control ).toMatchSnapshot();
 	} );
 
 	test( 'renders upload done state', () => {
-		props.isDone = true;
-		props.fileName = 'file.pdf';
 		const { container: control } = render(
-			<FileUploadControl { ...props } />
+			<FileUploadControl
+				{ ...baseProps }
+				isDone={ true }
+				fileName="file.pdf"
+			/>
 		);
 		expect( control ).toMatchSnapshot();
 	} );
 
 	test( 'renders upload failed state', () => {
-		props.error = 'Error message';
-		props.fileName = 'file.pdf';
 		const { container: control } = render(
-			<FileUploadControl { ...props } />
+			<FileUploadControl
+				{ ...baseProps }
+				error="Error message"
+				fileName="file.pdf"
+			/>
 		);
 		expect( control ).toMatchSnapshot();
 	} );
 
 	test( 'triggers onFileChange', () => {
 		const { container: control } = render(
-			<FileUploadControl { ...props } />
+			<FileUploadControl { ...baseProps } />
 		);
 		const fakeFile = {};
 		const fakeEvent = { target: { files: [ fakeFile ] } };
 
 		// Note: FormFileUpload does not associate file input with label so workaround is required to select it.
-		const input = control.querySelector< HTMLInputElement >(
-			'input[type="file"]'
-		);
+		const input = control.querySelector( 'input[type="file"]' );
 		if ( input !== null ) {
 			fireEvent.change( input, fakeEvent );
 		}
 
-		expect( props.onFileChange ).toHaveBeenCalledTimes( 1 );
-		expect( props.onFileChange ).toHaveBeenCalledWith(
-			field.key,
+		expect( baseProps.onFileChange ).toHaveBeenCalledTimes( 1 );
+		expect( baseProps.onFileChange ).toHaveBeenCalledWith(
+			'field_key',
 			fakeFile
 		);
 	} );
 
 	test( 'triggers onFileChange two times when selecting the same file again', () => {
 		const { container: control } = render(
-			<FileUploadControl { ...props } />
+			<FileUploadControl { ...baseProps } />
 		);
 
 		const file = new File( [ 'hello' ], 'hello.png', {
@@ -103,37 +99,40 @@ describe( 'FileUploadControl', () => {
 		} );
 
 		// Note: FormFileUpload does not associate file input with label so workaround is required to select it.
-		const input = control.querySelector< HTMLInputElement >(
-			'input[type="file"]'
-		);
+		const input = control.querySelector( 'input[type="file"]' );
 		if ( input !== null ) {
 			fireEvent.change( input, { target: { files: [ file ] } } );
 			fireEvent.change( input, { target: { files: [ file ] } } );
 		}
 
-		expect( props.onFileChange ).toHaveBeenCalledTimes( 2 );
-		expect( props.onFileChange ).toHaveBeenNthCalledWith(
+		expect( baseProps.onFileChange ).toHaveBeenNthCalledWith(
 			2,
-			field.key,
+			'field_key',
 			file
 		);
 	} );
 
 	test( 'triggers onFileRemove', () => {
-		props.fileName = 'file.pdf';
-		props.isDone = true;
-		const { getByRole } = render( <FileUploadControl { ...props } /> );
+		const { getByRole } = render(
+			<FileUploadControl
+				{ ...baseProps }
+				fileName="file.pdf"
+				isDone={ true }
+			/>
+		);
 		fireEvent.click( getByRole( 'button', { name: /remove file/i } ) );
-		expect( props.onFileRemove ).toHaveBeenCalledTimes( 1 );
-		expect( props.onFileRemove ).toHaveBeenCalledWith( field.key );
+		expect( baseProps.onFileRemove ).toHaveBeenCalledTimes( 1 );
+		expect( baseProps.onFileRemove ).toHaveBeenCalledWith( 'field_key' );
 	} );
 
 	test( 'renders disabled state', () => {
-		props.disabled = true;
-		props.isDone = true;
-		props.fileName = 'file.pdf';
 		const { container: control } = render(
-			<FileUploadControl { ...props } />
+			<FileUploadControl
+				{ ...baseProps }
+				disabled={ true }
+				isDone={ true }
+				fileName="file.pdf"
+			/>
 		);
 		expect( control ).toMatchSnapshot();
 	} );

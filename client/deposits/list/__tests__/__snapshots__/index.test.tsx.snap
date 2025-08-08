@@ -255,7 +255,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
             class="woocommerce-table__actions"
           >
             <button
-              class="components-button woocommerce-table__download-button"
+              class="components-button woocommerce-table__download-button is-next-40px-default-size"
               type="button"
             >
               <svg
@@ -1100,7 +1100,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
             class="woocommerce-table__actions"
           >
             <button
-              class="components-button woocommerce-table__download-button"
+              class="components-button woocommerce-table__download-button is-next-40px-default-size"
               type="button"
             >
               <svg

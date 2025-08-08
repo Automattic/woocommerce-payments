@@ -7,22 +7,32 @@ import CheckmarkIcon from 'gridicons/dist/checkmark';
 import ImageIcon from 'gridicons/dist/image';
 import AddOutlineIcon from 'gridicons/dist/add-outline';
 import TrashIcon from 'gridicons/dist/trash';
-import {
-	BaseControl,
-	DropZone,
-	FormFileUpload,
-	Button,
-} from '@wordpress/components';
+import { DropZone, FormFileUpload, Button } from '@wordpress/components';
 
 /**
  * Internal dependencies.
  */
-import type { FileUploadControlProps } from 'wcpay/types/disputes';
 import FileUploadError from './upload-error';
 import FileUploadPreview from './preview';
 
+interface FileUploadControlProps {
+	fieldKey: string;
+	fileName: string;
+	disabled?: boolean;
+	isDone: boolean;
+	isLoading: boolean;
+	accept: string;
+	error?: string;
+	onFileChange( key: string, file: File ): Promise< void >;
+	onFileRemove( key: string ): void;
+	help?: string;
+	showPreview?: boolean;
+	uploadButtonLabel?: string;
+	type?: string;
+}
+
 export const FileUploadControl = ( {
-	field,
+	fieldKey,
 	fileName,
 	disabled,
 	isDone,
@@ -31,7 +41,6 @@ export const FileUploadControl = ( {
 	error,
 	onFileChange,
 	onFileRemove,
-	help,
 	showPreview,
 	uploadButtonLabel,
 	type = 'file',
@@ -65,15 +74,10 @@ export const FileUploadControl = ( {
 	};
 
 	return (
-		<BaseControl
-			id={ `form-file-upload-base-control-${ field.key }` }
-			label={ field.label }
-			help={ help }
-			__nextHasNoMarginBottom
-		>
+		<>
 			<DropZone
 				onFilesDrop={ ( files: Array< File > ) =>
-					onFileChange( field.key, files[ 0 ] )
+					onFileChange( fieldKey, files[ 0 ] )
 				}
 			/>
 			<div className="file-upload">
@@ -83,17 +87,17 @@ export const FileUploadControl = ( {
 						event: React.ChangeEvent< HTMLInputElement >
 					): void => {
 						onFileChange(
-							field.key,
+							fieldKey,
 							( event.target.files || new FileList() )[ 0 ]
 						);
 					} }
 					render={ ( { openFileDialog } ) => (
 						<Button
-							id={ `form-file-upload-${ field.key }` }
+							id={ `form-file-upload-${ fieldKey }` }
 							className={
 								isDone && ! hasError ? 'is-success' : ''
 							}
-							variant="secondary"
+							isSecondary
 							isDestructive={ hasError }
 							isBusy={ isLoading }
 							disabled={ disabled || isLoading }
@@ -101,13 +105,12 @@ export const FileUploadControl = ( {
 							onClick={ (
 								event: React.MouseEvent< HTMLButtonElement >
 							) => handleButtonClick( event, openFileDialog ) }
-							__next40pxDefaultSize
 						>
 							{ uploadButtonLabel ||
 								__( 'Upload file', 'woocommerce-payments' ) }
 						</Button>
 					) }
-				></FormFileUpload>
+				/>
 
 				{ hasError ? (
 					<FileUploadError error={ error } />
@@ -126,10 +129,10 @@ export const FileUploadControl = ( {
 							'woocommerce-payments'
 						) }
 						icon={ <TrashIcon size={ 18 } /> }
-						onClick={ () => onFileRemove( field.key ) }
+						onClick={ () => onFileRemove( fieldKey ) }
 					/>
 				) : null }
 			</div>
-		</BaseControl>
+		</>
 	);
 };

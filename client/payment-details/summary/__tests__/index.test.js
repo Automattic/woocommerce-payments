@@ -985,16 +985,24 @@ describe( 'PaymentDetailsSummary', () => {
 	} );
 
 	describe( 'Refund actions menu', () => {
-		test( 'Refund control menu is visible when conditions are met', () => {
-			renderCharge( getBaseCharge() );
+		test( 'Refund control menu is visible when conditions are met', async () => {
+			await act( async () => {
+				renderCharge( getBaseCharge() );
+			} );
 			expect(
 				screen.getByLabelText( 'Transaction actions' )
 			).toBeInTheDocument();
 		} );
 
-		test( 'Refund in full option is available when no amount has been refunded', () => {
-			renderCharge( getBaseCharge() );
-			fireEvent.click( screen.getByLabelText( 'Transaction actions' ) );
+		test( 'Refund in full option is available when no amount has been refunded', async () => {
+			await act( async () => {
+				renderCharge( getBaseCharge() );
+			} );
+			await act( async () => {
+				await userEvent.click(
+					screen.getByLabelText( 'Transaction actions' )
+				);
+			} );
 			expect( screen.getByText( 'Refund in full' ) ).toBeInTheDocument();
 		} );
 
@@ -1002,17 +1010,25 @@ describe( 'PaymentDetailsSummary', () => {
 			await act( async () => {
 				renderCharge( { ...getBaseCharge(), amount_refunded: 42 } );
 			} );
-			await userEvent.click(
-				screen.getByLabelText( 'Transaction actions' )
-			);
+			await act( async () => {
+				await userEvent.click(
+					screen.getByLabelText( 'Transaction actions' )
+				);
+			} );
 			expect(
 				screen.queryByText( 'Refund in full' )
 			).not.toBeInTheDocument();
 		} );
 
-		test( 'Partial refund option is available when charge is associated with an order', () => {
-			renderCharge( getBaseCharge() );
-			fireEvent.click( screen.getByLabelText( 'Transaction actions' ) );
+		test( 'Partial refund option is available when charge is associated with an order', async () => {
+			await act( async () => {
+				renderCharge( getBaseCharge() );
+			} );
+			await act( async () => {
+				await userEvent.click(
+					screen.getByLabelText( 'Transaction actions' )
+				);
+			} );
 			expect( screen.getByText( 'Partial refund' ) ).toBeInTheDocument();
 		} );
 

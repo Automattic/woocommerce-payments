@@ -7,7 +7,7 @@ exports[`Payment details page should match the snapshot - Charge query param 1`]
   position: relative;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
   outline: none;
-  border-radius: calc(2px - 1px);
+  border-radius: calc(8px - 1px);
 }
 
 .emotion-2 {
@@ -22,13 +22,13 @@ exports[`Payment details page should match the snapshot - Charge query param 1`]
 }
 
 .emotion-4:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-4:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 .emotion-6 {
@@ -43,14 +43,11 @@ exports[`Payment details page should match the snapshot - Charge query param 1`]
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: justify;
   -webkit-justify-content: space-between;
   justify-content: space-between;
   width: 100%;
-}
-
-.emotion-6>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
 }
 
 .emotion-6>* {
@@ -78,19 +75,18 @@ exports[`Payment details page should match the snapshot - Charge query param 1`]
   will-change: box-shadow;
   border-radius: inherit;
   bottom: 0;
-  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
   opacity: 1;
   left: 0;
   right: 0;
   top: 0;
-  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  border-radius: 2px;
+  border-radius: 8px;
 }
 
-@media ( prefers-reduced-motion: reduce ) {
+@media not ( prefers-reduced-motion ) {
   .emotion-12 {
-    transition-duration: 0ms;
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
   }
 }
 
@@ -106,6 +102,7 @@ exports[`Payment details page should match the snapshot - Charge query param 1`]
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: justify;
   -webkit-justify-content: space-between;
   justify-content: space-between;
@@ -114,10 +111,6 @@ exports[`Payment details page should match the snapshot - Charge query param 1`]
   box-sizing: border-box;
   border-color: rgba(0, 0, 0, 0.1);
   padding: calc(4px * 6) calc(4px * 8);
-}
-
-.emotion-20>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
 }
 
 .emotion-20>* {
@@ -129,13 +122,13 @@ exports[`Payment details page should match the snapshot - Charge query param 1`]
 }
 
 .emotion-20:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-20:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 .emotion-22 {
@@ -146,13 +139,13 @@ exports[`Payment details page should match the snapshot - Charge query param 1`]
 }
 
 .emotion-22:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-22:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 <div>
@@ -632,7 +625,7 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
   position: relative;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
   outline: none;
-  border-radius: calc(2px - 1px);
+  border-radius: calc(8px - 1px);
 }
 
 .emotion-2 {
@@ -647,13 +640,13 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
 }
 
 .emotion-4:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-4:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 .emotion-6 {
@@ -668,14 +661,11 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: justify;
   -webkit-justify-content: space-between;
   justify-content: space-between;
   width: 100%;
-}
-
-.emotion-6>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
 }
 
 .emotion-6>* {
@@ -706,6 +696,7 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: justify;
   -webkit-justify-content: space-between;
   justify-content: space-between;
@@ -714,10 +705,6 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
   box-sizing: border-box;
   border-color: rgba(0, 0, 0, 0.1);
   padding: calc(4px * 4) calc(4px * 6);
-}
-
-.emotion-12>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
 }
 
 .emotion-12>* {
@@ -729,13 +716,13 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
 }
 
 .emotion-12:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-12:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 .emotion-14 {
@@ -747,19 +734,18 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
   will-change: box-shadow;
   border-radius: inherit;
   bottom: 0;
-  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
   opacity: 1;
   left: 0;
   right: 0;
   top: 0;
-  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  border-radius: 2px;
+  border-radius: 8px;
 }
 
-@media ( prefers-reduced-motion: reduce ) {
+@media not ( prefers-reduced-motion ) {
   .emotion-14 {
-    transition-duration: 0ms;
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
   }
 }
 
@@ -775,6 +761,7 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: justify;
   -webkit-justify-content: space-between;
   justify-content: space-between;
@@ -783,10 +770,6 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
   box-sizing: border-box;
   border-color: rgba(0, 0, 0, 0.1);
   padding: calc(4px * 6) calc(4px * 8);
-}
-
-.emotion-22>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
 }
 
 .emotion-22>* {
@@ -798,13 +781,13 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
 }
 
 .emotion-22:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-22:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 .emotion-24 {
@@ -815,13 +798,13 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
 }
 
 .emotion-24:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-24:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 <div>
@@ -1148,7 +1131,7 @@ exports[`Payment details page should match the snapshot - Payment Intent query p
               class="card-notice__button"
             >
               <button
-                class="components-button is-primary"
+                class="components-button is-next-40px-default-size is-primary"
                 type="button"
               >
                 Refund

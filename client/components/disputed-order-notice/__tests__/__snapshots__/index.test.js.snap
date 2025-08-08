@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`DisputedOrderNoticeHandler renders regular dispute notice 1`] = `
-.emotion-0 {
+.emotion-2 {
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -13,6 +13,7 @@ exports[`DisputedOrderNoticeHandler renders regular dispute notice 1`] = `
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: start;
   -ms-flex-pack: start;
   -webkit-justify-content: flex-start;
@@ -20,15 +21,11 @@ exports[`DisputedOrderNoticeHandler renders regular dispute notice 1`] = `
   width: 100%;
 }
 
-.emotion-0>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
-}
-
-.emotion-0>* {
+.emotion-2>* {
   min-width: 0;
 }
 
-.emotion-2 {
+.emotion-4 {
   display: block;
   max-height: 100%;
   max-width: 100%;
@@ -36,7 +33,7 @@ exports[`DisputedOrderNoticeHandler renders regular dispute notice 1`] = `
   min-width: 0;
 }
 
-.emotion-4 {
+.emotion-6 {
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -48,6 +45,7 @@ exports[`DisputedOrderNoticeHandler renders regular dispute notice 1`] = `
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 4);
   -webkit-box-pack: start;
   -ms-flex-pack: start;
   -webkit-justify-content: flex-start;
@@ -55,11 +53,7 @@ exports[`DisputedOrderNoticeHandler renders regular dispute notice 1`] = `
   width: 100%;
 }
 
-.emotion-4>*+*:not( marquee ) {
-  margin-left: calc(4px * 4);
-}
-
-.emotion-4>* {
+.emotion-6>* {
   min-width: 0;
 }
 
@@ -68,15 +62,23 @@ exports[`DisputedOrderNoticeHandler renders regular dispute notice 1`] = `
     class="wcpay-inline-notice wcpay-inline-warning-notice components-notice is-warning"
   >
     <div
+      class="components-visually-hidden emotion-0 emotion-1"
+      data-wp-c16t="true"
+      data-wp-component="VisuallyHidden"
+      style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+    >
+      Warning notice
+    </div>
+    <div
       class="components-notice__content"
     >
       <div
-        class="components-flex emotion-0 emotion-1"
+        class="components-flex emotion-2 emotion-1"
         data-wp-c16t="true"
         data-wp-component="Flex"
       >
         <div
-          class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content emotion-2 emotion-1"
+          class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content emotion-4 emotion-1"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
@@ -86,7 +88,7 @@ exports[`DisputedOrderNoticeHandler renders regular dispute notice 1`] = `
            
           Please respond before Oct 28, 2023.
           <div
-            class="components-flex wcpay-inline-notice__content__actions emotion-4 emotion-1"
+            class="components-flex wcpay-inline-notice__content__actions emotion-6 emotion-1"
             data-wp-c16t="true"
             data-wp-component="Flex"
           >
@@ -108,7 +110,7 @@ exports[`DisputedOrderNoticeHandler renders regular dispute notice 1`] = `
 `;
 
 exports[`DisputedOrderNoticeHandler renders urgent dispute notice 1`] = `
-.emotion-0 {
+.emotion-2 {
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -120,6 +122,7 @@ exports[`DisputedOrderNoticeHandler renders urgent dispute notice 1`] = `
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: start;
   -ms-flex-pack: start;
   -webkit-justify-content: flex-start;
@@ -127,15 +130,11 @@ exports[`DisputedOrderNoticeHandler renders urgent dispute notice 1`] = `
   width: 100%;
 }
 
-.emotion-0>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
-}
-
-.emotion-0>* {
+.emotion-2>* {
   min-width: 0;
 }
 
-.emotion-2 {
+.emotion-4 {
   display: block;
   max-height: 100%;
   max-width: 100%;
@@ -143,7 +142,7 @@ exports[`DisputedOrderNoticeHandler renders urgent dispute notice 1`] = `
   min-width: 0;
 }
 
-.emotion-4 {
+.emotion-6 {
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -155,6 +154,7 @@ exports[`DisputedOrderNoticeHandler renders urgent dispute notice 1`] = `
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 4);
   -webkit-box-pack: start;
   -ms-flex-pack: start;
   -webkit-justify-content: flex-start;
@@ -162,11 +162,7 @@ exports[`DisputedOrderNoticeHandler renders urgent dispute notice 1`] = `
   width: 100%;
 }
 
-.emotion-4>*+*:not( marquee ) {
-  margin-left: calc(4px * 4);
-}
-
-.emotion-4>* {
+.emotion-6>* {
   min-width: 0;
 }
 
@@ -175,15 +171,23 @@ exports[`DisputedOrderNoticeHandler renders urgent dispute notice 1`] = `
     class="wcpay-inline-notice wcpay-inline-error-notice components-notice is-error"
   >
     <div
+      class="components-visually-hidden emotion-0 emotion-1"
+      data-wp-c16t="true"
+      data-wp-component="VisuallyHidden"
+      style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+    >
+      Error notice
+    </div>
+    <div
       class="components-notice__content"
     >
       <div
-        class="components-flex emotion-0 emotion-1"
+        class="components-flex emotion-2 emotion-1"
         data-wp-c16t="true"
         data-wp-component="Flex"
       >
         <div
-          class="components-flex-item wcpay-inline-notice__content wcpay-inline-error-notice__content emotion-2 emotion-1"
+          class="components-flex-item wcpay-inline-notice__content wcpay-inline-error-notice__content emotion-4 emotion-1"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
@@ -193,7 +197,7 @@ exports[`DisputedOrderNoticeHandler renders urgent dispute notice 1`] = `
            
           (Last day today)
           <div
-            class="components-flex wcpay-inline-notice__content__actions emotion-4 emotion-1"
+            class="components-flex wcpay-inline-notice__content__actions emotion-6 emotion-1"
             data-wp-c16t="true"
             data-wp-component="Flex"
           >

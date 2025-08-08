@@ -74,6 +74,7 @@ const ManualCaptureControl = (): JSX.Element => {
 									),
 									components: {
 										a: (
+											// @ts-expect-error: children is provided when interpolating the component
 											<ExternalLink href="https://woocommerce.com/in-person-payments/" />
 										),
 									},
@@ -84,7 +85,7 @@ const ManualCaptureControl = (): JSX.Element => {
 				__nextHasNoMarginBottom
 			/>
 			{ isStripeBillingEnabled && (
-				<InlineNotice status="warning" isDismissible={ false } icon>
+				<InlineNotice status="warning" isDismissible={ false }>
 					{ __(
 						'Manual capture is not available when Stripe Billing is active.',
 						'woocommerce-payments'

@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { act } from 'react';
 import { render, waitFor } from '@testing-library/react';
 import { updateQueryString } from '@woocommerce/navigation';
 import apiFetch from '@wordpress/api-fetch';
@@ -278,8 +278,9 @@ describe( 'Deposits list', () => {
 			} );
 
 			const { getByRole } = render( <DepositsList /> );
-
-			getByRole( 'button', { name: 'Export' } ).click();
+			await act( async () => {
+				getByRole( 'button', { name: 'Export' } ).click();
+			} );
 
 			expect( window.confirm ).toHaveBeenCalledTimes( 1 );
 			expect( window.confirm ).toHaveBeenCalledWith(

@@ -230,42 +230,36 @@ const Deposits = () => {
 
 				<DepositsSchedule />
 
-				<div className="deposits__bank-information">
-					<h4>
-						{ __( 'Payout bank account', 'woocommerce-payments' ) }
-					</h4>
-					{ hasErroredExternalAccount ? (
-						<DepositFailureNotice
-							updateAccountLink={ accountLink }
-						/>
-					) : (
-						<p className="deposits__bank-information-help">
-							{ __(
-								'Manage and update your bank account information to receive payouts.',
-								'woocommerce-payments'
-							) }{ ' ' }
-							{ accountLink && (
-								<ExternalLink
-									href={ accountLink }
-									onClick={ () => {
-										recordEvent(
-											'wcpay_settings_deposits_manage_in_stripe_click'
-										);
-										recordEvent(
-											'wcpay_account_details_link_clicked',
-											{ source: 'settings-deposits' }
-										);
-									} }
-								>
-									{ __(
-										'Manage in Stripe',
-										'woocommerce-payments'
-									) }
-								</ExternalLink>
-							) }
-						</p>
-					) }
-				</div>
+				<h4>{ __( 'Payout bank account', 'woocommerce-payments' ) }</h4>
+				{ hasErroredExternalAccount ? (
+					<DepositFailureNotice updateAccountLink={ accountLink } />
+				) : (
+					<p>
+						{ __(
+							'Manage and update your bank account information to receive payouts.',
+							'woocommerce-payments'
+						) }{ ' ' }
+						{ accountLink && (
+							<ExternalLink
+								href={ accountLink }
+								onClick={ () => {
+									recordEvent(
+										'wcpay_settings_deposits_manage_in_stripe_click'
+									);
+									recordEvent(
+										'wcpay_account_details_link_clicked',
+										{ source: 'settings-deposits' }
+									);
+								} }
+							>
+								{ __(
+									'Manage in Stripe',
+									'woocommerce-payments'
+								) }
+							</ExternalLink>
+						) }
+					</p>
+				) }
 			</CardBody>
 		</Card>
 	);

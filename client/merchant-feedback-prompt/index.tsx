@@ -101,6 +101,7 @@ const MerchantFeedbackPrompt: React.FC< MerchantFeedbackPromptProps > = ( {
 					{
 						id: 'wcpay-merchant-feedback-prompt',
 						className: 'wcpay-merchant-feedback-prompt',
+						// @ts-expect-error: content can receive a JSX element, not just a string
 						content: (
 							<Flex
 								gap={ 3 }
