@@ -65,8 +65,8 @@ jobs:
           #
           # BLOCKS TESTS STRATEGY:
           # - Run blocks tests on current stable and newer WC versions where blocks support is mature
-          # - WC 7.7.0: NO blocks tests (too old, limited support)
-          # - WC L-1: NO blocks tests (previous major, potential compatibility issues)
+          # - WC 7.7.0: NO blocks tests (too old, limited support) - uses skip_blocks=1
+          # - WC L-1: NO blocks tests (previous major, potential compatibility issues) - uses skip_blocks=1
           # - WC latest: YES blocks tests (current stable, full support)
           # - WC beta: YES blocks tests (newer version, test latest features)
           # - WC RC: YES blocks tests (newest version, test upcoming release)
@@ -84,17 +84,17 @@ jobs:
           # Initialize empty matrix array
           MATRIX_ENTRIES=()
 
-          # Add WC 7.7.0 with PHP 7.3 only (legacy)
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+          # Add WC 7.7.0 with PHP 7.3 only (legacy - NO blocks tests)
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\",\"skip_blocks\":\"1\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\",\"skip_blocks\":\"1\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\",\"skip_blocks\":\"1\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\",\"skip_blocks\":\"1\"}")
 
           # Add L-1 version with PHP 8.3 only (NO blocks tests - older version)
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\",\"skip_blocks\":\"1\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\",\"skip_blocks\":\"1\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\",\"skip_blocks\":\"1\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\",\"skip_blocks\":\"1\"}")
 
           # Add latest with PHP 8.3 (INCLUDE blocks tests - current stable, full support)
           MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
@@ -143,6 +143,7 @@ jobs:
       E2E_BRANCH: ${{ matrix.test_branches }}
       SKIP_WC_SUBSCRIPTIONS_TESTS: ${{ matrix.test_groups == 'blocks' && '1' || '' }}
       SKIP_WC_ACTION_SCHEDULER_TESTS: ${{ matrix.test_groups == 'blocks' && '1' || '' }}
+      SKIP_WC_BLOCKS_TESTS: ${{ matrix.skip_blocks == '1' && '1' || '' }}
 
     steps:
       - name: Checkout WCPay repository
@@ -161,6 +162,8 @@ jobs:
 
 
   # Run tests against WP Nightly & WC latest
+  # This section tests cutting-edge WordPress features with latest WC
+  # Blocks tests are included here since we're testing against WP nightly + WC latest
   wp-nightly-tests:
     runs-on: ubuntu-latest
 
