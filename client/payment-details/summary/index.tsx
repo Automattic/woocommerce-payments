@@ -764,6 +764,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 							),
 							{
 								a: (
+									// @ts-expect-error: children is provided when interpolating the component
 									<ExternalLink href="https://woocommerce.com/document/woopayments/settings-guide/authorize-and-capture/#capturing-authorized-orders" />
 								),
 							}

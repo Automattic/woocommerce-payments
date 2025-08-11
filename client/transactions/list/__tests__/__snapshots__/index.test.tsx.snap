@@ -302,7 +302,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
               </div>
             </div>
             <button
-              class="components-button woocommerce-table__download-button"
+              class="components-button woocommerce-table__download-button is-next-40px-default-size"
               type="button"
             >
               <svg
@@ -851,6 +851,7 @@ exports[`Transactions list renders correctly when can filter by several currenci
                           class="conversion-indicator"
                           data-testid="conversion-indicator"
                           style="height: 18px; width: 18px;"
+                          tabindex="0"
                         >
                           <svg
                             class="gridicon gridicons-sync"
@@ -1447,7 +1448,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
               </div>
             </div>
             <button
-              class="components-button woocommerce-table__download-button"
+              class="components-button woocommerce-table__download-button is-next-40px-default-size"
               type="button"
             >
               <svg
@@ -1996,6 +1997,7 @@ exports[`Transactions list renders correctly when filtered by currency 1`] = `
                           class="conversion-indicator"
                           data-testid="conversion-indicator"
                           style="height: 18px; width: 18px;"
+                          tabindex="0"
                         >
                           <svg
                             class="gridicon gridicons-sync"
@@ -2589,7 +2591,7 @@ exports[`Transactions list renders correctly when filtered by payout 1`] = `
               </div>
             </div>
             <button
-              class="components-button woocommerce-table__download-button"
+              class="components-button woocommerce-table__download-button is-next-40px-default-size"
               type="button"
             >
               <svg
@@ -2964,6 +2966,7 @@ exports[`Transactions list renders correctly when filtered by payout 1`] = `
                           class="conversion-indicator"
                           data-testid="conversion-indicator"
                           style="height: 18px; width: 18px;"
+                          tabindex="0"
                         >
                           <svg
                             class="gridicon gridicons-sync"
@@ -3422,7 +3425,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
               </div>
             </div>
             <button
-              class="components-button woocommerce-table__download-button"
+              class="components-button woocommerce-table__download-button is-next-40px-default-size"
               type="button"
             >
               <svg
@@ -3997,6 +4000,7 @@ exports[`Transactions list subscription column renders correctly 1`] = `
                           class="conversion-indicator"
                           data-testid="conversion-indicator"
                           style="height: 18px; width: 18px;"
+                          tabindex="0"
                         >
                           <svg
                             class="gridicon gridicons-sync"
@@ -4641,7 +4645,7 @@ exports[`Transactions list when not filtered by payout renders correctly 1`] = `
               </div>
             </div>
             <button
-              class="components-button woocommerce-table__download-button"
+              class="components-button woocommerce-table__download-button is-next-40px-default-size"
               type="button"
             >
               <svg
@@ -5190,6 +5194,7 @@ exports[`Transactions list when not filtered by payout renders correctly 1`] = `
                           class="conversion-indicator"
                           data-testid="conversion-indicator"
                           style="height: 18px; width: 18px;"
+                          tabindex="0"
                         >
                           <svg
                             class="gridicon gridicons-sync"
@@ -5828,7 +5833,7 @@ exports[`Transactions list when not filtered by payout renders table summary onl
               </div>
             </div>
             <button
-              class="components-button woocommerce-table__download-button"
+              class="components-button woocommerce-table__download-button is-next-40px-default-size"
               type="button"
             >
               <svg
@@ -6377,6 +6382,7 @@ exports[`Transactions list when not filtered by payout renders table summary onl
                           class="conversion-indicator"
                           data-testid="conversion-indicator"
                           style="height: 18px; width: 18px;"
+                          tabindex="0"
                         >
                           <svg
                             class="gridicon gridicons-sync"

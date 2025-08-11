@@ -85,7 +85,7 @@ const getNoticeContent = (
 							strong: <strong />,
 							learnMoreLink: (
 								// Link content is in the format string above. Consider disabling jsx-a11y/anchor-has-content.
-
+								// @ts-expect-error: children is provided when interpolating the component
 								<ExternalLink
 									href={
 										'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/sandbox-mode/'

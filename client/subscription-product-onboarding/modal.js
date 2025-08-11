@@ -86,6 +86,7 @@ const SubscriptionProductOnboardingModalContent = ( {
 						'woocommerce-payments'
 					),
 					{
+						// @ts-expect-error: children is provided when interpolating the component
 						a: <ExternalLink href="https://wordpress.com/tos/" />,
 					}
 				) }

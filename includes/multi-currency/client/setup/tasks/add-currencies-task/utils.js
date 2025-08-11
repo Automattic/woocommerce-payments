@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { sprintf, __ } from '@wordpress/i18n';
+import { sprintf, __, _n } from '@wordpress/i18n';
 
 /**
  * Builds the string representation of a currency object, e.g. "US Dollars ($ USD)"
@@ -37,16 +37,32 @@ export const ConcatenateCurrencyStrings = (
 	const filteredCurrencies = currencies.filter(
 		( code ) => code !== except && currenciesData[ code ]
 	);
-	const __and = __( 'and', 'woocommerce-payments' );
-	return filteredCurrencies
-		.map( ( code ) =>
-			StringRepresentationOfCurrency( currenciesData[ code ] )
-		)
-		.join( ', ' )
-		.replace(
-			/, ([^,]+)$/,
-			filteredCurrencies.length === 2
-				? ' ' + __and + ' $1'
-				: ', ' + __and + ' $1'
-		);
+
+	const currencyStrings = filteredCurrencies.map( ( code ) =>
+		StringRepresentationOfCurrency( currenciesData[ code ] )
+	);
+
+	if ( currencyStrings.length === 0 ) {
+		return '';
+	}
+
+	if ( currencyStrings.length === 1 ) {
+		return currencyStrings[ 0 ];
+	}
+
+	// for 2+ currencies, use array destructuring to get last currency and rest
+	const lastCurrency = currencyStrings.pop();
+	const remainingCurrencies = currencyStrings.join( ', ' );
+
+	return sprintf(
+		/* translators: %1$s: comma-separated list of currencies, %2$s: last currency */
+		_n(
+			'%1$s and %2$s',
+			'%1$s, and %2$s',
+			currencyStrings.length,
+			'woocommerce-payments'
+		),
+		remainingCurrencies,
+		lastCurrency
+	);
 };

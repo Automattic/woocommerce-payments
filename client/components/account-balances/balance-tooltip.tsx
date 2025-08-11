@@ -133,6 +133,7 @@ export const AvailableBalanceTooltip: React.FC< AvailableBalanceTooltipProps > =
 								),
 								components: {
 									discoverWhyLink: (
+										// @ts-expect-error: children is provided when interpolating the component
 										<ExternalLink
 											href={
 												documentationUrls.negativeBalance

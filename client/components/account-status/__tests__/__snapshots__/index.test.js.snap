@@ -7,7 +7,7 @@ exports[`AccountStatus does not render edit details when no account link 1`] = `
   position: relative;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
   outline: none;
-  border-radius: calc(2px - 1px);
+  border-radius: calc(8px - 1px);
 }
 
 .emotion-2 {
@@ -26,6 +26,7 @@ exports[`AccountStatus does not render edit details when no account link 1`] = `
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 3);
   -webkit-box-pack: left;
   -ms-flex-pack: left;
   -webkit-justify-content: left;
@@ -37,10 +38,6 @@ exports[`AccountStatus does not render edit details when no account link 1`] = `
   padding: calc(4px * 4) calc(4px * 6);
 }
 
-.emotion-4>*+*:not( marquee ) {
-  margin-left: calc(4px * 3);
-}
-
 .emotion-4>* {
   min-width: 0;
 }
@@ -50,13 +47,13 @@ exports[`AccountStatus does not render edit details when no account link 1`] = `
 }
 
 .emotion-4:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-4:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 .emotion-6 {
@@ -86,13 +83,13 @@ exports[`AccountStatus does not render edit details when no account link 1`] = `
 }
 
 .emotion-10:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-10:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 .emotion-12 {
@@ -107,15 +104,12 @@ exports[`AccountStatus does not render edit details when no account link 1`] = `
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 3);
   -webkit-box-pack: left;
   -ms-flex-pack: left;
   -webkit-justify-content: left;
   justify-content: left;
   width: 100%;
-}
-
-.emotion-12>*+*:not( marquee ) {
-  margin-left: calc(4px * 3);
 }
 
 .emotion-12>* {
@@ -143,19 +137,18 @@ exports[`AccountStatus does not render edit details when no account link 1`] = `
   will-change: box-shadow;
   border-radius: inherit;
   bottom: 0;
-  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
   opacity: 1;
   left: 0;
   right: 0;
   top: 0;
-  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  border-radius: 2px;
+  border-radius: 8px;
 }
 
-@media ( prefers-reduced-motion: reduce ) {
+@media not ( prefers-reduced-motion ) {
   .emotion-26 {
-    transition-duration: 0ms;
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
   }
 }
 
@@ -320,7 +313,7 @@ exports[`AccountStatus renders account tools 1`] = `
   position: relative;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
   outline: none;
-  border-radius: calc(2px - 1px);
+  border-radius: calc(8px - 1px);
 }
 
 .emotion-2 {
@@ -339,6 +332,7 @@ exports[`AccountStatus renders account tools 1`] = `
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 3);
   -webkit-box-pack: left;
   -ms-flex-pack: left;
   -webkit-justify-content: left;
@@ -350,10 +344,6 @@ exports[`AccountStatus renders account tools 1`] = `
   padding: calc(4px * 4) calc(4px * 6);
 }
 
-.emotion-4>*+*:not( marquee ) {
-  margin-left: calc(4px * 3);
-}
-
 .emotion-4>* {
   min-width: 0;
 }
@@ -363,13 +353,13 @@ exports[`AccountStatus renders account tools 1`] = `
 }
 
 .emotion-4:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-4:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 .emotion-6 {
@@ -399,13 +389,13 @@ exports[`AccountStatus renders account tools 1`] = `
 }
 
 .emotion-12:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-12:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 .emotion-14 {
@@ -420,15 +410,12 @@ exports[`AccountStatus renders account tools 1`] = `
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 3);
   -webkit-box-pack: left;
   -ms-flex-pack: left;
   -webkit-justify-content: left;
   justify-content: left;
   width: 100%;
-}
-
-.emotion-14>*+*:not( marquee ) {
-  margin-left: calc(4px * 3);
 }
 
 .emotion-14>* {
@@ -456,19 +443,18 @@ exports[`AccountStatus renders account tools 1`] = `
   will-change: box-shadow;
   border-radius: inherit;
   bottom: 0;
-  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
   opacity: 1;
   left: 0;
   right: 0;
   top: 0;
-  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  border-radius: 2px;
+  border-radius: 8px;
 }
 
-@media ( prefers-reduced-motion: reduce ) {
+@media not ( prefers-reduced-motion ) {
   .emotion-30 {
-    transition-duration: 0ms;
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
   }
 }
 
@@ -510,7 +496,7 @@ exports[`AccountStatus renders account tools 1`] = `
           data-wp-component="FlexItem"
         >
           <a
-            class="components-button is-link"
+            class="components-button is-next-40px-default-size is-link"
             href="https://stripe.example.com/account?from=WCPAY_ACCOUNT_DETAILS&source=wcpay-account-details"
             target="_blank"
           >
@@ -617,7 +603,7 @@ exports[`AccountStatus renders account tools 1`] = `
             class="account-tools__actions"
           >
             <button
-              class="components-button is-secondary"
+              class="components-button is-next-40px-default-size is-secondary"
               type="button"
             >
               Reset account
@@ -673,7 +659,7 @@ exports[`AccountStatus renders error status 1`] = `
   position: relative;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
   outline: none;
-  border-radius: calc(2px - 1px);
+  border-radius: calc(8px - 1px);
 }
 
 .emotion-2 {
@@ -692,6 +678,7 @@ exports[`AccountStatus renders error status 1`] = `
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 3);
   -webkit-box-pack: left;
   -ms-flex-pack: left;
   -webkit-justify-content: left;
@@ -703,10 +690,6 @@ exports[`AccountStatus renders error status 1`] = `
   padding: calc(4px * 4) calc(4px * 6);
 }
 
-.emotion-4>*+*:not( marquee ) {
-  margin-left: calc(4px * 3);
-}
-
 .emotion-4>* {
   min-width: 0;
 }
@@ -716,13 +699,13 @@ exports[`AccountStatus renders error status 1`] = `
 }
 
 .emotion-4:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-4:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 .emotion-6 {
@@ -733,13 +716,13 @@ exports[`AccountStatus renders error status 1`] = `
 }
 
 .emotion-6:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-6:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 .emotion-8 {
@@ -751,19 +734,18 @@ exports[`AccountStatus renders error status 1`] = `
   will-change: box-shadow;
   border-radius: inherit;
   bottom: 0;
-  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
   opacity: 1;
   left: 0;
   right: 0;
   top: 0;
-  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  border-radius: 2px;
+  border-radius: 8px;
 }
 
-@media ( prefers-reduced-motion: reduce ) {
+@media not ( prefers-reduced-motion ) {
   .emotion-8 {
-    transition-duration: 0ms;
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
   }
 }
 
@@ -814,7 +796,7 @@ exports[`AccountStatus renders normal status 1`] = `
   position: relative;
   box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
   outline: none;
-  border-radius: calc(2px - 1px);
+  border-radius: calc(8px - 1px);
 }
 
 .emotion-2 {
@@ -833,6 +815,7 @@ exports[`AccountStatus renders normal status 1`] = `
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 3);
   -webkit-box-pack: left;
   -ms-flex-pack: left;
   -webkit-justify-content: left;
@@ -844,10 +827,6 @@ exports[`AccountStatus renders normal status 1`] = `
   padding: calc(4px * 4) calc(4px * 6);
 }
 
-.emotion-4>*+*:not( marquee ) {
-  margin-left: calc(4px * 3);
-}
-
 .emotion-4>* {
   min-width: 0;
 }
@@ -857,13 +836,13 @@ exports[`AccountStatus renders normal status 1`] = `
 }
 
 .emotion-4:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-4:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 .emotion-6 {
@@ -893,13 +872,13 @@ exports[`AccountStatus renders normal status 1`] = `
 }
 
 .emotion-12:first-of-type {
-  border-top-left-radius: calc(2px - 1px);
-  border-top-right-radius: calc(2px - 1px);
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
 }
 
 .emotion-12:last-of-type {
-  border-bottom-left-radius: calc(2px - 1px);
-  border-bottom-right-radius: calc(2px - 1px);
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
 }
 
 .emotion-14 {
@@ -914,15 +893,12 @@ exports[`AccountStatus renders normal status 1`] = `
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 3);
   -webkit-box-pack: left;
   -ms-flex-pack: left;
   -webkit-justify-content: left;
   justify-content: left;
   width: 100%;
-}
-
-.emotion-14>*+*:not( marquee ) {
-  margin-left: calc(4px * 3);
 }
 
 .emotion-14>* {
@@ -950,19 +926,18 @@ exports[`AccountStatus renders normal status 1`] = `
   will-change: box-shadow;
   border-radius: inherit;
   bottom: 0;
-  box-shadow: 0 0px 0px 0 rgba(0 ,0, 0, 0);
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
   opacity: 1;
   left: 0;
   right: 0;
   top: 0;
-  -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
-  border-radius: 2px;
+  border-radius: 8px;
 }
 
-@media ( prefers-reduced-motion: reduce ) {
+@media not ( prefers-reduced-motion ) {
   .emotion-28 {
-    transition-duration: 0ms;
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
   }
 }
 
@@ -1004,7 +979,7 @@ exports[`AccountStatus renders normal status 1`] = `
           data-wp-component="FlexItem"
         >
           <a
-            class="components-button is-link"
+            class="components-button is-next-40px-default-size is-link"
             href="https://stripe.example.com/account?from=WCPAY_ACCOUNT_DETAILS&source=wcpay-account-details"
             target="_blank"
           >

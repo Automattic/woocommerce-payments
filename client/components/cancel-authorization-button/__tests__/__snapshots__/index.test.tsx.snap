@@ -3,7 +3,7 @@
 exports[`CancelAuthorizationButton should be disabled when requesting is true 1`] = `
 <div>
   <button
-    class="components-button is-small"
+    class="components-button is-next-40px-default-size is-small"
     disabled=""
     type="button"
   >
@@ -15,7 +15,7 @@ exports[`CancelAuthorizationButton should be disabled when requesting is true 1`
 exports[`CancelAuthorizationButton should render normal status 1`] = `
 <div>
   <button
-    class="components-button is-destructive"
+    class="components-button is-next-40px-default-size is-destructive"
     type="button"
   >
     Cancel
@@ -26,7 +26,7 @@ exports[`CancelAuthorizationButton should render normal status 1`] = `
 exports[`CancelAuthorizationButton should transition to busy state when clicked 1`] = `
 <div>
   <button
-    class="components-button is-busy is-destructive"
+    class="components-button is-next-40px-default-size is-busy is-destructive"
     disabled=""
     type="button"
   >
