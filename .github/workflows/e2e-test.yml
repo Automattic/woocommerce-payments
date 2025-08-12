@@ -63,12 +63,12 @@ jobs:
           # Create optimized matrix with selective PHP version testing
           # Build matrix dynamically based on WC versions
           #
-          # BLOCKS TESTS STRATEGY:
-          # - Run blocks tests on current stable and newer WC versions where blocks support is mature
-          # - WC 7.7.0: NO blocks tests (too old, limited support) - uses skip_blocks=1
-          # - WC L-1: NO blocks tests (previous major, potential compatibility issues) - uses skip_blocks=1
-          # - WC latest: YES blocks tests (current stable, full support)
-          # - WC beta: YES blocks tests (newer version, test latest features)
+          # BLOCK-BASED CHECKOUT TESTS STRATEGY:
+          # - Run block-based checkout tests on current stable and newer WC versions where blocks support is mature
+          # - WC 7.7.0: NO block-based checkout tests (too old, limited support) - uses skip_blocks=1
+          # - WC L-1: NO block-based checkout tests (previous major, potential compatibility issues) - uses skip_blocks=1
+          # - WC latest: YES block-based checkout tests (current stable, full support)
+          # - WC beta: YES block-based checkout tests (newer version, test latest features)
           # - WC RC: YES blocks tests (newest version, test upcoming release)
 
           # Define common values to reduce repetition
@@ -162,7 +162,7 @@ jobs:
 
 
   # Run tests against WP Nightly & WC latest
-  # This section tests cutting-edge WordPress features with latest WC
+  # This section tests new WordPress features with latest WC
   # Blocks tests are included here since we're testing against WP nightly + WC latest
   wp-nightly-tests:
     runs-on: ubuntu-latest
