@@ -7,13 +7,11 @@ runs:
     - name: Run E2E Tests
       shell: bash
       run: |
-        npm run test:e2e-ci
-
-        # If tests failed, retry only the failed tests using --last-failed
-        if [[ $? -ne 0 ]]; then
+        set -e
+        npm run test:e2e-ci || {
           echo "::notice::Some tests failed, retrying only failed tests with --last-failed flag"
-          npm run test:e2e-ci -- --last-failed
-        fi
+          npx playwright test --config=tests/e2e/playwright.config.ts --grep-invert @todo --last-failed
+        }
 
     # Archive screenshots if any
     - name: Archive e2e test screenshots & logs
