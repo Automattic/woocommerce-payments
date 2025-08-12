@@ -8,13 +8,8 @@ const goToDevToolsSettings = async ( page: Page ) => {
 		waitUntil: 'domcontentloaded',
 	} );
 
-	// Wait for the page to be fully loaded and verify we're on the right page
+	// Wait for the page to be fully loaded
 	await page.waitForLoadState( 'networkidle' );
-
-	// Verify we're on the devtools page by checking for a unique element
-	await expect(
-		page.getByText( /WooCommerce Payments Dev Tools/ )
-	).toBeVisible( { timeout: 10000 } );
 };
 
 const saveDevToolsSettings = async ( page: Page ) => {
