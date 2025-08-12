@@ -51,7 +51,9 @@ let web: WebClient;
  */
 const initializeWeb = (): WebClient => {
 	if ( ! web ) {
-		web = new WebClient( E2E_SLACK_TOKEN );
+		web = new WebClient( E2E_SLACK_TOKEN, {
+			timeout: 10000, // 10 second timeout to prevent hanging
+		} );
 	}
 	return web;
 };
@@ -113,27 +115,45 @@ export const sendFailedTestMessageToSlack = async ( testName: string ) => {
 	const { branch, commit, webUrl } = slackParams;
 	const webClient = initializeWeb();
 
+	// Add timeout to prevent hanging
+	const timeoutPromise = new Promise( ( _, reject ) => {
+		setTimeout( () => reject( new Error( 'Slack API timeout' ) ), 10000 );
+	} );
+
 	try {
 		// Adding the app does not add the app user to the channel
-		await webClient.conversations.join( {
-			channel: E2E_SLACK_CHANNEL_ID,
-			token: E2E_SLACK_TOKEN,
-		} );
+		await Promise.race( [
+			webClient.conversations.join( {
+				channel: E2E_SLACK_CHANNEL_ID,
+				token: E2E_SLACK_TOKEN,
+			} ),
+			timeoutPromise,
+		] );
 	} catch ( error ) {
-		handleRequestError( error, 'Failed to join the channel' );
+		// Handle the case where the bot is already in the channel
+		if ( ( error as CodedError ).code === 'already_in_channel' ) {
+			// This is expected and not an error - the bot is already in the channel
+			console.log( 'Bot is already in the Slack channel' );
+		} else {
+			handleRequestError( error, 'Failed to join the channel' );
+			return; // Don't proceed if we can't join the channel
+		}
 	}
 
 	try {
-		await webClient.chat.postMessage( {
-			channel: E2E_SLACK_CHANNEL_ID,
-			token: E2E_SLACK_TOKEN,
-			text: `Test failed on *${ branch }* branch. \n
+		await Promise.race( [
+			webClient.chat.postMessage( {
+				channel: E2E_SLACK_CHANNEL_ID,
+				token: E2E_SLACK_TOKEN,
+				text: `Test failed on *${ branch }* branch. \n
             The commit this build is testing is *${ commit }*. \n
             The name of the test that failed: *${ testName }*. \n
             See screenshot of the failed test below. ${
 				webUrl ? `*Build log* can be found here: ${ webUrl }` : ''
 			}`,
-		} );
+			} ),
+			timeoutPromise,
+		] );
 	} catch ( error ) {
 		handleRequestError( error, 'Failed to post message to Slack' );
 	}
@@ -153,13 +173,21 @@ export const sendFailedTestScreenshotToSlack = async (
 	const filename = `screenshot_of_${ testName || 'failed_test' }.png`;
 	const webClient = initializeWeb();
 
+	// Add timeout to prevent hanging
+	const timeoutPromise = new Promise( ( _, reject ) => {
+		setTimeout( () => reject( new Error( 'Slack API timeout' ) ), 15000 );
+	} );
+
 	try {
-		await webClient.filesUploadV2( {
-			filename,
-			file: createReadStream( screenshotOfFailedTest ),
-			token: E2E_SLACK_TOKEN,
-			channel_id: E2E_SLACK_CHANNEL_ID,
-		} );
+		await Promise.race( [
+			webClient.filesUploadV2( {
+				filename,
+				file: createReadStream( screenshotOfFailedTest ),
+				token: E2E_SLACK_TOKEN,
+				channel_id: E2E_SLACK_CHANNEL_ID,
+			} ),
+			timeoutPromise,
+		] );
 	} catch ( error ) {
 		handleRequestError( error, 'Failed to upload screenshot to Slack' );
 	}
