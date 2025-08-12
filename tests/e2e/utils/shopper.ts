@@ -586,6 +586,7 @@ export const addSavedCard = async (
 	country: string,
 	zipCode?: string
 ) => {
+	await page.getByRole( 'link', { name: 'Add payment method' } ).click();
 	await page.waitForLoadState( 'networkidle' );
 	await page.getByText( 'Card', { exact: true } ).click();
 	const frameHandle = page.getByTitle( 'Secure payment input frame' );
@@ -609,53 +610,18 @@ export const addSavedCard = async (
 	if ( zip ) await zip.fill( zipCode ?? '90210' );
 
 	await page.getByRole( 'button', { name: 'Add payment method' } ).click();
-
-	// Wait for the card to be processed and saved
-	await page.waitForLoadState( 'networkidle' );
-	// Additional wait to ensure the card is fully saved
-	await page.waitForTimeout( 3000 );
-};
-
-export const verifySavedCardIsDisplayed = async (
-	page: Page,
-	card: typeof config.cards.basic
-) => {
-	// Wait for the page to be fully loaded
-	await page.waitForLoadState( 'networkidle' );
-
-	// Wait a bit more for any dynamic content to load
-	await page.waitForTimeout( 2000 );
-
-	// Verify the card label is visible
-	await expect( page.getByText( card.label ) ).toBeVisible( {
-		timeout: 10000,
-	} );
-
-	// Verify the card expiration is visible
-	await expect(
-		page.getByText( `${ card.expires.month }/${ card.expires.year }` )
-	).toBeVisible( { timeout: 10000 } );
 };
 
 export const deleteSavedCard = async (
 	page: Page,
 	card: typeof config.cards.basic
 ) => {
-	// Wait for the page to be fully loaded
-	await page.waitForLoadState( 'networkidle' );
-
-	// Wait a bit more for any dynamic content to load
-	await page.waitForTimeout( 2000 );
-
 	const row = page.getByRole( 'row', { name: card.label } ).first();
-	await expect( row ).toBeVisible( { timeout: 10000 } );
+	await expect( row ).toBeVisible( { timeout: 100 } );
 	const button = row.getByRole( 'link', { name: 'Delete' } );
-	await expect( button ).toBeVisible( { timeout: 10000 } );
-	await expect( button ).toBeEnabled( { timeout: 10000 } );
+	await expect( button ).toBeVisible( { timeout: 100 } );
+	await expect( button ).toBeEnabled( { timeout: 100 } );
 	await button.click();
-
-	// Wait for the deletion to complete
-	await page.waitForLoadState( 'networkidle' );
 };
 
 export const selectSavedCardOnCheckout = async (
@@ -667,7 +633,7 @@ export const selectSavedCardOnCheckout = async (
 			`${ card.label } (expires ${ card.expires.month }/${ card.expires.year })`
 		)
 		.first();
-	await expect( option ).toBeVisible( { timeout: 10000 } );
+	await expect( option ).toBeVisible( { timeout: 100 } );
 	await option.click();
 };
 
@@ -675,21 +641,12 @@ export const setDefaultPaymentMethod = async (
 	page: Page,
 	card: typeof config.cards.basic
 ) => {
-	// Wait for the page to be fully loaded
-	await page.waitForLoadState( 'networkidle' );
-
-	// Wait a bit more for any dynamic content to load
-	await page.waitForTimeout( 2000 );
-
 	const row = page.getByRole( 'row', { name: card.label } ).first();
-	await expect( row ).toBeVisible( { timeout: 10000 } );
+	await expect( row ).toBeVisible( { timeout: 100 } );
 	const button = row.getByRole( 'link', { name: 'Make default' } );
-	await expect( button ).toBeVisible( { timeout: 10000 } );
-	await expect( button ).toBeEnabled( { timeout: 10000 } );
+	await expect( button ).toBeVisible( { timeout: 100 } );
+	await expect( button ).toBeEnabled( { timeout: 100 } );
 	await button.click();
-
-	// Wait for the action to complete
-	await page.waitForLoadState( 'networkidle' );
 };
 
 export const removeCoupon = async ( page: Page ) => {
