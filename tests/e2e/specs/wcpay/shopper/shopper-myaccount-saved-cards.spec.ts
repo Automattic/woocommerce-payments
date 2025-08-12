@@ -251,6 +251,14 @@ test.describe( 'Shopper can save and delete cards', () => {
 					async () => {
 						await goToMyAccount( shopperPage, 'payment-methods' );
 
+						// Verify both cards are visible before trying to delete them
+						await expect(
+							shopperPage.getByText( card.label )
+						).toBeVisible( { timeout: 10000 } );
+						await expect(
+							shopperPage.getByText( card2.label )
+						).toBeVisible( { timeout: 10000 } );
+
 						await deleteSavedCard( shopperPage, card );
 						await expect(
 							shopperPage.getByText( 'Payment method deleted.' )
