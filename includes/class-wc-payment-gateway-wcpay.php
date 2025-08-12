@@ -668,36 +668,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Validate order_id received from the request vs value saved in the intent metadata.
-	 * Throw an exception if they're not matched.
-	 *
-	 * @param  WC_Order $order The received order to process.
-	 * @param  array    $intent_metadata The metadata of attached intent to the order.
-	 *
-	 * @return void
-	 * @throws Process_Payment_Exception
-	 */
-	private function validate_order_id_received_vs_intent_meta_order_id( WC_Order $order, array $intent_metadata ): void {
-		$intent_meta_order_id_raw = $intent_metadata['order_id'] ?? '';
-		$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
-
-		if ( $order->get_id() !== $intent_meta_order_id ) {
-			Logger::error(
-				sprintf(
-					'UPE Process Redirect Payment - Order ID mismatched. Received: %1$d. Intent Metadata Value: %2$d',
-					$order->get_id(),
-					$intent_meta_order_id
-				)
-			);
-
-			throw new Process_Payment_Exception(
-				__( "We're not able to process this payment due to the order ID mismatch. Please try again later.", 'woocommerce-payments' ),
-				self::PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE
-			);
-		}
-	}
-
-	/**
 	 * If we're in a WooPay preflight check, remove all the checkout order processed
 	 * actions to prevent a quantity reduction of the available resources.
 	 *
@@ -720,26 +690,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		return $response;
-	}
-
-	/**
-	 * Gets and formats payment request data.
-	 *
-	 * @param \WP_REST_Request $request Request object.
-	 * @return array
-	 */
-	private function get_request_payment_data( \WP_REST_Request $request ) {
-		static $payment_data = [];
-		if ( ! empty( $payment_data ) ) {
-			return $payment_data;
-		}
-		if ( ! empty( $request['payment_data'] ) ) {
-			foreach ( $request['payment_data'] as $data ) {
-				$payment_data[ sanitize_key( $data['key'] ) ] = wc_clean( $data['value'] );
-			}
-		}
-
-		return $payment_data;
 	}
 
 	/**
@@ -1097,7 +1047,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// Check if session exists and we're currently not processing a WooPay request before instantiating `Fraud_Prevention_Service`.
 			if ( WC()->session && ! apply_filters( 'wcpay_is_woopay_store_api_request', false ) ) {
 				$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
-				// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+                // phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 				if ( $fraud_prevention_service->is_enabled() && ! $fraud_prevention_service->verify_token( $_POST['wcpay-fraud-prevention-token'] ?? null ) ) {
 					throw new Fraud_Prevention_Enabled_Exception(
 						__( "We're not able to process this payment. Please refresh the page and try again.", 'woocommerce-payments' ),
@@ -1114,7 +1064,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			}
 
 			// The request is a preflight check from WooPay.
-			// phpcs:ignore WordPress.Security.NonceVerification.Missing
+            // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			if ( ! empty( $_POST['is-woopay-preflight-check'] ) ) {
 				// Set the order status to "pending payment".
 				$order->update_status( 'pending' );
@@ -1243,30 +1193,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Prepares the payment information object.
-	 *
-	 * @param WC_Order $order The order whose payment will be processed.
-	 * @return Payment_Information An object, which describes the payment.
-	 */
-	protected function prepare_payment_information( $order ) {
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing
-		$payment_information = Payment_Information::from_payment_request( $_POST, $order, Payment_Type::SINGLE(), Payment_Initiated_By::CUSTOMER(), $this->get_capture_type(), $this->get_payment_method_to_use_for_intent() );
-		$payment_information = $this->maybe_prepare_subscription_payment_information( $payment_information, $order->get_id() );
-
-		if ( ! empty( $_POST[ 'wc-' . static::GATEWAY_ID . '-new-payment-method' ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
-			// During normal orders the payment method is saved when the customer enters a new one and chooses to save it.
-			$payment_information->must_save_payment_method_to_store();
-		}
-
-		if ( $this->woopay_util->should_save_platform_customer() ) {
-			do_action( 'woocommerce_payments_save_user_in_woopay' );
-			$payment_information->must_save_payment_method_to_platform();
-		}
-
-		return $payment_information;
-	}
-
-	/**
 	 * Update the customer details with the incoming order data, in a CRON job.
 	 *
 	 * @param \WC_Order $order        WC order id.
@@ -1325,35 +1251,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 		);
-	}
-
-	/**
-	 * Manages customer details held on WCPay server for WordPress user associated with an order.
-	 *
-	 * @param WC_Order $order   WC Order object.
-	 * @param array    $options Additional options to apply.
-	 *
-	 * @return array First element is the new or updated WordPress user, the second element is the WCPay customer ID.
-	 */
-	protected function manage_customer_details_for_order( $order, $options = [] ) {
-		$user = $order->get_user();
-		if ( false === $user ) {
-			$user = wp_get_current_user();
-		}
-
-		// Determine the customer making the payment, create one if we don't have one already.
-		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
-
-		if ( null === $customer_id ) {
-			$customer_data = WC_Payments_Customer_Service::map_customer_data( $order, new WC_Customer( $user->ID ) );
-			// Create a new customer.
-			$customer_id = $this->customer_service->create_customer_for_user( $user, $customer_data );
-		} else {
-			// Update the customer with order data async.
-			$this->update_customer_with_order_data( $order, $customer_id, WC_Payments::mode()->is_test(), $options['is_woopay'] ?? false );
-		}
-
-		return [ $user, $customer_id ];
 	}
 
 	/**
@@ -1492,7 +1389,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				throw new Exception( WC_Payments_Utils::get_filtered_error_message( $e ) );
 			}
 
-			// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+            // phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			$woopay_intent_id = WooPay_Utilities::sanitize_intent_id( wp_unslash( $_POST['platform-checkout-intent'] ?? '' ) );
 
 			// Initializing the intent variable here to ensure we don't try to use an undeclared
@@ -1606,7 +1503,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$this->order_service->mark_payment_failed( $order, $intent_id, $status, $charge_id );
 			}
 		} else {
-			// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+            // phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 			$woopay_intent_id = WooPay_Utilities::sanitize_intent_id( wp_unslash( $_POST['platform-checkout-intent'] ?? '' ) );
 
 			if ( ! empty( $woopay_intent_id ) ) {
@@ -2118,23 +2015,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Get values for Stripe mandate_data parameter
-	 *
-	 * @return array mandate_data values to use in request.
-	 */
-	private function get_mandate_data() {
-		return [
-			'customer_acceptance' => [
-				'type'   => 'online',
-				'online' => [
-					'ip_address' => WC_Geolocation::get_ip_address(),
-					'user_agent' => 'WooCommerce Payments/' . WCPAY_VERSION_NUMBER . '; ' . get_bloginfo( 'url' ),
-				],
-			],
-		];
-	}
-
-	/**
 	 * Set formatted readable payment method title for order,
 	 * using payment method details from accompanying charge.
 	 *
@@ -2155,21 +2035,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$order->set_payment_method( $payment_gateway );
 		$order->set_payment_method_title( $payment_method_title );
 		$order->save();
-	}
-
-	/**
-	 * Prepares Stripe metadata for a given order. The metadata later injected into intents, and
-	 * used in transactions listing/details. If merchant connects an account to new store, listing/details
-	 * keeps working even if orders are not available anymore - the metadata provides needed details.
-	 *
-	 * @param WC_Order     $order        Order being processed.
-	 * @param Payment_Type $payment_type Enum stating whether payment is single or recurring.
-	 *
-	 * @return array Array of keyed metadata values.
-	 */
-	protected function get_metadata_from_order( $order, $payment_type ) {
-		$service = wcpay_get_container()->get( OrderService::class );
-		return $service->get_payment_metadata( $order->get_id(), $payment_type );
 	}
 
 	/**
@@ -2229,19 +2094,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		$this->maybe_add_token_to_subscription_order( $order, $token );
-	}
-
-	/**
-	 * Retrieve payment token from a subscription or order.
-	 *
-	 * @param WC_Order $order Order or subscription object.
-	 *
-	 * @return null|WC_Payment_Token Last token associated with order or subscription.
-	 */
-	protected function get_payment_token( $order ) {
-		$order_tokens = $order->get_payment_tokens();
-		$token_id     = end( $order_tokens );
-		return ! $token_id ? null : WC_Payment_Tokens::get( $token_id );
 	}
 
 	/**
@@ -2376,33 +2228,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function has_refund_failed( $order ) {
 		return Refund_Status::FAILED === $this->order_service->get_wcpay_refund_status_for_order( $order );
-	}
-
-	/**
-	 * Gets the payment method type used for an order, if any
-	 *
-	 * @param WC_Order $order The order to get the payment method type for.
-	 *
-	 * @return string
-	 */
-	private function get_payment_method_type_for_order( $order ): string {
-		$payment_method_details = [];
-		if ( $this->order_service->get_payment_method_id_for_order( $order ) ) {
-			$payment_method_id      = $this->order_service->get_payment_method_id_for_order( $order );
-			$payment_method_details = $this->payments_api_client->get_payment_method( $payment_method_id );
-		} elseif ( $this->order_service->get_intent_id_for_order( $order ) ) {
-			$payment_intent_id = $this->order_service->get_intent_id_for_order( $order );
-
-			$request = Get_Intention::create( $payment_intent_id );
-			$request->set_hook_args( $order );
-
-			$payment_intent = $request->send();
-
-			$charge                 = $payment_intent ? $payment_intent->get_charge() : null;
-			$payment_method_details = $charge ? $charge->get_payment_method_details() : [];
-		}
-
-		return $payment_method_details['type'] ?? 'unknown';
 	}
 
 	/**
@@ -2557,15 +2382,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Get payment capture type from WCPay settings.
-	 *
-	 * @return Payment_Capture_Type MANUAL or AUTOMATIC depending on the settings.
-	 */
-	protected function get_capture_type() {
-		return 'yes' === $this->get_option( 'manual_capture' ) ? Payment_Capture_Type::MANUAL() : Payment_Capture_Type::AUTOMATIC();
-	}
-
-	/**
 	 * Map fields that need to be updated and update the fields server side.
 	 *
 	 * @param array $settings Plugin settings.
@@ -2644,177 +2460,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Gets connected account business name.
-	 *
-	 * @param string $default_value Value to return when not connected or failed to fetch business name.
-	 *
-	 * @return string Business name or default value.
-	 */
-	protected function get_account_business_name( $default_value = '' ): string {
-		try {
-			if ( $this->is_connected() ) {
-				return $this->account->get_business_name();
-			}
-		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business name.' . $e );
-		}
-
-		return $default_value;
-	}
-
-	/**
-	 * Gets connected account business url.
-	 *
-	 * @param string $default_value Value to return when not connected or failed to fetch business url.
-	 *
-	 * @return string Business url or default value.
-	 */
-	protected function get_account_business_url( $default_value = '' ): string {
-		try {
-			if ( $this->is_connected() ) {
-				return $this->account->get_business_url();
-			}
-		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business URL.' . $e );
-		}
-
-		return $default_value;
-	}
-
-	/**
-	 * Gets connected account business address.
-	 *
-	 * @param array $default_value Value to return when not connected or failed to fetch business address.
-	 *
-	 * @return array Business address or default value.
-	 */
-	protected function get_account_business_support_address( $default_value = [] ): array {
-		try {
-			if ( $this->is_connected() ) {
-				return $this->account->get_business_support_address();
-			}
-		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business support address.' . $e );
-		}
-
-		return $default_value;
-	}
-
-	/**
-	 * Gets connected account business support email.
-	 *
-	 * @param string $default_value Value to return when not connected or failed to fetch business support email.
-	 *
-	 * @return string Business support email or default value.
-	 */
-	protected function get_account_business_support_email( $default_value = '' ): string {
-		try {
-			if ( $this->is_connected() ) {
-				return $this->account->get_business_support_email();
-			}
-		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get business support email.' . $e );
-		}
-
-		return $default_value;
-	}
-
-	/**
-	 * Gets connected account business support phone.
-	 *
-	 * @param string $default_value Value to return when not connected or failed to fetch business support phone.
-	 *
-	 * @return string Business support phone or default value.
-	 */
-	protected function get_account_business_support_phone( $default_value = '' ): string {
-		try {
-			if ( $this->is_connected() ) {
-				return $this->account->get_business_support_phone();
-			}
-		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account business support phone.' . $e );
-		}
-
-		return $default_value;
-	}
-
-	/**
-	 * Gets connected account branding logo.
-	 *
-	 * @param string $default_value Value to return when not connected or failed to fetch branding logo.
-	 *
-	 * @return string Business support branding logo or default value.
-	 */
-	protected function get_account_branding_logo( $default_value = '' ): string {
-		try {
-			if ( $this->is_connected() ) {
-				return $this->account->get_branding_logo();
-			}
-		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account branding logo.' . $e );
-		}
-
-		return $default_value;
-	}
-
-	/**
-	 * Gets connected account branding icon.
-	 *
-	 * @param string $default_value Value to return when not connected or failed to fetch branding icon.
-	 *
-	 * @return string Business support branding icon or default value.
-	 */
-	protected function get_account_branding_icon( $default_value = '' ): string {
-		try {
-			if ( $this->is_connected() ) {
-				return $this->account->get_branding_icon();
-			}
-		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account\'s branding icon.' . $e );
-		}
-
-		return $default_value;
-	}
-
-	/**
-	 * Gets connected account branding primary color.
-	 *
-	 * @param string $default_value Value to return when not connected or failed to fetch branding primary color.
-	 *
-	 * @return string Business support branding primary color or default value.
-	 */
-	protected function get_account_branding_primary_color( $default_value = '' ): string {
-		try {
-			if ( $this->is_connected() ) {
-				return $this->account->get_branding_primary_color();
-			}
-		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account\'s branding primary color.' . $e );
-		}
-
-		return $default_value;
-	}
-
-	/**
-	 * Gets connected account branding secondary color.
-	 *
-	 * @param string $default_value Value to return when not connected or failed to fetch branding secondary color.
-	 *
-	 * @return string Business support branding secondary color or default value.
-	 */
-	protected function get_account_branding_secondary_color( $default_value = '' ): string {
-		try {
-			if ( $this->is_connected() ) {
-				return $this->account->get_branding_secondary_color();
-			}
-		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account\'s branding secondary color.' . $e );
-		}
-
-		return $default_value;
-	}
-
-	/**
 	 * Retrieves the domestic currency of the current account based on its country.
 	 * It will fallback to the store's currency if the account's country is not supported.
 	 *
@@ -2839,78 +2484,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Gets connected account deposit schedule interval.
-	 *
-	 * @param string $empty_value Empty value to return when not connected or fails to fetch deposit schedule.
-	 *
-	 * @return string Interval or default value.
-	 */
-	protected function get_deposit_schedule_interval( string $empty_value = '' ): string {
-		try {
-			if ( $this->is_connected() ) {
-				return $this->account->get_deposit_schedule_interval();
-			}
-		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get deposit schedule interval.' . $e );
-		}
-		return $empty_value;
-	}
-
-	/**
-	 * Gets connected account deposit schedule weekly anchor.
-	 *
-	 * @param string $empty_value Empty value to return when not connected or fails to fetch deposit schedule weekly anchor.
-	 *
-	 * @return string Weekly anchor or default value.
-	 */
-	protected function get_deposit_schedule_weekly_anchor( string $empty_value = '' ): string {
-		try {
-			if ( $this->is_connected() ) {
-				return $this->account->get_deposit_schedule_weekly_anchor();
-			}
-		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get deposit schedule weekly anchor.' . $e );
-		}
-		return $empty_value;
-	}
-
-	/**
-	 * Gets connected account deposit schedule monthly anchor.
-	 *
-	 * @param int|null $empty_value Empty value to return when not connected or fails to fetch deposit schedule monthly anchor.
-	 *
-	 * @return int|null Monthly anchor or default value.
-	 */
-	protected function get_deposit_schedule_monthly_anchor( $empty_value = null ) {
-		try {
-			if ( $this->is_connected() ) {
-				return $this->account->get_deposit_schedule_monthly_anchor();
-			}
-		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get deposit schedule monthly anchor.' . $e );
-		}
-		return null === $empty_value ? null : (int) $empty_value;
-	}
-
-	/**
-	 * Gets connected account deposit delay days.
-	 *
-	 * @param int $default_value Value to return when not connected or fails to fetch deposit delay days. Default is 7 days.
-	 *
-	 * @return int number of days.
-	 */
-	protected function get_deposit_delay_days( int $default_value = 7 ): int {
-		try {
-			if ( $this->is_connected() ) {
-				return $this->account->get_deposit_delay_days() ?? $default_value;
-			}
-		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get deposit delay days.' . $e );
-		}
-		return $default_value;
-	}
-
-	/**
 	 * Gets connected account country.
 	 *
 	 * @param string $default_value Value to return when not connected or fails to fetch account details. Default is US.
@@ -2926,204 +2499,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			Logger::error( 'Failed to get account country.' . $e );
 		}
 		return $default_value;
-	}
-
-	/**
-	 * Gets connected account deposit status.
-	 *
-	 * @param string $empty_value Empty value to return when not connected or fails to fetch deposit status.
-	 *
-	 * @return string deposit status or default value.
-	 */
-	protected function get_deposit_status( string $empty_value = '' ): string {
-		try {
-			if ( $this->is_connected() ) {
-				return $this->account->get_deposit_status();
-			}
-		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get deposit status.' . $e );
-		}
-		return $empty_value;
-	}
-
-	/**
-	 * Gets connected account deposit restrictions.
-	 *
-	 * @param string $empty_value Empty value to return when not connected or fails to fetch deposit restrictions.
-	 *
-	 * @return string deposit restrictions or default value.
-	 */
-	protected function get_deposit_restrictions( string $empty_value = '' ): string {
-		try {
-			if ( $this->is_connected() ) {
-				return $this->account->get_deposit_restrictions();
-			}
-		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get deposit restrictions.' . $e );
-		}
-		return $empty_value;
-	}
-
-	/**
-	 * Gets the completed deposit waiting period value.
-	 *
-	 * @param bool $empty_value Empty value to return when not connected or fails to fetch the completed deposit waiting period value.
-	 *
-	 * @return bool The completed deposit waiting period value or default value.
-	 */
-	protected function get_deposit_completed_waiting_period( bool $empty_value = false ): bool {
-		try {
-			if ( $this->is_connected() ) {
-				return $this->account->get_deposit_completed_waiting_period();
-			}
-		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get the deposit waiting period value.' . $e );
-		}
-		return $empty_value;
-	}
-
-	/**
-	 * Gets the current fraud protection level value.
-	 *
-	 * @return  string The current fraud protection level.
-	 */
-	protected function get_current_protection_level() {
-		$this->maybe_refresh_fraud_protection_settings();
-		return get_option( 'current_protection_level', 'basic' );
-	}
-
-	/**
-	 * Gets the advanced fraud protection level settings value.
-	 *
-	 * @return  array|string The advanced level fraud settings for the store, if not saved, the default ones.
-	 *                       If there's a fetch error, it returns "error".
-	 */
-	protected function get_advanced_fraud_protection_settings() {
-		// Check if Stripe is connected.
-		if ( ! $this->is_connected() ) {
-			return [];
-		}
-
-		$this->maybe_refresh_fraud_protection_settings();
-		$transient_value = get_transient( 'wcpay_fraud_protection_settings' );
-		return false === $transient_value ? 'error' : $transient_value;
-	}
-
-	/**
-	 * Checks if a fraud protection rule is enabled.
-	 *
-	 * @param string $rule The rule to check.
-	 *
-	 * @return bool True if the rule is enabled, false otherwise.
-	 */
-	protected function is_fraud_rule_enabled( string $rule ): bool {
-		$settings = $this->get_advanced_fraud_protection_settings();
-
-		if ( ! is_array( $settings ) ) {
-			return false;
-		}
-
-		foreach ( $settings as $setting ) {
-			if ( $rule === $setting['key'] ) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/**
-	 * Checks if the transaction was blocked by AVS verification fraud rule.
-	 *
-	 * @param string|null $error_code The error code to check.
-	 * @param string|null $error_type The error type to check.
-	 *
-	 * @return bool True if the transaction was blocked by the AVS verification fraud rule, false otherwise.
-	 */
-	private function is_blocked_by_avs_verification_fraud_rule( ?string $error_code, ?string $error_type ): bool {
-		$is_avs_verification_rule_enabled = $this->is_fraud_rule_enabled( 'avs_verification' );
-		$is_incorrect_zip_error           = 'card_error' === $error_type && 'incorrect_zip' === $error_code;
-
-		return $is_avs_verification_rule_enabled && $is_incorrect_zip_error;
-	}
-
-	/**
-	 * Checks if the transaction was blocked by fraud rules.
-	 *
-	 * @param Exception $e The exception to check.
-	 *
-	 * @return bool True if the transaction was blocked by fraud rules, false otherwise.
-	 */
-	protected function is_blocked_by_fraud_rules( Exception $e ): bool {
-		if ( ! ( $e instanceof API_Exception ) ) {
-			return false;
-		}
-
-		$error_code = $e->get_error_code() ?? null;
-		$error_type = $e->get_error_type() ?? null;
-
-		$blocked_by_fraud_rule = 'wcpay_blocked_by_fraud_rule' === $error_code;
-
-		// Since the AVS mismatch is part of the advanced fraud prevention, we need to consider that as a blocked order.
-		$blocked_by_avs_mismatch = $this->is_blocked_by_avs_verification_fraud_rule( $error_code, $error_type );
-
-		return $blocked_by_fraud_rule || $blocked_by_avs_mismatch;
-	}
-
-	/**
-	 * Checks the synchronicity of fraud protection settings with the server, and updates the local cache when needed.
-	 *
-	 * @return  void
-	 */
-	protected function maybe_refresh_fraud_protection_settings() {
-		// It'll be good to run this only once per call, because if it succeeds, the latter won't require
-		// to run again, and if it fails, it will fail on other calls too.
-		static $runonce = false;
-
-		// If already ran this before on this call, return.
-		if ( $runonce ) {
-			return;
-		}
-
-		// Check if we have local cache available before pulling it from the server.
-		// If the transient exists, do nothing.
-		$cached_server_settings = get_transient( 'wcpay_fraud_protection_settings' );
-
-		if ( false === $cached_server_settings ) {
-			// When both local and server values don't exist, we need to reset the protection level on both to "Basic".
-			$needs_reset = false;
-
-			try {
-				// There's no cached ruleset, or the cache has expired. Try to fetch it from the server.
-				$latest_server_ruleset = $this->payments_api_client->get_latest_fraud_ruleset();
-				if ( isset( $latest_server_ruleset['ruleset_config'] ) ) {
-					// Update the local cache from the server.
-					set_transient( 'wcpay_fraud_protection_settings', $latest_server_ruleset['ruleset_config'], DAY_IN_SECONDS );
-					// Get the matching level for the ruleset, and set the option.
-					update_option( 'current_protection_level', Fraud_Risk_Tools::get_matching_protection_level( $latest_server_ruleset['ruleset_config'] ) );
-					return;
-				}
-				// If the response doesn't contain a ruleset, probably there's an error. Grey out the form.
-			} catch ( API_Exception $ex ) {
-				if ( 'wcpay_fraud_ruleset_not_found' === $ex->get_error_code() ) {
-					// If fetching returned a 'wcpay_fraud_ruleset_not_found' exception, save the basic protection as the server ruleset,
-					// and update the client with the same config.
-					$needs_reset = true;
-				}
-				// If the exception isn't what we want, probably there's an error. Grey out the form.
-			}
-
-			if ( $needs_reset ) {
-				// Set the Basic protection level as the default on both client and server.
-				$basic_protection_settings = Fraud_Risk_Tools::get_basic_protection_settings();
-				$this->payments_api_client->save_fraud_ruleset( $basic_protection_settings );
-				set_transient( 'wcpay_fraud_protection_settings', $basic_protection_settings, DAY_IN_SECONDS );
-				update_option( 'current_protection_level', 'basic' );
-			}
-
-			// Set the static flag to prevent duplicate calls to this method.
-			$runonce = true;
-		}
 	}
 
 	/**
@@ -3652,7 +3027,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function add_payment_method() {
 		try {
 
-			// phpcs:ignore WordPress.Security.NonceVerification.Missing
+            // phpcs:ignore WordPress.Security.NonceVerification.Missing
 			if ( ! isset( $_POST['wcpay-setup-intent'] ) ) {
 				throw new Add_Payment_Method_Exception(
 					sprintf(
@@ -3664,7 +3039,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 
-			// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+            // phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 			$setup_intent_id = ! empty( $_POST['wcpay-setup-intent'] ) ? wc_clean( $_POST['wcpay-setup-intent'] ) : false;
 
 			$customer_id = $this->customer_service->get_customer_id_by_user_id( get_current_user_id() );
@@ -3811,7 +3186,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$payment_information             = Payment_Information::from_payment_request( $_POST, null, null, null, null, $this->get_payment_method_to_use_for_intent() ); // phpcs:ignore WordPress.Security.NonceVerification
 		$should_save_in_platform_account = false;
 
-		// phpcs:ignore WordPress.Security.NonceVerification.Missing
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing
 		if ( ! empty( $_POST['save_payment_method_in_platform_account'] ) && filter_var( wp_unslash( $_POST['save_payment_method_in_platform_account'] ), FILTER_VALIDATE_BOOLEAN ) ) {
 			$should_save_in_platform_account = true;
 		}
@@ -3872,33 +3247,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				WC_Payments_Utils::get_filtered_error_status_code( $e )
 			);
 		}
-	}
-
-	/**
-	 * Returns a formatted token list for a user.
-	 *
-	 * @param int $user_id The user ID.
-	 */
-	protected function get_user_formatted_tokens_array( $user_id ) {
-		$tokens = WC_Payment_Tokens::get_tokens(
-			[
-				'user_id'    => $user_id,
-				'gateway_id' => self::GATEWAY_ID,
-				'limit'      => self::USER_FORMATTED_TOKENS_LIMIT,
-			]
-		);
-
-		return array_map(
-			static function ( WC_Payment_Token $token ): array {
-				return [
-					'tokenId'         => $token->get_id(),
-					'paymentMethodId' => $token->get_token(),
-					'isDefault'       => $token->get_is_default(),
-					'displayName'     => $token->get_display_name(),
-				];
-			},
-			array_values( $tokens )
-		);
 	}
 
 	/**
@@ -4231,36 +3579,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Returns true if the code returned from the API represents an error that should be rate-limited.
-	 *
-	 * @param string $error_code The error code returned from the API.
-	 *
-	 * @return bool Whether the rate limiter should be bumped.
-	 */
-	protected function should_bump_rate_limiter( string $error_code ): bool {
-		return in_array( $error_code, [ 'card_declined', 'incorrect_number', 'incorrect_cvc' ], true );
-	}
-
-	/**
 	 * Returns boolean for whether payment gateway supports saved payments.
 	 *
 	 * @return bool True, if gateway supports saved payments. False, otherwise.
 	 */
 	public function should_support_saved_payments() {
 		return $this->is_enabled_for_saved_payments( $this->stripe_id );
-	}
-
-	/**
-	 * Returns true when viewing payment methods page.
-	 *
-	 * @return bool
-	 */
-	private function is_payment_methods_page() {
-		global $wp;
-
-		$page_id = wc_get_page_id( 'myaccount' );
-
-		return ( $page_id && is_page( $page_id ) && ( isset( $wp->query_vars['payment-methods'] ) ) );
 	}
 
 	/**
@@ -4363,34 +3687,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Get selected UPE payment methods.
-	 *
-	 * @param string $selected_upe_payment_type Selected payment methods.
-	 * @param array  $enabled_payment_methods Enabled payment methods.
-	 *
-	 * @return array
-	 */
-	protected function get_selected_upe_payment_methods( string $selected_upe_payment_type, array $enabled_payment_methods ) {
-		$payment_methods = [];
-		if ( '' !== $selected_upe_payment_type ) {
-			// Only update the payment_method_types if we have a reference to the payment type the customer selected.
-			$payment_methods[] = $selected_upe_payment_type;
-
-			if ( CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID === $selected_upe_payment_type ) {
-				$is_link_enabled = in_array(
-					Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-					$enabled_payment_methods,
-					true
-				);
-				if ( $is_link_enabled ) {
-					$payment_methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-				}
-			}
-		}
-		return $payment_methods;
-	}
-
-	/**
 	 * Gets UPE_Payment_Method instance from ID.
 	 *
 	 * @param string $payment_method_type Stripe payment method type ID.
@@ -4398,27 +3694,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function get_selected_payment_method( $payment_method_type ) {
 		return WC_Payments::get_payment_method_by_id( $payment_method_type );
-	}
-
-	/**
-	 * Return the payment method type from the payment method details.
-	 *
-	 * @param array $payment_method_details Payment method details.
-	 * @return string|null Payment method type or nothing.
-	 */
-	private function get_payment_method_type_from_payment_details( $payment_method_details ) {
-		return $payment_method_details['type'] ?? null;
-	}
-
-	/**
-	 * Get the payment method used with a setup intent.
-	 *
-	 * @param WC_Payments_API_Setup_Intention $intent The PaymentIntent object.
-	 * @param WC_Payment_Token                $token The payment token.
-	 * @return string|null The payment method type.
-	 */
-	private function get_payment_method_type_for_setup_intent( $intent, $token ) {
-		return 'wcpay_link' !== $token->get_type() ? $intent->get_payment_method_type() : Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 	}
 
 	/**
@@ -4558,6 +3833,750 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
+	 * Prepares the payment information object.
+	 *
+	 * @param WC_Order $order The order whose payment will be processed.
+	 * @return Payment_Information An object, which describes the payment.
+	 */
+	protected function prepare_payment_information( $order ) {
+        // phpcs:ignore WordPress.Security.NonceVerification.Missing
+		$payment_information = Payment_Information::from_payment_request( $_POST, $order, Payment_Type::SINGLE(), Payment_Initiated_By::CUSTOMER(), $this->get_capture_type(), $this->get_payment_method_to_use_for_intent() );
+		$payment_information = $this->maybe_prepare_subscription_payment_information( $payment_information, $order->get_id() );
+
+		if ( ! empty( $_POST[ 'wc-' . static::GATEWAY_ID . '-new-payment-method' ] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			// During normal orders the payment method is saved when the customer enters a new one and chooses to save it.
+			$payment_information->must_save_payment_method_to_store();
+		}
+
+		if ( $this->woopay_util->should_save_platform_customer() ) {
+			do_action( 'woocommerce_payments_save_user_in_woopay' );
+			$payment_information->must_save_payment_method_to_platform();
+		}
+
+		return $payment_information;
+	}
+
+	/**
+	 * Manages customer details held on WCPay server for WordPress user associated with an order.
+	 *
+	 * @param WC_Order $order   WC Order object.
+	 * @param array    $options Additional options to apply.
+	 *
+	 * @return array First element is the new or updated WordPress user, the second element is the WCPay customer ID.
+	 */
+	protected function manage_customer_details_for_order( $order, $options = [] ) {
+		$user = $order->get_user();
+		if ( false === $user ) {
+			$user = wp_get_current_user();
+		}
+
+		// Determine the customer making the payment, create one if we don't have one already.
+		$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+
+		if ( null === $customer_id ) {
+			$customer_data = WC_Payments_Customer_Service::map_customer_data( $order, new WC_Customer( $user->ID ) );
+			// Create a new customer.
+			$customer_id = $this->customer_service->create_customer_for_user( $user, $customer_data );
+		} else {
+			// Update the customer with order data async.
+			$this->update_customer_with_order_data( $order, $customer_id, WC_Payments::mode()->is_test(), $options['is_woopay'] ?? false );
+		}
+
+		return [ $user, $customer_id ];
+	}
+
+	/**
+	 * Prepares Stripe metadata for a given order. The metadata later injected into intents, and
+	 * used in transactions listing/details. If merchant connects an account to new store, listing/details
+	 * keeps working even if orders are not available anymore - the metadata provides needed details.
+	 *
+	 * @param WC_Order     $order        Order being processed.
+	 * @param Payment_Type $payment_type Enum stating whether payment is single or recurring.
+	 *
+	 * @return array Array of keyed metadata values.
+	 */
+	protected function get_metadata_from_order( $order, $payment_type ) {
+		$service = wcpay_get_container()->get( OrderService::class );
+		return $service->get_payment_metadata( $order->get_id(), $payment_type );
+	}
+
+	/**
+	 * Retrieve payment token from a subscription or order.
+	 *
+	 * @param WC_Order $order Order or subscription object.
+	 *
+	 * @return null|WC_Payment_Token Last token associated with order or subscription.
+	 */
+	protected function get_payment_token( $order ) {
+		$order_tokens = $order->get_payment_tokens();
+		$token_id     = end( $order_tokens );
+		return ! $token_id ? null : WC_Payment_Tokens::get( $token_id );
+	}
+
+	/**
+	 * Get payment capture type from WCPay settings.
+	 *
+	 * @return Payment_Capture_Type MANUAL or AUTOMATIC depending on the settings.
+	 */
+	protected function get_capture_type() {
+		return 'yes' === $this->get_option( 'manual_capture' ) ? Payment_Capture_Type::MANUAL() : Payment_Capture_Type::AUTOMATIC();
+	}
+
+	/**
+	 * Gets connected account business name.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch business name.
+	 *
+	 * @return string Business name or default value.
+	 */
+	protected function get_account_business_name( $default_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_business_name();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account business name.' . $e );
+		}
+
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account business url.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch business url.
+	 *
+	 * @return string Business url or default value.
+	 */
+	protected function get_account_business_url( $default_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_business_url();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account business URL.' . $e );
+		}
+
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account business address.
+	 *
+	 * @param array $default_value Value to return when not connected or failed to fetch business address.
+	 *
+	 * @return array Business address or default value.
+	 */
+	protected function get_account_business_support_address( $default_value = [] ): array {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_business_support_address();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account business support address.' . $e );
+		}
+
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account business support email.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch business support email.
+	 *
+	 * @return string Business support email or default value.
+	 */
+	protected function get_account_business_support_email( $default_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_business_support_email();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get business support email.' . $e );
+		}
+
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account business support phone.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch business support phone.
+	 *
+	 * @return string Business support phone or default value.
+	 */
+	protected function get_account_business_support_phone( $default_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_business_support_phone();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account business support phone.' . $e );
+		}
+
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account branding logo.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch branding logo.
+	 *
+	 * @return string Business support branding logo or default value.
+	 */
+	protected function get_account_branding_logo( $default_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_branding_logo();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account branding logo.' . $e );
+		}
+
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account branding icon.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch branding icon.
+	 *
+	 * @return string Business support branding icon or default value.
+	 */
+	protected function get_account_branding_icon( $default_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_branding_icon();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account\'s branding icon.' . $e );
+		}
+
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account branding primary color.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch branding primary color.
+	 *
+	 * @return string Business support branding primary color or default value.
+	 */
+	protected function get_account_branding_primary_color( $default_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_branding_primary_color();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account\'s branding primary color.' . $e );
+		}
+
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account branding secondary color.
+	 *
+	 * @param string $default_value Value to return when not connected or failed to fetch branding secondary color.
+	 *
+	 * @return string Business support branding secondary color or default value.
+	 */
+	protected function get_account_branding_secondary_color( $default_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_branding_secondary_color();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get account\'s branding secondary color.' . $e );
+		}
+
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account deposit schedule interval.
+	 *
+	 * @param string $empty_value Empty value to return when not connected or fails to fetch deposit schedule.
+	 *
+	 * @return string Interval or default value.
+	 */
+	protected function get_deposit_schedule_interval( string $empty_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_deposit_schedule_interval();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get deposit schedule interval.' . $e );
+		}
+		return $empty_value;
+	}
+
+	/**
+	 * Gets connected account deposit schedule weekly anchor.
+	 *
+	 * @param string $empty_value Empty value to return when not connected or fails to fetch deposit schedule weekly anchor.
+	 *
+	 * @return string Weekly anchor or default value.
+	 */
+	protected function get_deposit_schedule_weekly_anchor( string $empty_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_deposit_schedule_weekly_anchor();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get deposit schedule weekly anchor.' . $e );
+		}
+		return $empty_value;
+	}
+
+	/**
+	 * Gets connected account deposit schedule monthly anchor.
+	 *
+	 * @param int|null $empty_value Empty value to return when not connected or fails to fetch deposit schedule monthly anchor.
+	 *
+	 * @return int|null Monthly anchor or default value.
+	 */
+	protected function get_deposit_schedule_monthly_anchor( $empty_value = null ) {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_deposit_schedule_monthly_anchor();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get deposit schedule monthly anchor.' . $e );
+		}
+		return null === $empty_value ? null : (int) $empty_value;
+	}
+
+	/**
+	 * Gets connected account deposit delay days.
+	 *
+	 * @param int $default_value Value to return when not connected or fails to fetch deposit delay days. Default is 7 days.
+	 *
+	 * @return int number of days.
+	 */
+	protected function get_deposit_delay_days( int $default_value = 7 ): int {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_deposit_delay_days() ?? $default_value;
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get deposit delay days.' . $e );
+		}
+		return $default_value;
+	}
+
+	/**
+	 * Gets connected account deposit status.
+	 *
+	 * @param string $empty_value Empty value to return when not connected or fails to fetch deposit status.
+	 *
+	 * @return string deposit status or default value.
+	 */
+	protected function get_deposit_status( string $empty_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_deposit_status();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get deposit status.' . $e );
+		}
+		return $empty_value;
+	}
+
+	/**
+	 * Gets connected account deposit restrictions.
+	 *
+	 * @param string $empty_value Empty value to return when not connected or fails to fetch deposit restrictions.
+	 *
+	 * @return string deposit restrictions or default value.
+	 */
+	protected function get_deposit_restrictions( string $empty_value = '' ): string {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_deposit_restrictions();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get deposit restrictions.' . $e );
+		}
+		return $empty_value;
+	}
+
+	/**
+	 * Gets the completed deposit waiting period value.
+	 *
+	 * @param bool $empty_value Empty value to return when not connected or fails to fetch the completed deposit waiting period value.
+	 *
+	 * @return bool The completed deposit waiting period value or default value.
+	 */
+	protected function get_deposit_completed_waiting_period( bool $empty_value = false ): bool {
+		try {
+			if ( $this->is_connected() ) {
+				return $this->account->get_deposit_completed_waiting_period();
+			}
+		} catch ( Exception $e ) {
+			Logger::error( 'Failed to get the deposit waiting period value.' . $e );
+		}
+		return $empty_value;
+	}
+
+	/**
+	 * Gets the current fraud protection level value.
+	 *
+	 * @return  string The current fraud protection level.
+	 */
+	protected function get_current_protection_level() {
+		$this->maybe_refresh_fraud_protection_settings();
+		return get_option( 'current_protection_level', 'basic' );
+	}
+
+	/**
+	 * Gets the advanced fraud protection level settings value.
+	 *
+	 * @return  array|string The advanced level fraud settings for the store, if not saved, the default ones.
+	 *                       If there's a fetch error, it returns "error".
+	 */
+	protected function get_advanced_fraud_protection_settings() {
+		// Check if Stripe is connected.
+		if ( ! $this->is_connected() ) {
+			return [];
+		}
+
+		$this->maybe_refresh_fraud_protection_settings();
+		$transient_value = get_transient( 'wcpay_fraud_protection_settings' );
+		return false === $transient_value ? 'error' : $transient_value;
+	}
+
+	/**
+	 * Checks if a fraud protection rule is enabled.
+	 *
+	 * @param string $rule The rule to check.
+	 *
+	 * @return bool True if the rule is enabled, false otherwise.
+	 */
+	protected function is_fraud_rule_enabled( string $rule ): bool {
+		$settings = $this->get_advanced_fraud_protection_settings();
+
+		if ( ! is_array( $settings ) ) {
+			return false;
+		}
+
+		foreach ( $settings as $setting ) {
+			if ( $rule === $setting['key'] ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Checks if the transaction was blocked by fraud rules.
+	 *
+	 * @param Exception $e The exception to check.
+	 *
+	 * @return bool True if the transaction was blocked by fraud rules, false otherwise.
+	 */
+	protected function is_blocked_by_fraud_rules( Exception $e ): bool {
+		if ( ! ( $e instanceof API_Exception ) ) {
+			return false;
+		}
+
+		$error_code = $e->get_error_code() ?? null;
+		$error_type = $e->get_error_type() ?? null;
+
+		$blocked_by_fraud_rule = 'wcpay_blocked_by_fraud_rule' === $error_code;
+
+		// Since the AVS mismatch is part of the advanced fraud prevention, we need to consider that as a blocked order.
+		$blocked_by_avs_mismatch = $this->is_blocked_by_avs_verification_fraud_rule( $error_code, $error_type );
+
+		return $blocked_by_fraud_rule || $blocked_by_avs_mismatch;
+	}
+
+	/**
+	 * Checks the synchronicity of fraud protection settings with the server, and updates the local cache when needed.
+	 *
+	 * @return  void
+	 */
+	protected function maybe_refresh_fraud_protection_settings() {
+		// It'll be good to run this only once per call, because if it succeeds, the latter won't require
+		// to run again, and if it fails, it will fail on other calls too.
+		static $runonce = false;
+
+		// If already ran this before on this call, return.
+		if ( $runonce ) {
+			return;
+		}
+
+		// Check if we have local cache available before pulling it from the server.
+		// If the transient exists, do nothing.
+		$cached_server_settings = get_transient( 'wcpay_fraud_protection_settings' );
+
+		if ( false === $cached_server_settings ) {
+			// When both local and server values don't exist, we need to reset the protection level on both to "Basic".
+			$needs_reset = false;
+
+			try {
+				// There's no cached ruleset, or the cache has expired. Try to fetch it from the server.
+				$latest_server_ruleset = $this->payments_api_client->get_latest_fraud_ruleset();
+				if ( isset( $latest_server_ruleset['ruleset_config'] ) ) {
+					// Update the local cache from the server.
+					set_transient( 'wcpay_fraud_protection_settings', $latest_server_ruleset['ruleset_config'], DAY_IN_SECONDS );
+					// Get the matching level for the ruleset, and set the option.
+					update_option( 'current_protection_level', Fraud_Risk_Tools::get_matching_protection_level( $latest_server_ruleset['ruleset_config'] ) );
+					return;
+				}
+				// If the response doesn't contain a ruleset, probably there's an error. Grey out the form.
+			} catch ( API_Exception $ex ) {
+				if ( 'wcpay_fraud_ruleset_not_found' === $ex->get_error_code() ) {
+					// If fetching returned a 'wcpay_fraud_ruleset_not_found' exception, save the basic protection as the server ruleset,
+					// and update the client with the same config.
+					$needs_reset = true;
+				}
+				// If the exception isn't what we want, probably there's an error. Grey out the form.
+			}
+
+			if ( $needs_reset ) {
+				// Set the Basic protection level as the default on both client and server.
+				$basic_protection_settings = Fraud_Risk_Tools::get_basic_protection_settings();
+				$this->payments_api_client->save_fraud_ruleset( $basic_protection_settings );
+				set_transient( 'wcpay_fraud_protection_settings', $basic_protection_settings, DAY_IN_SECONDS );
+				update_option( 'current_protection_level', 'basic' );
+			}
+
+			// Set the static flag to prevent duplicate calls to this method.
+			$runonce = true;
+		}
+	}
+
+	/**
+	 * Returns a formatted token list for a user.
+	 *
+	 * @param int $user_id The user ID.
+	 */
+	protected function get_user_formatted_tokens_array( $user_id ) {
+		$tokens = WC_Payment_Tokens::get_tokens(
+			[
+				'user_id'    => $user_id,
+				'gateway_id' => self::GATEWAY_ID,
+				'limit'      => self::USER_FORMATTED_TOKENS_LIMIT,
+			]
+		);
+
+		return array_map(
+			static function ( WC_Payment_Token $token ): array {
+				return [
+					'tokenId'         => $token->get_id(),
+					'paymentMethodId' => $token->get_token(),
+					'isDefault'       => $token->get_is_default(),
+					'displayName'     => $token->get_display_name(),
+				];
+			},
+			array_values( $tokens )
+		);
+	}
+
+	/**
+	 * Returns true if the code returned from the API represents an error that should be rate-limited.
+	 *
+	 * @param string $error_code The error code returned from the API.
+	 *
+	 * @return bool Whether the rate limiter should be bumped.
+	 */
+	protected function should_bump_rate_limiter( string $error_code ): bool {
+		return in_array( $error_code, [ 'card_declined', 'incorrect_number', 'incorrect_cvc' ], true );
+	}
+
+	/**
+	 * Get selected UPE payment methods.
+	 *
+	 * @param string $selected_upe_payment_type Selected payment methods.
+	 * @param array  $enabled_payment_methods Enabled payment methods.
+	 *
+	 * @return array
+	 */
+	protected function get_selected_upe_payment_methods( string $selected_upe_payment_type, array $enabled_payment_methods ) {
+		$payment_methods = [];
+		if ( '' !== $selected_upe_payment_type ) {
+			// Only update the payment_method_types if we have a reference to the payment type the customer selected.
+			$payment_methods[] = $selected_upe_payment_type;
+
+			if ( CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID === $selected_upe_payment_type ) {
+				$is_link_enabled = in_array(
+					Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+					$enabled_payment_methods,
+					true
+				);
+				if ( $is_link_enabled ) {
+					$payment_methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+				}
+			}
+		}
+		return $payment_methods;
+	}
+
+	/**
+	 * Modifies the create intent parameters when processing a payment.
+	 *
+	 * If the selected Stripe payment type is AFTERPAY, it updates the shipping data in the request.
+	 *
+	 * @param Create_And_Confirm_Intention $request               The request object for creating and confirming intention.
+	 * @param Payment_Information          $payment_information   The payment information object.
+	 * @param WC_Order                     $order                 The order object.
+	 * @throws Invalid_Address_Exception
+	 *
+	 * @return void
+	 */
+	protected function modify_create_intent_parameters_when_processing_payment( Create_And_Confirm_Intention $request, Payment_Information $payment_information, WC_Order $order ): void {
+		if ( Payment_Method::AFTERPAY === $this->get_selected_stripe_payment_type_id() ) {
+			$this->handle_afterpay_shipping_requirement( $order, $request );
+		}
+	}
+
+
+	/**
+	 * Validate order_id received from the request vs value saved in the intent metadata.
+	 * Throw an exception if they're not matched.
+	 *
+	 * @param  WC_Order $order The received order to process.
+	 * @param  array    $intent_metadata The metadata of attached intent to the order.
+	 *
+	 * @return void
+	 * @throws Process_Payment_Exception
+	 */
+	private function validate_order_id_received_vs_intent_meta_order_id( WC_Order $order, array $intent_metadata ): void {
+		$intent_meta_order_id_raw = $intent_metadata['order_id'] ?? '';
+		$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
+
+		if ( $order->get_id() !== $intent_meta_order_id ) {
+			Logger::error(
+				sprintf(
+					'UPE Process Redirect Payment - Order ID mismatched. Received: %1$d. Intent Metadata Value: %2$d',
+					$order->get_id(),
+					$intent_meta_order_id
+				)
+			);
+
+			throw new Process_Payment_Exception(
+				__( "We're not able to process this payment due to the order ID mismatch. Please try again later.", 'woocommerce-payments' ),
+				self::PROCESS_REDIRECT_ORDER_MISMATCH_ERROR_CODE
+			);
+		}
+	}
+
+	/**
+	 * Gets and formats payment request data.
+	 *
+	 * @param \WP_REST_Request $request Request object.
+	 * @return array
+	 */
+	private function get_request_payment_data( \WP_REST_Request $request ) {
+		static $payment_data = [];
+		if ( ! empty( $payment_data ) ) {
+			return $payment_data;
+		}
+		if ( ! empty( $request['payment_data'] ) ) {
+			foreach ( $request['payment_data'] as $data ) {
+				$payment_data[ sanitize_key( $data['key'] ) ] = wc_clean( $data['value'] );
+			}
+		}
+
+		return $payment_data;
+	}
+
+	/**
+	 * Get values for Stripe mandate_data parameter
+	 *
+	 * @return array mandate_data values to use in request.
+	 */
+	private function get_mandate_data() {
+		return [
+			'customer_acceptance' => [
+				'type'   => 'online',
+				'online' => [
+					'ip_address' => WC_Geolocation::get_ip_address(),
+					'user_agent' => 'WooCommerce Payments/' . WCPAY_VERSION_NUMBER . '; ' . get_bloginfo( 'url' ),
+				],
+			],
+		];
+	}
+
+	/**
+	 * Gets the payment method type used for an order, if any
+	 *
+	 * @param WC_Order $order The order to get the payment method type for.
+	 *
+	 * @return string
+	 */
+	private function get_payment_method_type_for_order( $order ): string {
+		$payment_method_details = [];
+		if ( $this->order_service->get_payment_method_id_for_order( $order ) ) {
+			$payment_method_id      = $this->order_service->get_payment_method_id_for_order( $order );
+			$payment_method_details = $this->payments_api_client->get_payment_method( $payment_method_id );
+		} elseif ( $this->order_service->get_intent_id_for_order( $order ) ) {
+			$payment_intent_id = $this->order_service->get_intent_id_for_order( $order );
+
+			$request = Get_Intention::create( $payment_intent_id );
+			$request->set_hook_args( $order );
+
+			$payment_intent = $request->send();
+
+			$charge                 = $payment_intent ? $payment_intent->get_charge() : null;
+			$payment_method_details = $charge ? $charge->get_payment_method_details() : [];
+		}
+
+		return $payment_method_details['type'] ?? 'unknown';
+	}
+
+	/**
+	 * Checks if the transaction was blocked by AVS verification fraud rule.
+	 *
+	 * @param string|null $error_code The error code to check.
+	 * @param string|null $error_type The error type to check.
+	 *
+	 * @return bool True if the transaction was blocked by the AVS verification fraud rule, false otherwise.
+	 */
+	private function is_blocked_by_avs_verification_fraud_rule( ?string $error_code, ?string $error_type ): bool {
+		$is_avs_verification_rule_enabled = $this->is_fraud_rule_enabled( 'avs_verification' );
+		$is_incorrect_zip_error           = 'card_error' === $error_type && 'incorrect_zip' === $error_code;
+
+		return $is_avs_verification_rule_enabled && $is_incorrect_zip_error;
+	}
+
+	/**
+	 * Returns true when viewing payment methods page.
+	 *
+	 * @return bool
+	 */
+	private function is_payment_methods_page() {
+		global $wp;
+
+		$page_id = wc_get_page_id( 'myaccount' );
+
+		return ( $page_id && is_page( $page_id ) && ( isset( $wp->query_vars['payment-methods'] ) ) );
+	}
+
+	/**
+	 * Return the payment method type from the payment method details.
+	 *
+	 * @param array $payment_method_details Payment method details.
+	 * @return string|null Payment method type or nothing.
+	 */
+	private function get_payment_method_type_from_payment_details( $payment_method_details ) {
+		return $payment_method_details['type'] ?? null;
+	}
+
+	/**
+	 * Get the payment method used with a setup intent.
+	 *
+	 * @param WC_Payments_API_Setup_Intention $intent The PaymentIntent object.
+	 * @param WC_Payment_Token                $token The payment token.
+	 * @return string|null The payment method type.
+	 */
+	private function get_payment_method_type_for_setup_intent( $intent, $token ) {
+		return 'wcpay_link' !== $token->get_type() ? $intent->get_payment_method_type() : Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+	}
+
+	/**
 	 * Determine whether redirection is needed for the non-card UPE payment method.
 	 *
 	 * @param array $payment_methods The list of payment methods used for the order processing, usually consists of one method only.
@@ -4630,24 +4649,5 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		throw new Invalid_Address_Exception( __( 'A valid shipping address is required for Afterpay payments.', 'woocommerce-payments' ) );
-	}
-
-
-	/**
-	 * Modifies the create intent parameters when processing a payment.
-	 *
-	 * If the selected Stripe payment type is AFTERPAY, it updates the shipping data in the request.
-	 *
-	 * @param Create_And_Confirm_Intention $request               The request object for creating and confirming intention.
-	 * @param Payment_Information          $payment_information   The payment information object.
-	 * @param WC_Order                     $order                 The order object.
-	 * @throws Invalid_Address_Exception
-	 *
-	 * @return void
-	 */
-	protected function modify_create_intent_parameters_when_processing_payment( Create_And_Confirm_Intention $request, Payment_Information $payment_information, WC_Order $order ): void {
-		if ( Payment_Method::AFTERPAY === $this->get_selected_stripe_payment_type_id() ) {
-			$this->handle_afterpay_shipping_requirement( $order, $request );
-		}
 	}
 }
