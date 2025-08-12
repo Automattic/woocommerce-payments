@@ -105,6 +105,30 @@ else
     VERSIONS+=("rc")  # Fallback to string if no RC found
 fi
 
+# Validate versions before output
+if [[ -z "$L1_VERSION" || "$L1_VERSION" == "null" ]]; then
+    echo "Error: Could not extract L-1 version" >&2
+    exit 1
+fi
+
+if [[ ! "$L1_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    echo "Error: Invalid L-1 version: $L1_VERSION" >&2
+    exit 1
+fi
+
+if [[ -z "$LATEST_RC_VERSION" || "$LATEST_RC_VERSION" == "null" ]]; then
+    echo "Error: Could not extract RC version" >&2
+    exit 1
+fi
+
+# Only validate beta if it's available
+if [[ -n "$LATEST_BETA_VERSION" && "$LATEST_BETA_VERSION" != "null" ]]; then
+    if [[ ! "$LATEST_BETA_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+ ]]; then
+        echo "Error: Invalid beta version: $LATEST_BETA_VERSION" >&2
+        exit 1
+    fi
+fi
+
 # Convert to JSON array and output only the JSON (no extra whitespace or newlines)
 # Output a single JSON object with both versions and metadata
 RESULT=$(jq -n \

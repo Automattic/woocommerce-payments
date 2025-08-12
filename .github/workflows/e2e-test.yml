@@ -44,49 +44,17 @@ jobs:
           SCRIPT_RESULT=$( .github/scripts/generate-wc-matrix.sh )
 
           # Extract versions and metadata from JSON
-          WC_VERSIONS=$(echo "$SCRIPT_RESULT" | jq -r '.versions')
           L1_VERSION=$(echo "$SCRIPT_RESULT" | jq -r '.metadata.l1_version')
           RC_VERSION=$(echo "$SCRIPT_RESULT" | jq -r '.metadata.rc_version')
           BETA_VERSION=$(echo "$SCRIPT_RESULT" | jq -r '.metadata.beta_version')
 
-          # Check if beta version is actually a version (not null or empty)
-          if [[ "$BETA_VERSION" == "null" || -z "$BETA_VERSION" ]]; then
+          if [[ "$BETA_VERSION" == "null" ]]; then
             BETA_VERSION=""
-            echo "No beta version available" >&2
-          fi
-
-          # Validate that we got proper versions
-          if [[ -z "$L1_VERSION" || "$L1_VERSION" == "null" ]]; then
-            echo "Error: Could not extract L-1 version from script output" >&2
-            echo "Script result: $SCRIPT_RESULT" >&2
-            exit 1
-          fi
-
-          if [[ ! "$L1_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "Error: Invalid L-1 version extracted: $L1_VERSION" >&2
-            echo "WC_VERSIONS: $WC_VERSIONS" >&2
-            exit 1
-          fi
-
-          # Validate RC version
-          if [[ -z "$RC_VERSION" || "$RC_VERSION" == "null" ]]; then
-            echo "Error: Could not extract RC version from script output" >&2
-            echo "WC_VERSIONS: $WC_VERSIONS" >&2
-            exit 1
-          fi
-
-          # Only validate beta if it's available
-          if [[ -n "$BETA_VERSION" && "$BETA_VERSION" != "null" ]]; then
-            if [[ ! "$BETA_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+ ]]; then
-              echo "Error: Invalid beta version extracted: $BETA_VERSION" >&2
-              echo "WC_VERSIONS: $WC_VERSIONS" >&2
-              exit 1
-            fi
           fi
 
           echo "Using L-1 version: $L1_VERSION" >&2
           echo "Using RC version: $RC_VERSION" >&2
-          if [[ -n "$BETA_VERSION" && "$BETA_VERSION" != "null" ]]; then
+          if [[ -n "$BETA_VERSION" ]]; then
             echo "Using beta version: $BETA_VERSION" >&2
           else
             echo "No beta version available" >&2

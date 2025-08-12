@@ -58,21 +58,7 @@ jobs:
           SCRIPT_RESULT=$( .github/scripts/generate-wc-matrix.sh )
 
           # Extract versions and metadata from JSON
-          WC_VERSIONS=$(echo "$SCRIPT_RESULT" | jq -r '.versions')
           L1_VERSION=$(echo "$SCRIPT_RESULT" | jq -r '.metadata.l1_version')
-
-          # Validate that we got proper versions
-          if [[ -z "$L1_VERSION" || "$L1_VERSION" == "null" ]]; then
-            echo "Error: Could not extract L-1 version from script output" >&2
-            echo "Script result: $SCRIPT_RESULT" >&2
-            exit 1
-          fi
-
-          if [[ ! "$L1_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "Error: Invalid L-1 version extracted: $L1_VERSION" >&2
-            echo "WC_VERSIONS: $WC_VERSIONS" >&2
-            exit 1
-          fi
 
           echo "Using L-1 version: $L1_VERSION" >&2
 
