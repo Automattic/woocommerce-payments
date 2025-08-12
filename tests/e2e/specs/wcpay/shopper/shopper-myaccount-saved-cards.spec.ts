@@ -17,6 +17,7 @@ import {
 	selectSavedCardOnCheckout,
 	setDefaultPaymentMethod,
 	setupProductCheckout,
+	verifySavedCardIsDisplayed,
 } from '../../../utils/shopper';
 
 type TestVariablesType = {
@@ -235,11 +236,9 @@ test.describe( 'Shopper can save and delete cards', () => {
 						// Take note of the time when we added this card
 						cardTimingHelper.markCardAdded();
 
-						await expect(
-							shopperPage.getByText(
-								`${ card2.expires.month }/${ card2.expires.year }`
-							)
-						).toBeVisible();
+						// Verify the card was properly added and is visible
+						await verifySavedCardIsDisplayed( shopperPage, card2 );
+
 						await setDefaultPaymentMethod( shopperPage, card2 );
 						// Verify that the card was set as default
 						await expect(
@@ -255,6 +254,11 @@ test.describe( 'Shopper can save and delete cards', () => {
 					{ tag: '@critical' },
 					async () => {
 						await goToMyAccount( shopperPage, 'payment-methods' );
+
+						// Verify both cards are visible before trying to delete them
+						await verifySavedCardIsDisplayed( shopperPage, card );
+						await verifySavedCardIsDisplayed( shopperPage, card2 );
+
 						await deleteSavedCard( shopperPage, card );
 						await expect(
 							shopperPage.getByText( 'Payment method deleted.' )
