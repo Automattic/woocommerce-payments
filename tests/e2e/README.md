@@ -4,6 +4,24 @@ WooPayments e2e tests can be found in the `./tests/e2e/specs` directory. These t
 
 E2E tests can be run locally or in GitHub Actions. Github Actions are already configured and don't require any changes to run the tests.
 
+## Recent Improvements
+
+### Retry Mechanism
+The E2E tests now include an intelligent retry mechanism that:
+- **First run**: Executes all tests normally
+- **Automatic retry**: If any tests fail, only the failed tests are retried using Playwright's `--last-failed` flag
+
+### Improved Timeout Handling
+- **Increased timeouts**: UI interaction timeouts increased from 100ms to 10 seconds for better reliability
+- **Better error handling**: More robust page loading and element waiting strategies
+- **DevTools reliability**: Improved devtools page navigation and interaction
+
+### Dynamic Matrix Generation
+- **L-1 Policy**: Tests automatically run against the latest WooCommerce version and the L-1 (previous major) version
+- **Dynamic version resolution**: Automatically fetches latest WC, RC, and beta versions from WordPress.org API
+- **Optimized PHP strategy**: Reduces job count while maintaining comprehensive coverage
+- **Business continuity**: Maintains support for WC 7.7.0 for significant TPV reasons
+
 ## Setting up & running E2E tests
 
 For running E2E tests locally, create a new file named `local.env` under `tests/e2e/config` folder with the following env variables (replace values as required).
@@ -207,6 +225,19 @@ Currently, the best way to debug tests is to use the Playwright UI mode. This mo
 You can use the locator functionality to help correctly determine the locator syntax to correctly target the HTML element you need. Lastly, you can also use
 `console.log()` to assist with debugging tests in UI mode. To run tests in UI mode, use the `npm run test:e2e-ui path/to/test.spec` command.
 
+### Understanding Test Failures and Retries
+
+When tests fail in CI, the retry mechanism automatically kicks in:
+
+1. **First run**: All tests execute normally
+2. **If failures occur**: The system automatically retries only the failed tests
+3. **Retry logs**: Look for the message "Some tests failed, retrying only failed tests with --last-failed flag" in the logs
+4. **Final results**: The test run will show both the initial results and retry results
+
+This approach helps distinguish between:
+- **Flaky tests**: Tests that fail occasionally but pass on retry
+- **Consistent failures**: Tests that fail both initially and on retry (indicating real issues)
+
 ## Slack integration
 
 The Slack reporter is a custom reporter that sends e2e test failures to a public Slack channel (search Slack channel ID `CQ0Q6N62D`). The reporter is configured to only send the first failure of a test to Slack. If the retry also fails it will not be sent to prevent spamming the channel.
@@ -253,6 +284,16 @@ await page.getByRole( 'button', { name: /submit/i } ).click();
 ```
 
 In some cases, you may need to wait for the page to reach a certain load state before interacting with it. You can use `await page.waitForLoadState( 'domcontentloaded' );` to wait for the page to finish loading.
+
+**What timeout values are used for UI interactions?**
+
+The E2E tests use optimized timeout values for better reliability:
+- **Global expect timeout**: 20 seconds (configured in `playwright.config.ts`)
+- **UI interaction timeouts**: 10 seconds for critical UI elements (buttons, forms, etc.)
+- **Page load timeouts**: 120 seconds for test execution
+- **Network idle waits**: Used for dynamic content loading
+
+These timeouts have been increased from the previous 100ms values to provide better stability, especially for slower environments or complex UI interactions.
 
 **What is the best way to target elements in the page?**
 
@@ -314,15 +355,29 @@ test.describe( 'Sign in as customer', () => {
 } );
 ```
 
+**How does the dynamic matrix generation work?**
+
+The E2E test matrix is dynamically generated using the `.github/scripts/generate-wc-matrix.sh` script:
+
+- **L-1 Policy**: Automatically tests against the latest WooCommerce version and the L-1 (previous major) version
+- **Version Resolution**: Fetches latest WC, RC, and beta versions from WordPress.org API
+- **PHP Strategy**:
+  - WC 7.7.0: PHP 7.3 (legacy support)
+  - WC L-1 & Latest: PHP 8.3 (stable)
+  - WC RC: PHP 8.4 (latest)
+- **Business Continuity**: Maintains WC 7.7.0 support for significant TPV reasons
+
+This ensures comprehensive test coverage while optimizing CI execution time and resource usage.
+
 **How can I investigate and interact with a test failures?**
 
 - **Github Action test runs**
   - View GitHub checks in the "Checks" tab of a PR
-  - There are currently four E2E test workflows:
-    - E2E Tests - Pull Request / WC - latest | wcpay - merchant (pull_request)
-    - E2E Tests - Pull Request / WC - latest | wcpay - shopper (pull_request)
-    - E2E Tests - Pull Request / WC - latest | subscriptions - merchant (pull_request)
-    - E2E Tests - Pull Request / WC - latest | subscriptions - shopper (pull_request)
+  - The E2E test matrix now dynamically generates test combinations based on:
+    - **WooCommerce versions**: Latest, L-1 (previous major), RC, and beta versions
+    - **PHP versions**: 7.3 (legacy), 8.3 (stable), 8.4 (latest)
+    - **Test groups**: wcpay, subscriptions
+    - **Test branches**: merchant, shopper
   - Click on the details link to the right of the failed job to see the summary
   - In the job summary, click on the "Run tests, upload screenshots & logs" section.
   - Click on the artifact download link at the end of the section, then extract and copy the `playwright-report` directory to the root of the WooPayments repository
