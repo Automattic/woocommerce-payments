@@ -2796,6 +2796,40 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$gateway->process_payment_for_order( WC()->cart, $pi );
 	}
 
+	public function test_set_mandate_data_to_payment_intent_for_becs() {
+		// Mandate data is required for BECS payments, hence creating the gateway with a BECS payment method should add mandate data.
+		$gateway        = $this->get_gateway( Payment_Method::BECS );
+		$payment_method = 'woocommerce_payments_au_becs_debit';
+		$order          = WC_Helper_Order::create_order();
+		$order->set_currency( 'AUD' );
+		$order->set_total( 100 );
+		$order->save();
+
+		$_POST['wcpay-fraud-prevention-token'] = 'correct-token';
+		$_POST['payment_method']               = $payment_method;
+		$pi                                    = new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'card' );
+
+		$request = $this->mock_wcpay_request( Create_And_Confirm_Intention::class );
+		$request->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( WC_Helper_Intention::create_intention( [ 'status' => 'success' ] ) );
+
+		$request->expects( $this->once() )
+			->method( 'set_mandate_data' )
+			->with(
+				$this->callback(
+					function ( $data ) {
+								return isset( $data['customer_acceptance']['type'] ) &&
+								'online' === $data['customer_acceptance']['type'] &&
+								isset( $data['customer_acceptance']['online'] ) &&
+								is_array( $data['customer_acceptance']['online'] );
+					}
+				)
+			);
+
+		$gateway->process_payment_for_order( WC()->cart, $pi );
+	}
+
 	public function test_set_mandate_data_with_setup_intent_request_when_link_is_disabled() {
 		// Disabled link is reflected in upe_enabled_payment_method_ids: when link is disabled, the array contains only card.
 		$this->card_gateway->settings['upe_enabled_payment_method_ids'] = [ 'card' ];
@@ -2898,8 +2932,13 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $sepa->is_mandate_data_required() );
 	}
 
+	public function test_is_mandate_data_required_becs() {
+		$becs = $this->get_gateway( Payment_Method::BECS );
+		$this->assertTrue( $becs->is_mandate_data_required() );
+	}
+
 	public function test_is_mandate_data_required_returns_false() {
-		foreach ( $this->get_gateways_excluding( [ Payment_Method::SEPA, Payment_Method::CARD ] ) as $gateway ) {
+		foreach ( $this->get_gateways_excluding( [ Payment_Method::SEPA, Payment_Method::BECS, Payment_Method::CARD ] ) as $gateway ) {
 			$this->assertFalse( $gateway->is_mandate_data_required() );
 		}
 	}

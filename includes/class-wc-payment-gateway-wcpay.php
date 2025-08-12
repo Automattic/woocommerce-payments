@@ -2042,7 +2042,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Mandate must be shown and acknowledged by customer before deferred intent UPE payment can be processed.
-	 * This applies to SEPA and Link payment methods.
+	 * This applies to SEPA, BECS, and Link payment methods.
 	 * https://stripe.com/docs/payments/finalize-payments-on-the-server
 	 *
 	 * @return boolean True if mandate must be shown and acknowledged by customer before deferred intent UPE payment can be processed, false otherwise.
@@ -2050,8 +2050,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function is_mandate_data_required() {
 		$is_stripe_link_enabled = Payment_Method::CARD === $this->get_selected_stripe_payment_type_id() && in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true );
 		$is_sepa_debit_payment  = Payment_Method::SEPA === $this->get_selected_stripe_payment_type_id();
+		$is_becs_debit_payment  = Payment_Method::BECS === $this->get_selected_stripe_payment_type_id();
 
-		return $is_stripe_link_enabled || $is_sepa_debit_payment;
+		return $is_stripe_link_enabled || $is_sepa_debit_payment || $is_becs_debit_payment;
 	}
 
 	/**
