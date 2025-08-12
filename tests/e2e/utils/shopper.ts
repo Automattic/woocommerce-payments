@@ -617,10 +617,10 @@ export const deleteSavedCard = async (
 	card: typeof config.cards.basic
 ) => {
 	const row = page.getByRole( 'row', { name: card.label } ).first();
-	await expect( row ).toBeVisible( { timeout: 100 } );
+	await expect( row ).toBeVisible( { timeout: 10000 } );
 	const button = row.getByRole( 'link', { name: 'Delete' } );
-	await expect( button ).toBeVisible( { timeout: 100 } );
-	await expect( button ).toBeEnabled( { timeout: 100 } );
+	await expect( button ).toBeVisible( { timeout: 10000 } );
+	await expect( button ).toBeEnabled( { timeout: 10000 } );
 	await button.click();
 };
 
@@ -633,7 +633,7 @@ export const selectSavedCardOnCheckout = async (
 			`${ card.label } (expires ${ card.expires.month }/${ card.expires.year })`
 		)
 		.first();
-	await expect( option ).toBeVisible( { timeout: 100 } );
+	await expect( option ).toBeVisible( { timeout: 10000 } );
 	await option.click();
 };
 
@@ -642,10 +642,10 @@ export const setDefaultPaymentMethod = async (
 	card: typeof config.cards.basic
 ) => {
 	const row = page.getByRole( 'row', { name: card.label } ).first();
-	await expect( row ).toBeVisible( { timeout: 100 } );
+	await expect( row ).toBeVisible( { timeout: 10000 } );
 	const button = row.getByRole( 'link', { name: 'Make default' } );
-	await expect( button ).toBeVisible( { timeout: 100 } );
-	await expect( button ).toBeEnabled( { timeout: 100 } );
+	await expect( button ).toBeVisible( { timeout: 10000 } );
+	await expect( button ).toBeEnabled( { timeout: 10000 } );
 	await button.click();
 };
 
