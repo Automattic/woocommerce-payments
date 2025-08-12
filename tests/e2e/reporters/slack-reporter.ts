@@ -18,14 +18,6 @@ function slugifyForFileName( input: string ): string {
 
 class SlackReporter implements Reporter {
 	onTestEnd( test: TestCase, result: TestResult ) {
-		// Skip if Slack is not properly configured
-		if (
-			! process.env.E2E_SLACK_TOKEN ||
-			! process.env.E2E_SLACK_CHANNEL_ID
-		) {
-			return;
-		}
-
 		// If the test has already failed, we don't want to send a duplicate message.
 		if ( result.retry !== 0 ) {
 			return;
