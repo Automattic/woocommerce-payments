@@ -7,14 +7,9 @@ E2E tests can be run locally or in GitHub Actions. Github Actions are already co
 ## Recent Improvements
 
 ### Retry Mechanism
-The E2E tests now include an intelligent retry mechanism that:
-- **First run**: Executes all tests normally
-- **Automatic retry**: If any tests fail, only the failed tests are retried using Playwright's `--last-failed` flag
-
-### Improved Timeout Handling
-- **Increased timeouts**: UI interaction timeouts increased from 100ms to 10 seconds for better reliability
-- **Better error handling**: More robust page loading and element waiting strategies
-- **DevTools reliability**: Improved devtools page navigation and interaction
+The E2E tests use Playwright's built-in retry mechanism:
+- **Automatic retries**: Failed tests are automatically retried up to 2 times in CI
+- **Configurable**: Retries are enabled in CI (`retries: 2`) and disabled locally (`retries: 0`)
 
 ### Dynamic Matrix Generation
 - **L-1 Policy**: Tests automatically run against the latest WooCommerce version and the L-1 (previous major) version
@@ -229,14 +224,9 @@ You can use the locator functionality to help correctly determine the locator sy
 
 When tests fail in CI, the retry mechanism automatically kicks in:
 
-1. **First run**: All tests execute normally
-2. **If failures occur**: The system automatically retries only the failed tests
-3. **Retry logs**: Look for the message "Some tests failed, retrying only failed tests with --last-failed flag" in the logs
-4. **Final results**: The test run will show both the initial results and retry results
-
-This approach helps distinguish between:
-- **Flaky tests**: Tests that fail occasionally but pass on retry
-- **Consistent failures**: Tests that fail both initially and on retry (indicating real issues)
+1. **Automatic retries**: Failed tests are automatically retried up to 2 times
+2. **Retry logs**: Look for retry attempts in the test output
+3. **Final results**: The test run will show the final result after all retry attempts
 
 ## Slack integration
 
@@ -284,16 +274,6 @@ await page.getByRole( 'button', { name: /submit/i } ).click();
 ```
 
 In some cases, you may need to wait for the page to reach a certain load state before interacting with it. You can use `await page.waitForLoadState( 'domcontentloaded' );` to wait for the page to finish loading.
-
-**What timeout values are used for UI interactions?**
-
-The E2E tests use optimized timeout values for better reliability:
-- **Global expect timeout**: 20 seconds (configured in `playwright.config.ts`)
-- **UI interaction timeouts**: 10 seconds for critical UI elements (buttons, forms, etc.)
-- **Page load timeouts**: 120 seconds for test execution
-- **Network idle waits**: Used for dynamic content loading
-
-These timeouts have been increased from the previous 100ms values to provide better stability, especially for slower environments or complex UI interactions.
 
 **What is the best way to target elements in the page?**
 
