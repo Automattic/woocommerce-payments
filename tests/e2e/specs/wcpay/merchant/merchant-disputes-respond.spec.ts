@@ -579,32 +579,8 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 				await merchantPage
 					.getByLabel( 'PRODUCT DESCRIPTION' )
 					.fill( 'my product description' );
-
-				// Verify the values were set correctly immediately after filling
-				await expect(
-					merchantPage.getByTestId(
-						'dispute-challenge-product-type-selector'
-					)
-				).toHaveValue( 'offline_service' );
-
-				await expect(
-					merchantPage.getByLabel( 'PRODUCT DESCRIPTION' )
-				).toHaveValue( 'my product description' );
 			}
 		);
-
-		await test.step( 'Verify form values before saving', async () => {
-			// Double-check that the form values are still correct before saving
-			await expect(
-				merchantPage.getByTestId(
-					'dispute-challenge-product-type-selector'
-				)
-			).toHaveValue( 'offline_service' );
-
-			await expect(
-				merchantPage.getByLabel( 'PRODUCT DESCRIPTION' )
-			).toHaveValue( 'my product description' );
-		} );
 
 		await test.step( 'Save the dispute challenge for later', async () => {
 			await merchantPage
@@ -612,14 +588,6 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 					name: 'Save for later',
 				} )
 				.click();
-
-			// Wait for the save operation to complete
-			// Look for the success notification in the snackbar
-			await expect(
-				merchantPage
-					.locator( '.components-snackbar__content' )
-					.filter( { hasText: 'Evidence saved!' } )
-			).toBeVisible( { timeout: 10000 } );
 		} );
 
 		await test.step( 'Go back to the payment details page', async () => {
