@@ -235,6 +235,11 @@ test.describe( 'Shopper can save and delete cards', () => {
 						// Take note of the time when we added this card
 						cardTimingHelper.markCardAdded();
 
+						await expect(
+							shopperPage.getByText(
+								`${ card2.expires.month }/${ card2.expires.year }`
+							)
+						).toBeVisible();
 						await setDefaultPaymentMethod( shopperPage, card2 );
 						// Verify that the card was set as default
 						await expect(
@@ -250,15 +255,6 @@ test.describe( 'Shopper can save and delete cards', () => {
 					{ tag: '@critical' },
 					async () => {
 						await goToMyAccount( shopperPage, 'payment-methods' );
-
-						// Verify both cards are visible before trying to delete them
-						await expect(
-							shopperPage.getByText( card.label )
-						).toBeVisible( { timeout: 10000 } );
-						await expect(
-							shopperPage.getByText( card2.label )
-						).toBeVisible( { timeout: 10000 } );
-
 						await deleteSavedCard( shopperPage, card );
 						await expect(
 							shopperPage.getByText( 'Payment method deleted.' )
