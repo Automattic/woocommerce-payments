@@ -11,7 +11,7 @@ config( { path: path.resolve( __dirname, '../e2e/config', 'local.env' ) } );
 
 const { BASE_URL, NODE_ENV, E2E_GROUP, E2E_BRANCH } = process.env;
 
-const validGroups = [ 'wcpay', 'subscriptions' ];
+const validGroups = [ 'wcpay', 'subscriptions', 'blocks' ];
 const validBranches = [ 'merchant', 'shopper' ];
 
 const buildTestDir = ( group: string, branch: string ) => {
@@ -19,6 +19,14 @@ const buildTestDir = ( group: string, branch: string ) => {
 
 	if ( ! group || ! validGroups.includes( group ) ) {
 		return baseDir;
+	}
+
+	// Special handling for blocks tests - they are located in wcpay/shopper directory
+	if ( group === 'blocks' ) {
+		if ( ! branch || ! validBranches.includes( branch ) ) {
+			return `${ baseDir }\/wcpay`;
+		}
+		return `${ baseDir }\/wcpay\/${ branch }`;
 	}
 
 	if ( ! branch || ! validBranches.includes( branch ) ) {
@@ -30,6 +38,11 @@ const buildTestDir = ( group: string, branch: string ) => {
 
 const getTestMatch = ( group: string, branch: string ) => {
 	const testDir = buildTestDir( group, branch );
+
+	// Special handling for blocks tests - filter for wc-blocks test files
+	if ( group === 'blocks' ) {
+		return new RegExp( `${ testDir }\/.*wc-blocks.*\.spec\.ts` );
+	}
 
 	return new RegExp( `${ testDir }\/.*\.spec\.ts` );
 };
