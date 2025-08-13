@@ -50,7 +50,9 @@ export default defineConfig( {
 		video: 'on-first-retry',
 		viewport: { width: 1280, height: 720 },
 	},
-	timeout: 120 * 1000, // Default is 30s, sometimes it is not enough for local tests due to long setup.
+	// Global timeout for each action (click, fill, etc.)
+	timeout: process.env.CI ? 60000 : 30000,
+
 	expect: {
 		toHaveScreenshot: {
 			maxDiffPixelRatio:
