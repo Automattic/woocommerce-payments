@@ -316,7 +316,7 @@ export const addToCartFromShopPage = async (
 
 	// This generic regex will match the aria-label for the "Add to cart" button for any product.
 	// It should work for WC 7.7.0 and later.
-	// These unicode characters are the smart (or curly) quotes: " ".
+	// These unicode characters are the smart (or curly) quotes: “ ”.
 	const addToCartRegex = new RegExp(
 		`Add\\s+(?:to\\s+cart:\\s*)?\u201C${ product.name }\u201D(?:\\s+to\\s+your\\s+cart)?`
 	);
