@@ -2,6 +2,9 @@
  * External dependencies
  */
 import React from 'react';
+import { calendar } from '@wordpress/icons';
+import { Link } from '@woocommerce/components';
+import { __ } from '@wordpress/i18n';
 import {
 	CardBody,
 	CardDivider,
@@ -9,9 +12,6 @@ import {
 	FlexItem,
 	Icon,
 } from '@wordpress/components';
-import { calendar } from '@wordpress/icons';
-import { Link } from '@woocommerce/components';
-import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies.

@@ -18,7 +18,7 @@ const AdvancedSettings = () => {
 	return (
 		<>
 			<Card>
-				<CardBody>
+				<CardBody className="wcpay-card-body">
 					<MultiCurrencyToggle />
 					{ wcpaySettings.isSubscriptionsActive &&
 					wcpaySettings.isStripeBillingEligible ? (

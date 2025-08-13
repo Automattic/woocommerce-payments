@@ -96,7 +96,7 @@ const PaymentMethod = ( {
 	const {
 		isActionable,
 		notice,
-		noticeType = 'warning',
+		noticeType = 'warning' as const,
 	} = usePaymentMethodAvailability( id );
 	const [ enabledMethodIds ] = useEnabledPaymentMethodIds();
 
@@ -134,6 +134,7 @@ const PaymentMethod = ( {
 						checked={ enabledMethodIds.includes( id ) }
 						disabled={ ! isActionable || locked }
 						onChange={ handleChange }
+						__nextHasNoMarginBottom
 					/>
 				</div>
 				<div className="payment-method__text-container">

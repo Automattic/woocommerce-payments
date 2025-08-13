@@ -3,7 +3,6 @@
  */
 import React, { useEffect } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Button, Flex, FlexItem, Modal } from '@wordpress/components';
 import {
 	Icon,
 	commentContent,
@@ -15,6 +14,7 @@ import {
 /**
  * Internal dependencies
  */
+import { Modal, Button, Flex, FlexItem } from '@wordpress/components';
 import { recordEvent } from 'wcpay/tracks';
 import './style.scss';
 

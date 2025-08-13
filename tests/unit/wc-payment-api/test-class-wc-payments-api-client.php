@@ -302,7 +302,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 						'account_data'                => $account_data,
 						'actioned_notes'              => $actioned_notes,
 						'create_live_account'         => true,
-						'progressive'                 => false,
 						'collect_payout_requirements' => false,
 						'compatibility_data'          => $this->get_mock_compatibility_data(),
 						'referral_code'               => null,
@@ -406,7 +405,8 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 			->expects( $this->once() )
 			->method( 'remote_request' )
 			->with(
-				$this->containsIdentical( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/currency/rates?test_mode=0&currency_from=USD' ),
+				// Please note the use of the V2 API endpoint - `/transact/` instead of `/wcpay/`.
+				$this->containsIdentical( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/transact/currency/rates?test_mode=0&currency_from=USD' ),
 				null,
 				true,
 				false

@@ -2,6 +2,8 @@
  * External dependencies
  */
 import React from 'react';
+import { __, sprintf } from '@wordpress/i18n';
+import { createInterpolateElement } from '@wordpress/element';
 import {
 	Button,
 	Card,
@@ -11,8 +13,6 @@ import {
 	FlexBlock,
 	FlexItem,
 } from '@wordpress/components';
-import { __, sprintf } from '@wordpress/i18n';
-import { createInterpolateElement } from '@wordpress/element';
 
 /**
  * Internal dependencies.
@@ -162,7 +162,7 @@ const ActiveLoanSummary = (): JSX.Element => {
 				<FlexItem>
 					{ getActiveLoanId() && (
 						<Button
-							isLink
+							variant="link"
 							href={ getAdminUrl( {
 								page: 'wc-admin',
 								path: '/payments/transactions',
@@ -170,6 +170,7 @@ const ActiveLoanSummary = (): JSX.Element => {
 								filter: 'advanced',
 								loan_id_is: getActiveLoanId(),
 							} ) }
+							__next40pxDefaultSize
 						>
 							{ __(
 								'View transactions',

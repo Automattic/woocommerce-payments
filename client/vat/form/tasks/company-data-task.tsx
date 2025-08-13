@@ -3,12 +3,6 @@
 /**
  * External dependencies
  */
-import {
-	Button,
-	Notice,
-	TextareaControl,
-	TextControl,
-} from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 import React, { useContext, useEffect, useState } from 'react';
 import apiFetch from '@wordpress/api-fetch';
@@ -16,6 +10,12 @@ import apiFetch from '@wordpress/api-fetch';
 /**
  * Internal dependencies
  */
+import {
+	Button,
+	Notice,
+	TextareaControl,
+	TextControl,
+} from '@wordpress/components';
 import CollapsibleBody from 'wcpay/components/wizard/collapsible-body';
 import WizardTaskItem from 'wcpay/components/wizard/task-item';
 import WizardTaskContext from 'wcpay/components/wizard/task/context';
@@ -99,22 +99,28 @@ export const CompanyDataTask = ( {
 		>
 			<CollapsibleBody>
 				<TextControl
+					className="wcpay-company-data-task__text-control"
 					label={ __( 'Business name', 'woocommerce-payments' ) }
 					value={ companyName }
 					onChange={ setCompanyName }
+					__nextHasNoMarginBottom
+					__next40pxDefaultSize
 				/>
 
 				<TextareaControl
+					className="wcpay-company-data-task__textarea-control"
 					label={ __( 'Address', 'woocommerce-payments' ) }
 					value={ companyAddress }
 					onChange={ setCompanyAddress }
+					__nextHasNoMarginBottom
 				/>
 
 				<Button
-					isPrimary
+					variant="primary"
 					disabled={ isConfirmButtonDisabled || isLoading }
 					isBusy={ isLoading }
 					onClick={ submit }
+					__next40pxDefaultSize
 				>
 					{ __( 'Confirm', 'woocommerce-payments' ) }
 				</Button>

@@ -348,13 +348,13 @@ export const DisputesList = (): JSX.Element => {
 		const { page, path, ...params } = getQuery();
 		const userEmail = wcpaySettings.currentUserEmail;
 
+		const locale = wcSettings.locale.userLocale;
 		recordEvent( 'wcpay_csv_export_click', {
 			row_type: 'disputes',
 			source: path,
 			exported_row_count: disputesSummary.count,
 		} );
 
-		const userLocale = wcpaySettings.userLocale.code;
 		const {
 			date_before: dateBefore,
 			date_after: dateAfter,
@@ -367,7 +367,7 @@ export const DisputesList = (): JSX.Element => {
 
 		const exportRequestURL = getDisputesCSVRequestURL( {
 			userEmail,
-			userLocale,
+			locale,
 			dateAfter,
 			dateBefore,
 			dateBetween,

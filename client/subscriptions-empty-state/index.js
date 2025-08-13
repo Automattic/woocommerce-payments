@@ -62,13 +62,14 @@ const ActionButtons = () => {
 				disabled={ isFinishingSetup }
 				href={ connectUrl }
 				isBusy={ isFinishingSetup }
-				isPrimary
+				variant="primary"
 				onClick={ () => {
 					recordEvent(
 						'wcpay_subscriptions_empty_state_finish_setup'
 					);
 					setIsFinishingSetup( true );
 				} }
+				__next40pxDefaultSize
 			>
 				{ __( 'Finish setup', 'woocommerce-payments' ) }
 			</Button>
@@ -76,13 +77,14 @@ const ActionButtons = () => {
 				disabled={ isCreatingProduct }
 				href={ newProductUrl }
 				isBusy={ isCreatingProduct }
-				isSecondary
+				variant="secondary"
 				onClick={ () => {
 					recordEvent(
 						'wcpay_subscriptions_empty_state_create_product'
 					);
 					setIsCreatingProduct( true );
 				} }
+				__next40pxDefaultSize
 			>
 				{ __( 'Create subscription product', 'woocommerce-payments' ) }
 			</Button>

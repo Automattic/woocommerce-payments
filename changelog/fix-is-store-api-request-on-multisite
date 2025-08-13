@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-fix: is_store_api_request utility on multisite with subdirectory install

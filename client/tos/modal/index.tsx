@@ -1,0 +1,262 @@
+/**
+ * External dependencies
+ */
+import React, { ComponentProps, useState } from 'react';
+import { __, sprintf } from '@wordpress/i18n';
+import interpolateComponents from '@automattic/interpolate-components';
+import { Button, Notice, Modal, ExternalLink } from '@wordpress/components';
+import { addQueryArgs } from '@wordpress/url';
+
+/**
+ * Internal dependencies
+ */
+import { getPaymentMethodsUrl } from 'utils';
+import {
+	makeTosAcceptanceRequest,
+	maybeTrackStripeConnected,
+} from '../request';
+import './style.scss';
+
+const TosLink = ( props: ComponentProps< typeof ExternalLink > ) => (
+	<ExternalLink { ...props } href="https://wordpress.com/tos" />
+);
+
+const TosModalUI = ( {
+	onAccept,
+	onDecline,
+	isBusy,
+	hasError,
+}: {
+	onAccept: () => void;
+	onDecline: () => void;
+	isBusy: boolean;
+	hasError: boolean;
+} ) => {
+	const title = sprintf(
+		/* translators: %s: WooPayments */
+		__( '%s: Terms of Service', 'woocommerce-payments' ),
+		'WooPayments'
+	);
+	const message = interpolateComponents( {
+		mixedString: sprintf(
+			/* translators: %s: WooPayments */
+			__(
+				'To continue using %s, please review and agree to our {{link}}Terms of Service{{/link}}.' +
+					' By clicking “Accept” you agree to the Terms of Service.',
+				'woocommerce-payments'
+			),
+			'WooPayments'
+		),
+		components: {
+			// @ts-expect-error: the link already has href
+			link: <TosLink />,
+		},
+	} );
+
+	return (
+		<Modal
+			title={ title }
+			isDismissible={ false }
+			shouldCloseOnClickOutside={ false }
+			shouldCloseOnEsc={ false }
+			onRequestClose={ onDecline }
+			className="woocommerce-payments__tos-modal"
+		>
+			{ hasError && (
+				<Notice
+					status="error"
+					isDismissible={ false }
+					className="woocommerce-payments__tos-error"
+				>
+					{ __(
+						'Something went wrong. Please try accepting the Terms of Service again!',
+						'woocommerce-payments'
+					) }
+				</Notice>
+			) }
+			<div className="woocommerce-payments__tos-wrapper">
+				<div className="woocommerce-payments__tos-modal-message">
+					{ message }
+				</div>
+				<div className="woocommerce-payments__tos-footer">
+					<Button
+						variant="secondary"
+						onClick={ onDecline }
+						disabled={ isBusy }
+						__next40pxDefaultSize
+					>
+						{ __( 'Decline', 'woocommerce-payments' ) }
+					</Button>
+
+					<Button
+						variant="primary"
+						onClick={ onAccept }
+						isBusy={ isBusy }
+						__next40pxDefaultSize
+					>
+						{ __( 'Accept', 'woocommerce-payments' ) }
+					</Button>
+				</div>
+			</div>
+		</Modal>
+	);
+};
+
+const DisableModalUI = ( {
+	onDisable,
+	onCancel,
+	isBusy,
+	hasError,
+}: {
+	onDisable: () => void;
+	onCancel: () => void;
+	isBusy: boolean;
+	hasError: boolean;
+} ) => {
+	const title = sprintf(
+		/* translators: %s: WooPayments */
+		__( 'Disable %s', 'woocommerce-payments' ),
+		'WooPayments'
+	);
+	const message = interpolateComponents( {
+		mixedString: sprintf(
+			/* translators: %s: WooPayments */
+			__(
+				'By declining our {{link}}Terms of Service{{/link}},' +
+					' you’ll no longer be able to capture credit card payments using %s.' +
+					' Your previous transaction and payout data will still be available.',
+				'woocommerce-payments'
+			),
+			'WooPayments'
+		),
+		components: {
+			// @ts-expect-error: the link already has href
+			link: <TosLink />,
+		},
+	} );
+
+	return (
+		<Modal
+			title={ title }
+			isDismissible={ false }
+			shouldCloseOnClickOutside={ false }
+			shouldCloseOnEsc={ false }
+			onRequestClose={ onDisable }
+			className="woocommerce-payments__tos-modal"
+		>
+			{ hasError && (
+				<Notice
+					status="error"
+					isDismissible={ false }
+					className="woocommerce-payments__tos-error"
+				>
+					{ __(
+						'Something went wrong. Please try again!',
+						'woocommerce-payments'
+					) }
+				</Notice>
+			) }
+
+			<div className="woocommerce-payments__tos-wrapper">
+				<div className="woocommerce-payments__tos-modal-message">
+					{ message }
+				</div>
+				<div className="woocommerce-payments__tos-footer">
+					<Button
+						variant="tertiary"
+						onClick={ onCancel }
+						isBusy={ isBusy }
+						__next40pxDefaultSize
+					>
+						{ __( 'Back', 'woocommerce-payments' ) }
+					</Button>
+
+					<Button
+						variant="primary"
+						onClick={ onDisable }
+						isBusy={ isBusy }
+						__next40pxDefaultSize
+					>
+						{ __( 'Disable', 'woocommerce-payments' ) }
+					</Button>
+				</div>
+			</div>
+		</Modal>
+	);
+};
+
+const TosModal = () => {
+	const [ isTosModalOpen, setIsTosModalOpen ] = useState( true );
+	const [ isDisableModalOpen, setIsDisableModalOpen ] = useState( false );
+	const [ isBusy, setIsBusy ] = useState( false );
+	const [ hasAcceptanceError, setAcceptanceError ] = useState( false );
+	const [ hasDeclineError, setDeclineError ] = useState( false );
+
+	const closeTosModal = () => setIsTosModalOpen( false );
+	const closeDisableModal = () => setIsDisableModalOpen( false );
+
+	const declineTos = () => {
+		closeTosModal();
+		setIsDisableModalOpen( true );
+	};
+
+	const acceptTos = async () => {
+		try {
+			setAcceptanceError( false );
+			setIsBusy( true );
+			await makeTosAcceptanceRequest( { accept: true } );
+			maybeTrackStripeConnected();
+			closeTosModal();
+		} catch ( err ) {
+			setAcceptanceError( true );
+		} finally {
+			setIsBusy( false );
+		}
+	};
+	const disablePlugin = async () => {
+		try {
+			setDeclineError( false );
+			setIsBusy( true );
+			await makeTosAcceptanceRequest( { accept: false } );
+			closeDisableModal();
+			window.location.href = addQueryArgs( getPaymentMethodsUrl(), {
+				'tos-disabled': 1,
+			} );
+		} catch ( err ) {
+			setDeclineError( true );
+		} finally {
+			setIsBusy( false );
+		}
+	};
+
+	const cancelPluginDisable = () => {
+		closeDisableModal();
+		setIsTosModalOpen( true );
+	};
+
+	if ( isDisableModalOpen ) {
+		return (
+			<DisableModalUI
+				onDisable={ disablePlugin }
+				onCancel={ cancelPluginDisable }
+				isBusy={ isBusy }
+				hasError={ hasDeclineError }
+			/>
+		);
+	}
+
+	if ( isTosModalOpen ) {
+		return (
+			<TosModalUI
+				onAccept={ acceptTos }
+				onDecline={ declineTos }
+				isBusy={ isBusy }
+				hasError={ hasAcceptanceError }
+			/>
+		);
+	}
+
+	return null;
+};
+
+export default TosModal;

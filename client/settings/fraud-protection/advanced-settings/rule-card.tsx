@@ -7,7 +7,7 @@ import { Card } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import './../style.scss';
+import './rule-card.scss';
 import CardBody from '../../card-body';
 
 interface FraudProtectionRuleCardProps {
@@ -20,12 +20,8 @@ const FraudProtectionRuleCard: React.FC< React.PropsWithChildren<
 > > = ( { title, children, id } ) => {
 	return (
 		<Card id={ id } className="fraud-protection-rule-card">
-			<CardBody>
-				<div>
-					<p className="fraud-protection-rule-card-header">
-						{ title }
-					</p>
-				</div>
+			<CardBody className="wcpay-card-body">
+				<h4>{ title }</h4>
 				{ children }
 			</CardBody>
 		</Card>

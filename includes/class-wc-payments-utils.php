@@ -1035,6 +1035,8 @@ class WC_Payments_Utils {
 	/**
 	 * Helper function to check whether to show default new onboarding flow or as an exception disable it (if specific constant is set) .
 	 *
+	 * @deprecated 9.8.0 There is no longer an optional "new" onboarding flow, so this method is no longer needed.
+	 *
 	 * @return boolean
 	 */
 	public static function should_use_new_onboarding_flow(): bool {
@@ -1274,77 +1276,6 @@ class WC_Payments_Utils {
 			self::register_style( $handle, $path, $deps, $version, $media, $has_rtl );
 		}
 		wp_enqueue_style( $handle );
-	}
-
-	/**
-	 * Returns language data: english name and native name
-	 *
-	 * @param string $language Language code.
-	 *
-	 * @return array
-	 */
-	public static function get_language_data( $language ) {
-		require_once ABSPATH . 'wp-admin/includes/translation-install.php';
-
-		$translations = wp_get_available_translations();
-
-		if ( isset( $translations[ $language ] ) ) {
-			return [
-				'code'         => self::convert_to_server_locale( $language ),
-				'english_name' => $translations[ $language ]['english_name'] ?? $language,
-				'native_name'  => $translations[ $language ]['native_name'] ?? $language,
-			];
-		}
-
-		return [
-			'code'         => 'en_US',
-			'english_name' => 'English (United States)',
-			'native_name'  => 'English (United States)',
-		];
-	}
-
-	/**
-	 * Converts a locale to the server supported languages.
-	 *
-	 * @param string $locale The locale to convert.
-	 *
-	 * @return string Closest locale supported ('en' if NONE)
-	 */
-	public static function convert_to_server_locale( string $locale ): string {
-		$supported = [
-			'ar',     // Arabic.
-			'de',     // German (Germany).
-			'es',     // Spanish (Spain).
-			'fr',     // French (France).
-			'he',     // Hebrew (Israel).
-			'id',     // Indonesian (Indonesia).
-			'it',     // Italian (Italy).
-			'ja',     // Japanese.
-			'ko',     // Korean.
-			'nl',     // Dutch (Netherlands).
-			'pt-br',  // Portuguese (Brazil).
-			'ru',     // Russian (Russia).
-			'sv',     // Swedish (Sweden).
-			'tr',     // Turkish (Turkey).
-			'zh-cn',  // Simplified, Singapore).
-			'zh-tw',  // Chinese Traditional (Taiwan).
-		];
-
-		// Replace '-' with '_' (used in WordPress).
-		$locale = str_replace( '_', '-', $locale );
-
-		if ( in_array( $locale, $supported, true ) ) {
-			return $locale;
-		}
-
-		// Remove the country code and try with that.
-		$base_locale = substr( $locale, 0, 2 );
-		if ( in_array( $base_locale, $supported, true ) ) {
-			return $base_locale;
-		}
-
-		// Return 'en_US' to match the default site language.
-		return 'en_US';
 	}
 
 	/**

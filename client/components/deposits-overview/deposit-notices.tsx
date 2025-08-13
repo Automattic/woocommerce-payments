@@ -201,6 +201,7 @@ export const DepositFailureNotice: React.FC< {
 				),
 				components: {
 					updateLink: (
+						// @ts-expect-error: children is provided when interpolating the component
 						<ExternalLink
 							onClick={ () =>
 								recordEvent(

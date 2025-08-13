@@ -26,6 +26,7 @@ const DownloadButton: React.FunctionComponent< React.PropsWithChildren<
 		disabled={ isDisabled }
 		onClick={ onClick }
 		isBusy={ isBusy }
+		__next40pxDefaultSize
 	>
 		<svg
 			xmlns="http://www.w3.org/2000/svg"

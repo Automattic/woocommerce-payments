@@ -6,11 +6,6 @@
 import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { find } from 'lodash';
-
-/**
- * Internal dependencies
- */
-import { useTimeline } from 'wcpay/data';
 import {
 	Card,
 	CardBody,
@@ -19,6 +14,11 @@ import {
 	Flex,
 	FlexItem,
 } from '@wordpress/components';
+
+/**
+ * Internal dependencies
+ */
+import { useTimeline } from 'wcpay/data';
 import { TimelineItem } from 'wcpay/data/timeline/types';
 import Loadable, { LoadableBlock } from 'components/loadable';
 import { formatCurrency } from 'multi-currency/interface/functions';

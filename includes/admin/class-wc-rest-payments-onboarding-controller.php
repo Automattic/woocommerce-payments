@@ -56,13 +56,6 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 				'callback'            => [ $this, 'create_embedded_kyc_session' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 				'args'                => [
-					'progressive'     => [
-						'required'    => false,
-						'description' => 'Whether the session is for progressive onboarding.',
-						// phpcs:ignore Squiz.PHP.CommentedOutCode.Found
-						// We expect a boolean (true, false, 0, 1, '0', '1', 'true', or 'false'), but will also accept `yes`/`no`.
-						'type'        => [ 'boolean', 'string' ],
-					],
 					'self_assessment' => [
 						'required'    => false,
 						'description' => 'The self-assessment data.',
@@ -83,6 +76,17 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 							'site'          => [
 								'type'        => 'string',
 								'description' => 'The URL of the site.',
+							],
+						],
+					],
+					'capabilities'    => [
+						'description' => 'The capabilities to request and enable for the test-drive account. Leave empty to use the default capabilities.',
+						'type'        => 'object',
+						'default'     => [],
+						'required'    => false,
+						'properties'  => [
+							'*' => [
+								'type' => 'boolean',
 							],
 						],
 					],
@@ -214,11 +218,11 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 	 */
 	public function create_embedded_kyc_session( WP_REST_Request $request ) {
 		$self_assessment_data = ! empty( $request->get_param( 'self_assessment' ) ) ? wc_clean( wp_unslash( $request->get_param( 'self_assessment' ) ) ) : [];
-		$progressive          = ! empty( $request->get_param( 'progressive' ) ) && filter_var( $request->get_param( 'progressive' ), FILTER_VALIDATE_BOOLEAN );
+		$capabilities         = ! empty( $request->get_param( 'capabilities' ) ) ? wc_clean( wp_unslash( $request->get_param( 'capabilities' ) ) ) : [];
 
 		$account_session = $this->onboarding_service->create_embedded_kyc_session(
 			$self_assessment_data,
-			$progressive
+			$capabilities
 		);
 
 		if ( $account_session ) {
@@ -295,11 +299,9 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 	/**
 	 * Get fields data via API.
 	 *
-	 * @param WP_REST_Request $request Request object.
-	 *
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public function get_fields( WP_REST_Request $request ) {
+	public function get_fields() {
 		$fields = $this->onboarding_service->get_fields_data( get_user_locale() );
 		if ( is_null( $fields ) ) {
 			return new WP_Error( self::RESULT_BAD_REQUEST, 'Failed to retrieve the onboarding fields.', [ 'status' => 400 ] );
@@ -311,11 +313,9 @@ class WC_REST_Payments_Onboarding_Controller extends WC_Payments_REST_Controller
 	/**
 	 * Get business types via API.
 	 *
-	 * @param WP_REST_Request $request Request object.
-	 *
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public function get_business_types( WP_REST_Request $request ) {
+	public function get_business_types() {
 		$business_types = $this->onboarding_service->get_cached_business_types();
 		return rest_ensure_response( [ 'data' => $business_types ] );
 	}
