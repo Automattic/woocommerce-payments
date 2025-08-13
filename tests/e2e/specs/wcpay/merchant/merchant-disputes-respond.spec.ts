@@ -588,6 +588,14 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 					name: 'Save for later',
 				} )
 				.click();
+
+			// Wait for the save operation to complete
+			// Look for the success notification in the snackbar
+			await expect(
+				merchantPage
+					.locator( '.components-snackbar__content' )
+					.filter( { hasText: 'Evidence saved!' } )
+			).toBeVisible( { timeout: 10000 } );
 		} );
 
 		await test.step( 'Go back to the payment details page', async () => {
