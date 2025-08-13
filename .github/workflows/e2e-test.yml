@@ -144,7 +144,7 @@ jobs:
       E2E_BRANCH: ${{ matrix.test_branches }}
       SKIP_WC_SUBSCRIPTIONS_TESTS: ${{ matrix.test_groups == 'blocks' && '1' || '' }}
       SKIP_WC_ACTION_SCHEDULER_TESTS: ${{ matrix.test_groups == 'blocks' && '1' || '' }}
-      SKIP_WC_BLOCKS_TESTS: ${{ matrix.skip_blocks == '1' && '1' || '' }}
+      SKIP_WC_BLOCKS_TESTS: ${{ matrix.skip_blocks }}
 
     steps:
       - name: Checkout WCPay repository
