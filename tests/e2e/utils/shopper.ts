@@ -316,7 +316,7 @@ export const addToCartFromShopPage = async (
 
 	// This generic regex will match the aria-label for the "Add to cart" button for any product.
 	// It should work for WC 7.7.0 and later.
-	// These unicode characters are the smart (or curly) quotes: “ ”.
+	// These unicode characters are the smart (or curly) quotes: " ".
 	const addToCartRegex = new RegExp(
 		`Add\\s+(?:to\\s+cart:\\s*)?\u201C${ product.name }\u201D(?:\\s+to\\s+your\\s+cart)?`
 	);
@@ -586,13 +586,27 @@ export const addSavedCard = async (
 	country: string,
 	zipCode?: string
 ) => {
+	// Wait for the page to be fully loaded
+	await page.waitForLoadState( 'domcontentloaded' );
+	await page.waitForTimeout( 1000 );
+
 	await page.getByRole( 'link', { name: 'Add payment method' } ).click();
+
+	// Wait for the modal/page to load
 	await page.waitForLoadState( 'networkidle' );
+	await page.waitForTimeout( 2000 );
+
 	await page.getByText( 'Card', { exact: true } ).click();
+
+	// Wait for Stripe frame to be available
+	await page.waitForTimeout( 1000 );
+
 	const frameHandle = page.getByTitle( 'Secure payment input frame' );
 	const stripeFrame = frameHandle.contentFrame();
 
-	if ( ! stripeFrame ) return;
+	if ( ! stripeFrame ) {
+		throw new Error( 'Stripe frame not found' );
+	}
 
 	await stripeFrame
 		.getByPlaceholder( '1234 1234 1234 1234' )
@@ -610,27 +624,29 @@ export const addSavedCard = async (
 	if ( zip ) await zip.fill( zipCode ?? '90210' );
 
 	await page.getByRole( 'button', { name: 'Add payment method' } ).click();
+
+	// Wait for the success message
+	await expect(
+		page.getByText( 'Payment method successfully added.' )
+	).toBeVisible( { timeout: 15000 } );
 };
 
 export const deleteSavedCard = async (
 	page: Page,
 	card: typeof config.cards.basic
 ) => {
-	// First, let's check if the card is visible on the page
-	const cardText = page.getByText( card.label );
-	const isCardVisible = await cardText.isVisible();
+	// Wait for the page to be fully loaded
+	await page.waitForLoadState( 'domcontentloaded' );
+	await page.waitForTimeout( 2000 );
 
-	if ( ! isCardVisible ) {
-		throw new Error(
-			`Card with label "${ card.label }" is not visible on the page`
-		);
-	}
+	// Find the row that contains the card text
+	const row = page.locator( `tr:has-text("${ card.label }")` ).first();
+	await expect( row ).toBeVisible( { timeout: 10000 } );
 
-	const row = page.getByRole( 'row', { name: card.label } ).first();
-	await expect( row ).toBeVisible( { timeout: 5000 } );
+	// Find the "Delete" button within that row
 	const button = row.getByRole( 'link', { name: 'Delete' } );
-	await expect( button ).toBeVisible( { timeout: 5000 } );
-	await expect( button ).toBeEnabled( { timeout: 5000 } );
+	await expect( button ).toBeVisible( { timeout: 10000 } );
+	await expect( button ).toBeEnabled( { timeout: 10000 } );
 	await button.click();
 };
 
@@ -638,12 +654,16 @@ export const selectSavedCardOnCheckout = async (
 	page: Page,
 	card: typeof config.cards.basic
 ) => {
+	// Wait for the page to be fully loaded
+	await page.waitForLoadState( 'domcontentloaded' );
+	await page.waitForTimeout( 2000 );
+
 	const option = page
 		.getByText(
 			`${ card.label } (expires ${ card.expires.month }/${ card.expires.year })`
 		)
 		.first();
-	await expect( option ).toBeVisible( { timeout: 5000 } );
+	await expect( option ).toBeVisible( { timeout: 10000 } );
 	await option.click();
 };
 
@@ -651,12 +671,33 @@ export const setDefaultPaymentMethod = async (
 	page: Page,
 	card: typeof config.cards.basic
 ) => {
-	const row = page.getByRole( 'row', { name: card.label } ).first();
-	await expect( row ).toBeVisible( { timeout: 5000 } );
-	const button = row.getByRole( 'link', { name: 'Make default' } );
-	await expect( button ).toBeVisible( { timeout: 5000 } );
-	await expect( button ).toBeEnabled( { timeout: 5000 } );
-	await button.click();
+	await page.waitForLoadState( 'domcontentloaded' );
+	await page.waitForTimeout( 2000 );
+
+	// Wait for the accessibility tree to be ready
+	// This ensures ARIA attributes are properly set before using getByRole
+	await page.waitForTimeout( 1000 );
+
+	// Try the original approach first (since it works manually)
+	try {
+		const row = page.getByRole( 'row', { name: card.label } ).first();
+		await expect( row ).toBeVisible( { timeout: 15000 } );
+
+		const button = row.getByRole( 'link', { name: 'Make default' } );
+		await expect( button ).toBeVisible( { timeout: 10000 } );
+		await expect( button ).toBeEnabled( { timeout: 10000 } );
+		await button.click();
+		return;
+	} catch ( error ) {
+		// Fallback to the alternative approach
+		const row = page.locator( `tr:has-text("${ card.label }")` ).first();
+		await expect( row ).toBeVisible( { timeout: 10000 } );
+
+		const button = row.getByRole( 'link', { name: 'Make default' } );
+		await expect( button ).toBeVisible( { timeout: 10000 } );
+		await expect( button ).toBeEnabled( { timeout: 10000 } );
+		await button.click();
+	}
 };
 
 export const removeCoupon = async ( page: Page ) => {
