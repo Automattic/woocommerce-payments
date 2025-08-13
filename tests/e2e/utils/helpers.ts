@@ -113,20 +113,16 @@ export const getShopper = async (
 		await wpAdminLogin( shopperPage, config.users.customer );
 		await shopperPage.waitForLoadState( 'networkidle' );
 		await shopperPage.goto( '/my-account' );
-
-		// Wait for the logout link to be visible with a reasonable timeout
-		await expect(
+		expect(
 			shopperPage.locator(
 				'.woocommerce-MyAccount-navigation-link--customer-logout'
 			)
-		).toBeVisible( { timeout: 10000 } );
-
-		// Wait for the welcome message with a reasonable timeout
+		).toBeVisible();
 		await expect(
 			shopperPage.locator(
 				'div.woocommerce-MyAccount-content > p >> nth=0'
 			)
-		).toContainText( 'Hello', { timeout: 10000 } );
+		).toContainText( 'Hello' );
 		await shopperPage
 			.context()
 			.storageState( { path: customerStorageFile } );
@@ -211,10 +207,10 @@ export const loginAsCustomer = async (
 				page.locator(
 					'.woocommerce-MyAccount-navigation-link--customer-logout'
 				)
-			).toBeVisible( { timeout: 10000 } );
+			).toBeVisible();
 			await expect(
 				page.locator( 'div.woocommerce-MyAccount-content > p >> nth=0' )
-			).toContainText( 'Hello', { timeout: 10000 } );
+			).toContainText( 'Hello' );
 
 			console.log( 'Logged-in as customer successfully.' );
 			customerLoggedIn = true;
