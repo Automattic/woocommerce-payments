@@ -3,29 +3,15 @@
  */
 import { Page, expect } from '@playwright/test';
 
-const goToDevToolsSettings = async ( page: Page ) => {
-	await page.goto( '/wp-admin/admin.php?page=wcpaydev', {
-		waitUntil: 'domcontentloaded',
+const goToDevToolsSettings = ( page: Page ) =>
+	page.goto( '/wp-admin/admin.php?page=wcpaydev', {
+		waitUntil: 'load',
 	} );
-
-	// Wait for the page to be fully loaded
-	await page.waitForLoadState( 'networkidle' );
-};
 
 const saveDevToolsSettings = async ( page: Page ) => {
-	// Wait for the page to be fully loaded before trying to interact
-	await page.waitForLoadState( 'domcontentloaded' );
-
-	// Wait for the Save Changes button to be available
-	const saveButton = page.getByRole( 'button', { name: 'Save Changes' } );
-	await expect( saveButton ).toBeVisible( { timeout: 10000 } );
-	await expect( saveButton ).toBeEnabled( { timeout: 10000 } );
-
-	await saveButton.click();
+	await page.getByRole( 'button', { name: 'Save Changes' } ).click();
 	await page.waitForLoadState( 'networkidle' );
-	await expect( page.getByText( /Settings saved/ ) ).toBeVisible( {
-		timeout: 10000,
-	} );
+	await expect( page.getByText( /Settings saved/ ) ).toBeVisible();
 };
 
 const getIsCardTestingProtectionEnabled = ( page: Page ) =>
