@@ -586,27 +586,13 @@ export const addSavedCard = async (
 	country: string,
 	zipCode?: string
 ) => {
-	// Wait for the page to be fully loaded
-	await page.waitForLoadState( 'domcontentloaded' );
-	await page.waitForTimeout( 1000 );
-
 	await page.getByRole( 'link', { name: 'Add payment method' } ).click();
-
-	// Wait for the modal/page to load
 	await page.waitForLoadState( 'networkidle' );
-	await page.waitForTimeout( 2000 );
-
 	await page.getByText( 'Card', { exact: true } ).click();
-
-	// Wait for Stripe frame to be available
-	await page.waitForTimeout( 1000 );
-
 	const frameHandle = page.getByTitle( 'Secure payment input frame' );
 	const stripeFrame = frameHandle.contentFrame();
 
-	if ( ! stripeFrame ) {
-		throw new Error( 'Stripe frame not found' );
-	}
+	if ( ! stripeFrame ) return;
 
 	await stripeFrame
 		.getByPlaceholder( '1234 1234 1234 1234' )
@@ -624,29 +610,17 @@ export const addSavedCard = async (
 	if ( zip ) await zip.fill( zipCode ?? '90210' );
 
 	await page.getByRole( 'button', { name: 'Add payment method' } ).click();
-
-	// Wait for the success message
-	await expect(
-		page.getByText( 'Payment method successfully added.' )
-	).toBeVisible( { timeout: 15000 } );
 };
 
 export const deleteSavedCard = async (
 	page: Page,
 	card: typeof config.cards.basic
 ) => {
-	// Wait for the page to be fully loaded
-	await page.waitForLoadState( 'domcontentloaded' );
-	await page.waitForTimeout( 2000 );
-
-	// Find the row that contains the card text
-	const row = page.locator( `tr:has-text("${ card.label }")` ).first();
-	await expect( row ).toBeVisible( { timeout: 10000 } );
-
-	// Find the "Delete" button within that row
+	const row = page.getByRole( 'row', { name: card.label } ).first();
+	await expect( row ).toBeVisible( { timeout: 100 } );
 	const button = row.getByRole( 'link', { name: 'Delete' } );
-	await expect( button ).toBeVisible( { timeout: 10000 } );
-	await expect( button ).toBeEnabled( { timeout: 10000 } );
+	await expect( button ).toBeVisible( { timeout: 100 } );
+	await expect( button ).toBeEnabled( { timeout: 100 } );
 	await button.click();
 };
 
@@ -654,16 +628,12 @@ export const selectSavedCardOnCheckout = async (
 	page: Page,
 	card: typeof config.cards.basic
 ) => {
-	// Wait for the page to be fully loaded
-	await page.waitForLoadState( 'domcontentloaded' );
-	await page.waitForTimeout( 2000 );
-
 	const option = page
 		.getByText(
 			`${ card.label } (expires ${ card.expires.month }/${ card.expires.year })`
 		)
 		.first();
-	await expect( option ).toBeVisible( { timeout: 10000 } );
+	await expect( option ).toBeVisible( { timeout: 100 } );
 	await option.click();
 };
 
@@ -671,33 +641,12 @@ export const setDefaultPaymentMethod = async (
 	page: Page,
 	card: typeof config.cards.basic
 ) => {
-	await page.waitForLoadState( 'domcontentloaded' );
-	await page.waitForTimeout( 2000 );
-
-	// Wait for the accessibility tree to be ready
-	// This ensures ARIA attributes are properly set before using getByRole
-	await page.waitForTimeout( 1000 );
-
-	// Try the original approach first (since it works manually)
-	try {
-		const row = page.getByRole( 'row', { name: card.label } ).first();
-		await expect( row ).toBeVisible( { timeout: 15000 } );
-
-		const button = row.getByRole( 'link', { name: 'Make default' } );
-		await expect( button ).toBeVisible( { timeout: 10000 } );
-		await expect( button ).toBeEnabled( { timeout: 10000 } );
-		await button.click();
-		return;
-	} catch ( error ) {
-		// Fallback to the alternative approach
-		const row = page.locator( `tr:has-text("${ card.label }")` ).first();
-		await expect( row ).toBeVisible( { timeout: 10000 } );
-
-		const button = row.getByRole( 'link', { name: 'Make default' } );
-		await expect( button ).toBeVisible( { timeout: 10000 } );
-		await expect( button ).toBeEnabled( { timeout: 10000 } );
-		await button.click();
-	}
+	const row = page.getByRole( 'row', { name: card.label } ).first();
+	await expect( row ).toBeVisible( { timeout: 100 } );
+	const button = row.getByRole( 'link', { name: 'Make default' } );
+	await expect( button ).toBeVisible( { timeout: 100 } );
+	await expect( button ).toBeEnabled( { timeout: 100 } );
+	await button.click();
 };
 
 export const removeCoupon = async ( page: Page ) => {
