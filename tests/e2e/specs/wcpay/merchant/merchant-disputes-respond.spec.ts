@@ -579,8 +579,32 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 				await merchantPage
 					.getByLabel( 'PRODUCT DESCRIPTION' )
 					.fill( 'my product description' );
+
+				// Verify the values were set correctly immediately after filling
+				await expect(
+					merchantPage.getByTestId(
+						'dispute-challenge-product-type-selector'
+					)
+				).toHaveValue( 'offline_service' );
+
+				await expect(
+					merchantPage.getByLabel( 'PRODUCT DESCRIPTION' )
+				).toHaveValue( 'my product description' );
 			}
 		);
+
+		await test.step( 'Verify form values before saving', async () => {
+			// Double-check that the form values are still correct before saving
+			await expect(
+				merchantPage.getByTestId(
+					'dispute-challenge-product-type-selector'
+				)
+			).toHaveValue( 'offline_service' );
+
+			await expect(
+				merchantPage.getByLabel( 'PRODUCT DESCRIPTION' )
+			).toHaveValue( 'my product description' );
+		} );
 
 		await test.step( 'Save the dispute challenge for later', async () => {
 			await merchantPage
