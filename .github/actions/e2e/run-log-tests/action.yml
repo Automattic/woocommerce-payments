@@ -23,46 +23,12 @@ runs:
         fi
 
     # Retry failed E2E tests
-    - name: Re-try Failed E2E Files
+    - name: Re-try Failed E2E Tests
       if: ${{ steps.first_run_e2e_tests.outputs.FIRST_RUN_FAILED_TEST_SUITES > 0  }}
       shell: bash
-      # Filter failed E2E files from the result JSON file, and re-run them.
       run: |
-        # Check if results file exists
-        echo "Checking for results file: $E2E_RESULT_FILEPATH"
-        if [[ -f "$E2E_RESULT_FILEPATH" ]]; then
-          echo "Results file exists, size: $(wc -c < "$E2E_RESULT_FILEPATH") bytes"
-
-          # Extract failed test files using the correct JSON structure
-          echo "Extracting failed test files..."
-
-          # Debug: Check the actual JSON structure for failed tests
-          echo "Debug: Checking for failed tests in JSON..."
-          echo "Stats unexpected: $(cat "$E2E_RESULT_FILEPATH" | jq -r '.stats.unexpected' 2>/dev/null || echo "Failed to get stats")"
-
-          # Try to find any test with unexpected status
-          echo "Debug: Looking for tests with unexpected status..."
-          cat "$E2E_RESULT_FILEPATH" | jq -r '[.. | select(.status? == "unexpected") | .status] | .[]' 2>/dev/null || echo "No unexpected tests found"
-
-          # Try the correct command that handles nested suites
-          echo "Debug: Running jq command to extract failed files..."
-          FAILED_FILES=$(cat "$E2E_RESULT_FILEPATH" | jq -r '[.. | select(.tests? and (.tests[] | .status == "unexpected")) | .file] | unique | .[]' 2>/dev/null)
-          echo "Debug: jq command exit code: $?"
-          echo "Debug: FAILED_FILES content: '$FAILED_FILES'"
-
-          if [[ -n "$FAILED_FILES" ]]; then
-            echo "Retrying failed test files: $FAILED_FILES"
-            npx playwright test --config=tests/e2e/playwright.config.ts --grep-invert @todo $FAILED_FILES
-          else
-            echo "No failed test files found to retry"
-            echo "Debug: Checking JSON structure..."
-            echo "JSON keys: $(cat "$E2E_RESULT_FILEPATH" | jq -r 'keys | .[]' 2>/dev/null || echo "Failed to get keys")"
-            echo "Has suites: $(cat "$E2E_RESULT_FILEPATH" | jq -r 'has("suites")' 2>/dev/null || echo "Failed to check suites")"
-            echo "Suites count: $(cat "$E2E_RESULT_FILEPATH" | jq -r '.suites | length' 2>/dev/null || echo "Failed to get suites count")"
-          fi
-        else
-          echo "Error: Results file not found at $E2E_RESULT_FILEPATH"
-        fi
+        echo "Retrying all E2E tests due to previous failures..."
+        npm run test:e2e-ci
 
     # Archive screenshots if any
     - name: Archive e2e test screenshots & logs
