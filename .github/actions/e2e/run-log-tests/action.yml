@@ -28,7 +28,14 @@ runs:
       shell: bash
       # Filter failed E2E files from the result JSON file, and re-run them.
       run: |
-        npm run test:e2e-ci $(cat $E2E_RESULT_FILEPATH | jq -r '[.suites[] | (if has("suites") then .suites[] | .specs[] else .specs[] end) | select(.tests[].status == "unexpected") | .file] | unique | .[]')
+        # Extract failed test files and run only those
+        FAILED_FILES=$(cat $E2E_RESULT_FILEPATH | jq -r '[.suites[] | (if has("suites") then .suites[] | .specs[] else .specs[] end) | select(.tests[].status == "unexpected") | .file] | unique | .[]')
+        if [[ -n "$FAILED_FILES" ]]; then
+          echo "Retrying failed test files: $FAILED_FILES"
+          npx playwright test --config=tests/e2e/playwright.config.ts --grep-invert @todo $FAILED_FILES
+        else
+          echo "No failed test files found to retry"
+        fi
 
     # Archive screenshots if any
     - name: Archive e2e test screenshots & logs
