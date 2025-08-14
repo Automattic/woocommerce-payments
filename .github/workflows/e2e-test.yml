@@ -65,7 +65,7 @@ jobs:
           #
           # BLOCK-BASED CHECKOUT TESTS STRATEGY:
           # - Run block-based checkout tests on current stable and newer WC versions where blocks support is mature
-          # - WC 7.7.0: NO block-based checkout tests (too old, limited support) - uses skip_blocks=1
+          # - WC 7.7.0: NO block-based checkout tests (too old, limited support)
           # - WC L-1: YES block-based checkout tests (recent version with full block support)
           # - WC latest: YES block-based checkout tests (current stable, full support)
           # - WC beta: YES block-based checkout tests (newer version, test latest features)
@@ -85,10 +85,10 @@ jobs:
           MATRIX_ENTRIES=()
 
           # Add WC 7.7.0 with PHP 7.3 only (legacy - NO blocks tests)
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\",\"skip_blocks\":\"1\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\",\"skip_blocks\":\"1\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\",\"skip_blocks\":\"1\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\",\"skip_blocks\":\"1\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
 
           # Add L-1 version with PHP 8.3 only (INCLUDE blocks tests - recent version with full support)
           MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
@@ -144,7 +144,7 @@ jobs:
       E2E_BRANCH: ${{ matrix.test_branches }}
       SKIP_WC_SUBSCRIPTIONS_TESTS: ${{ matrix.test_groups == 'blocks' && '1' || '' }}
       SKIP_WC_ACTION_SCHEDULER_TESTS: ${{ matrix.test_groups == 'blocks' && '1' || '' }}
-      SKIP_WC_BLOCKS_TESTS: ${{ matrix.skip_blocks }}
+      SKIP_WC_BLOCKS_TESTS: ${{ matrix.test_groups != 'blocks' && '1' || '' }}
 
     steps:
       - name: Checkout WCPay repository
