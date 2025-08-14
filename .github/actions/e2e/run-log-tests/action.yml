@@ -28,13 +28,34 @@ runs:
       shell: bash
       # Filter failed E2E files from the result JSON file, and re-run them.
       run: |
-        # Extract failed test files and run only those
-        FAILED_FILES=$(cat $E2E_RESULT_FILEPATH | jq -r '[.suites[] | (if has("suites") then .suites[] | .specs[] else .specs[] end) | select(.tests[].status == "unexpected") | .file] | unique | .[]')
-        if [[ -n "$FAILED_FILES" ]]; then
-          echo "Retrying failed test files: $FAILED_FILES"
-          npx playwright test --config=tests/e2e/playwright.config.ts --grep-invert @todo $FAILED_FILES
+        # Debug: Check if results file exists and show its structure
+        echo "Checking for results file: $E2E_RESULT_FILEPATH"
+        if [[ -f "$E2E_RESULT_FILEPATH" ]]; then
+          echo "Results file exists, size: $(wc -c < "$E2E_RESULT_FILEPATH") bytes"
+          echo "First 500 characters of results file:"
+          head -c 500 "$E2E_RESULT_FILEPATH"
+          echo ""
+
+          # Extract failed test files and run only those
+          echo "Extracting failed test files..."
+          FAILED_FILES=$(cat "$E2E_RESULT_FILEPATH" | jq -r '[.suites[] | (if has("suites") then .suites[] | .specs[] else .specs[] end) | select(.tests[].status == "unexpected") | .file] | unique | .[]' 2>/dev/null)
+
+          if [[ $? -ne 0 ]]; then
+            echo "Error: jq command failed. Trying alternative JSON structure..."
+            # Try alternative structure - maybe tests are directly in specs
+            FAILED_FILES=$(cat "$E2E_RESULT_FILEPATH" | jq -r '[.suites[] | .specs[] | select(.tests[].status == "unexpected") | .file] | unique | .[]' 2>/dev/null)
+          fi
+
+          if [[ -n "$FAILED_FILES" ]]; then
+            echo "Retrying failed test files: $FAILED_FILES"
+            npx playwright test --config=tests/e2e/playwright.config.ts --grep-invert @todo $FAILED_FILES
+          else
+            echo "No failed test files found to retry"
+            echo "Debug: Full JSON structure:"
+            cat "$E2E_RESULT_FILEPATH" | jq '.' | head -50
+          fi
         else
-          echo "No failed test files found to retry"
+          echo "Error: Results file not found at $E2E_RESULT_FILEPATH"
         fi
 
     # Archive screenshots if any
