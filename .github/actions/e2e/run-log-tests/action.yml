@@ -10,7 +10,6 @@ runs:
       shell: /bin/bash +e {0}
       run: |
         npm run test:e2e-ci
-
         if [[ -f "$E2E_RESULT_FILEPATH" ]]; then
           E2E_NUM_FAILED_TEST_SUITES=$(cat "$E2E_RESULT_FILEPATH" | jq '.stats["unexpected"]')
           echo "FIRST_RUN_FAILED_TEST_SUITES=$(echo $E2E_NUM_FAILED_TEST_SUITES)" >> $GITHUB_OUTPUT
