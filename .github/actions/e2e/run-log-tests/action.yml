@@ -35,7 +35,20 @@ runs:
 
           # Extract failed test files using the correct JSON structure
           echo "Extracting failed test files..."
-          FAILED_FILES=$(cat "$E2E_RESULT_FILEPATH" | jq -r '[.suites[] | .specs[] | select(.tests[].status == "unexpected") | .file] | unique | .[]' 2>/dev/null)
+
+          # Debug: Check the actual JSON structure for failed tests
+          echo "Debug: Checking for failed tests in JSON..."
+          echo "Stats unexpected: $(cat "$E2E_RESULT_FILEPATH" | jq -r '.stats.unexpected' 2>/dev/null || echo "Failed to get stats")"
+
+          # Try to find any test with unexpected status
+          echo "Debug: Looking for tests with unexpected status..."
+          cat "$E2E_RESULT_FILEPATH" | jq -r '[.. | select(.status? == "unexpected") | .status] | .[]' 2>/dev/null || echo "No unexpected tests found"
+
+          # Try the correct command that handles nested suites
+          echo "Debug: Running jq command to extract failed files..."
+          FAILED_FILES=$(cat "$E2E_RESULT_FILEPATH" | jq -r '[.. | select(.tests? and (.tests[] | .status == "unexpected")) | .file] | unique | .[]' 2>/dev/null)
+          echo "Debug: jq command exit code: $?"
+          echo "Debug: FAILED_FILES content: '$FAILED_FILES'"
 
           if [[ -n "$FAILED_FILES" ]]; then
             echo "Retrying failed test files: $FAILED_FILES"
@@ -46,7 +59,6 @@ runs:
             echo "JSON keys: $(cat "$E2E_RESULT_FILEPATH" | jq -r 'keys | .[]' 2>/dev/null || echo "Failed to get keys")"
             echo "Has suites: $(cat "$E2E_RESULT_FILEPATH" | jq -r 'has("suites")' 2>/dev/null || echo "Failed to check suites")"
             echo "Suites count: $(cat "$E2E_RESULT_FILEPATH" | jq -r '.suites | length' 2>/dev/null || echo "Failed to get suites count")"
-            echo "First suite structure: $(cat "$E2E_RESULT_FILEPATH" | jq -r '.suites[0] | keys | .[]' 2>/dev/null || echo "Failed to get first suite keys")"
           fi
         else
           echo "Error: Results file not found at $E2E_RESULT_FILEPATH"
