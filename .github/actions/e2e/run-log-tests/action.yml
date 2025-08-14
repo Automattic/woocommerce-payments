@@ -28,38 +28,14 @@ runs:
       shell: bash
       # Filter failed E2E files from the result JSON file, and re-run them.
       run: |
-        # Debug: Check if results file exists
+        # Check if results file exists
         echo "Checking for results file: $E2E_RESULT_FILEPATH"
         if [[ -f "$E2E_RESULT_FILEPATH" ]]; then
           echo "Results file exists, size: $(wc -c < "$E2E_RESULT_FILEPATH") bytes"
 
-          # Extract failed test files and run only those
+          # Extract failed test files using the correct JSON structure
           echo "Extracting failed test files..."
-
-          # Try multiple JSON structures to find failed tests
-          FAILED_FILES=""
-
-          # Method 1: Standard structure
-          echo "Trying standard JSON structure..."
-          FAILED_FILES=$(cat "$E2E_RESULT_FILEPATH" | jq -r '[.suites[] | (if has("suites") then .suites[] | .specs[] else .specs[] end) | select(.tests[].status == "unexpected") | .file] | unique | .[]' 2>/dev/null)
-
-          # Method 2: Direct specs structure
-          if [[ -z "$FAILED_FILES" ]]; then
-            echo "Trying direct specs structure..."
-            FAILED_FILES=$(cat "$E2E_RESULT_FILEPATH" | jq -r '[.suites[] | .specs[] | select(.tests[].status == "unexpected") | .file] | unique | .[]' 2>/dev/null)
-          fi
-
-          # Method 3: Look for any file with unexpected status
-          if [[ -z "$FAILED_FILES" ]]; then
-            echo "Trying to find any file with unexpected status..."
-            FAILED_FILES=$(cat "$E2E_RESULT_FILEPATH" | jq -r '[.. | select(.status? == "unexpected") | .file] | unique | .[]' 2>/dev/null)
-          fi
-
-          # Method 4: Look for files in test results
-          if [[ -z "$FAILED_FILES" ]]; then
-            echo "Trying to extract from test results..."
-            FAILED_FILES=$(cat "$E2E_RESULT_FILEPATH" | jq -r '[.suites[] | .specs[] | select(.tests[] | .status == "unexpected") | .file] | unique | .[]' 2>/dev/null)
-          fi
+          FAILED_FILES=$(cat "$E2E_RESULT_FILEPATH" | jq -r '[.suites[] | .specs[] | select(.tests[].status == "unexpected") | .file] | unique | .[]' 2>/dev/null)
 
           if [[ -n "$FAILED_FILES" ]]; then
             echo "Retrying failed test files: $FAILED_FILES"
@@ -70,6 +46,7 @@ runs:
             echo "JSON keys: $(cat "$E2E_RESULT_FILEPATH" | jq -r 'keys | .[]' 2>/dev/null || echo "Failed to get keys")"
             echo "Has suites: $(cat "$E2E_RESULT_FILEPATH" | jq -r 'has("suites")' 2>/dev/null || echo "Failed to check suites")"
             echo "Suites count: $(cat "$E2E_RESULT_FILEPATH" | jq -r '.suites | length' 2>/dev/null || echo "Failed to get suites count")"
+            echo "First suite structure: $(cat "$E2E_RESULT_FILEPATH" | jq -r '.suites[0] | keys | .[]' 2>/dev/null || echo "Failed to get first suite keys")"
           fi
         else
           echo "Error: Results file not found at $E2E_RESULT_FILEPATH"
