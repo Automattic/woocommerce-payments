@@ -32,6 +32,7 @@ declare global {
 			isDisputeIssuerEvidenceEnabled: boolean;
 			multiCurrency?: boolean;
 			isFRTReviewFeatureActive: boolean;
+			isDynamicCheckoutPlaceOrderButtonEnabled: boolean;
 		};
 		accountFees: Record< string, any >;
 		fraudServices: unknown[];
