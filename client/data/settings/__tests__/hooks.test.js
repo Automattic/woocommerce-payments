@@ -15,6 +15,7 @@ import {
 	useTestMode,
 	usePaymentRequestEnabledSettings,
 	usePaymentRequestLocations,
+	useAppleGooglePayInPaymentMethodsOptionsEnabledSettings,
 	useWooPayEnabledSettings,
 	useWooPayCustomMessage,
 	useWooPayStoreLogo,
@@ -229,6 +230,34 @@ describe( 'Settings hooks tests', () => {
 			expect( isPaymentRequestEnabled ).toEqual( true );
 			expect(
 				actions.updateIsPaymentRequestEnabled
+			).toHaveBeenCalledWith( false );
+		} );
+	} );
+
+	describe( 'useAppleGooglePayInPaymentMethodsOptionsEnabledSettings()', () => {
+		test( 'returns Apple Google Pay in payment methods options settings from selector', () => {
+			actions = {
+				updateIsAppleGooglePayInPaymentMethodsOptionsEnabled: jest.fn(),
+			};
+
+			selectors = {
+				getIsAppleGooglePayInPaymentMethodsOptionsEnabled: jest.fn(
+					() => true
+				),
+			};
+
+			const [
+				isAppleGooglePayInPaymentMethodsOptionsEnabled,
+				updateIsAppleGooglePayInPaymentMethodsOptionsEnabled,
+			] = useAppleGooglePayInPaymentMethodsOptionsEnabledSettings();
+
+			updateIsAppleGooglePayInPaymentMethodsOptionsEnabled( false );
+
+			expect( isAppleGooglePayInPaymentMethodsOptionsEnabled ).toEqual(
+				true
+			);
+			expect(
+				actions.updateIsAppleGooglePayInPaymentMethodsOptionsEnabled
 			).toHaveBeenCalledWith( false );
 		} );
 	} );
