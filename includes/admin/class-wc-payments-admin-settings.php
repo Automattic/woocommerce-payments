@@ -44,16 +44,49 @@ class WC_Payments_Admin_Settings {
 	 */
 	public function init_hooks() {
 		add_action( 'woocommerce_woocommerce_payments_admin_notices', [ $this, 'display_test_mode_notice' ] );
+		add_action( 'woocommerce_woocommerce_payments_admin_notices', [ $this, 'display_test_account_notice' ] );
 		add_filter( 'plugin_action_links_' . plugin_basename( WCPAY_PLUGIN_FILE ), [ $this, 'add_plugin_links' ] );
 	}
 
 	/**
-	 * Add notice explaining test mode when it's enabled.
+	 * Add notice to activate payments when test account is onboarded.
 	 */
 	public function display_test_mode_notice() {
-		if ( WC_Payments::mode()->is_test_mode_onboarding() ) {
+		if ( WC_Payments::mode()->is_test() && ! WC_Payments::mode()->is_test_mode_onboarding() ) {
 			?>
 			<div id="wcpay-test-mode-notice" class="notice notice-warning">
+				<p>
+					<b>
+						<?php
+							printf(
+								/* translators: %s: WooPayments */
+								esc_html__( '%s is in test mode. ', 'woocommerce-payments' ),
+								'WooPayments'
+							);
+						?>
+					</b>
+					<?php
+						printf(
+							wp_kses_post(
+								/* translators: %s: URL to test card numbers */
+								__( 'You can use <a href="%s" target="_blank" rel="noreferrer noopener">test card numbers</a> to simulate various types of transactions.', 'woocommerce-payments' ),
+							),
+							esc_url( 'https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards' )
+						);
+					?>
+				</p>
+			</div>
+			<?php
+		}
+	}
+
+	/**
+	 * Add notice to activate payments when test account is onboarded.
+	 */
+	public function display_test_account_notice() {
+		if ( WC_Payments::mode()->is_test_mode_onboarding() ) {
+			?>
+			<div id="wcpay-test-account-notice" class="notice notice-warning">
 				<p>
 					<b><?php esc_html_e( 'You are using a test account. ', 'woocommerce-payments' ); ?></b>
 					<?php
