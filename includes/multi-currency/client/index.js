@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React, { useState } from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 
 /**
  * Internal dependencies
@@ -10,7 +10,6 @@ import ReactDOM from 'react-dom';
 import MultiCurrencySettings from './settings/multi-currency';
 import SingleCurrencySettings from './settings/single-currency';
 import MultiCurrencySettingsContext from './context';
-import UnbundledWpComponentsProvider from 'wcpay/wordpress-components-context/unbundled-wp-components-provider';
 
 const MultiCurrencySettingsPage = () => {
 	const [
@@ -34,9 +33,8 @@ const MultiCurrencySettingsPage = () => {
 	);
 };
 
-ReactDOM.render(
-	<UnbundledWpComponentsProvider>
-		<MultiCurrencySettingsPage />
-	</UnbundledWpComponentsProvider>,
-	document.querySelector( '#wcpay_multi_currency_settings_container' )
+const container = document.querySelector(
+	'#wcpay_multi_currency_settings_container'
 );
+const root = createRoot( container );
+root.render( <MultiCurrencySettingsPage /> );

@@ -2,15 +2,13 @@
  * External dependencies
  */
 import React, { useEffect } from 'react';
+import { __ } from '@wordpress/i18n';
 import { getHistory } from '@woocommerce/navigation';
 
 /**
  * Internal dependencies.
  */
-import { Spinner } from 'wcpay/components/wp-components-wrapped/components/spinner';
-import { Icon } from 'wcpay/components/wp-components-wrapped/components/icon';
-import { Flex } from 'wcpay/components/wp-components-wrapped/components/flex';
-import { FlexItem } from 'wcpay/components/wp-components-wrapped/components/flex-item';
+import { Spinner, Icon, Flex, FlexItem } from '@wordpress/components';
 import Page from 'components/page';
 import { useDispute } from 'data/index';
 import { Charge } from 'wcpay/types/charges';
@@ -49,14 +47,23 @@ const RedirectToTransactionDetails: React.FC< { query: { id: string } } > = ( {
 				{ error ? (
 					<>
 						<FlexItem>
-							{ /* @ts-expect-error: type is not a prop defined in the WP Icon component. */ }
 							<Icon icon={ warning } type="warning" size={ 32 } />
 						</FlexItem>
 						<FlexItem>
 							<div>
-								<b>Error retrieving dispute</b>
+								<b>
+									{ __(
+										'Error retrieving dispute',
+										'woocommerce-payments'
+									) }
+								</b>
 							</div>
-							<div>Please check your network and try again.</div>
+							<div>
+								{ __(
+									'Please check your network and try again.',
+									'woocommerce-payments'
+								) }
+							</div>
 						</FlexItem>
 					</>
 				) : (
@@ -66,9 +73,19 @@ const RedirectToTransactionDetails: React.FC< { query: { id: string } } > = ( {
 						</FlexItem>
 						<FlexItem>
 							<div>
-								<b>One moment please</b>
+								<b>
+									{ __(
+										'One moment please',
+										'woocommerce-payments'
+									) }
+								</b>
 							</div>
-							<div>Redirecting to payment details…</div>
+							<div>
+								{ __(
+									'Redirecting to payment details…',
+									'woocommerce-payments'
+								) }
+							</div>
 						</FlexItem>
 					</>
 				) }

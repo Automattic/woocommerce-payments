@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React, { useState } from 'react';
-import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
+import { ExternalLink } from '@wordpress/components';
 import { addQueryArgs } from '@wordpress/url';
 
 /**
@@ -116,7 +116,7 @@ const DepositFailureNotice: React.FC = () => {
 		>
 			{ interpolateComponents( {
 				mixedString: __(
-					'Payouts are currently paused because a recent payout failed. Please {{updateLink}}update your bank account details{{/updateLink}}.',
+					'Payouts are currently paused because a recent payout failed. Please {{updateLink/}}.',
 					'woocommerce-payments'
 				),
 				components: {
@@ -132,7 +132,12 @@ const DepositFailureNotice: React.FC = () => {
 								)
 							}
 							href={ accountLink }
-						/>
+						>
+							{ __(
+								'update your bank account details',
+								'woocommerce-payments'
+							) }
+						</ExternalLink>
 					),
 				},
 			} ) }

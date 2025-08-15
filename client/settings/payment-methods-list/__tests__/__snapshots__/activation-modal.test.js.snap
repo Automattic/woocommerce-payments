@@ -1,11 +1,15 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Activation Modal matches the snapshot 1`] = `
+.emotion-0 {
+  margin-bottom: 0;
+  margin-left: calc(4px * 2);
+}
+
 <body
   class="modal-open"
 >
   <p
-    aria-hidden="true"
     class="a11y-speak-intro-text"
     hidden="hidden"
     id="a11y-speak-intro-text"
@@ -39,6 +43,7 @@ exports[`Activation Modal matches the snapshot 1`] = `
       aria-labelledby="components-modal-header-0"
       class="components-modal__frame wcpay-confirmation-modal wcpay-payment-method-confirmation-modal"
       role="dialog"
+      style="--modal-frame-animation-duration: 200ms;"
       tabindex="-1"
     >
       <div
@@ -58,9 +63,14 @@ exports[`Activation Modal matches the snapshot 1`] = `
               One more step to enable Credit / Debit Cards
             </h1>
           </div>
+          <div
+            class="components-spacer emotion-0 emotion-1"
+            data-wp-c16t="true"
+            data-wp-component="Spacer"
+          />
           <button
-            aria-label="Close dialog"
-            class="components-button has-icon"
+            aria-label="Close"
+            class="components-button is-compact has-icon"
             type="button"
           >
             <svg
@@ -72,72 +82,74 @@ exports[`Activation Modal matches the snapshot 1`] = `
               xmlns="http://www.w3.org/2000/svg"
             >
               <path
-                d="M12 13.06l3.712 3.713 1.061-1.06L13.061 12l3.712-3.712-1.06-1.06L12 10.938 8.288 7.227l-1.061 1.06L10.939 12l-3.712 3.712 1.06 1.061L12 13.061z"
+                d="m13.06 12 6.47-6.47-1.06-1.06L12 10.94 5.53 4.47 4.47 5.53 10.94 12l-6.47 6.47 1.06 1.06L12 13.06l6.47 6.47 1.06-1.06L13.06 12Z"
               />
             </svg>
           </button>
         </div>
-        <div
-          class="payment-confirm-illustration__wrapper"
-        >
+        <div>
           <div
-            class="payment-confirm-illustration__illustrations"
+            class="payment-confirm-illustration__wrapper"
           >
-            <img
-              alt="Credit / Debit Cards"
-              class="payment-method__icon payment-confirm-illustration__payment-icon"
-              src="assets/images/icon-card.svg"
-            />
-            <svg
-              class="gridicon gridicons-help payment-confirm-illustration__payment-question-mark-icon"
-              height="24"
-              viewBox="0 0 24 24"
-              width="24"
-              xmlns="http://www.w3.org/2000/svg"
+            <div
+              class="payment-confirm-illustration__illustrations"
             >
-              <g>
-                <path
-                  d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 16h-2v-2h2v2zm0-4.141V15h-2v-2a1 1 0 011-1c1.103 0 2-.897 2-2s-.897-2-2-2-2 .897-2 2H8a4 4 0 018 0 3.991 3.991 0 01-3 3.859z"
-                />
-              </g>
-            </svg>
+              <img
+                alt="Credit / Debit Cards"
+                class="payment-method__icon payment-confirm-illustration__payment-icon"
+                src="assets/images/icon-card.svg"
+              />
+              <svg
+                class="gridicon gridicons-help payment-confirm-illustration__payment-question-mark-icon"
+                height="24"
+                viewBox="0 0 24 24"
+                width="24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g>
+                  <path
+                    d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 16h-2v-2h2v2zm0-4.141V15h-2v-2a1 1 0 011-1c1.103 0 2-.897 2-2s-.897-2-2-2-2 .897-2 2H8a4 4 0 018 0 3.991 3.991 0 01-3 3.859z"
+                  />
+                </g>
+              </svg>
+            </div>
           </div>
-        </div>
-        <p>
-          You need to provide more information to enable Credit / Debit Cards on your checkout:
-        </p>
-        <ul
-          class="payment-method-requirements-list"
-        >
-          <li>
-            Business Number
-          </li>
-        </ul>
-        <p>
-          If you choose to continue, our payment partner Stripe will send an e-mail to 
-          <b>
-            admin@example.com
-          </b>
-           to collect the required information
-        </p>
-        <hr
-          class="wcpay-confirmation-modal__separator"
-        />
-        <div
-          class="wcpay-confirmation-modal__footer"
-        >
-          <button
-            class="components-button is-secondary"
-            type="button"
+          <p>
+            You need to provide more information to enable Credit / Debit Cards on your checkout:
+          </p>
+          <ul
+            class="payment-method-requirements-list"
           >
-            Cancel
-          </button>
-          <button
-            class="components-button is-primary"
-            type="button"
+            <li>
+              Business Number
+            </li>
+          </ul>
+          <p>
+            If you choose to continue, our payment partner Stripe will send an e-mail to 
+            <b>
+              admin@example.com
+            </b>
+             to collect the required information
+          </p>
+          <hr
+            class="wcpay-confirmation-modal__separator"
+          />
+          <div
+            class="wcpay-confirmation-modal__footer"
           >
-            Continue
-          </button>
+            <button
+              class="components-button is-secondary"
+              type="button"
+            >
+              Cancel
+            </button>
+            <button
+              class="components-button is-primary"
+              type="button"
+            >
+              Continue
+            </button>
+          </div>
         </div>
       </div>
     </div>

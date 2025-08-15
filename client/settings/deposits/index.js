@@ -9,9 +9,7 @@ import interpolateComponents from '@automattic/interpolate-components';
 /**
  * Internal dependencies
  */
-import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
-import { SelectControl } from 'wcpay/components/wp-components-wrapped/components/select-control';
-import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
+import { Card, SelectControl, ExternalLink } from '@wordpress/components';
 import { STORE_NAME } from 'wcpay/data/constants';
 import { getDepositMonthlyAnchorLabel } from 'wcpay/deposits/utils';
 import WCPaySettingsContext from '../wcpay-settings-context';
@@ -232,42 +230,36 @@ const Deposits = () => {
 
 				<DepositsSchedule />
 
-				<div className="deposits__bank-information">
-					<h4>
-						{ __( 'Payout bank account', 'woocommerce-payments' ) }
-					</h4>
-					{ hasErroredExternalAccount ? (
-						<DepositFailureNotice
-							updateAccountLink={ accountLink }
-						/>
-					) : (
-						<p className="deposits__bank-information-help">
-							{ __(
-								'Manage and update your bank account information to receive payouts.',
-								'woocommerce-payments'
-							) }{ ' ' }
-							{ accountLink && (
-								<ExternalLink
-									href={ accountLink }
-									onClick={ () => {
-										recordEvent(
-											'wcpay_settings_deposits_manage_in_stripe_click'
-										);
-										recordEvent(
-											'wcpay_account_details_link_clicked',
-											{ source: 'settings-deposits' }
-										);
-									} }
-								>
-									{ __(
-										'Manage in Stripe',
-										'woocommerce-payments'
-									) }
-								</ExternalLink>
-							) }
-						</p>
-					) }
-				</div>
+				<h4>{ __( 'Payout bank account', 'woocommerce-payments' ) }</h4>
+				{ hasErroredExternalAccount ? (
+					<DepositFailureNotice updateAccountLink={ accountLink } />
+				) : (
+					<p>
+						{ __(
+							'Manage and update your bank account information to receive payouts.',
+							'woocommerce-payments'
+						) }{ ' ' }
+						{ accountLink && (
+							<ExternalLink
+								href={ accountLink }
+								onClick={ () => {
+									recordEvent(
+										'wcpay_settings_deposits_manage_in_stripe_click'
+									);
+									recordEvent(
+										'wcpay_account_details_link_clicked',
+										{ source: 'settings-deposits' }
+									);
+								} }
+							>
+								{ __(
+									'Manage in Stripe',
+									'woocommerce-payments'
+								) }
+							</ExternalLink>
+						) }
+					</p>
+				) }
 			</CardBody>
 		</Card>
 	);

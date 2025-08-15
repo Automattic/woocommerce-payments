@@ -12,15 +12,18 @@ import {
 } from '@woocommerce/components';
 import interpolateComponents from '@automattic/interpolate-components';
 import clsx from 'clsx';
+import {
+	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
+	__experimentalText as Text,
+	Card,
+	CardBody,
+	CardHeader,
+	ExternalLink,
+} from '@wordpress/components';
 
 /**
  * Internal dependencies.
  */
-import { Text } from 'wcpay/components/wp-components-wrapped/components/text';
-import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
-import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
-import { CardHeader } from 'wcpay/components/wp-components-wrapped/components/card-header';
-import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
 import type { CachedDeposit } from 'types/deposits';
 import { useDeposit } from 'data';
 import TransactionsList from 'transactions/list';
@@ -344,6 +347,7 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 									),
 									components: {
 										learnMoreLink: (
+											// @ts-expect-error: children is provided when interpolating the component
 											<ExternalLink href="https://woocommerce.com/document/woopayments/payouts/instant-payouts/#transactions" />
 										),
 									},

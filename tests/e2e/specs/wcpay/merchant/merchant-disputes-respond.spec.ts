@@ -111,18 +111,21 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 					await merchantPage
 						.getByTestId( 'accept-dispute-button' )
 						.click();
+
+					// Wait for the network request to complete
+					await merchantPage.waitForLoadState( 'networkidle' );
 				}
 			);
 
 			await test.step(
 				'Wait for the accept request to resolve and observe the lost dispute status',
 				async () => {
-					expect(
+					await expect(
 						merchantPage.getByText( 'Disputed: Lost' )
 					).toBeVisible();
 
 					// Check the dispute details footer
-					expect(
+					await expect(
 						merchantPage.getByText( 'You accepted this dispute on' )
 					).toBeVisible();
 				}
@@ -169,6 +172,16 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			);
 
 			await test.step( 'Select the product type', async () => {
+				// wait for the dispute to the loaded.
+				await expect(
+					merchantPage.getByText(
+						'The cardholder claims this is an unauthorized transaction.',
+						{
+							exact: true,
+						}
+					)
+				).toBeVisible();
+
 				await merchantPage
 					.getByTestId( 'dispute-challenge-product-type-selector' )
 					.selectOption( 'physical_product' );
@@ -293,14 +306,25 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			await test.step(
 				'Navigate back to payment details and confirm the dispute status is Won',
 				async () => {
-					// Navigate back to the payment details page
-					await merchantPage.goto( paymentDetailsLink );
+					// Poll for the final status, refreshing the page if needed
+					await expect( async () => {
+						await merchantPage.goto( paymentDetailsLink );
+						await merchantPage.waitForLoadState( 'networkidle' );
 
-					await expect(
-						merchantPage
-							.locator( '.payment-details-summary__status' )
-							.filter( { hasText: 'Disputed: Won' } )
-					).toBeVisible();
+						// Check that we're no longer "Under Review"
+						await expect(
+							merchantPage
+								.locator( '.payment-details-summary__status' )
+								.filter( { hasText: 'Disputed: Under Review' } )
+						).not.toBeVisible( { timeout: 2000 } );
+
+						// Confirm we have the "Won" status
+						await expect(
+							merchantPage
+								.locator( '.payment-details-summary__status' )
+								.filter( { hasText: 'Disputed: Won' } )
+						).toBeVisible( { timeout: 2000 } );
+					} ).toPass( { timeout: 60000, intervals: [ 3000 ] } );
 
 					await expect(
 						merchantPage.getByText(
@@ -351,6 +375,16 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			);
 
 			await test.step( 'Select the product type', async () => {
+				// wait for the dispute to the loaded.
+				await expect(
+					merchantPage.getByText(
+						'The cardholder claims this is an unauthorized transaction.',
+						{
+							exact: true,
+						}
+					)
+				).toBeVisible();
+
 				await merchantPage
 					.getByTestId( 'dispute-challenge-product-type-selector' )
 					.selectOption( 'physical_product' );
@@ -448,14 +482,25 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			await test.step(
 				'Navigate back to payment details and confirm the dispute status is Lost',
 				async () => {
-					// Navigate back to the payment details page
-					await merchantPage.goto( paymentDetailsLink );
+					// Poll for the final status, refreshing the page if needed
+					await expect( async () => {
+						await merchantPage.goto( paymentDetailsLink );
+						await merchantPage.waitForLoadState( 'networkidle' );
 
-					await expect(
-						merchantPage
-							.locator( '.payment-details-summary__status' )
-							.filter( { hasText: 'Disputed: Lost' } )
-					).toBeVisible();
+						// Check that we're no longer "Under Review"
+						await expect(
+							merchantPage
+								.locator( '.payment-details-summary__status' )
+								.filter( { hasText: 'Disputed: Under Review' } )
+						).not.toBeVisible( { timeout: 2000 } );
+
+						// Confirm we have the "Lost" status
+						await expect(
+							merchantPage
+								.locator( '.payment-details-summary__status' )
+								.filter( { hasText: 'Disputed: Lost' } )
+						).toBeVisible( { timeout: 2000 } );
+					} ).toPass( { timeout: 60000, intervals: [ 3000 ] } );
 
 					await expect(
 						merchantPage.getByText(

@@ -5,12 +5,10 @@
  */
 import { __ } from '@wordpress/i18n';
 import { Timeline } from '@woocommerce/components';
+import { Card, CardBody, CardHeader } from '@wordpress/components';
 /**
  * Internal dependencies
  */
-import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
-import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
-import { CardHeader } from 'wcpay/components/wp-components-wrapped/components/card-header';
 import { useTimeline } from 'wcpay/data';
 import mapTimelineEvents from './map-events';
 import Loadable, { LoadableBlock } from 'components/loadable';

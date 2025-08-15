@@ -24,7 +24,6 @@ jest.mock( 'wcpay/data', () => ( {
 describe( 'usePaymentMethodAvailability', () => {
 	beforeEach( () => {
 		global.wcpaySettings = {
-			progressiveOnboarding: { isEnabled: false, isComplete: false },
 			isMultiCurrencyEnabled: true,
 			storeCurrency: 'USD',
 			accountEmail: 'test@woo.com',
@@ -81,24 +80,6 @@ describe( 'usePaymentMethodAvailability', () => {
 	it( 'returns "More information needed" for the "inactive" status', () => {
 		const { result } = renderHook( () =>
 			usePaymentMethodAvailability( 'ideal' )
-		);
-
-		expect( result.current.isActionable ).toBe( false );
-		expect( result.current.chip ).toBe( 'More information needed' );
-		// Since in this case we use `interpolateComponents`, I'm using `render` to render the notice, and asserting on its text content.
-		expect( render( result.current.notice ).container.textContent ).toMatch(
-			/We need more information from you to enable this method./
-		);
-	} );
-
-	it( 'returns "More information needed" for the "unrequested" status when PO in progress', () => {
-		global.wcpaySettings.progressiveOnboarding = {
-			isEnabled: true,
-			isComplete: false,
-		};
-
-		const { result } = renderHook( () =>
-			usePaymentMethodAvailability( 'p24' )
 		);
 
 		expect( result.current.isActionable ).toBe( false );

@@ -84,7 +84,6 @@ class WC_REST_Payments_Onboarding_Controller_Test extends WCPAY_UnitTestCase {
 		$request = new WP_REST_Request( 'POST' );
 		$request->set_body_params(
 			[
-				'progressive'         => true,
 				'create_live_account' => true,
 			]
 		);

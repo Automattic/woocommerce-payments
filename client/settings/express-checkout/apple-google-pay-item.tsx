@@ -4,12 +4,11 @@
 import { __ } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 import React, { useContext } from 'react';
+import { Button, CheckboxControl } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
-import { CheckboxControl } from 'wcpay/components/wp-components-wrapped/components/checkbox-control';
 import { getPaymentMethodSettingsUrl } from '../../utils';
 import { usePaymentRequestEnabledSettings } from 'wcpay/data';
 import { ApplePayIcon, GooglePayIcon } from 'wcpay/payment-methods-icons';

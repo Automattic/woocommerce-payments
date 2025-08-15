@@ -14,10 +14,7 @@ import {
 /**
  * Internal dependencies
  */
-import { Modal } from 'wcpay/components/wp-components-wrapped/components/modal';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
-import { Flex } from 'wcpay/components/wp-components-wrapped/components/flex';
-import { FlexItem } from 'wcpay/components/wp-components-wrapped/components/flex-item';
+import { Modal, Button, Flex, FlexItem } from '@wordpress/components';
 import { recordEvent } from 'wcpay/tracks';
 import './style.scss';
 

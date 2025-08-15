@@ -8,13 +8,11 @@ import { getQuery } from '@woocommerce/navigation';
 import { __, sprintf } from '@wordpress/i18n';
 import { dispatch } from '@wordpress/data';
 import interpolateComponents from '@automattic/interpolate-components';
+import { Card, Notice, ExternalLink } from '@wordpress/components';
 
 /**
  * Internal dependencies.
  */
-import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
-import { Notice } from 'wcpay/components/wp-components-wrapped/components/notice';
-import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
 import AccountBalances from 'components/account-balances';
 import AccountStatus from 'components/account-status';
 import ActiveLoanSummary from 'components/active-loan-summary';
@@ -26,7 +24,6 @@ import Page from 'components/page';
 import Welcome from 'components/welcome';
 import { TestModeNotice } from 'components/test-mode-notice';
 import InboxNotifications from './inbox-notifications';
-import ProgressiveOnboardingEligibilityModal from './modal/progressive-onboarding-eligibility';
 import TaskList from './task-list';
 import { getTasks, taskSort } from './task-list/tasks';
 import { useDisputes, useGetSettings, useSettings } from 'data';
@@ -64,7 +61,6 @@ const OverviewPageError = () => {
 const OverviewPage = () => {
 	const {
 		accountStatus,
-		accountStatus: { progressiveOnboarding },
 		accountLoans: { has_active_loan: hasActiveLoan },
 		overviewTasksVisibility,
 		wpcomReconnectUrl,
@@ -74,10 +70,6 @@ const OverviewPage = () => {
 	const [ showUpdateDetailsTask, setShowUpdateDetailsTask ] = useState(
 		false
 	);
-	const [
-		showGetVerifyBankAccountTask,
-		setShowGetVerifyBankAccountTask,
-	] = useState( false );
 
 	const [
 		stripeNotificationsBannerErrorMessage,
@@ -117,7 +109,6 @@ const OverviewPage = () => {
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
 		activeDisputes,
-		showGetVerifyBankAccountTask,
 	} );
 	const tasks =
 		Array.isArray( tasksUnsorted ) && tasksUnsorted.sort( taskSort );
@@ -143,20 +134,13 @@ const OverviewPage = () => {
 		queryParams[ 'wcpay-server-link-error' ] === '1';
 	const showResetAccountError =
 		queryParams[ 'wcpay-reset-account-error' ] === '1';
-	const showProgressiveOnboardingEligibilityModal =
-		showConnectionSuccess &&
-		progressiveOnboarding.isEnabled &&
-		! progressiveOnboarding.isComplete;
 	const showTaskList =
 		! accountRejected && ! accountUnderReview && tasks.length > 0;
-	const isPoDisabledOrCompleted =
-		! progressiveOnboarding.isEnabled || progressiveOnboarding.isComplete;
 	const showConnectionSuccessModal =
 		showConnectionSuccess &&
 		! isTestModeOnboarding &&
 		paymentsEnabled &&
-		depositsEnabled &&
-		isPoDisabledOrCompleted;
+		depositsEnabled;
 
 	const activeAccountFees = Object.entries( wcpaySettings.accountFees )
 		.map( ( [ key, value ] ) => {
@@ -194,7 +178,6 @@ const OverviewPage = () => {
 	useEffect( () => {
 		if ( stripeNotificationsBannerErrorMessage ) {
 			setShowUpdateDetailsTask( true );
-			setShowGetVerifyBankAccountTask( true );
 			setStripeComponentLoading( false );
 		}
 	}, [ stripeNotificationsBannerErrorMessage ] );
@@ -403,11 +386,6 @@ const OverviewPage = () => {
 			{ ! accountRejected && ! accountUnderReview && (
 				<ErrorBoundary>
 					<InboxNotifications />
-				</ErrorBoundary>
-			) }
-			{ showProgressiveOnboardingEligibilityModal && (
-				<ErrorBoundary>
-					<ProgressiveOnboardingEligibilityModal />
 				</ErrorBoundary>
 			) }
 			{ showConnectionSuccessModal && (

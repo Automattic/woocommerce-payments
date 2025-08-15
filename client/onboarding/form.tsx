@@ -3,11 +3,11 @@
  */
 import React from 'react';
 import { isEmpty, mapValues } from 'lodash';
+import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
 import { useStepperContext } from 'components/stepper';
 import { Item as SelectItem } from 'components/custom-select-control';
 import { ListItem as GroupedSelectItem } from 'components/grouped-select-control';
@@ -73,6 +73,7 @@ export const OnboardingTextField: React.FC<
 
 	return (
 		<TextField
+			__next40pxDefaultSize
 			ref={ inputRef as any }
 			label={ strings.fields[ name ] }
 			value={ data[ name ] || '' }

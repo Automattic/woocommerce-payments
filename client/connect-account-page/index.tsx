@@ -4,20 +4,21 @@
  * External dependencies
  */
 import React, { useEffect, useState, useRef } from 'react';
-import { render } from '@wordpress/element';
 import apiFetch from '@wordpress/api-fetch';
 import { addQueryArgs } from '@wordpress/url';
 import { Loader } from '@woocommerce/onboarding';
 import { __ } from '@wordpress/i18n';
+import {
+	Button,
+	Card,
+	CardBody,
+	Panel,
+	PanelBody,
+} from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
-import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
-import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
-import { Panel } from 'wcpay/components/wp-components-wrapped/components/panel';
-import { PanelBody } from 'wcpay/components/wp-components-wrapped/components/panel-body';
 import { recordEvent } from 'tracks';
 import Page from 'components/page';
 import BannerNotice from 'components/banner-notice';
@@ -36,6 +37,7 @@ import { isInTestModeOnboarding } from 'wcpay/utils';
 import ResetAccountModal from 'wcpay/overview/modal/reset-account';
 import SandboxModeSwitchToLiveNotice from 'wcpay/components/sandbox-mode-switch-to-live-notice';
 import { decodeEntities } from '@wordpress/html-entities';
+import { createRoot } from 'react-dom/client';
 
 interface AccountData {
 	status: string;
@@ -368,13 +370,14 @@ const ConnectAccountPage: React.FC = () => {
 
 		const container = document.createElement( 'div' );
 		container.id = 'wcpay-onboarding-location-check-container';
-		render(
+
+		const root = createRoot( container );
+		root.render(
 			<OnboardingLocationCheckModal
 				countries={ countries }
 				onDeclined={ handleModalDeclined }
 				onConfirmed={ handleModalConfirmed }
-			/>,
-			container
+			/>
 		);
 		document.body.appendChild( container );
 	};
@@ -588,7 +591,7 @@ const ConnectAccountPage: React.FC = () => {
 										.detailsSubmitted ||
 										isInTestModeOnboarding() ) && (
 										<Button
-											variant={ 'tertiary' }
+											variant="tertiary"
 											onClick={ () =>
 												setModalVisible( true )
 											}

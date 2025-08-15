@@ -4,8 +4,7 @@
 import React, { useState } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { getAdminUrl } from 'utils';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
-import { Modal } from 'wcpay/components/wp-components-wrapped/components/modal';
+import { Button, Modal } from '@wordpress/components';
 import { Icon, currencyDollar } from '@wordpress/icons';
 
 /**
@@ -40,8 +39,8 @@ const SetupLivePaymentsModal: React.FC< Props > = ( {
 			page: 'wc-settings',
 			tab: 'checkout',
 			path: '/woopayments/onboarding',
-			source: 'wcpay-setup-live-payments',
-			from: from,
+			source,
+			from: 'wcpay-setup-live-payments',
 		} );
 	};
 
@@ -119,6 +118,7 @@ const SetupLivePaymentsModal: React.FC< Props > = ( {
 					isBusy={ isSubmitted }
 					disabled={ isSubmitted }
 					onClick={ handleSetup }
+					__next40pxDefaultSize
 				>
 					{ __( 'Activate payments', 'woocommerce-payments' ) }
 				</Button>

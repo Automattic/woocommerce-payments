@@ -28,10 +28,10 @@ declare global {
 			woopay: boolean;
 			documents: boolean;
 			woopayExpressCheckout: boolean;
-			isAuthAndCaptureEnabled: boolean;
 			paymentTimeline: boolean;
 			isDisputeIssuerEvidenceEnabled: boolean;
 			multiCurrency?: boolean;
+			isFRTReviewFeatureActive: boolean;
 		};
 		accountFees: Record< string, any >;
 		fraudServices: unknown[];
@@ -76,12 +76,6 @@ declare global {
 					requirement: string;
 				}[];
 			};
-			progressiveOnboarding: {
-				isEnabled: boolean;
-				isComplete: boolean;
-				tpv: number;
-				firstTransactionDate?: string;
-			};
 			fraudProtection: {
 				declineOnAVSFailure: boolean;
 				declineOnCVCFailure: boolean;
@@ -116,14 +110,8 @@ declare global {
 		fraudProtection: {
 			isWelcomeTourDismissed?: boolean;
 		};
-		progressiveOnboarding?: {
-			isEnabled: boolean;
-			isComplete: boolean;
-			isEligibilityModalDismissed: boolean;
-		};
 		dismissedDuplicateNotices: PaymentMethodToPluginsMap;
 		accountDefaultCurrency: string;
-		isFRTReviewFeatureActive: boolean;
 		onboardingFieldsData?: {
 			business_types: Country[];
 			mccs_display_tree: MccsDisplayTreeItem[];
@@ -147,7 +135,6 @@ declare global {
 		isNextDepositNoticeDismissed: boolean;
 		isInstantDepositNoticeDismissed: boolean;
 		isConnectionSuccessModalDismissed: boolean;
-		isWCReactifySettingsFeatureEnabled: boolean;
 		trackingInfo?: {
 			hosting_provider: string;
 		};

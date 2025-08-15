@@ -1,18 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ToS modal should render ToS modal 1`] = `
-.emotion-2 {
-  width: 1em;
-  height: 1em;
-  margin: 0;
-  vertical-align: middle;
-  fill: currentColor;
-}
-
 <div
   aria-labelledby="components-modal-header-0"
   class="components-modal__frame woocommerce-payments__tos-modal"
   role="dialog"
+  style="--modal-frame-animation-duration: 200ms;"
   tabindex="-1"
 >
   <div
@@ -33,59 +26,50 @@ exports[`ToS modal should render ToS modal 1`] = `
         </h1>
       </div>
     </div>
-    <div
-      class="woocommerce-payments__tos-wrapper"
-    >
+    <div>
       <div
-        class="woocommerce-payments__tos-modal-message"
+        class="woocommerce-payments__tos-wrapper"
       >
-        To continue using WooPayments, please review and agree to our 
-        <a
-          class="components-external-link"
-          href="https://wordpress.com/tos"
-          rel="external noreferrer noopener"
-          target="_blank"
+        <div
+          class="woocommerce-payments__tos-modal-message"
         >
-          Terms of Service
-          <span
-            class="components-visually-hidden emotion-0 emotion-1"
-            data-wp-c16t="true"
-            data-wp-component="VisuallyHidden"
-            style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+          To continue using WooPayments, please review and agree to our 
+          <a
+            class="components-external-link"
+            href="https://wordpress.com/tos"
+            rel="external noreferrer noopener"
+            target="_blank"
           >
-            (opens in a new tab)
-          </span>
-          <svg
-            aria-hidden="true"
-            class="components-external-link__icon emotion-2 emotion-3"
-            focusable="false"
-            height="24"
-            viewBox="0 0 24 24"
-            width="24"
-            xmlns="http://www.w3.org/2000/svg"
+            <span
+              class="components-external-link__contents"
+            >
+              Terms of Service
+            </span>
+            <span
+              aria-label="(opens in a new tab)"
+              class="components-external-link__icon"
+            >
+              ↗
+            </span>
+          </a>
+          . By clicking “Accept” you agree to the Terms of Service.
+        </div>
+        <div
+          class="woocommerce-payments__tos-footer"
+        >
+          <button
+            class="components-button is-next-40px-default-size is-secondary"
+            type="button"
           >
-            <path
-              d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
-            />
-          </svg>
-        </a>
-        . By clicking “Accept” you agree to the Terms of Service.
-      </div>
-      <div
-        class="woocommerce-payments__tos-footer"
-      >
-        <button
-          class="components-button is-secondary"
-          type="button"
-        >
-          Decline
-        </button>
-        <button
-          class="components-button is-primary"
-          type="button"
-        >
-          Accept
-        </button>
+            Decline
+          </button>
+          <button
+            class="components-button is-next-40px-default-size is-primary"
+            type="button"
+          >
+            Accept
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -93,18 +77,11 @@ exports[`ToS modal should render ToS modal 1`] = `
 `;
 
 exports[`ToS modal should render disable plugin modal on decline 1`] = `
-.emotion-2 {
-  width: 1em;
-  height: 1em;
-  margin: 0;
-  vertical-align: middle;
-  fill: currentColor;
-}
-
 <div
   aria-labelledby="components-modal-header-3"
   class="components-modal__frame woocommerce-payments__tos-modal"
   role="dialog"
+  style="--modal-frame-animation-duration: 200ms;"
   tabindex="-1"
 >
   <div
@@ -125,59 +102,50 @@ exports[`ToS modal should render disable plugin modal on decline 1`] = `
         </h1>
       </div>
     </div>
-    <div
-      class="woocommerce-payments__tos-wrapper"
-    >
+    <div>
       <div
-        class="woocommerce-payments__tos-modal-message"
+        class="woocommerce-payments__tos-wrapper"
       >
-        By declining our 
-        <a
-          class="components-external-link"
-          href="https://wordpress.com/tos"
-          rel="external noreferrer noopener"
-          target="_blank"
+        <div
+          class="woocommerce-payments__tos-modal-message"
         >
-          Terms of Service
-          <span
-            class="components-visually-hidden emotion-0 emotion-1"
-            data-wp-c16t="true"
-            data-wp-component="VisuallyHidden"
-            style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+          By declining our 
+          <a
+            class="components-external-link"
+            href="https://wordpress.com/tos"
+            rel="external noreferrer noopener"
+            target="_blank"
           >
-            (opens in a new tab)
-          </span>
-          <svg
-            aria-hidden="true"
-            class="components-external-link__icon emotion-2 emotion-3"
-            focusable="false"
-            height="24"
-            viewBox="0 0 24 24"
-            width="24"
-            xmlns="http://www.w3.org/2000/svg"
+            <span
+              class="components-external-link__contents"
+            >
+              Terms of Service
+            </span>
+            <span
+              aria-label="(opens in a new tab)"
+              class="components-external-link__icon"
+            >
+              ↗
+            </span>
+          </a>
+          , you’ll no longer be able to capture credit card payments using WooPayments. Your previous transaction and payout data will still be available.
+        </div>
+        <div
+          class="woocommerce-payments__tos-footer"
+        >
+          <button
+            class="components-button is-next-40px-default-size is-tertiary"
+            type="button"
           >
-            <path
-              d="M18.2 17c0 .7-.6 1.2-1.2 1.2H7c-.7 0-1.2-.6-1.2-1.2V7c0-.7.6-1.2 1.2-1.2h3.2V4.2H7C5.5 4.2 4.2 5.5 4.2 7v10c0 1.5 1.2 2.8 2.8 2.8h10c1.5 0 2.8-1.2 2.8-2.8v-3.6h-1.5V17zM14.9 3v1.5h3.7l-6.4 6.4 1.1 1.1 6.4-6.4v3.7h1.5V3h-6.3z"
-            />
-          </svg>
-        </a>
-        , you’ll no longer be able to capture credit card payments using WooPayments. Your previous transaction and payout data will still be available.
-      </div>
-      <div
-        class="woocommerce-payments__tos-footer"
-      >
-        <button
-          class="components-button is-tertiary"
-          type="button"
-        >
-          Back
-        </button>
-        <button
-          class="components-button is-primary"
-          type="button"
-        >
-          Disable
-        </button>
+            Back
+          </button>
+          <button
+            class="components-button is-next-40px-default-size is-primary"
+            type="button"
+          >
+            Disable
+          </button>
+        </div>
       </div>
     </div>
   </div>

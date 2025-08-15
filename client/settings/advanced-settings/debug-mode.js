@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { CheckboxControl } from 'wcpay/components/wp-components-wrapped/components/checkbox-control';
+import { CheckboxControl } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -15,9 +15,7 @@ const DebugMode = () => {
 
 	return (
 		<>
-			<h4 tabIndex="-1">
-				{ __( 'Debug mode', 'woocommerce-payments' ) }
-			</h4>
+			<h4>{ __( 'Debug mode', 'woocommerce-payments' ) }</h4>
 			<CheckboxControl
 				label={
 					isDevModeEnabled

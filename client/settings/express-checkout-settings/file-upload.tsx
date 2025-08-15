@@ -14,8 +14,7 @@ import clsx from 'clsx';
 /**
  * Internal dependencies
  */
-import { BaseControl } from 'wcpay/components/wp-components-wrapped/components/base-control';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
+import { BaseControl, Button } from '@wordpress/components';
 import { FileUploadControl } from 'wcpay/components/file-upload';
 
 interface WooPayFileUploadProps {
@@ -135,7 +134,12 @@ const WooPayFileUpload: React.FunctionComponent< WooPayFileUploadProps > = ( {
 	const error = ( uploadError || '' ) as string;
 
 	return (
-		<div className="wcpay-branding-upload-field__wrapper">
+		<BaseControl
+			id={ `form-file-upload-${ fieldKey }` }
+			help={ help }
+			label={ label }
+			__nextHasNoMarginBottom
+		>
 			<div
 				className={ clsx(
 					'woopay-settings__update-store-logo',
@@ -143,10 +147,7 @@ const WooPayFileUpload: React.FunctionComponent< WooPayFileUploadProps > = ( {
 				) }
 			>
 				<FileUploadControl
-					field={ {
-						key: fieldKey,
-						label: label,
-					} }
+					fieldKey={ fieldKey }
 					fileName={ fileID }
 					isLoading={ isLoading }
 					accept={ accept }
@@ -187,11 +188,7 @@ const WooPayFileUpload: React.FunctionComponent< WooPayFileUploadProps > = ( {
 					) }
 				</div>
 			</div>
-
-			<BaseControl id="test" help={ help } __nextHasNoMarginBottom>
-				{ ' ' }
-			</BaseControl>
-		</div>
+		</BaseControl>
 	);
 };
 

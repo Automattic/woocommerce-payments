@@ -8,10 +8,10 @@ import { closeSmall, cloudUpload } from '@wordpress/icons';
 /**
  * Internal dependencies
  */
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
-import { FormFileUpload } from 'wcpay/components/wp-components-wrapped/components/form-file-upload';
+import { Button, FormFileUpload } from '@wordpress/components';
 import { FileUploadControlProps } from './types';
 import { formatFileNameWithSize } from './utils';
+import { useViewport } from 'wcpay/hooks/use-viewport';
 
 const FileUploadControl: React.FC< FileUploadControlProps > = ( {
 	fileName = '',
@@ -25,6 +25,48 @@ const FileUploadControl: React.FC< FileUploadControlProps > = ( {
 	accept = '.pdf, image/png, image/jpeg',
 	label,
 } ) => {
+	const { isVerySmallMobile } = useViewport();
+
+	// Render file chip component
+	const renderFileChip = () => {
+		if ( ! isDone || ! fileName ) {
+			return null;
+		}
+
+		return (
+			<div className="wcpay-dispute-evidence-file-upload-control__chip">
+				<span className="wcpay-dispute-evidence-file-upload-control__chip-filename">
+					{ fileSize ? (
+						<>
+							<div className="wcpay-dispute-evidence-file-upload-control__chip-filename-name">
+								{
+									formatFileNameWithSize( fileName, fileSize )
+										.namePart
+								}
+							</div>
+							<div className="wcpay-dispute-evidence-file-upload-control__chip-filename-extension">
+								{
+									formatFileNameWithSize( fileName, fileSize )
+										.extensionSizePart
+								}
+							</div>
+						</>
+					) : (
+						fileName
+					) }
+				</span>
+				<Button
+					className="wcpay-dispute-evidence-file-upload-control__chip-action"
+					icon={ closeSmall }
+					onClick={ onFileRemove }
+					disabled={ disabled }
+					aria-label={ __( 'Remove file', 'woocommerce-payments' ) }
+					variant="tertiary"
+				/>
+			</div>
+		);
+	};
+
 	return (
 		<div className="wcpay-dispute-evidence-file-upload-control">
 			<div className="wcpay-dispute-evidence-file-upload-control__info">
@@ -32,51 +74,16 @@ const FileUploadControl: React.FC< FileUploadControlProps > = ( {
 					<label className="wcpay-dispute-evidence-file-upload-control__label">
 						{ label }
 					</label>
-					{ isDone && fileName ? (
-						<div className="wcpay-dispute-evidence-file-upload-control__chip">
-							<span className="wcpay-dispute-evidence-file-upload-control__chip-filename">
-								{ fileSize ? (
-									<>
-										<div className="wcpay-dispute-evidence-file-upload-control__chip-filename-name">
-											{
-												formatFileNameWithSize(
-													fileName,
-													fileSize
-												).namePart
-											}
-										</div>
-										<div className="wcpay-dispute-evidence-file-upload-control__chip-filename-extension">
-											{
-												formatFileNameWithSize(
-													fileName,
-													fileSize
-												).extensionSizePart
-											}
-										</div>
-									</>
-								) : (
-									fileName
-								) }
-							</span>
-							<Button
-								className="wcpay-dispute-evidence-file-upload-control__chip-action"
-								icon={ closeSmall }
-								onClick={ onFileRemove }
-								disabled={ disabled }
-								aria-label={ __(
-									'Remove file',
-									'woocommerce-payments'
-								) }
-								variant="tertiary"
-							/>
-						</div>
-					) : null }
+					{ /* Only show chip in header for larger screens */ }
+					{ ! isVerySmallMobile && renderFileChip() }
 				</div>
 				{ description && (
 					<p className="wcpay-dispute-evidence-file-upload-control__info-description">
 						{ description }
 					</p>
 				) }
+				{ /* Show chip after description for very small mobile screens */ }
+				{ isVerySmallMobile && renderFileChip() }
 			</div>
 			<div className="wcpay-dispute-evidence-file-upload-control__actions">
 				<FormFileUpload

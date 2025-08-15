@@ -5,16 +5,18 @@
  */
 import { __ } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
+import {
+	Button,
+	Card,
+	CardBody,
+	CardHeader,
+	FlexBlock,
+	FlexItem,
+} from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
-import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
-import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
-import { CardHeader } from 'wcpay/components/wp-components-wrapped/components/card-header';
-import { FlexBlock } from 'wcpay/components/wp-components-wrapped/components/flex-block';
-import { FlexItem } from 'wcpay/components/wp-components-wrapped/components/flex-item';
 import AccountFees from './account-fees';
 import AccountStatusItem from './account-status-item';
 import DepositsStatus from 'components/deposits-status';
@@ -70,13 +72,7 @@ const AccountStatusDetails = ( props ) => {
 				{ __( 'Account details', 'woocommerce-payments' ) }
 			</FlexItem>
 			<FlexBlock className={ 'account-status' }>
-				<StatusChip
-					accountStatus={ accountStatus.status }
-					poEnabled={ accountStatus.progressiveOnboarding.isEnabled }
-					poComplete={
-						accountStatus.progressiveOnboarding.isComplete
-					}
-				/>
+				<StatusChip accountStatus={ accountStatus.status } />
 			</FlexBlock>
 			{ accountLink && (
 				<FlexItem className={ 'edit-details' }>
