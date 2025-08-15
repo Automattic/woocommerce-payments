@@ -27,7 +27,6 @@ export const getUpdateBusinessDetailsTask = (
 	const accountDetailsPastDue = 'restricted' === status && pastDue;
 	const hasMultipleErrors = 1 < errorMessages.length;
 	const hasSingleError = 1 === errorMessages.length;
-	const connectUrl = wcpaySettings.connectUrl;
 	const accountLinkWithSource = accountLink
 		? addQueryArgs( accountLink, {
 				from: 'WCPAY_OVERVIEW',
