@@ -54,6 +54,7 @@ class WC_Payments_Admin_Settings_Test extends WCPAY_UnitTestCase {
 		$result = ob_get_clean();
 
 		$this->assertStringContainsStringIgnoringCase( 'WooPayments is in test mode.', $result );
+		$this->assertStringNotContainsString( 'You are using a test account.', $result );
 	}
 
 	public function test_it_hides_test_account_notice() {
@@ -74,6 +75,7 @@ class WC_Payments_Admin_Settings_Test extends WCPAY_UnitTestCase {
 		$result = ob_get_clean();
 
 		$this->assertStringContainsString( 'You are using a test account.', $result );
+		$this->assertStringNotContainsString( 'WooPayments is in test mode.', $result );
 	}
 
 	public function test_it_adds_plugin_links() {
