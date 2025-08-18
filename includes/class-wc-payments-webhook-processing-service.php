@@ -722,9 +722,10 @@ class WC_Payments_Webhook_Processing_Service {
 		$event_data   = $this->read_webhook_property( $event_body, 'data' );
 		$event_object = $this->read_webhook_property( $event_data, 'object' );
 		$intent_id    = $this->read_webhook_property( $event_object, 'id' );
+		$order_key    = $this->read_webhook_property( $event_object, 'metadata' )['order_key'] ?? null;
 
 		// Look up the order related to this intent.
-		$order = $this->wcpay_db->order_from_intent_id( $intent_id );
+		$order = $this->wcpay_db->order_from_intent_id( $intent_id, $order_key );
 
 		if ( ! $order instanceof \WC_Order ) {
 			// Retrieving order with order_id in case intent_id was not properly set.
