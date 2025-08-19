@@ -1275,6 +1275,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 					],
 				],
 			],
+			'metadata'           => [],
 			'last_payment_error' => [
 				'message'        => 'error message',
 				'payment_method' => [
@@ -1345,6 +1346,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'object'             => 'payment_intent',
 			'amount'             => 1500,
 			'charges'            => [],
+			'metadata'           => [],
 			'last_payment_error' => [
 				'code'           => 'card_declined',
 				'decline_code'   => 'debit_notification_undelivered',
@@ -1988,6 +1990,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 							],
 						],
 					],
+					'metadata'           => [],
 					'last_payment_error' => [
 						'message'        => 'Card declined',
 						'payment_method' => [
