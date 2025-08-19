@@ -752,7 +752,7 @@ class WC_Payments_Webhook_Processing_Service {
 		 * could be caused by another site creating orders with the same IDs
 		 * while this site remains the primary webhook receiver.
 		 */
-		if ( ! is_null( $order_key ) && $order instanceof WC_Order && $order->get_order_key() !== $order_key ) {
+		if ( null !== $order_key && $order instanceof WC_Order && $order->get_order_key() !== $order_key ) {
 			Logger::debug(
 				'Mismatching order key found while retrieving an order for webhook processing',
 				[

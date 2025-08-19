@@ -2761,7 +2761,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 */
 	private function get_order_info_from_intention_object( $intention_id, $order_key = null ) {
 		$order = $this->wcpay_db->order_from_intent_id( $intention_id );
-		if ( $order instanceof WC_Order && ! is_null( $order_key ) && $order_key !== $order->get_order_key() ) {
+		if ( $order instanceof WC_Order && null !== $order_key && $order_key !== $order->get_order_key() ) {
 			return [];
 		}
 
