@@ -63,19 +63,15 @@ class WC_Payments_DB {
 	/**
 	 * Retrieve an order from the DB using a corresponding Stripe intent ID.
 	 *
-	 * @param string      $intent_id Intent ID corresponding to an order ID.
-	 * @param string|null $order_key Order key.
+	 * @param string $intent_id Intent ID corresponding to an order ID.
+	 *
 	 * @return boolean|WC_Order|WC_Order_Refund
 	 */
-	public function order_from_intent_id( $intent_id, ?string $order_key = null ) {
+	public function order_from_intent_id( $intent_id ) {
 		$order_id = $this->order_id_from_meta_key_value( self::META_KEY_INTENT_ID, $intent_id );
 
 		if ( $order_id ) {
-			$order = $this->order_from_order_id( $order_id );
-			if ( ! is_null( $order_key ) && $order->get_order_key() !== $order_key ) {
-				return null;
-			}
-			return $order;
+			return $this->order_from_order_id( $order_id );
 		}
 		return false;
 	}
