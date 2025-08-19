@@ -2,8 +2,8 @@
  * External dependencies
  */
 import React, { useState } from 'react';
-import { Button, Modal, Notice } from '@wordpress/components';
 import { sprintf } from '@wordpress/i18n';
+import { Button, Modal, Notice } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -79,13 +79,18 @@ const UpdateBusinessDetailsModal = ( {
 					</div>
 					<hr />
 					<div className="wcpay-update-business-details-modal__footer">
-						<Button variant={ 'secondary' } onClick={ closeModal }>
+						<Button
+							variant="secondary"
+							onClick={ closeModal }
+							__next40pxDefaultSize
+						>
 							{ strings.cancel }
 						</Button>
 
 						<Button
-							variant={ 'primary' }
+							variant="primary"
 							onClick={ openAccountLink }
+							__next40pxDefaultSize
 						>
 							{ strings.updateBusinessDetails }
 						</Button>

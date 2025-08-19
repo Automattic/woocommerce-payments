@@ -44,6 +44,7 @@ export const ConnectionSuccessModal = () => {
 							isBusy={ false }
 							disabled={ false }
 							onClick={ onDismiss }
+							__next40pxDefaultSize
 						>
 							{ strings.button }
 						</Button>

@@ -20,7 +20,9 @@ interface CaptureAuthorizationButtonProps {
 	onClick?: () => void;
 }
 
-const CaptureAuthorizationButton: React.FC< CaptureAuthorizationButtonProps > = ( {
+const CaptureAuthorizationButton: React.FC< React.PropsWithChildren<
+	CaptureAuthorizationButtonProps
+> > = ( {
 	orderId,
 	children,
 	paymentIntentId,
@@ -39,8 +41,7 @@ const CaptureAuthorizationButton: React.FC< CaptureAuthorizationButtonProps > = 
 
 	return (
 		<Button
-			isPrimary={ buttonIsPrimary }
-			isSecondary={ ! buttonIsPrimary }
+			variant={ buttonIsPrimary ? 'primary' : 'secondary' }
 			isSmall={ buttonIsSmall }
 			onClick={ () => {
 				onClick();
@@ -49,6 +50,7 @@ const CaptureAuthorizationButton: React.FC< CaptureAuthorizationButtonProps > = 
 			} }
 			isBusy={ isLoading && isCaptureRequested } // Button should be in busy state when the capture is requested
 			disabled={ ( isLoading && isCaptureRequested ) || isRequesting } // Button should be disabled when the capture is requested
+			__next40pxDefaultSize
 		>
 			{ children || __( 'Capture', 'woocommerce-payments' ) }
 		</Button>

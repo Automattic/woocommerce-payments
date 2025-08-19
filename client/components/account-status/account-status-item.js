@@ -5,10 +5,6 @@
  */
 import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
 
-/**
- * Internal dependencies
- */
-
 const AccountStatusItem = ( { label, align, value, children } ) => {
 	return (
 		<Flex

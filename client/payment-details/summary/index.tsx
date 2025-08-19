@@ -4,21 +4,22 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import {
-	Card,
-	CardBody,
-	CardDivider,
-	Flex,
-	DropdownMenu,
-	MenuGroup,
-	MenuItem,
-} from '@wordpress/components';
 import { moreVertical } from '@wordpress/icons';
 import moment from 'moment';
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { createInterpolateElement } from '@wordpress/element';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import _ from 'lodash';
+import {
+	CardDivider,
+	DropdownMenu,
+	MenuGroup,
+	MenuItem,
+	Card,
+	CardBody,
+	Flex,
+	ExternalLink,
+} from '@wordpress/components';
 
 /**
  * Internal dependencies.
@@ -30,6 +31,7 @@ import {
 	isOnHoldByFraudTools,
 	getBankName,
 } from 'utils/charge';
+import CardNotice from 'wcpay/components/card-notice';
 import isValueTruthy from 'utils/is-value-truthy';
 import PaymentStatusChip from 'components/payment-status-chip';
 import PaymentMethodDetails from 'components/payment-method-details';
@@ -63,7 +65,6 @@ import DisputeAwaitingResponseDetails from '../dispute-details/dispute-awaiting-
 import DisputeResolutionFooter from '../dispute-details/dispute-resolution-footer';
 import ErrorBoundary from 'components/error-boundary';
 import RefundModal from 'wcpay/payment-details/summary/refund-modal';
-import CardNotice from 'wcpay/components/card-notice';
 import {
 	formatDateTimeFromString,
 	formatDateTimeFromTimestamp,
@@ -88,7 +89,7 @@ const placeholderValues = {
 };
 
 const isTapToPay = ( model: string ) => {
-	return model === 'COTS_DEVICE';
+	return model === 'COTS_DEVICE' || model === 'TAP_TO_PAY_DEVICE';
 };
 
 const getTapToPayChannel = ( platform: string ) => {
@@ -173,6 +174,60 @@ const composePaymentSummaryItems = ( {
 		},
 	].filter( isValueTruthy );
 
+const composePaymentSummaryItemsForDispute = ( {
+	charge = {} as Charge,
+}: {
+	charge: Charge;
+} ): HorizontalListItem[] =>
+	[
+		{
+			title: __( 'Date', 'woocommerce-payments' ),
+			content: charge.created
+				? formatDateTimeFromTimestamp( charge.created, {
+						customFormat: 'F j, Y g:i A',
+				  } )
+				: '–',
+		},
+		{
+			title: __( 'Customer', 'woocommerce-payments' ),
+			content: (
+				<CustomerLink
+					billing_details={ charge.billing_details }
+					order_details={ charge.order }
+				/>
+			),
+		},
+		{
+			title: __( 'Order', 'woocommerce-payments' ),
+			content: <OrderLink order={ charge.order } />,
+		},
+		wcpaySettings.isSubscriptionsActive && {
+			title: __( 'Subscription', 'woocommerce-payments' ),
+			content: charge.order?.subscriptions?.length ? (
+				charge.order.subscriptions.map( ( subscription, i, all ) => [
+					<OrderLink key={ i } order={ subscription } />,
+					i !== all.length - 1 && ', ',
+				] )
+			) : (
+				<OrderLink order={ null } />
+			),
+		},
+		{
+			title: __( 'Payment method', 'woocommerce-payments' ),
+			content: (
+				<PaymentMethodDetails
+					payment={ charge.payment_method_details }
+				/>
+			),
+		},
+		{
+			title: __( 'Risk evaluation', 'woocommerce-payments' ),
+			content: charge.outcome?.risk_level
+				? riskMappings[ charge.outcome.risk_level ]
+				: '–',
+		},
+	].filter( isValueTruthy );
+
 const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	charge = {} as Charge,
 	metadata = {},
@@ -185,18 +240,13 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 	const renderStorePrice =
 		charge.currency && balance.currency !== charge.currency;
 
-	const {
-		featureFlags: { isAuthAndCaptureEnabled },
-	} = useContext( WCPaySettingsContext );
-
 	// We should only fetch the authorization data if the payment is marked for manual capture and it is not already captured.
 	// We also need to exclude failed payments and payments that have been refunded, because capture === false in those cases, even
 	// if the capture is automatic.
 	const shouldFetchAuthorization =
 		! charge.captured &&
 		charge.status !== 'failed' &&
-		charge.amount_refunded === 0 &&
-		isAuthAndCaptureEnabled;
+		charge.amount_refunded === 0;
 
 	const { authorization } = useAuthorization(
 		charge.payment_intent as string,
@@ -623,10 +673,16 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 			<CardBody>
 				<LoadableBlock isLoading={ isLoading } numLines={ 4 }>
 					<HorizontalList
-						items={ composePaymentSummaryItems( {
-							charge,
-							metadata,
-						} ) }
+						items={
+							charge.dispute
+								? composePaymentSummaryItemsForDispute( {
+										charge,
+								  } )
+								: composePaymentSummaryItems( {
+										charge,
+										metadata,
+								  } )
+						}
 					/>
 				</LoadableBlock>
 			</CardBody>
@@ -674,76 +730,70 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 					onButtonClick={ () => setIsRefundModalOpen( true ) }
 				/>
 			) }
-			{ isAuthAndCaptureEnabled &&
-				authorization &&
-				! authorization.captured && (
-					<Loadable isLoading={ isLoading } placeholder="">
-						<CardNotice
-							actions={
-								! isFraudOutcomeReview ? (
-									<CaptureAuthorizationButton
-										orderId={ charge.order?.id || 0 }
-										paymentIntentId={
-											charge.payment_intent || ''
-										}
-										buttonIsPrimary={ true }
-										buttonIsSmall={ false }
-										onClick={ () => {
-											recordEvent(
-												'payments_transactions_details_capture_charge_button_click',
-												{
-													payment_intent_id:
-														charge.payment_intent,
-												}
-											);
-										} }
-									/>
-								) : (
-									<></>
-								)
-							}
-						>
-							{ createInterpolateElement(
-								__(
-									'You must <a>capture</a> this charge within the next',
-									'woocommerce-payments'
+			{ authorization && ! authorization.captured && (
+				<Loadable isLoading={ isLoading } placeholder="">
+					<CardNotice
+						actions={
+							! isFraudOutcomeReview ? (
+								<CaptureAuthorizationButton
+									orderId={ charge.order?.id || 0 }
+									paymentIntentId={
+										charge.payment_intent || ''
+									}
+									buttonIsPrimary={ true }
+									buttonIsSmall={ false }
+									onClick={ () => {
+										recordEvent(
+											'payments_transactions_details_capture_charge_button_click',
+											{
+												payment_intent_id:
+													charge.payment_intent,
+											}
+										);
+									} }
+								/>
+							) : (
+								<></>
+							)
+						}
+					>
+						{ createInterpolateElement(
+							__(
+								'You must <a>capture</a> this charge within the next',
+								'woocommerce-payments'
+							),
+							{
+								a: (
+									// @ts-expect-error: children is provided when interpolating the component
+									<ExternalLink href="https://woocommerce.com/document/woopayments/settings-guide/authorize-and-capture/#capturing-authorized-orders" />
 								),
-								{
-									a: (
-										// eslint-disable-next-line jsx-a11y/anchor-has-content, react/jsx-no-target-blank
-										<a
-											href="https://woocommerce.com/document/woopayments/settings-guide/authorize-and-capture/#capturing-authorized-orders"
-											target="_blank"
-											rel="noreferer"
-										/>
-									),
-								}
-							) }{ ' ' }
-							<abbr
-								title={ formatDateTimeFromString(
-									// TODO: is this string?
-									moment
-										.utc( authorization.created )
-										.add( 7, 'days' )
-										.toISOString(),
-									{ includeTime: true }
-								) }
-							>
-								<b>
-									{ moment
-										.utc( authorization.created )
-										.add( 7, 'days' )
-										.fromNow( true ) }
-								</b>
-							</abbr>
-							{ isFraudOutcomeReview &&
-								`. ${ __(
-									'Approving this transaction will capture the charge.',
-									'woocommerce-payments'
-								) }` }
-						</CardNotice>
-					</Loadable>
-				) }
+							}
+						) }{ ' ' }
+						<abbr
+							title={ formatDateTimeFromString(
+								// TODO: is this string?
+								moment
+									.utc( authorization.created )
+									.add( 7, 'days' )
+									.toISOString(),
+								{ includeTime: true }
+							) }
+						>
+							<b>
+								{ moment
+									.utc( authorization.created )
+									.add( 7, 'days' )
+									.fromNow( true ) }
+							</b>
+						</abbr>
+						{ isFraudOutcomeReview &&
+							`. ${ __(
+								'Approving this transaction will capture the charge.',
+								'woocommerce-payments'
+							) }` }
+					</CardNotice>
+				</Loadable>
+			) }
 		</Card>
 	);
 };

@@ -2,8 +2,8 @@
  * External dependencies
  */
 import React from 'react';
-import { CardHeader, Flex, FlexItem } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
+import { CardHeader, Flex, FlexItem } from '@wordpress/components';
 
 /**
  * Internal dependencies

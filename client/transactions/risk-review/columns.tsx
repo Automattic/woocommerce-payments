@@ -79,7 +79,7 @@ export const getRiskReviewListRowContent = (
 		includeTime: true,
 	} );
 
-	const clickable = ( children: JSX.Element | string ) => (
+	const clickable = ( children: React.ReactNode ) => (
 		<ClickableCell href={ detailsURL }>{ children }</ClickableCell>
 	);
 
@@ -114,9 +114,10 @@ export const getRiskReviewListRowContent = (
 		action: {
 			display: (
 				<Button
-					isSecondary
+					variant="secondary"
 					href={ detailsURL }
 					onClick={ handleActionButtonClick }
+					__next40pxDefaultSize
 				>
 					{ __( 'Review' ) }
 				</Button>

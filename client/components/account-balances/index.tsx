@@ -2,10 +2,15 @@
  * External dependencies
  */
 import React, { useState } from 'react';
-import { Card, CardBody, CardHeader, Flex } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
-import { Link } from '@woocommerce/components';
+import {
+	Card,
+	CardBody,
+	CardHeader,
+	Flex,
+	ExternalLink,
+} from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -73,7 +78,9 @@ const AccountBalances: React.FC = () => {
 
 		return (
 			<Card className="wcpay-account-balances">
-				<CardHeader>Balance</CardHeader>
+				<CardHeader>
+					{ __( 'Balance', 'woocommerce-payments' ) }
+				</CardHeader>
 				<CardBody className="wcpay-account-balances__balances">
 					<BalanceBlock
 						id={ `wcpay-account-balances-${ loadingData.currencyCode }-total` }
@@ -118,7 +125,9 @@ const AccountBalances: React.FC = () => {
 	return (
 		<>
 			<Card className="wcpay-account-balances">
-				<CardHeader>Balance</CardHeader>
+				<CardHeader>
+					{ __( 'Balance', 'woocommerce-payments' ) }
+				</CardHeader>
 				<CardBody className="wcpay-account-balances__balances">
 					<BalanceBlock
 						id={ `wcpay-account-balances-${ selectedOverview.currencyCode }-total` }
@@ -204,11 +213,11 @@ const AccountBalances: React.FC = () => {
 											components: {
 												strong: <strong />,
 												learnMoreLink: (
-													<Link
-														href="https://woocommerce.com/document/woopayments/payouts/instant-payouts/"
-														target="_blank"
-														rel="noreferrer"
-														type="external"
+													// @ts-expect-error: children is provided when interpolating the component
+													<ExternalLink
+														href={
+															'https://woocommerce.com/document/woopayments/payouts/instant-payouts/'
+														}
 													/>
 												),
 											},

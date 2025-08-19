@@ -69,7 +69,6 @@ use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\Payment_Methods\Multibanco_Payment_Method;
 use WCPay\Payment_Methods\Grabpay_Payment_Method;
-use WCPay\Payment_Methods\Wechatpay_Payment_Method;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 
 /**
@@ -811,7 +810,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	}
 
 	/**
-	 * Add a url to the admin order page that links directly to the transactions detail view.
+	 * Add a url to the admin order page that links directly to the transactions detail view for authorized intent statuses.
+	 *
 	 * Called directly by WooCommerce Core.
 	 *
 	 * @since 1.4.0
@@ -820,6 +820,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string
 	 */
 	public function get_transaction_url( $order ) {
+		$intent_status = $this->order_service->get_intention_status_for_order( $order );
+		if ( ! in_array( $intent_status, Intent_Status::AUTHORIZED_STATUSES, true ) ) {
+			return '';
+		}
+
 		$intent_id = $this->order_service->get_intent_id_for_order( $order );
 		$charge_id = $this->order_service->get_charge_id_for_order( $order );
 
@@ -884,6 +889,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// available in the country of the account.
 		if ( $this->needs_https_setup() || ! $this->is_available_for_current_currency() ) {
 			return false;
+		}
+
+		if ( in_array( $this->payment_method->get_id(), [ Payment_Method::AFTERPAY, Payment_Method::AFFIRM ], true ) && is_wc_endpoint_url( 'order-pay' ) ) {
+			$order = wc_get_order( absint( get_query_var( 'order-pay' ) ) );
+			$order = is_a( $order, 'WC_Order' ) ? $order : null;
+
+			if ( $order && ! $this->retrieve_usable_shipping_data_from_order( $order ) ) {
+				return false;
+			}
 		}
 
 		// Disable the gateway if it should not be displayed on the checkout page.
@@ -1752,7 +1766,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// Only attempt to use WC_Subscriptions_Change_Payment_Gateway if it exists.
 				if ( class_exists( 'WC_Subscriptions_Change_Payment_Gateway' ) ) {
 					// Update the payment method for subscription if the payment intent is not requiring action.
-					WC_Subscriptions_Change_Payment_Gateway::update_payment_method( $order, $payment_information->get_payment_method() );
+					WC_Subscriptions_Change_Payment_Gateway::update_payment_method( $order, $this->id );
 				}
 
 				// Because this new payment does not require action/confirmation, remove this filter so that WC_Subscriptions_Change_Payment_Gateway proceeds to update all subscriptions if flagged.
@@ -1770,6 +1784,34 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->order_service->attach_transaction_fee_to_order( $order, $charge );
 
 		$this->maybe_add_customer_notification_note( $order, $processing );
+
+		// ensuring the payment method title is set before any early return paths to avoid incomplete order data.
+		if ( empty( $_POST['payment_request_type'] ) && empty( $_POST['express_payment_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+			// Extract payment method details for setting the payment method title.
+			if ( $payment_needed ) {
+				$charge                 = $intent ? $intent->get_charge() : null;
+				$payment_method_details = $charge ? $charge->get_payment_method_details() : [];
+				// For payment intents, get payment method type from the intent itself, fallback to charge details.
+				$payment_method_type = $intent ? $intent->get_payment_method_type() : null;
+				if ( ! $payment_method_type && $payment_method_details ) {
+					$payment_method_type = $payment_method_details['type'] ?? null;
+				}
+
+				if ( 'card' === $payment_method_type && isset( $payment_method_details['card']['last4'] ) ) {
+					$order->add_meta_data( 'last4', $payment_method_details['card']['last4'], true );
+					if ( isset( $payment_method_details['card']['brand'] ) ) {
+						$order->add_meta_data( '_card_brand', $payment_method_details['card']['brand'], true );
+					}
+					$order->save_meta_data();
+				}
+			} else {
+				$payment_method_details = false;
+				$token                  = $payment_information->is_using_saved_payment_method() ? $payment_information->get_payment_token() : null;
+				$payment_method_type    = $token ? $this->get_payment_method_type_for_setup_intent( $intent, $token ) : null;
+			}
+
+			$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
+		}
 
 		if ( isset( $status ) && Intent_Status::REQUIRES_ACTION === $status && $this->is_changing_payment_method_for_subscription() ) {
 			// Because we're filtering woocommerce_subscriptions_update_payment_via_pay_shortcode, we need to manually set this delayed update all flag here.
@@ -1789,27 +1831,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		wc_maybe_reduce_stock_levels( $order_id );
 		if ( isset( $cart ) ) {
 			$cart->empty_cart();
-		}
-
-		if ( $payment_needed ) {
-			$charge                 = $intent ? $intent->get_charge() : null;
-			$payment_method_details = $charge ? $charge->get_payment_method_details() : [];
-			$payment_method_type    = $payment_method_details ? $payment_method_details['type'] : null;
-
-			if ( 'card' === $payment_method_type && isset( $payment_method_details['card']['last4'] ) ) {
-				$order->add_meta_data( 'last4', $payment_method_details['card']['last4'], true );
-				if ( isset( $payment_method_details['card']['brand'] ) ) {
-					$order->add_meta_data( '_card_brand', $payment_method_details['card']['brand'], true );
-				}
-				$order->save_meta_data();
-			}
-		} else {
-			$payment_method_details = false;
-			$payment_method_type    = $this->get_payment_method_type_for_setup_intent( $intent, $token );
-		}
-
-		if ( empty( $_POST['payment_request_type'] ) && empty( $_POST['express_payment_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 		}
 
 		return [
@@ -3544,7 +3565,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$this->order_service->update_order_status_from_intent( $order, $intent );
 
 			if ( $intent->is_authorized() ) {
-				wc_reduce_stock_levels( $order_id );
+				wc_maybe_reduce_stock_levels( $order_id );
 				WC()->cart->empty_cart();
 
 				$is_subscription            = function_exists( 'wcs_order_contains_subscription' ) && wcs_order_contains_subscription( $order );
@@ -4100,7 +4121,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$available_methods[] = Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Multibanco_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Grabpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$available_methods[] = Wechatpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 
 		// This gets all the registered payment method definitions. As new payment methods are converted from the legacy style, they need to be removed from the list above.
 		$payment_method_definitions = PaymentMethodDefinitionRegistry::instance()->get_all_payment_method_definitions();
@@ -4569,9 +4589,29 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return void
 	 */
 	private function handle_afterpay_shipping_requirement( WC_Order $order, Create_And_Confirm_Intention $request ): void {
+		$shipping_data = $this->retrieve_usable_shipping_data_from_order( $order );
+		if ( $shipping_data ) {
+			$request->set_shipping( $shipping_data );
+			return;
+		}
+
+		throw new Invalid_Address_Exception( __( 'A valid shipping address is required for Afterpay payments.', 'woocommerce-payments' ) );
+	}
+
+	/**
+	 * Retrieves the usable shipping data from the order (either from the shipping or billing details).
+	 * Returns null if there are no usable addresses.
+	 *
+	 * @param WC_Order $order The order object.
+	 * @return null|array
+	 */
+	private function retrieve_usable_shipping_data_from_order( WC_Order $order ): ?array {
 		$wc_locale_data = WC()->countries->get_country_locale();
 
 		$check_if_usable = function ( array $address ) use ( $wc_locale_data ): bool {
+			if ( ! isset( $address['country'] ) ) {
+				return false;
+			}
 			if ( $address['country'] && isset( $wc_locale_data[ $address['country'] ] ) ) {
 				$country_locale_data = $wc_locale_data[ $address['country'] ];
 				$fields_to_check     = [
@@ -4601,23 +4641,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$shipping_data = $this->order_service->get_shipping_data_from_order( $order );
 		if ( $check_if_usable( $shipping_data['address'] ) ) {
-			$request->set_shipping( $shipping_data );
-			return;
+			return $shipping_data;
 		}
 
+		// Afterpay fails if we send more parameters than expected in the
+		// shipping address. This ensures that we only send the name and address
+		// fields, as in get_shipping_data_from_order.
 		$billing_data = $this->order_service->get_billing_data_from_order( $order );
-		// Afterpay fails if we send more parameters than expected in the shipping address.
-		// This ensures that we only send the name and address fields, as in get_shipping_data_from_order.
-		$shipping_data = [
-			'name'    => $billing_data['name'] ?? '',
-			'address' => $billing_data['address'] ?? [],
-		];
-		if ( $check_if_usable( $shipping_data['address'] ) ) {
-			$request->set_shipping( $shipping_data );
-			return;
+		if ( $check_if_usable( $billing_data['address'] ) ) {
+			return [
+				'name'    => $billing_data['name'] ?? '',
+				'address' => $billing_data['address'] ?? [],
+			];
 		}
 
-		throw new Invalid_Address_Exception( __( 'A valid shipping address is required for Afterpay payments.', 'woocommerce-payments' ) );
+		return null;
 	}
 
 

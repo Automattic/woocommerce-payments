@@ -6,21 +6,16 @@
 /**
  * External dependencies
  */
-import React from 'react';
-
+import React, { ComponentProps } from 'react';
 import { __ } from '@wordpress/i18n';
 import { useEffect, renderToString } from '@wordpress/element';
 import { speak } from '@wordpress/a11y';
 import clsx from 'clsx';
-import { Icon, Button } from '@wordpress/components';
 import { check, info } from '@wordpress/icons';
 import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 import NoticeIcon from 'gridicons/dist/notice';
 import CloseIcon from 'gridicons/dist/cross-small';
-
-/**
- * Internal dependencies.
- */
+import { Icon, Button } from '@wordpress/components';
 import './style.scss';
 
 const statusIconMap = {
@@ -101,7 +96,7 @@ interface Props {
 	actions?: ReadonlyArray< {
 		label: string;
 		className?: string;
-		variant?: Button.Props[ 'variant' ];
+		variant?: ComponentProps< typeof Button >[ 'variant' ];
 		url?: string;
 		urlTarget?: string;
 		onClick?: React.MouseEventHandler< HTMLAnchorElement >;
@@ -114,7 +109,7 @@ interface Props {
 	onRemove?: () => void;
 }
 
-const BannerNotice: React.FC< Props > = ( {
+const BannerNotice: React.FC< React.PropsWithChildren< Props > > = ( {
 	icon,
 	children,
 	actions = [],
@@ -165,11 +160,13 @@ const BannerNotice: React.FC< Props > = ( {
 								return (
 									<Button
 										key={ index }
+										// @ts-expect-error: href is a valid prop on Button
 										href={ url }
 										variant={ computedVariant }
 										onClick={ url ? undefined : onClick }
 										className={ buttonCustomClasses }
 										target={ urlTarget }
+										__next40pxDefaultSize
 									>
 										{ label }
 									</Button>
@@ -189,6 +186,7 @@ const BannerNotice: React.FC< Props > = ( {
 					) }
 					onClick={ handleRemove }
 					showTooltip={ false }
+					__next40pxDefaultSize
 				/>
 			) }
 		</div>

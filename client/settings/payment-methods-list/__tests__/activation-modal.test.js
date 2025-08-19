@@ -12,6 +12,25 @@ import user from '@testing-library/user-event';
  */
 import ConfirmPaymentMethodActivationModal from '../activation-modal';
 
+// Mock ResizeObserver for modal components - comprehensive setup
+class MockResizeObserver {
+	observe() {}
+	unobserve() {}
+	disconnect() {}
+}
+
+// Set up ResizeObserver mock in multiple places to ensure it's available
+global.ResizeObserver = MockResizeObserver;
+global.window = global.window || {};
+global.window.ResizeObserver = MockResizeObserver;
+
+// Ensure it's available on window in JSDOM environment
+Object.defineProperty( window, 'ResizeObserver', {
+	writable: true,
+	configurable: true,
+	value: MockResizeObserver,
+} );
+
 const mockOnClose = jest.fn();
 const mockOnConfirm = jest.fn();
 
@@ -57,21 +76,21 @@ describe( 'Activation Modal', () => {
 		expect( screen.queryByText( 'person.tax_id' ) ).not.toBeInTheDocument();
 	} );
 
-	it( 'triggers the onClose event on close button click', () => {
+	it( 'triggers the onClose event on close button click', async () => {
 		renderActivationModal( [] );
 		const closeButton = screen.queryByRole( 'button', { name: 'Cancel' } );
 		expect( mockOnClose ).not.toBeCalled();
-		user.click( closeButton );
+		await user.click( closeButton );
 		expect( mockOnClose ).toBeCalled();
 	} );
 
-	it( 'triggers the onConfirmClose event on confirm button click', () => {
+	it( 'triggers the onConfirmClose event on confirm button click', async () => {
 		renderActivationModal( [] );
 		const confirmButton = screen.queryByRole( 'button', {
 			name: 'Continue',
 		} );
 		expect( mockOnConfirm ).not.toBeCalled();
-		user.click( confirmButton );
+		await user.click( confirmButton );
 		expect( mockOnConfirm ).toBeCalled();
 	} );
 } );

@@ -3,12 +3,12 @@
  */
 import React, { useContext } from 'react';
 import { __ } from '@wordpress/i18n';
-import { ToggleControl, RadioControl } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import './../style.scss';
+import './rule-toggle.scss';
+import { ToggleControl, RadioControl } from '@wordpress/components';
 import FraudPreventionSettingsContext from './context';
 import { FraudPreventionSettings } from '../interfaces';
 
@@ -43,19 +43,16 @@ const getFilterAction = (
 	return settingUI.block ? filterActions.BLOCK : filterActions.REVIEW;
 };
 
-const FraudProtectionRuleToggle: React.FC< FraudProtectionRuleToggleProps > = ( {
-	setting,
-	label,
-	description,
-	children,
-} ) => {
+const FraudProtectionRuleToggle: React.FC< React.PropsWithChildren<
+	FraudProtectionRuleToggleProps
+> > = ( { setting, label, description, children } ) => {
 	const {
 		protectionSettingsUI,
 		setProtectionSettingsUI,
 		setIsDirty,
 	} = useContext( FraudPreventionSettingsContext );
 
-	const { isFRTReviewFeatureActive } = wcpaySettings;
+	const { isFRTReviewFeatureActive } = wcpaySettings.featureFlags;
 
 	const settingUI = protectionSettingsUI?.[ setting ];
 	const filterAction = getFilterAction( settingUI, isFRTReviewFeatureActive );
@@ -85,25 +82,23 @@ const FraudProtectionRuleToggle: React.FC< FraudProtectionRuleToggleProps > = ( 
 
 	// Render view.
 	return (
-		<div className="fraud-protection-rule-toggle">
-			<ToggleControl
-				label={ label }
-				key={ setting }
-				checked={ settingUI?.enabled }
-				className="fraud-protection-rule-toggle-toggle"
-				onChange={ handleEnableToggleChange }
-			/>
-
-			<div className="fraud-protection-rule-toggle-description">
-				{ description }
+		<>
+			<div className="fraud-protection-rule-toggle">
+				<ToggleControl
+					label={ label }
+					key={ setting }
+					checked={ settingUI?.enabled }
+					help={ description }
+					onChange={ handleEnableToggleChange }
+					__nextHasNoMarginBottom
+				/>
 			</div>
 
 			{ settingUI?.enabled && (
-				<div>
+				<>
 					{ children }
-
-					{ !! isFRTReviewFeatureActive && (
-						<div className="fraud-protection-rule-toggle-block">
+					{ Boolean( isFRTReviewFeatureActive ) && (
+						<div>
 							<strong>
 								{ __(
 									'Filter action',
@@ -118,9 +113,9 @@ const FraudProtectionRuleToggle: React.FC< FraudProtectionRuleToggleProps > = ( 
 							/>
 						</div>
 					) }
-				</div>
+				</>
 			) }
-		</div>
+		</>
 	);
 };
 

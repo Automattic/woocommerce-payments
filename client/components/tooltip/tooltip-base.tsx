@@ -138,29 +138,29 @@ type TooltipPortalProps = {
 	parentElement: HTMLElement;
 };
 
-const TooltipPortal: React.FC< TooltipPortalProps > = memo(
-	( { children, parentElement } ) => {
-		const node = useRef< HTMLElement | null >( null );
-		if ( ! node.current ) {
-			node.current = document.createElement( 'div' );
-			parentElement.appendChild( node.current );
-		}
-
-		// on component unmount, clear any reference to the created node
-		useEffect( () => {
-			return () => {
-				if ( node.current ) {
-					parentElement.removeChild( node.current );
-					node.current = null;
-				}
-			};
-		}, [ parentElement ] );
-
-		return createPortal( children, node.current );
+const TooltipPortal: React.FC< React.PropsWithChildren<
+	TooltipPortalProps
+> > = memo( ( { children, parentElement } ) => {
+	const node = useRef< HTMLElement | null >( null );
+	if ( ! node.current ) {
+		node.current = document.createElement( 'div' );
+		parentElement.appendChild( node.current );
 	}
-);
 
-export type TooltipBaseProps = {
+	// on component unmount, clear any reference to the created node
+	useEffect( () => {
+		return () => {
+			if ( node.current ) {
+				parentElement.removeChild( node.current );
+				node.current = null;
+			}
+		};
+	}, [ parentElement ] );
+
+	return createPortal( children, node.current );
+} );
+
+type TooltipBaseProps = {
 	className?: string;
 	children?: React.ReactNode;
 	content: React.ReactNode;
@@ -171,7 +171,7 @@ export type TooltipBaseProps = {
 	maxWidth?: string;
 };
 
-const TooltipBase: React.FC< TooltipBaseProps > = ( {
+const TooltipBase: React.FC< React.PropsWithChildren< TooltipBaseProps > > = ( {
 	className,
 	children,
 	content,

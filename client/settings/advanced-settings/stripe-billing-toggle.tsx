@@ -3,12 +3,12 @@
  */
 import React, { useContext } from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-import { CheckboxControl, ExternalLink } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
 
 /**
  * Internal dependencies
  */
+import { CheckboxControl, ExternalLink } from '@wordpress/components';
 import StripeBillingMigrationNoticeContext from './stripe-billing-notices/context';
 
 interface Props {
@@ -56,11 +56,13 @@ const StripeBillingToggle: React.FC< Props > = ( { onChange } ) => {
 				components: {
 					learnMoreLink: (
 						// eslint-disable-next-line max-len
+						// @ts-expect-error: children is provided when interpolating the component
 						<ExternalLink href="https://woocommerce.com/document/woopayments/subscriptions/stripe-billing/" />
 					),
 				},
 			} ) }
 			data-testid={ 'stripe-billing-toggle' }
+			__nextHasNoMarginBottom
 		/>
 	);
 };

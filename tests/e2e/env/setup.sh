@@ -106,6 +106,9 @@ if [[ "$E2E_USE_LOCAL_SERVER" != false ]]; then
 	step "Configuring server with stripe account"
 	"$SERVER_PATH"/local/bin/link-account.sh "$BLOG_ID" "$E2E_WCPAY_STRIPE_ACCOUNT_ID" test 1 1
 
+	step "Ensuring the site has the required flags for the e2e tests running against the local server"
+	"$SERVER_PATH"/local/bin/setup-account-metas.sh "$BLOG_ID"
+
 	if [[ -n $CI ]]; then
 		step "Disable Xdebug on server container"
 		docker exec "$SERVER_CONTAINER" \
@@ -205,9 +208,10 @@ cli wp plugin install wordpress-importer --activate
 
 # Install WooCommerce
 if [[ -n "$E2E_WC_VERSION" && $E2E_WC_VERSION != 'latest' ]]; then
-	# If specified version is 'beta', fetch the latest beta version from WordPress.org API
-	if [[ $E2E_WC_VERSION == 'beta' ]]; then
-		E2E_WC_VERSION=$(curl https://api.wordpress.org/plugins/info/1.0/woocommerce.json | jq -r '.versions | with_entries(select(.key|match("beta";"i"))) | keys[-1]' --sort-keys)
+	# If specified version is 'beta' or 'rc', fetch the latest beta version from WordPress.org API
+	if [[ $E2E_WC_VERSION == 'beta' ]] || [[ $E2E_WC_VERSION == 'rc' ]]; then
+		# Get the latest non-trunk version number from the .org repo. This will usually be the latest release, beta, or rc.
+		E2E_WC_VERSION=$(curl https://api.wordpress.org/plugins/info/1.0/woocommerce.json | jq -r '.versions | with_entries(select(.key|match("'$E2E_WC_VERSION'";"i"))) | keys | sort_by( . | split("-")[0] | split(".") | map(tonumber) ) | last' --sort-keys)
 	fi
 
 	echo "Installing and activating specified WooCommerce version..."

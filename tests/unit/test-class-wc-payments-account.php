@@ -712,6 +712,11 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		// This should be in sync with the current account mode.
 		WC_Payments_Onboarding_Service::set_test_mode( false );
 
+		// The server needs to be connected.
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+
 		// Assert.
 		$this->mock_api_client
 			->expects( $this->once() )
@@ -719,8 +724,54 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->with( false );
 		$this->mock_redirect_service
 			->expects( $this->once() )
-			->method( 'redirect_to_connect_page' )
-			->with( null, WC_Payments_Onboarding_Service::FROM_RESET_ACCOUNT, [ 'source' => WC_Payments_Onboarding_Service::SOURCE_WCPAY_RESET_ACCOUNT ] );
+			->method( 'redirect_to_nox_flow' )
+			->with(
+				WC_Payments_Onboarding_Service::FROM_RESET_ACCOUNT,
+				WC_Payments_Onboarding_Service::SOURCE_WCPAY_RESET_ACCOUNT,
+			);
+		// We should be in live mode now.
+		$this->assertFalse( WC_Payments_Onboarding_Service::is_test_mode_enabled() );
+
+		// Act.
+		$this->wcpay_account->maybe_handle_onboarding();
+	}
+
+	public function test_maybe_handle_onboarding_reset_account_with_no_cache_account() {
+		// Arrange.
+		// We need to be in the WP admin dashboard.
+		$this->set_is_admin( true );
+		// Test as an admin user.
+		wp_set_current_user( 1 );
+
+		$_GET['wcpay-connect'] = 'connect-from';
+		$_REQUEST['_wpnonce']  = wp_create_nonce( 'wcpay-connect' );
+		// Set the request as if the user is on some bogus page. It doesn't matter.
+		$_GET['page'] = 'wc-admin';
+		$_GET['path'] = '/payments/some-bogus-page';
+
+		// This is the flag indicating the account should be reset.
+		$_GET['wcpay-reset-account'] = 'true';
+
+		$this->cache_account_details( [] );
+		// This should be in sync with the current account mode.
+		WC_Payments_Onboarding_Service::set_test_mode( false );
+
+		// The server needs to be connected.
+		$this->mock_api_client
+			->method( 'is_server_connected' )
+			->willReturn( true );
+
+		// Assert.
+		$this->mock_api_client
+			->expects( $this->never() )
+			->method( 'delete_account' );
+		$this->mock_redirect_service
+			->expects( $this->once() )
+			->method( 'redirect_to_nox_flow' )
+			->with(
+				WC_Payments_Onboarding_Service::FROM_RESET_ACCOUNT,
+				WC_Payments_Onboarding_Service::SOURCE_WCPAY_RESET_ACCOUNT
+			);
 		// We should be in live mode now.
 		$this->assertFalse( WC_Payments_Onboarding_Service::is_test_mode_enabled() );
 
@@ -742,10 +793,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$_GET['path']   = '/payments/some-bogus-page';
 		$_GET['source'] = WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE; // This should not matter but be carried over.
 		// Make sure important flags are carried over.
-		$_GET['promo']       = 'incentive_id';
-		$_GET['progressive'] = 'true';
-		$_GET['test_drive']  = 'true';
-		$_GET['test_mode']   = '1'; // Some truthy value that will be carried over as `true`.
+		$_GET['promo']      = 'incentive_id';
+		$_GET['test_drive'] = 'true';
+		$_GET['test_mode']  = '1'; // Some truthy value that will be carried over as `true`.
 
 		// Even if we have connected account data, the Jetpack connection takes precedence.
 		$this->cache_account_details(
@@ -770,7 +820,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					$this->stringContains( 'wcpay-connect=connect-from' ),
 					$this->stringContains( 'wcpay-connect-jetpack-success=1' ),
 					$this->stringContains( 'promo=incentive_id' ),
-					$this->stringContains( 'progressive=true' ),
 					$this->stringContains( 'test_drive=true' ),
 					$this->stringContains( 'test_mode=true' ),
 					$this->stringContains( 'from=' . WC_Payments_Onboarding_Service::FROM_WPCOM_CONNECTION ),
@@ -798,8 +847,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$_GET['from']   = WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD;
 		$_GET['source'] = WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE;
 		// Make sure important flags are carried over.
-		$_GET['promo']       = 'incentive_id';
-		$_GET['progressive'] = 'true';
+		$_GET['promo'] = 'incentive_id';
 		// There is no `test_mode` param and no test mode is set. It should end up as a live mode onboarding.
 
 		// The Jetpack connection is in working order.
@@ -819,6 +867,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->method( 'redirect_to_connect_page' );
 		$this->mock_redirect_service
 			->expects( $this->never() )
+			->method( 'redirect_to_nox_flow' );
+		$this->mock_redirect_service
+			->expects( $this->never() )
 			->method( 'redirect_to_onboarding_wizard' );
 
 		$this->mock_api_client
@@ -833,13 +884,11 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					$this->stringContains( 'from=' . WC_Payments_Onboarding_Service::FROM_STRIPE ),
 					// It should carry over contextual params.
 					$this->stringContains( 'promo=incentive_id' ),
-					$this->stringContains( 'progressive=true' )
 				),
 				$this->isType( 'array' ), // Site data.
 				$this->isType( 'array' ), // User data.
 				$this->isType( 'array' ), // Account data.
 				$this->isType( 'array' ), // Actioned notes.
-				true, // Progressive onboarding.
 				false // Collect payout requirements.
 			)
 			->willReturn( [ 'url' => 'https://connect.stripe.com/something' ] );
@@ -869,8 +918,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$_GET['from']   = WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD;
 		$_GET['source'] = WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE;
 		// Make sure important flags are carried over.
-		$_GET['promo']       = 'incentive_id';
-		$_GET['progressive'] = 'true';
+		$_GET['promo'] = 'incentive_id';
 		// There is no `test_mode` param and no test mode is set. It should end up as a live mode onboarding.
 
 		// The Jetpack connection is in working order.
@@ -888,6 +936,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->mock_redirect_service
 			->expects( $this->never() )
 			->method( 'redirect_to_connect_page' );
+		$this->mock_redirect_service
+			->expects( $this->never() )
+			->method( 'redirect_to_nox_flow' );
 		$this->mock_redirect_service
 			->expects( $this->never() )
 			->method( 'redirect_to_onboarding_wizard' );
@@ -926,7 +977,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		// Configure the request to be in sandbox mode.
 		$_GET['wcpay-connect'] = 'connect-from';
 		$_REQUEST['_wpnonce']  = wp_create_nonce( 'wcpay-connect' );
-		$_GET['progressive']   = 'true';
 		$_GET['test_mode']     = 'true';
 		$_GET['from']          = WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD;
 
@@ -968,7 +1018,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		// Configure the request to be in sandbox mode.
 		$_GET['wcpay-connect'] = 'connect-from';
 		$_REQUEST['_wpnonce']  = wp_create_nonce( 'wcpay-connect' );
-		$_GET['progressive']   = 'true';
 		$_GET['from']          = WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD;
 
 		// The Jetpack connection is in working order.
@@ -1007,8 +1056,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$_GET['from']   = WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD;
 		$_GET['source'] = WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE; // This should not matter.
 		// Make sure important flags are carried over.
-		$_GET['promo']       = 'incentive_id';
-		$_GET['progressive'] = 'true';
+		$_GET['promo'] = 'incentive_id';
 		// There is no `test_mode` param and no test mode is set.
 		// It should end up as a live mode onboarding.
 
@@ -1029,6 +1077,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->method( 'redirect_to_connect_page' );
 		$this->mock_redirect_service
 			->expects( $this->never() )
+			->method( 'redirect_to_nox_flow' );
+		$this->mock_redirect_service
+			->expects( $this->never() )
 			->method( 'redirect_to_onboarding_wizard' );
 
 		$this->mock_api_client
@@ -1043,13 +1094,11 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					$this->stringContains( 'from=' . WC_Payments_Onboarding_Service::FROM_STRIPE ),
 					// It should carry over contextual params.
 					$this->stringContains( 'promo=incentive_id' ),
-					$this->stringContains( 'progressive=true' )
 				),
 				$this->isType( 'array' ), // Site data.
 				$this->isType( 'array' ), // User data.
 				$this->isType( 'array' ), // Account data.
 				$this->isType( 'array' ), // Actioned notes.
-				true, // Progressive onboarding.
 				false // Collect payout requirements.
 			)
 			->willReturn( [ 'url' => false ] ); // This means that an account already exits on the platform.
@@ -1065,7 +1114,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					$this->stringContains( 'from=' . WC_Payments_Onboarding_Service::FROM_STRIPE ),
 					// It should carry over contextual params.
 					$this->stringContains( 'promo=incentive_id' ),
-					$this->stringContains( 'progressive=true' ),
 					// It should have the connection success flag.
 					$this->stringContains( 'wcpay-connection-success=1' )
 				)
@@ -1091,8 +1139,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$_GET['from']   = WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD;
 		$_GET['source'] = WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE; // This should not matter.
 		// Make sure important flags are carried over.
-		$_GET['promo']       = 'incentive_id';
-		$_GET['progressive'] = 'true';
+		$_GET['promo'] = 'incentive_id';
 
 		// There is another onboarding started.
 		$this->mock_onboarding_service
@@ -1153,6 +1200,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'redirect_to_connect_page' );
 		$this->mock_redirect_service
+			->expects( $this->never() )
+			->method( 'redirect_to_nox_flow' );
+		$this->mock_redirect_service
 			->expects( $this->once() )
 			->method( 'redirect_to_overview_page' )
 			->with( WC_Payments_Onboarding_Service::FROM_STRIPE, $this->arrayHasKey( 'wcpay-connection-success' ) );
@@ -1210,6 +1260,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->mock_redirect_service
 			->expects( $this->never() )
 			->method( 'redirect_to_connect_page' );
+		$this->mock_redirect_service
+			->expects( $this->never() )
+			->method( 'redirect_to_nox_flow' );
 		$this->mock_redirect_service
 			->expects( $this->once() )
 			->method( 'redirect_to_overview_page' )
@@ -1270,6 +1323,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->mock_redirect_service
 			->expects( $this->never() )
 			->method( 'redirect_to_connect_page' );
+		$this->mock_redirect_service
+			->expects( $this->never() )
+			->method( 'redirect_to_nox_flow' );
 		$this->mock_redirect_service
 			->expects( $this->once() )
 			->method( 'redirect_to_overview_page' )
@@ -1727,14 +1783,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		return [
 			'no_get_params'                             => [
 				0,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				false,
 				true,
 				[],
 			],
 			'missing_param'                             => [
 				0,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				false,
 				true,
 				[
@@ -1743,7 +1799,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'incorrect_param'                           => [
 				0,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				false,
 				true,
 				[
@@ -1753,7 +1809,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'empty_path_param'                          => [
 				0,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				false,
 				true,
 				[
@@ -1762,7 +1818,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'incorrect_path_param'                      => [
 				0,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				false,
 				true,
 				[
@@ -1772,7 +1828,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'server_not_connected'                      => [
 				1,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				false,
 				false,
 				[
@@ -1782,7 +1838,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'stripe not connected'                      => [
 				0,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				false,
 				true,
 				[
@@ -1792,7 +1848,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'stripe connected, but partially onboarded' => [
 				1,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				true,
 				true,
 				[
@@ -1849,14 +1905,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		return [
 			'no_get_params'                            => [
 				0,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				true,
 				true,
 				[],
 			],
 			'missing_param'                            => [
 				0,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				true,
 				true,
 				[
@@ -1866,7 +1922,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'incorrect_param'                          => [
 				0,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				true,
 				true,
 				[
@@ -1877,7 +1933,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'server_not_connected'                     => [
 				1,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				true,
 				false,
 				[
@@ -1888,7 +1944,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'stripe_not_connected'                     => [
 				1,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				false,
 				true,
 				[
@@ -1899,7 +1955,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'stripe_connected_but_partially_onboarded' => [
 				1,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				true,
 				true,
 				[
@@ -1911,7 +1967,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'happy_path'                               => [
 				0,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				true,
 				true,
 				[
@@ -2080,14 +2136,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		return [
 			'no_get_params'                            => [
 				0,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				true,
 				true,
 				[],
 			],
 			'missing_param'                            => [
 				0,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				true,
 				true,
 				[
@@ -2096,7 +2152,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'incorrect_param'                          => [
 				0,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				true,
 				true,
 				[
@@ -2106,7 +2162,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'empty_path_param'                         => [
 				0,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				true,
 				true,
 				[
@@ -2115,7 +2171,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'incorrect_path_param'                     => [
 				0,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				true,
 				true,
 				[
@@ -2125,7 +2181,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'server_not_connected'                     => [
 				1,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				true,
 				false,
 				[
@@ -2135,7 +2191,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'stripe_not_connected'                     => [
 				1,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				false,
 				true,
 				[
@@ -2145,7 +2201,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'stripe_connected_but_partially_onboarded' => [
 				1,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				true,
 				true,
 				[
@@ -2156,7 +2212,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 			'happy_path'                               => [
 				0,
-				'redirect_to_connect_page',
+				'redirect_to_nox_flow',
 				true,
 				true,
 				[
@@ -2186,7 +2242,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		// Assert.
 		$this->mock_redirect_service->expects( $this->once() )->method( 'redirect_to_overview_page' );
-		$this->mock_redirect_service->expects( $this->never() )->method( 'redirect_to_connect_page' );
+		$this->mock_redirect_service->expects( $this->never() )->method( 'redirect_to_nox_flow' );
 
 		// Act.
 		$_GET = [
@@ -2227,7 +2283,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->mock_jetpack_connection( $has_working_jetpack_connection );
 
 		// Assert.
-		$this->mock_redirect_service->expects( $this->once() )->method( 'redirect_to_connect_page' );
+		$this->mock_redirect_service->expects( $this->once() )->method( 'redirect_to_nox_flow' );
 		$this->mock_redirect_service->expects( $this->never() )->method( 'redirect_to_overview_page' );
 
 		// Act.

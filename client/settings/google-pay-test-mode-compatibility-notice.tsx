@@ -41,6 +41,7 @@ const GooglePayTestModeCompatibilityNotice = () => {
 				),
 				components: {
 					learnMore: (
+						// @ts-expect-error: children is provided when interpolating the component
 						<ExternalLink href="https://woocommerce.com/document/woopayments/payment-methods/google-pay/#testing" />
 					),
 				},

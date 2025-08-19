@@ -3,8 +3,8 @@
 /**
  * External dependencies
  */
-import * as React from 'react';
-import { __, _n } from '@wordpress/i18n';
+import React from 'react';
+import { __, _n, sprintf } from '@wordpress/i18n';
 import { TableCard } from '@woocommerce/components';
 
 /**
@@ -79,9 +79,11 @@ const columns = [
 
 const getLoanStatusText = ( loan: CapitalLoan ) => {
 	return loan.fully_paid_at
-		? __( 'Paid off', 'woocommerce-payments' ) +
-				': ' +
+		? sprintf(
+				/* translators: %s: date when the loan was paid off */
+				__( 'Paid off: %s', 'woocommerce-payments' ),
 				formatDateTimeFromString( loan.fully_paid_at )
+		  )
 		: __( 'Active', 'woocommerce-payments' );
 };
 

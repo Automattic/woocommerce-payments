@@ -3,13 +3,13 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
+import { Card, CardBody } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import { TestModeNotice } from '../../components/test-mode-notice';
 import Page from '../../components/page';
-import { Card, CardBody } from '@wordpress/components';
 import ErrorBoundary from '../../components/error-boundary';
 import PaymentDetailsSummary from '../summary';
 import PaymentDetailsTimeline from '../timeline';

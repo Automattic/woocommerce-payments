@@ -1,22 +1,152 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`PaymentDetailsSummary capture notification and fraud buttons renders capture section correctly 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(8px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
+}
+
+.emotion-6 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: start;
+  -webkit-box-align: start;
+  -ms-flex-align: start;
+  align-items: start;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  gap: calc(4px * 2);
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.emotion-6>* {
+  min-width: 0;
+}
+
+.emotion-8 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.emotion-12 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  gap: calc(4px * 2);
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+  border-top: 1px solid;
+  box-sizing: border-box;
+  border-color: rgba(0, 0, 0, 0.1);
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-12>* {
+  min-width: 0;
+}
+
+.emotion-12:first-of-type {
+  border-top: none;
+}
+
+.emotion-12:first-of-type {
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
+}
+
+.emotion-12:last-of-type {
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
+}
+
+.emotion-14 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  border-radius: 8px;
+}
+
+@media not ( prefers-reduced-motion ) {
+  .emotion-14 {
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
         <div
-          class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex emotion-6 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
@@ -48,12 +178,10 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
               <div
                 class="payment-details-summary__breakdown"
               >
-                
                 <p>
                   Fees: 
                   -$0.70
                 </p>
-                
                 <p>
                   Net: 
                   $19.30
@@ -104,13 +232,13 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
       </div>
       <hr
         aria-orientation="horizontal"
-        class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+        class="components-divider components-card__divider components-card-divider emotion-8 emotion-9"
         data-wp-c16t="true"
         data-wp-component="CardDivider"
         role="separator"
       />
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -283,7 +411,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
         </ul>
       </div>
       <div
-        class="components-flex components-card__footer components-card-footer card-notice css-p1v47q-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
+        class="components-flex components-card__footer components-card-footer card-notice emotion-12 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardFooter"
       >
@@ -295,11 +423,22 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
           >
             You must 
             <a
+              class="components-external-link"
               href="https://woocommerce.com/document/woopayments/settings-guide/authorize-and-capture/#capturing-authorized-orders"
-              rel="noreferer"
+              rel="external noreferrer noopener"
               target="_blank"
             >
-              capture
+              <span
+                class="components-external-link__contents"
+              >
+                capture
+              </span>
+              <span
+                aria-label="(opens in a new tab)"
+                class="components-external-link__icon"
+              >
+                ↗
+              </span>
             </a>
              this charge within the next
              
@@ -315,7 +454,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
             class="card-notice__button"
           >
             <button
-              class="components-button is-primary"
+              class="components-button is-next-40px-default-size is-primary"
               type="button"
             >
               Capture
@@ -326,13 +465,13 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-14 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-14 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -341,22 +480,152 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders ca
 `;
 
 exports[`PaymentDetailsSummary capture notification and fraud buttons renders the fraud outcome buttons 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(8px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
+}
+
+.emotion-6 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: start;
+  -webkit-box-align: start;
+  -ms-flex-align: start;
+  align-items: start;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  gap: calc(4px * 2);
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.emotion-6>* {
+  min-width: 0;
+}
+
+.emotion-8 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.emotion-12 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  gap: calc(4px * 2);
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+  border-top: 1px solid;
+  box-sizing: border-box;
+  border-color: rgba(0, 0, 0, 0.1);
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-12>* {
+  min-width: 0;
+}
+
+.emotion-12:first-of-type {
+  border-top: none;
+}
+
+.emotion-12:first-of-type {
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
+}
+
+.emotion-12:last-of-type {
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
+}
+
+.emotion-14 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  border-radius: 8px;
+}
+
+@media not ( prefers-reduced-motion ) {
+  .emotion-14 {
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
         <div
-          class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex emotion-6 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
@@ -388,12 +657,10 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
               <div
                 class="payment-details-summary__breakdown"
               >
-                
                 <p>
                   Fees: 
                   -$0.70
                 </p>
-                
                 <p>
                   Net: 
                   $19.30
@@ -407,13 +674,13 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
                 class="payment-details-summary__fraud-outcome-action"
               >
                 <button
-                  class="components-button is-destructive"
+                  class="components-button is-next-40px-default-size is-destructive"
                   type="button"
                 >
                   Block transaction
                 </button>
                 <button
-                  class="components-button is-primary"
+                  class="components-button is-next-40px-default-size is-primary"
                   type="button"
                 >
                   Approve Transaction
@@ -460,13 +727,13 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
       </div>
       <hr
         aria-orientation="horizontal"
-        class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+        class="components-divider components-card__divider components-card-divider emotion-8 emotion-9"
         data-wp-c16t="true"
         data-wp-component="CardDivider"
         role="separator"
       />
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -639,7 +906,7 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
         </ul>
       </div>
       <div
-        class="components-flex components-card__footer components-card-footer card-notice css-p1v47q-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
+        class="components-flex components-card__footer components-card-footer card-notice emotion-12 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardFooter"
       >
@@ -651,11 +918,22 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
           >
             You must 
             <a
+              class="components-external-link"
               href="https://woocommerce.com/document/woopayments/settings-guide/authorize-and-capture/#capturing-authorized-orders"
-              rel="noreferer"
+              rel="external noreferrer noopener"
               target="_blank"
             >
-              capture
+              <span
+                class="components-external-link__contents"
+              >
+                capture
+              </span>
+              <span
+                aria-label="(opens in a new tab)"
+                class="components-external-link__icon"
+              >
+                ↗
+              </span>
             </a>
              this charge within the next
              
@@ -676,13 +954,13 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-14 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-14 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -691,22 +969,111 @@ exports[`PaymentDetailsSummary capture notification and fraud buttons renders th
 `;
 
 exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(8px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
+}
+
+.emotion-6 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: start;
+  -webkit-box-align: start;
+  -ms-flex-align: start;
+  align-items: start;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  gap: calc(4px * 2);
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.emotion-6>* {
+  min-width: 0;
+}
+
+.emotion-8 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.emotion-12 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  border-radius: 8px;
+}
+
+@media not ( prefers-reduced-motion ) {
+  .emotion-12 {
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
         <div
-          class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex emotion-6 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
@@ -738,12 +1105,10 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
               <div
                 class="payment-details-summary__breakdown"
               >
-                
                 <p>
                   Fees: 
                   -$0.70
                 </p>
-                
                 <p>
                   Net: 
                   $19.30
@@ -819,13 +1184,13 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
       </div>
       <hr
         aria-orientation="horizontal"
-        class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+        class="components-divider components-card__divider components-card-divider emotion-8 emotion-9"
         data-wp-c16t="true"
         data-wp-component="CardDivider"
         role="separator"
       />
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -1000,13 +1365,13 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-12 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-12 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -1015,22 +1380,111 @@ exports[`PaymentDetailsSummary correctly renders a charge 1`] = `
 `;
 
 exports[`PaymentDetailsSummary correctly renders when payment intent is missing 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(8px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
+}
+
+.emotion-6 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: start;
+  -webkit-box-align: start;
+  -ms-flex-align: start;
+  align-items: start;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  gap: calc(4px * 2);
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.emotion-6>* {
+  min-width: 0;
+}
+
+.emotion-8 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.emotion-12 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  border-radius: 8px;
+}
+
+@media not ( prefers-reduced-motion ) {
+  .emotion-12 {
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
         <div
-          class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex emotion-6 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
@@ -1062,12 +1516,10 @@ exports[`PaymentDetailsSummary correctly renders when payment intent is missing 
               <div
                 class="payment-details-summary__breakdown"
               >
-                
                 <p>
                   Fees: 
                   -$0.70
                 </p>
-                
                 <p>
                   Net: 
                   $19.30
@@ -1129,13 +1581,13 @@ exports[`PaymentDetailsSummary correctly renders when payment intent is missing 
       </div>
       <hr
         aria-orientation="horizontal"
-        class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+        class="components-divider components-card__divider components-card-divider emotion-8 emotion-9"
         data-wp-c16t="true"
         data-wp-component="CardDivider"
         role="separator"
       />
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -1310,13 +1762,13 @@ exports[`PaymentDetailsSummary correctly renders when payment intent is missing 
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-12 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-12 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -1325,22 +1777,111 @@ exports[`PaymentDetailsSummary correctly renders when payment intent is missing 
 `;
 
 exports[`PaymentDetailsSummary order missing notice does not render notice if order present 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(8px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
+}
+
+.emotion-6 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: start;
+  -webkit-box-align: start;
+  -ms-flex-align: start;
+  align-items: start;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  gap: calc(4px * 2);
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.emotion-6>* {
+  min-width: 0;
+}
+
+.emotion-8 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.emotion-12 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  border-radius: 8px;
+}
+
+@media not ( prefers-reduced-motion ) {
+  .emotion-12 {
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
         <div
-          class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex emotion-6 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
@@ -1372,12 +1913,10 @@ exports[`PaymentDetailsSummary order missing notice does not render notice if or
               <div
                 class="payment-details-summary__breakdown"
               >
-                
                 <p>
                   Fees: 
                   -$0.70
                 </p>
-                
                 <p>
                   Net: 
                   $19.30
@@ -1453,13 +1992,13 @@ exports[`PaymentDetailsSummary order missing notice does not render notice if or
       </div>
       <hr
         aria-orientation="horizontal"
-        class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+        class="components-divider components-card__divider components-card-divider emotion-8 emotion-9"
         data-wp-c16t="true"
         data-wp-component="CardDivider"
         role="separator"
       />
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -1634,13 +2173,13 @@ exports[`PaymentDetailsSummary order missing notice does not render notice if or
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-12 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-12 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -1649,22 +2188,152 @@ exports[`PaymentDetailsSummary order missing notice does not render notice if or
 `;
 
 exports[`PaymentDetailsSummary order missing notice renders notice if order missing 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(8px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
+}
+
+.emotion-6 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: start;
+  -webkit-box-align: start;
+  -ms-flex-align: start;
+  align-items: start;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  gap: calc(4px * 2);
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.emotion-6>* {
+  min-width: 0;
+}
+
+.emotion-8 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.emotion-12 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  gap: calc(4px * 2);
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+  border-top: 1px solid;
+  box-sizing: border-box;
+  border-color: rgba(0, 0, 0, 0.1);
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-12>* {
+  min-width: 0;
+}
+
+.emotion-12:first-of-type {
+  border-top: none;
+}
+
+.emotion-12:first-of-type {
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
+}
+
+.emotion-12:last-of-type {
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
+}
+
+.emotion-14 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  border-radius: 8px;
+}
+
+@media not ( prefers-reduced-motion ) {
+  .emotion-14 {
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
         <div
-          class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex emotion-6 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
@@ -1696,12 +2365,10 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
               <div
                 class="payment-details-summary__breakdown"
               >
-                
                 <p>
                   Fees: 
                   -$0.70
                 </p>
-                
                 <p>
                   Net: 
                   $19.30
@@ -1777,13 +2444,13 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
       </div>
       <hr
         aria-orientation="horizontal"
-        class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+        class="components-divider components-card__divider components-card-divider emotion-8 emotion-9"
         data-wp-c16t="true"
         data-wp-component="CardDivider"
         role="separator"
       />
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -1953,7 +2620,7 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
         </ul>
       </div>
       <div
-        class="components-flex components-card__footer components-card-footer card-notice css-p1v47q-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
+        class="components-flex components-card__footer components-card-footer card-notice emotion-12 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardFooter"
       >
@@ -1970,7 +2637,7 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
             class="card-notice__button"
           >
             <button
-              class="components-button is-primary"
+              class="components-button is-next-40px-default-size is-primary"
               type="button"
             >
               Refund
@@ -1981,13 +2648,13 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-14 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-14 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -1996,22 +2663,111 @@ exports[`PaymentDetailsSummary order missing notice renders notice if order miss
 `;
 
 exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(8px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
+}
+
+.emotion-6 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: start;
+  -webkit-box-align: start;
+  -ms-flex-align: start;
+  align-items: start;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  gap: calc(4px * 2);
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.emotion-6>* {
+  min-width: 0;
+}
+
+.emotion-8 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.emotion-12 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  border-radius: 8px;
+}
+
+@media not ( prefers-reduced-motion ) {
+  .emotion-12 {
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
         <div
-          class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex emotion-6 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
@@ -2043,12 +2799,10 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
               <div
                 class="payment-details-summary__breakdown"
               >
-                
                 <p>
                   Fees: 
                   -$0.70
                 </p>
-                
                 <p>
                   Net: 
                   $19.30
@@ -2124,13 +2878,13 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
       </div>
       <hr
         aria-orientation="horizontal"
-        class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+        class="components-divider components-card__divider components-card-divider emotion-8 emotion-9"
         data-wp-c16t="true"
         data-wp-component="CardDivider"
         role="separator"
       />
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -2332,13 +3086,13 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-12 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-12 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -2347,22 +3101,111 @@ exports[`PaymentDetailsSummary renders a charge with subscriptions 1`] = `
 `;
 
 exports[`PaymentDetailsSummary renders fully refunded information for a charge 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(8px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
+}
+
+.emotion-6 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: start;
+  -webkit-box-align: start;
+  -ms-flex-align: start;
+  align-items: start;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  gap: calc(4px * 2);
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.emotion-6>* {
+  min-width: 0;
+}
+
+.emotion-8 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.emotion-12 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  border-radius: 8px;
+}
+
+@media not ( prefers-reduced-motion ) {
+  .emotion-12 {
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
         <div
-          class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex emotion-6 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
@@ -2402,7 +3245,6 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
                   Fees: 
                   -$0.70
                 </p>
-                
                 <p>
                   Net: 
                   -$0.70
@@ -2453,13 +3295,13 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
       </div>
       <hr
         aria-orientation="horizontal"
-        class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+        class="components-divider components-card__divider components-card-divider emotion-8 emotion-9"
         data-wp-c16t="true"
         data-wp-component="CardDivider"
         role="separator"
       />
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -2634,13 +3476,13 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-12 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-12 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -2649,22 +3491,111 @@ exports[`PaymentDetailsSummary renders fully refunded information for a charge 1
 `;
 
 exports[`PaymentDetailsSummary renders loading state 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(8px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
+}
+
+.emotion-6 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: start;
+  -webkit-box-align: start;
+  -ms-flex-align: start;
+  align-items: start;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  gap: calc(4px * 2);
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.emotion-6>* {
+  min-width: 0;
+}
+
+.emotion-8 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.emotion-12 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  border-radius: 8px;
+}
+
+@media not ( prefers-reduced-motion ) {
+  .emotion-12 {
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
         <div
-          class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex emotion-6 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
@@ -2680,7 +3611,6 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
                 <p
                   class="payment-details-summary__amount"
                 >
-                  
                   <span
                     class="payment-details-summary__amount-currency"
                   >
@@ -2694,12 +3624,10 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
               <div
                 class="payment-details-summary__breakdown"
               >
-                
                 <p>
                   Fees: 
                   $0.00
                 </p>
-                
                 <p>
                   Net: 
                   $0.00
@@ -2721,13 +3649,13 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
       </div>
       <hr
         aria-orientation="horizontal"
-        class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+        class="components-divider components-card__divider components-card-divider emotion-8 emotion-9"
         data-wp-c16t="true"
         data-wp-component="CardDivider"
         role="separator"
       />
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -2878,13 +3806,13 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-12 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-12 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -2893,22 +3821,111 @@ exports[`PaymentDetailsSummary renders loading state 1`] = `
 `;
 
 exports[`PaymentDetailsSummary renders partially refunded information for a charge 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(8px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
+}
+
+.emotion-6 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: start;
+  -webkit-box-align: start;
+  -ms-flex-align: start;
+  align-items: start;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  gap: calc(4px * 2);
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.emotion-6>* {
+  min-width: 0;
+}
+
+.emotion-8 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.emotion-12 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  border-radius: 8px;
+}
+
+@media not ( prefers-reduced-motion ) {
+  .emotion-12 {
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
         <div
-          class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex emotion-6 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
@@ -2948,7 +3965,6 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
                   Fees: 
                   -$0.70
                 </p>
-                
                 <p>
                   Net: 
                   $7.30
@@ -3024,13 +4040,13 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
       </div>
       <hr
         aria-orientation="horizontal"
-        class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+        class="components-divider components-card__divider components-card-divider emotion-8 emotion-9"
         data-wp-c16t="true"
         data-wp-component="CardDivider"
         role="separator"
       />
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -3205,13 +4221,13 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-12 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-12 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -3219,23 +4235,112 @@ exports[`PaymentDetailsSummary renders partially refunded information for a char
 </div>
 `;
 
-exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata 1`] = `
+exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata with android TAP_TO_PAY_DEVICE 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(8px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
+}
+
+.emotion-6 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: start;
+  -webkit-box-align: start;
+  -ms-flex-align: start;
+  align-items: start;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  gap: calc(4px * 2);
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.emotion-6>* {
+  min-width: 0;
+}
+
+.emotion-8 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.emotion-12 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  border-radius: 8px;
+}
+
+@media not ( prefers-reduced-motion ) {
+  .emotion-12 {
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
         <div
-          class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex emotion-6 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
@@ -3267,12 +4372,10 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata 1`] 
               <div
                 class="payment-details-summary__breakdown"
               >
-                
                 <p>
                   Fees: 
                   -$0.70
                 </p>
-                
                 <p>
                   Net: 
                   $19.30
@@ -3348,13 +4451,424 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata 1`] 
       </div>
       <hr
         aria-orientation="horizontal"
-        class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+        class="components-divider components-card__divider components-card-divider emotion-8 emotion-9"
         data-wp-c16t="true"
         data-wp-component="CardDivider"
         role="separator"
       />
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
+      >
+        <ul
+          class="woocommerce-list woocommerce-list--horizontal"
+          role="menu"
+        >
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Date
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  Sep 19, 2019, 5:24pm
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Sales channel
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <span>
+                    Tap to Pay on Android
+                  </span>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Customer
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <a
+                    data-link-type="wc-admin"
+                    href="admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions&search%5B0%5D=Customer%20name%20(mock%40example.com)"
+                  >
+                    Customer name
+                  </a>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Order
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <a
+                    data-link-type="external"
+                    href="https://somerandomorderurl.com/?edit_order=45981"
+                  >
+                    45981
+                  </a>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Payment method
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  <span
+                    class="payment-method-details"
+                  >
+                    <button
+                      class="wcpay-tooltip__content-wrapper"
+                      type="button"
+                    >
+                      <div
+                        class="wcpay-tooltip__content-wrapper"
+                      >
+                        <span
+                          aria-label="Visa"
+                          class="payment-method__brand payment-method__brand--visa account-country--us"
+                        />
+                      </div>
+                    </button>
+                     •••• 
+                    4242
+                  </span>
+                </span>
+              </div>
+            </div>
+          </li>
+          <li
+            class="woocommerce-list__item"
+          >
+            <div
+              class="woocommerce-list__item-inner"
+            >
+              <div
+                class="woocommerce-list__item-text"
+              >
+                <span
+                  class="woocommerce-list__item-title"
+                >
+                  Risk evaluation
+                </span>
+                <span
+                  class="woocommerce-list__item-content"
+                >
+                  Normal
+                </span>
+              </div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div
+      aria-hidden="true"
+      class="components-elevation emotion-12 emotion-1"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+    <div
+      aria-hidden="true"
+      class="components-elevation emotion-12 emotion-1"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+  </div>
+</div>
+`;
+
+exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata with ios COTS_DEVICE 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(8px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
+}
+
+.emotion-6 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: start;
+  -webkit-box-align: start;
+  -ms-flex-align: start;
+  align-items: start;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  gap: calc(4px * 2);
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.emotion-6>* {
+  min-width: 0;
+}
+
+.emotion-8 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.emotion-12 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  border-radius: 8px;
+}
+
+@media not ( prefers-reduced-motion ) {
+  .emotion-12 {
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  }
+}
+
+<div>
+  <div
+    class="components-surface components-card emotion-0 emotion-1"
+    data-wp-c16t="true"
+    data-wp-component="Card"
+  >
+    <div
+      class="emotion-2 emotion-1"
+    >
+      <div
+        class="components-card__body components-card-body emotion-4 emotion-1"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
+      >
+        <div
+          class="components-flex emotion-6 emotion-1"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
+        >
+          <div
+            class="payment-details-summary"
+          >
+            <div
+              class="payment-details-summary__section"
+            >
+              <div
+                class="payment-details-summary__amount-wrapper"
+              >
+                <p
+                  class="payment-details-summary__amount"
+                >
+                  $20.00
+                  <span
+                    class="payment-details-summary__amount-currency"
+                  >
+                    usd
+                  </span>
+                </p>
+                <span
+                  class="chip chip-success payment-details-summary__status"
+                >
+                  Paid
+                </span>
+              </div>
+              <div
+                class="payment-details-summary__breakdown"
+              >
+                <p>
+                  Fees: 
+                  -$0.70
+                </p>
+                <p>
+                  Net: 
+                  $19.30
+                </p>
+              </div>
+            </div>
+            <div
+              class="payment-details-summary__section"
+            >
+              <div
+                class="payment-details-summary__id"
+              >
+                <div
+                  class="payment-details-summary__id_wrapper"
+                >
+                  <span
+                    class="payment-details-summary__id_label"
+                  >
+                    Payment ID: 
+                  </span>
+                  <span
+                    class="payment-details-summary__id_value"
+                  >
+                    pi_abc
+                  </span>
+                </div>
+                <div
+                  class="payment-details-summary__id_wrapper"
+                >
+                  <span
+                    class="payment-details-summary__id_label"
+                  >
+                    Charge ID: 
+                  </span>
+                  <span
+                    class="payment-details-summary__id_value"
+                  >
+                    ch_38jdHA39KKA
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div
+            class="payment-details__refund-controls"
+          >
+            <div
+              class="components-dropdown components-dropdown-menu refund-controls__dropdown-menu"
+              tabindex="-1"
+            >
+              <button
+                aria-expanded="false"
+                aria-haspopup="true"
+                aria-label="Transaction actions"
+                class="components-button components-dropdown-menu__toggle has-icon"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  size="24"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M13 19h-2v-2h2v2zm0-6h-2v-2h2v2zm0-6h-2V5h2v2z"
+                  />
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <hr
+        aria-orientation="horizontal"
+        class="components-divider components-card__divider components-card-divider emotion-8 emotion-9"
+        data-wp-c16t="true"
+        data-wp-component="CardDivider"
+        role="separator"
+      />
+      <div
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -3529,13 +5043,13 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata 1`] 
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-12 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-12 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
@@ -3544,22 +5058,183 @@ exports[`PaymentDetailsSummary renders the Tap to Pay channel from metadata 1`] 
 `;
 
 exports[`PaymentDetailsSummary renders the information of a dispute-reversal charge 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(8px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
+}
+
+.emotion-6 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: start;
+  -webkit-box-align: start;
+  -ms-flex-align: start;
+  align-items: start;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  gap: calc(4px * 2);
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.emotion-6>* {
+  min-width: 0;
+}
+
+.emotion-8 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.emotion-12 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  gap: calc(4px * 2);
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+  border-top: 1px solid;
+  box-sizing: border-box;
+  border-color: rgba(0, 0, 0, 0.1);
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-12>* {
+  min-width: 0;
+}
+
+.emotion-12:first-of-type {
+  border-top: none;
+}
+
+.emotion-12:first-of-type {
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
+}
+
+.emotion-12:last-of-type {
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
+}
+
+.emotion-14 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  gap: calc(4px * 2);
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.emotion-14>* {
+  min-width: 0;
+}
+
+.emotion-16 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+.emotion-20 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  border-radius: 8px;
+}
+
+@media not ( prefers-reduced-motion ) {
+  .emotion-20 {
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  }
+}
+
 <div>
   <div
-    class="components-surface components-card css-nsno0f-View-Surface-getBorders-primary-Card-rounded em57xhy0"
+    class="components-surface components-card emotion-0 emotion-1"
     data-wp-c16t="true"
     data-wp-component="Card"
   >
     <div
-      class="css-mgwsf4-View-Content em57xhy0"
+      class="emotion-2 emotion-1"
     >
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
         <div
-          class="components-flex css-175m5nr-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex emotion-6 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
@@ -3591,12 +5266,10 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
               <div
                 class="payment-details-summary__breakdown"
               >
-                
                 <p>
                   Fees: 
                   -$0.70
                 </p>
-                
                 <p>
                   Net: 
                   $19.30
@@ -3672,13 +5345,13 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
       </div>
       <hr
         aria-orientation="horizontal"
-        class="components-divider components-card__divider components-card-divider css-yo8r29-DividerView-renderBorder-renderSize-renderMargin-Divider-borderColor e19on6iw0"
+        class="components-divider components-card__divider components-card-divider emotion-8 emotion-9"
         data-wp-c16t="true"
         data-wp-component="CardDivider"
         role="separator"
       />
       <div
-        class="components-card__body components-card-body css-1nwhnu3-View-Body-borderRadius-medium em57xhy0"
+        class="components-card__body components-card-body emotion-4 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardBody"
       >
@@ -3703,31 +5376,7 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
                 <span
                   class="woocommerce-list__item-content"
                 >
-                  Sep 19, 2019, 5:24pm
-                </span>
-              </div>
-            </div>
-          </li>
-          <li
-            class="woocommerce-list__item"
-          >
-            <div
-              class="woocommerce-list__item-inner"
-            >
-              <div
-                class="woocommerce-list__item-text"
-              >
-                <span
-                  class="woocommerce-list__item-title"
-                >
-                  Sales channel
-                </span>
-                <span
-                  class="woocommerce-list__item-content"
-                >
-                  <span>
-                    Online store
-                  </span>
+                  September 19, 2019 5:24 PM
                 </span>
               </div>
             </div>
@@ -3851,36 +5500,34 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
         </ul>
       </div>
       <div
-        class="components-flex components-card__footer components-card-footer transaction-details-dispute-footer css-p1v47q-View-Flex-sx-Base-sx-Items-ItemsRow-Footer-borderRadius-borderColor-medium em57xhy0"
+        class="components-flex components-card__footer components-card-footer transaction-details-dispute-footer emotion-12 emotion-1"
         data-wp-c16t="true"
         data-wp-component="CardFooter"
       >
         <div
-          class="components-flex css-1giw1wa-View-Flex-sx-Base-sx-Items-ItemsRow em57xhy0"
+          class="components-flex emotion-14 emotion-1"
           data-wp-c16t="true"
           data-wp-component="Flex"
         >
           <div
-            class="components-flex-item css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item emotion-16 emotion-1"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
-            Good news! The 
             <strong>
-              cardholder’s bank
+              Good news — you've won this dispute! The customer's bank reached this decision on -.
             </strong>
-             decided that you won the dispute on -. The disputed amount and the dispute fee have been credited back to your account. 
+             Your account has been credited with the disputed amount and fee. 
             <a
               href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
               rel="noopener noreferrer"
               target="_blank"
             >
-              Learn more about preventing disputes
+              Learn more about preventing disputes.
             </a>
-            .
           </div>
           <div
-            class="components-flex-item transaction-details-dispute-footer__actions css-mw3lhz-View-Item-sx-Base em57xhy0"
+            class="components-flex-item transaction-details-dispute-footer__actions emotion-16 emotion-1"
             data-wp-c16t="true"
             data-wp-component="FlexItem"
           >
@@ -3901,13 +5548,13 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
     </div>
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-20 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />
     <div
       aria-hidden="true"
-      class="components-elevation css-91yjwm-View-Elevation-sx-Base-elevationClassName em57xhy0"
+      class="components-elevation emotion-20 emotion-1"
       data-wp-c16t="true"
       data-wp-component="Elevation"
     />

@@ -2,8 +2,8 @@
  * External dependencies
  */
 import React, { useState } from 'react';
-import { Button, CardDivider } from '@wordpress/components';
 import { addQueryArgs } from '@wordpress/url';
+import { Button, CardDivider } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -13,10 +13,6 @@ import './styles.scss';
 import ResetAccountModal from 'wcpay/overview/modal/reset-account';
 import { isInTestModeOnboarding } from 'wcpay/utils';
 
-interface Props {
-	openModal: () => void;
-}
-
 const handleReset = () => {
 	window.location.href = addQueryArgs( wcpaySettings.connectUrl, {
 		'wcpay-reset-account': 'true',
@@ -24,7 +20,7 @@ const handleReset = () => {
 	} );
 };
 
-export const AccountTools: React.FC< Props > = () => {
+export const AccountTools = () => {
 	const [ modalVisible, setModalVisible ] = useState( false );
 
 	// Only render when in test/sandbox mode onboarding.
@@ -43,6 +39,7 @@ export const AccountTools: React.FC< Props > = () => {
 					<Button
 						variant={ 'secondary' }
 						onClick={ () => setModalVisible( true ) }
+						__next40pxDefaultSize
 					>
 						{ strings.reset }
 					</Button>

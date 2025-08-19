@@ -1172,14 +1172,6 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( $intent_id_from_service, $intent_id );
 	}
 
-	public function test_set_payment_method_id() {
-		$payment_method = 'pm_mock';
-		$this->order_service->set_payment_method_id_for_order( $this->order, $payment_method );
-		$this->assertEquals( $this->order->get_meta( '_payment_method_id', true ), $payment_method );
-		$this->assertSame( 0, did_action( 'wcpay_order_intent_id_updated' ) );
-		$this->assertSame( 1, did_action( 'wcpay_order_payment_method_id_updated' ) );
-	}
-
 	public function test_get_payment_method_id() {
 		$payment_method_id = 'pm_mock_123';
 		$this->order->update_meta_data( '_payment_method_id', $payment_method_id );

@@ -198,6 +198,7 @@ export const DocumentsList = (): JSX.Element => {
 								document.type
 							)
 						}
+						__next40pxDefaultSize
 					>
 						{ __( 'Download', 'woocommerce-payments' ) }
 					</Button>

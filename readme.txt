@@ -4,7 +4,7 @@ Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.3
-Stable tag: 9.3.0
+Stable tag: 9.8.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -86,6 +86,172 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 4. Manage Disputes
 
 == Changelog ==
+
+= 9.8.0 - 2025-08-13 =
+* Add - Add address autocomplete to Checkout
+* Add - Add support for small screens on the evidence submission form.
+* Fix - Fix customer details section when name and/or email are very big.
+* Fix - Fix Google/Apple Pay "State / County is required" error during checkout for Croatia
+* Fix - Fix the icon border of the Steps component for a dispute.
+* Fix - Reset the enabled payment methods to default value on account reset.
+* Fix - Suppress sending completed-renewal-order email after dispute resolution
+* Update - As of this change, we stop bundling WordPress Components in favor of using the wp.components available in the WordPress installation.
+* Update - Make onboading pages use the pw.components available in the WordPress installation.
+* Update - Make the connect acctount components use the wp.components from the installation.
+* Update - Make the KYC onboarding use the WP components available in the installation.
+* Update - update: ensure Google Pay/Apple Pay can check out w/ LT addresses
+* Update - update: fraud protection rules to use WP components bundled within the WP installation
+* Update - Update documents page to use WP components available in the WordPress installation.
+* Update - Update loan page to use the installation WordPress components.
+* Update - Update the "Learn more about disputes" link in the confirmation screen of the disputes documentation.
+* Dev - Fix: enhances the robustness of the selectPaymentMethod method in end-to-end tests
+* Dev - Fix: Respond to a dispute e2e tests
+* Dev - Fix: select payment method shopper util
+* Dev - Removed all the Progressive Onboarding (PO) code.
+* Dev - update: use React 18
+* Dev - Update tested WooCommerce version to 10.1.0
+
+= 9.7.0 - 2025-07-24 =
+* Add - Add a confirmation screen to the new flow for submitting dispute evidence.
+* Add - Add Credit not processed logic for the new evidence submission form.
+* Add - Add external help link to the recomended documents section.
+* Add - Add logic for Duplicate chargeback reason for the new evidence submission form.
+* Add - Add logic for subscription cancelled for the new evidence form.
+* Add - Add new transaction type fee_refund
+* Add - File name should show size the extension
+* Add - New evidence flow for the "General" dispute type.
+* Fix - Accept TAP_TO_PAY_DEVICE as a valid card reader model to consider a transaction as TTP.
+* Fix - Adjusted deactivation modal behavior to correctly resize when its content updates.
+* Fix - Change copy to avoid leaving words alone.
+* Fix - Consolidate test account notices in one in the WooPayments Settings page.
+* Fix - Enable WooPay Direct Checkout on mini-cart.
+* Fix - Fix - Remove unwanted animations and improve styling consistency on dispute evidence pages.
+* Fix - Fix: Allow multiple authorization cancellations on the same order.
+* Fix - Fix: Google Pay 3D Secure authentication being bypassed due to redirect URL extraction issue
+* Fix - fix: remove BNPLs from PMME when BNPL method is not active
+* Fix - Fix: Spinner alignment issues in cart checkout button and checkout address form email field.
+* Fix - Fix border color of some items.
+* Fix - Fix copy for the documents section and fix the font size of the content inside the accordion on top.
+* Fix - Fix filename issue on the new evidence submission form.
+* Fix - Fix margin of the shipping details title on the evidence submission form.
+* Fix - Fix order notes after subscriptions' payment method gets changed.
+* Fix - Fix spacings on the envidence submission form
+* Fix - Fix vertical UI shift when uploading a file
+* Fix - Fix WooPay button spinner on some themes.
+* Fix - Improve the cover letter save behavior.
+* Fix - Provide correct language code when requesting CSV exports in a region-specific language
+* Fix - Remove unnecessary gap
+* Fix - Step back should also scroll the page to the top
+* Fix - Support numbers starting from 4, 7, 8 for Hong Kong phones.
+* Update - Disallow challenging the Visa compliance disputes.
+* Update - ensure payments and transactions pages uses wp components that come with the WP installation.
+* Update - Improve multicurrency caching and use new API endpoint.
+* Update - Make the card reaaders page use the wp.components available in the WordPress installation.
+* Update - Redirect merchant to the dispute detail screen
+* Update - Redirects to the dispute list after save.
+* Update - Removes the feature flag for the new evidence submission form.
+* Update - update: deactivation survey to use WP components bundled within the WP installation
+* Update - update: ensure multi-currency settings page uses wp components that come with the WP installation; updated some styles to use WP components, rather than bespoke components;
+* Update - update: ensure settings page uses wp components that come with the WP installation
+* Update - update: multi-currency widget to use WP components bundled within the WP installation
+* Update - update: order page assets with wp components
+* Update - update: RedirectToTransactionDetails to use Gutenberg components that come with the WP installation
+* Update - update: removed the payment gateways confirmation dialog
+* Update - update: subscription-product-onboarding to use WP components bundled within the WP installation
+* Update - update: TOS agreement dialog to use WP Components bundled within the WP installation
+* Update - Update client to use NOX surfaces instead of MOX/Connect page wherever possible.
+* Update - Update copy for disputes
+* Update - Update Multi-currency settings to use wp.components available in the WordPress installation.
+* Update - Update the payments overview page to use the components available in the WP installation.
+* Update - Update the payout list and payout details pages to use the WP components available on the WP installation.
+* Dev - Fix imports for the unbundled components.
+* Dev - Prevent "Evidence saved" toast from appearing multiple times.
+* Dev - Remove conversion to the server locale, as it is done on the server.
+* Dev - Remove feature flag _wcpay_feature_documents
+* Dev - Remove old evidence submission code
+* Dev - update: ensure `wp-components-wrapped` has individually exported components
+
+= 9.6.0 - 2025-07-02 =
+* Add - Add cover letter for the new evidence submission screen for Product Unacceptable chargeback reason
+* Add - Added a URL parameter to allow merchants to access the VAT details modal.
+* Add - Show an admin notice when bundled subscriptions are in use
+* Fix - Add NO VAT description for Norway in tax descriptions
+* Fix - fix: ensure Google Pay/Apple Pay postcode matching for shipping zones works even when the provided postcode is redacted.
+* Fix - Fix a layout shift when uploading evidence for a dispute on the new challenge dispute screen
+* Fix - Fix mobile version of the StepperPanel and make the top navigation clickable.
+* Fix - Fix padding on the recommended document section
+* Fix - Fix payment methods logos width calculation in block editor preview
+* Fix - Fix preselected Payment Methods ignored during account creation via KYC session.
+* Fix - Fix spacing on disputes expandable block
+* Fix - Fix state for the cover letter.
+* Fix - Fix the browser print preview page on the payouts page.
+* Fix - Prevent double stock reduction after (3DS) authentication.
+* Fix - Prevent fatal error on the Pay for Order page upon deleted orders.
+* Update - Change the copy of the cover letter notice.
+* Update - Clicking on the Next button scroll the page position to the top.
+* Update - Evidence submission form for product not received
+* Update - fix: update Google Pay/Apple Pay buttons compatibility when multi-currency functionality is disabled - they'll no longer throw an exception for logged-out customers
+* Update - Refine "Temporarily Suspended" language, statuses and tooltip copy
+* Update - update: add `wcpay_express_checkout_js_params` filter for express checkout JS params.
+* Update - Updates the recomended documents section for the new disputes experience
+* Dev - Add missing arrow icons from the new evidence form
+* Dev - Ensure the submitted state is working as expected
+* Dev - Fix the regexp checking for the loading state of the checkout button to cover changes in latest WooCommerce.
+* Dev - Remove CTA from the new evidence "Evidence saved!" toast.
+* Dev - Revert @woocommerce/onboarding upgrade in PR 10840
+* Dev - Update reviewers for dependabot
+* Dev - Update tested WooCommerce version to 10.0.0
+
+= 9.5.0 - 2025-06-11 =
+* Add - Add specific texts for collecting Norway and New Zealand tax data
+* Add - Add specific texts for collecting Singapore tax data
+* Add - Add tax to the fee breakdown on order notes
+* Add - Enable Australian merchants to add tax details (ABN) for generating tax documents.
+* Add - New Filter: wcpay_woopay_enabled – Allows developers to conditionally disable WooPay based on custom logic, improving compatibility with themes and plugins.
+* Fix - fix: ensure `checkPaymentMethodIsAvailable` cache key is correctly memoized on express checkout elements
+* Fix - fix: formatting of currencies in the backend will always honor the merchant's settings, rather than the currency locale.
+* Fix - fix: set the correct payment method title when processing the payment with wechat pay, multibanco, and others
+* Fix - Fixed handling of orders containing items with negative tax
+* Fix - Handle state field requirements for Express Checkout in countries without states
+* Fix - Prevent accounts scheduled for deletion from being accessible to the WooPayments client to avoid exposing stale or partial data.
+* Update - Evidence submission form now should use the global wp.components
+* Update - refactor: add data massaging from legacy google pay/apple pay for HK-based addresses
+* Update - Refactor: Remove unused Props interface from AccountTools component
+* Update - Remove WooPayments adding their sections into other gateways when enabled
+* Update - update: Apple Pay domain verification file is no longer needed
+* Update - update: remove `_wcpay_feature_tokenized_cart_ece` feature flag; remove `client/express-checkout` in favor of `client/tokenized-express-checkout`
+* Dev - Add cover letter for fraudulent reason
+* Dev - Add the components that will be used on the evidence form
+* Dev - Add the logic "Save for later" when submitting evidence
+* Dev - Add the new StepperPanel component.
+* Dev - Bump WC tested up to version to 9.8.5
+* Dev - chore: update @stripe/connect-js @stripe/react-connect-js @stripe/react-stripe-js @stripe/stripe-js dependencies
+* Dev - Clean up database options after completing onboarding.
+* Dev - Condition AliPay block tests under shouldRunWCBlocksTests
+* Dev - Create a new feature flag for the evidence submission form
+* Dev - Decouple the accordion component from the dispute details screen.
+* Dev - fix: is_store_api_request utility on multisite with subdirectory install
+* Dev - refactor: introduced MSW for mocking network requests in tests.
+
+= 9.4.0 - 2025-05-21 =
+* Add - Add support for rendering fee tax details in the transaction timeline where available
+* Fix - Keep the shipping costs structure intact when applying multi-currency adjustments.
+* Fix - Only display the transaction URL for authorized intent statuses in WP Admin order page
+* Fix - Optimize session handling by only setting cookies on cart and checkout pages, improving product page caching performance.
+* Update - chore: remove "add payment methods" wizard task in favor of NOX flow.
+* Update - chore: update "Tested up to" WordPress 6.8
+* Update - Improve error message for embedded onboarding.
+* Update - Improve the user experience of the WooCommerce Payments dispute management interface, focusing on visual clarity of the dispute steps component that guides merchants through the process of handling payment disputes and inquiries.
+* Update - Perist payment method checkbox after capability request
+* Update - refactor: adjust payment method settings UI to show inline notices and disabled checkboxes instead of `(!)` icon
+* Update - Remove self-assessment fields from the onboarding flow
+* Update - update: ensure Klarna is never part of ECE buttons
+* Update - update: remove BNPL payment method messaging element/offering from checkout labels
+* Update - Update ‘Activate payments’ task to use NOX flow when the reactify-settings-payments feature is enabled.
+* Dev - refactor: created a "common" component for the payment method details on the transactions view, made for Affirm, Afterpay, Alipay, WeChat Pay, Grabpay, Multibanco
+* Dev - Set payment method title for order before order status change to make it visible for status change actions.
+* Dev - Unbundles wordpress/components for Dispute screens
+* Dev - upgrade currency-switcher block to apiVersion 3
 
 = 9.3.0 - 2025-05-05 =
 * Add - Add dedicated onboarding REST API endpoint for disabling test drive account, when possible.

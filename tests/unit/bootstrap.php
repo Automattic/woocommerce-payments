@@ -75,7 +75,6 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/exceptions/class-rest-request-exception.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-payments-admin.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-payments-admin-settings.php';
-	require_once $_plugin_dir . 'includes/admin/class-wc-payments-admin-sections-overwrite.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-payments-rest-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-accounts-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-orders-controller.php';
@@ -86,7 +85,6 @@ function _manually_load_plugin() {
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-tos-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-settings-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-settings-option-controller.php';
-	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-survey-controller.php';
 	require_once $_plugin_dir . 'includes/admin/tracks/class-tracker.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-reader-controller.php';
 	require_once $_plugin_dir . 'includes/admin/class-wc-rest-payments-files-controller.php';

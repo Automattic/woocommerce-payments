@@ -20,11 +20,8 @@ module.exports = {
 			cart: './client/cart/index.js',
 			checkout: './client/checkout/classic/event-handlers.js',
 			'express-checkout': './client/express-checkout/index.js',
-			'tokenized-express-checkout':
-				'./client/tokenized-express-checkout/index.js',
 			'subscription-edit-page': './client/subscription-edit-page.js',
-			tos: './client/tos/index.js',
-			'payment-gateways': './client/payment-gateways/index.js',
+			tos: './client/tos/index.tsx',
 			'multi-currency': './includes/multi-currency/client/index.js',
 			'multi-currency-switcher-block':
 				'./includes/multi-currency/client/blocks/currency-switcher.js',
@@ -77,13 +74,13 @@ module.exports = {
 								],
 							},
 							additionalData:
-								'@import "node_modules/@wordpress/base-styles/_colors.scss"; ' +
-								'@import "node_modules/@wordpress/base-styles/_colors.native.scss"; ' +
-								'@import "node_modules/@wordpress/base-styles/_variables.scss"; ' +
-								'@import "node_modules/@wordpress/base-styles/_mixins.scss"; ' +
-								'@import "node_modules/@wordpress/base-styles/_breakpoints.scss"; ' +
-								'@import "node_modules/@wordpress/base-styles/_animations.scss"; ' +
-								'@import "node_modules/@wordpress/base-styles/_z-index.scss"; ' +
+								'@import "~@wordpress/base-styles/_colors.scss"; ' +
+								'@import "~@wordpress/base-styles/_colors.native.scss"; ' +
+								'@import "~@wordpress/base-styles/_variables.scss"; ' +
+								'@import "~@wordpress/base-styles/_mixins.scss"; ' +
+								'@import "~@wordpress/base-styles/_breakpoints.scss"; ' +
+								'@import "~@wordpress/base-styles/_animations.scss"; ' +
+								'@import "~@wordpress/base-styles/_z-index.scss"; ' +
 								'@import "_colors"; ' +
 								'@import "_breakpoints"; ' +
 								'@import "_mixins"; ' +
@@ -148,16 +145,12 @@ module.exports = {
 			injectPolyfill: true,
 			requestToExternal( request ) {
 				switch ( request ) {
-					case '@wordpress/components':
-						return null;
 					case 'wp-mediaelement':
 						return [ 'wp', 'mediaelement' ];
 				}
 			},
 			requestToHandle( request ) {
 				switch ( request ) {
-					case '@wordpress/components':
-						return null;
 					case 'wp-mediaelement':
 						return 'wp-mediaelement';
 				}

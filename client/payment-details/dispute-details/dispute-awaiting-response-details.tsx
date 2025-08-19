@@ -9,6 +9,10 @@ import { backup, edit, lock, arrowRight } from '@wordpress/icons';
 import { useDispatch } from '@wordpress/data';
 import { createInterpolateElement } from '@wordpress/element';
 import { Link } from '@woocommerce/components';
+
+/**
+ * Internal dependencies
+ */
 import {
 	Button,
 	ExternalLink,
@@ -18,10 +22,6 @@ import {
 	Modal,
 	HorizontalRule,
 } from '@wordpress/components';
-
-/**
- * Internal dependencies
- */
 import type { Dispute } from 'wcpay/types/disputes';
 import type { ChargeBillingDetails } from 'wcpay/types/charges';
 import { recordEvent } from 'tracks';
@@ -239,9 +239,17 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 		isDisputeAcceptRequestPending,
 	} );
 
+	/**
+	 * The following cases cannot be defended:
+	 * - Klarna inquiries
+	 * - Visa Compliance disputes (require confirmation of a specific fee)
+	 */
 	const isDefendable = ! (
-		paymentMethod === 'klarna' && isInquiry( dispute.status )
-	); // Only Klarna inquires are not defendable
+		( paymentMethod === 'klarna' && isInquiry( dispute.status ) ) ||
+		( dispute?.enhanced_eligibility_types || [] ).includes(
+			'visa_compliance'
+		)
+	);
 
 	const challengeButtonDefaultText = isInquiry( dispute.status )
 		? __( 'Submit evidence', 'woocommerce-payments' )
@@ -353,6 +361,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 											}
 										);
 									} }
+									__next40pxDefaultSize
 								>
 									{ hasStagedEvidence
 										? __(
@@ -378,6 +387,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 								);
 								setModalOpen( true );
 							} }
+							__next40pxDefaultSize
 						>
 							{ disputeAcceptAction.acceptButtonLabel }
 						</Button>
@@ -421,6 +431,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 											isDisputeAcceptRequestPending
 										}
 										onClick={ handleModalClose }
+										__next40pxDefaultSize
 									>
 										{ __(
 											'Cancel',
@@ -455,6 +466,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 												doAccept();
 											}
 										} }
+										__next40pxDefaultSize
 									>
 										{ disputeAcceptAction.modalButtonLabel }
 									</Button>

@@ -272,6 +272,9 @@ class UPE_Payment_Method {
 	 */
 	public function is_currency_valid( string $account_domestic_currency, $order_id = null ) {
 		$current_store_currency = $this->get_currency( $order_id );
+		if ( null === $current_store_currency ) {
+			return false;
+		}
 
 		if ( $this->has_domestic_transactions_restrictions() ) {
 			if ( strtolower( $current_store_currency ) !== strtolower( $account_domestic_currency ) ) {
@@ -457,7 +460,7 @@ class UPE_Payment_Method {
 	 *
 	 * @param int $order_id Optional order ID, if order currency should take precedence.
 	 *
-	 * @return string
+	 * @return string|null
 	 */
 	private function get_currency( $order_id = null ) {
 		if ( is_wc_endpoint_url( 'order-pay' ) || null !== $order_id ) {
@@ -466,6 +469,9 @@ class UPE_Payment_Method {
 				$order_id = absint( $wp->query_vars['order-pay'] );
 			}
 			$order = wc_get_order( $order_id );
+			if ( false === $order ) {
+				return null;
+			}
 			return $order->get_currency();
 		}
 		return get_woocommerce_currency();

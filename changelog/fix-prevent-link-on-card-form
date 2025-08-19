@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: prevent Stripe Link to be shown on the checkout form

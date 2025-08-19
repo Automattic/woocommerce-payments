@@ -10,7 +10,7 @@ import { __, sprintf } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { enableGatewayAfterTosDecline } from './request.js';
+import { enableGatewayAfterTosDecline } from './request';
 
 const showTosNotice = ( settingsUrl ) => {
 	const { createInfoNotice } = dispatch( 'core/notices' );

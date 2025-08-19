@@ -150,6 +150,10 @@ class WooPay_Order_Status_Sync {
 	 */
 	public static function create_payload( $payload, $resource_name, $resource_id, $id ) {
 		$webhook = wc_get_webhook( $id );
+		if ( ! $webhook ) {
+			return $payload;
+		}
+
 		if ( 0 !== strpos( $webhook->get_delivery_url(), WooPay_Utilities::get_woopay_rest_url( 'merchant-notification' ) ) ) {
 			// This is not a WooPay webhook, so we don't need to modify the payload.
 			return $payload;

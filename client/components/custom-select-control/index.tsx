@@ -10,16 +10,12 @@
  * External Dependencies
  */
 import React from 'react';
-import { Button } from '@wordpress/components';
 import { check, chevronDown, Icon } from '@wordpress/icons';
 import { useCallback } from '@wordpress/element';
 import clsx from 'clsx';
 import { __, sprintf } from '@wordpress/i18n';
 import { useSelect, UseSelectState } from 'downshift';
-
-/**
- * Internal Dependencies
- */
+import { Button } from '@wordpress/components';
 import './style.scss';
 
 export interface Item {
@@ -130,7 +126,7 @@ function CustomSelectControl< ItemType extends Item >( {
 	} );
 
 	const onKeyDownHandler = useCallback(
-		( e ) => {
+		( e: any ) => {
 			e.stopPropagation();
 			menuProps?.onKeyDown?.( e );
 		},
@@ -172,6 +168,7 @@ function CustomSelectControl< ItemType extends Item >( {
 					),
 					name,
 				} ) }
+				__next40pxDefaultSize
 			>
 				<span className="components-custom-select-control__button-value">
 					{ itemString || placeholder }

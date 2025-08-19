@@ -3,7 +3,7 @@
  */
 import React from 'react';
 
-import { Button, Icon, Modal } from '@wordpress/components';
+import { Button, Icon, Modal, ExternalLink } from '@wordpress/components';
 import {
 	createInterpolateElement,
 	useEffect,
@@ -29,13 +29,14 @@ const FinishSetupButton = () => {
 			disabled={ isFinishingSetup }
 			href={ connectUrl }
 			isBusy={ isFinishingSetup }
-			isPrimary
+			variant="primary"
 			onClick={ () => {
 				recordEvent(
 					'wcpay_subscriptions_account_not_connected_product_modal_finish_setup'
 				);
 				setIsFinishingSetup( true );
 			} }
+			__next40pxDefaultSize
 		>
 			{ __( 'Finish setup', 'woocommerce-payments' ) }
 		</Button>
@@ -85,14 +86,8 @@ const SubscriptionProductOnboardingModalContent = ( {
 						'woocommerce-payments'
 					),
 					{
-						a: (
-							// eslint-disable-next-line jsx-a11y/anchor-has-content
-							<a
-								href="https://wordpress.com/tos/"
-								target="_blank"
-								rel="noreferrer"
-							/>
-						),
+						// @ts-expect-error: children is provided when interpolating the component
+						a: <ExternalLink href="https://wordpress.com/tos/" />,
 					}
 				) }
 			</p>

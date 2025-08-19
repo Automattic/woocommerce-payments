@@ -7,8 +7,7 @@ import NoticeOutlineIcon from 'gridicons/dist/notice-outline';
 /**
  * Internal dependencies
  */
-import './../style.scss';
-import InlineNotice from 'components/inline-notice';
+import InlineNotice from 'wcpay/components/inline-notice';
 import { TipIcon } from 'wcpay/icons';
 
 const supportedTypes = [ 'error', 'warning', 'info' ] as const;
@@ -19,10 +18,9 @@ interface FraudProtectionRuleCardNoticeProps {
 	type: NoticeType;
 }
 
-const FraudProtectionRuleCardNotice: React.FC< FraudProtectionRuleCardNoticeProps > = ( {
-	type,
-	children,
-} ) => {
+const FraudProtectionRuleCardNotice: React.FC< React.PropsWithChildren<
+	FraudProtectionRuleCardNoticeProps
+> > = ( { type, children } ) => {
 	if ( ! supportedTypes.includes( type ) ) {
 		return null;
 	}
@@ -34,10 +32,6 @@ const FraudProtectionRuleCardNotice: React.FC< FraudProtectionRuleCardNoticeProp
 		<InlineNotice
 			status={ type }
 			icon={ icon }
-			className={
-				'fraud-protection-rule-card-notice fraud-protection-rule-card-notice-' +
-				type
-			}
 			children={ children }
 			isDismissible={ false }
 		/>

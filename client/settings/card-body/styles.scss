@@ -5,8 +5,25 @@
 	}
 
 	h4 {
+		@include heading-md;
 		margin-top: 0;
-		margin-bottom: 1em;
+		margin-bottom: 24px;
+
+		&:not( :first-child ) {
+			margin-top: 32px;
+		}
+
+		+ p {
+			margin-top: calc( 8px );
+			margin-bottom: 24px;
+			font-size: 12px;
+			font-style: normal;
+			color: #757575;
+		}
+
+		&:has( + p ) {
+			margin-bottom: 0;
+		}
 	}
 
 	> * {
@@ -42,14 +59,11 @@
 		max-width: none;
 	}
 
-	// spacing in the "Express checkouts" settings page
-	.components-radio-control__option {
-		margin-bottom: 10px;
-		align-items: center;
-		display: flex;
-	}
-
-	.components-base-control__help {
-		margin-top: unset;
+	.components-checkbox-control {
+		input[type='checkbox'] {
+			&:checked:disabled {
+				opacity: 0.3;
+			}
+		}
 	}
 }

@@ -45,10 +45,19 @@ const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 			onRequestClose={ onClose }
 			actions={
 				<>
-					<Button onClick={ onConfirm } isPrimary isDestructive>
+					<Button
+						onClick={ onConfirm }
+						variant="primary"
+						isDestructive
+						__next40pxDefaultSize
+					>
 						Disable
 					</Button>
-					<Button onClick={ onClose } isSecondary>
+					<Button
+						onClick={ onClose }
+						variant="secondary"
+						__next40pxDefaultSize
+					>
 						Cancel
 					</Button>
 				</>

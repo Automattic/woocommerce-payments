@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { forwardRef } from 'react';
+import React, { ComponentProps, forwardRef } from 'react';
 import { TextControl } from '@wordpress/components';
 import clsx from 'clsx';
 
@@ -22,7 +22,7 @@ interface CommonProps {
 	error?: string;
 }
 
-export type TextFieldProps = TextControl.Props & CommonProps;
+export type TextFieldProps = ComponentProps< typeof TextControl > & CommonProps;
 export type SelectFieldProps< ItemType > = SelectControlProps< ItemType > &
 	CommonProps;
 export type GroupedSelectFieldProps< ItemType > = GroupedSelectControlProps<
@@ -40,26 +40,34 @@ export type GroupedSelectFieldProps< ItemType > = GroupedSelectControlProps<
  */
 const makeField = (
 	Control: React.ElementType,
-	props: CommonProps & Record< any, any >,
+	props: CommonProps & Record< string, any >,
 	ref?: React.Ref< any >
-) => {
+): React.ReactElement => {
 	const { error, ...rest } = props;
-	if ( ! error ) return <Control { ...rest } ref={ ref } />;
+	if ( ! error ) return React.createElement( Control, { ...rest, ref } );
 	return (
 		<>
-			<Control
-				{ ...rest }
-				ref={ ref }
-				className={ clsx( rest.className, 'has-error' ) }
-			/>
-			{ <div className="components-form-field__error">{ error }</div> }
+			{ React.createElement( Control, {
+				...rest,
+				ref,
+				className: clsx( rest.className, 'has-error' ),
+			} ) }
+			<div className="components-form-field__error">{ error }</div>
 		</>
 	);
 };
 
 export const TextField = forwardRef< HTMLInputElement, TextFieldProps >(
 	( props, ref ) => {
-		return makeField( TextControl, props, ref );
+		return makeField(
+			TextControl,
+			{
+				...props,
+				__nextHasNoMarginBottom: true,
+				__next40pxDefaultSize: true,
+			},
+			ref
+		);
 	}
 );
 

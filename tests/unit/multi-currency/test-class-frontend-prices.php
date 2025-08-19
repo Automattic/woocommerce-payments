@@ -233,11 +233,23 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 	}
 
 	public function test_convert_shipping_method_rate_cost_for_array_cost() {
+		$matcher = $this->exactly( 2 );
 		$this->mock_multi_currency
-			->expects( $this->once() )
+			->expects( $matcher )
 			->method( 'get_price' )
-			->with( '11' )
-			->willReturn( 25.0 );
+			->willReturnCallback(
+				function ( $price ) use ( $matcher ) {
+					switch ( $matcher->getInvocationCount() ) {
+						case 1:
+							$this->assertEquals( 10.0, $price );
+							break;
+						case 2:
+							$this->assertEquals( 1.0, $price );
+							break;
+					}
+					return $price;
+				}
+			);
 
 		add_filter( 'wc_tax_enabled', '__return_true' );
 		add_filter(
@@ -272,8 +284,8 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		$shipping_rate = $shipping_method->rates[1];
 
 		// Cost gets converted and taxes properly calculated based on it.
-		$this->assertSame( '25.00', $shipping_rate->cost );
-		$this->assertSame( 2.5, $shipping_rate->taxes[1] );
+		$this->assertSame( '11.00', $shipping_rate->cost );
+		$this->assertSame( 1.1, $shipping_rate->taxes[1] );
 	}
 
 	public function test_get_coupon_amount_returns_empty_amount() {

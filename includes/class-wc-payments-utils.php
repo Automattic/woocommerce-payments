@@ -1035,6 +1035,8 @@ class WC_Payments_Utils {
 	/**
 	 * Helper function to check whether to show default new onboarding flow or as an exception disable it (if specific constant is set) .
 	 *
+	 * @deprecated 9.8.0 There is no longer an optional "new" onboarding flow, so this method is no longer needed.
+	 *
 	 * @return boolean
 	 */
 	public static function should_use_new_onboarding_flow(): bool {
@@ -1277,77 +1279,6 @@ class WC_Payments_Utils {
 	}
 
 	/**
-	 * Returns language data: english name and native name
-	 *
-	 * @param string $language Language code.
-	 *
-	 * @return array
-	 */
-	public static function get_language_data( $language ) {
-		require_once ABSPATH . 'wp-admin/includes/translation-install.php';
-
-		$translations = wp_get_available_translations();
-
-		if ( isset( $translations[ $language ] ) ) {
-			return [
-				'code'         => self::convert_to_server_locale( $language ),
-				'english_name' => $translations[ $language ]['english_name'] ?? $language,
-				'native_name'  => $translations[ $language ]['native_name'] ?? $language,
-			];
-		}
-
-		return [
-			'code'         => 'en_US',
-			'english_name' => 'English (United States)',
-			'native_name'  => 'English (United States)',
-		];
-	}
-
-	/**
-	 * Converts a locale to the server supported languages.
-	 *
-	 * @param string $locale The locale to convert.
-	 *
-	 * @return string Closest locale supported ('en' if NONE)
-	 */
-	public static function convert_to_server_locale( string $locale ): string {
-		$supported = [
-			'ar',     // Arabic.
-			'de',     // German (Germany).
-			'es',     // Spanish (Spain).
-			'fr',     // French (France).
-			'he',     // Hebrew (Israel).
-			'id',     // Indonesian (Indonesia).
-			'it',     // Italian (Italy).
-			'ja',     // Japanese.
-			'ko',     // Korean.
-			'nl',     // Dutch (Netherlands).
-			'pt-br',  // Portuguese (Brazil).
-			'ru',     // Russian (Russia).
-			'sv',     // Swedish (Sweden).
-			'tr',     // Turkish (Turkey).
-			'zh-cn',  // Simplified, Singapore).
-			'zh-tw',  // Chinese Traditional (Taiwan).
-		];
-
-		// Replace '-' with '_' (used in WordPress).
-		$locale = str_replace( '_', '-', $locale );
-
-		if ( in_array( $locale, $supported, true ) ) {
-			return $locale;
-		}
-
-		// Remove the country code and try with that.
-		$base_locale = substr( $locale, 0, 2 );
-		if ( in_array( $base_locale, $supported, true ) ) {
-			return $base_locale;
-		}
-
-		// Return 'en_US' to match the default site language.
-		return 'en_US';
-	}
-
-	/**
 	 * Check if the current page is the cart page.
 	 *
 	 * @return bool True if the current page is the cart page, false otherwise.
@@ -1377,11 +1308,7 @@ class WC_Payments_Utils {
 		if ( isset( $_REQUEST['rest_route'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			$rest_route = sanitize_text_field( $_REQUEST['rest_route'] ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.NonceVerification
 		} else {
-			// Extract the request path from the request URL.
-			$url_parts    = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
-			$request_path = ! empty( $url_parts['path'] ) ? rtrim( $url_parts['path'], '/' ) : '';
-			// Remove the REST API prefix from the request path to end up with the route.
-			$rest_route = str_replace( trailingslashit( rest_get_url_prefix() ), '', $request_path );
+			$rest_route = self::extract_rest_route_from_url();
 		}
 
 		// Bail early if the rest route is empty.
@@ -1398,6 +1325,37 @@ class WC_Payments_Utils {
 
 		// If no match was found, this is not a Store API request.
 		return false;
+	}
+
+	/**
+	 * Extract the REST route from the current request URL.
+	 *
+	 * @return string The REST route, or empty string if not found.
+	 */
+	private static function extract_rest_route_from_url(): string {
+		// Extract the request path from the request URL.
+		$url_parts = wp_parse_url( esc_url_raw( $_SERVER['REQUEST_URI'] ?? '' ) ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+		if ( empty( $url_parts['path'] ) ) {
+			return '';
+		}
+
+		$request_path = rtrim( $url_parts['path'], '/' );
+		if ( empty( $request_path ) ) {
+			return '';
+		}
+
+		// Remove the REST API prefix from the request path to end up with the route.
+		$rest_prefix = trailingslashit( rest_get_url_prefix() );
+
+		// For multisite subdirectory setups, we need to handle the subdirectory prefix.
+		// Look for the wp-json prefix in the path and extract everything after it.
+		$wp_json_pos = strpos( $request_path, '/' . rtrim( $rest_prefix, '/' ) );
+		if ( false !== $wp_json_pos ) {
+			return substr( $request_path, $wp_json_pos + strlen( $rest_prefix ) );
+		}
+
+		// Fallback: simple prefix replacement for non-multisite cases.
+		return str_replace( $rest_prefix, '', $request_path );
 	}
 
 	/**

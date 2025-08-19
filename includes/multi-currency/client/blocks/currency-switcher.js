@@ -16,6 +16,7 @@ import {
 	CheckboxControl,
 	PanelBody,
 	RangeControl,
+	ExternalLink,
 } from '@wordpress/components';
 import { registerBlockType } from '@wordpress/blocks';
 import {
@@ -25,7 +26,7 @@ import {
 } from '@wordpress/block-editor';
 
 registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
-	apiVersion: 2,
+	apiVersion: 3,
 	title: __( 'Currency Switcher Block', 'woocommerce-payments' ),
 	description: __(
 		'Let your customers switch between your enabled currencies',
@@ -211,18 +212,16 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 							'woocommerce-payments'
 						) }
 					>
-						<a
+						<ExternalLink
 							href={
 								'/wp-admin/admin.php?page=wc-settings&tab=wcpay_multi_currency'
 							}
-							target="_blank"
-							rel="noreferrer"
 						>
 							{ __(
 								'Adjust and edit your Multi-Currency settings',
 								'woocommerce-payments'
 							) }
-						</a>
+						</ExternalLink>
 					</PanelBody>
 					<PanelBody title={ __( 'Layout', 'woocommerce-payments' ) }>
 						<CheckboxControl
@@ -232,6 +231,7 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 							) }
 							checked={ flag }
 							onChange={ onChangeFlag }
+							__nextHasNoMarginBottom
 						/>
 
 						<CheckboxControl
@@ -241,12 +241,14 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 							) }
 							checked={ symbol }
 							onChange={ onChangeSymbol }
+							__nextHasNoMarginBottom
 						/>
 
 						<CheckboxControl
 							label={ __( 'Border', 'woocommerce-payments' ) }
 							checked={ border }
 							onChange={ onChangeBorder }
+							__nextHasNoMarginBottom
 						/>
 
 						<RangeControl
@@ -258,6 +260,8 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 							onChange={ onChangeBorderRadius }
 							min={ 1 }
 							max={ 20 }
+							__nextHasNoMarginBottom
+							__next40pxDefaultSize
 						/>
 					</PanelBody>
 					<PanelBody
@@ -269,6 +273,8 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 							onChange={ onChangeFontSize }
 							min={ 6 }
 							max={ 48 }
+							__nextHasNoMarginBottom
+							__next40pxDefaultSize
 						/>
 						<RangeControl
 							label={ __(
@@ -280,6 +286,8 @@ registerBlockType( 'woocommerce-payments/multi-currency-switcher', {
 							min={ 1 }
 							max={ 3 }
 							step={ 0.1 }
+							__nextHasNoMarginBottom
+							__next40pxDefaultSize
 						/>
 					</PanelBody>
 					<PanelBody

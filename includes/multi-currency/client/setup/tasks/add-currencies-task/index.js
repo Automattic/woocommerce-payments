@@ -3,15 +3,14 @@
  */
 import React, { useContext, useEffect, useState } from 'react';
 import { sprintf, __, _n } from '@wordpress/i18n';
-import { Button, Card, CardBody } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
 import _ from 'lodash';
 
 /**
  * Internal dependencies
  */
+import { Button, Card, CardBody, SearchControl } from '@wordpress/components';
 import { WizardTaskContext } from 'multi-currency/interface/functions';
-import Search from 'multi-currency/components/search';
 import {
 	CollapsibleBody,
 	LoadableBlock,
@@ -92,6 +91,7 @@ const ContinueButton = ( {
 			disabled={ isSaving || isDisabled }
 			onClick={ handleContinueClick }
 			variant="primary"
+			__next40pxDefaultSize
 		>
 			{ renderText() }
 		</Button>
@@ -158,9 +158,7 @@ const AddCurrenciesTask = () => {
 
 	// Search component
 	const [ searchText, setSearchText ] = useState( '' );
-	const handleSearchChange = ( event ) => {
-		setSearchText( event.target.value );
-	};
+
 	const filteredCurrencyCodes = ! searchText
 		? visibleCurrencyCodes.filter(
 				( code ) => ! recommendedCurrencyCodes.includes( code )
@@ -246,13 +244,14 @@ const AddCurrenciesTask = () => {
 				<Card className="add-currencies-task__currency-selector-wrapper">
 					<CardBody>
 						<div className="add-currencies-task__search">
-							<Search
+							<SearchControl
+								__nextHasNoMarginBottom
 								value={ searchText }
+								onChange={ setSearchText }
 								placeholder={ __(
 									'Search currencies',
 									'woocommerce-payments'
 								) }
-								onChange={ handleSearchChange }
 							/>
 						</div>
 						<div className={ 'add-currencies-task__separator' } />

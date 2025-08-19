@@ -2,9 +2,10 @@
 /**
  * External dependencies
  */
-import * as React from 'react';
+import React from 'react';
 import { Button } from '@wordpress/components';
 import { useState } from '@wordpress/element';
+
 /**
  * Internal dependencies
  */

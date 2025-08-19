@@ -21,7 +21,6 @@ use WCPay\Logger;
 class WC_Payments_Onboarding_Service {
 
 	const TEST_MODE_OPTION                           = 'wcpay_onboarding_test_mode';
-	const ONBOARDING_ELIGIBILITY_MODAL_OPTION        = 'wcpay_onboarding_eligibility_modal_dismissed';
 	const ONBOARDING_CONNECTION_SUCCESS_MODAL_OPTION = 'wcpay_connection_success_modal_dismissed';
 	const ONBOARDING_INIT_IN_PROGRESS_TRANSIENT      = 'wcpay_onboarding_init_in_progress';
 
@@ -276,14 +275,16 @@ class WC_Payments_Onboarding_Service {
 	 *
 	 * Will return the session key used to initialise the embedded onboarding session.
 	 *
-	 * @param array   $self_assessment_data Self assessment data.
-	 * @param boolean $progressive Whether the onboarding is progressive.
+	 * @param array $self_assessment_data Self assessment data.
+	 * @param array $capabilities Optional. List keyed by capabilities IDs (payment methods) with boolean values
+	 *                           indicating whether the capability should be requested when the account is created
+	 *                           and enabled in the settings.
 	 *
 	 * @return array Session data.
 	 *
 	 * @throws API_Exception|Exception
 	 */
-	public function create_embedded_kyc_session( array $self_assessment_data, bool $progressive = false ): array {
+	public function create_embedded_kyc_session( array $self_assessment_data, array $capabilities = [] ): array {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			return [];
 		}
@@ -309,7 +310,7 @@ class WC_Payments_Onboarding_Service {
 		$account_data   = $this->get_account_data(
 			$setup_mode,
 			$self_assessment_data,
-			$this->get_capabilities_from_request()
+			$capabilities
 		);
 		$actioned_notes = self::get_actioned_notes();
 
@@ -321,8 +322,7 @@ class WC_Payments_Onboarding_Service {
 		 * @see self::update_enabled_payment_methods_ids
 		 * ==================
 		 */
-		$capabilities = $this->get_capabilities_from_request();
-		$gateway      = WC_Payments::get_gateway();
+		$gateway = WC_Payments::get_gateway();
 
 		// Activate enabled Payment Methods IDs.
 		if ( ! empty( $capabilities ) ) {
@@ -336,7 +336,6 @@ class WC_Payments_Onboarding_Service {
 				WC_Payments_Utils::array_filter_recursive( $user_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
 				WC_Payments_Utils::array_filter_recursive( $account_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
 				$actioned_notes,
-				$progressive,
 				$this->get_referral_code()
 			);
 		} catch ( API_Exception $e ) {
@@ -357,6 +356,11 @@ class WC_Payments_Onboarding_Service {
 			filter_var( $account_session['woopay_enabled_by_default'] ?? false, FILTER_VALIDATE_BOOLEAN ),
 			DAY_IN_SECONDS
 		);
+
+		// If we have a new account, clear the account cache to force a refresh.
+		if ( ! empty( $account_session['account_created'] ) ) {
+			WC_Payments::get_account_service()->clear_cache();
+		}
 
 		return [
 			'clientSecret'   => $account_session['client_secret'] ?? '',
@@ -397,6 +401,10 @@ class WC_Payments_Onboarding_Service {
 
 		// Clear the embedded KYC in progress option, since the onboarding flow is now complete.
 		$this->clear_embedded_kyc_in_progress();
+
+		// Clear the account cache to make sure the account data is fresh
+		// and not depend on webhooks that might not have been received yet.
+		WC_Payments::get_account_service()->clear_cache();
 
 		return [
 			'success'           => $success,
@@ -709,7 +717,7 @@ class WC_Payments_Onboarding_Service {
 		// the WooPay capability value from the request.
 		$should_enable_woopay = $this->should_enable_woopay(
 			filter_var( $onboarding_data['woopay_enabled_by_default'] ?? false, FILTER_VALIDATE_BOOLEAN ),
-			$this->get_capabilities_from_request()
+			$capabilities
 		);
 
 		if ( $should_enable_woopay ) {
@@ -763,10 +771,19 @@ class WC_Payments_Onboarding_Service {
 			throw new Exception( __( 'Your store is not connected to WordPress.com. Please connect it first.', 'woocommerce-payments' ) );
 		}
 
+		// If the account does not exist, there's nothing to reset.
+		if ( ! WC_Payments::get_account_service()->is_stripe_connected() ) {
+			throw new API_Exception( __( 'Failed to reset the account: account does not exist.', 'woocommerce-payments' ), 'wcpay-onboarding-account-error', 400 );
+		}
+
+		// Immediately change the account cache to avoid API requests during the time it takes for
+		// the Transact Platform to actually delete the account.
+		WC_Payments::get_account_service()->overwrite_cache_with_no_account();
 		// Delete the currently connected Stripe account, in the onboarding mode we are currently in.
 		$test_mode_onboarding = self::is_test_mode_enabled();
 		$result               = $this->payments_api_client->delete_account( $test_mode_onboarding );
 		if ( ! isset( $result['result'] ) || 'success' !== $result['result'] ) {
+			WC_Payments::get_account_service()->refresh_account_data();
 			throw new API_Exception( __( 'Failed to delete account.', 'woocommerce-payments' ), 'wcpay-onboarding-account-error', 400 );
 		}
 
@@ -809,6 +826,11 @@ class WC_Payments_Onboarding_Service {
 			throw new Exception( __( 'Your store is not connected to WordPress.com. Please connect it first.', 'woocommerce-payments' ) );
 		}
 
+		// If the account does not exist, there's nothing to disable.
+		if ( ! WC_Payments::get_account_service()->is_stripe_connected() ) {
+			throw new API_Exception( __( 'Failed to activate the account: account does not exist.', 'woocommerce-payments' ), 'wcpay-onboarding-account-error', 400 );
+		}
+
 		// If the test mode onboarding is not enabled, we don't need to do anything.
 		if ( ! self::is_test_mode_enabled() ) {
 			return false;
@@ -823,9 +845,13 @@ class WC_Payments_Onboarding_Service {
 			// and apply those settings to the live account.
 			WC_Payments::get_account_service()->save_test_drive_settings();
 
+			// Immediately change the account cache to avoid API requests during the time it takes for
+			// the Transact Platform to actually delete the account.
+			WC_Payments::get_account_service()->overwrite_cache_with_no_account();
 			// Delete the currently connected Stripe account.
 			$this->payments_api_client->delete_account( true );
 		} catch ( API_Exception $e ) {
+			WC_Payments::get_account_service()->refresh_account_data();
 			throw new API_Exception( __( 'Failed to disable test drive account.', 'woocommerce-payments' ), 'wcpay-onboarding-account-error', 400 );
 		}
 
@@ -855,6 +881,7 @@ class WC_Payments_Onboarding_Service {
 		$gateway = WC_Payments::get_gateway();
 		$gateway->update_option( 'enabled', 'no' );
 		$gateway->update_option( 'test_mode', 'no' );
+		$gateway->update_option( 'upe_enabled_payment_method_ids', [ 'card' ] );
 
 		update_option( '_wcpay_onboarding_stripe_connected', [] );
 		update_option( self::TEST_MODE_OPTION, 'no' );
@@ -867,6 +894,24 @@ class WC_Payments_Onboarding_Service {
 
 		// Clear the cache to avoid stale data.
 		WC_Payments::get_account_service()->clear_cache();
+	}
+
+	/**
+	 * Cleanup onboarding flow data after the account is onboarded.
+	 *
+	 * This is to avoid keeping unnecessary data in the database.
+	 * We focus on data stores in DB options. Transients have a limited lifetime and will be cleaned up automatically.
+	 *
+	 * @return void
+	 */
+	public function cleanup_on_account_onboarded() {
+		// Delete the onboarding fields data since it is used only during the initial onboarding.
+		// Delete it by prefix since it can have entries suffixed with the user locale.
+		$this->database_cache->delete_by_prefix( Database_Cache::ONBOARDING_FIELDS_DATA_KEY );
+
+		$this->database_cache->delete( Database_Cache::BUSINESS_TYPES_KEY );
+		// Delete it by prefix since it can have entries suffixed with the user locale.
+		$this->database_cache->delete_by_prefix( Database_Cache::RECOMMENDED_PAYMENT_METHODS );
 	}
 
 	/**
@@ -956,17 +1001,7 @@ class WC_Payments_Onboarding_Service {
 	 * @return void
 	 */
 	public static function clear_account_options(): void {
-		delete_option( self::ONBOARDING_ELIGIBILITY_MODAL_OPTION );
 		delete_option( self::ONBOARDING_CONNECTION_SUCCESS_MODAL_OPTION );
-	}
-
-	/**
-	 * Set the onboarding eligibility modal dismissed option to true.
-	 *
-	 * @return void
-	 */
-	public static function set_onboarding_eligibility_modal_dismissed(): void {
-		update_option( self::ONBOARDING_ELIGIBILITY_MODAL_OPTION, true );
 	}
 
 	/**

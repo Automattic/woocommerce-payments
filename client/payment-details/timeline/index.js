@@ -6,7 +6,6 @@
 import { __ } from '@wordpress/i18n';
 import { Timeline } from '@woocommerce/components';
 import { Card, CardBody, CardHeader } from '@wordpress/components';
-
 /**
  * Internal dependencies
  */

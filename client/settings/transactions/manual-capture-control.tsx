@@ -4,11 +4,11 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { CheckboxControl, Button, ExternalLink } from '@wordpress/components';
 import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
+import { CheckboxControl, Button, ExternalLink } from '@wordpress/components';
 import {
 	useManualCapture,
 	useCardPresentEligible,
@@ -17,16 +17,15 @@ import {
 import './style.scss';
 import ConfirmationModal from 'wcpay/components/confirmation-modal';
 import interpolateComponents from '@automattic/interpolate-components';
-import { StripeBillingHook } from '../advanced-settings/interfaces';
 import InlineNotice from 'components/inline-notice';
 
 const ManualCaptureControl = (): JSX.Element => {
 	const [
 		isManualCaptureEnabled,
 		setIsManualCaptureEnabled,
-	] = useManualCapture() as [ boolean, ( value: boolean ) => void ];
-	const [ isStripeBillingEnabled ] = useStripeBilling() as StripeBillingHook;
-	const [ isCardPresentEligible ] = useCardPresentEligible() as [ boolean ];
+	] = useManualCapture();
+	const [ isStripeBillingEnabled ] = useStripeBilling();
+	const [ isCardPresentEligible ] = useCardPresentEligible();
 
 	const [
 		isManualDepositConfirmationModalOpen,
@@ -75,6 +74,7 @@ const ManualCaptureControl = (): JSX.Element => {
 									),
 									components: {
 										a: (
+											// @ts-expect-error: children is provided when interpolating the component
 											<ExternalLink href="https://woocommerce.com/in-person-payments/" />
 										),
 									},
@@ -82,9 +82,10 @@ const ManualCaptureControl = (): JSX.Element => {
 							: '' }
 					</span>
 				}
+				__nextHasNoMarginBottom
 			/>
 			{ isStripeBillingEnabled && (
-				<InlineNotice status="warning" isDismissible={ false } icon>
+				<InlineNotice status="warning" isDismissible={ false }>
 					{ __(
 						'Manual capture is not available when Stripe Billing is active.',
 						'woocommerce-payments'

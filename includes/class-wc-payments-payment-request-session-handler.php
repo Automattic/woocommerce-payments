@@ -65,7 +65,11 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 			throw new Exception( __( 'Invalid token: cookie and session customer mismatch', 'woocommerce-payments' ) );
 		}
 
-		add_action( 'shutdown', [ $this, 'save_data' ], 20 );
+		// saving the session and sending new cookies only when we're not dealing with an ephemeral cart.
+		if ( wc_clean( wp_unslash( $_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_IS_EPHEMERAL_CART'] ?? '' ) ) !== '1' ) {
+			add_action( 'shutdown', [ $this, 'save_data' ], 20 );
+			add_action( 'woocommerce_set_cart_cookies', [ $this, 'set_customer_session_cookie' ] );
+		}
 	}
 
 	/**
@@ -162,7 +166,7 @@ final class WC_Payments_Payment_Request_Session_Handler extends WC_Session_Handl
 	}
 
 	/**
-	 * Save data  - copy of parent method with a few modifications.
+	 * Save data - copy of parent method with a few modifications.
 	 *
 	 * @param int $old_session_key session ID before user logs in.
 	 */

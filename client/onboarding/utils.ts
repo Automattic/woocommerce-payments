@@ -19,9 +19,6 @@ export const fromDotNotation = (
 		return value != null ? set( result, key, value ) : result;
 	}, {} );
 
-const hasUndefinedValues = ( obj: Record< string, any > ): boolean =>
-	Object.values( obj ).some( ( value ) => value === undefined );
-
 export const getAvailableCountries = (): Country[] =>
 	Object.entries( wcpaySettings?.connect.availableCountries || [] )
 		.map( ( [ key, name ] ) => ( { key, name, types: [] } ) )

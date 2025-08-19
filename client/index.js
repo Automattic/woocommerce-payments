@@ -21,7 +21,7 @@ import TransactionsPage from 'transactions';
 import PaymentDetailsPage from 'payment-details';
 import DisputesPage from 'disputes';
 import RedirectToTransactionDetails from 'disputes/redirect-to-transaction-details';
-import DisputeEvidencePage from 'disputes/evidence';
+import DisputeNewEvidencePage from 'wcpay/disputes/new-evidence';
 import { MultiCurrencySetupPage } from 'multi-currency/interface/components';
 import CardReadersPage from 'card-readers';
 import CapitalPage from 'capital';
@@ -184,7 +184,7 @@ addFilter(
 		} );
 
 		pages.push( {
-			container: DisputeEvidencePage,
+			container: DisputeNewEvidencePage,
 			path: '/payments/disputes/challenge',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
@@ -201,6 +201,7 @@ addFilter(
 			},
 			capability: 'manage_woocommerce',
 		} );
+
 		pages.push( {
 			container: MultiCurrencySetupPage,
 			path: '/payments/multi-currency-setup',

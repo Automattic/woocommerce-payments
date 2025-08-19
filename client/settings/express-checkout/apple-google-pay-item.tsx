@@ -2,16 +2,15 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { Button, CheckboxControl } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
 import React, { useContext } from 'react';
+import { Button, CheckboxControl } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
 import { getPaymentMethodSettingsUrl } from '../../utils';
 import { usePaymentRequestEnabledSettings } from 'wcpay/data';
-import { PaymentRequestEnabledSettingsHook } from './interfaces';
 import { ApplePayIcon, GooglePayIcon } from 'wcpay/payment-methods-icons';
 import DuplicateNotice from 'wcpay/components/duplicate-notice';
 import DuplicatedPaymentMethodsContext from '../settings-manager/duplicated-payment-methods-context';
@@ -23,7 +22,7 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 	const [
 		isPaymentRequestEnabled,
 		updateIsPaymentRequestEnabled,
-	] = usePaymentRequestEnabledSettings() as PaymentRequestEnabledSettingsHook;
+	] = usePaymentRequestEnabledSettings();
 
 	const {
 		duplicates,
@@ -46,6 +45,7 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 						) }
 						checked={ isPaymentRequestEnabled }
 						onChange={ updateIsPaymentRequestEnabled }
+						__nextHasNoMarginBottom
 					/>
 				</div>
 				<div className="express-checkout__text-container">

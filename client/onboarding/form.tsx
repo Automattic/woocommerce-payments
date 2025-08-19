@@ -2,8 +2,8 @@
  * External dependencies
  */
 import React from 'react';
-import { Button } from '@wordpress/components';
 import { isEmpty, mapValues } from 'lodash';
+import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -25,7 +25,9 @@ import { useValidation } from './validation';
 import { trackStepCompleted } from './tracking';
 import strings from './strings';
 
-export const OnboardingForm: React.FC = ( { children } ) => {
+export const OnboardingForm: React.FC< { children?: React.ReactNode } > = ( {
+	children,
+} ) => {
 	const { errors, touched, setTouched } = useOnboardingContext();
 	const { currentStep, nextStep } = useStepperContext();
 
@@ -49,6 +51,7 @@ export const OnboardingForm: React.FC = ( { children } ) => {
 				variant={ 'primary' }
 				type="submit"
 				className="stepper__cta"
+				__next40pxDefaultSize
 			>
 				{ strings.continue }
 			</Button>
@@ -56,13 +59,13 @@ export const OnboardingForm: React.FC = ( { children } ) => {
 	);
 };
 
-interface OnboardingTextFieldProps extends Partial< TextFieldProps > {
+interface OnboardingTextFieldProps {
 	name: keyof OnboardingFields;
 }
 
-export const OnboardingTextField: React.FC< OnboardingTextFieldProps > = (
-	props
-) => {
+export const OnboardingTextField: React.FC<
+	OnboardingTextFieldProps & Partial< TextFieldProps >
+> = ( props ) => {
 	const { name } = props;
 	const { data, setData, touched } = useOnboardingContext();
 	const { validate, error } = useValidation( name );
@@ -70,6 +73,7 @@ export const OnboardingTextField: React.FC< OnboardingTextFieldProps > = (
 
 	return (
 		<TextField
+			__next40pxDefaultSize
 			ref={ inputRef as any }
 			label={ strings.fields[ name ] }
 			value={ data[ name ] || '' }

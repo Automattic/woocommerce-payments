@@ -8,7 +8,6 @@ import { __ } from '@wordpress/i18n';
  */
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { getAppearance, getFontRulesFromPage } from '../upe-styles';
-import { normalizeCurrencyToMinorUnit } from 'wcpay/checkout/utils';
 import showErrorCheckout from 'wcpay/checkout/utils/show-error-checkout';
 import {
 	appendFingerprintInputToForm,
@@ -32,6 +31,7 @@ import {
 	SHORTCODE_BILLING_ADDRESS_FIELDS,
 	PAYMENT_METHOD_ERROR,
 } from 'wcpay/checkout/constants';
+import PAYMENT_METHOD_IDS from 'wcpay/constants/payment-method';
 
 // It looks like on file import there are some side effects. Should probably be fixed.
 const gatewayUPEComponents = {};
@@ -132,7 +132,12 @@ function submitForm( jQueryForm ) {
  * @return {boolean} True, if there are missing address fields. False, if the validation passes or is not applicable.
  */
 function isMissingRequiredAddressFieldsForBNPL( params, paymentMethodType ) {
-	if ( [ 'afterpay_clearpay', 'affirm' ].includes( paymentMethodType ) ) {
+	if (
+		! [
+			PAYMENT_METHOD_IDS.AFTERPAY_CLEARPAY,
+			PAYMENT_METHOD_IDS.AFFIRM,
+		].includes( paymentMethodType )
+	) {
 		return false;
 	}
 	const address = params?.billing_details?.address;
@@ -142,7 +147,7 @@ function isMissingRequiredAddressFieldsForBNPL( params, paymentMethodType ) {
 	}
 
 	const requiredAddressFields =
-		paymentMethodType === 'affirm'
+		paymentMethodType === PAYMENT_METHOD_IDS.AFFIRM
 			? [ 'line1', 'state', 'city', 'postal_code', 'country' ] // Line2 is not required.
 			: [ 'line1', 'postal_code', 'country' ]; // City and State are not required in Afterpay.
 
@@ -285,6 +290,7 @@ async function createStripePaymentElement(
 		wallets: {
 			applePay: 'never',
 			googlePay: 'never',
+			link: 'never',
 		},
 	} );
 
@@ -496,40 +502,6 @@ export async function mountStripePaymentElement(
 	} );
 }
 
-export async function mountStripePaymentMethodMessagingElement(
-	api,
-	domElement,
-	cartData,
-	location
-) {
-	const paymentMethodType = domElement.dataset.paymentMethodType;
-	const appearance = await initializeAppearance( api, location );
-
-	try {
-		const stripe = await api.getStripe();
-		const paymentMethodMessagingElement = stripe
-			.elements( {
-				appearance: appearance,
-				fonts: getFontRulesFromPage(),
-			} )
-			.create( 'paymentMethodMessaging', {
-				currency: cartData.currency,
-				amount: normalizeCurrencyToMinorUnit(
-					cartData.amount,
-					cartData.decimalPlaces
-				),
-				countryCode: cartData.country, // Customer's country or base country of the store.
-				paymentMethodTypes: [ paymentMethodType ],
-				displayType: 'promotional_text',
-			} );
-
-		return paymentMethodMessagingElement.mount( domElement );
-	} finally {
-		// Resolve the promise even if the element mounting fails.
-		return Promise.resolve();
-	}
-}
-
 /**
  * Creates and confirms a setup intent using the provided ID, then appends the confirmed setup intent to the given jQuery form.
  *
@@ -665,3 +637,5 @@ export function __resetGatewayUPEComponentsElement( paymentMethodType ) {
 		delete gatewayUPEComponents[ paymentMethodType ].upeElement;
 	}
 }
+
+export { isMissingRequiredAddressFieldsForBNPL };
