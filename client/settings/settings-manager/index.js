@@ -192,7 +192,14 @@ const SettingsManager = () => {
 	useEffect( () => {
 		const urlParams = new URLSearchParams( window.location.search );
 		if ( urlParams.get( 'woopayments-vat-details-modal' ) === 'true' ) {
-			if ( ! wcpaySettings.accountStatus.hasSubmittedVatData ) {
+			if ( ! wcpaySettings.accountStatus.isDocumentsEnabled ) {
+				dispatch( 'core/notices' ).createErrorNotice(
+					__(
+						'Tax details collection is not available for your account.',
+						'woocommerce-payments'
+					)
+				);
+			} else if ( ! wcpaySettings.accountStatus.hasSubmittedVatData ) {
 				setVatFormModalOpen( true );
 			} else {
 				dispatch( 'core/notices' ).createInfoNotice(
