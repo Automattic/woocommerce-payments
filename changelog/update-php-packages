@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Update PHP packages: vimeo/psalm, php-stubs/woocommerce-stubs, yoast/phpunit-polyfills, cweagans/composer-patches
