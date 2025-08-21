@@ -891,6 +891,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return false;
 		}
 
+		if ( in_array( $this->payment_method->get_id(), [ Payment_Method::AFTERPAY, Payment_Method::AFFIRM ], true ) && is_wc_endpoint_url( 'order-pay' ) ) {
+			$order = wc_get_order( absint( get_query_var( 'order-pay' ) ) );
+			$order = is_a( $order, 'WC_Order' ) ? $order : null;
+
+			if ( $order && ! $this->retrieve_usable_shipping_data_from_order( $order ) ) {
+				return false;
+			}
+		}
+
 		// Disable the gateway if it should not be displayed on the checkout page.
 		$is_gateway_enabled = in_array( $this->stripe_id, $this->get_payment_method_ids_enabled_at_checkout(), true ) ? true : false;
 		if ( ! $is_gateway_enabled ) {
@@ -4580,9 +4589,29 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return void
 	 */
 	private function handle_afterpay_shipping_requirement( WC_Order $order, Create_And_Confirm_Intention $request ): void {
+		$shipping_data = $this->retrieve_usable_shipping_data_from_order( $order );
+		if ( $shipping_data ) {
+			$request->set_shipping( $shipping_data );
+			return;
+		}
+
+		throw new Invalid_Address_Exception( __( 'A valid shipping address is required for Afterpay payments.', 'woocommerce-payments' ) );
+	}
+
+	/**
+	 * Retrieves the usable shipping data from the order (either from the shipping or billing details).
+	 * Returns null if there are no usable addresses.
+	 *
+	 * @param WC_Order $order The order object.
+	 * @return null|array
+	 */
+	private function retrieve_usable_shipping_data_from_order( WC_Order $order ): ?array {
 		$wc_locale_data = WC()->countries->get_country_locale();
 
 		$check_if_usable = function ( array $address ) use ( $wc_locale_data ): bool {
+			if ( ! isset( $address['country'] ) ) {
+				return false;
+			}
 			if ( $address['country'] && isset( $wc_locale_data[ $address['country'] ] ) ) {
 				$country_locale_data = $wc_locale_data[ $address['country'] ];
 				$fields_to_check     = [
@@ -4612,23 +4641,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$shipping_data = $this->order_service->get_shipping_data_from_order( $order );
 		if ( $check_if_usable( $shipping_data['address'] ) ) {
-			$request->set_shipping( $shipping_data );
-			return;
+			return $shipping_data;
 		}
 
+		// Afterpay fails if we send more parameters than expected in the
+		// shipping address. This ensures that we only send the name and address
+		// fields, as in get_shipping_data_from_order.
 		$billing_data = $this->order_service->get_billing_data_from_order( $order );
-		// Afterpay fails if we send more parameters than expected in the shipping address.
-		// This ensures that we only send the name and address fields, as in get_shipping_data_from_order.
-		$shipping_data = [
-			'name'    => $billing_data['name'] ?? '',
-			'address' => $billing_data['address'] ?? [],
-		];
-		if ( $check_if_usable( $shipping_data['address'] ) ) {
-			$request->set_shipping( $shipping_data );
-			return;
+		if ( $check_if_usable( $billing_data['address'] ) ) {
+			return [
+				'name'    => $billing_data['name'] ?? '',
+				'address' => $billing_data['address'] ?? [],
+			];
 		}
 
-		throw new Invalid_Address_Exception( __( 'A valid shipping address is required for Afterpay payments.', 'woocommerce-payments' ) );
+		return null;
 	}
 
 

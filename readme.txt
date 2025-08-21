@@ -4,7 +4,7 @@ Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.3
-Stable tag: 9.7.0
+Stable tag: 9.8.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -86,6 +86,30 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 4. Manage Disputes
 
 == Changelog ==
+
+= 9.8.0 - 2025-08-13 =
+* Add - Add address autocomplete to Checkout
+* Add - Add support for small screens on the evidence submission form.
+* Fix - Fix customer details section when name and/or email are very big.
+* Fix - Fix Google/Apple Pay "State / County is required" error during checkout for Croatia
+* Fix - Fix the icon border of the Steps component for a dispute.
+* Fix - Reset the enabled payment methods to default value on account reset.
+* Fix - Suppress sending completed-renewal-order email after dispute resolution
+* Update - As of this change, we stop bundling WordPress Components in favor of using the wp.components available in the WordPress installation.
+* Update - Make onboading pages use the pw.components available in the WordPress installation.
+* Update - Make the connect acctount components use the wp.components from the installation.
+* Update - Make the KYC onboarding use the WP components available in the installation.
+* Update - update: ensure Google Pay/Apple Pay can check out w/ LT addresses
+* Update - update: fraud protection rules to use WP components bundled within the WP installation
+* Update - Update documents page to use WP components available in the WordPress installation.
+* Update - Update loan page to use the installation WordPress components.
+* Update - Update the "Learn more about disputes" link in the confirmation screen of the disputes documentation.
+* Dev - Fix: enhances the robustness of the selectPaymentMethod method in end-to-end tests
+* Dev - Fix: Respond to a dispute e2e tests
+* Dev - Fix: select payment method shopper util
+* Dev - Removed all the Progressive Onboarding (PO) code.
+* Dev - update: use React 18
+* Dev - Update tested WooCommerce version to 10.1.0
 
 = 9.7.0 - 2025-07-24 =
 * Add - Add a confirmation screen to the new flow for submitting dispute evidence.

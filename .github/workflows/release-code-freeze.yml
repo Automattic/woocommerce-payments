@@ -86,6 +86,7 @@ jobs:
       RELEASE_VERSION: ${{ needs.check-code-freeze.outputs.nextReleaseVersion }}
       RELEASE_DATE: ${{ needs.check-code-freeze.outputs.nextReleaseDate }}
       RELEASE_PR_ID: ${{ needs.create-release-pr.outputs.release-pr-id }}
+      GITHUB_RUN_ID: ${{ github.run_id }}
     steps:
       - name: "Slack ping"
         uses: slackapi/slack-github-action@v1.25.0
@@ -116,7 +117,7 @@ jobs:
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "• Created a release branch `release/${{ env.RELEASE_VERSION }}` \n • Raised a <https://github.com/Automattic/woocommerce-payments/pull/${{ env.RELEASE_PR_ID }}|Pull Request> to `trunk`\n • Built a <https://github.com/Automattic/woocommerce-payments/actions/runs/$GITHUB_RUN_ID|zip file and ran smoke tests> against it"
+                    "text": "• Created a release branch `release/${{ env.RELEASE_VERSION }}` \n • Raised a <https://github.com/Automattic/woocommerce-payments/pull/${{ env.RELEASE_PR_ID }}|Pull Request> to `trunk`\n • Built a <https://github.com/Automattic/woocommerce-payments/actions/runs/${{ env.GITHUB_RUN_ID }}|zip file and ran smoke tests> against it"
                   }
                 },
                 {

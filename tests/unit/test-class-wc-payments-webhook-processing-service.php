@@ -749,6 +749,46 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Tests that a payment_intent.succeeded event will ignore the order due to key mismatch.
+	 */
+	public function test_payment_intent_successful_ignores_order_due_to_key_mismatch() {
+		$this->event_body['type']           = 'payment_intent.succeeded';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'       => 'pi_123123123123123', // payment_intent's ID.
+			'amount'   => 1500,
+			'charges'  => [
+				'data' => [
+					[
+						'id' => 'py_123123123123123',
+					],
+				],
+			],
+			'currency' => 'eur',
+			'metadata' => [
+				'order_key' => 'abcd',
+			],
+		];
+
+		$this->mock_order->expects( $this->any() )
+			->method( 'get_order_key' )
+			->willReturn( 'xyz' );
+
+		$this->mock_order->expects( $this->never() )->method( 'update_meta_data' );
+		$this->mock_order->expects( $this->never() )->method( 'save' );
+		$this->mock_order->expects( $this->never() )->method( 'payment_complete' );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $this->mock_order );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
 	 * Tests that a payment_intent.succeeded event will add relevant metadata.
 	 */
 	public function test_payment_intent_successful_adds_relevant_metadata() {
@@ -1275,6 +1315,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 					],
 				],
 			],
+			'metadata'           => [],
 			'last_payment_error' => [
 				'message'        => 'error message',
 				'payment_method' => [
@@ -1345,6 +1386,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'object'             => 'payment_intent',
 			'amount'             => 1500,
 			'charges'            => [],
+			'metadata'           => [],
 			'last_payment_error' => [
 				'code'           => 'card_declined',
 				'decline_code'   => 'debit_notification_undelivered',
@@ -1988,6 +2030,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 							],
 						],
 					],
+					'metadata'           => [],
 					'last_payment_error' => [
 						'message'        => 'Card declined',
 						'payment_method' => [
