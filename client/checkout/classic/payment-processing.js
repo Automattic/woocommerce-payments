@@ -31,6 +31,7 @@ import {
 	SHORTCODE_BILLING_ADDRESS_FIELDS,
 	PAYMENT_METHOD_ERROR,
 } from 'wcpay/checkout/constants';
+import PAYMENT_METHOD_IDS from 'wcpay/constants/payment-method';
 
 // It looks like on file import there are some side effects. Should probably be fixed.
 const gatewayUPEComponents = {};
@@ -131,7 +132,12 @@ function submitForm( jQueryForm ) {
  * @return {boolean} True, if there are missing address fields. False, if the validation passes or is not applicable.
  */
 function isMissingRequiredAddressFieldsForBNPL( params, paymentMethodType ) {
-	if ( [ 'afterpay_clearpay', 'affirm' ].includes( paymentMethodType ) ) {
+	if (
+		! [
+			PAYMENT_METHOD_IDS.AFTERPAY_CLEARPAY,
+			PAYMENT_METHOD_IDS.AFFIRM,
+		].includes( paymentMethodType )
+	) {
 		return false;
 	}
 	const address = params?.billing_details?.address;
@@ -141,7 +147,7 @@ function isMissingRequiredAddressFieldsForBNPL( params, paymentMethodType ) {
 	}
 
 	const requiredAddressFields =
-		paymentMethodType === 'affirm'
+		paymentMethodType === PAYMENT_METHOD_IDS.AFFIRM
 			? [ 'line1', 'state', 'city', 'postal_code', 'country' ] // Line2 is not required.
 			: [ 'line1', 'postal_code', 'country' ]; // City and State are not required in Afterpay.
 
@@ -631,3 +637,5 @@ export function __resetGatewayUPEComponentsElement( paymentMethodType ) {
 		delete gatewayUPEComponents[ paymentMethodType ].upeElement;
 	}
 }
+
+export { isMissingRequiredAddressFieldsForBNPL };
