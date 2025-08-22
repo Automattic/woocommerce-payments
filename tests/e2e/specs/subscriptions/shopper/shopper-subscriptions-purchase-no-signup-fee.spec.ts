@@ -45,7 +45,7 @@ describeif( shouldRunSubscriptionsTests )(
 				);
 				await goToProductPageBySlug( shopperPage, productSlug );
 				await shopperPage
-					.getByRole( 'button', { name: 'Sign up now' } )
+					.getByRole( 'button', { name: 'Add to cart' } )
 					.click();
 				await shopperPage.waitForLoadState( 'networkidle' );
 				await expect(
