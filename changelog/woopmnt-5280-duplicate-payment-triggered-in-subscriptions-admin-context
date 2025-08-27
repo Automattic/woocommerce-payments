@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Attempt to avoid manual renewal triggering duplicates.

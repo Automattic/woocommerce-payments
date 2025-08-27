@@ -1136,20 +1136,43 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				];
 			}
 
+			// Enhanced duplicate payment prevention for manual retries
 			$check_session_order = $this->duplicate_payment_prevention_service->check_against_session_processing_order( $order );
 			if ( is_array( $check_session_order ) ) {
 				return $check_session_order;
 			}
-			$this->duplicate_payment_prevention_service->maybe_update_session_processing_order( $order_id );
+
+			// Check if order is already locked for payment processing
+			if ( ! $this->duplicate_payment_prevention_service->lock_order_for_payment_processing( $order ) ) {
+				return [
+					'result'   => 'failure',
+					'messages' => __( 'This order is currently being processed. Please wait a moment and try again.', 'woocommerce-payments' ),
+				];
+			}
+
+			// Check for existing successful payment intent (especially important for manual retries)
+			if ( $this->duplicate_payment_prevention_service->check_for_existing_successful_payment( $order ) ) {
+				$this->duplicate_payment_prevention_service->unlock_order_for_payment_processing( $order );
+				return [
+					'result'   => 'failure',
+					'messages' => __( 'This order has already been paid successfully. Duplicate payment prevented.', 'woocommerce-payments' ),
+				];
+			}
 
 			$check_existing_intention = $this->duplicate_payment_prevention_service->check_payment_intent_attached_to_order_succeeded( $order );
 			if ( is_array( $check_existing_intention ) ) {
+				$this->duplicate_payment_prevention_service->unlock_order_for_payment_processing( $order );
 				return $check_existing_intention;
 			}
+
+			$this->duplicate_payment_prevention_service->maybe_update_session_processing_order( $order_id );
 
 			$payment_information = $this->prepare_payment_information( $order );
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
+			// Unlock the order for payment processing in case of error
+			$this->duplicate_payment_prevention_service->unlock_order_for_payment_processing( $order );
+			
 			// We set this variable to be used in following checks.
 			$blocked_by_fraud_rules = $this->is_blocked_by_fraud_rules( $e );
 
@@ -1779,6 +1802,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->attach_exchange_info_to_order( $order, $charge_id );
 		if ( Intent_Status::SUCCEEDED === $status || ( Intent_Status::REQUIRES_ACTION === $status && $is_offline_payment_method ) ) {
 			$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
+			$this->duplicate_payment_prevention_service->unlock_order_for_payment_processing( $order );
 		}
 		$this->order_service->update_order_status_from_intent( $order, $intent );
 		$this->order_service->attach_transaction_fee_to_order( $order, $charge );
