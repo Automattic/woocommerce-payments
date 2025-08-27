@@ -27,12 +27,12 @@ use WCPay\Exceptions\{Add_Payment_Method_Exception,
 	Process_Payment_Exception,
 	Intent_Authentication_Exception,
 	API_Exception,
-	Invalid_Address_Exception,
 	Fraud_Prevention_Enabled_Exception,
+	Invalid_Address_Exception,
 	Invalid_Phone_Number_Exception,
-	Rate_Limiter_Enabled_Exception,
 	Order_ID_Mismatch_Exception,
-	Order_Not_Found_Exception};
+	Order_Not_Found_Exception,
+	Rate_Limiter_Enabled_Exception};
 use WCPay\Core\Server\Request\Cancel_Intention;
 use WCPay\Core\Server\Request\Capture_Intention;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
@@ -1092,26 +1092,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $check_session_order;
 			}
 
-			// Check if order is already locked for payment processing.
-			if ( ! $this->duplicate_payment_prevention_service->lock_order_for_payment_processing( $order ) ) {
-				return [
-					'result'   => 'failure',
-					'messages' => __( 'This order is currently being processed. Please wait a moment and try again.', 'woocommerce-payments' ),
-				];
-			}
-
-			// Check for existing successful payment intent (especially important for manual retries).
-			if ( $this->duplicate_payment_prevention_service->check_for_existing_successful_payment( $order ) ) {
-				$this->duplicate_payment_prevention_service->unlock_order_for_payment_processing( $order );
-				return [
-					'result'   => 'failure',
-					'messages' => __( 'This order has already been paid successfully. Duplicate payment prevented.', 'woocommerce-payments' ),
-				];
-			}
-
 			$check_existing_intention = $this->duplicate_payment_prevention_service->check_payment_intent_attached_to_order_succeeded( $order );
 			if ( is_array( $check_existing_intention ) ) {
-				$this->duplicate_payment_prevention_service->unlock_order_for_payment_processing( $order );
 				return $check_existing_intention;
 			}
 
@@ -1120,8 +1102,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_information = $this->prepare_payment_information( $order );
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
-			// Unlock the order for payment processing in case of error.
-			$this->duplicate_payment_prevention_service->unlock_order_for_payment_processing( $order );
 
 			// We set this variable to be used in following checks.
 			$blocked_by_fraud_rules = $this->is_blocked_by_fraud_rules( $e );
@@ -1699,7 +1679,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->attach_exchange_info_to_order( $order, $charge_id );
 		if ( Intent_Status::SUCCEEDED === $status || ( Intent_Status::REQUIRES_ACTION === $status && $is_offline_payment_method ) ) {
 			$this->duplicate_payment_prevention_service->remove_session_processing_order( $order->get_id() );
-			$this->duplicate_payment_prevention_service->unlock_order_for_payment_processing( $order );
 		}
 		$this->order_service->update_order_status_from_intent( $order, $intent );
 		$this->order_service->attach_transaction_fee_to_order( $order, $charge );
@@ -4569,9 +4548,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	private function is_blocked_by_avs_verification_fraud_rule( ?string $error_code, ?string $error_type ): bool {
 		$is_avs_verification_rule_enabled = $this->is_fraud_rule_enabled( 'avs_verification' );
+		$is_address_mismatch_rule_enabled = $this->is_fraud_rule_enabled( 'address_mismatch' );
 		$is_incorrect_zip_error           = 'card_error' === $error_type && 'incorrect_zip' === $error_code;
 
-		return $is_avs_verification_rule_enabled && $is_incorrect_zip_error;
+		return ( $is_avs_verification_rule_enabled || $is_address_mismatch_rule_enabled ) && $is_incorrect_zip_error;
 	}
 
 	/**

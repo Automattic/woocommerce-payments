@@ -3525,7 +3525,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->getMock();
 
 		$mock_order_service
-			->expects( $this->never() )
+			->expects( $this->once() )
 			->method( 'mark_order_blocked_for_fraud' );
 
 		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway(
