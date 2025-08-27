@@ -1097,6 +1097,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $check_existing_intention;
 			}
 
+			// Check for existing successful payment intent (especially important for manual retries).
+			if ( $this->duplicate_payment_prevention_service->check_for_existing_successful_payment( $order ) ) {
+				return [
+					'result'   => 'failure',
+					'messages' => __( 'This order has already been paid successfully. Duplicate payment prevented.', 'woocommerce-payments' ),
+				];
+			}
+
 			$this->duplicate_payment_prevention_service->maybe_update_session_processing_order( $order_id );
 
 			$payment_information = $this->prepare_payment_information( $order );
