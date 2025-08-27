@@ -417,6 +417,12 @@ echo
 echo "WooCommerce version:"
 cli_debug wp plugin get woocommerce --field=version
 
+if [[ ! ${SKIP_WC_SUBSCRIPTIONS_TESTS} ]]; then
+	echo
+    echo "WooCommerce Subscriptions version:"
+	cli_debug wp plugin get woocommerce-subscriptions --field=version
+fi
+
 echo
 echo "Docker environment:"
 cli_debug wp cli info
