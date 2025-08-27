@@ -2513,8 +2513,8 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			$url          .= '?' . http_build_query( $params );
 			$redacted_url .= '?' . http_build_query( $redacted_params );
 		} else {
-			// Use order-based idempotency key if available, otherwise fall back to UUID
-			$idempotency_key = $this->get_idempotency_key_for_request( $params );
+			// Use order-based idempotency key if available, otherwise fall back to UUID.
+			$idempotency_key            = $this->get_idempotency_key_for_request( $params );
 			$headers['Idempotency-Key'] = $idempotency_key;
 			$body                       = wp_json_encode( $params );
 			if ( ! $body ) {
@@ -2914,21 +2914,21 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 * @return string The idempotency key.
 	 */
 	private function get_idempotency_key_for_request( array $params ) {
-		// Check if this is a payment intent creation with order metadata
+		// Check if this is a payment intent creation with order metadata.
 		if ( isset( $params['metadata']['order_id'] ) ) {
 			$order_id = $params['metadata']['order_id'];
-			// Create a deterministic idempotency key based on order ID
+			// Create a deterministic idempotency key based on order ID.
 			return 'order_' . $order_id . '_' . hash( 'sha256', $order_id . '_payment_intent' );
 		}
 
-		// Check if this is a payment intent creation with order_number metadata
+		// Check if this is a payment intent creation with order_number metadata.
 		if ( isset( $params['metadata']['order_number'] ) ) {
 			$order_number = $params['metadata']['order_number'];
-			// Create a deterministic idempotency key based on order number
+			// Create a deterministic idempotency key based on order number.
 			return 'order_' . $order_number . '_' . hash( 'sha256', $order_number . '_payment_intent' );
 		}
 
-		// Fall back to UUID for requests without order context
+		// Fall back to UUID for requests without order context.
 		return $this->uuid();
 	}
 

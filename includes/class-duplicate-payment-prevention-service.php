@@ -1,6 +1,6 @@
 <?php
 /**
- * Class WC_Payments_Duplicate_Payment_Prevention_Service
+ * Class WC_Payments_Duplicate_Payment_Prevention_Service.
  *
  * @package WooCommerce\Payments
  */
@@ -90,7 +90,8 @@ class Duplicate_Payment_Prevention_Service {
 		try {
 			$request = Get_Intention::create( $intent_id );
 			$request->set_hook_args( $order );
-			/** @var \WC_Payments_API_Abstract_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+			// phpcs:ignore Generic.Commenting.DocComment.MissingShort
+			/** @var \WC_Payments_API_Abstract_Intention $intent */
 			$intent        = $request->send();
 			$intent_status = $intent->get_status();
 		} catch ( Exception $e ) {
@@ -164,7 +165,7 @@ class Duplicate_Payment_Prevention_Service {
 		}
 		$session_order->add_order_note(
 			sprintf(
-				/* translators: order ID integer number */
+				/* translators: order ID integer number. */
 				__( 'WooCommerce Payments: detected and deleted order ID %d, which has duplicate cart content with this order.', 'woocommerce-payments' ),
 				$current_order->get_id()
 			)
@@ -210,21 +211,6 @@ class Duplicate_Payment_Prevention_Service {
 	}
 
 	/**
-	 * Get the processing order ID for the current session.
-	 *
-	 * @return integer|null Order ID. Null if the value is not set.
-	 */
-	protected function get_session_processing_order() {
-		$session = WC()->session;
-		if ( null === $session ) {
-			return null;
-		}
-
-		$val = $session->get( self::SESSION_KEY_PROCESSING_ORDER );
-		return null === $val ? null : absint( $val );
-	}
-
-	/**
 	 * Check if the order already has a successful payment intent for manual retries.
 	 * This prevents duplicate payments when administrators manually retry failed payments.
 	 *
@@ -232,13 +218,13 @@ class Duplicate_Payment_Prevention_Service {
 	 * @return bool True if a successful payment intent exists, false otherwise.
 	 */
 	public function check_for_existing_successful_payment( WC_Order $order ) {
-		// Check if the order already has a successful payment intent
+		// Check if the order already has a successful payment intent.
 		$intent_id = (string) $order->get_meta( '_intent_id', true );
 		if ( empty( $intent_id ) ) {
 			return false;
 		}
 
-		// We only care about payment intents
+		// We only care about payment intents.
 		$is_payment_intent = 'pi_' === substr( $intent_id, 0, 3 );
 		if ( ! $is_payment_intent ) {
 			return false;
@@ -247,15 +233,16 @@ class Duplicate_Payment_Prevention_Service {
 		try {
 			$request = Get_Intention::create( $intent_id );
 			$request->set_hook_args( $order );
-			/** @var \WC_Payments_API_Abstract_Intention $intent */ // phpcs:ignore Generic.Commenting.DocComment.MissingShort
+			// phpcs:ignore Generic.Commenting.DocComment.MissingShort
+			/** @var \WC_Payments_API_Abstract_Intention $intent */
 			$intent        = $request->send();
 			$intent_status = $intent->get_status();
 
-			// Check if the payment intent is successful and belongs to this order
+			// Check if the payment intent is successful and belongs to this order.
 			if ( Intent_Status::SUCCEEDED === $intent_status ) {
 				$intent_meta_order_id_raw = $intent->get_metadata()['order_id'] ?? '';
 				$intent_meta_order_id     = is_numeric( $intent_meta_order_id_raw ) ? intval( $intent_meta_order_id_raw ) : 0;
-				
+
 				if ( $intent_meta_order_id === $order->get_id() ) {
 					Logger::info( sprintf( 'Duplicate payment prevention: Order #%d already has a successful payment intent %s', $order->get_id(), $intent_id ) );
 					return true;
@@ -278,16 +265,16 @@ class Duplicate_Payment_Prevention_Service {
 	public function lock_order_for_payment_processing( WC_Order $order ) {
 		$order_id       = $order->get_id();
 		$transient_name = 'wcpay_processing_order_' . $order_id;
-		$lock_duration  = 5 * MINUTE_IN_SECONDS; // 5 minutes
+		$lock_duration  = 5 * MINUTE_IN_SECONDS; // 5 minutes.
 
-		// Check if order is already locked
+		// Check if order is already locked.
 		$existing_lock = get_transient( $transient_name );
 		if ( false !== $existing_lock ) {
 			Logger::warning( sprintf( 'Order #%d is already locked for payment processing', $order_id ) );
 			return false;
 		}
 
-		// Lock the order
+		// Lock the order.
 		set_transient( $transient_name, time(), $lock_duration );
 		Logger::info( sprintf( 'Order #%d locked for payment processing', $order_id ) );
 		return true;
@@ -302,8 +289,23 @@ class Duplicate_Payment_Prevention_Service {
 	public function unlock_order_for_payment_processing( WC_Order $order ) {
 		$order_id       = $order->get_id();
 		$transient_name = 'wcpay_processing_order_' . $order_id;
-		
+
 		delete_transient( $transient_name );
 		Logger::info( sprintf( 'Order #%d unlocked from payment processing', $order_id ) );
+	}
+
+	/**
+	 * Get the processing order ID for the current session.
+	 *
+	 * @return integer|null Order ID. Null if the value is not set.
+	 */
+	protected function get_session_processing_order() {
+		$session = WC()->session;
+		if ( null === $session ) {
+			return null;
+		}
+
+		$val = $session->get( self::SESSION_KEY_PROCESSING_ORDER );
+		return null === $val ? null : absint( $val );
 	}
 }
