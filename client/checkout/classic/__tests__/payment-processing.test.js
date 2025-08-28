@@ -908,6 +908,81 @@ describe( 'isMissingRequiredAddressFieldsForBNPL', () => {
 		).toBe( false );
 	} );
 
+	test( 'returns false for affirm with complete address and name', () => {
+		const params = {
+			name: 'John Doe',
+			billing_details: {
+				address: {
+					line1: '123 Main St',
+					city: 'New York',
+					country: 'US',
+					postal_code: '10001',
+					state: 'NY',
+				},
+			},
+		};
+
+		expect(
+			isMissingRequiredAddressFieldsForBNPL( params, 'affirm' )
+		).toBe( false );
+	} );
+
+	test( 'returns true for affirm with complete address but missing name', () => {
+		const params = {
+			billing_details: {
+				address: {
+					line1: '123 Main St',
+					city: 'New York',
+					country: 'US',
+					postal_code: '10001',
+					state: 'NY',
+				},
+			},
+		};
+
+		expect(
+			isMissingRequiredAddressFieldsForBNPL( params, 'affirm' )
+		).toBe( true );
+	} );
+
+	test( 'returns true for affirm with complete address but empty name', () => {
+		const params = {
+			name: '',
+			billing_details: {
+				address: {
+					line1: '123 Main St',
+					city: 'New York',
+					country: 'US',
+					postal_code: '10001',
+					state: 'NY',
+				},
+			},
+		};
+
+		expect(
+			isMissingRequiredAddressFieldsForBNPL( params, 'affirm' )
+		).toBe( true );
+	} );
+
+	test( 'returns true for affirm with complete address but null name', () => {
+		const params = {
+			name: null,
+			billing_details: {
+				address: {
+					line1: '123 Main St',
+					city: 'New York',
+					country: 'US',
+					postal_code: '10001',
+					state: 'NY',
+				},
+			},
+		};
+
+		expect(
+			isMissingRequiredAddressFieldsForBNPL( params, 'affirm' )
+		).toBe( true );
+	} );
+
 	test( 'returns false for afterpay_clearpay with missing address', () => {
 		const params = {
 			billing_details: {},

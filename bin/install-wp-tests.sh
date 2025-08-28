@@ -48,11 +48,11 @@ get_db_connection_flags() {
 
 	if ! [ -z $DB_HOSTNAME ] ; then
 		if [ $(echo $DB_SOCK_OR_PORT | grep -e '^[0-9]\{1,\}$') ]; then
-			EXTRA_FLAGS=" --host=$DB_HOSTNAME --port=$DB_SOCK_OR_PORT --protocol=tcp"
+			EXTRA_FLAGS=" --host=$DB_HOSTNAME --port=$DB_SOCK_OR_PORT --protocol=tcp --skip_ssl"
 		elif ! [ -z $DB_SOCK_OR_PORT ] ; then
 			EXTRA_FLAGS=" --socket=$DB_SOCK_OR_PORT"
 		elif ! [ -z $DB_HOSTNAME ] ; then
-			EXTRA_FLAGS=" --host=$DB_HOSTNAME --protocol=tcp"
+			EXTRA_FLAGS=" --host=$DB_HOSTNAME --protocol=tcp --skip_ssl"
 		fi
 	fi
 	echo "--user=$DB_USER --password=$DB_PASS $EXTRA_FLAGS";
