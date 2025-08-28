@@ -2513,9 +2513,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			$url          .= '?' . http_build_query( $params );
 			$redacted_url .= '?' . http_build_query( $redacted_params );
 		} else {
-			// Use order-based idempotency key if available, otherwise fall back to UUID.
-			$idempotency_key            = $this->uuid();
-			$headers['Idempotency-Key'] = $idempotency_key;
+			$headers['Idempotency-Key'] = $this->uuid();
 			$body                       = wp_json_encode( $params );
 			if ( ! $body ) {
 				throw new API_Exception(
