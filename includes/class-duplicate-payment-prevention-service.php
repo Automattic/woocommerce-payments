@@ -256,45 +256,6 @@ class Duplicate_Payment_Prevention_Service {
 	}
 
 	/**
-	 * Lock an order for payment processing to prevent concurrent payment attempts.
-	 * This is especially important for manual retries by administrators.
-	 *
-	 * @param WC_Order $order The order to lock.
-	 * @return bool True if the order was successfully locked, false if already locked.
-	 */
-	public function lock_order_for_payment_processing( WC_Order $order ) {
-		$order_id       = $order->get_id();
-		$transient_name = 'wcpay_processing_order_' . $order_id;
-		$lock_duration  = 5 * MINUTE_IN_SECONDS; // 5 minutes.
-
-		// Check if order is already locked.
-		$existing_lock = get_transient( $transient_name );
-		if ( false !== $existing_lock ) {
-			Logger::warning( sprintf( 'Order #%d is already locked for payment processing', $order_id ) );
-			return false;
-		}
-
-		// Lock the order.
-		set_transient( $transient_name, time(), $lock_duration );
-		Logger::info( sprintf( 'Order #%d locked for payment processing', $order_id ) );
-		return true;
-	}
-
-	/**
-	 * Unlock an order after payment processing is complete.
-	 *
-	 * @param WC_Order $order The order to unlock.
-	 * @return void
-	 */
-	public function unlock_order_for_payment_processing( WC_Order $order ) {
-		$order_id       = $order->get_id();
-		$transient_name = 'wcpay_processing_order_' . $order_id;
-
-		delete_transient( $transient_name );
-		Logger::info( sprintf( 'Order #%d unlocked from payment processing', $order_id ) );
-	}
-
-	/**
 	 * Get the processing order ID for the current session.
 	 *
 	 * @return integer|null Order ID. Null if the value is not set.

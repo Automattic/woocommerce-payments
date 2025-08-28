@@ -67,38 +67,6 @@ class WC_Payments_Duplicate_Payment_Prevention_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Test that the service has the required methods.
-	 */
-	public function test_duplicate_prevention_service_has_required_methods() {
-		$this->assertTrue( method_exists( $this->duplicate_prevention_service, 'check_for_existing_successful_payment' ) );
-		$this->assertTrue( method_exists( $this->duplicate_prevention_service, 'lock_order_for_payment_processing' ) );
-		$this->assertTrue( method_exists( $this->duplicate_prevention_service, 'unlock_order_for_payment_processing' ) );
-	}
-
-	/**
-	 * Test order locking functionality.
-	 */
-	public function test_order_locking_functionality() {
-		$order_id = 12345;
-		$this->mock_order->method( 'get_id' )->willReturn( $order_id );
-
-		// Test successful locking.
-		$result = $this->duplicate_prevention_service->lock_order_for_payment_processing( $this->mock_order );
-		$this->assertTrue( $result );
-
-		// Test that subsequent lock attempts fail.
-		$result = $this->duplicate_prevention_service->lock_order_for_payment_processing( $this->mock_order );
-		$this->assertFalse( $result );
-
-		// Test unlocking.
-		$this->duplicate_prevention_service->unlock_order_for_payment_processing( $this->mock_order );
-
-		// Test that locking works again after unlock.
-		$result = $this->duplicate_prevention_service->lock_order_for_payment_processing( $this->mock_order );
-		$this->assertTrue( $result );
-	}
-
-	/**
 	 * Test existing successful payment detection with no intent ID.
 	 */
 	public function test_existing_successful_payment_detection_no_intent() {
@@ -123,48 +91,5 @@ class WC_Payments_Duplicate_Payment_Prevention_Test extends WCPAY_UnitTestCase {
 
 		$result = $this->duplicate_prevention_service->check_for_existing_successful_payment( $this->mock_order );
 		$this->assertFalse( $result );
-	}
-
-	/**
-	 * Test transient cleanup on unlock.
-	 */
-	public function test_transient_cleanup_on_unlock() {
-		$order_id = 12345;
-		$this->mock_order->method( 'get_id' )->willReturn( $order_id );
-
-		// Lock the order.
-		$this->duplicate_prevention_service->lock_order_for_payment_processing( $this->mock_order );
-
-		// Verify transient exists.
-		$transient_name = 'wcpay_processing_order_' . $order_id;
-		$this->assertNotFalse( get_transient( $transient_name ) );
-
-		// Unlock the order.
-		$this->duplicate_prevention_service->unlock_order_for_payment_processing( $this->mock_order );
-
-		// Verify transient is cleaned up.
-		$this->assertFalse( get_transient( $transient_name ) );
-	}
-
-	/**
-	 * Test lock expiration.
-	 */
-	public function test_lock_expiration() {
-		$order_id = 12345;
-		$this->mock_order->method( 'get_id' )->willReturn( $order_id );
-
-		// Lock the order.
-		$this->duplicate_prevention_service->lock_order_for_payment_processing( $this->mock_order );
-
-		// Verify lock exists.
-		$transient_name = 'wcpay_processing_order_' . $order_id;
-		$this->assertNotFalse( get_transient( $transient_name ) );
-
-		// Manually expire the transient (simulate time passing).
-		delete_transient( $transient_name );
-
-		// Verify we can lock again after expiration.
-		$result = $this->duplicate_prevention_service->lock_order_for_payment_processing( $this->mock_order );
-		$this->assertTrue( $result );
 	}
 }
