@@ -3044,8 +3044,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		// Create order with sufficient address data for BNPL.
 		$order = WC_Helper_Order::create_order();
-		$order->set_shipping_first_name( 'Joe' );
-		$order->set_shipping_last_name( 'Tribiani' );
+		$order->set_shipping_last_name( 'Tribbiani' );
 		$order->set_shipping_address_1( '123 Main St' );
 		$order->set_shipping_city( 'New York' );
 		$order->set_shipping_state( 'NY' );
