@@ -19,9 +19,6 @@ TMPDIR=$(echo $TMPDIR | sed -e "s/\/$//")
 WP_TESTS_DIR=${WP_TESTS_DIR-$TMPDIR/wordpress-tests-lib}
 WP_CORE_DIR=${WP_CORE_DIR-$TMPDIR/wordpress/}
 
-source $(dirname $0)/mysql-version-utils.sh
-MYSQL_SSL_FLAG=$(get_mysql_ssl_flag)
-
 download() {
     if [ `which curl` ]; then
         curl -s "$1" > "$2";
@@ -51,11 +48,11 @@ get_db_connection_flags() {
 
 	if ! [ -z $DB_HOSTNAME ] ; then
 		if [ $(echo $DB_SOCK_OR_PORT | grep -e '^[0-9]\{1,\}$') ]; then
-			EXTRA_FLAGS=" --host=$DB_HOSTNAME --port=$DB_SOCK_OR_PORT --protocol=tcp $MYSQL_SSL_FLAG"
+			EXTRA_FLAGS=" --host=$DB_HOSTNAME --port=$DB_SOCK_OR_PORT --protocol=tcp"
 		elif ! [ -z $DB_SOCK_OR_PORT ] ; then
 			EXTRA_FLAGS=" --socket=$DB_SOCK_OR_PORT"
 		elif ! [ -z $DB_HOSTNAME ] ; then
-			EXTRA_FLAGS=" --host=$DB_HOSTNAME --protocol=tcp $MYSQL_SSL_FLAG"
+			EXTRA_FLAGS=" --host=$DB_HOSTNAME --protocol=tcp"
 		fi
 	fi
 	echo "--user=$DB_USER --password=$DB_PASS $EXTRA_FLAGS";
