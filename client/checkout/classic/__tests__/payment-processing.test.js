@@ -890,25 +890,6 @@ describe( 'isMissingRequiredAddressFieldsForBNPL', () => {
 		).toBe( false );
 	} );
 
-	test( 'returns false for affirm with complete address', () => {
-		const params = {
-			billing_details: {
-				name: 'John Tribiani',
-				address: {
-					line1: '123 Main St',
-					city: 'New York',
-					country: 'US',
-					postal_code: '10001',
-					state: 'NY',
-				},
-			},
-		};
-
-		expect(
-			isMissingRequiredAddressFieldsForBNPL( params, 'affirm' )
-		).toBe( false );
-	} );
-
 	test( 'returns false for affirm with complete address and name', () => {
 		const params = {
 			name: 'John Doe',
