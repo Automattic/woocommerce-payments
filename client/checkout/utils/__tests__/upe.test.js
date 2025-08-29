@@ -639,7 +639,7 @@ describe( 'getStripeElementOptions', () => {
 				},
 			},
 			terms: { bancontact: 'always', card: 'always', eps: 'always' },
-			wallets: { applePay: 'never', googlePay: 'never', link: 'never' },
+			wallets: { applePay: 'never', googlePay: 'never' },
 		} );
 	} );
 
@@ -687,7 +687,7 @@ describe( 'getStripeElementOptions', () => {
 				},
 			},
 			terms: { bancontact: 'always', card: 'always', eps: 'always' },
-			wallets: { applePay: 'never', googlePay: 'never', link: 'never' },
+			wallets: { applePay: 'never', googlePay: 'never' },
 		} );
 	} );
 
@@ -727,7 +727,7 @@ describe( 'getStripeElementOptions', () => {
 				},
 			},
 			terms: { card: 'never' },
-			wallets: { applePay: 'never', googlePay: 'never', link: 'never' },
+			wallets: { applePay: 'never', googlePay: 'never' },
 		} );
 	} );
 } );

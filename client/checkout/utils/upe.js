@@ -258,7 +258,6 @@ export const getStripeElementOptions = (
 		wallets: {
 			applePay: 'never',
 			googlePay: 'never',
-			link: 'never',
 		},
 	};
 
