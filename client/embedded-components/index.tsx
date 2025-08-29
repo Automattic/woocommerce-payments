@@ -73,6 +73,11 @@ const useInitializeStripe = (
 	useEffect( () => {
 		const initializeStripe = async () => {
 			try {
+				// Reset state on refresh
+				setStripeConnectInstance( null );
+				setInitializationError( null );
+				setLoading( true );
+
 				let session: AccountSession;
 
 				if ( isOnboarding && onboardingData ) {
@@ -123,7 +128,64 @@ const useInitializeStripe = (
 		initializeStripe();
 	}, [ isOnboarding, onboardingData ] );
 
-	return { stripeConnectInstance, initializationError, loading };
+	const reinitialize = async () => {
+		// Reset state and reinitialize
+		setStripeConnectInstance( null );
+		setInitializationError( null );
+		setLoading( true );
+
+		try {
+			let session: AccountSession;
+
+			if ( isOnboarding && onboardingData ) {
+				session = await createKycAccountSession( onboardingData );
+				trackRedirected( true );
+			} else {
+				session = await createAccountSession();
+			}
+
+			const { clientSecret, publishableKey } = session;
+
+			if ( ! publishableKey ) {
+				throw new Error(
+					__(
+						'Unable to start onboarding. If this problem persists, please contact support.',
+						'woocommerce-payments'
+					)
+				);
+			}
+
+			const instance = loadConnectAndInitialize( {
+				publishableKey,
+				fetchClientSecret: async () => clientSecret,
+				appearance: {
+					overlays: 'drawer',
+					...appearance,
+				},
+				locale: session.locale.replace( '_', '-' ),
+			} );
+
+			setStripeConnectInstance( instance );
+		} catch ( err ) {
+			setInitializationError(
+				err instanceof Error
+					? err.message
+					: __(
+							'Unable to start onboarding. If this problem persists, please contact support.',
+							'woocommerce-payments'
+					  )
+			);
+		} finally {
+			setLoading( false );
+		}
+	};
+
+	return {
+		stripeConnectInstance,
+		initializationError,
+		loading,
+		reinitialize,
+	};
 };
 
 /**
@@ -196,15 +258,71 @@ export const EmbeddedConnectNotificationBanner: React.FC< EmbeddedAccountNotific
 	onLoadError,
 	onNotificationsChange,
 } ) => {
+	const [ lastNotifications, setLastNotifications ] = useState< {
+		total: number;
+		actionRequired: number;
+	} | null >( null );
+	const [ isRefreshing, setIsRefreshing ] = useState( false );
+
 	const {
 		stripeConnectInstance,
 		initializationError,
 		loading,
+		reinitialize,
 	} = useInitializeStripe( false, null );
+
+	// Listen for simple refresh event from other components
+	useEffect( () => {
+		const handleRefresh = () => {
+			setIsRefreshing( true );
+			reinitialize();
+		};
+
+		window.addEventListener( 'stripe-refresh', handleRefresh );
+		return () =>
+			window.removeEventListener( 'stripe-refresh', handleRefresh );
+	}, [ reinitialize ] );
+
+	// Reset refreshing state when loading completes
+	useEffect( () => {
+		if ( ! loading && isRefreshing ) {
+			setIsRefreshing( false );
+		}
+	}, [ loading, isRefreshing ] );
+
+	// Enhanced notification change handler - moved functionality to onNotificationsChange
+	const enhancedOnNotificationsChange = ( notifications: {
+		total: number;
+		actionRequired: number;
+	} ) => {
+		// Call the original onNotificationsChange if provided
+		if ( onNotificationsChange ) {
+			onNotificationsChange( notifications );
+		}
+
+		// Only trigger refresh if notifications actually changed
+		if ( lastNotifications ) {
+			const hasChanged =
+				lastNotifications.total !== notifications.total ||
+				lastNotifications.actionRequired !==
+					notifications.actionRequired;
+
+			if ( hasChanged ) {
+				setTimeout( () => {
+					window.dispatchEvent( new Event( 'stripe-refresh' ) );
+				}, 1000 );
+			}
+		}
+
+		// Update last notifications
+		setLastNotifications( notifications );
+	};
 
 	return (
 		<>
-			{ ( loading || ! stripeConnectInstance ) && <StripeSpinner /> }
+			{ ( loading || ! stripeConnectInstance ) && ! isRefreshing && (
+				<StripeSpinner />
+			) }
 			{ initializationError && (
 				<BannerNotice status="error">
 					{ initializationError }
@@ -217,7 +335,7 @@ export const EmbeddedConnectNotificationBanner: React.FC< EmbeddedAccountNotific
 					<ConnectNotificationBanner
 						onLoaderStart={ onLoaderStart }
 						onLoadError={ onLoadError }
-						onNotificationsChange={ onNotificationsChange }
+						onNotificationsChange={ enhancedOnNotificationsChange }
 						collectionOptions={ {
 							fields: 'eventually_due',
 							futureRequirements: 'omit',

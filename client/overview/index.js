@@ -182,6 +182,17 @@ const OverviewPage = () => {
 		}
 	}, [ stripeNotificationsBannerErrorMessage ] );
 
+	// Listen for stripe-refresh events and show loader during refresh
+	useEffect( () => {
+		const handleStripeRefresh = () => {
+			setStripeComponentLoading( true );
+		};
+
+		window.addEventListener( 'stripe-refresh', handleStripeRefresh );
+		return () =>
+			window.removeEventListener( 'stripe-refresh', handleStripeRefresh );
+	}, [] );
+
 	// eslint-disable-next-line valid-jsdoc
 	/**
 	 * Configure custom banner behaviour so the banner isn't shown when there are no action items.
