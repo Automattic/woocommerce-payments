@@ -9,6 +9,7 @@ use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Order_Status;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Duplicate_Payment_Prevention_Service;
+use PHPUnit\Framework\MockObject\MockObject;
 
 /**
  * WCPay\Duplicate_Payment_Prevention_Service unit tests.
@@ -29,6 +30,13 @@ class Duplicate_Payment_Prevention_Service_Test extends WCPAY_UnitTestCase {
 	private $mock_order_service;
 
 	/**
+	 * Mock order instance.
+	 *
+	 * @var WC_Order|MockObject
+	 */
+	private $mock_order;
+
+	/**
 	 * Gateway mock.
 	 *
 	 * @var WC_Payment_Gateway_WCPay
@@ -43,6 +51,7 @@ class Duplicate_Payment_Prevention_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_order_service = $this->createMock( WC_Payments_Order_Service::class );
 		$this->mock_gateway       = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$this->mock_order         = $this->createMock( WC_Order::class );
 		$this->service            = new Duplicate_Payment_Prevention_Service();
 		$this->service->init( $this->mock_gateway, $this->mock_order_service );
 	}
@@ -277,5 +286,32 @@ class Duplicate_Payment_Prevention_Service_Test extends WCPAY_UnitTestCase {
 		}
 
 		return $ret;
+	}
+
+	/**
+	 * Test existing successful payment detection with no intent ID.
+	 */
+	public function test_existing_successful_payment_detection_no_intent() {
+		$order_id = 12345;
+
+		$this->mock_order->method( 'get_id' )->willReturn( $order_id );
+		$this->mock_order->method( 'get_meta' )->with( '_intent_id', true )->willReturn( '' );
+
+		$result = $this->service->check_for_existing_successful_payment( $this->mock_order );
+		$this->assertFalse( $result );
+	}
+
+	/**
+	 * Test existing successful payment detection with setup intent.
+	 */
+	public function test_existing_successful_payment_detection_setup_intent() {
+		$order_id  = 12345;
+		$intent_id = 'seti_test_intent_123'; // Setup intent, not payment intent.
+
+		$this->mock_order->method( 'get_id' )->willReturn( $order_id );
+		$this->mock_order->method( 'get_meta' )->with( '_intent_id', true )->willReturn( $intent_id );
+
+		$result = $this->service->check_for_existing_successful_payment( $this->mock_order );
+		$this->assertFalse( $result );
 	}
 }

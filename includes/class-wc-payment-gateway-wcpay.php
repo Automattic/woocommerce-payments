@@ -1086,28 +1086,28 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				];
 			}
 
-			// Enhanced duplicate payment prevention for manual retries.
 			$check_session_order = $this->duplicate_payment_prevention_service->check_against_session_processing_order( $order );
 			if ( is_array( $check_session_order ) ) {
 				return $check_session_order;
 			}
+			$this->duplicate_payment_prevention_service->maybe_update_session_processing_order( $order_id );
 
 			$check_existing_intention = $this->duplicate_payment_prevention_service->check_payment_intent_attached_to_order_succeeded( $order );
 			if ( is_array( $check_existing_intention ) ) {
 				return $check_existing_intention;
 			}
 
-			// Check for existing successful payment intent (especially important for manual retries).
-			if ( $this->duplicate_payment_prevention_service->check_for_existing_successful_payment( $order ) ) {
-				return [
-					'result'   => 'failure',
-					'messages' => __( 'This order has already been paid successfully. Duplicate payment prevented.', 'woocommerce-payments' ),
-				];
-			}
-
-			$this->duplicate_payment_prevention_service->maybe_update_session_processing_order( $order_id );
-
 			$payment_information = $this->prepare_payment_information( $order );
+
+			if ( $payment_information->is_merchant_initiated() ) {
+				// Check for existing successful payment intent (especially important for manual retries).
+				if ( $this->duplicate_payment_prevention_service->check_for_existing_successful_payment( $order ) ) {
+					return [
+						'result'   => 'failure',
+						'messages' => __( 'This order has already been paid successfully. Duplicate payment prevented.', 'woocommerce-payments' ),
+					];
+				}
+			}
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
 

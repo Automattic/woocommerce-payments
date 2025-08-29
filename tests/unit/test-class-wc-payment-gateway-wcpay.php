@@ -3393,7 +3393,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$mock_wcpay_gateway
 			->expects( $this->once() )
-			->method( 'prepare_payment_information' );
+			->method( 'prepare_payment_information' )
+			->willReturn( new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'afterpay_clearpay' ) );
 		$mock_wcpay_gateway
 			->expects( $this->once() )
 			->method( 'process_payment_for_order' )
@@ -3464,7 +3465,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$mock_wcpay_gateway
 			->expects( $this->once() )
-			->method( 'prepare_payment_information' );
+			->method( 'prepare_payment_information' )
+			->willReturn( new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'afterpay_clearpay' ) );
 		$mock_wcpay_gateway
 			->expects( $this->once() )
 			->method( 'process_payment_for_order' )
@@ -3537,7 +3539,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$mock_wcpay_gateway
 			->expects( $this->once() )
-			->method( 'prepare_payment_information' );
+			->method( 'prepare_payment_information' )
+			->willReturn( new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'afterpay_clearpay' ) );
 		$mock_wcpay_gateway
 			->expects( $this->once() )
 			->method( 'process_payment_for_order' )
@@ -3578,7 +3581,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway( [ 'prepare_payment_information', 'process_payment_for_order' ] );
 		$mock_wcpay_gateway
 			->expects( $this->once() )
-			->method( 'prepare_payment_information' );
+			->method( 'prepare_payment_information' )
+			->willReturn( new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'afterpay_clearpay' ) );
 		$mock_wcpay_gateway
 			->expects( $this->once() )
 			->method( 'process_payment_for_order' );
@@ -3605,7 +3609,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway( [ 'prepare_payment_information', 'process_payment_for_order' ] );
 		$mock_wcpay_gateway
 			->expects( $this->once() )
-			->method( 'prepare_payment_information' );
+			->method( 'prepare_payment_information' )
+			->willReturn( new Payment_Information( 'pm_test', $order, null, null, null, null, null, '', 'afterpay_clearpay' ) );
 		$mock_wcpay_gateway
 			->expects( $this->once() )
 			->method( 'process_payment_for_order' );
