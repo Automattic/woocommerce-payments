@@ -89,7 +89,6 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 
 = 9.9.0 - 2025-09-03 =
 * Fix - fix: adding some missing i18n wrappers
-* Fix - fix: prevent Stripe Link to be shown on the checkout form
 * Fix - Fix checks for the billing details for the BNPL methods on the Pay for Order page.
 * Fix - Fixed WooPay terms and conditions text for merchants using blocks checkout.
 * Fix - Fix margins for phone number input and add styling to match other inputs
