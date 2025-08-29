@@ -91,6 +91,10 @@ const OverviewPage = () => {
 		stripeNotificationsCountToAddressMemo,
 		setStripeNotificationsCountToAddressMemo,
 	] = useState( 0 );
+	// Flag to prevent duplicate refresh notices
+	const [ hasShownRefreshNotice, setHasShownRefreshNotice ] = useState(
+		false
+	);
 
 	const isTestModeOnboarding = wcpaySettings.testModeOnboarding;
 	const { isLoading: settingsIsLoading } = useSettings();
@@ -212,7 +216,10 @@ const OverviewPage = () => {
 		} else {
 			// This is the case where we addressed everything and previously had some notifications to address.
 			// We recommend the merchant to reload the page in this case.
-			if ( stripeNotificationsCountToAddressMemo > 0 ) {
+			if (
+				stripeNotificationsCountToAddressMemo > 0 &&
+				! hasShownRefreshNotice
+			) {
 				dispatch( 'core/notices' ).createSuccessNotice(
 					__(
 						'Updates take a moment to appear. Please refresh the page in a minute.',
@@ -235,6 +242,7 @@ const OverviewPage = () => {
 				recordEvent(
 					'wcpay_overview_stripe_notifications_banner_action_completed'
 				);
+				setHasShownRefreshNotice( true );
 			}
 			setNotificationsBannerMessage( '' );
 		}
