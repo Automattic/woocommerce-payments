@@ -893,6 +893,7 @@ describe( 'isMissingRequiredAddressFieldsForBNPL', () => {
 	test( 'returns false for affirm with complete address', () => {
 		const params = {
 			billing_details: {
+				name: 'John Tribiani',
 				address: {
 					line1: '123 Main St',
 					city: 'New York',
