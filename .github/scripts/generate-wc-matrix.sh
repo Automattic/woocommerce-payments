@@ -99,10 +99,22 @@ if [[ -n "$LATEST_BETA_VERSION" && "$LATEST_BETA_VERSION" != "null" ]]; then
 else
     echo "No beta version available, skipping beta tests" >&2
 fi
+
+# Decide whether to include RC: only include if RC base version (without suffix) is strictly greater than the latest stable.
+INCLUDED_RC_VERSION=""
 if [[ -n "$LATEST_RC_VERSION" && "$LATEST_RC_VERSION" != "null" ]]; then
-    VERSIONS+=("$LATEST_RC_VERSION")
+    RC_BASE="${LATEST_RC_VERSION%%-*}"
+    # Compare RC_BASE vs LATEST_WC_VERSION using sort -V
+    HIGHEST=$(printf '%s\n%s\n' "$RC_BASE" "$LATEST_WC_VERSION" | sort -V | tail -n1)
+    if [[ "$HIGHEST" == "$RC_BASE" && "$RC_BASE" != "$LATEST_WC_VERSION" ]]; then
+        INCLUDED_RC_VERSION="$LATEST_RC_VERSION"
+        VERSIONS+=("$LATEST_RC_VERSION")
+        echo "Including RC version: $LATEST_RC_VERSION (base $RC_BASE > latest $LATEST_WC_VERSION)" >&2
+    else
+        echo "Skipping RC version $LATEST_RC_VERSION because stable $LATEST_WC_VERSION is already released for this line." >&2
+    fi
 else
-    VERSIONS+=("rc")  # Fallback to string if no RC found
+    echo "No RC version available, skipping rc tests" >&2
 fi
 
 # Validate versions before output
@@ -116,10 +128,7 @@ if [[ ! "$L1_VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     exit 1
 fi
 
-if [[ -z "$LATEST_RC_VERSION" || "$LATEST_RC_VERSION" == "null" ]]; then
-    echo "Error: Could not extract RC version" >&2
-    exit 1
-fi
+# RC is optional; do not fail if not present or skipped
 
 # Only validate beta if it's available
 if [[ -n "$LATEST_BETA_VERSION" && "$LATEST_BETA_VERSION" != "null" ]]; then
@@ -132,17 +141,17 @@ fi
 # Convert to JSON array and output only the JSON (no extra whitespace or newlines)
 # Output a single JSON object with both versions and metadata
 RESULT=$(jq -n \
-  --argjson versions "$(printf '%s\n' "${VERSIONS[@]}" | jq -R . | jq -s .)" \
-  --arg l1_version "$L1_VERSION" \
-  --arg rc_version "$LATEST_RC_VERSION" \
-  --arg beta_version "${LATEST_BETA_VERSION:-null}" \
-  '{
-    versions: $versions,
-    metadata: {
-      l1_version: $l1_version,
-      rc_version: $rc_version,
-      beta_version: $beta_version
-    }
-  }')
+    --argjson versions "$(printf '%s\n' "${VERSIONS[@]}" | jq -R . | jq -s .)" \
+    --arg l1_version "$L1_VERSION" \
+    --arg rc_version "${INCLUDED_RC_VERSION}" \
+    --arg beta_version "${LATEST_BETA_VERSION}" \
+    '{
+        versions: $versions,
+        metadata: {
+            l1_version: $l1_version,
+            rc_version: (if ($rc_version // "") == "" or ($rc_version == "null") then null else $rc_version end),
+            beta_version: (if ($beta_version // "") == "" or ($beta_version == "null") then null else $beta_version end)
+        }
+    }')
 
 echo "$RESULT"
