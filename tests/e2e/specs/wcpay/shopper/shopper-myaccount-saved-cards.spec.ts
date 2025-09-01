@@ -171,9 +171,6 @@ test.describe( 'Shopper can save and delete cards', () => {
 							await confirmCardAuthentication( shopperPage );
 						}
 
-						// Take note of the time when we added this card
-						cardTimingHelper.markCardAdded();
-
 						// waiting for the new page to be loaded, since there is a redirect happening after the submission..
 						await shopperPage.waitForLoadState( 'networkidle' );
 
@@ -182,6 +179,9 @@ test.describe( 'Shopper can save and delete cards', () => {
 								'Payment method successfully added.'
 							)
 						).toBeVisible();
+
+						// Take note of the time when we added this card
+						cardTimingHelper.markCardAdded();
 
 						// Verify that the card was added
 						await expect(

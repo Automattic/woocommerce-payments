@@ -587,7 +587,13 @@ export const addSavedCard = async (
 	zipCode?: string
 ) => {
 	await page.getByRole( 'link', { name: 'Add payment method' } ).click();
-	await page.waitForLoadState( 'networkidle' );
+
+	// Wait for the page to be stable
+	// Use a more reliable approach than networkidle which can timeout
+	await page.waitForLoadState( 'domcontentloaded' );
+	// Ensure UI is not blocked
+	await isUIUnblocked( page );
+
 	await page.getByText( 'Card', { exact: true } ).click();
 	const frameHandle = page.getByTitle( 'Secure payment input frame' );
 	const stripeFrame = frameHandle.contentFrame();
