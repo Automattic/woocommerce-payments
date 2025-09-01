@@ -2289,7 +2289,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		$payment_method_options = $intention_array['payment_method_options'] ?? [];
 
 		$charge = ! empty( $charge_array ) ? self::deserialize_charge_object_from_array( $charge_array ) : null;
-		$order  = $this->get_order_info_from_intention_object( $intention_array['id'] );
+		$order  = $this->get_order_info_from_intention_object( $intention_array['id'], $intention_array['metadata']['order_key'] ?? null );
 
 		$intent = new WC_Payments_API_Payment_Intention(
 			$intention_array['id'],
@@ -2756,13 +2756,16 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 * Adds additional info to intention object.
 	 *
 	 * @param string $intention_id Intention ID.
-	 *
+	 * @param string $order_key    Order key.
 	 * @return array
 	 */
-	private function get_order_info_from_intention_object( $intention_id ) {
-		$order  = $this->wcpay_db->order_from_intent_id( $intention_id );
-		$object = $this->add_order_info_to_object( $order, [] );
+	private function get_order_info_from_intention_object( $intention_id, $order_key = null ) {
+		$order = $this->wcpay_db->order_from_intent_id( $intention_id );
+		if ( $order instanceof WC_Order && null !== $order_key && $order_key !== $order->get_order_key() ) {
+			return [];
+		}
 
+		$object = $this->add_order_info_to_object( $order, [] );
 		return $object['order'];
 	}
 

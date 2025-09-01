@@ -8,6 +8,7 @@ import {
 	renderTerms,
 	__resetGatewayUPEComponentsElement,
 	__resetHasCheckoutCompleted,
+	isMissingRequiredAddressFieldsForBNPL,
 } from '../payment-processing';
 import { getAppearance } from '../../upe-styles';
 import { getUPEConfig } from 'wcpay/utils/checkout';
@@ -843,5 +844,202 @@ describe( 'Setup intent creation and confirmation', () => {
 		);
 
 		expect( apiMock.setupIntent ).toHaveBeenCalled();
+	} );
+} );
+
+describe( 'isMissingRequiredAddressFieldsForBNPL', () => {
+	test( 'returns false for non-BNPL payment methods', () => {
+		const params = {
+			billing_details: {
+				address: {
+					line1: '123 Main St',
+					city: 'New York',
+					country: 'US',
+					postal_code: '10001',
+					state: 'NY',
+				},
+			},
+		};
+
+		expect( isMissingRequiredAddressFieldsForBNPL( params, 'card' ) ).toBe(
+			false
+		);
+		expect(
+			isMissingRequiredAddressFieldsForBNPL( params, 'klarna' )
+		).toBe( false );
+		expect(
+			isMissingRequiredAddressFieldsForBNPL( params, 'sepa_debit' )
+		).toBe( false );
+	} );
+
+	test( 'returns false for afterpay_clearpay with complete address', () => {
+		const params = {
+			billing_details: {
+				address: {
+					line1: '123 Main St',
+					city: 'New York',
+					country: 'US',
+					postal_code: '10001',
+					state: 'NY',
+				},
+			},
+		};
+
+		expect(
+			isMissingRequiredAddressFieldsForBNPL( params, 'afterpay_clearpay' )
+		).toBe( false );
+	} );
+
+	test( 'returns false for affirm with complete address', () => {
+		const params = {
+			billing_details: {
+				address: {
+					line1: '123 Main St',
+					city: 'New York',
+					country: 'US',
+					postal_code: '10001',
+					state: 'NY',
+				},
+			},
+		};
+
+		expect(
+			isMissingRequiredAddressFieldsForBNPL( params, 'affirm' )
+		).toBe( false );
+	} );
+
+	test( 'returns false for afterpay_clearpay with missing address', () => {
+		const params = {
+			billing_details: {},
+		};
+
+		expect(
+			isMissingRequiredAddressFieldsForBNPL( params, 'afterpay_clearpay' )
+		).toBe( false );
+	} );
+
+	test( 'returns false for affirm with missing address', () => {
+		const params = {
+			billing_details: {},
+		};
+
+		expect(
+			isMissingRequiredAddressFieldsForBNPL( params, 'affirm' )
+		).toBe( false );
+	} );
+
+	test( 'returns true for afterpay_clearpay with incomplete address missing required fields', () => {
+		const params = {
+			billing_details: {
+				address: {
+					line1: '123 Main St',
+					// Missing city, country, postal_code, state
+				},
+			},
+		};
+
+		expect(
+			isMissingRequiredAddressFieldsForBNPL( params, 'afterpay_clearpay' )
+		).toBe( true );
+	} );
+
+	test( 'returns true for affirm with incomplete address missing required fields', () => {
+		const params = {
+			billing_details: {
+				address: {
+					line1: '123 Main St',
+					city: 'New York',
+					// Missing country, postal_code, state
+				},
+			},
+		};
+
+		expect(
+			isMissingRequiredAddressFieldsForBNPL( params, 'affirm' )
+		).toBe( true );
+	} );
+
+	test( 'returns true for afterpay_clearpay with empty address object', () => {
+		const params = {
+			billing_details: {
+				address: {},
+			},
+		};
+
+		expect(
+			isMissingRequiredAddressFieldsForBNPL( params, 'afterpay_clearpay' )
+		).toBe( true );
+	} );
+
+	test( 'returns true for affirm with empty address object', () => {
+		const params = {
+			billing_details: {
+				address: {},
+			},
+		};
+
+		expect(
+			isMissingRequiredAddressFieldsForBNPL( params, 'affirm' )
+		).toBe( true );
+	} );
+
+	test( 'returns false for afterpay_clearpay with null address', () => {
+		const params = {
+			billing_details: {
+				address: null,
+			},
+		};
+
+		expect(
+			isMissingRequiredAddressFieldsForBNPL( params, 'afterpay_clearpay' )
+		).toBe( false );
+	} );
+
+	test( 'returns false for affirm with null address', () => {
+		const params = {
+			billing_details: {
+				address: null,
+			},
+		};
+
+		expect(
+			isMissingRequiredAddressFieldsForBNPL( params, 'affirm' )
+		).toBe( false );
+	} );
+
+	test( 'returns false for afterpay_clearpay with address containing empty string values but all required fields present', () => {
+		const params = {
+			billing_details: {
+				address: {
+					line1: '123 Main St',
+					city: 'New York',
+					country: 'US',
+					postal_code: '10001',
+					state: 'NY',
+				},
+			},
+		};
+
+		expect(
+			isMissingRequiredAddressFieldsForBNPL( params, 'afterpay_clearpay' )
+		).toBe( false );
+	} );
+
+	test( 'returns true for afterpay_clearpay with address containing empty string values for required fields', () => {
+		const params = {
+			billing_details: {
+				address: {
+					line1: '123 Main St',
+					city: '',
+					country: 'US',
+					postal_code: '',
+					state: 'NY',
+				},
+			},
+		};
+
+		expect(
+			isMissingRequiredAddressFieldsForBNPL( params, 'afterpay_clearpay' )
+		).toBe( true );
 	} );
 } );

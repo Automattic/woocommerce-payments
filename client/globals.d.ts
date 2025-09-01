@@ -69,6 +69,7 @@ declare global {
 			pastDue?: boolean;
 			accountLink: string;
 			hasSubmittedVatData?: boolean;
+			isDocumentsEnabled?: boolean;
 			requirements?: {
 				errors?: {
 					code: string;

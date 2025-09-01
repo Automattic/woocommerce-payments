@@ -722,6 +722,7 @@ class WC_Payments_Webhook_Processing_Service {
 		$event_data   = $this->read_webhook_property( $event_body, 'data' );
 		$event_object = $this->read_webhook_property( $event_data, 'object' );
 		$intent_id    = $this->read_webhook_property( $event_object, 'id' );
+		$order_key    = $this->read_webhook_property( $event_object, 'metadata' )['order_key'] ?? null;
 
 		// Look up the order related to this intent.
 		$order = $this->wcpay_db->order_from_intent_id( $intent_id );
@@ -744,6 +745,24 @@ class WC_Payments_Webhook_Processing_Service {
 				// If the payment intent contains an invoice it is a WCPay Subscription-related intent and will be handled by the `invoice.paid` event.
 				return null;
 			}
+		}
+
+		/**
+		 * If the order has been found, but there is an order key mismatch, it
+		 * could be caused by another site creating orders with the same IDs
+		 * while this site remains the primary webhook receiver.
+		 */
+		if ( null !== $order_key && $order instanceof WC_Order && $order->get_order_key() !== $order_key ) {
+			Logger::debug(
+				'Mismatching order key found while retrieving an order for webhook processing',
+				[
+					'intent_id'         => $intent_id,
+					'order_id'          => $order->get_id(),
+					'webhook_order_key' => $order_key,
+					'local_order_key'   => $order->get_order_key(),
+				]
+			);
+			return null;
 		}
 
 		if ( ! $order instanceof \WC_Order ) {

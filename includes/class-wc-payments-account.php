@@ -362,6 +362,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			// Test-drive accounts don't have access to the Stripe dashboard.
 			'accountLink'         => empty( $account['is_test_drive'] ) ? $this->get_login_url() : false,
 			'hasSubmittedVatData' => $account['has_submitted_vat_data'] ?? false,
+			'isDocumentsEnabled'  => $account['is_documents_enabled'] ?? false,
 			'requirements'        => [
 				'errors' => $account['requirements']['errors'] ?? [],
 			],
