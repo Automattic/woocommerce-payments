@@ -59,14 +59,6 @@ import RefundStatus from './refund-status';
 import DuplicateStatus from './duplicate-status';
 import ConfirmationScreen from './confirmation-screen';
 
-// --- Utility: Determine if shipping is required for a given reason ---
-const ReasonsNeedShipping = [
-	'product_unacceptable',
-	'product_not_received',
-	'general',
-	'fraudulent',
-];
-
 const ReasonsNoShipping = [
 	'duplicate',
 	'subscription_canceled',
@@ -95,11 +87,8 @@ const steps = [
 function needsShipping( reason: string | undefined, productType = '' ) {
 	// If product type is digital, no shipping is needed
 	if ( productType === 'digital_product_or_service' ) return false;
-
 	// Check dispute reason logic
-	if ( ! reason ) return true;
-	if ( ReasonsNoShipping.includes( reason ) ) return false;
-	if ( ReasonsNeedShipping.includes( reason ) ) return true;
+	if ( ReasonsNoShipping.includes( reason || '' ) ) return false;
 	return true;
 }
 
