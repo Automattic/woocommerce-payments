@@ -24,6 +24,38 @@ export const isObject = ( value ) => {
 };
 
 /**
+ * Returns true if WooPayments uses a test [drive] account, false otherwise.
+ *
+ * @return {boolean} True if a test [drive] account is connected, false otherwise.
+ */
+export const hasTestAccount = () => {
+	const accountStatus = wcpaySettings?.accountStatus;
+
+	if ( ! wcpaySettings?.isAccountConnected || ! isObject( accountStatus ) ) {
+		return false;
+	}
+
+	// A test [drive] account is one that is not live and is marked as such.
+	return ! accountStatus?.isLive && !! accountStatus?.testDrive;
+};
+
+/**
+ * Returns true if WooPayments uses a sandbox [test] account, false otherwise.
+ *
+ * @return {boolean} True if a sandbox [test] account is connected, false otherwise.
+ */
+export const hasSandboxAccount = () => {
+	const accountStatus = wcpaySettings?.accountStatus;
+
+	if ( ! wcpaySettings?.isAccountConnected || ! isObject( accountStatus ) ) {
+		return false;
+	}
+
+	// A sandbox [test] account is one that is not live and is not a test [drive] account.
+	return ! accountStatus?.isLive && ! accountStatus?.testDrive;
+};
+
+/**
  * Returns true if WooPayments is in test mode, false otherwise.
  *
  * @param {boolean} fallback Test mode fallback value in case test mode value can't be found.
