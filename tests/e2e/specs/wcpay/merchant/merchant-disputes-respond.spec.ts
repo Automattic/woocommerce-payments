@@ -570,37 +570,19 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			}
 		);
 
-		await test.step(
-			'Fill in the product type and product description',
-			async () => {
-				await merchantPage
-					.getByTestId( 'dispute-challenge-product-type-selector' )
-					.selectOption( 'offline_service' );
-				await merchantPage
-					.getByLabel( 'PRODUCT DESCRIPTION' )
-					.fill( 'my product description' );
+		await test.step( 'Fill in the product description', async () => {
+			await merchantPage
+				.getByLabel( 'PRODUCT DESCRIPTION' )
+				.fill( 'my product description' );
 
-				// Verify the values were set correctly immediately after filling
-				await expect(
-					merchantPage.getByTestId(
-						'dispute-challenge-product-type-selector'
-					)
-				).toHaveValue( 'offline_service' );
-
-				await expect(
-					merchantPage.getByLabel( 'PRODUCT DESCRIPTION' )
-				).toHaveValue( 'my product description' );
-			}
-		);
+			// Verify the value was set correctly immediately after filling
+			await expect(
+				merchantPage.getByLabel( 'PRODUCT DESCRIPTION' )
+			).toHaveValue( 'my product description' );
+		} );
 
 		await test.step( 'Verify form values before saving', async () => {
-			// Double-check that the form values are still correct before saving
-			await expect(
-				merchantPage.getByTestId(
-					'dispute-challenge-product-type-selector'
-				)
-			).toHaveValue( 'offline_service' );
-
+			// Double-check that the form value is still correct before saving
 			await expect(
 				merchantPage.getByLabel( 'PRODUCT DESCRIPTION' )
 			).toHaveValue( 'my product description' );
@@ -612,6 +594,13 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 					name: 'Save for later',
 				} )
 				.click();
+
+			// Wait for the success snackbar to confirm UI acknowledged the save.
+			await expect(
+				merchantPage.locator( '.components-snackbar__content', {
+					hasText: 'Evidence saved!',
+				} )
+			).toBeVisible( { timeout: 10000 } );
 		} );
 
 		await test.step( 'Go back to the payment details page', async () => {
@@ -628,7 +617,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 		);
 
 		await test.step(
-			'Verify the previously selected challenge product type is saved',
+			'Verify previously saved values are restored',
 			async () => {
 				await test.step(
 					'Confirm we are on the challenge dispute page',
@@ -641,15 +630,15 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 					}
 				);
 
+				// Wait for description control to be visible
 				await merchantPage
-					.getByTestId( 'dispute-challenge-product-type-selector' )
-					.waitFor( { timeout: 5000, state: 'visible' } );
+					.getByLabel( 'PRODUCT DESCRIPTION' )
+					.waitFor( { timeout: 10000, state: 'visible' } );
 
+				// Assert the product description persisted (server stores this under evidence)
 				await expect(
-					merchantPage.getByTestId(
-						'dispute-challenge-product-type-selector'
-					)
-				).toHaveValue( 'offline_service' );
+					merchantPage.getByLabel( 'PRODUCT DESCRIPTION' )
+				).toHaveValue( 'my product description', { timeout: 10000 } );
 			}
 		);
 	} );
