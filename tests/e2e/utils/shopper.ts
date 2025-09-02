@@ -587,12 +587,12 @@ export const addSavedCard = async (
 	zipCode?: string
 ) => {
 	await page.getByRole( 'link', { name: 'Add payment method' } ).click();
-
-	// Wait for the page to be stable
-	// Use a more reliable approach than networkidle which can timeout
+	// Wait for the page to be stable and the payment method list to render
 	await page.waitForLoadState( 'domcontentloaded' );
-	// Ensure UI is not blocked
 	await isUIUnblocked( page );
+	await expect(
+		page.locator( 'input[name="payment_method"]' ).first()
+	).toBeVisible( { timeout: 5000 } );
 
 	await page.getByText( 'Card', { exact: true } ).click();
 	const frameHandle = page.getByTitle( 'Secure payment input frame' );
@@ -622,11 +622,12 @@ export const deleteSavedCard = async (
 	page: Page,
 	card: typeof config.cards.basic
 ) => {
+	// Saved methods are listed in a table; wait for it to render
 	const row = page.getByRole( 'row', { name: card.label } ).first();
-	await expect( row ).toBeVisible( { timeout: 100 } );
+	await expect( row ).toBeVisible( { timeout: 5000 } );
 	const button = row.getByRole( 'link', { name: 'Delete' } );
-	await expect( button ).toBeVisible( { timeout: 100 } );
-	await expect( button ).toBeEnabled( { timeout: 100 } );
+	await expect( button ).toBeVisible( { timeout: 5000 } );
+	await expect( button ).toBeEnabled( { timeout: 5000 } );
 	await button.click();
 };
 
@@ -639,7 +640,7 @@ export const selectSavedCardOnCheckout = async (
 			`${ card.label } (expires ${ card.expires.month }/${ card.expires.year })`
 		)
 		.first();
-	await expect( option ).toBeVisible( { timeout: 100 } );
+	await expect( option ).toBeVisible( { timeout: 5000 } );
 	await option.click();
 };
 
@@ -648,10 +649,10 @@ export const setDefaultPaymentMethod = async (
 	card: typeof config.cards.basic
 ) => {
 	const row = page.getByRole( 'row', { name: card.label } ).first();
-	await expect( row ).toBeVisible( { timeout: 100 } );
+	await expect( row ).toBeVisible( { timeout: 5000 } );
 	const button = row.getByRole( 'link', { name: 'Make default' } );
-	await expect( button ).toBeVisible( { timeout: 100 } );
-	await expect( button ).toBeEnabled( { timeout: 100 } );
+	await expect( button ).toBeVisible( { timeout: 5000 } );
+	await expect( button ).toBeEnabled( { timeout: 5000 } );
 	await button.click();
 };
 

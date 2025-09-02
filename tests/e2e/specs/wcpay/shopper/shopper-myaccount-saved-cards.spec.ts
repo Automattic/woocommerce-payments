@@ -171,8 +171,10 @@ test.describe( 'Shopper can save and delete cards', () => {
 							await confirmCardAuthentication( shopperPage );
 						}
 
-						// waiting for the new page to be loaded, since there is a redirect happening after the submission..
-						await shopperPage.waitForLoadState( 'networkidle' );
+						// Wait for success UI instead of networkidle which can hang
+						await shopperPage.waitForLoadState(
+							'domcontentloaded'
+						);
 
 						await expect(
 							shopperPage.getByText(
@@ -208,6 +210,10 @@ test.describe( 'Shopper can save and delete cards', () => {
 					{ tag: '@critical' },
 					async () => {
 						await setupProductCheckout( shopperPage, products );
+						// Ensure payment section is visible
+						await expect(
+							shopperPage.getByText( 'Payment method' ).first()
+						).toBeVisible();
 						await selectSavedCardOnCheckout( shopperPage, card );
 						await placeOrder( shopperPage );
 						if ( cardName !== 'basic' ) {
@@ -226,6 +232,12 @@ test.describe( 'Shopper can save and delete cards', () => {
 					{ tag: '@critical' },
 					async () => {
 						await goToMyAccount( shopperPage, 'payment-methods' );
+						// Ensure the saved methods table is present before interacting
+						await expect(
+							shopperPage.getByRole( 'heading', {
+								name: 'Payment methods',
+							} )
+						).toBeVisible();
 						// Make sure that at least 20s had already elapsed since the last card was added.
 						await cardTimingHelper.waitIfNeededBeforeAddingCard(
 							shopperPage
