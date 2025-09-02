@@ -6,6 +6,8 @@
 import {
 	getDocumentUrl,
 	getPaymentMethodSettingsUrl,
+	hasTestAccount,
+	hasSandboxAccount,
 	isVersionGreaterOrEqual,
 } from '..';
 
@@ -47,5 +49,153 @@ describe( 'isVersionGreaterOrEqual', () => {
 	it( 'handles versions with missing patch/minor', () => {
 		expect( isVersionGreaterOrEqual( '9.4', '9.4.0' ) ).toBe( true );
 		expect( isVersionGreaterOrEqual( '9', '9.0.0' ) ).toBe( true );
+	} );
+} );
+
+describe( 'hasTestAccount', () => {
+	const originalWcpaySettings = global.wcpaySettings;
+
+	afterEach( () => {
+		global.wcpaySettings = originalWcpaySettings;
+	} );
+
+	it( 'returns false when wcpaySettings is undefined', () => {
+		global.wcpaySettings = undefined;
+		expect( hasTestAccount() ).toBe( false );
+	} );
+
+	it( 'returns false when wcpaySettings is null', () => {
+		global.wcpaySettings = null;
+		expect( hasTestAccount() ).toBe( false );
+	} );
+
+	it( 'returns false when account is not connected', () => {
+		global.wcpaySettings = {
+			isAccountConnected: false,
+			accountStatus: { isLive: false, testDrive: true },
+		};
+		expect( hasTestAccount() ).toBe( false );
+	} );
+
+	it( 'returns false when accountStatus is not an object', () => {
+		global.wcpaySettings = {
+			isAccountConnected: true,
+			accountStatus: null,
+		};
+		expect( hasTestAccount() ).toBe( false );
+	} );
+
+	it( 'returns true when account is not live and testDrive is true', () => {
+		global.wcpaySettings = {
+			isAccountConnected: true,
+			accountStatus: { isLive: false, testDrive: true },
+		};
+		expect( hasTestAccount() ).toBe( true );
+	} );
+
+	it( 'returns true when isLive is undefined and testDrive is true', () => {
+		global.wcpaySettings = {
+			isAccountConnected: true,
+			accountStatus: { testDrive: true },
+		};
+		expect( hasTestAccount() ).toBe( true );
+	} );
+
+	it( 'returns false when account is live', () => {
+		global.wcpaySettings = {
+			isAccountConnected: true,
+			accountStatus: { isLive: true, testDrive: true },
+		};
+		expect( hasTestAccount() ).toBe( false );
+	} );
+
+	it( 'returns false when testDrive is false', () => {
+		global.wcpaySettings = {
+			isAccountConnected: true,
+			accountStatus: { isLive: false, testDrive: false },
+		};
+		expect( hasTestAccount() ).toBe( false );
+	} );
+
+	it( 'returns false when testDrive is undefined', () => {
+		global.wcpaySettings = {
+			isAccountConnected: true,
+			accountStatus: { isLive: false },
+		};
+		expect( hasTestAccount() ).toBe( false );
+	} );
+} );
+
+describe( 'hasSandboxAccount', () => {
+	const originalWcpaySettings = global.wcpaySettings;
+
+	afterEach( () => {
+		global.wcpaySettings = originalWcpaySettings;
+	} );
+
+	it( 'returns false when wcpaySettings is undefined', () => {
+		global.wcpaySettings = undefined;
+		expect( hasSandboxAccount() ).toBe( false );
+	} );
+
+	it( 'returns false when wcpaySettings is null', () => {
+		global.wcpaySettings = null;
+		expect( hasSandboxAccount() ).toBe( false );
+	} );
+
+	it( 'returns false when account is not connected', () => {
+		global.wcpaySettings = {
+			isAccountConnected: false,
+			accountStatus: { isLive: false, testDrive: false },
+		};
+		expect( hasSandboxAccount() ).toBe( false );
+	} );
+
+	it( 'returns false when accountStatus is not an object', () => {
+		global.wcpaySettings = {
+			isAccountConnected: true,
+			accountStatus: null,
+		};
+		expect( hasSandboxAccount() ).toBe( false );
+	} );
+
+	it( 'returns true when account is not live and testDrive is false', () => {
+		global.wcpaySettings = {
+			isAccountConnected: true,
+			accountStatus: { isLive: false, testDrive: false },
+		};
+		expect( hasSandboxAccount() ).toBe( true );
+	} );
+
+	it( 'returns true when isLive is undefined and testDrive is false', () => {
+		global.wcpaySettings = {
+			isAccountConnected: true,
+			accountStatus: { testDrive: false },
+		};
+		expect( hasSandboxAccount() ).toBe( true );
+	} );
+
+	it( 'returns true when isLive is undefined and testDrive is undefined', () => {
+		global.wcpaySettings = {
+			isAccountConnected: true,
+			accountStatus: {},
+		};
+		expect( hasSandboxAccount() ).toBe( true );
+	} );
+
+	it( 'returns false when account is live', () => {
+		global.wcpaySettings = {
+			isAccountConnected: true,
+			accountStatus: { isLive: true, testDrive: false },
+		};
+		expect( hasSandboxAccount() ).toBe( false );
+	} );
+
+	it( 'returns false when testDrive is true', () => {
+		global.wcpaySettings = {
+			isAccountConnected: true,
+			accountStatus: { isLive: false, testDrive: true },
+		};
+		expect( hasSandboxAccount() ).toBe( false );
 	} );
 } );
