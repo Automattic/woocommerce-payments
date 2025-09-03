@@ -895,8 +895,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$order = wc_get_order( absint( get_query_var( 'order-pay' ) ) );
 			$order = is_a( $order, 'WC_Order' ) ? $order : null;
 
-			if ( $order && ! $this->retrieve_usable_shipping_data_from_order( $order ) ) {
-				return false;
+			if ( $order ) {
+				$address = $this->retrieve_usable_shipping_data_from_order( $order );
+				if ( ! $address ) {
+					return false;
+				}
+				if ( Payment_Method::AFFIRM === $this->payment_method->get_id() && empty( $address['name'] ) ) {
+					return false;
+				}
 			}
 		}
 

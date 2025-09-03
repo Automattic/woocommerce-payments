@@ -161,6 +161,11 @@ function isMissingRequiredAddressFieldsForBNPL( params, paymentMethodType ) {
 		}
 	}
 
+	if ( paymentMethodType === PAYMENT_METHOD_IDS.AFFIRM && ! params.name ) {
+		// Name is required for Affirm.
+		return true;
+	}
+
 	return false;
 }
 
@@ -290,7 +295,9 @@ async function createStripePaymentElement(
 		wallets: {
 			applePay: 'never',
 			googlePay: 'never',
-			link: 'never',
+			link: isLinkEnabled( getUPEConfig( 'paymentMethodsConfig' ) )
+				? 'auto'
+				: 'never',
 		},
 	} );
 

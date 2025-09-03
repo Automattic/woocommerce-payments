@@ -46,6 +46,7 @@ declare global {
 			email?: string;
 			created: string;
 			isLive?: boolean;
+			testDrive?: boolean;
 			error?: boolean;
 			status?: string;
 			country?: string;

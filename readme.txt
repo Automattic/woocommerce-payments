@@ -4,7 +4,7 @@ Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.3
-Stable tag: 9.8.0
+Stable tag: 9.9.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -86,6 +86,23 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 4. Manage Disputes
 
 == Changelog ==
+
+= 9.9.0 - 2025-09-03 =
+* Fix - Conditionally set Stripe Link wallet option based on payment method configuration
+* Fix - fix: adding some missing i18n wrappers
+* Fix - Fix checks for the billing details for the BNPL methods on the Pay for Order page.
+* Fix - Fixed WooPay terms and conditions text for merchants using blocks checkout.
+* Fix - Fix margins for phone number input and add styling to match other inputs
+* Fix - Fix VAT setup modal for unsupported merchants
+* Fix - Generate payment method details in WooPayments instead of Woo core, cache them for performance improvements.
+* Fix - Ignore webhooks whenever the order key in their body does not match the local order.
+* Fix - Show Activate payments notice in WooPayments Settings only for test accounts.
+* Update - update: label text on the support phone number in test mode
+* Update - update: settings page design audit.
+* Update - Update WP components for development and tests.
+* Update - Update “Finish setting up WooPayments” task to redirect to NOX flow.
+* Dev - Fix E2E subcription shopper test failures because the core changes text from "Sign up now" to "Add to cart"
+* Dev - Update JS packages mini-css-extract-plugin and shelljs
 
 = 9.8.0 - 2025-08-13 =
 * Add - Add address autocomplete to Checkout
