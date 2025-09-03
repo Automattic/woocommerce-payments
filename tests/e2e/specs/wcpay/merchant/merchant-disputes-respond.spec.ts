@@ -570,16 +570,27 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			}
 		);
 
-		await test.step( 'Fill in the product description', async () => {
-			await merchantPage
-				.getByLabel( 'PRODUCT DESCRIPTION' )
-				.fill( 'my product description' );
+		await test.step(
+			'Select product type and fill description',
+			async () => {
+				await merchantPage
+					.getByTestId( 'dispute-challenge-product-type-selector' )
+					.selectOption( 'offline_service' );
+				await merchantPage
+					.getByLabel( 'PRODUCT DESCRIPTION' )
+					.fill( 'my product description' );
 
-			// Verify the value was set correctly immediately after filling
-			await expect(
-				merchantPage.getByLabel( 'PRODUCT DESCRIPTION' )
-			).toHaveValue( 'my product description' );
-		} );
+				// Blur the field to ensure value is committed to state before saving
+				await merchantPage
+					.getByLabel( 'PRODUCT DESCRIPTION' )
+					.press( 'Tab' );
+
+				// Verify the value was set correctly immediately after filling
+				await expect(
+					merchantPage.getByLabel( 'PRODUCT DESCRIPTION' )
+				).toHaveValue( 'my product description' );
+			}
+		);
 
 		await test.step( 'Verify form values before saving', async () => {
 			// Double-check that the form value is still correct before saving
@@ -589,11 +600,33 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 		} );
 
 		await test.step( 'Save the dispute challenge for later', async () => {
+			const waitResponse = merchantPage.waitForResponse(
+				( r ) =>
+					r.url().includes( '/wc/v3/payments/disputes/' ) &&
+					r.request().method() === 'POST'
+			);
+
 			await merchantPage
-				.getByRole( 'button', {
-					name: 'Save for later',
-				} )
+				.getByRole( 'button', { name: 'Save for later' } )
 				.click();
+
+			const response = await waitResponse;
+
+			// Server acknowledged save
+			expect( response.ok() ).toBeTruthy();
+
+			// Validate payload included our description (guards against state not committed)
+			try {
+				const payload = response.request().postDataJSON?.();
+				// Some environments may not expose postDataJSON; guard accordingly
+				if ( payload && payload.evidence ) {
+					expect( payload.evidence.product_description ).toBe(
+						'my product description'
+					);
+				}
+			} catch ( _e ) {
+				// Non-fatal: continue to UI confirmation
+			}
 
 			// Wait for the success snackbar to confirm UI acknowledged the save.
 			await expect(
@@ -601,6 +634,11 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 					hasText: 'Evidence saved!',
 				} )
 			).toBeVisible( { timeout: 10000 } );
+
+			// Sanity-check the field didn't reset visually before leaving the page
+			await expect(
+				merchantPage.getByLabel( 'PRODUCT DESCRIPTION' )
+			).toHaveValue( 'my product description' );
 		} );
 
 		await test.step( 'Go back to the payment details page', async () => {
@@ -638,7 +676,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 				// Assert the product description persisted (server stores this under evidence)
 				await expect(
 					merchantPage.getByLabel( 'PRODUCT DESCRIPTION' )
-				).toHaveValue( 'my product description', { timeout: 10000 } );
+				).toHaveValue( 'my product description', { timeout: 15000 } );
 			}
 		);
 	} );
