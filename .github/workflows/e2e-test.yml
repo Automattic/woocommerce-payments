@@ -29,7 +29,7 @@ env:
 
 jobs:
   generate-matrix:
-    name: "Generate the matrix for subscriptions-tests dynamically"
+    name: "Generate the test matrix dynamically"
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.generate_matrix.outputs.matrix }}
@@ -116,16 +116,14 @@ jobs:
 
           echo "matrix={\"include\":$MATRIX_INCLUDE}" >> $GITHUB_OUTPUT
 
-  # Run WCPay & subscriptions tests against specific WC versions with PHP variations
-  wcpay-subscriptions-tests:
+  # Run WCPay and Subscriptions tests across WooCommerce and PHP matrix
+  wcpay-matrix-tests:
     runs-on: ubuntu-latest
     needs: generate-matrix
     strategy:
       fail-fast:     false
       matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
-
-    name: WC - ${{ matrix.woocommerce }} | PHP - ${{ matrix.php }} | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
-
+    name: "${{ matrix.test_groups }}/${{ matrix.test_branches }} — WC ${{ matrix.woocommerce }} — PHP ${{ matrix.php }}"
     env:
       E2E_WP_VERSION: 'latest'
       E2E_WC_VERSION: ${{ matrix.woocommerce }}
