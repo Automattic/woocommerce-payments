@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix checks for the billing details for the BNPL methods on the Pay for Order page.
