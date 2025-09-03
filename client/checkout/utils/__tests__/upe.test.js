@@ -639,7 +639,7 @@ describe( 'getStripeElementOptions', () => {
 				},
 			},
 			terms: { bancontact: 'always', card: 'always', eps: 'always' },
-			wallets: { applePay: 'never', googlePay: 'never' },
+			wallets: { applePay: 'never', googlePay: 'never', link: 'never' },
 		} );
 	} );
 
@@ -687,7 +687,7 @@ describe( 'getStripeElementOptions', () => {
 				},
 			},
 			terms: { bancontact: 'always', card: 'always', eps: 'always' },
-			wallets: { applePay: 'never', googlePay: 'never' },
+			wallets: { applePay: 'never', googlePay: 'never', link: 'never' },
 		} );
 	} );
 
@@ -727,7 +727,50 @@ describe( 'getStripeElementOptions', () => {
 				},
 			},
 			terms: { card: 'never' },
-			wallets: { applePay: 'never', googlePay: 'never' },
+			wallets: { applePay: 'never', googlePay: 'never', link: 'never' },
+		} );
+	} );
+
+	test( 'should return options with link: "auto" when both card and link are available', () => {
+		const shouldSavePayment = false;
+		const paymentMethodsConfig = {
+			card: {
+				isReusable: true,
+			},
+			link: {
+				isReusable: false,
+			},
+		};
+
+		getUPEConfig.mockImplementation( ( argument ) => {
+			if ( argument === 'cartContainsSubscription' ) {
+				return false;
+			}
+		} );
+
+		const options = getStripeElementOptions(
+			shouldSavePayment,
+			paymentMethodsConfig
+		);
+
+		expect( options ).toEqual( {
+			fields: {
+				billingDetails: {
+					address: {
+						city: 'never',
+						country: 'never',
+						line1: 'never',
+						line2: 'never',
+						postalCode: 'never',
+						state: 'never',
+					},
+					email: 'never',
+					name: 'never',
+					phone: 'never',
+				},
+			},
+			terms: { card: 'never' },
+			wallets: { applePay: 'never', googlePay: 'never', link: 'auto' },
 		} );
 	} );
 } );

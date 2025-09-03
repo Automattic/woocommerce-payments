@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Conditionally set Stripe Link wallet option based on payment method configuration
