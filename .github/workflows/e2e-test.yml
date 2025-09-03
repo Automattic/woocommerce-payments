@@ -123,7 +123,7 @@ jobs:
     strategy:
       fail-fast:     false
       matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
-    name: "${{ matrix.test_groups }}/${{ matrix.test_branches }} — WC ${{ matrix.woocommerce }} — PHP ${{ matrix.php }}"
+    name: "WC - ${{ matrix.woocommerce }} | PHP - ${{ matrix.php }} | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}"
     env:
       E2E_WP_VERSION: 'latest'
       E2E_WC_VERSION: ${{ matrix.woocommerce }}
