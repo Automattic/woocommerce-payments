@@ -10,12 +10,7 @@ runs:
       shell: /bin/bash +e {0}
       run: |
         npm run test:e2e-ci
-        # Determine the actual results JSON path: prefer env path, fallback to default 'results.json'
         RESULTS_JSON="$E2E_RESULT_FILEPATH"
-        if [[ ! -f "$RESULTS_JSON" && -f "results.json" ]]; then
-          RESULTS_JSON="results.json"
-        fi
-
         if [[ -f "$RESULTS_JSON" ]]; then
           # Build unique list of spec files with any failed/unexpected/timedOut/interrupted result and count them.
           FAILED_SPECS_COUNT=$( jq -r '[ .. | objects | select(has("specs")) | .specs[]
@@ -34,25 +29,12 @@ runs:
         fi
 
     # Retry failed E2E tests
-    - name: Re-try Failed E2E Tests
+    - name: Re-try Failed E2E Files
       if: ${{ steps.first_run_e2e_tests.outputs.FIRST_RUN_FAILED_TEST_SUITES > 0  }}
       shell: bash
       run: |
         set -e
         RESULTS_JSON="${{ steps.first_run_e2e_tests.outputs.RESULTS_JSON }}"
-        if [[ -z "$RESULTS_JSON" ]]; then
-          # Fallback in case output wasn't set
-          if [[ -f "$E2E_RESULT_FILEPATH" ]]; then
-            RESULTS_JSON="$E2E_RESULT_FILEPATH"
-          elif [[ -f "results.json" ]]; then
-            RESULTS_JSON="results.json"
-          else
-            echo "::warning::Could not locate Playwright results JSON. Re-running full suite."
-            npm run test:e2e-ci
-            exit 0
-          fi
-        fi
-
         echo "Using results file: $RESULTS_JSON"
 
         # Build a unique list of spec files that had unexpected/failed outcomes.
