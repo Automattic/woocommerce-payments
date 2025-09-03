@@ -245,6 +245,35 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	}
 
 	/**
+	 * Delete all known cache entries.
+	 */
+	public function delete_all() {
+		$keys = [
+			self::ACCOUNT_KEY,
+			self::ONBOARDING_FIELDS_DATA_KEY,
+			self::BUSINESS_TYPES_KEY,
+			self::PAYMENT_PROCESS_FACTORS_KEY,
+			self::FRAUD_SERVICES_KEY,
+			self::RECOMMENDED_PAYMENT_METHODS,
+			self::DISPUTE_STATUS_COUNTS_KEY,
+			self::ACTIVE_DISPUTES_KEY,
+			self::AUTHORIZATION_SUMMARY_KEY,
+			self::AUTHORIZATION_SUMMARY_KEY_TEST_MODE,
+			self::CONNECT_INCENTIVE_KEY,
+			self::TRACKING_INFO_KEY,
+		];
+
+		foreach ( $keys as $key ) {
+			$this->delete( $key );
+		}
+
+		// Delete prefix-based keys.
+		$this->delete_by_prefix( self::PAYMENT_METHODS_KEY_PREFIX );
+		$this->delete_by_prefix( self::ONBOARDING_FIELDS_DATA_KEY ); // It can be prefixed with the locale.
+		$this->delete_by_prefix( self::RECOMMENDED_PAYMENT_METHODS ); // It can be prefixed with the locale.
+	}
+
+	/**
 	 * Hook function allowing the cache refresh to be selectively disabled in certain situations
 	 * (such as while running an Action Scheduler job). While the refresh is disabled, get_or_add
 	 * will only return the cached value and never regenerate it, even if it's expired.
