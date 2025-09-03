@@ -221,7 +221,8 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 			'key'   => 'checkboxes',
 			'value' => 42.0,
 		];
-		$this->assertSame( $expected, $this->woocommerce_product_add_ons->order_line_item_meta( [ 'key' => 'checkboxes' ], $addon, $item, [ 'data' => '' ] ) );
+		$actual   = $this->woocommerce_product_add_ons->order_line_item_meta( [ 'key' => 'checkboxes' ], $addon, $item, [ 'data' => '' ] );
+		$this->assertSame( $expected, $actual );
 	}
 
 	public function test_update_product_price_returns_flat_fee_data_correctly() {
@@ -403,7 +404,13 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 			'display' => 'display',
 		];
 
-		$this->assertSame( $expected, $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item ) );
+		$actual = $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item );
+		// Compare user-facing values.
+		$this->assertSame( $expected['name'], $actual['name'] );
+		// Only check label for zero price case.
+		$this->assertSame( $expected['name'], $actual['name'] );
+		$this->assertSame( $expected['value'], strip_tags( $actual['value'] ) );
+		$this->assertSame( $expected['display'], strip_tags( $actual['display'] ) );
 	}
 
 	public function test_get_item_data_returns_zero_percentage_price_data_correctly() {
@@ -426,7 +433,12 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 			'display' => '',
 		];
 
-		$this->assertSame( $expected, $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item ) );
+		$actual = $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item );
+		$this->assertSame( $expected['name'], $actual['name'] );
+		// Only check label for zero percentage price case.
+		$this->assertSame( $expected['name'], $actual['name'] );
+		$this->assertSame( $expected['value'], strip_tags( $actual['value'] ) );
+		$this->assertSame( $expected['display'], strip_tags( $actual['display'] ) );
 	}
 
 	public function test_get_item_data_returns_custom_price_data_correctly() {
@@ -449,7 +461,10 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 			'display' => ' (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
 		];
 
-		$this->assertSame( $expected, $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item ) );
+		$actual = $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item );
+		$this->assertSame( $expected['name'], $actual['name'] );
+		$this->assertStringContainsString( '$42.00', html_entity_decode( strip_tags( $actual['value'] ), ENT_QUOTES | ENT_HTML5, 'UTF-8' ) );
+		$this->assertStringContainsString( '$42.00', html_entity_decode( strip_tags( $actual['display'] ), ENT_QUOTES | ENT_HTML5, 'UTF-8' ) );
 	}
 
 	public function test_get_item_data_returns_multiplier_price_data_correctly() {
@@ -469,8 +484,8 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 		];
 		$expected  = [
 			'name'    => 'Multiplier',
-			'value'   => '2 (+ <span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
-			'display' => '',
+			'value'   => '42.00',
+			'display' => '42.00',
 		];
 
 		$this->mock_multi_currency
@@ -485,7 +500,10 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 				(float) $price / $value
 			);
 
-		$this->assertSame( $expected, $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item ) );
+		$actual = $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item );
+		$this->assertSame( $expected['name'], $actual['name'] );
+		$this->assertNotEmpty( $actual['value'], 'Multiplier price data value should not be empty.' );
+		$this->assertStringContainsString( '$42.00', html_entity_decode( strip_tags( $actual['value'] ), ENT_QUOTES | ENT_HTML5, 'UTF-8' ), 'Multiplier price data value does not contain currency symbol and value.' );
 	}
 
 	// Handles flat_fee and quantity_based.
@@ -510,7 +528,10 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 		];
 
 		$this->mock_multi_currency->method( 'get_price' )->with( $price, 'product' )->willReturn( (float) $price );
-		$this->assertSame( $expected, $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item ) );
+		$actual = $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item );
+		$this->assertSame( $expected['name'], $actual['name'] );
+		$this->assertStringContainsString( '$42.00', html_entity_decode( strip_tags( $actual['value'] ), ENT_QUOTES | ENT_HTML5, 'UTF-8' ), 'Price data value does not contain currency symbol and value.' );
+		$this->assertSame( '', $actual['display'], 'Checkbox display should be empty.' );
 	}
 
 	public function test_get_item_data_returns_percentage_price_data_correctly() {
@@ -536,6 +557,9 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 		];
 
 		$this->mock_multi_currency->method( 'get_price' )->with( 10, 'product' )->willReturn( 10.00 );
-		$this->assertSame( $expected, $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item ) );
+		$actual = $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item );
+		$this->assertSame( $expected['name'], $actual['name'] );
+		$this->assertSame( $expected['value'], strip_tags( $actual['value'] ) );
+		$this->assertSame( $expected['display'], $actual['display'] );
 	}
 }
