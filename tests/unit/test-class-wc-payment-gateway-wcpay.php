@@ -3044,6 +3044,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		// Create order with sufficient address data for BNPL.
 		$order = WC_Helper_Order::create_order();
+		$order->set_shipping_last_name( 'Tribbiani' );
 		$order->set_shipping_address_1( '123 Main St' );
 		$order->set_shipping_city( 'New York' );
 		$order->set_shipping_state( 'NY' );
@@ -3061,6 +3062,85 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->prepare_gateway_for_availability_testing( $bnpl_gateway );
 
 		$this->assertTrue( $bnpl_gateway->is_available() );
+	}
+
+	public function test_affirm_gateway_disabled_on_order_pay_page_when_missing_name() {
+		global $wp;
+
+		// Create order with sufficient address data but missing name for Affirm.
+		$order = WC_Helper_Order::create_order();
+		$order->set_shipping_address_1( '123 Main St' );
+		$order->set_shipping_city( 'New York' );
+		$order->set_shipping_state( 'NY' );
+		$order->set_shipping_postcode( '10001' );
+		$order->set_shipping_country( 'US' );
+		$order->set_shipping_first_name( '' );
+		$order->set_shipping_last_name( '' );
+		$order->save();
+
+		set_query_var( 'order-pay', $order->get_id() );
+		$wp->set_query_var( 'order-pay', $order->get_id() );
+
+		$this->card_gateway->update_option( 'enabled', 'yes' );
+
+		$affirm_gateway = $this->get_gateway( Payment_Method::AFFIRM );
+		$affirm_gateway->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::AFFIRM ] );
+		$this->prepare_gateway_for_availability_testing( $affirm_gateway );
+
+		$this->assertFalse( $affirm_gateway->is_available() );
+	}
+
+	public function test_affirm_gateway_enabled_on_order_pay_page_when_name_present() {
+		global $wp;
+
+		// Create order with sufficient address data and name for Affirm.
+		$order = WC_Helper_Order::create_order();
+		$order->set_shipping_address_1( '123 Main St' );
+		$order->set_shipping_city( 'New York' );
+		$order->set_shipping_state( 'NY' );
+		$order->set_shipping_postcode( '10001' );
+		$order->set_shipping_country( 'US' );
+		$order->set_shipping_first_name( 'John' );
+		$order->set_shipping_last_name( 'Doe' );
+		$order->save();
+
+		set_query_var( 'order-pay', $order->get_id() );
+		$wp->set_query_var( 'order-pay', $order->get_id() );
+
+		$this->card_gateway->update_option( 'enabled', 'yes' );
+
+		$affirm_gateway = $this->get_gateway( Payment_Method::AFFIRM );
+		$affirm_gateway->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::AFFIRM ] );
+		$this->prepare_gateway_for_availability_testing( $affirm_gateway );
+
+		$this->assertTrue( $affirm_gateway->is_available() );
+	}
+
+	public function test_afterpay_gateway_not_affected_by_name_validation() {
+		global $wp;
+
+		// Create order with sufficient address data but missing name.
+		$order = WC_Helper_Order::create_order();
+		$order->set_shipping_address_1( '123 Main St' );
+		$order->set_shipping_city( 'New York' );
+		$order->set_shipping_state( 'NY' );
+		$order->set_shipping_postcode( '10001' );
+		$order->set_shipping_country( 'US' );
+		$order->set_shipping_first_name( '' );
+		$order->set_shipping_last_name( '' );
+		$order->save();
+
+		set_query_var( 'order-pay', $order->get_id() );
+		$wp->set_query_var( 'order-pay', $order->get_id() );
+
+		$this->card_gateway->update_option( 'enabled', 'yes' );
+
+		$afterpay_gateway = $this->get_gateway( Payment_Method::AFTERPAY );
+		$afterpay_gateway->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::AFTERPAY ] );
+		$this->prepare_gateway_for_availability_testing( $afterpay_gateway );
+
+		// Afterpay should not be affected by missing name validation.
+		$this->assertTrue( $afterpay_gateway->is_available() );
 	}
 
 	public function test_non_bnpl_gateway_not_affected_by_order_pay_validation() {

@@ -33,7 +33,7 @@ import BannerNotice from 'wcpay/components/banner-notice';
 import { MaybeShowMerchantFeedbackPrompt } from 'wcpay/merchant-feedback-prompt';
 import { recordEvent } from 'wcpay/tracks';
 import StripeSpinner from 'wcpay/components/stripe-spinner';
-import { getAdminUrl } from 'wcpay/utils';
+import { getAdminUrl, isInTestModeOnboarding } from 'wcpay/utils';
 import { EmbeddedConnectNotificationBanner } from 'wcpay/embedded-components';
 
 const OverviewPageError = () => {
@@ -92,7 +92,7 @@ const OverviewPage = () => {
 		setStripeNotificationsCountToAddressMemo,
 	] = useState( 0 );
 
-	const isTestModeOnboarding = wcpaySettings.testModeOnboarding;
+	const isTestModeOnboarding = isInTestModeOnboarding();
 	const { isLoading: settingsIsLoading } = useSettings();
 	const [
 		isTestDriveSuccessDisplayed,
