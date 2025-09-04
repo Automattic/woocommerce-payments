@@ -142,6 +142,7 @@ export default ( { query }: { query: { id: string } } ) => {
 	const [ showConfirmation, setShowConfirmation ] = useState( false );
 
 	// --- Data loading ---
+	const hasInitializedRef = useRef( false );
 	useEffect( () => {
 		const fetchDispute = async () => {
 			try {
@@ -154,9 +155,22 @@ export default ( { query }: { query: { id: string } } ) => {
 					?.map( ( item: any ) => item.product_description )
 					.filter( Boolean )
 					.join( ', ' );
-				setProductDescription(
-					d.evidence?.product_description || level3ProductNames || ''
-				);
+				// Prefer persisted evidence description; only fallback to level3 on first load if empty
+				const incomingDescription = d.evidence?.product_description;
+				// Only set description on first load, or if incoming evidence has a non-empty value
+				if ( ! hasInitializedRef.current ) {
+					setProductDescription(
+						incomingDescription && incomingDescription !== ''
+							? incomingDescription
+							: level3ProductNames || ''
+					);
+					hasInitializedRef.current = true;
+				} else if (
+					incomingDescription &&
+					incomingDescription !== ''
+				) {
+					setProductDescription( incomingDescription );
+				}
 				// Load saved shipping details from evidence
 				setShippingCarrier( d.evidence?.shipping_carrier || '' );
 				setShippingDate( d.evidence?.shipping_date || '' );
@@ -475,7 +489,7 @@ export default ( { query }: { query: { id: string } } ) => {
 					shipping_tracking_number: shippingTrackingNumber,
 					shipping_address: shippingAddress,
 					customer_purchase_ip: dispute.order?.ip_address,
-				} ).filter( ( [ value ] ) => value && value !== '' )
+				} ).filter( ( [ , value ] ) => value && value !== '' )
 			);
 
 			// Update metadata with the current productType
