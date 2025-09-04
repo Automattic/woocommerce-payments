@@ -405,12 +405,7 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 		];
 
 		$actual = $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item );
-		// Compare user-facing values.
-		$this->assertSame( $expected['name'], $actual['name'] );
-		// Only check label for zero price case.
-		$this->assertSame( $expected['name'], $actual['name'] );
-		$this->assertSame( $expected['value'], strip_tags( $actual['value'] ) );
-		$this->assertSame( $expected['display'], strip_tags( $actual['display'] ) );
+		$this->assertSame( $expected, $this->array_strip_tags( $actual ) );
 	}
 
 	public function test_get_item_data_returns_zero_percentage_price_data_correctly() {
@@ -434,11 +429,7 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 		];
 
 		$actual = $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item );
-		$this->assertSame( $expected['name'], $actual['name'] );
-		// Only check label for zero percentage price case.
-		$this->assertSame( $expected['name'], $actual['name'] );
-		$this->assertSame( $expected['value'], strip_tags( $actual['value'] ) );
-		$this->assertSame( $expected['display'], strip_tags( $actual['display'] ) );
+		$this->assertSame( $expected, $this->array_strip_tags( $actual ) );
 	}
 
 	public function test_get_item_data_returns_custom_price_data_correctly() {
