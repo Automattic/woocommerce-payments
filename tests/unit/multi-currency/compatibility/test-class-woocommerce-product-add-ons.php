@@ -457,14 +457,12 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 		];
 		$expected  = [
 			'name'    => 'Customer defined price',
-			'value'   => ' (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
-			'display' => ' (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
+			'value'   => ' (&#36;42.00)',
+			'display' => ' (&#36;42.00)',
 		];
 
 		$actual = $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item );
-		$this->assertSame( $expected['name'], $actual['name'] );
-		$this->assertStringContainsString( '$42.00', html_entity_decode( strip_tags( $actual['value'] ), ENT_QUOTES | ENT_HTML5, 'UTF-8' ) );
-		$this->assertStringContainsString( '$42.00', html_entity_decode( strip_tags( $actual['display'] ), ENT_QUOTES | ENT_HTML5, 'UTF-8' ) );
+		$this->assertSame( $expected, $this->array_strip_tags( $actual ) );
 	}
 
 	public function test_get_item_data_returns_multiplier_price_data_correctly() {
@@ -484,8 +482,8 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 		];
 		$expected  = [
 			'name'    => 'Multiplier',
-			'value'   => '42.00',
-			'display' => '42.00',
+			'value'   => '2 (+ &#36;42.00)',
+			'display' => '',
 		];
 
 		$this->mock_multi_currency
@@ -501,9 +499,7 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 			);
 
 		$actual = $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item );
-		$this->assertSame( $expected['name'], $actual['name'] );
-		$this->assertNotEmpty( $actual['value'], 'Multiplier price data value should not be empty.' );
-		$this->assertStringContainsString( '$42.00', html_entity_decode( strip_tags( $actual['value'] ), ENT_QUOTES | ENT_HTML5, 'UTF-8' ), 'Multiplier price data value does not contain currency symbol and value.' );
+		$this->assertSame( $expected, $this->array_strip_tags( $actual ) );
 	}
 
 	// Handles flat_fee and quantity_based.
@@ -523,15 +519,13 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 		];
 		$expected  = [
 			'name'    => 'Checkbox',
-			'value'   => 'Flat fee (+ <span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
+			'value'   => 'Flat fee (+ &#36;42.00)',
 			'display' => '',
 		];
 
 		$this->mock_multi_currency->method( 'get_price' )->with( $price, 'product' )->willReturn( (float) $price );
 		$actual = $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item );
-		$this->assertSame( $expected['name'], $actual['name'] );
-		$this->assertStringContainsString( '$42.00', html_entity_decode( strip_tags( $actual['value'] ), ENT_QUOTES | ENT_HTML5, 'UTF-8' ), 'Price data value does not contain currency symbol and value.' );
-		$this->assertSame( '', $actual['display'], 'Checkbox display should be empty.' );
+		$this->assertSame( $expected, $this->array_strip_tags( $actual ) );
 	}
 
 	public function test_get_item_data_returns_percentage_price_data_correctly() {
@@ -558,8 +552,26 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 
 		$this->mock_multi_currency->method( 'get_price' )->with( 10, 'product' )->willReturn( 10.00 );
 		$actual = $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item );
-		$this->assertSame( $expected['name'], $actual['name'] );
-		$this->assertSame( $expected['value'], strip_tags( $actual['value'] ) );
-		$this->assertSame( $expected['display'], $actual['display'] );
+		$this->assertSame( $expected, $this->array_strip_tags( $actual ) );
+	}
+
+	/**
+	 * Strip HTML tags from all values in an array while preserving keys.
+	 *
+	 * @param array $array The array to process.
+	 * @return array The array with HTML tags stripped from all values.
+	 */
+	private function array_strip_tags( array $array ): array {
+		$result = [];
+		foreach ( $array as $key => $value ) {
+			if ( is_array( $value ) ) {
+				$result[ $key ] = $this->array_strip_tags( $value );
+			} elseif ( is_string( $value ) ) {
+				$result[ $key ] = strip_tags( $value );
+			} else {
+				$result[ $key ] = $value;
+			}
+		}
+		return $result;
 	}
 }
