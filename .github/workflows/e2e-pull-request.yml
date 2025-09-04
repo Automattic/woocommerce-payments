@@ -41,21 +41,68 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  generate-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.generate_matrix.outputs.matrix }}
+    steps:
+      - name: Checkout WCPay repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.repo-branch || github.ref }}
+
+      - name: "Generate matrix"
+        id: generate_matrix
+        run: |
+          # Use dynamic script to get WooCommerce versions (L-1 policy)
+          SCRIPT_RESULT=$( .github/scripts/generate-wc-matrix.sh )
+
+          # Extract versions and metadata from JSON
+          L1_VERSION=$(echo "$SCRIPT_RESULT" | jq -r '.metadata.l1_version')
+
+          echo "Using L-1 version: $L1_VERSION" >&2
+
+          # Create PR matrix with L-1 and latest versions
+          # For PRs, we test against L-1 and latest with PHP 8.3 (stable)
+          PHP_STABLE="8.3"
+          TEST_GROUPS_WCPAY="wcpay"
+          TEST_GROUPS_SUBSCRIPTIONS="subscriptions"
+          TEST_BRANCHES_MERCHANT="merchant"
+          TEST_BRANCHES_SHOPPER="shopper"
+
+          # Initialize empty matrix array
+          MATRIX_ENTRIES=()
+
+          # Add L-1 version with PHP 8.3
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+
+          # Add latest with PHP 8.3
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+
+          # Convert array to JSON
+          MATRIX_INCLUDE=$(printf '%s\n' "${MATRIX_ENTRIES[@]}" | jq -s . -c)
+
+          echo "matrix={\"include\":$MATRIX_INCLUDE}" >> $GITHUB_OUTPUT
+
   wcpay-e2e-tests:
     runs-on: ubuntu-latest
-
+    needs: generate-matrix
     strategy:
       fail-fast:     false
-      matrix:
-        wc_version:   [ 'latest' ]
-        test_groups:   [ 'wcpay', 'subscriptions' ] # [TODO] Unskip blocks tests after investigating constant failures.
-        test_branches: [ 'merchant', 'shopper' ]
+      matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
 
-    name: WC - ${{ matrix.wc_version }} | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
+    name: WC - ${{ matrix.woocommerce }} | PHP - ${{ matrix.php }} | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
 
     env:
       E2E_WP_VERSION: 'latest'
-      E2E_WC_VERSION: ${{ matrix.wc_version }}
+      E2E_WC_VERSION: ${{ matrix.woocommerce }}
+      E2E_PHP_VERSION: ${{ matrix.php }}
       E2E_GROUP:  ${{ matrix.test_groups }}
       E2E_BRANCH: ${{ matrix.test_branches }}
 

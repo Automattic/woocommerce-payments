@@ -29,30 +29,105 @@ env:
 
 jobs:
   generate-matrix:
-    name: "Generate the matrix for subscriptions-tests dynamically"
+    name: "Generate the test matrix dynamically"
     runs-on: ubuntu-latest
     outputs:
       matrix: ${{ steps.generate_matrix.outputs.matrix }}
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: "Generate matrix"
         id: generate_matrix
         run: |
-          WC_VERSIONS=$( echo "[\"7.7.0\", \"latest\", \"beta\", \"rc\"]" )
-          echo "matrix={\"woocommerce\":$WC_VERSIONS,\"test_groups\":[\"wcpay\", \"subscriptions\"],\"test_branches\":[\"merchant\", \"shopper\"]}" >> $GITHUB_OUTPUT
+          # Use dynamic script to get WooCommerce versions (L-1 policy)
+          SCRIPT_RESULT=$( .github/scripts/generate-wc-matrix.sh )
 
-  # Run WCPay & subscriptions tests against specific WC versions
-  wcpay-subscriptions-tests:
+          # Extract versions and metadata from JSON
+          L1_VERSION=$(echo "$SCRIPT_RESULT" | jq -r '.metadata.l1_version')
+          RC_VERSION=$(echo "$SCRIPT_RESULT" | jq -r '.metadata.rc_version')
+          BETA_VERSION=$(echo "$SCRIPT_RESULT" | jq -r '.metadata.beta_version')
+
+          if [[ "$BETA_VERSION" == "null" ]]; then
+            BETA_VERSION=""
+          fi
+
+          echo "Using L-1 version: $L1_VERSION" >&2
+          echo "Using RC version: $RC_VERSION" >&2
+          if [[ -n "$BETA_VERSION" ]]; then
+            echo "Using beta version: $BETA_VERSION" >&2
+          else
+            echo "No beta version available" >&2
+          fi
+
+          # Create optimized matrix with selective PHP version testing
+          # Build matrix dynamically based on WC versions
+
+          # Define common values to reduce repetition
+          PHP_LEGACY="7.3"
+          PHP_STABLE="8.3"
+          PHP_LATEST="8.4"
+          TEST_GROUPS_WCPAY="wcpay"
+          TEST_GROUPS_SUBSCRIPTIONS="subscriptions"
+          TEST_BRANCHES_MERCHANT="merchant"
+          TEST_BRANCHES_SHOPPER="shopper"
+
+          # Initialize empty matrix array
+          MATRIX_ENTRIES=()
+
+          # Add WC 7.7.0 with PHP 7.3 only (legacy)
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+
+          # Add L-1 version with PHP 8.3 only
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+
+          # Add latest with PHP 8.3 only
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+
+          # Add beta with PHP 8.3 only (only if beta version is available)
+          if [[ -n "$BETA_VERSION" ]]; then
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+          fi
+
+          # Add rc with PHP 8.4 only (only if RC version is available)
+          if [[ -n "$RC_VERSION" && "$RC_VERSION" != "null" ]]; then
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+          else
+            echo "No RC version available, skipping RC matrix entries" >&2
+          fi
+
+          # Convert array to JSON
+          MATRIX_INCLUDE=$(printf '%s\n' "${MATRIX_ENTRIES[@]}" | jq -s . -c)
+
+          echo "matrix={\"include\":$MATRIX_INCLUDE}" >> $GITHUB_OUTPUT
+
+  # Run WCPay and Subscriptions tests across WooCommerce and PHP matrix
+  wcpay-matrix-tests:
     runs-on: ubuntu-latest
     needs: generate-matrix
     strategy:
       fail-fast:     false
       matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
-
-    name: WC - ${{ matrix.woocommerce }} | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}
-
+    name: "WC - ${{ matrix.woocommerce }} | PHP - ${{ matrix.php }} | ${{ matrix.test_groups }} - ${{ matrix.test_branches }}"
     env:
       E2E_WP_VERSION: 'latest'
       E2E_WC_VERSION: ${{ matrix.woocommerce }}
+      E2E_PHP_VERSION: ${{ matrix.php }}
       E2E_GROUP:  ${{ matrix.test_groups }}
       E2E_BRANCH: ${{ matrix.test_branches }}
       SKIP_WC_BLOCKS_TESTS: 1 # skip running blocks tests
