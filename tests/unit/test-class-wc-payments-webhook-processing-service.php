@@ -76,6 +76,13 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	private $mock_database_cache;
 
 	/**
+	 * Mock onboarding service.
+	 *
+	 * @var WC_Payments_Onboarding_Service&MockObject
+	 */
+	private $mock_onboarding_service;
+
+	/**
 	 * @var array
 	 */
 	private $event_body;
@@ -130,6 +137,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_database_cache = $this->createMock( Database_Cache::class );
 
+		$this->mock_onboarding_service = $this->createMock( WC_Payments_Onboarding_Service::class );
+
 		$this->webhook_processing_service = new WC_Payments_Webhook_Processing_Service(
 			$this->mock_api_client,
 			$this->mock_db_wrapper,
@@ -139,7 +148,8 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			$this->mock_receipt_service,
 			$this->mock_wcpay_gateway,
 			$this->mock_customer_service,
-			$this->mock_database_cache
+			$this->mock_database_cache,
+			$this->mock_onboarding_service
 		);
 
 		// Build the event body data.
@@ -2130,5 +2140,96 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 				'An unknown error occurred while processing the refund',
 			],
 		];
+	}
+
+	/**
+	 * Tests that an account.updated webhook refreshes account data and clears cached payment methods.
+	 */
+	public function test_account_updated_webhook() {
+		// Setup test request data.
+		$this->event_body['type']     = 'account.updated';
+		$this->event_body['livemode'] = true;
+		$this->event_body['data']     = [
+			'object' => [
+				'id' => 'acct_test_account_id',
+			],
+		];
+
+		// Mock expectations.
+		$mock_account = $this->createMock( WC_Payments_Account::class );
+		$mock_account
+			->expects( $this->once() )
+			->method( 'refresh_account_data' );
+
+		$this->mock_customer_service
+			->expects( $this->once() )
+			->method( 'delete_cached_payment_methods' );
+
+		// Create webhook processing service with the mocked account.
+		$webhook_processing_service = new WC_Payments_Webhook_Processing_Service(
+			$this->mock_api_client,
+			$this->mock_db_wrapper,
+			$mock_account,
+			$this->mock_remote_note_service,
+			$this->order_service,
+			$this->mock_receipt_service,
+			$this->mock_wcpay_gateway,
+			$this->mock_customer_service,
+			$this->mock_database_cache,
+			$this->mock_onboarding_service
+		);
+
+		// Run the test.
+		$webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
+	 * Tests that an account.deleted webhook cleans up onboarding data, deletes options, and refreshes account data.
+	 */
+	public function test_account_deleted_webhook() {
+		// Setup test request data.
+		$this->event_body['type']     = 'account.deleted';
+		$this->event_body['livemode'] = true;
+		$this->event_body['data']     = [
+			'object' => [
+				'id' => 'acct_test_account_id',
+			],
+		];
+
+		update_option( WC_Payments_Account::NOX_PROFILE_OPTION_KEY, 'test_value' );
+		update_option( WC_Payments_Account::NOX_ONBOARDING_LOCKED_KEY, 'yes' );
+
+		// Mock expectations.
+		$mock_account = $this->createMock( WC_Payments_Account::class );
+		$mock_account
+			->expects( $this->once() )
+			->method( 'refresh_account_data' );
+
+		$this->mock_onboarding_service
+			->expects( $this->once() )
+			->method( 'cleanup_on_account_reset' );
+
+		// Create webhook processing service with the mocked account.
+		$webhook_processing_service = new WC_Payments_Webhook_Processing_Service(
+			$this->mock_api_client,
+			$this->mock_db_wrapper,
+			$mock_account,
+			$this->mock_remote_note_service,
+			$this->order_service,
+			$this->mock_receipt_service,
+			$this->mock_wcpay_gateway,
+			$this->mock_customer_service,
+			$this->mock_database_cache,
+			$this->mock_onboarding_service
+		);
+
+		// Run the test.
+		$webhook_processing_service->process( $this->event_body );
+
+		// Verify that the options were deleted.
+		// Note: These are integration tests since we can't easily mock WordPress delete_option function
+		// but the important behavior (method calls) is tested above.
+		$this->assertFalse( get_option( WC_Payments_Account::NOX_PROFILE_OPTION_KEY ) );
+		$this->assertFalse( get_option( WC_Payments_Account::NOX_ONBOARDING_LOCKED_KEY ) );
 	}
 }
