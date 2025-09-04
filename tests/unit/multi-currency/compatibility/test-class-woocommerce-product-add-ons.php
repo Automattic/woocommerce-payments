@@ -443,11 +443,20 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 			'quantity'                 => 1,
 			'addons_price_before_calc' => 10,
 		];
-		$expected  = [
-			'name'    => 'Customer defined price',
-			'value'   => ' (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
-			'display' => ' (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
-		];
+
+		if ( version_compare( WC_VERSION, '10.2.0-dev', '<' ) ) {
+			$expected = [
+				'name'    => 'Customer defined price',
+				'value'   => ' (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
+				'display' => ' (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
+			];
+		} else {
+			$expected = [
+				'name'    => 'Customer defined price',
+				'value'   => ' (<span class="woocommerce-Price-amount amount"><bdi class="woocommerce-Price-bidi"><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
+				'display' => ' (<span class="woocommerce-Price-amount amount"><bdi class="woocommerce-Price-bidi"><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
+			];
+		}
 
 		$this->assertSame( $expected, $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item ) );
 	}
@@ -467,11 +476,19 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 			'data'     => WC_Helper_Product::create_simple_product(),
 			'quantity' => 1,
 		];
-		$expected  = [
-			'name'    => 'Multiplier',
-			'value'   => '2 (+ <span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
-			'display' => '',
-		];
+		if ( version_compare( WC_VERSION, '10.2.0-dev', '<' ) ) {
+			$expected = [
+				'name'    => 'Multiplier',
+				'value'   => '2 (+ <span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
+				'display' => '',
+			];
+		} else {
+			$expected = [
+				'name'    => 'Multiplier',
+				'value'   => '2 (+ <span class="woocommerce-Price-amount amount"><bdi class="woocommerce-Price-bidi"><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
+				'display' => '',
+			];
+		}
 
 		$this->mock_multi_currency
 			->expects( $this->exactly( 2 ) )
@@ -503,11 +520,20 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 			'data'     => WC_Helper_Product::create_simple_product(),
 			'quantity' => 1,
 		];
-		$expected  = [
-			'name'    => 'Checkbox',
-			'value'   => 'Flat fee (+ <span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
-			'display' => '',
-		];
+
+		if ( version_compare( WC_VERSION, '10.2.0-dev', '<' ) ) {
+			$expected = [
+				'name'    => 'Checkbox',
+				'value'   => 'Flat fee (+ <span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
+				'display' => '',
+			];
+		} else {
+			$expected = [
+				'name'    => 'Checkbox',
+				'value'   => 'Flat fee (+ <span class="woocommerce-Price-amount amount"><bdi class="woocommerce-Price-bidi"><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
+				'display' => '',
+			];
+		}
 
 		$this->mock_multi_currency->method( 'get_price' )->with( $price, 'product' )->willReturn( (float) $price );
 		$this->assertSame( $expected, $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item ) );
