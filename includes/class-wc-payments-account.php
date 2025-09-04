@@ -40,7 +40,9 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	const TRACKS_EVENT_ACCOUNT_CONNECT_FINISHED                 = 'wcpay_account_connect_finished';
 	const TRACKS_EVENT_KYC_REMINDER_MERCHANT_RETURNED           = 'wcpay_kyc_reminder_merchant_returned';
 	const TRACKS_EVENT_ACCOUNT_REFERRAL                         = 'wcpay_account_referral';
-	const NOX_PROFILE_OPTION_KEY                                = 'woocommerce_woopayments_nox_profile';
+	// NOX-related constants from the WooCommerce core.
+	const NOX_PROFILE_OPTION_KEY    = 'woocommerce_woopayments_nox_profile';
+	const NOX_ONBOARDING_LOCKED_KEY = 'woocommerce_woopayments_nox_onboarding_locked';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
