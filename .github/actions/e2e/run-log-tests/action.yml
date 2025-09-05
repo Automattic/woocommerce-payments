@@ -56,8 +56,8 @@ runs:
           echo " - $f"
         done
 
-        # Re-run only the failed spec files using Playwright directly (npm script does not accept args)
-        npx playwright test --config=tests/e2e/playwright.config.ts --grep-invert @todo "${FAILED_SPECS[@]}"
+        # Re-run only the failed spec files.
+        npm run test:e2e-ci "${FAILED_SPECS[@]}"
 
     # Archive screenshots if any
     - name: Archive e2e test screenshots & logs

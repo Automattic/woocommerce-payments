@@ -12,6 +12,8 @@ We don't use Playwright's built-in retries in this repo (retries are `0`). Inste
 - Selective re-run: If some specs failed, CI re-runs just those spec files once
 - Local runs: No automatic retries
 
+This approach is intentional. Playwright’s `--last-failed` flag was evaluated but led to instability, likely due to some tests depending on previous steps within the same file. For example, a spec may first save a card, then process a payment with it, and finally delete the card. Retrying only the “delete the card” step without the earlier context will fail.
+
 Note: The Playwright config sets `video: on-first-retry`, which applies only if you enable built-in retries locally.
 
 ## Dynamic matrix generation
