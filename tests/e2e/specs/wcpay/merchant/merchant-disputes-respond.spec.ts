@@ -523,8 +523,8 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			);
 		}
 	);
-	// Skipped due to flakiness, see https://linear.app/a8c/issue/WOOPMNT-5307/flaky-disputes-e2e-tests-with-extended-version-coverage
-	test.skip( 'Save a dispute challenge without submitting evidence', async ( {
+
+	test( 'Save a dispute challenge without submitting evidence', async ( {
 		browser,
 	} ) => {
 		const { merchantPage } = await getMerchant( browser );
