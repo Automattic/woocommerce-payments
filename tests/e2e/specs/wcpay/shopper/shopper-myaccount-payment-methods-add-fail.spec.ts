@@ -111,7 +111,12 @@ test.describe( 'Payment Methods', () => {
 				.getByRole( 'link', { name: 'Add payment method' } )
 				.click();
 
-			await shopperPage.waitForLoadState( 'networkidle' );
+			// Wait for the form to render instead of using networkidle
+			await shopperPage.waitForLoadState( 'domcontentloaded' );
+			await isUIUnblocked( shopperPage );
+			await expect(
+				shopperPage.locator( 'input[name="payment_method"]' ).first()
+			).toBeVisible( { timeout: 5000 } );
 
 			//This will simulate selecting another payment gateway
 			await shopperPage.$eval(
@@ -124,6 +129,8 @@ test.describe( 'Payment Methods', () => {
 			await shopperPage
 				.getByRole( 'button', { name: 'Add payment method' } )
 				.click();
+			// Give the page a moment to handle the submit without selected gateway
+			await shopperPage.waitForTimeout( 300 );
 
 			await expect( shopperPage.getByRole( 'alert' ) ).not.toBeVisible();
 		}
