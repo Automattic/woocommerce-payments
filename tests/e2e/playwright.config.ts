@@ -21,14 +21,6 @@ const buildTestDir = ( group: string, branch: string ) => {
 		return baseDir;
 	}
 
-	// Special handling for blocks tests - they are located in wcpay/shopper directory
-	if ( group === 'blocks' ) {
-		if ( ! branch || ! validBranches.includes( branch ) ) {
-			return `${ baseDir }\/wcpay`;
-		}
-		return `${ baseDir }\/wcpay\/${ branch }`;
-	}
-
 	if ( ! branch || ! validBranches.includes( branch ) ) {
 		return `${ baseDir }\/${ group }`;
 	}
@@ -39,9 +31,11 @@ const buildTestDir = ( group: string, branch: string ) => {
 const getTestMatch = ( group: string, branch: string ) => {
 	const testDir = buildTestDir( group, branch );
 
-	// Special handling for blocks tests - filter for wc-blocks test files
+	// Special handling for blocks tests - use tag filtering.
 	if ( group === 'blocks' ) {
-		return new RegExp( `${ testDir }\/.*wc-blocks.*\.spec\.ts` );
+		// For blocks group, look in wcpay directory but filter by @blocks tag
+		const wcpayTestDir = buildTestDir( 'wcpay', branch );
+		return new RegExp( `${ wcpayTestDir }\/.*\.spec\.ts` );
 	}
 
 	return new RegExp( `${ testDir }\/.*\.spec\.ts` );
@@ -99,6 +93,9 @@ export default defineConfig( {
 
 	testMatch: getTestMatch( E2E_GROUP, E2E_BRANCH ),
 	testIgnore: /specs\/performance/,
+
+	// When running blocks tests, filter by @blocks tag
+	grep: E2E_GROUP === 'blocks' ? /@blocks/ : undefined,
 
 	/* Configure projects for major browsers */
 	projects: [

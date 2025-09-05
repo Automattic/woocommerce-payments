@@ -156,8 +156,23 @@ By adding additional env variables to your `local.env` file, it is possible to r
 - Adding `E2E_GROUP='wcpay'` and `E2E_BRANCH='merchant'` to your `local.env` file, then running `npm run test:e2e-ui` runs the WooPayments merchant tests for WCPay in UI mode.
 - Adding `E2E_GROUP='wcpay'` and `E2E_BRANCH='shopper'` to your `local.env` file, then running `npm run test:e2e-ui` runs WooPayments shopper tests for WCPay in UI mode.
 - Adding just `E2E_GROUP='wcpay'` to your `local.env` file, then running `npm run test:e2e-ui` runs WooPayments merchant & shopper tests for WCPay in UI mode.
-- Available groups are `wcpay` and `subscriptions`.
+- Available groups are `wcpay`, `subscriptions`, and `blocks`.
 - Available branches are `merchant` and `shopper`.
+
+#### Running tests by tags
+
+You can also run tests using Playwright's tag filtering:
+
+```bash
+# Run only WooCommerce Blocks tests
+npm run test:e2e -- --grep @blocks
+
+# Run WCPay tests excluding blocks tests
+npm run test:e2e wcpay/ -- --grep-invert @blocks
+
+# Run all critical tests (includes blocks tests)
+npm run test:e2e -- --grep @critical
+```
 
 It is also possible to run the groups using the relative path to the tests. e.g.
 
@@ -183,7 +198,7 @@ Place new spec files in the appropriate directory under `tests/e2e/specs`. The d
 - **Subscriptions Merchant**: `tests/e2e/specs/subscriptions/merchant` - Subscription related tests for the merchant role.
 - **Subscriptions Shopper**: `tests/e2e/specs/subscriptions/shopper` - Subscription related tests for the shopper role.
 - **WooPayments Merchant**: `tests/e2e/specs/wcpay/merchant` - Tests for the merchant role in WooPayments.
-- **WooPayments Shopper**: `tests/e2e/specs/wcpay/shopper` - Tests for the shopper role in WooPayments, including Blocks E2E tests.
+- **WooPayments Shopper**: `tests/e2e/specs/wcpay/shopper` - Tests for the shopper role in WooPayments (includes WooCommerce Blocks tests tagged with `@blocks`).
 
 ## Debugging tests
 
