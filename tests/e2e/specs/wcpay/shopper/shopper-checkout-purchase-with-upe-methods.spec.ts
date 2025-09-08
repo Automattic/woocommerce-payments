@@ -98,12 +98,16 @@ test.describe(
 							ctpEnabled
 						);
 						await shopperPage.getByText( 'Bancontact' ).click();
-
-						// Wait for the Bancontact payment method to be actually selected
-						await shopperPage.waitForSelector(
-							'#payment_method_woocommerce_payments_bancontact:checked',
-							{ timeout: 10000 }
+						// Ensure the actual radio becomes checked (visibility of :checked can be flaky)
+						const bancontactRadio = shopperPage.locator(
+							'#payment_method_woocommerce_payments_bancontact'
 						);
+						await bancontactRadio.scrollIntoViewIfNeeded();
+						// Explicitly check in case label click didn't propagate
+						await bancontactRadio.check( { force: true } );
+						await expect( bancontactRadio ).toBeChecked( {
+							timeout: 10000,
+						} );
 
 						await focusPlaceOrderButton( shopperPage );
 						await placeOrder( shopperPage );
