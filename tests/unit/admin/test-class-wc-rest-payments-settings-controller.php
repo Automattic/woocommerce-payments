@@ -566,6 +566,35 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'book', $this->gateway->get_option( 'payment_request_button_type' ) );
 	}
 
+	public function test_update_settings_enables_apple_google_pay_in_payment_methods_options() {
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_apple_google_pay_in_payment_methods_options_enabled', true );
+
+		$this->controller->update_settings( $request );
+
+		$this->assertEquals( 'yes', $this->gateway->get_option( 'apple_google_pay_in_payment_methods_options' ) );
+	}
+
+	public function test_update_settings_disables_apple_google_pay_in_payment_methods_options() {
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_apple_google_pay_in_payment_methods_options_enabled', false );
+
+		$this->controller->update_settings( $request );
+
+		$this->assertEquals( 'no', $this->gateway->get_option( 'apple_google_pay_in_payment_methods_options' ) );
+	}
+
+	public function test_update_settings_does_not_toggle_apple_google_pay_in_payment_methods_options_if_not_supplied() {
+		$this->gateway->update_option( 'apple_google_pay_in_payment_methods_options', 'yes' );
+		$status_before_request = $this->gateway->get_option( 'apple_google_pay_in_payment_methods_options' );
+
+		$request = new WP_REST_Request();
+
+		$this->controller->update_settings( $request );
+
+		$this->assertEquals( $status_before_request, $this->gateway->get_option( 'apple_google_pay_in_payment_methods_options' ) );
+	}
+
 	public function test_update_settings_does_not_save_account_if_not_supplied() {
 		$request = new WP_REST_Request();
 
@@ -773,6 +802,30 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertArrayHasKey( 'is_woopay_enabled', $response->get_data() );
 		$this->assertFalse( $response->get_data()['is_woopay_enabled'] );
 		$this->gateway->update_option( 'platform_checkout', $current_platform_checkout );
+	}
+
+	public function test_get_settings_returns_apple_google_pay_in_payment_methods_options_enabled_true(): void {
+		$this->gateway->update_option( 'apple_google_pay_in_payment_methods_options', 'yes' );
+
+		$response = $this->controller->get_settings();
+
+		$this->assertTrue( $response->get_data()['is_apple_google_pay_in_payment_methods_options_enabled'] );
+	}
+
+	public function test_get_settings_returns_apple_google_pay_in_payment_methods_options_enabled_false(): void {
+		$this->gateway->update_option( 'apple_google_pay_in_payment_methods_options', 'no' );
+
+		$response = $this->controller->get_settings();
+
+		$this->assertFalse( $response->get_data()['is_apple_google_pay_in_payment_methods_options_enabled'] );
+	}
+
+	public function test_get_settings_returns_apple_google_pay_in_payment_methods_options_enabled_false_by_default(): void {
+		$this->gateway->update_option( 'apple_google_pay_in_payment_methods_options', '' );
+
+		$response = $this->controller->get_settings();
+
+		$this->assertFalse( $response->get_data()['is_apple_google_pay_in_payment_methods_options_enabled'] );
 	}
 
 	/**

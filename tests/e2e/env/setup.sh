@@ -208,12 +208,6 @@ cli wp plugin install wordpress-importer --activate
 
 # Install WooCommerce
 if [[ -n "$E2E_WC_VERSION" && $E2E_WC_VERSION != 'latest' ]]; then
-	# If specified version is 'beta' or 'rc', fetch the latest beta version from WordPress.org API
-	if [[ $E2E_WC_VERSION == 'beta' ]] || [[ $E2E_WC_VERSION == 'rc' ]]; then
-		# Get the latest non-trunk version number from the .org repo. This will usually be the latest release, beta, or rc.
-		E2E_WC_VERSION=$(curl https://api.wordpress.org/plugins/info/1.0/woocommerce.json | jq -r '.versions | with_entries(select(.key|match("'$E2E_WC_VERSION'";"i"))) | keys | sort_by( . | split("-")[0] | split(".") | map(tonumber) ) | last' --sort-keys)
-	fi
-
 	echo "Installing and activating specified WooCommerce version..."
 	cli wp plugin install woocommerce --version="$E2E_WC_VERSION" --activate
 else

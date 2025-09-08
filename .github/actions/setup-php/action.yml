@@ -1,5 +1,5 @@
 name: "Set up PHP"
-description: "Extracts the required PHP version from plugin file and uses it to build PHP."
+description: "Extracts the required PHP version from plugin file and uses it to build PHP. Can be overridden with E2E_PHP_VERSION environment variable."
 
 runs:
   using: composite
@@ -14,6 +14,6 @@ runs:
     - name: "Setup PHP"
       uses: shivammathur/setup-php@v2
       with:
-        php-version: ${{ steps.get_min_php_version.outputs.MIN_PHP_VERSION }}
+        php-version: ${{ env.E2E_PHP_VERSION || steps.get_min_php_version.outputs.MIN_PHP_VERSION }}
         tools: composer
         coverage: none

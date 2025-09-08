@@ -14,6 +14,7 @@ import GeneralPaymentRequestButtonSettings from './general-payment-request-butto
 import {
 	usePaymentRequestEnabledSettings,
 	usePaymentRequestLocations,
+	useAppleGooglePayInPaymentMethodsOptionsEnabledSettings,
 } from 'wcpay/data';
 import GooglePayTestModeCompatibilityNotice from '../google-pay-test-mode-compatibility-notice';
 
@@ -22,6 +23,11 @@ const PaymentRequestSettings = ( { section } ) => {
 		isPaymentRequestEnabled,
 		updateIsPaymentRequestEnabled,
 	] = usePaymentRequestEnabledSettings();
+
+	const [
+		isAppleGooglePayInPaymentMethodsOptionsEnabled,
+		updateIsAppleGooglePayInPaymentMethodsOptionsEnabled,
+	] = useAppleGooglePayInPaymentMethodsOptionsEnabledSettings();
 
 	const [
 		paymentRequestLocations,
@@ -47,6 +53,28 @@ const PaymentRequestSettings = ( { section } ) => {
 				<CardBody className="wcpay-card-body">
 					<GooglePayTestModeCompatibilityNotice />
 					<div className="wcpay-payment-request-settings__enable">
+						{ wcpaySettings.featureFlags
+							.isDynamicCheckoutPlaceOrderButtonEnabled && (
+							<CheckboxControl
+								className="wcpay-payment-request-settings__enable__checkbox"
+								checked={
+									isAppleGooglePayInPaymentMethodsOptionsEnabled
+								}
+								onChange={
+									updateIsAppleGooglePayInPaymentMethodsOptionsEnabled
+								}
+								label={ __(
+									'Enable Apple Pay / Google Pay as options in the payment methods list',
+									'woocommerce-payments'
+								) }
+								help={ __(
+									'Customers with Apple Pay or Google Pay enabled will be able to pay with ' +
+										'their preferred wallet as options in the payment methods list.',
+									'woocommerce-payments'
+								) }
+								__nextHasNoMarginBottom
+							/>
+						) }
 						<CheckboxControl
 							className="wcpay-payment-request-settings__enable__checkbox"
 							checked={ isPaymentRequestEnabled }
