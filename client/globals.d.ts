@@ -4,6 +4,7 @@
 import type { MccsDisplayTreeItem, Country } from 'onboarding/types';
 import { PaymentMethodToPluginsMap } from './components/duplicate-notice';
 import { WCPayExpressCheckoutParams } from './express-checkout/utils';
+import { AccountDetails } from 'wcpay/types/account/account-details';
 
 declare global {
 	interface TosSettingsStripeConnected {
@@ -32,6 +33,7 @@ declare global {
 			isDisputeIssuerEvidenceEnabled: boolean;
 			multiCurrency?: boolean;
 			isFRTReviewFeatureActive: boolean;
+			isAccountDetailsEnabled: boolean;
 		};
 		accountFees: Record< string, any >;
 		fraudServices: unknown[];
@@ -98,6 +100,7 @@ declare global {
 			has_past_loans: boolean;
 			loans: Array< string >;
 		};
+		accountDetails: null | undefined | AccountDetails;
 		connect: {
 			country: string;
 			availableStates: Array< Record< string, string > >;

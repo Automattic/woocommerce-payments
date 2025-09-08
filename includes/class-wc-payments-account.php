@@ -381,6 +381,25 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	}
 
 	/**
+	 * Get structured account details including status, payout info, and banners for frontend display.
+	 *
+	 * @return null|array Account details array with nested status objects, or null if unavailable.
+	 */
+	public function get_account_details(): ?array {
+		$account = $this->get_cached_account_data();
+		if ( empty( $account['account_details'] ) ) {
+			return null;
+		}
+
+		$account_details = $account['account_details'];
+		if ( isset( $account_details['account_status'], $account_details['payout_status'], $account_details['banner'] ) ) {
+			return null;
+		}
+
+		return $account_details;
+	}
+
+	/**
 	 * Gets the account statement descriptor for rendering on the settings page.
 	 *
 	 * @return string Account statement descriptor.
