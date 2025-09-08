@@ -121,6 +121,13 @@ export const getIsPaymentRequestEnabled = ( state ) => {
 	return getSettings( state ).is_payment_request_enabled || false;
 };
 
+export const getIsAppleGooglePayInPaymentMethodsOptionsEnabled = ( state ) => {
+	return (
+		getSettings( state )
+			.is_apple_google_pay_in_payment_methods_options_enabled || false
+	);
+};
+
 export const getIsDebugLogEnabled = ( state ) => {
 	return getSettings( state ).is_debug_log_enabled || false;
 };
