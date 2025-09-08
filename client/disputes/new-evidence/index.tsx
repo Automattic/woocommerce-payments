@@ -37,7 +37,13 @@ import RecommendedDocuments from './recommended-documents';
 import InlineNotice from 'components/inline-notice';
 import ShippingDetails from './shipping-details';
 import CoverLetter from './cover-letter';
-import { Button, HorizontalRule } from '@wordpress/components';
+import {
+	Button,
+	HorizontalRule,
+	Spinner,
+	Flex,
+	FlexItem,
+} from '@wordpress/components';
 import { getAdminUrl } from 'wcpay/utils';
 import { StepperPanel } from 'wcpay/components/stepper';
 import {
@@ -98,6 +104,7 @@ export default ( { query }: { query: { id: string } } ) => {
 	const [ dispute, setDispute ] = useState< any >();
 	const [ evidence, setEvidence ] = useState< any >( {} );
 	const [ productType, setProductType ] = useState< string >( '' );
+	const [ isInitialLoading, setIsInitialLoading ] = useState( true );
 	const [ currentStep, setCurrentStep ] = useState( 0 );
 	const [ isAccordionOpen, setIsAccordionOpen ] = useState( true );
 	const [ productDescription, setProductDescription ] = useState( '' );
@@ -142,10 +149,10 @@ export default ( { query }: { query: { id: string } } ) => {
 	const [ showConfirmation, setShowConfirmation ] = useState( false );
 
 	// --- Data loading ---
-	const hasInitializedRef = useRef( false );
 	useEffect( () => {
 		const fetchDispute = async () => {
 			try {
+				setIsInitialLoading( true );
 				const d: any = await apiFetch( { path } );
 				setDispute( d );
 				// fallback to multiple if no product type is set
@@ -155,22 +162,9 @@ export default ( { query }: { query: { id: string } } ) => {
 					?.map( ( item: any ) => item.product_description )
 					.filter( Boolean )
 					.join( ', ' );
-				// Prefer persisted evidence description; only fallback to level3 on first load if empty
-				const incomingDescription = d.evidence?.product_description;
-				// Only set description on first load, or if incoming evidence has a non-empty value
-				if ( ! hasInitializedRef.current ) {
-					setProductDescription(
-						incomingDescription && incomingDescription !== ''
-							? incomingDescription
-							: level3ProductNames || ''
-					);
-					hasInitializedRef.current = true;
-				} else if (
-					incomingDescription &&
-					incomingDescription !== ''
-				) {
-					setProductDescription( incomingDescription );
-				}
+				setProductDescription(
+					d.evidence?.product_description || level3ProductNames || ''
+				);
 				// Load saved shipping details from evidence
 				setShippingCarrier( d.evidence?.shipping_carrier || '' );
 				setShippingDate( d.evidence?.shipping_date || '' );
@@ -263,6 +257,8 @@ export default ( { query }: { query: { id: string } } ) => {
 				}
 			} catch ( error ) {
 				createErrorNotice( String( error ) );
+			} finally {
+				setIsInitialLoading( false );
 			}
 		};
 		fetchDispute();
@@ -528,6 +524,126 @@ export default ( { query }: { query: { id: string } } ) => {
 		dispute.status !== 'needs_response' &&
 		dispute.status !== 'warning_needs_response';
 
+	// --- Accordion summary content (must be before any early returns) ---
+	const summaryItems = useMemo( () => {
+		if ( ! dispute ) return [];
+		const disputeReasonSummary = reasons[ disputeReason ]?.summary || [];
+		return [
+			{
+				title: __( 'Dispute Amount', 'woocommerce-payments' ),
+				content: formatExplicitCurrency(
+					dispute.amount,
+					dispute.currency
+				),
+			},
+			{
+				title: __( 'Disputed On', 'woocommerce-payments' ),
+				content: dispute.created
+					? formatDateTimeFromTimestamp( dispute.created, {
+							separator: ', ',
+							includeTime: false,
+					  } )
+					: '–',
+			},
+			{
+				title: __( 'Reason', 'woocommerce-payments' ),
+				content: (
+					<>
+						{ reasons[ disputeReason ]?.display || disputeReason }
+						{ disputeReasonSummary.length > 0 && (
+							<ClickTooltip
+								buttonIcon={ <HelpOutlineIcon /> }
+								buttonLabel={ __(
+									'Learn more',
+									'woocommerce-payments'
+								) }
+								content={
+									<div className="dispute-reason-tooltip">
+										<p>
+											{ reasons[ disputeReason ]
+												?.display || disputeReason }
+										</p>
+										<Paragraphs>
+											{ disputeReasonSummary }
+										</Paragraphs>
+										<p>
+											<a
+												href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/"
+												target="_blank"
+												rel="noopener noreferrer"
+											>
+												{ __(
+													'Learn more',
+													'woocommerce-payments'
+												) }
+											</a>
+										</p>
+									</div>
+								}
+							/>
+						) }
+					</>
+				),
+			},
+			{
+				title: __( 'Respond By', 'woocommerce-payments' ),
+				content: (
+					<DisputeDueByDate
+						dueBy={ dispute.evidence_details?.due_by }
+					/>
+				),
+			},
+			{
+				title: __( 'Order', 'woocommerce-payments' ),
+				content: <OrderLink order={ dispute.order } />,
+			},
+		];
+	}, [ dispute, disputeReason ] );
+
+	// Focus on heading when step changes (must be before any early returns)
+	useEffect( () => {
+		// Use setTimeout to ensure the DOM has updated with the new step content
+		const timeoutId = setTimeout( () => {
+			const headingRef = stepHeadingRefs.current[ currentStep ];
+			if ( headingRef ) {
+				headingRef.focus();
+			}
+		}, 100 );
+
+		return () => clearTimeout( timeoutId );
+	}, [ currentStep ] );
+
+	// --- Initial loading state ---
+	if ( isInitialLoading ) {
+		return (
+			<Page>
+				<ErrorBoundary>
+					<Flex
+						direction="column"
+						align="center"
+						justify="center"
+						className="wcpay-dispute-evidence-new__loading"
+						aria-busy="true"
+						aria-live="polite"
+						data-testid="new-evidence-loading"
+					>
+						<FlexItem>
+							<Spinner />
+						</FlexItem>
+						<FlexItem>
+							<div>
+								{ __(
+									'Loading dispute…',
+									'woocommerce-payments'
+								) }
+							</div>
+						</FlexItem>
+					</Flex>
+				</ErrorBoundary>
+			</Page>
+		);
+	}
+
 	// --- Handle step changes ---
 	const handleStepChange = async ( newStep: number ) => {
 		// Only save if not in readOnly mode
@@ -545,19 +661,6 @@ export default ( { query }: { query: { id: string } } ) => {
 		// Scroll to top of page
 		window.scrollTo( { top: 0, behavior: 'smooth' } );
 	};
-
-	// Focus on heading when step changes
-	useEffect( () => {
-		// Use setTimeout to ensure the DOM has updated with the new step content
-		const timeoutId = setTimeout( () => {
-			const headingRef = stepHeadingRefs.current[ currentStep ];
-			if ( headingRef ) {
-				headingRef.focus();
-			}
-		}, 100 );
-
-		return () => clearTimeout( timeoutId );
-	}, [ currentStep ] );
 
 	const updateProductType = ( newType: string ) => {
 		recordEvent( 'wcpay_dispute_product_selected', { selection: newType } );
@@ -695,82 +798,6 @@ export default ( { query }: { query: { id: string } } ) => {
 		// Remove the file name from the uploaded files.
 		setUploadedFiles( ( prev ) => ( { ...prev, [ key ]: '' } ) );
 	};
-
-	// --- Accordion summary content ---
-	const summaryItems = useMemo( () => {
-		if ( ! dispute ) return [];
-		const disputeReasonSummary = reasons[ disputeReason ]?.summary || [];
-		return [
-			{
-				title: __( 'Dispute Amount', 'woocommerce-payments' ),
-				content: formatExplicitCurrency(
-					dispute.amount,
-					dispute.currency
-				),
-			},
-			{
-				title: __( 'Disputed On', 'woocommerce-payments' ),
-				content: dispute.created
-					? formatDateTimeFromTimestamp( dispute.created, {
-							separator: ', ',
-							includeTime: false,
-					  } )
-					: '–',
-			},
-			{
-				title: __( 'Reason', 'woocommerce-payments' ),
-				content: (
-					<>
-						{ reasons[ disputeReason ]?.display || disputeReason }
-						{ disputeReasonSummary.length > 0 && (
-							<ClickTooltip
-								buttonIcon={ <HelpOutlineIcon /> }
-								buttonLabel={ __(
-									'Learn more',
-									'woocommerce-payments'
-								) }
-								content={
-									<div className="dispute-reason-tooltip">
-										<p>
-											{ reasons[ disputeReason ]
-												?.display || disputeReason }
-										</p>
-										<Paragraphs>
-											{ disputeReasonSummary }
-										</Paragraphs>
-										<p>
-											<a
-												href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/"
-												target="_blank"
-												rel="noopener noreferrer"
-											>
-												{ __(
-													'Learn more',
-													'woocommerce-payments'
-												) }
-											</a>
-										</p>
-									</div>
-								}
-							/>
-						) }
-					</>
-				),
-			},
-			{
-				title: __( 'Respond By', 'woocommerce-payments' ),
-				content: (
-					<DisputeDueByDate
-						dueBy={ dispute.evidence_details?.due_by }
-					/>
-				),
-			},
-			{
-				title: __( 'Order', 'woocommerce-payments' ),
-				content: <OrderLink order={ dispute.order } />,
-			},
-		];
-	}, [ dispute, disputeReason ] );
 
 	// --- Recommended documents ---
 	const recommendedDocumentFields = getRecommendedDocumentFields(
@@ -1067,6 +1094,7 @@ export default ( { query }: { query: { id: string } } ) => {
 							<Button
 								variant="tertiary"
 								onClick={ () => doSave( false ) }
+								data-testid="save-for-later-button"
 								__next40pxDefaultSize
 							>
 								{ __(
@@ -1107,6 +1135,7 @@ export default ( { query }: { query: { id: string } } ) => {
 							<Button
 								variant="tertiary"
 								onClick={ () => doSave( false ) }
+								data-testid="save-for-later-button"
 								__next40pxDefaultSize
 							>
 								{ __(
@@ -1146,6 +1175,7 @@ export default ( { query }: { query: { id: string } } ) => {
 						<Button
 							variant="tertiary"
 							onClick={ () => doSave( false ) }
+							data-testid="save-for-later-button"
 							__next40pxDefaultSize
 						>
 							{ __( 'Save for later', 'woocommerce-payments' ) }
@@ -1165,6 +1195,7 @@ export default ( { query }: { query: { id: string } } ) => {
 									doSave( true );
 								}
 							} }
+							data-testid="submit-evidence-button"
 							__next40pxDefaultSize
 						>
 							{ __( 'Submit', 'woocommerce-payments' ) }

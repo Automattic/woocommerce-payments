@@ -168,6 +168,11 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 							name: 'Challenge dispute',
 						} )
 						.click();
+
+					// Wait for new evidence screen to finish initial loading
+					await expect(
+						merchantPage.getByTestId( 'new-evidence-loading' )
+					).toBeHidden( { timeout: 20000 } );
 				}
 			);
 
@@ -279,9 +284,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 
 					// Click the submit button
 					await merchantPage
-						.getByRole( 'button', {
-							name: 'Submit',
-						} )
+						.getByTestId( 'submit-evidence-button' )
 						.click();
 				}
 			);
@@ -371,6 +374,11 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 							name: 'Challenge dispute',
 						} )
 						.click();
+
+					// Wait for new evidence screen to finish initial loading
+					await expect(
+						merchantPage.getByTestId( 'new-evidence-loading' )
+					).toBeHidden( { timeout: 20000 } );
 				}
 			);
 
@@ -455,9 +463,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 
 					// Click the submit button
 					await merchantPage
-						.getByRole( 'button', {
-							name: 'Submit',
-						} )
+						.getByTestId( 'submit-evidence-button' )
 						.click();
 				}
 			);
