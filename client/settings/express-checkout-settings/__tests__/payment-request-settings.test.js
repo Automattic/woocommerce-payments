@@ -18,6 +18,7 @@ import {
 	usePaymentRequestButtonSize,
 	usePaymentRequestButtonTheme,
 	useWooPayEnabledSettings,
+	useAppleGooglePayInPaymentMethodsOptionsEnabledSettings,
 } from '../../../data';
 import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
 
@@ -31,6 +32,7 @@ jest.mock( '../../../data', () => ( {
 	usePaymentRequestButtonTheme: jest.fn().mockReturnValue( [ 'dark' ] ),
 	useWooPayEnabledSettings: jest.fn(),
 	useWooPayShowIncompatibilityNotice: jest.fn().mockReturnValue( false ),
+	useAppleGooglePayInPaymentMethodsOptionsEnabledSettings: jest.fn(),
 } ) );
 
 jest.mock( '../payment-request-button-preview' );
@@ -50,6 +52,11 @@ const getMockPaymentRequestEnabledSettings = (
 ) => [ isEnabled, updateIsPaymentRequestEnabledHandler ];
 
 const getMockWooPayEnabledSettings = ( isEnabled ) => [ isEnabled ];
+
+const getMockAppleGooglePayInPaymentMethodsOptionsEnabledSettings = (
+	isEnabled,
+	updateIsAppleGooglePayInPaymentMethodsOptionsEnabledHandler
+) => [ isEnabled, updateIsAppleGooglePayInPaymentMethodsOptionsEnabledHandler ];
 
 const getMockPaymentRequestLocations = (
 	isCheckoutEnabled,
@@ -102,6 +109,15 @@ const renderWithSettingsProvider = ( ui ) =>
 
 describe( 'PaymentRequestSettings', () => {
 	beforeEach( () => {
+		// Mock the global wcpaySettings
+		global.wcpaySettings = {
+			accountStatus: {},
+			restUrl: 'http://example.com/wp-json/',
+			featureFlags: {
+				isDynamicCheckoutPlaceOrderButtonEnabled: true,
+			},
+		};
+
 		usePaymentRequestEnabledSettings.mockReturnValue(
 			getMockPaymentRequestEnabledSettings( true, jest.fn() )
 		);
@@ -113,6 +129,13 @@ describe( 'PaymentRequestSettings', () => {
 		useWooPayEnabledSettings.mockReturnValue(
 			getMockWooPayEnabledSettings( true )
 		);
+
+		useAppleGooglePayInPaymentMethodsOptionsEnabledSettings.mockReturnValue(
+			getMockAppleGooglePayInPaymentMethodsOptionsEnabledSettings(
+				false,
+				jest.fn()
+			)
+		);
 	} );
 
 	it( 'renders enable settings with defaults', () => {
@@ -121,9 +144,36 @@ describe( 'PaymentRequestSettings', () => {
 		);
 
 		// confirm checkbox groups displayed
-		const [ enableCheckbox ] = screen.queryAllByRole( 'checkbox' );
+		const checkboxes = screen.queryAllByRole( 'checkbox' );
 
-		expect( enableCheckbox ).toBeInTheDocument();
+		expect( checkboxes ).toHaveLength( 5 ); // Apple/Google Pay in payment methods, express buttons, and 3 location checkboxes
+	} );
+
+	it( 'renders Apple Pay / Google Pay in payment methods checkbox when feature flag is enabled', () => {
+		renderWithSettingsProvider(
+			<PaymentRequestSettings section="enable" />
+		);
+
+		expect(
+			screen.getByLabelText(
+				'Enable Apple Pay / Google Pay as options in the payment methods list'
+			)
+		).toBeInTheDocument();
+	} );
+
+	it( 'does not render Apple Pay / Google Pay in payment methods checkbox when feature flag is disabled', () => {
+		// Mock the feature flag as disabled
+		global.wcpaySettings.featureFlags.isDynamicCheckoutPlaceOrderButtonEnabled = false;
+
+		renderWithSettingsProvider(
+			<PaymentRequestSettings section="enable" />
+		);
+
+		expect(
+			screen.queryByLabelText(
+				'Enable Apple Pay / Google Pay as options in the payment methods list'
+			)
+		).not.toBeInTheDocument();
 	} );
 
 	it( 'triggers the hooks when the enable setting is being interacted with', async () => {
@@ -148,10 +198,59 @@ describe( 'PaymentRequestSettings', () => {
 		expect( screen.getByLabelText( 'Show on product page' ) ).toBeChecked();
 		expect( screen.getByLabelText( 'Show on cart page' ) ).toBeChecked();
 
-		await userEvent.click( screen.getByLabelText( /Enable Apple Pay/ ) );
+		await userEvent.click(
+			screen.getByLabelText( /Enable Apple Pay.*express payment buttons/ )
+		);
 		expect( updateIsPaymentRequestEnabledHandler ).toHaveBeenCalledWith(
 			false
 		);
+	} );
+
+	it( 'triggers the Apple Pay / Google Pay in payment methods hook when the checkbox is interacted with', async () => {
+		const updateIsAppleGooglePayInPaymentMethodsOptionsEnabledHandler = jest.fn();
+
+		useAppleGooglePayInPaymentMethodsOptionsEnabledSettings.mockReturnValue(
+			getMockAppleGooglePayInPaymentMethodsOptionsEnabledSettings(
+				true,
+				updateIsAppleGooglePayInPaymentMethodsOptionsEnabledHandler
+			)
+		);
+
+		renderWithSettingsProvider(
+			<PaymentRequestSettings section="enable" />
+		);
+
+		expect(
+			updateIsAppleGooglePayInPaymentMethodsOptionsEnabledHandler
+		).not.toHaveBeenCalled();
+
+		await userEvent.click(
+			screen.getByLabelText(
+				'Enable Apple Pay / Google Pay as options in the payment methods list'
+			)
+		);
+		expect(
+			updateIsAppleGooglePayInPaymentMethodsOptionsEnabledHandler
+		).toHaveBeenCalledWith( false );
+	} );
+
+	it( 'displays the correct checked state for Apple Pay / Google Pay in payment methods checkbox', () => {
+		useAppleGooglePayInPaymentMethodsOptionsEnabledSettings.mockReturnValue(
+			getMockAppleGooglePayInPaymentMethodsOptionsEnabledSettings(
+				true,
+				jest.fn()
+			)
+		);
+
+		renderWithSettingsProvider(
+			<PaymentRequestSettings section="enable" />
+		);
+
+		expect(
+			screen.getByLabelText(
+				'Enable Apple Pay / Google Pay as options in the payment methods list'
+			)
+		).toBeChecked();
 	} );
 
 	it( 'renders general settings with defaults', () => {
