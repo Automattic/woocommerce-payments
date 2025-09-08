@@ -887,9 +887,8 @@ class WC_Payments_Admin {
 			];
 		}
 
-		$account_status_data  = $this->account->get_account_status_data();
-		$account_details_data = $this->account->get_account_details();
-		$account_is_valid     = $this->account->is_stripe_account_valid();
+		$account_status_data = $this->account->get_account_status_data();
+		$account_is_valid    = $this->account->is_stripe_account_valid();
 
 		$test_mode = false;
 		try {
@@ -954,7 +953,7 @@ class WC_Payments_Admin {
 			'accountFees'                        => $this->account->get_fees(),
 			'accountLoans'                       => $this->account->get_capital(),
 			'accountEmail'                       => $this->account->get_account_email(),
-			'accountDetails'                     => $account_details_data,
+			'accountDetails'                     => $this->account->get_account_details(),
 			'showUpdateDetailsTask'              => $this->get_should_show_update_business_details_task( $account_status_data ),
 			'wpcomReconnectUrl'                  => $this->payments_api_client->is_server_connected() && ! $this->payments_api_client->has_server_connection_owner() ? WC_Payments_Account::get_wpcom_reconnect_url() : null,
 			'multiCurrencySetup'                 => [

@@ -1,4 +1,4 @@
-export interface AccountDetails {
+export interface AccountDetailsData {
 	account_status: {
 		text: string;
 		background_color: 'green' | 'yellow' | 'red';
@@ -21,3 +21,5 @@ export interface AccountDetails {
 		icon: 'caution';
 	} | null;
 }
+
+export type AccountDetailsType = AccountDetailsData | null;

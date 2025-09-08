@@ -4,7 +4,7 @@
 import type { MccsDisplayTreeItem, Country } from 'onboarding/types';
 import { PaymentMethodToPluginsMap } from './components/duplicate-notice';
 import { WCPayExpressCheckoutParams } from './express-checkout/utils';
-import { AccountDetails } from 'wcpay/types/account/account-details';
+import { AccountDetailsType } from 'wcpay/types/account/account-details';
 
 declare global {
 	interface TosSettingsStripeConnected {
@@ -100,7 +100,7 @@ declare global {
 			has_past_loans: boolean;
 			loans: Array< string >;
 		};
-		accountDetails: null | undefined | AccountDetails;
+		accountDetails: AccountDetailsType;
 		connect: {
 			country: string;
 			availableStates: Array< Record< string, string > >;
