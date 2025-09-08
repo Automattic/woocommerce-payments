@@ -10,6 +10,7 @@ import {
 	isSavingSettings,
 	getPaymentRequestLocations,
 	getIsPaymentRequestEnabled,
+	getIsAppleGooglePayInPaymentMethodsOptionsEnabled,
 	getAccountBusinessSupportEmail,
 	getAccountBusinessSupportPhone,
 	getIsWooPayEnabled,
@@ -176,6 +177,33 @@ describe( 'Settings selectors tests', () => {
 			[ { settings: { data: {} } } ],
 		] )( 'returns false if missing (tested state: %j)', ( state ) => {
 			expect( getIsPaymentRequestEnabled( state ) ).toBeFalsy();
+		} );
+	} );
+
+	describe( 'getIsAppleGooglePayInPaymentMethodsOptionsEnabled()', () => {
+		test( 'returns the value of state.settings.data.is_apple_google_pay_in_payment_methods_options_enabled', () => {
+			const state = {
+				settings: {
+					data: {
+						is_apple_google_pay_in_payment_methods_options_enabled: true,
+					},
+				},
+			};
+
+			expect(
+				getIsAppleGooglePayInPaymentMethodsOptionsEnabled( state )
+			).toBeTruthy();
+		} );
+
+		test.each( [
+			[ undefined ],
+			[ {} ],
+			[ { settings: {} } ],
+			[ { settings: { data: {} } } ],
+		] )( 'returns false if missing (tested state: %j)', ( state ) => {
+			expect(
+				getIsAppleGooglePayInPaymentMethodsOptionsEnabled( state )
+			).toBeFalsy();
 		} );
 	} );
 
