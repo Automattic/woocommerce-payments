@@ -29,6 +29,7 @@ class WC_Payments_Features {
 	const DISPUTE_ISSUER_EVIDENCE                             = '_wcpay_feature_dispute_issuer_evidence';
 	const WOOPAY_GLOBAL_THEME_SUPPORT_FLAG_NAME               = '_wcpay_feature_woopay_global_theme_support';
 	const WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME = '_wcpay_feature_dynamic_checkout_place_order_button';
+	const ACCOUNT_DETAILS_FLAG_NAME                           = '_wcpay_feature_account_details';
 
 	/**
 	 * Indicates whether card payments are enabled for this (Stripe) account.
@@ -341,6 +342,15 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether the Account Details feature is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_account_details_enabled(): bool {
+		return '1' === get_option( self::ACCOUNT_DETAILS_FLAG_NAME, '0' );
+	}
+
+	/**
 	 * Returns feature flags as an array suitable for display on the front-end.
 	 *
 	 * @return bool[]
@@ -355,6 +365,7 @@ class WC_Payments_Features {
 				'isDisputeIssuerEvidenceEnabled'           => self::is_dispute_issuer_evidence_enabled(),
 				'isFRTReviewFeatureActive'                 => self::is_frt_review_feature_active(),
 				'isDynamicCheckoutPlaceOrderButtonEnabled' => self::is_dynamic_checkout_place_order_button_enabled(),
+				'isAccountDetailsEnabled'                  => self::is_account_details_enabled(),
 			]
 		);
 	}

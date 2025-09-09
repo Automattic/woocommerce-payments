@@ -15,6 +15,7 @@ import { Card, Notice, ExternalLink } from '@wordpress/components';
  */
 import AccountBalances from 'components/account-balances';
 import AccountStatus from 'components/account-status';
+import AccountDetails from 'components/account-details';
 import ActiveLoanSummary from 'components/active-loan-summary';
 import ConnectionSuccessModal from './modal/connection-success';
 import DepositsOverview from 'components/deposits-overview';
@@ -64,6 +65,8 @@ const OverviewPage = () => {
 		accountLoans: { has_active_loan: hasActiveLoan },
 		overviewTasksVisibility,
 		wpcomReconnectUrl,
+		featureFlags: { isAccountDetailsEnabled },
+		accountDetails,
 	} = wcpaySettings;
 
 	// Don't show the update details and verify business tasks by default due to embedded component.
@@ -373,10 +376,14 @@ const OverviewPage = () => {
 				</ErrorBoundary>
 			) }
 			<ErrorBoundary>
-				<AccountStatus
-					accountStatus={ accountStatus }
-					accountFees={ activeAccountFees }
-				/>
+				{ isAccountDetailsEnabled && accountDetails ? (
+					<AccountDetails accountDetails={ accountDetails } />
+				) : (
+					<AccountStatus
+						accountStatus={ accountStatus }
+						accountFees={ activeAccountFees }
+					/>
+				) }
 			</ErrorBoundary>
 			{ hasActiveLoan && (
 				<ErrorBoundary>
