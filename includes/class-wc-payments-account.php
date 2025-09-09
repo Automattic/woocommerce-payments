@@ -392,11 +392,8 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		}
 
 		$account_details = $account['account_details'];
-		if ( isset( $account_details['account_status'], $account_details['payout_status'], $account_details['banner'] ) ) {
-			return null;
-		}
-
-		return $account_details;
+		$is_valid        = isset( $account_details['account_status'], $account_details['payout_status'] ) && array_key_exists( 'banner', $account_details );
+		return $is_valid ? $account_details : null;
 	}
 
 	/**
