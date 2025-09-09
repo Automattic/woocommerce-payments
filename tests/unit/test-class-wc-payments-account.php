@@ -3477,4 +3477,103 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		$current_screen->method( 'in_admin' )->willReturn( $is_admin );
 	}
+
+	public function test_get_account_details_returns_null_when_empty() {
+		$this->mock_database_cache->method( 'get' )->willReturn( [] );
+
+		$result = $this->wcpay_account->get_account_details();
+
+		$this->assertNull( $result );
+	}
+
+	public function test_get_account_details_returns_null_when_missing_key() {
+		$cached_account_data = [
+			'some_other_key' => 'some_value',
+		];
+
+		$this->mock_database_cache->method( 'get' )->willReturn( $cached_account_data );
+
+		$result = $this->wcpay_account->get_account_details();
+
+		$this->assertNull( $result );
+	}
+
+	public function test_get_account_details_returns_null_when_invalid_structure() {
+		$cached_account_data = [
+			'account_details' => [
+				'account_status' => [
+					'text'             => 'Active',
+					'background_color' => 'green',
+				],
+				// Missing payout_status - invalid structure.
+			],
+		];
+
+		$this->mock_database_cache->method( 'get' )->willReturn( $cached_account_data );
+
+		$result = $this->wcpay_account->get_account_details();
+
+		$this->assertNull( $result );
+	}
+
+	public function test_get_account_details_returns_valid_data_minimal() {
+		$account_details = [
+			'account_status' => [
+				'text'             => 'Active',
+				'background_color' => 'green',
+			],
+			'payout_status'  => [
+				'text'             => 'Available',
+				'background_color' => 'green',
+				'icon'             => 'published',
+			],
+			'banner'         => null,
+		];
+
+		$cached_account_data = [
+			'account_details' => $account_details,
+		];
+
+		$this->mock_database_cache->method( 'get' )->willReturn( $cached_account_data );
+
+		$result = $this->wcpay_account->get_account_details();
+
+		$this->assertEquals( $account_details, $result );
+	}
+
+	public function test_get_account_details_returns_valid_data_with_banner() {
+		$account_details = [
+			'account_status' => [
+				'text'             => 'Restricted',
+				'background_color' => 'red',
+			],
+			'payout_status'  => [
+				'text'             => 'Suspended',
+				'background_color' => 'red',
+				'icon'             => 'error',
+				'popover'          => [
+					'text'     => 'Account suspended',
+					'cta_text' => 'Learn more',
+					'cta_link' => 'https://example.com',
+				],
+			],
+			'banner'         => [
+				'text'             => 'Account needs attention',
+				'background_color' => 'yellow',
+				'cta_text'         => 'Fix now',
+				'cta_link'         => 'https://example.com/fix',
+				'icon'             => 'caution',
+			],
+		];
+
+		$cached_account_data = [
+			'account_details' => $account_details,
+		];
+
+		$this->mock_database_cache->method( 'get' )->willReturn( $cached_account_data );
+
+		$result = $this->wcpay_account->get_account_details();
+
+		$this->assertEquals( $account_details, $result );
+	}
 }
