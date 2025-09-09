@@ -3479,7 +3479,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_account_details_returns_null_when_empty() {
-		$this->mock_database_cache->method( 'get' )->willReturn( [] );
+		$this->cache_account_details( [] );
 
 		$result = $this->wcpay_account->get_account_details();
 
@@ -3488,10 +3488,11 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 	public function test_get_account_details_returns_null_when_missing_key() {
 		$cached_account_data = [
+			'is_live'        => true,
 			'some_other_key' => 'some_value',
 		];
 
-		$this->mock_database_cache->method( 'get' )->willReturn( $cached_account_data );
+		$this->cache_account_details( $cached_account_data );
 
 		$result = $this->wcpay_account->get_account_details();
 
@@ -3499,7 +3500,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_account_details_returns_null_when_invalid_structure() {
+		$this->mock_api_client->method( 'is_server_connected' )->willReturn( true );
 		$cached_account_data = [
+			'is_live'         => true,
 			'account_details' => [
 				'account_status' => [
 					'text'             => 'Active',
@@ -3509,7 +3512,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			],
 		];
 
-		$this->mock_database_cache->method( 'get' )->willReturn( $cached_account_data );
+		$this->cache_account_details( $cached_account_data );
 
 		$result = $this->wcpay_account->get_account_details();
 
@@ -3517,6 +3520,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_account_details_returns_valid_data_minimal() {
+		$this->mock_api_client->method( 'is_server_connected' )->willReturn( true );
 		$account_details = [
 			'account_status' => [
 				'text'             => 'Active',
@@ -3531,10 +3535,11 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		];
 
 		$cached_account_data = [
+			'is_live'         => true,
 			'account_details' => $account_details,
 		];
 
-		$this->mock_database_cache->method( 'get' )->willReturn( $cached_account_data );
+		$this->cache_account_details( $cached_account_data );
 
 		$result = $this->wcpay_account->get_account_details();
 
@@ -3542,6 +3547,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_get_account_details_returns_valid_data_with_banner() {
+		$this->mock_api_client->method( 'is_server_connected' )->willReturn( true );
 		$account_details = [
 			'account_status' => [
 				'text'             => 'Restricted',
@@ -3567,10 +3573,11 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		];
 
 		$cached_account_data = [
+			'is_live'         => true,
 			'account_details' => $account_details,
 		];
 
-		$this->mock_database_cache->method( 'get' )->willReturn( $cached_account_data );
+		$this->cache_account_details( $cached_account_data );
 
 		$result = $this->wcpay_account->get_account_details();
 
