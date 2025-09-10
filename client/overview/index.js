@@ -15,6 +15,7 @@ import { Card, Notice, ExternalLink } from '@wordpress/components';
  */
 import AccountBalances from 'components/account-balances';
 import AccountStatus from 'components/account-status';
+import AccountDetails from 'components/account-details';
 import ActiveLoanSummary from 'components/active-loan-summary';
 import ConnectionSuccessModal from './modal/connection-success';
 import DepositsOverview from 'components/deposits-overview';
@@ -24,7 +25,6 @@ import Page from 'components/page';
 import Welcome from 'components/welcome';
 import { TestModeNotice } from 'components/test-mode-notice';
 import InboxNotifications from './inbox-notifications';
-import ProgressiveOnboardingEligibilityModal from './modal/progressive-onboarding-eligibility';
 import TaskList from './task-list';
 import { getTasks, taskSort } from './task-list/tasks';
 import { useDisputes, useGetSettings, useSettings } from 'data';
@@ -34,7 +34,7 @@ import BannerNotice from 'wcpay/components/banner-notice';
 import { MaybeShowMerchantFeedbackPrompt } from 'wcpay/merchant-feedback-prompt';
 import { recordEvent } from 'wcpay/tracks';
 import StripeSpinner from 'wcpay/components/stripe-spinner';
-import { getAdminUrl } from 'wcpay/utils';
+import { getAdminUrl, isInTestModeOnboarding } from 'wcpay/utils';
 import { EmbeddedConnectNotificationBanner } from 'wcpay/embedded-components';
 
 const OverviewPageError = () => {
@@ -62,20 +62,17 @@ const OverviewPageError = () => {
 const OverviewPage = () => {
 	const {
 		accountStatus,
-		accountStatus: { progressiveOnboarding },
 		accountLoans: { has_active_loan: hasActiveLoan },
 		overviewTasksVisibility,
 		wpcomReconnectUrl,
+		featureFlags: { isAccountDetailsEnabled },
+		accountDetails,
 	} = wcpaySettings;
 
 	// Don't show the update details and verify business tasks by default due to embedded component.
 	const [ showUpdateDetailsTask, setShowUpdateDetailsTask ] = useState(
 		false
 	);
-	const [
-		showGetVerifyBankAccountTask,
-		setShowGetVerifyBankAccountTask,
-	] = useState( false );
 
 	const [
 		stripeNotificationsBannerErrorMessage,
@@ -98,7 +95,7 @@ const OverviewPage = () => {
 		setStripeNotificationsCountToAddressMemo,
 	] = useState( 0 );
 
-	const isTestModeOnboarding = wcpaySettings.testModeOnboarding;
+	const isTestModeOnboarding = isInTestModeOnboarding();
 	const { isLoading: settingsIsLoading } = useSettings();
 	const [
 		isTestDriveSuccessDisplayed,
@@ -115,7 +112,6 @@ const OverviewPage = () => {
 		showUpdateDetailsTask,
 		wpcomReconnectUrl,
 		activeDisputes,
-		showGetVerifyBankAccountTask,
 	} );
 	const tasks =
 		Array.isArray( tasksUnsorted ) && tasksUnsorted.sort( taskSort );
@@ -141,20 +137,13 @@ const OverviewPage = () => {
 		queryParams[ 'wcpay-server-link-error' ] === '1';
 	const showResetAccountError =
 		queryParams[ 'wcpay-reset-account-error' ] === '1';
-	const showProgressiveOnboardingEligibilityModal =
-		showConnectionSuccess &&
-		progressiveOnboarding.isEnabled &&
-		! progressiveOnboarding.isComplete;
 	const showTaskList =
 		! accountRejected && ! accountUnderReview && tasks.length > 0;
-	const isPoDisabledOrCompleted =
-		! progressiveOnboarding.isEnabled || progressiveOnboarding.isComplete;
 	const showConnectionSuccessModal =
 		showConnectionSuccess &&
 		! isTestModeOnboarding &&
 		paymentsEnabled &&
-		depositsEnabled &&
-		isPoDisabledOrCompleted;
+		depositsEnabled;
 
 	const activeAccountFees = Object.entries( wcpaySettings.accountFees )
 		.map( ( [ key, value ] ) => {
@@ -192,7 +181,6 @@ const OverviewPage = () => {
 	useEffect( () => {
 		if ( stripeNotificationsBannerErrorMessage ) {
 			setShowUpdateDetailsTask( true );
-			setShowGetVerifyBankAccountTask( true );
 			setStripeComponentLoading( false );
 		}
 	}, [ stripeNotificationsBannerErrorMessage ] );
@@ -388,10 +376,14 @@ const OverviewPage = () => {
 				</ErrorBoundary>
 			) }
 			<ErrorBoundary>
-				<AccountStatus
-					accountStatus={ accountStatus }
-					accountFees={ activeAccountFees }
-				/>
+				{ isAccountDetailsEnabled && accountDetails ? (
+					<AccountDetails accountDetails={ accountDetails } />
+				) : (
+					<AccountStatus
+						accountStatus={ accountStatus }
+						accountFees={ activeAccountFees }
+					/>
+				) }
 			</ErrorBoundary>
 			{ hasActiveLoan && (
 				<ErrorBoundary>
@@ -401,11 +393,6 @@ const OverviewPage = () => {
 			{ ! accountRejected && ! accountUnderReview && (
 				<ErrorBoundary>
 					<InboxNotifications />
-				</ErrorBoundary>
-			) }
-			{ showProgressiveOnboardingEligibilityModal && (
-				<ErrorBoundary>
-					<ProgressiveOnboardingEligibilityModal />
 				</ErrorBoundary>
 			) }
 			{ showConnectionSuccessModal && (

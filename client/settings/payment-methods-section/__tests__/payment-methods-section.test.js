@@ -5,7 +5,7 @@
  */
 import React from 'react';
 import { render, screen } from '@testing-library/react';
-import user from '@testing-library/user-event';
+import { userEvent as user } from 'jest-utils/user-event-timers';
 import { select } from '@wordpress/data';
 
 /**

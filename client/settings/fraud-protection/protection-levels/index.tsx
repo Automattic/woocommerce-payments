@@ -183,7 +183,6 @@ const ProtectionLevels: React.FC = () => {
 							level={ ProtectionLevel.BASIC }
 						/>
 					</li>
-					<hr className="fraud-protection__list-divider" />
 					<li className="fraud-protection__advanced-level-container">
 						<label htmlFor="fraud-protection-level-select_advanced-level">
 							<div className="fraud-protection-radio-wrapper">
@@ -209,6 +208,7 @@ const ProtectionLevels: React.FC = () => {
 							/>
 						</label>
 						<Button
+							// @ts-expect-error: not sure why href should not be declared - it is.
 							href={ getAdminUrl( {
 								page: 'wc-admin',
 								path: '/payments/fraud-protection',

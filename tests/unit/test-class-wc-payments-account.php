@@ -793,10 +793,9 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$_GET['path']   = '/payments/some-bogus-page';
 		$_GET['source'] = WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE; // This should not matter but be carried over.
 		// Make sure important flags are carried over.
-		$_GET['promo']       = 'incentive_id';
-		$_GET['progressive'] = 'true';
-		$_GET['test_drive']  = 'true';
-		$_GET['test_mode']   = '1'; // Some truthy value that will be carried over as `true`.
+		$_GET['promo']      = 'incentive_id';
+		$_GET['test_drive'] = 'true';
+		$_GET['test_mode']  = '1'; // Some truthy value that will be carried over as `true`.
 
 		// Even if we have connected account data, the Jetpack connection takes precedence.
 		$this->cache_account_details(
@@ -821,7 +820,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					$this->stringContains( 'wcpay-connect=connect-from' ),
 					$this->stringContains( 'wcpay-connect-jetpack-success=1' ),
 					$this->stringContains( 'promo=incentive_id' ),
-					$this->stringContains( 'progressive=true' ),
 					$this->stringContains( 'test_drive=true' ),
 					$this->stringContains( 'test_mode=true' ),
 					$this->stringContains( 'from=' . WC_Payments_Onboarding_Service::FROM_WPCOM_CONNECTION ),
@@ -849,8 +847,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$_GET['from']   = WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD;
 		$_GET['source'] = WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE;
 		// Make sure important flags are carried over.
-		$_GET['promo']       = 'incentive_id';
-		$_GET['progressive'] = 'true';
+		$_GET['promo'] = 'incentive_id';
 		// There is no `test_mode` param and no test mode is set. It should end up as a live mode onboarding.
 
 		// The Jetpack connection is in working order.
@@ -887,13 +884,11 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					$this->stringContains( 'from=' . WC_Payments_Onboarding_Service::FROM_STRIPE ),
 					// It should carry over contextual params.
 					$this->stringContains( 'promo=incentive_id' ),
-					$this->stringContains( 'progressive=true' )
 				),
 				$this->isType( 'array' ), // Site data.
 				$this->isType( 'array' ), // User data.
 				$this->isType( 'array' ), // Account data.
 				$this->isType( 'array' ), // Actioned notes.
-				true, // Progressive onboarding.
 				false // Collect payout requirements.
 			)
 			->willReturn( [ 'url' => 'https://connect.stripe.com/something' ] );
@@ -923,8 +918,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$_GET['from']   = WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD;
 		$_GET['source'] = WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE;
 		// Make sure important flags are carried over.
-		$_GET['promo']       = 'incentive_id';
-		$_GET['progressive'] = 'true';
+		$_GET['promo'] = 'incentive_id';
 		// There is no `test_mode` param and no test mode is set. It should end up as a live mode onboarding.
 
 		// The Jetpack connection is in working order.
@@ -983,7 +977,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		// Configure the request to be in sandbox mode.
 		$_GET['wcpay-connect'] = 'connect-from';
 		$_REQUEST['_wpnonce']  = wp_create_nonce( 'wcpay-connect' );
-		$_GET['progressive']   = 'true';
 		$_GET['test_mode']     = 'true';
 		$_GET['from']          = WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD;
 
@@ -1025,7 +1018,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		// Configure the request to be in sandbox mode.
 		$_GET['wcpay-connect'] = 'connect-from';
 		$_REQUEST['_wpnonce']  = wp_create_nonce( 'wcpay-connect' );
-		$_GET['progressive']   = 'true';
 		$_GET['from']          = WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD;
 
 		// The Jetpack connection is in working order.
@@ -1064,8 +1056,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$_GET['from']   = WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD;
 		$_GET['source'] = WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE; // This should not matter.
 		// Make sure important flags are carried over.
-		$_GET['promo']       = 'incentive_id';
-		$_GET['progressive'] = 'true';
+		$_GET['promo'] = 'incentive_id';
 		// There is no `test_mode` param and no test mode is set.
 		// It should end up as a live mode onboarding.
 
@@ -1103,13 +1094,11 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					$this->stringContains( 'from=' . WC_Payments_Onboarding_Service::FROM_STRIPE ),
 					// It should carry over contextual params.
 					$this->stringContains( 'promo=incentive_id' ),
-					$this->stringContains( 'progressive=true' )
 				),
 				$this->isType( 'array' ), // Site data.
 				$this->isType( 'array' ), // User data.
 				$this->isType( 'array' ), // Account data.
 				$this->isType( 'array' ), // Actioned notes.
-				true, // Progressive onboarding.
 				false // Collect payout requirements.
 			)
 			->willReturn( [ 'url' => false ] ); // This means that an account already exits on the platform.
@@ -1125,7 +1114,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					$this->stringContains( 'from=' . WC_Payments_Onboarding_Service::FROM_STRIPE ),
 					// It should carry over contextual params.
 					$this->stringContains( 'promo=incentive_id' ),
-					$this->stringContains( 'progressive=true' ),
 					// It should have the connection success flag.
 					$this->stringContains( 'wcpay-connection-success=1' )
 				)
@@ -1151,8 +1139,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$_GET['from']   = WC_Payments_Onboarding_Service::FROM_ONBOARDING_WIZARD;
 		$_GET['source'] = WC_Payments_Onboarding_Service::SOURCE_WCADMIN_INCENTIVE_PAGE; // This should not matter.
 		// Make sure important flags are carried over.
-		$_GET['promo']       = 'incentive_id';
-		$_GET['progressive'] = 'true';
+		$_GET['promo'] = 'incentive_id';
 
 		// There is another onboarding started.
 		$this->mock_onboarding_service
@@ -3489,5 +3476,111 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			->getMock();
 
 		$current_screen->method( 'in_admin' )->willReturn( $is_admin );
+	}
+
+	public function test_get_account_details_returns_null_when_empty() {
+		$this->cache_account_details( [] );
+
+		$result = $this->wcpay_account->get_account_details();
+
+		$this->assertNull( $result );
+	}
+
+	public function test_get_account_details_returns_null_when_missing_key() {
+		$cached_account_data = [
+			'is_live'        => true,
+			'some_other_key' => 'some_value',
+		];
+
+		$this->cache_account_details( $cached_account_data );
+
+		$result = $this->wcpay_account->get_account_details();
+
+		$this->assertNull( $result );
+	}
+
+	public function test_get_account_details_returns_null_when_invalid_structure() {
+		$this->mock_api_client->method( 'is_server_connected' )->willReturn( true );
+		$cached_account_data = [
+			'is_live'         => true,
+			'account_details' => [
+				'account_status' => [
+					'text'             => 'Active',
+					'background_color' => 'green',
+				],
+				// Missing payout_status - invalid structure.
+			],
+		];
+
+		$this->cache_account_details( $cached_account_data );
+
+		$result = $this->wcpay_account->get_account_details();
+
+		$this->assertNull( $result );
+	}
+
+	public function test_get_account_details_returns_valid_data_minimal() {
+		$this->mock_api_client->method( 'is_server_connected' )->willReturn( true );
+		$account_details = [
+			'account_status' => [
+				'text'             => 'Active',
+				'background_color' => 'green',
+			],
+			'payout_status'  => [
+				'text'             => 'Available',
+				'background_color' => 'green',
+				'icon'             => 'published',
+			],
+			'banner'         => null,
+		];
+
+		$cached_account_data = [
+			'is_live'         => true,
+			'account_details' => $account_details,
+		];
+
+		$this->cache_account_details( $cached_account_data );
+
+		$result = $this->wcpay_account->get_account_details();
+
+		$this->assertEquals( $account_details, $result );
+	}
+
+	public function test_get_account_details_returns_valid_data_with_banner() {
+		$this->mock_api_client->method( 'is_server_connected' )->willReturn( true );
+		$account_details = [
+			'account_status' => [
+				'text'             => 'Restricted',
+				'background_color' => 'red',
+			],
+			'payout_status'  => [
+				'text'             => 'Suspended',
+				'background_color' => 'red',
+				'icon'             => 'error',
+				'popover'          => [
+					'text'     => 'Account suspended',
+					'cta_text' => 'Learn more',
+					'cta_link' => 'https://example.com',
+				],
+			],
+			'banner'         => [
+				'text'             => 'Account needs attention',
+				'background_color' => 'yellow',
+				'cta_text'         => 'Fix now',
+				'cta_link'         => 'https://example.com/fix',
+				'icon'             => 'caution',
+			],
+		];
+
+		$cached_account_data = [
+			'is_live'         => true,
+			'account_details' => $account_details,
+		];
+
+		$this->cache_account_details( $cached_account_data );
+
+		$result = $this->wcpay_account->get_account_details();
+
+		$this->assertEquals( $account_details, $result );
 	}
 }

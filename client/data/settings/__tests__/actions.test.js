@@ -7,7 +7,11 @@ import { apiFetch } from '@wordpress/data-controls';
 /**
  * Internal dependencies
  */
-import { saveSettings, updateIsSavingSettings } from '../actions';
+import {
+	saveSettings,
+	updateIsSavingSettings,
+	updateIsAppleGooglePayInPaymentMethodsOptionsEnabled,
+} from '../actions';
 
 jest.mock( '@wordpress/data' );
 jest.mock( '@wordpress/data-controls' );
@@ -158,6 +162,34 @@ describe( 'Settings actions tests', () => {
 					} ),
 				] )
 			);
+		} );
+	} );
+
+	describe( 'updateIsAppleGooglePayInPaymentMethodsOptionsEnabled()', () => {
+		test( 'returns action with correct payload for enabled state', () => {
+			const action = updateIsAppleGooglePayInPaymentMethodsOptionsEnabled(
+				true
+			);
+
+			expect( action ).toEqual( {
+				type: 'SET_SETTINGS_VALUES',
+				payload: {
+					is_apple_google_pay_in_payment_methods_options_enabled: true,
+				},
+			} );
+		} );
+
+		test( 'returns action with correct payload for disabled state', () => {
+			const action = updateIsAppleGooglePayInPaymentMethodsOptionsEnabled(
+				false
+			);
+
+			expect( action ).toEqual( {
+				type: 'SET_SETTINGS_VALUES',
+				payload: {
+					is_apple_google_pay_in_payment_methods_options_enabled: false,
+				},
+			} );
 		} );
 	} );
 } );

@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix customer details section when name and/or email are very big.

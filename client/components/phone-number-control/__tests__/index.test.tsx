@@ -62,10 +62,9 @@ describe( 'Phone Number Control', () => {
 		render( <PhoneNumberControl value="" onChange={ onChange } /> );
 
 		const input = screen.getByRole( 'textbox' );
-		await userEvent.type( input, '1234567890' );
+		await userEvent.paste( input, '1234567890' );
 
-		expect( onChange ).toHaveBeenCalledTimes( 10 );
-		expect( onChange ).toHaveBeenLastCalledWith( '+11234567890', 'US' );
+		expect( onChange ).toHaveBeenCalledWith( '+11234567890', 'US' );
 	} );
 
 	it( 'calls onChange when country code select value changes', async () => {

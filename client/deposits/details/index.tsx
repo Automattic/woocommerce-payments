@@ -13,7 +13,6 @@ import {
 import interpolateComponents from '@automattic/interpolate-components';
 import clsx from 'clsx';
 import {
-	// @ts-expect-error: Suppressing Module '"@wordpress/components"' has no exported member '__experimentalText'.
 	// eslint-disable-next-line @wordpress/no-unsafe-wp-apis
 	__experimentalText as Text,
 	Card,
@@ -348,6 +347,7 @@ export const DepositDetails: React.FC< DepositDetailsProps > = ( {
 									),
 									components: {
 										learnMoreLink: (
+											// @ts-expect-error: children is provided when interpolating the component
 											<ExternalLink href="https://woocommerce.com/document/woopayments/payouts/instant-payouts/#transactions" />
 										),
 									},

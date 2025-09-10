@@ -318,6 +318,13 @@ class WC_Payments {
 	private static $currency_manager;
 
 	/**
+	 * Instance of WC_Payments_Payment_Method_Service, created in init function
+	 *
+	 * @var WC_Payments_Payment_Method_Service
+	 */
+	private static $payment_method_service;
+
+	/**
 	 * Entry point to the initialization logic.
 	 */
 	public static function init() {
@@ -517,6 +524,7 @@ class WC_Payments {
 		include_once __DIR__ . '/compat/multi-currency/wc-payments-multi-currency.php';
 		include_once __DIR__ . '/compat/multi-currency/class-wc-payments-currency-manager.php';
 		include_once __DIR__ . '/class-duplicates-detection-service.php';
+		include_once __DIR__ . '/class-wc-payments-payment-method-service.php';
 
 		wcpay_get_container()->get( \WCPay\Internal\LoggerContext::class )->init_hooks();
 
@@ -628,7 +636,7 @@ class WC_Payments {
 		self::$card_gateway->init_hooks();
 		self::$wc_payments_checkout->init_hooks();
 
-		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::get_gateway(), self::$customer_service, self::$database_cache );
+		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::get_gateway(), self::$customer_service, self::$database_cache, self::$onboarding_service );
 		self::$webhook_reliability_service = new WC_Payments_Webhook_Reliability_Service( self::$api_client, self::$action_scheduler_service, self::$webhook_processing_service );
 
 		self::$customer_service_api = new WC_Payments_Customer_Service_API( self::$customer_service );
@@ -645,6 +653,9 @@ class WC_Payments {
 
 		$express_checkout_helper = new WC_Payments_Express_Checkout_Button_Helper( self::get_gateway(), self::$account );
 		self::set_express_checkout_helper( $express_checkout_helper );
+
+		self::$payment_method_service = new WC_Payments_Payment_Method_Service( self::$api_client, self::$order_service );
+		self::$payment_method_service->init_hooks();
 
 		// Delay registering hooks that could end up in a fatal error due to expired account cache.
 		// The `woocommerce_payments_account_refreshed` action will result in a fatal error if it's fired before the `$wp_rewrite` is defined.
@@ -739,7 +750,7 @@ class WC_Payments {
 			);
 			$admin->init_hooks();
 
-			$admin_settings = new WC_Payments_Admin_Settings( self::get_gateway() );
+			$admin_settings = new WC_Payments_Admin_Settings( self::get_gateway(), self::get_account_service() );
 			$admin_settings->init_hooks();
 
 			// Use tracks loader only in admin screens because it relies on WC_Tracks loaded by WC_Admin.

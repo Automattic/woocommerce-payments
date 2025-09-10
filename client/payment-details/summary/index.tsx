@@ -6,7 +6,7 @@
 import { __ } from '@wordpress/i18n';
 import { moreVertical } from '@wordpress/icons';
 import moment from 'moment';
-import React, { useContext, useState } from 'react';
+import React, { useState } from 'react';
 import { createInterpolateElement } from '@wordpress/element';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import _ from 'lodash';
@@ -764,6 +764,7 @@ const PaymentDetailsSummary: React.FC< PaymentDetailsSummaryProps > = ( {
 							),
 							{
 								a: (
+									// @ts-expect-error: children is provided when interpolating the component
 									<ExternalLink href="https://woocommerce.com/document/woopayments/settings-guide/authorize-and-capture/#capturing-authorized-orders" />
 								),
 							}

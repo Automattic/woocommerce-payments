@@ -73,8 +73,11 @@ export const DisputeSteps: React.FC< Props > = ( {
 			<Accordion>
 				<AccordionBody
 					lg
-					title="Steps you can take"
-					subtitle="We recommend reviewing your options before responding by the deadline. "
+					title={ __( 'Steps you can take', 'woocommerce-payments' ) }
+					subtitle={ __(
+						'We recommend reviewing your options before responding by the deadline. ',
+						'woocommerce-payments'
+					) }
 				>
 					<AccordionRow>
 						<div className="dispute-steps__content">
@@ -253,8 +256,11 @@ export const InquirySteps: React.FC< Props > = ( {
 			<Accordion>
 				<AccordionBody
 					lg
-					title="Steps you can take"
-					subtitle="We recommend reviewing your options before responding by the deadline. "
+					title={ __( 'Steps you can take', 'woocommerce-payments' ) }
+					subtitle={ __(
+						'We recommend reviewing your options before responding by the deadline. ',
+						'woocommerce-payments'
+					) }
 				>
 					<AccordionRow>
 						<div className="dispute-steps__content">
@@ -412,8 +418,11 @@ export const NotDefendableInquirySteps: React.FC< Props > = ( {
 			<Accordion>
 				<AccordionBody
 					lg
-					title="Steps you can take"
-					subtitle="We recommend reviewing your options before responding by the deadline. "
+					title={ __( 'Steps you can take', 'woocommerce-payments' ) }
+					subtitle={ __(
+						'We recommend reviewing your options before responding by the deadline. ',
+						'woocommerce-payments'
+					) }
 				>
 					<AccordionRow>
 						<div className="dispute-steps__content">

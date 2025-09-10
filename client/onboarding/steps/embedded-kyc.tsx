@@ -93,14 +93,17 @@ const EmbeddedKyc: React.FC< Props > = ( {
 						isDismissible={ false }
 						actions={ [
 							{
-								label: 'Learn more',
+								label: __(
+									'Learn more',
+									'woocommerce-payments'
+								),
 								variant: 'primary',
 								url:
 									'https://woocommerce.com/document/woopayments/startup-guide/#requirements',
 								urlTarget: '_blank',
 							},
 							{
-								label: 'Cancel',
+								label: __( 'Cancel', 'woocommerce-payments' ),
 								variant: 'link',
 								url: getConnectUrl(
 									{
@@ -119,7 +122,7 @@ const EmbeddedKyc: React.FC< Props > = ( {
 					</BannerNotice>
 				) : (
 					<BannerNotice
-						className={ 'wcpay-banner-notice--embedded-kyc' }
+						className="wcpay-banner-notice--embedded-kyc"
 						status="error"
 						isDismissible={ false }
 					>

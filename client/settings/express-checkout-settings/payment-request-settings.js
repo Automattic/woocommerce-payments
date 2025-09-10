@@ -9,11 +9,12 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import CardBody from '../card-body';
-import { Card, CheckboxControl } from '@wordpress/components';
+import { Card, CheckboxControl, BaseControl } from '@wordpress/components';
 import GeneralPaymentRequestButtonSettings from './general-payment-request-button-settings';
 import {
 	usePaymentRequestEnabledSettings,
 	usePaymentRequestLocations,
+	useAppleGooglePayInPaymentMethodsOptionsEnabledSettings,
 } from 'wcpay/data';
 import GooglePayTestModeCompatibilityNotice from '../google-pay-test-mode-compatibility-notice';
 
@@ -22,6 +23,11 @@ const PaymentRequestSettings = ( { section } ) => {
 		isPaymentRequestEnabled,
 		updateIsPaymentRequestEnabled,
 	] = usePaymentRequestEnabledSettings();
+
+	const [
+		isAppleGooglePayInPaymentMethodsOptionsEnabled,
+		updateIsAppleGooglePayInPaymentMethodsOptionsEnabled,
+	] = useAppleGooglePayInPaymentMethodsOptionsEnabledSettings();
 
 	const [
 		paymentRequestLocations,
@@ -46,81 +52,110 @@ const PaymentRequestSettings = ( { section } ) => {
 			{ section === 'enable' && (
 				<CardBody className="wcpay-card-body">
 					<GooglePayTestModeCompatibilityNotice />
-					<CheckboxControl
-						checked={ isPaymentRequestEnabled }
-						onChange={ updateIsPaymentRequestEnabled }
-						label={ __(
-							'Enable Apple Pay / Google Pay',
-							'woocommerce-payments'
-						) }
-						help={ __(
-							'When enabled, customers who have configured Apple Pay or Google Pay enabled devices ' +
-								'will be able to pay with their respective choice of Wallet.',
-							'woocommerce-payments'
-						) }
-						__nextHasNoMarginBottom
-					/>
-					<h4>
-						{ __(
-							'Enable Apple Pay and Google Pay on selected pages',
-							'woocommerce-payments'
-						) }
-					</h4>
-					<ul className="payment-request-settings__location">
-						<li>
+					<div className="wcpay-payment-request-settings__enable">
+						{ wcpaySettings.featureFlags
+							.isDynamicCheckoutPlaceOrderButtonEnabled && (
 							<CheckboxControl
-								disabled={ ! isPaymentRequestEnabled }
+								className="wcpay-payment-request-settings__enable__checkbox"
 								checked={
-									isPaymentRequestEnabled &&
-									paymentRequestLocations.includes(
-										'checkout'
-									)
+									isAppleGooglePayInPaymentMethodsOptionsEnabled
 								}
-								onChange={ makeLocationChangeHandler(
-									'checkout'
-								) }
+								onChange={
+									updateIsAppleGooglePayInPaymentMethodsOptionsEnabled
+								}
 								label={ __(
-									'Checkout Page',
+									'Enable Apple Pay / Google Pay as options in the payment methods list',
+									'woocommerce-payments'
+								) }
+								help={ __(
+									'Customers with Apple Pay or Google Pay enabled will be able to pay with ' +
+										'their preferred wallet as options in the payment methods list.',
 									'woocommerce-payments'
 								) }
 								__nextHasNoMarginBottom
 							/>
-						</li>
-						<li>
-							<CheckboxControl
-								disabled={ ! isPaymentRequestEnabled }
-								checked={
-									isPaymentRequestEnabled &&
-									paymentRequestLocations.includes(
-										'product'
-									)
-								}
-								onChange={ makeLocationChangeHandler(
-									'product'
-								) }
-								label={ __(
-									'Product Page',
-									'woocommerce-payments'
-								) }
-								__nextHasNoMarginBottom
-							/>
-						</li>
-						<li>
-							<CheckboxControl
-								disabled={ ! isPaymentRequestEnabled }
-								checked={
-									isPaymentRequestEnabled &&
-									paymentRequestLocations.includes( 'cart' )
-								}
-								onChange={ makeLocationChangeHandler( 'cart' ) }
-								label={ __(
-									'Cart Page',
-									'woocommerce-payments'
-								) }
-								__nextHasNoMarginBottom
-							/>
-						</li>
-					</ul>
+						) }
+						<CheckboxControl
+							className="wcpay-payment-request-settings__enable__checkbox"
+							checked={ isPaymentRequestEnabled }
+							onChange={ updateIsPaymentRequestEnabled }
+							label={ __(
+								'Enable Apple Pay / Google Pay as express payment buttons',
+								'woocommerce-payments'
+							) }
+							help={ __(
+								'Show express payment buttons on store pages for faster purchases. ' +
+									'Customers with Apple Pay or Google Pay enabled will be able to pay with their preferred wallet.',
+								'woocommerce-payments'
+							) }
+							__nextHasNoMarginBottom
+						/>
+						{ /* eslint-disable-next-line @wordpress/no-base-control-with-label-without-id */ }
+						<BaseControl
+							__next40pxDefaultSize
+							__nextHasNoMarginBottom
+						>
+							<ul className="payment-request-settings__location">
+								<li>
+									<CheckboxControl
+										disabled={ ! isPaymentRequestEnabled }
+										checked={
+											isPaymentRequestEnabled &&
+											paymentRequestLocations.includes(
+												'product'
+											)
+										}
+										onChange={ makeLocationChangeHandler(
+											'product'
+										) }
+										label={ __(
+											'Show on product page',
+											'woocommerce-payments'
+										) }
+										__nextHasNoMarginBottom
+									/>
+								</li>
+								<li>
+									<CheckboxControl
+										disabled={ ! isPaymentRequestEnabled }
+										checked={
+											isPaymentRequestEnabled &&
+											paymentRequestLocations.includes(
+												'cart'
+											)
+										}
+										onChange={ makeLocationChangeHandler(
+											'cart'
+										) }
+										label={ __(
+											'Show on cart page',
+											'woocommerce-payments'
+										) }
+										__nextHasNoMarginBottom
+									/>
+								</li>
+								<li>
+									<CheckboxControl
+										disabled={ ! isPaymentRequestEnabled }
+										checked={
+											isPaymentRequestEnabled &&
+											paymentRequestLocations.includes(
+												'checkout'
+											)
+										}
+										onChange={ makeLocationChangeHandler(
+											'checkout'
+										) }
+										label={ __(
+											'Show on checkout page',
+											'woocommerce-payments'
+										) }
+										__nextHasNoMarginBottom
+									/>
+								</li>
+							</ul>
+						</BaseControl>
+					</div>
 				</CardBody>
 			) }
 

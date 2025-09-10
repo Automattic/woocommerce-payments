@@ -4,6 +4,7 @@
 import type { MccsDisplayTreeItem, Country } from 'onboarding/types';
 import { PaymentMethodToPluginsMap } from './components/duplicate-notice';
 import { WCPayExpressCheckoutParams } from './express-checkout/utils';
+import { AccountDetailsType } from 'wcpay/types/account/account-details';
 
 declare global {
 	interface TosSettingsStripeConnected {
@@ -32,6 +33,8 @@ declare global {
 			isDisputeIssuerEvidenceEnabled: boolean;
 			multiCurrency?: boolean;
 			isFRTReviewFeatureActive: boolean;
+			isDynamicCheckoutPlaceOrderButtonEnabled: boolean;
+			isAccountDetailsEnabled: boolean;
 		};
 		accountFees: Record< string, any >;
 		fraudServices: unknown[];
@@ -46,6 +49,7 @@ declare global {
 			email?: string;
 			created: string;
 			isLive?: boolean;
+			testDrive?: boolean;
 			error?: boolean;
 			status?: string;
 			country?: string;
@@ -69,18 +73,13 @@ declare global {
 			pastDue?: boolean;
 			accountLink: string;
 			hasSubmittedVatData?: boolean;
+			isDocumentsEnabled?: boolean;
 			requirements?: {
 				errors?: {
 					code: string;
 					reason: string;
 					requirement: string;
 				}[];
-			};
-			progressiveOnboarding: {
-				isEnabled: boolean;
-				isComplete: boolean;
-				tpv: number;
-				firstTransactionDate?: string;
 			};
 			fraudProtection: {
 				declineOnAVSFailure: boolean;
@@ -102,6 +101,7 @@ declare global {
 			has_past_loans: boolean;
 			loans: Array< string >;
 		};
+		accountDetails: AccountDetailsType;
 		connect: {
 			country: string;
 			availableStates: Array< Record< string, string > >;
@@ -115,11 +115,6 @@ declare global {
 		shouldUseExplicitPrice: boolean;
 		fraudProtection: {
 			isWelcomeTourDismissed?: boolean;
-		};
-		progressiveOnboarding?: {
-			isEnabled: boolean;
-			isComplete: boolean;
-			isEligibilityModalDismissed: boolean;
 		};
 		dismissedDuplicateNotices: PaymentMethodToPluginsMap;
 		accountDefaultCurrency: string;
@@ -146,7 +141,6 @@ declare global {
 		isNextDepositNoticeDismissed: boolean;
 		isInstantDepositNoticeDismissed: boolean;
 		isConnectionSuccessModalDismissed: boolean;
-		isWCReactifySettingsFeatureEnabled: boolean;
 		trackingInfo?: {
 			hosting_provider: string;
 		};

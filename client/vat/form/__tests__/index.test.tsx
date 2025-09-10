@@ -5,7 +5,7 @@
  */
 import { render, screen, waitFor } from '@testing-library/react';
 import user from '@testing-library/user-event';
-import React from 'react';
+import React, { act } from 'react';
 import apiFetch from '@wordpress/api-fetch';
 
 /**
@@ -63,16 +63,20 @@ const countryTaxNumberInfo = [
 describe( 'VAT form', () => {
 	it.each( countryTaxNumberInfo )(
 		'should display the right prefix for country %s',
-		( country, expectedPrefix, expectedTaxIdName ) => {
+		async ( country, expectedPrefix, expectedTaxIdName ) => {
 			global.wcpaySettings = {
 				accountStatus: { country: country },
 			};
 
 			render( <VatForm onCompleted={ mockOnCompleted } /> );
 
-			user.click(
-				screen.getByLabelText( `I have a valid ${ expectedTaxIdName }` )
-			);
+			await act( async () => {
+				await user.click(
+					screen.getByLabelText(
+						`I have a valid ${ expectedTaxIdName }`
+					)
+				);
+			} );
 
 			if ( expectedPrefix ) {
 				expect(
@@ -93,6 +97,11 @@ describe( 'VAT form', () => {
 } );
 
 describe( 'VAT form', () => {
+	beforeAll( () => {
+		jest.spyOn( console, 'error' ).mockImplementation( () => null );
+		jest.spyOn( console, 'warn' ).mockImplementation( () => null );
+	} );
+
 	beforeEach( () => {
 		global.wcpaySettings = {
 			accountStatus: { country: 'GB' },
@@ -129,8 +138,10 @@ describe( 'VAT form', () => {
 		} );
 
 		describe( 'after submitting the vat number step', () => {
-			beforeEach( () => {
-				user.click( screen.getByText( 'Continue' ) );
+			beforeEach( async () => {
+				await act( async () => {
+					await user.click( screen.getByText( 'Continue' ) );
+				} );
 			} );
 
 			it( 'should proceed to the company-data step', () => {
@@ -148,18 +159,18 @@ describe( 'VAT form', () => {
 			} );
 
 			describe( 'after filling the company details', () => {
-				beforeEach( () => {
-					user.type(
-						screen.getByLabelText( 'Business name' ),
-						'Test company'
-					);
-					user.type(
-						screen.getByLabelText( 'Address' ),
-						'Test address'
-					);
-				} );
+				beforeEach( async () => {
+					await act( async () => {
+						await user.type(
+							screen.getByLabelText( 'Business name' ),
+							'Test company'
+						);
+						await user.type(
+							screen.getByLabelText( 'Address' ),
+							'Test address'
+						);
+					} );
 
-				it( 'should enable the Confirm button', () => {
 					expect( screen.getByText( 'Confirm' ) ).toBeEnabled();
 				} );
 
@@ -170,7 +181,9 @@ describe( 'VAT form', () => {
 						)
 					);
 
-					user.click( screen.getByText( 'Confirm' ) );
+					await act( async () => {
+						await user.click( screen.getByText( 'Confirm' ) );
+					} );
 
 					await waitForVatSaveDetailsRequest( {
 						name: 'Test company',
@@ -197,7 +210,9 @@ describe( 'VAT form', () => {
 						vat_number: null,
 					} );
 
-					user.click( screen.getByText( 'Confirm' ) );
+					await act( async () => {
+						await user.click( screen.getByText( 'Confirm' ) );
+					} );
 
 					await waitForVatSaveDetailsRequest( {
 						name: 'Test company',
@@ -219,31 +234,41 @@ describe( 'VAT form', () => {
 	} );
 
 	describe( 'when registered for VAT', () => {
-		beforeEach( () => {
-			user.click( screen.getByLabelText( 'I have a valid VAT Number' ) );
+		beforeEach( async () => {
+			await act( async () => {
+				await user.click(
+					screen.getByLabelText( 'I have a valid VAT Number' )
+				);
+			} );
 		} );
 
 		it( 'should disable the Continue button', () => {
 			expect( screen.getByText( 'Continue' ) ).toBeDisabled();
 		} );
 
-		it( 'should not allow the prefix to be removed', () => {
+		it( 'should not allow the prefix to be removed', async () => {
 			const input = screen.getByRole( 'textbox', { name: 'VAT Number' } );
 
-			user.clear( input );
+			await act( async () => {
+				await user.clear( input );
+			} );
 			// Due to the way clear works, we need to "simulate" a keypress with
-			// user.type to fire a change event.
-			user.type( input, ' ' );
+			// await user.type to fire a change event.
+			await act( async () => {
+				await user.type( input, ' ' );
+			} );
 
 			expect( input ).toHaveValue( 'GB ' );
 		} );
 
 		describe( 'after filling a VAT number', () => {
-			beforeEach( () => {
-				user.type(
-					screen.getByRole( 'textbox', { name: 'VAT Number' } ),
-					'123456789'
-				);
+			beforeEach( async () => {
+				await act( async () => {
+					await user.type(
+						screen.getByRole( 'textbox', { name: 'VAT Number' } ),
+						'123456789'
+					);
+				} );
 			} );
 
 			it( 'should enable the Continue button', () => {
@@ -255,7 +280,9 @@ describe( 'VAT form', () => {
 					new Error( 'The provided VAT number failed validation' )
 				);
 
-				user.click( screen.getByText( 'Continue' ) );
+				await act( async () => {
+					await user.click( screen.getByText( 'Continue' ) );
+				} );
 
 				await waitForVatValidationRequest( '123456789' );
 
@@ -279,7 +306,9 @@ describe( 'VAT form', () => {
 					vat_number: '123456789',
 				} );
 
-				user.click( screen.getByText( 'Continue' ) );
+				await act( async () => {
+					await user.click( screen.getByText( 'Continue' ) );
+				} );
 
 				await waitForVatValidationRequest( '123456789' );
 
@@ -302,7 +331,9 @@ describe( 'VAT form', () => {
 						vat_number: '123456789',
 					} );
 
-					user.click( screen.getByText( 'Continue' ) );
+					await act( async () => {
+						await user.click( screen.getByText( 'Continue' ) );
+					} );
 
 					await waitForVatValidationRequest( '123456789' );
 				} );
@@ -326,7 +357,9 @@ describe( 'VAT form', () => {
 						)
 					);
 
-					user.click( screen.getByText( 'Confirm' ) );
+					await act( async () => {
+						await user.click( screen.getByText( 'Confirm' ) );
+					} );
 
 					await waitForVatSaveDetailsRequest( {
 						vat_number: '123456789',
@@ -354,7 +387,9 @@ describe( 'VAT form', () => {
 						vat_number: '123456789',
 					} );
 
-					user.click( screen.getByText( 'Confirm' ) );
+					await act( async () => {
+						await user.click( screen.getByText( 'Confirm' ) );
+					} );
 
 					await waitForVatSaveDetailsRequest( {
 						vat_number: '123456789',

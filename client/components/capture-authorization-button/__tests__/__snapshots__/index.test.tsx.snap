@@ -3,7 +3,7 @@
 exports[`CaptureAuthorizationButton should be disabled when requesting is true 1`] = `
 <div>
   <button
-    class="components-button is-secondary is-small"
+    class="components-button is-next-40px-default-size is-secondary is-small"
     disabled=""
     type="button"
   >
@@ -15,7 +15,7 @@ exports[`CaptureAuthorizationButton should be disabled when requesting is true 1
 exports[`CaptureAuthorizationButton should render normal status 1`] = `
 <div>
   <button
-    class="components-button is-secondary is-small"
+    class="components-button is-next-40px-default-size is-secondary is-small"
     type="button"
   >
     Capture
@@ -26,7 +26,7 @@ exports[`CaptureAuthorizationButton should render normal status 1`] = `
 exports[`CaptureAuthorizationButton should transition to busy state when clicked 1`] = `
 <div>
   <button
-    class="components-button is-secondary is-small is-busy"
+    class="components-button is-next-40px-default-size is-secondary is-small is-busy"
     disabled=""
     type="button"
   >

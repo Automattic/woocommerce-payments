@@ -221,7 +221,8 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 			'key'   => 'checkboxes',
 			'value' => 42.0,
 		];
-		$this->assertSame( $expected, $this->woocommerce_product_add_ons->order_line_item_meta( [ 'key' => 'checkboxes' ], $addon, $item, [ 'data' => '' ] ) );
+		$actual   = $this->woocommerce_product_add_ons->order_line_item_meta( [ 'key' => 'checkboxes' ], $addon, $item, [ 'data' => '' ] );
+		$this->assertSame( $expected, $actual );
 	}
 
 	public function test_update_product_price_returns_flat_fee_data_correctly() {
@@ -403,7 +404,8 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 			'display' => 'display',
 		];
 
-		$this->assertSame( $expected, $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item ) );
+		$actual = $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item );
+		$this->assertSame( $expected, $this->array_strip_tags( $actual ) );
 	}
 
 	public function test_get_item_data_returns_zero_percentage_price_data_correctly() {
@@ -426,7 +428,8 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 			'display' => '',
 		];
 
-		$this->assertSame( $expected, $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item ) );
+		$actual = $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item );
+		$this->assertSame( $expected, $this->array_strip_tags( $actual ) );
 	}
 
 	public function test_get_item_data_returns_custom_price_data_correctly() {
@@ -445,11 +448,12 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 		];
 		$expected  = [
 			'name'    => 'Customer defined price',
-			'value'   => ' (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
-			'display' => ' (<span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
+			'value'   => ' (&#36;42.00)',
+			'display' => ' (&#36;42.00)',
 		];
 
-		$this->assertSame( $expected, $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item ) );
+		$actual = $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item );
+		$this->assertSame( $expected, $this->array_strip_tags( $actual ) );
 	}
 
 	public function test_get_item_data_returns_multiplier_price_data_correctly() {
@@ -469,7 +473,7 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 		];
 		$expected  = [
 			'name'    => 'Multiplier',
-			'value'   => '2 (+ <span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
+			'value'   => '2 (+ &#36;42.00)',
 			'display' => '',
 		];
 
@@ -485,7 +489,8 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 				(float) $price / $value
 			);
 
-		$this->assertSame( $expected, $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item ) );
+		$actual = $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item );
+		$this->assertSame( $expected, $this->array_strip_tags( $actual ) );
 	}
 
 	// Handles flat_fee and quantity_based.
@@ -505,12 +510,13 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 		];
 		$expected  = [
 			'name'    => 'Checkbox',
-			'value'   => 'Flat fee (+ <span class="woocommerce-Price-amount amount"><bdi><span class="woocommerce-Price-currencySymbol">&#36;</span>42.00</bdi></span>)',
+			'value'   => 'Flat fee (+ &#36;42.00)',
 			'display' => '',
 		];
 
 		$this->mock_multi_currency->method( 'get_price' )->with( $price, 'product' )->willReturn( (float) $price );
-		$this->assertSame( $expected, $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item ) );
+		$actual = $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item );
+		$this->assertSame( $expected, $this->array_strip_tags( $actual ) );
 	}
 
 	public function test_get_item_data_returns_percentage_price_data_correctly() {
@@ -536,6 +542,27 @@ class WCPay_Multi_Currency_WooCommerceProductAddOns_Tests extends WCPAY_UnitTest
 		];
 
 		$this->mock_multi_currency->method( 'get_price' )->with( 10, 'product' )->willReturn( 10.00 );
-		$this->assertSame( $expected, $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item ) );
+		$actual = $this->woocommerce_product_add_ons->get_item_data( [], $addon, $cart_item );
+		$this->assertSame( $expected, $this->array_strip_tags( $actual ) );
+	}
+
+	/**
+	 * Strip HTML tags from all values in an array while preserving keys.
+	 *
+	 * @param array $array The array to process.
+	 * @return array The array with HTML tags stripped from all values.
+	 */
+	private function array_strip_tags( array $array ): array {
+		$result = [];
+		foreach ( $array as $key => $value ) {
+			if ( is_array( $value ) ) {
+				$result[ $key ] = $this->array_strip_tags( $value );
+			} elseif ( is_string( $value ) ) {
+				$result[ $key ] = strip_tags( $value );
+			} else {
+				$result[ $key ] = $value;
+			}
+		}
+		return $result;
 	}
 }

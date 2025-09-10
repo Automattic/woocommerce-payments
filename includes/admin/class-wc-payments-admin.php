@@ -427,24 +427,6 @@ class WC_Payments_Admin {
 		}
 
 		if ( $should_render_full_menu ) {
-			// Only register if details are submitted and the account is PO.
-			if ( $this->account->is_stripe_connected()
-				&& $this->account->is_details_submitted()
-				&& $this->account->is_progressive_onboarding_in_progress()
-			) {
-				$this->admin_child_pages['wc-payments-onboarding-kyc'] = [
-					'id'         => 'wc-payments-onboarding-kyc',
-					'title'      => __( 'Continue onboarding', 'woocommerce-payments' ),
-					'parent'     => 'wc-payments',
-					'path'       => '/payments/onboarding/kyc',
-					'capability' => 'manage_woocommerce',
-					'nav_args'   => [
-						'parent' => 'wc-payments',
-						'order'  => 50,
-					],
-				];
-			}
-
 			if ( $this->account->is_card_present_eligible() && $this->account->has_card_readers_available() ) {
 				$this->admin_child_pages['wc-payments-card-readers'] = [
 					'id'       => 'wc-payments-card-readers',
@@ -971,6 +953,7 @@ class WC_Payments_Admin {
 			'accountFees'                        => $this->account->get_fees(),
 			'accountLoans'                       => $this->account->get_capital(),
 			'accountEmail'                       => $this->account->get_account_email(),
+			'accountDetails'                     => $this->account->get_account_details(),
 			'showUpdateDetailsTask'              => $this->get_should_show_update_business_details_task( $account_status_data ),
 			'wpcomReconnectUrl'                  => $this->payments_api_client->is_server_connected() && ! $this->payments_api_client->has_server_connection_owner() ? WC_Payments_Account::get_wpcom_reconnect_url() : null,
 			'multiCurrencySetup'                 => [
@@ -990,7 +973,6 @@ class WC_Payments_Admin {
 			'fraudProtection'                    => [
 				'isWelcomeTourDismissed' => WC_Payments_Features::is_fraud_protection_welcome_tour_dismissed(),
 			],
-			'progressiveOnboarding'              => $this->account->get_progressive_onboarding_details(),
 			'accountDefaultCurrency'             => $this->account->get_account_default_currency(),
 			'storeCurrency'                      => get_option( 'woocommerce_currency' ),
 			'isWooPayStoreCountryAvailable'      => WooPay_Utilities::is_store_country_available(),
@@ -1001,13 +983,12 @@ class WC_Payments_Admin {
 			'isNextDepositNoticeDismissed'       => WC_Payments_Features::is_next_deposit_notice_dismissed(),
 			'isInstantDepositNoticeDismissed'    => get_option( 'wcpay_instant_deposit_notice_dismissed', false ),
 			'dismissedDuplicateNotices'          => get_option( 'wcpay_duplicate_payment_method_notices_dismissed', [] ),
-			'isConnectionSuccessModalDismissed'  => get_option( 'wcpay_connection_success_modal_dismissed', false ),
+			'isConnectionSuccessModalDismissed'  => get_option( WC_Payments_Onboarding_Service::ONBOARDING_CONNECTION_SUCCESS_MODAL_OPTION, false ),
 			'isOverviewSurveySubmitted'          => get_option( 'wcpay_survey_payment_overview_submitted', false ),
 			'trackingInfo'                       => $this->account->get_tracking_info(),
 			'lifetimeTPV'                        => $this->account->get_lifetime_total_payment_volume(),
 			'defaultExpressCheckoutBorderRadius' => WC_Payments_Express_Checkout_Button_Handler::DEFAULT_BORDER_RADIUS_IN_PX,
 			'isWooPayGlobalThemeSupportEligible' => WC_Payments_Features::is_woopay_global_theme_support_eligible(),
-			'isWCReactifySettingsFeatureEnabled' => $this->is_reactify_settings_payments_feature_enabled(),
 			'dateFormat'                         => wc_date_format(),
 			'timeFormat'                         => get_option( 'time_format' ),
 		];
@@ -1051,21 +1032,6 @@ class WC_Payments_Admin {
 			],
 			WC_Payments_Features::to_array()
 		);
-	}
-
-	/**
-	 * Check if the WooCommerce Reactify Payments Settings feature is enabled.
-	 *
-	 * @return bool True if the feature is enabled, false otherwise.
-	 */
-	private function is_reactify_settings_payments_feature_enabled(): bool {
-		// Check if the WooCommerce Reactify Payments Settings feature is enabled.
-		if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
-			return \Automattic\WooCommerce\Utilities\FeaturesUtil::feature_is_enabled( 'reactify-classic-payments-settings' );
-		}
-
-		// If the class does not exist, the feature is not enabled.
-		return false;
 	}
 
 	/**

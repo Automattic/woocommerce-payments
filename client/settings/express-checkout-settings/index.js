@@ -141,7 +141,11 @@ const ExpressCheckoutSettings = ( { methodId } ) => {
 	return (
 		<SettingsLayout>
 			{ sections.map( ( { section, description } ) => (
-				<SettingsSection key={ section } description={ description }>
+				<SettingsSection
+					key={ section }
+					description={ description }
+					className={ `wcpay-express-checkout__${ section }` }
+				>
 					<LoadableSettingsSection numLines={ 30 }>
 						<ErrorBoundary>
 							<Controls section={ section } />

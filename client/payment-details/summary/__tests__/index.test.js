@@ -684,9 +684,9 @@ describe( 'PaymentDetailsSummary', () => {
 			name: /Challenge dispute/,
 		} );
 
-		challengeButton.click();
-
-		expect( window.location.href ).toContain(
+		const challengeLink = challengeButton.closest( 'a' );
+		expect( challengeLink ).toHaveAttribute(
+			'href',
 			`admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes%2Fchallenge&id=${ charge.dispute.id }`
 		);
 	} );
@@ -985,30 +985,50 @@ describe( 'PaymentDetailsSummary', () => {
 	} );
 
 	describe( 'Refund actions menu', () => {
-		test( 'Refund control menu is visible when conditions are met', () => {
-			renderCharge( getBaseCharge() );
+		test( 'Refund control menu is visible when conditions are met', async () => {
+			await act( async () => {
+				renderCharge( getBaseCharge() );
+			} );
 			expect(
 				screen.getByLabelText( 'Transaction actions' )
 			).toBeInTheDocument();
 		} );
 
-		test( 'Refund in full option is available when no amount has been refunded', () => {
-			renderCharge( getBaseCharge() );
-			fireEvent.click( screen.getByLabelText( 'Transaction actions' ) );
+		test( 'Refund in full option is available when no amount has been refunded', async () => {
+			await act( async () => {
+				renderCharge( getBaseCharge() );
+			} );
+			await act( async () => {
+				await userEvent.click(
+					screen.getByLabelText( 'Transaction actions' )
+				);
+			} );
 			expect( screen.getByText( 'Refund in full' ) ).toBeInTheDocument();
 		} );
 
-		test( 'Refund in full option is not available when an amount has been refunded', () => {
-			renderCharge( { ...getBaseCharge(), amount_refunded: 42 } );
-			fireEvent.click( screen.getByLabelText( 'Transaction actions' ) );
+		test( 'Refund in full option is not available when an amount has been refunded', async () => {
+			await act( async () => {
+				renderCharge( { ...getBaseCharge(), amount_refunded: 42 } );
+			} );
+			await act( async () => {
+				await userEvent.click(
+					screen.getByLabelText( 'Transaction actions' )
+				);
+			} );
 			expect(
 				screen.queryByText( 'Refund in full' )
 			).not.toBeInTheDocument();
 		} );
 
-		test( 'Partial refund option is available when charge is associated with an order', () => {
-			renderCharge( getBaseCharge() );
-			fireEvent.click( screen.getByLabelText( 'Transaction actions' ) );
+		test( 'Partial refund option is available when charge is associated with an order', async () => {
+			await act( async () => {
+				renderCharge( getBaseCharge() );
+			} );
+			await act( async () => {
+				await userEvent.click(
+					screen.getByLabelText( 'Transaction actions' )
+				);
+			} );
 			expect( screen.getByText( 'Partial refund' ) ).toBeInTheDocument();
 		} );
 

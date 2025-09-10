@@ -45,9 +45,6 @@ exports[`ProtectionLevels renders 1`] = `
           Provides the base level of platform protection.
         </p>
       </li>
-      <hr
-        class="fraud-protection__list-divider"
-      />
       <li
         class="fraud-protection__advanced-level-container"
       >
@@ -89,7 +86,7 @@ exports[`ProtectionLevels renders 1`] = `
 `;
 
 exports[`ProtectionLevels renders an error message when settings can not be fetched from the server 1`] = `
-.emotion-0 {
+.emotion-2 {
   display: -webkit-box;
   display: -webkit-flex;
   display: -ms-flexbox;
@@ -101,6 +98,7 @@ exports[`ProtectionLevels renders an error message when settings can not be fetc
   -webkit-flex-direction: row;
   -ms-flex-direction: row;
   flex-direction: row;
+  gap: calc(4px * 2);
   -webkit-box-pack: start;
   -ms-flex-pack: start;
   -webkit-justify-content: flex-start;
@@ -108,15 +106,11 @@ exports[`ProtectionLevels renders an error message when settings can not be fetc
   width: 100%;
 }
 
-.emotion-0>*+*:not( marquee ) {
-  margin-left: calc(4px * 2);
-}
-
-.emotion-0>* {
+.emotion-2>* {
   min-width: 0;
 }
 
-.emotion-2 {
+.emotion-4 {
   display: block;
   max-height: 100%;
   max-width: 100%;
@@ -129,15 +123,23 @@ exports[`ProtectionLevels renders an error message when settings can not be fetc
     class="wcpay-inline-notice wcpay-inline-error-notice components-notice is-error"
   >
     <div
+      class="components-visually-hidden emotion-0 emotion-1"
+      data-wp-c16t="true"
+      data-wp-component="VisuallyHidden"
+      style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+    >
+      Error notice
+    </div>
+    <div
       class="components-notice__content"
     >
       <div
-        class="components-flex emotion-0 emotion-1"
+        class="components-flex emotion-2 emotion-1"
         data-wp-c16t="true"
         data-wp-component="Flex"
       >
         <div
-          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-error-notice__icon emotion-2 emotion-1"
+          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-error-notice__icon emotion-4 emotion-1"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
@@ -156,7 +158,7 @@ exports[`ProtectionLevels renders an error message when settings can not be fetc
           </svg>
         </div>
         <div
-          class="components-flex-item wcpay-inline-notice__content wcpay-inline-error-notice__content emotion-2 emotion-1"
+          class="components-flex-item wcpay-inline-notice__content wcpay-inline-error-notice__content emotion-4 emotion-1"
           data-wp-c16t="true"
           data-wp-component="FlexItem"
         >
@@ -212,9 +214,6 @@ exports[`ProtectionLevels renders an error message when settings can not be fetc
           Provides the base level of platform protection.
         </p>
       </li>
-      <hr
-        class="fraud-protection__list-divider"
-      />
       <li
         class="fraud-protection__advanced-level-container"
       >
@@ -300,9 +299,6 @@ exports[`ProtectionLevels renders with the advanced fraud protection settings se
           Provides the base level of platform protection.
         </p>
       </li>
-      <hr
-        class="fraud-protection__list-divider"
-      />
       <li
         class="fraud-protection__advanced-level-container"
       >

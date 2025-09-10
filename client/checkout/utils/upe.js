@@ -225,6 +225,19 @@ export function dispatchChangeEventFor( element ) {
 }
 
 /**
+ * Check whether Stripe Link is enabled.
+ *
+ * @param {Object} paymentMethodsConfig Checkout payment methods configuration settings object.
+ * @return {boolean} True, if enabled; false otherwise.
+ */
+export const isLinkEnabled = ( paymentMethodsConfig ) => {
+	return (
+		paymentMethodsConfig.link !== undefined &&
+		paymentMethodsConfig.card !== undefined
+	);
+};
+
+/**
  * Returns the prepared set of options needed to initialize the Stripe elements for UPE in Block Checkout.
  * The initial options have all the fields set to 'never' to hide them from the UPE, because all the
  * information is already collected in the checkout form. Additionally, the options are updated with
@@ -258,6 +271,7 @@ export const getStripeElementOptions = (
 		wallets: {
 			applePay: 'never',
 			googlePay: 'never',
+			link: isLinkEnabled( paymentMethodsConfig ) ? 'auto' : 'never',
 		},
 	};
 
@@ -269,19 +283,6 @@ export const getStripeElementOptions = (
 	options.terms = getTerms( paymentMethodsConfig, showTerms );
 
 	return options;
-};
-
-/**
- * Check whether Stripe Link is enabled.
- *
- * @param {Object} paymentMethodsConfig Checkout payment methods configuration settings object.
- * @return {boolean} True, if enabled; false otherwise.
- */
-export const isLinkEnabled = ( paymentMethodsConfig ) => {
-	return (
-		paymentMethodsConfig.link !== undefined &&
-		paymentMethodsConfig.card !== undefined
-	);
 };
 
 /**
