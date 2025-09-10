@@ -40,7 +40,9 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	const TRACKS_EVENT_ACCOUNT_CONNECT_FINISHED                 = 'wcpay_account_connect_finished';
 	const TRACKS_EVENT_KYC_REMINDER_MERCHANT_RETURNED           = 'wcpay_kyc_reminder_merchant_returned';
 	const TRACKS_EVENT_ACCOUNT_REFERRAL                         = 'wcpay_account_referral';
-	const NOX_PROFILE_OPTION_KEY                                = 'woocommerce_woopayments_nox_profile';
+	// NOX-related constants from the WooCommerce core.
+	const NOX_PROFILE_OPTION_KEY    = 'woocommerce_woopayments_nox_profile';
+	const NOX_ONBOARDING_LOCKED_KEY = 'woocommerce_woopayments_nox_onboarding_locked';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -362,6 +364,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			// Test-drive accounts don't have access to the Stripe dashboard.
 			'accountLink'         => empty( $account['is_test_drive'] ) ? $this->get_login_url() : false,
 			'hasSubmittedVatData' => $account['has_submitted_vat_data'] ?? false,
+			'isDocumentsEnabled'  => $account['is_documents_enabled'] ?? false,
 			'requirements'        => [
 				'errors' => $account['requirements']['errors'] ?? [],
 			],
@@ -375,6 +378,24 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				'wporgReview2025' => $account['eligibility_wporg_review_campaign_2025'] ?? false,
 			],
 		];
+	}
+
+	/**
+	 * Get structured account details including status, payout info, and banners for frontend display.
+	 *
+	 * @return null|array Account details array with nested status objects, or null if unavailable.
+	 */
+	public function get_account_details(): ?array {
+		$account = $this->get_cached_account_data();
+		if ( empty( $account['account_details'] ) ) {
+			return null;
+		}
+
+		$account_details = $account['account_details'];
+		$is_valid        = is_array( $account_details )
+							&& isset( $account_details['account_status'], $account_details['payout_status'] )
+							&& array_key_exists( 'banner', $account_details );
+		return $is_valid ? $account_details : null;
 	}
 
 	/**

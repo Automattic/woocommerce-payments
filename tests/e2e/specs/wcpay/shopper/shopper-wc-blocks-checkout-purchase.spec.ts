@@ -20,7 +20,7 @@ import { config } from '../../../config/default';
 
 describeif( shouldRunWCBlocksTests )(
 	'WooCommerce Blocks > Successful purchase',
-	{ tag: '@critical' },
+	{ tag: [ '@critical', '@blocks' ] },
 	() => {
 		let shopperPage: Page;
 

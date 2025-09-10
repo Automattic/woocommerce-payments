@@ -59,14 +59,6 @@ import RefundStatus from './refund-status';
 import DuplicateStatus from './duplicate-status';
 import ConfirmationScreen from './confirmation-screen';
 
-// --- Utility: Determine if shipping is required for a given reason ---
-const ReasonsNeedShipping = [
-	'product_unacceptable',
-	'product_not_received',
-	'general',
-	'fraudulent',
-];
-
 const ReasonsNoShipping = [
 	'duplicate',
 	'subscription_canceled',
@@ -92,10 +84,11 @@ const steps = [
 	},
 ];
 
-function needsShipping( reason: string | undefined ) {
-	if ( ! reason ) return true;
-	if ( ReasonsNoShipping.includes( reason ) ) return false;
-	if ( ReasonsNeedShipping.includes( reason ) ) return true;
+function needsShipping( reason: string | undefined, productType = '' ) {
+	// If product type is digital, no shipping is needed
+	if ( productType === 'digital_product_or_service' ) return false;
+	// Check dispute reason logic
+	if ( ReasonsNoShipping.includes( reason || '' ) ) return false;
 	return true;
 }
 
@@ -385,7 +378,7 @@ export default ( { query }: { query: { id: string } } ) => {
 
 	// --- Step logic ---
 	const disputeReason = dispute?.reason;
-	const hasShipping = needsShipping( disputeReason );
+	const hasShipping = needsShipping( disputeReason, productType );
 	const panelHeadings = hasShipping
 		? [ 'Purchase info', 'Shipping details', 'Review' ]
 		: [ 'Purchase info', 'Review' ];
@@ -942,10 +935,10 @@ export default ( { query }: { query: { id: string } } ) => {
 						}
 						tabIndex={ -1 }
 					>
-						{ steps[ reviewStep ].heading }
+						{ steps[ 2 ].heading }
 					</h2>
 					<p className="wcpay-dispute-evidence-new__stepper-subheading">
-						{ steps[ reviewStep ].subheading }
+						{ steps[ 2 ].subheading }
 					</p>
 					{ isCoverLetterManuallyEdited && (
 						<InlineNotice

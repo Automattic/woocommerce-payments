@@ -11,7 +11,7 @@ config( { path: path.resolve( __dirname, '../e2e/config', 'local.env' ) } );
 
 const { BASE_URL, NODE_ENV, E2E_GROUP, E2E_BRANCH } = process.env;
 
-const validGroups = [ 'wcpay', 'subscriptions' ];
+const validGroups = [ 'wcpay', 'subscriptions', 'blocks' ];
 const validBranches = [ 'merchant', 'shopper' ];
 
 const buildTestDir = ( group: string, branch: string ) => {
@@ -30,6 +30,12 @@ const buildTestDir = ( group: string, branch: string ) => {
 
 const getTestMatch = ( group: string, branch: string ) => {
 	const testDir = buildTestDir( group, branch );
+
+	if ( group === 'blocks' ) {
+		// For blocks group, look in wcpay directory - actual @blocks tag filtering happens via grep config
+		const wcpayTestDir = buildTestDir( 'wcpay', branch );
+		return new RegExp( `${ wcpayTestDir }\/.*\.spec\.ts` );
+	}
 
 	return new RegExp( `${ testDir }\/.*\.spec\.ts` );
 };
@@ -51,8 +57,7 @@ export default defineConfig( {
 	fullyParallel: false,
 	/* Fail the build on CI if you accidentally left test.only in the source code. */
 	forbidOnly: !! process.env.CI,
-	/* Retry on CI only */
-	retries: process.env.CI ? 2 : 0,
+	retries: 0,
 	/* Opt out of parallel tests. */
 	workers: 1,
 	/* Reporters to use. See https://playwright.dev/docs/test-reporters */
@@ -87,6 +92,9 @@ export default defineConfig( {
 
 	testMatch: getTestMatch( E2E_GROUP, E2E_BRANCH ),
 	testIgnore: /specs\/performance/,
+
+	// When running blocks tests, filter by @blocks tag
+	grep: E2E_GROUP === 'blocks' ? /@blocks/ : undefined,
 
 	/* Configure projects for major browsers */
 	projects: [

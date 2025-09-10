@@ -885,15 +885,17 @@ class WC_Payments_Onboarding_Service {
 
 		update_option( '_wcpay_onboarding_stripe_connected', [] );
 		update_option( self::TEST_MODE_OPTION, 'no' );
+		self::clear_account_options();
 
 		// Discard any ongoing onboarding session.
 		delete_transient( WC_Payments_Account::ONBOARDING_STATE_TRANSIENT );
-		delete_option( WC_Payments_Account::EMBEDDED_KYC_IN_PROGRESS_OPTION );
+		$this->clear_embedded_kyc_in_progress();
 		delete_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT );
 		$this->clear_onboarding_init_in_progress();
 
-		// Clear the cache to avoid stale data.
-		WC_Payments::get_account_service()->clear_cache();
+		// Clear the entire database cache since everything hinges on the account.
+		// If the account is gone, everything else is too.
+		$this->database_cache->delete_all();
 	}
 
 	/**

@@ -24,6 +24,38 @@ export const isObject = ( value ) => {
 };
 
 /**
+ * Returns true if WooPayments uses a test [drive] account, false otherwise.
+ *
+ * @return {boolean} True if a test [drive] account is connected, false otherwise.
+ */
+export const hasTestAccount = () => {
+	const accountStatus = wcpaySettings?.accountStatus;
+
+	if ( ! wcpaySettings?.isAccountConnected || ! isObject( accountStatus ) ) {
+		return false;
+	}
+
+	// A test [drive] account is one that is not live and is marked as such.
+	return ! accountStatus?.isLive && !! accountStatus?.testDrive;
+};
+
+/**
+ * Returns true if WooPayments uses a sandbox [test] account, false otherwise.
+ *
+ * @return {boolean} True if a sandbox [test] account is connected, false otherwise.
+ */
+export const hasSandboxAccount = () => {
+	const accountStatus = wcpaySettings?.accountStatus;
+
+	if ( ! wcpaySettings?.isAccountConnected || ! isObject( accountStatus ) ) {
+		return false;
+	}
+
+	// A sandbox [test] account is one that is not live and is not a test [drive] account.
+	return ! accountStatus?.isLive && ! accountStatus?.testDrive;
+};
+
+/**
  * Returns true if WooPayments is in test mode, false otherwise.
  *
  * @param {boolean} fallback Test mode fallback value in case test mode value can't be found.
@@ -42,13 +74,13 @@ export const isInTestMode = ( fallback = false ) => {
 };
 
 /**
- * Returns true if WooPayments is in test/sandbox mode onboarding, false otherwise.
+ * Returns true if WooPayments is in test mode onboarding, false otherwise.
  *
- * @param {boolean} fallback Fallback in case test/sandbox mode onboarding value can't be found
+ * @param {boolean} fallback Fallback in case test mode onboarding value can't be found
  * 							 (for example if the wcpaySettings are undefined).
  *
- * @return {boolean} True if in test/sandbox mode onboarding, false otherwise.
- * 					 Fallback value if test/sandbox mode onboarding value can't be found.
+ * @return {boolean} True if in test mode onboarding, false otherwise.
+ * 					 Fallback value if test mode onboarding value can't be found.
  */
 export const isInTestModeOnboarding = ( fallback = false ) => {
 	if (
@@ -62,11 +94,11 @@ export const isInTestModeOnboarding = ( fallback = false ) => {
 };
 
 /**
- * Returns true if WooPayments is in dev/sandbox mode, false otherwise.
+ * Returns true if WooPayments is in dev mode, false otherwise.
  *
- * @param {boolean} fallback Fallback in case dev/sandbox mode value can't be found (for example if the wcpaySettings are undefined).
+ * @param {boolean} fallback Fallback in case dev mode value can't be found (for example if the wcpaySettings are undefined).
  *
- * @return {boolean} True if in dev/sandbox mode, false otherwise. Fallback value if dev/sandbox mode value can't be found.
+ * @return {boolean} True if in dev mode, false otherwise. Fallback value if dev mode value can't be found.
  */
 export const isInDevMode = ( fallback = false ) => {
 	if (

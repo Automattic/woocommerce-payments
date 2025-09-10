@@ -211,6 +211,11 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
+					'is_apple_google_pay_in_payment_methods_options_enabled' => [
+						'description'       => __( 'If Apple Pay / Google Pay should be enabled as an option in the payment methods list.', 'woocommerce-payments' ),
+						'type'              => 'boolean',
+						'validate_callback' => 'rest_validate_request_arg',
+					],
 					'payment_request_enabled_locations'    => [
 						'description'       => __( 'Express checkout locations that should be enabled.', 'woocommerce-payments' ),
 						'type'              => 'array',
@@ -494,6 +499,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'account_branding_secondary_color'       => $this->wcpay_gateway->get_option( 'account_branding_secondary_color' ),
 				'account_domestic_currency'              => $this->wcpay_gateway->get_option( 'account_domestic_currency' ),
 				'is_payment_request_enabled'             => 'yes' === $this->wcpay_gateway->get_option( 'payment_request' ),
+				'is_apple_google_pay_in_payment_methods_options_enabled' => 'yes' === $this->wcpay_gateway->get_option( 'apple_google_pay_in_payment_methods_options' ),
 				'is_debug_log_enabled'                   => 'yes' === $this->wcpay_gateway->get_option( 'enable_logging' ),
 				'payment_request_enabled_locations'      => $this->wcpay_gateway->get_option( 'payment_request_button_locations' ),
 				'payment_request_button_size'            => $this->wcpay_gateway->get_option( 'payment_request_button_size' ),
@@ -537,6 +543,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_is_multi_currency_enabled( $request );
 		$this->update_is_wcpay_subscriptions_enabled( $request );
 		$this->update_is_payment_request_enabled( $request );
+		$this->update_is_apple_google_pay_in_payment_methods_options_enabled( $request );
 		$this->update_payment_request_enabled_locations( $request );
 		$this->update_payment_request_appearance( $request );
 		$this->update_is_saved_cards_enabled( $request );
@@ -557,6 +564,29 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		}
 
 		return new WP_REST_Response( $this->get_settings(), 200 );
+	}
+
+	/**
+	 * Schedule a migration of Stripe Billing subscriptions.
+	 *
+	 * @param WP_REST_Request $request The request object. Optional. If passed, the function will return a REST response.
+	 *
+	 * @return WP_REST_Response|null The response object, if this is a REST request.
+	 */
+	public function schedule_stripe_billing_migration( ?WP_REST_Request $request = null ) {
+
+		if ( class_exists( 'WC_Payments_Subscriptions' ) ) {
+			$stripe_billing_migrator = WC_Payments_Subscriptions::get_stripe_billing_migrator();
+
+			if ( $stripe_billing_migrator && ! $stripe_billing_migrator->is_migrating() && $stripe_billing_migrator->get_stripe_billing_subscription_count() > 0 ) {
+				$stripe_billing_migrator->schedule_migrate_wcpay_subscriptions_action();
+			}
+		}
+
+		// Return a response if this is a REST request.
+		if ( $request ) {
+			return new WP_REST_Response( [], 200 );
+		}
 	}
 
 	/**
@@ -816,6 +846,21 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
+	 * Updates the "Apple Pay / Google Pay in payment methods options" enable/disable settings.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	private function update_is_apple_google_pay_in_payment_methods_options_enabled( WP_REST_Request $request ) {
+		if ( ! $request->has_param( 'is_apple_google_pay_in_payment_methods_options_enabled' ) ) {
+			return;
+		}
+
+		$is_apple_google_pay_in_payment_methods_options_enabled = $request->get_param( 'is_apple_google_pay_in_payment_methods_options_enabled' );
+
+		$this->wcpay_gateway->update_option( 'apple_google_pay_in_payment_methods_options', $is_apple_google_pay_in_payment_methods_options_enabled ? 'yes' : 'no' );
+	}
+
+	/**
 	 * Updates the list of locations that will show the payment request button.
 	 *
 	 * @param WP_REST_Request $request Request object.
@@ -1028,29 +1073,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		// Schedule a migration if Stripe Billing was disabled and there are subscriptions to migrate.
 		if ( ! $is_stripe_billing_enabled ) {
 			$this->schedule_stripe_billing_migration();
-		}
-	}
-
-	/**
-	 * Schedule a migration of Stripe Billing subscriptions.
-	 *
-	 * @param WP_REST_Request $request The request object. Optional. If passed, the function will return a REST response.
-	 *
-	 * @return WP_REST_Response|null The response object, if this is a REST request.
-	 */
-	public function schedule_stripe_billing_migration( ?WP_REST_Request $request = null ) {
-
-		if ( class_exists( 'WC_Payments_Subscriptions' ) ) {
-			$stripe_billing_migrator = WC_Payments_Subscriptions::get_stripe_billing_migrator();
-
-			if ( $stripe_billing_migrator && ! $stripe_billing_migrator->is_migrating() && $stripe_billing_migrator->get_stripe_billing_subscription_count() > 0 ) {
-				$stripe_billing_migrator->schedule_migrate_wcpay_subscriptions_action();
-			}
-		}
-
-		// Return a response if this is a REST request.
-		if ( $request ) {
-			return new WP_REST_Response( [], 200 );
 		}
 	}
 
