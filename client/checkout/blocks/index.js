@@ -115,9 +115,6 @@ const addCheckoutTracking = () => {
 
 // Register Apple Pay and Google Pay as payment methods when the setting is enabled
 if ( getUPEConfig( 'isAppleGooglePayInPaymentMethodsOptionsEnabled' ) ) {
-	console.log(
-		'Register Apple Pay and Google Pay as payment methods when the setting is enabled'
-	);
 	registerPaymentMethod( paymentMethodApplePay( api ) );
 	registerPaymentMethod( paymentMethodGooglePay( api ) );
 }
