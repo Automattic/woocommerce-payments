@@ -6,6 +6,8 @@ import Visa from 'assets/images/payment-method-icons/visa.svg?asset';
 import Mastercard from 'assets/images/payment-method-icons/mastercard.svg?asset';
 import Amex from 'assets/images/payment-method-icons/amex.svg?asset';
 import Discover from 'assets/images/payment-method-icons/discover.svg?asset';
+import ApplePay from 'assets/images/payment-method-icons/applepay.svg?asset';
+import GooglePay from 'assets/images/payment-method-icons/gpay.svg?asset';
 import { useStripeForUPE } from 'wcpay/hooks/use-stripe-async';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { __ } from '@wordpress/i18n';
@@ -33,6 +35,10 @@ const paymentMethods = [
 	// TODO: Missing Diners Club
 	// TODO: What other card payment methods should be here?
 ];
+
+const applePayLogos = [ { name: 'applepay', component: ApplePay } ];
+
+const googlePayLogos = [ { name: 'googlepay', component: GooglePay } ];
 const breakpointConfigs = [
 	{ breakpoint: 550, maxElements: 2 },
 	{ breakpoint: 330, maxElements: 1 },
@@ -75,7 +81,11 @@ export default ( { api, title, iconLight, iconDark, upeName } ) => {
 
 	const stripe = useStripeForUPE( api, upeName );
 
-	if ( ! stripe ) {
+	if (
+		! stripe &&
+		upeName !== 'woocommerce_payments_applePay' &&
+		upeName !== 'woocommerce_payments_googlePay'
+	) {
 		return null;
 	}
 
@@ -87,21 +97,46 @@ export default ( { api, title, iconLight, iconDark, upeName } ) => {
 					{ __( 'Test Mode', 'woocommerce-payments' ) }
 				</span>
 			) }
-			{ upeName === 'card' ? (
-				<PaymentMethodsLogos
-					maxElements={ 4 }
-					paymentMethods={ paymentMethods }
-					breakpointConfigs={ breakpointConfigs }
-				/>
-			) : (
-				<img
-					className="payment-methods--logos"
-					src={
-						upeAppearanceTheme === 'night' ? iconDark : iconLight
-					}
-					alt={ title }
-				/>
-			) }
+			{ ( () => {
+				if ( upeName === 'card' ) {
+					return (
+						<PaymentMethodsLogos
+							maxElements={ 4 }
+							paymentMethods={ paymentMethods }
+							breakpointConfigs={ breakpointConfigs }
+						/>
+					);
+				}
+				if ( upeName === 'woocommerce_payments_applePay' ) {
+					return (
+						<PaymentMethodsLogos
+							maxElements={ 1 }
+							paymentMethods={ applePayLogos }
+							breakpointConfigs={ breakpointConfigs }
+						/>
+					);
+				}
+				if ( upeName === 'woocommerce_payments_googlePay' ) {
+					return (
+						<PaymentMethodsLogos
+							maxElements={ 1 }
+							paymentMethods={ googlePayLogos }
+							breakpointConfigs={ breakpointConfigs }
+						/>
+					);
+				}
+				return (
+					<img
+						className="payment-methods--logos"
+						src={
+							upeAppearanceTheme === 'night'
+								? iconDark
+								: iconLight
+						}
+						alt={ title }
+					/>
+				);
+			} )() }
 		</div>
 	);
 };

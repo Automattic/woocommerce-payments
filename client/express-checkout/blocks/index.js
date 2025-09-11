@@ -10,6 +10,9 @@ import { PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT } from 'wcpay/checkout/con
 import { getConfig } from 'wcpay/utils/checkout';
 import ExpressCheckoutContainer from './components/express-checkout-container';
 import { checkPaymentMethodIsAvailable } from '../utils/checkPaymentMethodIsAvailable';
+import PaymentMethodLabel from '../../checkout/blocks/payment-method-label';
+import ApplePay from 'assets/images/payment-method-icons/applepay.svg?asset';
+import GooglePay from 'assets/images/payment-method-icons/gpay.svg?asset';
 
 export const expressCheckoutElementApplePay = ( api ) => ( {
 	paymentMethodId: PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT,
@@ -108,7 +111,15 @@ export const paymentMethodGooglePay = ( api ) => {
 				/>
 			);
 		},
-		label: 'Google Pay',
+		label: (
+			<PaymentMethodLabel
+				api={ api }
+				title="Google Pay"
+				iconLight={ GooglePay }
+				iconDark={ GooglePay }
+				upeName="woocommerce_payments_googlePay"
+			/>
+		),
 		ariaLabel: 'Google Pay',
 		supports: {
 			showSavedCards: false,
@@ -145,7 +156,15 @@ export const paymentMethodApplePay = ( api ) => {
 				/>
 			);
 		},
-		label: 'Apple Pay',
+		label: (
+			<PaymentMethodLabel
+				api={ api }
+				title="Apple Pay"
+				iconLight={ ApplePay }
+				iconDark={ ApplePay }
+				upeName="woocommerce_payments_applePay"
+			/>
+		),
 		ariaLabel: 'Apple Pay',
 		supports: {
 			showSavedCards: false,
