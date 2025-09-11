@@ -92,7 +92,10 @@ export const paymentMethodGooglePay = ( api ) => {
 				// Remove console.error and return proper error component
 				return (
 					<div className="wc-block-components-error">
-						{ __( 'Error: Missing payment method interface', 'woocommerce-payments' ) }
+						{ __(
+							'Error: Missing payment method interface',
+							'woocommerce-payments'
+						) }
 					</div>
 				);
 			}
@@ -105,8 +108,8 @@ export const paymentMethodGooglePay = ( api ) => {
 				/>
 			);
 		},
-		label: 'Google Pay - WooPayments',
-		ariaLabel: 'Google Pay - WooPayments',
+		label: 'Google Pay',
+		ariaLabel: 'Google Pay',
 		supports: {
 			showSavedCards: false,
 			showSaveOption: false,
@@ -117,7 +120,7 @@ export const paymentMethodGooglePay = ( api ) => {
 				return false;
 			}
 
-			return checkPaymentMethodIsAvailable( 'googlePay', cart );
+			return checkPaymentMethodIsAvailable( 'googlePay', cart, api );
 		},
 	};
 };
@@ -132,7 +135,9 @@ export const paymentMethodApplePay = ( api ) => {
 		placeOrderButton: ( props ) => {
 			// Validate that we have the required props
 			if ( ! props || typeof props.onSubmit !== 'function' ) {
-				console.error( 'Apple Pay placeOrderButton: Missing required props' );
+				console.error(
+					'Apple Pay placeOrderButton: Missing required props'
+				);
 				return <div>Error: Missing payment method interface</div>;
 			}
 
@@ -144,8 +149,8 @@ export const paymentMethodApplePay = ( api ) => {
 				/>
 			);
 		},
-		label: 'Apple Pay - WooPayments',
-		ariaLabel: 'Apple Pay - WooPayments',
+		label: 'Apple Pay',
+		ariaLabel: 'Apple Pay',
 		supports: {
 			showSavedCards: false,
 			showSaveOption: false,
@@ -156,7 +161,7 @@ export const paymentMethodApplePay = ( api ) => {
 				return false;
 			}
 
-			return checkPaymentMethodIsAvailable( 'applePay', cart );
+			return checkPaymentMethodIsAvailable( 'applePay', cart, api );
 		},
 	};
 };

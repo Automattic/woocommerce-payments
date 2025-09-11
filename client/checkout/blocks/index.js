@@ -22,6 +22,7 @@ import {
 	expressCheckoutElementApplePay,
 	expressCheckoutElementGooglePay,
 	paymentMethodGooglePay,
+	paymentMethodApplePay,
 } from 'wcpay/express-checkout/blocks';
 
 import { getDeferredIntentCreationUPEFields } from './payment-elements';
@@ -113,18 +114,19 @@ const addCheckoutTracking = () => {
 };
 
 // Register Apple Pay and Google Pay as payment methods when the setting is enabled
-if ( getUPEConfig( 'isAppleGooglePayInPaymentMethodsOptionsEnabled' ) && getUPEConfig( 'isDynamicCheckoutPlaceOrderButtonEnabled' ) ) {
+if ( getUPEConfig( 'isAppleGooglePayInPaymentMethodsOptionsEnabled' ) ) {
 	registerPaymentMethod( paymentMethodApplePay( api ) );
 	registerPaymentMethod( paymentMethodGooglePay( api ) );
 }
 
 // Register express payment methods only when in-payment-methods is disabled
-if ( getUPEConfig( 'isPaymentRequestEnabled' ) && ! getUPEConfig( 'isAppleGooglePayInPaymentMethodsOptionsEnabled' ) ) {
+if (
+	getUPEConfig( 'isPaymentRequestEnabled' ) &&
+	! getUPEConfig( 'isAppleGooglePayInPaymentMethodsOptionsEnabled' )
+) {
 	registerExpressPaymentMethod( expressCheckoutElementApplePay( api ) );
 	registerExpressPaymentMethod( expressCheckoutElementGooglePay( api ) );
 }
-
-registerPaymentMethod( paymentMethodGooglePay( api ) );
 
 // Call handleWooPayEmailInput if woopay is enabled and this is the checkout page.
 if ( getUPEConfig( 'isWooPayEnabled' ) ) {
