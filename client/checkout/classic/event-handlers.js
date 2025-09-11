@@ -36,6 +36,8 @@ import Visa from 'assets/images/payment-method-icons/visa.svg?asset';
 import Mastercard from 'assets/images/payment-method-icons/mastercard.svg?asset';
 import Amex from 'assets/images/payment-method-icons/amex.svg?asset';
 import Discover from 'assets/images/payment-method-icons/discover.svg?asset';
+import ApplePay from 'assets/images/payment-method-icons/applepay.svg?asset';
+import GooglePay from 'assets/images/payment-method-icons/gpay.svg?asset';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
@@ -188,6 +190,90 @@ jQuery( function ( $ ) {
 			{ name: 'discover', component: Discover },
 		];
 
+		injectLogosForPaymentMethod(
+			cardLabel,
+			target,
+			logosContainer,
+			innerContainer,
+			paymentMethods
+		);
+
+		// Handle Apple Pay payment method
+		const applePayLabel = document.querySelector(
+			'label[for="payment_method_woocommerce_payments_applePay"]'
+		);
+		if ( ! applePayLabel ) return;
+
+		if ( applePayLabel.querySelector( '.payment-methods--logos' ) ) return;
+
+		const applePayTarget = applePayLabel.querySelector( 'img' );
+		if ( ! applePayTarget ) return;
+
+		// Create container div
+		const applePayLogosContainer = document.createElement( 'div' );
+		applePayLogosContainer.className = 'payment-methods--logos';
+
+		// Create inner div for flex layout
+		const applePayInnerContainer = document.createElement( 'div' );
+		applePayInnerContainer.setAttribute( 'role', 'button' );
+		applePayInnerContainer.setAttribute( 'tabindex', '0' );
+		applePayInnerContainer.setAttribute(
+			'data-testid',
+			'payment-methods-logos'
+		);
+
+		const applePayLogos = [ { name: 'applepay', component: ApplePay } ];
+
+		injectLogosForPaymentMethod(
+			applePayLabel,
+			applePayTarget,
+			applePayLogosContainer,
+			applePayInnerContainer,
+			applePayLogos
+		);
+
+		// Handle Google Pay payment method
+		const googlePayLabel = document.querySelector(
+			'label[for="payment_method_woocommerce_payments_googlePay"]'
+		);
+		if ( ! googlePayLabel ) return;
+
+		if ( googlePayLabel.querySelector( '.payment-methods--logos' ) ) return;
+
+		const googlePayTarget = googlePayLabel.querySelector( 'img' );
+		if ( ! googlePayTarget ) return;
+
+		// Create container div
+		const googlePayLogosContainer = document.createElement( 'div' );
+		googlePayLogosContainer.className = 'payment-methods--logos';
+
+		// Create inner div for flex layout
+		const googlePayInnerContainer = document.createElement( 'div' );
+		googlePayInnerContainer.setAttribute( 'role', 'button' );
+		googlePayInnerContainer.setAttribute( 'tabindex', '0' );
+		googlePayInnerContainer.setAttribute(
+			'data-testid',
+			'payment-methods-logos'
+		);
+
+		const googlePayLogos = [ { name: 'googlepay', component: GooglePay } ];
+
+		injectLogosForPaymentMethod(
+			googlePayLabel,
+			googlePayTarget,
+			googlePayLogosContainer,
+			googlePayInnerContainer,
+			googlePayLogos
+		);
+	}
+
+	function injectLogosForPaymentMethod(
+		label,
+		target,
+		logosContainer,
+		innerContainer,
+		paymentMethods
+	) {
 		function getMaxElements() {
 			const paymentMethodElement = document.querySelector(
 				'.payment_method_woocommerce_payments'
@@ -240,11 +326,11 @@ jQuery( function ( $ ) {
 		}
 
 		function positionPopover( popover, anchor ) {
-			const label = anchor.closest( 'label' );
-			if ( ! label ) return;
+			const labelElement = anchor.closest( 'label' );
+			if ( ! labelElement ) return;
 
-			const labelRect = label.getBoundingClientRect();
-			const labelStyle = window.getComputedStyle( label );
+			const labelRect = labelElement.getBoundingClientRect();
+			const labelStyle = window.getComputedStyle( labelElement );
 			const labelPaddingRight = parseInt( labelStyle.paddingRight, 10 );
 
 			popover.style.position = 'fixed';
@@ -289,7 +375,7 @@ jQuery( function ( $ ) {
 			}
 
 			// Remove existing popover if we no longer need it
-			const existingPopover = cardLabel.querySelector( '.logo-popover' );
+			const existingPopover = label.querySelector( '.logo-popover' );
 			if ( existingPopover && ! shouldHavePopover() ) {
 				existingPopover.remove();
 			}
@@ -299,7 +385,7 @@ jQuery( function ( $ ) {
 			const popover = createPopover(
 				paymentMethods.slice( getMaxElements() )
 			);
-			cardLabel.appendChild( popover );
+			label.appendChild( popover );
 			positionPopover( popover, innerContainer );
 
 			const handleResize = () =>
@@ -348,7 +434,7 @@ jQuery( function ( $ ) {
 		function togglePopover() {
 			if ( ! shouldHavePopover() ) return;
 
-			const existingPopover = cardLabel.querySelector( '.logo-popover' );
+			const existingPopover = label.querySelector( '.logo-popover' );
 			if ( existingPopover ) {
 				existingPopover.remove();
 				return;
