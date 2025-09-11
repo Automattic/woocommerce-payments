@@ -36,7 +36,7 @@ For running E2E tests locally, create a new file named `local.env` under `tests/
 
 ```bash
 # WooPayments Dev Tools Repo
-WCP_DEV_TOOLS_REPO='https://github.com/dev-tools-repo.git or git@github.com:org/dev-tools-repo.git'
+WCP_DEV_TOOLS_REPO='https://github.com/dev-tools-repo-ci.git or git@github.com:org/dev-tools-repo-ci.git'
 
 # Optional to see additional verbose output. Default false.
 DEBUG=false
@@ -92,7 +92,9 @@ E2E_JP_SITE_ID='<blog_id>'
 
 If you wish to run E2E tests for WC Subscriptions, the following env variables need to be added to your `local.env` (replace values as required).
 
-For the `E2E_GH_TOKEN`, follow [these instructions to generate a GitHub Personal Access Token](https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token) and assign the `repo` scope to it.
+For the `E2E_GH_TOKEN`, follow [these instructions to generate a GitHub Fine-grained Personal Access Token](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens#creating-a-fine-grained-personal-access-token).
+
+The token should have access to the subscriptions repo. 
 
 ```bash
 E2E_GH_TOKEN='githubPersonalAccessToken'
