@@ -116,10 +116,6 @@ export const paymentMethodGooglePay = ( api ) => {
 			features: getConfig( 'features' ),
 		},
 		canMakePayment: ( { cart } ) => {
-			if ( typeof wcpayExpressCheckoutParams === 'undefined' ) {
-				return false;
-			}
-
 			return checkPaymentMethodIsAvailable( 'googlePay', cart, api );
 		},
 	};
@@ -157,10 +153,6 @@ export const paymentMethodApplePay = ( api ) => {
 			features: getConfig( 'features' ),
 		},
 		canMakePayment: ( { cart } ) => {
-			if ( typeof wcpayExpressCheckoutParams === 'undefined' ) {
-				return false;
-			}
-
 			return checkPaymentMethodIsAvailable( 'applePay', cart, api );
 		},
 	};
