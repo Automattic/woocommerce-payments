@@ -85,7 +85,18 @@ export const paymentMethodGooglePay = ( api ) => {
 		edit: <CustomWrapper />,
 		content: <CustomWrapper />,
 		paymentMethodId: 'woocommerce_payments_googlePay',
+		// Enhanced placeOrderButton with proper props typing
 		placeOrderButton: ( props ) => {
+			// Validate that we have the required props
+			if ( ! props || typeof props.onSubmit !== 'function' ) {
+				// Remove console.error and return proper error component
+				return (
+					<div className="wc-block-components-error">
+						{ __( 'Error: Missing payment method interface', 'woocommerce-payments' ) }
+					</div>
+				);
+			}
+
 			return (
 				<ExpressCheckoutContainer
 					api={ api }
@@ -107,6 +118,45 @@ export const paymentMethodGooglePay = ( api ) => {
 			}
 
 			return checkPaymentMethodIsAvailable( 'googlePay', cart );
+		},
+	};
+};
+
+export const paymentMethodApplePay = ( api ) => {
+	return {
+		name: 'woocommerce_payments_applePay',
+		edit: <CustomWrapper />,
+		content: <CustomWrapper />,
+		paymentMethodId: 'woocommerce_payments_applePay',
+		// Enhanced placeOrderButton with proper props typing
+		placeOrderButton: ( props ) => {
+			// Validate that we have the required props
+			if ( ! props || typeof props.onSubmit !== 'function' ) {
+				console.error( 'Apple Pay placeOrderButton: Missing required props' );
+				return <div>Error: Missing payment method interface</div>;
+			}
+
+			return (
+				<ExpressCheckoutContainer
+					api={ api }
+					expressPaymentMethod="applePay"
+					{ ...props }
+				/>
+			);
+		},
+		label: 'Apple Pay - WooPayments',
+		ariaLabel: 'Apple Pay - WooPayments',
+		supports: {
+			showSavedCards: false,
+			showSaveOption: false,
+			features: getConfig( 'features' ),
+		},
+		canMakePayment: ( { cart } ) => {
+			if ( typeof wcpayExpressCheckoutParams === 'undefined' ) {
+				return false;
+			}
+
+			return checkPaymentMethodIsAvailable( 'applePay', cart );
 		},
 	};
 };

@@ -199,6 +199,7 @@ class WC_Payments_Checkout {
 			'isPreview'                         => is_preview(),
 			'isSavedCardsEnabled'               => $this->gateway->is_saved_cards_enabled(),
 			'isPaymentRequestEnabled'           => $this->gateway->is_payment_request_enabled(),
+			'isAppleGooglePayInPaymentMethodsOptionsEnabled' => 'yes' === $this->gateway->get_option( 'apple_google_pay_in_payment_methods_options' ),
 			'isWooPayEnabled'                   => $this->woopay_util->should_enable_woopay( $this->gateway ) && $this->woopay_util->should_enable_woopay_on_guest_checkout(),
 			'isWoopayExpressCheckoutEnabled'    => $this->woopay_util->is_woopay_express_checkout_enabled(),
 			'isWoopayFirstPartyAuthEnabled'     => $this->woopay_util->is_woopay_first_party_auth_enabled(),

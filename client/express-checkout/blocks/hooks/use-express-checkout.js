@@ -55,10 +55,15 @@ export const useExpressCheckout = ( {
 
 	const onButtonClick = useCallback(
 		( event ) => {
+			// Enhanced validation with better error handling
 			if ( eventRegistration?.onPlaceOrderButtonValidation ) {
 				const validationResult = eventRegistration.onPlaceOrderButtonValidation();
-				console.log( '### vr', validationResult );
+				
 				if ( ! validationResult ) {
+					// Remove console.warn and use proper error handling
+					setExpressPaymentError( 
+						__( 'Please complete all required fields before proceeding.', 'woocommerce-payments' )
+					);
 					return;
 				}
 			}
@@ -145,6 +150,7 @@ export const useExpressCheckout = ( {
 			shippingData.needsShipping,
 			shippingData.shippingRates,
 			eventRegistration,
+			setExpressPaymentError,
 		]
 	);
 

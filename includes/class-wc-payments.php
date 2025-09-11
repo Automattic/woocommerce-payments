@@ -884,6 +884,9 @@ class WC_Payments {
 		require_once WCPAY_ABSPATH . '/includes/class-wc-gateway-google-pay.php';
 		$gateways[] = 'WC_Gateway_Google_Pay';
 
+		require_once WCPAY_ABSPATH . '/includes/class-wc-gateway-apple-pay.php';
+		$gateways[] = 'WC_Gateway_Apple_Pay';
+
 		return $gateways;
 	}
 
