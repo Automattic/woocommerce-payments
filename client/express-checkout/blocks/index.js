@@ -142,6 +142,7 @@ export const paymentMethodApplePay = ( api ) => {
 		placeOrderButton: ( props ) => {
 			// Validate that we have the required props
 			if ( ! props || typeof props.onSubmit !== 'function' ) {
+				// eslint-disable-next-line no-console
 				console.error(
 					'Apple Pay placeOrderButton: Missing required props'
 				);

@@ -881,11 +881,14 @@ class WC_Payments {
 			$gateways[] = self::get_payment_gateway_by_id( $payment_method_id );
 		}
 
-		require_once WCPAY_ABSPATH . '/includes/class-wc-gateway-google-pay.php';
-		$gateways[] = 'WC_Gateway_Google_Pay';
+		// Only register Apple Pay and Google Pay gateways when the dynamic place order button feature is enabled.
+		if ( WC_Payments_Features::is_dynamic_checkout_place_order_button_enabled() ) {
+			require_once WCPAY_ABSPATH . '/includes/class-wc-gateway-google-pay.php';
+			$gateways[] = 'WC_Gateway_Google_Pay';
 
-		require_once WCPAY_ABSPATH . '/includes/class-wc-gateway-apple-pay.php';
-		$gateways[] = 'WC_Gateway_Apple_Pay';
+			require_once WCPAY_ABSPATH . '/includes/class-wc-gateway-apple-pay.php';
+			$gateways[] = 'WC_Gateway_Apple_Pay';
+		}
 
 		return $gateways;
 	}

@@ -58,11 +58,14 @@ export const useExpressCheckout = ( {
 			// Enhanced validation with better error handling
 			if ( eventRegistration?.onPlaceOrderButtonValidation ) {
 				const validationResult = eventRegistration.onPlaceOrderButtonValidation();
-				
+
 				if ( ! validationResult ) {
 					// Remove console.warn and use proper error handling
-					setExpressPaymentError( 
-						__( 'Please complete all required fields before proceeding.', 'woocommerce-payments' )
+					setExpressPaymentError(
+						__(
+							'Please complete all required fields before proceeding.',
+							'woocommerce-payments'
+						)
 					);
 					return;
 				}
