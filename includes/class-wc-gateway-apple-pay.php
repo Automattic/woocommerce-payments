@@ -24,7 +24,7 @@ class WC_Gateway_Apple_Pay extends WC_Payment_Gateway_CC {
 		$this->method_title = __( 'Apple Pay', 'woocommerce-payments' );
 		$this->title        = __( 'Apple Pay', 'woocommerce-payments' );
 		$this->has_fields   = false;
-		$this->enabled      = true;
+		$this->enabled      = 'yes';
 		$this->description  = '';
 		$this->supports     = [
 			'products',

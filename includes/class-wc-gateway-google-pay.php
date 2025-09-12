@@ -24,7 +24,7 @@ class WC_Gateway_Google_Pay extends WC_Payment_Gateway_CC {
 		$this->method_title = __( 'Google Pay', 'woocommerce-payments' );
 		$this->title        = __( 'Google Pay', 'woocommerce-payments' );
 		$this->has_fields   = false;
-		$this->enabled      = true;
+		$this->enabled      = 'yes';
 		$this->description  = '';
 		$this->supports     = [
 			'products',
