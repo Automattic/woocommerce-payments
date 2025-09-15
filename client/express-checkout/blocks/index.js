@@ -42,7 +42,42 @@ export const expressCheckoutElementApplePay = ( api ) => ( {
 			return false;
 		}
 
-		return checkPaymentMethodIsAvailable( 'applePay', cart, api );
+		// Check if Apple Pay is available
+		if ( ! checkPaymentMethodIsAvailable( 'applePay', cart, api ) ) {
+			return false;
+		}
+
+		// Check location settings for express checkout buttons
+		const buttonLocations =
+			getConfig( 'paymentRequestEnabledLocations' ) || [];
+		const isCheckoutPage =
+			document.querySelector(
+				'[data-block-name="woocommerce/checkout"]'
+			) !== null;
+		const isCartPage =
+			document.querySelector( '[data-block-name="woocommerce/cart"]' ) !==
+			null;
+		const isProductPage =
+			document.querySelector(
+				'[data-block-name="woocommerce/product-gallery"]'
+			) !== null;
+
+		// If we're on checkout page but checkout is not in allowed locations, don't show
+		if ( isCheckoutPage && ! buttonLocations.includes( 'checkout' ) ) {
+			return false;
+		}
+
+		// If we're on cart page but cart is not in allowed locations, don't show
+		if ( isCartPage && ! buttonLocations.includes( 'cart' ) ) {
+			return false;
+		}
+
+		// If we're on product page but product is not in allowed locations, don't show
+		if ( isProductPage && ! buttonLocations.includes( 'product' ) ) {
+			return false;
+		}
+
+		return true;
 	},
 } );
 
@@ -77,7 +112,42 @@ export const expressCheckoutElementGooglePay = ( api ) => ( {
 			return false;
 		}
 
-		return checkPaymentMethodIsAvailable( 'googlePay', cart, api );
+		// Check if Google Pay is available
+		if ( ! checkPaymentMethodIsAvailable( 'googlePay', cart, api ) ) {
+			return false;
+		}
+
+		// Check location settings for express checkout buttons
+		const buttonLocations =
+			getConfig( 'paymentRequestEnabledLocations' ) || [];
+		const isCheckoutPage =
+			document.querySelector(
+				'[data-block-name="woocommerce/checkout"]'
+			) !== null;
+		const isCartPage =
+			document.querySelector( '[data-block-name="woocommerce/cart"]' ) !==
+			null;
+		const isProductPage =
+			document.querySelector(
+				'[data-block-name="woocommerce/product-gallery"]'
+			) !== null;
+
+		// If we're on checkout page but checkout is not in allowed locations, don't show
+		if ( isCheckoutPage && ! buttonLocations.includes( 'checkout' ) ) {
+			return false;
+		}
+
+		// If we're on cart page but cart is not in allowed locations, don't show
+		if ( isCartPage && ! buttonLocations.includes( 'cart' ) ) {
+			return false;
+		}
+
+		// If we're on product page but product is not in allowed locations, don't show
+		if ( isProductPage && ! buttonLocations.includes( 'product' ) ) {
+			return false;
+		}
+
+		return true;
 	},
 } );
 

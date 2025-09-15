@@ -332,16 +332,16 @@ jQuery( ( $ ) => {
 					// They are preemptively initialized because the `event.resolve({})`
 					// needs to be called within 1 second of the `click` event.
 					business: {
-						name: getExpressCheckoutData( 'store_name' ),
+						name: getExpressCheckoutData( 'store_name' ) || 'Store',
 					},
 					emailRequired: true,
 					...options,
 					shippingRates: options.shippingAddressRequired
 						? shippingOptionsWithFallback
 						: undefined,
-					allowedShippingCountries: getExpressCheckoutData(
-						'checkout'
-					).allowed_shipping_countries,
+					allowedShippingCountries:
+						getExpressCheckoutData( 'checkout' )
+							?.allowed_shipping_countries ?? [],
 				} );
 			} );
 

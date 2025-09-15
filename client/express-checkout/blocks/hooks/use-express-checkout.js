@@ -119,7 +119,7 @@ export const useExpressCheckout = ( {
 
 			const options = {
 				business: {
-					name: getExpressCheckoutData( 'store_name' ),
+					name: getExpressCheckoutData( 'store_name' ) || 'Store',
 				},
 				// if the `billing.cartTotal.value` is less than the total of `lineItems`, Stripe throws an error
 				// it can sometimes happen that the total is _slightly_ less, due to rounding errors on individual items/taxes/shipping
@@ -136,8 +136,9 @@ export const useExpressCheckout = ( {
 					getExpressCheckoutData( 'checkout' )?.needs_payer_phone ??
 					false,
 				shippingRates,
-				allowedShippingCountries: getExpressCheckoutData( 'checkout' )
-					.allowed_shipping_countries,
+				allowedShippingCountries:
+					getExpressCheckoutData( 'checkout' )
+						?.allowed_shipping_countries ?? [],
 			};
 
 			// Click event from WC Blocks.
