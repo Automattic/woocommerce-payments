@@ -351,7 +351,12 @@ class WC_Payments_Checkout {
 	 */
 	private function get_config_for_payment_method( $payment_method_id, $account_country ) {
 		$payment_method = $this->gateway->wc_payments_get_payment_method_by_id( $payment_method_id );
-		$config         = [
+
+		if ( ! $payment_method ) {
+			return [];
+		}
+
+		$config = [
 			'isReusable'     => $payment_method->is_reusable(),
 			'isBnpl'         => $payment_method->is_bnpl(),
 			'title'          => $payment_method->get_title( $account_country ),
