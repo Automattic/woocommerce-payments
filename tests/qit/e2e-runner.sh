@@ -46,10 +46,27 @@ else
     QIT_CMD="$QIT_BINARY"
 fi
 
-echo "Running QIT E2E foundation tests (no Jetpack credentials)..."
+# Pass basic Jetpack environment variables
+env_args=()
+if [[ -n "${E2E_JP_SITE_ID:-}" ]]; then
+    env_args+=( --env "E2E_JP_SITE_ID=${E2E_JP_SITE_ID}" )
+fi
+if [[ -n "${E2E_JP_BLOG_TOKEN:-}" ]]; then
+    env_args+=( --env "E2E_JP_BLOG_TOKEN=${E2E_JP_BLOG_TOKEN}" )
+fi
+if [[ -n "${E2E_JP_USER_TOKEN:-}" ]]; then
+    env_args+=( --env "E2E_JP_USER_TOKEN=${E2E_JP_USER_TOKEN}" )
+fi
 
 # Run our QIT E2E tests (qit.yml automatically loaded from current directory)
-"$QIT_CMD" run:e2e woocommerce-payments ./e2e \
-    --source "$WCP_ROOT/woocommerce-payments.zip"
+echo "Running QIT E2E tests with Jetpack functionality..."
+if [ ${#env_args[@]} -eq 0 ]; then
+    "$QIT_CMD" run:e2e woocommerce-payments ./e2e \
+        --source "$WCP_ROOT/woocommerce-payments.zip"
+else
+    "$QIT_CMD" run:e2e woocommerce-payments ./e2e \
+        --source "$WCP_ROOT/woocommerce-payments.zip" \
+        "${env_args[@]}"
+fi
 
 echo "QIT E2E foundation tests completed!"
