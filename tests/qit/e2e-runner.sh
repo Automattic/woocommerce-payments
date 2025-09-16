@@ -78,7 +78,17 @@ else
     QIT_CMD="$QIT_BINARY"
 fi
 
-echo "Running QIT E2E foundation tests (no Jetpack credentials)..."
+# Pass basic Jetpack environment variables
+env_args=()
+if [[ -n "${E2E_JP_SITE_ID:-}" ]]; then
+    env_args+=( --env "E2E_JP_SITE_ID=${E2E_JP_SITE_ID}" )
+fi
+if [[ -n "${E2E_JP_BLOG_TOKEN:-}" ]]; then
+    env_args+=( --env "E2E_JP_BLOG_TOKEN=${E2E_JP_BLOG_TOKEN}" )
+fi
+if [[ -n "${E2E_JP_USER_TOKEN:-}" ]]; then
+    env_args+=( --env "E2E_JP_USER_TOKEN=${E2E_JP_USER_TOKEN}" )
+fi
 
 # Run our QIT E2E tests (qit.yml automatically loaded from current directory)
 echo "Running QIT E2E tests with Jetpack functionality..."
