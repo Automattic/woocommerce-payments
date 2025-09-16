@@ -48,6 +48,7 @@
     "test:qit-phpstan": "npm run build:release && ./tests/qit/phpstan.sh",
     "test:qit-phpstan-local": "npm run build:release && ./tests/qit/phpstan.sh --local",
     "test:qit-malware": "npm run build:release && ./tests/qit/malware.sh --local",
+    "test:qit-e2e": "./tests/qit/e2e-runner.sh",
     "watch": "webpack --watch",
     "hmr": "webpack server",
     "start": "npm run watch",

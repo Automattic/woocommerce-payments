@@ -1,0 +1,143 @@
+name: QIT E2E Tests
+
+on:
+  pull_request:
+    paths:
+      - 'client/**'
+      - 'includes/**'
+      - 'src/**'
+      - 'tests/qit/e2e/**'
+      - 'tests/qit/qit.yml'
+      - '.github/workflows/qit-e2e.yml'
+  push:
+    branches:
+      - 'develop'
+      - 'trunk'
+      - 'dev/poc-e2e-qit'  # Temporary: for testing QIT E2E workflow
+  schedule:
+    # Run daily at 2 AM UTC
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      woocommerce_version:
+        description: 'WooCommerce version to test against'
+        required: false
+        default: 'stable'
+        type: choice
+        options:
+          - 'stable'
+          - '8.9.3'
+          - '7.7.0'
+          - 'rc'
+          - 'beta'
+      php_version:
+        description: 'PHP version'
+        required: false
+        default: '8.3'
+        type: choice
+        options:
+          - '8.3'
+          - '8.2'
+          - '8.1'
+          - '7.4'
+      run_ui_mode:
+        description: 'Run tests in UI mode for debugging'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  qit-e2e-tests:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Pull requests: Test against stable and L-1 WooCommerce versions
+          - wc_version: "stable"
+            php_version: "8.3"
+            test_group: "basic"
+          - wc_version: "8.9.3"  # L-1 version
+            php_version: "8.3"
+            test_group: "basic"
+          # Full runs: Include business continuity version
+          - wc_version: "7.7.0"
+            php_version: "7.4"
+            test_group: "basic"
+
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: "Set up repository"
+        uses: ./.github/actions/setup-repo
+
+      - name: "Build the plugin"
+        id: build_plugin
+        uses: ./.github/actions/build
+
+      - name: Install PHP & Composer
+        run: sudo apt-get update && sudo apt-get install -y php-cli php-zip unzip
+
+      - name: Install QIT CLI
+        run: composer global require woocommerce/qit-cli:0.10.0
+
+      - name: Authenticate QIT
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+        run: qit partner:add --user='${{ secrets.QIT_CI_USER }}' --application_password='${{ secrets.QIT_CI_SECRET }}'
+
+      - name: Set test options
+        id: test_options
+        run: |
+          OPTIONS=""
+          if [[ "${{ inputs.run_ui_mode }}" == "true" ]]; then
+            OPTIONS="${OPTIONS} --ui"
+          fi
+
+          # Use input versions if provided, otherwise use matrix
+          WC_VERSION="${{ inputs.woocommerce_version || matrix.wc_version }}"
+          PHP_VERSION="${{ inputs.php_version || matrix.php_version }}"
+
+          OPTIONS="${OPTIONS} --php_version=${PHP_VERSION} --woo=${WC_VERSION}"
+
+          echo "options=${OPTIONS}" >> $GITHUB_OUTPUT
+          echo "Will run with options: ${OPTIONS}"
+
+      - name: Run QIT E2E Tests
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+        run: |
+          cd tests/qit
+          qit run:e2e woocommerce-payments ./e2e \
+            --source ../../woocommerce-payments.zip \
+            --env E2E_JP_SITE_ID="${{ secrets.E2E_JP_SITE_ID }}" \
+            --env E2E_JP_BLOG_TOKEN="${{ secrets.E2E_JP_BLOG_TOKEN }}" \
+            --env E2E_JP_USER_TOKEN="${{ secrets.E2E_JP_USER_TOKEN }}" \
+            ${{ steps.test_options.outputs.options }}
+
+      - name: Show QIT Report Info
+        if: always()
+        run: |
+          cd tests/qit
+          echo "QIT E2E test completed. Use 'qit e2e-report' to view detailed results."
+          echo "Test artifacts and reports are managed by QIT's reporting system."
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qit-e2e-results-wc${{ matrix.wc_version }}-php${{ matrix.php_version }}
+          path: |
+            tests/qit/e2e/test-results/
+            tests/qit/e2e/playwright-report/
+          retention-days: 14
+          # Continue even if no artifacts are found (QIT handles its own reporting)
+        continue-on-error: true
