@@ -1,7 +1,61 @@
+.wcpay-account-details-payout-status-item {
+	line-height: 16px;
+	flex-wrap: wrap;
+	height: auto;
+	min-height: 2em;
+	margin-bottom: 8px;
+
+	.item-label,
+	.item-value {
+		flex-shrink: 1;
+		flex-basis: auto;
+		width: min-content;
+	}
+
+	.item-label {
+		color: $gray-900;
+		min-width: 130px;
+		white-space: nowrap;
+	}
+
+	@include breakpoint( '<480px' ) {
+		.item-label {
+			min-width: 80px;
+		}
+	}
+
+	.item-value {
+		color: $gray-700;
+	}
+}
+
 .woocommerce-account-details__header {
 	h2 {
 		margin: 0;
 		font-size: 16px;
 		font-weight: 600;
 	}
+}
+
+.account-details-banner {
+	margin-bottom: 16px;
+}
+
+.payout-status-chip {
+	&--green {
+		background-color: #dff0d8;
+		color: #3c763d;
+	}
+	&--yellow {
+		background-color: #fcf8e3;
+		color: #8a6d3b;
+	}
+	&--red {
+		background-color: #f2dede;
+		color: #a94442;
+	}
+}
+
+.payout-popover-content {
+	max-width: 300px;
 }
