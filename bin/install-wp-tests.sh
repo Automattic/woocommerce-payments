@@ -118,6 +118,8 @@ install_wp() {
 }
 
 configure_wp() {
+	echo "Configuring WordPress..."
+	
 	# portable in-place argument for both GNU sed and Mac OSX sed
 	if [[ $(uname -s) == 'Darwin' ]]; then
 		local ioption='-i.bak'
@@ -126,19 +128,28 @@ configure_wp() {
 	fi
 
 	WP_SITE_URL="http://local.wordpress.test"
+	echo "Waiting for database connection..."
 	wait_db
 
 	if [[ ! -f "$WP_CORE_DIR/wp-config.php" ]]; then
+		echo "Creating WordPress configuration..."
 		wp core config --dbname=$DB_NAME --dbuser=$DB_USER --dbpass=$DB_PASS --dbhost=$DB_HOST --dbprefix=wptests_
+	else
+		echo "WordPress configuration already exists"
 	fi
 
     # MySQL default reporting level has changed in PHP 8.1, here we forcing it to be the same in all tested PHP versions
+    echo "Updating wp-config.php for PHP 8.1 compatibility..."
     sed $ioption -E "s/(Happy publishing.+)/\1\nmysqli_report(MYSQLI_REPORT_OFF);/" "$WP_CORE_DIR/wp-config.php"
 
+	echo "Installing WordPress core..."
 	wp core install --url="$WP_SITE_URL" --title="Example" --admin_user=admin --admin_password=password --admin_email=info@example.com --skip-email
+	echo "WordPress configuration completed"
 }
 
 install_test_suite() {
+	echo "Installing WordPress test suite..."
+	
 	# portable in-place argument for both GNU sed and Mac OSX sed
 	if [[ $(uname -s) == 'Darwin' ]]; then
 		local ioption='-i.bak'
@@ -148,26 +159,37 @@ install_test_suite() {
 
 	# set up testing suite if it doesn't yet exist
 	if [ ! -d $WP_TESTS_DIR ]; then
+		echo "Creating test suite directory: $WP_TESTS_DIR"
 		# set up testing suite
 		mkdir -p $WP_TESTS_DIR
+		echo "Downloading test suite includes from WordPress ${WP_TESTS_TAG}..."
 		svn co --quiet https://develop.svn.wordpress.org/${WP_TESTS_TAG}/tests/phpunit/includes/ $WP_TESTS_DIR/includes
+		echo "Downloading test suite data from WordPress ${WP_TESTS_TAG}..."
 		svn co --quiet https://develop.svn.wordpress.org/${WP_TESTS_TAG}/tests/phpunit/data/ $WP_TESTS_DIR/data
+	else
+		echo "Test suite directory already exists: $WP_TESTS_DIR"
 	fi
 
 	if [ ! -f wp-tests-config.php ]; then
+		echo "Creating wp-tests-config.php..."
 		download https://develop.svn.wordpress.org/${WP_TESTS_TAG}/wp-tests-config-sample.php "$WP_TESTS_DIR"/wp-tests-config.php
 
 		# MySQL default reporting level has changed in PHP 8.1, here we forcing it to be the same in all tested PHP versions
+		echo "Updating wp-tests-config.php for PHP 8.1 compatibility..."
 		sed $ioption -E "s/(youremptytestdbnamehere.+)/\1\nmysqli_report(MYSQLI_REPORT_OFF);/" "$WP_TESTS_DIR/wp-tests-config.php"
 
 		# remove all forward slashes in the end
 		WP_CORE_DIR=$(echo $WP_CORE_DIR | sed "s:/\+$::")
+		echo "Configuring test database settings..."
 		sed $ioption "s:dirname( __FILE__ ) . '/src/':'$WP_CORE_DIR/':" "$WP_TESTS_DIR"/wp-tests-config.php
 		sed $ioption "s/youremptytestdbnamehere/$DB_NAME/" "$WP_TESTS_DIR"/wp-tests-config.php
 		sed $ioption "s/yourusernamehere/$DB_USER/" "$WP_TESTS_DIR"/wp-tests-config.php
 		sed $ioption "s/yourpasswordhere/$DB_PASS/" "$WP_TESTS_DIR"/wp-tests-config.php
 		sed $ioption "s|localhost|${DB_HOST}|" "$WP_TESTS_DIR"/wp-tests-config.php
+	else
+		echo "wp-tests-config.php already exists"
 	fi
+	echo "WordPress test suite installation completed"
 }
 
 install_db() {
@@ -217,43 +239,36 @@ install_woocommerce() {
 }
 
 install_gutenberg() {
-	INSTALLED_GUTENBERG_VERSION=$(wp plugin get gutenberg --field=version)
+	echo "Installing Gutenberg plugin..."
+	
+	INSTALLED_GUTENBERG_VERSION=$(wp plugin get gutenberg --field=version 2>/dev/null || echo "")
+	echo "Current Gutenberg version: ${INSTALLED_GUTENBERG_VERSION:-'not installed'}"
+	echo "Target Gutenberg version: $GUTENBERG_VERSION"
 
 	if [[ -n $INSTALLED_GUTENBERG_VERSION ]] && [[ $GUTENBERG_VERSION == 'latest' ]]; then
 		# Gutenberg is already installed, we just must update it to the latest stable version
+		echo "Updating Gutenberg to latest version..."
 		wp plugin update gutenberg
+		echo "Activating Gutenberg..."
 		wp plugin activate gutenberg
 	else
 		if [[ $INSTALLED_GUTENBERG_VERSION != $GUTENBERG_VERSION ]]; then
 			# Gutenberg is installed but it's the wrong version, overwrite the installed version
+			echo "Gutenberg version mismatch, will force reinstall..."
 			GUTENBERG_INSTALL_EXTRA+=" --force"
 		fi
 
 		if [[ $GUTENBERG_VERSION != 'latest' ]]; then
+			echo "Installing specific Gutenberg version: $GUTENBERG_VERSION"
 			GUTENBERG_INSTALL_EXTRA+=" --version=$GUTENBERG_VERSION"
+		else
+			echo "Installing latest Gutenberg version..."
 		fi
 
-		# Retry Gutenberg installation up to 5 times with exponential backoff
-		local retry_count=0
-		local max_retries=5
-		local sleep_time=5
-		
-		while [ $retry_count -lt $max_retries ]; do
-			if wp plugin install gutenberg --activate$GUTENBERG_INSTALL_EXTRA; then
-				break
-			fi
-
-			((retry_count++))
-			if [ $retry_count -lt $max_retries ]; then
-				echo "Gutenberg installation failed, retrying in ${sleep_time} seconds... (attempt $((retry_count + 1))/$max_retries)"
-				sleep $sleep_time
-				sleep_time=$((sleep_time * 2))  # Exponential backoff
-			else
-				echo "Gutenberg installation failed after $max_retries attempts"
-				exit 1
-			fi
-		done
+		echo "Running: wp plugin install gutenberg --activate$GUTENBERG_INSTALL_EXTRA"
+		wp plugin install gutenberg --activate$GUTENBERG_INSTALL_EXTRA
 	fi
+	echo "Gutenberg installation completed"
 }
 
 install_wp
