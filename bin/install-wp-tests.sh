@@ -233,7 +233,7 @@ install_gutenberg() {
 			GUTENBERG_INSTALL_EXTRA+=" --version=$GUTENBERG_VERSION"
 		fi
 
-		wp plugin install gutenberg --activate$GUTENBERG_INSTALL_EXTRA
+		wp plugin install gutenberg --activate$GUTENBERG_INSTALL_EXTRA || ( sleep 5 && wp plugin install gutenberg --activate$GUTENBERG_INSTALL_EXTRA )
 	fi
 }
 
