@@ -34,8 +34,10 @@ wp() {
 	if [ ! -f $TMPDIR/wp-cli.phar ]; then
 		download https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar  "$TMPDIR/wp-cli.phar"
 	fi
-	# Use --insecure flag to bypass SSL certificate issues in CI environments
-	php "$TMPDIR/wp-cli.phar" --insecure $@
+	# Set environment variables to bypass SSL certificate issues in CI environments
+	export WP_CLI_DISABLE_SSL_VERIFY=1
+	export WP_CLI_HTTP_VERIFY_SSL=false
+	php "$TMPDIR/wp-cli.phar" $@
 
 	cd "$WORKING_DIR"
 }
