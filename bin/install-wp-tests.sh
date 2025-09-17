@@ -241,16 +241,17 @@ install_woocommerce() {
 install_gutenberg() {
 	echo "Installing Gutenberg plugin..."
 	
-	INSTALLED_GUTENBERG_VERSION=$(wp plugin get gutenberg --field=version 2>/dev/null || echo "")
+	# Use --insecure flag to bypass SSL certificate issues in CI environments
+	INSTALLED_GUTENBERG_VERSION=$(wp --insecure plugin get gutenberg --field=version 2>/dev/null || echo "")
 	echo "Current Gutenberg version: ${INSTALLED_GUTENBERG_VERSION:-'not installed'}"
 	echo "Target Gutenberg version: $GUTENBERG_VERSION"
 
 	if [[ -n $INSTALLED_GUTENBERG_VERSION ]] && [[ $GUTENBERG_VERSION == 'latest' ]]; then
 		# Gutenberg is already installed, we just must update it to the latest stable version
 		echo "Updating Gutenberg to latest version..."
-		wp plugin update gutenberg
+		wp --insecure plugin update gutenberg
 		echo "Activating Gutenberg..."
-		wp plugin activate gutenberg
+		wp --insecure plugin activate gutenberg
 	else
 		if [[ $INSTALLED_GUTENBERG_VERSION != $GUTENBERG_VERSION ]]; then
 			# Gutenberg is installed but it's the wrong version, overwrite the installed version
@@ -265,8 +266,8 @@ install_gutenberg() {
 			echo "Installing latest Gutenberg version..."
 		fi
 
-		echo "Running: wp plugin install gutenberg --activate$GUTENBERG_INSTALL_EXTRA"
-		wp plugin install gutenberg --activate$GUTENBERG_INSTALL_EXTRA
+		echo "Running: wp --insecure plugin install gutenberg --activate$GUTENBERG_INSTALL_EXTRA"
+		wp --insecure plugin install gutenberg --activate$GUTENBERG_INSTALL_EXTRA
 	fi
 	echo "Gutenberg installation completed"
 }
