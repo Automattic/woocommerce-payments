@@ -43,8 +43,8 @@ wp() {
 	if [ ! -f $TMPDIR/wp-cli.phar ]; then
 		download https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar  "$TMPDIR/wp-cli.phar"
 	fi
-	# Environment variables are set globally at script start to bypass SSL certificate issues
-	php "$TMPDIR/wp-cli.phar" $@
+	# Set environment variables right before WP-CLI execution to bypass SSL certificate issues
+	WP_CLI_DISABLE_SSL_VERIFY=1 WP_CLI_HTTP_VERIFY_SSL=false CURL_INSECURE=1 php "$TMPDIR/wp-cli.phar" $@
 
 	cd "$WORKING_DIR"
 }
