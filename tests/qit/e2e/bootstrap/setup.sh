@@ -43,32 +43,9 @@ wp user create testcustomer test@example.com \
 
 echo "Setting up WooCommerce Payments configuration..."
 
-# Check required environment variables for Jetpack authentication
-if [ -n "${E2E_JP_SITE_ID:-}" ] && [ -n "${E2E_JP_BLOG_TOKEN:-}" ] && [ -n "${E2E_JP_USER_TOKEN:-}" ]; then
-    echo "Configuring WCPay with Jetpack authentication..."
-
-    # Set up Jetpack connection and refresh account data from server
-    wp woopayments qit_setup "$E2E_JP_SITE_ID" \
-        --blog_token="$E2E_JP_BLOG_TOKEN" \
-        --user_token="$E2E_JP_USER_TOKEN"
-
-    echo "✅ WCPay connection configured - account data fetched from server"
-
-else
-    echo "No Jetpack credentials configured - using default development mode"
-    echo "WooPayments will show Connect screen"
-    echo ""
-    echo "For basic connectivity testing, set in tests/qit/config/local.env:"
-    echo "  E2E_JP_SITE_ID=123456789"
-    echo "  E2E_JP_BLOG_TOKEN=123.ABC.QIT"
-    echo "  E2E_JP_USER_TOKEN=123.ABC.QIT.1"
-    echo ""
-fi
-
-# Always check the setup status
-echo ""
-echo "Current WooPayments setup status:"
-wp woopayments qit_status
+# NOTE: Jetpack connection setup will be added in future PRs
+# For now, WooPayments will run in development mode
+echo "Running WooPayments without a Jetpack connection (Jetpack connection setup in upcoming PRs)"
 
 # Enable development/test mode for better testing experience
 wp option set wcpay_dev_mode 1 --quiet 2>/dev/null || true

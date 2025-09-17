@@ -15,9 +15,11 @@ test( 'Load home page', async ( { page } ) => {
 } );
 
 /**
- * Test QIT admin authentication and WooCommerce Payments plugin access
+ * Test WooCommerce Payments onboarding flow access
+ * Since we're running in development mode without Jetpack connection,
+ * we expect to always land on the onboarding flow.
  */
-test( 'Access WooCommerce Payments as admin', async ( { page } ) => {
+test( 'Access WooCommerce Payments onboarding as admin', async ( { page } ) => {
 	// Use QIT helper to login as admin
 	await qit.loginAsAdmin( page );
 
@@ -31,21 +33,13 @@ test( 'Access WooCommerce Payments as admin', async ( { page } ) => {
 		page.locator( 'h1:not(.screen-reader-text)' ).first()
 	).toContainText( /Settings|Payments|Overview/, { timeout: 15000 } );
 
-	// Check that we can successfully load the WooCommerce Payments interface
-	// Either we get the overview (if fully connected) OR the onboarding.
-	const isOnboarding = page.url().includes( 'onboarding' );
-	const isOverview = page.url().includes( 'payments' );
+	// In development mode without Jetpack connection, we should be on onboarding
+	expect( page.url() ).toContain( 'onboarding' );
 
-	// We should be on either the onboarding or overview page (both indicate success)
-	expect( isOnboarding || isOverview ).toBe( true );
-
-	// If we're on onboarding, it should be functional (not errored)
-	if ( isOnboarding ) {
-		// The onboarding page should load without errors
-		await expect( page.locator( 'body' ) ).not.toHaveText(
-			/500|404|Fatal error/
-		);
-	}
+	// The onboarding page should load without errors
+	await expect( page.locator( 'body' ) ).not.toHaveText(
+		/500|404|Fatal error/
+	);
 } );
 
 /**
