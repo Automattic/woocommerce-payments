@@ -44,15 +44,25 @@ wp() {
 		download https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar  "$TMPDIR/wp-cli.phar"
 	fi
 	
-	# Set environment variables and run WP-CLI with SSL bypass
-	WP_CLI_DISABLE_SSL_VERIFY=1 \
-	WP_CLI_HTTP_VERIFY_SSL=false \
-	CURL_INSECURE=1 \
-	CURL_CA_BUNDLE="" \
-	SSL_VERIFY=false \
-	CURLOPT_SSL_VERIFYPEER=0 \
-	CURLOPT_SSL_VERIFYHOST=0 \
-	php -d "curl.cainfo=" -d "openssl.cafile=" "$TMPDIR/wp-cli.phar" $@
+	# Create a temporary script that sets environment variables and runs WP-CLI
+	cat > "$TMPDIR/wp-cli-wrapper.sh" << 'EOF'
+#!/bin/bash
+export WP_CLI_DISABLE_SSL_VERIFY=1
+export WP_CLI_HTTP_VERIFY_SSL=false
+export CURL_INSECURE=1
+export CURL_CA_BUNDLE=""
+export SSL_VERIFY=false
+export CURLOPT_SSL_VERIFYPEER=0
+export CURLOPT_SSL_VERIFYHOST=0
+
+# Run WP-CLI with PHP SSL bypass settings
+php -d "curl.cainfo=" -d "openssl.cafile=" "$1" "${@:2}"
+EOF
+	
+	chmod +x "$TMPDIR/wp-cli-wrapper.sh"
+	
+	# Run WP-CLI through our wrapper script
+	"$TMPDIR/wp-cli-wrapper.sh" "$TMPDIR/wp-cli.phar" $@
 
 	cd "$WORKING_DIR"
 }
