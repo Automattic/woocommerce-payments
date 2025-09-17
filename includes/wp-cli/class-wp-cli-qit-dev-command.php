@@ -41,11 +41,19 @@ class WP_CLI_QIT_Dev_Command {
 			\WP_CLI::error( 'Jetpack_Options class does not exist. Ensure Jetpack is installed and active.' );
 		}
 
-		$blog_id    = (int) $args[0];
-		$blog_token = isset( $assoc_args['blog_token'] ) ? (string) $assoc_args['blog_token'] : '123.ABC.QIT';
-		$user_token = isset( $assoc_args['user_token'] ) ? (string) $assoc_args['user_token'] : '123.ABC.QIT.1';
+		$blog_id = (int) $args[0];
 
-		// Force test mode BEFORE any other operations (since this is a test account).
+		// Prioritize environment variables over command-line arguments for security.
+		// This prevents tokens from appearing in process lists or command history.
+		$blog_token = getenv( 'E2E_JP_BLOG_TOKEN' );
+		if ( ! $blog_token ) {
+			$blog_token = isset( $assoc_args['blog_token'] ) ? (string) $assoc_args['blog_token'] : '123.ABC.QIT';
+		}
+
+		$user_token = getenv( 'E2E_JP_USER_TOKEN' );
+		if ( ! $user_token ) {
+			$user_token = isset( $assoc_args['user_token'] ) ? (string) $assoc_args['user_token'] : '123.ABC.QIT.1';
+		}       // Force test mode BEFORE any other operations (since this is a test account).
 		$this->force_test_mode();
 
 		// Set up Jetpack connection.

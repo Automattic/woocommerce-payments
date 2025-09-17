@@ -112,6 +112,14 @@ jobs:
           echo "options=${OPTIONS}" >> $GITHUB_OUTPUT
           echo "Will run with options: ${OPTIONS}"
 
+      - name: Mask sensitive values
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+        run: |
+          # Mask tokens in GitHub Actions logs to prevent accidental exposure
+          echo "::add-mask::${{ secrets.E2E_JP_SITE_ID }}"
+          echo "::add-mask::${{ secrets.E2E_JP_BLOG_TOKEN }}"  
+          echo "::add-mask::${{ secrets.E2E_JP_USER_TOKEN }}"
+
       - name: Run QIT E2E Tests
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
         env:
