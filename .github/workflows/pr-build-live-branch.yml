@@ -113,8 +113,6 @@ jobs:
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           PR_HEAD_REF: ${{ github.head_ref }}
         run: |
-          set -e  # Exit on any error
-
           # Debug: Check environment variables
           echo "=== Debug: Environment Variables ==="
           echo "PR_NUMBER: ${PR_NUMBER}"
@@ -122,13 +120,6 @@ jobs:
           echo "PR_HEAD_SHA: ${PR_HEAD_SHA}"
           echo "GITHUB_REPOSITORY: ${GITHUB_REPOSITORY}"
           echo "===================================="
-
-          # Test GitHub CLI access
-          echo "Testing GitHub CLI access..."
-          gh pr view ${PR_NUMBER} --json number || {
-            echo "ERROR: Failed to access PR via GitHub CLI"
-            exit 1
-          }
 
           echo "Creating comment body..."
           BODY="### Test the build 
@@ -163,14 +154,14 @@ jobs:
           if [ -n "$COMMENT_ID" ]; then
             echo "Found existing comment ID: $COMMENT_ID"
             echo "Updating existing comment..."
-            gh api repos/${GITHUB_REPOSITORY}/issues/comments/${COMMENT_ID} -X PATCH -f body="${BODY}" || {
+            gh api repos/${GITHUB_REPOSITORY}/issues/comments/${COMMENT_ID} -X PATCH -f body="${BODY}"  2>/dev/nul || {
               echo "ERROR: Failed to update existing comment"
               exit 1
             }
             echo "Comment updated successfully"
           else
             echo "No existing comment found, creating new one..."
-            gh api repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments -f body="${BODY}" || {
+            gh api repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments -f body="${BODY}" 2>/dev/null || {
               echo "ERROR: Failed to create new comment"
               exit 1
             }

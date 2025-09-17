@@ -1,5 +1,5 @@
 Significance: patch
 Type: dev
-Comment: Fix pr-build-live-branch workflow failure due to BOTWOO_TOKEN
+Comment: Replace BOTWOO_TOKEN in pr-build-live-branch workflow with github-actions bot
 
 
