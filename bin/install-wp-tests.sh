@@ -231,18 +231,27 @@ install_gutenberg() {
 
 		if [[ $GUTENBERG_VERSION != 'latest' ]]; then
 			GUTENBERG_INSTALL_EXTRA+=" --version=$GUTENBERG_VERSION"
-		fi		wp plugin install gutenberg --activate$GUTENBERG_INSTALL_EXTRA || ( sleep 5 && wp plugin install gutenberg --activate$GUTENBERG_INSTALL_EXTRA )
-
-		max_retries=5
-		count=0
-		until wp plugin install gutenberg --activate"$GUTENBERG_INSTALL_EXTRA"; do
-		count=$((count+1))
-		if [ $count -ge $max_retries ]; then
-			echo "Failed after $max_retries attempts."
-			exit 1
 		fi
-		echo "Retry $count/$max_retries failed. Retrying in 5 seconds..."
-		sleep 5
+
+		# Retry Gutenberg installation up to 5 times with exponential backoff
+		local retry_count=0
+		local max_retries=5
+		local sleep_time=5
+		
+		while [ $retry_count -lt $max_retries ]; do
+			if wp plugin install gutenberg --activate$GUTENBERG_INSTALL_EXTRA; then
+				break
+			fi
+
+			((retry_count++))
+			if [ $retry_count -lt $max_retries ]; then
+				echo "Gutenberg installation failed, retrying in ${sleep_time} seconds... (attempt $((retry_count + 1))/$max_retries)"
+				sleep $sleep_time
+				sleep_time=$((sleep_time * 2))  # Exponential backoff
+			else
+				echo "Gutenberg installation failed after $max_retries attempts"
+				exit 1
+			fi
 		done
 	fi
 }
