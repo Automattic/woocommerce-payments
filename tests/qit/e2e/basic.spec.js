@@ -36,10 +36,16 @@ test( 'Access WooPayments as admin', async ( { page } ) => {
 	const isOnboarding = page.url().includes( 'onboarding' );
 	const isOverview = page.url().includes( 'payments' );
 
-	// The onboarding page should load without errors
-	await expect( page.locator( 'body' ) ).not.toHaveText(
-		/500|404|Fatal error/
-	);
+	// We should be on either the onboarding or overview page (both indicate success)
+	expect( isOnboarding || isOverview ).toBe( true );
+
+	// If we're on onboarding, it should be functional (not errored)
+	if ( isOnboarding ) {
+		// The onboarding page should load without errors
+		await expect( page.locator( 'body' ) ).not.toHaveText(
+			/500|404|Fatal error/
+		);
+	}
 } );
 
 /**
