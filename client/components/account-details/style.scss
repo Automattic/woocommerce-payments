@@ -1,8 +1,12 @@
 .woopayments-account-details__header {
-	h2 {
-		margin: 0;
-		font-size: 16px;
-		font-weight: 600;
+	//h2 {
+	//	margin: 0;
+	//	font-size: 16px;
+	//	font-weight: 600;
+	//}
+
+	.edit-details .components-button.is-link {
+		text-decoration: none;
 	}
 }
 
