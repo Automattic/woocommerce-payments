@@ -717,6 +717,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			// Avoid creating new accounts during preflight check.
 			remove_all_filters( 'woocommerce_checkout_registration_required' );
+
+			add_filter(
+				'woocommerce_coupon_get_usage_limit',
+				function () {
+					return null;
+				}
+			);
 		}
 
 		return $response;
