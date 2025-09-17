@@ -59,7 +59,7 @@ if [ -n "${E2E_JP_SITE_ID:-}" ] && [ -n "${E2E_JP_BLOG_TOKEN:-}" ] && [ -n "${E2
     echo "✅ WooPayments connection configured - account data fetched from server"
 
 else
-    echo "No Jetpack credentials configured - using default development mode"
+    echo "No Jetpack credentials configured - WooPayments will show Connect screen"
     echo "WooPayments will show Connect screen"
     echo ""
     echo "For basic connectivity testing, set in tests/qit/config/local.env:"

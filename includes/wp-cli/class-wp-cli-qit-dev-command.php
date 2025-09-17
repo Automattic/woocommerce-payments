@@ -1,6 +1,6 @@
 <?php
 /**
- * QIT Dev Tools command - Foundation (PR 1)
+ * QIT Dev Tools command
  *
  * @package WooCommerce\Payments
  */

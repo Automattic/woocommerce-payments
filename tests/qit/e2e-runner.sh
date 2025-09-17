@@ -22,18 +22,60 @@ echo "Running E2E tests..."
 # Change to project root directory to build plugin
 cd "$WCP_ROOT"
 
-# Foundation version: Simplified build process for easier testing
-# For this foundation PR, we'll always build to avoid complex signature computation issues
+# Compute a signature of sources relevant to the release build and
+# skip rebuilding if nothing has changed since the last build.
+compute_build_signature() {
+    # Hash tracked files that affect the release artifact. This includes
+    # sources packaged in the zip and build/config files that affect the output.
+    git ls-files -z -- \
+        assets \
+        i18n \
+        includes \
+        languages \
+        lib \
+        src \
+        templates \
+        client \
+        tasks/release.js \
+        webpack \
+        webpack.config.js \
+        babel.config.js \
+        package.json \
+        package-lock.json \
+        composer.json \
+        composer.lock \
+        woocommerce-payments.php \
+        changelog.txt \
+        readme.txt \
+        SECURITY.md \
+        2>/dev/null \
+    | xargs -0 shasum -a 256 2>/dev/null \
+    | shasum -a 256 \
+    | awk '{print $1}'
+}
 
 BUILD_HASH_FILE="$WCP_ROOT/woocommerce-payments.zip.hash"
 
-# For this foundation PR, always build if zip doesn't exist or if forced
-if [[ -n "${WCP_FORCE_BUILD:-}" ]] || [[ ! -f "woocommerce-payments.zip" ]]; then
+CURRENT_SIG="$(compute_build_signature)"
+
+# If WCP_FORCE_BUILD is set, always rebuild
+if [[ -n "${WCP_FORCE_BUILD:-}" ]]; then
+    echo "WCP_FORCE_BUILD set; forcing build of WooPayments plugin..."
+    npm run build:release
+    echo "$CURRENT_SIG" > "$BUILD_HASH_FILE"
+elif [[ -f "woocommerce-payments.zip" && -f "$BUILD_HASH_FILE" ]]; then
+    LAST_SIG="$(cat "$BUILD_HASH_FILE" 2>/dev/null || true)"
+    if [[ "$CURRENT_SIG" == "$LAST_SIG" && -n "$CURRENT_SIG" ]]; then
+        echo "No relevant changes detected since last build; skipping build."
+    else
+        echo "Changes detected; rebuilding WooPayments plugin..."
+        npm run build:release
+        echo "$CURRENT_SIG" > "$BUILD_HASH_FILE"
+    fi
+else
     echo "Building WooPayments plugin..."
     npm run build:release
-    echo "foundation-build-$(date +%s)" > "$BUILD_HASH_FILE"
-else
-    echo "Using existing woocommerce-payments.zip"
+    echo "$CURRENT_SIG" > "$BUILD_HASH_FILE"
 fi
 
 # Change to QIT directory so qit.yml is automatically found
