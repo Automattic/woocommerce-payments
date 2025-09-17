@@ -34,7 +34,8 @@ wp() {
 	if [ ! -f $TMPDIR/wp-cli.phar ]; then
 		download https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar  "$TMPDIR/wp-cli.phar"
 	fi
-	php "$TMPDIR/wp-cli.phar" $@
+	# Use --insecure flag to bypass SSL certificate issues in CI environments
+	php "$TMPDIR/wp-cli.phar" --insecure $@
 
 	cd "$WORKING_DIR"
 }
@@ -241,17 +242,16 @@ install_woocommerce() {
 install_gutenberg() {
 	echo "Installing Gutenberg plugin..."
 	
-	# Use --insecure flag to bypass SSL certificate issues in CI environments
-	INSTALLED_GUTENBERG_VERSION=$(wp --insecure plugin get gutenberg --field=version 2>/dev/null || echo "")
+	INSTALLED_GUTENBERG_VERSION=$(wp plugin get gutenberg --field=version 2>/dev/null || echo "")
 	echo "Current Gutenberg version: ${INSTALLED_GUTENBERG_VERSION:-'not installed'}"
 	echo "Target Gutenberg version: $GUTENBERG_VERSION"
 
 	if [[ -n $INSTALLED_GUTENBERG_VERSION ]] && [[ $GUTENBERG_VERSION == 'latest' ]]; then
 		# Gutenberg is already installed, we just must update it to the latest stable version
 		echo "Updating Gutenberg to latest version..."
-		wp --insecure plugin update gutenberg
+		wp plugin update gutenberg
 		echo "Activating Gutenberg..."
-		wp --insecure plugin activate gutenberg
+		wp plugin activate gutenberg
 	else
 		if [[ $INSTALLED_GUTENBERG_VERSION != $GUTENBERG_VERSION ]]; then
 			# Gutenberg is installed but it's the wrong version, overwrite the installed version
@@ -266,8 +266,8 @@ install_gutenberg() {
 			echo "Installing latest Gutenberg version..."
 		fi
 
-		echo "Running: wp --insecure plugin install gutenberg --activate$GUTENBERG_INSTALL_EXTRA"
-		wp --insecure plugin install gutenberg --activate$GUTENBERG_INSTALL_EXTRA
+		echo "Running: wp plugin install gutenberg --activate$GUTENBERG_INSTALL_EXTRA"
+		wp plugin install gutenberg --activate$GUTENBERG_INSTALL_EXTRA
 	fi
 	echo "Gutenberg installation completed"
 }
