@@ -59,26 +59,13 @@ compute_build_signature() {
 
 BUILD_HASH_FILE="$WCP_ROOT/woocommerce-payments.zip.hash"
 
-CURRENT_SIG="$(compute_build_signature)"
-
-# If WCP_FORCE_BUILD is set, always rebuild
-if [[ -n "${WCP_FORCE_BUILD:-}" ]]; then
-    echo "WCP_FORCE_BUILD set; forcing build of WooPayments plugin..."
-    npm run build:release
-    echo "$CURRENT_SIG" > "$BUILD_HASH_FILE"
-elif [[ -f "woocommerce-payments.zip" && -f "$BUILD_HASH_FILE" ]]; then
-    LAST_SIG="$(cat "$BUILD_HASH_FILE" 2>/dev/null || true)"
-    if [[ "$CURRENT_SIG" == "$LAST_SIG" && -n "$CURRENT_SIG" ]]; then
-        echo "No relevant changes detected since last build; skipping build."
-    else
-        echo "Changes detected; rebuilding WooPayments plugin..."
-        npm run build:release
-        echo "$CURRENT_SIG" > "$BUILD_HASH_FILE"
-    fi
-else
+# For this foundation PR, always build if zip doesn't exist or if forced
+if [[ -n "${WCP_FORCE_BUILD:-}" ]] || [[ ! -f "woocommerce-payments.zip" ]]; then
     echo "Building WooPayments plugin..."
     npm run build:release
-    echo "$CURRENT_SIG" > "$BUILD_HASH_FILE"
+    echo "foundation-build-$(date +%s)" > "$BUILD_HASH_FILE"
+else
+    echo "Using existing woocommerce-payments.zip"
 fi
 
 # Change to QIT directory so qit.yml is automatically found
@@ -91,17 +78,7 @@ else
     QIT_CMD="$QIT_BINARY"
 fi
 
-# Pass basic Jetpack environment variables
-env_args=()
-if [[ -n "${E2E_JP_SITE_ID:-}" ]]; then
-    env_args+=( --env "E2E_JP_SITE_ID=${E2E_JP_SITE_ID}" )
-fi
-if [[ -n "${E2E_JP_BLOG_TOKEN:-}" ]]; then
-    env_args+=( --env "E2E_JP_BLOG_TOKEN=${E2E_JP_BLOG_TOKEN}" )
-fi
-if [[ -n "${E2E_JP_USER_TOKEN:-}" ]]; then
-    env_args+=( --env "E2E_JP_USER_TOKEN=${E2E_JP_USER_TOKEN}" )
-fi
+echo "Running QIT E2E foundation tests (no Jetpack credentials)..."
 
 # Run our QIT E2E tests (qit.yml automatically loaded from current directory)
 echo "Running QIT E2E tests with Jetpack functionality..."

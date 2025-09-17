@@ -792,21 +792,6 @@ class WC_Payments {
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_assets_script' ] );
 		add_action( 'wp_enqueue_scripts', [ __CLASS__, 'enqueue_cart_scripts' ] );
 
-		// Register development-only WP-CLI commands to assist E2E setup.
-		if (
-			defined( 'WP_CLI' ) && WP_CLI &&
-			function_exists( 'wp_get_environment_type' ) &&
-			in_array( wp_get_environment_type(), [ 'development', 'local' ], true )
-		) {
-			// phpcs:ignore WordPressVIPMinimum.Files.IncludingFile.UsingVariable
-			require_once WCPAY_ABSPATH . 'includes/wp-cli/class-wp-cli-qit-dev-command.php';
-
-			$wp_cli_qit_dev_command = new \WP_CLI_QIT_Dev_Command();
-
-			\WP_CLI::add_command( 'woopayments qit_setup', [ $wp_cli_qit_dev_command, 'qit_setup' ] );
-			\WP_CLI::add_command( 'woopayments qit_status', [ $wp_cli_qit_dev_command, 'qit_status' ] );
-		}
-
 		self::$duplicate_payment_prevention_service->init( self::$card_gateway, self::$order_service );
 
 		wcpay_get_container()->get( \WCPay\Internal\PluginManagement\TranslationsLoader::class )->init_hooks();
