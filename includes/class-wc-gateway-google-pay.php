@@ -32,6 +32,7 @@ class WC_Gateway_Google_Pay extends WC_Payment_Gateway_CC {
 		];
 
 		// Initialize express checkout parameters for dynamic place order button functionality.
+		$this->init_express_checkout_params();
 	}
 
 	/**

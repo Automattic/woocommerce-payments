@@ -183,38 +183,39 @@ class WC_Payments_Checkout {
 		$gateway = WC_Payments::get_gateway() ?? $this->gateway;
 
 		$js_config = [
-			'publishableKey'                    => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
-			'testMode'                          => WC_Payments::mode()->is_test(),
-			'accountId'                         => $this->account->get_stripe_account_id(),
-			'ajaxUrl'                           => admin_url( 'admin-ajax.php' ),
-			'wcAjaxUrl'                         => WC_AJAX::get_endpoint( '%%endpoint%%' ),
-			'createSetupIntentNonce'            => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
-			'initWooPayNonce'                   => wp_create_nonce( 'wcpay_init_woopay_nonce' ),
-			'saveUPEAppearanceNonce'            => wp_create_nonce( 'wcpay_save_upe_appearance_nonce' ),
-			'genericErrorMessage'               => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),
-			'fraudServices'                     => $this->fraud_service->get_fraud_services_config(),
-			'features'                          => $this->gateway->supports,
-			'forceNetworkSavedCards'            => WC_Payments::is_network_saved_cards_enabled() || $gateway->should_use_stripe_platform_on_checkout_page(),
-			'locale'                            => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
-			'isPreview'                         => is_preview(),
-			'isSavedCardsEnabled'               => $this->gateway->is_saved_cards_enabled(),
-			'isPaymentRequestEnabled'           => $this->gateway->is_payment_request_enabled(),
+			'publishableKey'                           => $this->account->get_publishable_key( WC_Payments::mode()->is_test() ),
+			'testMode'                                 => WC_Payments::mode()->is_test(),
+			'accountId'                                => $this->account->get_stripe_account_id(),
+			'ajaxUrl'                                  => admin_url( 'admin-ajax.php' ),
+			'wcAjaxUrl'                                => WC_AJAX::get_endpoint( '%%endpoint%%' ),
+			'createSetupIntentNonce'                   => wp_create_nonce( 'wcpay_create_setup_intent_nonce' ),
+			'initWooPayNonce'                          => wp_create_nonce( 'wcpay_init_woopay_nonce' ),
+			'saveUPEAppearanceNonce'                   => wp_create_nonce( 'wcpay_save_upe_appearance_nonce' ),
+			'genericErrorMessage'                      => __( 'There was a problem processing the payment. Please check your email inbox and refresh the page to try again.', 'woocommerce-payments' ),
+			'fraudServices'                            => $this->fraud_service->get_fraud_services_config(),
+			'features'                                 => $this->gateway->supports,
+			'forceNetworkSavedCards'                   => WC_Payments::is_network_saved_cards_enabled() || $gateway->should_use_stripe_platform_on_checkout_page(),
+			'locale'                                   => WC_Payments_Utils::convert_to_stripe_locale( get_locale() ),
+			'isPreview'                                => is_preview(),
+			'isSavedCardsEnabled'                      => $this->gateway->is_saved_cards_enabled(),
+			'isPaymentRequestEnabled'                  => $this->gateway->is_payment_request_enabled(),
 			'isAppleGooglePayInPaymentMethodsOptionsEnabled' => 'yes' === $this->gateway->get_option( 'apple_google_pay_in_payment_methods_options' ),
-			'isWooPayEnabled'                   => $this->woopay_util->should_enable_woopay( $this->gateway ) && $this->woopay_util->should_enable_woopay_on_guest_checkout(),
-			'isWoopayExpressCheckoutEnabled'    => $this->woopay_util->is_woopay_express_checkout_enabled(),
-			'isWoopayFirstPartyAuthEnabled'     => $this->woopay_util->is_woopay_first_party_auth_enabled(),
-			'isWooPayEmailInputEnabled'         => $this->woopay_util->is_woopay_email_input_enabled(),
-			'isWooPayDirectCheckoutEnabled'     => WC_Payments_Features::is_woopay_direct_checkout_enabled(),
-			'isWooPayGlobalThemeSupportEnabled' => $this->gateway->is_woopay_global_theme_support_enabled(),
-			'woopayHost'                        => WooPay_Utilities::get_woopay_url(),
-			'platformTrackerNonce'              => wp_create_nonce( 'platform_tracks_nonce' ),
-			'accountIdForIntentConfirmation'    => apply_filters( 'wc_payments_account_id_for_intent_confirmation', '' ),
-			'wcpayVersionNumber'                => WCPAY_VERSION_NUMBER,
-			'woopaySignatureNonce'              => wp_create_nonce( 'woopay_signature_nonce' ),
-			'woopaySessionNonce'                => wp_create_nonce( 'woopay_session_nonce' ),
-			'woopayMerchantId'                  => Jetpack_Options::get_option( 'id' ),
-			'icon'                              => $this->gateway->get_icon_url(),
-			'woopayMinimumSessionData'          => WooPay_Session::get_woopay_minimum_session_data(),
+			'isWooPayEnabled'                          => $this->woopay_util->should_enable_woopay( $this->gateway ) && $this->woopay_util->should_enable_woopay_on_guest_checkout(),
+			'isWoopayExpressCheckoutEnabled'           => $this->woopay_util->is_woopay_express_checkout_enabled(),
+			'isWoopayFirstPartyAuthEnabled'            => $this->woopay_util->is_woopay_first_party_auth_enabled(),
+			'isWooPayEmailInputEnabled'                => $this->woopay_util->is_woopay_email_input_enabled(),
+			'isWooPayDirectCheckoutEnabled'            => WC_Payments_Features::is_woopay_direct_checkout_enabled(),
+			'isWooPayGlobalThemeSupportEnabled'        => $this->gateway->is_woopay_global_theme_support_enabled(),
+			'woopayHost'                               => WooPay_Utilities::get_woopay_url(),
+			'platformTrackerNonce'                     => wp_create_nonce( 'platform_tracks_nonce' ),
+			'accountIdForIntentConfirmation'           => apply_filters( 'wc_payments_account_id_for_intent_confirmation', '' ),
+			'wcpayVersionNumber'                       => WCPAY_VERSION_NUMBER,
+			'woopaySignatureNonce'                     => wp_create_nonce( 'woopay_signature_nonce' ),
+			'woopaySessionNonce'                       => wp_create_nonce( 'woopay_session_nonce' ),
+			'woopayMerchantId'                         => Jetpack_Options::get_option( 'id' ),
+			'icon'                                     => $this->gateway->get_icon_url(),
+			'woopayMinimumSessionData'                 => WooPay_Session::get_woopay_minimum_session_data(),
+			'isDynamicCheckoutPlaceOrderButtonEnabled' => WC_Payments_Features::is_dynamic_checkout_place_order_button_enabled(),
 		];
 
 		/**
@@ -344,66 +345,6 @@ class WC_Payments_Checkout {
 	}
 
 	/**
-	 * Gets the config for a payment method.
-	 *
-	 * @param string $payment_method_id The payment method ID.
-	 * @param string $account_country The account country.
-	 * @return array
-	 */
-	private function get_config_for_payment_method( $payment_method_id, $account_country ) {
-		$payment_method = $this->gateway->wc_payments_get_payment_method_by_id( $payment_method_id );
-
-		if ( ! $payment_method ) {
-			return [];
-		}
-
-		$config = [
-			'isReusable'     => $payment_method->is_reusable(),
-			'isBnpl'         => $payment_method->is_bnpl(),
-			'title'          => $payment_method->get_title( $account_country ),
-			'icon'           => $payment_method->get_icon( $account_country ),
-			'darkIcon'       => $payment_method->get_dark_icon( $account_country ),
-			'showSaveOption' => $this->should_upe_payment_method_show_save_option( $payment_method ),
-			'countries'      => $payment_method->get_countries(),
-		];
-
-		$gateway_for_payment_method    = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );
-		$config['gatewayId']           = $gateway_for_payment_method->id;
-		$config['testingInstructions'] = WC_Payments_Utils::esc_interpolated_html(
-			/* translators: link to Stripe testing page */
-			$payment_method->get_testing_instructions( $account_country ),
-			[
-				'a'      => '<a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
-				'strong' => '<strong>',
-				'number' => '<button type="button" class="js-woopayments-copy-test-number" aria-label="' . esc_attr( __( 'Click to copy the test number to clipboard', 'woocommerce-payments' ) ) . '" title="' . esc_attr( __( 'Copy to clipboard', 'woocommerce-payments' ) ) . '"><i></i><span>',
-			]
-		);
-
-		$should_enable_network_saved_cards = Payment_Method::CARD === $payment_method_id && WC_Payments::is_network_saved_cards_enabled();
-		$config['forceNetworkSavedCards']  = $should_enable_network_saved_cards || $gateway_for_payment_method->should_use_stripe_platform_on_checkout_page();
-
-		return $config;
-	}
-
-	/**
-	 * Checks if the save option for a payment method should be displayed or not.
-	 *
-	 * @param UPE_Payment_Method $payment_method UPE Payment Method instance.
-	 * @return bool - True if the payment method is reusable and the saved cards feature is enabled for the gateway and there is no subscription item in the cart, false otherwise.
-	 */
-	private function should_upe_payment_method_show_save_option( $payment_method ) {
-		if ( $payment_method->get_id() === Payment_Method::CARD && is_user_logged_in() && WC_Payments_Features::is_woopay_enabled() ) {
-			return false;
-		}
-
-		if ( $payment_method->is_reusable() ) {
-			return $this->gateway->is_saved_cards_enabled() && ! $this->gateway->is_subscription_item_in_cart();
-		}
-
-		return false;
-	}
-
-	/**
 	 * Renders the UPE input fields needed to get the user's payment information on the checkout page.
 	 *
 	 * We also add the JavaScript which drives the UI.
@@ -477,7 +418,7 @@ class WC_Payments_Checkout {
 					?>
 				<p class="testmode-info">
 					<?php
-						// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 							echo WC_Payments_Utils::esc_interpolated_html(
 							/* translators: link to Stripe testing page */
 								$this->gateway->get_payment_method()->get_testing_instructions( $this->account->get_account_country() ),
@@ -541,6 +482,66 @@ class WC_Payments_Checkout {
 		if ( null !== $payment_method_id ) {
 			$this->gateway = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );
 		}
+	}
+
+	/**
+	 * Gets the config for a payment method.
+	 *
+	 * @param string $payment_method_id The payment method ID.
+	 * @param string $account_country The account country.
+	 * @return array
+	 */
+	private function get_config_for_payment_method( $payment_method_id, $account_country ) {
+		$payment_method = $this->gateway->wc_payments_get_payment_method_by_id( $payment_method_id );
+
+		if ( ! $payment_method ) {
+			return [];
+		}
+
+		$config = [
+			'isReusable'     => $payment_method->is_reusable(),
+			'isBnpl'         => $payment_method->is_bnpl(),
+			'title'          => $payment_method->get_title( $account_country ),
+			'icon'           => $payment_method->get_icon( $account_country ),
+			'darkIcon'       => $payment_method->get_dark_icon( $account_country ),
+			'showSaveOption' => $this->should_upe_payment_method_show_save_option( $payment_method ),
+			'countries'      => $payment_method->get_countries(),
+		];
+
+		$gateway_for_payment_method    = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );
+		$config['gatewayId']           = $gateway_for_payment_method->id;
+		$config['testingInstructions'] = WC_Payments_Utils::esc_interpolated_html(
+			/* translators: link to Stripe testing page */
+			$payment_method->get_testing_instructions( $account_country ),
+			[
+				'a'      => '<a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
+				'strong' => '<strong>',
+				'number' => '<button type="button" class="js-woopayments-copy-test-number" aria-label="' . esc_attr( __( 'Click to copy the test number to clipboard', 'woocommerce-payments' ) ) . '" title="' . esc_attr( __( 'Copy to clipboard', 'woocommerce-payments' ) ) . '"><i></i><span>',
+			]
+		);
+
+		$should_enable_network_saved_cards = Payment_Method::CARD === $payment_method_id && WC_Payments::is_network_saved_cards_enabled();
+		$config['forceNetworkSavedCards']  = $should_enable_network_saved_cards || $gateway_for_payment_method->should_use_stripe_platform_on_checkout_page();
+
+		return $config;
+	}
+
+	/**
+	 * Checks if the save option for a payment method should be displayed or not.
+	 *
+	 * @param UPE_Payment_Method $payment_method UPE Payment Method instance.
+	 * @return bool - True if the payment method is reusable and the saved cards feature is enabled for the gateway and there is no subscription item in the cart, false otherwise.
+	 */
+	private function should_upe_payment_method_show_save_option( $payment_method ) {
+		if ( $payment_method->get_id() === Payment_Method::CARD && is_user_logged_in() && WC_Payments_Features::is_woopay_enabled() ) {
+			return false;
+		}
+
+		if ( $payment_method->is_reusable() ) {
+			return $this->gateway->is_saved_cards_enabled() && ! $this->gateway->is_subscription_item_in_cart();
+		}
+
+		return false;
 	}
 
 	/**

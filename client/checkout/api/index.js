@@ -51,9 +51,9 @@ export default class WCPayAPI {
 	 * @return {Object} The Stripe Object.
 	 */
 	async getStripeForUPE( paymentMethodType ) {
-		this.options.forceNetworkSavedCards = getUPEConfig(
-			'paymentMethodsConfig'
-		)[ paymentMethodType ].forceNetworkSavedCards;
+		this.options.forceNetworkSavedCards =
+			getUPEConfig( 'paymentMethodsConfig' )[ paymentMethodType ]
+				?.forceNetworkSavedCards ?? false;
 		return this.getStripe();
 	}
 

@@ -95,6 +95,12 @@ Object.entries( enabledPaymentMethodsConfig )
 		} );
 	} );
 
+// Register Apple Pay and Google Pay if enabled
+if ( getUPEConfig( 'isAppleGooglePayInPaymentMethodsOptionsEnabled' ) ) {
+	registerPaymentMethod( paymentMethodGooglePay( api ) );
+	registerPaymentMethod( paymentMethodApplePay( api ) );
+}
+
 const addCheckoutTracking = () => {
 	const placeOrderButton = document.getElementsByClassName(
 		'wc-block-components-checkout-place-order-button'
@@ -113,16 +119,10 @@ const addCheckoutTracking = () => {
 	}
 };
 
-// Register Apple Pay and Google Pay as payment methods when the setting is enabled
-if ( getUPEConfig( 'isAppleGooglePayInPaymentMethodsOptionsEnabled' ) ) {
-	registerPaymentMethod( paymentMethodApplePay( api ) );
-	registerPaymentMethod( paymentMethodGooglePay( api ) );
-}
-
 // Register express payment methods only when in-payment-methods is disabled
 if ( getUPEConfig( 'isPaymentRequestEnabled' ) ) {
-	registerExpressPaymentMethod( expressCheckoutElementApplePay( api ) );
 	registerExpressPaymentMethod( expressCheckoutElementGooglePay( api ) );
+	registerExpressPaymentMethod( expressCheckoutElementApplePay( api ) );
 }
 
 // Call handleWooPayEmailInput if woopay is enabled and this is the checkout page.
