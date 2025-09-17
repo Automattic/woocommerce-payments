@@ -52,9 +52,8 @@ if [ -n "${E2E_JP_SITE_ID:-}" ] && [ -n "${E2E_JP_BLOG_TOKEN:-}" ] && [ -n "${E2
     echo "Configuring WCPay with Jetpack authentication..."
 
     # Set up Jetpack connection and refresh account data from server
-    wp woopayments qit_setup "$E2E_JP_SITE_ID" \
-        --blog_token="$E2E_JP_BLOG_TOKEN" \
-        --user_token="$E2E_JP_USER_TOKEN"
+    # Tokens are passed via environment variables for security (not command-line args)
+    wp woopayments qit_setup "$E2E_JP_SITE_ID"
 
     echo "✅ WooPayments connection configured - account data fetched from server"
 

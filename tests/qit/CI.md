@@ -26,10 +26,12 @@ The workflow tests against multiple combinations:
 The workflow requires these GitHub secrets to be configured:
 
 - `QIT_CI_USER`: QIT partner username
-- `QIT_CI_SECRET`: QIT application password
+- `QIT_CI_SECRET`: QIT application password  
 - `E2E_JP_SITE_ID`: Jetpack site ID for test account connection
 - `E2E_JP_BLOG_TOKEN`: Jetpack blog token
 - `E2E_JP_USER_TOKEN`: Jetpack user token
+
+**Security Note**: All sensitive tokens are automatically masked in GitHub Actions logs to prevent accidental exposure. The WP-CLI commands use environment variables instead of command-line arguments to avoid tokens appearing in process lists.
 
 ### Manual Workflow Dispatch
 
@@ -70,3 +72,23 @@ The workflow passes these environment variables to the test runner:
 - `QIT_OPTIONS`: Additional QIT CLI options (PHP version, WooCommerce version, UI mode)
 
 These are automatically handled by the `e2e-runner.sh` script.
+
+## Security Considerations
+
+### Token Protection
+
+1. **GitHub Actions Masking**: All secret tokens are automatically masked in CI logs using `::add-mask::`
+2. **Environment Variables**: Tokens are passed via environment variables, not command-line arguments
+3. **Process Isolation**: WP-CLI commands receive tokens through environment, preventing exposure in process lists
+4. **Repository Restrictions**: Secrets are only available to PRs from the main repository, not forks
+
+### Best Practices
+
+- Never log or echo environment variables containing tokens
+- Use GitHub secrets for all sensitive credentials
+- Tokens are scoped to test accounts only, not production systems
+- Regular rotation of test account credentials is recommended
+
+### Local Development Security
+
+When testing locally, store credentials in `tests/qit/config/local.env` (gitignored) rather than exposing them in shell history or environment.
