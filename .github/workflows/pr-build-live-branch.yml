@@ -130,38 +130,29 @@ jobs:
             exit 1
           }
 
-          # Create BODY variable using here-document for better handling
           echo "Creating comment body..."
-          BODY=$(cat << 'EOF'
-          ### Test the build
+          BODY="### Test the build 
           
           #### Option 1. Jetpack Beta
           
           - Install and activate [Jetpack Beta](https://jetpack.com/download-jetpack-beta/).
-          - Use this build by searching for PR number `PLACEHOLDER_PR_NUMBER` or branch name `PLACEHOLDER_PR_HEAD_REF` in your-test.site/wp-admin/admin.php?page=jetpack-beta&plugin=woocommerce-payments
+          - Use this build by searching for PR number \`${PR_NUMBER}\` or branch name \`${PR_HEAD_REF}\` in your-test.site/wp-admin/admin.php?page=jetpack-beta&plugin=woocommerce-payments          
           
           #### Option 2. Jurassic Ninja - available for logged-in A12s
+         
+          :rocket: [Launch a JN site with this branch](https://jurassic.ninja/create/?jetpack-beta&shortlived&nojetpack&woocommerce&woocommerce-payments-dev-tools&branches.woocommerce-payments=${PR_HEAD_REF}) :rocket:
           
-          🚀 [Launch a JN site with this branch](https://jurassic.ninja/create/?jetpack-beta&shortlived&nojetpack&woocommerce&woocommerce-payments-dev-tools&branches.woocommerce-payments=PLACEHOLDER_PR_HEAD_REF) 🚀
-          
-          ℹ️ Install this [Tampermonkey script](https://github.com/Automattic/woocommerce-payments/tree/develop/bin/wcpay-live-branches) to get more options.
+          :information_source: Install this [Tampermonkey script](https://github.com/Automattic/woocommerce-payments/tree/develop/bin/wcpay-live-branches) to get more options.
           
           ---
-          
-          Build info:
-          
-          - Latest commit: PLACEHOLDER_PR_HEAD_SHA
-          - Build time: PLACEHOLDER_BUILD_TIME
-          
-          _Note: the build is updated when a new commit is pushed to this PR._
-          EOF
-          )
 
-          # Substitute variables in BODY
-          BODY=$(echo "$BODY" | sed "s/PLACEHOLDER_PR_NUMBER/${PR_NUMBER}/g")
-          BODY=$(echo "$BODY" | sed "s/PLACEHOLDER_PR_HEAD_REF/${PR_HEAD_REF}/g")
-          BODY=$(echo "$BODY" | sed "s/PLACEHOLDER_PR_HEAD_SHA/${PR_HEAD_SHA}/g")
-          BODY=$(echo "$BODY" | sed "s/PLACEHOLDER_BUILD_TIME/$(date -u "+%Y-%m-%d %H:%M:%S UTC")/g")
+          Build info: 
+          
+          - Latest commit: ${PR_HEAD_SHA}
+          - Build time: $(date -u "+%Y-%m-%d %H:%M:%S UTC")
+
+          _Note: the build is updated when a new commit is pushed to this PR._"
+          # End declaring variable BODY
 
           echo "Comment body created successfully"
 
