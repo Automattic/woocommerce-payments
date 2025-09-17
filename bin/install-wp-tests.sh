@@ -43,8 +43,19 @@ wp() {
 	if [ ! -f $TMPDIR/wp-cli.phar ]; then
 		download https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar  "$TMPDIR/wp-cli.phar"
 	fi
+	
 	# Set environment variables right before WP-CLI execution to bypass SSL certificate issues
-	WP_CLI_DISABLE_SSL_VERIFY=1 WP_CLI_HTTP_VERIFY_SSL=false CURL_INSECURE=1 php "$TMPDIR/wp-cli.phar" $@
+	# Also set PHP environment variables to disable SSL verification
+	export WP_CLI_DISABLE_SSL_VERIFY=1
+	export WP_CLI_HTTP_VERIFY_SSL=false
+	export CURL_INSECURE=1
+	export CURL_CA_BUNDLE=""
+	export SSL_VERIFY=false
+	export CURLOPT_SSL_VERIFYPEER=0
+	export CURLOPT_SSL_VERIFYHOST=0
+	
+	# Set PHP ini settings to disable SSL verification
+	php -d "curl.cainfo=" -d "openssl.cafile=" "$TMPDIR/wp-cli.phar" $@
 
 	cd "$WORKING_DIR"
 }
@@ -250,6 +261,16 @@ install_woocommerce() {
 
 install_gutenberg() {
 	echo "Installing Gutenberg plugin..."
+	
+	# Debug: Show environment variables
+	echo "Debug: Environment variables for SSL bypass:"
+	echo "  WP_CLI_DISABLE_SSL_VERIFY: ${WP_CLI_DISABLE_SSL_VERIFY:-'not set'}"
+	echo "  WP_CLI_HTTP_VERIFY_SSL: ${WP_CLI_HTTP_VERIFY_SSL:-'not set'}"
+	echo "  CURL_INSECURE: ${CURL_INSECURE:-'not set'}"
+	
+	# Debug: Test WP-CLI connectivity first
+	echo "Debug: Testing WP-CLI connectivity..."
+	wp --info 2>&1 | head -5 || echo "WP-CLI info failed"
 	
 	INSTALLED_GUTENBERG_VERSION=$(wp plugin get gutenberg --field=version 2>/dev/null || echo "")
 	echo "Current Gutenberg version: ${INSTALLED_GUTENBERG_VERSION:-'not installed'}"
