@@ -154,7 +154,7 @@ jobs:
           if [ -n "$COMMENT_ID" ]; then
             echo "Found existing comment ID: $COMMENT_ID"
             echo "Updating existing comment..."
-            gh api repos/${GITHUB_REPOSITORY}/issues/comments/${COMMENT_ID} -X PATCH -f body="${BODY}"  2>/dev/nul || {
+            gh api repos/${GITHUB_REPOSITORY}/issues/comments/${COMMENT_ID} -X PATCH -f body="${BODY}"  2>/dev/null || {
               echo "ERROR: Failed to update existing comment"
               exit 1
             }
