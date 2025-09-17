@@ -1,5 +1,14 @@
 #!/usr/bin/env bash
 
+# Set environment variables to bypass SSL certificate issues in CI environments
+export WP_CLI_DISABLE_SSL_VERIFY=1
+export WP_CLI_HTTP_VERIFY_SSL=false
+export CURL_INSECURE=1
+export CURL_CA_BUNDLE=""
+export SSL_VERIFY=false
+export CURLOPT_SSL_VERIFYPEER=0
+export CURLOPT_SSL_VERIFYHOST=0
+
 if [ $# -lt 3 ] && [ -z $WCPAY_DIR ]; then
 	echo "usage: $0 <db-name> <db-user> <db-pass> [db-host] [wp-version] [wc-version] [skip-database-creation]"
 	exit 1
@@ -34,9 +43,7 @@ wp() {
 	if [ ! -f $TMPDIR/wp-cli.phar ]; then
 		download https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar  "$TMPDIR/wp-cli.phar"
 	fi
-	# Set environment variables to bypass SSL certificate issues in CI environments
-	export WP_CLI_DISABLE_SSL_VERIFY=1
-	export WP_CLI_HTTP_VERIFY_SSL=false
+	# Environment variables are set globally at script start to bypass SSL certificate issues
 	php "$TMPDIR/wp-cli.phar" $@
 
 	cd "$WORKING_DIR"
