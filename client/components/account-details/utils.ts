@@ -11,7 +11,7 @@ import { published, caution, error, info } from '@wordpress/icons';
 import { ChipType } from 'wcpay/components/chip';
 
 export const getChipTypeFromColor = (
-	color: 'green' | 'yellow' | 'red'
+	color: 'green' | 'yellow' | 'red' | 'blue' | 'gray'
 ): ChipType => {
 	switch ( color ) {
 		case 'green':
@@ -20,6 +20,10 @@ export const getChipTypeFromColor = (
 			return 'warning';
 		case 'red':
 			return 'alert';
+		case 'blue':
+			return 'primary';
+		case 'gray':
+			return 'light';
 		default:
 			return 'primary';
 	}

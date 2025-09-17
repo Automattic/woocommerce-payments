@@ -17,8 +17,21 @@ interface BannerProps {
 	banner: AccountDetailsData[ 'banner' ];
 }
 
-const getNoticeStatusFromColor = ( color: 'yellow' | 'red' ) => {
-	return color === 'yellow' ? 'warning' : 'error';
+const getNoticeStatusFromColor = (
+	color: 'green' | 'blue' | 'yellow' | 'red'
+) => {
+	switch ( color ) {
+		case 'green':
+			return 'success';
+		case 'blue':
+			return 'info';
+		case 'yellow':
+			return 'warning';
+		case 'red':
+			return 'error';
+		default:
+			return 'info';
+	}
 };
 
 const Banner: React.FC< BannerProps > = ( { banner } ) => {
