@@ -113,36 +113,75 @@ jobs:
           PR_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
           PR_HEAD_REF: ${{ github.head_ref }}
         run: |
-          BODY="### Test the build 
+          set -e  # Exit on any error
+
+          # Debug: Check environment variables
+          echo "=== Debug: Environment Variables ==="
+          echo "PR_NUMBER: ${PR_NUMBER}"
+          echo "PR_HEAD_REF: ${PR_HEAD_REF}"
+          echo "PR_HEAD_SHA: ${PR_HEAD_SHA}"
+          echo "GITHUB_REPOSITORY: ${GITHUB_REPOSITORY}"
+          echo "===================================="
+
+          # Test GitHub CLI access
+          echo "Testing GitHub CLI access..."
+          gh pr view ${PR_NUMBER} --json number || {
+            echo "ERROR: Failed to access PR via GitHub CLI"
+            exit 1
+          }
+
+          # Create BODY variable using here-document for better handling
+          echo "Creating comment body..."
+          BODY=$(cat << 'EOF'
+          ### Test the build
           
           #### Option 1. Jetpack Beta
           
           - Install and activate [Jetpack Beta](https://jetpack.com/download-jetpack-beta/).
-          - Use this build by searching for PR number \`${PR_NUMBER}\` or branch name \`${PR_HEAD_REF}\` in your-test.site/wp-admin/admin.php?page=jetpack-beta&plugin=woocommerce-payments          
+          - Use this build by searching for PR number `PLACEHOLDER_PR_NUMBER` or branch name `PLACEHOLDER_PR_HEAD_REF` in your-test.site/wp-admin/admin.php?page=jetpack-beta&plugin=woocommerce-payments
           
           #### Option 2. Jurassic Ninja - available for logged-in A12s
-         
-          :rocket: [Launch a JN site with this branch](https://jurassic.ninja/create/?jetpack-beta&shortlived&nojetpack&woocommerce&woocommerce-payments-dev-tools&branches.woocommerce-payments=${PR_HEAD_REF}) :rocket:
           
-          :information_source: Install this [Tampermonkey script](https://github.com/Automattic/woocommerce-payments/tree/develop/bin/wcpay-live-branches) to get more options.
+          🚀 [Launch a JN site with this branch](https://jurassic.ninja/create/?jetpack-beta&shortlived&nojetpack&woocommerce&woocommerce-payments-dev-tools&branches.woocommerce-payments=PLACEHOLDER_PR_HEAD_REF) 🚀
+          
+          ℹ️ Install this [Tampermonkey script](https://github.com/Automattic/woocommerce-payments/tree/develop/bin/wcpay-live-branches) to get more options.
           
           ---
-
-          Build info: 
           
-          - Latest commit: ${PR_HEAD_SHA}
-          - Build time: $(date -u "+%Y-%m-%d %H:%M:%S UTC")
+          Build info:
+          
+          - Latest commit: PLACEHOLDER_PR_HEAD_SHA
+          - Build time: PLACEHOLDER_BUILD_TIME
+          
+          _Note: the build is updated when a new commit is pushed to this PR._
+          EOF
+          )
 
-          _Note: the build is updated when a new commit is pushed to this PR._"
-          # End declaring variable BODY
+          # Substitute variables in BODY
+          BODY=$(echo "$BODY" | sed "s/PLACEHOLDER_PR_NUMBER/${PR_NUMBER}/g")
+          BODY=$(echo "$BODY" | sed "s/PLACEHOLDER_PR_HEAD_REF/${PR_HEAD_REF}/g")
+          BODY=$(echo "$BODY" | sed "s/PLACEHOLDER_PR_HEAD_SHA/${PR_HEAD_SHA}/g")
+          BODY=$(echo "$BODY" | sed "s/PLACEHOLDER_BUILD_TIME/$(date -u "+%Y-%m-%d %H:%M:%S UTC")/g")
 
-          # Find existing build comment by searching for unique identifier
-          COMMENT_ID=$(gh pr view ${PR_NUMBER} --json comments --jq '.comments[] | select(.body | contains("### Test the build")) | .url' | head -1 | grep -o '[0-9]*$')
+          echo "Comment body created successfully"
+
+          # Find existing build comment with better error handling
+          echo "Searching for existing comment..."
+          COMMENT_ID=$(gh pr view ${PR_NUMBER} --json comments --jq '.comments[]? | select(.body | contains("### Test the build")) | .url' 2>/dev/null | head -1 | grep -o '[0-9]*$' || echo "")
 
           if [ -n "$COMMENT_ID" ]; then
-            # Update existing comment
-            gh api repos/${GITHUB_REPOSITORY}/issues/comments/${COMMENT_ID} -X PATCH -f body="${BODY}"
+            echo "Found existing comment ID: $COMMENT_ID"
+            echo "Updating existing comment..."
+            gh api repos/${GITHUB_REPOSITORY}/issues/comments/${COMMENT_ID} -X PATCH -f body="${BODY}" || {
+              echo "ERROR: Failed to update existing comment"
+              exit 1
+            }
+            echo "Comment updated successfully"
           else
-            # Create new comment if none found
-            gh api repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments -f body="${BODY}"
+            echo "No existing comment found, creating new one..."
+            gh api repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments -f body="${BODY}" || {
+              echo "ERROR: Failed to create new comment"
+              exit 1
+            }
+            echo "New comment created successfully"
           fi
