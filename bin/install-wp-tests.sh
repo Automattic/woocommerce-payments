@@ -44,18 +44,28 @@ wp() {
 		download https://raw.githubusercontent.com/wp-cli/builds/gh-pages/phar/wp-cli.phar  "$TMPDIR/wp-cli.phar"
 	fi
 	
-	# Set environment variables right before WP-CLI execution to bypass SSL certificate issues
-	# Also set PHP environment variables to disable SSL verification
-	export WP_CLI_DISABLE_SSL_VERIFY=1
-	export WP_CLI_HTTP_VERIFY_SSL=false
-	export CURL_INSECURE=1
-	export CURL_CA_BUNDLE=""
-	export SSL_VERIFY=false
-	export CURLOPT_SSL_VERIFYPEER=0
-	export CURLOPT_SSL_VERIFYHOST=0
-	
-	# Set PHP ini settings to disable SSL verification
-	php -d "curl.cainfo=" -d "openssl.cafile=" "$TMPDIR/wp-cli.phar" $@
+	# Create a temporary PHP script that sets SSL bypass and runs WP-CLI
+	cat > "$TMPDIR/wp-cli-ssl-bypass.php" << 'EOF'
+<?php
+// Disable SSL verification at PHP level
+ini_set('curl.cainfo', '');
+ini_set('openssl.cafile', '');
+putenv('CURL_INSECURE=1');
+putenv('CURL_CA_BUNDLE=');
+putenv('SSL_VERIFY=false');
+putenv('CURLOPT_SSL_VERIFYPEER=0');
+putenv('CURLOPT_SSL_VERIFYHOST=0');
+
+// Set WP-CLI specific environment variables
+putenv('WP_CLI_DISABLE_SSL_VERIFY=1');
+putenv('WP_CLI_HTTP_VERIFY_SSL=false');
+
+// Include and run WP-CLI
+include $argv[1];
+EOF
+
+	# Run WP-CLI through our SSL bypass script
+	php "$TMPDIR/wp-cli-ssl-bypass.php" "$TMPDIR/wp-cli.phar" $@
 
 	cd "$WORKING_DIR"
 }
