@@ -144,5 +144,5 @@ jobs:
             gh api repos/${GITHUB_REPOSITORY}/issues/comments/${COMMENT_ID} -X PATCH -f body="${BODY}"
           else
             # Create new comment if none found
-            gh pr comment ${PR_NUMBER} --body "${BODY}"
+            gh api repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments -f body="${BODY}"
           fi
