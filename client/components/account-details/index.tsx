@@ -57,7 +57,7 @@ const PayoutStatusItem: React.FC< StatusItemProps > = ( {
 			align={ align }
 			justify="left"
 			gap={ 3 }
-			className="wcpay-account-details-payout-status-item" // @todo
+			className="woopayments-account-details__payout-status-item"
 		>
 			<FlexItem className="item-label">{ label }</FlexItem>
 			<FlexBlock className="item-value">{ children }</FlexBlock>
@@ -113,7 +113,7 @@ const PayoutStatus: React.FC< {
 					buttonSize={ 24 }
 					maxWidth={ '300px' }
 					content={
-						<div className="payout-popover-content">
+						<div>
 							{ payoutStatus.popover.text }
 							{ payoutStatus.popover.cta_text &&
 								payoutStatus.popover.cta_link && (
@@ -142,7 +142,7 @@ const AccountDetailsCard: React.FC< {
 } > = ( { title, children } ) => {
 	return (
 		<Card size="medium">
-			<CardHeader className="woocommerce-account-status__header">
+			<CardHeader className="woopayments-account-details__header">
 				<Flex
 					direction="row"
 					align="center"
@@ -221,7 +221,7 @@ const AccountDetailsContent: React.FC< {
 						accountDetails.banner.background_color
 					) }
 					icon={ iconMap[ accountDetails.banner.icon ?? 'info' ] }
-					className="account-details-banner"
+					className="woopayments-account-details__banner"
 					isDismissible={ false }
 				>
 					<div>

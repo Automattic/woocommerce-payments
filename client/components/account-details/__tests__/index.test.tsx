@@ -109,9 +109,11 @@ describe( 'AccountDetails', () => {
 
 		render( <AccountDetails accountDetails={ accountDetails } /> );
 
-		expect(
-			screen.getByText( 'Your account has been rejected.' )
-		).toBeInTheDocument();
+		const banner = document.querySelector(
+			'.woopayments-account-details__banner'
+		);
+		expect( banner ).toBeInTheDocument();
+		expect( banner ).toHaveTextContent( 'Your account has been rejected.' );
 		// Should not render CTA when cta_text and cta_link are not provided
 		expect( screen.queryByRole( 'link' ) ).not.toBeInTheDocument();
 	} );
