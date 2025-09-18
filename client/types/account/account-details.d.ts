@@ -13,7 +13,7 @@ export type StatusBackgroundColor =
  */
 export type BannerBackgroundColor = 'yellow' | 'red' | 'green' | 'blue';
 
-export type IconName = 'published' | 'caution' | 'error';
+export type IconName = 'published' | 'caution' | 'error' | 'info' | 'check';
 export interface AccountDetailsData {
 	account_status: {
 		text: string;
