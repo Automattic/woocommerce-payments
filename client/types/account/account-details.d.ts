@@ -13,7 +13,7 @@ export type StatusBackgroundColor =
  */
 export type BannerBackgroundColor = 'yellow' | 'red' | 'green' | 'blue';
 
-export type IconName = 'published' | 'caution' | 'error' | 'info';
+export type IconName = 'published' | 'caution' | 'error';
 export interface AccountDetailsData {
 	account_status: {
 		text: string;
@@ -22,6 +22,9 @@ export interface AccountDetailsData {
 	payout_status: {
 		text: string;
 		background_color: StatusBackgroundColor;
+		/**
+		 * Current design only use `published` `caution` `error`, but it can support any icon in https://wordpress.github.io/gutenberg/?path=/docs/icons-icon--docs
+		 */
 		icon?: IconName;
 		popover?: {
 			text: string;
@@ -35,7 +38,7 @@ export interface AccountDetailsData {
 		cta_text?: string;
 		cta_link?: string;
 		/**
-		 * Current design only use `caution` but add all front-end assisted options.
+		 * Current design only use `caution` but it can support any icon in https://wordpress.github.io/gutenberg/?path=/docs/icons-icon--docs.
 		 */
 		icon?: IconName;
 	} | null;

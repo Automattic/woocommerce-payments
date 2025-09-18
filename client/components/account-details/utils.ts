@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import { published, caution, error, info } from '@wordpress/icons';
+import * as icons from '@wordpress/icons';
 
 /**
  * Internal dependencies
@@ -34,12 +34,5 @@ export const getChipTypeFromColor = (
 };
 
 export const getIconByName = ( iconName?: IconName ) => {
-	const iconMap = {
-		published: published,
-		caution: caution,
-		error: error,
-		info: info,
-	};
-
-	return iconMap[ iconName ?? 'info' ];
+	return icons[ iconName ?? 'info' ];
 };
