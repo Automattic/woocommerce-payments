@@ -88,8 +88,10 @@ else
     QIT_CMD="$QIT_BINARY"
 fi
 
-# Pass basic Jetpack environment variables
+# Build environment arguments for local development
 env_args=()
+
+# Add Jetpack environment variables if available
 if [[ -n "${E2E_JP_SITE_ID:-}" ]]; then
     env_args+=( --env "E2E_JP_SITE_ID=${E2E_JP_SITE_ID}" )
 fi
@@ -100,32 +102,11 @@ if [[ -n "${E2E_JP_USER_TOKEN:-}" ]]; then
     env_args+=( --env "E2E_JP_USER_TOKEN=${E2E_JP_USER_TOKEN}" )
 fi
 
-# Parse additional QIT options from CI environment
-qit_options=()
-if [[ -n "${QIT_OPTIONS:-}" ]]; then
-    # Split QIT_OPTIONS into array (simple space-separated parsing)
-    read -ra qit_options <<< "$QIT_OPTIONS"
-    echo "Using additional QIT options: ${qit_options[*]}"
-fi
+# Run QIT E2E tests (qit.yml automatically loaded from current directory)
+echo "Running QIT E2E tests for local development..."
 
-# Run our QIT E2E tests (qit.yml automatically loaded from current directory)
-echo "Running QIT E2E tests with Jetpack functionality..."
-if [ ${#env_args[@]} -eq 0 ] && [ ${#qit_options[@]} -eq 0 ]; then
-    "$QIT_CMD" run:e2e woocommerce-payments e2e \
-        --source "$WCP_ROOT/woocommerce-payments.zip"
-elif [ ${#env_args[@]} -eq 0 ]; then
-    "$QIT_CMD" run:e2e woocommerce-payments e2e \
-        --source "$WCP_ROOT/woocommerce-payments.zip" \
-        "${qit_options[@]}"
-elif [ ${#qit_options[@]} -eq 0 ]; then
-    "$QIT_CMD" run:e2e woocommerce-payments e2e \
-        --source "$WCP_ROOT/woocommerce-payments.zip" \
-        "${env_args[@]}"
-else
-    "$QIT_CMD" run:e2e woocommerce-payments e2e \
-        --source "$WCP_ROOT/woocommerce-payments.zip" \
-        "${env_args[@]}" \
-        "${qit_options[@]}"
-fi
+"$QIT_CMD" run:e2e woocommerce-payments ./e2e \
+    --source "$WCP_ROOT/woocommerce-payments.zip" \
+    "${env_args[@]}"
 
 echo "QIT E2E foundation tests completed!"
