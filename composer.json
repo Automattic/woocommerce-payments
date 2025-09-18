@@ -68,7 +68,8 @@
         "installer-disable": true,
         "production-dependencies-guard": [
             "check-lock-file",
-            "check-abandoned"
+            "check-abandoned",
+            "white-list:woocommerce/subscriptions-core"
         ],
         "composer-exit-on-patch-failure": true,
         "patches": {
