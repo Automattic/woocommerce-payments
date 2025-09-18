@@ -111,18 +111,18 @@ fi
 # Run our QIT E2E tests (qit.yml automatically loaded from current directory)
 echo "Running QIT E2E tests with Jetpack functionality..."
 if [ ${#env_args[@]} -eq 0 ] && [ ${#qit_options[@]} -eq 0 ]; then
-    "$QIT_CMD" run:e2e woocommerce-payments ./e2e \
+    "$QIT_CMD" run:e2e woocommerce-payments \
         --source "$WCP_ROOT/woocommerce-payments.zip"
 elif [ ${#env_args[@]} -eq 0 ]; then
-    "$QIT_CMD" run:e2e woocommerce-payments ./e2e \
+    "$QIT_CMD" run:e2e woocommerce-payments \
         --source "$WCP_ROOT/woocommerce-payments.zip" \
         "${qit_options[@]}"
 elif [ ${#qit_options[@]} -eq 0 ]; then
-    "$QIT_CMD" run:e2e woocommerce-payments ./e2e \
+    "$QIT_CMD" run:e2e woocommerce-payments \
         --source "$WCP_ROOT/woocommerce-payments.zip" \
         "${env_args[@]}"
 else
-    "$QIT_CMD" run:e2e woocommerce-payments ./e2e \
+    "$QIT_CMD" run:e2e woocommerce-payments \
         --source "$WCP_ROOT/woocommerce-payments.zip" \
         "${env_args[@]}" \
         "${qit_options[@]}"
