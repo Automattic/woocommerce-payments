@@ -112,7 +112,7 @@ if [[ -n "${QIT_OPTIONS:-}" ]]; then
 fi
 
 # Run our QIT E2E tests (qit.yml automatically loaded from current directory)
-echo "Running QIT E2E foundation tests..."
+echo "Running QIT E2E tests with Jetpack functionality..."
 if [ ${#env_args[@]} -eq 0 ] && [ ${#qit_options[@]} -eq 0 ]; then
     "$QIT_CMD" run:e2e woocommerce-payments ./e2e \
         --source "$WCP_ROOT/woocommerce-payments.zip"
