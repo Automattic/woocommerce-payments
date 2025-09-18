@@ -9,9 +9,13 @@ import { published, caution, error, info } from '@wordpress/icons';
  * Internal dependencies
  */
 import { ChipType } from 'wcpay/components/chip';
+import {
+	StatusBackgroundColor,
+	IconName,
+} from 'wcpay/types/account/account-details';
 
 export const getChipTypeFromColor = (
-	color: 'green' | 'yellow' | 'red' | 'blue' | 'gray'
+	color: StatusBackgroundColor
 ): ChipType => {
 	switch ( color ) {
 		case 'green':
@@ -29,9 +33,7 @@ export const getChipTypeFromColor = (
 	}
 };
 
-export const getIconByName = (
-	iconName?: 'published' | 'caution' | 'error'
-) => {
+export const getIconByName = ( iconName?: IconName ) => {
 	const iconMap = {
 		published: published,
 		caution: caution,

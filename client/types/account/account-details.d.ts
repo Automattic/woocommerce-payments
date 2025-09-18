@@ -1,12 +1,28 @@
+/**
+ * Current design only uses `green`, `yellow`, `red` but add all front-end assisted options.
+ */
+export type StatusBackgroundColor =
+	| 'green'
+	| 'yellow'
+	| 'red'
+	| 'blue'
+	| 'gray';
+
+/**
+ * Current design only uses `yellow`, `red` but add all front-end assisted options.
+ */
+export type BannerBackgroundColor = 'yellow' | 'red' | 'green' | 'blue';
+
+export type IconName = 'published' | 'caution' | 'error' | 'info';
 export interface AccountDetailsData {
 	account_status: {
 		text: string;
-		background_color: 'green' | 'yellow' | 'red';
+		background_color: StatusBackgroundColor;
 	};
 	payout_status: {
 		text: string;
-		background_color: 'green' | 'yellow' | 'red';
-		icon?: 'published' | 'caution' | 'error';
+		background_color: StatusBackgroundColor;
+		icon?: IconName;
 		popover?: {
 			text: string;
 			cta_text: string;
@@ -15,10 +31,13 @@ export interface AccountDetailsData {
 	};
 	banner?: {
 		text: string;
-		background_color: 'yellow' | 'red';
+		background_color: BannerBackgroundColor;
 		cta_text?: string;
 		cta_link?: string;
-		icon?: 'caution';
+		/**
+		 * Current design only use `caution` but add all front-end assisted options.
+		 */
+		icon?: IconName;
 	} | null;
 }
 

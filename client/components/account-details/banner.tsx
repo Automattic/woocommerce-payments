@@ -10,16 +10,17 @@ import { ExternalLink } from '@wordpress/components';
  * Internal dependencies
  */
 import InlineNotice from 'wcpay/components/inline-notice';
-import { AccountDetailsData } from 'wcpay/types/account/account-details';
+import {
+	AccountDetailsData,
+	BannerBackgroundColor,
+} from 'wcpay/types/account/account-details';
 import { getIconByName } from './utils';
 
 interface BannerProps {
 	banner: AccountDetailsData[ 'banner' ];
 }
 
-const getNoticeStatusFromColor = (
-	color: 'green' | 'blue' | 'yellow' | 'red'
-) => {
+const getNoticeStatusFromColor = ( color: BannerBackgroundColor ) => {
 	switch ( color ) {
 		case 'green':
 			return 'success';
