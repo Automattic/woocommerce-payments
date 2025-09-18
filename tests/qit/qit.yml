@@ -9,8 +9,6 @@ woo: "stable"
 wp: "stable"
 php_version: "8.3"
 
-# Environment variables are passed via --env in e2e-runner.sh for better security
-
 # Dependencies and additional plugins for compatibility testing
 plugin:
   - "woocommerce"
