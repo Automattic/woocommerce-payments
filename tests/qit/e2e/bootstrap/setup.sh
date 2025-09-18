@@ -32,6 +32,14 @@ wp option update woocommerce_checkout_page_id $(wp post list --post_type=page --
 wp option update woocommerce_currency "USD"
 wp option update woocommerce_enable_guest_checkout "yes"
 wp option update woocommerce_force_ssl_checkout "no"
+wp option set woocommerce_coming_soon "no" --quiet 2>/dev/null || true
+wp option set woocommerce_store_pages_only "no" --quiet 2>/dev/null || true
+
+# Ensure Storefront theme is active for consistent storefront markup
+if ! wp theme is-installed storefront > /dev/null 2>&1; then
+    wp theme install storefront --force
+fi
+wp theme activate storefront
 
 # Create a test customer
 wp user create testcustomer test@example.com \

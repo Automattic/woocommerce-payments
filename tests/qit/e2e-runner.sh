@@ -19,6 +19,65 @@ QIT_BINARY=${QIT_BINARY:-./vendor/bin/qit}
 
 echo "Running E2E tests..."
 
+# Support running focused specs or Playwright filters via simple CLI flags
+SPEC_PATH="./e2e"
+SPEC_REQUEST=""
+PW_GREP=""
+extra_qit_args=()
+
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --spec)
+            SPEC_REQUEST="$2"
+            shift 2
+            ;;
+        --grep)
+            PW_GREP="$2"
+            shift 2
+            ;;
+        --pw-options)
+            extra_qit_args+=( "--pw_options=$2" )
+            shift 2
+            ;;
+        --pw-options=*)
+            extra_qit_args+=( "$1" )
+            shift
+            ;;
+        --)
+            shift
+            extra_qit_args+=( "$@" )
+            break
+            ;;
+        *)
+            echo "Unknown option: $1"
+            echo "Usage: $0 [--spec <path>] [--grep <pattern>] [--pw-options <options>] [-- <additional QIT args>]"
+            exit 1
+            ;;
+    esac
+done
+
+if [[ -n "$SPEC_REQUEST" ]]; then
+    # Allow pointing to a single spec file by automatically targeting the default
+    # directory and passing a matching Playwright grep instead of a file path.
+    spec_candidate="${SPEC_REQUEST#./}"
+    spec_file=""
+
+    if [[ -f "$QIT_ROOT/$spec_candidate" ]]; then
+        spec_file="$spec_candidate"
+    elif [[ -f "$QIT_ROOT/e2e/$spec_candidate" ]]; then
+        spec_file="e2e/$spec_candidate"
+    fi
+
+    if [[ -n "$spec_file" ]]; then
+        SPEC_PATH="./e2e"
+        filename="${spec_file##*/}"
+        basename="${filename%.spec.js}"
+        extra_qit_args+=( "--pw_options=--grep @${basename}" )
+    else
+        SPEC_PATH="$SPEC_REQUEST"
+    fi
+fi
+
 # Change to project root directory to build plugin
 cd "$WCP_ROOT"
 
@@ -88,6 +147,10 @@ else
     QIT_CMD="$QIT_BINARY"
 fi
 
+if [[ -n "$PW_GREP" ]]; then
+    extra_qit_args+=( "--pw_options=--grep ${PW_GREP}" )
+fi
+
 # Build environment arguments for local development
 env_args=()
 
@@ -105,8 +168,15 @@ fi
 # Run QIT E2E tests (qit.yml automatically loaded from current directory)
 echo "Running QIT E2E tests for local development..."
 
-"$QIT_CMD" run:e2e woocommerce-payments ./e2e \
-    --source "$WCP_ROOT/woocommerce-payments.zip" \
-    "${env_args[@]}"
+if [[ ${#extra_qit_args[@]} -gt 0 ]]; then
+    "$QIT_CMD" run:e2e woocommerce-payments "$SPEC_PATH" \
+        --source "$WCP_ROOT/woocommerce-payments.zip" \
+        "${env_args[@]}" \
+        "${extra_qit_args[@]}"
+else
+    "$QIT_CMD" run:e2e woocommerce-payments "$SPEC_PATH" \
+        --source "$WCP_ROOT/woocommerce-payments.zip" \
+        "${env_args[@]}"
+fi
 
 echo "QIT E2E foundation tests completed!"
