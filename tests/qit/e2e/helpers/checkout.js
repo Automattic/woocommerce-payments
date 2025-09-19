@@ -170,6 +170,17 @@ export const setupCheckout = async (
 			.count() ) > 0;
 
 	if ( isBlocks ) {
+		// If the billing address form is collapsed (summary card), click 'Edit billing address' to expand it
+		const editBillingButton = page.getByRole( 'button', {
+			name: 'Edit billing address',
+		} );
+		if ( ( await editBillingButton.count() ) > 0 ) {
+			await editBillingButton.click();
+			// Wait for the form to appear
+			await page
+				.getByRole( 'group', { name: 'Billing address' } )
+				.waitFor();
+		}
 		// Use label-based selectors for Blocks checkout
 		const contactInfoForm = page.getByRole( 'group', {
 			name: 'Contact information',
