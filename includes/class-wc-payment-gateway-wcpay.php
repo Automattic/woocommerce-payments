@@ -52,6 +52,7 @@ use WCPay\Payment_Information;
 use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\WooPay\WooPay_Order_Status_Sync;
 use WCPay\WooPay\WooPay_Utilities;
+use WCPay\WooPay\WooPay_Session;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Tracker;
 use WCPay\Internal\Service\Level3Service;
@@ -719,9 +720,33 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			remove_all_filters( 'woocommerce_checkout_registration_required' );
 
 			add_filter( 'woocommerce_coupon_get_usage_limit', '__return_null' );
+		} elseif (
+			WooPay_Session::is_request_from_woopay() &&
+			$this->is_request_to_store_api_checkout() &&
+			WooPay_Session::has_valid_request_signature()
+		) {
+			// We disable the user usage limit check during WooPay actual checkout because
+			// the coupon validation looks for existing orders with the same user email and coupon code,
+			// and the draft order generated during the preflight check meets those criteria.
+			// There is no problem in disabling it because the user usage limit is already checked
+			// during the preflight check.
+			add_filter( 'woocommerce_coupon_get_usage_limit_per_user', '__return_zero' );
 		}
 
 		return $response;
+	}
+
+	/**
+	 * Checks if the request is to the Store API checkout.
+	 *
+	 * @return bool True if the request is to the Store API checkout, false otherwise.
+	 */
+	protected function is_request_to_store_api_checkout() {
+		if ( ! \WC_Payments_Utils::is_store_api_request() ) {
+			return false;
+		}
+
+		return false !== strpos( $GLOBALS['wp']->query_vars['rest_route'], '/checkout' );
 	}
 
 	/**
