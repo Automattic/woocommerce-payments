@@ -47,7 +47,7 @@ const Banner: React.FC< BannerProps > = ( { banner } ) => {
 			className="woopayments-account-details__banner"
 			isDismissible={ false }
 		>
-			<div>
+			<>
 				{ banner.text }
 				{ banner.cta_text && banner.cta_link && (
 					<>
@@ -57,7 +57,7 @@ const Banner: React.FC< BannerProps > = ( { banner } ) => {
 						</ExternalLink>
 					</>
 				) }
-			</div>
+			</>
 		</InlineNotice>
 	);
 };

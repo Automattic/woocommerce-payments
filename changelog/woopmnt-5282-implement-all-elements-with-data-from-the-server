@@ -1,4 +1,5 @@
-Significance: minor
-Type: add
+Significance: patch
+Type: update
+Comment: New Account Details (behind the feature flag): implement complete component
 
-New Account Details: implement complete component
+
