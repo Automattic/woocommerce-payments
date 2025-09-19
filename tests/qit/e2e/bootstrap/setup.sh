@@ -41,6 +41,69 @@ if ! wp theme is-installed storefront > /dev/null 2>&1; then
 fi
 wp theme activate storefront
 
+echo "Forcing classic (shortcode) Cart/Checkout…"
+
+# Get WooCommerce version
+WC_VER=$(wp plugin get woocommerce --field=version)
+echo "WooCommerce version: $WC_VER"
+
+NEED_WORKAROUND=$(wp eval "echo version_compare('$WC_VER','8.3','>=');")
+
+# Helper: get numeric option value safely
+get_option_id () {
+  wp option get "$1" --format=json | tr -d '"' | awk '/^[0-9]+$/{print; exit}'
+}
+
+# Helper: ensure a page exists, contains shortcode, and is assigned in WC options
+ensure_page_with_shortcode () {
+  local TITLE="$1"
+  local SHORTCODE="$2"
+  local OPTION_KEY="$3"
+
+  local PAGE_ID
+  PAGE_ID="$(get_option_id "$OPTION_KEY")"
+
+  if [[ -z "$PAGE_ID" ]]; then
+    echo "No valid $TITLE page set. Creating…"
+    PAGE_ID=$(wp post create --post_type=page --post_status=publish \
+      --post_title="$TITLE" --post_content="$SHORTCODE" \
+      --porcelain)
+    wp option update "$OPTION_KEY" "$PAGE_ID"
+  else
+    echo "$TITLE page is $PAGE_ID. Updating content & publishing…"
+    wp post update "$PAGE_ID" --post_content="$SHORTCODE" --post_status=publish
+  fi
+
+  echo "$TITLE page ID: $PAGE_ID"
+}
+
+if [[ "$NEED_WORKAROUND" = "1" ]]; then
+  echo "WC >= 8.3 — creating both Blocks and shortcode checkout pages…"
+
+  # Create shortcode-based cart page
+  ensure_page_with_shortcode "Cart" "[woocommerce_cart]" "woocommerce_cart_page_id"
+
+  # Create shortcode-based checkout page with specific slug
+  echo "Creating shortcode checkout page at /checkout-wsc..."
+  SHORTCODE_CHECKOUT_ID=$(wp post create --post_type=page --post_status=publish \
+    --post_title="Checkout WSC" --post_name="checkout-wsc" \
+    --post_content="[woocommerce_checkout]" --porcelain)
+  echo "Shortcode checkout page created: ID=$SHORTCODE_CHECKOUT_ID at /checkout-wsc"
+
+  # Set the shortcode checkout as the official WooCommerce checkout page
+  wp option update "woocommerce_checkout_page_id" "$SHORTCODE_CHECKOUT_ID"
+  echo "WooCommerce checkout page option set to shortcode page"
+
+  # Safety: flush rewrites & caches
+  wp rewrite flush --hard
+  wp transient delete --all
+
+  echo "Shortcode checkout available at /checkout-wsc (official WC checkout)"
+  echo "Blocks checkout remains available at /checkout (default page)"
+else
+  echo "WC < 8.3 — classic checkout already default."
+fi
+
 # Create a test customer
 wp user create testcustomer test@example.com \
     --role=customer \

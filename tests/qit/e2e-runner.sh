@@ -19,7 +19,8 @@ QIT_BINARY=${QIT_BINARY:-./vendor/bin/qit}
 
 echo "Running E2E tests..."
 
-# Support running focused specs or Playwright filters via simple CLI flags
+# Support running focused specs, UI mode, or Playwright filters via simple CLI flags
+# --ui flag passes through to QIT's native UI mode for interactive test debugging
 SPEC_PATH="./e2e"
 SPEC_REQUEST=""
 PW_GREP=""
@@ -34,6 +35,10 @@ while [[ $# -gt 0 ]]; do
         --grep)
             PW_GREP="$2"
             shift 2
+            ;;
+        --ui)
+            extra_qit_args+=( "--ui" )
+            shift
             ;;
         --pw-options)
             extra_qit_args+=( "--pw_options=$2" )
@@ -50,7 +55,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         *)
             echo "Unknown option: $1"
-            echo "Usage: $0 [--spec <path>] [--grep <pattern>] [--pw-options <options>] [-- <additional QIT args>]"
+            echo "Usage: $0 [--spec <path>] [--grep <pattern>] [--ui] [--pw-options <options>] [-- <additional QIT args>]"
             exit 1
             ;;
     esac
