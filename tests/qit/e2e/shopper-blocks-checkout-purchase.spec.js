@@ -16,7 +16,7 @@ import {
 	confirm3dsAuthentication,
 } from './helpers/checkout.js';
 
-test.describe.skip(
+test.describe(
 	'QIT WooCommerce Blocks Checkout - Successful purchase',
 	{ tag: [ '@critical', '@blocks' ] },
 	() => {
@@ -59,8 +59,12 @@ test.describe.skip(
 					);
 					await expect( cartForm ).toBeVisible( { timeout: 10000 } );
 
-					// Use existing helper that handles both Blocks and classic checkout
-					await setupCheckout( customerPage, defaultBillingAddress );
+					// Use helper, but explicitly pass the Blocks checkout URL
+					await setupCheckout(
+						customerPage,
+						defaultBillingAddress,
+						'/checkout'
+					);
 				} );
 
 				test( 'using a basic card', { tag: '@critical' }, async () => {

@@ -106,10 +106,15 @@ export const waitForCartOrCheckoutForm = async ( page ) => {
  *
  * @param {Page} page - Playwright page object
  * @param {Object} billingAddress - Billing address details
+ * @param {string} checkoutUrl - URL to use for the checkout page (Blocks or shortcode)
  */
-export const setupCheckout = async ( page, billingAddress ) => {
-	// Navigate to shortcode checkout page (setup script creates this at /checkout-wsc)
-	await page.goto( CHECKOUT_URLS.shortcode );
+export const setupCheckout = async (
+	page,
+	billingAddress,
+	checkoutUrl = CHECKOUT_URLS.shortcode
+) => {
+	// Navigate to the provided checkout page (Blocks or shortcode)
+	await page.goto( checkoutUrl );
 	await page.waitForLoadState( 'domcontentloaded' );
 
 	// Give the page time to fully load and render
@@ -158,39 +163,118 @@ export const setupCheckout = async ( page, billingAddress ) => {
 		}
 	}
 
-	// Fill billing information - using classic shortcode format (underscores)
-	// Since we're on /checkout-wsc, this should be pure shortcode checkout
-	await page
-		.locator( '#billing_first_name' )
-		.fill( billingAddress.firstName );
-	await page.locator( '#billing_last_name' ).fill( billingAddress.lastName );
+	// Detect Blocks checkout
+	const isBlocks =
+		( await page
+			.locator( '.wp-block-woocommerce-checkout, .wc-block-checkout' )
+			.count() ) > 0;
 
-	// Company field is optional - only fill if present
-	const companyField = page.locator( '#billing_company' );
-	if (
-		( await companyField.count() ) > 0 &&
-		( await companyField.isVisible() )
-	) {
-		await companyField.fill( billingAddress.company );
-	}
+	if ( isBlocks ) {
+		// Use label-based selectors for Blocks checkout
+		const contactInfoForm = page.getByRole( 'group', {
+			name: 'Contact information',
+		} );
+		await contactInfoForm
+			.getByLabel( 'Email address' )
+			.fill( billingAddress.email );
 
-	await page
-		.locator( '#billing_country' )
-		.selectOption( billingAddress.country );
-	await page.locator( '#billing_address_1' ).fill( billingAddress.address1 );
-	await page.locator( '#billing_address_2' ).fill( billingAddress.address2 );
-	await page.locator( '#billing_city' ).fill( billingAddress.city );
-	await page.locator( '#billing_postcode' ).fill( billingAddress.postcode );
-	await page.locator( '#billing_phone' ).fill( billingAddress.phone );
-	await page.locator( '#billing_email' ).fill( billingAddress.email );
+		const billingAddressForm = page.getByRole( 'group', {
+			name: 'Billing address',
+		} );
+		await billingAddressForm
+			.getByLabel( 'First name', { exact: true } )
+			.fill( billingAddress.firstName );
+		await billingAddressForm
+			.getByLabel( 'Last name', { exact: true } )
+			.fill( billingAddress.lastName );
+		// Country is a dropdown in Blocks checkout, use selectOption
+		const countrySelect = await page
+			.getByLabel( 'Country/Region', { exact: false } )
+			.or( page.getByLabel( 'Country', { exact: true } ) );
+		try {
+			await countrySelect.selectOption( billingAddress.country );
+		} catch ( e ) {
+			// Fallback: try 'Country' label if 'Country/Region' is not found
+			try {
+				const fallbackCountry = await page.getByLabel( 'Country', {
+					exact: true,
+				} );
+				await fallbackCountry.selectOption( billingAddress.country );
+			} catch ( e2 ) {
+				throw new Error(
+					`Could not select country in Blocks checkout: ${ e2.message }`
+				);
+			}
+		}
 
-	// Handle state field (can be dropdown or text input) - classic shortcode format
-	const stateDropdown = page.locator( '#billing_state' );
-	if (
-		( await stateDropdown.count() ) > 0 &&
-		( await stateDropdown.isVisible() )
-	) {
-		await stateDropdown.selectOption( billingAddress.state );
+		// Address line 1
+		await billingAddressForm
+			.getByLabel( 'Address', { exact: true } )
+			.fill( billingAddress.address1 );
+
+		// Address line 2 (apartment, suite, etc.)
+		const addSecondLineButton = page.getByRole( 'button', {
+			name: '+ Add apartment, suite, etc.',
+		} );
+		if ( ( await addSecondLineButton.count() ) > 0 ) {
+			await addSecondLineButton.click();
+		}
+		await billingAddressForm
+			.getByLabel( 'Apartment, suite, etc. (optional)' )
+			.fill( billingAddress.address2 );
+		await billingAddressForm
+			.getByLabel( 'City', { exact: true } )
+			.fill( billingAddress.city );
+
+		// State: try selectOption, fallback to fill (text input)
+		const stateInput = billingAddressForm.getByLabel( 'State', {
+			exact: true,
+		} );
+		if ( billingAddress.state ) {
+			try {
+				await stateInput.selectOption( billingAddress.state );
+			} catch ( error ) {
+				await stateInput.fill( billingAddress.state );
+			}
+		}
+
+		await billingAddressForm
+			.getByLabel( 'ZIP Code', { exact: true } )
+			.fill( billingAddress.postcode );
+		await billingAddressForm
+			.getByLabel( 'Phone (optional)', { exact: true } )
+			.fill( billingAddress.phone );
+	} else {
+		// Fallback to classic shortcode selectors
+		await page
+			.locator( '#billing_first_name' )
+			.fill( billingAddress.firstName );
+		await page
+			.locator( '#billing_last_name' )
+			.fill( billingAddress.lastName );
+		await page
+			.locator( '#billing_country' )
+			.selectOption( billingAddress.country );
+		await page
+			.locator( '#billing_address_1' )
+			.fill( billingAddress.address1 );
+		await page
+			.locator( '#billing_address_2' )
+			.fill( billingAddress.address2 );
+		await page.locator( '#billing_city' ).fill( billingAddress.city );
+		await page
+			.locator( '#billing_postcode' )
+			.fill( billingAddress.postcode );
+		await page.locator( '#billing_phone' ).fill( billingAddress.phone );
+		await page.locator( '#billing_email' ).fill( billingAddress.email );
+		// Handle state field (can be dropdown or text input) - classic shortcode format
+		const stateDropdown = page.locator( '#billing_state' );
+		if (
+			( await stateDropdown.count() ) > 0 &&
+			( await stateDropdown.isVisible() )
+		) {
+			await stateDropdown.selectOption( billingAddress.state );
+		}
 	}
 };
 
@@ -355,8 +439,20 @@ export const fillCardDetails = async ( page, card ) => {
  * @param {Page} page - Playwright page object
  */
 export const placeOrder = async ( page ) => {
-	// Click the place order button
-	const placeOrderButton = page.locator( '#place_order' );
+	// Detect Blocks checkout
+	const isBlocks =
+		( await page
+			.locator( '.wp-block-woocommerce-checkout, .wc-block-checkout' )
+			.count() ) > 0;
+
+	let placeOrderButton;
+	if ( isBlocks ) {
+		// Use role+name for Blocks checkout
+		placeOrderButton = page.getByRole( 'button', { name: 'Place Order' } );
+	} else {
+		// Use ID for shortcode checkout
+		placeOrderButton = page.locator( '#place_order' );
+	}
 	await expect( placeOrderButton ).toBeVisible();
 	await placeOrderButton.click();
 

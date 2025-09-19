@@ -25,7 +25,6 @@ SPEC_PATH="./e2e"
 SPEC_REQUEST=""
 PW_GREP=""
 extra_qit_args=()
-
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --spec)
@@ -152,6 +151,8 @@ else
     QIT_CMD="$QIT_BINARY"
 fi
 
+
+# Add Playwright grep if specified
 if [[ -n "$PW_GREP" ]]; then
     extra_qit_args+=( "--pw_options=--grep ${PW_GREP}" )
 fi
