@@ -35,15 +35,7 @@ const AccountDetailsCard: React.FC< {
 	return (
 		<Card size="medium">
 			<CardHeader className="woopayments-account-details__header">
-				<Flex
-					direction="row"
-					align="center"
-					justify="left"
-					gap={ 3 }
-					expanded
-				>
-					{ title }
-				</Flex>
+				{ title }
 			</CardHeader>
 			<CardBody>{ children }</CardBody>
 		</Card>
@@ -72,16 +64,17 @@ const AccountDetailsContent: React.FC< {
 		: null;
 
 	const cardTitle = (
-		<HeaderTitle
-			accountStatus={ accountDetails.account_status }
-			accountLink={ processedAccountLink }
-		/>
+		<>
+			<HeaderTitle
+				accountStatus={ accountDetails.account_status }
+				accountLink={ processedAccountLink }
+			/>
+			<Banner banner={ accountDetails.banner } />
+		</>
 	);
 
 	return (
 		<AccountDetailsCard title={ cardTitle }>
-			<Banner banner={ accountDetails.banner } />
-
 			<PayoutStatusWrapper
 				payoutStatus={ accountDetails.payout_status }
 			/>

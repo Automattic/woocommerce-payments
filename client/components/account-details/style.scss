@@ -1,6 +1,40 @@
 .woopayments-account-details__header {
+	flex-wrap: wrap;
+
 	.edit-details .components-button.is-link {
 		text-decoration: none;
+	}
+
+	.edit-details,
+	.account-details,
+	.account-status {
+		flex-basis: auto;
+		min-width: max-content;
+	}
+
+	// on a smaller viewports controls section should move in front of the
+	// status chip
+	@media screen and ( max-width: $break-mobile ) {
+		.account-details {
+			order: 1;
+			flex-grow: 1;
+			margin-bottom: 8px;
+		}
+		.edit-details {
+			order: 2;
+			margin-bottom: 8px;
+		}
+		.account-status {
+			order: 3;
+		}
+
+		.woopayments-account-details__banner {
+			order: 5;
+			margin-bottom: 16px;
+			a.components-external-link {
+				white-space: wrap;
+			}
+		}
 	}
 }
 
@@ -24,7 +58,7 @@
 		white-space: nowrap;
 	}
 
-	@include breakpoint( '<480px' ) {
+	@media screen and ( max-width: $break-mobile ) {
 		.item-label {
 			min-width: 80px;
 		}
@@ -33,8 +67,4 @@
 	.item-value {
 		color: $gray-700;
 	}
-}
-
-.woopayments-account-details__banner {
-	margin-bottom: 16px;
 }
