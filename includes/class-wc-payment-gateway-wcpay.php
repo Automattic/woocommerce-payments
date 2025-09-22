@@ -576,7 +576,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// Only add certain actions/filter if this is the main gateway (i.e. not split UPE).
 		if ( self::GATEWAY_ID === $this->id ) {
 			add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
-			add_action( 'woocommerce_order_action_capture_charge', [ $this, 'capture_charge' ] );
+			add_action( 'woocommerce_order_action_capture_charge', [ $this, 'handle_capture_charge_action' ] );
 			add_action( 'woocommerce_order_action_cancel_authorization', [ $this, 'cancel_authorization' ] );
 			add_action( 'woocommerce_order_status_cancelled', [ $this->order_service, 'cancel_authorizations_on_order_status_change' ] );
 			add_action( 'woocommerce_order_status_completed', [ $this->order_service, 'capture_authorization_on_order_status_change' ], 10, 3 );
@@ -3280,6 +3280,25 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		];
 
 		return array_merge( $new_actions, $actions );
+	}
+
+	/**
+	 * Handles the manual order action for capturing a charge.
+	 *
+	 * @param WC_Order|int $order Order object or ID.
+	 *
+	 * @return void
+	 */
+	public function handle_capture_charge_action( $order ): void {
+		if ( is_numeric( $order ) ) {
+			$order = wc_get_order( $order );
+		}
+
+		if ( ! $order instanceof WC_Order ) {
+			return;
+		}
+
+		$this->capture_charge( $order );
 	}
 
 	/**
