@@ -111,7 +111,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		// Add admin init hooks.
 		// Our onboarding handling comes first.
 		add_action( 'admin_init', [ $this, 'maybe_handle_onboarding' ] );
-		add_action( 'admin_init', [ $this, 'maybe_activate_woopay' ] );
+		add_action( 'admin_init', [ $this, 'handle_maybe_activate_woopay_action' ] );
 		// Second, handle redirections based on context.
 		add_action( 'admin_init', [ $this, 'maybe_redirect_after_plugin_activation' ], 11 ); // Run this after the WC setup wizard and onboarding redirection logic.
 		add_action( 'admin_init', [ $this, 'maybe_redirect_by_get_param' ], 12 ); // Run this after the redirect to onboarding logic.
@@ -2121,6 +2121,13 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		set_transient( self::ONBOARDING_STATE_TRANSIENT, $onboarding_data['state'] ?? '', DAY_IN_SECONDS );
 
 		return (string) ( $onboarding_data['url'] ?? '' );
+	}
+
+	/**
+	 * Bridges the admin action hook to the WooPay activation logic without returning a value.
+	 */
+	public function handle_maybe_activate_woopay_action(): void {
+		$this->maybe_activate_woopay();
 	}
 
 	/**

@@ -105,7 +105,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_from_onboarding_wizard_page' ] ), 'maybe_redirect_from_onboarding_page action does not exist.' );
 		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_from_connect_page' ] ), 'maybe_redirect_from_connect_page action does not exist.' );
 		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_redirect_from_overview_page' ] ), 'maybe_redirect_from_overview_page action does not exist.' );
-		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'maybe_activate_woopay' ] ), 'maybe_activate_woopay action does not exist.' );
+		$this->assertNotFalse( has_action( 'admin_init', [ $this->wcpay_account, 'handle_maybe_activate_woopay_action' ] ), 'handle_maybe_activate_woopay_action action does not exist.' );
 		$this->assertNotFalse( has_action( 'woocommerce_payments_account_refreshed', [ $this->wcpay_account, 'handle_instant_deposits_inbox_note' ] ), 'handle_instant_deposits_inbox_note action does not exist.' );
 		$this->assertNotFalse( has_action( 'woocommerce_payments_account_refreshed', [ $this->wcpay_account, 'handle_loan_approved_inbox_note' ] ), 'handle_loan_approved_inbox_note action does not exist.' );
 		$this->assertNotFalse( has_action( 'wcpay_instant_deposit_reminder', [ $this->wcpay_account, 'handle_instant_deposits_inbox_reminder' ] ), 'handle_instant_deposits_inbox_reminder action does not exist.' );
