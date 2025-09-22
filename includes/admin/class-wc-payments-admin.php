@@ -1164,21 +1164,21 @@ class WC_Payments_Admin {
 	 * @see WC_Payments_Account::maybe_redirect_from_overview_page() for overview page handling.
 	 * @see WC_Payments_Account::maybe_handle_onboarding() for connect links handling.
 	 *
-	 * @return bool True if a redirection happened, false otherwise.
+	 * @return void
 	 */
-	public function maybe_redirect_from_payments_admin_child_pages(): bool {
+	public function maybe_redirect_from_payments_admin_child_pages(): void {
 		if ( wp_doing_ajax() || ! current_user_can( 'manage_woocommerce' ) ) {
-			return false;
+			return;
 		}
 
 		$url_params = wp_unslash( $_GET ); // phpcs:ignore WordPress.Security.NonceVerification
 		if ( empty( $url_params['page'] ) || 'wc-admin' !== $url_params['page'] ) {
-			return false;
+			return;
 		}
 
 		$current_path = ! empty( $url_params['path'] ) ? $url_params['path'] : '';
 		if ( empty( $current_path ) ) {
-			return false;
+			return;
 		}
 
 		// If the current path doesn't match any of the paths we're interested in, do not redirect.
@@ -1187,7 +1187,7 @@ class WC_Payments_Admin {
 			$page_paths[] = preg_quote( $payments_child_page['path'], '/' );
 		}
 		if ( ! preg_match( '/^(' . implode( '|', $page_paths ) . ')/', $current_path ) ) {
-			return false;
+			return;
 		}
 
 		// If everything is NOT in good working condition, redirect to Payments Connect page.
@@ -1199,10 +1199,8 @@ class WC_Payments_Admin {
 					'WooPayments'
 				)
 			);
-			return true;
+			return;
 		}
-
-		return false;
 	}
 
 	/**
