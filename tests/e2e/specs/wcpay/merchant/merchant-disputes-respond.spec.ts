@@ -168,6 +168,11 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 							name: 'Challenge dispute',
 						} )
 						.click();
+
+					// Wait for new evidence screen to finish initial loading
+					await expect(
+						merchantPage.getByTestId( 'new-evidence-loading' )
+					).toBeHidden( { timeout: 20000 } );
 				}
 			);
 
@@ -279,9 +284,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 
 					// Click the submit button
 					await merchantPage
-						.getByRole( 'button', {
-							name: 'Submit',
-						} )
+						.getByTestId( 'submit-evidence-button' )
 						.click();
 				}
 			);
@@ -371,6 +374,11 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 							name: 'Challenge dispute',
 						} )
 						.click();
+
+					// Wait for new evidence screen to finish initial loading
+					await expect(
+						merchantPage.getByTestId( 'new-evidence-loading' )
+					).toBeHidden( { timeout: 20000 } );
 				}
 			);
 
@@ -455,9 +463,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 
 					// Click the submit button
 					await merchantPage
-						.getByRole( 'button', {
-							name: 'Submit',
-						} )
+						.getByTestId( 'submit-evidence-button' )
 						.click();
 				}
 			);
@@ -523,8 +529,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			);
 		}
 	);
-	// Skipped due to flakiness, see https://linear.app/a8c/issue/WOOPMNT-5307/flaky-disputes-e2e-tests-with-extended-version-coverage
-	test.skip( 'Save a dispute challenge without submitting evidence', async ( {
+	test( 'Save a dispute challenge without submitting evidence', async ( {
 		browser,
 	} ) => {
 		const { merchantPage } = await getMerchant( browser );
@@ -544,6 +549,11 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 						name: 'Challenge dispute',
 					} )
 					.click();
+
+				// Wait for the challenge screen initial loading spinner to disappear
+				await expect(
+					merchantPage.getByTestId( 'new-evidence-loading' )
+				).toBeHidden( { timeout: 20000 } );
 			}
 		);
 
@@ -606,9 +616,8 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 					r.request().method() === 'POST'
 			);
 
-			await merchantPage
-				.getByRole( 'button', { name: 'Save for later' } )
-				.click();
+			// Use stable test id for the save button
+			await merchantPage.getByTestId( 'save-for-later-button' ).click();
 
 			const response = await waitResponse;
 
@@ -651,6 +660,11 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 				await merchantPage
 					.getByTestId( 'challenge-dispute-button' )
 					.click();
+
+				// Wait for the challenge screen initial loading spinner to disappear
+				await expect(
+					merchantPage.getByTestId( 'new-evidence-loading' )
+				).toBeHidden( { timeout: 20000 } );
 			}
 		);
 
