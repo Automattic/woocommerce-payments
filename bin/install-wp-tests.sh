@@ -55,7 +55,7 @@ get_db_connection_flags() {
 			EXTRA_FLAGS=" --host=$DB_HOSTNAME --protocol=tcp"
 		fi
 	fi
-	echo "--user=$DB_USER --password=$DB_PASS $EXTRA_FLAGS";
+	echo "--user=$DB_USER --password=$DB_PASS $EXTRA_FLAGS --skip-ssl";
 }
 
 wait_db() {
