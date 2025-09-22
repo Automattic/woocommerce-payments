@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "82ae2b86cd431fd736751ad4c4460abb",
+    "content-hash": "3a7757b6225a05bcb677272632bbcc13",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -2649,16 +2649,16 @@
         },
         {
             "name": "php-stubs/woocommerce-stubs",
-            "version": "v6.8.0",
+            "version": "v10.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/php-stubs/woocommerce-stubs.git",
-                "reference": "aa70197bc38607e0f25a4de0b39422ab379defd3"
+                "reference": "113bf98892b5fc2b709a36970ce618fd375edb9a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/php-stubs/woocommerce-stubs/zipball/aa70197bc38607e0f25a4de0b39422ab379defd3",
-                "reference": "aa70197bc38607e0f25a4de0b39422ab379defd3",
+                "url": "https://api.github.com/repos/php-stubs/woocommerce-stubs/zipball/113bf98892b5fc2b709a36970ce618fd375edb9a",
+                "reference": "113bf98892b5fc2b709a36970ce618fd375edb9a",
                 "shasum": ""
             },
             "require": {
@@ -2687,9 +2687,9 @@
             ],
             "support": {
                 "issues": "https://github.com/php-stubs/woocommerce-stubs/issues",
-                "source": "https://github.com/php-stubs/woocommerce-stubs/tree/v6.8.0"
+                "source": "https://github.com/php-stubs/woocommerce-stubs/tree/v10.2.0"
             },
-            "time": "2022-08-09T05:06:14+00:00"
+            "time": "2025-09-17T14:44:22+00:00"
         },
         {
             "name": "php-stubs/wordpress-stubs",
@@ -7019,9 +7019,9 @@
         "php": ">=7.3",
         "ext-json": "*"
     },
-    "platform-dev": [],
+    "platform-dev": {},
     "platform-overrides": {
         "php": "7.3"
     },
-    "plugin-api-version": "2.3.0"
+    "plugin-api-version": "2.6.0"
 }
