@@ -19,11 +19,13 @@ QIT_BINARY=${QIT_BINARY:-./vendor/bin/qit}
 
 echo "Running E2E tests..."
 
-# Support running focused specs, UI mode, or Playwright filters via simple CLI flags
+
+# Support running focused specs, UI mode, Playwright filters, or tags via simple CLI flags
 # --ui flag passes through to QIT's native UI mode for interactive test debugging
 SPEC_PATH="./e2e"
 SPEC_REQUEST=""
 PW_GREP=""
+TAG=""
 extra_qit_args=()
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -33,6 +35,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --grep)
             PW_GREP="$2"
+            shift 2
+            ;;
+        --tag)
+            TAG="$2"
             shift 2
             ;;
         --ui)
@@ -54,7 +60,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         *)
             echo "Unknown option: $1"
-            echo "Usage: $0 [--spec <path>] [--grep <pattern>] [--ui] [--pw-options <options>] [-- <additional QIT args>]"
+            echo "Usage: $0 [--spec <path>] [--grep <pattern>] [--tag <tag>] [--ui] [--pw-options <options>] [-- <additional QIT args>]"
             exit 1
             ;;
     esac
@@ -152,9 +158,15 @@ else
 fi
 
 
+
 # Add Playwright grep if specified
 if [[ -n "$PW_GREP" ]]; then
     extra_qit_args+=( "--pw_options=--grep ${PW_GREP}" )
+fi
+
+# Add Playwright grep for tag if specified
+if [[ -n "$TAG" ]]; then
+    extra_qit_args+=( "--pw_options=--grep @$TAG" )
 fi
 
 # Build environment arguments for local development

@@ -74,91 +74,80 @@ const setCardTestingProtection = async ( page ) => {
 		} );
 };
 
-test.describe(
-	'Successful purchase',
-	{ tag: '@shopper-checkout-purchase' },
-	() => {
-		// Test both with and without card testing protection
-		for ( const ctpEnabled of [ false, true ] ) {
-			test.describe( `Card testing protection ${ ctpEnabled }`, () => {
-				let adminPage;
-				let customerPage;
+test.describe( 'Successful purchase @critical @shopper', () => {
+	// Test both with and without card testing protection
+	for ( const ctpEnabled of [ false, true ] ) {
+		test.describe( `Card testing protection ${ ctpEnabled }`, () => {
+			let adminPage;
+			let customerPage;
 
-				test.beforeAll( async ( { browser } ) => {
-					// Set up admin page for settings management
-					adminPage = await browser.newPage();
-					await setCardTestingProtection( adminPage, ctpEnabled );
+			test.beforeAll( async ( { browser } ) => {
+				// Set up admin page for settings management
+				adminPage = await browser.newPage();
+				await setCardTestingProtection( adminPage, ctpEnabled );
 
-					// Set up customer page for shopping
-					customerPage = await browser.newPage();
-					await loginAsCustomer( customerPage );
-				} );
+				// Set up customer page for shopping
+				customerPage = await browser.newPage();
+				await loginAsCustomer( customerPage );
+			} );
 
-				test.afterAll( async () => {
-					if ( ctpEnabled ) {
-						await setCardTestingProtection( adminPage, false );
-					}
-					await adminPage?.close();
-					await customerPage?.close();
-				} );
+			test.afterAll( async () => {
+				if ( ctpEnabled ) {
+					await setCardTestingProtection( adminPage, false );
+				}
+				await adminPage?.close();
+				await customerPage?.close();
+			} );
 
-				test.beforeEach( async () => {
+			test.beforeEach( async () => {
+				await addToCartFromShopPage( customerPage );
+
+				// Verify cart has items before proceeding to checkout
+				await customerPage.goto( '/cart' );
+				await customerPage.waitForLoadState( 'domcontentloaded' );
+
+				// Check if cart is empty and retry adding product if needed
+				const cartEmptyMessage = customerPage.locator( '.cart-empty' );
+
+				if ( ( await cartEmptyMessage.count() ) > 0 ) {
+					// Cart is empty, try adding product again
 					await addToCartFromShopPage( customerPage );
-
-					// Verify cart has items before proceeding to checkout
 					await customerPage.goto( '/cart' );
 					await customerPage.waitForLoadState( 'domcontentloaded' );
+				}
 
-					// Check if cart is empty and retry adding product if needed
-					const cartEmptyMessage = customerPage.locator(
-						'.cart-empty'
-					);
+				// Ensure we have the classic WooCommerce cart
+				const cartForm = customerPage.locator(
+					'.woocommerce-cart-form'
+				);
+				await expect( cartForm ).toBeVisible( { timeout: 10000 } );
 
-					if ( ( await cartEmptyMessage.count() ) > 0 ) {
-						// Cart is empty, try adding product again
-						await addToCartFromShopPage( customerPage );
-						await customerPage.goto( '/cart' );
-						await customerPage.waitForLoadState(
-							'domcontentloaded'
-						);
-					}
-
-					// Ensure we have the classic WooCommerce cart
-					const cartForm = customerPage.locator(
-						'.woocommerce-cart-form'
-					);
-					await expect( cartForm ).toBeVisible( { timeout: 10000 } );
-
-					await setupCheckout( customerPage, defaultBillingAddress );
-					await expectFraudPreventionToken(
-						customerPage,
-						ctpEnabled
-					);
-				} );
-
-				test( 'using a basic card', { tag: '@critical' }, async () => {
-					await fillCardDetails( customerPage, cards.basic );
-					await placeOrder( customerPage );
-
-					await expect(
-						customerPage.getByRole( 'heading', {
-							name: 'Order received',
-						} )
-					).toBeVisible( { timeout: 15000 } );
-				} );
-
-				test( 'using a 3DS card', { tag: '@critical' }, async () => {
-					await fillCardDetails( customerPage, cards[ '3ds' ] );
-					await placeOrder( customerPage );
-					await confirmCardAuthentication( customerPage );
-
-					await expect(
-						customerPage.getByRole( 'heading', {
-							name: 'Order received',
-						} )
-					).toBeVisible( { timeout: 15000 } );
-				} );
+				await setupCheckout( customerPage, defaultBillingAddress );
+				await expectFraudPreventionToken( customerPage, ctpEnabled );
 			} );
-		}
+
+			test( 'using a basic card', { tag: '@critical' }, async () => {
+				await fillCardDetails( customerPage, cards.basic );
+				await placeOrder( customerPage );
+
+				await expect(
+					customerPage.getByRole( 'heading', {
+						name: 'Order received',
+					} )
+				).toBeVisible( { timeout: 15000 } );
+			} );
+
+			test( 'using a 3DS card', { tag: '@critical' }, async () => {
+				await fillCardDetails( customerPage, cards[ '3ds' ] );
+				await placeOrder( customerPage );
+				await confirmCardAuthentication( customerPage );
+
+				await expect(
+					customerPage.getByRole( 'heading', {
+						name: 'Order received',
+					} )
+				).toBeVisible( { timeout: 15000 } );
+			} );
+		} );
 	}
-);
+} );

@@ -17,8 +17,7 @@ import {
 } from './helpers/checkout.js';
 
 test.describe(
-	'QIT WooCommerce Blocks Checkout - Successful purchase',
-	{ tag: [ '@critical', '@blocks' ] },
+	'QIT WooCommerce Blocks Checkout - Successful purchase @critical @blocks @shopper',
 	() => {
 		// Test both with and without card testing protection
 		for ( const ctpEnabled of [ false, true ] ) {
