@@ -29,7 +29,12 @@ const Chip: React.FC< React.PropsWithChildren< Props > > = ( {
 	tooltip,
 	icon,
 } ) => {
-	const classNames = clsx( 'chip', `chip-${ type }`, className );
+	const classNames = clsx(
+		'chip',
+		`chip-${ type }`,
+		icon && 'chip-has-icon',
+		className
+	);
 
 	const content = (
 		<>

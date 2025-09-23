@@ -11,6 +11,10 @@
 	line-height: 1.5;
 	white-space: nowrap;
 
+	&.chip-has-icon {
+		padding-inline-start: 4px;
+	}
+
 	&.chip-primary {
 		& svg {
 			fill: $wp-blue-70;
