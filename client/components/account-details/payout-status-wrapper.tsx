@@ -25,12 +25,12 @@ const PayoutStatus: React.FC< {
 		<Flex align="center" gap={ 0 } justify="flex-start">
 			<Chip
 				type={ chipType }
-				className={ `payout-status-chip payout-status-chip--${ payoutStatus.background_color }` }
 				message={ payoutStatus.text }
 				icon={ getIconByName( payoutStatus.icon ) }
 			/>
 			{ payoutStatus.popover && (
 				<ClickTooltip
+					className={ 'payout-click-tooltip' }
 					buttonIcon={ <HelpOutlineIcon /> }
 					buttonLabel={ __(
 						'More information about payout status',
@@ -46,6 +46,9 @@ const PayoutStatus: React.FC< {
 									<>
 										{ ' ' }
 										<ExternalLink
+											className={
+												'payout-tooltip-external-link'
+											}
 											href={
 												payoutStatus.popover.cta_link
 											}

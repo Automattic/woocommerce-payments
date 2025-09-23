@@ -67,4 +67,9 @@
 	.item-value {
 		color: $gray-700;
 	}
+
+	a.payout-tooltip-external-link {
+		// Disable underline for arrow icon in the end of external link.
+		text-decoration: none;
+	}
 }
