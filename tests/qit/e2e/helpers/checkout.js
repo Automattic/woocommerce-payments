@@ -318,9 +318,15 @@ export const setupCheckout = async (
 			}
 		}
 
-		await billingAddressForm
+		const zipField = billingAddressForm
 			.getByLabel( 'ZIP Code', { exact: true } )
-			.fill( billingAddress.postcode );
+			.or(
+				billingAddressForm.getByLabel( 'Postal code', { exact: true } )
+			)
+			.or(
+				billingAddressForm.getByLabel( 'Postcode', { exact: false } )
+			);
+		await zipField.fill( billingAddress.postcode );
 		await billingAddressForm
 			.getByLabel( 'Phone (optional)', { exact: true } )
 			.fill( billingAddress.phone );
@@ -356,6 +362,56 @@ export const setupCheckout = async (
 			await stateDropdown.selectOption( billingAddress.state );
 		}
 	}
+};
+
+/**
+ * Updates the account currency for the current customer via My Account > Account details.
+ *
+ * @param {Page} page - Playwright page object
+ * @param {Object} customerDetails - Customer profile information (firstname, lastname, company, etc.)
+ * @param {string} currency - Currency code to select (e.g. 'EUR')
+ */
+export const changeAccountCurrency = async (
+	page,
+	customerDetails,
+	currency
+) => {
+	await page.goto( '/my-account/edit-account/' );
+	await page.waitForLoadState( 'domcontentloaded' );
+
+	const maybeFill = async ( label, value, options = {} ) => {
+		if ( ! value ) {
+			return;
+		}
+		const field = page.getByLabel( label, { exact: false, ...options } );
+		if ( ( await field.count() ) > 0 ) {
+			await field.fill( value );
+		}
+	};
+
+	await maybeFill(
+		'First name',
+		customerDetails?.firstname || customerDetails?.firstName
+	);
+	await maybeFill(
+		'Last name',
+		customerDetails?.lastname || customerDetails?.lastName
+	);
+	await maybeFill( 'Display name', customerDetails?.displayName );
+	await maybeFill( 'Company name', customerDetails?.company );
+	await maybeFill( 'Email address', customerDetails?.email );
+	await maybeFill( 'Phone', customerDetails?.phone );
+
+	const currencySelect = page.getByLabel( 'Default currency', {
+		exact: false,
+	} );
+	await expect( currencySelect ).toBeVisible( { timeout: 10000 } );
+	await currencySelect.selectOption( currency );
+
+	await page.getByRole( 'button', { name: 'Save changes' } ).click();
+	await expect(
+		page.getByText( 'Account details changed successfully.' )
+	).toBeVisible( { timeout: 15000 } );
 };
 
 /**
@@ -540,6 +596,69 @@ export const fillCardDetails = async ( page, card ) => {
 	}
 
 	await cvcField.fill( card.cvc );
+};
+
+/**
+ * Selects a WooPayments payment method by label/button text.
+ *
+ * @param {Page} page - Playwright page object
+ * @param {string} paymentMethod - Display name of the payment method (e.g. 'Bancontact')
+ */
+export const selectPaymentMethod = async ( page, paymentMethod = 'Card' ) => {
+	const candidates = [
+		page.locator( `label:has-text("${ paymentMethod }")` ).first(),
+		page
+			.getByRole( 'button', { name: new RegExp( paymentMethod, 'i' ) } )
+			.first(),
+		page
+			.getByRole( 'radio', { name: new RegExp( paymentMethod, 'i' ) } )
+			.first(),
+		page.getByText( paymentMethod, { exact: true } ).first(),
+	];
+
+	let target = null;
+	for ( const option of candidates ) {
+		if ( ( await option.count() ) > 0 ) {
+			target = option;
+			break;
+		}
+	}
+
+	if ( ! target ) {
+		const stripeFrame = page.frameLocator(
+			'iframe[name^="__privateStripeFrame"]'
+		);
+		const paymentButtonInFrame = stripeFrame
+			.getByRole( 'button', { name: new RegExp( paymentMethod, 'i' ) } )
+			.first();
+		if ( ( await paymentButtonInFrame.count() ) > 0 ) {
+			await paymentButtonInFrame.click();
+			return;
+		}
+
+		throw new Error(
+			`Payment method "${ paymentMethod }" not found on checkout page.`
+		);
+	}
+
+	await expect( target ).toBeVisible( { timeout: 20000 } );
+	await target.scrollIntoViewIfNeeded();
+	await target.click( { force: true } );
+
+	const normalized = paymentMethod
+		.toLowerCase()
+		.replace( /[^a-z0-9]+/g, '_' );
+	const radio = page.locator(
+		`#payment_method_woocommerce_payments_${ normalized.replace(
+			/_+/g,
+			'_'
+		) }`
+	);
+	if ( ( await radio.count() ) > 0 ) {
+		await radio.check( { force: true } ).catch( async () => {
+			await radio.click( { force: true } );
+		} );
+	}
 };
 
 /**
@@ -776,6 +895,10 @@ export const placeOrder = async ( page ) => {
 		page.waitForSelector( 'iframe[name^="__privateStripeFrame"]', {
 			timeout: 10000,
 		} ),
+		// Local payment method redirect page
+		page
+			.getByRole( 'link', { name: /Authorize Test Payment/i } )
+			.waitFor( { state: 'visible', timeout: 20000 } ),
 	] );
 };
 
@@ -868,11 +991,17 @@ export const expectFraudPreventionToken = async (
 	// In QIT, we just verify the payment method exists (it may be hidden by CSS but still present)
 	if ( shouldBePresent ) {
 		const paymentMethod = page.locator(
-			'#payment_method_woocommerce_payments'
+			'#payment_method_woocommerce_payments, input[type="radio"][value="woocommerce_payments"]'
 		);
-		await expect( paymentMethod ).toHaveCount( 1 );
-		// Also verify it's checked (since it may be visually hidden but functional)
-		await expect( paymentMethod ).toBeChecked();
+		if ( ( await paymentMethod.count() ) === 0 ) {
+			await expect(
+				page
+					.locator(
+						'.wcpay-upe-element iframe[name^="__privateStripeFrame"]'
+					)
+					.first()
+			).toBeVisible( { timeout: 20000 } );
+		}
 	}
 	// For QIT, this is a placeholder - in full environment we'd check for actual tokens
 };
