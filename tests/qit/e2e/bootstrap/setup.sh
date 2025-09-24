@@ -11,19 +11,24 @@ echo "Setting up WooPayments for E2E testing..."
 # Ensure environment is marked as local so dev-only CLI commands are available
 wp config set WP_ENVIRONMENT_TYPE local --quiet 2>/dev/null || true
 
-# Create a test product for payment testing
-PRODUCT_ID=$(wp post create \
-    --post_title="Test Product for Payments" \
-    --post_content="A simple test product for QIT payment testing" \
-    --post_status=publish \
-    --post_type=product \
-    --porcelain)
+echo "Installing WordPress importer for sample data..."
+if ! wp plugin is-installed wordpress-importer >/dev/null 2>&1; then
+    wp plugin install wordpress-importer --activate
+else
+    wp plugin activate wordpress-importer
+fi
 
-# Set product meta data properly
-wp post meta update $PRODUCT_ID _price "10.00"
-wp post meta update $PRODUCT_ID _regular_price "10.00"
-wp post meta update $PRODUCT_ID _virtual "yes"
-wp post meta update $PRODUCT_ID _manage_stock "no"
+WC_SAMPLE_DATA_PATH=$(wp eval 'echo trailingslashit( WP_CONTENT_DIR ) . "plugins/woocommerce/sample-data/sample_products.xml";' 2>/dev/null)
+if [ -z "$WC_SAMPLE_DATA_PATH" ]; then
+    echo "Unable to resolve WooCommerce sample data path; skipping import."
+else
+    if [ -f "$WC_SAMPLE_DATA_PATH" ]; then
+        echo "Importing WooCommerce sample products from $WC_SAMPLE_DATA_PATH ..."
+        wp import "$WC_SAMPLE_DATA_PATH" --authors=skip
+    else
+        echo "Sample data file not found at $WC_SAMPLE_DATA_PATH; skipping import."
+    fi
+fi
 
 # Ensure WooCommerce checkout page exists and is properly configured
 wp option update woocommerce_checkout_page_id $(wp post list --post_type=page --post_name=checkout --field=ID --format=ids)

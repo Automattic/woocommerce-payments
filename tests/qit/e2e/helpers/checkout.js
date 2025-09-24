@@ -137,16 +137,21 @@ export const CHECKOUT_URLS = {
  * @param {Page} page - Playwright page object
  */
 export const addToCartFromShopPage = async ( page ) => {
-	// Navigate to shop page
 	await page.goto( '/shop' );
 	await page.waitForLoadState( 'domcontentloaded' );
 
-	// Add the first available product to cart (usually "Beanie")
-	const addToCartButton = page.locator( '.add_to_cart_button' ).first();
-	await addToCartButton.click();
+	const productTiles = page.locator( '.products .product' );
+	await expect( productTiles.first() ).toBeVisible( { timeout: 10000 } );
 
-	// Wait for the cart to update
-	await page.waitForTimeout( 2000 );
+	const addButton = productTiles
+		.locator(
+			'.add_to_cart_button, button[aria-label*="Add to cart" i], a[aria-label*="Add to cart" i]'
+		)
+		.first();
+	await expect( addButton ).toBeVisible( { timeout: 10000 } );
+	await addButton.click();
+	await page.waitForLoadState( 'networkidle' ).catch( () => {} );
+	await page.waitForTimeout( 500 );
 };
 
 /**
@@ -535,6 +540,209 @@ export const fillCardDetails = async ( page, card ) => {
 	}
 
 	await cvcField.fill( card.cvc );
+};
+
+/**
+ * Toggles the "save payment method" checkbox on checkout.
+ *
+ * @param {Page} page - Playwright page object
+ * @param {boolean} save - Whether the method should be saved
+ */
+export const setSavePaymentMethod = async ( page, save = true ) => {
+	const candidates = [
+		page.getByLabel(
+			'Save payment information to my account for future purchases.'
+		),
+		page.getByRole( 'checkbox', { name: /(save|store).*account/i } ),
+		page.locator( 'input[name="save_payment_method"]' ),
+		page.locator( '#save_payment_method' ),
+	];
+
+	let toggle = null;
+	for ( const candidate of candidates ) {
+		if ( ! candidate ) {
+			continue;
+		}
+		if ( ( await candidate.count() ) > 0 ) {
+			toggle = candidate.first();
+			break;
+		}
+	}
+
+	if ( ! toggle ) {
+		throw new Error(
+			'Save payment method toggle not found on checkout page.'
+		);
+	}
+
+	await expect( toggle ).toBeVisible( { timeout: 15000 } );
+
+	const shouldBeChecked = !! save;
+	let isChecked = false;
+	try {
+		isChecked = await toggle.isChecked();
+	} catch ( _error ) {
+		// Some themes wrap the input in a label; fall back to reading the associated input
+		const forAttribute = await toggle.getAttribute?.( 'for' );
+		if ( forAttribute ) {
+			const input = page.locator( `#${ forAttribute }` );
+			if ( ( await input.count() ) > 0 ) {
+				isChecked = await input.isChecked();
+				toggle = input;
+			}
+		}
+	}
+
+	if ( shouldBeChecked === isChecked ) {
+		return;
+	}
+
+	const toggleAction = async ( action ) => {
+		try {
+			await toggle[ action ]( { force: true } );
+		} catch ( error ) {
+			await toggle.click( { force: true } );
+		}
+	};
+
+	if ( shouldBeChecked ) {
+		await toggleAction( 'check' );
+	} else {
+		await toggleAction( 'uncheck' );
+	}
+};
+
+/**
+ * Selects a saved card option on the checkout page.
+ *
+ * @param {Page} page - Playwright page object
+ * @param {Object} card - Card configuration containing the card number
+ */
+export const selectSavedCardOnCheckout = async ( page, card ) => {
+	const lastFour = card?.number?.slice( -4 );
+	if ( ! lastFour ) {
+		throw new Error( 'Card number is required to select saved card.' );
+	}
+
+	const labelPattern = new RegExp( `ending in\\s*${ lastFour }`, 'i' );
+	const candidates = [
+		page.getByRole( 'radio', { name: labelPattern } ),
+		page.getByRole( 'button', { name: labelPattern } ),
+		page.locator( 'label' ).filter( { hasText: labelPattern } ),
+		page
+			.locator( '.wc-block-components-radio-control__label' )
+			.filter( { hasText: labelPattern } ),
+		page.locator( 'li, div, span' ).filter( { hasText: labelPattern } ),
+	];
+
+	let option = null;
+	for ( const candidate of candidates ) {
+		if ( ! candidate ) {
+			continue;
+		}
+		if ( ( await candidate.count() ) > 0 ) {
+			option = candidate.first();
+			break;
+		}
+	}
+
+	if ( ! option ) {
+		throw new Error(
+			`Saved card option containing "ending in ${ lastFour }" was not found.`
+		);
+	}
+
+	await expect( option ).toBeVisible( { timeout: 20000 } );
+
+	const forAttribute = await option.getAttribute?.( 'for' );
+	if ( forAttribute ) {
+		const radio = page.locator( `#${ forAttribute }` );
+		if ( ( await radio.count() ) > 0 ) {
+			await radio.check( { force: true } ).catch( async () => {
+				await radio.click( { force: true } );
+			} );
+			return;
+		}
+	}
+
+	const radioWithin = option.locator( 'input[type="radio"]' );
+	if ( ( await radioWithin.count() ) > 0 ) {
+		await radioWithin
+			.first()
+			.check( { force: true } )
+			.catch( async () => {
+				await radioWithin.first().click( { force: true } );
+			} );
+		return;
+	}
+
+	await option.click( { force: true } );
+};
+
+/**
+ * Deletes a saved card from the My Account payment methods page.
+ *
+ * @param {Page} page - Playwright page object
+ * @param {Object} card - Card configuration containing the card number
+ */
+export const deleteSavedCard = async ( page, card ) => {
+	const lastFour = card?.number?.slice( -4 );
+	if ( ! lastFour ) {
+		throw new Error( 'Card number is required to delete saved card.' );
+	}
+
+	const rowLocator = page
+		.locator( 'table tr, ul li, div' )
+		.filter( {
+			hasText: new RegExp( lastFour + '$|ending in\\s*' + lastFour, 'i' ),
+		} )
+		.first();
+
+	await expect( rowLocator ).toBeVisible( { timeout: 20000 } );
+
+	const deleteControl = rowLocator
+		.getByRole( 'link', { name: /delete/i } )
+		.or( rowLocator.getByRole( 'button', { name: /delete/i } ) )
+		.or( rowLocator.locator( 'a.delete, button.delete' ) );
+
+	await expect( deleteControl ).toBeVisible( { timeout: 15000 } );
+
+	await Promise.all( [
+		page.waitForLoadState( 'networkidle' ).catch( () => {} ),
+		deleteControl.first().click(),
+	] );
+};
+
+/**
+ * Removes all items from the cart for cleanup between tests.
+ *
+ * @param {Page} page - Playwright page object
+ */
+export const emptyCart = async ( page ) => {
+	await page.goto( '/cart' );
+	await page.waitForLoadState( 'domcontentloaded' );
+
+	const removalStrategies = [
+		page.locator( '.cart_item .remove' ),
+		page.locator( 'button[data-automation-id="remove-item"]' ),
+		page.getByRole( 'button', { name: /^Remove/i } ),
+	];
+
+	for ( const remover of removalStrategies ) {
+		while ( ( await remover.count() ) > 0 ) {
+			await remover.first().click();
+			await page.waitForLoadState( 'networkidle' ).catch( () => {} );
+			await page.waitForTimeout( 250 );
+		}
+	}
+
+	const emptyIndicators = page.locator(
+		'.cart-empty, .wc-block-cart__empty-cart, .wc-block-components-notice-banner__content'
+	);
+	await emptyIndicators
+		.first()
+		.waitFor( { timeout: 10000 } )
+		.catch( () => {} );
 };
 
 /**
