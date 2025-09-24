@@ -23,7 +23,7 @@ const waitForBanner = async ( page, errorText ) => {
 };
 
 test.describe(
-	'QIT Shopper > Checkout > Failures with various cards @critical @shopper-checkout-failures',
+	'QIT Shopper > Checkout > Failures with various cards @critical @shopper',
 	() => {
 		let customerPage;
 
