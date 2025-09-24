@@ -737,7 +737,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return false;
 		}
 
-		return str_contains( $GLOBALS['wp']->query_vars['rest_route'], '/checkout' );
+		return false !== strpos( $GLOBALS['wp']->query_vars['rest_route'], '/checkout' );
 	}
 
 	/**
