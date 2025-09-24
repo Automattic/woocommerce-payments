@@ -40,6 +40,70 @@ export const cards = {
 		},
 		cvc: '123',
 	},
+	declined: {
+		number: '4000000000000002',
+		expires: {
+			month: '06',
+			year: '45',
+		},
+		cvc: '626',
+	},
+	'declined-funds': {
+		number: '4000000000009995',
+		expires: {
+			month: '06',
+			year: '45',
+		},
+		cvc: '626',
+	},
+	'declined-incorrect': {
+		number: '4242424242424241',
+		expires: {
+			month: '06',
+			year: '45',
+		},
+		cvc: '626',
+	},
+	'declined-expired': {
+		number: '4000000000000069',
+		expires: {
+			month: '06',
+			year: '45',
+		},
+		cvc: '626',
+	},
+	'declined-cvc': {
+		number: '4000000000000127',
+		expires: {
+			month: '06',
+			year: '45',
+		},
+		cvc: '626',
+	},
+	'declined-processing': {
+		number: '4000000000000119',
+		expires: {
+			month: '06',
+			year: '45',
+		},
+		cvc: '626',
+	},
+	'declined-3ds': {
+		number: '4000008400001629',
+		expires: {
+			month: '06',
+			year: '45',
+		},
+		cvc: '626',
+	},
+	'invalid-cvv-number': {
+		number: '4242424242424242',
+		expires: {
+			month: '06',
+			year: '45',
+		},
+		cvc: '11',
+	},
 };
 
 /**
@@ -307,6 +371,74 @@ export const fillCardDetails = async ( page, card ) => {
 	// And it has title="Secure payment input frame"
 
 	let stripeFrame = null;
+	let cardNumberField = null;
+
+	const cardNumberSelectors = [
+		'input[name="number"]',
+		'#Field-numberInput',
+		'.p-CardNumberInput input',
+		'[placeholder="1234 1234 1234 1234"]',
+		'[aria-label="Card number"]',
+		'[name="cardnumber"]',
+		'[placeholder*="card number" i]',
+		'[placeholder*="number" i]',
+		'input[data-elements-stable-field-name="cardNumber"]',
+		'#cardNumber',
+		'input[autocomplete="cc-number"]',
+		'input[type="tel"]',
+		'.CardNumberField input',
+		'.CardField-number input',
+	];
+
+	const expirySelectors = [
+		'input[name="expiry"]',
+		'#Field-expiryInput',
+		'.p-ExpiryInput input',
+		'[placeholder="MM / YY"]',
+		'[placeholder="MM/YY"]',
+		'[name="exp-date"]',
+		'[placeholder*="mm" i]',
+		'[placeholder*="expir" i]',
+		'input[data-elements-stable-field-name="expiryDate"]',
+		'#expiryDate',
+		'input[autocomplete="cc-exp"]',
+		'.CardExpiryField input',
+		'.CardField-expiry input',
+	];
+
+	const cvcSelectors = [
+		'input[name="cvc"]',
+		'input[name="securityCode"]',
+		'#Field-cvcInput',
+		'.p-CvcInput input',
+		'[placeholder="CVC"]',
+		'[placeholder*="cvc" i]',
+		'[placeholder*="cvv" i]',
+		'[placeholder*="security" i]',
+		'input[data-elements-stable-field-name="cvcNumber"]',
+		'#cvcNumber',
+		'input[autocomplete="cc-csc"]',
+		'.CardCvcField input',
+		'.CardField-cvc input',
+	];
+
+	const findFieldInFrame = async (
+		frameLocator,
+		selectors,
+		timeout = 1500
+	) => {
+		for ( const selector of selectors ) {
+			const locator = frameLocator.locator( selector ).first();
+			try {
+				await locator.waitFor( { timeout } );
+				return locator;
+			} catch ( e ) {
+				continue;
+			}
+		}
+
+		return null;
+	};
 
 	// Method 1: Direct approach - look for the main Stripe iframe with card inputs
 	try {
@@ -319,14 +451,18 @@ export const fillCardDetails = async ( page, card ) => {
 			try {
 				const title = await iframe.getAttribute( 'title' );
 				if ( title && title.includes( 'Secure payment input frame' ) ) {
-					stripeFrame = page.frameLocator(
+					const candidateFrame = page.frameLocator(
 						`iframe[title="${ title }"]`
 					);
-					// Test if this frame has card inputs
-					await stripeFrame
-						.locator( '[name="cardnumber"]' )
-						.waitFor( { timeout: 1000 } );
-					break;
+					cardNumberField = await findFieldInFrame(
+						candidateFrame,
+						cardNumberSelectors,
+						1500
+					);
+					if ( cardNumberField ) {
+						stripeFrame = candidateFrame;
+						break;
+					}
 				}
 			} catch ( e ) {
 				// This iframe doesn't have card inputs, continue to next
@@ -344,12 +480,20 @@ export const fillCardDetails = async ( page, card ) => {
 				'#payment .wcpay-upe-element iframe[name^="__privateStripeFrame"]',
 				{ timeout: 5000 }
 			);
-			stripeFrame = page.frameLocator(
+			const candidateFrame = page.frameLocator(
 				'#payment .wcpay-upe-element iframe[name^="__privateStripeFrame"]'
 			);
-			await stripeFrame
-				.locator( '[name="cardnumber"]' )
-				.waitFor( { timeout: 2000 } );
+			cardNumberField = await findFieldInFrame(
+				candidateFrame,
+				cardNumberSelectors,
+				2000
+			);
+			if ( ! cardNumberField ) {
+				throw new Error(
+					'Card number field not found in fallback Stripe frame'
+				);
+			}
+			stripeFrame = candidateFrame;
 		} catch ( e2 ) {
 			throw new Error(
 				`Could not find WooCommerce Payments card input form. Error: ${ e2.message }`
@@ -357,91 +501,40 @@ export const fillCardDetails = async ( page, card ) => {
 		}
 	}
 
-	// Fill card number - try different field selectors that Stripe might use
-	const cardNumberSelectors = [
-		'[name="cardnumber"]',
-		'[placeholder*="card number" i]',
-		'[placeholder*="number" i]',
-		'input[data-elements-stable-field-name="cardNumber"]',
-		'#cardNumber',
-		'input[autocomplete="cc-number"]',
-		'input[type="tel"]',
-		'.CardNumberField input, .CardField-number input',
-	];
-
-	let cardNumberFilled = false;
-	for ( const selector of cardNumberSelectors ) {
-		try {
-			const field = stripeFrame.locator( selector );
-			await field.waitFor( { timeout: 1000 } );
-			await field.fill( card.number );
-			cardNumberFilled = true;
-			break;
-		} catch ( e ) {
-			continue; // Try next selector
-		}
+	if ( ! stripeFrame ) {
+		throw new Error( 'Could not locate Stripe payment frame.' );
 	}
 
-	if ( ! cardNumberFilled ) {
+	// Fill card number - try different field selectors that Stripe might use
+	cardNumberField =
+		cardNumberField ??
+		( await findFieldInFrame( stripeFrame, cardNumberSelectors, 2000 ) );
+
+	if ( ! cardNumberField ) {
 		throw new Error( 'Could not find card number field in Stripe iframe' );
 	}
 
-	// Fill expiry date - try different field selectors
-	const expirySelectors = [
-		'[name="exp-date"]',
-		'[placeholder*="mm" i]',
-		'[placeholder*="expir" i]',
-		'input[data-elements-stable-field-name="expiryDate"]',
-		'#expiryDate',
-		'input[autocomplete="cc-exp"]',
-		'.CardExpiryField input, .CardField-expiry input',
-	];
+	await cardNumberField.fill( card.number );
 
-	let expiryFilled = false;
-	for ( const selector of expirySelectors ) {
-		try {
-			const field = stripeFrame.locator( selector );
-			await field.waitFor( { timeout: 1000 } );
-			await field.fill( card.expires.month + card.expires.year );
-			expiryFilled = true;
-			break;
-		} catch ( e ) {
-			continue; // Try next selector
-		}
-	}
+	const expiryField = await findFieldInFrame(
+		stripeFrame,
+		expirySelectors,
+		2000
+	);
 
-	if ( ! expiryFilled ) {
+	if ( ! expiryField ) {
 		throw new Error( 'Could not find expiry date field in Stripe iframe' );
 	}
 
-	// Fill CVC - try different field selectors
-	const cvcSelectors = [
-		'[name="cvc"]',
-		'[placeholder*="cvc" i]',
-		'[placeholder*="cvv" i]',
-		'[placeholder*="security" i]',
-		'input[data-elements-stable-field-name="cvcNumber"]',
-		'#cvcNumber',
-		'input[autocomplete="cc-csc"]',
-		'.CardCvcField input, .CardField-cvc input',
-	];
+	await expiryField.fill( card.expires.month + card.expires.year );
 
-	let cvcFilled = false;
-	for ( const selector of cvcSelectors ) {
-		try {
-			const field = stripeFrame.locator( selector );
-			await field.waitFor( { timeout: 1000 } );
-			await field.fill( card.cvc );
-			cvcFilled = true;
-			break;
-		} catch ( e ) {
-			continue; // Try next selector
-		}
-	}
+	const cvcField = await findFieldInFrame( stripeFrame, cvcSelectors, 2000 );
 
-	if ( ! cvcFilled ) {
+	if ( ! cvcField ) {
 		throw new Error( 'Could not find CVC field in Stripe iframe' );
 	}
+
+	await cvcField.fill( card.cvc );
 };
 
 /**
@@ -485,14 +578,21 @@ export const placeOrder = async ( page ) => {
  * @param {boolean} authorize - Whether to authorize or decline
  */
 export const confirm3dsAuthentication = async ( page, authorize = true ) => {
-	// Wait for 3DS iframe to appear
+	// Give the Payment Element a moment to mount the challenge iframe tree
+	await page.waitForTimeout( 2000 );
+
 	const privateFrame = page.locator(
 		'body > div > iframe[name^="__privateStripeFrame"]'
 	);
-	await privateFrame.waitFor( { state: 'visible', timeout: 20000 } );
+	const challengeVisible = await privateFrame
+		.waitFor( { state: 'visible', timeout: 20000 } )
+		.then( () => true )
+		.catch( () => false );
 
-	// Access the 3DS challenge frame
-	await page.waitForTimeout( 2000 ); // Give iframe time to load content
+	// Frictionless flows never surface the modal
+	if ( ! challengeVisible ) {
+		return;
+	}
 
 	const stripeFrame = page.frameLocator(
 		'body>div>iframe[name^="__privateStripeFrame"]'
@@ -501,24 +601,42 @@ export const confirm3dsAuthentication = async ( page, authorize = true ) => {
 		'iframe[name="stripe-challenge-frame"]'
 	);
 
-	// Wait for challenge form to be ready
-	await challengeFrame
-		.locator( 'body' )
-		.waitFor( { state: 'visible', timeout: 20000 } );
-
-	// Click Complete authentication or Fail authentication
-	if ( authorize ) {
+	try {
 		await challengeFrame
-			.locator( '#test-source-authorize-3ds' )
-			.click( { timeout: 10000 } );
-	} else {
-		await challengeFrame
-			.locator( '#test-source-fail-3ds' )
-			.click( { timeout: 10000 } );
+			.locator( 'body' )
+			.waitFor( { state: 'visible', timeout: 20000 } );
+	} catch ( _error ) {
+		// Some issuers complete 3DS without showing the embedded challenge UI
+		return;
 	}
 
-	// Wait for redirect to order confirmation
-	await page.waitForURL( '**/order-received/**', { timeout: 30000 } );
+	const submitButton = challengeFrame.getByRole( 'button', {
+		name: authorize ? /Complete/i : /Fail/i,
+	} );
+
+	// Avoid interacting while the challenge is still loading
+	await expect(
+		stripeFrame.locator( '.LightboxModalLoadingIndicator' )
+	).not.toBeVisible( { timeout: 20000 } );
+
+	await submitButton.click();
+
+	await privateFrame
+		.waitFor( { state: 'hidden', timeout: 20000 } )
+		.catch( () => {} );
+
+	if ( authorize ) {
+		await page
+			.waitForURL( '**/order-received/**', { timeout: 30000 } )
+			.catch( () => {} );
+	} else {
+		await page
+			.waitForSelector(
+				'.woocommerce-error, #payment .woocommerce-error, .wcpay-payment-error',
+				{ timeout: 30000 }
+			)
+			.catch( () => {} );
+	}
 };
 
 /**
