@@ -155,8 +155,12 @@ export default ( { query }: { query: { id: string } } ) => {
 				setIsInitialLoading( true );
 				const d: any = await apiFetch( { path } );
 				setDispute( d );
-				// fallback to multiple if no product type is set
-				setProductType( d.metadata?.__product_type || '' );
+				// Use suggested product type from order, fallback to saved metadata, then empty string
+				const suggestedProductType =
+					d.order?.suggested_product_type ||
+					d.metadata?.__product_type ||
+					'';
+				setProductType( suggestedProductType );
 				// Load saved product description from evidence or level3 line items
 				const level3ProductNames = d.charge?.level3?.line_items
 					?.map( ( item: any ) => item.product_description )
