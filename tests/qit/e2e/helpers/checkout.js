@@ -96,6 +96,14 @@ export const cards = {
 		},
 		cvc: '626',
 	},
+	'invalid-exp-date': {
+		number: '4242424242424242',
+		expires: {
+			month: '11',
+			year: '12',
+		},
+		cvc: '123',
+	},
 	'invalid-cvv-number': {
 		number: '4242424242424242',
 		expires: {
@@ -907,8 +915,16 @@ export const placeOrder = async ( page ) => {
  *
  * @param {Page} page - Playwright page object
  * @param {boolean} authorize - Whether to authorize or decline
+ * @param {Object} options - Additional options
+ * @param {'success'|'error'|'none'} [options.waitFor] - Outcome to wait for
  */
-export const confirm3dsAuthentication = async ( page, authorize = true ) => {
+export const confirm3dsAuthentication = async (
+	page,
+	authorize = true,
+	options = {}
+) => {
+	const { waitFor = authorize ? 'success' : 'error' } = options;
+
 	// Give the Payment Element a moment to mount the challenge iframe tree
 	await page.waitForTimeout( 2000 );
 
@@ -956,14 +972,14 @@ export const confirm3dsAuthentication = async ( page, authorize = true ) => {
 		.waitFor( { state: 'hidden', timeout: 20000 } )
 		.catch( () => {} );
 
-	if ( authorize ) {
+	if ( waitFor === 'success' ) {
 		await page
 			.waitForURL( '**/order-received/**', { timeout: 30000 } )
 			.catch( () => {} );
-	} else {
+	} else if ( waitFor === 'error' ) {
 		await page
 			.waitForSelector(
-				'.woocommerce-error, #payment .woocommerce-error, .wcpay-payment-error',
+				'.woocommerce-error, #payment .woocommerce-error, .wcpay-payment-error, .wc-block-components-notice-banner__content',
 				{ timeout: 30000 }
 			)
 			.catch( () => {} );
