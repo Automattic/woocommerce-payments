@@ -9,7 +9,7 @@ namespace WCPay;
 
 use WC_Payments;
 use WC_Payments_API_Client;
-use WCPay\Exceptions\API_Exception;
+use WC_Payments_Session_Service;
 
 defined( 'ABSPATH' ) || exit; // block direct access.
 
@@ -27,12 +27,24 @@ class Compatibility_Service {
 	private $payments_api_client;
 
 	/**
+	 * Session service.
+	 *
+	 * @var WC_Payments_Session_Service instance for working with session information
+	 */
+	private $session_service;
+
+	/**
 	 * Constructor for Compatibility_Service.
 	 *
-	 * @param WC_Payments_API_Client $payments_api_client WooCommerce Payments API client.
+	 * @param WC_Payments_API_Client      $payments_api_client WooCommerce Payments API client.
+	 * @param WC_Payments_Session_Service $session_service     Session service.
 	 */
-	public function __construct( WC_Payments_API_Client $payments_api_client ) {
+	public function __construct(
+		WC_Payments_API_Client $payments_api_client,
+		WC_Payments_Session_Service $session_service
+	) {
 		$this->payments_api_client = $payments_api_client;
+		$this->session_service     = $session_service;
 	}
 
 	/**
@@ -62,7 +74,12 @@ class Compatibility_Service {
 	 * @return  void
 	 */
 	public function update_compatibility_data_hook() {
-		$this->payments_api_client->update_compatibility_data( $this->get_compatibility_data() );
+		$compatibility_data = array_merge(
+			$this->get_compatibility_data(),
+			$this->get_client_data(),
+		);
+
+		$this->payments_api_client->update_compatibility_data( $compatibility_data );
 	}
 
 	/**
@@ -75,6 +92,19 @@ class Compatibility_Service {
 	public function add_compatibility_onboarding_data( $args ): array {
 		$args['compatibility_data'] = $this->get_compatibility_data();
 		return $args;
+	}
+
+	/**
+	 * Gets the browser info.
+	 *
+	 * @return array
+	 */
+	public static function get_browser_info() {
+		return [
+			'user_agent'       => isset( $_SERVER['HTTP_USER_AGENT'] ) ? wc_clean( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) ) : '',
+			'accept_language'  => isset( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ? wc_clean( wp_unslash( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ) : '',
+			'content_language' => empty( get_user_locale() ) ? 'en-US' : str_replace( '_', '-', get_user_locale() ),
+		];
 	}
 
 	/**
@@ -100,6 +130,19 @@ class Compatibility_Service {
 			'blog_theme'             => get_stylesheet(),
 			'active_plugins'         => $active_plugins,
 			'post_types_count'       => $post_types_count,
+		];
+	}
+
+	/**
+	 * Gets the client data.
+	 *
+	 * @return array
+	 */
+	private function get_client_data(): array {
+		return [
+			'sift_session_id' => $this->session_service->get_sift_session_id(),
+			'ip_address'      => \WC_Geolocation::get_ip_address(),
+			'browser'         => self::get_browser_info(),
 		];
 	}
 

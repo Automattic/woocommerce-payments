@@ -544,9 +544,9 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . 'includes/class-woopay-tracker.php';
 
 		self::$order_service                        = new WC_Payments_Order_Service( self::$api_client );
-		self::$compatibility_service                = new Compatibility_Service( self::$api_client );
-		self::$action_scheduler_service             = new WC_Payments_Action_Scheduler_Service( self::$api_client, self::$order_service, self::$compatibility_service );
 		self::$session_service                      = new WC_Payments_Session_Service( self::$api_client );
+		self::$compatibility_service                = new Compatibility_Service( self::$api_client, self::$session_service );
+		self::$action_scheduler_service             = new WC_Payments_Action_Scheduler_Service( self::$api_client, self::$order_service, self::$compatibility_service );
 		self::$redirect_service                     = new WC_Payments_Redirect_Service( self::$api_client );
 		self::$onboarding_service                   = new WC_Payments_Onboarding_Service( self::$api_client, self::$database_cache, self::$session_service );
 		self::$account                              = new WC_Payments_Account( self::$api_client, self::$database_cache, self::$action_scheduler_service, self::$onboarding_service, self::$redirect_service );
