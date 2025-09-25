@@ -585,6 +585,20 @@ class WC_Payments_Webhook_Processing_Service {
 		// Clear dispute caches to trigger a fetch of new data.
 		$this->database_cache->delete( DATABASE_CACHE::DISPUTE_STATUS_COUNTS_KEY );
 		$this->database_cache->delete( DATABASE_CACHE::ACTIVE_DISPUTES_KEY );
+
+		// Provide an action to log the dispute outside of this plugin.
+		do_action(
+			'log_stripe_charge_dispute_created_event',
+			[
+				'amount_raw' => $amount_raw,
+				'amount'     => $amount,
+				'charge_id'  => $charge_id,
+				'currency'   => $currency,
+				'event_data' => $event_data,
+				'order'      => $order,
+				'reason'     => $reason,
+			]
+		);
 	}
 
 	/**
@@ -616,6 +630,17 @@ class WC_Payments_Webhook_Processing_Service {
 		// Clear dispute caches to trigger a fetch of new data.
 		$this->database_cache->delete( DATABASE_CACHE::DISPUTE_STATUS_COUNTS_KEY );
 		$this->database_cache->delete( DATABASE_CACHE::ACTIVE_DISPUTES_KEY );
+
+		// Provide an action to log the dispute outside of this plugin.
+		do_action(
+			'log_stripe_charge_dispute_closed_event',
+			[
+				'charge_id'  => $charge_id,
+				'event_data' => $event_data,
+				'order'      => $order,
+				'status'     => $status,
+			]
+		);
 	}
 
 	/**
