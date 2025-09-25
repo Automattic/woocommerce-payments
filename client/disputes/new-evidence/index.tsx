@@ -397,6 +397,21 @@ export default ( { query }: { query: { id: string } } ) => {
 		setIsAccordionOpen( currentStep === 0 );
 	}, [ currentStep ] );
 
+	// Clear shipping information when shipping is not needed
+	useEffect( () => {
+		if ( ! hasShipping ) {
+			setShippingCarrier( '' );
+			setShippingDate( '' );
+			setShippingTrackingNumber( '' );
+			setShippingAddress( '' );
+			// Clear shipping documentation from evidence
+			setEvidence( ( prev: any ) => ( {
+				...prev,
+				shipping_documentation: '',
+			} ) );
+		}
+	}, [ hasShipping ] );
+
 	// --- File upload logic ---
 	const isUploadingEvidence = () =>
 		Object.values( isUploading ).some( Boolean );
@@ -462,30 +477,62 @@ export default ( { query }: { query: { id: string } } ) => {
 					: 'wcpay_dispute_save_evidence_clicked'
 			);
 
-			// Only include file keys in the evidence object if they have a non-empty value
+			// Build base evidence object
+			const baseEvidence = {
+				...dispute.evidence,
+				product_description: productDescription,
+				receipt: evidence.receipt,
+				customer_communication: evidence.customer_communication,
+				customer_signature: evidence.customer_signature,
+				refund_policy: evidence.refund_policy,
+				duplicate_charge_documentation:
+					evidence.duplicate_charge_documentation,
+				service_documentation: evidence.service_documentation,
+				cancellation_policy: evidence.cancellation_policy,
+				access_activity_log: evidence.access_activity_log,
+				uncategorized_file: evidence.uncategorized_file,
+				uncategorized_text: coverLetter,
+				customer_purchase_ip: dispute.order?.ip_address,
+			};
+
+			// Only include shipping information if shipping is needed
+			if ( hasShipping ) {
+				baseEvidence.shipping_documentation =
+					evidence.shipping_documentation;
+				baseEvidence.shipping_carrier = shippingCarrier;
+				baseEvidence.shipping_date = shippingDate;
+				baseEvidence.shipping_tracking_number = shippingTrackingNumber;
+				baseEvidence.shipping_address = shippingAddress;
+			} else {
+				// Clear shipping information when not needed
+				baseEvidence.shipping_documentation = '';
+				baseEvidence.shipping_carrier = '';
+				baseEvidence.shipping_date = '';
+				baseEvidence.shipping_tracking_number = '';
+				baseEvidence.shipping_address = '';
+			}
+
+			// Define shipping field keys that need special handling
+			// These fields must always be sent to Stripe (even when empty) to clear existing data when shipping is not needed
+			const shippingFieldKeys = [
+				'shipping_documentation',
+				'shipping_carrier',
+				'shipping_date',
+				'shipping_tracking_number',
+				'shipping_address',
+			];
+
+			// Filter evidence: include shipping fields even if empty (to clear them),
+			// but filter out other empty fields
 			const evidenceToSend = Object.fromEntries(
-				Object.entries( {
-					...dispute.evidence,
-					product_description: productDescription,
-					receipt: evidence.receipt,
-					customer_communication: evidence.customer_communication,
-					customer_signature: evidence.customer_signature,
-					refund_policy: evidence.refund_policy,
-					duplicate_charge_documentation:
-						evidence.duplicate_charge_documentation,
-					shipping_documentation: evidence.shipping_documentation,
-					service_documentation: evidence.service_documentation,
-					cancellation_policy: evidence.cancellation_policy,
-					access_activity_log: evidence.access_activity_log,
-					uncategorized_file: evidence.uncategorized_file,
-					uncategorized_text: coverLetter,
-					// Add shipping details
-					shipping_carrier: shippingCarrier,
-					shipping_date: shippingDate,
-					shipping_tracking_number: shippingTrackingNumber,
-					shipping_address: shippingAddress,
-					customer_purchase_ip: dispute.order?.ip_address,
-				} ).filter( ( [ , value ] ) => value && value !== '' )
+				Object.entries( baseEvidence ).filter( ( [ key, value ] ) => {
+					// Always include shipping fields (even if empty) to ensure they're cleared on Stripe
+					if ( shippingFieldKeys.includes( key ) ) {
+						return true;
+					}
+					// For non-shipping fields, only include if they have a value
+					return value && value !== '';
+				} )
 			);
 
 			// Update metadata with the current productType
