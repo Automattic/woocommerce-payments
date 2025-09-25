@@ -15,7 +15,7 @@ import {
 	placeOrder,
 	confirmCardAuthentication,
 	defaultBillingAddress,
-} from '../../helpers/checkout.js';
+} from '../../../helpers/checkout.js';
 
 // Helper to wait for error banner
 const waitForBanner = async ( page, errorText ) => {

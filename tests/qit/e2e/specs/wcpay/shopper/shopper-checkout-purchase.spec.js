@@ -1,3 +1,4 @@
+/* Moved from ../shopper-checkout-purchase.spec.js */
 /**
  * External dependencies
  */
@@ -16,7 +17,7 @@ import {
 	expectFraudPreventionToken,
 	cards,
 	defaultBillingAddress,
-} from './helpers/checkout.js';
+} from '../../../helpers/checkout.js';
 
 const CUSTOMER_USERNAME = process.env.QIT_CUSTOMER_USERNAME || 'testcustomer';
 const CUSTOMER_PASSWORD = process.env.QIT_CUSTOMER_PASSWORD || 'testpass123';

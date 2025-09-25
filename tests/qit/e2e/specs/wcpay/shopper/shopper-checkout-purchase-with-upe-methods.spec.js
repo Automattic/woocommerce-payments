@@ -19,7 +19,7 @@ import {
 	selectPaymentMethod,
 	setupCheckout,
 	CHECKOUT_URLS,
-} from './helpers/checkout.js';
+} from '../../../helpers/checkout.js';
 
 const CUSTOMER_USERNAME = process.env.QIT_CUSTOMER_USERNAME || 'testcustomer';
 const CUSTOMER_PASSWORD = process.env.QIT_CUSTOMER_PASSWORD || 'testpass123';

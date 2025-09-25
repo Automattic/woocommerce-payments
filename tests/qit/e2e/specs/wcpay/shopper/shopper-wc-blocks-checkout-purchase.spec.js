@@ -1,3 +1,4 @@
+/* Moved from ../shopper-blocks-checkout-purchase.spec.js */
 /**
  * External dependencies
  */
@@ -14,7 +15,7 @@ import {
 	fillCardDetails,
 	placeOrder,
 	confirm3dsAuthentication,
-} from './helpers/checkout.js';
+} from '../../../helpers/checkout.js';
 
 test.describe(
 	'QIT WooCommerce Blocks Checkout - Successful purchase @critical @blocks @shopper',
