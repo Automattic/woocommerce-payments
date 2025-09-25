@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+Skip SSL verification when running the PHP tests locally.
