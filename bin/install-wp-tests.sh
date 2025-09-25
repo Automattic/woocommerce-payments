@@ -19,6 +19,12 @@ TMPDIR=$(echo $TMPDIR | sed -e "s/\/$//")
 WP_TESTS_DIR=${WP_TESTS_DIR-$TMPDIR/wordpress-tests-lib}
 WP_CORE_DIR=${WP_CORE_DIR-$TMPDIR/wordpress/}
 
+# Source the MySQL version utility functions (keep this before changing directory)
+source "$(dirname "$0")/mysql-version-utils.sh"
+
+# Get the appropriate SSL flag based on MySQL/MariaDB version
+SSL_FLAG=$(get_mysql_ssl_flag)
+
 download() {
     if [ `which curl` ]; then
         curl -s "$1" > "$2";
@@ -55,7 +61,7 @@ get_db_connection_flags() {
 			EXTRA_FLAGS=" --host=$DB_HOSTNAME --protocol=tcp"
 		fi
 	fi
-	echo "--user=$DB_USER --password=$DB_PASS $EXTRA_FLAGS --skip_ssl";
+	echo "--user=$DB_USER --password=$DB_PASS $EXTRA_FLAGS $SSL_FLAG";
 }
 
 wait_db() {
