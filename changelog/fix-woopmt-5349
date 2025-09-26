@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Add caching to address autocomplete token

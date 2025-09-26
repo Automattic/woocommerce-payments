@@ -1,7 +1,75 @@
-.woocommerce-account-details__header {
-	h2 {
-		margin: 0;
-		font-size: 16px;
-		font-weight: 600;
+.woopayments-account-details__header {
+	flex-wrap: wrap;
+
+	.edit-details .components-button.is-link {
+		text-decoration: none;
+	}
+
+	.edit-details,
+	.account-details,
+	.account-status {
+		flex-basis: auto;
+		min-width: max-content;
+	}
+
+	// on a smaller viewports controls section should move in front of the
+	// status chip
+	@media screen and ( max-width: $break-mobile ) {
+		.account-details {
+			order: 1;
+			flex-grow: 1;
+			margin-bottom: 8px;
+		}
+		.edit-details {
+			order: 2;
+			margin-bottom: 8px;
+		}
+		.account-status {
+			order: 3;
+		}
+
+		.woopayments-account-details__banner {
+			order: 5;
+			margin-bottom: 16px;
+			a.components-external-link {
+				white-space: wrap;
+			}
+		}
+	}
+}
+
+.woopayments-account-details__payout-status-item {
+	line-height: 16px;
+	flex-wrap: wrap;
+	height: auto;
+	min-height: 2em;
+	margin-bottom: 8px;
+
+	.item-label,
+	.item-value {
+		flex-shrink: 1;
+		flex-basis: auto;
+		width: min-content;
+	}
+
+	.item-label {
+		color: $gray-900;
+		min-width: 130px;
+		white-space: nowrap;
+	}
+
+	@media screen and ( max-width: $break-mobile ) {
+		.item-label {
+			min-width: 80px;
+		}
+	}
+
+	.item-value {
+		color: $gray-700;
+	}
+
+	a.payout-tooltip-external-link {
+		// Disable underline for arrow icon in the end of external link.
+		text-decoration: none;
 	}
 }

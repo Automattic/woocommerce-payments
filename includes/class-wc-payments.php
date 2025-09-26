@@ -904,7 +904,7 @@ class WC_Payments {
 
 		include_once __DIR__ . '/class-wc-payments-address-provider.php';
 
-		$providers[] = new WC_Payments_Address_Provider( self::$api_client );
+		$providers[] = new WC_Payments_Address_Provider( self::$api_client, self::$account, self::$database_cache );
 
 		return $providers;
 	}
