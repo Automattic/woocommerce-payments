@@ -1,69 +1,58 @@
 /**
  * External dependencies
  */
-import { Page, expect } from '@playwright/test';
+import qit from '/qitHelpers';
 
-const goToDevToolsSettings = ( page: Page ) =>
-	page.goto( '/wp-admin/admin.php?page=wcpaydev', {
-		waitUntil: 'load',
-	} );
+/**
+ * The legacy E2E environment relied on the WooPayments Dev Tools plugin UI to toggle
+ * options like card testing protection. The QIT stack does not load that plugin, so
+ * these helpers mirror the behaviour by patching the relevant options directly via WP-CLI.
+ */
 
-const saveDevToolsSettings = async ( page: Page ) => {
-	await page.getByRole( 'button', { name: 'Save Changes' } ).click();
-	await page.waitForLoadState( 'networkidle' );
-	await expect( page.getByText( /Settings saved/ ) ).toBeVisible();
+const setCardTestingProtection = async ( enabled: boolean ) => {
+	const { stdout } = await qit.wp(
+		'option get wcpay_account_data --format=json',
+		true
+	);
+	let cache: Record< string, unknown > = {};
+	try {
+		cache = stdout.trim().length ? JSON.parse( stdout ) : {};
+	} catch ( error ) {
+		cache = {};
+	}
+	const data = {
+		...( typeof cache.data === 'object' && cache.data !== null
+			? cache.data
+			: {} ),
+		card_testing_protection_eligible: enabled,
+	};
+	const updatedCache = {
+		...cache,
+		data,
+		fetched: Math.floor( Date.now() / 1000 ),
+		errored: false,
+	};
+	const payload = JSON.stringify( updatedCache );
+	const escapedPayload = payload.replace( /'/g, `'"'"'` );
+	await qit.wp(
+		`option update wcpay_account_data '${ escapedPayload }' --format=json`,
+		true
+	);
+	await qit.wp(
+		`option update wcpaydev_force_card_testing_protection_on ${
+			enabled ? 1 : 0
+		}`,
+		true
+	);
+	await qit
+		.wp( 'cache delete wcpay_account_data options', true )
+		.catch( () => undefined );
 };
 
-const getIsCardTestingProtectionEnabled = ( page: Page ) =>
-	page.getByLabel( /Card testing mitigations enabled/ ).isChecked();
-
-const setCardTestingProtection = ( page: Page, enabled: boolean ) =>
-	page
-		.locator( 'label[for="wcpaydev_force_card_testing_protection_on"]' )
-		.setChecked( enabled );
-
-const getIsActAsDisconnectedFromWCPayEnabled = ( page: Page ) =>
-	page
-		.getByLabel( 'act as disconnected from the Transact Platform Server' )
-		.isChecked();
-
-const setActAsDisconnectedFromWCPay = ( page: Page, enabled: boolean ) =>
-	page
-		.getByLabel( 'act as disconnected from the Transact Platform Server' )
-		.setChecked( enabled );
-
-export const enableCardTestingProtection = async ( page: Page ) => {
-	await goToDevToolsSettings( page );
-
-	if ( ! ( await getIsCardTestingProtectionEnabled( page ) ) ) {
-		await setCardTestingProtection( page, true );
-		await saveDevToolsSettings( page );
-	}
+export const enableCardTestingProtection = async () => {
+	await setCardTestingProtection( true );
 };
 
-export const disableCardTestingProtection = async ( page: Page ) => {
-	await goToDevToolsSettings( page );
-
-	if ( await getIsCardTestingProtectionEnabled( page ) ) {
-		await setCardTestingProtection( page, false );
-		await saveDevToolsSettings( page );
-	}
-};
-
-export const enableActAsDisconnectedFromWCPay = async ( page: Page ) => {
-	await goToDevToolsSettings( page );
-
-	if ( ! ( await getIsActAsDisconnectedFromWCPayEnabled( page ) ) ) {
-		await setActAsDisconnectedFromWCPay( page, true );
-		await saveDevToolsSettings( page );
-	}
-};
-
-export const disableActAsDisconnectedFromWCPay = async ( page: Page ) => {
-	await goToDevToolsSettings( page );
-
-	if ( await getIsActAsDisconnectedFromWCPayEnabled( page ) ) {
-		await setActAsDisconnectedFromWCPay( page, false );
-		await saveDevToolsSettings( page );
-	}
+export const disableCardTestingProtection = async () => {
+	await setCardTestingProtection( false );
 };
