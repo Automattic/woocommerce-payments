@@ -18,8 +18,7 @@ test.describe( 'Successful purchase', () => {
 	let merchantContext: BrowserContext;
 	let shopperContext: BrowserContext;
 
-	// for ( const ctpEnabled of [ false, true ] ) {
-	for ( const ctpEnabled of [ false ] ) {
+	for ( const ctpEnabled of [ false, true ] ) {
 		test.describe( `Carding protection ${ ctpEnabled }`, () => {
 			test.beforeAll( async ( { browser } ) => {
 				merchantContext = await browser.newContext();
