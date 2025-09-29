@@ -583,8 +583,7 @@ class WC_Payments_Webhook_Processing_Service {
 		$this->order_service->mark_payment_dispute_created( $order, $charge_id, $amount, $reason, $due_by, $status );
 
 		// Clear dispute caches to trigger a fetch of new data.
-		$this->database_cache->delete( DATABASE_CACHE::DISPUTE_STATUS_COUNTS_KEY );
-		$this->database_cache->delete( DATABASE_CACHE::ACTIVE_DISPUTES_KEY );
+		$this->database_cache->delete_dispute_caches();
 	}
 
 	/**
@@ -614,8 +613,7 @@ class WC_Payments_Webhook_Processing_Service {
 		$this->order_service->mark_payment_dispute_closed( $order, $charge_id, $status );
 
 		// Clear dispute caches to trigger a fetch of new data.
-		$this->database_cache->delete( DATABASE_CACHE::DISPUTE_STATUS_COUNTS_KEY );
-		$this->database_cache->delete( DATABASE_CACHE::ACTIVE_DISPUTES_KEY );
+		$this->database_cache->delete_dispute_caches();
 	}
 
 	/**
@@ -670,8 +668,7 @@ class WC_Payments_Webhook_Processing_Service {
 		$order->add_order_note( $note );
 
 		// Clear dispute caches to trigger a fetch of new data.
-		$this->database_cache->delete( DATABASE_CACHE::DISPUTE_STATUS_COUNTS_KEY );
-		$this->database_cache->delete( DATABASE_CACHE::ACTIVE_DISPUTES_KEY );
+		$this->database_cache->delete_dispute_caches();
 	}
 
 	/**

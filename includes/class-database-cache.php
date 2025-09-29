@@ -47,6 +47,13 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	const DISPUTE_STATUS_COUNTS_KEY = 'wcpay_dispute_status_counts_cache';
 
 	/**
+	 * Dispute status counts cache key for test mode.
+	 *
+	 * @var string
+	 */
+	const DISPUTE_STATUS_COUNTS_KEY_TEST_MODE = 'wcpay_test_dispute_status_counts_cache';
+
+	/**
 	 * Active disputes cache key.
 	 *
 	 * @var string
@@ -257,6 +264,7 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 			self::FRAUD_SERVICES_KEY,
 			self::RECOMMENDED_PAYMENT_METHODS,
 			self::DISPUTE_STATUS_COUNTS_KEY,
+			self::DISPUTE_STATUS_COUNTS_KEY_TEST_MODE,
 			self::ACTIVE_DISPUTES_KEY,
 			self::AUTHORIZATION_SUMMARY_KEY,
 			self::AUTHORIZATION_SUMMARY_KEY_TEST_MODE,
@@ -283,6 +291,18 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	 */
 	public function disable_refresh() {
 		$this->refresh_disabled = true;
+	}
+
+	/**
+	 * Delete all dispute-related cache entries.
+	 * This ensures both live and test mode dispute counts are refreshed.
+	 *
+	 * @return void
+	 */
+	public function delete_dispute_caches() {
+		$this->delete( self::DISPUTE_STATUS_COUNTS_KEY );
+		$this->delete( self::DISPUTE_STATUS_COUNTS_KEY_TEST_MODE );
+		$this->delete( self::ACTIVE_DISPUTES_KEY );
 	}
 
 	/**
