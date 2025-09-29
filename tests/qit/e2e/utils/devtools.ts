@@ -56,3 +56,10 @@ export const enableCardTestingProtection = async () => {
 export const disableCardTestingProtection = async () => {
 	await setCardTestingProtection( false );
 };
+
+const rateLimiterOption =
+	'wcpay_session_rate_limiter_disabled_wcpay_card_declined_registry';
+
+export const disableFailedTransactionRateLimiter = async () => {
+	await qit.wp( `option set ${ rateLimiterOption } yes`, true );
+};

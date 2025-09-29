@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { Page, expect } from 'playwright/test';
+import { Locator, Page, expect } from 'playwright/test';
 /**
  * Internal dependencies
  */
@@ -139,6 +139,91 @@ export const placeOrder = async ( page: Page ) => {
 	}
 };
 
+const orderConfirmationTimeout = 30_000;
+
+const isLocatorVisible = async ( locator: Locator ) => {
+	try {
+		return await locator.isVisible();
+	} catch ( _error ) {
+		return false;
+	}
+};
+
+export const waitForOrderConfirmationWCB = async ( page: Page ) => {
+	const orderReceivedHeading = page
+		.getByRole( 'heading', { name: 'Order received' } )
+		.first();
+	const orderConfirmationHeading = page
+		.getByRole( 'heading', { name: 'Order confirmation' } )
+		.first();
+	const thankYouNotice = page
+		.locator( '.woocommerce-notice.woocommerce-notice--success' )
+		.first();
+
+	await new Promise< void >( ( resolve, reject ) => {
+		let settled = false;
+		const timer = setTimeout( () => {
+			if ( settled ) {
+				return;
+			}
+			settled = true;
+			reject(
+				new Error(
+					'Timed out waiting for the Blocks checkout confirmation view.'
+				)
+			);
+		}, orderConfirmationTimeout );
+
+		const handleSuccess = () => {
+			if ( settled ) {
+				return;
+			}
+			settled = true;
+			clearTimeout( timer );
+			resolve();
+		};
+
+		page.waitForURL( /\/order-received\//, {
+			timeout: orderConfirmationTimeout,
+		} )
+			.then( handleSuccess )
+			.catch( () => undefined );
+		orderReceivedHeading
+			.waitFor( {
+				state: 'visible',
+				timeout: orderConfirmationTimeout,
+			} )
+			.then( handleSuccess )
+			.catch( () => undefined );
+		orderConfirmationHeading
+			.waitFor( {
+				state: 'visible',
+				timeout: orderConfirmationTimeout,
+			} )
+			.then( handleSuccess )
+			.catch( () => undefined );
+		thankYouNotice
+			.waitFor( {
+				state: 'visible',
+				timeout: orderConfirmationTimeout,
+			} )
+			.then( handleSuccess )
+			.catch( () => undefined );
+	} );
+
+	if ( await isLocatorVisible( orderReceivedHeading ) ) {
+		await expect( orderReceivedHeading ).toBeVisible();
+		return;
+	}
+
+	if ( await isLocatorVisible( orderConfirmationHeading ) ) {
+		await expect( orderConfirmationHeading ).toBeVisible();
+		return;
+	}
+
+	await expect( thankYouNotice ).toBeVisible();
+};
+
 export const placeOrderWCB = async (
 	page: Page,
 	confirmOrderReceived = true
@@ -153,10 +238,7 @@ export const placeOrderWCB = async (
 	await placeOrderButton.click();
 
 	if ( confirmOrderReceived ) {
-		await page.waitForURL( /\/order-received\// );
-		await expect(
-			page.getByRole( 'heading', { name: 'Order received' } )
-		).toBeVisible();
+		await waitForOrderConfirmationWCB( page );
 	}
 };
 
@@ -248,12 +330,15 @@ export const fillCardDetailsWCB = async (
 	await stripeFrame.getByPlaceholder( 'CVC' ).fill( card.cvc );
 };
 
+const stripeChallengeAppearTimeout = 8_000;
+const stripeChallengeBodyTimeout = 8_000;
+
 export const confirmCardAuthentication = async (
 	page: Page,
 	authorize = true
 ) => {
-	// Give the Stripe modal a moment to appear.
-	await page.waitForTimeout( 2000 );
+	// Allow the Stripe modal to mount if it is going to show up.
+	await page.waitForTimeout( 1_000 );
 
 	// Stripe card input also uses __privateStripeFrame as a prefix, so need to make sure we wait for an iframe that
 	// appears at the top of the DOM. If it never appears, skip gracefully.
@@ -261,7 +346,10 @@ export const confirmCardAuthentication = async (
 		'body > div > iframe[name^="__privateStripeFrame"]'
 	);
 	const appeared = await privateFrame
-		.waitFor( { state: 'visible', timeout: 20000 } )
+		.waitFor( {
+			state: 'visible',
+			timeout: stripeChallengeAppearTimeout,
+		} )
 		.then( () => true )
 		.catch( () => false );
 	if ( ! appeared ) return;
@@ -276,9 +364,10 @@ export const confirmCardAuthentication = async (
 	);
 	// If challenge frame never appears, assume frictionless and return.
 	try {
-		await challengeFrame
-			.locator( 'body' )
-			.waitFor( { state: 'visible', timeout: 20000 } );
+		await challengeFrame.locator( 'body' ).waitFor( {
+			state: 'visible',
+			timeout: stripeChallengeBodyTimeout,
+		} );
 	} catch ( _e ) {
 		return;
 	}

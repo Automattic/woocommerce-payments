@@ -112,4 +112,4 @@ echo "Running QIT E2E tests for local development..."
     --source "$WCP_ROOT/woocommerce-payments.zip" \
     "${env_args[@]}"
 
-echo "QIT E2E foundation tests completed!"
+echo "QIT E2E tests completed!"
