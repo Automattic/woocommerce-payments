@@ -4,6 +4,10 @@
 import { test, expect, getAuthState } from '../../../fixtures/auth';
 import type { BrowserContext, Page } from '@playwright/test';
 
+// QIT environments and Stripe/3DS flows can be slow; increase the per-test timeout
+// so setup/login and external iframes don't trigger the default 30s timeout.
+test.setTimeout( 120_000 );
+
 /**
  * Internal dependencies
  */
