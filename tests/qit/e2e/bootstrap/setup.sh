@@ -145,6 +145,9 @@ wp option set wcpaydev_proxy 0 --quiet 2>/dev/null || true
 # Disable onboarding redirect for E2E testing
 wp option set wcpay_should_redirect_to_onboarding 0 --quiet 2>/dev/null || true
 
+echo "Dismissing fraud protection welcome tour in E2E tests"
+wp option set wcpay_fraud_protection_welcome_tour_dismissed 1 --quiet 2>/dev/null || true
+
 echo "Resetting coupons and creating standard free coupon"
 wp post delete $(wp post list --post_type=shop_coupon --format=ids) --force --quiet 2>/dev/null || true
 wp db query "DELETE FROM wp_postmeta WHERE post_id NOT IN (SELECT ID FROM wp_posts)" --skip-column-names 2>/dev/null || true
