@@ -155,10 +155,11 @@ export default ( { query }: { query: { id: string } } ) => {
 				setIsInitialLoading( true );
 				const d: any = await apiFetch( { path } );
 				setDispute( d );
-				// Use suggested product type from order, fallback to saved metadata, then empty string
+				// Prefer the saved metadata value for product type, as it will be empty on the merchant's first visit.
+				// After the merchant saves the dispute challenge, this metadata will be populated and should be used.
 				const suggestedProductType =
-					d.order?.suggested_product_type ||
 					d.metadata?.__product_type ||
+					d.order?.suggested_product_type ||
 					'';
 				setProductType( suggestedProductType );
 				// Load saved product description from evidence or level3 line items
