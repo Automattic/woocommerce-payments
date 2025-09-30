@@ -1,8 +1,8 @@
 /**
  * External dependencies
  */
-import { test, expect, Page, BrowserContext } from '@playwright/test';
-import qit from '/qitHelpers';
+import { Page, BrowserContext } from '@playwright/test';
+import { test, expect, getAuthState } from '../../../fixtures/auth';
 
 /**
  * Internal dependencies
@@ -21,14 +21,15 @@ test.describe( 'Successful purchase', () => {
 	for ( const ctpEnabled of [ false, true ] ) {
 		test.describe( `Carding protection ${ ctpEnabled }`, () => {
 			test.beforeAll( async ( { browser } ) => {
-				merchantContext = await browser.newContext();
+				merchantContext = await browser.newContext( {
+					storageState: await getAuthState( browser, 'admin' ),
+				} );
 				merchantPage = await merchantContext.newPage();
-				await qit.loginAsAdmin( merchantPage );
 
-				shopperContext = await browser.newContext();
+				shopperContext = await browser.newContext( {
+					storageState: await getAuthState( browser, 'customer' ),
+				} );
 				shopperPage = await shopperContext.newPage();
-				const { username, password } = config.users.customer;
-				await qit.loginAs( shopperPage, username, password );
 				if ( ctpEnabled ) {
 					await devtools.enableCardTestingProtection( merchantPage );
 				}
@@ -43,6 +44,7 @@ test.describe( 'Successful purchase', () => {
 			} );
 
 			test.beforeEach( async () => {
+				await shopper.emptyCart( shopperPage );
 				await shopper.addToCartFromShopPage( shopperPage );
 				await shopper.setupCheckout(
 					shopperPage,
