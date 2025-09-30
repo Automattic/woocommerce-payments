@@ -1,13 +1,7 @@
 /**
  * External dependencies
  */
-import { test, expect } from '@playwright/test';
-import qit from '/qitHelpers';
-
-/**
- * Internal dependencies
- */
-import { config } from '../config/default';
+import { test, expect } from '../fixtures/auth';
 
 test.describe(
 	'A basic set of tests to ensure WP, wp-admin and my-account load',
@@ -21,26 +15,23 @@ test.describe(
 		} );
 
 		test.describe( 'Sign in as admin', () => {
-			test( 'Load Payments Overview', async ( { page } ) => {
-				await qit.loginAsAdmin( page );
-
-				await page.goto(
+			test( 'Load Payments Overview', async ( { adminPage } ) => {
+				await adminPage.goto(
 					'/wp-admin/admin.php?page=wc-admin&path=/payments/overview'
 				);
-				await page.waitForLoadState( 'domcontentloaded' );
+				await adminPage.waitForLoadState( 'domcontentloaded' );
 				await expect(
-					page.getByRole( 'heading', { name: 'Overview' } )
+					adminPage.getByRole( 'heading', { name: 'Overview' } )
 				).toBeVisible();
 			} );
 		} );
 
 		test.describe( 'Sign in as customer', () => {
-			test( 'Load customer my account page', async ( { page } ) => {
-				const { username, password } = config.users.customer;
-				await qit.loginAs( page, username, password );
-
-				await page.goto( '/my-account' );
-				const title = page.locator( 'h1.entry-title' );
+			test( 'Load customer my account page', async ( {
+				customerPage,
+			} ) => {
+				await customerPage.goto( '/my-account' );
+				const title = customerPage.locator( 'h1.entry-title' );
 				await expect( title ).toHaveText( 'My account' );
 			} );
 		} );
