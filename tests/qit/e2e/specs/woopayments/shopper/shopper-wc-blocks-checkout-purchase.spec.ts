@@ -1,8 +1,8 @@
 /**
  * External dependencies
  */
-import { test, BrowserContext, Page } from '@playwright/test';
-import qit from '/qitHelpers';
+import { test, getAuthState } from '../../../fixtures/auth';
+import type { BrowserContext, Page } from '@playwright/test';
 
 /**
  * Internal dependencies
@@ -19,6 +19,7 @@ import {
 	expectFraudPreventionToken,
 	waitForOrderConfirmationWCB,
 	placeOrderWCB,
+	emptyCart,
 } from '../../../utils/shopper';
 
 const shouldRunWCBlocksTests = process.env.SKIP_WC_BLOCKS_TESTS !== '1';
@@ -31,16 +32,20 @@ describeif( shouldRunWCBlocksTests )(
 		let shopperPage: Page;
 
 		test.beforeAll( async ( { browser } ) => {
-			shopperContext = await browser.newContext();
+			shopperContext = await browser.newContext( {
+				storageState: await getAuthState( browser, 'customer' ),
+			} );
 			shopperPage = await shopperContext.newPage();
-			const { username, password } = config.users.customer;
-			await qit.loginAs( shopperPage, username, password );
 			await devtools.disableCardTestingProtection();
 			await devtools.disableFailedTransactionRateLimiter();
 		} );
 
 		test.afterAll( async () => {
 			await shopperContext?.close();
+		} );
+
+		test.beforeEach( async () => {
+			await emptyCart( shopperPage );
 		} );
 
 		test( 'using a basic card', async () => {
