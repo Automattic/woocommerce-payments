@@ -1,8 +1,8 @@
 /**
  * External dependencies
  */
-import { test, expect, BrowserContext, Page } from '@playwright/test';
-import qit from '/qitHelpers';
+import { test, expect, getAuthState } from '../../../fixtures/auth';
+import type { BrowserContext, Page } from '@playwright/test';
 
 /**
  * Internal dependencies
@@ -133,10 +133,10 @@ describeif( shouldRunWCBlocksTests )(
 		let shopperPage: Page;
 
 		test.beforeAll( async ( { browser } ) => {
-			shopperContext = await browser.newContext();
+			shopperContext = await browser.newContext( {
+				storageState: await getAuthState( browser, 'customer' ),
+			} );
 			shopperPage = await shopperContext.newPage();
-			const { username, password } = config.users.customer;
-			await qit.loginAs( shopperPage, username, password );
 			await devtools.disableCardTestingProtection();
 			await devtools.disableFailedTransactionRateLimiter();
 		} );
