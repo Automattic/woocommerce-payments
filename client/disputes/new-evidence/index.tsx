@@ -58,7 +58,7 @@ import {
 	getRecommendedDocumentFields,
 	getRecommendedShippingDocumentFields,
 } from './recommended-document-fields';
-import { RecommendedDocument } from './types';
+import { RecommendedDocument, EvidenceState } from './types';
 
 import './style.scss';
 import RefundStatus from './refund-status';
@@ -102,7 +102,7 @@ function needsShipping( reason: string | undefined, productType = '' ) {
 export default ( { query }: { query: { id: string } } ) => {
 	const path = `/wc/v3/payments/disputes/${ query.id }`;
 	const [ dispute, setDispute ] = useState< any >();
-	const [ evidence, setEvidence ] = useState< any >( {} );
+	const [ evidence, setEvidence ] = useState< EvidenceState >( {} );
 	const [ productType, setProductType ] = useState< string >( '' );
 	const [ isInitialLoading, setIsInitialLoading ] = useState( true );
 	const [ currentStep, setCurrentStep ] = useState( 0 );
@@ -173,7 +173,7 @@ export default ( { query }: { query: { id: string } } ) => {
 				);
 				setShippingAddress( d.evidence?.shipping_address || '' );
 				// Load saved file IDs from evidence
-				setEvidence( ( prev: any ) => ( {
+				setEvidence( ( prev: EvidenceState ) => ( {
 					...prev,
 					receipt: d.evidence?.receipt || '',
 					customer_communication:
@@ -405,7 +405,7 @@ export default ( { query }: { query: { id: string } } ) => {
 			setShippingTrackingNumber( '' );
 			setShippingAddress( '' );
 			// Clear shipping documentation from evidence
-			setEvidence( ( prev: any ) => ( {
+			setEvidence( ( prev: EvidenceState ) => ( {
 				...prev,
 				shipping_documentation: '',
 			} ) );
@@ -716,7 +716,7 @@ export default ( { query }: { query: { id: string } } ) => {
 
 	const updateProductDescription = ( value: string ) => {
 		setProductDescription( value );
-		setEvidence( ( prev: any ) => ( {
+		setEvidence( ( prev: EvidenceState ) => ( {
 			...prev,
 			product_description: value,
 		} ) );
@@ -724,7 +724,7 @@ export default ( { query }: { query: { id: string } } ) => {
 
 	const updateShippingCarrier = ( value: string ) => {
 		setShippingCarrier( value );
-		setEvidence( ( prev: any ) => ( {
+		setEvidence( ( prev: EvidenceState ) => ( {
 			...prev,
 			shipping_carrier: value,
 		} ) );
@@ -732,7 +732,7 @@ export default ( { query }: { query: { id: string } } ) => {
 
 	const updateShippingDate = ( value: string ) => {
 		setShippingDate( value );
-		setEvidence( ( prev: any ) => ( {
+		setEvidence( ( prev: EvidenceState ) => ( {
 			...prev,
 			shipping_date: value,
 		} ) );
@@ -740,7 +740,7 @@ export default ( { query }: { query: { id: string } } ) => {
 
 	const updateShippingTrackingNumber = ( value: string ) => {
 		setShippingTrackingNumber( value );
-		setEvidence( ( prev: any ) => ( {
+		setEvidence( ( prev: EvidenceState ) => ( {
 			...prev,
 			shipping_tracking_number: value,
 		} ) );
@@ -748,7 +748,7 @@ export default ( { query }: { query: { id: string } } ) => {
 
 	const updateShippingAddress = ( value: string ) => {
 		setShippingAddress( value );
-		setEvidence( ( prev: any ) => ( {
+		setEvidence( ( prev: EvidenceState ) => ( {
 			...prev,
 			shipping_address: value,
 		} ) );
@@ -795,7 +795,7 @@ export default ( { query }: { query: { id: string } } ) => {
 		setIsUploading( ( prev ) => ( { ...prev, [ key ]: true } ) );
 
 		// Force reload evidence components.
-		setEvidence( ( e: any ) => ( { ...e, [ key ]: '' } ) );
+		setEvidence( ( e: EvidenceState ) => ( { ...e, [ key ]: '' } ) );
 
 		try {
 			const uploadedFile: any = await apiFetch( {
@@ -805,7 +805,10 @@ export default ( { query }: { query: { id: string } } ) => {
 			} );
 
 			// Store uploaded file name in metadata to display in submitted evidence or saved for later form.
-			setEvidence( ( e: any ) => ( { ...e, [ key ]: uploadedFile.id } ) );
+			setEvidence( ( e: EvidenceState ) => ( {
+				...e,
+				[ key ]: uploadedFile.id,
+			} ) );
 			// Store uploaded file name to avoid fetching the file details again.
 			setUploadedFiles( ( prev ) => ( {
 				...prev,
@@ -833,14 +836,14 @@ export default ( { query }: { query: { id: string } } ) => {
 			);
 
 			// Force reload evidence components.
-			setEvidence( ( e: any ) => ( { ...e, [ key ]: '' } ) );
+			setEvidence( ( e: EvidenceState ) => ( { ...e, [ key ]: '' } ) );
 		} finally {
 			setIsUploading( ( prev ) => ( { ...prev, [ key ]: false } ) );
 		}
 	};
 
 	const doRemoveFile = ( key: string ) => {
-		setEvidence( ( e: any ) => ( { ...e, [ key ]: '' } ) );
+		setEvidence( ( e: EvidenceState ) => ( { ...e, [ key ]: '' } ) );
 		setFileSizes( ( prev ) => ( { ...prev, [ key ]: 0 } ) );
 		// Remove the file name from the uploaded files.
 		setUploadedFiles( ( prev ) => ( { ...prev, [ key ]: '' } ) );
