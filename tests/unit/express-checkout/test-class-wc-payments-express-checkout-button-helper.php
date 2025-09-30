@@ -131,6 +131,7 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 		$mock_order_service            = $this->createMock( WC_Payments_Order_Service::class );
 		$mock_dpps                     = $this->createMock( Duplicate_Payment_Prevention_Service::class );
 		$mock_payment_method           = $this->createMock( CC_Payment_Method::class );
+		$mock_payment_method->method( 'get_id' )->willReturn( CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID );
 
 		return new WC_Payment_Gateway_WCPay(
 			$mock_api_client,

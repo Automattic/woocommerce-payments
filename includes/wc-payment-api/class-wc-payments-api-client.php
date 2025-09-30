@@ -684,8 +684,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 
 		$dispute = $this->request( $request, self::DISPUTES_API . '/' . $dispute_id, self::POST );
 		// Invalidate the dispute caches.
-		\WC_Payments::get_database_cache()->delete( Database_Cache::DISPUTE_STATUS_COUNTS_KEY );
-		\WC_Payments::get_database_cache()->delete( Database_Cache::ACTIVE_DISPUTES_KEY );
+		\WC_Payments::get_database_cache()->delete_dispute_caches();
 
 		if ( is_wp_error( $dispute ) ) {
 			return $dispute;
@@ -714,8 +713,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 
 		$dispute = $this->request( [], self::DISPUTES_API . '/' . $dispute_id . '/close', self::POST );
 		// Invalidate the dispute caches.
-		\WC_Payments::get_database_cache()->delete( Database_Cache::DISPUTE_STATUS_COUNTS_KEY );
-		\WC_Payments::get_database_cache()->delete( Database_Cache::ACTIVE_DISPUTES_KEY );
+		\WC_Payments::get_database_cache()->delete_dispute_caches();
 
 		if ( is_wp_error( $dispute ) ) {
 			return $dispute;
