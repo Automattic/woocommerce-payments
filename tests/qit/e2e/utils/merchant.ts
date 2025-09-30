@@ -24,6 +24,13 @@ const goToMultiCurrencySettings = async ( page: Page ) => {
 	await dataHasLoaded( page );
 };
 
+const goToWooCommerceGeneralSettings = async ( page: Page ) => {
+	await page.goto( '/wp-admin/admin.php?page=wc-settings&tab=general', {
+		waitUntil: 'load',
+	} );
+	await expect( page.locator( '#woocommerce_currency' ) ).toBeVisible();
+};
+
 const expectSnackbarWithText = async (
 	page: Page,
 	text: string,
@@ -58,6 +65,31 @@ export const saveWooPaymentsSettings = async ( page: Page ) => {
 export const saveMultiCurrencySettings = async ( page: Page ) => {
 	await page.getByRole( 'button', { name: 'Save changes' } ).click();
 	await expectSnackbarWithText( page, 'Currency settings updated.' );
+};
+
+export const getDefaultCurrency = async ( page: Page ) => {
+	await goToWooCommerceGeneralSettings( page );
+	return await page.locator( '#woocommerce_currency' ).inputValue();
+};
+
+export const setDefaultCurrency = async (
+	page: Page,
+	currencyCode: string
+) => {
+	await goToWooCommerceGeneralSettings( page );
+	const currencySelect = page.locator( '#woocommerce_currency' );
+	const currentCurrency = await currencySelect.inputValue();
+
+	if ( currentCurrency === currencyCode ) {
+		return;
+	}
+
+	await currencySelect.selectOption( currencyCode );
+	await page.getByRole( 'button', { name: 'Save changes' } ).click();
+	const successNotice = page
+		.locator( '.notice-success, .updated' )
+		.filter( { hasText: 'Your settings have been saved.' } );
+	await expect( successNotice ).toBeVisible();
 };
 
 export const isMulticurrencyEnabled = async ( page: Page ) => {
