@@ -4,6 +4,46 @@
 import { Page, expect } from '@playwright/test';
 import qit from '/qitHelpers';
 
+import { config } from '../config/default';
+
+type WidgetEntry = {
+	id: string;
+	id_base: string;
+	instance?: unknown;
+};
+
+const parseJson = < T >( value: string, fallback: T ): T => {
+	try {
+		return JSON.parse( value ) as T;
+	} catch ( _error ) {
+		return fallback;
+	}
+};
+
+const chunkArray = < T >( items: T[], size: number ): T[][] => {
+	if ( size <= 0 ) {
+		return [ items ];
+	}
+	const chunks: T[][] = [];
+	for ( let index = 0; index < items.length; index += size ) {
+		chunks.push( items.slice( index, index + size ) );
+	}
+	return chunks;
+};
+
+const shouldRemoveWidget = ( widget: WidgetEntry ) => {
+	if ( widget.id_base === 'currency_switcher_widget' ) {
+		return true;
+	}
+
+	if ( widget.id_base === 'block' ) {
+		const serialized = JSON.stringify( widget.instance ?? '' );
+		return serialized.includes( 'currency-switcher-holder' );
+	}
+
+	return false;
+};
+
 export async function dataHasLoaded( page: Page ) {
 	await expect( page.locator( '.is-loadable-placeholder' ) ).toHaveCount( 0 );
 }
@@ -117,6 +157,160 @@ export const deactivateMulticurrency = async ( page: Page ) => {
 		await toggle.uncheck();
 		await saveWooPaymentsSettings( page );
 	}
+};
+
+export const removeMultiCurrencyWidgets = async () => {
+	// Avoid relying on `wp widget list --fields=...` because some WP-CLI
+	// versions/environment may not expose `id_base` or `instance` as fields.
+	// Instead run a small PHP eval that examines the widget options and
+	// returns the widget ids to delete as a JSON array.
+	const php = `
+$ids = array();
+$widgets = get_option( 'widget_currency_switcher_widget', array() );
+foreach ( $widgets as $num => $inst ) {
+	if ( $num === '_multiwidget' ) {
+		continue;
+	}
+	$ids[] = 'currency_switcher_widget-' . $num;
+}
+$blocks = get_option( 'widget_block', array() );
+foreach ( $blocks as $num => $inst ) {
+	if ( $num === '_multiwidget' ) {
+		continue;
+	}
+	$rendered = is_array( $inst ) ? wp_json_encode( $inst ) : strval( $inst );
+	if ( strpos( $rendered, 'currency-switcher-holder' ) !== false ) {
+		$ids[] = 'block-' . $num;
+	}
+}
+echo wp_json_encode( array_values( array_unique( $ids ) ) );
+`;
+
+	const { stdout } = await qit.wp(
+		`eval '${ php.replace( /'/g, "'\"'\"'" ) }'`,
+		true
+	);
+	const widgetIds = parseJson< string[] >(
+		stdout.trim().length ? stdout : '[]',
+		[]
+	);
+
+	if ( ! widgetIds.length ) {
+		return;
+	}
+
+	for ( const batch of chunkArray( widgetIds, 5 ) ) {
+		await qit.wp( `widget delete ${ batch.join( ' ' ) }`, true );
+	}
+};
+
+export const addMulticurrencyWidget = async (
+	page: Page,
+	blocksVersion = false
+) => {
+	await removeMultiCurrencyWidgets();
+
+	await page.goto( '/wp-admin/widgets.php', {
+		waitUntil: 'load',
+	} );
+
+	try {
+		await page
+			.locator( '.components-spinner' )
+			.first()
+			.waitFor( { timeout: 2_000 } );
+		await expect( page.locator( '.components-spinner' ) ).toHaveCount( 0 );
+	} catch {
+		// The spinner is not always present when the widget area is empty.
+	}
+
+	const closeModalButton = page.getByRole( 'button', { name: 'Close' } );
+	if ( await closeModalButton.isVisible() ) {
+		await closeModalButton.click();
+	}
+
+	await expect( page.locator( '.components-spinner' ) ).toHaveCount( 0 );
+
+	const widgetName = blocksVersion
+		? 'Currency Switcher Block'
+		: 'Currency Switcher Widget';
+	const isWidgetAdded = blocksVersion
+		? ( await page.locator( `[data-title="${ widgetName }"]` ).count() ) > 0
+		: ( await page.getByRole( 'heading', { name: widgetName } ).count() ) >
+		  0;
+
+	if ( isWidgetAdded ) {
+		return;
+	}
+
+	await page.getByRole( 'button', { name: 'Add block' } ).click();
+	const searchInput = page.locator( 'input[placeholder="Search"]' );
+	await searchInput.pressSequentially( widgetName, { delay: 20 } );
+	await expect(
+		page.locator( 'button.components-button[role="option"]' ).first()
+	).toBeVisible( { timeout: 5_000 } );
+	await page
+		.locator( 'button.components-button[role="option"]' )
+		.first()
+		.click();
+	await page.waitForTimeout( 2_000 );
+	await expect(
+		page.getByRole( 'button', { name: 'Update' } )
+	).toBeEnabled();
+	await page.getByRole( 'button', { name: 'Update' } ).click();
+	await expectSnackbarWithText( page, 'Widgets saved.' );
+};
+
+export const createPendingOrder = async (): Promise< string > => {
+	const billing = config.addresses.customer.billing;
+	const billingPayload = JSON.stringify( {
+		first_name: billing.firstname,
+		last_name: billing.lastname,
+		company: billing.company,
+		address_1: billing.addressfirstline,
+		address_2: billing.addresssecondline,
+		city: billing.city,
+		state: billing.state,
+		postcode: billing.postcode,
+		country: billing.country_code,
+		email: billing.email,
+		phone: billing.phone,
+	} );
+	const escapedBilling = billingPayload.replace( /'/g, `'"'"'` );
+	const customerUsername = config.users.customer.username;
+	const script = `
+$products = wc_get_products( array(
+	'limit' => 1,
+	'orderby' => 'date',
+	'order' => 'DESC',
+	'return' => 'objects',
+	'paginated' => false,
+	'status' => array( 'publish' ),
+) );
+if ( empty( $products ) ) {
+	throw new Exception( 'No products available for order creation.' );
+}
+$order = wc_create_order( array( 'status' => 'pending' ) );
+$order->add_product( $products[0], 1 );
+$billing = json_decode( '${ escapedBilling }', true );
+if ( is_array( $billing ) ) {
+	$order->set_address( $billing, 'billing' );
+	$order->set_address( $billing, 'shipping' );
+}
+$customer = get_user_by( 'login', '${ customerUsername }' );
+if ( $customer && ! is_wp_error( $customer ) ) {
+	$order->set_customer_id( (int) $customer->ID );
+}
+$order->calculate_totals();
+echo $order->get_id();
+`;
+	const escapedScript = script.replace( /'/g, `'"'"'` );
+	const { stdout } = await qit.wp( `eval '${ escapedScript }'`, true );
+	const orderId = stdout.trim().split( /\s+/ ).pop() ?? '';
+	if ( ! orderId ) {
+		throw new Error( 'Failed to create order for pay-for-order flow.' );
+	}
+	return orderId;
 };
 
 const disableAllEnabledCurrencies = async ( page: Page ) => {
