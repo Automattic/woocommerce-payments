@@ -775,6 +775,19 @@ export const deleteSavedCard = async (
 	await expect( button ).toBeVisible( { timeout: 10000 } );
 	await expect( button ).toBeEnabled( { timeout: 10000 } );
 	await button.click();
+
+	// After clicking delete, wait for one of these to confirm deletion:
+	// - success notice
+	// - the row to be removed
+	const successNotice = page.getByText( 'Payment method deleted.' );
+	try {
+		await Promise.race( [
+			successNotice.waitFor( { state: 'visible', timeout: 20000 } ),
+			row.waitFor( { state: 'detached', timeout: 20000 } ),
+		] );
+	} catch ( _e ) {
+		// ignore; callers will assert expected state
+	}
 };
 
 export const selectSavedCardOnCheckout = async (
