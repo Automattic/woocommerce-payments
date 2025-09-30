@@ -16,7 +16,7 @@ import qit from '/qitHelpers';
 
 import { config } from '../config/default';
 
-type Role = 'admin' | 'customer' | 'editor';
+export type Role = 'admin' | 'customer' | 'editor';
 
 type RoleConfig = {
 	login: ( page: Page ) => Promise< void >;
@@ -107,3 +107,6 @@ export const test = base.extend< Fixtures >( {
 } );
 
 export const expect = test.expect;
+
+export const getAuthState = ( browser: Browser, role: Role ) =>
+	getState( browser, role );
