@@ -1,8 +1,8 @@
 /**
  * External dependencies
  */
-import { test, expect, BrowserContext, Page } from '@playwright/test';
-import qit from '/qitHelpers';
+import { test, expect } from '../../../fixtures/auth';
+import type { Page } from '@playwright/test';
 
 /**
  * Internal dependencies
@@ -14,60 +14,58 @@ test.describe(
 	'Shopper > Checkout > Failures with various cards',
 	{ tag: '@critical' },
 	() => {
-		let shopperContext: BrowserContext;
-		let shopperPage: Page;
-
 		const waitForBanner = async ( page: Page, errorText: string ) => {
 			await expect( page.getByText( errorText ) ).toBeVisible();
 		};
 
-		test.beforeAll( async ( { browser } ) => {
-			shopperContext = await browser.newContext();
-			shopperPage = await shopperContext.newPage();
-			const { username, password } = config.users.customer;
-			await qit.loginAs( shopperPage, username, password );
+		test.beforeEach( async ( { customerPage } ) => {
+			await shopper.emptyCart( customerPage );
+			await shopper.addToCartFromShopPage( customerPage );
+			await shopper.setupCheckout( customerPage );
+			await shopper.selectPaymentMethod( customerPage );
 		} );
 
-		test.afterAll( async () => {
-			await shopperContext?.close();
-		} );
-
-		test.beforeEach( async () => {
-			await shopper.emptyCart( shopperPage );
-			await shopper.addToCartFromShopPage( shopperPage );
-			await shopper.setupCheckout( shopperPage );
-			await shopper.selectPaymentMethod( shopperPage );
-		} );
-
-		test( 'should throw an error that the card was simply declined', async () => {
-			await shopper.fillCardDetails( shopperPage, config.cards.declined );
-			await shopper.placeOrder( shopperPage );
+		test( 'should throw an error that the card was simply declined', async ( {
+			customerPage,
+		} ) => {
+			await shopper.fillCardDetails(
+				customerPage,
+				config.cards.declined
+			);
+			await shopper.placeOrder( customerPage );
 
 			await waitForBanner(
-				shopperPage,
+				customerPage,
 				'Error: Your card was declined.'
 			);
 		} );
 
-		test( 'should throw an error that the card expiration date is in the past', async () => {
+		test( 'should throw an error that the card expiration date is in the past', async ( {
+			customerPage,
+		} ) => {
 			await shopper.fillCardDetails(
-				shopperPage,
+				customerPage,
 				config.cards[ 'declined-expired' ]
 			);
-			await shopper.placeOrder( shopperPage );
+			await shopper.placeOrder( customerPage );
 
-			await waitForBanner( shopperPage, 'Error: Your card has expired.' );
+			await waitForBanner(
+				customerPage,
+				'Error: Your card has expired.'
+			);
 		} );
 
-		test( 'should throw an error that the card CVV number is invalid', async () => {
+		test( 'should throw an error that the card CVV number is invalid', async ( {
+			customerPage,
+		} ) => {
 			await shopper.fillCardDetails(
-				shopperPage,
+				customerPage,
 				config.cards[ 'invalid-cvv-number' ]
 			);
 
-			await shopperPage.keyboard.press( 'Tab' );
+			await customerPage.keyboard.press( 'Tab' );
 
-			const frameHandle = await shopperPage.waitForSelector(
+			const frameHandle = await customerPage.waitForSelector(
 				'#payment .payment_method_woocommerce_payments .wcpay-upe-element iframe'
 			);
 
@@ -85,62 +83,75 @@ test.describe(
 			);
 		} );
 
-		test( 'should throw an error that the card was declined due to insufficient funds', async () => {
+		test( 'should throw an error that the card was declined due to insufficient funds', async ( {
+			customerPage,
+		} ) => {
 			await shopper.fillCardDetails(
-				shopperPage,
+				customerPage,
 				config.cards[ 'declined-funds' ]
 			);
-			await shopper.placeOrder( shopperPage );
+			await shopper.placeOrder( customerPage );
 
 			await waitForBanner(
-				shopperPage,
+				customerPage,
 				'Error: Your card has insufficient funds.'
 			);
 		} );
 
-		test( 'should throw an error that the card was declined due to expired card', async () => {
+		test( 'should throw an error that the card was declined due to expired card', async ( {
+			customerPage,
+		} ) => {
 			await shopper.fillCardDetails(
-				shopperPage,
+				customerPage,
 				config.cards[ 'declined-expired' ]
 			);
-			await shopper.placeOrder( shopperPage );
-
-			await waitForBanner( shopperPage, 'Error: Your card has expired.' );
-		} );
-
-		test( 'should throw an error that the card was declined due to incorrect CVC number', async () => {
-			await shopper.fillCardDetails(
-				shopperPage,
-				config.cards[ 'declined-cvc' ]
-			);
-			await shopper.placeOrder( shopperPage );
+			await shopper.placeOrder( customerPage );
 
 			await waitForBanner(
-				shopperPage,
+				customerPage,
+				'Error: Your card has expired.'
+			);
+		} );
+
+		test( 'should throw an error that the card was declined due to incorrect CVC number', async ( {
+			customerPage,
+		} ) => {
+			await shopper.fillCardDetails(
+				customerPage,
+				config.cards[ 'declined-cvc' ]
+			);
+			await shopper.placeOrder( customerPage );
+
+			await waitForBanner(
+				customerPage,
 				"Error: Your card's security code is incorrect."
 			);
 		} );
 
-		test( 'should throw an error that the card was declined due to processing error', async () => {
+		test( 'should throw an error that the card was declined due to processing error', async ( {
+			customerPage,
+		} ) => {
 			await shopper.fillCardDetails(
-				shopperPage,
+				customerPage,
 				config.cards[ 'declined-processing' ]
 			);
-			await shopper.placeOrder( shopperPage );
+			await shopper.placeOrder( customerPage );
 
 			await waitForBanner(
-				shopperPage,
+				customerPage,
 				'Error: An error occurred while processing your card. Try again in a little bit.'
 			);
 		} );
 
-		test( 'should throw an error that the card was declined due to incorrect card number', async () => {
+		test( 'should throw an error that the card was declined due to incorrect card number', async ( {
+			customerPage,
+		} ) => {
 			await shopper.fillCardDetails(
-				shopperPage,
+				customerPage,
 				config.cards[ 'declined-incorrect' ]
 			);
 
-			const frameHandle = await shopperPage.waitForSelector(
+			const frameHandle = await customerPage.waitForSelector(
 				'#payment .payment_method_woocommerce_payments .wcpay-upe-element iframe'
 			);
 
@@ -160,17 +171,19 @@ test.describe(
 			);
 		} );
 
-		test( 'should throw an error that the card was declined due to invalid 3DS card', async () => {
+		test( 'should throw an error that the card was declined due to invalid 3DS card', async ( {
+			customerPage,
+		} ) => {
 			await shopper.fillCardDetails(
-				shopperPage,
+				customerPage,
 				config.cards[ 'declined-3ds' ]
 			);
-			await shopper.placeOrder( shopperPage );
+			await shopper.placeOrder( customerPage );
 
-			await shopper.confirmCardAuthentication( shopperPage, false );
+			await shopper.confirmCardAuthentication( customerPage, false );
 
 			await waitForBanner(
-				shopperPage,
+				customerPage,
 				'We are unable to authenticate your payment method. Please choose a different payment method and try again.'
 			);
 		} );
