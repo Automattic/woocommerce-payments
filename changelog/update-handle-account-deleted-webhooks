@@ -1,4 +1,0 @@
-Significance: patch
-Type: update
-
-Introduce account.deleted webhook processing for a smoother experience when an account is deleted from the Transact Platform.

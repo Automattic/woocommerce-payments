@@ -153,16 +153,25 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			Link_Payment_Method::class,
 		];
 
+		// Create the main payment method (CC) for the gateway constructor.
+		$mock_cc_payment_method = $this->getMockBuilder( CC_Payment_Method::class )
+			->setConstructorArgs( [ $token_service ] )
+			->setMethods( [ 'is_subscription_item_in_cart' ] )
+			->getMock();
+		$mock_cc_payment_method->expects( $this->any() )
+			->method( 'is_subscription_item_in_cart' )
+			->will( $this->returnValue( false ) );
+
 		foreach ( $payment_method_classes as $payment_method_class ) {
-			$mock_payment_method = $this->getMockBuilder( $payment_method_class )
+			$mock_payment_method_instance = $this->getMockBuilder( $payment_method_class )
 				->setConstructorArgs( [ $token_service ] )
 				->setMethods( [ 'is_subscription_item_in_cart' ] )
 				->getMock();
-			$mock_payment_method->expects( $this->any() )
+			$mock_payment_method_instance->expects( $this->any() )
 				->method( 'is_subscription_item_in_cart' )
 				->will( $this->returnValue( false ) );
 
-			$mock_payment_methods[ $mock_payment_method->get_id() ] = $mock_payment_method;
+			$mock_payment_methods[ $mock_payment_method_instance->get_id() ] = $mock_payment_method_instance;
 		}
 
 		$this->mock_wcpay_account
@@ -175,7 +184,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			$customer_service,
 			$token_service,
 			$action_scheduler_service,
-			$mock_payment_method,
+			$mock_cc_payment_method,
 			$mock_payment_methods,
 			$order_service,
 			$mock_dpps,

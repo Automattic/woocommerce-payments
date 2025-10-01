@@ -1343,6 +1343,9 @@ class WC_Payments_Admin {
 	 * @return int The number of disputes which need a response.
 	 */
 	private function get_disputes_awaiting_response_count() {
+		$test_mode = WC_Payments::mode()->is_test();
+		$cache_key = $test_mode ? Database_Cache::DISPUTE_STATUS_COUNTS_KEY_TEST_MODE : Database_Cache::DISPUTE_STATUS_COUNTS_KEY;
+
 		$send_callback = function () {
 			$request = Request::get( WC_Payments_API_Client::DISPUTES_API . '/status_counts' );
 			$request->assign_hook( 'wcpay_get_dispute_status_counts' );
@@ -1350,7 +1353,7 @@ class WC_Payments_Admin {
 		};
 
 		$disputes_status_counts = $this->database_cache->get_or_add(
-			Database_Cache::DISPUTE_STATUS_COUNTS_KEY,
+			$cache_key,
 			$send_callback,
 			// We'll consider all array values to be valid as the cache is only invalidated when it is deleted or it expires.
 			'is_array'

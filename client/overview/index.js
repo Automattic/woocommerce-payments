@@ -377,7 +377,11 @@ const OverviewPage = () => {
 			) }
 			<ErrorBoundary>
 				{ isAccountDetailsEnabled && accountDetails ? (
-					<AccountDetails accountDetails={ accountDetails } />
+					<AccountDetails
+						accountDetails={ accountDetails }
+						accountFees={ activeAccountFees }
+						accountLink={ accountStatus.accountLink }
+					/>
 				) : (
 					<AccountStatus
 						accountStatus={ accountStatus }
