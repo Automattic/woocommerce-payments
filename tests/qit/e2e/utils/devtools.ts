@@ -63,3 +63,27 @@ const rateLimiterOption =
 export const disableFailedTransactionRateLimiter = async () => {
 	await qit.wp( `option set ${ rateLimiterOption } yes`, true );
 };
+
+/**
+ * Simulates disconnecting from the WooPayments Transact Platform Server.
+ * This mirrors the "Act as disconnected from WCPay" dev tools option.
+ */
+export const enableActAsDisconnectedFromWCPay = async () => {
+	await qit.wp( 'option update wcpaydev_force_disconnected 1', true );
+	// Clear any related caches
+	await qit
+		.wp( 'cache delete wcpay_account_data options', true )
+		.catch( () => undefined );
+};
+
+/**
+ * Re-enables connection to the WooPayments Transact Platform Server.
+ * This mirrors disabling the "Act as disconnected from WCPay" dev tools option.
+ */
+export const disableActAsDisconnectedFromWCPay = async () => {
+	await qit.wp( 'option update wcpaydev_force_disconnected 0', true );
+	// Clear any related caches
+	await qit
+		.wp( 'cache delete wcpay_account_data options', true )
+		.catch( () => undefined );
+};
