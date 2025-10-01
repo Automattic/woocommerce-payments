@@ -51,8 +51,10 @@ test( 'Verify WooCommerce Payments plugin activation', async ( { page } ) => {
 	// Check plugins page to verify WooCommerce Payments is active
 	await page.goto( '/wp-admin/plugins.php' );
 
-	// Look for the WooCommerce Payments plugin row
-	const pluginRow = page.locator( 'tr[data-plugin*="woocommerce-payments"]' );
+	// Look for the WooCommerce Payments plugin row (exclude update row)
+	const pluginRow = page.locator(
+		'tr[data-plugin*="woocommerce-payments"]:not(.plugin-update-tr)'
+	);
 	await expect( pluginRow ).toBeVisible();
 
 	// Verify it shows as activated
