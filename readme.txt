@@ -4,7 +4,7 @@ Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.3
-Stable tag: 9.9.0
+Stable tag: 10.0.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -86,6 +86,18 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 4. Manage Disputes
 
 == Changelog ==
+
+= 10.0.0 - 2025-09-24 =
+* Add - Add new feature flag for the dynamic checkout place order button, and new option on payment settings.
+* Add - New AccountDetails: Add feature flag, TypeScript definition, and basic component
+* Fix - Do not ask for shipping info for digital products dispute.
+* Fix - Fix Google/Apple Pay "State / County is required" error during checkout for Saudi Arabia
+* Fix - Fix possible errors when WooPay is enabled while the store is in Coming Soon mode
+* Fix - Name is required for the Affirm payment method.
+* Update - Improve messaging around test accounts and development mode on the Payments Overview page.
+* Update - Introduce account.deleted webhook processing for a smoother experience when an account is deleted from the Transact Platform.
+* Dev - Bump WC tested up to version to 10.2.0
+* Dev - Fix flaky E2E test in addSavedCard function
 
 = 9.9.0 - 2025-09-03 =
 * Fix - Conditionally set Stripe Link wallet option based on payment method configuration
