@@ -69,11 +69,13 @@ export const disableFailedTransactionRateLimiter = async () => {
  * This mirrors the "Act as disconnected from WCPay" dev tools option.
  */
 export const enableActAsDisconnectedFromWCPay = async () => {
-	await qit.wp( 'option update wcpaydev_force_disconnected 1', true );
-	// Clear any related caches
-	await qit
-		.wp( 'cache delete wcpay_account_data options', true )
-		.catch( () => undefined );
+	// Force disconnect by setting options directly via WP-CLI (simpler approach)
+	await qit.wp( 'option update wcpaydev_force_disconnected "1"' );
+	await qit.wp( 'option update wcpay_account_data "[]"' );
+
+	// Clear caches to ensure the change takes effect
+	await qit.wp( 'cache flush' );
+	await qit.wp( 'transient delete --all' );
 };
 
 /**
@@ -81,9 +83,13 @@ export const enableActAsDisconnectedFromWCPay = async () => {
  * This mirrors disabling the "Act as disconnected from WCPay" dev tools option.
  */
 export const disableActAsDisconnectedFromWCPay = async () => {
-	await qit.wp( 'option update wcpaydev_force_disconnected 0', true );
-	// Clear any related caches
-	await qit
-		.wp( 'cache delete wcpay_account_data options', true )
-		.catch( () => undefined );
+	// Re-enable connection by removing force disconnected flag
+	await qit.wp( 'option delete wcpaydev_force_disconnected' );
+
+	// Clear the account data cache so it refreshes from server
+	await qit.wp( 'option delete wcpay_account_data' );
+
+	// Clear all caches and transients to force refresh
+	await qit.wp( 'cache flush' );
+	await qit.wp( 'transient delete --all' );
 };
