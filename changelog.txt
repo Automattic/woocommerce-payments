@@ -1,5 +1,17 @@
 *** WooPayments Changelog ***
 
+= 10.0.0 - 2025-09-24 =
+* Add - Add new feature flag for the dynamic checkout place order button, and new option on payment settings.
+* Add - New AccountDetails: Add feature flag, TypeScript definition, and basic component
+* Fix - Do not ask for shipping info for digital products dispute.
+* Fix - Fix Google/Apple Pay "State / County is required" error during checkout for Saudi Arabia
+* Fix - Fix possible errors when WooPay is enabled while the store is in Coming Soon mode
+* Fix - Name is required for the Affirm payment method.
+* Update - Improve messaging around test accounts and development mode on the Payments Overview page.
+* Update - Introduce account.deleted webhook processing for a smoother experience when an account is deleted from the Transact Platform.
+* Dev - Bump WC tested up to version to 10.2.0
+* Dev - Fix flaky E2E test in addSavedCard function
+
 = 9.9.0 - 2025-09-03 =
 * Fix - Conditionally set Stripe Link wallet option based on payment method configuration
 * Fix - fix: adding some missing i18n wrappers

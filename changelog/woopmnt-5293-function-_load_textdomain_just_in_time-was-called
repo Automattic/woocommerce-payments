@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Fix _load_textdomain_just_in_time error when loading a non-existing payment method
