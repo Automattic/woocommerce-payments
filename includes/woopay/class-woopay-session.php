@@ -778,23 +778,12 @@ class WooPay_Session {
 	}
 
 	/**
-	 * Get the WooPay verified email address from the header.
-	 *
-	 * @return string|null The WooPay verified email address if it's set.
-	 */
-	private static function get_woopay_verified_email_address() {
-		$has_woopay_verified_email_address = isset( $_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'] );
-
-		return $has_woopay_verified_email_address ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'] ) ) : null;
-	}
-
-	/**
 	 * Returns true if the request that's currently being processed is from WooPay, false
 	 * otherwise.
 	 *
 	 * @return bool True if request is from WooPay.
 	 */
-	private static function is_request_from_woopay(): bool {
+	public static function is_request_from_woopay(): bool {
 		return isset( $_SERVER['HTTP_USER_AGENT'] ) && 'WooPay' === $_SERVER['HTTP_USER_AGENT'];
 	}
 
@@ -803,8 +792,19 @@ class WooPay_Session {
 	 *
 	 * @return bool True if the request signature is valid.
 	 */
-	private static function has_valid_request_signature() {
+	public static function has_valid_request_signature() {
 		return apply_filters( 'wcpay_woopay_is_signed_with_blog_token', Rest_Authentication::is_signed_with_blog_token() );
+	}
+
+	/**
+	 * Get the WooPay verified email address from the header.
+	 *
+	 * @return string|null The WooPay verified email address if it's set.
+	 */
+	private static function get_woopay_verified_email_address() {
+		$has_woopay_verified_email_address = isset( $_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'] );
+
+		return $has_woopay_verified_email_address ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_X_WOOPAY_VERIFIED_EMAIL_ADDRESS'] ) ) : null;
 	}
 
 	/**

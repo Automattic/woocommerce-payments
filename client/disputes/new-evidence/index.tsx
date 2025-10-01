@@ -58,7 +58,7 @@ import {
 	getRecommendedDocumentFields,
 	getRecommendedShippingDocumentFields,
 } from './recommended-document-fields';
-import { RecommendedDocument } from './types';
+import { RecommendedDocument, EvidenceState } from './types';
 
 import './style.scss';
 import RefundStatus from './refund-status';
@@ -102,7 +102,7 @@ function needsShipping( reason: string | undefined, productType = '' ) {
 export default ( { query }: { query: { id: string } } ) => {
 	const path = `/wc/v3/payments/disputes/${ query.id }`;
 	const [ dispute, setDispute ] = useState< any >();
-	const [ evidence, setEvidence ] = useState< any >( {} );
+	const [ evidence, setEvidence ] = useState< EvidenceState >( {} );
 	const [ productType, setProductType ] = useState< string >( '' );
 	const [ isInitialLoading, setIsInitialLoading ] = useState( true );
 	const [ currentStep, setCurrentStep ] = useState( 0 );
@@ -173,7 +173,7 @@ export default ( { query }: { query: { id: string } } ) => {
 				);
 				setShippingAddress( d.evidence?.shipping_address || '' );
 				// Load saved file IDs from evidence
-				setEvidence( ( prev: any ) => ( {
+				setEvidence( ( prev: EvidenceState ) => ( {
 					...prev,
 					receipt: d.evidence?.receipt || '',
 					customer_communication:
@@ -397,6 +397,21 @@ export default ( { query }: { query: { id: string } } ) => {
 		setIsAccordionOpen( currentStep === 0 );
 	}, [ currentStep ] );
 
+	// Clear shipping information when shipping is not needed
+	useEffect( () => {
+		if ( ! hasShipping ) {
+			setShippingCarrier( '' );
+			setShippingDate( '' );
+			setShippingTrackingNumber( '' );
+			setShippingAddress( '' );
+			// Clear shipping documentation from evidence
+			setEvidence( ( prev: EvidenceState ) => ( {
+				...prev,
+				shipping_documentation: '',
+			} ) );
+		}
+	}, [ hasShipping ] );
+
 	// --- File upload logic ---
 	const isUploadingEvidence = () =>
 		Object.values( isUploading ).some( Boolean );
@@ -462,30 +477,62 @@ export default ( { query }: { query: { id: string } } ) => {
 					: 'wcpay_dispute_save_evidence_clicked'
 			);
 
-			// Only include file keys in the evidence object if they have a non-empty value
+			// Build base evidence object
+			const baseEvidence = {
+				...dispute.evidence,
+				product_description: productDescription,
+				receipt: evidence.receipt,
+				customer_communication: evidence.customer_communication,
+				customer_signature: evidence.customer_signature,
+				refund_policy: evidence.refund_policy,
+				duplicate_charge_documentation:
+					evidence.duplicate_charge_documentation,
+				service_documentation: evidence.service_documentation,
+				cancellation_policy: evidence.cancellation_policy,
+				access_activity_log: evidence.access_activity_log,
+				uncategorized_file: evidence.uncategorized_file,
+				uncategorized_text: coverLetter,
+				customer_purchase_ip: dispute.order?.ip_address,
+			};
+
+			// Only include shipping information if shipping is needed
+			if ( hasShipping ) {
+				baseEvidence.shipping_documentation =
+					evidence.shipping_documentation;
+				baseEvidence.shipping_carrier = shippingCarrier;
+				baseEvidence.shipping_date = shippingDate;
+				baseEvidence.shipping_tracking_number = shippingTrackingNumber;
+				baseEvidence.shipping_address = shippingAddress;
+			} else {
+				// Clear shipping information when not needed
+				baseEvidence.shipping_documentation = '';
+				baseEvidence.shipping_carrier = '';
+				baseEvidence.shipping_date = '';
+				baseEvidence.shipping_tracking_number = '';
+				baseEvidence.shipping_address = '';
+			}
+
+			// Define shipping field keys that need special handling
+			// These fields must always be sent to Stripe (even when empty) to clear existing data when shipping is not needed
+			const shippingFieldKeys = [
+				'shipping_documentation',
+				'shipping_carrier',
+				'shipping_date',
+				'shipping_tracking_number',
+				'shipping_address',
+			];
+
+			// Filter evidence: include shipping fields even if empty (to clear them),
+			// but filter out other empty fields
 			const evidenceToSend = Object.fromEntries(
-				Object.entries( {
-					...dispute.evidence,
-					product_description: productDescription,
-					receipt: evidence.receipt,
-					customer_communication: evidence.customer_communication,
-					customer_signature: evidence.customer_signature,
-					refund_policy: evidence.refund_policy,
-					duplicate_charge_documentation:
-						evidence.duplicate_charge_documentation,
-					shipping_documentation: evidence.shipping_documentation,
-					service_documentation: evidence.service_documentation,
-					cancellation_policy: evidence.cancellation_policy,
-					access_activity_log: evidence.access_activity_log,
-					uncategorized_file: evidence.uncategorized_file,
-					uncategorized_text: coverLetter,
-					// Add shipping details
-					shipping_carrier: shippingCarrier,
-					shipping_date: shippingDate,
-					shipping_tracking_number: shippingTrackingNumber,
-					shipping_address: shippingAddress,
-					customer_purchase_ip: dispute.order?.ip_address,
-				} ).filter( ( [ , value ] ) => value && value !== '' )
+				Object.entries( baseEvidence ).filter( ( [ key, value ] ) => {
+					// Always include shipping fields (even if empty) to ensure they're cleared on Stripe
+					if ( shippingFieldKeys.includes( key ) ) {
+						return true;
+					}
+					// For non-shipping fields, only include if they have a value
+					return value && value !== '';
+				} )
 			);
 
 			// Update metadata with the current productType
@@ -669,7 +716,7 @@ export default ( { query }: { query: { id: string } } ) => {
 
 	const updateProductDescription = ( value: string ) => {
 		setProductDescription( value );
-		setEvidence( ( prev: any ) => ( {
+		setEvidence( ( prev: EvidenceState ) => ( {
 			...prev,
 			product_description: value,
 		} ) );
@@ -677,7 +724,7 @@ export default ( { query }: { query: { id: string } } ) => {
 
 	const updateShippingCarrier = ( value: string ) => {
 		setShippingCarrier( value );
-		setEvidence( ( prev: any ) => ( {
+		setEvidence( ( prev: EvidenceState ) => ( {
 			...prev,
 			shipping_carrier: value,
 		} ) );
@@ -685,7 +732,7 @@ export default ( { query }: { query: { id: string } } ) => {
 
 	const updateShippingDate = ( value: string ) => {
 		setShippingDate( value );
-		setEvidence( ( prev: any ) => ( {
+		setEvidence( ( prev: EvidenceState ) => ( {
 			...prev,
 			shipping_date: value,
 		} ) );
@@ -693,7 +740,7 @@ export default ( { query }: { query: { id: string } } ) => {
 
 	const updateShippingTrackingNumber = ( value: string ) => {
 		setShippingTrackingNumber( value );
-		setEvidence( ( prev: any ) => ( {
+		setEvidence( ( prev: EvidenceState ) => ( {
 			...prev,
 			shipping_tracking_number: value,
 		} ) );
@@ -701,7 +748,7 @@ export default ( { query }: { query: { id: string } } ) => {
 
 	const updateShippingAddress = ( value: string ) => {
 		setShippingAddress( value );
-		setEvidence( ( prev: any ) => ( {
+		setEvidence( ( prev: EvidenceState ) => ( {
 			...prev,
 			shipping_address: value,
 		} ) );
@@ -748,7 +795,7 @@ export default ( { query }: { query: { id: string } } ) => {
 		setIsUploading( ( prev ) => ( { ...prev, [ key ]: true } ) );
 
 		// Force reload evidence components.
-		setEvidence( ( e: any ) => ( { ...e, [ key ]: '' } ) );
+		setEvidence( ( e: EvidenceState ) => ( { ...e, [ key ]: '' } ) );
 
 		try {
 			const uploadedFile: any = await apiFetch( {
@@ -758,7 +805,10 @@ export default ( { query }: { query: { id: string } } ) => {
 			} );
 
 			// Store uploaded file name in metadata to display in submitted evidence or saved for later form.
-			setEvidence( ( e: any ) => ( { ...e, [ key ]: uploadedFile.id } ) );
+			setEvidence( ( e: EvidenceState ) => ( {
+				...e,
+				[ key ]: uploadedFile.id,
+			} ) );
 			// Store uploaded file name to avoid fetching the file details again.
 			setUploadedFiles( ( prev ) => ( {
 				...prev,
@@ -786,14 +836,14 @@ export default ( { query }: { query: { id: string } } ) => {
 			);
 
 			// Force reload evidence components.
-			setEvidence( ( e: any ) => ( { ...e, [ key ]: '' } ) );
+			setEvidence( ( e: EvidenceState ) => ( { ...e, [ key ]: '' } ) );
 		} finally {
 			setIsUploading( ( prev ) => ( { ...prev, [ key ]: false } ) );
 		}
 	};
 
 	const doRemoveFile = ( key: string ) => {
-		setEvidence( ( e: any ) => ( { ...e, [ key ]: '' } ) );
+		setEvidence( ( e: EvidenceState ) => ( { ...e, [ key ]: '' } ) );
 		setFileSizes( ( prev ) => ( { ...prev, [ key ]: 0 } ) );
 		// Remove the file name from the uploaded files.
 		setUploadedFiles( ( prev ) => ( { ...prev, [ key ]: '' } ) );

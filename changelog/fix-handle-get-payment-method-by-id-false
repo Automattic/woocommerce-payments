@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix possible errors when WooPay is enabled while the store is in Coming Soon mode
