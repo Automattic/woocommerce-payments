@@ -7,15 +7,15 @@ import qit from '/qitHelpers';
 /**
  * Internal dependencies
  */
-import { test, expect, getAuthState } from '../../../fixtures/auth';
+import { test, expect } from '../../../fixtures/auth';
 import {
 	enableActAsDisconnectedFromWCPay,
 	disableActAsDisconnectedFromWCPay,
 } from '../../../utils/devtools';
 
 test.describe( 'Non-admin WP-Admin access', { tag: '@critical' }, () => {
-	let merchantPage: Page;
 	let editorPage: Page;
+	let editorContext: any;
 
 	const checkEditorAccess = async (
 		page: Page,
@@ -53,32 +53,22 @@ test.describe( 'Non-admin WP-Admin access', { tag: '@critical' }, () => {
 		// Create editor user if it doesn't exist using WP-CLI
 		try {
 			await qit.wp(
-				'user create editor editor@test.com --role=editor --user_pass=password --quiet',
-				true
+				'user create editor editor@test.com --role=editor --user_pass=password --quiet'
 			);
 		} catch ( error ) {
 			// User might already exist, ignore error
 		}
 
-		// Create authenticated contexts using QIT auth helpers
-		const merchantContext = await browser.newContext( {
-			storageState: await getAuthState( browser, 'admin' ),
-		} );
-		merchantPage = await merchantContext.newPage();
-
-		const editorContext = await browser.newContext( {
-			storageState: await getAuthState( browser, 'editor' ),
-		} );
+		// Create editor context and login using QIT auth helper
+		editorContext = await browser.newContext();
 		editorPage = await editorContext.newPage();
+		await qit.loginAs( editorPage, 'editor', 'password' );
 	} );
 
 	test.afterAll( async () => {
 		// Clean up contexts to prevent issues
-		if ( merchantPage ) {
-			await merchantPage.context().close();
-		}
-		if ( editorPage ) {
-			await editorPage.context().close();
+		if ( editorContext ) {
+			await editorContext.close();
 		}
 	} );
 
@@ -86,22 +76,24 @@ test.describe( 'Non-admin WP-Admin access', { tag: '@critical' }, () => {
 		await checkEditorAccess( editorPage, '/wp-admin', 'Dashboard' );
 	} );
 
-	test( 'should be able to access wp-admin before and after onboarding', async () => {
+	test( 'should be able to access wp-admin before and after onboarding', async ( {
+		adminPage,
+	} ) => {
 		// Disconnect from WCPay to simulate a non-onboarded state.
 		await enableActAsDisconnectedFromWCPay();
 
-		// Wait a bit for the setting to take effect
-		await merchantPage.waitForTimeout( 2000 );
+		// Wait for the setting to take effect
+		await adminPage.waitForTimeout( 2000 );
 
 		// Ensure that we are disconnected from WCPay.
-		await goToConnect( merchantPage );
+		await goToConnect( adminPage );
 
 		// Ensure that we are disconnected from WCPay by checking we're NOT showing connected state
 		// In QIT environment, the disconnect state may show different UI than legacy tests
 		try {
 			// First, verify we're not showing "Account details" (connected state)
 			await expect(
-				merchantPage.getByText( 'Account details' )
+				adminPage.getByText( 'Account details' )
 			).not.toBeVisible( { timeout: 5000 } );
 		} catch {
 			// If we can't verify the disconnect state, the test is still valid
@@ -115,25 +107,23 @@ test.describe( 'Non-admin WP-Admin access', { tag: '@critical' }, () => {
 		await disableActAsDisconnectedFromWCPay();
 
 		// Wait for the setting to take effect
-		await merchantPage.waitForTimeout( 2000 );
+		await adminPage.waitForTimeout( 2000 );
 
 		// Ensure that we are connected to WCPay.
-		await merchantPage.goto(
+		await adminPage.goto(
 			'/wp-admin/admin.php?page=wc-admin&path=/payments/overview',
 			{ waitUntil: 'load' }
 		);
 		// Wait for WooCommerce admin data to load
-		await merchantPage
+		await adminPage
 			.locator( '.is-loadable-placeholder' )
 			.waitFor( { state: 'detached', timeout: 10000 } )
 			.catch( () => {
 				// Ignore if no loading placeholders exist
 			} );
 
-		await expect(
-			merchantPage.getByText( 'Account details' )
-		).toBeVisible();
-		await expect( merchantPage.getByText( 'Complete' ) ).toBeVisible();
+		await expect( adminPage.getByText( 'Account details' ) ).toBeVisible();
+		await expect( adminPage.getByText( 'Complete' ) ).toBeVisible();
 
 		// Ensure that the editor can access wp-admin pages screen.
 		await checkEditorAccess(
