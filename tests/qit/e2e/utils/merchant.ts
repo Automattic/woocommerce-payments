@@ -202,6 +202,53 @@ export const goToNewPost = async ( page: Page ) => {
 	await dataHasLoaded( page );
 };
 
+export const goToOrder = async ( page: Page, orderId: string ) => {
+	await page.goto(
+		`/wp-admin/admin.php?page=wc-orders&action=edit&id=${ orderId }`,
+		{
+			waitUntil: 'load',
+		}
+	);
+	await dataHasLoaded( page );
+};
+
+export const isCaptureLaterEnabled = async ( page: Page ) => {
+	await goToWooPaymentsSettings( page );
+
+	const checkboxTestId = 'capture-later-checkbox';
+	const isEnabled = await page.getByTestId( checkboxTestId ).isChecked();
+
+	return isEnabled;
+};
+
+export const activateCaptureLater = async ( page: Page ) => {
+	await goToWooPaymentsSettings( page );
+
+	const checkboxTestId = 'capture-later-checkbox';
+	const wasInitiallyEnabled = await page
+		.getByTestId( checkboxTestId )
+		.isChecked();
+
+	if ( ! wasInitiallyEnabled ) {
+		await page.getByTestId( checkboxTestId ).click();
+		await page
+			.getByRole( 'button', { name: 'Enable manual capture' } )
+			.click();
+		// Save the settings using the standard method (defined later in file)
+		await page.getByRole( 'button', { name: 'Save changes' } ).click();
+		await page.waitForTimeout( 1000 );
+	}
+	return wasInitiallyEnabled;
+};
+
+export const deactivateCaptureLater = async ( page: Page ) => {
+	await goToWooPaymentsSettings( page );
+	await page.getByTestId( 'capture-later-checkbox' ).uncheck();
+	// Save the settings using the standard method
+	await page.getByRole( 'button', { name: 'Save changes' } ).click();
+	await page.waitForTimeout( 1000 );
+};
+
 const goToWooCommerceGeneralSettings = async ( page: Page ) => {
 	await page.goto( '/wp-admin/admin.php?page=wc-settings&tab=general', {
 		waitUntil: 'load',
