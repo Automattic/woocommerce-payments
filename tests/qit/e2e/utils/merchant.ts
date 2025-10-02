@@ -195,6 +195,13 @@ export const goToMultiCurrencySettings = async ( page: Page ) => {
 	await dataHasLoaded( page );
 };
 
+export const goToNewPost = async ( page: Page ) => {
+	await page.goto( '/wp-admin/post-new.php', {
+		waitUntil: 'load',
+	} );
+	await dataHasLoaded( page );
+};
+
 const goToWooCommerceGeneralSettings = async ( page: Page ) => {
 	await page.goto( '/wp-admin/admin.php?page=wc-settings&tab=general', {
 		waitUntil: 'load',
