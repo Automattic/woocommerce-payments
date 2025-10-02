@@ -48,6 +48,97 @@ export async function dataHasLoaded( page: Page ) {
 	await expect( page.locator( '.is-loadable-placeholder' ) ).toHaveCount( 0 );
 }
 
+export const tableDataHasLoaded = async ( page: Page ) => {
+	await page
+		.locator( '.woocommerce-table__table.is-loading' )
+		.waitFor( { state: 'hidden' } );
+};
+
+export const waitAndSkipTourComponent = async (
+	page: Page,
+	containerClass: string
+) => {
+	try {
+		await page.waitForSelector( `${ containerClass }`, { timeout: 3000 } );
+		if ( await page.isVisible( `${ containerClass }` ) ) {
+			await page.click(
+				`${ containerClass } button.woocommerce-tour-kit-step-controls__close-btn`
+			);
+		}
+	} catch ( error ) {
+		// Do nothing. The tour component being not present shouldn't cause the test to fail.
+	}
+};
+
+export const ensureOrderIsProcessed = async ( page: Page, orderId: string ) => {
+	// Navigate to action scheduler to manually run order import
+	await page.goto(
+		`/wp-admin/tools.php?page=action-scheduler&status=pending&s=${ orderId }`,
+		{ waitUntil: 'load' }
+	);
+
+	// Wait for page content to load
+	await page.waitForLoadState( 'networkidle' );
+
+	// Try multiple times to find and run the import action
+	let attempts = 0;
+	const maxAttempts = 2;
+
+	while ( attempts < maxAttempts ) {
+		try {
+			// Check if the run button exists
+			const runButton = page.locator(
+				'td:has-text("wc-admin_import_orders") a:has-text("Run")'
+			);
+
+			if ( ( await runButton.count() ) > 0 ) {
+				// Try $eval first (more reliable in QIT environments)
+				try {
+					await page.$eval(
+						'td:has-text("wc-admin_import_orders") a:has-text("Run")',
+						( el: HTMLLinkElement ) => el.click()
+					);
+				} catch ( evalError ) {
+					// Fallback to modern approach
+					await runButton.first().click( { timeout: 10000 } );
+				}
+
+				// Wait for action to process
+				await page.waitForTimeout( 2000 );
+
+				// Check if the action is no longer pending (successfully processed)
+				await page.reload();
+				await page.waitForLoadState( 'networkidle' );
+
+				const stillPending = await page
+					.locator(
+						'td:has-text("wc-admin_import_orders") a:has-text("Run")'
+					)
+					.count();
+
+				if ( stillPending === 0 ) {
+					// Action processed successfully
+					break;
+				}
+			} else {
+				// No pending import actions found
+				break;
+			}
+		} catch ( error ) {
+			// Continue to next attempt
+		}
+
+		attempts++;
+		if ( attempts < maxAttempts ) {
+			// Wait before retrying
+			await page.waitForTimeout( 1000 );
+		}
+	}
+
+	// Final wait for analytics data to be processed
+	await page.waitForTimeout( 2000 );
+};
+
 export const goToWooPaymentsSettings = async ( page: Page ) => {
 	await page.goto(
 		'/wp-admin/admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments',
@@ -59,6 +150,14 @@ export const goToWooPaymentsSettings = async ( page: Page ) => {
 export const goToTransactions = async ( page: Page ) => {
 	await page.goto(
 		'/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Ftransactions',
+		{ waitUntil: 'load' }
+	);
+	await dataHasLoaded( page );
+};
+
+export const goToOrderAnalytics = async ( page: Page ) => {
+	await page.goto(
+		'/wp-admin/admin.php?page=wc-admin&path=%2Fanalytics%2Forders',
 		{ waitUntil: 'load' }
 	);
 	await dataHasLoaded( page );
