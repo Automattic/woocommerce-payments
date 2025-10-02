@@ -102,6 +102,34 @@ export const saveWooPaymentsSettings = async ( page: Page ) => {
 	await expectSnackbarWithText( page, 'Settings saved.' );
 };
 
+export const isWooPayEnabled = async ( page: Page ) => {
+	await goToWooPaymentsSettings( page );
+
+	const checkboxTestId = 'woopay-toggle';
+	const isEnabled = await page.getByTestId( checkboxTestId ).isChecked();
+
+	return isEnabled;
+};
+
+export const activateWooPay = async ( page: Page ) => {
+	await goToWooPaymentsSettings( page );
+
+	const checkboxTestId = 'woopay-toggle';
+	const wasInitiallyEnabled = await isWooPayEnabled( page );
+
+	if ( ! wasInitiallyEnabled ) {
+		await page.getByTestId( checkboxTestId ).check();
+		await saveWooPaymentsSettings( page );
+	}
+	return wasInitiallyEnabled;
+};
+
+export const deactivateWooPay = async ( page: Page ) => {
+	await goToWooPaymentsSettings( page );
+	await page.getByTestId( 'woopay-toggle' ).uncheck();
+	await saveWooPaymentsSettings( page );
+};
+
 export const saveMultiCurrencySettings = async ( page: Page ) => {
 	await page.getByRole( 'button', { name: 'Save changes' } ).click();
 	await expectSnackbarWithText( page, 'Currency settings updated.' );
@@ -313,7 +341,7 @@ echo $order->get_id();
 	return orderId;
 };
 
-const disableAllEnabledCurrencies = async ( page: Page ) => {
+export const disableAllEnabledCurrencies = async ( page: Page ) => {
 	await goToMultiCurrencySettings( page );
 
 	const deleteButtons = () =>
@@ -406,6 +434,77 @@ export const addCurrency = async ( page: Page, currencyCode: string ) => {
 	await expect(
 		page.locator( `li.enabled-currency.${ currencyCode.toLowerCase() }` )
 	).toBeVisible();
+};
+
+export const removeCurrency = async ( page: Page, currencyCode: string ) => {
+	await goToMultiCurrencySettings( page );
+	const removeButton = page.locator(
+		`li.enabled-currency.${ currencyCode.toLowerCase() } button[aria-label="Remove"]`
+	);
+	await removeButton.click();
+	await expectSnackbarWithText( page, 'Enabled currencies updated.' );
+	await expect(
+		page.locator( `li.enabled-currency.${ currencyCode.toLowerCase() }` )
+	).not.toBeVisible();
+};
+
+export const editCurrency = async (
+	page: Page,
+	currencyCode: string,
+	options: {
+		exchangeRate?: string;
+		priceCharm?: string;
+		priceRounding?: string;
+	} = {}
+) => {
+	await goToMultiCurrencySettings( page );
+	const editButton = page.locator(
+		`li.enabled-currency.${ currencyCode.toLowerCase() } button[aria-label="Edit"]`
+	);
+	await editButton.click();
+
+	if ( options.exchangeRate ) {
+		await page.getByLabel( 'Exchange rate' ).fill( options.exchangeRate );
+	}
+
+	if ( options.priceCharm ) {
+		await page
+			.locator( 'select[name="price_charm"]' )
+			.selectOption( options.priceCharm );
+	}
+
+	if ( options.priceRounding ) {
+		await page
+			.locator( 'select[name="price_rounding"]' )
+			.selectOption( options.priceRounding );
+	}
+
+	await page.getByRole( 'button', { name: 'Update' } ).click();
+	await expectSnackbarWithText( page, 'Enabled currencies updated.' );
+};
+
+export const setCurrencyRate = async (
+	page: Page,
+	currencyCode: string,
+	rate: string
+) => {
+	await editCurrency( page, currencyCode, { exchangeRate: rate } );
+};
+
+export const setCurrencyCharmPricing = async (
+	page: Page,
+	currencyCode: string,
+	charm: string
+) => {
+	await editCurrency( page, currencyCode, { priceCharm: charm } );
+};
+
+export const setCurrencyPriceRounding = async (
+	page: Page,
+	currencyCode: string,
+	rounding: string
+) => {
+	await editCurrency( page, currencyCode, { priceRounding: rounding } );
 };
 
 export const enablePaymentMethods = async (
