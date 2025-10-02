@@ -76,9 +76,11 @@ const expectSnackbarWithText = async (
 	text: string,
 	timeout = 10_000
 ) => {
-	const snackbar = page.locator( '.components-snackbar__content', {
-		hasText: text,
-	} );
+	const snackbar = page
+		.locator( '.components-snackbar__content', {
+			hasText: text,
+		} )
+		.first();
 	await expect( snackbar ).toBeVisible( { timeout } );
 	await page.waitForTimeout( 2_000 );
 };
@@ -439,48 +441,22 @@ export const addCurrency = async ( page: Page, currencyCode: string ) => {
 export const removeCurrency = async ( page: Page, currencyCode: string ) => {
 	await goToMultiCurrencySettings( page );
 	const removeButton = page.locator(
-		`li.enabled-currency.${ currencyCode.toLowerCase() } button[aria-label="Remove"]`
+		`li.enabled-currency.${ currencyCode.toLowerCase() } .enabled-currency__action.delete`
 	);
 	await removeButton.click();
 	await expectSnackbarWithText( page, 'Enabled currencies updated.' );
 	await expect(
 		page.locator( `li.enabled-currency.${ currencyCode.toLowerCase() }` )
-	).not.toBeVisible();
+	).toBeHidden();
 };
 
-export const editCurrency = async (
-	page: Page,
-	currencyCode: string,
-	options: {
-		exchangeRate?: string;
-		priceCharm?: string;
-		priceRounding?: string;
-	} = {}
-) => {
+export const editCurrency = async ( page: Page, currencyCode: string ) => {
 	await goToMultiCurrencySettings( page );
 	const editButton = page.locator(
-		`li.enabled-currency.${ currencyCode.toLowerCase() } button[aria-label="Edit"]`
+		`.enabled-currency.${ currencyCode.toLowerCase() } .enabled-currency__action.edit`
 	);
 	await editButton.click();
-
-	if ( options.exchangeRate ) {
-		await page.getByLabel( 'Exchange rate' ).fill( options.exchangeRate );
-	}
-
-	if ( options.priceCharm ) {
-		await page
-			.locator( 'select[name="price_charm"]' )
-			.selectOption( options.priceCharm );
-	}
-
-	if ( options.priceRounding ) {
-		await page
-			.locator( 'select[name="price_rounding"]' )
-			.selectOption( options.priceRounding );
-	}
-
-	await page.getByRole( 'button', { name: 'Update' } ).click();
-	await expectSnackbarWithText( page, 'Enabled currencies updated.' );
+	await dataHasLoaded( page );
 };
 
 export const setCurrencyRate = async (
@@ -488,7 +464,10 @@ export const setCurrencyRate = async (
 	currencyCode: string,
 	rate: string
 ) => {
-	await editCurrency( page, currencyCode, { exchangeRate: rate } );
+	await editCurrency( page, currencyCode );
+	await page.getByLabel( 'Manual' ).check();
+	await page.getByTestId( 'manual_rate_input' ).fill( rate );
+	await saveMultiCurrencySettings( page );
 };
 
 export const setCurrencyCharmPricing = async (
@@ -496,7 +475,9 @@ export const setCurrencyCharmPricing = async (
 	currencyCode: string,
 	charm: string
 ) => {
-	await editCurrency( page, currencyCode, { priceCharm: charm } );
+	await editCurrency( page, currencyCode );
+	await page.getByTestId( 'price_charm' ).selectOption( charm );
+	await saveMultiCurrencySettings( page );
 };
 
 export const setCurrencyPriceRounding = async (
@@ -504,7 +485,9 @@ export const setCurrencyPriceRounding = async (
 	currencyCode: string,
 	rounding: string
 ) => {
-	await editCurrency( page, currencyCode, { priceRounding: rounding } );
+	await editCurrency( page, currencyCode );
+	await page.getByTestId( 'price_rounding' ).selectOption( rounding );
+	await saveMultiCurrencySettings( page );
 };
 
 export const enablePaymentMethods = async (
