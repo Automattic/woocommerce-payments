@@ -155,6 +155,14 @@ export const goToTransactions = async ( page: Page ) => {
 	await dataHasLoaded( page );
 };
 
+export const goToDisputes = async ( page: Page ) => {
+	await page.goto(
+		'/wp-admin/admin.php?page=wc-admin&path=%2Fpayments%2Fdisputes',
+		{ waitUntil: 'load' }
+	);
+	await dataHasLoaded( page );
+};
+
 export const goToOrderAnalytics = async ( page: Page ) => {
 	await page.goto(
 		'/wp-admin/admin.php?page=wc-admin&path=%2Fanalytics%2Forders',
