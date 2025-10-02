@@ -171,6 +171,14 @@ export const goToOrderAnalytics = async ( page: Page ) => {
 	await dataHasLoaded( page );
 };
 
+export const goToPaymentsOverview = async ( page: Page ) => {
+	await page.goto(
+		'/wp-admin/admin.php?page=wc-admin&path=/payments/overview',
+		{ waitUntil: 'load' }
+	);
+	await dataHasLoaded( page );
+};
+
 const goToMultiCurrencySettings = async ( page: Page ) => {
 	await page.goto(
 		'/wp-admin/admin.php?page=wc-settings&tab=wcpay_multi_currency',
