@@ -48,7 +48,7 @@ export async function dataHasLoaded( page: Page ) {
 	await expect( page.locator( '.is-loadable-placeholder' ) ).toHaveCount( 0 );
 }
 
-const goToWooPaymentsSettings = async ( page: Page ) => {
+export const goToWooPaymentsSettings = async ( page: Page ) => {
 	await page.goto(
 		'/wp-admin/admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments',
 		{ waitUntil: 'load' }
