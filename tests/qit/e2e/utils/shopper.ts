@@ -868,3 +868,30 @@ export const confirmCardAuthenticationWCB = async (
 	);
 	await confirmCardAuthentication( page, authorize );
 };
+
+/**
+ * Creates a disputed order using the disputed-fraudulent test card.
+ * This helper automatically triggers a dispute after order creation.
+ * Each test should create its own disputed order to avoid state conflicts.
+ *
+ * @param {Page} page - The customer page context
+ * @return {Promise<string>} The order ID of the created disputed order
+ */
+export const createDisputedOrder = async ( page: Page ): Promise< string > => {
+	await addToCartFromShopPage( page );
+
+	await navigation.goToCheckout( page );
+
+	await fillBillingAddress( page, config.addresses.customer.billing );
+
+	// Use disputed-fraudulent card to trigger automatic dispute creation
+	await fillCardDetails( page, config.cards[ 'disputed-fraudulent' ] );
+
+	await placeOrder( page );
+
+	// Extract order ID from confirmation page
+	const orderIdField = page.locator(
+		'.woocommerce-order-overview__order.order > strong'
+	);
+	return await orderIdField.innerText();
+};

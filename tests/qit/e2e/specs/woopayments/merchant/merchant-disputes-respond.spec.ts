@@ -2,118 +2,103 @@
  * Internal dependencies
  */
 import { test, expect } from '../../../fixtures/auth';
-import { config } from '../../../config/default';
-import {
-	addToCartFromShopPage,
-	fillBillingAddress,
-	fillCardDetails,
-	placeOrder,
-} from '../../../utils/shopper';
-import { goToCheckout } from '../../../utils/shopper-navigation';
+import { createDisputedOrder } from '../../../utils/shopper';
 import { goToPaymentDetailsForOrder } from '../../../utils/merchant';
-
-let disputedOrderId: string;
 
 test.describe( 'Disputes > Respond to a dispute', () => {
 	// Complex dispute workflows with evidence submission require extended timeout
 	test.setTimeout( 90000 );
 
-	// Create a single disputed order for all tests to reuse (efficiency pattern from task template)
-	test.beforeAll( async ( { customerPage } ) => {
-		await test.step( 'Create order that will be disputed', async () => {
-			await addToCartFromShopPage( customerPage );
-
-			await goToCheckout( customerPage );
-
-			await fillBillingAddress(
-				customerPage,
-				config.addresses.customer.billing
+	test(
+		'Accept a dispute',
+		{ tag: '@critical' },
+		async ( { adminPage, customerPage } ) => {
+			// Create a fresh disputed order for this test
+			const disputedOrderId = await test.step(
+				'Create order that will be disputed',
+				async () => {
+					return await createDisputedOrder( customerPage );
+				}
 			);
 
-			// Use disputed-fraudulent card to trigger automatic dispute creation
-			await fillCardDetails(
-				customerPage,
-				config.cards[ 'disputed-fraudulent' ]
-			);
+			// Go to payment details page for the disputed order
+			await goToPaymentDetailsForOrder( adminPage, disputedOrderId );
 
-			await placeOrder( customerPage );
-
-			// Extract order ID from confirmation page
-			const orderIdField = customerPage.locator(
-				'.woocommerce-order-overview__order.order > strong'
-			);
-			disputedOrderId = await orderIdField.innerText();
-		} );
-	} );
-
-	test( 'Accept a dispute', { tag: '@critical' }, async ( { adminPage } ) => {
-		// Go to payment details page for the disputed order
-		await goToPaymentDetailsForOrder( adminPage, disputedOrderId );
-
-		await test.step( 'Wait for dispute status to appear', async () => {
-			// Wait for the dispute status chip to be visible
-			await expect(
-				adminPage.locator( '.payment-details-summary__status' )
-			).toBeVisible( { timeout: 30000 } );
-		} );
-
-		await test.step(
-			'Click the accept dispute button to open the accept dispute modal',
-			async () => {
-				await adminPage
-					.getByRole( 'button', { name: 'Accept dispute' } )
-					.click();
-			}
-		);
-
-		await test.step(
-			'Click the accept dispute button to accept the dispute',
-			async () => {
-				// Wait for the modal to appear
+			await test.step( 'Wait for dispute status to appear', async () => {
+				// Wait for the dispute status chip to be visible
 				await expect(
-					adminPage.getByText( 'Accept the dispute?' )
-				).toBeVisible();
-
-				// Click the button within the modal using test ID
-				await adminPage.getByTestId( 'accept-dispute-button' ).click();
-
-				// Wait for the network request to complete
-				await adminPage.waitForLoadState( 'networkidle' );
-			}
-		);
-
-		await test.step(
-			'Wait for the accept request to resolve and observe the lost dispute status',
-			async () => {
-				// Poll for status change since dispute processing is async
-				await expect(
-					adminPage.getByText( 'Disputed: Lost' )
+					adminPage.locator( '.payment-details-summary__status' )
 				).toBeVisible( { timeout: 30000 } );
+			} );
 
-				// Check the dispute details footer
-				await expect(
-					adminPage.getByText( 'You accepted this dispute on' )
-				).toBeVisible();
-			}
-		);
+			await test.step(
+				'Click the accept dispute button to open the accept dispute modal',
+				async () => {
+					await adminPage
+						.getByRole( 'button', { name: 'Accept dispute' } )
+						.click();
+				}
+			);
 
-		await test.step(
-			'Confirm dispute action buttons are not present anymore since the dispute has been accepted',
-			async () => {
-				await expect(
-					adminPage.getByTestId( 'challenge-dispute-button' )
-				).not.toBeVisible();
-				await expect(
-					adminPage.getByTestId( 'accept-dispute-button' )
-				).not.toBeVisible();
-			}
-		);
-	} );
+			await test.step(
+				'Click the accept dispute button to accept the dispute',
+				async () => {
+					// Wait for the modal to appear
+					await expect(
+						adminPage.getByText( 'Accept the dispute?' )
+					).toBeVisible();
+
+					// Click the button within the modal using test ID
+					await adminPage
+						.getByTestId( 'accept-dispute-button' )
+						.click();
+
+					// Wait for the network request to complete
+					await adminPage.waitForLoadState( 'networkidle' );
+				}
+			);
+
+			await test.step(
+				'Wait for the accept request to resolve and observe the lost dispute status',
+				async () => {
+					// Poll for status change since dispute processing is async
+					await expect(
+						adminPage.getByText( 'Disputed: Lost' )
+					).toBeVisible( { timeout: 30000 } );
+
+					// Check the dispute details footer
+					await expect(
+						adminPage.getByText( 'You accepted this dispute on' )
+					).toBeVisible();
+				}
+			);
+
+			await test.step(
+				'Confirm dispute action buttons are not present anymore since the dispute has been accepted',
+				async () => {
+					await expect(
+						adminPage.getByTestId( 'challenge-dispute-button' )
+					).not.toBeVisible();
+					await expect(
+						adminPage.getByTestId( 'accept-dispute-button' )
+					).not.toBeVisible();
+				}
+			);
+		}
+	);
 
 	test(
 		'Challenge a dispute with winning evidence',
 		{ tag: '@critical' },
-		async ( { adminPage } ) => {
+		async ( { adminPage, customerPage } ) => {
+			// Create a fresh disputed order for this test
+			const disputedOrderId = await test.step(
+				'Create order that will be disputed',
+				async () => {
+					return await createDisputedOrder( customerPage );
+				}
+			);
+
 			const paymentDetailsLink = await goToPaymentDetailsForOrder(
 				adminPage,
 				disputedOrderId
@@ -314,7 +299,15 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 	test(
 		'Challenge a dispute with losing evidence',
 		{ tag: '@critical' },
-		async ( { adminPage } ) => {
+		async ( { adminPage, customerPage } ) => {
+			// Create a fresh disputed order for this test
+			const disputedOrderId = await test.step(
+				'Create order that will be disputed',
+				async () => {
+					return await createDisputedOrder( customerPage );
+				}
+			);
+
 			const paymentDetailsLink = await goToPaymentDetailsForOrder(
 				adminPage,
 				disputedOrderId
@@ -484,7 +477,16 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 
 	test( 'Save a dispute challenge without submitting evidence', async ( {
 		adminPage,
+		customerPage,
 	} ) => {
+		// Create a fresh disputed order for this test
+		const disputedOrderId = await test.step(
+			'Create order that will be disputed',
+			async () => {
+				return await createDisputedOrder( customerPage );
+			}
+		);
+
 		const paymentDetailsLink = await goToPaymentDetailsForOrder(
 			adminPage,
 			disputedOrderId
