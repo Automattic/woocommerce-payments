@@ -222,6 +222,37 @@ export const goToPaymentDetails = async (
 	await dataHasLoaded( page );
 };
 
+/**
+ * Navigate to payment details for a specific order.
+ * Extracts the payment intent ID from the order page and navigates to the payment details.
+ *
+ * @param page - The page object to use for navigation
+ * @param orderId - The WooCommerce order ID
+ * @return The URL of the payment details page
+ */
+export const goToPaymentDetailsForOrder = async (
+	page: Page,
+	orderId: string
+): Promise< string > => {
+	// Navigate to the order page
+	await goToOrder( page, orderId );
+
+	// Extract payment intent ID from order page
+	const paymentIntentId = await page
+		.locator( '#order_data' )
+		.getByRole( 'link', {
+			name: /pi_/,
+		} )
+		.innerText();
+
+	// Navigate to payment details
+	await goToPaymentDetails( page, paymentIntentId );
+	await dataHasLoaded( page );
+
+	// Return current URL for later use
+	return page.url();
+};
+
 export const isCaptureLaterEnabled = async ( page: Page ) => {
 	await goToWooPaymentsSettings( page );
 
