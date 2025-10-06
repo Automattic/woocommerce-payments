@@ -30,6 +30,23 @@ else
     fi
 fi
 
+# Import WooCommerce Subscriptions products if the plugin is installed
+echo "Checking for WooCommerce Subscriptions plugin..."
+if wp plugin is-installed woocommerce-subscriptions 2>/dev/null; then
+    echo "WooCommerce Subscriptions detected - importing subscription products..."
+    # In QIT, tests are mounted at /qit/tests/e2e/<extension-name>/local/
+    WC_SUBSCRIPTIONS_DATA_PATH="/qit/tests/e2e/woocommerce-payments/local/wc-subscription-products.xml"
+
+    if [ -f "$WC_SUBSCRIPTIONS_DATA_PATH" ]; then
+        wp import "$WC_SUBSCRIPTIONS_DATA_PATH" --authors=skip
+        echo "✅ Subscription products imported successfully"
+    else
+        echo "Warning: Subscription products XML not found at $WC_SUBSCRIPTIONS_DATA_PATH"
+    fi
+else
+    echo "WooCommerce Subscriptions not installed - skipping subscription products import"
+fi
+
 # Ensure WooCommerce core pages exist and capture IDs
 echo "Ensuring WooCommerce core pages exist..."
 wp wc --user=admin tool run install_pages >/dev/null 2>&1 || true

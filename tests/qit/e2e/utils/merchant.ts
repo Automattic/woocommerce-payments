@@ -807,3 +807,15 @@ export const activateTheme = async ( slug: string ) => {
 		// Theme activation failed, but we don't want to crash the test
 	}
 };
+
+export const goToSubscriptions = async ( page: Page ) => {
+	const wooCoreVersion = process.env.E2E_WC_VERSION;
+	const subscriptionsUrl =
+		wooCoreVersion === '7.7.0'
+			? '/wp-admin/edit.php?post_type=shop_subscription'
+			: '/wp-admin/admin.php?page=wc-orders--shop_subscription';
+	await page.goto( subscriptionsUrl, {
+		waitUntil: 'load',
+	} );
+	await dataHasLoaded( page );
+};

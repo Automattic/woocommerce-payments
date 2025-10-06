@@ -13,3 +13,4 @@ php_version: "8.3"
 plugin:
   - "woocommerce"
   - "jetpack"
+  - "woocommerce-subscriptions.zip"
