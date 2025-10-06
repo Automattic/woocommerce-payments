@@ -28,7 +28,7 @@ const shouldRunWCBlocksTests = process.env.SKIP_WC_BLOCKS_TESTS !== '1';
 
 describeif( shouldRunWCBlocksTests )(
 	'WooCommerce Blocks > Saved cards',
-	{ tag: [ '@critical', '@blocks' ] },
+	{ tag: [ '@shopper', '@critical', '@blocks' ] },
 	() => {
 		let shopperContext: BrowserContext;
 		let shopperPage: Page;

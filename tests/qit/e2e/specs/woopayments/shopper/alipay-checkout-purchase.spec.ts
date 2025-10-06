@@ -15,7 +15,7 @@ import { goToCheckoutWCB } from '../../../utils/shopper-navigation';
 
 const shouldRunWCBlocksTests = process.env.SKIP_WC_BLOCKS_TESTS !== '1';
 
-test.describe( 'Alipay Checkout', () => {
+test.describe( 'Alipay Checkout', { tag: '@shopper' }, () => {
 	let merchantContext: BrowserContext;
 	let merchantPage: Page;
 	let shopperContext: BrowserContext;

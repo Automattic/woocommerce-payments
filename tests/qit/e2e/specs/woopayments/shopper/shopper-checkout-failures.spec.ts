@@ -12,7 +12,7 @@ import * as shopper from '../../../utils/shopper';
 
 test.describe(
 	'Shopper > Checkout > Failures with various cards',
-	{ tag: '@critical' },
+	{ tag: [ '@shopper', '@critical' ] },
 	() => {
 		const waitForBanner = async ( page: Page, errorText: string ) => {
 			await expect( page.getByText( errorText ) ).toBeVisible();

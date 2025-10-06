@@ -50,7 +50,7 @@ const cards: Array< [ string, typeof config.cards.declined, string ] > = [
 	],
 ];
 
-test.describe( 'Payment Methods', () => {
+test.describe( 'Payment Methods', { tag: '@shopper' }, () => {
 	let shopperContext: BrowserContext;
 	let shopperPage: Page;
 
