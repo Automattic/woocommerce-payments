@@ -127,7 +127,7 @@ const assertCheckoutError = async (
 
 describeif( shouldRunWCBlocksTests )(
 	'WooCommerce Blocks > Checkout failures',
-	{ tag: [ '@critical', '@blocks' ] },
+	{ tag: [ '@shopper', '@critical', '@blocks' ] },
 	() => {
 		let shopperContext: BrowserContext;
 		let shopperPage: Page;

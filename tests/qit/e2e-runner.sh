@@ -99,14 +99,34 @@ fi
 # overridden via the first positional argument (if it is not an option) or
 # the WCP_E2E_SPEC environment variable.
 SPEC_TARGET=${WCP_E2E_SPEC:-tests/qit/e2e}
+TEST_TAG=""
 declare -a FORWARDED_ARGS=()
-if [[ $# -gt 0 ]]; then
-    if [[ $1 != --* ]]; then
-        SPEC_TARGET="$1"
-        shift
-    fi
-    FORWARDED_ARGS=( "$@" )
-fi
+
+# Parse arguments to extract spec target and optional --tag
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        --tag=*)
+            TEST_TAG="${1#*=}"
+            shift
+            ;;
+        --tag)
+            TEST_TAG="$2"
+            shift 2
+            ;;
+        --*)
+            FORWARDED_ARGS+=("$1")
+            shift
+            ;;
+        *)
+            # First non-option argument is the spec target
+            if [[ -z "${SPEC_TARGET_SET:-}" ]]; then
+                SPEC_TARGET="$1"
+                SPEC_TARGET_SET=1
+            fi
+            shift
+            ;;
+    esac
+done
 
 # Normalize paths to work from project root
 # Handle various input formats and convert them to paths QIT can use
@@ -179,7 +199,7 @@ if [[ -f "$SPEC_TARGET" ]]; then
 fi
 
 # Build the final command to execute QIT.
-echo "Running QIT E2E tests for local development (target: ${SPEC_TARGET}${PW_OPTIONS:+ | pw_options: ${PW_OPTIONS}})..."
+echo "Running QIT E2E tests for local development (target: ${SPEC_TARGET}${TEST_TAG:+ | tag: ${TEST_TAG}}${PW_OPTIONS:+ | pw_options: ${PW_OPTIONS}})..."
 
 QIT_CMD_ARGS=(
     "$QIT_CMD" run:e2e woocommerce-payments "$SPEC_TARGET"
@@ -187,6 +207,11 @@ QIT_CMD_ARGS=(
     --source "$WCP_ROOT/woocommerce-payments.zip"
     "${env_args[@]}"
 )
+
+# Add tag filter if specified
+if [[ -n "$TEST_TAG" ]]; then
+    QIT_CMD_ARGS+=( --pw_test_tag="${TEST_TAG}" )
+fi
 
 if [[ -n "$PW_OPTIONS" ]]; then
     if (( ${#FORWARDED_ARGS[@]} )); then

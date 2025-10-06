@@ -27,7 +27,7 @@ const cards: CardType[] = [
 	],
 ];
 
-test.describe( 'Saved cards', { tag: '@critical' }, () => {
+test.describe( 'Saved cards', { tag: [ '@shopper', '@critical' ] }, () => {
 	cards.forEach( ( [ cardType, card, products ] ) => {
 		test.describe(
 			`When using a ${ cardType } card added on checkout`,

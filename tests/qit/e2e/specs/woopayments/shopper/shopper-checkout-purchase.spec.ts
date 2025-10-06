@@ -12,7 +12,7 @@ import { config } from '../../../config/default';
 import * as shopper from '../../../utils/shopper';
 import * as devtools from '../../../utils/devtools';
 
-test.describe( 'Successful purchase', () => {
+test.describe( 'Successful purchase', { tag: '@shopper' }, () => {
 	let merchantPage: Page;
 	let shopperPage: Page;
 	let merchantContext: BrowserContext;

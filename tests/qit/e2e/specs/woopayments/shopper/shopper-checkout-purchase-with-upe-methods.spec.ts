@@ -15,7 +15,7 @@ import { goToCheckout } from '../../../utils/shopper-navigation';
 
 test.describe(
 	'Local payment method checkout with card testing',
-	{ tag: '@critical' },
+	{ tag: [ '@shopper', '@critical' ] },
 	() => {
 		test.describe.configure( { timeout: 120_000 } );
 
