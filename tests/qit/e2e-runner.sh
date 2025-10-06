@@ -14,9 +14,6 @@ if [[ -f "$QIT_ROOT/config/local.env" ]]; then
     . "$QIT_ROOT/config/local.env"
 fi
 
-# If QIT_BINARY is not set, default to ./vendor/bin/qit
-QIT_BINARY=${QIT_BINARY:-./vendor/bin/qit}
-
 echo "Running E2E tests..."
 
 # Change to project root directory to build plugin
@@ -81,15 +78,8 @@ else
     echo "$CURRENT_SIG" > "$BUILD_HASH_FILE"
 fi
 
-# Change to QIT directory so qit.yml is automatically found
-cd "$QIT_ROOT"
-
-# Convert relative QIT_BINARY path to absolute for directory change compatibility
-if [[ "$QIT_BINARY" = ./* ]]; then
-    QIT_CMD="$WCP_ROOT/$QIT_BINARY"
-else
-    QIT_CMD="$QIT_BINARY"
-fi
+# QIT CLI is installed via composer as a dev dependency
+QIT_CMD="./vendor/bin/qit"
 
 # Build environment arguments for local development
 env_args=()
@@ -108,7 +98,7 @@ fi
 # Determine the desired spec target. Defaults to the whole suite unless
 # overridden via the first positional argument (if it is not an option) or
 # the WCP_E2E_SPEC environment variable.
-SPEC_TARGET=${WCP_E2E_SPEC:-./e2e}
+SPEC_TARGET=${WCP_E2E_SPEC:-tests/qit/e2e}
 declare -a FORWARDED_ARGS=()
 if [[ $# -gt 0 ]]; then
     if [[ $1 != --* ]]; then
@@ -118,62 +108,82 @@ if [[ $# -gt 0 ]]; then
     FORWARDED_ARGS=( "$@" )
 fi
 
-if [[ ! -e "$SPEC_TARGET" && -e "./e2e/$SPEC_TARGET" ]]; then
-    SPEC_TARGET="./e2e/$SPEC_TARGET"
-fi
+# Normalize paths to work from project root
+# Handle various input formats and convert them to paths QIT can use
+normalize_path() {
+    local input="$1"
 
-PW_OPTIONS=""
-QIT_TEST_ARG="$SPEC_TARGET"
+    # If path exists as-is from project root, use it
+    if [[ -e "$input" ]]; then
+        echo "$input"
+        return 0
+    fi
 
-if [[ -f "$SPEC_TARGET" ]]; then
-    # Convert file path to Playwright argument while using ./e2e as QIT target.
-    # Implemented in POSIX shell to avoid a python dependency.
-    abspath() {
-        local path="$1"
-        if [[ -d "$path" ]]; then
-            (cd "$path" 2>/dev/null && pwd -P) || return 1
-        else
-            local dir base
-            dir=$(dirname "$path")
-            base=$(basename "$path")
-            (cd "$dir" 2>/dev/null && printf '%s/%s' "$(pwd -P)" "$base") || return 1
+    # Try prefixing with tests/qit/
+    if [[ -e "tests/qit/$input" ]]; then
+        echo "tests/qit/$input"
+        return 0
+    fi
+
+    # Try prefixing with tests/qit/e2e/
+    if [[ -e "tests/qit/e2e/$input" ]]; then
+        echo "tests/qit/e2e/$input"
+        return 0
+    fi
+
+    # If it looks like it starts with e2e/, try tests/qit/e2e/
+    if [[ "$input" == e2e/* ]] && [[ -e "tests/qit/$input" ]]; then
+        echo "tests/qit/$input"
+        return 0
+    fi
+
+    # If just a filename (no path separators), search for it in e2e directory
+    if [[ "$input" != */* ]]; then
+        local found
+        found=$(find tests/qit/e2e -name "$input" -type f | head -1)
+        if [[ -n "$found" ]]; then
+            echo "$found"
+            return 0
         fi
-    }
+    fi
 
-    spec_abs=$(abspath "$SPEC_TARGET") || {
-        echo "Specified spec file must reside within ./e2e" >&2
-        exit 1
-    }
-    root_abs=$(abspath "./e2e") || {
-        echo "Unable to resolve ./e2e directory" >&2
-        exit 1
-    }
+    # Path not found
+    echo "$input"
+    return 1
+}
 
-    # Ensure the spec file is inside the e2e root and compute the relative path.
-    case "$spec_abs" in
-        "$root_abs"/*)
-            PW_OPTIONS="${spec_abs#$root_abs/}"
+SPEC_TARGET=$(normalize_path "$SPEC_TARGET") || {
+    echo "Unable to locate spec target: $SPEC_TARGET" >&2
+    exit 1
+}
+
+# Determine if we're running a specific file or directory
+PW_OPTIONS=""
+if [[ -f "$SPEC_TARGET" ]]; then
+    # Running a specific spec file - pass it to Playwright via --pw_options
+    # QIT needs the e2e directory, Playwright needs the specific file
+    E2E_ROOT="tests/qit/e2e"
+
+    # Ensure spec is within e2e directory
+    case "$SPEC_TARGET" in
+        "$E2E_ROOT"/*)
+            # Extract the path relative to e2e directory
+            PW_OPTIONS="${SPEC_TARGET#$E2E_ROOT/}"
+            SPEC_TARGET="$E2E_ROOT"
             ;;
         *)
-            echo "Specified spec file must reside within ./e2e" >&2
+            echo "Specified spec file must reside within tests/qit/e2e" >&2
             exit 1
             ;;
     esac
-    QIT_TEST_ARG="./e2e"
-elif [[ -d "$SPEC_TARGET" ]]; then
-    QIT_TEST_ARG="$SPEC_TARGET"
-else
-    if [[ -n "$SPEC_TARGET" ]]; then
-        echo "Unable to locate spec target: $SPEC_TARGET" >&2
-    fi
-    exit 1
 fi
 
 # Build the final command to execute QIT.
-echo "Running QIT E2E tests for local development (target: ${QIT_TEST_ARG}${PW_OPTIONS:+ | pw_options: ${PW_OPTIONS}})..."
+echo "Running QIT E2E tests for local development (target: ${SPEC_TARGET}${PW_OPTIONS:+ | pw_options: ${PW_OPTIONS}})..."
 
 QIT_CMD_ARGS=(
-    "$QIT_CMD" run:e2e woocommerce-payments "$QIT_TEST_ARG"
+    "$QIT_CMD" run:e2e woocommerce-payments "$SPEC_TARGET"
+    --config "$QIT_ROOT/qit.yml"
     --source "$WCP_ROOT/woocommerce-payments.zip"
     "${env_args[@]}"
 )
