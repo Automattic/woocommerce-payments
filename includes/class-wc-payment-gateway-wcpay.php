@@ -1149,7 +1149,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				);
 			}
 			// Check if session exists and we're currently not processing a WooPay request before instantiating `Fraud_Prevention_Service`.
-			if ( WC()->session && ! apply_filters( 'wcpay_is_woopay_store_api_request', false ) ) {
+			if ( WC()->session
+				&& ! apply_filters( 'wcpay_is_woopay_store_api_request', false )
+				// @TODO must address: at this point, the $_POST can be in different context: Store API, classic checkout. A fraudster can send similar `wc-agentic_commerce-*` POST fields to bypass this. Needs more a robust detection.
+				&& ! Payment_Information::is_agentic_commerce_request( $_POST ) // phpcs:ignore WordPress.Security.NonceVerification.Missing
+			) {
 				$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
 				// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 				if ( $fraud_prevention_service->is_enabled() && ! $fraud_prevention_service->verify_token( $_POST['wcpay-fraud-prevention-token'] ?? null ) ) {

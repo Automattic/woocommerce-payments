@@ -295,7 +295,7 @@ class Payment_Information {
 	 * @return string
 	 */
 	public static function get_payment_method_from_request( array $request ): string {
-		$keys_to_check = self::is_agentic_commerce_request()
+		$keys_to_check = self::is_agentic_commerce_request( $request )
 			? [ 'wc-agentic_commerce-token' ]
 			: [ 'wcpay-payment-method', 'wcpay-payment-method-sepa' ];
 
@@ -311,9 +311,10 @@ class Payment_Information {
 	/**
 	 * Whether the current order is processed by Agentic Commerce.
 	 *
+	 * @param array $request Provided data in the request.
 	 * @return bool
 	 */
-	public static function is_agentic_commerce_request(): bool {
+	public static function is_agentic_commerce_request( array $request ): bool {
 		return isset( $request['wc-agentic_commerce-token'], $request['wc-agentic_commerce-provider'] );
 	}
 
