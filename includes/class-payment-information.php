@@ -128,6 +128,13 @@ class Payment_Information {
 	private $error = null;
 
 	/**
+	 * Whether the current order is processed by Agentic Commerce.
+	 *
+	 * @var bool
+	 */
+	private $is_agentic_commerce_request = false;
+
+	/**
 	 * Payment information constructor.
 	 *
 	 * @param string               $payment_method The ID of the payment method used for this payment.
@@ -140,6 +147,7 @@ class Payment_Information {
 	 * @param string               $fingerprint The attached fingerprint.
 	 * @param string               $payment_method_stripe_id The Stripe ID of the payment method used for this payment.
 	 * @param string               $customer_id The WCPay Customer ID that owns the payment token.
+	 * @param bool                 $is_agentic_commerce_request Whether the current order is processed by Agentic Commerce.
 	 *
 	 * @throws Invalid_Payment_Method_Exception When no payment method is found in the provided request.
 	 */
@@ -153,7 +161,8 @@ class Payment_Information {
 		?string $cvc_confirmation = null,
 		string $fingerprint = '',
 		?string $payment_method_stripe_id = null,
-		?string $customer_id = null
+		?string $customer_id = null,
+		bool $is_agentic_commerce_request = false
 	) {
 		if ( empty( $payment_method ) && empty( $token ) && ! \WC_Payments::is_network_saved_cards_enabled() ) {
 			// If network-wide cards are enabled, a payment method or token may not be specified and the platform default one will be used.
@@ -162,16 +171,17 @@ class Payment_Information {
 				'payment_method_not_provided'
 			);
 		}
-		$this->payment_method           = $payment_method;
-		$this->order                    = $order;
-		$this->token                    = $token;
-		$this->payment_initiated_by     = $payment_initiated_by ?? Payment_Initiated_By::CUSTOMER();
-		$this->manual_capture           = $manual_capture ?? Payment_Capture_Type::AUTOMATIC();
-		$this->payment_type             = $payment_type ?? Payment_Type::SINGLE();
-		$this->cvc_confirmation         = $cvc_confirmation;
-		$this->fingerprint              = $fingerprint;
-		$this->payment_method_stripe_id = $payment_method_stripe_id;
-		$this->customer_id              = $customer_id;
+		$this->payment_method              = $payment_method;
+		$this->order                       = $order;
+		$this->token                       = $token;
+		$this->payment_initiated_by        = $payment_initiated_by ?? Payment_Initiated_By::CUSTOMER();
+		$this->manual_capture              = $manual_capture ?? Payment_Capture_Type::AUTOMATIC();
+		$this->payment_type                = $payment_type ?? Payment_Type::SINGLE();
+		$this->cvc_confirmation            = $cvc_confirmation;
+		$this->fingerprint                 = $fingerprint;
+		$this->payment_method_stripe_id    = $payment_method_stripe_id;
+		$this->customer_id                 = $customer_id;
+		$this->is_agentic_commerce_request = $is_agentic_commerce_request;
 	}
 
 	/**
@@ -271,11 +281,16 @@ class Payment_Information {
 		$cvc_confirmation = self::get_cvc_confirmation_from_request( $request );
 		$fingerprint      = self::get_fingerprint_from_request( $request );
 
+		$is_agentic_commerce_request =
+			null !== $order
+			&& is_string( $order->get_meta( 'checkout_session_id', true ) )
+			&& isset( $request['wc-agentic_commerce-token'], $request['wc-agentic_commerce-provider'] );
+
 		if ( isset( $request['is_woopay'] ) && $request['is_woopay'] ) {
 			$order->add_meta_data( 'is_woopay', true, true );
 			$order->save_meta_data();
 		}
-		$payment_information = new Payment_Information( $payment_method, $order, $payment_type, $token, $payment_initiated_by, $manual_capture, $cvc_confirmation, $fingerprint, $payment_method_stripe_id );
+		$payment_information = new Payment_Information( $payment_method, $order, $payment_type, $token, $payment_initiated_by, $manual_capture, $cvc_confirmation, $fingerprint, $payment_method_stripe_id, $is_agentic_commerce_request );
 
 		if ( self::PAYMENT_METHOD_ERROR === $payment_method ) {
 			$error_message = $request['wcpay-payment-method-error-message'] ?? __( "We're not able to process this payment. Please try again later.", 'woocommerce-payments' );
@@ -295,9 +310,7 @@ class Payment_Information {
 	 * @return string
 	 */
 	public static function get_payment_method_from_request( array $request ): string {
-		$keys_to_check = self::is_agentic_commerce_request( $request )
-			? [ 'wc-agentic_commerce-token' ]
-			: [ 'wcpay-payment-method', 'wcpay-payment-method-sepa' ];
+		$keys_to_check = [ 'wc-agentic_commerce-token', 'wcpay-payment-method', 'wcpay-payment-method-sepa' ];
 
 		foreach ( $keys_to_check as $key ) {
 			if ( ! empty( $request[ $key ] ) ) {
@@ -309,13 +322,12 @@ class Payment_Information {
 	}
 
 	/**
-	 * Whether the current order is processed by Agentic Commerce.
+	 * Whether this payment is processed by Agentic Commerce.
 	 *
-	 * @param array $request Provided data in the request.
 	 * @return bool
 	 */
-	public static function is_agentic_commerce_request( array $request ): bool {
-		return isset( $request['wc-agentic_commerce-token'], $request['wc-agentic_commerce-provider'] );
+	public function is_agentic_commerce_request(): bool {
+		return $this->is_agentic_commerce_request;
 	}
 
 	/**

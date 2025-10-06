@@ -1139,7 +1139,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @throws Exception Error processing the payment.
 	 */
 	public function process_payment( $order_id ) {
-		$order = wc_get_order( $order_id );
+		$order               = wc_get_order( $order_id );
+		$payment_information = $this->prepare_payment_information( $order );
 
 		try {
 			if ( 20 < strlen( $order->get_billing_phone() ) ) {
@@ -1151,8 +1152,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// Check if session exists and we're currently not processing a WooPay request before instantiating `Fraud_Prevention_Service`.
 			if ( WC()->session
 				&& ! apply_filters( 'wcpay_is_woopay_store_api_request', false )
-				// @TODO must address: at this point, the $_POST can be in different context: Store API, classic checkout. A fraudster can send similar `wc-agentic_commerce-*` POST fields to bypass this. Needs more a robust detection.
-				&& ! Payment_Information::is_agentic_commerce_request( $_POST ) // phpcs:ignore WordPress.Security.NonceVerification.Missing
+				&& ! $payment_information->is_agentic_commerce_request()
 			) {
 				$fraud_prevention_service = Fraud_Prevention_Service::get_instance();
 				// phpcs:ignore WordPress.Security.NonceVerification.Missing,WordPress.Security.ValidatedSanitizedInput.MissingUnslash,WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
@@ -1196,7 +1196,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $check_existing_intention;
 			}
 
-			$payment_information = $this->prepare_payment_information( $order );
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
 			// We set this variable to be used in following checks.
@@ -2131,7 +2130,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array List of payment methods.
 	 */
 	public function get_payment_method_types( $payment_information ): array {
-		$requested_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		$requested_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? 'card' ) ); // phpcs:ignore WordPress.Security.NonceVerification
 		$token                    = $payment_information->get_payment_token();
 
 		if ( ! empty( $requested_payment_method ) ) {
