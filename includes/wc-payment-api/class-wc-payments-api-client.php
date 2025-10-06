@@ -83,6 +83,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	const FRAUD_RULESET_API            = 'fraud_ruleset';
 	const COMPATIBILITY_API            = 'compatibility';
 	const RECOMMENDED_PAYMENT_METHODS  = 'payment_methods/recommended';
+	const ADDRESS_AUTOCOMPLETE_TOKEN   = 'address-autocomplete-token';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -683,8 +684,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 
 		$dispute = $this->request( $request, self::DISPUTES_API . '/' . $dispute_id, self::POST );
 		// Invalidate the dispute caches.
-		\WC_Payments::get_database_cache()->delete( Database_Cache::DISPUTE_STATUS_COUNTS_KEY );
-		\WC_Payments::get_database_cache()->delete( Database_Cache::ACTIVE_DISPUTES_KEY );
+		\WC_Payments::get_database_cache()->delete_dispute_caches();
 
 		if ( is_wp_error( $dispute ) ) {
 			return $dispute;
@@ -713,8 +713,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 
 		$dispute = $this->request( [], self::DISPUTES_API . '/' . $dispute_id . '/close', self::POST );
 		// Invalidate the dispute caches.
-		\WC_Payments::get_database_cache()->delete( Database_Cache::DISPUTE_STATUS_COUNTS_KEY );
-		\WC_Payments::get_database_cache()->delete( Database_Cache::ACTIVE_DISPUTES_KEY );
+		\WC_Payments::get_database_cache()->delete_dispute_caches();
 
 		if ( is_wp_error( $dispute ) ) {
 			return $dispute;
@@ -1048,7 +1047,6 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 * @param array   $user_data                   Data about the user doing the onboarding (location and device).
 	 * @param array   $account_data                Data to prefill the onboarding.
 	 * @param array   $actioned_notes              Actioned WCPay note names to be sent to the onboarding flow.
-	 * @param bool    $progressive                 Whether we need to enable progressive onboarding prefill.
 	 * @param bool    $collect_payout_requirements Whether we need to redirect user to Stripe KYC to complete their payouts data.
 	 * @param ?string $referral_code              Referral code to be used for onboarding.
 	 *
@@ -1062,7 +1060,6 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		array $user_data = [],
 		array $account_data = [],
 		array $actioned_notes = [],
-		bool $progressive = false,
 		bool $collect_payout_requirements = false,
 		?string $referral_code = null
 	): array {
@@ -1075,7 +1072,6 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 				'account_data'                => $account_data,
 				'actioned_notes'              => $actioned_notes,
 				'create_live_account'         => $live_account,
-				'progressive'                 => $progressive,
 				'collect_payout_requirements' => $collect_payout_requirements,
 			]
 		);
@@ -1093,7 +1089,6 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 * @param array   $user_data User data.
 	 * @param array   $account_data Account data to be prefilled.
 	 * @param array   $actioned_notes Actioned notes to be sent.
-	 * @param bool    $progressive Whether progressive onboarding should be enabled for this onboarding.
 	 * @param ?string $referral_code Referral code to be used for onboarding.
 	 *
 	 * @return array
@@ -1106,7 +1101,6 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		array $user_data = [],
 		array $account_data = [],
 		array $actioned_notes = [],
-		bool $progressive = false,
 		?string $referral_code = null
 	): array {
 		$request_args = apply_filters(
@@ -1117,7 +1111,6 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 				'account_data'        => $account_data,
 				'actioned_notes'      => $actioned_notes,
 				'create_live_account' => $live_account,
-				'progressive'         => $progressive,
 			]
 		);
 
@@ -2162,6 +2155,20 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	}
 
 	/**
+	 * Get the address autocomplete token.
+	 *
+	 * @return array The address autocomplete token.
+	 *
+	 * @throws API_Exception - If not connected or request failed.
+	 */
+	public function get_address_autocomplete_token() {
+		return $this->request(
+			[],
+			self::ADDRESS_AUTOCOMPLETE_TOKEN,
+			self::POST,
+		);
+	}
+	/**
 	 * Sends a request object.
 	 *
 	 * @param  Request $request The request to send.
@@ -2227,14 +2234,15 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 */
 	public function build_order_info( WC_Order $order ): array {
 		$order_info = [
-			'id'                  => $order->get_id(),
-			'number'              => $order->get_order_number(),
-			'url'                 => $order->get_edit_order_url(),
-			'customer_url'        => $this->get_customer_url( $order ),
-			'customer_name'       => trim( $order->get_formatted_billing_full_name() ),
-			'customer_email'      => $order->get_billing_email(),
-			'fraud_meta_box_type' => $order->get_meta( '_wcpay_fraud_meta_box_type' ),
-			'ip_address'          => $order->get_customer_ip_address(),
+			'id'                     => $order->get_id(),
+			'number'                 => $order->get_order_number(),
+			'url'                    => $order->get_edit_order_url(),
+			'customer_url'           => $this->get_customer_url( $order ),
+			'customer_name'          => trim( $order->get_formatted_billing_full_name() ),
+			'customer_email'         => $order->get_billing_email(),
+			'fraud_meta_box_type'    => $order->get_meta( '_wcpay_fraud_meta_box_type' ),
+			'ip_address'             => $order->get_customer_ip_address(),
+			'suggested_product_type' => $this->determine_suggested_product_type( $order ),
 		];
 
 		if ( function_exists( 'wcs_get_subscriptions_for_order' ) ) {
@@ -2280,7 +2288,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		$payment_method_options = $intention_array['payment_method_options'] ?? [];
 
 		$charge = ! empty( $charge_array ) ? self::deserialize_charge_object_from_array( $charge_array ) : null;
-		$order  = $this->get_order_info_from_intention_object( $intention_array['id'] );
+		$order  = $this->get_order_info_from_intention_object( $intention_array['id'], $intention_array['metadata']['order_key'] ?? null );
 
 		$intent = new WC_Payments_API_Payment_Intention(
 			$intention_array['id'],
@@ -2747,13 +2755,16 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 * Adds additional info to intention object.
 	 *
 	 * @param string $intention_id Intention ID.
-	 *
+	 * @param string $order_key    Order key.
 	 * @return array
 	 */
-	private function get_order_info_from_intention_object( $intention_id ) {
-		$order  = $this->wcpay_db->order_from_intent_id( $intention_id );
-		$object = $this->add_order_info_to_object( $order, [] );
+	private function get_order_info_from_intention_object( $intention_id, $order_key = null ) {
+		$order = $this->wcpay_db->order_from_intent_id( $intention_id );
+		if ( $order instanceof WC_Order && null !== $order_key && $order_key !== $order->get_order_key() ) {
+			return [];
+		}
 
+		$object = $this->add_order_info_to_object( $order, [] );
 		return $object['order'];
 	}
 
@@ -2907,5 +2918,56 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		$customer_fingerprint_metadata['fraud_prevention_data_available'] = true;
 
 		return $customer_fingerprint_metadata;
+	}
+
+	/**
+	 * Determine the suggested product type based on the order's products.
+	 *
+	 * @param WC_Order $order The order.
+	 * @return string The suggested product type.
+	 */
+	private function determine_suggested_product_type( WC_Order $order ): string {
+		$items = $order->get_items();
+
+		if ( empty( $items ) ) {
+			return 'physical_product';
+		}
+
+		$virtual_products  = 0;
+		$physical_products = 0;
+		$product_count     = 0;
+
+		foreach ( $items as $item ) {
+			// Only process product items.
+			if ( ! $item instanceof WC_Order_Item_Product ) {
+				continue;
+			}
+
+			$product = $item->get_product();
+			if ( ! $product ) {
+				continue;
+			}
+
+			++$product_count;
+
+			if ( $product->is_virtual() ) {
+				++$virtual_products;
+			} else {
+				++$physical_products;
+			}
+		}
+
+		// If more than one product, suggest multiple.
+		if ( $product_count > 1 ) {
+			return 'multiple';
+		}
+
+		// If only one product and it's virtual, suggest digital.
+		if ( 1 === $product_count && 1 === $virtual_products ) {
+			return 'digital_product_or_service';
+		}
+
+		// Everything else defaults to physical.
+		return 'physical_product';
 	}
 }

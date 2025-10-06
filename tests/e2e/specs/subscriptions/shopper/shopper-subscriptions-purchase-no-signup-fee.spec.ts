@@ -45,7 +45,7 @@ describeif( shouldRunSubscriptionsTests )(
 				);
 				await goToProductPageBySlug( shopperPage, productSlug );
 				await shopperPage
-					.getByRole( 'button', { name: 'Sign up now' } )
+					.getByRole( 'button', { name: 'Add to cart', exact: true } )
 					.click();
 				await shopperPage.waitForLoadState( 'networkidle' );
 				await expect(
@@ -94,7 +94,7 @@ describeif( shouldRunSubscriptionsTests )(
 				.replace( '#', '' );
 
 			const transactionPageLink = await merchantPage
-				.getByText( 'Payment via Cards', { exact: false } )
+				.getByText( 'Payment via Card', { exact: false } )
 				.getByRole( 'link', { name: /pi_.+/ } )
 				.getAttribute( 'href' );
 

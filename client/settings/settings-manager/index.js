@@ -3,7 +3,7 @@
  * External dependencies
  */
 import React, { useState, useEffect, useLayoutEffect } from 'react';
-import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
+import { ExternalLink } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { dispatch } from '@wordpress/data';
@@ -192,7 +192,14 @@ const SettingsManager = () => {
 	useEffect( () => {
 		const urlParams = new URLSearchParams( window.location.search );
 		if ( urlParams.get( 'woopayments-vat-details-modal' ) === 'true' ) {
-			if ( ! wcpaySettings.accountStatus.hasSubmittedVatData ) {
+			if ( ! wcpaySettings.accountStatus.isDocumentsEnabled ) {
+				dispatch( 'core/notices' ).createErrorNotice(
+					__(
+						'Tax details collection is not available for your account.',
+						'woocommerce-payments'
+					)
+				);
+			} else if ( ! wcpaySettings.accountStatus.hasSubmittedVatData ) {
 				setVatFormModalOpen( true );
 			} else {
 				dispatch( 'core/notices' ).createInfoNotice(

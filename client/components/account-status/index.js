@@ -3,6 +3,8 @@
 /**
  * External dependencies
  */
+import { __ } from '@wordpress/i18n';
+import { addQueryArgs } from '@wordpress/url';
 import {
 	Button,
 	Card,
@@ -10,8 +12,7 @@ import {
 	CardHeader,
 	FlexBlock,
 	FlexItem,
-} from 'wcpay/components/wp-components-wrapped';
-import { __ } from '@wordpress/i18n';
+} from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -25,7 +26,6 @@ import './style.scss';
 import './shared.scss';
 import { AccountTools } from './account-tools';
 import { recordEvent } from 'wcpay/tracks';
-import { addQueryArgs } from '@wordpress/url';
 
 const AccountStatusCard = ( props ) => {
 	const { title, children, value } = props;
@@ -72,13 +72,7 @@ const AccountStatusDetails = ( props ) => {
 				{ __( 'Account details', 'woocommerce-payments' ) }
 			</FlexItem>
 			<FlexBlock className={ 'account-status' }>
-				<StatusChip
-					accountStatus={ accountStatus.status }
-					poEnabled={ accountStatus.progressiveOnboarding.isEnabled }
-					poComplete={
-						accountStatus.progressiveOnboarding.isComplete
-					}
-				/>
+				<StatusChip accountStatus={ accountStatus.status } />
 			</FlexBlock>
 			{ accountLink && (
 				<FlexItem className={ 'edit-details' }>
@@ -92,6 +86,7 @@ const AccountStatusDetails = ( props ) => {
 						}
 						href={ accountLink }
 						target={ '_blank' }
+						__next40pxDefaultSize
 					>
 						{ __( 'Edit details', 'woocommerce-payments' ) }
 					</Button>

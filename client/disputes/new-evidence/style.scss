@@ -1,40 +1,3 @@
-// Define mixins here
-@mixin heading-xl {
-	/* Heading XL */
-	font-size: var( --xl, 20px );
-	font-style: normal;
-	font-weight: var( --Medium, 500 );
-	line-height: var( --m, 24px ); /* 120% */
-}
-@mixin heading-md {
-	/* Heading MD */
-	font-size: var( --m, 13px );
-	font-style: normal;
-	font-weight: var( --Medium, 500 );
-	line-height: var( --s, 20px ); /* 153.846% */
-}
-@mixin heading-s {
-	/* Heading S */
-	font-size: var( --xs, 11px );
-	font-style: normal;
-	font-weight: var( --Medium, 500 );
-	line-height: var( --xs, 16px ); /* 145.455% */
-}
-@mixin body-md {
-	/* Body MD */
-	font-size: var( --m, 13px );
-	font-style: normal;
-	font-weight: var( --Regular, 400 );
-	line-height: var( --s, 20px ); /* 153.846% */
-}
-@mixin body-sm {
-	/* Body SM */
-	font-size: var( --s, 12px );
-	font-style: normal;
-	font-weight: var( --Regular, 400 );
-	line-height: var( --xs, 16px ); /* 133.333% */
-}
-
 // Stepper section background to match accordion
 .wcpay-dispute-evidence-new {
 	display: flex;
@@ -98,6 +61,10 @@
 	&__button-group-right .components-button + .components-button {
 		margin-left: 8px;
 	}
+
+	.dispute-steps__notice-content {
+		font-size: 14px;
+	}
 }
 
 // Customer details section
@@ -114,8 +81,9 @@
 	&__row {
 		display: flex;
 		align-items: flex-start;
-		gap: 32px;
+		gap: 24px 32px;
 		margin-bottom: 24px;
+		flex-wrap: wrap;
 	}
 
 	&__row > div {
@@ -130,7 +98,7 @@
 
 		& > span {
 			color: var( --Scales-Grays-gray-700, $gray-700 );
-			@include body-md;
+			@include body-sm;
 		}
 	}
 
@@ -138,12 +106,16 @@
 	&__billing-label {
 		color: var( --Scales-Grays-gray-900, $gray-900 );
 		text-transform: uppercase;
-		@include heading-s;
+		@include heading-sm;
+	}
+
+	&__link,
+	&__ip-address {
+		@include body-sm;
 	}
 
 	&__link {
 		color: var( --wp-admin-theme-color );
-		@include body-sm;
 		text-decoration: underline;
 		word-break: break-all;
 	}
@@ -168,6 +140,7 @@
 		&__row {
 			flex-direction: column;
 			gap: 8px;
+			margin-bottom: 8px;
 		}
 		&__row > div {
 			min-width: 0;
@@ -250,6 +223,10 @@
 		margin-top: 16px;
 		margin-bottom: 0;
 	}
+
+	&__helper-link {
+		margin-top: 8px;
+	}
 }
 
 // Recommended documents section
@@ -318,7 +295,6 @@
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
-		gap: 4px;
 	}
 	&__info-header {
 		height: 32px;
@@ -335,8 +311,21 @@
 		margin: 0;
 	}
 
+	// Very small mobile screens (width < 385px) - restructure layout
+	@media ( max-width: 385px ) {
+		&__info {
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 4px;
+		}
+
+		&__chip-filename {
+			max-width: 160px;
+		}
+	}
+
 	// Responsive breakpoints for file chip
-	@media ( max-width: 480px ) {
+	@media ( min-width: 386px ) and ( max-width: 480px ) {
 		// Small screens: hide extension and size, show only filename with ellipsis
 		&__chip-filename {
 			max-width: 120px;
@@ -372,6 +361,14 @@
 
 	&__printonly {
 		display: none;
+	}
+}
+
+.wcpay-accordion {
+	.wcpay-inline-notice.components-notice {
+		.components-notice__content {
+			font-size: 14px;
+		}
 	}
 }
 
@@ -419,5 +416,134 @@
 		transform: none;
 		opacity: 1;
 		max-height: none;
+	}
+}
+
+// Confirmation screen section
+.wcpay-dispute-evidence-confirmation {
+	padding: 40px 0;
+	display: flex;
+	justify-content: center;
+	background: #fff;
+
+	&__wrapper {
+		width: 984px;
+		max-width: calc( 100vw - 48px );
+		padding: 24px;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 24px;
+	}
+
+	&__content {
+		display: flex;
+		flex-direction: column;
+		max-width: 600px;
+		width: 100%;
+	}
+
+	&__illustration {
+		display: flex;
+		justify-content: center;
+		margin-bottom: 40px;
+	}
+
+	&__illustration-image {
+		width: 180px;
+		height: auto;
+		max-width: 100%;
+	}
+
+	&__title {
+		@include heading-xl;
+		color: var( --Scales-Grays-gray-900, $gray-900 );
+		margin: 0 0 12px 0;
+		text-align: left;
+	}
+
+	&__subtitle {
+		@include body-md;
+		color: var( --Scales-Grays-gray-900, $gray-900 );
+		margin: 0 0 40px 0;
+		text-align: left;
+	}
+
+	&__next-steps {
+		text-align: left;
+		width: 100%;
+		margin-bottom: 24px;
+
+		h3 {
+			@include heading-xl;
+			color: var( --Scales-Grays-gray-900, $gray-900 );
+			margin: 0 0 12px 0;
+		}
+
+		ul {
+			list-style: none;
+			padding: 0 0 0 8px;
+			margin: 0;
+
+			li {
+				padding-left: 12px;
+				position: relative;
+				@include body-md;
+				color: var( --Scales-Grays-gray-900, $gray-900 );
+
+				&::before {
+					content: '•';
+					font-weight: bold;
+					position: absolute;
+					left: 0;
+				}
+
+				a {
+					color: #3858e9;
+					text-decoration: none;
+
+					&:hover {
+						text-decoration: underline;
+					}
+				}
+			}
+		}
+	}
+
+	&__notice {
+		&.wcpay-inline-notice.components-notice {
+			margin-bottom: 48px;
+		}
+	}
+
+	&__actions {
+		display: flex;
+		gap: 16px;
+		justify-content: space-between;
+		flex-wrap: wrap;
+	}
+
+	// Responsive adjustments
+	@media ( max-width: 768px ) {
+		padding: 24px 16px;
+
+		&__title {
+			font-size: 24px;
+		}
+
+		&__actions {
+			flex-direction: column-reverse;
+			gap: 12px;
+			width: 100%;
+
+			.components-button {
+				width: 100%;
+				justify-content: center;
+			}
+
+			.components-button + .components-button {
+				margin-left: 0;
+			}
+		}
 	}
 }

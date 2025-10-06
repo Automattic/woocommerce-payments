@@ -11,27 +11,47 @@
 	line-height: 1.5;
 	white-space: nowrap;
 
+	&.chip-has-icon {
+		padding-inline-start: 4px;
+		gap: 2px;
+	}
+
 	&.chip-primary {
+		& svg {
+			fill: $wp-blue-70;
+		}
 		background: $wp-blue-0;
 		color: $wp-blue-70;
 	}
 
 	&.chip-success {
+		& svg {
+			fill: $wp-green-70;
+		}
 		background: $wp-green-0;
 		color: $wp-green-70;
 	}
 
 	&.chip-light {
+		& svg {
+			fill: $wp-gray-80;
+		}
 		background: $wp-gray-0;
 		color: $wp-gray-80;
 	}
 
 	&.chip-alert {
+		& svg {
+			fill: $wp-red-70;
+		}
 		background: $wp-red-0;
 		color: $wp-red-70;
 	}
 
 	&.chip-warning {
+		& svg {
+			fill: $wp-yellow-70;
+		}
 		background: $wp-yellow-0;
 		color: $wp-yellow-70;
 	}

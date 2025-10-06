@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React from 'react';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import user from '@testing-library/user-event';
 
 /**
@@ -51,7 +51,7 @@ describe( 'PaymentMethod', () => {
 		expect( screen.queryByText( 'Bar' ) ).toBeInTheDocument();
 	} );
 
-	it( 'calls onCheckClick when clicking its checkbox', () => {
+	it( 'calls onCheckClick when clicking its checkbox', async () => {
 		const handleCheckClickMock = jest.fn();
 		const handleUnCheckClickMock = jest.fn();
 		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card' ] ] );
@@ -66,14 +66,16 @@ describe( 'PaymentMethod', () => {
 			/>
 		);
 
-		user.click( screen.getByLabelText( 'Bancontact' ) );
+		await user.click( screen.getByLabelText( 'Bancontact' ) );
 
-		expect( handleCheckClickMock ).toHaveBeenCalledTimes( 1 );
+		await waitFor( () =>
+			expect( handleCheckClickMock ).toHaveBeenCalledTimes( 1 )
+		);
 		expect( handleCheckClickMock ).toHaveBeenCalledWith( 'bancontact' );
 		expect( handleUnCheckClickMock ).not.toHaveBeenCalled();
 	} );
 
-	test( 'calls onUnCheckClick when clicking its checkbox', () => {
+	test( 'calls onUnCheckClick when clicking its checkbox', async () => {
 		const handleCheckClickMock = jest.fn();
 		const handleUnCheckClickMock = jest.fn();
 
@@ -87,9 +89,11 @@ describe( 'PaymentMethod', () => {
 			/>
 		);
 
-		user.click( screen.getByLabelText( 'Bancontact' ) );
+		await user.click( screen.getByLabelText( 'Bancontact' ) );
 
-		expect( handleUnCheckClickMock ).toHaveBeenCalledTimes( 1 );
+		await waitFor( () =>
+			expect( handleUnCheckClickMock ).toHaveBeenCalledTimes( 1 )
+		);
 		expect( handleUnCheckClickMock ).toHaveBeenCalledWith( 'bancontact' );
 		expect( handleCheckClickMock ).not.toHaveBeenCalled();
 	} );
@@ -108,7 +112,7 @@ describe( 'PaymentMethod', () => {
 		expect( screen.getAllByText( '(Required)' ) ).toHaveLength( 2 );
 	} );
 
-	it( 'does not call onCheckClick or onUnCheckClick when clicking a locked checkbox', () => {
+	it( 'does not call onCheckClick or onUnCheckClick when clicking a locked checkbox', async () => {
 		const handleCheckClickMock = jest.fn();
 		const handleUnCheckClickMock = jest.fn();
 		render(
@@ -122,7 +126,7 @@ describe( 'PaymentMethod', () => {
 			/>
 		);
 
-		user.click( screen.getByLabelText( 'Bancontact' ) );
+		await user.click( screen.getByLabelText( 'Bancontact' ) );
 
 		expect( handleCheckClickMock ).not.toHaveBeenCalled();
 		expect( handleUnCheckClickMock ).not.toHaveBeenCalled();

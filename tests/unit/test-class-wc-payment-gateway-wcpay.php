@@ -625,7 +625,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$afterpay_method   = $this->payment_methods['afterpay_clearpay'];
 		$grabpay_method    = $this->payment_methods['grabpay'];
 		$this->assertEquals( 'card', $card_method->get_id() );
-		$this->assertEquals( 'Cards', $card_method->get_title() );
+		$this->assertEquals( 'Card', $card_method->get_title() );
 		$this->assertEquals( 'Visa debit card', $card_method->get_title( 'US', $mock_visa_details ) );
 		$this->assertEquals( 'Mastercard credit card', $card_method->get_title( 'US', $mock_mastercard_details ) );
 		$this->assertTrue( $card_method->is_enabled_at_checkout( 'US' ) );
@@ -2993,6 +2993,181 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $afterpay->is_available() );
 	}
 
+	public function provider_test_bnpl_on_order_pay_page(): array {
+		return [
+			[ Payment_Method::AFTERPAY ],
+			[ Payment_Method::AFFIRM ],
+		];
+	}
+
+	/**
+	 * Tests that BNPL gateways are disabled on the order pay page when shipping data is missing.
+	 *
+	 * @dataProvider provider_test_bnpl_on_order_pay_page
+	 */
+	public function test_bnpl_gateway_disabled_on_order_pay_page_when_missing_shipping_data( string $gateway_id ): void {
+		global $wp;
+
+		// Create order with insufficient address data for BNPL.
+		$order = WC_Helper_Order::create_order();
+		$order->set_billing_address_1( '' );
+		$order->set_billing_city( '' );
+		$order->set_billing_state( '' );
+		$order->set_billing_postcode( '' );
+		$order->set_billing_country( '' );
+		$order->set_shipping_address_1( '' );
+		$order->set_shipping_city( '' );
+		$order->set_shipping_state( '' );
+		$order->set_shipping_postcode( '' );
+		$order->set_shipping_country( '' );
+		$order->save();
+
+		set_query_var( 'order-pay', $order->get_id() );
+		$wp->set_query_var( 'order-pay', $order->get_id() );
+
+		$this->card_gateway->update_option( 'enabled', 'yes' );
+
+		$bnpl_gateway = $this->get_gateway( $gateway_id );
+		$bnpl_gateway->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD, $gateway_id ] );
+		$this->prepare_gateway_for_availability_testing( $bnpl_gateway );
+
+		$this->assertFalse( $bnpl_gateway->is_available() );
+	}
+
+	/**
+	 * Tests that BNPL gateways are enabled on the order pay page when sufficient shipping data is available.
+	 *
+	 * @dataProvider provider_test_bnpl_on_order_pay_page
+	 */
+	public function test_bnpl_gateway_enabled_on_order_pay_page_when_sufficient_shipping_data_available( string $gateway_id ): void {
+		global $wp;
+
+		// Create order with sufficient address data for BNPL.
+		$order = WC_Helper_Order::create_order();
+		$order->set_shipping_last_name( 'Tribbiani' );
+		$order->set_shipping_address_1( '123 Main St' );
+		$order->set_shipping_city( 'New York' );
+		$order->set_shipping_state( 'NY' );
+		$order->set_shipping_postcode( '10001' );
+		$order->set_shipping_country( 'US' );
+		$order->save();
+
+		set_query_var( 'order-pay', $order->get_id() );
+		$wp->set_query_var( 'order-pay', $order->get_id() );
+
+		$this->card_gateway->update_option( 'enabled', 'yes' );
+
+		$bnpl_gateway = $this->get_gateway( $gateway_id );
+		$bnpl_gateway->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD, $gateway_id ] );
+		$this->prepare_gateway_for_availability_testing( $bnpl_gateway );
+
+		$this->assertTrue( $bnpl_gateway->is_available() );
+	}
+
+	public function test_affirm_gateway_disabled_on_order_pay_page_when_missing_name() {
+		global $wp;
+
+		// Create order with sufficient address data but missing name for Affirm.
+		$order = WC_Helper_Order::create_order();
+		$order->set_shipping_address_1( '123 Main St' );
+		$order->set_shipping_city( 'New York' );
+		$order->set_shipping_state( 'NY' );
+		$order->set_shipping_postcode( '10001' );
+		$order->set_shipping_country( 'US' );
+		$order->set_shipping_first_name( '' );
+		$order->set_shipping_last_name( '' );
+		$order->save();
+
+		set_query_var( 'order-pay', $order->get_id() );
+		$wp->set_query_var( 'order-pay', $order->get_id() );
+
+		$this->card_gateway->update_option( 'enabled', 'yes' );
+
+		$affirm_gateway = $this->get_gateway( Payment_Method::AFFIRM );
+		$affirm_gateway->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::AFFIRM ] );
+		$this->prepare_gateway_for_availability_testing( $affirm_gateway );
+
+		$this->assertFalse( $affirm_gateway->is_available() );
+	}
+
+	public function test_affirm_gateway_enabled_on_order_pay_page_when_name_present() {
+		global $wp;
+
+		// Create order with sufficient address data and name for Affirm.
+		$order = WC_Helper_Order::create_order();
+		$order->set_shipping_address_1( '123 Main St' );
+		$order->set_shipping_city( 'New York' );
+		$order->set_shipping_state( 'NY' );
+		$order->set_shipping_postcode( '10001' );
+		$order->set_shipping_country( 'US' );
+		$order->set_shipping_first_name( 'John' );
+		$order->set_shipping_last_name( 'Doe' );
+		$order->save();
+
+		set_query_var( 'order-pay', $order->get_id() );
+		$wp->set_query_var( 'order-pay', $order->get_id() );
+
+		$this->card_gateway->update_option( 'enabled', 'yes' );
+
+		$affirm_gateway = $this->get_gateway( Payment_Method::AFFIRM );
+		$affirm_gateway->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::AFFIRM ] );
+		$this->prepare_gateway_for_availability_testing( $affirm_gateway );
+
+		$this->assertTrue( $affirm_gateway->is_available() );
+	}
+
+	public function test_afterpay_gateway_not_affected_by_name_validation() {
+		global $wp;
+
+		// Create order with sufficient address data but missing name.
+		$order = WC_Helper_Order::create_order();
+		$order->set_shipping_address_1( '123 Main St' );
+		$order->set_shipping_city( 'New York' );
+		$order->set_shipping_state( 'NY' );
+		$order->set_shipping_postcode( '10001' );
+		$order->set_shipping_country( 'US' );
+		$order->set_shipping_first_name( '' );
+		$order->set_shipping_last_name( '' );
+		$order->save();
+
+		set_query_var( 'order-pay', $order->get_id() );
+		$wp->set_query_var( 'order-pay', $order->get_id() );
+
+		$this->card_gateway->update_option( 'enabled', 'yes' );
+
+		$afterpay_gateway = $this->get_gateway( Payment_Method::AFTERPAY );
+		$afterpay_gateway->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::AFTERPAY ] );
+		$this->prepare_gateway_for_availability_testing( $afterpay_gateway );
+
+		// Afterpay should not be affected by missing name validation.
+		$this->assertTrue( $afterpay_gateway->is_available() );
+	}
+
+	public function test_non_bnpl_gateway_not_affected_by_order_pay_validation() {
+		global $wp;
+
+		// Create order with insufficient address data.
+		$order = WC_Helper_Order::create_order();
+		$order->set_billing_address_1( '' );
+		$order->set_billing_city( '' );
+		$order->set_billing_state( '' );
+		$order->set_billing_postcode( '' );
+		$order->set_billing_country( '' );
+		$order->save();
+
+		set_query_var( 'order-pay', $order->get_id() );
+		$wp->set_query_var( 'order-pay', $order->get_id() );
+
+		$this->card_gateway->update_option( 'enabled', 'yes' );
+
+		// Test that card gateway is not affected by order-pay validation.
+		$card_gateway = $this->get_gateway( Payment_Method::CARD );
+		$card_gateway->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::AFTERPAY, Payment_Method::CARD, Payment_Method::AFFIRM ] );
+		$this->prepare_gateway_for_availability_testing( $card_gateway );
+
+		$this->assertTrue( $card_gateway->is_available() );
+	}
+
 	public function test_process_payment_for_order_cc_payment_method() {
 		$payment_method                              = 'woocommerce_payments';
 		$expected_upe_payment_method_for_pi_creation = 'card';
@@ -3943,9 +4118,13 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				[
 					'capabilities'            => [
 						'afterpay_clearpay_payments' => 'active',
+						'affirm_payments'            => 'active',
+						'card_payments'              => 'active',
 					],
 					'capability_requirements' => [
 						'afterpay_clearpay_payments' => [],
+						'affirm_payments'            => [],
+						'card_payments'              => [],
 					],
 				]
 			);
@@ -3963,8 +4142,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 					'paymentsEnabled' => true,
 				]
 			);
-			$gateway->update_option( WC_Payment_Gateway_WCPay::METHOD_ENABLED_KEY, 'yes' );
-			$gateway->init_settings();
+
+		$gateway->update_option( WC_Payment_Gateway_WCPay::METHOD_ENABLED_KEY, 'yes' );
+		$gateway->init_settings();
 	}
 
 	private function init_payment_methods() {

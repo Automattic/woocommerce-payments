@@ -2,16 +2,16 @@
  * External dependencies
  */
 import React from 'react';
+import { calendar } from '@wordpress/icons';
+import { Link } from '@woocommerce/components';
+import { __ } from '@wordpress/i18n';
 import {
 	CardBody,
 	CardDivider,
 	Flex,
 	FlexItem,
 	Icon,
-} from 'wcpay/components/wp-components-wrapped';
-import { calendar } from '@wordpress/icons';
-import { Link } from '@woocommerce/components';
-import { __ } from '@wordpress/i18n';
+} from '@wordpress/components';
 
 /**
  * Internal dependencies.

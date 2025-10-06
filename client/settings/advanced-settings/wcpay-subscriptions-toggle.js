@@ -1,15 +1,12 @@
 /**
  * External dependencies
  */
-import {
-	CheckboxControl,
-	ExternalLink,
-} from 'wcpay/components/wp-components-wrapped';
 import { __, sprintf } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
+import { CheckboxControl, ExternalLink } from '@wordpress/components';
 import { useWCPaySubscriptions } from 'wcpay/data';
 import interpolateComponents from '@automattic/interpolate-components';
 
@@ -48,12 +45,14 @@ const WCPaySubscriptionsToggle = () => {
 				components: {
 					learnMoreLink: (
 						// eslint-disable-next-line max-len
+						// @ts-expect-error: children is provided when interpolating the component
 						<ExternalLink href="https://woocommerce.com/document/woopayments/subscriptions/" />
 					),
 				},
 			} ) }
 			checked={ isWCPaySubscriptionsEnabled }
 			onChange={ handleWCPaySubscriptionsStatusChange }
+			__nextHasNoMarginBottom
 		/>
 	) : null;
 };

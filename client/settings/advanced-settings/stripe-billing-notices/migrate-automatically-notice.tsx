@@ -4,7 +4,7 @@
 import React, { useState, useContext, useEffect } from 'react';
 import InlineNotice from 'wcpay/components/inline-notice';
 import { _n, sprintf } from '@wordpress/i18n';
-import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
+import { ExternalLink } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
 
 /**
@@ -85,6 +85,7 @@ const MigrateAutomaticallyNotice: React.FC< Props > = ( {
 				components: {
 					learnMoreLink: (
 						// eslint-disable-next-line max-len
+						// @ts-expect-error: children is provided when interpolating the component
 						<ExternalLink href="https://woocommerce.com/document/woopayments/subscriptions/stripe-billing/#disabling" />
 					),
 				},

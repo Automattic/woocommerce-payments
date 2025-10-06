@@ -59,7 +59,7 @@ const AllowedCountriesNotice: React.FC< AllowedCountriesNoticeProps > = ( {
 	const settingCountries = getSettingCountries();
 
 	return (
-		<FraudProtectionRuleCardNotice type={ 'info' }>
+		<FraudProtectionRuleCardNotice type="info">
 			{ getNoticeText( supportedCountriesType, isBlocking ) }
 			<strong>
 				{ decodeEntities(

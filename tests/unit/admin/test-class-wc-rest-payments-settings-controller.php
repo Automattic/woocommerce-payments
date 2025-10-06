@@ -153,16 +153,25 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			Link_Payment_Method::class,
 		];
 
+		// Create the main payment method (CC) for the gateway constructor.
+		$mock_cc_payment_method = $this->getMockBuilder( CC_Payment_Method::class )
+			->setConstructorArgs( [ $token_service ] )
+			->setMethods( [ 'is_subscription_item_in_cart' ] )
+			->getMock();
+		$mock_cc_payment_method->expects( $this->any() )
+			->method( 'is_subscription_item_in_cart' )
+			->will( $this->returnValue( false ) );
+
 		foreach ( $payment_method_classes as $payment_method_class ) {
-			$mock_payment_method = $this->getMockBuilder( $payment_method_class )
+			$mock_payment_method_instance = $this->getMockBuilder( $payment_method_class )
 				->setConstructorArgs( [ $token_service ] )
 				->setMethods( [ 'is_subscription_item_in_cart' ] )
 				->getMock();
-			$mock_payment_method->expects( $this->any() )
+			$mock_payment_method_instance->expects( $this->any() )
 				->method( 'is_subscription_item_in_cart' )
 				->will( $this->returnValue( false ) );
 
-			$mock_payment_methods[ $mock_payment_method->get_id() ] = $mock_payment_method;
+			$mock_payment_methods[ $mock_payment_method_instance->get_id() ] = $mock_payment_method_instance;
 		}
 
 		$this->mock_wcpay_account
@@ -175,7 +184,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			$customer_service,
 			$token_service,
 			$action_scheduler_service,
-			$mock_payment_method,
+			$mock_cc_payment_method,
 			$mock_payment_methods,
 			$order_service,
 			$mock_dpps,
@@ -566,6 +575,35 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'book', $this->gateway->get_option( 'payment_request_button_type' ) );
 	}
 
+	public function test_update_settings_enables_apple_google_pay_in_payment_methods_options() {
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_apple_google_pay_in_payment_methods_options_enabled', true );
+
+		$this->controller->update_settings( $request );
+
+		$this->assertEquals( 'yes', $this->gateway->get_option( 'apple_google_pay_in_payment_methods_options' ) );
+	}
+
+	public function test_update_settings_disables_apple_google_pay_in_payment_methods_options() {
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_apple_google_pay_in_payment_methods_options_enabled', false );
+
+		$this->controller->update_settings( $request );
+
+		$this->assertEquals( 'no', $this->gateway->get_option( 'apple_google_pay_in_payment_methods_options' ) );
+	}
+
+	public function test_update_settings_does_not_toggle_apple_google_pay_in_payment_methods_options_if_not_supplied() {
+		$this->gateway->update_option( 'apple_google_pay_in_payment_methods_options', 'yes' );
+		$status_before_request = $this->gateway->get_option( 'apple_google_pay_in_payment_methods_options' );
+
+		$request = new WP_REST_Request();
+
+		$this->controller->update_settings( $request );
+
+		$this->assertEquals( $status_before_request, $this->gateway->get_option( 'apple_google_pay_in_payment_methods_options' ) );
+	}
+
 	public function test_update_settings_does_not_save_account_if_not_supplied() {
 		$request = new WP_REST_Request();
 
@@ -773,6 +811,30 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertArrayHasKey( 'is_woopay_enabled', $response->get_data() );
 		$this->assertFalse( $response->get_data()['is_woopay_enabled'] );
 		$this->gateway->update_option( 'platform_checkout', $current_platform_checkout );
+	}
+
+	public function test_get_settings_returns_apple_google_pay_in_payment_methods_options_enabled_true(): void {
+		$this->gateway->update_option( 'apple_google_pay_in_payment_methods_options', 'yes' );
+
+		$response = $this->controller->get_settings();
+
+		$this->assertTrue( $response->get_data()['is_apple_google_pay_in_payment_methods_options_enabled'] );
+	}
+
+	public function test_get_settings_returns_apple_google_pay_in_payment_methods_options_enabled_false(): void {
+		$this->gateway->update_option( 'apple_google_pay_in_payment_methods_options', 'no' );
+
+		$response = $this->controller->get_settings();
+
+		$this->assertFalse( $response->get_data()['is_apple_google_pay_in_payment_methods_options_enabled'] );
+	}
+
+	public function test_get_settings_returns_apple_google_pay_in_payment_methods_options_enabled_false_by_default(): void {
+		$this->gateway->update_option( 'apple_google_pay_in_payment_methods_options', '' );
+
+		$response = $this->controller->get_settings();
+
+		$this->assertFalse( $response->get_data()['is_apple_google_pay_in_payment_methods_options_enabled'] );
 	}
 
 	/**

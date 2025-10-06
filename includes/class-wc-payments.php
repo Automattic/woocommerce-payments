@@ -318,6 +318,13 @@ class WC_Payments {
 	private static $currency_manager;
 
 	/**
+	 * Instance of WC_Payments_Payment_Method_Service, created in init function
+	 *
+	 * @var WC_Payments_Payment_Method_Service
+	 */
+	private static $payment_method_service;
+
+	/**
 	 * Entry point to the initialization logic.
 	 */
 	public static function init() {
@@ -517,6 +524,7 @@ class WC_Payments {
 		include_once __DIR__ . '/compat/multi-currency/wc-payments-multi-currency.php';
 		include_once __DIR__ . '/compat/multi-currency/class-wc-payments-currency-manager.php';
 		include_once __DIR__ . '/class-duplicates-detection-service.php';
+		include_once __DIR__ . '/class-wc-payments-payment-method-service.php';
 
 		wcpay_get_container()->get( \WCPay\Internal\LoggerContext::class )->init_hooks();
 
@@ -628,7 +636,7 @@ class WC_Payments {
 		self::$card_gateway->init_hooks();
 		self::$wc_payments_checkout->init_hooks();
 
-		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::get_gateway(), self::$customer_service, self::$database_cache );
+		self::$webhook_processing_service  = new WC_Payments_Webhook_Processing_Service( self::$api_client, self::$db_helper, self::$account, self::$remote_note_service, self::$order_service, self::$in_person_payments_receipts_service, self::get_gateway(), self::$customer_service, self::$database_cache, self::$onboarding_service );
 		self::$webhook_reliability_service = new WC_Payments_Webhook_Reliability_Service( self::$api_client, self::$action_scheduler_service, self::$webhook_processing_service );
 
 		self::$customer_service_api = new WC_Payments_Customer_Service_API( self::$customer_service );
@@ -645,6 +653,9 @@ class WC_Payments {
 
 		$express_checkout_helper = new WC_Payments_Express_Checkout_Button_Helper( self::get_gateway(), self::$account );
 		self::set_express_checkout_helper( $express_checkout_helper );
+
+		self::$payment_method_service = new WC_Payments_Payment_Method_Service( self::$api_client, self::$order_service );
+		self::$payment_method_service->init_hooks();
 
 		// Delay registering hooks that could end up in a fatal error due to expired account cache.
 		// The `woocommerce_payments_account_refreshed` action will result in a fatal error if it's fired before the `$wp_rewrite` is defined.
@@ -681,6 +692,7 @@ class WC_Payments {
 		add_filter( 'default_option_woocommerce_gateway_order', [ __CLASS__, 'order_woopayments_gateways' ], 3 );
 		add_filter( 'woocommerce_admin_get_user_data_fields', [ __CLASS__, 'add_user_data_fields' ] );
 
+		add_filter( 'woocommerce_address_providers', [ __CLASS__, 'add_address_provider' ] );
 		// Add note query support for source.
 		add_filter( 'woocommerce_rest_notes_object_query', [ __CLASS__, 'possibly_add_source_to_notes_query' ], 10, 2 );
 		add_filter( 'woocommerce_note_where_clauses', [ __CLASS__, 'possibly_add_note_source_where_clause' ], 10, 2 );
@@ -738,7 +750,7 @@ class WC_Payments {
 			);
 			$admin->init_hooks();
 
-			$admin_settings = new WC_Payments_Admin_Settings( self::get_gateway() );
+			$admin_settings = new WC_Payments_Admin_Settings( self::get_gateway(), self::get_account_service() );
 			$admin_settings->init_hooks();
 
 			// Use tracks loader only in admin screens because it relies on WC_Tracks loaded by WC_Admin.
@@ -870,6 +882,31 @@ class WC_Payments {
 		}
 
 		return $gateways;
+	}
+
+	/**
+	 * Add the WooCommerce Payments address autocomplete provider, but only if a WCPay gateway is enabled.
+	 *
+	 * @psalm-suppress MissingDependency
+	 *
+	 * @param array $providers The address providers.
+	 * @return array The address providers.
+	 */
+	public static function add_address_provider( $providers ) {
+		// Only enable address provider integration if a WCPay gateway is enabled.
+		if ( ! self::get_gateway()->is_enabled() ) {
+			return $providers;
+		}
+
+		if ( ! class_exists( 'Automattic\WooCommerce\Internal\AddressProvider\AbstractAutomatticAddressProvider' ) ) {
+			return $providers;
+		}
+
+		include_once __DIR__ . '/class-wc-payments-address-provider.php';
+
+		$providers[] = new WC_Payments_Address_Provider( self::$api_client, self::$account, self::$database_cache );
+
+		return $providers;
 	}
 
 	/**
@@ -1885,6 +1922,15 @@ class WC_Payments {
 		if ( WC_Payments_Utils::is_cart_block() ) {
 			self::register_script_with_dependencies( 'WCPAY_CART_BLOCK', 'dist/cart-block', [ 'wc-cart-block-frontend' ] );
 			wp_enqueue_script( 'WCPAY_CART_BLOCK' );
+
+			// Enqueue cart block styles.
+			WC_Payments_Utils::enqueue_style(
+				'WCPAY_CART_BLOCK',
+				plugins_url( 'dist/cart-block.css', WCPAY_PLUGIN_FILE ),
+				[],
+				self::get_file_version( 'dist/cart-block.css' ),
+				'all'
+			);
 		}
 	}
 

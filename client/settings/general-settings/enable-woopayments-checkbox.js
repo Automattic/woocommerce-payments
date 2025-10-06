@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
-import { CheckboxControl } from 'wcpay/components/wp-components-wrapped';
+import { CheckboxControl } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -60,6 +60,7 @@ const EnableWooPaymentsCheckbox = () => {
 					),
 					'WooPayments'
 				) }
+				__nextHasNoMarginBottom
 			/>
 			{ isConfirmationModalVisible && (
 				<DisableConfirmationModal

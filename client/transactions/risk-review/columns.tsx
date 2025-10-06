@@ -4,7 +4,7 @@
 import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { TableCardColumn, TableCardBodyColumn } from '@woocommerce/components';
-import { Button } from 'wcpay/components/wp-components-wrapped';
+import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -114,9 +114,10 @@ export const getRiskReviewListRowContent = (
 		action: {
 			display: (
 				<Button
-					isSecondary
+					variant="secondary"
 					href={ detailsURL }
 					onClick={ handleActionButtonClick }
+					__next40pxDefaultSize
 				>
 					{ __( 'Review' ) }
 				</Button>

@@ -2,7 +2,7 @@
  * External dependencies
  */
 import { __ } from '@wordpress/i18n';
-import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
+import { ExternalLink } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
 import React, { useContext } from 'react';
 
@@ -41,6 +41,7 @@ const GooglePayTestModeCompatibilityNotice = () => {
 				),
 				components: {
 					learnMore: (
+						// @ts-expect-error: children is provided when interpolating the component
 						<ExternalLink href="https://woocommerce.com/document/woopayments/payment-methods/google-pay/#testing" />
 					),
 				},

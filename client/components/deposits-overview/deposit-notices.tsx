@@ -5,7 +5,7 @@ import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 import { Link } from '@woocommerce/components';
-import { ExternalLink } from 'wcpay/components/wp-components-wrapped';
+import { ExternalLink } from '@wordpress/components';
 import { addQueryArgs } from '@wordpress/url';
 
 /**
@@ -201,6 +201,7 @@ export const DepositFailureNotice: React.FC< {
 				),
 				components: {
 					updateLink: (
+						// @ts-expect-error: children is provided when interpolating the component
 						<ExternalLink
 							onClick={ () =>
 								recordEvent(

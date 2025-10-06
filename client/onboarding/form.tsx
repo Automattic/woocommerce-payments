@@ -2,8 +2,8 @@
  * External dependencies
  */
 import React from 'react';
-import { Button } from 'wcpay/components/wp-components-wrapped';
 import { isEmpty, mapValues } from 'lodash';
+import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -51,6 +51,7 @@ export const OnboardingForm: React.FC< { children?: React.ReactNode } > = ( {
 				variant={ 'primary' }
 				type="submit"
 				className="stepper__cta"
+				__next40pxDefaultSize
 			>
 				{ strings.continue }
 			</Button>
@@ -72,6 +73,7 @@ export const OnboardingTextField: React.FC<
 
 	return (
 		<TextField
+			__next40pxDefaultSize
 			ref={ inputRef as any }
 			label={ strings.fields[ name ] }
 			value={ data[ name ] || '' }

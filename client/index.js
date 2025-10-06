@@ -21,7 +21,6 @@ import TransactionsPage from 'transactions';
 import PaymentDetailsPage from 'payment-details';
 import DisputesPage from 'disputes';
 import RedirectToTransactionDetails from 'disputes/redirect-to-transaction-details';
-import DisputeEvidencePage from 'wcpay/disputes/evidence';
 import DisputeNewEvidencePage from 'wcpay/disputes/new-evidence';
 import { MultiCurrencySetupPage } from 'multi-currency/interface/components';
 import CardReadersPage from 'card-readers';
@@ -32,7 +31,6 @@ import OnboardingPage from 'onboarding';
 import OnboardingKycPage from 'onboarding/kyc';
 import FraudProtectionAdvancedSettingsPage from './settings/fraud-protection/advanced-settings';
 import { getTasks } from 'overview/task-list/tasks';
-import { WordPressComponentsContext } from 'wcpay/wordpress-components-context/context';
 
 addFilter(
 	'woocommerce_admin_pages_list',
@@ -138,11 +136,7 @@ addFilter(
 			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
-			container: ( { query } ) => (
-				<WordPressComponentsContext.Provider value={ wp.components }>
-					<PaymentDetailsPage query={ query } />
-				</WordPressComponentsContext.Provider>
-			),
+			container: PaymentDetailsPage,
 			path: '/payments/transactions/details',
 			wpOpenMenu: menuID,
 			breadcrumbs: [
@@ -160,11 +154,7 @@ addFilter(
 			capability: 'manage_woocommerce',
 		} );
 		pages.push( {
-			container: ( { query } ) => (
-				<WordPressComponentsContext.Provider value={ wp.components }>
-					<DisputesPage query={ query } />
-				</WordPressComponentsContext.Provider>
-			),
+			container: DisputesPage,
 			path: '/payments/disputes',
 			wpOpenMenu: menuID,
 			breadcrumbs: [ rootLink, __( 'Disputes', 'woocommerce-payments' ) ],
@@ -193,57 +183,25 @@ addFilter(
 			capability: 'manage_woocommerce',
 		} );
 
-		if ( wcpaySettings.featureFlags.isNewEvidenceSubmissionFormEnabled ) {
-			pages.push( {
-				container: ( { query } ) => (
-					<WordPressComponentsContext.Provider
-						value={ wp.components }
-					>
-						<DisputeNewEvidencePage query={ query } />
-					</WordPressComponentsContext.Provider>
-				),
-				path: '/payments/disputes/challenge',
-				wpOpenMenu: menuID,
-				breadcrumbs: [
-					rootLink,
-					[
-						'/payments/disputes',
-						__( 'Disputes', 'woocommerce-payments' ),
-					],
-					__( 'Challenge dispute', 'woocommerce-payments' ),
+		pages.push( {
+			container: DisputeNewEvidencePage,
+			path: '/payments/disputes/challenge',
+			wpOpenMenu: menuID,
+			breadcrumbs: [
+				rootLink,
+				[
+					'/payments/disputes',
+					__( 'Disputes', 'woocommerce-payments' ),
 				],
-				navArgs: {
-					id: 'wc-payments-disputes-challenge',
-					parentPath: '/payments/disputes',
-				},
-				capability: 'manage_woocommerce',
-			} );
-		} else {
-			pages.push( {
-				container: ( { query } ) => (
-					<WordPressComponentsContext.Provider
-						value={ wp.components }
-					>
-						<DisputeEvidencePage query={ query } />
-					</WordPressComponentsContext.Provider>
-				),
-				path: '/payments/disputes/challenge',
-				wpOpenMenu: menuID,
-				breadcrumbs: [
-					rootLink,
-					[
-						'/payments/disputes',
-						__( 'Disputes', 'woocommerce-payments' ),
-					],
-					__( 'Challenge dispute', 'woocommerce-payments' ),
-				],
-				navArgs: {
-					id: 'wc-payments-disputes-challenge',
-					parentPath: '/payments/disputes',
-				},
-				capability: 'manage_woocommerce',
-			} );
-		}
+				__( 'Challenge dispute', 'woocommerce-payments' ),
+			],
+			navArgs: {
+				id: 'wc-payments-disputes-challenge',
+				parentPath: '/payments/disputes',
+			},
+			capability: 'manage_woocommerce',
+		} );
+
 		pages.push( {
 			container: MultiCurrencySetupPage,
 			path: '/payments/multi-currency-setup',

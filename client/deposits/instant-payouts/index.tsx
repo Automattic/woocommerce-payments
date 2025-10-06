@@ -4,9 +4,9 @@
  * External dependencies
  */
 import React from 'react';
-import { Button } from 'wcpay/components/wp-components-wrapped';
 import { __, sprintf } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
+import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -46,9 +46,10 @@ const InstantPayoutButton: React.FC< InstantPayoutButtonProps > = ( {
 	return (
 		<>
 			<Button
-				isPrimary
+				variant="primary"
 				disabled={ buttonDisabled }
 				onClick={ () => setModalOpen( true ) }
+				__next40pxDefaultSize
 			>
 				{ sprintf(
 					__(

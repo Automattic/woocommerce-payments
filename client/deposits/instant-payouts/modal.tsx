@@ -4,7 +4,7 @@
  * External dependencies
  */
 import React from 'react';
-import { Button, Modal } from 'wcpay/components/wp-components-wrapped';
+import { Button, Modal } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
 
@@ -85,14 +85,19 @@ const InstantPayoutModal: React.FC< InstantPayoutModalProps > = ( {
 			</ul>
 
 			<div className="wcpay-instant-payout-modal__footer">
-				<Button isSecondary onClick={ onClose }>
+				<Button
+					variant="secondary"
+					onClick={ onClose }
+					__next40pxDefaultSize
+				>
 					{ __( 'Cancel', 'woocommerce-payments' ) }
 				</Button>
 				<Button
-					isPrimary
+					variant="primary"
 					onClick={ onSubmit }
 					isBusy={ inProgress }
 					disabled={ inProgress }
+					__next40pxDefaultSize
 				>
 					{ sprintf(
 						/* translators: %s: Monetary amount to pay out */

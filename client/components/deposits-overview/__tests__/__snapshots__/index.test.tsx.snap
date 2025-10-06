@@ -1,0 +1,679 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DepositFailureNotice Renders Renders DepositFailureNotice component correctly 1`] = `
+.emotion-2 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  gap: calc(4px * 2);
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-2>* {
+  min-width: 0;
+}
+
+.emotion-4 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+<div>
+  <div
+    class="wcpay-inline-notice wcpay-inline-warning-notice deposit-failure-notice components-notice is-warning"
+  >
+    <div
+      class="components-visually-hidden emotion-0 emotion-1"
+      data-wp-c16t="true"
+      data-wp-component="VisuallyHidden"
+      style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+    >
+      Warning notice
+    </div>
+    <div
+      class="components-notice__content"
+    >
+      <div
+        class="components-flex emotion-2 emotion-1"
+        data-wp-c16t="true"
+        data-wp-component="Flex"
+      >
+        <div
+          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon emotion-4 emotion-1"
+          data-wp-c16t="true"
+          data-wp-component="FlexItem"
+        >
+          <svg
+            class="gridicon gridicons-notice-outline"
+            height="24"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <g>
+              <path
+                d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+              />
+            </g>
+          </svg>
+        </div>
+        <div
+          class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content emotion-4 emotion-1"
+          data-wp-c16t="true"
+          data-wp-component="FlexItem"
+        >
+          Payouts are currently paused because a recent payout failed. Please 
+          <a
+            class="components-external-link"
+            href="https://example.com?from=WCPAY_PAYOUTS&source=wcpay-payout-failure-notice"
+            rel="external noreferrer noopener"
+            target="_blank"
+          >
+            <span
+              class="components-external-link__contents"
+            >
+              update your bank account details
+            </span>
+            <span
+              aria-label="(opens in a new tab)"
+              class="components-external-link__icon"
+            >
+              ↗
+            </span>
+          </a>
+          .
+        </div>
+      </div>
+      <div
+        class="components-notice__actions"
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`Deposits Overview information Component Renders 1`] = `
+.emotion-0 {
+  background-color: #fff;
+  color: #1e1e1e;
+  position: relative;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.1);
+  outline: none;
+  border-radius: calc(8px - 1px);
+}
+
+.emotion-2 {
+  height: 100%;
+}
+
+.emotion-4 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  gap: calc(4px * 2);
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+  border-bottom: 1px solid;
+  box-sizing: border-box;
+  border-color: rgba(0, 0, 0, 0.1);
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-4>* {
+  min-width: 0;
+}
+
+.emotion-4:last-child {
+  border-bottom: none;
+}
+
+.emotion-4:first-of-type {
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
+}
+
+.emotion-4:last-of-type {
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
+}
+
+.emotion-6 {
+  box-sizing: border-box;
+  height: auto;
+  max-height: 100%;
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-6:first-of-type {
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
+}
+
+.emotion-6:last-of-type {
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
+}
+
+.emotion-14 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  gap: calc(4px * 2);
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.emotion-14>* {
+  min-width: 0;
+}
+
+.emotion-16 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+.emotion-22 {
+  border: 0;
+  margin: 0;
+  border-bottom: 1px solid currentColor;
+  height: 0;
+  width: auto;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  border-color: rgba(0, 0, 0, 0.1);
+}
+
+.emotion-50 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  gap: calc(4px * 2);
+  -webkit-box-pack: justify;
+  -webkit-justify-content: space-between;
+  justify-content: space-between;
+  width: 100%;
+  border-top: 1px solid;
+  box-sizing: border-box;
+  border-color: rgba(0, 0, 0, 0.1);
+  padding: calc(4px * 4) calc(4px * 6);
+}
+
+.emotion-50>* {
+  min-width: 0;
+}
+
+.emotion-50:first-of-type {
+  border-top: none;
+}
+
+.emotion-50:first-of-type {
+  border-top-left-radius: calc(8px - 1px);
+  border-top-right-radius: calc(8px - 1px);
+}
+
+.emotion-50:last-of-type {
+  border-bottom-left-radius: calc(8px - 1px);
+  border-bottom-right-radius: calc(8px - 1px);
+}
+
+.emotion-52 {
+  background: transparent;
+  display: block;
+  margin: 0!important;
+  pointer-events: none;
+  position: absolute;
+  will-change: box-shadow;
+  border-radius: inherit;
+  bottom: 0;
+  box-shadow: 0 0px 0px 0 rgba(0, 0, 0, 0);
+  opacity: 1;
+  left: 0;
+  right: 0;
+  top: 0;
+  border-radius: 8px;
+}
+
+@media not ( prefers-reduced-motion ) {
+  .emotion-52 {
+    -webkit-transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+    transition: box-shadow 200ms cubic-bezier(0.08, 0.52, 0.52, 1);
+  }
+}
+
+<div>
+  <div
+    class="components-surface components-card wcpay-deposits-overview emotion-0 emotion-1"
+    data-wp-c16t="true"
+    data-wp-component="Card"
+  >
+    <div
+      class="emotion-2 emotion-1"
+    >
+      <div
+        class="components-flex components-card__header components-card-header emotion-4 emotion-1"
+        data-wp-c16t="true"
+        data-wp-component="CardHeader"
+      >
+        Payouts
+      </div>
+      <div
+        class="components-card__body components-card-body wcpay-deposits-overview__schedule__container emotion-6 emotion-1"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
+      >
+        Available funds are automatically dispatched 
+        <strong>
+          every Monday
+        </strong>
+        .
+        <button
+          class="wcpay-tooltip__content-wrapper wcpay-tooltip--click__content-wrapper"
+          type="button"
+        >
+          <div
+            class="wcpay-tooltip__content-wrapper"
+          >
+            <div
+              aria-label="Payout schedule tooltip"
+              role="button"
+              tabindex="0"
+            >
+              <svg
+                class="gridicon gridicons-help-outline"
+                height="16"
+                viewBox="0 0 24 24"
+                width="16"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <g>
+                  <path
+                    d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm4 8a4 4 0 00-8 0h2c0-1.103.897-2 2-2s2 .897 2 2-.897 2-2 2a1 1 0 00-1 1v2h2v-1.141A3.991 3.991 0 0016 10zm-3 6h-2v2h2v-2z"
+                  />
+                </g>
+              </svg>
+            </div>
+          </div>
+        </button>
+      </div>
+      <div
+        class="components-card__body components-card-body wcpay-deposits-overview__notices__container emotion-6 emotion-1"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
+      />
+      <div
+        class="components-card__body components-card-body wcpay-deposits-overview__heading emotion-6 emotion-1"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
+      >
+        <span
+          class="wcpay-deposits-overview__heading__title"
+        >
+          Payout history
+        </span>
+      </div>
+      <div
+        class="components-card__body components-card-body wcpay-deposits-overview__table__container emotion-6 emotion-1"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
+      >
+        <div
+          class="components-flex wcpay-deposits-overview__table__row__header emotion-14 emotion-1"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
+        >
+          <div
+            class="components-flex-item wcpay-deposits-overview__table__cell emotion-16 emotion-1"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            Dispatch date
+          </div>
+          <div
+            class="components-flex-item wcpay-deposits-overview__table__cell emotion-16 emotion-1"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            Status
+          </div>
+          <div
+            class="components-flex-item wcpay-deposits-overview__table__cell emotion-16 emotion-1"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            Amount
+          </div>
+        </div>
+      </div>
+      <hr
+        aria-orientation="horizontal"
+        class="components-divider components-card__divider components-card-divider emotion-22 emotion-23"
+        data-wp-c16t="true"
+        data-wp-component="CardDivider"
+        role="separator"
+      />
+      <div
+        class="components-card__body components-card-body wcpay-deposits-overview__table__container emotion-6 emotion-1"
+        data-wp-c16t="true"
+        data-wp-component="CardBody"
+      >
+        <div
+          class="components-flex wcpay-deposits-overview__table__row emotion-14 emotion-1"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
+        >
+          <div
+            class="components-flex-item wcpay-deposits-overview__table__cell emotion-16 emotion-1"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            <svg
+              aria-hidden="true"
+              focusable="false"
+              size="17"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm.5 16c0 .3-.2.5-.5.5H5c-.3 0-.5-.2-.5-.5V7h15v12zM9 10H7v2h2v-2zm0 4H7v2h2v-2zm4-4h-2v2h2v-2zm4 0h-2v2h2v-2zm-4 4h-2v2h2v-2zm4 0h-2v2h2v-2z"
+              />
+            </svg>
+            <a
+              data-link-type="wc-admin"
+              href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock1"
+            >
+              January 2, 2020
+            </a>
+          </div>
+          <div
+            class="components-flex-item wcpay-deposits-overview__table__cell emotion-16 emotion-1"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            <span
+              class="chip chip-success"
+            >
+              Completed (paid)
+            </span>
+          </div>
+          <div
+            class="components-flex-item wcpay-deposits-overview__table__cell emotion-16 emotion-1"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            $20.00
+          </div>
+        </div>
+        <div
+          class="components-flex wcpay-deposits-overview__table__row emotion-14 emotion-1"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
+        >
+          <div
+            class="components-flex-item wcpay-deposits-overview__table__cell emotion-16 emotion-1"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            <svg
+              aria-hidden="true"
+              focusable="false"
+              size="17"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm.5 16c0 .3-.2.5-.5.5H5c-.3 0-.5-.2-.5-.5V7h15v12zM9 10H7v2h2v-2zm0 4H7v2h2v-2zm4-4h-2v2h2v-2zm4 0h-2v2h2v-2zm-4 4h-2v2h2v-2zm4 0h-2v2h2v-2z"
+              />
+            </svg>
+            <a
+              data-link-type="wc-admin"
+              href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock2"
+            >
+              January 3, 2020
+            </a>
+          </div>
+          <div
+            class="components-flex-item wcpay-deposits-overview__table__cell emotion-16 emotion-1"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            <span
+              class="chip chip-warning"
+            >
+              Pending
+            </span>
+          </div>
+          <div
+            class="components-flex-item wcpay-deposits-overview__table__cell emotion-16 emotion-1"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            $30.00
+          </div>
+        </div>
+        <div
+          class="components-flex wcpay-deposits-overview__table__row emotion-14 emotion-1"
+          data-wp-c16t="true"
+          data-wp-component="Flex"
+        >
+          <div
+            class="components-flex-item wcpay-deposits-overview__table__cell emotion-16 emotion-1"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            <svg
+              aria-hidden="true"
+              focusable="false"
+              size="17"
+              viewBox="0 0 24 24"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm.5 16c0 .3-.2.5-.5.5H5c-.3 0-.5-.2-.5-.5V7h15v12zM9 10H7v2h2v-2zm0 4H7v2h2v-2zm4-4h-2v2h2v-2zm4 0h-2v2h2v-2zm-4 4h-2v2h2v-2zm4 0h-2v2h2v-2z"
+              />
+            </svg>
+            <a
+              data-link-type="wc-admin"
+              href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock3"
+            >
+              January 4, 2020
+            </a>
+          </div>
+          <div
+            class="components-flex-item wcpay-deposits-overview__table__cell emotion-16 emotion-1"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            <span
+              class="chip chip-success"
+            >
+              Completed (deducted)
+            </span>
+          </div>
+          <div
+            class="components-flex-item wcpay-deposits-overview__table__cell emotion-16 emotion-1"
+            data-wp-c16t="true"
+            data-wp-component="FlexItem"
+          >
+            $40.00
+          </div>
+        </div>
+      </div>
+      <div
+        class="components-flex components-card__footer components-card-footer wcpay-deposits-overview__footer emotion-50 emotion-1"
+        data-wp-c16t="true"
+        data-wp-component="CardFooter"
+      >
+        <button
+          class="components-button is-next-40px-default-size is-secondary"
+          type="button"
+        >
+          View full payout history
+        </button>
+        <a
+          class="components-button is-next-40px-default-size is-tertiary"
+          href="admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments#payout-schedule"
+        >
+          Change payout schedule
+        </a>
+      </div>
+    </div>
+    <div
+      aria-hidden="true"
+      class="components-elevation emotion-52 emotion-1"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+    <div
+      aria-hidden="true"
+      class="components-elevation emotion-52 emotion-1"
+      data-wp-c16t="true"
+      data-wp-component="Elevation"
+    />
+  </div>
+</div>
+`;
+
+exports[`Suspended Deposit Notice Renders Component Renders 1`] = `
+.emotion-2 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  gap: calc(4px * 2);
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-2>* {
+  min-width: 0;
+}
+
+.emotion-4 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+<div>
+  <div
+    class="wcpay-inline-notice wcpay-inline-warning-notice wcpay-deposits-overview__suspended-notice components-notice is-warning"
+  >
+    <div
+      class="components-visually-hidden emotion-0 emotion-1"
+      data-wp-c16t="true"
+      data-wp-component="VisuallyHidden"
+      style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+    >
+      Warning notice
+    </div>
+    <div
+      class="components-notice__content"
+    >
+      <div
+        class="components-flex emotion-2 emotion-1"
+        data-wp-c16t="true"
+        data-wp-component="Flex"
+      >
+        <div
+          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon emotion-4 emotion-1"
+          data-wp-c16t="true"
+          data-wp-component="FlexItem"
+        >
+          <svg
+            class="gridicon gridicons-notice-outline"
+            height="24"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <g>
+              <path
+                d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+              />
+            </g>
+          </svg>
+        </div>
+        <div
+          class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content emotion-4 emotion-1"
+          data-wp-c16t="true"
+          data-wp-component="FlexItem"
+        >
+          Your payouts are 
+          <strong>
+            temporarily suspended
+          </strong>
+          . 
+          <a
+            data-link-type="wc-admin"
+            href="https://woocommerce.com/document/woopayments/payouts/why-payouts-suspended/"
+          >
+            Learn more
+          </a>
+        </div>
+      </div>
+      <div
+        class="components-notice__actions"
+      />
+    </div>
+  </div>
+</div>
+`;

@@ -266,11 +266,6 @@ class MultiCurrency {
 	public function init() {
 		$store_currency_updated = $this->check_store_currency_for_change();
 
-		// If the store currency has been updated, clear the cache to make sure we fetch fresh rates from the server.
-		if ( $store_currency_updated ) {
-			$this->clear_cache();
-		}
-
 		$this->initialize_available_currencies();
 		$this->set_default_currency();
 		$this->initialize_enabled_currencies();
@@ -406,16 +401,6 @@ class MultiCurrency {
 		$config['isMultiCurrencyEnabled'] = true;
 
 		return $config;
-	}
-
-	/**
-	 * Wipes the cached currency data option, forcing to re-fetch the data from WPCOM.
-	 *
-	 * @return void
-	 */
-	public function clear_cache() {
-		Logger::debug( 'Clearing the cache to force new rates to be fetched from the server.' );
-		$this->cache->delete( MultiCurrencyCacheInterface::CURRENCIES_KEY );
 	}
 
 	/**
@@ -1628,7 +1613,7 @@ class MultiCurrency {
 	 * @return void
 	 */
 	private function register_admin_scripts() {
-		$this->register_script_with_dependencies( 'WCPAY_MULTI_CURRENCY_SETTINGS', 'dist/multi-currency', [ 'WCPAY_ADMIN_SETTINGS' ] );
+		$this->register_script_with_dependencies( 'WCPAY_MULTI_CURRENCY_SETTINGS', 'dist/multi-currency', [ 'WCPAY_ADMIN_SETTINGS', 'wp-components' ] );
 
 		wp_register_style(
 			'WCPAY_MULTI_CURRENCY_SETTINGS',
