@@ -33,7 +33,7 @@ const dataTable = [
 ];
 let orderId: string;
 
-test.describe( 'Order > Refund Failure', () => {
+test.describe( 'Order > Refund Failure', { tag: '@merchant' }, () => {
 	test.beforeAll( async ( { customerPage, adminPage } ) => {
 		// Place an order to refund later
 		await emptyCart( customerPage );

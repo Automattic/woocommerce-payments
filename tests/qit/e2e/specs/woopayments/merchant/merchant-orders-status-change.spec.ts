@@ -29,152 +29,156 @@ const verifyOrderStatus = async ( page, status: string ) => {
 	).resolves.toBe( status );
 };
 
-test.describe( 'Order > Status Change', { tag: '@critical' }, () => {
-	let orderId: string;
+test.describe(
+	'Order > Status Change',
+	{ tag: [ '@merchant', '@critical' ] },
+	() => {
+		let orderId: string;
 
-	test.describe( 'Change Status of order to Cancelled', () => {
-		test.beforeAll( async ( { customerPage } ) => {
-			orderId = await placeOrderWithOptions( customerPage );
+		test.describe( 'Change Status of order to Cancelled', () => {
+			test.beforeAll( async ( { customerPage } ) => {
+				orderId = await placeOrderWithOptions( customerPage );
+			} );
+
+			test( 'Show Cancel Confirmation modal, do not change status if Do Nothing selected', async ( {
+				adminPage,
+			} ) => {
+				await goToOrder( adminPage, orderId );
+
+				// Select cancel from the order status dropdown.
+				await adminPage.selectOption(
+					orderStatusDropdownSelector,
+					'Cancelled'
+				);
+
+				// Verify the confirmation modal shows.
+				await adminPage
+					.locator( cancelModalSelector )
+					.waitFor( { state: 'visible' } );
+
+				// Click on Do Nothing.
+				await adminPage
+					.getByRole( 'button', { name: 'Do Nothing' } )
+					.click();
+
+				// Verify the order status is set to processing.
+				await verifyOrderStatus( adminPage, 'Processing' );
+
+				// Click on the update order button and wait for page reload.
+				await saveOrder( adminPage );
+
+				// Verify the order status is set to processing.
+				await verifyOrderStatus( adminPage, 'Processing' );
+			} );
+
+			test( 'When Order Status changed to Cancel, show Cancel Confirmation modal, change status to Cancel if confirmed', async ( {
+				adminPage,
+			} ) => {
+				await goToOrder( adminPage, orderId );
+
+				// Select cancel from the order status dropdown.
+				await adminPage.selectOption(
+					orderStatusDropdownSelector,
+					'Cancelled'
+				);
+
+				// Verify the confirmation modal shows.
+				await adminPage
+					.locator( cancelModalSelector )
+					.waitFor( { state: 'visible' } );
+
+				// Click on Cancel order.
+				await adminPage
+					.getByRole( 'button', { name: 'Cancel order' } )
+					.click();
+				await adminPage.waitForLoadState( 'networkidle' );
+
+				// Verify the order status is set to cancel.
+				await verifyOrderStatus( adminPage, 'Cancelled' );
+
+				// Click on the update order button and wait for page reload.
+				await saveOrder( adminPage );
+
+				// Verify the order status is set to cancelled.
+				await verifyOrderStatus( adminPage, 'Cancelled' );
+			} );
 		} );
 
-		test( 'Show Cancel Confirmation modal, do not change status if Do Nothing selected', async ( {
-			adminPage,
-		} ) => {
-			await goToOrder( adminPage, orderId );
+		test.describe( 'Change Status of order to Refunded', () => {
+			test.beforeAll( async ( { customerPage } ) => {
+				orderId = await placeOrderWithOptions( customerPage );
+			} );
 
-			// Select cancel from the order status dropdown.
-			await adminPage.selectOption(
-				orderStatusDropdownSelector,
-				'Cancelled'
-			);
+			test( 'Show Refund Confirmation modal, do not change status if Cancel clicked', async ( {
+				adminPage,
+			} ) => {
+				await goToOrder( adminPage, orderId );
 
-			// Verify the confirmation modal shows.
-			await adminPage
-				.locator( cancelModalSelector )
-				.waitFor( { state: 'visible' } );
+				// Select refunded from the order status dropdown.
+				await adminPage.selectOption(
+					orderStatusDropdownSelector,
+					'Refunded'
+				);
 
-			// Click on Do Nothing.
-			await adminPage
-				.getByRole( 'button', { name: 'Do Nothing' } )
-				.click();
+				// Verify the confirmation modal shows.
+				await adminPage
+					.locator( refundModalSelector )
+					.waitFor( { state: 'visible' } );
 
-			// Verify the order status is set to processing.
-			await verifyOrderStatus( adminPage, 'Processing' );
+				// Click on Cancel.
+				await adminPage.locator( refundCancelSelector ).click();
 
-			// Click on the update order button and wait for page reload.
-			await saveOrder( adminPage );
+				// Verify the order status is set to processing.
+				await verifyOrderStatus( adminPage, 'Processing' );
 
-			// Verify the order status is set to processing.
-			await verifyOrderStatus( adminPage, 'Processing' );
+				// Click on the update order button and wait for page reload.
+				await saveOrder( adminPage );
+
+				// Verify the order status is set to processing.
+				await verifyOrderStatus( adminPage, 'Processing' );
+			} );
+
+			test( 'Show Refund Confirmation modal, process Refund if confirmed', async ( {
+				adminPage,
+			} ) => {
+				await goToOrder( adminPage, orderId );
+
+				// Select refunded from the order status dropdown.
+				await adminPage.selectOption(
+					orderStatusDropdownSelector,
+					'Refunded'
+				);
+
+				// Verify the confirmation modal shows.
+				await adminPage
+					.locator( refundModalSelector )
+					.waitFor( { state: 'visible' } );
+
+				// Click on Refund order.
+				await adminPage.locator( refundConfirmSelector ).click();
+
+				// Wait for refund to be processed
+				await isUIUnblocked( adminPage );
+				await adminPage.waitForLoadState( 'networkidle' );
+
+				// Get the order price
+				const priceElement = await adminPage.$( orderPriceSelector );
+				const orderAmount = await adminPage.evaluate(
+					( el ) => el.textContent,
+					priceElement
+				);
+
+				// Verify the refund amount is equal to the order amount.
+				await expect(
+					adminPage.locator( '.refund > .line_cost' )
+				).toHaveText( `-${ orderAmount }` );
+
+				// Click on the update order button and wait for page reload.
+				await saveOrder( adminPage );
+
+				// Verify the order status is set to refunded.
+				await verifyOrderStatus( adminPage, 'Refunded' );
+			} );
 		} );
-
-		test( 'When Order Status changed to Cancel, show Cancel Confirmation modal, change status to Cancel if confirmed', async ( {
-			adminPage,
-		} ) => {
-			await goToOrder( adminPage, orderId );
-
-			// Select cancel from the order status dropdown.
-			await adminPage.selectOption(
-				orderStatusDropdownSelector,
-				'Cancelled'
-			);
-
-			// Verify the confirmation modal shows.
-			await adminPage
-				.locator( cancelModalSelector )
-				.waitFor( { state: 'visible' } );
-
-			// Click on Cancel order.
-			await adminPage
-				.getByRole( 'button', { name: 'Cancel order' } )
-				.click();
-			await adminPage.waitForLoadState( 'networkidle' );
-
-			// Verify the order status is set to cancel.
-			await verifyOrderStatus( adminPage, 'Cancelled' );
-
-			// Click on the update order button and wait for page reload.
-			await saveOrder( adminPage );
-
-			// Verify the order status is set to cancelled.
-			await verifyOrderStatus( adminPage, 'Cancelled' );
-		} );
-	} );
-
-	test.describe( 'Change Status of order to Refunded', () => {
-		test.beforeAll( async ( { customerPage } ) => {
-			orderId = await placeOrderWithOptions( customerPage );
-		} );
-
-		test( 'Show Refund Confirmation modal, do not change status if Cancel clicked', async ( {
-			adminPage,
-		} ) => {
-			await goToOrder( adminPage, orderId );
-
-			// Select refunded from the order status dropdown.
-			await adminPage.selectOption(
-				orderStatusDropdownSelector,
-				'Refunded'
-			);
-
-			// Verify the confirmation modal shows.
-			await adminPage
-				.locator( refundModalSelector )
-				.waitFor( { state: 'visible' } );
-
-			// Click on Cancel.
-			await adminPage.locator( refundCancelSelector ).click();
-
-			// Verify the order status is set to processing.
-			await verifyOrderStatus( adminPage, 'Processing' );
-
-			// Click on the update order button and wait for page reload.
-			await saveOrder( adminPage );
-
-			// Verify the order status is set to processing.
-			await verifyOrderStatus( adminPage, 'Processing' );
-		} );
-
-		test( 'Show Refund Confirmation modal, process Refund if confirmed', async ( {
-			adminPage,
-		} ) => {
-			await goToOrder( adminPage, orderId );
-
-			// Select refunded from the order status dropdown.
-			await adminPage.selectOption(
-				orderStatusDropdownSelector,
-				'Refunded'
-			);
-
-			// Verify the confirmation modal shows.
-			await adminPage
-				.locator( refundModalSelector )
-				.waitFor( { state: 'visible' } );
-
-			// Click on Refund order.
-			await adminPage.locator( refundConfirmSelector ).click();
-
-			// Wait for refund to be processed
-			await isUIUnblocked( adminPage );
-			await adminPage.waitForLoadState( 'networkidle' );
-
-			// Get the order price
-			const priceElement = await adminPage.$( orderPriceSelector );
-			const orderAmount = await adminPage.evaluate(
-				( el ) => el.textContent,
-				priceElement
-			);
-
-			// Verify the refund amount is equal to the order amount.
-			await expect(
-				adminPage.locator( '.refund > .line_cost' )
-			).toHaveText( `-${ orderAmount }` );
-
-			// Click on the update order button and wait for page reload.
-			await saveOrder( adminPage );
-
-			// Verify the order status is set to refunded.
-			await verifyOrderStatus( adminPage, 'Refunded' );
-		} );
-	} );
-} );
+	}
+);

@@ -8,7 +8,7 @@ import { goToTransactions } from '../../../utils/merchant';
 const shouldRunSubscriptionsTests =
 	process.env.SKIP_WC_SUBSCRIPTIONS_TESTS !== '1';
 
-test.describe( 'Admin transactions', () => {
+test.describe( 'Admin transactions', { tag: '@merchant' }, () => {
 	test( 'page should load without errors', async ( { adminPage } ) => {
 		await goToTransactions( adminPage );
 		await expect(

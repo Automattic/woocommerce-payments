@@ -18,7 +18,7 @@ import {
 } from '../../../utils/merchant';
 
 // Needs to be finished.
-test.describe( 'Order > Partial refund', () => {
+test.describe( 'Order > Partial refund', { tag: '@merchant' }, () => {
 	const product1 = config.products.simple;
 	const product2 = config.products.belt;
 	const product3 = config.products.hoodie_with_logo;

@@ -14,6 +14,7 @@ import { goToCheckout } from '../../../utils/shopper-navigation';
 
 test.describe(
 	'Disputes > View dispute details via disputed order notice',
+	{ tag: '@merchant' },
 	() => {
 		let orderId: string;
 

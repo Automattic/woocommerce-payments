@@ -3,7 +3,7 @@
  */
 import { test, expect } from '../../../fixtures/auth';
 
-test.describe( 'Merchant deposits', () => {
+test.describe( 'Merchant deposits', { tag: '@merchant' }, () => {
 	test( 'Load the deposits list page', async ( { adminPage } ) => {
 		await adminPage.goto(
 			'/wp-admin/admin.php?page=wc-admin&path=/payments/payouts'

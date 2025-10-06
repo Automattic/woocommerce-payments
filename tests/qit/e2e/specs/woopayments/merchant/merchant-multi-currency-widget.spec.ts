@@ -11,7 +11,7 @@ import {
 } from '../../../utils/merchant';
 import { goToShop } from '../../../utils/shopper-navigation';
 
-test.describe( 'Multi-currency widget setup', () => {
+test.describe( 'Multi-currency widget setup', { tag: '@merchant' }, () => {
 	let wasMulticurrencyEnabled: boolean;
 	// Values to test against. Defining nonsense values to ensure they are applied correctly.
 	const settings = {

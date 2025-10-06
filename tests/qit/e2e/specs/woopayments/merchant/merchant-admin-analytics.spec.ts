@@ -12,7 +12,7 @@ import {
 } from '../../../utils/merchant';
 import { placeOrderWithCurrency } from '../../../utils/shopper';
 
-test.describe( 'Admin order analytics', () => {
+test.describe( 'Admin order analytics', { tag: '@merchant' }, () => {
 	let orderId: string;
 
 	// Extend timeout for the entire test suite to allow order processing
