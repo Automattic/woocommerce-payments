@@ -642,24 +642,28 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$disabled_payment_methods = array_diff( $active_payment_methods, $payment_method_ids_to_enable );
 		$enabled_payment_methods  = array_diff( $payment_method_ids_to_enable, $active_payment_methods );
 
-		if ( function_exists( 'wc_admin_record_tracks_event' ) ) {
-			foreach ( $disabled_payment_methods as $disabled_payment_method ) {
-				wc_admin_record_tracks_event(
-					Track_Events::PAYMENT_METHOD_DISABLED,
-					[
-						'payment_method_id' => $disabled_payment_method,
-					]
-				);
-			}
-
-			foreach ( $enabled_payment_methods as $enabled_payment_method ) {
-				wc_admin_record_tracks_event(
-					Track_Events::PAYMENT_METHOD_ENABLED,
-					[
-						'payment_method_id' => $enabled_payment_method,
-					]
-				);
-			}
+		// Log Tracks events for each enabled/disabled payment method.
+		// We log these events before actually enabling/disabling the payment methods
+		// to ensure that if enabling/disabling fails, we still have a record of the
+		// attempt.
+		$pm_to_capability_key_map = $this->wcpay_gateway->get_payment_method_capability_key_map();
+		foreach ( $disabled_payment_methods as $disabled_payment_method ) {
+			$this->tracks_event(
+				Track_Events::PAYMENT_METHOD_DISABLED,
+				[
+					'payment_method_id' => $disabled_payment_method,
+					'capability_id'     => $pm_to_capability_key_map[ $disabled_payment_method ] ?? null,
+				]
+			);
+		}
+		foreach ( $enabled_payment_methods as $enabled_payment_method ) {
+			$this->tracks_event(
+				Track_Events::PAYMENT_METHOD_ENABLED,
+				[
+					'payment_method_id' => $enabled_payment_method,
+					'capability_id'     => $pm_to_capability_key_map[ $enabled_payment_method ] ?? null,
+				]
+			);
 		}
 
 		foreach ( $enabled_payment_methods as $payment_method_id ) {
