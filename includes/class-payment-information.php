@@ -295,13 +295,26 @@ class Payment_Information {
 	 * @return string
 	 */
 	public static function get_payment_method_from_request( array $request ): string {
-		foreach ( [ 'wcpay-payment-method', 'wcpay-payment-method-sepa' ] as $key ) {
+		$keys_to_check = self::is_agentic_commerce_request()
+			? [ 'wc-agentic_commerce-token' ]
+			: [ 'wcpay-payment-method', 'wcpay-payment-method-sepa' ];
+
+		foreach ( $keys_to_check as $key ) {
 			if ( ! empty( $request[ $key ] ) ) {
 				$normalized = wc_clean( $request[ $key ] );
 				return is_string( $normalized ) ? $normalized : '';
 			}
 		}
 		return '';
+	}
+
+	/**
+	 * Whether the current order is processed by Agentic Commerce.
+	 *
+	 * @return bool
+	 */
+	public static function is_agentic_commerce_request(): bool {
+		return isset( $request['wc-agentic_commerce-token'], $request['wc-agentic_commerce-provider'] );
 	}
 
 	/**
