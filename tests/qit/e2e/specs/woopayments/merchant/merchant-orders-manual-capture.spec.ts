@@ -13,7 +13,7 @@ import {
 } from '../../../utils/merchant';
 import { placeOrderWithOptions } from '../../../utils/shopper';
 
-test.describe( 'Order > Manual Capture', () => {
+test.describe( 'Order > Manual Capture', { tag: '@merchant' }, () => {
 	let orderId: string;
 	let wasInitiallyEnabled: boolean;
 

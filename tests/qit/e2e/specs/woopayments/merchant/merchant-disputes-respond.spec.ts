@@ -5,7 +5,7 @@ import { test, expect } from '../../../fixtures/auth';
 import { createDisputedOrder } from '../../../utils/shopper';
 import { goToPaymentDetailsForOrder } from '../../../utils/merchant';
 
-test.describe( 'Disputes > Respond to a dispute', () => {
+test.describe( 'Disputes > Respond to a dispute', { tag: '@merchant' }, () => {
 	// Complex dispute workflows with evidence submission require extended timeout
 	test.setTimeout( 90000 );
 

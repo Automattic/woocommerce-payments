@@ -17,7 +17,7 @@ import {
 	goToNewPost,
 } from '../../../utils/merchant';
 
-test.describe( 'Multi-currency', { tag: '@critical' }, () => {
+test.describe( 'Multi-currency', { tag: [ '@merchant', '@critical' ] }, () => {
 	let wasMulticurrencyEnabled: boolean;
 
 	test.beforeAll( async ( { adminPage } ) => {

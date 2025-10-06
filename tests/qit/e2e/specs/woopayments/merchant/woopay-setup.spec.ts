@@ -4,7 +4,7 @@
 import { test } from '../../../fixtures/auth';
 import { activateWooPay, deactivateWooPay } from '../../../utils/merchant';
 
-test.describe( 'WooPay setup', () => {
+test.describe( 'WooPay setup', { tag: '@merchant' }, () => {
 	let wasWooPayEnabled: boolean;
 
 	test.beforeAll( async ( { adminPage } ) => {

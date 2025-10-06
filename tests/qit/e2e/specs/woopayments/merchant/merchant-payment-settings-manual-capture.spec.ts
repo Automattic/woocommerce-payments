@@ -10,7 +10,7 @@ import { goToWooPaymentsSettings } from '../../../utils/merchant';
 
 test.describe(
 	'As a merchant, I should be prompted a confirmation modal when I try to activate the manual capture',
-	{ tag: '@critical' },
+	{ tag: [ '@merchant', '@critical' ] },
 	() => {
 		test.beforeEach( async ( { adminPage } ) => {
 			await goToWooPaymentsSettings( adminPage );

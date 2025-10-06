@@ -4,7 +4,7 @@
 import { test, expect } from '../../../fixtures/auth';
 import { goToDisputes, tableDataHasLoaded } from '../../../utils/merchant';
 
-test.describe( 'Merchant disputes', () => {
+test.describe( 'Merchant disputes', { tag: '@merchant' }, () => {
 	test( 'Load the disputes list page', async ( { adminPage } ) => {
 		await goToDisputes( adminPage );
 		await tableDataHasLoaded( adminPage );
