@@ -88,7 +88,7 @@ const makeCardTimingHelper = () => {
 	};
 };
 
-test.describe( 'Shopper can save and delete cards', () => {
+test.describe( 'Shopper can save and delete cards', { tag: '@shopper' }, () => {
 	// Use cards different from other tests to prevent conflicts.
 	const card2 = config.cards.basic2;
 	let shopperContext: BrowserContext;

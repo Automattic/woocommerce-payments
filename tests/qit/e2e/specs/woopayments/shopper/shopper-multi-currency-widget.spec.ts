@@ -11,7 +11,7 @@ import * as merchant from '../../../utils/merchant';
 import * as navigation from '../../../utils/shopper-navigation';
 import * as shopper from '../../../utils/shopper';
 
-test.describe( 'Shopper Multi-Currency widget', () => {
+test.describe( 'Shopper Multi-Currency widget', { tag: '@shopper' }, () => {
 	let merchantContext: BrowserContext;
 	let merchantPage: Page;
 	let shopperContext: BrowserContext;

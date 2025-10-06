@@ -23,6 +23,7 @@ const couponCode = 'free';
 
 test.describe(
 	'Checkout with free coupon & after modifying cart on Checkout page',
+	{ tag: '@shopper' },
 	() => {
 		let shopperContext: BrowserContext;
 		let shopperPage: Page;

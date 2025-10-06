@@ -13,7 +13,7 @@ import * as shopper from '../../../utils/shopper';
 import * as navigation from '../../../utils/shopper-navigation';
 import { isUIUnblocked } from '../../../utils/helpers';
 
-test.describe( 'Multi-currency checkout', () => {
+test.describe( 'Multi-currency checkout', { tag: '@shopper' }, () => {
 	let merchantContext: BrowserContext;
 	let merchantPage: Page;
 	let shopperContext: BrowserContext;

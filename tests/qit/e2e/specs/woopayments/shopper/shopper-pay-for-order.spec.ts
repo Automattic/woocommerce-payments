@@ -17,86 +17,96 @@ const cardTestingPreventionStates = [
 	{ cardTestingPreventionEnabled: true },
 ];
 
-test.describe( 'Shopper > Pay for Order', { tag: '@critical' }, () => {
-	let merchantContext: BrowserContext;
-	let merchantPage: Page;
-	let shopperContext: BrowserContext;
-	let shopperPage: Page;
+test.describe(
+	'Shopper > Pay for Order',
+	{ tag: [ '@shopper', '@critical' ] },
+	() => {
+		let merchantContext: BrowserContext;
+		let merchantPage: Page;
+		let shopperContext: BrowserContext;
+		let shopperPage: Page;
 
-	test.beforeAll( async ( { browser } ) => {
-		merchantContext = await browser.newContext( {
-			storageState: await getAuthState( browser, 'admin' ),
-		} );
-		merchantPage = await merchantContext.newPage();
-
-		shopperContext = await browser.newContext( {
-			storageState: await getAuthState( browser, 'customer' ),
-		} );
-		shopperPage = await shopperContext.newPage();
-	} );
-
-	test.afterAll( async () => {
-		await devtools.disableCardTestingProtection( merchantPage );
-		await merchantContext?.close();
-		await shopperContext?.close();
-	} );
-
-	cardTestingPreventionStates.forEach(
-		( { cardTestingPreventionEnabled } ) => {
-			test( `should be able to pay for a failed order with card testing protection ${ cardTestingPreventionEnabled }`, async () => {
-				if ( cardTestingPreventionEnabled ) {
-					await devtools.enableCardTestingProtection( merchantPage );
-				} else {
-					await devtools.disableCardTestingProtection( merchantPage );
-				}
-
-				await shopper.addToCartFromShopPage( shopperPage );
-				await shopper.setupCheckout( shopperPage );
-				await shopper.selectPaymentMethod( shopperPage );
-				await shopper.fillCardDetails(
-					shopperPage,
-					config.cards.declined
-				);
-				await shopper.placeOrder( shopperPage );
-
-				await expect(
-					shopperPage.getByText( 'Your card was declined' ).first()
-				).toBeVisible();
-
-				await shopperNavigation.goToOrders( shopperPage );
-				const payForOrderButton = shopperPage
-					.locator( '.woocommerce-button.button.pay', {
-						hasText: 'Pay',
-					} )
-					.first();
-				await payForOrderButton.click();
-
-				await expect(
-					shopperPage.getByRole( 'heading', {
-						name: 'Pay for order',
-					} )
-				).toBeVisible();
-				await shopper.fillCardDetails(
-					shopperPage,
-					config.cards.basic
-				);
-
-				const token = await shopperPage.evaluate( () => {
-					return ( window as any ).wcpayFraudPreventionToken;
-				} );
-
-				if ( cardTestingPreventionEnabled ) {
-					expect( token ).not.toBeUndefined();
-				} else {
-					expect( token ).toBeUndefined();
-				}
-
-				await shopper.placeOrder( shopperPage );
-
-				await expect(
-					shopperPage.getByText( 'Order received' ).first()
-				).toBeVisible();
+		test.beforeAll( async ( { browser } ) => {
+			merchantContext = await browser.newContext( {
+				storageState: await getAuthState( browser, 'admin' ),
 			} );
-		}
-	);
-} );
+			merchantPage = await merchantContext.newPage();
+
+			shopperContext = await browser.newContext( {
+				storageState: await getAuthState( browser, 'customer' ),
+			} );
+			shopperPage = await shopperContext.newPage();
+		} );
+
+		test.afterAll( async () => {
+			await devtools.disableCardTestingProtection( merchantPage );
+			await merchantContext?.close();
+			await shopperContext?.close();
+		} );
+
+		cardTestingPreventionStates.forEach(
+			( { cardTestingPreventionEnabled } ) => {
+				test( `should be able to pay for a failed order with card testing protection ${ cardTestingPreventionEnabled }`, async () => {
+					if ( cardTestingPreventionEnabled ) {
+						await devtools.enableCardTestingProtection(
+							merchantPage
+						);
+					} else {
+						await devtools.disableCardTestingProtection(
+							merchantPage
+						);
+					}
+
+					await shopper.addToCartFromShopPage( shopperPage );
+					await shopper.setupCheckout( shopperPage );
+					await shopper.selectPaymentMethod( shopperPage );
+					await shopper.fillCardDetails(
+						shopperPage,
+						config.cards.declined
+					);
+					await shopper.placeOrder( shopperPage );
+
+					await expect(
+						shopperPage
+							.getByText( 'Your card was declined' )
+							.first()
+					).toBeVisible();
+
+					await shopperNavigation.goToOrders( shopperPage );
+					const payForOrderButton = shopperPage
+						.locator( '.woocommerce-button.button.pay', {
+							hasText: 'Pay',
+						} )
+						.first();
+					await payForOrderButton.click();
+
+					await expect(
+						shopperPage.getByRole( 'heading', {
+							name: 'Pay for order',
+						} )
+					).toBeVisible();
+					await shopper.fillCardDetails(
+						shopperPage,
+						config.cards.basic
+					);
+
+					const token = await shopperPage.evaluate( () => {
+						return ( window as any ).wcpayFraudPreventionToken;
+					} );
+
+					if ( cardTestingPreventionEnabled ) {
+						expect( token ).not.toBeUndefined();
+					} else {
+						expect( token ).toBeUndefined();
+					}
+
+					await shopper.placeOrder( shopperPage );
+
+					await expect(
+						shopperPage.getByText( 'Order received' ).first()
+					).toBeVisible();
+				} );
+			}
+		);
+	}
+);

@@ -12,7 +12,7 @@ import * as merchant from '../../../utils/merchant';
 import * as shopper from '../../../utils/shopper';
 import { goToProductPageBySlug } from '../../../utils/shopper-navigation';
 
-test.describe( 'Klarna Checkout', () => {
+test.describe( 'Klarna Checkout', { tag: '@shopper' }, () => {
 	let merchantContext: BrowserContext;
 	let shopperContext: BrowserContext;
 	let merchantPage: Page;

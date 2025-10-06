@@ -18,7 +18,7 @@ const bnplProviders = [ 'Affirm', 'Cash App Afterpay' ];
 // Use different products per provider to avoid the order duplication protection.
 const products = [ 'belt', 'sunglasses' ];
 
-test.describe( 'BNPL checkout', { tag: '@critical' }, () => {
+test.describe( 'BNPL checkout', { tag: [ '@shopper', '@critical' ] }, () => {
 	let merchantContext: BrowserContext;
 	let merchantPage: Page;
 	let shopperContext: BrowserContext;
