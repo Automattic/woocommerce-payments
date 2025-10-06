@@ -754,7 +754,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 		if ( ! empty( $request['payment_data'] ) ) {
 			foreach ( $request['payment_data'] as $data ) {
-				$payment_data[ sanitize_key( $data['key'] ) ] = wc_clean( $data['value'] );
+				if ( isset( $data['key'], $data['value'] ) ) {
+					$payment_data[ sanitize_key( $data['key'] ) ] = wc_clean( $data['value'] );
+				}
 			}
 		}
 
