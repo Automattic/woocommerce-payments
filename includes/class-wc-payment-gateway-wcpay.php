@@ -325,6 +325,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->supports    = [
 			'products',
 			'refunds',
+			'agentic_commerce',
 		];
 
 		if ( 'card' !== $this->stripe_id ) {
@@ -862,6 +863,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$account_status = $this->account->get_account_status_data();
 		return parent::needs_setup() || ! empty( $account_status['error'] ) || ! $account_status['paymentsEnabled'];
+	}
+
+	/**
+	 * Get the agentic commerce payment provider identifier.
+	 *
+	 * @return string Payment provider identifier.
+	 */
+	public function get_agentic_commerce_provider() {
+		return 'stripe';
+	}
+
+	/**
+	 * Get the supported payment methods for agentic commerce.
+	 *
+	 * @return array Array of supported payment methods.
+	 */
+	public function get_agentic_commerce_payment_methods() {
+		return [ 'card' ];
 	}
 
 	/**
