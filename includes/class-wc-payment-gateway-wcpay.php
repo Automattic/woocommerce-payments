@@ -2130,6 +2130,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array List of payment methods.
 	 */
 	public function get_payment_method_types( $payment_information ): array {
+		// @todo - this change is temporary, must be fixed!
 		$requested_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? 'card' ) ); // phpcs:ignore WordPress.Security.NonceVerification
 		$token                    = $payment_information->get_payment_token();
 
