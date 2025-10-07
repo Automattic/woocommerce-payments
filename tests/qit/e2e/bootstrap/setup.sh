@@ -52,9 +52,8 @@ if [ -n "${E2E_JP_SITE_ID:-}" ] && [ -n "${E2E_JP_BLOG_TOKEN:-}" ] && [ -n "${E2
     echo "Configuring WCPay with Jetpack authentication..."
 
     # Set up Jetpack connection and refresh account data from server
-    wp woopayments qit_setup "$E2E_JP_SITE_ID" \
-        --blog_token="$E2E_JP_BLOG_TOKEN" \
-        --user_token="$E2E_JP_USER_TOKEN"
+    # Environment variables are automatically available to PHP via getenv()
+    wp eval-file /qit/tests/e2e/woocommerce-payments/local/bootstrap/run-qit-setup.php
 
     echo "✅ WooPayments connection configured - account data fetched from server"
 
@@ -72,7 +71,7 @@ fi
 # Always check the setup status
 echo ""
 echo "Current WooPayments setup status:"
-wp woopayments qit_status
+wp eval-file /qit/tests/e2e/woocommerce-payments/local/bootstrap/run-qit-status.php
 
 # Enable development/test mode for better testing experience
 wp option set wcpay_dev_mode 1 --quiet 2>/dev/null || true

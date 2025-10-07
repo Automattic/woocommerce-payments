@@ -52,6 +52,9 @@ compute_build_signature() {
     | xargs -0 shasum -a 256 2>/dev/null \
     | shasum -a 256 \
     | awk '{print $1}'
+
+    # Explicitly return 0 to avoid pipefail issues
+    return 0
 }
 
 BUILD_HASH_FILE="$WCP_ROOT/woocommerce-payments.zip.hash"
