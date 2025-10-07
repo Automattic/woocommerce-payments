@@ -7,7 +7,6 @@ import type { BrowserContext, Page } from '@playwright/test';
 /**
  * Internal dependencies
  */
-import { describeif } from '../../../utils/helpers';
 import { config } from '../../../config/default';
 import { goToCheckoutWCB } from '../../../utils/shopper-navigation';
 import * as devtools from '../../../utils/devtools';
@@ -22,9 +21,7 @@ import {
 	emptyCart,
 } from '../../../utils/shopper';
 
-const shouldRunWCBlocksTests = process.env.SKIP_WC_BLOCKS_TESTS !== '1';
-
-describeif( shouldRunWCBlocksTests )(
+test.describe(
 	'WooCommerce Blocks > Successful purchase',
 	{ tag: [ '@shopper', '@critical', '@blocks' ] },
 	() => {
