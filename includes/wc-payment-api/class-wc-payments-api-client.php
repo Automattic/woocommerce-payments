@@ -2234,14 +2234,15 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 */
 	public function build_order_info( WC_Order $order ): array {
 		$order_info = [
-			'id'                  => $order->get_id(),
-			'number'              => $order->get_order_number(),
-			'url'                 => $order->get_edit_order_url(),
-			'customer_url'        => $this->get_customer_url( $order ),
-			'customer_name'       => trim( $order->get_formatted_billing_full_name() ),
-			'customer_email'      => $order->get_billing_email(),
-			'fraud_meta_box_type' => $order->get_meta( '_wcpay_fraud_meta_box_type' ),
-			'ip_address'          => $order->get_customer_ip_address(),
+			'id'                     => $order->get_id(),
+			'number'                 => $order->get_order_number(),
+			'url'                    => $order->get_edit_order_url(),
+			'customer_url'           => $this->get_customer_url( $order ),
+			'customer_name'          => trim( $order->get_formatted_billing_full_name() ),
+			'customer_email'         => $order->get_billing_email(),
+			'fraud_meta_box_type'    => $order->get_meta( '_wcpay_fraud_meta_box_type' ),
+			'ip_address'             => $order->get_customer_ip_address(),
+			'suggested_product_type' => $this->determine_suggested_product_type( $order ),
 		];
 
 		if ( function_exists( 'wcs_get_subscriptions_for_order' ) ) {
@@ -2917,5 +2918,56 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		$customer_fingerprint_metadata['fraud_prevention_data_available'] = true;
 
 		return $customer_fingerprint_metadata;
+	}
+
+	/**
+	 * Determine the suggested product type based on the order's products.
+	 *
+	 * @param WC_Order $order The order.
+	 * @return string The suggested product type.
+	 */
+	private function determine_suggested_product_type( WC_Order $order ): string {
+		$items = $order->get_items();
+
+		if ( empty( $items ) ) {
+			return 'physical_product';
+		}
+
+		$virtual_products  = 0;
+		$physical_products = 0;
+		$product_count     = 0;
+
+		foreach ( $items as $item ) {
+			// Only process product items.
+			if ( ! $item instanceof WC_Order_Item_Product ) {
+				continue;
+			}
+
+			$product = $item->get_product();
+			if ( ! $product ) {
+				continue;
+			}
+
+			++$product_count;
+
+			if ( $product->is_virtual() ) {
+				++$virtual_products;
+			} else {
+				++$physical_products;
+			}
+		}
+
+		// If more than one product, suggest multiple.
+		if ( $product_count > 1 ) {
+			return 'multiple';
+		}
+
+		// If only one product and it's virtual, suggest digital.
+		if ( 1 === $product_count && 1 === $virtual_products ) {
+			return 'digital_product_or_service';
+		}
+
+		// Everything else defaults to physical.
+		return 'physical_product';
 	}
 }
