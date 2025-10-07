@@ -284,7 +284,8 @@ class Payment_Information {
 		$is_agentic_commerce_request =
 			null !== $order
 			&& is_string( $order->get_meta( 'checkout_session_id', true ) )
-			&& isset( $request['wc-agentic_commerce-token'], $request['wc-agentic_commerce-provider'] );
+			&& ! empty( $request['wc-agentic_commerce-token'] )
+			&& ! empty( $request['wc-agentic_commerce-provider'] );
 
 		if ( isset( $request['is_woopay'] ) && $request['is_woopay'] ) {
 			$order->add_meta_data( 'is_woopay', true, true );
