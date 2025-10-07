@@ -1,8 +1,8 @@
 <?php
 /**
- * WooPayments QIT E2E Setup - Load Commands and Run Setup
+ * WooPayments QIT E2E Jetpack Connection Setup
  *
- * This script loads QIT WP-CLI commands and runs the setup in a single execution.
+ * This script loads QIT WP-CLI commands and establishes Jetpack connection with tokens.
  * This is necessary because WP-CLI commands registered via eval-file are not
  * persisted across separate wp command invocations.
  *
@@ -23,7 +23,8 @@ if ( empty( $site_id ) ) {
 }
 
 // Load the QIT command class.
-$command_file = '/qit/tests/e2e/woocommerce-payments/local/bootstrap/class-wp-cli-qit-dev-command.php';
+// Note: /qit/bootstrap is a volume mount defined in qit.yml pointing to tests/qit/e2e/bootstrap.
+$command_file = '/qit/bootstrap/class-wp-cli-qit-dev-command.php';
 
 if ( ! file_exists( $command_file ) ) {
 	WP_CLI::error( 'QIT command file not found: ' . $command_file );
@@ -31,9 +32,9 @@ if ( ! file_exists( $command_file ) ) {
 
 require_once $command_file;
 
-// Create instance and run setup directly.
+// Create instance and run Jetpack connection setup.
 $qit_command = new WP_CLI_QIT_Dev_Command();
-$qit_command->qit_setup(
+$qit_command->qit_jetpack_connection(
 	[ $site_id ],
 	[
 		'blog_token' => $blog_token,

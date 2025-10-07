@@ -13,3 +13,9 @@ php_version: "8.3"
 plugin:
   - "woocommerce"
   - "jetpack"
+
+# Mount bootstrap directory for easier access in setup scripts.
+# This mounts ./e2e/bootstrap (relative to this qit.yml file) to /qit/bootstrap
+# inside the QIT test container (read-only for safety).
+volumes:
+  - "./e2e/bootstrap:/qit/bootstrap:ro"
