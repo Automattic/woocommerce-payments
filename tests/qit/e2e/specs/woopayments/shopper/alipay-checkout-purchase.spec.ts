@@ -8,12 +8,9 @@ import { test, expect, getAuthState } from '../../../fixtures/auth';
  * Internal dependencies
  */
 import { config } from '../../../config/default';
-import { describeif } from '../../../utils/helpers';
 import * as merchant from '../../../utils/merchant';
 import * as shopper from '../../../utils/shopper';
 import { goToCheckoutWCB } from '../../../utils/shopper-navigation';
-
-const shouldRunWCBlocksTests = process.env.SKIP_WC_BLOCKS_TESTS !== '1';
 
 test.describe( 'Alipay Checkout', { tag: '@shopper' }, () => {
 	let merchantContext: BrowserContext;
@@ -84,9 +81,9 @@ test.describe( 'Alipay Checkout', { tag: '@shopper' }, () => {
 		}
 	);
 
-	describeif( shouldRunWCBlocksTests )(
+	test.describe(
 		'checkout on block-based checkout page',
-		{ tag: '@critical' },
+		{ tag: [ '@critical', '@blocks' ] },
 		() => {
 			test( 'completes payment successfully', async () => {
 				await shopper.setupProductCheckout(

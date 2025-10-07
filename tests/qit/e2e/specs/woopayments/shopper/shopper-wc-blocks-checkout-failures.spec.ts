@@ -7,7 +7,6 @@ import type { BrowserContext, Page } from '@playwright/test';
 /**
  * Internal dependencies
  */
-import { describeif } from '../../../utils/helpers';
 import { config } from '../../../config/default';
 import { goToCheckoutWCB } from '../../../utils/shopper-navigation';
 import * as devtools from '../../../utils/devtools';
@@ -19,8 +18,6 @@ import {
 	fillCardDetailsWCB,
 	placeOrderWCB,
 } from '../../../utils/shopper';
-
-const shouldRunWCBlocksTests = process.env.SKIP_WC_BLOCKS_TESTS !== '1';
 
 const failures = [
 	{
@@ -125,7 +122,7 @@ const assertCheckoutError = async (
 	await expect( page.getByText( generalNoticeMatcher ) ).toBeVisible();
 };
 
-describeif( shouldRunWCBlocksTests )(
+test.describe(
 	'WooCommerce Blocks > Checkout failures',
 	{ tag: [ '@shopper', '@critical', '@blocks' ] },
 	() => {
