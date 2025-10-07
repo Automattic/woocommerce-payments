@@ -7,7 +7,6 @@ import type { BrowserContext, Page } from '@playwright/test';
 /**
  * Internal dependencies
  */
-import { describeif } from '../../../utils/helpers';
 import { config } from '../../../config/default';
 import {
 	goToCheckoutWCB,
@@ -24,9 +23,7 @@ import {
 	setSavePaymentMethod,
 } from '../../../utils/shopper';
 
-const shouldRunWCBlocksTests = process.env.SKIP_WC_BLOCKS_TESTS !== '1';
-
-describeif( shouldRunWCBlocksTests )(
+test.describe(
 	'WooCommerce Blocks > Saved cards',
 	{ tag: [ '@shopper', '@critical', '@blocks' ] },
 	() => {
