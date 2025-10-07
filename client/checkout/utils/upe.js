@@ -117,6 +117,7 @@ export const getUpeSettings = ( paymentMethodType ) => {
 			billingDetails: {
 				name: window.wcpayCustomerData.name,
 				email: window.wcpayCustomerData.email,
+				phone: window.wcpayCustomerData.billing_phone,
 				address: {
 					country: window.wcpayCustomerData.billing_country,
 				},

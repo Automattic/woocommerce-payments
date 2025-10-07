@@ -535,6 +535,7 @@ class WC_Payments_Customer_Service {
 		$user_email      = '';
 		$firstname       = '';
 		$lastname        = '';
+		$billing_phone   = '';
 		$billing_country = '';
 		$address         = null;
 
@@ -546,6 +547,7 @@ class WC_Payments_Customer_Service {
 				$firstname       = $order->get_billing_first_name();
 				$lastname        = $order->get_billing_last_name();
 				$user_email      = $order->get_billing_email();
+				$billing_phone   = $order->get_billing_phone();
 				$billing_country = $order->get_billing_country();
 				$address         = [
 					'city'        => $order->get_billing_city(),
@@ -566,6 +568,7 @@ class WC_Payments_Customer_Service {
 				$lastname        = $user->user_lastname;
 				$user_email      = get_user_meta( $user->ID, 'billing_email', true );
 				$user_email      = ! empty( $user_email ) ? $user_email : $user->user_email;
+				$billing_phone   = get_user_meta( $user->ID, 'billing_phone', true );
 				$billing_country = get_user_meta( $user->ID, 'billing_country', true );
 			}
 		}
@@ -573,6 +576,7 @@ class WC_Payments_Customer_Service {
 		return [
 			'name'            => $firstname . ' ' . $lastname,
 			'email'           => $user_email,
+			'billing_phone'   => $billing_phone,
 			'billing_country' => $billing_country,
 			'address'         => $address,
 		];

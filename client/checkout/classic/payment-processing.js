@@ -192,6 +192,7 @@ async function createStripePaymentMethod(
 			billing_details: {
 				name: wcpayCustomerData.name || undefined,
 				email: wcpayCustomerData.email,
+				phone: wcpayCustomerData.billing_phone,
 				address: wcpayCustomerData.address || {
 					country: wcpayCustomerData.billing_country,
 				},
