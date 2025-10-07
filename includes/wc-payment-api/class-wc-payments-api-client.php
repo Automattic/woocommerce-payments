@@ -84,6 +84,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	const COMPATIBILITY_API            = 'compatibility';
 	const RECOMMENDED_PAYMENT_METHODS  = 'payment_methods/recommended';
 	const ADDRESS_AUTOCOMPLETE_TOKEN   = 'address-autocomplete-token';
+	const STORE_SETUP_API              = 'accounts/store_setup';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -2460,6 +2461,33 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			self::POST,
 			true,
 			true
+		);
+	}
+
+	/**
+	 * Sync store setup with the Transact Platform.
+	 *
+	 * It is a non-blocking request, as we don't need to wait for the response.
+	 *
+	 * @param array $store_setup The store setup data.
+	 * @param bool  $test_mode   Whether we are in test mode or not.
+	 *
+	 * @return void Since it's a non-blocking request, we don't return anything.
+	 * @throws API_Exception
+	 */
+	public function sync_store_setup( array $store_setup, bool $test_mode = false ): void {
+		$this->request(
+			[
+				'store_setup' => $store_setup,
+				'test_mode'   => $test_mode,
+			],
+			self::STORE_SETUP_API,
+			self::POST,
+			true,
+			true,
+			false,
+			false,
+			false
 		);
 	}
 
