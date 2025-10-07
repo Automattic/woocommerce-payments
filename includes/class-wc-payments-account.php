@@ -2741,7 +2741,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 			// General store details.
 			'store_url'                    => home_url(),
-			'store_id'                     => (int) get_option( 'woocommerce_store_id', 0 ),
+			'store_id'                     => get_option( 'woocommerce_store_id', null ),
 
 			// Theme and plugins details.
 			'store_active_theme'           => $this->get_store_theme_details(),
