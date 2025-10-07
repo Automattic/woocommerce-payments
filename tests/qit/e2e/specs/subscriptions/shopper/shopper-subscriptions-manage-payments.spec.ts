@@ -15,10 +15,6 @@ import {
 } from '../../../utils/shopper';
 import { goToSubscriptions } from '../../../utils/shopper-navigation';
 
-// Define subscriptions test guard from legacy pattern
-const shouldRunSubscriptionsTests =
-	process.env.SKIP_WC_SUBSCRIPTIONS_TESTS !== '1';
-
 /**
  * Navigate to the subscription change payment method page.
  *
@@ -48,11 +44,6 @@ const navigateToSubscriptionDetails = async (
 };
 
 test.describe( 'Subscriptions > Manage payment methods', () => {
-	test.skip(
-		! shouldRunSubscriptionsTests,
-		'Subscriptions tests are disabled'
-	);
-
 	const customerBillingAddress =
 		config.addresses[ 'subscriptions-customer' ].billing;
 

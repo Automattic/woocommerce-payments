@@ -16,16 +16,7 @@ import {
 } from '../../../utils/shopper';
 import { goToSubscriptions } from '../../../utils/shopper-navigation';
 
-// Define subscriptions test guard from legacy pattern
-const shouldRunSubscriptionsTests =
-	process.env.SKIP_WC_SUBSCRIPTIONS_TESTS !== '1';
-
 test.describe( 'Subscriptions > Purchase multiple subscriptions', () => {
-	test.skip(
-		! shouldRunSubscriptionsTests,
-		'Subscriptions tests are disabled'
-	);
-
 	test(
 		'should be able to purchase multiple subscriptions',
 		{ tag: [ '@critical', '@subscriptions', '@shopper' ] },

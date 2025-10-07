@@ -16,19 +16,10 @@ import {
 } from '../../../utils/shopper';
 import { goToSubscriptions, dataHasLoaded } from '../../../utils/merchant';
 
-// Define subscriptions test guard from legacy pattern
-const shouldRunSubscriptionsTests =
-	process.env.SKIP_WC_SUBSCRIPTIONS_TESTS !== '1';
-
 test.describe(
 	'Subscriptions > Renew a subscription as a merchant',
 	{ tag: [ '@critical', '@subscriptions', '@merchant' ] },
 	() => {
-		test.skip(
-			! shouldRunSubscriptionsTests,
-			'Subscriptions tests are disabled'
-		);
-
 		const customerBillingConfig =
 			config.addresses[ 'subscriptions-customer' ].billing;
 

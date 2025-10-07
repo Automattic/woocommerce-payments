@@ -19,23 +19,10 @@ import {
 	goToSubscriptions,
 } from '../../../utils/merchant';
 
-// Define subscriptions test guard from legacy pattern
-const shouldRunSubscriptionsTests =
-	process.env.SKIP_WC_SUBSCRIPTIONS_TESTS !== '1';
-
-// Define action scheduler test guard
-const shouldRunActionSchedulerTests =
-	process.env.SKIP_ACTION_SCHEDULER_TESTS !== '1';
-
 test.describe(
 	'Subscriptions > Renew a subscription via Action Scheduler',
 	{ tag: [ '@critical', '@subscriptions', '@merchant' ] },
 	() => {
-		test.skip(
-			! shouldRunSubscriptionsTests || ! shouldRunActionSchedulerTests,
-			'Subscriptions or Action Scheduler tests are disabled'
-		);
-
 		const actionSchedulerHook =
 			'woocommerce_scheduled_subscription_payment';
 

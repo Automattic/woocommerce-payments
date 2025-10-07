@@ -20,10 +20,6 @@ import {
 } from '../../../utils/shopper-navigation';
 import { goToOrder, goToSubscriptions } from '../../../utils/merchant';
 
-// Define subscriptions test guard from legacy pattern
-const shouldRunSubscriptionsTests =
-	process.env.SKIP_WC_SUBSCRIPTIONS_TESTS !== '1';
-
 // Calculate dates for 14-day free trial
 const nowLocal = new Date();
 const nowUTC = new Date(
@@ -41,11 +37,6 @@ const productName = 'Subscription free trial product';
 const productSlug = 'subscription-free-trial-product';
 
 test.describe( 'Subscriptions > Purchase Free Trial', () => {
-	test.skip(
-		! shouldRunSubscriptionsTests,
-		'Subscriptions tests are disabled'
-	);
-
 	let orderId: string;
 	let subscriptionId: string;
 

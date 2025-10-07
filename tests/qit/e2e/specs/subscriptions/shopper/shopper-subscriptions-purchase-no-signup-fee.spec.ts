@@ -16,18 +16,9 @@ import {
 import { goToProductPageBySlug } from '../../../utils/shopper-navigation';
 import { goToOrder, goToPaymentDetails } from '../../../utils/merchant';
 
-// Define subscriptions test guard from legacy pattern
-const shouldRunSubscriptionsTests =
-	process.env.SKIP_WC_SUBSCRIPTIONS_TESTS !== '1';
-
 test.describe(
 	'Subscriptions > Purchase subscription without signup fee',
 	() => {
-		test.skip(
-			! shouldRunSubscriptionsTests,
-			'Subscriptions tests are disabled'
-		);
-
 		let orderId: string;
 
 		const productName = 'Subscription no signup fee product';

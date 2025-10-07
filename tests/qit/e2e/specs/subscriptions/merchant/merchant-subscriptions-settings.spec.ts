@@ -3,16 +3,7 @@
  */
 import { test, expect } from '../../../fixtures/auth';
 
-// Define subscriptions test guard from legacy pattern
-const shouldRunSubscriptionsTests =
-	process.env.SKIP_WC_SUBSCRIPTIONS_TESTS !== '1';
-
 test.describe( 'WooCommerce > Settings > Subscriptions', () => {
-	test.skip(
-		! shouldRunSubscriptionsTests,
-		'Subscriptions tests are disabled'
-	);
-
 	test(
 		'Merchant should be able to load WooCommerce Subscriptions settings tab',
 		{ tag: [ '@merchant', '@subscriptions' ] },
