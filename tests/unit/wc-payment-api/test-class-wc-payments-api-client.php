@@ -1248,6 +1248,126 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Test the determine_suggested_product_type method with various scenarios.
+	 *
+	 * @dataProvider data_determine_suggested_product_type
+	 */
+	public function test_determine_suggested_product_type( $order_items, $expected_product_type ) {
+		// Create a mock order.
+		$mock_order = $this->getMockBuilder( 'WC_Order' )
+			->disableOriginalConstructor()
+			->setMethods( [ 'get_items' ] )
+			->getMock();
+
+		$mock_order->method( 'get_items' )->willReturn( $order_items );
+
+		// Use reflection to call the private method.
+		$reflection = new ReflectionClass( $this->payments_api_client );
+		$method     = $reflection->getMethod( 'determine_suggested_product_type' );
+		$method->setAccessible( true );
+
+		$result = $method->invoke( $this->payments_api_client, $mock_order );
+
+		$this->assertEquals( $expected_product_type, $result );
+	}
+
+	/**
+	 * Data provider for test_determine_suggested_product_type.
+	 */
+	public function data_determine_suggested_product_type() {
+		return [
+			'empty_order'                  => [
+				'order_items'           => [],
+				'expected_product_type' => 'physical_product',
+			],
+			'single_physical_product'      => [
+				'order_items'           => [
+					$this->create_mock_order_item_product( false ), // not virtual.
+				],
+				'expected_product_type' => 'physical_product',
+			],
+			'single_virtual_product'       => [
+				'order_items'           => [
+					$this->create_mock_order_item_product( true ), // virtual.
+				],
+				'expected_product_type' => 'digital_product_or_service',
+			],
+			'multiple_products_mixed'      => [
+				'order_items'           => [
+					$this->create_mock_order_item_product( false ), // physical.
+					$this->create_mock_order_item_product( true ),  // virtual.
+				],
+				'expected_product_type' => 'multiple',
+			],
+			'multiple_physical_products'   => [
+				'order_items'           => [
+					$this->create_mock_order_item_product( false ), // physical.
+					$this->create_mock_order_item_product( false ), // physical.
+				],
+				'expected_product_type' => 'multiple',
+			],
+			'multiple_virtual_products'    => [
+				'order_items'           => [
+					$this->create_mock_order_item_product( true ), // virtual.
+					$this->create_mock_order_item_product( true ), // virtual.
+				],
+				'expected_product_type' => 'multiple',
+			],
+			'order_with_non_product_items' => [
+				'order_items'           => [
+					$this->create_mock_order_item_product( true ), // virtual product.
+					$this->create_mock_order_item_shipping(), // shipping item (not a product).
+				],
+				'expected_product_type' => 'digital_product_or_service',
+			],
+			'order_with_invalid_product'   => [
+				'order_items'           => [
+					$this->create_mock_order_item_product( true, false ), // virtual but invalid product.
+				],
+				'expected_product_type' => 'physical_product',
+			],
+		];
+	}
+
+	/**
+	 * Create a mock order item product for testing.
+	 *
+	 * @param bool $is_virtual Whether the product is virtual.
+	 * @param bool $is_valid Whether the product is valid (can be retrieved).
+	 * @return MockObject
+	 */
+	private function create_mock_order_item_product( $is_virtual = false, $is_valid = true ) {
+		$mock_product = $this->getMockBuilder( 'WC_Product' )
+			->disableOriginalConstructor()
+			->setMethods( [ 'is_virtual' ] )
+			->getMock();
+
+		$mock_product->method( 'is_virtual' )->willReturn( $is_virtual );
+
+		$mock_order_item = $this->getMockBuilder( 'WC_Order_Item_Product' )
+			->disableOriginalConstructor()
+			->setMethods( [ 'get_product' ] )
+			->getMock();
+
+		$mock_order_item->method( 'get_product' )->willReturn( $is_valid ? $mock_product : false );
+
+		return $mock_order_item;
+	}
+
+	/**
+	 * Create a mock order item that is not a product (e.g., shipping).
+	 *
+	 * @return MockObject
+	 */
+	private function create_mock_order_item_shipping() {
+		$mock_order_item = $this->getMockBuilder( 'WC_Order_Item_Shipping' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		return $mock_order_item;
+	}
+
+	/**
 	 * Delete test posts that were created during a unit test.
 	 *
 	 * @param array $post_ids Array of post IDs to delete.
