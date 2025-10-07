@@ -33,7 +33,15 @@ fi
 # Import WooCommerce Subscriptions products if the plugin is installed
 echo "Checking for WooCommerce Subscriptions plugin..."
 if wp plugin is-installed woocommerce-subscriptions 2>/dev/null; then
-    echo "WooCommerce Subscriptions detected - importing subscription products..."
+    echo "WooCommerce Subscriptions detected - configuring settings..."
+
+    # Allow multiple subscriptions to be purchased in a single order
+    # This is required for testing scenarios where customers buy multiple subscription products
+    wp option update woocommerce_subscriptions_multiple_purchase "yes"
+    echo "✅ Enabled multiple subscription purchases"
+
+    # Import subscription products
+    echo "Importing subscription products..."
     # In QIT, tests are mounted at /qit/tests/e2e/<extension-name>/local/
     WC_SUBSCRIPTIONS_DATA_PATH="/qit/tests/e2e/woocommerce-payments/local/wc-subscription-products.xml"
 
