@@ -2757,13 +2757,14 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 			// General store details.
 			'store'                  => [
-				'url'            => home_url(),
-				'id'             => get_option( 'woocommerce_store_id', null ),
-				'active_theme'   => $this->get_store_theme_details(),
-				'active_plugins' => ! empty( $wc_plugin_util ) ? $wc_plugin_util->get_all_active_valid_plugins() : [],
-				'wc_version'     => defined( 'WC_VERSION' ) ? explode( '-', WC_VERSION, 2 )[0] : '',
-				'wp_version'     => get_bloginfo( 'version' ),
-				'currency'       => get_woocommerce_currency(),
+				'url'              => home_url(),
+				'id'               => get_option( 'woocommerce_store_id', null ),
+				'active_theme'     => $this->get_store_theme_details(),
+				'active_plugins'   => ! empty( $wc_plugin_util ) ? $wc_plugin_util->get_all_active_valid_plugins() : [],
+				'wc_version'       => defined( 'WC_VERSION' ) ? explode( '-', WC_VERSION, 2 )[0] : '',
+				'wp_version'       => get_bloginfo( 'version' ),
+				'currency'         => get_woocommerce_currency(),
+				'tracking_enabled' => WC_Site_Tracking::is_tracking_enabled(),
 			],
 		];
 	}
