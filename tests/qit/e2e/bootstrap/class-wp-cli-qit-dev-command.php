@@ -13,7 +13,7 @@ use WCPay\Database_Cache;
  */
 class WP_CLI_QIT_Dev_Command {
 	/**
-	 * Sets up a WooPayments connection for QIT testing.
+	 * Establishes Jetpack connection for WooPayments QIT testing.
 	 *
 	 * ## OPTIONS
 	 *
@@ -27,12 +27,12 @@ class WP_CLI_QIT_Dev_Command {
 	 * : Jetpack user token.
 	 *
 	 * ## EXAMPLES
-	 *     wp woopayments qit_setup 248403234 --blog_token=abc123 --user_token=def456
+	 *     wp woopayments qit_jetpack_connection 248403234 --blog_token=abc123 --user_token=def456
 	 *
 	 * @param array $args Positional arguments passed to the command.
 	 * @param array $assoc_args Associative arguments passed to the command.
 	 */
-	public function qit_setup( array $args, array $assoc_args ): void {
+	public function qit_jetpack_connection( array $args, array $assoc_args ): void {
 		if ( empty( $args[0] ) || ! is_numeric( $args[0] ) ) {
 			\WP_CLI::error( 'Please provide a numeric blog ID.' );
 		}
@@ -67,8 +67,8 @@ class WP_CLI_QIT_Dev_Command {
 			$this->refresh_account_data();
 		}
 
-		\WP_CLI::success( "QIT WooPayments setup completed for blog ID {$blog_id}" );
-		\WP_CLI::line( 'Account data will be fetched from server based on Jetpack connection' );
+		\WP_CLI::success( "Jetpack connection established for blog ID {$blog_id}" );
+		\WP_CLI::line( 'Account data fetched from server based on Jetpack connection' );
 	}
 
 	/**
@@ -159,12 +159,12 @@ class WP_CLI_QIT_Dev_Command {
 	}
 
 	/**
-	 * Shows QIT WooPayments connection status for debugging.
+	 * Shows Jetpack connection status for WooPayments QIT testing.
 	 *
 	 * @when after_wp_load
 	 */
-	public function qit_status(): void {
-		\WP_CLI::line( '=== QIT WooPayments Connection Status ===' );
+	public function qit_jetpack_status(): void {
+		\WP_CLI::line( '=== QIT Jetpack Connection Status ===' );
 
 		if ( class_exists( 'Jetpack_Options' ) ) {
 			$blog_id = Jetpack_Options::get_option( 'id' );
