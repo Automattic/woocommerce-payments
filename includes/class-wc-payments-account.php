@@ -2737,7 +2737,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				'button_type'          => $gateway->get_option( 'payment_request_button_type' ),
 				'button_size'          => $gateway->get_option( 'payment_request_button_size' ),
 				'button_theme'         => $gateway->get_option( 'payment_request_button_theme' ),
-				'button_border_radius' => (int) $gateway->get_option( 'payment_request_button_border_radius', WC_Payments_Express_Checkout_Button_Handler::DEFAULT_BORDER_RADIUS_IN_PX ),
+				'button_border_radius' => $gateway->get_option( 'payment_request_button_border_radius' ),
 			],
 
 			'woopay'                 => [
