@@ -9,6 +9,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use Automattic\WooCommerce\Utilities\PluginUtil;
 use WCPay\Constants\Country_Code;
 use WCPay\Constants\Currency_Code;
 use WCPay\Core\Server\Request\Get_Account;
@@ -2694,29 +2695,44 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		}
 		$provider_capabilities_available = array_unique( array_merge( $provider_capabilities_enabled, $provider_capabilities_disabled ) );
 
+		// Get active plugins using the PluginUtil from WC, if available.
+		$wc_plugin_util = null;
+		try {
+			$wc_plugin_util = wc_get_container()->get( PluginUtil::class );
+		} catch ( Exception $e ) {
+			// If we can't get the PluginUtil, we won't be able to get the active plugins.
+			// This is not a critical failure, so we can log it and continue.
+			Logger::error( 'Failed to get PluginUtil: ' . $e->getMessage() );
+		}
+
 		return [
-			// WooPayments plugin settings.
-			'gateway_enabled'              => $gateway->is_enabled(),
-			'gateway_test_mode'            => WC_Payments::mode()->is_test(),
-			'gateway_test_mode_onboarding' => WC_Payments::mode()->is_test_mode_onboarding(),
+			'gateway'                => [
+				'enabled'              => $gateway->is_enabled(),
+				'test_mode'            => WC_Payments::mode()->is_test(),
+				'test_mode_onboarding' => WC_Payments::mode()->is_test_mode_onboarding(),
+			],
 
 			// Payment methods setup.
-			'payment_methods_available'    => $payment_methods_available,
-			'payment_methods_enabled'      => $payment_methods_enabled,
-			'payment_methods_disabled'     => $payment_methods_disabled,
-			'payment_methods_duplicates'   => $gateway->find_duplicates(),
+			'payment_methods'        => [
+				'available'  => $payment_methods_available,
+				'enabled'    => $payment_methods_enabled,
+				'disabled'   => $payment_methods_disabled,
+				'duplicates' => $gateway->find_duplicates(),
+			],
 			// Payment methods mapped to capabilities.
-			'provider_caps_available'      => $provider_capabilities_available,
-			'provider_caps_enabled'        => $provider_capabilities_enabled,
-			'provider_caps_disabled'       => $provider_capabilities_disabled,
+			'provider_capabilities'  => [
+				'available' => $provider_capabilities_available,
+				'enabled'   => $provider_capabilities_enabled,
+				'disabled'  => $provider_capabilities_disabled,
+			],
 			'apple_google_pay_in_payment_methods_options_enabled' => $gateway->get_option( 'apple_google_pay_in_payment_methods_options' ),
 
-			'saved_cards_enabled'          => $gateway->is_saved_cards_enabled(),
-			'manual_capture_enabled'       => 'yes' === $gateway->get_option( 'manual_capture' ),
-			'debug_log_enabled'            => 'yes' === $gateway->get_option( 'enable_logging' ),
+			'saved_cards_enabled'    => $gateway->is_saved_cards_enabled(),
+			'manual_capture_enabled' => 'yes' === $gateway->get_option( 'manual_capture' ),
+			'debug_log_enabled'      => 'yes' === $gateway->get_option( 'enable_logging' ),
 
-			'payment_request_enabled'      => 'yes' === $gateway->get_option( 'payment_request' ),
-			'payment_request_settings'     => [
+			'payment_request'        => [
+				'enabled'              => 'yes' === $gateway->get_option( 'payment_request' ),
 				'enabled_locations'    => $gateway->get_option( 'payment_request_button_locations' ),
 				'button_type'          => $gateway->get_option( 'payment_request_button_type' ),
 				'button_size'          => $gateway->get_option( 'payment_request_button_size' ),
@@ -2724,8 +2740,8 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				'button_border_radius' => (int) $gateway->get_option( 'payment_request_button_border_radius', WC_Payments_Express_Checkout_Button_Handler::DEFAULT_BORDER_RADIUS_IN_PX ),
 			],
 
-			'woopay_enabled'               => WC_Payments_Features::is_woopay_enabled(),
-			'woopay_settings'              => [
+			'woopay'                 => [
+				'enabled'                 => WC_Payments_Features::is_woopay_enabled(),
 				'enabled_locations'       => $gateway->get_option(
 					'platform_checkout_button_locations',
 					array_keys( $gateway_form_fields['payment_request_button_locations']['options'] )
@@ -2736,20 +2752,18 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			],
 
 			// WooPayments features.
-			'multi_currency_enabled'       => WC_Payments_Features::is_customer_multi_currency_enabled(),
-			'stripe_billing_enabled'       => WC_Payments_Features::is_stripe_billing_enabled(),
+			'multi_currency_enabled' => WC_Payments_Features::is_customer_multi_currency_enabled(),
+			'stripe_billing_enabled' => WC_Payments_Features::is_stripe_billing_enabled(),
 
 			// General store details.
-			'store_url'                    => home_url(),
-			'store_id'                     => get_option( 'woocommerce_store_id', null ),
-
-			// Theme and plugins details.
-			'store_active_theme'           => $this->get_store_theme_details(),
-			'store_active_plugins'         => get_option( 'active_plugins', [] ),
-
-			// Versions.
-			'store_wc_version'             => defined( 'WC_VERSION' ) ? explode( '-', WC_VERSION, 2 )[0] : '',
-			'store_wp_version'             => get_bloginfo( 'version' ),
+			'store'                  => [
+				'url'            => home_url(),
+				'id'             => get_option( 'woocommerce_store_id', null ),
+				'active_theme'   => $this->get_store_theme_details(),
+				'active_plugins' => ! empty( $wc_plugin_util ) ? $wc_plugin_util->get_all_active_valid_plugins() : [],
+				'wc_version'     => defined( 'WC_VERSION' ) ? explode( '-', WC_VERSION, 2 )[0] : '',
+				'wp_version'     => get_bloginfo( 'version' ),
+			],
 		];
 	}
 
