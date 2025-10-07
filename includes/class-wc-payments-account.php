@@ -2748,7 +2748,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				),
 				'store_logo'              => $gateway->get_option( 'platform_checkout_store_logo' ),
 				'custom_message'          => $gateway->get_option( 'platform_checkout_custom_message' ),
-				'invalid_extension_found' => get_option( 'woopay_invalid_extension_found', false ),
+				'invalid_extension_found' => (bool) get_option( 'woopay_invalid_extension_found', false ),
 			],
 
 			// WooPayments features.
@@ -2763,6 +2763,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				'active_plugins' => ! empty( $wc_plugin_util ) ? $wc_plugin_util->get_all_active_valid_plugins() : [],
 				'wc_version'     => defined( 'WC_VERSION' ) ? explode( '-', WC_VERSION, 2 )[0] : '',
 				'wp_version'     => get_bloginfo( 'version' ),
+				'currency'       => get_woocommerce_currency(),
 			],
 		];
 	}
