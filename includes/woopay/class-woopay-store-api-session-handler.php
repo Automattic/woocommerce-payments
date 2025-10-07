@@ -142,4 +142,13 @@ final class SessionHandler extends WC_Session {
 			$this->_dirty = false;
 		}
 	}
+
+	/**
+	 * Get session data.
+	 *
+	 * @return array
+	 */
+	public function get_session_data() {
+		return $this->has_session() ? (array) $this->get_session( $this->get_customer_id(), array() ) : array();
+	}
 }
