@@ -819,3 +819,12 @@ export const goToSubscriptions = async ( page: Page ) => {
 	} );
 	await dataHasLoaded( page );
 };
+
+export const goToActionScheduler = async ( page: Page, status = 'pending' ) => {
+	await page.goto(
+		`/wp-admin/tools.php?page=action-scheduler&status=${ status }`,
+		{
+			waitUntil: 'load',
+		}
+	);
+};

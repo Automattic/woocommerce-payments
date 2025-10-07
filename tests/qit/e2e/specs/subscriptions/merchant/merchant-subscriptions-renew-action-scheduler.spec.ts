@@ -14,7 +14,10 @@ import {
 	placeOrder,
 	setupCheckout,
 } from '../../../utils/shopper';
-import { goToSubscriptions } from '../../../utils/merchant';
+import {
+	goToActionScheduler,
+	goToSubscriptions,
+} from '../../../utils/merchant';
 
 // Define subscriptions test guard from legacy pattern
 const shouldRunSubscriptionsTests =
@@ -57,9 +60,7 @@ test.describe(
 			).toBeVisible();
 
 			// Step 2: Merchant goes to Action Scheduler
-			await adminPage.goto(
-				'/wp-admin/tools.php?page=action-scheduler&status=pending'
-			);
+			await goToActionScheduler( adminPage, 'pending' );
 
 			// Search for the subscription payment hook
 			await adminPage
