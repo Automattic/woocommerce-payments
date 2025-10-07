@@ -397,64 +397,6 @@ class WC_Payments_Customer_Service {
 	}
 
 	/**
-	 * Recreates the customer for this user.
-	 *
-	 * @param WP_User|null $user          User to recreate a customer for.
-	 * @param array        $customer_data Customer data.
-	 *
-	 * @return string The newly created customer's ID
-	 *
-	 * @throws API_Exception Error creating customer.
-	 */
-	private function recreate_customer( ?WP_User $user, array $customer_data ): string {
-		if ( $user instanceof WP_User && $user->ID > 0 ) {
-			$result = delete_user_option( $user->ID, $this->get_customer_id_option() );
-			if ( ! $result ) {
-				// Log the error, but continue since we'll be trying to update this option in create_customer.
-				Logger::error( 'Failed to delete old customer ID for user ' . $user->ID );
-			}
-		}
-
-		return $this->create_customer_for_user( $user, $customer_data );
-	}
-
-	/**
-	 * Returns the name of the customer option meta, taking test mode into account.
-	 *
-	 * @return string The customer ID option name.
-	 */
-	private function get_customer_id_option(): string {
-		return WC_Payments::mode()->is_test()
-			? self::WCPAY_TEST_CUSTOMER_ID_OPTION
-			: self::WCPAY_LIVE_CUSTOMER_ID_OPTION;
-	}
-
-	/**
-	 * Migrate any customer ID that might be in the DEPRECATED_WCPAY_CUSTOMER_ID_OPTION.
-	 *
-	 * @param int $user_id The user ID to look for a customer ID with.
-	 */
-	private function maybe_migrate_deprecated_customer( $user_id ) {
-		$customer_id = get_user_option( self::DEPRECATED_WCPAY_CUSTOMER_ID_OPTION, $user_id );
-		if ( false !== $customer_id ) {
-			// A customer was found in the deprecated key. Migrate it to the appropriate one and delete the old meta.
-			// If an account is live mode, we optimistically assume that the customer is live mode, to avoid losing
-			// live mode customer data. If the account is not live mode, it can only have test mode objects, so we
-			// can safely migrate them to the test key.
-			// If is_live cannot be determined, default it to true to avoid considering a live account as test.
-			$account_is_live    = null === $this->account->get_is_live() || $this->account->get_is_live();
-			$customer_option_id = $account_is_live
-				? self::WCPAY_LIVE_CUSTOMER_ID_OPTION
-				: self::WCPAY_TEST_CUSTOMER_ID_OPTION;
-			if ( update_user_option( $user_id, $customer_option_id, $customer_id ) ) {
-				delete_user_option( $user_id, self::DEPRECATED_WCPAY_CUSTOMER_ID_OPTION );
-			} else {
-				Logger::error( 'Failed to store new customer ID for user ' . $user_id . '; legacy customer was kept.' );
-			}
-		}
-	}
-
-	/**
 	 * Get the WCPay customer ID associated with an order, or create one if none found.
 	 *
 	 * @param WC_Order $order WC Order object.
@@ -580,5 +522,63 @@ class WC_Payments_Customer_Service {
 			'billing_country' => $billing_country,
 			'address'         => $address,
 		];
+	}
+
+	/**
+	 * Recreates the customer for this user.
+	 *
+	 * @param WP_User|null $user          User to recreate a customer for.
+	 * @param array        $customer_data Customer data.
+	 *
+	 * @return string The newly created customer's ID
+	 *
+	 * @throws API_Exception Error creating customer.
+	 */
+	private function recreate_customer( ?WP_User $user, array $customer_data ): string {
+		if ( $user instanceof WP_User && $user->ID > 0 ) {
+			$result = delete_user_option( $user->ID, $this->get_customer_id_option() );
+			if ( ! $result ) {
+				// Log the error, but continue since we'll be trying to update this option in create_customer.
+				Logger::error( 'Failed to delete old customer ID for user ' . $user->ID );
+			}
+		}
+
+		return $this->create_customer_for_user( $user, $customer_data );
+	}
+
+	/**
+	 * Returns the name of the customer option meta, taking test mode into account.
+	 *
+	 * @return string The customer ID option name.
+	 */
+	private function get_customer_id_option(): string {
+		return WC_Payments::mode()->is_test()
+			? self::WCPAY_TEST_CUSTOMER_ID_OPTION
+			: self::WCPAY_LIVE_CUSTOMER_ID_OPTION;
+	}
+
+	/**
+	 * Migrate any customer ID that might be in the DEPRECATED_WCPAY_CUSTOMER_ID_OPTION.
+	 *
+	 * @param int $user_id The user ID to look for a customer ID with.
+	 */
+	private function maybe_migrate_deprecated_customer( $user_id ) {
+		$customer_id = get_user_option( self::DEPRECATED_WCPAY_CUSTOMER_ID_OPTION, $user_id );
+		if ( false !== $customer_id ) {
+			// A customer was found in the deprecated key. Migrate it to the appropriate one and delete the old meta.
+			// If an account is live mode, we optimistically assume that the customer is live mode, to avoid losing
+			// live mode customer data. If the account is not live mode, it can only have test mode objects, so we
+			// can safely migrate them to the test key.
+			// If is_live cannot be determined, default it to true to avoid considering a live account as test.
+			$account_is_live    = null === $this->account->get_is_live() || $this->account->get_is_live();
+			$customer_option_id = $account_is_live
+				? self::WCPAY_LIVE_CUSTOMER_ID_OPTION
+				: self::WCPAY_TEST_CUSTOMER_ID_OPTION;
+			if ( update_user_option( $user_id, $customer_option_id, $customer_id ) ) {
+				delete_user_option( $user_id, self::DEPRECATED_WCPAY_CUSTOMER_ID_OPTION );
+			} else {
+				Logger::error( 'Failed to store new customer ID for user ' . $user_id . '; legacy customer was kept.' );
+			}
+		}
 	}
 }
