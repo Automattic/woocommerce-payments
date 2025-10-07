@@ -64,17 +64,6 @@ final class SessionHandler extends WC_Session {
 	}
 
 	/**
-	 * Process the token header to load the correct session.
-	 */
-	protected function init_session_from_token() {
-		$payload = JsonWebToken::get_parts( $this->token )->payload;
-
-		$this->_customer_id       = $payload->user_id;
-		$this->session_expiration = $payload->exp;
-		$this->_data              = (array) $this->get_session( $this->_customer_id, [] );
-	}
-
-	/**
 	 * Return true if the current user has an active session,.
 	 *
 	 * @return bool
@@ -114,15 +103,6 @@ final class SessionHandler extends WC_Session {
 	}
 
 	/**
-	 * Gets a cache prefix. This is used in session names so the entire cache can be invalidated with 1 function call.
-	 *
-	 * @return string
-	 */
-	private function get_cache_prefix() {
-		return \WC_Cache_Helper::get_cache_prefix( WC_SESSION_CACHE_GROUP );
-	}
-
-	/**
 	 * Save data and delete user session.
 	 */
 	public function save_data() {
@@ -149,6 +129,26 @@ final class SessionHandler extends WC_Session {
 	 * @return array
 	 */
 	public function get_session_data() {
-		return $this->has_session() ? (array) $this->get_session( $this->get_customer_id(), array() ) : array();
+		return $this->has_session() ? (array) $this->get_session( $this->get_customer_id(), [] ) : [];
+	}
+
+	/**
+	 * Process the token header to load the correct session.
+	 */
+	protected function init_session_from_token() {
+		$payload = JsonWebToken::get_parts( $this->token )->payload;
+
+		$this->_customer_id       = $payload->user_id;
+		$this->session_expiration = $payload->exp;
+		$this->_data              = (array) $this->get_session( $this->_customer_id, [] );
+	}
+
+	/**
+	 * Gets a cache prefix. This is used in session names so the entire cache can be invalidated with 1 function call.
+	 *
+	 * @return string
+	 */
+	private function get_cache_prefix() {
+		return \WC_Cache_Helper::get_cache_prefix( WC_SESSION_CACHE_GROUP );
 	}
 }
