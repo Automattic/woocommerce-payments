@@ -42,8 +42,8 @@ if wp plugin is-installed woocommerce-subscriptions 2>/dev/null; then
 
     # Import subscription products
     echo "Importing subscription products..."
-    # In QIT, tests are mounted at /qit/tests/e2e/<extension-name>/local/
-    WC_SUBSCRIPTIONS_DATA_PATH="/qit/tests/e2e/woocommerce-payments/local/wc-subscription-products.xml"
+    # Note: /qit/bootstrap is a volume mount defined in qit.yml pointing to ./e2e/bootstrap
+    WC_SUBSCRIPTIONS_DATA_PATH="/qit/bootstrap/wc-subscription-products.xml"
 
     if [ -f "$WC_SUBSCRIPTIONS_DATA_PATH" ]; then
         wp import "$WC_SUBSCRIPTIONS_DATA_PATH" --authors=skip
