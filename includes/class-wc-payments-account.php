@@ -132,6 +132,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		add_action( 'jetpack_site_registered', [ $this, 'clear_cache' ] );
 		add_action( 'updated_option', [ $this, 'possibly_update_wcpay_account_locale' ], 10, 3 );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'clear_cache' ] );
+		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'sync_store_setup' ], 20 );
 	}
 
 	/**

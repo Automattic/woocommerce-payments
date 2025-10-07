@@ -564,6 +564,9 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			return new WP_REST_Response( [ 'server_error' => $update_account_result->get_error_message() ], 400 );
 		}
 
+		// Sync the store setup with the Transact Platform.
+		$this->account->sync_store_setup();
+
 		return rest_ensure_response( $this->get_settings() );
 	}
 
