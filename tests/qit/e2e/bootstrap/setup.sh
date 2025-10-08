@@ -11,13 +11,6 @@ echo "Setting up WooPayments for E2E testing..."
 # Ensure environment is marked as local so dev-only CLI commands are available
 wp config set WP_ENVIRONMENT_TYPE local --quiet 2>/dev/null || true
 
-echo "Installing WordPress importer for sample data..."
-if ! wp plugin is-installed wordpress-importer >/dev/null 2>&1; then
-    wp plugin install wordpress-importer --activate
-else
-    wp plugin activate wordpress-importer
-fi
-
 WC_SAMPLE_DATA_PATH=$(wp eval 'echo trailingslashit( WP_CONTENT_DIR ) . "plugins/woocommerce/sample-data/sample_products.xml";' 2>/dev/null)
 if [ -z "$WC_SAMPLE_DATA_PATH" ]; then
     echo "Unable to resolve WooCommerce sample data path; skipping import."
@@ -112,14 +105,6 @@ wp option update woocommerce_force_ssl_checkout "no"
 wp option set woocommerce_checkout_company_field "optional" --quiet 2>/dev/null || true
 wp option set woocommerce_coming_soon "no" --quiet 2>/dev/null || true
 wp option set woocommerce_store_pages_only "no" --quiet 2>/dev/null || true
-
-# Ensure Storefront theme is active for consistent storefront markup
-if ! wp theme is-installed storefront > /dev/null 2>&1; then
-    wp theme install storefront --force
-fi
-wp theme activate storefront
-
-
 
 # Create a test customer
 wp user create testcustomer test@example.com \

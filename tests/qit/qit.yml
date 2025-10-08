@@ -14,6 +14,11 @@ plugin:
   - "woocommerce"
   - "jetpack"
   - "woocommerce-subscriptions"
+  - "wordpress-importer"
+
+# Theme dependency
+theme:
+  - "storefront"
 
 # Mount bootstrap directory for easier access in setup scripts.
 # This mounts tests/qit/e2e/bootstrap (relative to project root) to /qit/bootstrap
