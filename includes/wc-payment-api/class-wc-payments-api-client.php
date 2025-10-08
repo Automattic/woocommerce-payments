@@ -2465,29 +2465,22 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	}
 
 	/**
-	 * Sync store setup with the Transact Platform.
-	 *
-	 * It is a non-blocking request, as we don't need to wait for the response.
+	 * Send store setup data to the Transact Platform.
 	 *
 	 * @param array $store_setup The store setup data.
-	 * @param bool  $test_mode   Whether we are in test mode or not.
 	 *
-	 * @return void Since it's a non-blocking request, we don't return anything.
+	 * @return array Response from the API.
 	 * @throws API_Exception
 	 */
-	public function sync_store_setup( array $store_setup, bool $test_mode = false ): void {
-		$this->request(
+	public function send_store_setup( array $store_setup ): array {
+		return $this->request(
 			[
-				'store_setup' => $store_setup,
-				'test_mode'   => $test_mode,
+				'snapshot'  => $store_setup,
+				'test_mode' => \WC_Payments::mode()->is_test_mode_onboarding(),
 			],
 			self::STORE_SETUP_API,
 			self::POST,
-			true,
-			true,
-			false,
-			false,
-			false
+			true
 		);
 	}
 
@@ -2501,12 +2494,11 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	 * @param bool   $use_user_token   - If true, the request will be signed with the user token rather than blog token. Defaults to false.
 	 * @param bool   $raw_response     - If true, the raw response will be returned. Defaults to false.
 	 * @param bool   $use_v2_api       - If true, the request will be sent to the V2 API endpoint. Defaults to false.
-	 * @param bool   $blocking         - If false, the request will be non-blocking. Defaults to true.
 	 *
 	 * @return array
 	 * @throws API_Exception - If the account ID hasn't been set.
 	 */
-	protected function request( $params, $api, $method, $is_site_specific = true, $use_user_token = false, bool $raw_response = false, bool $use_v2_api = false, bool $blocking = true ) {
+	protected function request( $params, $api, $method, $is_site_specific = true, $use_user_token = false, bool $raw_response = false, bool $use_v2_api = false ) {
 		// Apply the default params that can be overridden by the calling method.
 		$params = wp_parse_args(
 			$params,
@@ -2570,7 +2562,6 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 				'headers'         => $headers,
 				'timeout'         => self::API_TIMEOUT_SECONDS,
 				'connect_timeout' => self::API_TIMEOUT_SECONDS,
-				'blocking'        => $blocking,
 			];
 
 			$log_request_id = uniqid();
