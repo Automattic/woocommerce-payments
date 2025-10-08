@@ -115,75 +115,72 @@ jobs:
 
             # PR matrix: Match e2e-pull-request.yml coverage
             # Test L-1 and latest with all test combinations (merchant, shopper, subscriptions, blocks)
-            # Note: Tags are without @ symbol - QIT adds it automatically
-            # Use space-separated tags (e.g., "merchant subscriptions") not regex
-            # Base merchant/shopper jobs exclude subscriptions and blocks to avoid duplication
+            # Strategy: Use paths for base tests, tags for combined tests
+            # - Paths (specs/woopayments/*) for base merchant/shopper to exclude subscriptions/blocks
+            # - Tags for combined tests (subscriptions, blocks) using AND logic
 
             # Add L-1 version with PHP 8.3
-            # Use space-separated tags - Playwright will match tests with ALL specified tags
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant subscriptions\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper subscriptions\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper blocks\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_path\":\"specs/woopayments/merchant\",\"test_name\":\"merchant\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_path\":\"specs/woopayments/shopper\",\"test_name\":\"shopper\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant subscriptions\",\"test_name\":\"subscriptions-merchant\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper subscriptions\",\"test_name\":\"subscriptions-shopper\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper blocks\",\"test_name\":\"blocks-shopper\"}")
 
             # Add latest with PHP 8.3
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant subscriptions\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper subscriptions\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper blocks\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_path\":\"specs/woopayments/merchant\",\"test_name\":\"merchant\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_path\":\"specs/woopayments/shopper\",\"test_name\":\"shopper\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant subscriptions\",\"test_name\":\"subscriptions-merchant\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper subscriptions\",\"test_name\":\"subscriptions-shopper\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper blocks\",\"test_name\":\"blocks-shopper\"}")
           else
             echo "Scheduled/push run detected - running full test suite" >&2
 
             # WC 7.7.0 with PHP 7.4 only (legacy - business continuity)
-            # Note: Tags without @ - QIT adds it. Use space-separated tags for multiple tags.
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_tag\":\"merchant\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_tag\":\"shopper\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_tag\":\"merchant subscriptions\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_tag\":\"shopper subscriptions\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_path\":\"specs/woopayments/merchant\",\"test_name\":\"merchant\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_path\":\"specs/woopayments/shopper\",\"test_name\":\"shopper\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_tag\":\"merchant subscriptions\",\"test_name\":\"subscriptions-merchant\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_tag\":\"shopper subscriptions\",\"test_name\":\"subscriptions-shopper\"}")
 
             # Add L-1 version with PHP 8.3
-            # Use space-separated tags - Playwright will match tests with ALL specified tags
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant subscriptions\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper subscriptions\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper blocks\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_path\":\"specs/woopayments/merchant\",\"test_name\":\"merchant\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_path\":\"specs/woopayments/shopper\",\"test_name\":\"shopper\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant subscriptions\",\"test_name\":\"subscriptions-merchant\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper subscriptions\",\"test_name\":\"subscriptions-shopper\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper blocks\",\"test_name\":\"blocks-shopper\"}")
 
             # Add latest with PHP 8.3
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant subscriptions\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper subscriptions\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper blocks\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_path\":\"specs/woopayments/merchant\",\"test_name\":\"merchant\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_path\":\"specs/woopayments/shopper\",\"test_name\":\"shopper\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant subscriptions\",\"test_name\":\"subscriptions-merchant\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper subscriptions\",\"test_name\":\"subscriptions-shopper\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper blocks\",\"test_name\":\"blocks-shopper\"}")
 
             # Add beta with PHP 8.3 (if available)
             if [[ -n "$BETA_VERSION" ]]; then
-              MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant\"}")
-              MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper\"}")
-              MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant subscriptions\"}")
-              MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper subscriptions\"}")
-              MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper blocks\"}")
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_path\":\"specs/woopayments/merchant\",\"test_name\":\"merchant\"}")
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_path\":\"specs/woopayments/shopper\",\"test_name\":\"shopper\"}")
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant subscriptions\",\"test_name\":\"subscriptions-merchant\"}")
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper subscriptions\",\"test_name\":\"subscriptions-shopper\"}")
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper blocks\",\"test_name\":\"blocks-shopper\"}")
             fi
 
             # Add rc with PHP 8.4 (only if RC version is available)
             if [[ -n "$RC_VERSION" && "$RC_VERSION" != "null" ]]; then
-              MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_tag\":\"merchant\"}")
-              MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_tag\":\"shopper\"}")
-              MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_tag\":\"merchant subscriptions\"}")
-              MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_tag\":\"shopper subscriptions\"}")
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_path\":\"specs/woopayments/merchant\",\"test_name\":\"merchant\"}")
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_path\":\"specs/woopayments/shopper\",\"test_name\":\"shopper\"}")
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_tag\":\"merchant subscriptions\",\"test_name\":\"subscriptions-merchant\"}")
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_tag\":\"shopper subscriptions\",\"test_name\":\"subscriptions-shopper\"}")
             else
               echo "No RC version available, skipping RC matrix entries" >&2
             fi
 
             # Add WordPress nightly with WC latest and PHP 8.3 (match e2e-test.yml wp-nightly-tests)
             # Test new WordPress features with latest stable WooCommerce
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"merchant\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"shopper\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"merchant subscriptions\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"shopper subscriptions\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"shopper blocks\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_path\":\"specs/woopayments/merchant\",\"test_name\":\"merchant\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_path\":\"specs/woopayments/shopper\",\"test_name\":\"shopper\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"merchant subscriptions\",\"test_name\":\"subscriptions-merchant\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"shopper subscriptions\",\"test_name\":\"subscriptions-shopper\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"shopper blocks\",\"test_name\":\"blocks-shopper\"}")
           fi
 
           # Convert array to JSON
@@ -191,14 +188,9 @@ jobs:
 
           echo "matrix={\"include\":$MATRIX_INCLUDE}" >> $GITHUB_OUTPUT
 
-  qit-e2e-tests:
+  build-plugin:
+    name: "Build plugin artifact"
     runs-on: ubuntu-latest
-    needs: generate-matrix
-    strategy:
-      fail-fast: false
-      matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
-    name: "${{ matrix.wordpress && format('WP - {0} | ', matrix.wordpress) || '' }}WC - ${{ matrix.woocommerce }} | PHP - ${{ matrix.php }} | ${{ matrix.test_tag }}"
-
     steps:
       - name: "Checkout repository"
         uses: actions/checkout@v4
@@ -211,6 +203,32 @@ jobs:
       - name: "Build the plugin"
         id: build_plugin
         uses: ./.github/actions/build
+
+      - name: "Upload plugin artifact"
+        uses: actions/upload-artifact@v4
+        with:
+          name: woocommerce-payments-plugin
+          path: woocommerce-payments.zip
+          retention-days: 1
+
+  qit-e2e-tests:
+    runs-on: ubuntu-latest
+    needs: [generate-matrix, build-plugin]
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
+    name: "${{ matrix.wordpress && format('WP - {0} | ', matrix.wordpress) || '' }}WC - ${{ matrix.woocommerce }} | PHP - ${{ matrix.php }} | ${{ matrix.test_name }}"
+
+    steps:
+      - name: "Checkout repository"
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref }}
+
+      - name: "Download plugin artifact"
+        uses: actions/download-artifact@v4
+        with:
+          name: woocommerce-payments-plugin
 
       - name: "Install QIT CLI for running tests"
         run: |
@@ -233,6 +251,7 @@ jobs:
           WC_VERSION="${{ inputs.woocommerce_version || matrix.woocommerce }}"
           PHP_VERSION="${{ inputs.php_version || matrix.php }}"
           TEST_TAG="${{ inputs.test_tag || matrix.test_tag }}"
+          TEST_PATH="${{ matrix.test_path }}"
           WP_VERSION="${{ inputs.wordpress_version || matrix.wordpress || 'stable' }}"
 
           OPTIONS="${OPTIONS} --php_version=${PHP_VERSION} --woo=${WC_VERSION} --wp=${WP_VERSION}"
@@ -240,19 +259,24 @@ jobs:
           # Disable retries to match non-QIT workflow behavior (retries: 0)
           OPTIONS="${OPTIONS} --pw_options=\"--retries=0\""
 
-          # Add tag if specified - strip leading @ symbol as QIT adds it automatically
-          if [[ -n "$TEST_TAG" ]]; then
+          # Determine test selection: use path for base tests, tags for combined tests
+          if [[ -n "$TEST_PATH" ]]; then
+            # Use specific directory path (e.g., specs/woopayments/merchant)
+            echo "test_path=$TEST_PATH" >> $GITHUB_OUTPUT
+            echo "Using test path: $TEST_PATH"
+          elif [[ -n "$TEST_TAG" ]]; then
+            # Use tags for combined tests (e.g., "merchant subscriptions")
             # Remove @ prefix if present (QIT will add it)
             CLEAN_TAG="${TEST_TAG#@}"
             # For combined tags like "@shopper and @subscriptions", strip all @ symbols
             CLEAN_TAG="${CLEAN_TAG//@/}"
             OPTIONS="${OPTIONS} --pw_test_tag=\"${CLEAN_TAG}\""
+            echo "Using test tags: ${TEST_TAG} (cleaned: ${CLEAN_TAG})"
           fi
 
           echo "options=${OPTIONS}" >> $GITHUB_OUTPUT
           echo "Will run with options: ${OPTIONS}"
           echo "WordPress: ${WP_VERSION}"
-          echo "Test tag: ${TEST_TAG} (cleaned: ${CLEAN_TAG:-none})"
 
       - name: Mask sensitive values
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
@@ -268,7 +292,10 @@ jobs:
         # Use continue-on-error to allow parsing results even if tests fail
         continue-on-error: true
         run: |
-          ./vendor/bin/qit run:e2e woocommerce-payments tests/qit/e2e \
+          # Use specific test path if provided, otherwise use full test directory
+          TEST_DIR="${{ steps.test_options.outputs.test_path || 'tests/qit/e2e' }}"
+
+          ./vendor/bin/qit run:e2e woocommerce-payments "$TEST_DIR" \
             --config tests/qit/qit.yml \
             --source woocommerce-payments.zip \
             --env E2E_JP_SITE_ID="${{ secrets.E2E_QIT_JP_SITE_ID }}" \
@@ -280,28 +307,44 @@ jobs:
         id: parse_failed_specs
         if: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && steps.first_run_qit_tests.outcome == 'failure' }}
         run: |
-          # QIT outputs results to a temporary directory
+          # QIT outputs results to a temporary directory like /tmp/qit-results-XXXXX
           # Find the most recent QIT results directory
-          QIT_RESULTS_DIR=$(find /tmp -name "qit-results-*" -type d 2>/dev/null | sort -r | head -1)
+          QIT_RESULTS_DIR=$(find /tmp -maxdepth 1 -name "qit-results-*" -type d 2>/dev/null | sort -r | head -1)
 
           if [[ -z "$QIT_RESULTS_DIR" ]]; then
-            echo "No QIT results directory found"
+            echo "No QIT results directory found in /tmp"
+            ls -la /tmp | grep qit || echo "No qit directories found"
             echo "failed_specs_count=0" >> $GITHUB_OUTPUT
             exit 0
           fi
 
-          # Look for Playwright JSON results
-          RESULTS_JSON=$(find "$QIT_RESULTS_DIR" -name "results.json" -o -name "test-results.json" 2>/dev/null | head -1)
+          echo "Found QIT results directory: $QIT_RESULTS_DIR"
+          ls -la "$QIT_RESULTS_DIR" || true
 
-          if [[ ! -f "$RESULTS_JSON" ]]; then
+          # QIT uses Playwright which outputs results to a JSON file
+          # Look for common Playwright result file names
+          RESULTS_JSON=""
+          for filename in "results.json" "test-results.json" "ctrf-report.json"; do
+            FOUND=$(find "$QIT_RESULTS_DIR" -name "$filename" -type f 2>/dev/null | head -1)
+            if [[ -n "$FOUND" ]]; then
+              RESULTS_JSON="$FOUND"
+              break
+            fi
+          done
+
+          if [[ -z "$RESULTS_JSON" || ! -f "$RESULTS_JSON" ]]; then
             echo "No results JSON found in $QIT_RESULTS_DIR"
+            find "$QIT_RESULTS_DIR" -name "*.json" -type f 2>/dev/null || echo "No JSON files found"
             echo "failed_specs_count=0" >> $GITHUB_OUTPUT
             exit 0
           fi
 
           echo "Found results at: $RESULTS_JSON"
+          echo "Results file content preview:"
+          head -20 "$RESULTS_JSON" || true
 
           # Extract failed spec files using same logic as non-QIT workflow
+          # This jq query looks for Playwright's standard results format
           FAILED_SPECS_COUNT=$(jq -r '[ .. | objects | select(has("specs")) | .specs[]
               | select( ( any(.tests[]?; (.status=="unexpected") or (.status=="failed")) )
                         or ( any(.tests[]?.results[]?; (.status=="failed") or (.status=="timedOut") or (.status=="interrupted")) ) )
@@ -344,8 +387,11 @@ jobs:
             SPEC_FILES="${SPEC_FILES} ${RELATIVE_SPEC}"
           done
 
+          # Use same test directory as first run
+          TEST_DIR="${{ steps.test_options.outputs.test_path || 'tests/qit/e2e' }}"
+
           # Re-run QIT with only the failed specs
-          ./vendor/bin/qit run:e2e woocommerce-payments tests/qit/e2e \
+          ./vendor/bin/qit run:e2e woocommerce-payments "$TEST_DIR" \
             --config tests/qit/qit.yml \
             --source woocommerce-payments.zip \
             --env E2E_JP_SITE_ID="${{ secrets.E2E_QIT_JP_SITE_ID }}" \
