@@ -8,8 +8,8 @@ IFS=$'\n\t'
 
 echo "Setting up WooPayments for E2E testing..."
 
-# Ensure environment is marked as local so dev-only CLI commands are available
-wp config set WP_ENVIRONMENT_TYPE local --quiet 2>/dev/null || true
+# Ensure environment is marked as development so dev-only CLI commands are available
+wp config set WP_ENVIRONMENT_TYPE development --quiet 2>/dev/null || true
 
 echo "Installing WordPress importer for sample data..."
 if ! wp plugin is-installed wordpress-importer >/dev/null 2>&1; then
