@@ -105,46 +105,48 @@ jobs:
             echo "Pull request detected - running critical tests only" >&2
 
             # PR matrix: Only critical tests on L-1 and latest with PHP 8.3
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"@critical\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"@critical\"}")
+            # Note: Tags are without @ symbol - QIT adds it automatically
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"critical\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"critical\"}")
           else
             echo "Scheduled/push run detected - running full test suite" >&2
 
             # WC 7.7.0 with PHP 7.4 only (legacy - business continuity)
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_tag\":\"@merchant\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_tag\":\"@shopper\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_tag\":\"@merchant and @subscriptions\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_tag\":\"@shopper and @subscriptions\"}")
+            # Note: Tags without @ - QIT adds it. For multiple tags, use regex: "tag1.*tag2|tag2.*tag1"
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_tag\":\"merchant\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_tag\":\"shopper\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_tag\":\"merchant.*subscriptions|subscriptions.*merchant\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_tag\":\"shopper.*subscriptions|subscriptions.*shopper\"}")
 
             # Add L-1 version with PHP 8.3
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"@merchant\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"@shopper\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"@merchant and @subscriptions\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"@shopper and @subscriptions\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"@shopper and @blocks\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant.*subscriptions|subscriptions.*merchant\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper.*subscriptions|subscriptions.*shopper\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper.*blocks|blocks.*shopper\"}")
 
             # Add latest with PHP 8.3
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"@merchant\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"@shopper\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"@merchant and @subscriptions\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"@shopper and @subscriptions\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"@shopper and @blocks\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant.*subscriptions|subscriptions.*merchant\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper.*subscriptions|subscriptions.*shopper\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper.*blocks|blocks.*shopper\"}")
 
             # Add beta with PHP 8.3 (if available)
             if [[ -n "$BETA_VERSION" ]]; then
-              MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"@merchant\"}")
-              MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"@shopper\"}")
-              MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"@merchant and @subscriptions\"}")
-              MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"@shopper and @subscriptions\"}")
-              MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"@shopper and @blocks\"}")
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant\"}")
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper\"}")
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant.*subscriptions|subscriptions.*merchant\"}")
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper.*subscriptions|subscriptions.*shopper\"}")
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper.*blocks|blocks.*shopper\"}")
             fi
 
             # Add rc with PHP 8.4 (only if RC version is available)
             if [[ -n "$RC_VERSION" && "$RC_VERSION" != "null" ]]; then
-              MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_tag\":\"@merchant\"}")
-              MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_tag\":\"@shopper\"}")
-              MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_tag\":\"@merchant and @subscriptions\"}")
-              MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_tag\":\"@shopper and @subscriptions\"}")
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_tag\":\"merchant\"}")
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_tag\":\"shopper\"}")
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_tag\":\"merchant.*subscriptions|subscriptions.*merchant\"}")
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_tag\":\"shopper.*subscriptions|subscriptions.*shopper\"}")
             else
               echo "No RC version available, skipping RC matrix entries" >&2
             fi
@@ -200,14 +202,18 @@ jobs:
 
           OPTIONS="${OPTIONS} --php_version=${PHP_VERSION} --woo=${WC_VERSION}"
 
-          # Add tag if specified
+          # Add tag if specified - strip leading @ symbol as QIT adds it automatically
           if [[ -n "$TEST_TAG" ]]; then
-            OPTIONS="${OPTIONS} --pw_test_tag=\"${TEST_TAG}\""
+            # Remove @ prefix if present (QIT will add it)
+            CLEAN_TAG="${TEST_TAG#@}"
+            # For combined tags like "@shopper and @subscriptions", strip all @ symbols
+            CLEAN_TAG="${CLEAN_TAG//@/}"
+            OPTIONS="${OPTIONS} --pw_test_tag=\"${CLEAN_TAG}\""
           fi
 
           echo "options=${OPTIONS}" >> $GITHUB_OUTPUT
           echo "Will run with options: ${OPTIONS}"
-          echo "Test tag: ${TEST_TAG}"
+          echo "Test tag: ${TEST_TAG} (cleaned: ${CLEAN_TAG:-none})"
 
       - name: Mask sensitive values
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
