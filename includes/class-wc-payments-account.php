@@ -45,6 +45,8 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	const NOX_PROFILE_OPTION_KEY    = 'woocommerce_woopayments_nox_profile';
 	const NOX_ONBOARDING_LOCKED_KEY = 'woocommerce_woopayments_nox_onboarding_locked';
 
+	const STORE_SETUP_SYNC_ACTION = 'wcpay_store_setup_sync';
+
 	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
@@ -133,7 +135,10 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		add_action( 'jetpack_site_registered', [ $this, 'clear_cache' ] );
 		add_action( 'updated_option', [ $this, 'possibly_update_wcpay_account_locale' ], 10, 3 );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'clear_cache' ] );
-		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'sync_store_setup' ], 20 );
+		// Hook into the account refreshed action to schedule a store setup sync.
+		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'schedule_store_setup_sync' ] );
+		// Hook into the store setup sync action (triggered by the scheduled job) and do the sync.
+		add_action( self::STORE_SETUP_SYNC_ACTION, [ $this, 'store_setup_sync' ] );
 	}
 
 	/**
@@ -2634,20 +2639,37 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	}
 
 	/**
-	 * Gather the latest store setup state and sync it with the Transact Platform.
-	 *
-	 * This is an asynchronous operation which will not block the request.
+	 * Schedule a store setup sync to run in 5 minutes, if there isn't one already scheduled.
 	 *
 	 * @return void
 	 */
-	public function sync_store_setup() {
+	public function schedule_store_setup_sync() {
+		$action_hook = self::STORE_SETUP_SYNC_ACTION;
+
+		// If there is already a pending action, do nothing.
+		if ( $this->action_scheduler_service->pending_action_exists( $action_hook ) ) {
+			return;
+		}
+
+		// Schedule the action to run in 5 minutes.
+		// Further attempts to schedule the action will be ignored until it runs.
+		$run_time = time() + 5 * MINUTE_IN_SECONDS;
+		$this->action_scheduler_service->schedule_job( $run_time, $action_hook );
+	}
+
+	/**
+	 * Gather the latest store setup state and send it to the Transact Platform.
+	 *
+	 * @return void
+	 */
+	public function store_setup_sync() {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			return;
 		}
 
 		try {
 			// This is a fire-and-forget operation, so we don't care about the result.
-			$this->payments_api_client->sync_store_setup( $this->get_store_setup_details() );
+			$this->payments_api_client->send_store_setup( $this->get_store_setup_details() );
 		} catch ( Exception $e ) {
 			Logger::error( 'Failed to sync store setup state with the Transact Platform: ' . $e->getMessage() );
 		}
