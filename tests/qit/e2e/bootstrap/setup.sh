@@ -8,8 +8,8 @@ IFS=$'\n\t'
 
 echo "Setting up WooPayments for E2E testing..."
 
-# Ensure environment is marked as local so dev-only CLI commands are available
-wp config set WP_ENVIRONMENT_TYPE local --quiet 2>/dev/null || true
+# Ensure environment is marked as development so dev-only CLI commands are available
+wp config set WP_ENVIRONMENT_TYPE development --quiet 2>/dev/null || true
 
 WC_SAMPLE_DATA_PATH=$(wp eval 'echo trailingslashit( WP_CONTENT_DIR ) . "plugins/woocommerce/sample-data/sample_products.xml";' 2>/dev/null)
 if [ -z "$WC_SAMPLE_DATA_PATH" ]; then
