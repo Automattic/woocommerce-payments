@@ -2741,7 +2741,8 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				'disabled'   => $payment_methods_disabled,
 				'duplicates' => $gateway->find_duplicates(),
 			],
-			// Payment methods mapped to capabilities.
+			// Payment methods mapped to capabilities, for flexibility with the Transact Platform.
+			// E.g. 'card_payments' capability corresponds to 'card' payment method.
 			'provider_capabilities'  => [
 				'available' => $provider_capabilities_available,
 				'enabled'   => $provider_capabilities_enabled,
@@ -2777,16 +2778,20 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			'multi_currency_enabled' => WC_Payments_Features::is_customer_multi_currency_enabled(),
 			'stripe_billing_enabled' => WC_Payments_Features::is_stripe_billing_enabled(),
 
-			// General store details.
-			'store'                  => [
-				'url'              => home_url(),
-				'id'               => get_option( 'woocommerce_store_id', null ),
-				'active_theme'     => $this->get_store_theme_details(),
-				'active_plugins'   => ! empty( $wc_plugin_util ) ? $wc_plugin_util->get_all_active_valid_plugins() : [],
-				'wc_version'       => defined( 'WC_VERSION' ) ? explode( '-', WC_VERSION, 2 )[0] : '',
-				'wp_version'       => get_bloginfo( 'version' ),
-				'currency'         => get_woocommerce_currency(),
-				'tracking_enabled' => WC_Site_Tracking::is_tracking_enabled(),
+			// General store setup details.
+			'wc_setup'               => [
+				'name'                     => get_bloginfo( 'name' ),
+				'url'                      => home_url(),
+				'id'                       => get_option( 'woocommerce_store_id', null ),
+				'active_theme'             => $this->get_store_theme_details(),
+				'active_plugins'           => ! empty( $wc_plugin_util ) ? $wc_plugin_util->get_all_active_valid_plugins() : [],
+				'wc_version'               => defined( 'WC_VERSION' ) ? explode( '-', WC_VERSION, 2 )[0] : '',
+				'wp_version'               => get_bloginfo( 'version' ),
+				'currency'                 => get_woocommerce_currency(),
+				'locale'                   => get_locale(),
+				'wc_subscriptions_active'  => $gateway->is_subscriptions_plugin_active(),
+				'wc_subscriptions_version' => $gateway->get_subscriptions_plugin_version(),
+				'tracking_enabled'         => WC_Site_Tracking::is_tracking_enabled(),
 			],
 		];
 	}
