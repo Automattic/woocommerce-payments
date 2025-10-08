@@ -13,10 +13,10 @@ on:
     branches:
       - 'develop'
       - 'trunk'
-      - 'dev/qit-e2e-*'  # Allow testing on QIT E2E development branches
+      - 'dev/qit-e2e-enhance-workflows'  # Testing QIT E2E workflow enhancements
   schedule:
-    # Run daily at 2 AM UTC
-    - cron: '0 2 * * *'
+    # Run every 6 hours like legacy e2e-test.yml
+    - cron: '0 */6 * * *'
   workflow_dispatch:
     inputs:
       woocommerce_version:
@@ -40,6 +40,10 @@ on:
           - '8.2'
           - '8.1'
           - '7.4'
+      test_tag:
+        description: 'Playwright test tag to run (e.g., @shopper, @merchant, @critical)'
+        required: false
+        type: string
       run_ui_mode:
         description: 'Run tests in UI mode for debugging'
         required: false
@@ -54,23 +58,110 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  generate-matrix:
+    name: "Generate the test matrix dynamically"
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.generate_matrix.outputs.matrix }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: "Generate matrix"
+        id: generate_matrix
+        run: |
+          # Use dynamic script to get WooCommerce versions (L-1 policy)
+          SCRIPT_RESULT=$( .github/scripts/generate-wc-matrix.sh )
+
+          # Extract versions and metadata from JSON
+          L1_VERSION=$(echo "$SCRIPT_RESULT" | jq -r '.metadata.l1_version')
+          RC_VERSION=$(echo "$SCRIPT_RESULT" | jq -r '.metadata.rc_version')
+          BETA_VERSION=$(echo "$SCRIPT_RESULT" | jq -r '.metadata.beta_version')
+
+          if [[ "$BETA_VERSION" == "null" ]]; then
+            BETA_VERSION=""
+          fi
+
+          echo "Using L-1 version: $L1_VERSION" >&2
+          echo "Using RC version: $RC_VERSION" >&2
+          if [[ -n "$BETA_VERSION" ]]; then
+            echo "Using beta version: $BETA_VERSION" >&2
+          else
+            echo "No beta version available" >&2
+          fi
+
+          # Define common values to reduce repetition
+          PHP_LEGACY="7.4"
+          PHP_STABLE="8.3"
+          PHP_LATEST="8.4"
+
+          # Initialize empty matrix array
+          MATRIX_ENTRIES=()
+
+          # Determine if this is a PR - for PRs, only run critical tests
+          IS_PR="${{ github.event_name == 'pull_request' }}"
+
+          if [[ "$IS_PR" == "true" ]]; then
+            echo "Pull request detected - running critical tests only" >&2
+
+            # PR matrix: Only critical tests on L-1 and latest with PHP 8.3
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"@critical\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"@critical\"}")
+          else
+            echo "Scheduled/push run detected - running full test suite" >&2
+
+            # WC 7.7.0 with PHP 7.4 only (legacy - business continuity)
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_tag\":\"@merchant\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_tag\":\"@shopper\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_tag\":\"@merchant and @subscriptions\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_tag\":\"@shopper and @subscriptions\"}")
+
+            # Add L-1 version with PHP 8.3
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"@merchant\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"@shopper\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"@merchant and @subscriptions\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"@shopper and @subscriptions\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"@shopper and @blocks\"}")
+
+            # Add latest with PHP 8.3
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"@merchant\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"@shopper\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"@merchant and @subscriptions\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"@shopper and @subscriptions\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"@shopper and @blocks\"}")
+
+            # Add beta with PHP 8.3 (if available)
+            if [[ -n "$BETA_VERSION" ]]; then
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"@merchant\"}")
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"@shopper\"}")
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"@merchant and @subscriptions\"}")
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"@shopper and @subscriptions\"}")
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"@shopper and @blocks\"}")
+            fi
+
+            # Add rc with PHP 8.4 (only if RC version is available)
+            if [[ -n "$RC_VERSION" && "$RC_VERSION" != "null" ]]; then
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_tag\":\"@merchant\"}")
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_tag\":\"@shopper\"}")
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_tag\":\"@merchant and @subscriptions\"}")
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_tag\":\"@shopper and @subscriptions\"}")
+            else
+              echo "No RC version available, skipping RC matrix entries" >&2
+            fi
+          fi
+
+          # Convert array to JSON
+          MATRIX_INCLUDE=$(printf '%s\n' "${MATRIX_ENTRIES[@]}" | jq -s . -c)
+
+          echo "matrix={\"include\":$MATRIX_INCLUDE}" >> $GITHUB_OUTPUT
+
   qit-e2e-tests:
     runs-on: ubuntu-latest
+    needs: generate-matrix
     strategy:
       fail-fast: false
-      matrix:
-        include:
-          # Pull requests: Test against stable and L-1 WooCommerce versions
-          - wc_version: "stable"
-            php_version: "8.3"
-            test_group: "basic"
-          - wc_version: "8.9.3"  # L-1 version
-            php_version: "8.3"
-            test_group: "basic"
-          # Full runs: Include business continuity version
-          - wc_version: "7.7.0"
-            php_version: "7.4"
-            test_group: "basic"
+      matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
+    name: "WC - ${{ matrix.woocommerce }} | PHP - ${{ matrix.php }} | ${{ matrix.test_tag }}"
 
     steps:
       - name: "Checkout repository"
@@ -103,13 +194,20 @@ jobs:
           fi
 
           # Use input versions if provided, otherwise use matrix
-          WC_VERSION="${{ inputs.woocommerce_version || matrix.wc_version }}"
-          PHP_VERSION="${{ inputs.php_version || matrix.php_version }}"
+          WC_VERSION="${{ inputs.woocommerce_version || matrix.woocommerce }}"
+          PHP_VERSION="${{ inputs.php_version || matrix.php }}"
+          TEST_TAG="${{ inputs.test_tag || matrix.test_tag }}"
 
           OPTIONS="${OPTIONS} --php_version=${PHP_VERSION} --woo=${WC_VERSION}"
 
+          # Add tag if specified
+          if [[ -n "$TEST_TAG" ]]; then
+            OPTIONS="${OPTIONS} --pw_test_tag=\"${TEST_TAG}\""
+          fi
+
           echo "options=${OPTIONS}" >> $GITHUB_OUTPUT
           echo "Will run with options: ${OPTIONS}"
+          echo "Test tag: ${TEST_TAG}"
 
       - name: Mask sensitive values
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}

@@ -5,6 +5,7 @@ import { test, expect } from '../fixtures/auth';
 
 test.describe(
 	'A basic set of tests to ensure WP, wp-admin and my-account load',
+	{ tag: '@basic' },
 	() => {
 		test( 'Load the home page', async ( { page } ) => {
 			await page.goto( '/' );
