@@ -13,7 +13,7 @@ php_version: "8.3"
 plugin:
   - "woocommerce"
   - "jetpack"
-  - "woocommerce-subscriptions.zip"
+  - "woocommerce-subscriptions"
 
 # Mount bootstrap directory for easier access in setup scripts.
 # This mounts tests/qit/e2e/bootstrap (relative to project root) to /qit/bootstrap
