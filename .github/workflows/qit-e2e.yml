@@ -40,6 +40,15 @@ on:
           - '8.2'
           - '8.1'
           - '7.4'
+      wordpress_version:
+        description: 'WordPress version to test against'
+        required: false
+        default: 'stable'
+        type: choice
+        options:
+          - 'stable'
+          - 'nightly'
+          - 'rc'
       test_tag:
         description: 'Playwright test tag to run (e.g., @shopper, @merchant, @critical)'
         required: false
@@ -98,16 +107,29 @@ jobs:
           # Initialize empty matrix array
           MATRIX_ENTRIES=()
 
-          # Determine if this is a PR - for PRs, only run critical tests
+          # Determine if this is a PR - for PRs, run full test suite on L-1 and latest
           IS_PR="${{ github.event_name == 'pull_request' }}"
 
           if [[ "$IS_PR" == "true" ]]; then
-            echo "Pull request detected - running critical tests only" >&2
+            echo "Pull request detected - running full test suite on L-1 and latest" >&2
 
-            # PR matrix: Only critical tests on L-1 and latest with PHP 8.3
+            # PR matrix: Match e2e-pull-request.yml coverage
+            # Test L-1 and latest with all test combinations (merchant, shopper, subscriptions, blocks)
             # Note: Tags are without @ symbol - QIT adds it automatically
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"critical\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"critical\"}")
+
+            # Add L-1 version with PHP 8.3
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant.*subscriptions|subscriptions.*merchant\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper.*subscriptions|subscriptions.*shopper\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper.*blocks|blocks.*shopper\"}")
+
+            # Add latest with PHP 8.3
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant.*subscriptions|subscriptions.*merchant\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper.*subscriptions|subscriptions.*shopper\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper.*blocks|blocks.*shopper\"}")
           else
             echo "Scheduled/push run detected - running full test suite" >&2
 
@@ -150,6 +172,14 @@ jobs:
             else
               echo "No RC version available, skipping RC matrix entries" >&2
             fi
+
+            # Add WordPress nightly with WC latest and PHP 8.3 (match e2e-test.yml wp-nightly-tests)
+            # Test new WordPress features with latest stable WooCommerce
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"merchant\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"shopper\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"merchant.*subscriptions|subscriptions.*merchant\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"shopper.*subscriptions|subscriptions.*shopper\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"shopper.*blocks|blocks.*shopper\"}")
           fi
 
           # Convert array to JSON
@@ -163,7 +193,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
-    name: "WC - ${{ matrix.woocommerce }} | PHP - ${{ matrix.php }} | ${{ matrix.test_tag }}"
+    name: "${{ matrix.wordpress && format('WP - {0} | ', matrix.wordpress) || '' }}WC - ${{ matrix.woocommerce }} | PHP - ${{ matrix.php }} | ${{ matrix.test_tag }}"
 
     steps:
       - name: "Checkout repository"
@@ -199,8 +229,9 @@ jobs:
           WC_VERSION="${{ inputs.woocommerce_version || matrix.woocommerce }}"
           PHP_VERSION="${{ inputs.php_version || matrix.php }}"
           TEST_TAG="${{ inputs.test_tag || matrix.test_tag }}"
+          WP_VERSION="${{ inputs.wordpress_version || matrix.wordpress || 'stable' }}"
 
-          OPTIONS="${OPTIONS} --php_version=${PHP_VERSION} --woo=${WC_VERSION}"
+          OPTIONS="${OPTIONS} --php_version=${PHP_VERSION} --woo=${WC_VERSION} --wp=${WP_VERSION}"
 
           # Add tag if specified - strip leading @ symbol as QIT adds it automatically
           if [[ -n "$TEST_TAG" ]]; then
@@ -213,6 +244,7 @@ jobs:
 
           echo "options=${OPTIONS}" >> $GITHUB_OUTPUT
           echo "Will run with options: ${OPTIONS}"
+          echo "WordPress: ${WP_VERSION}"
           echo "Test tag: ${TEST_TAG} (cleaned: ${CLEAN_TAG:-none})"
 
       - name: Mask sensitive values
