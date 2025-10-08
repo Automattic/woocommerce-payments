@@ -116,59 +116,60 @@ jobs:
             # PR matrix: Match e2e-pull-request.yml coverage
             # Test L-1 and latest with all test combinations (merchant, shopper, subscriptions, blocks)
             # Note: Tags are without @ symbol - QIT adds it automatically
+            # Use space-separated tags (e.g., "merchant subscriptions") not regex
 
             # Add L-1 version with PHP 8.3
             MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant\"}")
             MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant.*subscriptions|subscriptions.*merchant\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper.*subscriptions|subscriptions.*shopper\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper.*blocks|blocks.*shopper\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant subscriptions\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper subscriptions\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper blocks\"}")
 
             # Add latest with PHP 8.3
             MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant\"}")
             MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant.*subscriptions|subscriptions.*merchant\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper.*subscriptions|subscriptions.*shopper\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper.*blocks|blocks.*shopper\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant subscriptions\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper subscriptions\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper blocks\"}")
           else
             echo "Scheduled/push run detected - running full test suite" >&2
 
             # WC 7.7.0 with PHP 7.4 only (legacy - business continuity)
-            # Note: Tags without @ - QIT adds it. For multiple tags, use regex: "tag1.*tag2|tag2.*tag1"
+            # Note: Tags without @ - QIT adds it. Use space-separated tags for multiple tags.
             MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_tag\":\"merchant\"}")
             MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_tag\":\"shopper\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_tag\":\"merchant.*subscriptions|subscriptions.*merchant\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_tag\":\"shopper.*subscriptions|subscriptions.*shopper\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_tag\":\"merchant subscriptions\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_tag\":\"shopper subscriptions\"}")
 
             # Add L-1 version with PHP 8.3
             MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant\"}")
             MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant.*subscriptions|subscriptions.*merchant\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper.*subscriptions|subscriptions.*shopper\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper.*blocks|blocks.*shopper\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant subscriptions\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper subscriptions\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper blocks\"}")
 
             # Add latest with PHP 8.3
             MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant\"}")
             MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant.*subscriptions|subscriptions.*merchant\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper.*subscriptions|subscriptions.*shopper\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper.*blocks|blocks.*shopper\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant subscriptions\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper subscriptions\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper blocks\"}")
 
             # Add beta with PHP 8.3 (if available)
             if [[ -n "$BETA_VERSION" ]]; then
               MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant\"}")
               MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper\"}")
-              MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant.*subscriptions|subscriptions.*merchant\"}")
-              MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper.*subscriptions|subscriptions.*shopper\"}")
-              MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper.*blocks|blocks.*shopper\"}")
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant subscriptions\"}")
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper subscriptions\"}")
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper blocks\"}")
             fi
 
             # Add rc with PHP 8.4 (only if RC version is available)
             if [[ -n "$RC_VERSION" && "$RC_VERSION" != "null" ]]; then
               MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_tag\":\"merchant\"}")
               MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_tag\":\"shopper\"}")
-              MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_tag\":\"merchant.*subscriptions|subscriptions.*merchant\"}")
-              MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_tag\":\"shopper.*subscriptions|subscriptions.*shopper\"}")
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_tag\":\"merchant subscriptions\"}")
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_tag\":\"shopper subscriptions\"}")
             else
               echo "No RC version available, skipping RC matrix entries" >&2
             fi
@@ -177,9 +178,9 @@ jobs:
             # Test new WordPress features with latest stable WooCommerce
             MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"merchant\"}")
             MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"shopper\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"merchant.*subscriptions|subscriptions.*merchant\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"shopper.*subscriptions|subscriptions.*shopper\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"shopper.*blocks|blocks.*shopper\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"merchant subscriptions\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"shopper subscriptions\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"shopper blocks\"}")
           fi
 
           # Convert array to JSON
