@@ -262,8 +262,11 @@ jobs:
           echo "::add-mask::${{ secrets.E2E_QIT_JP_BLOG_TOKEN }}"
           echo "::add-mask::${{ secrets.E2E_QIT_JP_USER_TOKEN }}"
 
-      - name: Run QIT Tests
+      - name: First Run QIT Tests
+        id: first_run_qit_tests
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+        # Use continue-on-error to allow parsing results even if tests fail
+        continue-on-error: true
         run: |
           ./vendor/bin/qit run:e2e woocommerce-payments tests/qit/e2e \
             --config tests/qit/qit.yml \
@@ -272,3 +275,81 @@ jobs:
             --env E2E_JP_BLOG_TOKEN="${{ secrets.E2E_QIT_JP_BLOG_TOKEN }}" \
             --env E2E_JP_USER_TOKEN="${{ secrets.E2E_QIT_JP_USER_TOKEN }}" \
             ${{ steps.test_options.outputs.options }}
+
+      - name: Parse Failed Specs
+        id: parse_failed_specs
+        if: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && steps.first_run_qit_tests.outcome == 'failure' }}
+        run: |
+          # QIT outputs results to a temporary directory
+          # Find the most recent QIT results directory
+          QIT_RESULTS_DIR=$(find /tmp -name "qit-results-*" -type d 2>/dev/null | sort -r | head -1)
+
+          if [[ -z "$QIT_RESULTS_DIR" ]]; then
+            echo "No QIT results directory found"
+            echo "failed_specs_count=0" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          # Look for Playwright JSON results
+          RESULTS_JSON=$(find "$QIT_RESULTS_DIR" -name "results.json" -o -name "test-results.json" 2>/dev/null | head -1)
+
+          if [[ ! -f "$RESULTS_JSON" ]]; then
+            echo "No results JSON found in $QIT_RESULTS_DIR"
+            echo "failed_specs_count=0" >> $GITHUB_OUTPUT
+            exit 0
+          fi
+
+          echo "Found results at: $RESULTS_JSON"
+
+          # Extract failed spec files using same logic as non-QIT workflow
+          FAILED_SPECS_COUNT=$(jq -r '[ .. | objects | select(has("specs")) | .specs[]
+              | select( ( any(.tests[]?; (.status=="unexpected") or (.status=="failed")) )
+                        or ( any(.tests[]?.results[]?; (.status=="failed") or (.status=="timedOut") or (.status=="interrupted")) ) )
+              | .file ] | unique | length' "$RESULTS_JSON" 2>/dev/null || echo "0")
+
+          echo "failed_specs_count=$FAILED_SPECS_COUNT" >> $GITHUB_OUTPUT
+          echo "results_json=$RESULTS_JSON" >> $GITHUB_OUTPUT
+
+          if [[ ${FAILED_SPECS_COUNT} -gt 0 ]]; then
+            echo "::notice::${FAILED_SPECS_COUNT} spec file(s) failed in the first run. Will re-run only the failed specs."
+          fi
+
+      - name: Re-try Failed Specs
+        if: ${{ (github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository) && steps.parse_failed_specs.outputs.failed_specs_count > 0 }}
+        run: |
+          RESULTS_JSON="${{ steps.parse_failed_specs.outputs.results_json }}"
+
+          # Extract failed spec file paths
+          mapfile -t FAILED_SPECS < <(jq -r '[ .. | objects | select(has("specs")) | .specs[]
+            | select( ( any(.tests[]?; (.status=="unexpected") or (.status=="failed")) )
+              or ( any(.tests[]?.results[]?; (.status=="failed") or (.status=="timedOut") or (.status=="interrupted")) ) )
+            | .file ] | unique | .[]' "$RESULTS_JSON")
+
+          if [[ ${#FAILED_SPECS[@]} -eq 0 ]]; then
+            echo "::notice::No failed specs found. Skipping retry."
+            exit 0
+          fi
+
+          echo "Retrying ${#FAILED_SPECS[@]} failed spec(s):"
+          for spec in "${FAILED_SPECS[@]}"; do
+            echo " - $spec"
+          done
+
+          # Build pw_options with specific spec files
+          # Convert absolute paths to relative paths if needed
+          SPEC_FILES=""
+          for spec in "${FAILED_SPECS[@]}"; do
+            # Extract just the filename relative to tests/qit/e2e
+            RELATIVE_SPEC=$(echo "$spec" | sed 's|.*/tests/qit/e2e/||' | sed 's|^/qit/tests/e2e/||')
+            SPEC_FILES="${SPEC_FILES} ${RELATIVE_SPEC}"
+          done
+
+          # Re-run QIT with only the failed specs
+          ./vendor/bin/qit run:e2e woocommerce-payments tests/qit/e2e \
+            --config tests/qit/qit.yml \
+            --source woocommerce-payments.zip \
+            --env E2E_JP_SITE_ID="${{ secrets.E2E_QIT_JP_SITE_ID }}" \
+            --env E2E_JP_BLOG_TOKEN="${{ secrets.E2E_QIT_JP_BLOG_TOKEN }}" \
+            --env E2E_JP_USER_TOKEN="${{ secrets.E2E_QIT_JP_USER_TOKEN }}" \
+            ${{ steps.test_options.outputs.options }} \
+            --pw_options="${SPEC_FILES}"
