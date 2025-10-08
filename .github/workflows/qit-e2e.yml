@@ -220,9 +220,9 @@ jobs:
       - name: Run QIT Tests
         if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
         run: |
-          cd tests/qit
-          ../../vendor/bin/qit run:e2e woocommerce-payments ./e2e \
-            --source ../../woocommerce-payments.zip \
+          ./vendor/bin/qit run:e2e woocommerce-payments tests/qit/e2e \
+            --config tests/qit/qit.yml \
+            --source woocommerce-payments.zip \
             --env E2E_JP_SITE_ID="${{ secrets.E2E_QIT_JP_SITE_ID }}" \
             --env E2E_JP_BLOG_TOKEN="${{ secrets.E2E_QIT_JP_BLOG_TOKEN }}" \
             --env E2E_JP_USER_TOKEN="${{ secrets.E2E_QIT_JP_USER_TOKEN }}" \
