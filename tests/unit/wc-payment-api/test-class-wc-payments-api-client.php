@@ -1146,7 +1146,7 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 */
 	private function validate_default_remote_request_params( $data, $url, $method ) {
 		$this->assertIsArray( $data );
-		$this->assertCount( 6, $data );
+		$this->assertCount( 5, $data );
 		$this->assertArrayHasKey( 'url', $data );
 		$this->assertSame( $url, $data['url'] );
 		$this->assertNotFalse( filter_var( $data['url'], FILTER_VALIDATE_URL ) );
