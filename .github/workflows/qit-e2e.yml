@@ -11,8 +11,8 @@ on:
       - '.github/workflows/qit-e2e.yml'
   push:
     branches:
-      - 'develop'
-      - 'trunk'
+      # - 'develop' Temporarily disable develop branch runs to reduce CI load
+      # - 'trunk' Temporarily disable trunk branch runs to reduce CI load
       - 'dev/qit-e2e-enhance-workflows'  # Testing QIT E2E workflow enhancements
   schedule:
     # Run every 6 hours like legacy e2e-test.yml
