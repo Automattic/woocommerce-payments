@@ -396,10 +396,10 @@ jobs:
           # Always use full test directory for retry
           TEST_DIR="tests/qit/e2e"
 
-          # Get base options without --pw_options (we'll add our own with spec files)
+          # Get base options without --pw_options and --pw_test_tag (we'll run specific files)
           BASE_OPTIONS="${{ steps.test_options.outputs.options }}"
-          # Remove any existing --pw_options from base options to avoid conflicts
-          BASE_OPTIONS=$(echo "$BASE_OPTIONS" | sed 's/--pw_options="[^"]*"//g')
+          # Remove --pw_options and --pw_test_tag since we're specifying exact spec files
+          BASE_OPTIONS=$(echo "$BASE_OPTIONS" | sed 's/--pw_options="[^"]*"//g' | sed 's/--pw_test_tag="[^"]*"//g')
 
           # Re-run QIT with only the failed specs and --retries=0
           ./vendor/bin/qit run:e2e woocommerce-payments "$TEST_DIR" \
