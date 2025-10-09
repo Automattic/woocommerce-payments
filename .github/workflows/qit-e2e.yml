@@ -116,7 +116,7 @@ jobs:
             # PR matrix: Match e2e-pull-request.yml coverage
             # Test L-1 and latest with all test combinations (merchant, shopper, subscriptions, blocks)
             # Strategy:
-            # - Single tag (e.g., "merchant") for base tests - uses --grep-invert to exclude @subscriptions and @blocks
+            # - Single tag (e.g., "merchant") for base tests - uses --grep-invert "@(subscriptions|blocks)"
             # - Multiple tags (e.g., "merchant subscriptions") for combined tests - uses AND logic
 
             # Add L-1 version with PHP 8.3
@@ -268,9 +268,9 @@ jobs:
             WORD_COUNT=$(echo "$CLEAN_TAG" | wc -w | tr -d ' ')
 
             if [[ "$WORD_COUNT" -eq 1 ]]; then
-              # Single tag: exclude subscriptions and blocks tests using multiple --grep-invert
-              # Example: --grep @shopper --grep-invert @subscriptions --grep-invert @blocks
-              OPTIONS="${OPTIONS} --pw_test_tag=\"${CLEAN_TAG}\" --pw_options=\"--retries=0 --grep-invert @subscriptions --grep-invert @blocks\""
+              # Single tag: exclude subscriptions and blocks tests using --grep-invert with regex alternation
+              # Example: --grep @shopper --grep-invert "@(subscriptions|blocks)"
+              OPTIONS="${OPTIONS} --pw_test_tag=\"${CLEAN_TAG}\" --pw_options=\"--retries=0 --grep-invert '@(subscriptions|blocks)'\""
               echo "Using test tag: ${CLEAN_TAG} (excluding @subscriptions and @blocks)"
             else
               # Multiple tags: use AND logic for combined tests
