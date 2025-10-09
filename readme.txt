@@ -87,6 +87,9 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 
 == Changelog ==
 
+= 10.1.0-test-1 - unreleased =
+* Update - Show message about bundled subscriptions until 10.2.0.
+
 = 10.1.0 - 2025-10-15 =
 * Add - Disputes - Add a loading state to the “Challenge dispute” flow
 * Add - Pre-fill product type in dispute evidence form based on order products.
