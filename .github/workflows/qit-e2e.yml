@@ -354,12 +354,9 @@ jobs:
           echo "Results file content preview:"
           head -20 "$RESULTS_JSON" || true
 
-          # Extract failed spec files using same logic as non-QIT workflow
-          # This jq query looks for Playwright's standard results format
-          FAILED_SPECS_COUNT=$(jq -r '[ .. | objects | select(has("specs")) | .specs[]
-              | select( ( any(.tests[]?; (.status=="unexpected") or (.status=="failed")) )
-                        or ( any(.tests[]?.results[]?; (.status=="failed") or (.status=="timedOut") or (.status=="interrupted")) ) )
-              | .file ] | unique | length' "$RESULTS_JSON" 2>/dev/null || echo "0")
+          # Extract failed spec files from CTRF format
+          # CTRF format: .results.tests[] with .status and .filePath fields
+          FAILED_SPECS_COUNT=$(jq -r '[.results.tests[] | select(.status == "failed") | .filePath] | unique | length' "$RESULTS_JSON" 2>/dev/null || echo "0")
 
           echo "failed_specs_count=$FAILED_SPECS_COUNT" >> $GITHUB_OUTPUT
           echo "results_json=$RESULTS_JSON" >> $GITHUB_OUTPUT
@@ -373,11 +370,8 @@ jobs:
         run: |
           RESULTS_JSON="${{ steps.parse_failed_specs.outputs.results_json }}"
 
-          # Extract failed spec file paths
-          mapfile -t FAILED_SPECS < <(jq -r '[ .. | objects | select(has("specs")) | .specs[]
-            | select( ( any(.tests[]?; (.status=="unexpected") or (.status=="failed")) )
-              or ( any(.tests[]?.results[]?; (.status=="failed") or (.status=="timedOut") or (.status=="interrupted")) ) )
-            | .file ] | unique | .[]' "$RESULTS_JSON")
+          # Extract failed spec file paths from CTRF format
+          mapfile -t FAILED_SPECS < <(jq -r '[.results.tests[] | select(.status == "failed") | .filePath] | unique | .[]' "$RESULTS_JSON")
 
           if [[ ${#FAILED_SPECS[@]} -eq 0 ]]; then
             echo "::notice::No failed specs found. Skipping retry."
@@ -390,20 +384,17 @@ jobs:
           done
 
           # Build pw_options with specific spec files
-          # Convert absolute paths to relative paths if needed
+          # CTRF filePath format: /qit/tests/e2e/woocommerce-payments/local/specs/...
+          # We need to extract the relative path from /qit/tests/e2e/
           SPEC_FILES=""
           for spec in "${FAILED_SPECS[@]}"; do
-            # Extract just the filename relative to tests/qit/e2e
-            RELATIVE_SPEC=$(echo "$spec" | sed 's|.*/tests/qit/e2e/||' | sed 's|^/qit/tests/e2e/||')
+            # Extract path after /qit/tests/e2e/ or use as-is if already relative
+            RELATIVE_SPEC=$(echo "$spec" | sed 's|^/qit/tests/e2e/woocommerce-payments/local/||')
             SPEC_FILES="${SPEC_FILES} ${RELATIVE_SPEC}"
           done
 
-          # Determine test directory same as first run
-          if [[ -n "${{ steps.test_options.outputs.test_path }}" ]]; then
-            TEST_DIR="tests/qit/e2e/${{ steps.test_options.outputs.test_path }}"
-          else
-            TEST_DIR="tests/qit/e2e"
-          fi
+          # Always use full test directory for retry
+          TEST_DIR="tests/qit/e2e"
 
           # Re-run QIT with only the failed specs
           ./vendor/bin/qit run:e2e woocommerce-payments "$TEST_DIR" \
