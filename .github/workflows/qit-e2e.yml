@@ -383,7 +383,7 @@ jobs:
             echo " - $spec"
           done
 
-          # Build pw_options with specific spec files
+          # Build pw_options with specific spec files and --retries=0
           # CTRF filePath format: /qit/tests/e2e/woocommerce-payments/local/specs/...
           # We need to extract the relative path from /qit/tests/e2e/
           SPEC_FILES=""
@@ -396,12 +396,17 @@ jobs:
           # Always use full test directory for retry
           TEST_DIR="tests/qit/e2e"
 
-          # Re-run QIT with only the failed specs
+          # Get base options without --pw_options (we'll add our own with spec files)
+          BASE_OPTIONS="${{ steps.test_options.outputs.options }}"
+          # Remove any existing --pw_options from base options to avoid conflicts
+          BASE_OPTIONS=$(echo "$BASE_OPTIONS" | sed 's/--pw_options="[^"]*"//g')
+
+          # Re-run QIT with only the failed specs and --retries=0
           ./vendor/bin/qit run:e2e woocommerce-payments "$TEST_DIR" \
             --config tests/qit/qit.yml \
             --source woocommerce-payments.zip \
             --env E2E_JP_SITE_ID="${{ secrets.E2E_QIT_JP_SITE_ID }}" \
             --env E2E_JP_BLOG_TOKEN="${{ secrets.E2E_QIT_JP_BLOG_TOKEN }}" \
             --env E2E_JP_USER_TOKEN="${{ secrets.E2E_QIT_JP_USER_TOKEN }}" \
-            ${{ steps.test_options.outputs.options }} \
-            --pw_options="${SPEC_FILES}"
+            ${BASE_OPTIONS} \
+            --pw_options="--retries=0 ${SPEC_FILES}"
