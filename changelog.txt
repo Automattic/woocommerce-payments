@@ -1,5 +1,9 @@
 *** WooPayments Changelog ***
 
+= 10.1.0-test-2 - 2025-xx-xx =
+* Fix - Use Woo custom cap `pay_for_order` for validating the owner of order
+* Update - Show message about bundled subscriptions until 10.2.0.
+
 = 10.1.0 - 2025-10-15 =
 * Add - Disputes - Add a loading state to the “Challenge dispute” flow
 * Add - Pre-fill product type in dispute evidence form based on order products.
