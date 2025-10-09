@@ -772,6 +772,12 @@ class WC_Payments {
 		include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions.php';
 		WC_Payments_Subscriptions::init( self::$api_client, self::$customer_service, self::$order_service, self::$account, self::$token_service );
 
+		// Load subscription restrictions when UI is disabled (10.2+).
+		if ( WC_Payments_Features::should_disable_bundled_subscriptions_ui() ) {
+			include_once WCPAY_ABSPATH . '/includes/subscriptions/class-wc-payments-subscriptions-restrictions.php';
+			new WC_Payments_Subscriptions_Restrictions();
+		}
+
 		// Add hook to remove Stripe Billing deprecation note when WooCommerce Subscriptions is installed.
 		add_action( 'activated_plugin', [ __CLASS__, 'maybe_remove_stripe_billing_deprecation_note' ], 10, 1 );
 

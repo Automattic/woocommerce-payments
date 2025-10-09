@@ -315,6 +315,20 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Check if bundled subscriptions UI should be disabled (10.2+).
+	 *
+	 * When true, subscription management UI is disabled but Stripe Billing
+	 * renewal webhooks continue to create renewal orders.
+	 *
+	 * @return bool True if bundled subscriptions UI should be disabled.
+	 */
+	public static function should_disable_bundled_subscriptions_ui(): bool {
+		return version_compare( WCPAY_VERSION_NUMBER, '10.2.0', '>=' )
+			&& self::is_wcpay_subscriptions_enabled()
+			&& ! class_exists( 'WC_Subscriptions' );
+	}
+
+	/**
 	 * Checks whether Dispute issuer evidence feature should be enabled. Disabled by default.
 	 *
 	 * @return bool

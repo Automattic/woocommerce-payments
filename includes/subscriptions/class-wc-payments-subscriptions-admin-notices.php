@@ -18,6 +18,7 @@ class WC_Payments_Subscriptions_Admin_Notices {
 	 */
 	public function init_hooks() {
 		add_action( 'admin_notices', [ $this, 'display_stripe_billing_deprecation_notice' ] );
+		add_action( 'admin_notices', [ $this, 'display_ui_disabled_notice' ] );
 	}
 
 	/**
@@ -69,6 +70,54 @@ class WC_Payments_Subscriptions_Admin_Notices {
 		}
 
 		WC_Payments::display_admin_notice( $message, 'notice-warning' );
+	}
+
+	/**
+	 * Display admin notice when subscription UI is disabled (10.2+).
+	 */
+	public function display_ui_disabled_notice() {
+		// Only show when UI is disabled.
+		if ( ! WC_Payments_Features::should_disable_bundled_subscriptions_ui() ) {
+			return;
+		}
+
+		// Show on WooPayments settings pages.
+		if ( ! $this->is_wcpay_settings_page() ) {
+			return;
+		}
+
+		$message = sprintf(
+			/* translators: %1$s: WooCommerce Subscriptions */
+			__( '<strong>Subscription Management Disabled:</strong> WooPayments no longer supports creating or managing subscriptions. Your existing subscriptions will continue to renew automatically. To manage your subscriptions, please install <a target="_blank" href="%1$s">WooCommerce Subscriptions</a>.', 'woocommerce-payments' ),
+			'https://woocommerce.com/products/woocommerce-subscriptions/'
+		);
+
+		WC_Payments::display_admin_notice( $message, 'notice-info' );
+	}
+
+	/**
+	 * Check if the current page is a WooPayments settings page.
+	 *
+	 * @return bool
+	 */
+	protected function is_wcpay_settings_page() {
+		$screen = $this->get_screen_id();
+
+		if ( ! $screen ) {
+			return false;
+		}
+
+		// WooPayments settings page.
+		if ( 'woocommerce_page_wc-settings' === $screen && isset( $_GET['page'] ) && 'wc-settings' === $_GET['page'] && isset( $_GET['tab'] ) && 'checkout' === $_GET['tab'] && isset( $_GET['section'] ) && 'woocommerce_payments' === $_GET['section'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return true;
+		}
+
+		// WooPayments admin pages.
+		if ( false !== strpos( $screen, 'wc-admin' ) && isset( $_GET['path'] ) && false !== strpos( sanitize_text_field( wp_unslash( $_GET['path'] ) ), 'payments' ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
