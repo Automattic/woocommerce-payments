@@ -2728,6 +2728,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		}
 
 		return [
+			// The WooPayments setup details.
 			'gateway'                => [
 				'enabled'              => $gateway->is_enabled(),
 				'test_mode'            => WC_Payments::mode()->is_test(),
@@ -2778,20 +2779,22 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			'multi_currency_enabled' => WC_Payments_Features::is_customer_multi_currency_enabled(),
 			'stripe_billing_enabled' => WC_Payments_Features::is_stripe_billing_enabled(),
 
-			// General store setup details.
+			// Other store setup details.
+			'wp_setup'               => [
+				'name'           => get_bloginfo( 'name' ),
+				'url'            => home_url(),
+				'active_theme'   => $this->get_store_theme_details(),
+				'active_plugins' => ! empty( $wc_plugin_util ) ? $wc_plugin_util->get_all_active_valid_plugins() : [],
+				'version'        => get_bloginfo( 'version' ),
+				'locale'         => get_locale(),
+			],
 			'wc_setup'               => [
-				'name'                     => get_bloginfo( 'name' ),
-				'url'                      => home_url(),
-				'id'                       => get_option( 'woocommerce_store_id', null ),
-				'active_theme'             => $this->get_store_theme_details(),
-				'active_plugins'           => ! empty( $wc_plugin_util ) ? $wc_plugin_util->get_all_active_valid_plugins() : [],
-				'wc_version'               => defined( 'WC_VERSION' ) ? explode( '-', WC_VERSION, 2 )[0] : '',
-				'wp_version'               => get_bloginfo( 'version' ),
+				'version'                  => defined( 'WC_VERSION' ) ? explode( '-', WC_VERSION, 2 )[0] : '',
+				'store_id'                 => get_option( 'woocommerce_store_id', null ),
 				'currency'                 => get_woocommerce_currency(),
-				'locale'                   => get_locale(),
+				'tracking_enabled'         => WC_Site_Tracking::is_tracking_enabled(),
 				'wc_subscriptions_active'  => $gateway->is_subscriptions_plugin_active(),
 				'wc_subscriptions_version' => $gateway->get_subscriptions_plugin_version(),
-				'tracking_enabled'         => WC_Site_Tracking::is_tracking_enabled(),
 			],
 		];
 	}
