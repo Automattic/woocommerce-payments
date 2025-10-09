@@ -39,8 +39,8 @@ class WC_Payments_Notes_Stripe_Billing_Deprecation {
 			return false;
 		}
 
-		// If wcpay version is >= 10.0, bail to not show the notice indefinitely.
-		if ( version_compare( WC_Payments::get_file_version( WCPAY_PLUGIN_FILE ), '10.0.0', '>=' ) ) {
+		// If wcpay version is > 10.2.99 bail to not show the notice indefinitely.
+		if ( version_compare( WC_Payments::get_file_version( WCPAY_PLUGIN_FILE ), '10.2.99', '>' ) ) {
 			return false;
 		}
 
