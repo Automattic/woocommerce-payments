@@ -127,11 +127,11 @@ jobs:
             MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper blocks\",\"test_name\":\"blocks-shopper\"}")
 
             # Add latest with PHP 8.3
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_path\":\"specs/woopayments/merchant\",\"test_name\":\"merchant\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_path\":\"specs/woopayments/shopper\",\"test_name\":\"shopper\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant subscriptions\",\"test_name\":\"subscriptions-merchant\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper subscriptions\",\"test_name\":\"subscriptions-shopper\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper blocks\",\"test_name\":\"blocks-shopper\"}")
+            # MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_path\":\"specs/woopayments/merchant\",\"test_name\":\"merchant\"}")
+            # MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_path\":\"specs/woopayments/shopper\",\"test_name\":\"shopper\"}")
+            # MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant subscriptions\",\"test_name\":\"subscriptions-merchant\"}")
+            # MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper subscriptions\",\"test_name\":\"subscriptions-shopper\"}")
+            # MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper blocks\",\"test_name\":\"blocks-shopper\"}")
           else
             echo "Scheduled/push run detected - running full test suite" >&2
 
@@ -292,8 +292,14 @@ jobs:
         # Use continue-on-error to allow parsing results even if tests fail
         continue-on-error: true
         run: |
-          # Use specific test path if provided, otherwise use full test directory
-          TEST_DIR="${{ steps.test_options.outputs.test_path || 'tests/qit/e2e' }}"
+          # Determine test directory - if test_path is specified, prepend with tests/qit/e2e/
+          if [[ -n "${{ steps.test_options.outputs.test_path }}" ]]; then
+            TEST_DIR="tests/qit/e2e/${{ steps.test_options.outputs.test_path }}"
+          else
+            TEST_DIR="tests/qit/e2e"
+          fi
+
+          echo "Running tests from: $TEST_DIR"
 
           ./vendor/bin/qit run:e2e woocommerce-payments "$TEST_DIR" \
             --config tests/qit/qit.yml \
@@ -387,8 +393,12 @@ jobs:
             SPEC_FILES="${SPEC_FILES} ${RELATIVE_SPEC}"
           done
 
-          # Use same test directory as first run
-          TEST_DIR="${{ steps.test_options.outputs.test_path || 'tests/qit/e2e' }}"
+          # Determine test directory same as first run
+          if [[ -n "${{ steps.test_options.outputs.test_path }}" ]]; then
+            TEST_DIR="tests/qit/e2e/${{ steps.test_options.outputs.test_path }}"
+          else
+            TEST_DIR="tests/qit/e2e"
+          fi
 
           # Re-run QIT with only the failed specs
           ./vendor/bin/qit run:e2e woocommerce-payments "$TEST_DIR" \
