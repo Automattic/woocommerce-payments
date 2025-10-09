@@ -256,22 +256,24 @@ jobs:
 
           OPTIONS="${OPTIONS} --php_version=${PHP_VERSION} --woo=${WC_VERSION} --wp=${WP_VERSION}"
 
-          # Disable retries to match non-QIT workflow behavior (retries: 0)
-          OPTIONS="${OPTIONS} --pw_options=\"--retries=0\""
-
-          # Determine test selection: use path for base tests, tags for combined tests
+          # Determine test selection: use path pattern for base tests, tags for combined tests
           if [[ -n "$TEST_PATH" ]]; then
-            # Use specific directory path (e.g., specs/woopayments/merchant)
-            echo "test_path=$TEST_PATH" >> $GITHUB_OUTPUT
-            echo "Using test path: $TEST_PATH"
+            # Use Playwright's grep to filter by file path pattern
+            # e.g., specs/woopayments/merchant becomes a grep pattern
+            # Combine --retries=0 with --grep in single --pw_options
+            OPTIONS="${OPTIONS} --pw_options=\"--retries=0 --grep \\\"$TEST_PATH\\\"\""
+            echo "Using test path filter: $TEST_PATH"
           elif [[ -n "$TEST_TAG" ]]; then
             # Use tags for combined tests (e.g., "merchant subscriptions")
             # Remove @ prefix if present (QIT will add it)
             CLEAN_TAG="${TEST_TAG#@}"
             # For combined tags like "@shopper and @subscriptions", strip all @ symbols
             CLEAN_TAG="${CLEAN_TAG//@/}"
-            OPTIONS="${OPTIONS} --pw_test_tag=\"${CLEAN_TAG}\""
+            OPTIONS="${OPTIONS} --pw_test_tag=\"${CLEAN_TAG}\" --pw_options=\"--retries=0\""
             echo "Using test tags: ${TEST_TAG} (cleaned: ${CLEAN_TAG})"
+          else
+            # No specific test selection, just disable retries
+            OPTIONS="${OPTIONS} --pw_options=\"--retries=0\""
           fi
 
           echo "options=${OPTIONS}" >> $GITHUB_OUTPUT
@@ -292,12 +294,9 @@ jobs:
         # Use continue-on-error to allow parsing results even if tests fail
         continue-on-error: true
         run: |
-          # Determine test directory - if test_path is specified, prepend with tests/qit/e2e/
-          if [[ -n "${{ steps.test_options.outputs.test_path }}" ]]; then
-            TEST_DIR="tests/qit/e2e/${{ steps.test_options.outputs.test_path }}"
-          else
-            TEST_DIR="tests/qit/e2e"
-          fi
+          # Always use the full tests/qit/e2e directory
+          # Path filtering is handled via --grep in --pw_options
+          TEST_DIR="tests/qit/e2e"
 
           echo "Running tests from: $TEST_DIR"
 
