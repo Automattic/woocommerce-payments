@@ -115,20 +115,20 @@ jobs:
 
             # PR matrix: Match e2e-pull-request.yml coverage
             # Test L-1 and latest with all test combinations (merchant, shopper, subscriptions, blocks)
-            # Strategy: Use paths for base tests, tags for combined tests
-            # - Paths (specs/woopayments/*) for base merchant/shopper to exclude subscriptions/blocks
-            # - Tags for combined tests (subscriptions, blocks) using AND logic
+            # Strategy:
+            # - Single tag (e.g., "merchant") for base tests - uses --grep-invert to exclude @subscriptions and @blocks
+            # - Multiple tags (e.g., "merchant subscriptions") for combined tests - uses AND logic
 
             # Add L-1 version with PHP 8.3
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_path\":\"specs/woopayments/merchant\",\"test_name\":\"merchant\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_path\":\"specs/woopayments/shopper\",\"test_name\":\"shopper\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant\",\"test_name\":\"merchant\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper\",\"test_name\":\"shopper\"}")
             MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant subscriptions\",\"test_name\":\"subscriptions-merchant\"}")
             MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper subscriptions\",\"test_name\":\"subscriptions-shopper\"}")
             MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper blocks\",\"test_name\":\"blocks-shopper\"}")
 
             # Add latest with PHP 8.3
-            # MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_path\":\"specs/woopayments/merchant\",\"test_name\":\"merchant\"}")
-            # MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_path\":\"specs/woopayments/shopper\",\"test_name\":\"shopper\"}")
+            # MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant\",\"test_name\":\"merchant\"}")
+            # MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper\",\"test_name\":\"shopper\"}")
             # MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant subscriptions\",\"test_name\":\"subscriptions-merchant\"}")
             # MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper subscriptions\",\"test_name\":\"subscriptions-shopper\"}")
             # MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper blocks\",\"test_name\":\"blocks-shopper\"}")
@@ -136,29 +136,29 @@ jobs:
             echo "Scheduled/push run detected - running full test suite" >&2
 
             # WC 7.7.0 with PHP 7.4 only (legacy - business continuity)
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_path\":\"specs/woopayments/merchant\",\"test_name\":\"merchant\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_path\":\"specs/woopayments/shopper\",\"test_name\":\"shopper\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_tag\":\"merchant\",\"test_name\":\"merchant\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_tag\":\"shopper\",\"test_name\":\"shopper\"}")
             MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_tag\":\"merchant subscriptions\",\"test_name\":\"subscriptions-merchant\"}")
             MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_tag\":\"shopper subscriptions\",\"test_name\":\"subscriptions-shopper\"}")
 
             # Add L-1 version with PHP 8.3
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_path\":\"specs/woopayments/merchant\",\"test_name\":\"merchant\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_path\":\"specs/woopayments/shopper\",\"test_name\":\"shopper\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant\",\"test_name\":\"merchant\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper\",\"test_name\":\"shopper\"}")
             MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant subscriptions\",\"test_name\":\"subscriptions-merchant\"}")
             MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper subscriptions\",\"test_name\":\"subscriptions-shopper\"}")
             MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper blocks\",\"test_name\":\"blocks-shopper\"}")
 
             # Add latest with PHP 8.3
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_path\":\"specs/woopayments/merchant\",\"test_name\":\"merchant\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_path\":\"specs/woopayments/shopper\",\"test_name\":\"shopper\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant\",\"test_name\":\"merchant\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper\",\"test_name\":\"shopper\"}")
             MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant subscriptions\",\"test_name\":\"subscriptions-merchant\"}")
             MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper subscriptions\",\"test_name\":\"subscriptions-shopper\"}")
             MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper blocks\",\"test_name\":\"blocks-shopper\"}")
 
             # Add beta with PHP 8.3 (if available)
             if [[ -n "$BETA_VERSION" ]]; then
-              MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_path\":\"specs/woopayments/merchant\",\"test_name\":\"merchant\"}")
-              MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_path\":\"specs/woopayments/shopper\",\"test_name\":\"shopper\"}")
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant\",\"test_name\":\"merchant\"}")
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper\",\"test_name\":\"shopper\"}")
               MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant subscriptions\",\"test_name\":\"subscriptions-merchant\"}")
               MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper subscriptions\",\"test_name\":\"subscriptions-shopper\"}")
               MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper blocks\",\"test_name\":\"blocks-shopper\"}")
@@ -166,8 +166,8 @@ jobs:
 
             # Add rc with PHP 8.4 (only if RC version is available)
             if [[ -n "$RC_VERSION" && "$RC_VERSION" != "null" ]]; then
-              MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_path\":\"specs/woopayments/merchant\",\"test_name\":\"merchant\"}")
-              MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_path\":\"specs/woopayments/shopper\",\"test_name\":\"shopper\"}")
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_tag\":\"merchant\",\"test_name\":\"merchant\"}")
+              MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_tag\":\"shopper\",\"test_name\":\"shopper\"}")
               MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_tag\":\"merchant subscriptions\",\"test_name\":\"subscriptions-merchant\"}")
               MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_tag\":\"shopper subscriptions\",\"test_name\":\"subscriptions-shopper\"}")
             else
@@ -176,8 +176,8 @@ jobs:
 
             # Add WordPress nightly with WC latest and PHP 8.3 (match e2e-test.yml wp-nightly-tests)
             # Test new WordPress features with latest stable WooCommerce
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_path\":\"specs/woopayments/merchant\",\"test_name\":\"merchant\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_path\":\"specs/woopayments/shopper\",\"test_name\":\"shopper\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"merchant\",\"test_name\":\"merchant\"}")
+            MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"shopper\",\"test_name\":\"shopper\"}")
             MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"merchant subscriptions\",\"test_name\":\"subscriptions-merchant\"}")
             MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"shopper subscriptions\",\"test_name\":\"subscriptions-shopper\"}")
             MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"shopper blocks\",\"test_name\":\"blocks-shopper\"}")
@@ -251,26 +251,32 @@ jobs:
           WC_VERSION="${{ inputs.woocommerce_version || matrix.woocommerce }}"
           PHP_VERSION="${{ inputs.php_version || matrix.php }}"
           TEST_TAG="${{ inputs.test_tag || matrix.test_tag }}"
-          TEST_PATH="${{ matrix.test_path }}"
           WP_VERSION="${{ inputs.wordpress_version || matrix.wordpress || 'stable' }}"
 
           OPTIONS="${OPTIONS} --php_version=${PHP_VERSION} --woo=${WC_VERSION} --wp=${WP_VERSION}"
 
-          # Determine test selection: use path pattern for base tests, tags for combined tests
-          if [[ -n "$TEST_PATH" ]]; then
-            # Use Playwright's grep to filter by file path pattern
-            # e.g., specs/woopayments/merchant becomes a grep pattern
-            # Combine --retries=0 with --grep in single --pw_options
-            OPTIONS="${OPTIONS} --pw_options=\"--retries=0 --grep \\\"$TEST_PATH\\\"\""
-            echo "Using test path filter: $TEST_PATH"
-          elif [[ -n "$TEST_TAG" ]]; then
-            # Use tags for combined tests (e.g., "merchant subscriptions")
+          # Determine test selection using tags
+          # Single tag (e.g., "merchant") needs to exclude subscriptions/blocks tests
+          # Multiple tags (e.g., "merchant subscriptions") use AND logic to run combined tests
+          if [[ -n "$TEST_TAG" ]]; then
             # Remove @ prefix if present (QIT will add it)
             CLEAN_TAG="${TEST_TAG#@}"
             # For combined tags like "@shopper and @subscriptions", strip all @ symbols
             CLEAN_TAG="${CLEAN_TAG//@/}"
-            OPTIONS="${OPTIONS} --pw_test_tag=\"${CLEAN_TAG}\" --pw_options=\"--retries=0\""
-            echo "Using test tags: ${TEST_TAG} (cleaned: ${CLEAN_TAG})"
+
+            # Check if this is a single tag (base test) or multiple tags (combined test)
+            WORD_COUNT=$(echo "$CLEAN_TAG" | wc -w | tr -d ' ')
+
+            if [[ "$WORD_COUNT" -eq 1 ]]; then
+              # Single tag: exclude subscriptions and blocks tests using multiple --grep-invert
+              # Example: --grep @shopper --grep-invert @subscriptions --grep-invert @blocks
+              OPTIONS="${OPTIONS} --pw_test_tag=\"${CLEAN_TAG}\" --pw_options=\"--retries=0 --grep-invert @subscriptions --grep-invert @blocks\""
+              echo "Using test tag: ${CLEAN_TAG} (excluding @subscriptions and @blocks)"
+            else
+              # Multiple tags: use AND logic for combined tests
+              OPTIONS="${OPTIONS} --pw_test_tag=\"${CLEAN_TAG}\" --pw_options=\"--retries=0\""
+              echo "Using test tags: ${CLEAN_TAG}"
+            fi
           else
             # No specific test selection, just disable retries
             OPTIONS="${OPTIONS} --pw_options=\"--retries=0\""
@@ -295,7 +301,7 @@ jobs:
         continue-on-error: true
         run: |
           # Always use the full tests/qit/e2e directory
-          # Path filtering is handled via --grep in --pw_options
+          # Test filtering is handled via --pw_test_tag and --grep-invert
           TEST_DIR="tests/qit/e2e"
 
           echo "Running tests from: $TEST_DIR"
