@@ -274,6 +274,7 @@ jobs:
             --env E2E_JP_SITE_ID="${{ secrets.E2E_QIT_JP_SITE_ID }}" \
             --env E2E_JP_BLOG_TOKEN="${{ secrets.E2E_QIT_JP_BLOG_TOKEN }}" \
             --env E2E_JP_USER_TOKEN="${{ secrets.E2E_QIT_JP_USER_TOKEN }}" \
+            --no_upload_report \
             ${{ steps.test_options.outputs.options }}
 
           QIT_EXIT_CODE=$?
@@ -382,6 +383,7 @@ jobs:
             --env E2E_JP_SITE_ID="${{ secrets.E2E_QIT_JP_SITE_ID }}" \
             --env E2E_JP_BLOG_TOKEN="${{ secrets.E2E_QIT_JP_BLOG_TOKEN }}" \
             --env E2E_JP_USER_TOKEN="${{ secrets.E2E_QIT_JP_USER_TOKEN }}" \
+            --no_upload_report \
             --php_version=${PHP_VERSION} \
             --woo=${WC_VERSION} \
             --wp=${WP_VERSION} \
