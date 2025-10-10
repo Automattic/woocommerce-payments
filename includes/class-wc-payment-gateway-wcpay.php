@@ -3965,7 +3965,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		return $this->get_option(
 			'upe_enabled_payment_method_ids',
 			[
-				'card',
+				Payment_Method::CARD,
 			]
 		);
 	}
