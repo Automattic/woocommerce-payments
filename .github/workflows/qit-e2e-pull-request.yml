@@ -143,6 +143,15 @@ jobs:
         with:
           name: woocommerce-payments-plugin
 
+      - name: "Install QIT CLI for running tests"
+        run: |
+          # Install dev dependencies to get QIT CLI
+          composer install --optimize-autoloader
+
+      - name: Authenticate QIT
+        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
+        run: ./vendor/bin/qit partner:add --user='${{ secrets.QIT_CI_USER }}' --application_password='${{ secrets.QIT_CI_SECRET }}'
+
       - name: Set up test options
         id: test_options
         run: |
