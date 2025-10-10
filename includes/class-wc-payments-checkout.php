@@ -269,7 +269,7 @@ class WC_Payments_Checkout {
 			$order_id = absint( get_query_var( 'order-pay' ) );
 			$order    = wc_get_order( $order_id );
 
-			if ( is_a( $order, 'WC_Order' ) && get_current_user_id() === $order->get_user_id() ) {
+			if ( is_a( $order, 'WC_Order' ) && current_user_can( 'pay_for_order', $order->get_id() ) ) {
 				$payment_fields['isOrderPay'] = true;
 				$payment_fields['orderId']    = $order_id;
 				$order_currency               = $order->get_currency();
