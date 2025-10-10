@@ -195,7 +195,7 @@ export function* saveSettings() {
 		} );
 
 		yield updateSettingsValues( {
-			payment_method_statuses: response.payment_method_statuses,
+			payment_method_statuses: response.data.payment_method_statuses,
 		} );
 
 		yield dispatch( 'core/notices' ).createSuccessNotice(
