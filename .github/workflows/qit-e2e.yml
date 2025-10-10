@@ -115,11 +115,11 @@ jobs:
           MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper blocks\",\"test_name\":\"blocks-shopper\"}")
 
           # Add latest with PHP 8.3
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant\",\"test_name\":\"merchant\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper\",\"test_name\":\"shopper\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant subscriptions\",\"test_name\":\"subscriptions-merchant\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper subscriptions\",\"test_name\":\"subscriptions-shopper\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper blocks\",\"test_name\":\"blocks-shopper\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"stable\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant\",\"test_name\":\"merchant\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"stable\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper\",\"test_name\":\"shopper\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"stable\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant subscriptions\",\"test_name\":\"subscriptions-merchant\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"stable\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper subscriptions\",\"test_name\":\"subscriptions-shopper\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"stable\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper blocks\",\"test_name\":\"blocks-shopper\"}")
 
           # Add beta with PHP 8.3 (if available)
           if [[ -n "$BETA_VERSION" ]]; then
@@ -142,11 +142,11 @@ jobs:
 
           # Add WordPress nightly with WC latest and PHP 8.3 (match e2e-test.yml wp-nightly-tests)
           # Test new WordPress features with latest stable WooCommerce
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"merchant\",\"test_name\":\"merchant\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"shopper\",\"test_name\":\"shopper\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"merchant subscriptions\",\"test_name\":\"subscriptions-merchant\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"shopper subscriptions\",\"test_name\":\"subscriptions-shopper\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"shopper blocks\",\"test_name\":\"blocks-shopper\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"stable\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"merchant\",\"test_name\":\"merchant\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"stable\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"shopper\",\"test_name\":\"shopper\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"stable\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"merchant subscriptions\",\"test_name\":\"subscriptions-merchant\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"stable\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"shopper subscriptions\",\"test_name\":\"subscriptions-shopper\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"stable\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"shopper blocks\",\"test_name\":\"blocks-shopper\"}")
 
           # Convert array to JSON
           MATRIX_INCLUDE=$(printf '%s\n' "${MATRIX_ENTRIES[@]}" | jq -s . -c)

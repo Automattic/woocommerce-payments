@@ -79,18 +79,24 @@ jobs:
           # Initialize empty matrix array
           MATRIX_ENTRIES=()
 
-          # PR matrix: Match e2e-pull-request.yml coverage
-          # Test L-1 with all test combinations (merchant, shopper, subscriptions, blocks)
+          # PR matrix: Test both L-1 and stable versions for comprehensive coverage
           # Strategy:
           # - Single tag (e.g., "merchant") for base tests - uses --grep-invert "@(subscriptions|blocks)"
           # - Multiple tags (e.g., "merchant subscriptions") for combined tests - uses AND logic
 
-          # Add L-1 version with PHP 8.3
+          # Add L-1 version with PHP 8.3 (backward compatibility)
           MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant\",\"test_name\":\"merchant\"}")
           MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper\",\"test_name\":\"shopper\"}")
           MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant subscriptions\",\"test_name\":\"subscriptions-merchant\"}")
           MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper subscriptions\",\"test_name\":\"subscriptions-shopper\"}")
           MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper blocks\",\"test_name\":\"blocks-shopper\"}")
+
+          # Add stable version with PHP 8.3 (current WooCommerce release compatibility)
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"stable\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant\",\"test_name\":\"merchant\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"stable\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper\",\"test_name\":\"shopper\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"stable\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant subscriptions\",\"test_name\":\"subscriptions-merchant\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"stable\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper subscriptions\",\"test_name\":\"subscriptions-shopper\"}")
+          MATRIX_ENTRIES+=("{\"woocommerce\":\"stable\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper blocks\",\"test_name\":\"blocks-shopper\"}")
 
           # Convert array to JSON
           MATRIX_INCLUDE=$(printf '%s\n' "${MATRIX_ENTRIES[@]}" | jq -s . -c)
