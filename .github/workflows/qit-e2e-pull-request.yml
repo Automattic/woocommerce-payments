@@ -1,13 +1,14 @@
-name: QIT E2E Tests - Scheduled & Push
+name: QIT E2E Tests - Pull Request
 
 on:
-  push:
-    branches:
-      - 'develop'
-      - 'trunk'
-  schedule:
-    # Run every 6 hours like legacy e2e-test.yml. TODO: Should this be nightly only?
-    - cron: '0 */6 * * *'
+  pull_request:
+    paths:
+      - 'client/**'
+      - 'includes/**'
+      - 'src/**'
+      - 'tests/qit/e2e/**'
+      - 'tests/qit/qit.yml'
+      - '.github/workflows/qit-e2e-pull-request.yml' # Trigger on changes to this workflow for testing
   workflow_dispatch:
     inputs:
       woocommerce_version:
@@ -41,21 +42,15 @@ on:
           - 'nightly'
           - 'rc'
       test_tag:
-        description: 'Playwright test tag to run (e.g., @shopper, @merchant, @critical)'
+        description: 'Test tag to run (e.g., "merchant" or "shopper subscriptions")'
         required: false
+        default: ''
         type: string
       run_ui_mode:
-        description: 'Run tests in UI mode for debugging'
+        description: 'Run in UI mode'
         required: false
         default: false
         type: boolean
-
-permissions:
-  contents: read
-
-concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
 
 jobs:
   generate-matrix:
@@ -75,37 +70,20 @@ jobs:
 
           # Extract versions and metadata from JSON
           L1_VERSION=$(echo "$SCRIPT_RESULT" | jq -r '.metadata.l1_version')
-          RC_VERSION=$(echo "$SCRIPT_RESULT" | jq -r '.metadata.rc_version')
-          BETA_VERSION=$(echo "$SCRIPT_RESULT" | jq -r '.metadata.beta_version')
-
-          if [[ "$BETA_VERSION" == "null" ]]; then
-            BETA_VERSION=""
-          fi
 
           echo "Using L-1 version: $L1_VERSION" >&2
-          echo "Using RC version: $RC_VERSION" >&2
-          if [[ -n "$BETA_VERSION" ]]; then
-            echo "Using beta version: $BETA_VERSION" >&2
-          else
-            echo "No beta version available" >&2
-          fi
 
           # Define common values to reduce repetition
-          PHP_LEGACY="7.4"
           PHP_STABLE="8.3"
-          PHP_LATEST="8.4"
 
           # Initialize empty matrix array
           MATRIX_ENTRIES=()
 
-          # Scheduled/push matrix: Run comprehensive test suite across multiple versions
-          echo "Scheduled/push run detected - running full test suite" >&2
-
-          # WC 7.7.0 with PHP 7.4 only (legacy - business continuity)
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_tag\":\"merchant\",\"test_name\":\"merchant\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_tag\":\"shopper\",\"test_name\":\"shopper\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_tag\":\"merchant subscriptions\",\"test_name\":\"subscriptions-merchant\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_tag\":\"shopper subscriptions\",\"test_name\":\"subscriptions-shopper\"}")
+          # PR matrix: Match e2e-pull-request.yml coverage
+          # Test L-1 with all test combinations (merchant, shopper, subscriptions, blocks)
+          # Strategy:
+          # - Single tag (e.g., "merchant") for base tests - uses --grep-invert "@(subscriptions|blocks)"
+          # - Multiple tags (e.g., "merchant subscriptions") for combined tests - uses AND logic
 
           # Add L-1 version with PHP 8.3
           MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant\",\"test_name\":\"merchant\"}")
@@ -114,44 +92,15 @@ jobs:
           MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper subscriptions\",\"test_name\":\"subscriptions-shopper\"}")
           MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper blocks\",\"test_name\":\"blocks-shopper\"}")
 
-          # Add latest with PHP 8.3
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant\",\"test_name\":\"merchant\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper\",\"test_name\":\"shopper\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant subscriptions\",\"test_name\":\"subscriptions-merchant\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper subscriptions\",\"test_name\":\"subscriptions-shopper\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper blocks\",\"test_name\":\"blocks-shopper\"}")
-
-          # Add beta with PHP 8.3 (if available)
-          if [[ -n "$BETA_VERSION" ]]; then
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant\",\"test_name\":\"merchant\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper\",\"test_name\":\"shopper\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"merchant subscriptions\",\"test_name\":\"subscriptions-merchant\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper subscriptions\",\"test_name\":\"subscriptions-shopper\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"$BETA_VERSION\",\"php\":\"$PHP_STABLE\",\"test_tag\":\"shopper blocks\",\"test_name\":\"blocks-shopper\"}")
-          fi
-
-          # Add rc with PHP 8.4 (only if RC version is available)
-          if [[ -n "$RC_VERSION" && "$RC_VERSION" != "null" ]]; then
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_tag\":\"merchant\",\"test_name\":\"merchant\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_tag\":\"shopper\",\"test_name\":\"shopper\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_tag\":\"merchant subscriptions\",\"test_name\":\"subscriptions-merchant\"}")
-            MATRIX_ENTRIES+=("{\"woocommerce\":\"$RC_VERSION\",\"php\":\"$PHP_LATEST\",\"test_tag\":\"shopper subscriptions\",\"test_name\":\"subscriptions-shopper\"}")
-          else
-            echo "No RC version available, skipping RC matrix entries" >&2
-          fi
-
-          # Add WordPress nightly with WC latest and PHP 8.3 (match e2e-test.yml wp-nightly-tests)
-          # Test new WordPress features with latest stable WooCommerce
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"merchant\",\"test_name\":\"merchant\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"shopper\",\"test_name\":\"shopper\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"merchant subscriptions\",\"test_name\":\"subscriptions-merchant\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"shopper subscriptions\",\"test_name\":\"subscriptions-shopper\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"latest\",\"php\":\"$PHP_STABLE\",\"wordpress\":\"nightly\",\"test_tag\":\"shopper blocks\",\"test_name\":\"blocks-shopper\"}")
-
           # Convert array to JSON
           MATRIX_INCLUDE=$(printf '%s\n' "${MATRIX_ENTRIES[@]}" | jq -s . -c)
 
-          echo "matrix={\"include\":$MATRIX_INCLUDE}" >> $GITHUB_OUTPUT
+          # Output the full matrix
+          echo "matrix={\"include\":${MATRIX_INCLUDE}}" >> $GITHUB_OUTPUT
+
+          # Debug: log matrix to stderr so it appears in actions log
+          echo "Generated matrix with ${#MATRIX_ENTRIES[@]} combinations:" >&2
+          echo "$MATRIX_INCLUDE" | jq . >&2
 
   build-plugin:
     name: "Build plugin artifact"
@@ -159,14 +108,11 @@ jobs:
     steps:
       - name: "Checkout repository"
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref }}
 
       - name: "Set up repository"
         uses: ./.github/actions/setup-repo
 
       - name: "Build the plugin"
-        id: build_plugin
         uses: ./.github/actions/build
 
       - name: "Upload plugin artifact"
@@ -176,38 +122,33 @@ jobs:
           path: woocommerce-payments.zip
           retention-days: 1
 
-  qit-e2e-tests:
-    runs-on: ubuntu-latest
+  run-qit-tests:
+    name: "WC - ${{ matrix.woocommerce }} | PHP - ${{ matrix.php }} | ${{ matrix.test_name }}"
     needs: [generate-matrix, build-plugin]
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
     strategy:
       fail-fast: false
-      matrix: ${{ fromJSON(needs.generate-matrix.outputs.matrix) }}
-    name: "${{ matrix.wordpress && format('WP - {0} | ', matrix.wordpress) || '' }}WC - ${{ matrix.woocommerce }} | PHP - ${{ matrix.php }} | ${{ matrix.test_name }}"
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
 
     steps:
-      - name: "Checkout repository"
+      - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.ref }}
 
-      - name: "Download plugin artifact"
+      - name: Set up repository
+        uses: ./.github/actions/setup-repo
+
+      - name: Download plugin artifact
         uses: actions/download-artifact@v4
         with:
           name: woocommerce-payments-plugin
 
-      - name: "Install QIT CLI for running tests"
-        run: |
-          # Install dev dependencies to get QIT CLI
-          composer install --optimize-autoloader
-
-      - name: Authenticate QIT
-        if: ${{ github.event_name != 'pull_request' || github.event.pull_request.head.repo.full_name == github.repository }}
-        run: ./vendor/bin/qit partner:add --user='${{ secrets.QIT_CI_USER }}' --application_password='${{ secrets.QIT_CI_SECRET }}'
-
-      - name: Set test options
+      - name: Set up test options
         id: test_options
         run: |
           OPTIONS=""
+
+          # UI mode is primarily for manual testing
           if [[ "${{ inputs.run_ui_mode }}" == "true" ]]; then
             OPTIONS="${OPTIONS} --ui"
           fi
@@ -221,7 +162,7 @@ jobs:
           OPTIONS="${OPTIONS} --php_version=${PHP_VERSION} --woo=${WC_VERSION} --wp=${WP_VERSION}"
 
           # Determine test selection using tags
-          # Single tag (e.g., "merchant") needs to exclude subscriptions/blocks tests
+          # Single tag (e.g., "merchant") runs only base tests (excludes subscriptions/blocks)
           # Multiple tags (e.g., "merchant subscriptions") use AND logic to run combined tests
           if [[ -n "$TEST_TAG" ]]; then
             # Remove @ prefix if present (QIT will add it)
