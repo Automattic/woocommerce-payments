@@ -1520,6 +1520,9 @@ class WC_Payments_Onboarding_Service {
 		}
 
 		// Add default properties to every event.
+		$account_service = WC_Payments::get_account_service();
+		$tracking_info   = $account_service ? $account_service->get_tracking_info() : [];
+
 		$properties = array_merge(
 			$properties,
 			[
@@ -1528,7 +1531,7 @@ class WC_Payments_Onboarding_Service {
 				'wcpay_version'     => WCPAY_VERSION_NUMBER,
 				'woo_country_code'  => WC()->countries->get_base_country(),
 			],
-			WC_Payments::get_account_service()->get_tracking_info() ?? []
+			$tracking_info ?? []
 		);
 
 		wc_admin_record_tracks_event( $name, $properties );
