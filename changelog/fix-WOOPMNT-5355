@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Use Woo custom cap `pay_for_order` for validating the owner of order

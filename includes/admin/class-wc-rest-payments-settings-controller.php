@@ -10,6 +10,7 @@ use WCPay\Constants\Country_Code;
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
 use WCPay\Constants\Track_Events;
 use WCPay\Fraud_Prevention\Models\Rule;
+use WCPay\Logger;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -563,6 +564,9 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			return new WP_REST_Response( [ 'server_error' => $update_account_result->get_error_message() ], 400 );
 		}
 
+		// Sync the store setup with the Transact Platform.
+		$this->account->schedule_store_setup_sync();
+
 		return new WP_REST_Response( $this->get_settings(), 200 );
 	}
 
@@ -641,24 +645,28 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$disabled_payment_methods = array_diff( $active_payment_methods, $payment_method_ids_to_enable );
 		$enabled_payment_methods  = array_diff( $payment_method_ids_to_enable, $active_payment_methods );
 
-		if ( function_exists( 'wc_admin_record_tracks_event' ) ) {
-			foreach ( $disabled_payment_methods as $disabled_payment_method ) {
-				wc_admin_record_tracks_event(
-					Track_Events::PAYMENT_METHOD_DISABLED,
-					[
-						'payment_method_id' => $disabled_payment_method,
-					]
-				);
-			}
-
-			foreach ( $enabled_payment_methods as $enabled_payment_method ) {
-				wc_admin_record_tracks_event(
-					Track_Events::PAYMENT_METHOD_ENABLED,
-					[
-						'payment_method_id' => $enabled_payment_method,
-					]
-				);
-			}
+		// Log Tracks events for each enabled/disabled payment method.
+		// We log these events before actually enabling/disabling the payment methods
+		// to ensure that if enabling/disabling fails, we still have a record of the
+		// attempt.
+		$pm_to_capability_key_map = $this->wcpay_gateway->get_payment_method_capability_key_map();
+		foreach ( $disabled_payment_methods as $disabled_payment_method ) {
+			$this->tracks_event(
+				Track_Events::PAYMENT_METHOD_DISABLED,
+				[
+					'payment_method_id' => $disabled_payment_method,
+					'capability_id'     => $pm_to_capability_key_map[ $disabled_payment_method ] ?? null,
+				]
+			);
+		}
+		foreach ( $enabled_payment_methods as $enabled_payment_method ) {
+			$this->tracks_event(
+				Track_Events::PAYMENT_METHOD_ENABLED,
+				[
+					'payment_method_id' => $enabled_payment_method,
+					'capability_id'     => $pm_to_capability_key_map[ $enabled_payment_method ] ?? null,
+				]
+			);
 		}
 
 		foreach ( $enabled_payment_methods as $payment_method_id ) {
@@ -1094,5 +1102,43 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		}
 
 		return $avs_check_enabled;
+	}
+
+	/**
+	 * Send a Tracks event.
+	 *
+	 * By default Woo adds `url`, `blog_lang`, `blog_id`, `store_id`, `products_count`, and `wc_version`
+	 * properties to every event.
+	 *
+	 * @todo This is a duplicate of the one in the WC_Payments_Account and WC_Payments_Onboarding_Service classes.
+	 *
+	 * @param string $name       The event name.
+	 * @param array  $properties Optional. The event custom properties.
+	 *
+	 * @return void
+	 */
+	private function tracks_event( string $name, array $properties = [] ) {
+		if ( ! function_exists( 'wc_admin_record_tracks_event' ) ) {
+			return;
+		}
+
+		// Add default properties to every event.
+		$account_service = WC_Payments::get_account_service();
+		$tracking_info   = $account_service ? $account_service->get_tracking_info() : [];
+
+		$properties = array_merge(
+			$properties,
+			[
+				'is_test_mode'      => WC_Payments::mode()->is_test(),
+				'jetpack_connected' => $this->api_client->is_server_connected(),
+				'wcpay_version'     => WCPAY_VERSION_NUMBER,
+				'woo_country_code'  => WC()->countries->get_base_country(),
+			],
+			$tracking_info ?? []
+		);
+
+		wc_admin_record_tracks_event( $name, $properties );
+
+		Logger::info( 'Tracks event: ' . $name . ' with data: ' . wp_json_encode( WC_Payments_Utils::redact_array( $properties, [ 'woo_country_code' ] ) ) );
 	}
 }
