@@ -383,30 +383,38 @@ jobs:
             echo " - $spec"
           done
 
-          # Build pw_options with specific spec files and --retries=0
+          # Build grep pattern to match only failed spec files
           # CTRF filePath format: /qit/tests/e2e/woocommerce-payments/local/specs/...
-          # We need to extract the relative path from /qit/tests/e2e/
-          SPEC_FILES=""
+          # Extract filenames and build regex pattern
+          SPEC_PATTERN=""
           for spec in "${FAILED_SPECS[@]}"; do
-            # Extract path after /qit/tests/e2e/ or use as-is if already relative
-            RELATIVE_SPEC=$(echo "$spec" | sed 's|^/qit/tests/e2e/woocommerce-payments/local/||')
-            SPEC_FILES="${SPEC_FILES} ${RELATIVE_SPEC}"
+            # Extract just the filename without path (e.g., merchant-disputes-respond.spec.ts)
+            SPEC_NAME=$(basename "$spec")
+            if [[ -z "$SPEC_PATTERN" ]]; then
+              SPEC_PATTERN="$SPEC_NAME"
+            else
+              SPEC_PATTERN="${SPEC_PATTERN}|${SPEC_NAME}"
+            fi
           done
 
           # Always use full test directory for retry
           TEST_DIR="tests/qit/e2e"
 
-          # Get base options without --pw_options and --pw_test_tag (we'll run specific files)
-          BASE_OPTIONS="${{ steps.test_options.outputs.options }}"
-          # Remove --pw_options and --pw_test_tag since we're specifying exact spec files
-          BASE_OPTIONS=$(echo "$BASE_OPTIONS" | sed 's/--pw_options="[^"]*"//g' | sed 's/--pw_test_tag="[^"]*"//g')
+          # For retry, we only need PHP, WC, and WP versions
+          WC_VERSION="${{ matrix.woocommerce }}"
+          PHP_VERSION="${{ matrix.php }}"
+          WP_VERSION="${{ matrix.wordpress || 'stable' }}"
 
-          # Re-run QIT with only the failed specs and --retries=0
+          echo "Retry grep pattern: ($SPEC_PATTERN)"
+
+          # Re-run QIT with grep pattern matching only failed specs
           ./vendor/bin/qit run:e2e woocommerce-payments "$TEST_DIR" \
             --config tests/qit/qit.yml \
             --source woocommerce-payments.zip \
             --env E2E_JP_SITE_ID="${{ secrets.E2E_QIT_JP_SITE_ID }}" \
             --env E2E_JP_BLOG_TOKEN="${{ secrets.E2E_QIT_JP_BLOG_TOKEN }}" \
             --env E2E_JP_USER_TOKEN="${{ secrets.E2E_QIT_JP_USER_TOKEN }}" \
-            ${BASE_OPTIONS} \
-            --pw_options="--retries=0 ${SPEC_FILES}"
+            --php_version=${PHP_VERSION} \
+            --woo=${WC_VERSION} \
+            --wp=${WP_VERSION} \
+            --pw_options="--retries=0 --grep '(${SPEC_PATTERN})'"
