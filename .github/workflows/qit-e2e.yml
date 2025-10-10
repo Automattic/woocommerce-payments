@@ -305,6 +305,7 @@ jobs:
 
           echo "Running tests from: $TEST_DIR"
 
+          # Run QIT tests - exit code 0 = all passed, non-zero = tests failed or QIT error
           ./vendor/bin/qit run:e2e woocommerce-payments "$TEST_DIR" \
             --config tests/qit/qit.yml \
             --source woocommerce-payments.zip \
@@ -312,6 +313,18 @@ jobs:
             --env E2E_JP_BLOG_TOKEN="${{ secrets.E2E_QIT_JP_BLOG_TOKEN }}" \
             --env E2E_JP_USER_TOKEN="${{ secrets.E2E_QIT_JP_USER_TOKEN }}" \
             ${{ steps.test_options.outputs.options }}
+
+          QIT_EXIT_CODE=$?
+          echo "qit_exit_code=$QIT_EXIT_CODE" >> $GITHUB_OUTPUT
+
+          # Check if QIT actually ran tests by looking for results directory
+          QIT_RESULTS_DIR=$(find /tmp -maxdepth 1 -name "qit-results-*" -type d 2>/dev/null | sort -r | head -1)
+          if [[ -z "$QIT_RESULTS_DIR" ]]; then
+            echo "::error::QIT did not produce test results. This indicates an environment or setup failure."
+            exit 1
+          fi
+
+          exit $QIT_EXIT_CODE
 
       - name: Parse Failed Specs
         id: parse_failed_specs
