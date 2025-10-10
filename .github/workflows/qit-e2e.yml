@@ -323,19 +323,16 @@ jobs:
           QIT_RESULTS_DIR=$(find /tmp -maxdepth 1 -name "qit-results-*" -type d 2>/dev/null | sort -r | head -1)
 
           if [[ -z "$QIT_RESULTS_DIR" ]]; then
-            echo "No QIT results directory found in /tmp"
-            ls -la /tmp | grep qit || echo "No qit directories found"
+            echo "No QIT results directory found"
             echo "failed_specs_count=0" >> $GITHUB_OUTPUT
             exit 0
           fi
 
           echo "Found QIT results directory: $QIT_RESULTS_DIR"
-          ls -la "$QIT_RESULTS_DIR" || true
 
-          # QIT uses Playwright which outputs results to a JSON file
-          # Look for common Playwright result file names
+          # Look for CTRF report file
           RESULTS_JSON=""
-          for filename in "results.json" "test-results.json" "ctrf-report.json"; do
+          for filename in "ctrf-report.json" "results.json" "test-results.json"; do
             FOUND=$(find "$QIT_RESULTS_DIR" -name "$filename" -type f 2>/dev/null | head -1)
             if [[ -n "$FOUND" ]]; then
               RESULTS_JSON="$FOUND"
@@ -344,15 +341,12 @@ jobs:
           done
 
           if [[ -z "$RESULTS_JSON" || ! -f "$RESULTS_JSON" ]]; then
-            echo "No results JSON found in $QIT_RESULTS_DIR"
-            find "$QIT_RESULTS_DIR" -name "*.json" -type f 2>/dev/null || echo "No JSON files found"
+            echo "No results JSON found"
             echo "failed_specs_count=0" >> $GITHUB_OUTPUT
             exit 0
           fi
 
-          echo "Found results at: $RESULTS_JSON"
-          echo "Results file content preview:"
-          head -20 "$RESULTS_JSON" || true
+          echo "Parsing results from: $RESULTS_JSON"
 
           # Extract failed spec files from CTRF format
           # CTRF format: .results.tests[] with .status and .filePath fields
