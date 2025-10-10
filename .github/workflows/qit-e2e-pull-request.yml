@@ -65,11 +65,11 @@ jobs:
       - name: "Generate matrix"
         id: generate_matrix
         run: |
-          # Use dynamic script to get WooCommerce versions (L-1 policy)
-          SCRIPT_RESULT=$( .github/scripts/generate-wc-matrix.sh )
+          # Use simplified QIT script - QIT handles version resolution for stable
+          SCRIPT_RESULT=$( .github/scripts/generate-qit-wc-matrix.sh )
 
-          # Extract versions and metadata from JSON
-          L1_VERSION=$(echo "$SCRIPT_RESULT" | jq -r '.metadata.l1_version')
+          # Extract L-1 version from JSON
+          L1_VERSION=$(echo "$SCRIPT_RESULT" | jq -r '.l1_version')
 
           echo "Using L-1 version: $L1_VERSION" >&2
 
