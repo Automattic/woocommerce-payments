@@ -2467,6 +2467,8 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	/**
 	 * Send store setup data to the Transact Platform.
 	 *
+	 * Use a non-blocking request as this is not critical data, and it should have minimal impact on the user experience.
+	 *
 	 * @param array $store_setup The store setup data.
 	 *
 	 * @return array Response from the API.
@@ -2480,7 +2482,11 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			],
 			self::STORE_SETUP_API,
 			self::POST,
-			true
+			true,
+			false,
+			false,
+			false,
+			false
 		);
 	}
 
