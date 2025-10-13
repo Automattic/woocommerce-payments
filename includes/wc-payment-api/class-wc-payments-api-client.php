@@ -84,6 +84,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	const COMPATIBILITY_API            = 'compatibility';
 	const RECOMMENDED_PAYMENT_METHODS  = 'payment_methods/recommended';
 	const ADDRESS_AUTOCOMPLETE_TOKEN   = 'address-autocomplete-token';
+	const STORE_SETUP_API              = 'accounts/store_setup';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.
@@ -2459,6 +2460,26 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			self::ACCOUNTS_API . '/delete',
 			self::POST,
 			true,
+			true
+		);
+	}
+
+	/**
+	 * Send store setup data to the Transact Platform.
+	 *
+	 * @param array $store_setup The store setup data.
+	 *
+	 * @return array Response from the API.
+	 * @throws API_Exception
+	 */
+	public function send_store_setup( array $store_setup ): array {
+		return $this->request(
+			[
+				'snapshot'  => $store_setup,
+				'test_mode' => \WC_Payments::mode()->is_test_mode_onboarding(),
+			],
+			self::STORE_SETUP_API,
+			self::POST,
 			true
 		);
 	}
