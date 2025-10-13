@@ -135,10 +135,10 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		add_action( 'jetpack_site_registered', [ $this, 'clear_cache' ] );
 		add_action( 'updated_option', [ $this, 'possibly_update_wcpay_account_locale' ], 10, 3 );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'clear_cache' ] );
-		// Hook into the account refreshed action to schedule a store setup sync.
-		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'schedule_store_setup_sync' ] );
-		// Hook into the store setup sync action (triggered by the scheduled job) and do the sync.
+		// Hook into the recurring store setup sync action and do the store setup sync.
 		add_action( self::STORE_SETUP_SYNC_ACTION, [ $this, 'store_setup_sync' ] );
+		// Also do a store setup sync when the client is updated to a new version.
+		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'store_setup_sync' ] );
 	}
 
 	/**
@@ -2636,25 +2636,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	public function is_card_testing_protection_eligible(): bool {
 		$account = $this->get_cached_account_data();
 		return $account['card_testing_protection_eligible'] ?? false;
-	}
-
-	/**
-	 * Schedule a store setup sync to run in 5 minutes, if there isn't one already scheduled.
-	 *
-	 * @return void
-	 */
-	public function schedule_store_setup_sync() {
-		$action_hook = self::STORE_SETUP_SYNC_ACTION;
-
-		// If there is already a pending action, do nothing.
-		if ( $this->action_scheduler_service->pending_action_exists( $action_hook ) ) {
-			return;
-		}
-
-		// Schedule the action to run in 5 minutes.
-		// Further attempts to schedule the action will be ignored until it runs.
-		$run_time = time() + 5 * MINUTE_IN_SECONDS;
-		$this->action_scheduler_service->schedule_job( $run_time, $action_hook );
 	}
 
 	/**
