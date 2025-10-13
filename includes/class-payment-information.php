@@ -276,16 +276,16 @@ class Payment_Information {
 		?Payment_Capture_Type $manual_capture = null,
 		?string $payment_method_stripe_id = null
 	): Payment_Information {
-		$payment_method   = self::get_payment_method_from_request( $request );
-		$token            = self::get_token_from_request( $request );
-		$cvc_confirmation = self::get_cvc_confirmation_from_request( $request );
-		$fingerprint      = self::get_fingerprint_from_request( $request );
-
 		$is_agentic_commerce_request =
 			null !== $order
 			&& is_string( $order->get_meta( 'checkout_session_id', true ) )
 			&& ! empty( $request['wc-agentic_commerce-token'] )
 			&& ! empty( $request['wc-agentic_commerce-provider'] );
+
+		$payment_method   = self::get_payment_method_from_request( $request, $is_agentic_commerce_request );
+		$token            = self::get_token_from_request( $request );
+		$cvc_confirmation = self::get_cvc_confirmation_from_request( $request );
+		$fingerprint      = self::get_fingerprint_from_request( $request );
 
 		if ( isset( $request['is_woopay'] ) && $request['is_woopay'] ) {
 			$order->add_meta_data( 'is_woopay', true, true );
@@ -307,11 +307,14 @@ class Payment_Information {
 	 * Extracts the payment method from the provided request.
 	 *
 	 * @param array $request Associative array containing payment request information.
+	 * @param bool  $is_agentic_commerce_request Whether the current order is processed by Agentic Commerce.
 	 *
 	 * @return string
 	 */
-	public static function get_payment_method_from_request( array $request ): string {
-		$keys_to_check = [ 'wc-agentic_commerce-token', 'wcpay-payment-method', 'wcpay-payment-method-sepa' ];
+	public static function get_payment_method_from_request( array $request, bool $is_agentic_commerce_request = false ): string {
+		$keys_to_check = $is_agentic_commerce_request
+			? [ 'wc-agentic_commerce-token' ]
+			: [ 'wcpay-payment-method', 'wcpay-payment-method-sepa' ];
 
 		foreach ( $keys_to_check as $key ) {
 			if ( ! empty( $request[ $key ] ) ) {
