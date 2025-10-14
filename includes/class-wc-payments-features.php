@@ -30,6 +30,7 @@ class WC_Payments_Features {
 	const WOOPAY_GLOBAL_THEME_SUPPORT_FLAG_NAME               = '_wcpay_feature_woopay_global_theme_support';
 	const WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME = '_wcpay_feature_dynamic_checkout_place_order_button';
 	const ACCOUNT_DETAILS_FLAG_NAME                           = '_wcpay_feature_account_details';
+	const AGENTIC_COMMERCE_FLAG_NAME                          = '_wcpay_feature_agentic_commerce';
 
 	/**
 	 * Indicates whether card payments are enabled for this (Stripe) account.
@@ -348,6 +349,15 @@ class WC_Payments_Features {
 	 */
 	public static function is_account_details_enabled(): bool {
 		return '1' === get_option( self::ACCOUNT_DETAILS_FLAG_NAME, '0' );
+	}
+
+	/**
+	 * Checks whether the Agentic Commerce feature is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_agentic_commerce_enabled(): bool {
+		return '1' === get_option( self::AGENTIC_COMMERCE_FLAG_NAME, '0' );
 	}
 
 	/**
