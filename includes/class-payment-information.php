@@ -16,7 +16,6 @@ use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Capture_Type;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
-use WCPay\Payment_Methods\CC_Payment_Gateway;
 
 /**
  * Mostly a wrapper containing information on a single payment.
@@ -276,11 +275,8 @@ class Payment_Information {
 		?Payment_Capture_Type $manual_capture = null,
 		?string $payment_method_stripe_id = null
 	): Payment_Information {
-		$is_agentic_commerce_request =
-			null !== $order
-			&& is_string( $order->get_meta( 'checkout_session_id', true ) )
-			&& ! empty( $request['wc-agentic_commerce-token'] )
-			&& ! empty( $request['wc-agentic_commerce-provider'] );
+		$is_agentic_commerce_request = method_exists( 'Automattic\\WooCommerce\\StoreApi\\Utilities\\AgenticCheckoutUtils', 'is_agentic_commerce_session' )
+			&& \Automattic\WooCommerce\StoreApi\Utilities\AgenticCheckoutUtils::is_agentic_commerce_session();
 
 		$payment_method   = self::get_payment_method_from_request( $request, $is_agentic_commerce_request );
 		$token            = self::get_token_from_request( $request );

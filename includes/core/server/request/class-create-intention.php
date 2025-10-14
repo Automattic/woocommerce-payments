@@ -55,7 +55,7 @@ class Create_Intention extends Request {
 	 */
 	public function set_payment_method( string $payment_method_id ) {
 		// Including the 'card' prefix to support subscription renewals using legacy payment method IDs.
-		$this->validate_stripe_id( $payment_method_id, [ 'pm', 'src', 'card' ] );
+		$this->validate_stripe_id( $payment_method_id, [ 'pm', 'src', 'card', 'spt' ] );
 		$this->set_param( 'payment_method', $payment_method_id );
 	}
 

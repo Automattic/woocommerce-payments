@@ -2130,8 +2130,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return array List of payment methods.
 	 */
 	public function get_payment_method_types( $payment_information ): array {
-		// @todo - this change is temporary, must be fixed!
-		$requested_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? 'card' ) ); // phpcs:ignore WordPress.Security.NonceVerification
+		$requested_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
 		$token                    = $payment_information->get_payment_token();
 
 		if ( ! empty( $requested_payment_method ) ) {
@@ -2142,6 +2141,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$order           = $payment_information->get_order();
 			$order_id        = $order instanceof WC_Order ? $order->get_id() : null;
 			$payment_methods = $this->get_payment_methods_from_gateway_id( $token->get_gateway_id(), $order_id );
+		} elseif ( $payment_information->is_agentic_commerce_request() ) {
+			$payment_methods = $this->get_agentic_commerce_payment_methods();
 		}
 
 		return $payment_methods;
