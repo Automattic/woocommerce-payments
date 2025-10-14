@@ -179,6 +179,38 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Ensure related subscriptions section is removed from order detail view.
+	 */
+	public function test_remove_related_subscriptions_section() {
+		if ( ! class_exists( 'WC_Subscriptions_Order' ) ) {
+			$this->markTestSkipped( 'Subscriptions core not available.' );
+		}
+
+		add_action(
+			'woocommerce_order_details_after_order_table',
+			[ 'WC_Subscriptions_Order', 'add_subscriptions_to_view_order_templates' ],
+			10,
+			1
+		);
+
+		$this->assertNotFalse(
+			has_action(
+				'woocommerce_order_details_after_order_table',
+				[ 'WC_Subscriptions_Order', 'add_subscriptions_to_view_order_templates' ]
+			)
+		);
+
+		$this->disabler->remove_related_subscriptions_section();
+
+		$this->assertFalse(
+			has_action(
+				'woocommerce_order_details_after_order_table',
+				[ 'WC_Subscriptions_Order', 'add_subscriptions_to_view_order_templates' ]
+			)
+		);
+	}
+
+	/**
 	 * Verify that admin subscription screens are redirected away.
 	 */
 	public function test_maybe_block_admin_subscription_screen_redirects() {

@@ -33,6 +33,7 @@ class WC_Payments_Subscriptions_Disabler {
 
 		add_filter( 'woocommerce_account_menu_items', [ $this, 'remove_account_menu_item' ], PHP_INT_MAX );
 		add_action( 'template_redirect', [ $this, 'maybe_redirect_account_endpoints' ] );
+		add_action( 'init', [ $this, 'remove_related_subscriptions_section' ], PHP_INT_MAX );
 	}
 
 	/**
@@ -142,10 +143,6 @@ class WC_Payments_Subscriptions_Disabler {
 	 * @return void
 	 */
 	public function maybe_redirect_account_endpoints() {
-		if ( ! is_account_page() ) {
-			return;
-		}
-
 		foreach ( $this->get_blocked_account_endpoints() as $endpoint ) {
 			if ( empty( $endpoint ) ) {
 				continue;
@@ -154,6 +151,21 @@ class WC_Payments_Subscriptions_Disabler {
 			if ( $this->is_endpoint_url( $endpoint ) ) {
 				$this->redirect( wc_get_page_permalink( 'myaccount' ) );
 			}
+		}
+	}
+
+	/**
+	 * Removes the related subscriptions section from order details.
+	 *
+	 * @return void
+	 */
+	public function remove_related_subscriptions_section() {
+		if ( class_exists( 'WC_Subscriptions_Order' ) ) {
+			remove_action(
+				'woocommerce_order_details_after_order_table',
+				[ 'WC_Subscriptions_Order', 'add_subscriptions_to_view_order_templates' ],
+				10
+			);
 		}
 	}
 
