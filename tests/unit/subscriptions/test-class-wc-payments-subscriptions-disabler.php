@@ -125,6 +125,60 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Ensure subscription WooCommerce settings tab is removed.
+	 */
+	public function test_filter_settings_tabs_removes_subscription_tab() {
+		$tabs = [
+			'general'       => 'General',
+			'subscriptions' => 'Subscriptions',
+			'payments'      => 'Payments',
+		];
+
+		$result = $this->disabler->filter_settings_tabs( $tabs );
+
+		$this->assertArrayHasKey( 'general', $result );
+		$this->assertArrayHasKey( 'payments', $result );
+		$this->assertArrayNotHasKey( 'subscriptions', $result );
+	}
+
+	/**
+	 * Ensure direct navigation to the subscriptions settings tab is redirected.
+	 */
+	public function test_maybe_redirect_settings_tab_redirects_subscription_tab() {
+		$_GET['page'] = 'wc-settings';
+		$_GET['tab']  = 'subscriptions';
+
+		$this->disabler->maybe_redirect_settings_tab();
+
+		$this->assertSame(
+			add_query_arg(
+				[
+					'page' => 'wc-settings',
+					'tab'  => 'general',
+				],
+				admin_url( 'admin.php' )
+			),
+			$this->disabler->redirected_to
+		);
+
+		unset( $_GET['page'], $_GET['tab'] );
+	}
+
+	/**
+	 * Ensure non-subscription tabs ignore settings redirect logic.
+	 */
+	public function test_maybe_redirect_settings_tab_ignores_other_tabs() {
+		$_GET['page'] = 'wc-settings';
+		$_GET['tab']  = 'payments';
+
+		$this->disabler->maybe_redirect_settings_tab();
+
+		$this->assertNull( $this->disabler->redirected_to );
+
+		unset( $_GET['page'], $_GET['tab'] );
+	}
+
+	/**
 	 * Verify that admin subscription screens are redirected away.
 	 */
 	public function test_maybe_block_admin_subscription_screen_redirects() {

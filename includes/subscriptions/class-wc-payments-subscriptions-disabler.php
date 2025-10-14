@@ -27,6 +27,8 @@ class WC_Payments_Subscriptions_Disabler {
 			add_action( 'admin_menu', [ $this, 'remove_admin_menu_items' ], PHP_INT_MAX );
 			add_action( 'current_screen', [ $this, 'maybe_block_admin_subscription_screen' ] );
 			add_filter( 'product_type_selector', [ $this, 'filter_product_type_selector' ], PHP_INT_MAX );
+			add_filter( 'woocommerce_settings_tabs_array', [ $this, 'filter_settings_tabs' ], PHP_INT_MAX );
+			add_action( 'admin_init', [ $this, 'maybe_redirect_settings_tab' ], PHP_INT_MAX );
 		}
 
 		add_filter( 'woocommerce_account_menu_items', [ $this, 'remove_account_menu_item' ], PHP_INT_MAX );
@@ -92,6 +94,46 @@ class WC_Payments_Subscriptions_Disabler {
 		unset( $product_types['subscription'], $product_types['variable-subscription'] );
 
 		return $product_types;
+	}
+
+	/**
+	 * Removes subscription tab from WooCommerce settings.
+	 *
+	 * @param array $tabs Registered WooCommerce settings tabs.
+	 * @return array
+	 */
+	public function filter_settings_tabs( $tabs ) {
+		unset( $tabs['subscriptions'] );
+
+		return $tabs;
+	}
+
+	/**
+	 * Redirects attempts to access the removed subscriptions settings tab.
+	 *
+	 * @return void
+	 */
+	public function maybe_redirect_settings_tab() {
+		if ( empty( $_GET['page'] ) || empty( $_GET['tab'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return;
+		}
+
+		$page = sanitize_key( wp_unslash( $_GET['page'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		$tab  = sanitize_key( wp_unslash( $_GET['tab'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+
+		if ( 'wc-settings' !== $page || 'subscriptions' !== $tab ) {
+			return;
+		}
+
+		$this->redirect(
+			add_query_arg(
+				[
+					'page' => 'wc-settings',
+					'tab'  => 'general',
+				],
+				admin_url( 'admin.php' )
+			)
+		);
 	}
 
 	/**
