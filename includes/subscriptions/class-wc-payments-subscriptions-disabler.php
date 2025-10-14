@@ -24,16 +24,16 @@ class WC_Payments_Subscriptions_Disabler {
 	 */
 	public function init_hooks() {
 		if ( is_admin() ) {
-			add_action( 'admin_menu', [ $this, 'remove_admin_menu_items' ], PHP_INT_MAX );
+			add_action( 'admin_menu', [ $this, 'remove_admin_menu_items' ], 99 );
 			add_action( 'current_screen', [ $this, 'maybe_block_admin_subscription_screen' ] );
-			add_filter( 'product_type_selector', [ $this, 'filter_product_type_selector' ], PHP_INT_MAX );
-			add_filter( 'woocommerce_settings_tabs_array', [ $this, 'filter_settings_tabs' ], PHP_INT_MAX );
-			add_action( 'admin_init', [ $this, 'maybe_redirect_settings_tab' ], PHP_INT_MAX );
+			add_filter( 'product_type_selector', [ $this, 'filter_product_type_selector' ], 99 );
+			add_filter( 'woocommerce_settings_tabs_array', [ $this, 'filter_settings_tabs' ], 99 );
+			add_action( 'admin_init', [ $this, 'maybe_redirect_settings_tab' ], 99 );
 		}
 
-		add_filter( 'woocommerce_account_menu_items', [ $this, 'remove_account_menu_item' ], PHP_INT_MAX );
+		add_filter( 'woocommerce_account_menu_items', [ $this, 'remove_account_menu_item' ], 99 );
 		add_action( 'template_redirect', [ $this, 'maybe_redirect_account_endpoints' ] );
-		add_action( 'init', [ $this, 'remove_related_subscriptions_section' ], PHP_INT_MAX );
+		add_action( 'init', [ $this, 'remove_related_subscriptions_section' ], 99 );
 	}
 
 	/**
