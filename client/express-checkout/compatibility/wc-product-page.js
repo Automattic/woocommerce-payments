@@ -25,12 +25,7 @@ jQuery( ( $ ) => {
 	}
 
 	const $quantityInput = $( '.quantity' );
-	const addToCartButton = $( '.single_add_to_cart_button' );
 	const handleQuantityChange = () => {
-		// First check if product can be added to cart.
-		if ( addToCartButton.is( '.disabled' ) ) {
-			return;
-		}
 		expressCheckoutButtonUi.blockButton();
 	};
 	$quantityInput.on( 'input', '.qty', handleQuantityChange );
