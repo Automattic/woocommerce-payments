@@ -137,17 +137,17 @@ class Payment_Information {
 	/**
 	 * Payment information constructor.
 	 *
-	 * @param string               $payment_method The ID of the payment method used for this payment.
-	 * @param \WC_Order            $order The order object.
-	 * @param Payment_Type         $payment_type The type of the payment.
-	 * @param \WC_Payment_Token    $token The payment token used for this payment.
-	 * @param Payment_Initiated_By $payment_initiated_by Indicates whether the payment is merchant-initiated or customer-initiated.
-	 * @param Payment_Capture_Type $manual_capture Indicates whether the payment will be only authorized or captured immediately.
-	 * @param string               $cvc_confirmation The CVC confirmation for this payment method.
-	 * @param string               $fingerprint The attached fingerprint.
-	 * @param string               $payment_method_stripe_id The Stripe ID of the payment method used for this payment.
-	 * @param string               $customer_id The WCPay Customer ID that owns the payment token.
-	 * @param bool                 $is_agentic_commerce_request Whether the current order is processed by Agentic Commerce.
+	 * @param string                    $payment_method The ID of the payment method used for this payment.
+	 * @param \WC_Order|null            $order The order object.
+	 * @param Payment_Type|null         $payment_type The type of the payment.
+	 * @param \WC_Payment_Token|null    $token The payment token used for this payment.
+	 * @param Payment_Initiated_By|null $payment_initiated_by Indicates whether the payment is merchant-initiated or customer-initiated.
+	 * @param Payment_Capture_Type|null $manual_capture Indicates whether the payment will be only authorized or captured immediately.
+	 * @param string|null               $cvc_confirmation The CVC confirmation for this payment method.
+	 * @param string                    $fingerprint The attached fingerprint.
+	 * @param string|null               $payment_method_stripe_id The Stripe ID of the payment method used for this payment.
+	 * @param string|null               $customer_id The WCPay Customer ID that owns the payment token.
+	 * @param bool                      $is_agentic_commerce_request Whether the current order is processed by Agentic Commerce.
 	 *
 	 * @throws Invalid_Payment_Method_Exception When no payment method is found in the provided request.
 	 */
