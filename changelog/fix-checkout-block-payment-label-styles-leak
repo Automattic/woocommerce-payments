@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Prevent WooPayments-specific styles for the Checkout block to leak to other payment methods

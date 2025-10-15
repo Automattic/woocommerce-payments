@@ -217,12 +217,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->disableOriginalConstructor()
 			->setMethods(
 				[
-					'get_account_data',
 					'is_server_connected',
 					'get_blog_id',
-					'create_intention',
-					'create_and_confirm_intention',
-					'create_and_confirm_setup_intent',
 					'get_payment_method',
 					'get_timeline',
 					'get_latest_fraud_ruleset',

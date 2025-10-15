@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Prevent Express Checkout from being disabled on product page when updating quantity of variable products.
