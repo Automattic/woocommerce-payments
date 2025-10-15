@@ -66,8 +66,8 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 			'wc_payments_http',
 			[ $this, 'replace_http_client' ]
 		);
-		$this->customer_service     = new WC_Payments_Customer_Service( WC_Payments::create_api_client(), WC_Payments::get_account_service(), WC_Payments::get_database_cache(), WC_Payments::get_session_service(), WC_Payments::get_order_service() );
-		$this->customer_service_api = new WC_Payments_Customer_Service_API( $this->customer_service );
+		$this->customer_service     = new WC_Payments_Customer_Service( WC_Payments::create_api_client(), WC_Payments::get_account_service(), WC_Payments::get_session_service(), WC_Payments::get_order_service() );
+		$this->customer_service_api = new WC_Payments_Customer_Service_API( $this->customer_service, WC_Payments::get_token_service() );
 	}
 
 	/**
@@ -80,7 +80,7 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 		);
 
 		// Clear the cache after each test.
-		$this->customer_service->delete_cached_payment_methods();
+		$this->customer_service_api->delete_cached_payment_methods();
 
 		parent::tear_down();
 	}
@@ -413,57 +413,6 @@ class WC_Payments_Customer_Service_API_Test extends WCPAY_UnitTestCase {
 		$this->expectException( API_Exception::class );
 		$this->expectExceptionMessage( 'No such payment method' );
 		$this->customer_service_api->update_payment_method_with_billing_details_from_order( 'pm_mock', $order );
-	}
-
-
-	/**
-	 * Test clearing cached payment methods.
-	 *
-	 * @return void
-	 */
-	public function test_clear_cached_payment_methods_for_user() {
-		// get payment methods for a customer so that it gets cached.
-		$mock_payment_methods = [
-			[ 'id' => 'pm_mock1' ],
-			[ 'id' => 'pm_mock2' ],
-		];
-		$this->mock_http_client
-			->expects( $this->exactly( 1 ) )
-			->method( 'remote_request' )
-			->with(
-				$this->callback(
-					function ( $data ): bool {
-						$this->assertSame( 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/payment_methods?test_mode=0&customer=cus_123&type=card&limit=100', $data['url'] );
-						$this->assertSame( 'GET', $data['method'] );
-						return true;
-					}
-				)
-			)->willReturn(
-				[
-					'body'     => wp_json_encode( [ 'data' => $mock_payment_methods ] ),
-					'response' => [
-						'code'    => 200,
-						'message' => 'OK',
-					],
-				]
-			);
-		$response = $this->customer_service_api->get_payment_methods_for_customer( 'cus_123' );
-		$this->assertEquals( $mock_payment_methods, $response );
-
-		// check if we can retrieve from cache.
-		$db_cache       = WC_Payments::get_database_cache();
-		$cache_response = $db_cache->get( Database_Cache::PAYMENT_METHODS_KEY_PREFIX . 'cus_123_card' );
-		$this->assertEquals( $mock_payment_methods, $cache_response );
-
-		// set up the user for customer.
-		update_user_option( 1, self::CUSTOMER_LIVE_META_KEY, 'cus_123' );
-
-		// run the method.
-		$this->customer_service_api->clear_cached_payment_methods_for_user( 1 );
-
-		// check that cache is empty.
-		$cache_response = $db_cache->get( Database_Cache::PAYMENT_METHODS_KEY_PREFIX . 'cus_123_card' );
-		$this->assertEquals( null, $cache_response );
 	}
 
 	/**
