@@ -1059,8 +1059,16 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @return bool Whether to save the payment method.
 	 */
 	public function should_save_payment_method_for_subscription( $order_id ) {
-		// Current implementation: always save payment method for all subscriptions
-		// This will make our test fail initially (Red phase of TDD).
+		$subscriptions = wcs_get_subscriptions_for_order( $order_id );
+
+		foreach ( $subscriptions as $subscription ) {
+			// Don't save payment method for manual subscriptions.
+			if ( $subscription->is_manual() ) {
+				return false;
+			}
+		}
+
+		// For automatic subscriptions, always save payment method.
 		return true;
 	}
 }
