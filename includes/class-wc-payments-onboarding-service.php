@@ -124,11 +124,9 @@ class WC_Payments_Onboarding_Service {
 	 * The data is retrieved from the server and is cached. If we can't retrieve, we will use whatever data we have.
 	 *
 	 * @param string $locale The locale to use to i18n the data.
-	 * @param bool   $force_refresh Forces data to be fetched from the server, rather than using the cache.
-	 *
 	 * @return ?array Fields data, or NULL if failed to retrieve.
 	 */
-	public function get_fields_data( string $locale = '', bool $force_refresh = false ): ?array {
+	public function get_fields_data( string $locale = '' ): ?array {
 		// If we don't have a server connection, return what data we currently have, regardless of expiry.
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			return $this->database_cache->get( Database_Cache::ONBOARDING_FIELDS_DATA_KEY, true );
@@ -152,8 +150,7 @@ class WC_Payments_Onboarding_Service {
 
 				return $fields_data;
 			},
-			'__return_true',
-			$force_refresh
+			'__return_true'
 		);
 	}
 
@@ -418,16 +415,12 @@ class WC_Payments_Onboarding_Service {
 	/**
 	 * Gets and caches the business types per country from the server.
 	 *
-	 * @param bool $force_refresh Forces data to be fetched from the server, rather than using the cache.
-	 *
 	 * @return array|bool Business types, or false if failed to retrieve.
 	 */
-	public function get_cached_business_types( bool $force_refresh = false ) {
+	public function get_cached_business_types() {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			return [];
 		}
-
-		$refreshed = false;
 
 		$business_types = $this->database_cache->get_or_add(
 			Database_Cache::BUSINESS_TYPES_KEY,
@@ -445,9 +438,7 @@ class WC_Payments_Onboarding_Service {
 
 				return $business_types;
 			},
-			[ $this, 'is_valid_cached_business_types' ],
-			$force_refresh,
-			$refreshed
+			[ $this, 'is_valid_cached_business_types' ]
 		);
 
 		if ( null === $business_types ) {
