@@ -2641,8 +2641,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	 * Gather the latest store setup state and send it to the Transact Platform.
 	 *
 	 * @return void
-	 *
-	 * @throws Throwable When the sync fails.
 	 */
 	public function store_setup_sync() {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
@@ -2654,7 +2652,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			$this->payments_api_client->send_store_setup( $this->get_store_setup_details() );
 		} catch ( Throwable $e ) {
 			Logger::error( 'Failed to sync store setup state with the Transact Platform: ' . $e->getMessage() );
-			throw $e;
 		}
 	}
 
