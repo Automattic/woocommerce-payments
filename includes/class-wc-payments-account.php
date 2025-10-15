@@ -2698,16 +2698,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		}
 		$provider_capabilities_available = array_unique( array_merge( $provider_capabilities_enabled, $provider_capabilities_disabled ) );
 
-		// Get active plugins using the PluginUtil from WC, if available.
-		$wc_plugin_util = null;
-		try {
-			$wc_plugin_util = wc_get_container()->get( PluginUtil::class );
-		} catch ( Exception $e ) {
-			// If we can't get the PluginUtil, we won't be able to get the active plugins.
-			// This is not a critical failure, so we can log it and continue.
-			Logger::error( 'Failed to get PluginUtil: ' . $e->getMessage() );
-		}
-
 		return [
 			// The WooPayments setup details.
 			'gateway'                => [
@@ -2771,17 +2761,19 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				'name'           => get_bloginfo( 'name' ),
 				'url'            => home_url(),
 				'active_theme'   => $this->get_store_theme_details(),
-				'active_plugins' => ! empty( $wc_plugin_util ) ? $wc_plugin_util->get_all_active_valid_plugins() : [],
+				'active_plugins' => $this->get_store_active_plugins(),
 				'version'        => get_bloginfo( 'version' ),
 				'locale'         => get_locale(),
 			],
 			'wc_setup'               => [
-				'version'                  => defined( 'WC_VERSION' ) ? explode( '-', WC_VERSION, 2 )[0] : '',
-				'store_id'                 => get_option( 'woocommerce_store_id', null ),
-				'currency'                 => get_woocommerce_currency(),
-				'tracking_enabled'         => WC_Site_Tracking::is_tracking_enabled(),
-				'wc_subscriptions_active'  => $gateway->is_subscriptions_plugin_active(),
-				'wc_subscriptions_version' => $gateway->get_subscriptions_plugin_version(),
+				'version'                     => defined( 'WC_VERSION' ) ? explode( '-', WC_VERSION, 2 )[0] : '',
+				'store_id'                    => get_option( 'woocommerce_store_id', null ),
+				'currency'                    => get_woocommerce_currency(),
+				'tracking_enabled'            => WC_Site_Tracking::is_tracking_enabled(),
+				'registered_payment_gateways' => $this->get_store_registered_gateway_ids(),
+				'enabled_payment_gateways'    => $this->get_store_enabled_gateway_ids(),
+				'wc_subscriptions_active'     => $gateway->is_subscriptions_plugin_active(),
+				'wc_subscriptions_version'    => $gateway->get_subscriptions_plugin_version(),
 			],
 		];
 	}
@@ -2792,18 +2784,109 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	 * @return array Store theme details.
 	 */
 	private function get_store_theme_details(): array {
-		$theme_data           = wp_get_theme();
-		$theme_child_theme    = wc_bool_to_string( is_child_theme() );
-		$theme_wc_support     = wc_bool_to_string( current_theme_supports( 'woocommerce' ) );
-		$theme_is_block_theme = wc_bool_to_string( wp_is_block_theme() );
+		$theme_data = wp_get_theme();
 
 		return [
 			'name'        => $theme_data->Name, // @phpcs:ignore
 			'version'     => $theme_data->Version, // @phpcs:ignore
-			'child_theme' => $theme_child_theme,
-			'wc_support'  => $theme_wc_support,
-			'block_theme' => $theme_is_block_theme,
+			'child_theme' => is_child_theme(),
+			'wc_support'  => current_theme_supports( 'woocommerce' ),
+			'block_theme' => wp_is_block_theme(),
 		];
+	}
+
+	/**
+	 * Gathers the current store active (and valid) plugins.
+	 *
+	 * @return array Store active plugins details with each plugin slug and version.
+	 */
+	private function get_store_active_plugins(): array {
+		if ( ! function_exists( 'get_plugins' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+		$all_plugins = get_plugins();
+		if ( empty( $all_plugins ) ) {
+			return [];
+		}
+
+		// Get active plugins using the PluginUtil from WC, if available.
+		$wc_plugin_util = null;
+		try {
+			$wc_plugin_util = wc_get_container()->get( PluginUtil::class );
+		} catch ( Exception $e ) {
+			// If we can't get the PluginUtil, we won't be able to get the active plugins.
+			// This is not a critical failure, so we can log it and continue.
+			Logger::error( 'Failed to get PluginUtil: ' . $e->getMessage() );
+		}
+
+		$plugins_list = [];
+
+		$active_plugin_ids = ! empty( $wc_plugin_util ) ? $wc_plugin_util->get_all_active_valid_plugins() : wp_get_active_and_valid_plugins();
+		foreach ( $active_plugin_ids as $plugin_file ) {
+			if ( isset( $all_plugins[ $plugin_file ] ) ) {
+				$plugin_data                  = $all_plugins[ $plugin_file ];
+				$plugins_list[ $plugin_file ] = [
+					'name'     => $plugin_data['Name'],
+					'slug'     => dirname( $plugin_file ),
+					'version'  => $plugin_data['Version'],
+					'wc_aware' => ! empty( $wc_plugin_util ) ? $wc_plugin_util->is_woocommerce_aware_plugin( $plugin_data ) : null,
+				];
+			}
+		}
+
+		return array_values( $plugins_list );
+	}
+
+	/**
+	 * Gets the IDs of all payment gateways registered in the store.
+	 *
+	 * @return array Array of payment gateway IDs.
+	 */
+	private function get_store_registered_gateway_ids(): array {
+		$payment_gateways = WC()->payment_gateways()->payment_gateways();
+		if ( empty( $payment_gateways ) ) {
+			return [];
+		}
+
+		// Go through the gateways and get their IDs.
+		return array_unique(
+			array_values(
+				array_filter(
+					array_map(
+						function ( $gateway ) {
+							return $gateway->id ?? null;
+						},
+						$payment_gateways
+					)
+				)
+			)
+		);
+	}
+
+	/**
+	 * Gets the IDs of all enabled payment gateways registered in the store.
+	 *
+	 * @return array Array of enabled payment gateway IDs.
+	 */
+	private function get_store_enabled_gateway_ids(): array {
+		$payment_gateways = WC()->payment_gateways()->payment_gateways();
+		if ( empty( $payment_gateways ) ) {
+			return [];
+		}
+
+		// Go through the gateways and get the IDs of enabled ones.
+		return array_unique(
+			array_values(
+				array_filter(
+					array_map(
+						function ( $gateway ) {
+							return ( $gateway instanceof WC_Payment_Gateway && wc_string_to_bool( $gateway->enabled ) ) ? $gateway->id : null;
+						},
+						$payment_gateways
+					)
+				)
+			)
+		);
 	}
 
 	/**
