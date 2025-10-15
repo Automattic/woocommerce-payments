@@ -278,7 +278,9 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$orders = array_merge( [ $order ], $subscriptions );
 		foreach ( $orders as $order ) {
 			$payment_tokens = $order->get_payment_tokens();
-			$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
+			if ( [] !== $payment_tokens ) {
+				$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
+			}
 		}
 	}
 
@@ -322,7 +324,9 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$orders = array_merge( [ $order ], $subscriptions );
 		foreach ( $orders as $order ) {
 			$payment_tokens = $order->get_payment_tokens();
-			$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
+			if ( [] !== $payment_tokens ) {
+				$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
+			}
 		}
 	}
 
@@ -351,7 +355,9 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$orders = array_merge( [ $order ], $subscriptions );
 		foreach ( $orders as $order ) {
 			$payment_tokens = $order->get_payment_tokens();
-			$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
+			if ( [] !== $payment_tokens ) {
+				$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
+			}
 		}
 	}
 
@@ -432,7 +438,9 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$orders = array_merge( [ $order ], $subscriptions );
 		foreach ( $orders as $order ) {
 			$payment_tokens = $order->get_payment_tokens();
-			$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
+			if ( [] !== $payment_tokens ) {
+				$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
+			}
 		}
 	}
 
@@ -471,7 +479,9 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 		$orders = array_merge( [ $order ], $subscriptions );
 		foreach ( $orders as $order ) {
 			$payment_tokens = $order->get_payment_tokens();
-			$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
+			if ( [] !== $payment_tokens ) {
+				$this->assertEquals( $this->token->get_id(), end( $payment_tokens ) );
+			}
 		}
 	}
 

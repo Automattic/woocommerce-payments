@@ -14,7 +14,6 @@ use WCPay\Exceptions\API_Exception;
  */
 class WC_Payments_Invoice_Service_Test extends WCPAY_UnitTestCase {
 
-	const PRICE_ID_KEY                       = '_wcpay_product_price_id';
 	const PENDING_INVOICE_ID_KEY             = '_wcpay_pending_invoice_id';
 	const ORDER_INVOICE_ID_KEY               = '_wcpay_billing_invoice_id';
 	const SUBSCRIPTION_ID_META_KEY           = '_wcpay_subscription_id';
@@ -24,16 +23,22 @@ class WC_Payments_Invoice_Service_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Mock WC_Payments_API_Client.
 	 *
-	 * @var WC_Payments_API_Client|MockObject
+	 * @var WC_Payments_API_Client&MockObject
 	 */
 	private $mock_api_client;
 
 	/**
-	 * Mock WC_Payments_Product_Service.
+	 * Mock WC_Payments_Order_Service.
 	 *
-	 * @var WC_Payments_Product_Service|MockObject
+	 * @var WC_Payments_Order_Service&MockObject
 	 */
-	private $mock_product_service;
+	private $mock_order_service;
+
+	/**
+	 * Invoice Service under test.
+	 * @var WC_Payments_Invoice_Service
+	 */
+	private $invoice_service;
 
 	/**
 	 * Pre-test setup
@@ -41,10 +46,9 @@ class WC_Payments_Invoice_Service_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
-		$this->mock_api_client      = $this->createMock( WC_Payments_API_Client::class );
-		$this->mock_product_service = $this->createMock( WC_Payments_Product_Service::class );
-		$this->mock_order_service   = $this->createMock( WC_Payments_Order_Service::class );
-		$this->invoice_service      = new WC_Payments_Invoice_Service( $this->mock_api_client, $this->mock_product_service, $this->mock_order_service );
+		$this->mock_api_client    = $this->createMock( WC_Payments_API_Client::class );
+		$this->mock_order_service = $this->createMock( WC_Payments_Order_Service::class );
+		$this->invoice_service    = new WC_Payments_Invoice_Service( $this->mock_api_client, $this->mock_order_service );
 	}
 
 	/**
@@ -137,6 +141,7 @@ class WC_Payments_Invoice_Service_Test extends WCPAY_UnitTestCase {
 		$mock_order        = WC_Helper_Order::create_order();
 		$mock_subscription = new WC_Subscription();
 
+		$mock_subscription->payment_tokens = [ uniqid( 'pm_' ) ];
 		$mock_subscription->payment_method = 'woocommerce_payments';
 		$mock_subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, 'sub_123abc' );
 		$mock_subscription->save();
@@ -226,7 +231,7 @@ class WC_Payments_Invoice_Service_Test extends WCPAY_UnitTestCase {
 			->method( 'update_subscription' );
 
 		$invoice_service = $this->getMockBuilder( WC_Payments_Invoice_Service::class )
-			->setConstructorArgs( [ $this->mock_api_client, $this->mock_product_service, $this->mock_order_service ] )
+			->setConstructorArgs( [ $this->mock_api_client, $this->mock_order_service ] )
 			->onlyMethods( [ 'get_recurring_items', 'get_wcpay_item_id' ] )
 			->getMock();
 
@@ -346,7 +351,7 @@ class WC_Payments_Invoice_Service_Test extends WCPAY_UnitTestCase {
 
 		// Create a partial mock of the invoice service.
 		$invoice_service = $this->getMockBuilder( WC_Payments_Invoice_Service::class )
-			->setConstructorArgs( [ $this->mock_api_client, $this->mock_product_service, $this->mock_order_service ] )
+			->setConstructorArgs( [ $this->mock_api_client, $this->mock_order_service ] )
 			->onlyMethods( [ 'get_recurring_items', 'get_wcpay_item_id' ] )
 			->getMock();
 
