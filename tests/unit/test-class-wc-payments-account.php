@@ -3664,10 +3664,14 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$captured_data = null;
 		$this->mock_api_client->expects( $this->once() )
 			->method( 'send_store_setup' )
-			->willReturnCallback(
-				function ( $data ) use ( &$captured_data ) {
-					$captured_data = $data;
-				}
+			->with(
+				$this->callback(
+					function ( $data ) use ( &$captured_data ) {
+						$captured_data = $data;
+
+						return is_array( $data );
+					}
+				)
 			);
 
 		// Act: Call store_setup_sync.
