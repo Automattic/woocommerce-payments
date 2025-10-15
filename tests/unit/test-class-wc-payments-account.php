@@ -3617,19 +3617,19 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		);
 		$mock_gateway->method( 'get_upe_available_payment_methods' )->willReturn( [ 'card', 'bancontact', 'eps', 'ideal', 'p24', 'klarna', 'multibanco', 'alipay', 'wechat_pay' ] );
 		$mock_gateway->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ 'card', 'klarna' ] );
-		$mock_gateway->method( 'get_payment_method_capability_key_map' )->willReturn(
-			[
-				'card'       => 'card_payments',
-				'bancontact' => 'bancontact_payments',
-				'eps'        => 'eps_payments',
-				'ideal'      => 'ideal_payments',
-				'p24'        => 'p24_payments',
-				'klarna'     => 'klarna_payments',
-				'multibanco' => 'multibanco_payments',
-				'alipay'     => 'alipay_payments',
-				'wechat_pay' => 'wechat_payments',
-			]
-		);
+
+		$payment_method_capability_map = [
+			'card'       => 'card_payments',
+			'bancontact' => 'bancontact_payments',
+			'eps'        => 'eps_payments',
+			'ideal'      => 'ideal_payments',
+			'p24'        => 'p24_payments',
+			'klarna'     => 'klarna_payments',
+			'multibanco' => 'multibanco_payments',
+			'alipay'     => 'alipay_payments',
+			'wechat_pay' => 'wechat_payments',
+		];
+		$mock_gateway->method( 'get_payment_method_capability_key_map' )->willReturn( $payment_method_capability_map );
 		$mock_gateway->method( 'find_duplicates' )->willReturn( [ 'card' => [ 'woocommerce_payments', 'some_other_gateway' ] ] );
 		$mock_gateway->method( 'get_option' )->willReturnCallback(
 			function ( $key, $default = null ) {
@@ -3652,8 +3652,13 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		);
 		$mock_gateway->method( 'is_saved_cards_enabled' )->willReturn( true );
 
-		// Mock WC_Payments static methods.
+		// Replace the real gateway with the mock.
 		WC_Payments::set_gateway( $mock_gateway );
+
+		// Set the account mode to test mode.
+		WC_Payments::mode()->test();
+		// Set the onboarding to test mode.
+		WC_Payments::mode()->test_mode_onboarding();
 
 		// Capture the argument passed to send_store_setup.
 		$captured_data = null;
@@ -3668,6 +3673,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		// Act: Call store_setup_sync.
 		$this->wcpay_account->store_setup_sync();
 
+		$this->assertIsArray( $captured_data, 'Expected send_store_setup to be called with an array argument.' );
 		// Assert: Verify that the data structure contains expected top-level keys.
 		$this->assertArrayHasKey( 'gateway', $captured_data );
 		$this->assertArrayHasKey( 'payment_methods', $captured_data );
@@ -3689,6 +3695,8 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertArrayHasKey( 'test_mode', $captured_data['gateway'] );
 		$this->assertArrayHasKey( 'test_mode_onboarding', $captured_data['gateway'] );
 		$this->assertTrue( $captured_data['gateway']['enabled'] );
+		$this->assertTrue( $captured_data['gateway']['test_mode'] );
+		$this->assertTrue( $captured_data['gateway']['test_mode_onboarding'] );
 
 		// Assert: Verify payment_methods sub-entries and values.
 		$this->assertArrayHasKey( 'available', $captured_data['payment_methods'] );
@@ -3704,9 +3712,18 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertArrayHasKey( 'available', $captured_data['provider_capabilities'] );
 		$this->assertArrayHasKey( 'enabled', $captured_data['provider_capabilities'] );
 		$this->assertArrayHasKey( 'disabled', $captured_data['provider_capabilities'] );
-		$this->assertContains( 'card_payments', $captured_data['provider_capabilities']['available'] );
-		$this->assertContains( 'klarna_payments', $captured_data['provider_capabilities']['available'] );
-		$this->assertEquals( [ 'card_payments', 'klarna_payments' ], $captured_data['provider_capabilities']['enabled'] );
+		$this->assertContains( $payment_method_capability_map['card'], $captured_data['provider_capabilities']['available'] );
+		$this->assertContains( $payment_method_capability_map['klarna'], $captured_data['provider_capabilities']['available'] );
+		$this->assertEquals( [ $payment_method_capability_map['card'], $payment_method_capability_map['klarna'] ], $captured_data['provider_capabilities']['enabled'] );
+		$this->assertEquals(
+			array_values(
+				array_diff(
+					$payment_method_capability_map,
+					[ $payment_method_capability_map['card'], $payment_method_capability_map['klarna'] ]
+				)
+			),
+			$captured_data['provider_capabilities']['disabled']
+		);
 
 		// Assert: Verify simple boolean/string values match mocked data.
 		$this->assertEquals( 'yes', $captured_data['apple_google_pay_in_payment_methods_options_enabled'] );
@@ -3749,6 +3766,10 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertArrayHasKey( 'active_plugins', $captured_data['wp_setup'] );
 		$this->assertArrayHasKey( 'version', $captured_data['wp_setup'] );
 		$this->assertArrayHasKey( 'locale', $captured_data['wp_setup'] );
+		$this->assertSame( get_bloginfo( 'name' ), $captured_data['wp_setup']['name'] );
+		$this->assertSame( get_bloginfo( 'url' ), $captured_data['wp_setup']['url'] );
+		$this->assertSame( get_bloginfo( 'version' ), $captured_data['wp_setup']['version'] );
+		$this->assertSame( get_locale(), $captured_data['wp_setup']['locale'] );
 
 		// Assert: Verify wc_setup sub-entries.
 		$this->assertArrayHasKey( 'version', $captured_data['wc_setup'] );
@@ -3788,6 +3809,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$mock_gateway->method( 'get_option' )->willReturn( 'yes' );
 		$mock_gateway->method( 'is_saved_cards_enabled' )->willReturn( true );
 
+		// Replace the real gateway with the mock.
 		WC_Payments::set_gateway( $mock_gateway );
 
 		// Mock send_store_setup to throw an exception.
