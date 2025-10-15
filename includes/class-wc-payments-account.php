@@ -9,7 +9,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-use Automattic\WooCommerce\Utilities\PluginUtil;
 use WCPay\Constants\Country_Code;
 use WCPay\Constants\Currency_Code;
 use WCPay\Core\Server\Request\Get_Account;
@@ -2814,17 +2813,19 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 		// Get active plugins using the PluginUtil from WC, if available.
 		$wc_plugin_util = null;
-		try {
-			$wc_plugin_util = wc_get_container()->get( PluginUtil::class );
-		} catch ( Exception $e ) {
-			// If we can't get the PluginUtil, we won't be able to get the active plugins.
-			// This is not a critical failure, so we can log it and continue.
-			Logger::error( 'Failed to get PluginUtil: ' . $e->getMessage() );
+		if ( class_exists( '\Automattic\WooCommerce\Utilities\PluginUtil' ) ) {
+			try {
+				$wc_plugin_util = wc_get_container()->get( '\Automattic\WooCommerce\Utilities\PluginUtil' );
+			} catch ( Throwable $e ) {
+				// If we can't get the PluginUtil, we won't be able to accurately get the active plugins.
+				// This is not a critical failure, so we can log it and continue.
+				Logger::error( 'Failed to get PluginUtil: ' . $e->getMessage() );
+			}
 		}
 
 		$plugins_list = [];
 
-		$active_plugin_ids = ( ! empty( $wc_plugin_util ) && is_callable( [ $wc_plugin_util, 'get_all_active_valid_plugins' ] ) ) ? $wc_plugin_util->get_all_active_valid_plugins() : wp_get_active_and_valid_plugins();
+		$active_plugin_ids = ( is_object( $wc_plugin_util ) && is_callable( [ $wc_plugin_util, 'get_all_active_valid_plugins' ] ) ) ? $wc_plugin_util->get_all_active_valid_plugins() : wp_get_active_and_valid_plugins();
 		foreach ( $active_plugin_ids as $plugin_file ) {
 			if ( isset( $all_plugins[ $plugin_file ] ) ) {
 				$plugin_data                  = $all_plugins[ $plugin_file ];
@@ -2832,7 +2833,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 					'name'     => $plugin_data['Name'],
 					'slug'     => dirname( $plugin_file ),
 					'version'  => $plugin_data['Version'],
-					'wc_aware' => ( ! empty( $wc_plugin_util ) && is_callable( [ $wc_plugin_util, 'is_woocommerce_aware_plugin' ] ) ) ? $wc_plugin_util->is_woocommerce_aware_plugin( $plugin_data ) : null,
+					'wc_aware' => ( is_object( $wc_plugin_util ) && is_callable( [ $wc_plugin_util, 'is_woocommerce_aware_plugin' ] ) ) ? $wc_plugin_util->is_woocommerce_aware_plugin( $plugin_data ) : null,
 				];
 			}
 		}
