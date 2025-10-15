@@ -1139,8 +1139,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @throws Exception Error processing the payment.
 	 */
 	public function process_payment( $order_id ) {
-		$order               = wc_get_order( $order_id );
-		$payment_information = $this->prepare_payment_information( $order );
+		$order = wc_get_order( $order_id );
 
 		try {
 			if ( 20 < strlen( $order->get_billing_phone() ) ) {
@@ -1149,6 +1148,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					'invalid_phone_number'
 				);
 			}
+
+			$payment_information = $this->prepare_payment_information( $order );
+
 			// Check if session exists and we're currently not processing a WooPay request before instantiating `Fraud_Prevention_Service`.
 			if ( WC()->session
 				&& ! apply_filters( 'wcpay_is_woopay_store_api_request', false )
@@ -1218,6 +1220,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			if ( $blocked_by_fraud_rules ) {
 				$this->order_service->mark_order_blocked_for_fraud( $order, '', Intent_Status::CANCELED );
+			} elseif ( $e instanceof Process_Payment_Exception && 'rate_limiter_enabled' === $e->get_error_code() ) {
+				/**
+				 * TODO: Move the contents of this into the Order_Service.
+				 */
+				$note = sprintf(
+					WC_Payments_Utils::esc_interpolated_html(
+					/* translators: %1: the failed payment amount */
+						__(
+							'A payment of %1$s <strong>failed</strong> to complete because of too many failed transactions. A rate limiter was enabled for the user to prevent more attempts temporarily.',
+							'woocommerce-payments'
+						),
+						[
+							'strong' => '<strong>',
+						]
+					),
+					WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] ), $order )
+				);
+				$order->add_order_note( $note );
 			} elseif ( ! empty( $payment_information ) ) {
 				/**
 				 * TODO: Move the contents of this else into the Order_Service.
@@ -1264,26 +1284,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					$error_details
 				);
 
-				$order->add_order_note( $note );
-			}
-
-			if ( $e instanceof Process_Payment_Exception && 'rate_limiter_enabled' === $e->get_error_code() ) {
-				/**
-				 * TODO: Move the contents of this into the Order_Service.
-				 */
-				$note = sprintf(
-					WC_Payments_Utils::esc_interpolated_html(
-						/* translators: %1: the failed payment amount */
-						__(
-							'A payment of %1$s <strong>failed</strong> to complete because of too many failed transactions. A rate limiter was enabled for the user to prevent more attempts temporarily.',
-							'woocommerce-payments'
-						),
-						[
-							'strong' => '<strong>',
-						]
-					),
-					WC_Payments_Explicit_Price_Formatter::get_explicit_price( wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] ), $order )
-				);
 				$order->add_order_note( $note );
 			}
 

@@ -962,6 +962,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		$order = WC_Helper_Order::create_order();
 		$order->set_billing_phone( '+1123456789123456789123' );
 		$order->save();
+
+		$_POST['wcpay-payment-method'] = 'pm_mock';
+
 		$result = $this->card_gateway->process_payment( $order->get_id() );
 		$this->assertEquals( 'fail', $result['result'] );
 		$error_notices = WC()->session->get( 'wc_notices' );
@@ -3381,6 +3384,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	public function test_process_payment_rejects_if_missing_fraud_prevention_token() {
 		$order = WC_Helper_Order::create_order();
 
+		$_POST['wcpay-payment-method'] = 'pm_mock';
+
 		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
 
 		$fraud_prevention_service_mock
@@ -3399,6 +3404,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 	public function test_process_payment_rejects_if_invalid_fraud_prevention_token() {
 		$order = WC_Helper_Order::create_order();
+
+		$_POST['wcpay-payment-method'] = 'pm_mock';
 
 		$fraud_prevention_service_mock = $this->get_fraud_prevention_service_mock();
 
@@ -3467,9 +3474,13 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$error_message = "There's a problem with this payment. Please try again or use a different payment method.";
 
+		$mock_payment_information = $this->createMock( Payment_Information::class );
+		$mock_payment_information->method( 'is_agentic_commerce_request' )->willReturn( false );
+
 		$mock_wcpay_gateway
 			->expects( $this->once() )
-			->method( 'prepare_payment_information' );
+			->method( 'prepare_payment_information' )
+			->willReturn( $mock_payment_information );
 		$mock_wcpay_gateway
 			->expects( $this->once() )
 			->method( 'process_payment_for_order' )
@@ -3538,9 +3549,13 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$error_message = "There's a problem with this payment. Please try again or use a different payment method.";
 
+		$mock_payment_information = $this->createMock( Payment_Information::class );
+		$mock_payment_information->method( 'is_agentic_commerce_request' )->willReturn( false );
+
 		$mock_wcpay_gateway
 			->expects( $this->once() )
-			->method( 'prepare_payment_information' );
+			->method( 'prepare_payment_information' )
+			->willReturn( $mock_payment_information );
 		$mock_wcpay_gateway
 			->expects( $this->once() )
 			->method( 'process_payment_for_order' )
@@ -3611,9 +3626,13 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		$error_message = 'We couldn’t verify the postal code in your billing address. Make sure the information is current with your card issuing bank and try again.';
 
+		$mock_payment_information = $this->createMock( Payment_Information::class );
+		$mock_payment_information->method( 'is_agentic_commerce_request' )->willReturn( false );
+
 		$mock_wcpay_gateway
 			->expects( $this->once() )
-			->method( 'prepare_payment_information' );
+			->method( 'prepare_payment_information' )
+			->willReturn( $mock_payment_information );
 		$mock_wcpay_gateway
 			->expects( $this->once() )
 			->method( 'process_payment_for_order' )
@@ -3652,9 +3671,15 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 			->willReturn( false );
 
 		$mock_wcpay_gateway = $this->get_partial_mock_for_gateway( [ 'prepare_payment_information', 'process_payment_for_order' ] );
+
+		$mock_payment_information = $this->createMock( Payment_Information::class );
+		$mock_payment_information->method( 'is_agentic_commerce_request' )->willReturn( false );
+
 		$mock_wcpay_gateway
 			->expects( $this->once() )
-			->method( 'prepare_payment_information' );
+			->method( 'prepare_payment_information' )
+			->willReturn( $mock_payment_information );
+
 		$mock_wcpay_gateway
 			->expects( $this->once() )
 			->method( 'process_payment_for_order' );
@@ -3843,6 +3868,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_no_payment_is_processed_for_woopay_preflight_check_request() {
 		$_POST['is-woopay-preflight-check'] = true;
+		$_POST['wcpay-payment-method']      = 'pm_mock';
 
 		// Arrange: Create an order to test with.
 		$order_data = [
@@ -3865,6 +3891,8 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 	public function test_process_payment_rate_limiter_enabled_throw_exception() {
 		$order = WC_Helper_Order::create_order();
+
+		$_POST['wcpay-payment-method'] = 'pm_mock';
 
 		$this->mock_rate_limiter
 			->expects( $this->once() )
