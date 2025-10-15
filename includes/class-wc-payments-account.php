@@ -2760,6 +2760,12 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			'multi_currency_enabled' => WC_Payments_Features::is_customer_multi_currency_enabled(),
 			'stripe_billing_enabled' => WC_Payments_Features::is_stripe_billing_enabled(),
 
+			// Other WooPayments details.
+			'plugin'                 => [
+				'version'              => WCPAY_VERSION_NUMBER,
+				'activation_timestamp' => get_option( 'wcpay_activation_timestamp', null ),
+			],
+
 			// Other store setup details.
 			'wp_setup'               => [
 				'name'           => get_bloginfo( 'name' ),
