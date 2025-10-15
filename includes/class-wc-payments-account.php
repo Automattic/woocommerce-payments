@@ -2678,7 +2678,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 		$payment_methods_available = $gateway->get_upe_available_payment_methods();
 		$payment_methods_enabled   = $gateway->get_upe_enabled_payment_method_ids();
-		$payment_methods_disabled  = array_diff( $payment_methods_available, $payment_methods_enabled );
+		$payment_methods_disabled  = array_values( array_diff( $payment_methods_available, $payment_methods_enabled ) );
 
 		// Map enabled payment methods to capabilities.
 		// This is needed because the capabilities in the Transact Platform are named differently.
