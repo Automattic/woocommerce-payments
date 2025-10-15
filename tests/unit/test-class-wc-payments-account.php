@@ -65,6 +65,13 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	private $mock_redirect_service;
 
 	/**
+	 * Backup of the original card gateway instance.
+	 *
+	 * @var WC_Payment_Gateway_WCPay
+	 */
+	private $card_gateway_backup;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -75,6 +82,8 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			'page' => 'wc-admin',
 			'path' => '/payments/connect',
 		];
+
+		$this->card_gateway_backup = WC_Payments::get_gateway();
 
 		// Always start off with live mode. If you want another mode, you should set it in the test.
 		WC_Payments::mode()->live();
@@ -94,6 +103,10 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION );
 		unset( $_GET );
 		unset( $_REQUEST );
+
+		// Restore the card gateway instance.
+		WC_Payments::set_gateway( $this->card_gateway_backup );
+
 		parent::tear_down();
 	}
 
@@ -3602,7 +3615,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->mock_api_client->method( 'is_server_connected' )->willReturn( true );
 
 		// Mock the gateway and its methods.
-		$temp_gateway = WC_Payments::get_gateway();
 		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
 		$mock_gateway->method( 'is_enabled' )->willReturn( true );
 		$mock_gateway->method( 'get_form_fields' )->willReturn(
@@ -3662,7 +3674,8 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		// Capture the argument passed to send_store_setup.
 		$captured_data = null;
-		$this->mock_api_client->expects( $this->once() )
+		$this->mock_api_client
+			->expects( $this->once() )
 			->method( 'send_store_setup' )
 			->with(
 				$this->callback(
@@ -3784,9 +3797,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertArrayHasKey( 'enabled_payment_gateways', $captured_data['wc_setup'] );
 		$this->assertArrayHasKey( 'wc_subscriptions_active', $captured_data['wc_setup'] );
 		$this->assertArrayHasKey( 'wc_subscriptions_version', $captured_data['wc_setup'] );
-
-		// Restore the original gateway.
-		WC_Payments::set_gateway( $temp_gateway );
 	}
 
 	public function test_store_setup_sync_handles_exception_gracefully() {
@@ -3794,7 +3804,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->mock_api_client->method( 'is_server_connected' )->willReturn( true );
 
 		// Mock the gateway.
-		$temp_gateway = WC_Payments::get_gateway();
 		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
 		$mock_gateway->method( 'is_enabled' )->willReturn( true );
 		$mock_gateway->method( 'get_form_fields' )->willReturn(
@@ -3828,9 +3837,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		// Assert: If we reach here without an exception being thrown, the test passes.
 		// The method should handle the exception gracefully.
 		$this->assertTrue( true );
-
-		// Restore the original gateway.
-		WC_Payments::set_gateway( $temp_gateway );
 	}
 
 	public function test_store_setup_sync_handles_gateway_not_available() {
@@ -3838,7 +3844,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->mock_api_client->method( 'is_server_connected' )->willReturn( true );
 
 		// Mock WC_Payments to return null gateway.
-		$temp_gateway = WC_Payments::get_gateway();
 		WC_Payments::set_gateway( null );
 
 		// Assert: send_store_setup should be called with empty array when gateway is not available.
@@ -3848,8 +3853,5 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 
 		// Act: Call store_setup_sync.
 		$this->wcpay_account->store_setup_sync();
-
-		// Restore the original gateway.
-		WC_Payments::set_gateway( $temp_gateway );
 	}
 }
