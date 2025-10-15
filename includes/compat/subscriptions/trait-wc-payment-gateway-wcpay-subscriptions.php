@@ -1051,4 +1051,16 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 		return $mandate;
 	}
+
+	/**
+	 * Determines if payment method should be saved for subscription.
+	 *
+	 * @param int $order_id The order ID.
+	 * @return bool Whether to save the payment method.
+	 */
+	public function should_save_payment_method_for_subscription( $order_id ) {
+		// Current implementation: always save payment method for all subscriptions
+		// This will make our test fail initially (Red phase of TDD).
+		return true;
+	}
 }
