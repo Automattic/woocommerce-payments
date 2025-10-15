@@ -195,8 +195,6 @@ class WC_Payments_Token_Service {
 			return $tokens;
 		}
 
-		// TODO: Implement caching for payment methods in the future.
-
 		try {
 			$customer_id = $this->customer_service->get_customer_id_by_user_id( $user_id );
 
@@ -254,16 +252,16 @@ class WC_Payments_Token_Service {
 	 * @return array Payment methods.
 	 */
 	private function get_payment_methods_from_stripe( $user_id, $customer_id, $gateway_id ) {
-		$cache_key = 'payment_methods_' . $gateway_id;
-
-		// Check for cached user methods. Ignore the cache if the customer ID is different.
+		$cache_key   = 'payment_methods_' . $gateway_id;
 		$cached_data = get_user_meta( $user_id, self::CACHED_PAYMENT_METHODS_META_KEY, true );
 
 		// Start by checking the customer ID. If it is different, bust the cache.
 		if (
 			is_array( $cached_data )
-			&& isset( $cached_data['customer_id'] )
-			&& $cached_data['customer_id'] !== $customer_id
+			&& (
+				( isset( $cached_data['customer_id'] ) && $cached_data['customer_id'] !== $customer_id )
+				|| ! isset( $cached_data['customer_id'] )
+			)
 		) {
 			$cached_data = [];
 		}
