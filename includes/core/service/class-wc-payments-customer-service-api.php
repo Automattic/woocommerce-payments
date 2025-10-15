@@ -12,6 +12,7 @@ use WC_Payments_Customer_Service;
 use WP_User;
 use WC_Customer;
 use WC_Order;
+use WC_Payments_Token_Service;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -28,12 +29,24 @@ class WC_Payments_Customer_Service_API {
 	private $customer_service;
 
 	/**
+	 * Internal Token_Service instance to invoke.
+	 *
+	 * @var WC_Payments_Token_Service
+	 */
+	private $token_service;
+
+	/**
 	 * Class constructor
 	 *
 	 * @param WC_Payments_Customer_Service $customer_service Customer Service instance.
+	 * @param WC_Payments_Token_Service    $token_service Token Service instance.
 	 */
-	public function __construct( WC_Payments_Customer_Service $customer_service ) {
+	public function __construct(
+		WC_Payments_Customer_Service $customer_service,
+		WC_Payments_Token_Service $token_service
+	) {
 		$this->customer_service = $customer_service;
+		$this->token_service    = $token_service;
 	}
 
 	/**
@@ -114,7 +127,7 @@ class WC_Payments_Customer_Service_API {
 	 * @param int $user_id WC user ID.
 	 */
 	public function clear_cached_payment_methods_for_user( $user_id ) {
-		return $this->customer_service->clear_cached_payment_methods_for_user( $user_id );
+		return $this->token_service->clear_cached_payment_methods_for_user( $user_id );
 	}
 
 	/**
@@ -136,7 +149,7 @@ class WC_Payments_Customer_Service_API {
 	 * @return void
 	 */
 	public function delete_cached_payment_methods() {
-		$this->customer_service->delete_cached_payment_methods();
+		$this->token_service->clear_all_cached_payment_methods();
 	}
 
 	/**

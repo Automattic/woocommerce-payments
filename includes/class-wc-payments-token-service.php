@@ -12,6 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use WCPay\Logger;
 use WCPay\Payment_Methods\CC_Payment_Gateway;
 use WCPay\Constants\Payment_Method;
+use WCPay\Database_Cache;
 
 /**
  * Handles and process WC payment tokens API.
@@ -71,7 +72,7 @@ class WC_Payments_Token_Service {
 	 */
 	public function add_token_to_user( $payment_method, $user ) {
 		// Clear cached payment methods.
-		$this->customer_service->clear_cached_payment_methods_for_user( $user->ID );
+		$this->clear_cached_payment_methods_for_user( $user->ID );
 
 		switch ( $payment_method['type'] ) {
 			case Payment_Method::SEPA:
@@ -134,6 +135,62 @@ class WC_Payments_Token_Service {
 	}
 
 	/**
+	 * Clear payment methods cache for a user.
+	 *
+	 * @param int $user_id WC user ID.
+	 */
+	public function clear_cached_payment_methods_for_user( $user_id ) {
+		if ( WC_Payments::is_network_saved_cards_enabled() ) {
+			return; // No need to do anything, payment methods will never be cached in this case.
+		}
+
+		$retrievable_payment_method_types = [ Payment_Method::CARD, Payment_Method::LINK, Payment_Method::SEPA ];
+		$customer_id                      = $this->customer_service->get_customer_id_by_user_id( $user_id );
+		$database_cache                   = WC_Payments::get_database_cache();
+		foreach ( $retrievable_payment_method_types as $type ) {
+			$database_cache->delete( Database_Cache::PAYMENT_METHODS_KEY_PREFIX . $customer_id . '_' . $type );
+		}
+	}
+
+	/**
+	 * Clear all cached payment methods.
+	 * Used when account data is updated and all payment method caches need to be cleared.
+	 */
+	public function clear_all_cached_payment_methods() {
+		if ( WC_Payments::is_network_saved_cards_enabled() ) {
+			return; // No need to do anything, payment methods will never be cached in this case.
+		}
+
+		$database_cache                   = WC_Payments::get_database_cache();
+		$retrievable_payment_method_types = [ Payment_Method::CARD, Payment_Method::LINK, Payment_Method::SEPA ];
+
+		// Get all users with WooCommerce customer IDs.
+		$users = get_users();
+
+		foreach ( $users as $user ) {
+			$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
+			if ( $customer_id ) {
+				foreach ( $retrievable_payment_method_types as $type ) {
+					$database_cache->delete( Database_Cache::PAYMENT_METHODS_KEY_PREFIX . $customer_id . '_' . $type );
+				}
+			}
+		}
+
+		/**
+		 * Legacy: Payment methods were stored in the database cache with the `wcpay_pm_` prefix.
+		 * When cleaning up cached payment methods, we need to flush the database from old cached data as well.
+		 *
+		 * This method gets called for account updates. Even though those are rare, they should be a
+		 * good opportunity to clean up old cached data.
+		 */
+		global $wpdb;
+		$options = $wpdb->get_results( "SELECT option_name FROM $wpdb->options WHERE option_name LIKE 'wcpay_pm_%'" );
+		foreach ( $options as $option ) {
+			delete_option( $option->option_name );
+		}
+	}
+
+	/**
 	 * Gets saved tokens from API if they don't already exist in WooCommerce.
 	 *
 	 * @param array  $tokens     Array of tokens.
@@ -152,6 +209,8 @@ class WC_Payments_Token_Service {
 			// Having 10 saved credit cards is considered an unsupported edge case, new ones that have been stored in Stripe won't be added.
 			return $tokens;
 		}
+
+		// TODO: Implement caching for payment methods in the future.
 
 		try {
 			$customer_id = $this->customer_service->get_customer_id_by_user_id( $user_id );
@@ -310,7 +369,7 @@ class WC_Payments_Token_Service {
 		try {
 			$this->payments_api_client->detach_payment_method( $token->get_token() );
 			// Clear cached payment methods.
-			$this->customer_service->clear_cached_payment_methods_for_user( $token->get_user_id() );
+			$this->clear_cached_payment_methods_for_user( $token->get_user_id() );
 		} catch ( Exception $e ) {
 			Logger::log( 'Error detaching payment method:' . $e->getMessage() );
 		}
@@ -329,7 +388,7 @@ class WC_Payments_Token_Service {
 			if ( $customer_id ) {
 				$this->customer_service->set_default_payment_method_for_customer( $customer_id, $token->get_token() );
 				// Clear cached payment methods.
-				$this->customer_service->clear_cached_payment_methods_for_user( $token->get_user_id() );
+				$this->clear_cached_payment_methods_for_user( $token->get_user_id() );
 			}
 		}
 	}

@@ -24,11 +24,6 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	const ADDRESS_AUTOCOMPLETE_JWT_KEY = 'wcpay_address_autocomplete_jwt';
 
 	/**
-	 * Payment methods cache key prefix. Used in conjunction with the customer_id to cache a customer's payment methods.
-	 */
-	const PAYMENT_METHODS_KEY_PREFIX = 'wcpay_pm_';
-
-	/**
 	 * Dispute status counts cache key.
 	 *
 	 * @var string
@@ -224,51 +219,12 @@ class Database_Cache implements MultiCurrencyCacheInterface {
 	}
 
 	/**
-	 * Deletes all cache entries that are keyed with a certain prefix.
-	 *
-	 * This is useful when you use dynamic cache keys.
-	 *
-	 * Note: Only key prefixes with known, static prefixes are allowed, for protection purposes.
-	 *
-	 * @param string $key_prefix The cache key prefix.
-	 *
-	 * @return void
-	 */
-	public function delete_by_prefix( string $key_prefix ) {
-		// Protection against accidentally deleting all options or options that are not related to WCPay caching.
-		// Feel free to update this statement as more prefix cache keys are used.
-		$allowed_base_prefixes = [
-			self::PAYMENT_METHODS_KEY_PREFIX,
-		];
-		$is_allowed            = false;
-		foreach ( $allowed_base_prefixes as $allowed_base_prefix ) {
-			if ( strncmp( $key_prefix, $allowed_base_prefix, strlen( $allowed_base_prefix ) ) === 0 ) {
-				$is_allowed = true;
-				break;
-			}
-		}
-		if ( ! $is_allowed ) {
-			return; // Maybe throw exception here...
-		}
-
-		global $wpdb;
-
-		$options = $wpdb->get_results( $wpdb->prepare( "SELECT option_name FROM $wpdb->options WHERE option_name LIKE %s", $key_prefix . '%' ) );
-		foreach ( $options as $option ) {
-			$this->delete( $option->option_name );
-		}
-	}
-
-	/**
 	 * Delete all known cache entries.
 	 */
 	public function delete_all() {
 		foreach ( self::ALL_KEYS as $key ) {
 			$this->delete( $key );
 		}
-
-		// Delete prefix-based keys.
-		$this->delete_by_prefix( self::PAYMENT_METHODS_KEY_PREFIX );
 	}
 
 	/**
