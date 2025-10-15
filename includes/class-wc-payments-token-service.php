@@ -272,9 +272,12 @@ class WC_Payments_Token_Service {
 
 		$payment_methods = [];
 		foreach ( $retrievable_payment_method_types as $type ) {
-			$payment_methods[] = $this->customer_service->get_payment_methods_for_customer( $customer_id, $type );
+			$type_methods = $this->customer_service->get_payment_methods_for_customer( $customer_id, $type );
+			if ( is_array( $type_methods ) ) {
+				$payment_methods[] = $type_methods;
+			}
 		}
-		$payment_methods = array_merge( ...$payment_methods );
+		$payment_methods = ! empty( $payment_methods ) ? array_merge( ...$payment_methods ) : [];
 
 		// Cache the payment methods. Combine with existing data in case there are cached PMs for other gateway IDs.
 		$new_cache = [
