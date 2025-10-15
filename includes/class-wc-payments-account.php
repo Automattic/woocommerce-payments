@@ -2821,7 +2821,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 		$plugins_list = [];
 
-		$active_plugin_ids = ! empty( $wc_plugin_util ) ? $wc_plugin_util->get_all_active_valid_plugins() : wp_get_active_and_valid_plugins();
+		$active_plugin_ids = ( ! empty( $wc_plugin_util ) && is_callable( [ $wc_plugin_util, 'get_all_active_valid_plugins' ] ) ) ? $wc_plugin_util->get_all_active_valid_plugins() : wp_get_active_and_valid_plugins();
 		foreach ( $active_plugin_ids as $plugin_file ) {
 			if ( isset( $all_plugins[ $plugin_file ] ) ) {
 				$plugin_data                  = $all_plugins[ $plugin_file ];
@@ -2829,7 +2829,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 					'name'     => $plugin_data['Name'],
 					'slug'     => dirname( $plugin_file ),
 					'version'  => $plugin_data['Version'],
-					'wc_aware' => ! empty( $wc_plugin_util ) ? $wc_plugin_util->is_woocommerce_aware_plugin( $plugin_data ) : null,
+					'wc_aware' => ( ! empty( $wc_plugin_util ) && is_callable( [ $wc_plugin_util, 'is_woocommerce_aware_plugin' ] ) ) ? $wc_plugin_util->is_woocommerce_aware_plugin( $plugin_data ) : null,
 				];
 			}
 		}
