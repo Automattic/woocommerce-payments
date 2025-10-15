@@ -132,13 +132,8 @@ class WC_Payments_Onboarding_Service {
 			return $this->database_cache->get( Database_Cache::ONBOARDING_FIELDS_DATA_KEY, true );
 		}
 
-		$cache_key = Database_Cache::ONBOARDING_FIELDS_DATA_KEY;
-		if ( ! empty( $locale ) ) {
-			$cache_key .= '__' . $locale;
-		}
-
 		return $this->database_cache->get_or_add(
-			$cache_key,
+			Database_Cache::ONBOARDING_FIELDS_DATA_KEY,
 			function () use ( $locale ) {
 				try {
 					// We will use the language for the current user (defaults to the site language).
@@ -148,9 +143,19 @@ class WC_Payments_Onboarding_Service {
 					return null;
 				}
 
+				// Store the locale, so if a different one is requested, we can invalidate the cache.
+				$fields_data['__locale'] = $locale;
+
 				return $fields_data;
 			},
-			'__return_true'
+			function ( $data ) use ( $locale ) {
+				// The locale used to be part of a dynamic key. If it is not set, the data is old & invalid.
+				return (
+					is_array( $data )
+					&& isset( $data['__locale'] )
+					&& $data['__locale'] === $locale
+				);
+			}
 		);
 	}
 
@@ -164,23 +169,38 @@ class WC_Payments_Onboarding_Service {
 	 *                NULL on retrieval or validation error.
 	 */
 	public function get_recommended_payment_methods( string $country_code, string $locale = '' ): ?array {
-		$cache_key = Database_Cache::RECOMMENDED_PAYMENT_METHODS . '__' . $country_code;
-		if ( ! empty( $locale ) ) {
-			$cache_key .= '__' . $locale;
-		}
-
-		return \WC_Payments::get_database_cache()->get_or_add(
-			$cache_key,
+		$cached_data = \WC_Payments::get_database_cache()->get_or_add(
+			Database_Cache::RECOMMENDED_PAYMENT_METHODS,
 			function () use ( $country_code, $locale ) {
 				try {
-					return $this->payments_api_client->get_recommended_payment_methods( $country_code, $locale );
+					$payment_methods = $this->payments_api_client->get_recommended_payment_methods( $country_code, $locale );
+
+					// Indicate that the cached value is specific for the given locale and country code.
+					return [
+						'payment_methods' => $payment_methods,
+						'__locale'        => $locale,
+						'__country_code'  => $country_code,
+					];
 				} catch ( API_Exception $e ) {
 					// Return NULL to signal retrieval error.
 					return null;
 				}
 			},
-			'is_array'
+			function ( $data ) use ( $locale, $country_code ) {
+				// The locale and country code used to be part of a dynamic key.
+				// If either is not set, the data is old & invalid.
+				return (
+					is_array( $data )
+					&& isset( $data['payment_methods'] )
+					&& isset( $data['__locale'] )
+					&& isset( $data['__country_code'] )
+					&& $data['__locale'] === $locale
+					&& $data['__country_code'] === $country_code
+				);
+			}
 		);
+
+		return $cached_data['payment_methods'] ?? null;
 	}
 
 	/**
