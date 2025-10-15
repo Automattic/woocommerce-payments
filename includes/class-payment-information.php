@@ -275,7 +275,12 @@ class Payment_Information {
 		?Payment_Capture_Type $manual_capture = null,
 		?string $payment_method_stripe_id = null
 	): Payment_Information {
-		$is_agentic_commerce_request = method_exists( 'Automattic\\WooCommerce\\StoreApi\\Utilities\\AgenticCheckoutUtils', 'is_agentic_commerce_session' )
+		/**
+		 * Psalm note: Class exists as a util in Woo core.
+		 *
+		 * @psalm-suppress UndefinedClass
+		 */
+		$is_agentic_commerce_request = method_exists( '\\Automattic\\WooCommerce\\StoreApi\\Utilities\\AgenticCheckoutUtils', 'is_agentic_commerce_session' )
 			&& \Automattic\WooCommerce\StoreApi\Utilities\AgenticCheckoutUtils::is_agentic_commerce_session();
 
 		$payment_method   = self::get_payment_method_from_request( $request, $is_agentic_commerce_request );
