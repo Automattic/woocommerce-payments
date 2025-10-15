@@ -2767,7 +2767,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			],
 			'wc_setup'               => [
 				'version'                     => defined( 'WC_VERSION' ) ? explode( '-', WC_VERSION, 2 )[0] : '',
-				'store_id'                    => get_option( 'woocommerce_store_id', null ),
+				'store_id'                    => ( class_exists( '\WC_Install' ) && defined( '\WC_Install::STORE_ID_OPTION' ) ) ? get_option( \WC_Install::STORE_ID_OPTION, null ) : null,
 				'currency'                    => get_woocommerce_currency(),
 				'tracking_enabled'            => WC_Site_Tracking::is_tracking_enabled(),
 				'registered_payment_gateways' => $this->get_store_registered_gateway_ids(),
