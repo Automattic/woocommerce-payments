@@ -2752,7 +2752,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 			// Other WooPayments details.
 			'plugin'                 => [
-				'version'              => WCPAY_VERSION_NUMBER,
+				'version'              => defined( 'WCPAY_VERSION_NUMBER' ) ? explode( '-', WCPAY_VERSION_NUMBER, 2 )[0] : '',
 				'activation_timestamp' => get_option( 'wcpay_activation_timestamp', null ),
 			],
 
