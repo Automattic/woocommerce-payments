@@ -75,13 +75,6 @@ class WC_Payments_Webhook_Processing_Service {
 	private $wcpay_gateway;
 
 	/**
-	 * WC_Payment_Gateway_WCPay
-	 *
-	 * @var WC_Payments_Customer_Service
-	 */
-	private $customer_service;
-
-	/**
 	 * Database_Cache instance.
 	 *
 	 * @var Database_Cache
@@ -112,7 +105,6 @@ class WC_Payments_Webhook_Processing_Service {
 	 * @param WC_Payments_Order_Service                       $order_service       WC_Payments_Order_Service instance.
 	 * @param WC_Payments_In_Person_Payments_Receipts_Service $receipt_service     WC_Payments_In_Person_Payments_Receipts_Service instance.
 	 * @param WC_Payment_Gateway_WCPay                        $wcpay_gateway       WC_Payment_Gateway_WCPay instance.
-	 * @param WC_Payments_Customer_Service                    $customer_service    WC_Payments_Customer_Service instance.
 	 * @param Database_Cache                                  $database_cache      Database_Cache instance.
 	 * @param WC_Payments_Onboarding_Service                  $onboarding_service  WC_Payments_Onboarding_Service instance.
 	 * @param WC_Payments_Token_Service                       $token_service       WC_Payments_Token_Service instance.
@@ -125,7 +117,6 @@ class WC_Payments_Webhook_Processing_Service {
 		WC_Payments_Order_Service $order_service,
 		WC_Payments_In_Person_Payments_Receipts_Service $receipt_service,
 		WC_Payment_Gateway_WCPay $wcpay_gateway,
-		WC_Payments_Customer_Service $customer_service,
 		Database_Cache $database_cache,
 		WC_Payments_Onboarding_Service $onboarding_service,
 		WC_Payments_Token_Service $token_service
@@ -137,7 +128,6 @@ class WC_Payments_Webhook_Processing_Service {
 		$this->api_client          = $api_client;
 		$this->receipt_service     = $receipt_service;
 		$this->wcpay_gateway       = $wcpay_gateway;
-		$this->customer_service    = $customer_service;
 		$this->database_cache      = $database_cache;
 		$this->onboarding_service  = $onboarding_service;
 		$this->token_service       = $token_service;
