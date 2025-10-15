@@ -45,10 +45,17 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 	protected $mock_cache;
 
 	/**
+	 * @var WC_Payment_Gateway_WCPay
+	 */
+	private $original_gateway;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
 		parent::set_up();
+
+		$this->original_gateway = WC_Payments::get_gateway();
 
 		$this->user_id = get_current_user_id();
 		wp_set_current_user( 1 );
@@ -70,6 +77,7 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		wp_set_current_user( $this->user_id );
 		// Restore the cache service in the main class.
 		WC_Payments::set_database_cache( $this->_cache );
+		WC_Payments::set_gateway( $this->original_gateway );
 		parent::tear_down();
 	}
 

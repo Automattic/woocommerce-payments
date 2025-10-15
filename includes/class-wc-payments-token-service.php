@@ -258,26 +258,35 @@ class WC_Payments_Token_Service {
 
 		// Check for cached user methods. Ignore the cache if the customer ID is different.
 		$cached_data = get_user_meta( $user_id, self::CACHED_PAYMENT_METHODS_META_KEY, true );
+
+		// Start by checking the customer ID. If it is different, bust the cache.
 		if (
 			is_array( $cached_data )
 			&& isset( $cached_data['customer_id'] )
-			&& $cached_data['customer_id'] === $customer_id
+			&& $cached_data['customer_id'] !== $customer_id
+		) {
+			$cached_data = [];
+		}
+
+		// Now, if there is cached data, then it is for the right customer. Check for the gateway-specific cache key.
+		if (
+			is_array( $cached_data )
 			&& isset( $cached_data[ $cache_key ] )
 			&& is_array( $cached_data[ $cache_key ] )
 		) {
 			return $cached_data[ $cache_key ];
 		}
 
+		// Proceed loading payment methods.
 		$retrievable_payment_method_types = $this->get_retrievable_payment_method_types( $gateway_id );
 
 		$payment_methods = [];
 		foreach ( $retrievable_payment_method_types as $type ) {
 			$type_methods = $this->customer_service->get_payment_methods_for_customer( $customer_id, $type );
 			if ( is_array( $type_methods ) ) {
-				$payment_methods[] = $type_methods;
+				$payment_methods = array_merge( $payment_methods, $type_methods );
 			}
 		}
-		$payment_methods = ! empty( $payment_methods ) ? array_merge( ...$payment_methods ) : [];
 
 		// Cache the payment methods. Combine with existing data in case there are cached PMs for other gateway IDs.
 		$new_cache = [
