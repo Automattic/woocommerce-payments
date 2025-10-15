@@ -2648,12 +2648,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			return;
 		}
 
-		try {
-			// This is a fire-and-forget operation, so we don't care about the result.
-			$this->payments_api_client->send_store_setup( $this->get_store_setup_details() );
-		} catch ( Throwable $e ) {
-			Logger::error( 'Failed to sync store setup state with the Transact Platform: ' . $e->getMessage() );
-		}
+		$this->payments_api_client->send_store_setup( $this->get_store_setup_details() );
 	}
 
 	/**
