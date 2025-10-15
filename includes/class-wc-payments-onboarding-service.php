@@ -919,12 +919,9 @@ class WC_Payments_Onboarding_Service {
 	 */
 	public function cleanup_on_account_onboarded() {
 		// Delete the onboarding fields data since it is used only during the initial onboarding.
-		// Delete it by prefix since it can have entries suffixed with the user locale.
-		$this->database_cache->delete_by_prefix( Database_Cache::ONBOARDING_FIELDS_DATA_KEY );
-
+		$this->database_cache->delete( Database_Cache::ONBOARDING_FIELDS_DATA_KEY );
 		$this->database_cache->delete( Database_Cache::BUSINESS_TYPES_KEY );
-		// Delete it by prefix since it can have entries suffixed with the user locale.
-		$this->database_cache->delete_by_prefix( Database_Cache::RECOMMENDED_PAYMENT_METHODS );
+		$this->database_cache->delete( Database_Cache::RECOMMENDED_PAYMENT_METHODS );
 	}
 
 	/**
