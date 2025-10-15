@@ -12,7 +12,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 use WCPay\Logger;
 use WCPay\Payment_Methods\CC_Payment_Gateway;
 use WCPay\Constants\Payment_Method;
-use WCPay\Database_Cache;
 
 /**
  * Handles and process WC payment tokens API.
@@ -24,6 +23,8 @@ class WC_Payments_Token_Service {
 		Payment_Method::SEPA => WC_Payment_Gateway_WCPay::GATEWAY_ID . '_' . Payment_Method::SEPA,
 		Payment_Method::LINK => WC_Payment_Gateway_WCPay::GATEWAY_ID,
 	];
+
+	const CACHED_PAYMENT_METHODS_META_KEY = '_wcpay_payment_methods';
 
 	/**
 	 * Client for making requests to the WooCommerce Payments API
@@ -144,12 +145,7 @@ class WC_Payments_Token_Service {
 			return; // No need to do anything, payment methods will never be cached in this case.
 		}
 
-		$retrievable_payment_method_types = [ Payment_Method::CARD, Payment_Method::LINK, Payment_Method::SEPA ];
-		$customer_id                      = $this->customer_service->get_customer_id_by_user_id( $user_id );
-		$database_cache                   = WC_Payments::get_database_cache();
-		foreach ( $retrievable_payment_method_types as $type ) {
-			$database_cache->delete( Database_Cache::PAYMENT_METHODS_KEY_PREFIX . $customer_id . '_' . $type );
-		}
+		delete_user_meta( $user_id, self::CACHED_PAYMENT_METHODS_META_KEY );
 	}
 
 	/**
@@ -157,24 +153,14 @@ class WC_Payments_Token_Service {
 	 * Used when account data is updated and all payment method caches need to be cleared.
 	 */
 	public function clear_all_cached_payment_methods() {
+		global $wpdb;
+
 		if ( WC_Payments::is_network_saved_cards_enabled() ) {
 			return; // No need to do anything, payment methods will never be cached in this case.
 		}
 
-		$database_cache                   = WC_Payments::get_database_cache();
-		$retrievable_payment_method_types = [ Payment_Method::CARD, Payment_Method::LINK, Payment_Method::SEPA ];
-
-		// Get all users with WooCommerce customer IDs.
-		$users = get_users();
-
-		foreach ( $users as $user ) {
-			$customer_id = $this->customer_service->get_customer_id_by_user_id( $user->ID );
-			if ( $customer_id ) {
-				foreach ( $retrievable_payment_method_types as $type ) {
-					$database_cache->delete( Database_Cache::PAYMENT_METHODS_KEY_PREFIX . $customer_id . '_' . $type );
-				}
-			}
-		}
+		// Tap straight into the database and delete the meta key for all users.
+		$wpdb->query( $wpdb->prepare( "DELETE FROM $wpdb->usermeta WHERE meta_key = %s", self::CACHED_PAYMENT_METHODS_META_KEY ) );
 
 		/**
 		 * Legacy: Payment methods were stored in the database cache with the `wcpay_pm_` prefix.
@@ -183,7 +169,6 @@ class WC_Payments_Token_Service {
 		 * This method gets called for account updates. Even though those are rare, they should be a
 		 * good opportunity to clean up old cached data.
 		 */
-		global $wpdb;
 		$options = $wpdb->get_results( "SELECT option_name FROM $wpdb->options WHERE option_name LIKE 'wcpay_pm_%'" );
 		foreach ( $options as $option ) {
 			delete_option( $option->option_name );
@@ -227,16 +212,7 @@ class WC_Payments_Token_Service {
 				}
 			}
 
-			$retrievable_payment_method_types = $this->get_retrievable_payment_method_types( $gateway_id );
-
-			$payment_methods = [];
-
-			foreach ( $retrievable_payment_method_types as $type ) {
-				$payment_methods[] = $this->customer_service->get_payment_methods_for_customer( $customer_id, $type );
-			}
-
-			$payment_methods = array_merge( ...$payment_methods );
-
+			$payment_methods = $this->get_payment_methods_from_stripe( $user_id, $customer_id, $gateway_id );
 		} catch ( Exception $e ) {
 			Logger::error( 'Failed to fetch payment methods for customer.' . $e );
 			return $tokens;
@@ -267,6 +243,48 @@ class WC_Payments_Token_Service {
 		add_action( 'woocommerce_payment_token_deleted', [ $this, 'woocommerce_payment_token_deleted' ], 10, 2 );
 
 		return $tokens;
+	}
+
+	/**
+	 * Gets payment methods from Stripe.
+	 *
+	 * @param string $user_id     WP user ID.
+	 * @param string $customer_id WC customer ID.
+	 * @param string $gateway_id  WC gateway ID.
+	 * @return array Payment methods.
+	 */
+	private function get_payment_methods_from_stripe( $user_id, $customer_id, $gateway_id ) {
+		// Check for cached user methods. Ignore the cache if the customer ID is different.
+		$cached_data = get_user_meta( $user_id, self::CACHED_PAYMENT_METHODS_META_KEY, true );
+		if (
+			is_array( $cached_data )
+			&& isset( $cached_data['customer_id'] )
+			&& $cached_data['customer_id'] === $customer_id
+			&& isset( $cached_data['payment_methods'] )
+			&& is_array( $cached_data['payment_methods'] )
+		) {
+			return $cached_data['payment_methods'];
+		}
+
+		$retrievable_payment_method_types = $this->get_retrievable_payment_method_types( $gateway_id );
+
+		$payment_methods = [];
+		foreach ( $retrievable_payment_method_types as $type ) {
+			$payment_methods[] = $this->customer_service->get_payment_methods_for_customer( $customer_id, $type );
+		}
+		$payment_methods = array_merge( ...$payment_methods );
+
+		// Cache the payment methods.
+		update_user_meta(
+			$user_id,
+			self::CACHED_PAYMENT_METHODS_META_KEY,
+			[
+				'customer_id'     => $customer_id,
+				'payment_methods' => $payment_methods,
+			]
+		);
+
+		return $payment_methods;
 	}
 
 	/**
