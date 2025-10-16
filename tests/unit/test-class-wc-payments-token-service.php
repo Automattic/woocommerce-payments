@@ -832,10 +832,24 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertEmpty( get_user_meta( $user_id, $cache_key, true ) );
 	}
 
+	public function provider_clearing_with_network_saved_cards_enabled(): array {
+		return [
+			'clear_cached_payment_methods_for_user' => [
+				'user_id' => 1, // specific user.
+			],
+			'clear_all_cached_payment_methods'      => [
+				'user_id' => null, // all users.
+			],
+		];
+	}
+
 	/**
-	 * Test clear_cached_payment_methods_for_user with network saved cards enabled.
+	 * Test `clear_cached_payment_methods_for_user` and `clear_all_cached_payment_methods` with network saved cards enabled.
+	 *
+	 * @dataProvider provider_clearing_with_network_saved_cards_enabled
+	 * @param int|null $user_id The user ID.
 	 */
-	public function test_clear_cached_payment_methods_for_user_network_saved_cards_enabled() {
+	public function test_clearing_with_network_saved_cards_enabled( ?int $user_id = null ) {
 		$user_id     = 1;
 		$cached_data = [
 			'customer_id'                          => 'cus_12345',
@@ -850,8 +864,13 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		// Mock network saved cards enabled using the filter.
 		add_filter( 'wcpay_force_network_saved_cards', '__return_true' );
 
-		// Clear cached payment methods for user.
-		$this->token_service->clear_cached_payment_methods_for_user( $user_id );
+		if ( $user_id > 0 ) {
+			// Clear cached payment methods for user.
+			$this->token_service->clear_cached_payment_methods_for_user( $user_id );
+		} else {
+			// Clear all cached payment methods for all users.
+			$this->token_service->clear_all_cached_payment_methods();
+		}
 
 		// Verify cached data still exists (should not be cleared when network saved cards is enabled).
 		$this->assertEquals( $cached_data, get_user_meta( $user_id, WC_Payments_Token_Service::CACHED_PAYMENT_METHODS_META_KEY, true ) );
@@ -901,34 +920,6 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( get_option( 'wcpay_pm_legacy_2' ) );
 		// Verify non-payment method options are not deleted.
 		$this->assertEquals( 'should_not_be_deleted', get_option( 'wcpay_other_option' ) );
-	}
-
-	/**
-	 * Test clear_all_cached_payment_methods with network saved cards enabled.
-	 */
-	public function test_clear_all_cached_payment_methods_network_saved_cards_enabled() {
-		$user_id     = 1;
-		$cached_data = [
-			'customer_id'                          => 'cus_12345',
-			'payment_methods_woocommerce_payments' => [
-				$this->generate_card_pm_response( 'pm_test1' ),
-			],
-		];
-
-		// Add cached data to user meta.
-		update_user_meta( $user_id, WC_Payments_Token_Service::CACHED_PAYMENT_METHODS_META_KEY, $cached_data );
-
-		// Mock network saved cards enabled using the filter.
-		add_filter( 'wcpay_force_network_saved_cards', '__return_true' );
-
-		// Clear all cached payment methods.
-		$this->token_service->clear_all_cached_payment_methods();
-
-		// Verify cached data still exists (should not be cleared when network saved cards is enabled).
-		$this->assertEquals( $cached_data, get_user_meta( $user_id, WC_Payments_Token_Service::CACHED_PAYMENT_METHODS_META_KEY, true ) );
-
-		// Clean up the filter.
-		remove_filter( 'wcpay_force_network_saved_cards', '__return_true' );
 	}
 
 	/**
