@@ -23,11 +23,7 @@ const PayoutStatus: React.FC< {
 
 	return (
 		<Flex align="center" gap={ 0 } justify="flex-start">
-			<Chip
-				type={ chipType }
-				message={ payoutStatus.text }
-				icon={ getIconByName( payoutStatus.icon ) }
-			/>
+			<Chip type={ chipType } message={ payoutStatus.text } />
 			{ payoutStatus.popover && (
 				<ClickTooltip
 					className={ 'payout-click-tooltip' }
