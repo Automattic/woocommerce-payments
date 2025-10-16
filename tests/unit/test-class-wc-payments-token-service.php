@@ -825,9 +825,6 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		// Add cached data to user meta.
 		update_user_meta( $user_id, $cache_key, $cached_data );
 
-		// Verify cached data exists.
-		$this->assertEquals( $cached_data, get_user_meta( $user_id, $cache_key, true ) );
-
 		// Clear cached payment methods for user.
 		$this->token_service->clear_cached_payment_methods_for_user( $user_id );
 
@@ -891,12 +888,6 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		update_option( 'wcpay_pm_legacy_2', 'legacy_data_2' );
 		update_option( 'wcpay_other_option', 'should_not_be_deleted' );
 
-		// Verify cached data exists.
-		$this->assertEquals( $cached_data_1, get_user_meta( $user_id_1, WC_Payments_Token_Service::CACHED_PAYMENT_METHODS_META_KEY, true ) );
-		$this->assertEquals( $cached_data_2, get_user_meta( $user_id_2, WC_Payments_Token_Service::CACHED_PAYMENT_METHODS_META_KEY, true ) );
-		$this->assertEquals( 'legacy_data_1', get_option( 'wcpay_pm_legacy_1' ) );
-		$this->assertEquals( 'legacy_data_2', get_option( 'wcpay_pm_legacy_2' ) );
-
 		// Clear all cached payment methods.
 		$this->token_service->clear_all_cached_payment_methods();
 
@@ -959,7 +950,7 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		// Add cached data to user meta.
 		update_user_meta( $user_id, WC_Payments_Token_Service::CACHED_PAYMENT_METHODS_META_KEY, $cached_data );
 
-		$result = $this->call_sut_method( 'get_payment_methods_for_customer', $user_id, $customer_id, $gateway_id );
+		$result = $this->call_sut_method( 'get_payment_methods_from_stripe', $user_id, $customer_id, $gateway_id );
 
 		// Verify cached data is returned.
 		$this->assertEquals( $cached_payment_methods, $result );
@@ -1047,7 +1038,7 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 				[ $payment_methods[1] ]
 			);
 
-		$result = $this->call_sut_method( 'get_payment_methods_for_customer', $user_id, $customer_id, $gateway_id );
+		$result = $this->call_sut_method( 'get_payment_methods_from_stripe', $user_id, $customer_id, $gateway_id );
 
 		// Verify payment methods are returned.
 		$this->assertEquals( $payment_methods, $result );
@@ -1081,7 +1072,7 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 			->with( $customer_id, Payment_Method::SEPA )
 			->willReturn( $payment_methods );
 
-		$result = $this->call_sut_method( 'get_payment_methods_for_customer', $user_id, $customer_id, $gateway_id );
+		$result = $this->call_sut_method( 'get_payment_methods_from_stripe', $user_id, $customer_id, $gateway_id );
 
 		// Verify SEPA payment methods are returned.
 		$this->assertEquals( $payment_methods, $result );
@@ -1095,7 +1086,7 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 	private function call_sut_method( $method_name, $user_id, $customer_id, $gateway_id ) {
 		// Use reflection to access private method.
 		$reflection = new ReflectionClass( $this->token_service );
-		$method     = $reflection->getMethod( 'get_payment_methods_from_stripe' );
+		$method     = $reflection->getMethod( $method_name );
 		$method->setAccessible( true );
 
 		// Call the private method.
