@@ -950,15 +950,15 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		// Add cached data to user meta.
 		update_user_meta( $user_id, WC_Payments_Token_Service::CACHED_PAYMENT_METHODS_META_KEY, $cached_data );
 
-		$result = $this->call_sut_method( 'get_payment_methods_from_stripe', $user_id, $customer_id, $gateway_id );
-
-		// Verify cached data is returned.
-		$this->assertEquals( $cached_payment_methods, $result );
-
 		// Verify customer service is not called (since we're using cached data).
 		$this->mock_customer_service
 			->expects( $this->never() )
 			->method( 'get_payment_methods_for_customer' );
+
+		$result = $this->call_sut_method( 'get_payment_methods_from_stripe', $user_id, $customer_id, $gateway_id );
+
+		// Verify cached data is returned.
+		$this->assertEquals( $cached_payment_methods, $result );
 	}
 
 	/**
