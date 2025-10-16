@@ -565,7 +565,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		}
 
 		// Sync the store setup with the Transact Platform.
-		$this->account->schedule_store_setup_sync();
+		$this->account->store_setup_sync();
 
 		return new WP_REST_Response( $this->get_settings(), 200 );
 	}
