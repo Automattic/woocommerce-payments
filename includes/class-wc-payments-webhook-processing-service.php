@@ -204,6 +204,9 @@ class WC_Payments_Webhook_Processing_Service {
 
 				// Refetch the account data to allow the platform to drive the available next steps.
 				$this->account->refresh_account_data();
+
+				// Use the opportunity to clear cached payment methods.
+				$this->token_service->clear_all_cached_payment_methods();
 				break;
 			case 'wcpay.notification':
 				$this->process_wcpay_notification( $event_body );
