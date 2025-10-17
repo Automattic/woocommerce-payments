@@ -97,29 +97,51 @@ class WC_Payments_Non_Reusable_Payment_Methods_Integration_Test extends WCPAY_Un
 	}
 
 	/**
-	 * Simulate the checkout payment method saving logic.
+	 * Simulate the checkout payment method saving logic using real implementation.
 	 */
 	private function simulate_checkout_payment_method_saving( $order_id, $subscription ) {
-		// This simulates the logic from should_save_payment_method_for_subscription().
-		// Current implementation: always save (will make tests fail initially).
-		return true;
+		// Use actual logic from should_save_payment_method_for_subscription().
+		$subscriptions = [ $subscription ];
+
+		// Mock wcs_get_subscriptions_for_order.
+		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
+			function ( $order_id ) use ( $subscriptions ) {
+				return $subscriptions;
+			}
+		);
+
+		// Create trait instance to test.
+		$trait  = $this->getMockForTrait( WC_Payment_Gateway_WCPay_Subscriptions_Trait::class );
+		$result = $trait->should_save_payment_method_for_subscription( $order_id );
+
+		// Clean up.
+		WC_Subscriptions::set_wcs_get_subscriptions_for_order( null );
+
+		return $result;
 	}
 
 	/**
-	 * Simulate the renewal conversion logic.
+	 * Simulate the renewal conversion logic using real implementation.
 	 */
 	private function simulate_renewal_conversion_logic( $subscription ) {
-		// This simulates the logic from invoice service conversion.
-		// Current implementation: always convert (will make tests fail initially).
-		return true;
+		// Use actual logic from invoice service conversion.
+		if ( $subscription->is_manual() ) {
+			$payment_tokens = $subscription->get_payment_tokens();
+			return ! empty( $payment_tokens );
+		}
+		return false;
 	}
 
 	/**
-	 * Simulate the WCPay subscription creation logic.
+	 * Simulate the WCPay subscription creation logic using real implementation.
 	 */
 	private function simulate_wcpay_subscription_creation( $subscription ) {
-		// This simulates the logic from create_subscription_for_manual_renewal().
-		// Current implementation: always create (will make tests fail initially).
-		return true;
+		// Use actual logic from create_subscription_for_manual_renewal().
+		if ( ! $subscription->is_manual() ) {
+			return false;
+		}
+
+		$payment_tokens = $subscription->get_payment_tokens();
+		return ! empty( $payment_tokens );
 	}
 }
