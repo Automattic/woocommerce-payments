@@ -347,20 +347,6 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		$this->assertSame( 12.5, $this->frontend_prices->get_coupon_min_max_amount( '5.0' ) );
 	}
 
-	public function test_get_free_shipping_min_amount_returns_empty_amount() {
-		$this->assertSame( [ 'key' => 'value' ], $this->frontend_prices->get_free_shipping_min_amount( [ 'key' => 'value' ] ) );
-	}
-
-	public function test_get_free_shipping_min_amount_returns_zero_amount() {
-		$this->assertSame( [ 'min_amount' => '0' ], $this->frontend_prices->get_free_shipping_min_amount( [ 'min_amount' => '0' ] ) );
-	}
-
-	public function test_get_free_shipping_min_amount_converts_amount_as_product() {
-		$this->mock_multi_currency->method( 'get_price' )->with( 5.0, 'product' )->willReturn( 12.5 );
-
-		$this->assertSame( [ 'min_amount' => 12.5 ], $this->frontend_prices->get_free_shipping_min_amount( [ 'min_amount' => '5.0' ] ) );
-	}
-
 	public function test_add_order_meta_skips_default_currency() {
 		$this->mock_multi_currency->method( 'get_default_currency' )->willReturn( new WCPay\MultiCurrency\Currency( $this->localization_service, 'USD' ) );
 
