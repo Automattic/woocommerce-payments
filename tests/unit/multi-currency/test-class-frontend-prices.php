@@ -81,7 +81,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 			[ 'woocommerce_variation_prices', 'get_variation_price_range' ],
 			[ 'woocommerce_get_variation_prices_hash', 'add_exchange_rate_to_variation_prices_hash' ],
 			[ 'woocommerce_shipping_method_add_rate_args', 'convert_shipping_method_rate_cost' ],
-			[ 'init', 'register_free_shipping_filters' ],
+			[ 'woocommerce_shipping_zone_shipping_methods', 'convert_free_shipping_method_min_amount' ],
 			[ 'woocommerce_coupon_get_amount', 'get_coupon_amount' ],
 			[ 'woocommerce_coupon_get_minimum_amount', 'get_coupon_min_max_amount' ],
 			[ 'woocommerce_coupon_get_maximum_amount', 'get_coupon_min_max_amount' ],
@@ -89,18 +89,33 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		];
 	}
 
-	public function test_registers_woocommerce_filters_for_free_shipping_methods() {
-		// Add a free shipping method to the default zone.
-		$default_zone_free_method = \WC_Shipping_Zones::get_zone( 0 )->add_shipping_method( 'free_shipping' );
+	public function test_converts_free_shipping_method_min_amount() {
+		// Add multiple shipping methods to the default zone.
+		$default_zone = \WC_Shipping_Zones::get_zone( 0 );
+		$default_zone->add_shipping_method( 'flat_rate' );
+		$free_shipping_id     = $default_zone->add_shipping_method( 'free_shipping' );
+		$free_shipping_method = \WC_Shipping_Zones::get_shipping_method( $free_shipping_id );
+		$this->assertNotNull( $free_shipping_method );
 
-		// Create a new shipping zone and shipping method.
-		$new_zone             = new WC_Shipping_Zone();
-		$new_zone_free_method = $new_zone->add_shipping_method( 'free_shipping' );
+		// Set a min_amount to be converted.
+		$free_shipping_method->instance_settings['min_amount'] = 10.0;
+		update_option(
+			$free_shipping_method->get_instance_option_key(),
+			$free_shipping_method->instance_settings,
+			'yes'
+		);
 
-		$this->frontend_prices->register_free_shipping_filters();
+		$this->mock_multi_currency
+			->expects( $this->once() )
+			->method( 'get_price' )
+			->with( 10.0, 'product' )
+			->willReturn( 25.0 );
 
-		$this->assertGreaterThan( 98, has_filter( 'option_woocommerce_free_shipping_' . $default_zone_free_method . '_settings', [ $this->frontend_prices, 'get_free_shipping_min_amount' ] ) );
-		$this->assertGreaterThan( 98, has_filter( 'option_woocommerce_free_shipping_' . $new_zone_free_method . '_settings', [ $this->frontend_prices, 'get_free_shipping_min_amount' ] ) );
+		// The filter should be registered when the zone's shipping methods are retrieved.
+		$methods = $default_zone->get_shipping_methods();
+
+		$this->assertCount( 2, $methods );
+		$this->assertEquals( 25.0, $methods[ $free_shipping_id ]->min_amount );
 	}
 
 	public function test_get_product_price_returns_empty_price() {
