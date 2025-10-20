@@ -256,14 +256,29 @@ class WC_Payments_Subscriptions_Disabler {
 	/**
 	 * Determines if the current request is targeting the subscription post type.
 	 *
+	 * This handles:
+	 * - Listing: ?post_type=shop_subscription
+	 * - Adding new: ?post_type=shop_subscription
+	 * - Editing by post ID: ?post=123&action=edit (checked via post type lookup)
+	 *
 	 * @return bool
 	 */
 	private function is_subscription_post_type_request() {
-		if ( empty( $_GET['post_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
-			return false;
+		// Check for explicit post_type parameter.
+		if ( ! empty( $_GET['post_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return 'shop_subscription' === sanitize_key( wp_unslash( $_GET['post_type'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 		}
 
-		return 'shop_subscription' === sanitize_key( wp_unslash( $_GET['post_type'] ) ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+		// Check if editing a specific post that might be a subscription.
+		if ( ! empty( $_GET['post'] ) && ! empty( $_GET['action'] ) && 'edit' === $_GET['action'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$post_id = absint( $_GET['post'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			if ( $post_id > 0 ) {
+				$post_type = get_post_type( $post_id );
+				return 'shop_subscription' === $post_type;
+			}
+		}
+
+		return false;
 	}
 
 	/**

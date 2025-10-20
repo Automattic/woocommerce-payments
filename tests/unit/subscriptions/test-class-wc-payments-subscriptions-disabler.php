@@ -211,7 +211,7 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Verify that admin subscription screens are redirected away.
+	 * Verify that admin subscription list screens are redirected away.
 	 */
 	public function test_maybe_block_admin_subscription_screen_redirects() {
 		require_once ABSPATH . 'wp-admin/includes/screen.php';
@@ -225,6 +225,85 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 
 		$this->assertSame( admin_url( 'admin.php?page=wc-admin' ), $this->disabler->redirected_to );
 
+		set_current_screen( 'front' );
+	}
+
+	/**
+	 * Verify that editing an individual subscription is blocked.
+	 */
+	public function test_maybe_block_admin_subscription_edit_screen() {
+		require_once ABSPATH . 'wp-admin/includes/screen.php';
+		require_once ABSPATH . 'wp-admin/includes/template.php';
+
+		// Test with CPT edit screen.
+		set_current_screen( 'shop_subscription' );
+
+		$screen = get_current_screen();
+
+		$this->disabler->maybe_block_admin_subscription_screen( $screen );
+
+		$this->assertSame(
+			admin_url( 'admin.php?page=wc-admin' ),
+			$this->disabler->redirected_to,
+			'Should block editing individual subscriptions (CPT)'
+		);
+
+		// Reset for next test.
+		$this->disabler->redirected_to = null;
+
+		// Test with HPOS edit screen.
+		set_current_screen( 'wc-orders--shop_subscription' );
+
+		$screen = get_current_screen();
+
+		$this->disabler->maybe_block_admin_subscription_screen( $screen );
+
+		$this->assertSame(
+			admin_url( 'admin.php?page=wc-admin' ),
+			$this->disabler->redirected_to,
+			'Should block editing individual subscriptions (HPOS)'
+		);
+
+		set_current_screen( 'front' );
+	}
+
+	/**
+	 * Verify that direct post.php?post=X&action=edit URLs are blocked for subscriptions.
+	 */
+	public function test_block_subscription_edit_via_post_id() {
+		if ( ! class_exists( 'WC_Subscription' ) ) {
+			$this->markTestSkipped( 'WC_Subscription class not available.' );
+		}
+
+		require_once ABSPATH . 'wp-admin/includes/screen.php';
+		require_once ABSPATH . 'wp-admin/includes/template.php';
+
+		// Create a mock subscription post.
+		$subscription_id = $this->factory->post->create(
+			[
+				'post_type'   => 'shop_subscription',
+				'post_status' => 'publish',
+			]
+		);
+
+		// Simulate accessing the edit screen via post ID.
+		$_GET['post']   = $subscription_id;
+		$_GET['action'] = 'edit';
+
+		set_current_screen( 'shop_subscription' );
+		$screen = get_current_screen();
+
+		$this->disabler->maybe_block_admin_subscription_screen( $screen );
+
+		$this->assertSame(
+			admin_url( 'admin.php?page=wc-admin' ),
+			$this->disabler->redirected_to,
+			'Should block editing subscription via direct post ID URL'
+		);
+
+		// Clean up.
+		unset( $_GET['post'], $_GET['action'] );
+		wp_delete_post( $subscription_id, true );
 		set_current_screen( 'front' );
 	}
 
