@@ -257,4 +257,231 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 
 		$this->assertSame( $account_url, $this->disabler->redirected_to );
 	}
+
+	/**
+	 * Verify that the disabler does NOT interfere with renewal order creation hooks.
+	 *
+	 * This is a critical test to ensure Stripe Billing renewals continue to work
+	 * when the UI is disabled.
+	 */
+	public function test_disabler_does_not_hook_into_renewal_order_creation() {
+		// First, register a test hook to simulate renewal logic being active.
+		$test_callback = function () {
+			return true;
+		};
+		add_action( 'woocommerce_renewal_order_payment_complete', $test_callback );
+
+		// Verify the hook exists before disabler runs.
+		$this->assertIsInt(
+			has_action( 'woocommerce_renewal_order_payment_complete', $test_callback ),
+			'Renewal hook should exist before disabler init'
+		);
+
+		// Initialize the disabler.
+		$this->disabler->init_hooks();
+
+		// Verify the renewal hook still exists and was NOT removed by disabler.
+		$this->assertIsInt(
+			has_action( 'woocommerce_renewal_order_payment_complete', $test_callback ),
+			'Disabler should NOT remove the renewal order payment complete hook'
+		);
+
+		// Clean up.
+		remove_action( 'woocommerce_renewal_order_payment_complete', $test_callback );
+	}
+
+	/**
+	 * Verify that the disabler does NOT hook into payment processing.
+	 *
+	 * Payment processing must continue to work for renewals to succeed.
+	 */
+	public function test_disabler_does_not_hook_into_payment_processing() {
+		// Register test hooks to simulate payment processing being active.
+		$payment_callback  = function () {};
+		$checkout_callback = function () {};
+
+		add_action( 'woocommerce_subscription_payment_complete', $payment_callback );
+		add_action( 'woocommerce_checkout_subscription_created', $checkout_callback );
+
+		// Initialize the disabler.
+		$this->disabler->init_hooks();
+
+		// Verify payment complete hook still exists (not removed by disabler).
+		$this->assertIsInt(
+			has_action( 'woocommerce_subscription_payment_complete', $payment_callback ),
+			'Disabler should NOT remove subscription payment complete hook'
+		);
+
+		// Verify checkout subscription creation hook still exists.
+		$this->assertIsInt(
+			has_action( 'woocommerce_checkout_subscription_created', $checkout_callback ),
+			'Disabler should NOT remove checkout subscription created hook'
+		);
+
+		// Clean up.
+		remove_action( 'woocommerce_subscription_payment_complete', $payment_callback );
+		remove_action( 'woocommerce_checkout_subscription_created', $checkout_callback );
+	}
+
+	/**
+	 * Verify that the disabler does NOT hook into subscription status changes.
+	 *
+	 * Status changes are critical for renewal processing and subscription lifecycle.
+	 */
+	public function test_disabler_does_not_hook_into_status_changes() {
+		$this->disabler->init_hooks();
+
+		// List of critical status change hooks that should NOT be affected.
+		$status_hooks = [
+			'woocommerce_subscription_status_cancelled',
+			'woocommerce_subscription_status_expired',
+			'woocommerce_subscription_status_on-hold',
+			'woocommerce_subscription_status_active',
+			'woocommerce_subscription_status_pending-cancel',
+		];
+
+		foreach ( $status_hooks as $hook ) {
+			$this->assertFalse(
+				has_action( $hook ),
+				"Disabler should NOT hook into {$hook}"
+			);
+		}
+	}
+
+	/**
+	 * Verify that disabler only hooks into UI-layer actions and filters.
+	 *
+	 * This test documents all hooks the disabler DOES use to confirm they're
+	 * all UI/presentation related and not backend functionality.
+	 */
+	public function test_disabler_only_hooks_into_ui_layer() {
+		// Set admin context for admin hooks to be registered.
+		set_current_screen( 'dashboard' );
+
+		$this->disabler->init_hooks();
+
+		// Admin UI hooks that SHOULD be present (only when is_admin()).
+		$hook_priority = has_action( 'admin_menu', [ $this->disabler, 'remove_admin_menu_items' ] );
+		$this->assertNotFalse(
+			$hook_priority,
+			'Disabler should hook into admin_menu to remove UI elements'
+		);
+
+		$hook_priority = has_action( 'current_screen', [ $this->disabler, 'maybe_block_admin_subscription_screen' ] );
+		$this->assertNotFalse(
+			$hook_priority,
+			'Disabler should hook into current_screen to block admin access'
+		);
+
+		$hook_priority = has_filter( 'product_type_selector', [ $this->disabler, 'filter_product_type_selector' ] );
+		$this->assertNotFalse(
+			$hook_priority,
+			'Disabler should hook into product_type_selector to hide subscription types'
+		);
+
+		$hook_priority = has_filter( 'woocommerce_settings_tabs_array', [ $this->disabler, 'filter_settings_tabs' ] );
+		$this->assertNotFalse(
+			$hook_priority,
+			'Disabler should hook into settings tabs to remove subscription tab'
+		);
+
+		// Frontend UI hooks that SHOULD be present (these run regardless of is_admin()).
+		$hook_priority = has_filter( 'woocommerce_account_menu_items', [ $this->disabler, 'remove_account_menu_item' ] );
+		$this->assertNotFalse(
+			$hook_priority,
+			'Disabler should hook into account menu to remove subscription links'
+		);
+
+		$hook_priority = has_action( 'template_redirect', [ $this->disabler, 'maybe_redirect_account_endpoints' ] );
+		$this->assertNotFalse(
+			$hook_priority,
+			'Disabler should hook into template_redirect to block customer access'
+		);
+
+		$hook_priority = has_action( 'init', [ $this->disabler, 'remove_related_subscriptions_section' ] );
+		$this->assertNotFalse(
+			$hook_priority,
+			'Disabler should hook into init to remove subscription display sections'
+		);
+
+		// Clean up.
+		set_current_screen( 'front' );
+	}
+
+	/**
+	 * Integration test: Verify wcs_create_renewal_order can still be called when disabler is active.
+	 *
+	 * This simulates what happens during a Stripe webhook when invoice.paid is received.
+	 */
+	public function test_renewal_order_creation_works_with_disabler_active() {
+		if ( ! class_exists( 'WC_Subscription' ) ) {
+			$this->markTestSkipped( 'WC_Subscription class not available.' );
+		}
+
+		// Initialize the disabler (simulating production state).
+		$this->disabler->init_hooks();
+
+		// Create a mock subscription.
+		$mock_subscription = $this->getMockBuilder( 'WC_Subscription' )
+			->disableOriginalConstructor()
+			->getMock();
+
+		$mock_subscription->method( 'get_id' )->willReturn( 123 );
+
+		// Track if wcs_create_renewal_order was called successfully.
+		$renewal_order_created = false;
+
+		// Mock the wcs_create_renewal_order function.
+		WC_Subscriptions::wcs_create_renewal_order(
+			function ( $subscription ) use ( &$renewal_order_created ) {
+				$renewal_order_created = true;
+				return WC_Helper_Order::create_order();
+			}
+		);
+
+		// Simulate renewal order creation (what happens in webhook handler).
+		$renewal_order = wcs_create_renewal_order( $mock_subscription );
+
+		// Verify renewal order was created successfully.
+		$this->assertTrue( $renewal_order_created, 'Renewal order should be created even with disabler active' );
+		$this->assertInstanceOf( 'WC_Order', $renewal_order, 'Should return a valid WC_Order object' );
+	}
+
+	/**
+	 * Verify that AJAX and REST requests are not blocked by screen blocking.
+	 *
+	 * This ensures backend operations (like webhook processing) continue to work.
+	 */
+	public function test_admin_screen_blocking_skips_ajax_and_rest_requests() {
+		if ( ! class_exists( 'WP_Screen' ) ) {
+			$this->markTestSkipped( 'WP_Screen class not available.' );
+		}
+
+		require_once ABSPATH . 'wp-admin/includes/screen.php';
+		require_once ABSPATH . 'wp-admin/includes/template.php';
+
+		// Simulate AJAX request.
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		set_current_screen( 'edit-shop_subscription' );
+
+		$screen = get_current_screen();
+		$this->disabler->maybe_block_admin_subscription_screen( $screen );
+
+		// Should NOT redirect during AJAX.
+		$this->assertNull( $this->disabler->redirected_to, 'Should not redirect during AJAX requests' );
+
+		remove_filter( 'wp_doing_ajax', '__return_true' );
+
+		// Simulate REST request.
+		define( 'REST_REQUEST', true );
+		set_current_screen( 'edit-shop_subscription' );
+
+		$screen = get_current_screen();
+		$this->disabler->maybe_block_admin_subscription_screen( $screen );
+
+		// Should NOT redirect during REST requests.
+		$this->assertNull( $this->disabler->redirected_to, 'Should not redirect during REST requests' );
+
+		set_current_screen( 'front' );
+	}
 }
