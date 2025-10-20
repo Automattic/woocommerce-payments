@@ -542,9 +542,9 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->controller->update_settings( $request );
 	}
 
-	public function test_update_settings_schedules_store_setup_sync() {
+	public function test_update_settings_calls_store_setup_sync() {
 		$this->mock_wcpay_account->expects( $this->once() )
-			->method( 'schedule_store_setup_sync' );
+			->method( 'store_setup_sync' );
 
 		$request = new WP_REST_Request();
 		$request->set_param( 'is_wcpay_enabled', true );
