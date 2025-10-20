@@ -14,11 +14,51 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * Disables bundled subscriptions management surfaces.
+ *
+ * This class hides UI elements and blocks access to subscription management
+ * interfaces for both merchants and customers. It operates exclusively on
+ * the presentation layer and does NOT affect backend subscription functionality.
+ *
+ * What this class disables:
+ * - Admin menu items (WooCommerce > Subscriptions)
+ * - Admin subscription management screens
+ * - Subscription product types in product creation
+ * - Subscription settings tab
+ * - Customer account subscription pages
+ * - Related subscriptions section on order details
+ *
+ * What this class does NOT affect:
+ * - Stripe Billing webhook processing (invoice.paid, invoice.upcoming, etc.)
+ * - Automatic renewal order creation via wcs_create_renewal_order()
+ * - Subscription payment processing and completion
+ * - Existing subscription data or meta
+ * - Backend subscription status management
+ * - Payment method updates
+ *
+ * This ensures merchants and customers cannot create or manage subscriptions
+ * through the UI while Stripe Billing continues to process renewals automatically.
  */
 class WC_Payments_Subscriptions_Disabler {
 
 	/**
 	 * Initiates hooks that hide bundled subscriptions management entry points.
+	 *
+	 * This method registers UI-layer hooks only. It does NOT hook into:
+	 * - Payment processing (woocommerce_subscription_payment_complete, etc.)
+	 * - Renewal order creation (woocommerce_renewal_order_payment_complete, etc.)
+	 * - Webhook handling (invoice.paid, invoice.upcoming, etc.)
+	 * - Subscription status changes (woocommerce_subscription_status_*, etc.)
+	 *
+	 * Admin hooks (menu/screen blocking):
+	 * - Removes admin menu items
+	 * - Blocks direct access to subscription screens
+	 * - Removes subscription product types from product editor
+	 * - Removes subscription settings tab
+	 *
+	 * Frontend hooks (customer-facing blocking):
+	 * - Removes subscription navigation from My Account
+	 * - Blocks direct access to subscription endpoints
+	 * - Removes subscription details from order views
 	 *
 	 * @return void
 	 */
@@ -39,6 +79,9 @@ class WC_Payments_Subscriptions_Disabler {
 	/**
 	 * Removes WooCommerce > Subscriptions menu entries.
 	 *
+	 * Hides the subscriptions admin menu for both CPT and HPOS implementations.
+	 * Does not affect subscription data or the ability for renewals to process.
+	 *
 	 * @return void
 	 */
 	public function remove_admin_menu_items() {
@@ -49,6 +92,10 @@ class WC_Payments_Subscriptions_Disabler {
 
 	/**
 	 * Redirects attempts to access admin subscription management screens.
+	 *
+	 * Prevents direct URL access to subscription edit/list screens by redirecting
+	 * to the WooCommerce overview. Does not run during AJAX or REST requests to
+	 * avoid interfering with legitimate background operations.
 	 *
 	 * @param WP_Screen $screen Current screen instance.
 	 * @return void
@@ -88,8 +135,12 @@ class WC_Payments_Subscriptions_Disabler {
 	/**
 	 * Removes subscription related product types from product selector.
 	 *
+	 * Prevents merchants from creating new subscription products by hiding
+	 * the product types from the dropdown. Existing subscription products
+	 * remain in the database and can still process renewals.
+	 *
 	 * @param array $product_types Registered product types.
-	 * @return array
+	 * @return array Filtered product types without subscription options.
 	 */
 	public function filter_product_type_selector( $product_types ) {
 		unset( $product_types['subscription'], $product_types['variable-subscription'] );
@@ -140,6 +191,14 @@ class WC_Payments_Subscriptions_Disabler {
 	/**
 	 * Redirects subscription related customer account endpoints.
 	 *
+	 * Prevents customers from accessing subscription management pages including:
+	 * - Subscriptions list (/my-account/subscriptions)
+	 * - View subscription detail (/my-account/view-subscription/123)
+	 * - Payment method management (/my-account/subscription-payment-method/123)
+	 *
+	 * Redirects all attempts to the My Account dashboard. Does not affect
+	 * subscription data or automated renewal payments.
+	 *
 	 * @return void
 	 */
 	public function maybe_redirect_account_endpoints() {
@@ -157,6 +216,13 @@ class WC_Payments_Subscriptions_Disabler {
 	/**
 	 * Removes the related subscriptions section from order details.
 	 *
+	 * Hides the "Related Subscriptions" section that normally appears on
+	 * order detail pages (both admin and customer-facing). This prevents
+	 * users from viewing subscription information through renewal orders.
+	 *
+	 * The underlying subscription and renewal order relationship remains intact;
+	 * only the display is hidden.
+	 *
 	 * @return void
 	 */
 	public function remove_related_subscriptions_section() {
@@ -172,8 +238,11 @@ class WC_Payments_Subscriptions_Disabler {
 	/**
 	 * Determines if the given screen ID should be blocked.
 	 *
+	 * Checks if a screen ID contains subscription-related identifiers for
+	 * both CPT (shop_subscription) and HPOS (wc-orders--shop_subscription).
+	 *
 	 * @param string $screen_id Screen ID.
-	 * @return bool
+	 * @return bool True if the screen should be blocked, false otherwise.
 	 */
 	private function is_blocked_admin_screen( $screen_id ) {
 		if ( '' === $screen_id ) {
@@ -227,7 +296,11 @@ class WC_Payments_Subscriptions_Disabler {
 	/**
 	 * Returns the list of account endpoints which should be blocked.
 	 *
-	 * @return array
+	 * Retrieves all subscription-related My Account endpoints that customers
+	 * should not be able to access. Endpoint slugs are configurable via
+	 * WooCommerce settings, so we fetch them dynamically.
+	 *
+	 * @return array Array of endpoint slugs to block.
 	 */
 	private function get_blocked_account_endpoints() {
 		return [
