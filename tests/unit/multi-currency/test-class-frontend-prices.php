@@ -89,7 +89,7 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		];
 	}
 
-	public function test_converts_free_shipping_method_min_amount() {
+	public function test_convert_free_shipping_method_min_amount() {
 		// Add multiple shipping methods to the default zone.
 		$default_zone = \WC_Shipping_Zones::get_zone( 0 );
 		$default_zone->add_shipping_method( 'flat_rate' );
@@ -115,7 +115,13 @@ class WCPay_Multi_Currency_Frontend_Prices_Tests extends WCPAY_UnitTestCase {
 		$methods = $default_zone->get_shipping_methods();
 
 		$this->assertCount( 2, $methods );
-		$this->assertEquals( 25.0, $methods[ $free_shipping_id ]->min_amount );
+
+		$test_gateway = $methods[ $free_shipping_id ];
+		$this->assertInstanceOf( \WC_Shipping_Free_Shipping::class, $test_gateway );
+		$this->assertEquals( 25.0, $test_gateway->min_amount );
+
+		// Make sure it doesn't change the gateway's settings directly.
+		$this->assertEquals( 10.0, $test_gateway->instance_settings['min_amount'] );
 	}
 
 	public function test_get_product_price_returns_empty_price() {
