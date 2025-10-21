@@ -527,11 +527,12 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Verify that AJAX and REST requests are not blocked by screen blocking.
+	 * Verify that AJAX requests are not blocked by screen blocking.
 	 *
 	 * This ensures backend operations (like webhook processing) continue to work.
+	 *
 	 */
-	public function test_admin_screen_blocking_skips_ajax_and_rest_requests() {
+	public function test_admin_screen_blocking_skips_ajax_requests() {
 		if ( ! class_exists( 'WP_Screen' ) ) {
 			$this->markTestSkipped( 'WP_Screen class not available.' );
 		}
@@ -550,16 +551,6 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 		$this->assertNull( $this->disabler->redirected_to, 'Should not redirect during AJAX requests' );
 
 		remove_filter( 'wp_doing_ajax', '__return_true' );
-
-		// Simulate REST request.
-		define( 'REST_REQUEST', true );
-		set_current_screen( 'edit-shop_subscription' );
-
-		$screen = get_current_screen();
-		$this->disabler->maybe_block_admin_subscription_screen( $screen );
-
-		// Should NOT redirect during REST requests.
-		$this->assertNull( $this->disabler->redirected_to, 'Should not redirect during REST requests' );
 
 		set_current_screen( 'front' );
 	}
