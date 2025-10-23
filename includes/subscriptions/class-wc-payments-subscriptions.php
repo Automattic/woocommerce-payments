@@ -92,7 +92,11 @@ class WC_Payments_Subscriptions {
 		new WC_Payments_Subscriptions_Empty_State_Manager( $account );
 		new WC_Payments_Subscriptions_Onboarding_Handler( $account );
 		new WC_Payments_Subscription_Minimum_Amount_Handler( $api_client );
-		( new WC_Payments_Subscriptions_Disabler() )->init_hooks();
+
+		// Only disable bundled subscriptions UI when the full WooCommerce Subscriptions plugin is not active.
+		if ( ! class_exists( 'WC_Subscriptions' ) ) {
+			( new WC_Payments_Subscriptions_Disabler() )->init_hooks();
+		}
 
 		if ( class_exists( 'WCS_Background_Repairer' ) ) {
 			include_once __DIR__ . '/class-wc-payments-subscriptions-migrator.php';
