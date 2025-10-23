@@ -346,8 +346,10 @@ export const handleWooPayEmailInput = async (
 	const woopayLocateUser = async ( email, shouldOpenIframe = true ) => {
 		parentDiv.insertBefore( spinner, woopayEmailInput );
 
-		if ( parentDiv.parentNode.contains( errorMessage ) ) {
-			parentDiv.parentNode.removeChild( errorMessage );
+		const node = isBlocksCheckout ? parentDiv.parentNode : parentDiv;
+
+		if ( node.contains( errorMessage ) ) {
+			node.removeChild( errorMessage );
 		}
 
 		recordUserEvent( 'checkout_email_address_woopay_check' );
