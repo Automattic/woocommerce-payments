@@ -274,11 +274,35 @@ class WC_Payments_Subscriptions_Disabler {
 			$post_id = absint( $_GET['post'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
 			if ( $post_id > 0 ) {
 				$post_type = get_post_type( $post_id );
-				return 'shop_subscription' === $post_type;
+				// Block subscription orders.
+				if ( 'shop_subscription' === $post_type ) {
+					return true;
+				}
+				// Block subscription products.
+				if ( 'product' === $post_type && $this->is_subscription_product( $post_id ) ) {
+					return true;
+				}
 			}
 		}
 
 		return false;
+	}
+
+	/**
+	 * Checks if a product ID is a subscription product.
+	 *
+	 * @param int $product_id Product ID to check.
+	 * @return bool True if the product is a subscription product, false otherwise.
+	 */
+	private function is_subscription_product( $product_id ) {
+		$product = wc_get_product( $product_id );
+		if ( ! $product ) {
+			return false;
+		}
+
+		// Check product type directly - more reliable than using WC_Subscriptions_Product
+		// which may not be available in all contexts.
+		return $product->is_type( [ 'subscription', 'variable-subscription', 'subscription_variation' ] );
 	}
 
 	/**

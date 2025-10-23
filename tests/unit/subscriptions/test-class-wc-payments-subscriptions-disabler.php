@@ -308,6 +308,81 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Verify that editing a subscription product is blocked.
+	 */
+	public function test_block_subscription_product_edit() {
+		if ( ! class_exists( 'WC_Product_Subscription' ) ) {
+			$this->markTestSkipped( 'WC_Product_Subscription class not available.' );
+		}
+
+		require_once ABSPATH . 'wp-admin/includes/screen.php';
+		require_once ABSPATH . 'wp-admin/includes/template.php';
+
+		// Create a subscription product.
+		$product = new WC_Product_Subscription();
+		$product->set_props(
+			[
+				'name'          => 'Dummy Subscription Product',
+				'regular_price' => 10,
+				'price'         => 10,
+			]
+		);
+		$product->save();
+		$product_id = $product->get_id();
+
+		// Simulate accessing the product edit screen via post ID.
+		$_GET['post']   = $product_id;
+		$_GET['action'] = 'edit';
+
+		set_current_screen( 'product' );
+		$screen = get_current_screen();
+
+		$this->disabler->maybe_block_admin_subscription_screen( $screen );
+
+		$this->assertSame(
+			admin_url( 'admin.php?page=wc-admin' ),
+			$this->disabler->redirected_to,
+			'Should block editing subscription products via direct post ID URL'
+		);
+
+		// Clean up.
+		unset( $_GET['post'], $_GET['action'] );
+		wp_delete_post( $product_id, true );
+		set_current_screen( 'front' );
+	}
+
+	/**
+	 * Verify that editing a regular (non-subscription) product is NOT blocked.
+	 */
+	public function test_does_not_block_regular_product_edit() {
+		require_once ABSPATH . 'wp-admin/includes/screen.php';
+		require_once ABSPATH . 'wp-admin/includes/template.php';
+
+		// Create a simple product.
+		$product    = WC_Helper_Product::create_simple_product();
+		$product_id = $product->get_id();
+
+		// Simulate accessing the product edit screen via post ID.
+		$_GET['post']   = $product_id;
+		$_GET['action'] = 'edit';
+
+		set_current_screen( 'product' );
+		$screen = get_current_screen();
+
+		$this->disabler->maybe_block_admin_subscription_screen( $screen );
+
+		$this->assertNull(
+			$this->disabler->redirected_to,
+			'Should NOT block editing regular products'
+		);
+
+		// Clean up.
+		unset( $_GET['post'], $_GET['action'] );
+		wp_delete_post( $product_id, true );
+		set_current_screen( 'front' );
+	}
+
+	/**
 	 * Verify that accessing subscription endpoints on My Account redirects to the dashboard.
 	 */
 	public function test_maybe_redirect_account_endpoints_redirects_to_my_account_page() {
