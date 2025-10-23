@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Only show WooPay error messages on connection errors.
