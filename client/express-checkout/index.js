@@ -479,6 +479,7 @@ jQuery( ( $ ) => {
 
 						// First check if product can be added to cart.
 						if ( addToCartButton.is( '.disabled' ) ) {
+							expressCheckoutButtonUi.unblockButton();
 							return;
 						}
 					}
