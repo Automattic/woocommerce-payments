@@ -120,6 +120,46 @@ class WC_Payments_Express_Checkout_Button_Helper_Test extends WCPAY_UnitTestCase
 	}
 
 	/**
+	 * Test has_shipping_zones_configured method with no shipping zones.
+	 */
+	public function test_has_shipping_zones_configured_no_zones() {
+		// Delete all shipping zones.
+		WC_Helper_Shipping::delete_simple_flat_rate();
+		$this->zone->delete();
+
+		// Create a new zone with no methods.
+		$empty_zone = new WC_Shipping_Zone();
+		$empty_zone->set_zone_name( 'Empty Zone' );
+		$empty_zone->save();
+
+		$this->assertFalse( $this->system_under_test->has_shipping_zones_configured() );
+
+		// Clean up.
+		$empty_zone->delete();
+	}
+
+	/**
+	 * Test has_shipping_zones_configured method with configured shipping zones.
+	 */
+	public function test_has_shipping_zones_configured_with_zones() {
+		// The zone is already set up in set_up() with shipping methods.
+		$this->assertTrue( $this->system_under_test->has_shipping_zones_configured() );
+	}
+
+	/**
+	 * Test has_shipping_zones_configured method when shipping is disabled.
+	 */
+	public function test_has_shipping_zones_configured_shipping_disabled() {
+		// Disable shipping.
+		update_option( 'woocommerce_ship_to_countries', 'disabled' );
+
+		$this->assertFalse( $this->system_under_test->has_shipping_zones_configured() );
+
+		// Re-enable shipping.
+		update_option( 'woocommerce_ship_to_countries', 'all' );
+	}
+
+	/**
 	 * @return WC_Payment_Gateway_WCPay
 	 */
 	private function make_wcpay_gateway() {

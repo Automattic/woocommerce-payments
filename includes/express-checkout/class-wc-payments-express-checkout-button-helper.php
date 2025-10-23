@@ -445,6 +445,17 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return false;
 		}
 
+		// Check if shipping is required but no shipping zones are configured.
+		if (
+			( $this->is_product() && $this->get_product()->needs_shipping() ) ||
+			( ( $this->is_cart() || $this->is_checkout() ) && WC()->cart->needs_shipping() )
+		) {
+			if ( ! $this->has_shipping_zones_configured() ) {
+				Logger::log( 'Shipping required but no shipping zones configured ( Express Checkout Element button disabled )' );
+				return false;
+			}
+		}
+
 		return true;
 	}
 
@@ -461,6 +472,39 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		}
 
 		return wc_shipping_enabled() && 0 !== wc_get_shipping_method_count( true ) && $product->needs_shipping();
+	}
+
+	/**
+	 * Check if shipping zones are properly configured.
+	 *
+	 * @return bool Returns true if shipping zones are configured; otherwise, returns false.
+	 */
+	public function has_shipping_zones_configured() {
+		if ( ! wc_shipping_enabled() ) {
+			return false;
+		}
+
+		$shipping_zones     = WC_Shipping_Zones::get_zones();
+		$rest_of_world_zone = WC_Shipping_Zones::get_zone_by( 'zone_id', 0 );
+
+		// Check if there are any shipping zones configured.
+		if ( empty( $shipping_zones ) && ( ! $rest_of_world_zone || empty( $rest_of_world_zone->get_shipping_methods() ) ) ) {
+			return false;
+		}
+
+		// Check if any zone has shipping methods.
+		foreach ( $shipping_zones as $zone ) {
+			if ( ! empty( $zone->get_shipping_methods() ) ) {
+				return true;
+			}
+		}
+
+		// Check rest of world zone.
+		if ( $rest_of_world_zone && ! empty( $rest_of_world_zone->get_shipping_methods() ) ) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
@@ -633,78 +677,6 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
-	 * The Store API doesn't allow checkout without the billing email address present on the order data.
-	 * https://github.com/woocommerce/woocommerce/issues/48540
-	 *
-	 * @return bool
-	 */
-	private function is_pay_for_order_supported() {
-		$order_id = absint( get_query_var( 'order-pay' ) );
-		if ( 0 === $order_id ) {
-			return false;
-		}
-
-		$order = wc_get_order( $order_id );
-		if ( ! is_a( $order, 'WC_Order' ) ) {
-			return false;
-		}
-
-		// we don't need to check its validity or value, we just need to ensure a billing email is present.
-		$billing_email = $order->get_billing_email();
-		if ( ! empty( $billing_email ) ) {
-			return true;
-		}
-
-		Logger::log( 'Billing email not present ( Express Checkout Element button disabled )' );
-
-		return false;
-	}
-
-	/**
-	 * Whether product page has a supported product.
-	 *
-	 * @return boolean
-	 */
-	private function is_product_supported() {
-		$product      = $this->get_product();
-		$is_supported = true;
-
-		/**
-		 * Ignore undefined classes from 3rd party plugins.
-		 *
-		 * @psalm-suppress UndefinedClass
-		 */
-
-		if ( is_null( $product ) || ! is_object( $product ) ) {
-			$is_supported = false;
-		} else {
-			// Simple subscription that needs shipping with free trials is not supported.
-			$is_free_trial_simple_subs = class_exists( 'WC_Subscriptions_Product' ) && $product->get_type() === 'subscription' && $product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $product ) > 0;
-
-			if (
-			! in_array( $product->get_type(), $this->supported_product_types(), true )
-			|| $is_free_trial_simple_subs
-			|| ( class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) // Pre Orders charge upon release not supported.
-			|| ( class_exists( 'WC_Composite_Products' ) && $product->is_type( 'composite' ) ) // Composite products are not supported on the product page.
-			|| ( class_exists( 'WC_Mix_and_Match' ) && $product->is_type( 'mix-and-match' ) ) // Mix and match products are not supported on the product page.
-			) {
-				$is_supported = false;
-			} elseif ( class_exists( 'WC_Product_Addons_Helper' ) ) {
-				// File upload addon not supported.
-				$product_addons = WC_Product_Addons_Helper::get_product_addons( $product->get_id() );
-				foreach ( $product_addons as $addon ) {
-					if ( 'file_upload' === $addon['type'] ) {
-						$is_supported = false;
-						break;
-					}
-				}
-			}
-		}
-
-		return apply_filters( 'wcpay_payment_request_is_product_supported', $is_supported, $product );
-	}
-
-	/**
 	 * Gets the product total price.
 	 *
 	 * @param object $product WC_Product_* object.
@@ -835,5 +807,77 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		$order = wc_get_order( $order_id );
 		$order->set_payment_method_title( $payment_method_title . $suffix );
 		$order->save();
+	}
+
+	/**
+	 * The Store API doesn't allow checkout without the billing email address present on the order data.
+	 * https://github.com/woocommerce/woocommerce/issues/48540
+	 *
+	 * @return bool
+	 */
+	private function is_pay_for_order_supported() {
+		$order_id = absint( get_query_var( 'order-pay' ) );
+		if ( 0 === $order_id ) {
+			return false;
+		}
+
+		$order = wc_get_order( $order_id );
+		if ( ! is_a( $order, 'WC_Order' ) ) {
+			return false;
+		}
+
+		// we don't need to check its validity or value, we just need to ensure a billing email is present.
+		$billing_email = $order->get_billing_email();
+		if ( ! empty( $billing_email ) ) {
+			return true;
+		}
+
+		Logger::log( 'Billing email not present ( Express Checkout Element button disabled )' );
+
+		return false;
+	}
+
+	/**
+	 * Whether product page has a supported product.
+	 *
+	 * @return boolean
+	 */
+	private function is_product_supported() {
+		$product      = $this->get_product();
+		$is_supported = true;
+
+		/**
+		 * Ignore undefined classes from 3rd party plugins.
+		 *
+		 * @psalm-suppress UndefinedClass
+		 */
+
+		if ( is_null( $product ) || ! is_object( $product ) ) {
+			$is_supported = false;
+		} else {
+			// Simple subscription that needs shipping with free trials is not supported.
+			$is_free_trial_simple_subs = class_exists( 'WC_Subscriptions_Product' ) && $product->get_type() === 'subscription' && $product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $product ) > 0;
+
+			if (
+			! in_array( $product->get_type(), $this->supported_product_types(), true )
+			|| $is_free_trial_simple_subs
+			|| ( class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) // Pre Orders charge upon release not supported.
+			|| ( class_exists( 'WC_Composite_Products' ) && $product->is_type( 'composite' ) ) // Composite products are not supported on the product page.
+			|| ( class_exists( 'WC_Mix_and_Match' ) && $product->is_type( 'mix-and-match' ) ) // Mix and match products are not supported on the product page.
+			) {
+				$is_supported = false;
+			} elseif ( class_exists( 'WC_Product_Addons_Helper' ) ) {
+				// File upload addon not supported.
+				$product_addons = WC_Product_Addons_Helper::get_product_addons( $product->get_id() );
+				foreach ( $product_addons as $addon ) {
+					if ( 'file_upload' === $addon['type'] ) {
+						$is_supported = false;
+						break;
+					}
+				}
+			}
+		}
+
+		return apply_filters( 'wcpay_payment_request_is_product_supported', $is_supported, $product );
 	}
 }
