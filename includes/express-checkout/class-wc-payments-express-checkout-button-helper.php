@@ -446,10 +446,22 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		}
 
 		// Check if shipping is required but no shipping zones are configured.
-		if (
-			( $this->is_product() && $this->get_product()->needs_shipping() ) ||
-			( ( $this->is_cart() || $this->is_checkout() ) && WC()->cart->needs_shipping() )
-		) {
+		$needs_shipping = false;
+
+		if ( $this->is_product() ) {
+			$needs_shipping = $this->get_product()->needs_shipping();
+		} elseif ( $this->is_cart() || $this->is_checkout() ) {
+			// Check if any products in cart need shipping.
+			$needs_shipping = false;
+			foreach ( WC()->cart->get_cart() as $cart_item ) {
+				if ( $cart_item['data']->needs_shipping() ) {
+					$needs_shipping = true;
+					break;
+				}
+			}
+		}
+
+		if ( $needs_shipping ) {
 			if ( ! $this->has_shipping_zones_configured() ) {
 				Logger::log( 'Shipping required but no shipping zones configured ( Express Checkout Element button disabled )' );
 				return false;
