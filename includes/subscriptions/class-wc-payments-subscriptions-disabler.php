@@ -69,6 +69,7 @@ class WC_Payments_Subscriptions_Disabler {
 			add_filter( 'product_type_selector', [ $this, 'filter_product_type_selector' ], 99 );
 			add_filter( 'woocommerce_settings_tabs_array', [ $this, 'filter_settings_tabs' ], 99 );
 			add_action( 'admin_init', [ $this, 'maybe_redirect_settings_tab' ], 99 );
+			add_action( 'admin_notices', [ $this, 'display_subscription_disabled_notice' ] );
 		}
 
 		add_filter( 'woocommerce_account_menu_items', [ $this, 'remove_account_menu_item' ], 99 );
@@ -306,12 +307,67 @@ class WC_Payments_Subscriptions_Disabler {
 	}
 
 	/**
-	 * Redirects the current request to the WooCommerce dashboard.
+	 * Displays an admin notice when users are redirected from disabled subscription features.
+	 *
+	 * @return void
+	 */
+	public function display_subscription_disabled_notice() {
+		if ( empty( $_GET['wcpay_subscription_disabled'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return;
+		}
+
+		if ( empty( $_GET['page'] ) || 'wc-settings' !== $_GET['page'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return;
+		}
+
+		if ( empty( $_GET['section'] ) || 'woocommerce_payments' !== $_GET['section'] ) { // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			return;
+		}
+
+		$message = sprintf(
+			/* translators: %1$s: WooCommerce Subscriptions link */
+			__( 'Subscription management is currently unavailable. To create and manage subscriptions, please install <a target="_blank" href="%1$s">WooCommerce Subscriptions</a>.', 'woocommerce-payments' ),
+			'https://woocommerce.com/products/woocommerce-subscriptions/'
+		);
+		?>
+		<div class="notice notice-info wcpay-notice">
+			<p><strong><?php esc_html_e( 'WooPayments', 'woocommerce-payments' ); ?></strong></p>
+			<p>
+			<?php
+			echo wp_kses(
+				$message,
+				[
+					'a' => [
+						'href'   => [],
+						'target' => [],
+					],
+				]
+			);
+			?>
+			</p>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Redirects the current request to the WooCommerce Payments settings page.
+	 *
+	 * Adds a query parameter to trigger an informational notice after redirect.
 	 *
 	 * @return void
 	 */
 	protected function redirect_to_admin_overview() {
-		$this->redirect( admin_url( 'admin.php?page=wc-admin' ) );
+		$redirect_url = add_query_arg(
+			[
+				'page'                        => 'wc-settings',
+				'tab'                         => 'checkout',
+				'section'                     => 'woocommerce_payments',
+				'wcpay_subscription_disabled' => '1',
+			],
+			admin_url( 'admin.php' )
+		);
+
+		$this->redirect( $redirect_url );
 	}
 
 	/**

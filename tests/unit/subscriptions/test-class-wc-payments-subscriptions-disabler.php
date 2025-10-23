@@ -223,7 +223,18 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 
 		$this->disabler->maybe_block_admin_subscription_screen( $screen );
 
-		$this->assertSame( admin_url( 'admin.php?page=wc-admin' ), $this->disabler->redirected_to );
+		$this->assertSame(
+			add_query_arg(
+				[
+					'page'                        => 'wc-settings',
+					'tab'                         => 'checkout',
+					'section'                     => 'woocommerce_payments',
+					'wcpay_subscription_disabled' => '1',
+				],
+				admin_url( 'admin.php' )
+			),
+			$this->disabler->redirected_to
+		);
 
 		set_current_screen( 'front' );
 	}
@@ -243,7 +254,15 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 		$this->disabler->maybe_block_admin_subscription_screen( $screen );
 
 		$this->assertSame(
-			admin_url( 'admin.php?page=wc-admin' ),
+			add_query_arg(
+				[
+					'page'                        => 'wc-settings',
+					'tab'                         => 'checkout',
+					'section'                     => 'woocommerce_payments',
+					'wcpay_subscription_disabled' => '1',
+				],
+				admin_url( 'admin.php' )
+			),
 			$this->disabler->redirected_to,
 			'Should block editing individual subscriptions (CPT)'
 		);
@@ -259,7 +278,15 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 		$this->disabler->maybe_block_admin_subscription_screen( $screen );
 
 		$this->assertSame(
-			admin_url( 'admin.php?page=wc-admin' ),
+			add_query_arg(
+				[
+					'page'                        => 'wc-settings',
+					'tab'                         => 'checkout',
+					'section'                     => 'woocommerce_payments',
+					'wcpay_subscription_disabled' => '1',
+				],
+				admin_url( 'admin.php' )
+			),
 			$this->disabler->redirected_to,
 			'Should block editing individual subscriptions (HPOS)'
 		);
@@ -296,7 +323,15 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 		$this->disabler->maybe_block_admin_subscription_screen( $screen );
 
 		$this->assertSame(
-			admin_url( 'admin.php?page=wc-admin' ),
+			add_query_arg(
+				[
+					'page'                        => 'wc-settings',
+					'tab'                         => 'checkout',
+					'section'                     => 'woocommerce_payments',
+					'wcpay_subscription_disabled' => '1',
+				],
+				admin_url( 'admin.php' )
+			),
 			$this->disabler->redirected_to,
 			'Should block editing subscription via direct post ID URL'
 		);
@@ -340,7 +375,15 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 		$this->disabler->maybe_block_admin_subscription_screen( $screen );
 
 		$this->assertSame(
-			admin_url( 'admin.php?page=wc-admin' ),
+			add_query_arg(
+				[
+					'page'                        => 'wc-settings',
+					'tab'                         => 'checkout',
+					'section'                     => 'woocommerce_payments',
+					'wcpay_subscription_disabled' => '1',
+				],
+				admin_url( 'admin.php' )
+			),
 			$this->disabler->redirected_to,
 			'Should block editing subscription products via direct post ID URL'
 		);
@@ -628,5 +671,91 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 		remove_filter( 'wp_doing_ajax', '__return_true' );
 
 		set_current_screen( 'front' );
+	}
+
+	/**
+	 * Verify that the redirect URL includes the notice query parameter.
+	 */
+	public function test_redirect_includes_notice_parameter() {
+		if ( ! class_exists( 'WC_Subscription' ) ) {
+			$this->markTestSkipped( 'WC_Subscription class not available.' );
+		}
+
+		require_once ABSPATH . 'wp-admin/includes/screen.php';
+		require_once ABSPATH . 'wp-admin/includes/template.php';
+
+		$subscription_id = $this->factory->post->create(
+			[
+				'post_type'   => 'shop_subscription',
+				'post_status' => 'publish',
+			]
+		);
+
+		$_GET['post']   = $subscription_id;
+		$_GET['action'] = 'edit';
+
+		set_current_screen( 'shop_subscription' );
+		$screen = get_current_screen();
+
+		$this->disabler->maybe_block_admin_subscription_screen( $screen );
+
+		$this->assertStringContainsString(
+			'wcpay_subscription_disabled=1',
+			$this->disabler->redirected_to,
+			'Redirect URL should contain notice parameter'
+		);
+
+		unset( $_GET['post'], $_GET['action'] );
+		wp_delete_post( $subscription_id, true );
+		set_current_screen( 'front' );
+	}
+
+	/**
+	 * Verify that the admin notice is displayed when the query parameter is set.
+	 */
+	public function test_display_subscription_disabled_notice() {
+		$_GET['wcpay_subscription_disabled'] = '1';
+		$_GET['page']                        = 'wc-settings';
+		$_GET['section']                     = 'woocommerce_payments';
+
+		ob_start();
+		$this->disabler->display_subscription_disabled_notice();
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( 'Subscription management is currently unavailable', $output );
+		$this->assertStringContainsString( 'WooCommerce Subscriptions', $output );
+		$this->assertStringContainsString( 'woocommerce.com/products/woocommerce-subscriptions', $output );
+		$this->assertStringNotContainsString( 'is-dismissible', $output, 'Notice should not be dismissible' );
+
+		unset( $_GET['wcpay_subscription_disabled'], $_GET['page'], $_GET['section'] );
+	}
+
+	/**
+	 * Verify that the notice is not displayed without the query parameter.
+	 */
+	public function test_display_subscription_disabled_notice_not_shown_without_parameter() {
+		unset( $_GET['wcpay_subscription_disabled'] );
+
+		ob_start();
+		$this->disabler->display_subscription_disabled_notice();
+		$output = ob_get_clean();
+
+		$this->assertEmpty( $output, 'Should not display notice when query parameter is not set' );
+	}
+
+	/**
+	 * Verify that the notice is not displayed on non-WooPayments settings pages.
+	 */
+	public function test_display_subscription_disabled_notice_not_shown_on_other_pages() {
+		$_GET['wcpay_subscription_disabled'] = '1';
+		$_GET['page']                        = 'other-page';
+
+		ob_start();
+		$this->disabler->display_subscription_disabled_notice();
+		$output = ob_get_clean();
+
+		$this->assertEmpty( $output, 'Should not display notice on non-WooPayments settings pages' );
+
+		unset( $_GET['wcpay_subscription_disabled'], $_GET['page'] );
 	}
 }
