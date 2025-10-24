@@ -40,6 +40,7 @@ const NotificationsEmailInput: React.FC = () => {
 				value={ communicationsEmail }
 				onChange={ setCommunicationsEmail }
 				data-testid={ 'notifications-email-input' }
+				required
 				__nextHasNoMarginBottom
 				__next40pxDefaultSize
 			/>

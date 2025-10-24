@@ -451,7 +451,14 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			return $string_validation_result;
 		}
 
-		if ( '' !== $value && ! is_email( $value ) ) {
+		if ( '' === $value ) {
+			return new WP_Error(
+				'rest_invalid_pattern',
+				__( 'Error: Communications email is required.', 'woocommerce-payments' )
+			);
+		}
+
+		if ( ! is_email( $value ) ) {
 			return new WP_Error(
 				'rest_invalid_pattern',
 				__( 'Error: Invalid email address: ', 'woocommerce-payments' ) . $value

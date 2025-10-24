@@ -53,13 +53,32 @@ describe( 'NotificationsEmailInput', () => {
 		expect( setCommunicationsEmail ).toHaveBeenCalledWith( newEmail );
 	} );
 
-	it( 'renders with empty email', () => {
+	it( 'displays error message for empty email', () => {
 		mockUseCommunicationsEmail.mockReturnValue( [ '', jest.fn() ] );
+		mockUseGetSavingError.mockReturnValue( {
+			code: 'rest_invalid_param',
+			message: 'Invalid parameter(s): communications_email',
+			data: {
+				status: 400,
+				params: {
+					communications_email:
+						'Error: Communications email is required.',
+				},
+				details: {
+					communications_email: {
+						code: 'rest_invalid_pattern',
+						message: 'Error: Communications email is required.',
+						data: null,
+					},
+				},
+			},
+		} );
 
 		const { container } = render( <NotificationsEmailInput /> );
 		expect(
 			container.querySelector( '.components-notice.is-error' )
-		).toBeNull();
+				?.textContent
+		).toMatch( /Error: Communications email is required./ );
 	} );
 
 	it( 'displays the error message for invalid email', () => {
