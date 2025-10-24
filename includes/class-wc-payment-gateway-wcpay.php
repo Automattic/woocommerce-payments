@@ -112,6 +112,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		'deposit_schedule_interval'          => 'deposit_schedule_interval',
 		'deposit_schedule_weekly_anchor'     => 'deposit_schedule_weekly_anchor',
 		'deposit_schedule_monthly_anchor'    => 'deposit_schedule_monthly_anchor',
+
+		'communications_email'               => 'communications_email',
 	];
 
 	const UPDATE_SAVED_PAYMENT_METHOD = 'wcpay_update_saved_payment_method';

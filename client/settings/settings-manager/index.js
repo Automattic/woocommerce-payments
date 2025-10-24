@@ -23,6 +23,9 @@ import LoadableSettingsSection from '../loadable-settings-section';
 import PaymentMethodsSection from '../payment-methods-section';
 import BuyNowPayLaterSection from '../buy-now-pay-later-section';
 import ErrorBoundary from '../../components/error-boundary';
+import NotificationSettings, {
+	NotificationSettingsDescription,
+} from '../notification-settings';
 import {
 	useDepositDelayDays,
 	useGetDuplicatedPaymentMethodIds,
@@ -297,6 +300,16 @@ const SettingsManager = () => {
 				<LoadableSettingsSection numLines={ 20 }>
 					<ErrorBoundary>
 						<AdvancedSettings />
+					</ErrorBoundary>
+				</LoadableSettingsSection>
+			</SettingsSection>
+			<SettingsSection
+				description={ NotificationSettingsDescription }
+				id="notification-settings"
+			>
+				<LoadableSettingsSection numLines={ 20 }>
+					<ErrorBoundary>
+						<NotificationSettings />
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>

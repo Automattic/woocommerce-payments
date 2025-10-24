@@ -304,6 +304,11 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'type'              => 'int',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
+					'communications_email'                 => [
+						'description'       => __( 'Email address used for WooPayments communications.', 'woocommerce-payments' ),
+						'type'              => 'string',
+						'validate_callback' => [ $this, 'validate_communications_email' ],
+					],
 				],
 			]
 		);
@@ -433,6 +438,30 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
+	 * Validate the communications email.
+	 *
+	 * @param string          $value The value being validated.
+	 * @param WP_REST_Request $request The request made.
+	 * @param string          $param The parameter name, used in error messages.
+	 * @return true|WP_Error
+	 */
+	public function validate_communications_email( string $value, WP_REST_Request $request, string $param ) {
+		$string_validation_result = rest_validate_request_arg( $value, $request, $param );
+		if ( true !== $string_validation_result ) {
+			return $string_validation_result;
+		}
+
+		if ( '' !== $value && ! is_email( $value ) ) {
+			return new WP_Error(
+				'rest_invalid_pattern',
+				__( 'Error: Invalid email address: ', 'woocommerce-payments' ) . $value
+			);
+		}
+
+		return true;
+	}
+
+	/**
 	 * Retrieve settings.
 	 *
 	 * @return WP_REST_Response
@@ -526,6 +555,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'is_migrating_stripe_billing'            => $is_migrating_stripe_billing ?? false,
 				'stripe_billing_subscription_count'      => $stripe_billing_subscription_count ?? 0,
 				'stripe_billing_migrated_count'          => $stripe_billing_migrated_count ?? 0,
+				'communications_email'                   => $this->account->get_communications_email(),
 			]
 		);
 	}

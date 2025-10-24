@@ -47,3 +47,20 @@ export type AdvancedFraudPreventionSettingsState = [
 	FraudProtectionRule[] | string,
 	( settings: FraudProtectionRule[] ) => void
 ];
+
+export interface SavingError {
+	code?: string;
+	message?: string;
+	data?: {
+		status?: number;
+		params?: Record< string, string >;
+		details?: Record<
+			string,
+			{
+				code?: string;
+				message?: string;
+				data?: unknown;
+			}
+		>;
+	};
+}
