@@ -226,6 +226,9 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		// Update subscriptions token when user sets a default payment method.
 		add_filter( 'woocommerce_subscriptions_update_subscription_token', [ $this, 'update_subscription_token' ], 10, 3 );
 		add_filter( 'woocommerce_subscriptions_update_payment_via_pay_shortcode', [ $this, 'update_payment_method_for_subscriptions' ], 10, 3 );
+
+		// Exclude WooPayments meta keys from being copied from parent orders to subscriptions.
+		add_filter( 'wcs_copy_payment_meta_to_order', [ $this, 'exclude_wcpay_meta_from_subscription_copy' ], 10, 3 );
 	}
 
 	/**
@@ -828,7 +831,9 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @return string
 	 */
 	public function update_renewal_meta_data( $order_meta_query, $to_order, $from_order ) {
-		$order_meta_query .= " AND `meta_key` NOT IN ('_new_order_tracking_complete')";
+		$excluded_meta_keys        = $this->get_excluded_meta_keys_for_subscription_copying();
+		$excluded_meta_keys_string = "'" . implode( "', '", $excluded_meta_keys ) . "'";
+		$order_meta_query         .= " AND `meta_key` NOT IN ({$excluded_meta_keys_string})";
 
 		return $order_meta_query;
 	}
@@ -841,7 +846,12 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @return array The renewal order data with the data we don't want copied removed
 	 */
 	public function remove_data_renewal_order( $order_data ) {
-		unset( $order_data['_new_order_tracking_complete'] );
+		$excluded_meta_keys = $this->get_excluded_meta_keys_for_subscription_copying();
+
+		foreach ( $excluded_meta_keys as $meta_key ) {
+			unset( $order_data[ $meta_key ] );
+		}
+
 		return $order_data;
 	}
 
@@ -1050,5 +1060,92 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		}
 
 		return $mandate;
+	}
+
+	/**
+	 * Exclude WooPayments meta keys from being copied from parent orders to subscriptions.
+	 *
+	 * This filter is applied when WooCommerce Subscriptions copies payment meta from parent orders
+	 * to subscriptions, preventing stale intent data and other WooPayments-specific metadata
+	 * from being copied.
+	 *
+	 * @param array           $payment_meta Associative array of meta data required for automatic payments.
+	 * @param WC_Order        $order        The subscription's related order.
+	 * @param WC_Subscription $subscription The subscription order.
+	 * @return array
+	 */
+	public function exclude_wcpay_meta_from_subscription_copy( $payment_meta, $order, $subscription ) {
+		if ( $this->id !== $order->get_payment_method() || $this->id !== $subscription->get_payment_method() ) {
+			return $payment_meta;
+		}
+
+		if ( ! is_array( $payment_meta ) ) {
+			return $payment_meta;
+		}
+
+		$excluded_meta_keys = $this->get_excluded_meta_keys_for_subscription_copying();
+
+		// Remove excluded meta keys from the payment meta array.
+		foreach ( $excluded_meta_keys as $meta_key ) {
+			unset( $payment_meta[ $meta_key ] );
+		}
+
+		return $payment_meta;
+	}
+
+	/**
+	 * Get the list of WooPayments meta keys that should be excluded from subscription data copying.
+	 *
+	 * This prevents stale intent data and other WooPayments-specific metadata from being copied
+	 * from parent orders to subscriptions, which can cause issues with 3DS failures and re-attempts.
+	 *
+	 * @return array Array of meta keys to exclude from copying.
+	 */
+	private function get_excluded_meta_keys_for_subscription_copying() {
+		return [
+			// Order tracking and completion.
+			'_new_order_tracking_complete',
+
+			// Intent-related meta keys (prevent stale intent data).
+			'_intent_id',
+			'_intention_status',
+			'_wcpay_intent_currency',
+
+			// Payment method and charge data (prevent stale payment data).
+			'_payment_method_id',
+			'_charge_id',
+			'_charge_risk_level',
+			'_wcpay_payment_method_details',
+			'_wcpay_payment_transaction_id',
+
+			// Customer and fraud data (should be fresh for each order).
+			'_stripe_customer_id',
+			'_wcpay_fraud_meta_box_type',
+			'_wcpay_fraud_outcome_status',
+
+			// Refund data (not relevant for subscriptions).
+			'_wcpay_refund_id',
+			'_wcpay_refund_transaction_id',
+			'_wcpay_refund_status',
+
+			// Transaction fees (calculated per transaction).
+			'_wcpay_transaction_fee',
+
+			// Mode and environment data.
+			'_wcpay_mode',
+
+			// Multibanco-specific data (payment method specific).
+			'_wcpay_multibanco_entity',
+			'_wcpay_multibanco_reference',
+			'_wcpay_multibanco_expiry',
+			'_wcpay_multibanco_url',
+
+			// Mandate data (should be fresh for each subscription).
+			'_stripe_mandate_id',
+
+			// Multi-currency data (should be calculated fresh).
+			'_wcpay_multi_currency_order_exchange_rate',
+			'_wcpay_multi_currency_order_default_currency',
+		];
 	}
 }
