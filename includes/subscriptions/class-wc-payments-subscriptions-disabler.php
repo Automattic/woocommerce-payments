@@ -326,7 +326,7 @@ class WC_Payments_Subscriptions_Disabler {
 
 		$message = sprintf(
 			/* translators: %1$s: WooCommerce Subscriptions link */
-			__( 'Subscription management is currently unavailable. To create and manage subscriptions, please install <a target="_blank" href="%1$s">WooCommerce Subscriptions</a>.', 'woocommerce-payments' ),
+			__( 'To access your subscriptions data and keep managing recurring payments, please install <a target="_blank" href="%1$s">WooCommerce Subscriptions</a>. Built-in support for subscriptions is no longer available in WooPayments.', 'woocommerce-payments' ),
 			'https://woocommerce.com/products/woocommerce-subscriptions/'
 		);
 		?>

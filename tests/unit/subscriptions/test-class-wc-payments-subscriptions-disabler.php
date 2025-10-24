@@ -722,7 +722,8 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 		$this->disabler->display_subscription_disabled_notice();
 		$output = ob_get_clean();
 
-		$this->assertStringContainsString( 'Subscription management is currently unavailable', $output );
+		$this->assertStringContainsString( 'To access your subscriptions data and keep managing recurring payments', $output );
+		$this->assertStringContainsString( 'Built-in support for subscriptions is no longer available in WooPayments.', $output );
 		$this->assertStringContainsString( 'WooCommerce Subscriptions', $output );
 		$this->assertStringContainsString( 'woocommerce.com/products/woocommerce-subscriptions', $output );
 		$this->assertStringNotContainsString( 'is-dismissible', $output, 'Notice should not be dismissible' );
