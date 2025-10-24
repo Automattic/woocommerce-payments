@@ -29,6 +29,37 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	use WC_Payments_Subscriptions_Utilities;
 
 	/**
+	 * Stores the payment method meta table name
+	 *
+	 * @var string
+	 */
+	private static $payment_method_meta_table = 'wc_order_tokens';
+
+	/**
+	 * Stores the payment method meta key name
+	 *
+	 * @var string
+	 */
+	private static $payment_method_meta_key = 'token';
+
+	/**
+	 * Stores a flag to indicate if the subscription integration hooks have been attached.
+	 *
+	 * The callbacks attached as part of maybe_init_subscriptions() only need to be attached once to avoid duplication.
+	 *
+	 * @var bool False by default, true once the callbacks have been attached.
+	 */
+	private static $has_attached_integration_hooks = false;
+
+	/**
+	 * Used to temporary keep the state of the order_pay value on the Pay for order page with the SCA authorization flow.
+	 * For more details, see remove_order_pay_var and restore_order_pay_var hooks.
+	 *
+	 * @var string|int
+	 */
+	private $order_pay_var;
+
+	/**
 	 * Retrieve payment token from a subscription or order.
 	 *
 	 * @param WC_Order $order Order or subscription object.
@@ -80,37 +111,6 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @return Payment_Information An object, which describes the payment.
 	 */
 	abstract protected function prepare_payment_information( $order );
-
-	/**
-	 * Stores the payment method meta table name
-	 *
-	 * @var string
-	 */
-	private static $payment_method_meta_table = 'wc_order_tokens';
-
-	/**
-	 * Stores the payment method meta key name
-	 *
-	 * @var string
-	 */
-	private static $payment_method_meta_key = 'token';
-
-	/**
-	 * Stores a flag to indicate if the subscription integration hooks have been attached.
-	 *
-	 * The callbacks attached as part of maybe_init_subscriptions() only need to be attached once to avoid duplication.
-	 *
-	 * @var bool False by default, true once the callbacks have been attached.
-	 */
-	private static $has_attached_integration_hooks = false;
-
-	/**
-	 * Used to temporary keep the state of the order_pay value on the Pay for order page with the SCA authorization flow.
-	 * For more details, see remove_order_pay_var and restore_order_pay_var hooks.
-	 *
-	 * @var string|int
-	 */
-	private $order_pay_var;
 
 	/**
 	 * Initialize subscription support and hooks.
@@ -327,27 +327,6 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	}
 
 	/**
-	 * Prepares the payment information object.
-	 *
-	 * @param Payment_Information $payment_information The payment information from parent gateway.
-	 * @param int                 $order_id The order ID whose payment will be processed.
-	 * @return Payment_Information An object, which describes the payment.
-	 */
-	protected function maybe_prepare_subscription_payment_information( $payment_information, $order_id ) {
-		if ( ! $this->is_payment_recurring( $order_id ) ) {
-			return $payment_information;
-		}
-
-		// Subs-specific behavior starts here.
-		$payment_information->set_payment_type( Payment_Type::RECURRING() );
-		// The payment method is always saved for subscriptions.
-		$payment_information->must_save_payment_method_to_store();
-		$payment_information->set_is_changing_payment_method_for_subscription( $this->is_changing_payment_method_for_subscription() );
-
-		return $payment_information;
-	}
-
-	/**
 	 * Process a scheduled subscription payment.
 	 *
 	 * @param float    $amount The amount to charge.
@@ -422,25 +401,6 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			return;
 		}
 		$this->add_token_to_order( $subscription, $renewal_token );
-	}
-
-	/**
-	 * Return the payment meta data for this payment gateway.
-	 *
-	 * @param WC_Subscription $subscription The subscription order.
-	 * @return array
-	 */
-	private function get_payment_meta( $subscription ) {
-		$active_token = $this->get_payment_token( $subscription );
-
-		return [
-			self::$payment_method_meta_table => [
-				self::$payment_method_meta_key => [
-					'label' => __( 'Saved payment method', 'woocommerce-payments' ),
-					'value' => empty( $active_token ) ? '' : (string) $active_token->get_id(),
-				],
-			],
-		];
 	}
 
 	/**
@@ -914,29 +874,6 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	}
 
 	/**
-	 * Checks if a renewal order is linked to a WCPay subscription.
-	 *
-	 * @param WC_Order $renewal_order The renewal order to check.
-	 *
-	 * @return bool True if the renewal order is linked to a renewal order. Otherwise false.
-	 */
-	private function is_wcpay_subscription_renewal_order( WC_Order $renewal_order ) {
-		// Renewal orders copy metadata from the parent subscription, so we can first check if it has the `_wcpay_subscription_id` meta.
-		if ( ! class_exists( 'WC_Payments_Subscription_Service' ) || ! $renewal_order->meta_exists( WC_Payments_Subscription_Service::SUBSCRIPTION_ID_META_KEY ) ) {
-			return false;
-		}
-
-		// Confirm the renewal order is linked to a subscription which is a WCPay Subscription.
-		foreach ( wcs_get_subscriptions_for_renewal_order( $renewal_order ) as $subscription ) {
-			if ( WC_Payments_Subscription_Service::is_wcpay_subscription( $subscription ) ) {
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/**
 	 * Get card mandate parameters for the order payment intent if needed.
 	 * Only required for subscriptions creation for cards issued in India.
 	 * More details https://wp.me/pc4etw-ky
@@ -1091,6 +1028,69 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		}
 
 		return $payment_meta;
+	}
+
+	/**
+	 * Prepares the payment information object.
+	 *
+	 * @param Payment_Information $payment_information The payment information from parent gateway.
+	 * @param int                 $order_id The order ID whose payment will be processed.
+	 * @return Payment_Information An object, which describes the payment.
+	 */
+	protected function maybe_prepare_subscription_payment_information( $payment_information, $order_id ) {
+		if ( ! $this->is_payment_recurring( $order_id ) ) {
+			return $payment_information;
+		}
+
+		// Subs-specific behavior starts here.
+		$payment_information->set_payment_type( Payment_Type::RECURRING() );
+		// The payment method is always saved for subscriptions.
+		$payment_information->must_save_payment_method_to_store();
+		$payment_information->set_is_changing_payment_method_for_subscription( $this->is_changing_payment_method_for_subscription() );
+
+		return $payment_information;
+	}
+
+	/**
+	 * Return the payment meta data for this payment gateway.
+	 *
+	 * @param WC_Subscription $subscription The subscription order.
+	 * @return array
+	 */
+	private function get_payment_meta( $subscription ) {
+		$active_token = $this->get_payment_token( $subscription );
+
+		return [
+			self::$payment_method_meta_table => [
+				self::$payment_method_meta_key => [
+					'label' => __( 'Saved payment method', 'woocommerce-payments' ),
+					'value' => empty( $active_token ) ? '' : (string) $active_token->get_id(),
+				],
+			],
+		];
+	}
+
+	/**
+	 * Checks if a renewal order is linked to a WCPay subscription.
+	 *
+	 * @param WC_Order $renewal_order The renewal order to check.
+	 *
+	 * @return bool True if the renewal order is linked to a renewal order. Otherwise false.
+	 */
+	private function is_wcpay_subscription_renewal_order( WC_Order $renewal_order ) {
+		// Renewal orders copy metadata from the parent subscription, so we can first check if it has the `_wcpay_subscription_id` meta.
+		if ( ! class_exists( 'WC_Payments_Subscription_Service' ) || ! $renewal_order->meta_exists( WC_Payments_Subscription_Service::SUBSCRIPTION_ID_META_KEY ) ) {
+			return false;
+		}
+
+		// Confirm the renewal order is linked to a subscription which is a WCPay Subscription.
+		foreach ( wcs_get_subscriptions_for_renewal_order( $renewal_order ) as $subscription ) {
+			if ( WC_Payments_Subscription_Service::is_wcpay_subscription( $subscription ) ) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/**
