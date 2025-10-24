@@ -16,8 +16,8 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Disables bundled subscriptions management surfaces.
  *
  * This class hides UI elements and blocks access to subscription management
- * interfaces for both merchants and customers. It operates exclusively on
- * the presentation layer and does NOT affect backend subscription functionality.
+ * interfaces for both merchants and customers. It also prevents new subscription
+ * products from being purchased.
  *
  * What this class disables:
  * - Admin menu items (WooCommerce > Subscriptions)
@@ -26,6 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * - Subscription settings tab
  * - Customer account subscription pages
  * - Related subscriptions section on order details
+ * - Purchasing of subscription products (makes them unpurchasable)
  *
  * What this class does NOT affect:
  * - Stripe Billing webhook processing (invoice.paid, invoice.upcoming, etc.)
@@ -34,6 +35,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * - Existing subscription data or meta
  * - Backend subscription status management
  * - Payment method updates
+ * - Regular (non-subscription) products
  *
  * This ensures merchants and customers cannot create or manage subscriptions
  * through the UI while Stripe Billing continues to process renewals automatically.
@@ -59,6 +61,7 @@ class WC_Payments_Subscriptions_Disabler {
 	 * - Removes subscription navigation from My Account
 	 * - Blocks direct access to subscription endpoints
 	 * - Removes subscription details from order views
+	 * - Makes subscription products unpurchasable (prevents new subscriptions)
 	 *
 	 * @return void
 	 */
@@ -75,6 +78,7 @@ class WC_Payments_Subscriptions_Disabler {
 		add_filter( 'woocommerce_account_menu_items', [ $this, 'remove_account_menu_item' ], 99 );
 		add_action( 'template_redirect', [ $this, 'maybe_redirect_account_endpoints' ] );
 		add_action( 'init', [ $this, 'remove_related_subscriptions_section' ], 99 );
+		add_filter( 'woocommerce_is_purchasable', [ $this, 'make_subscription_products_unpurchasable' ], 10, 2 );
 	}
 
 	/**
@@ -234,6 +238,35 @@ class WC_Payments_Subscriptions_Disabler {
 				10
 			);
 		}
+	}
+
+	/**
+	 * Makes subscription products unpurchasable to prevent new subscriptions.
+	 *
+	 * This prevents customers from adding subscription products to their cart
+	 * or purchasing them during checkout. Runs early in the purchase flow to
+	 * provide the cleanest user experience.
+	 *
+	 * Does NOT affect:
+	 * - Renewal order processing (renewals don't check is_purchasable)
+	 * - Existing subscriptions in the database
+	 * - Regular (non-subscription) products
+	 *
+	 * @param bool       $is_purchasable Whether the product can be purchased.
+	 * @param WC_Product $product        Product object.
+	 * @return bool False for subscription products, original value otherwise.
+	 */
+	public function make_subscription_products_unpurchasable( $is_purchasable, $product ) {
+		if ( ! $product ) {
+			return $is_purchasable;
+		}
+
+		// Check if product is a subscription type.
+		if ( $product->is_type( [ 'subscription', 'variable-subscription', 'subscription_variation' ] ) ) {
+			return false;
+		}
+
+		return $is_purchasable;
 	}
 
 	/**

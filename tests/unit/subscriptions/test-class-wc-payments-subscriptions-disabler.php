@@ -759,4 +759,72 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 
 		unset( $_GET['wcpay_subscription_disabled'], $_GET['page'] );
 	}
+
+	/**
+	 * Verify that subscription products cannot be purchased.
+	 */
+	public function test_make_subscription_products_unpurchasable() {
+		if ( ! class_exists( 'WC_Product_Subscription' ) ) {
+			$this->markTestSkipped( 'WC_Product_Subscription class not available.' );
+		}
+
+		$this->disabler->init_hooks();
+
+		// Create subscription product.
+		$subscription_product = new WC_Product_Subscription();
+		$subscription_product->set_props(
+			[
+				'name'          => 'Test Subscription',
+				'regular_price' => 10,
+				'price'         => 10,
+			]
+		);
+		$subscription_product->save();
+
+		// Verify subscription product is not purchasable.
+		$this->assertFalse(
+			$subscription_product->is_purchasable(),
+			'Subscription product should not be purchasable'
+		);
+
+		// Verify regular products are still purchasable.
+		$regular_product = WC_Helper_Product::create_simple_product();
+		$this->assertTrue(
+			$regular_product->is_purchasable(),
+			'Regular products should still be purchasable'
+		);
+
+		// Cleanup.
+		wp_delete_post( $subscription_product->get_id(), true );
+		wp_delete_post( $regular_product->get_id(), true );
+	}
+
+	/**
+	 * Verify that variable subscription products cannot be purchased.
+	 */
+	public function test_make_variable_subscription_products_unpurchasable() {
+		if ( ! class_exists( 'WC_Product_Variable_Subscription' ) ) {
+			$this->markTestSkipped( 'WC_Product_Variable_Subscription class not available.' );
+		}
+
+		$this->disabler->init_hooks();
+
+		// Create variable subscription product.
+		$variable_subscription = new WC_Product_Variable_Subscription();
+		$variable_subscription->set_props(
+			[
+				'name' => 'Test Variable Subscription',
+			]
+		);
+		$variable_subscription->save();
+
+		// Verify variable subscription is not purchasable.
+		$this->assertFalse(
+			$variable_subscription->is_purchasable(),
+			'Variable subscription product should not be purchasable'
+		);
+
+		// Cleanup.
+		wp_delete_post( $variable_subscription->get_id(), true );
+	}
 }
