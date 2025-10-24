@@ -63,9 +63,12 @@ class WC_Payments_Notes_Stripe_Billing_Deprecation {
 		} elseif ( version_compare( $wcpay_version, '9.9.0', '<' ) ) {
 			$note->set_title( __( 'WooPayments subscriptions update', 'woocommerce-payments' ) );
 			$note->set_content( __( 'WooPayments no longer supports billing for existing customer subscriptions. All subscriptions data is read-only. Please install WooCommerce Subscriptions to continue managing your subscriptions.', 'woocommerce-payments' ) );
-		} else {
+		} elseif ( version_compare( $wcpay_version, '10.2.0', '<' ) ) {
 			$note->set_title( __( 'WooPayments subscriptions update', 'woocommerce-payments' ) );
 			$note->set_content( __( 'WooPayments no longer supports subscriptions capabilities and subscriptions data can no longer be accessed. Please install WooCommerce Subscriptions to continue managing your subscriptions.', 'woocommerce-payments' ) );
+		} else {
+			$note->set_title( __( 'Built-in subscriptions functionality has been removed. Here\'s what to do', 'woocommerce-payments' ) );
+			$note->set_content( __( 'To continue offering subscriptions and gain access to your data, please install WooCommerce Subscriptions. WooPayments no longer supports this feature.', 'woocommerce-payments' ) );
 		}
 
 		$note->set_type( Note::E_WC_ADMIN_NOTE_INFORMATIONAL );
@@ -82,6 +85,9 @@ class WC_Payments_Notes_Stripe_Billing_Deprecation {
 	 * @return bool
 	 */
 	protected static function is_bundled_subscriptions_enabled() {
-		return WC_Payments_Features::is_stripe_billing_enabled() && ! class_exists( 'WC_Subscriptions' );
+		$has_bundled_subs = WC_Payments_Features::is_wcpay_subscriptions_enabled() || WC_Payments_Features::is_stripe_billing_enabled();
+		$has_wc_subs      = class_exists( 'WC_Subscriptions' );
+
+		return $has_bundled_subs && ! $has_wc_subs;
 	}
 }

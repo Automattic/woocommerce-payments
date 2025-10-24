@@ -31,9 +31,12 @@ class WC_Payments_Notes_Stripe_Billing_Deprecation_Test extends WCPAY_UnitTestCa
 		} elseif ( version_compare( $wcpay_version, '9.9.0', '<' ) ) {
 			$title   = 'WooPayments subscriptions update';
 			$content = 'WooPayments no longer supports billing for existing customer subscriptions. All subscriptions data is read-only. Please install WooCommerce Subscriptions to continue managing your subscriptions.';
-		} else {
+		} elseif ( version_compare( $wcpay_version, '10.2.0', '<' ) ) {
 			$title   = 'WooPayments subscriptions update';
 			$content = 'WooPayments no longer supports subscriptions capabilities and subscriptions data can no longer be accessed. Please install WooCommerce Subscriptions to continue managing your subscriptions.';
+		} else {
+			$title   = 'Built-in subscriptions functionality has been removed. Here\'s what to do';
+			$content = 'To continue offering subscriptions and gain access to your data, please install WooCommerce Subscriptions. WooPayments no longer supports this feature.';
 		}
 
 		$note = WC_Payments_Notes_Stripe_Billing_Deprecation::get_note();

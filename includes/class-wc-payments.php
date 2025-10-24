@@ -2131,8 +2131,10 @@ class WC_Payments {
 	 * Update the Stripe Billing deprecation note.
 	 */
 	public static function maybe_update_stripe_billing_deprecation_note() {
-		// If Stripe Billing is not enabled or WooCommerce Subscriptions is active, do not update the note.
-		if ( ! WC_Payments_Features::is_stripe_billing_enabled() || class_exists( 'WC_Subscriptions' ) ) {
+		// If bundled subscriptions are not enabled or WooCommerce Subscriptions is active, do not update the note.
+		$has_bundled_subs = WC_Payments_Features::is_wcpay_subscriptions_enabled() || WC_Payments_Features::is_stripe_billing_enabled();
+
+		if ( ! $has_bundled_subs || class_exists( 'WC_Subscriptions' ) ) {
 			return;
 		}
 
