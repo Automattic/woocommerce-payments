@@ -17,7 +17,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  *
  * This class hides UI elements and blocks access to subscription management
  * interfaces for both merchants and customers. It also prevents new subscription
- * products from being purchased.
+ * products from being purchased or added to orders.
  *
  * What this class disables:
  * - Admin menu items (WooCommerce > Subscriptions)
@@ -27,6 +27,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * - Customer account subscription pages
  * - Related subscriptions section on order details
  * - Purchasing of subscription products (makes them unpurchasable)
+ * - Adding subscription products to admin orders (both search and validation)
  *
  * What this class does NOT affect:
  * - Stripe Billing webhook processing (invoice.paid, invoice.upcoming, etc.)
@@ -73,6 +74,8 @@ class WC_Payments_Subscriptions_Disabler {
 			add_filter( 'woocommerce_settings_tabs_array', [ $this, 'filter_settings_tabs' ], 99 );
 			add_action( 'admin_init', [ $this, 'maybe_redirect_settings_tab' ], 99 );
 			add_action( 'admin_notices', [ $this, 'display_subscription_disabled_notice' ] );
+			add_filter( 'woocommerce_json_search_found_products', [ $this, 'filter_admin_product_search' ] );
+			add_filter( 'woocommerce_ajax_add_order_item_validation', [ $this, 'validate_admin_order_item' ], 10, 4 );
 		}
 
 		add_filter( 'woocommerce_account_menu_items', [ $this, 'remove_account_menu_item' ], 99 );
@@ -267,6 +270,68 @@ class WC_Payments_Subscriptions_Disabler {
 		}
 
 		return $is_purchasable;
+	}
+
+	/**
+	 * Filters subscription products from admin product search results.
+	 *
+	 * Removes subscription products from the AJAX product search used in the
+	 * admin order editor "Add item(s)" modal. This prevents admins from seeing
+	 * subscription products as options when manually creating orders.
+	 *
+	 * @param array $products Array of products (product_id => product_name).
+	 * @return array Filtered array without subscription products.
+	 */
+	public function filter_admin_product_search( $products ) {
+		if ( empty( $products ) ) {
+			return $products;
+		}
+
+		$filtered = [];
+		foreach ( $products as $product_id => $product_name ) {
+			$product = wc_get_product( $product_id );
+
+			// Skip if not a valid product or is a subscription type.
+			if ( ! $product || $product->is_type( [ 'subscription', 'variable-subscription', 'subscription_variation' ] ) ) {
+				continue;
+			}
+
+			$filtered[ $product_id ] = $product_name;
+		}
+
+		return $filtered;
+	}
+
+	/**
+	 * Validates that subscription products cannot be added to admin orders.
+	 *
+	 * This provides server-side validation as a backup to the search filtering.
+	 * If an admin somehow attempts to add a subscription product to an order
+	 * (e.g., by manipulating the AJAX request), this will block it with an error.
+	 *
+	 * @param WP_Error   $validation_error Error object to populate if validation fails.
+	 * @param WC_Product $product          Product being added to order.
+	 * @param WC_Order   $order            Order object.
+	 * @param int        $qty              Quantity being added.
+	 * @return WP_Error Error object (populated if validation fails).
+	 */
+	public function validate_admin_order_item( $validation_error, $product, $order, $qty ) {
+		// phpcs:ignore VariableAnalysis.CodeAnalysis.VariableAnalysis.UnusedVariable -- Required by filter signature.
+		unset( $order, $qty );
+
+		if ( ! $product ) {
+			return $validation_error;
+		}
+
+		// Check if product is a subscription type.
+		if ( $product->is_type( [ 'subscription', 'variable-subscription', 'subscription_variation' ] ) ) {
+			return new WP_Error(
+				'subscription_not_allowed_in_admin_order',
+				__( 'Subscription products cannot be added to orders. Please install WooCommerce Subscriptions to manage subscriptions.', 'woocommerce-payments' )
+			);
+		}
+
+		return $validation_error;
 	}
 
 	/**

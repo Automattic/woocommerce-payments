@@ -827,4 +827,140 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 		// Cleanup.
 		wp_delete_post( $variable_subscription->get_id(), true );
 	}
+
+	/**
+	 * Verify that subscription products are filtered from admin product search.
+	 */
+	public function test_filter_admin_product_search() {
+		if ( ! class_exists( 'WC_Product_Subscription' ) ) {
+			$this->markTestSkipped( 'WC_Product_Subscription class not available.' );
+		}
+
+		$this->disabler->init_hooks();
+
+		// Create subscription product.
+		$subscription_product = new WC_Product_Subscription();
+		$subscription_product->set_props(
+			[
+				'name'          => 'Test Subscription',
+				'regular_price' => 10,
+				'price'         => 10,
+			]
+		);
+		$subscription_product->save();
+
+		// Create regular product.
+		$regular_product = WC_Helper_Product::create_simple_product();
+
+		// Simulate product search results containing both products.
+		$search_results = [
+			$subscription_product->get_id() => 'Test Subscription',
+			$regular_product->get_id()      => $regular_product->get_name(),
+		];
+
+		// Apply filter.
+		$filtered_results = $this->disabler->filter_admin_product_search( $search_results );
+
+		// Verify subscription product is removed.
+		$this->assertArrayNotHasKey(
+			$subscription_product->get_id(),
+			$filtered_results,
+			'Subscription product should be removed from search results'
+		);
+
+		// Verify regular product remains.
+		$this->assertArrayHasKey(
+			$regular_product->get_id(),
+			$filtered_results,
+			'Regular product should remain in search results'
+		);
+
+		// Cleanup.
+		wp_delete_post( $subscription_product->get_id(), true );
+		wp_delete_post( $regular_product->get_id(), true );
+	}
+
+	/**
+	 * Verify that adding subscription products to admin orders is blocked with validation error.
+	 */
+	public function test_validate_admin_order_item_blocks_subscriptions() {
+		if ( ! class_exists( 'WC_Product_Subscription' ) ) {
+			$this->markTestSkipped( 'WC_Product_Subscription class not available.' );
+		}
+
+		$this->disabler->init_hooks();
+
+		// Create subscription product.
+		$subscription_product = new WC_Product_Subscription();
+		$subscription_product->set_props(
+			[
+				'name'          => 'Test Subscription',
+				'regular_price' => 10,
+				'price'         => 10,
+			]
+		);
+		$subscription_product->save();
+
+		// Create mock order.
+		$order = WC_Helper_Order::create_order();
+
+		// Attempt to validate adding subscription to order.
+		$validation_error = new WP_Error();
+		$result           = $this->disabler->validate_admin_order_item(
+			$validation_error,
+			$subscription_product,
+			$order,
+			1
+		);
+
+		// Verify error is returned.
+		$this->assertInstanceOf( 'WP_Error', $result, 'Should return WP_Error for subscription products' );
+		$this->assertEquals(
+			'subscription_not_allowed_in_admin_order',
+			$result->get_error_code(),
+			'Error code should match'
+		);
+		$this->assertStringContainsString(
+			'Subscription products cannot be added to orders',
+			$result->get_error_message(),
+			'Error message should explain why subscription cannot be added'
+		);
+
+		// Cleanup.
+		wp_delete_post( $subscription_product->get_id(), true );
+		wp_delete_post( $order->get_id(), true );
+	}
+
+	/**
+	 * Verify that regular products pass admin order validation.
+	 */
+	public function test_validate_admin_order_item_allows_regular_products() {
+		$this->disabler->init_hooks();
+
+		// Create regular product.
+		$regular_product = WC_Helper_Product::create_simple_product();
+
+		// Create mock order.
+		$order = WC_Helper_Order::create_order();
+
+		// Attempt to validate adding regular product to order.
+		$validation_error = new WP_Error();
+		$result           = $this->disabler->validate_admin_order_item(
+			$validation_error,
+			$regular_product,
+			$order,
+			1
+		);
+
+		// Verify no error is returned (should return the original empty WP_Error).
+		$this->assertInstanceOf( 'WP_Error', $result, 'Should return WP_Error object' );
+		$this->assertEmpty(
+			$result->get_error_codes(),
+			'Should not have any error codes for regular products'
+		);
+
+		// Cleanup.
+		wp_delete_post( $regular_product->get_id(), true );
+		wp_delete_post( $order->get_id(), true );
+	}
 }
