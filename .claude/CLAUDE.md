@@ -127,8 +127,10 @@ npm run i18n:pot                    # Generate translations
 - Main branch for PRs: `develop`
 - Release branch: `trunk`
 - Husky manages git hooks
+- **Before creating a PR:**
+  - Must run `npm run changelog add` and commit the changelog entry (choose 'patch' if change is not significant)
+  - Changelog must be committed and pushed before creating the PR
 - Use PR template from `.github/PULL_REQUEST_TEMPLATE.md` when creating pull requests
-  - Must run `npm run changelog` before PR (choose 'patch' if change is not significant)
   - Include testing instructions
   - Check mobile testing requirement
   - Link to release testing docs post-merge
