@@ -1,5 +1,8 @@
 *** WooPayments Changelog ***
 
+= 10.1.1 - 2025-10-27 =
+* Fix - Overrides the core `AbstractAutomatticAddressProvider`'s `load_scripts` method to only run if the core setting (`woocommerce_address_autocomplete_enabled` is enabled).
+
 = 10.1.0 - 2025-10-15 =
 * Add - Disputes - Add a loading state to the “Challenge dispute” flow
 * Add - Pre-fill product type in dispute evidence form based on order products.
