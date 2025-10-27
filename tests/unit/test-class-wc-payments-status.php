@@ -148,12 +148,19 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 		// Verify result message.
 		$this->assertStringContainsString( '2 test orders have been permanently deleted.', $result );
 
-		// Verify test orders were deleted.
-		$this->assertFalse( wc_get_order( $order1->get_id() ) );
-		$this->assertFalse( wc_get_order( $order2->get_id() ) );
+		// Verify test orders were moved to trash.
+		$trashed_order1 = wc_get_order( $order1->get_id() );
+		$this->assertInstanceOf( WC_Order::class, $trashed_order1 );
+		$this->assertEquals( 'trash', $trashed_order1->get_status() );
+
+		$trashed_order2 = wc_get_order( $order2->get_id() );
+		$this->assertInstanceOf( WC_Order::class, $trashed_order2 );
+		$this->assertEquals( 'trash', $trashed_order2->get_status() );
 
 		// Verify non-test order was not deleted.
-		$this->assertInstanceOf( WC_Order::class, wc_get_order( $order3->get_id() ) );
+		$order3_check = wc_get_order( $order3->get_id() );
+		$this->assertInstanceOf( WC_Order::class, $order3_check );
+		$this->assertNotEquals( 'trash', $order3_check->get_status() );
 	}
 
 	/**
@@ -168,7 +175,11 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 		$result = $this->status->delete_test_orders();
 
 		$this->assertStringContainsString( '1 test order has been permanently deleted.', $result );
-		$this->assertFalse( wc_get_order( $order->get_id() ) );
+
+		// Verify order was moved to trash.
+		$trashed_order = wc_get_order( $order->get_id() );
+		$this->assertInstanceOf( WC_Order::class, $trashed_order );
+		$this->assertEquals( 'trash', $trashed_order->get_status() );
 	}
 
 	/**
