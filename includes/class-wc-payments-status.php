@@ -63,21 +63,87 @@ class WC_Payments_Status {
 	 * @param array $tools List of current available tools.
 	 */
 	public function debug_tools( $tools ) {
-		$tools['clear_wcpay_account_cache'] = [
-			'name'     => sprintf(
-				/* translators: %s: WooPayments */
-				__( 'Clear %s account cache', 'woocommerce-payments' ),
-				'WooPayments'
-			),
-			'button'   => __( 'Clear', 'woocommerce-payments' ),
-			'desc'     => sprintf(
-				/* translators: %s: WooPayments */
-				__( 'This tool will clear the account cached values used in %s.', 'woocommerce-payments' ),
-				'WooPayments'
-			),
-			'callback' => [ $this->account, 'refresh_account_data' ],
-		];
-		return $tools;
+		return array_merge(
+			$tools,
+			[
+				'clear_wcpay_account_cache' => [
+					'name'     => sprintf(
+						/* translators: %s: WooPayments */
+						__( 'Clear %s account cache', 'woocommerce-payments' ),
+						'WooPayments'
+					),
+					'button'   => __( 'Clear', 'woocommerce-payments' ),
+					'desc'     => sprintf(
+						/* translators: %s: WooPayments */
+						__( 'This tool will clear the cached account values used in %s.', 'woocommerce-payments' ),
+						'WooPayments'
+					),
+					'callback' => [ $this->account, 'refresh_account_data' ],
+				],
+				'delete_wcpay_test_orders'  => [
+					'name'     => __( 'Delete test orders', 'woocommerce-payments' ),
+					'button'   => __( 'Delete', 'woocommerce-payments' ),
+					'desc'     => sprintf(
+						/* translators: %s: WooPayments */
+						__( '<strong class="red">Note:</strong> This option will delete ALL orders created while %s test mode was enabled, use with caution. This action cannot be reversed.', 'woocommerce-payments' ),
+						'WooPayments'
+					),
+					'callback' => [ $this, 'delete_test_orders' ],
+				],
+			]
+		);
+	}
+
+	/**
+	 * Deletes all test orders created with WooPayments.
+	 *
+	 * Test orders are identified by the '_wcpay_mode' meta key with value 'test'.
+	 *
+	 * @return string Success or error message.
+	 */
+	public function delete_test_orders() {
+		try {
+			// Get all orders with test mode meta.
+			$test_orders = wc_get_orders(
+				[
+					'limit'      => -1,
+					// phpcs:ignore
+					'meta_key'   => WC_Payments_Order_Service::WCPAY_MODE_META_KEY,
+					// phpcs:ignore
+					'meta_value' => 'test',
+					'return'     => 'objects',
+				]
+			);
+
+			if ( empty( $test_orders ) ) {
+				return __( 'No test orders found.', 'woocommerce-payments' );
+			}
+
+			$deleted_count = 0;
+			foreach ( $test_orders as $order ) {
+				// Permanently delete the order (skip trash).
+				if ( $order->delete() ) {
+					++$deleted_count;
+				}
+			}
+
+			return sprintf(
+				/* translators: %d: number of orders deleted */
+				_n(
+					'%d test order has been permanently deleted.',
+					'%d test orders have been permanently deleted.',
+					$deleted_count,
+					'woocommerce-payments'
+				),
+				$deleted_count
+			);
+		} catch ( Exception $e ) {
+			return sprintf(
+				/* translators: %s: error message */
+				__( 'Error deleting test orders: %s', 'woocommerce-payments' ),
+				$e->getMessage()
+			);
+		}
 	}
 
 	/**
