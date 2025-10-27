@@ -963,4 +963,200 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 		wp_delete_post( $regular_product->get_id(), true );
 		wp_delete_post( $order->get_id(), true );
 	}
+
+	/**
+	 * Verify that order-pay endpoint redirects when given a subscription ID.
+	 */
+	public function test_order_pay_redirects_for_subscription_id() {
+		if ( ! class_exists( 'WC_Subscription' ) ) {
+			$this->markTestSkipped( 'WC_Subscription class not available.' );
+		}
+
+		global $wp;
+
+		// Create a subscription post.
+		$subscription_id = $this->factory->post->create(
+			[
+				'post_type'   => 'shop_subscription',
+				'post_status' => 'wc-active',
+			]
+		);
+
+		// Simulate the order-pay endpoint with subscription ID.
+		$wp->query_vars['order-pay'] = $subscription_id;
+
+		$this->disabler->init_hooks();
+		$this->disabler->maybe_redirect_account_endpoints();
+
+		// Verify redirect occurred (should not be null).
+		$this->assertNotNull(
+			$this->disabler->redirected_to,
+			'Should redirect to My Account when order-pay contains subscription ID'
+		);
+
+		// Cleanup.
+		unset( $wp->query_vars['order-pay'] );
+		wp_delete_post( $subscription_id, true );
+	}
+
+	/**
+	 * Verify that order-pay endpoint does NOT redirect when given a regular order ID.
+	 */
+	public function test_order_pay_allows_regular_order_id() {
+		global $wp;
+
+		// Create a regular order.
+		$order = WC_Helper_Order::create_order();
+
+		// Simulate the order-pay endpoint with order ID.
+		$wp->query_vars['order-pay'] = $order->get_id();
+
+		$this->disabler->init_hooks();
+		$this->disabler->maybe_redirect_account_endpoints();
+
+		// Verify NO redirect occurred.
+		$this->assertNull(
+			$this->disabler->redirected_to,
+			'Should NOT redirect when order-pay contains regular order ID'
+		);
+
+		// Cleanup.
+		unset( $wp->query_vars['order-pay'] );
+		wp_delete_post( $order->get_id(), true );
+	}
+
+	/**
+	 * Verify that order-pay redirects when change_payment_method parameter contains subscription ID.
+	 *
+	 * This simulates the flow when WooCommerce Subscriptions redirects from
+	 * /my-account/subscription-payment-method/765 to /checkout/order-pay/765/?change_payment_method=765
+	 */
+	public function test_order_pay_redirects_for_change_payment_method_with_subscription_id() {
+		if ( ! class_exists( 'WC_Subscription' ) ) {
+			$this->markTestSkipped( 'WC_Subscription class not available.' );
+		}
+
+		global $wp;
+
+		// Create a subscription post.
+		$subscription_id = $this->factory->post->create(
+			[
+				'post_type'   => 'shop_subscription',
+				'post_status' => 'wc-active',
+			]
+		);
+
+		// Create a regular order (could be the parent order or renewal order).
+		$order = WC_Helper_Order::create_order();
+
+		// Simulate the order-pay endpoint with change_payment_method parameter.
+		// This is what WC Subscriptions does when redirecting.
+		$wp->query_vars['order-pay']   = $order->get_id();
+		$_GET['change_payment_method'] = $subscription_id;
+		$_GET['pay_for_order']         = 'true';
+		$_GET['key']                   = 'test_key';
+
+		$this->disabler->init_hooks();
+		$this->disabler->maybe_redirect_account_endpoints();
+
+		// Verify redirect occurred due to subscription ID in change_payment_method (should not be null).
+		$this->assertNotNull(
+			$this->disabler->redirected_to,
+			'Should redirect to My Account when change_payment_method parameter contains subscription ID'
+		);
+
+		// Cleanup.
+		unset( $wp->query_vars['order-pay'], $_GET['change_payment_method'], $_GET['pay_for_order'], $_GET['key'] );
+		wp_delete_post( $subscription_id, true );
+		wp_delete_post( $order->get_id(), true );
+	}
+
+	/**
+	 * Verify that order-pay does NOT redirect when change_payment_method contains order ID.
+	 */
+	public function test_order_pay_allows_change_payment_method_with_order_id() {
+		global $wp;
+
+		// Create two regular orders.
+		$order1 = WC_Helper_Order::create_order();
+		$order2 = WC_Helper_Order::create_order();
+
+		// Simulate order-pay with change_payment_method for a regular order.
+		$wp->query_vars['order-pay']   = $order1->get_id();
+		$_GET['change_payment_method'] = $order2->get_id();
+		$_GET['pay_for_order']         = 'true';
+		$_GET['key']                   = 'test_key';
+
+		$this->disabler->init_hooks();
+		$this->disabler->maybe_redirect_account_endpoints();
+
+		// Verify NO redirect occurred (regular order IDs are allowed).
+		$this->assertNull(
+			$this->disabler->redirected_to,
+			'Should NOT redirect when change_payment_method contains regular order ID'
+		);
+
+		// Cleanup.
+		unset( $wp->query_vars['order-pay'], $_GET['change_payment_method'], $_GET['pay_for_order'], $_GET['key'] );
+		wp_delete_post( $order1->get_id(), true );
+		wp_delete_post( $order2->get_id(), true );
+	}
+
+	/**
+	 * Verify that subscription endpoints are redirected during pre_get_posts.
+	 *
+	 * This tests the early redirect that happens BEFORE WooCommerce Subscriptions
+	 * can redirect to the order-pay endpoint.
+	 */
+	public function test_pre_get_posts_redirects_subscription_payment_method_endpoint() {
+		update_option( 'woocommerce_myaccount_subscription_payment_method_endpoint', 'subscription-payment-method' );
+
+		// Create a main query with subscription-payment-method endpoint.
+		$query_args = [
+			'subscription-payment-method' => 765,
+		];
+		$query      = new WP_Query( $query_args );
+
+		// Need to manually set this since we're not running a full WordPress request.
+		global $wp_the_query;
+		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Required for testing is_main_query() in isolation.
+		$wp_the_query = $query;
+
+		$this->disabler->init_hooks();
+		$this->disabler->maybe_redirect_subscription_endpoints( $query );
+
+		// Verify redirect occurred (should not be null).
+		$this->assertNotNull(
+			$this->disabler->redirected_to,
+			'Should redirect subscription-payment-method endpoint during pre_get_posts'
+		);
+
+		// Clean up.
+		// phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited -- Restoring original state.
+		$wp_the_query = null;
+	}
+
+	/**
+	 * Verify that non-main queries are not redirected.
+	 */
+	public function test_pre_get_posts_ignores_non_main_queries() {
+		update_option( 'woocommerce_myaccount_subscription_payment_method_endpoint', 'subscription-payment-method' );
+
+		// Create a non-main query (not setting as global query).
+		$query_args = [
+			'subscription-payment-method' => 765,
+		];
+		$query      = new WP_Query( $query_args );
+
+		// Don't set as main query - it's a secondary query.
+
+		$this->disabler->init_hooks();
+		$this->disabler->maybe_redirect_subscription_endpoints( $query );
+
+		// Verify NO redirect occurred (non-main queries should be ignored).
+		$this->assertNull(
+			$this->disabler->redirected_to,
+			'Should NOT redirect non-main queries'
+		);
+	}
 }

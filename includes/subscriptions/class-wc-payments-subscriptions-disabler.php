@@ -28,6 +28,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * - Related subscriptions section on order details
  * - Purchasing of subscription products (makes them unpurchasable)
  * - Adding subscription products to admin orders (both search and validation)
+ * - Order-pay endpoint when accessed with subscription IDs
  *
  * What this class does NOT affect:
  * - Stripe Billing webhook processing (invoice.paid, invoice.upcoming, etc.)
@@ -79,7 +80,8 @@ class WC_Payments_Subscriptions_Disabler {
 		}
 
 		add_filter( 'woocommerce_account_menu_items', [ $this, 'remove_account_menu_item' ], 99 );
-		add_action( 'template_redirect', [ $this, 'maybe_redirect_account_endpoints' ] );
+		add_action( 'pre_get_posts', [ $this, 'maybe_redirect_subscription_endpoints' ], 1 );
+		add_action( 'template_redirect', [ $this, 'maybe_redirect_account_endpoints' ], 5 );
 		add_action( 'init', [ $this, 'remove_related_subscriptions_section' ], 99 );
 		add_filter( 'woocommerce_is_purchasable', [ $this, 'make_subscription_products_unpurchasable' ], 10, 2 );
 	}
@@ -197,6 +199,42 @@ class WC_Payments_Subscriptions_Disabler {
 	}
 
 	/**
+	 * Redirects subscription endpoints during query parsing.
+	 *
+	 * This runs on the pre_get_posts hook (priority 1) to intercept subscription
+	 * endpoint requests BEFORE WooCommerce Subscriptions can redirect them to
+	 * the order-pay page. This is critical because WCS_Query::maybe_redirect_payment_methods()
+	 * runs at priority 10 on pre_get_posts and would redirect /my-account/subscription-payment-method/ID
+	 * to /checkout/order-pay/ID/?change_payment_method=ID before we can block it.
+	 *
+	 * @param WP_Query $query The WP_Query instance.
+	 * @return void
+	 */
+	public function maybe_redirect_subscription_endpoints( $query ) {
+		// Only process main queries.
+		if ( ! $query->is_main_query() ) {
+			return;
+		}
+
+		// Check each subscription endpoint.
+		$endpoints = [
+			'subscriptions',
+			'view-subscription',
+			'subscription-payment-method',
+		];
+
+		foreach ( $endpoints as $endpoint_key ) {
+			$endpoint_slug = $this->get_account_endpoint_slug( $endpoint_key );
+
+			// Check if this query is for a subscription endpoint.
+			if ( ! empty( $query->get( $endpoint_slug ) ) ) {
+				// Redirect to My Account before WCS can redirect elsewhere.
+				$this->redirect( wc_get_page_permalink( 'myaccount' ) );
+			}
+		}
+	}
+
+	/**
 	 * Redirects subscription related customer account endpoints.
 	 *
 	 * Prevents customers from accessing subscription management pages including:
@@ -218,6 +256,56 @@ class WC_Payments_Subscriptions_Disabler {
 			if ( $this->is_endpoint_url( $endpoint ) ) {
 				$this->redirect( wc_get_page_permalink( 'myaccount' ) );
 			}
+		}
+
+		// Also block order-pay endpoint if it contains a subscription ID.
+		$this->maybe_redirect_order_pay_for_subscription();
+	}
+
+	/**
+	 * Redirects order-pay requests that target subscription IDs.
+	 *
+	 * This prevents users from accessing the "pay for order" page using a
+	 * subscription ID in two ways:
+	 *
+	 * 1. Direct access: /checkout/order-pay/{subscription_id}/
+	 * 2. Via change_payment_method parameter: /checkout/order-pay/ID/?change_payment_method={subscription_id}
+	 *
+	 * The second case occurs when WooCommerce Subscriptions redirects from
+	 * /my-account/subscription-payment-method/{subscription_id}/ to the order-pay
+	 * endpoint during the pre_get_posts hook.
+	 *
+	 * @return void
+	 */
+	private function maybe_redirect_order_pay_for_subscription() {
+		global $wp;
+
+		$subscription_id = null;
+
+		// Check if we're on the order-pay endpoint with a subscription ID.
+		if ( ! empty( $wp->query_vars['order-pay'] ) ) {
+			$order_id  = absint( $wp->query_vars['order-pay'] );
+			$post_type = get_post_type( $order_id );
+
+			if ( 'shop_subscription' === $post_type ) {
+				$subscription_id = $order_id;
+			}
+		}
+
+		// Also check for change_payment_method parameter (when redirected from subscription-payment-method endpoint).
+		// phpcs:ignore WordPress.Security.NonceVerification.Recommended -- Nonce verified by WooCommerce core.
+		if ( ! $subscription_id && ! empty( $_GET['change_payment_method'] ) ) {
+			$change_payment_id = absint( $_GET['change_payment_method'] ); // phpcs:ignore WordPress.Security.NonceVerification.Recommended
+			$post_type         = get_post_type( $change_payment_id );
+
+			if ( 'shop_subscription' === $post_type ) {
+				$subscription_id = $change_payment_id;
+			}
+		}
+
+		// If we found a subscription ID in either place, redirect.
+		if ( $subscription_id ) {
+			$this->redirect( wc_get_page_permalink( 'myaccount' ) );
 		}
 	}
 
