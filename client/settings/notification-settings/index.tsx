@@ -12,6 +12,7 @@ import React from 'react';
  */
 import CardBody from '../card-body';
 import NotificationsEmailInput from './notifications-email-input';
+import './style.scss';
 
 export const NotificationSettingsDescription: React.FC = () => (
 	<>
