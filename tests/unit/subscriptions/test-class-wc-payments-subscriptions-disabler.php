@@ -1159,4 +1159,94 @@ class WC_Payments_Subscriptions_Disabler_Test extends WCPAY_UnitTestCase {
 			'Should NOT redirect non-main queries'
 		);
 	}
+
+	/**
+	 * Verify that the Related Orders meta box is removed from order edit screens.
+	 */
+	public function test_remove_related_orders_meta_box_removes_subscription_meta_box() {
+		global $wp_meta_boxes;
+
+		// Mock the wcs_get_page_screen_id function.
+		if ( ! function_exists( 'wcs_get_page_screen_id' ) ) {
+			function wcs_get_page_screen_id( $type ) {
+				return 'wc-orders--shop_order';
+			}
+		}
+
+		$screen_id = 'wc-orders--shop_order';
+
+		// Simulate WCS adding the Related Orders meta box.
+		add_meta_box(
+			'subscription_renewal_orders',
+			'Related Orders',
+			'__return_true',
+			$screen_id,
+			'normal',
+			'low'
+		);
+
+		// Verify the meta box was added.
+		$this->assertArrayHasKey(
+			'subscription_renewal_orders',
+			$wp_meta_boxes[ $screen_id ]['normal']['low'],
+			'Related Orders meta box should be added by WCS'
+		);
+
+		// Call our remove method.
+		$this->disabler->remove_related_orders_meta_box( 'shop_order', null );
+
+		// Verify the meta box was removed (marked as false by remove_meta_box).
+		// WordPress's remove_meta_box() sets the meta box to false rather than unsetting it.
+		$this->assertFalse(
+			$wp_meta_boxes[ $screen_id ]['normal']['low']['subscription_renewal_orders'],
+			'Related Orders meta box should be removed (set to false) by disabler'
+		);
+
+		// Clean up global.
+		unset( $wp_meta_boxes[ $screen_id ] );
+	}
+
+	/**
+	 * Verify that remove_related_orders_meta_box does nothing when WCS functions are not available.
+	 */
+	public function test_remove_related_orders_meta_box_does_nothing_without_wcs() {
+		global $wp_meta_boxes;
+
+		// Temporarily rename the function to simulate it not existing.
+		if ( function_exists( 'wcs_get_page_screen_id' ) ) {
+			$this->markTestSkipped( 'Cannot test missing function when it exists in test environment' );
+		}
+
+		$screen_id = 'wc-orders--shop_order';
+
+		// Add a meta box.
+		add_meta_box(
+			'subscription_renewal_orders',
+			'Related Orders',
+			'__return_true',
+			$screen_id,
+			'normal',
+			'low'
+		);
+
+		// Verify the meta box was added.
+		$this->assertArrayHasKey(
+			'subscription_renewal_orders',
+			$wp_meta_boxes[ $screen_id ]['normal']['low'],
+			'Related Orders meta box should be added'
+		);
+
+		// Call our remove method (should do nothing without WCS functions).
+		$this->disabler->remove_related_orders_meta_box( 'shop_order', null );
+
+		// Verify the meta box was NOT removed (function should exit early).
+		$this->assertArrayHasKey(
+			'subscription_renewal_orders',
+			$wp_meta_boxes[ $screen_id ]['normal']['low'],
+			'Related Orders meta box should remain when WCS functions not available'
+		);
+
+		// Clean up global.
+		unset( $wp_meta_boxes[ $screen_id ] );
+	}
 }

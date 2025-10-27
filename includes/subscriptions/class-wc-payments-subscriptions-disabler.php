@@ -26,6 +26,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * - Subscription settings tab
  * - Customer account subscription pages
  * - Related subscriptions section on order details
+ * - Related orders meta box on admin order edit screen
  * - Purchasing of subscription products (makes them unpurchasable)
  * - Adding subscription products to admin orders (both search and validation)
  * - Order-pay endpoint when accessed with subscription IDs
@@ -58,6 +59,7 @@ class WC_Payments_Subscriptions_Disabler {
 	 * - Blocks direct access to subscription screens
 	 * - Removes subscription product types from product editor
 	 * - Removes subscription settings tab
+	 * - Removes "Related Orders" meta box from order edit screen
 	 *
 	 * Frontend hooks (customer-facing blocking):
 	 * - Removes subscription navigation from My Account
@@ -77,6 +79,7 @@ class WC_Payments_Subscriptions_Disabler {
 			add_action( 'admin_notices', [ $this, 'display_subscription_disabled_notice' ] );
 			add_filter( 'woocommerce_json_search_found_products', [ $this, 'filter_admin_product_search' ] );
 			add_filter( 'woocommerce_ajax_add_order_item_validation', [ $this, 'validate_admin_order_item' ], 10, 4 );
+			add_action( 'add_meta_boxes', [ $this, 'remove_related_orders_meta_box' ], 99, 2 );
 		}
 
 		add_filter( 'woocommerce_account_menu_items', [ $this, 'remove_account_menu_item' ], 99 );
@@ -98,6 +101,38 @@ class WC_Payments_Subscriptions_Disabler {
 		remove_submenu_page( 'woocommerce', 'edit.php?post_type=shop_subscription' );
 		remove_submenu_page( 'woocommerce', 'wc-orders--shop_subscription' );
 		remove_menu_page( 'wc-orders--shop_subscription' );
+	}
+
+	/**
+	 * Removes the "Related Orders" meta box from order edit screens.
+	 *
+	 * This meta box displays subscription-related orders (renewals, parent orders, etc.)
+	 * on the admin order edit screen. We remove it to hide subscription relationships
+	 * from merchants when viewing orders.
+	 *
+	 * The meta box is added by WooCommerce Subscriptions via:
+	 * - WCS_Admin_Meta_Boxes::add_meta_boxes() at priority 10 on 'add_meta_boxes'
+	 * - Meta box ID: 'subscription_renewal_orders'
+	 * - Title: 'Related Orders'
+	 *
+	 * We run this at priority 99 to ensure it executes after WCS adds the meta box.
+	 *
+	 * @param string                $post_type The post type of the current post being edited.
+	 * @param WP_Post|WC_Order|null $post_or_order_object The post or order currently being edited.
+	 * @return void
+	 */
+	public function remove_related_orders_meta_box( $post_type, $post_or_order_object = null ) {
+		// Only process when WCS functions are available.
+		if ( ! function_exists( 'wcs_get_page_screen_id' ) ) {
+			return;
+		}
+
+		// Get the order screen ID (handles both CPT and HPOS).
+		$order_screen_id = wcs_get_page_screen_id( 'shop_order' );
+
+		// Remove the Related Orders meta box from the order edit screen.
+		// The 'normal' context matches where WCS registers the meta box.
+		remove_meta_box( 'subscription_renewal_orders', $order_screen_id, 'normal' );
 	}
 
 	/**
