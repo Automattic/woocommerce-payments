@@ -71,7 +71,6 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 
 		$this->add_mock_order_with_meta();
 		$this->set_is_admin( true );
-		$this->set_is_rest_request( true );
 		add_filter( 'woocommerce_is_rest_api_request', '__return_true' );
 		// Add manage_woocommerce capability to user.
 		$cb = $this->create_can_manage_woocommerce_cap_override( true );
@@ -583,10 +582,6 @@ class WCPay_Multi_Currency_Analytics_Tests extends WCPAY_UnitTestCase {
 			->getMock();
 
 		$current_screen->method( 'in_admin' )->willReturn( $is_admin );
-	}
-
-	private function set_is_rest_request() {
-		$_SERVER['REQUEST_URI'] = '/ajax';
 	}
 
 	/**

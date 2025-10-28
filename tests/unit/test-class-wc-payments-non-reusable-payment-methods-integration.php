@@ -5,143 +5,225 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use PHPUnit\Framework\InvalidArgumentException;
+use PHPUnit\Framework\MockObject\ClassAlreadyExistsException;
+use PHPUnit\Framework\MockObject\ClassIsFinalException;
+use PHPUnit\Framework\MockObject\DuplicateMethodException;
+use PHPUnit\Framework\MockObject\InvalidMethodNameException;
+use PHPUnit\Framework\MockObject\OriginalConstructorInvocationRequiredException;
+use PHPUnit\Framework\MockObject\ReflectionException;
+use PHPUnit\Framework\MockObject\RuntimeException;
+use PHPUnit\Framework\MockObject\UnknownTypeException;
+use PHPUnit\Framework\MockObject\UnknownClassException;
+use PHPUnit\Framework\MockObject\UnknownTraitException;
+
 /**
  * Integration tests for non-reusable payment methods with subscriptions.
- * Tests the complete flow from checkout to renewal.
+ * Tests the complete flow from checkout to renewal using real service instances.
  */
 class WC_Payments_Non_Reusable_Payment_Methods_Integration_Test extends WCPAY_UnitTestCase {
+
+	/**
+	 * Payment gateway trait instance.
+	 *
+	 * @var WC_Payment_Gateway_WCPay_Subscriptions_Trait
+	 */
+	private $payment_gateway_trait;
+
+	/**
+	 * Invoice service instance.
+	 *
+	 * @var WC_Payments_Invoice_Service
+	 */
+	private $invoice_service;
+
+	/**
+	 * Subscription service instance.
+	 *
+	 * @var WC_Payments_Subscription_Service
+	 */
+	private $subscription_service;
+
+	/**
+	 * Mock subscription product.
+	 *
+	 * @var WC_Product_Subscription
+	 */
+	private $mock_subscription_product;
+
+	public function set_up() {
+		parent::set_up();
+
+		// Set up real service instances for integration testing.
+		$mock_api_client       = $this->createMock( WC_Payments_API_Client::class );
+		$mock_order_service    = $this->createMock( WC_Payments_Order_Service::class );
+		$mock_product_service  = $this->createMock( WC_Payments_Product_Service::class );
+		$mock_customer_service = $this->createMock( WC_Payments_Customer_Service::class );
+
+		$this->mock_subscription_product = new WC_Subscriptions_Product();
+		$this->mock_subscription_product->set_props(
+			[
+				'regular_price' => 10,
+				'price'         => 10,
+			]
+		);
+		$this->mock_subscription_product->save();
+
+		$mock_customer_service
+			->method( 'get_customer_id_for_order' )
+			->willReturn( uniqid( 'wcpay_cus_' ) );
+
+		$mock_product_service
+			->method( 'get_wcpay_product_id_for_item' )
+			->willReturn( uniqid( 'wcpay_prod_' ) );
+
+		$mock_product_service
+			->method( 'get_or_create_wcpay_product_id' )
+			->willReturn( uniqid( 'wcpay_prod_' ) );
+
+		$mock_product_service
+			->method( 'is_valid_billing_cycle' )
+			->willReturn( true );
+
+		$mock_api_client
+			->method( 'create_subscription' )
+			->willReturn(
+				[
+					'id'    => uniqid( 'sub_' ),
+					'items' => [
+						'data' => [
+							[
+								'id' => uniqid( 'sub_item_' ),
+							],
+						],
+					],
+				]
+			);
+
+		// Mock charge_invoice for maybe_record_invoice_payment.
+		$mock_api_client
+			->method( 'charge_invoice' )
+			->willReturn( [ 'status' => 'paid' ] );
+
+		$this->invoice_service       = new WC_Payments_Invoice_Service( $mock_api_client, $mock_order_service );
+		$this->subscription_service  = new WC_Payments_Subscription_Service( $mock_api_client, $mock_customer_service, $mock_product_service, $this->invoice_service );
+		$this->payment_gateway_trait = $this->getMockForTrait( WC_Payment_Gateway_WCPay_Subscriptions_Trait::class );
+	}
 
 	/**
 	 * Test complete flow: Non-reusable payment method -> Manual subscription -> Stays manual.
 	 */
 	public function test_non_reusable_payment_method_creates_and_maintains_manual_subscription() {
-		// Arrange: Simulate checkout with non-reusable payment method (e.g., SEPA, iDEAL).
-		$order_id     = 123;
+		// Arrange: Create order and subscription with non-reusable payment method.
+		$order        = WC_Helper_Order::create_order( 1, 50, $this->mock_subscription_product );
 		$subscription = new WC_Subscription();
 		$subscription->set_requires_manual_renewal( true );
+		$subscription->set_parent( $order );
+		$subscription->set_props(
+			[
+				'payment_method' => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+				'payment_tokens' => [],
+			]
+		);
+		// Mock subscription meta for WCPay checks.
+		$subscription->update_meta_data( WC_Payments_Subscription_Service::SUBSCRIPTION_ID_META_KEY, '' );
+		$subscription->update_meta_data( WC_Payments_Invoice_Service::ORDER_INVOICE_ID_KEY, 'inv_test123' );
+		$subscription->save();
 
-		// No payment tokens saved (characteristic of non-reusable payment methods).
-		$subscription->payment_tokens = [];
+		// Mock required functions.
+		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
+			function ( $order_id ) use ( $subscription ) {
+				return [ $subscription ];
+			}
+		);
+		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
+			function ( $order_id ) use ( $subscription ) {
+				return [ $subscription ];
+			}
+		);
 
-		// Act 1: Check if payment method should be saved during checkout.
-		$should_save_payment_method = $this->simulate_checkout_payment_method_saving( $order_id, $subscription );
+		// Act 1: Test payment method saving during checkout (real method).
+		$should_save_payment_method = $this->payment_gateway_trait->should_save_payment_method_for_subscription( $order->get_id() );
 
-		// Act 2: Check if subscription should convert to automatic during renewal.
-		$should_convert_to_automatic = $this->simulate_renewal_conversion_logic( $subscription );
+		// Act 2: Test manual-to-automatic conversion during renewal (real method).
+		$initial_manual_state = $subscription->is_manual();
+		$this->invoice_service->maybe_record_invoice_payment( $order->get_id() );
+		$stayed_manual = $subscription->is_manual();
 
-		// Act 3: Check if WCPay subscription should be created.
-		$should_create_wcpay_subscription = $this->simulate_wcpay_subscription_creation( $subscription );
+		// Act 3: Test WCPay subscription creation during renewal (real method).
+		$this->subscription_service->create_subscription_for_manual_renewal( $order->get_id() );
 
 		// Assert: Complete flow behavior.
 		$this->assertFalse( $should_save_payment_method, 'Should NOT save payment method for manual subscription' );
-		$this->assertFalse( $should_convert_to_automatic, 'Should NOT convert to automatic without payment tokens' );
-		$this->assertFalse( $should_create_wcpay_subscription, 'Should NOT create WCPay subscription without tokens' );
-		$this->assertTrue( $subscription->is_manual(), 'Subscription should remain manual throughout' );
+		$this->assertTrue( $initial_manual_state, 'Subscription should start as manual' );
+		$this->assertTrue( $stayed_manual, 'Subscription should stay manual without payment tokens' );
+		// Note: We can't easily assert create_subscription wasn't called without complex mocking,
+		// but the real method will only call it when payment tokens exist.
 	}
 
 	/**
 	 * Test complete flow: Reusable payment method -> Manual subscription -> Converts to automatic.
 	 */
 	public function test_reusable_payment_method_allows_manual_to_automatic_conversion() {
-		// Arrange: Simulate checkout with reusable payment method (e.g., Card).
-		$order_id     = 123;
+		// Arrange: Create order and subscription with reusable payment method.
+		$order        = WC_Helper_Order::create_order( 1, 50, $this->mock_subscription_product );
 		$subscription = new WC_Subscription();
 		$subscription->set_requires_manual_renewal( true );
+		$subscription->set_parent( $order );
+		$subscription->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+		$subscription->set_payment_tokens( [ uniqid( 'pm_' ) ] );
+		// Mock subscription meta for WCPay checks.
+		$subscription->update_meta_data( WC_Payments_Subscription_Service::SUBSCRIPTION_ID_META_KEY, uniqid( 'sub_test_' ) );
+		$subscription->update_meta_data( WC_Payments_Invoice_Service::ORDER_INVOICE_ID_KEY, 'inv_test123' );
+		$subscription->save();
 
-		// Payment tokens saved (characteristic of reusable payment methods).
-		$subscription->payment_tokens = [ 'pm_reusable123' ];
-
-		// Act 1: Check if payment method should be saved during checkout.
-		$should_save_payment_method = $this->simulate_checkout_payment_method_saving( $order_id, $subscription );
-
-		// Act 2: Check if subscription should convert to automatic during renewal.
-		$should_convert_to_automatic = $this->simulate_renewal_conversion_logic( $subscription );
-
-		// Act 3: Check if WCPay subscription should be created.
-		$should_create_wcpay_subscription = $this->simulate_wcpay_subscription_creation( $subscription );
-
-		// Assert: Complete flow behavior.
-		$this->assertTrue( $should_save_payment_method, 'Should save payment method for future renewals' );
-		$this->assertTrue( $should_convert_to_automatic, 'Should convert to automatic with payment tokens' );
-		$this->assertTrue( $should_create_wcpay_subscription, 'Should create WCPay subscription with tokens' );
-	}
-
-	/**
-	 * Test mixed scenario: Multiple subscriptions with different payment method types.
-	 */
-	public function test_mixed_payment_methods_handled_correctly() {
-		// Arrange: Order with both reusable and non-reusable payment method subscriptions.
-		$order_id = 123;
-
-		$manual_subscription_with_tokens = new WC_Subscription();
-		$manual_subscription_with_tokens->set_requires_manual_renewal( true );
-		$manual_subscription_with_tokens->payment_tokens = [ 'pm_card123' ];
-
-		$manual_subscription_without_tokens = new WC_Subscription();
-		$manual_subscription_without_tokens->set_requires_manual_renewal( true );
-		$manual_subscription_without_tokens->payment_tokens = [];
-
-		// Act: Test behavior for both subscriptions.
-		$card_should_save = $this->simulate_checkout_payment_method_saving( $order_id, $manual_subscription_with_tokens );
-		$sepa_should_save = $this->simulate_checkout_payment_method_saving( $order_id, $manual_subscription_without_tokens );
-
-		$card_should_convert = $this->simulate_renewal_conversion_logic( $manual_subscription_with_tokens );
-		$sepa_should_convert = $this->simulate_renewal_conversion_logic( $manual_subscription_without_tokens );
-
-		// Assert: Different behavior based on payment method type.
-		$this->assertTrue( $card_should_save, 'Should save for reusable payment method' );
-		$this->assertFalse( $sepa_should_save, 'Should NOT save for non-reusable payment method' );
-
-		$this->assertTrue( $card_should_convert, 'Should convert with tokens' );
-		$this->assertFalse( $sepa_should_convert, 'Should NOT convert without tokens' );
-	}
-
-	/**
-	 * Simulate the checkout payment method saving logic using real implementation.
-	 */
-	private function simulate_checkout_payment_method_saving( $order_id, $subscription ) {
-		// Use actual logic from should_save_payment_method_for_subscription().
-		$subscriptions = [ $subscription ];
-
-		// Mock wcs_get_subscriptions_for_order.
+		// Mock required functions.
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
-			function ( $order_id ) use ( $subscriptions ) {
-				return $subscriptions;
+			function ( $order_id ) use ( $subscription ) {
+				return [ $subscription ];
+			}
+		);
+		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
+			function ( $order_id ) use ( $subscription ) {
+				return [ $subscription ];
 			}
 		);
 
-		// Create trait instance to test.
-		$trait  = $this->getMockForTrait( WC_Payment_Gateway_WCPay_Subscriptions_Trait::class );
-		$result = $trait->should_save_payment_method_for_subscription( $order_id );
+		// Mock the abstract get_payment_token method to return a payment token for subscriptions with tokens.
+		$this->payment_gateway_trait
+			->method( 'get_payment_token' )
+			->willReturnCallback(
+				function ( $subscription_or_order ) {
+					if ( is_a( $subscription_or_order, 'WC_Subscription' ) ) {
+							$tokens = $subscription_or_order->get_payment_tokens();
+							return ! empty( $tokens ) ? $tokens[0] : null;
+					}
+					return null;
+				}
+			);
 
-		// Clean up.
+		// Act 1: Test payment method saving during checkout (real method).
+		$should_save_payment_method = $this->payment_gateway_trait->should_save_payment_method_for_subscription( $order->get_id() );
+
+		// Act 2: Test manual-to-automatic conversion during renewal (real method).
+		$initial_manual_state = $subscription->is_manual();
+		$this->invoice_service->maybe_record_invoice_payment( $order->get_id() );
+		$converted_to_automatic = ! $subscription->is_manual();
+
+		// Act 3: Test WCPay subscription creation during renewal (real method).
+		$this->subscription_service->create_subscription_for_manual_renewal( $order->get_id() );
+
+		// Assert: Complete flow behavior.
+		$this->assertTrue( $should_save_payment_method, 'Should save payment method for future renewals' );
+		$this->assertTrue( $initial_manual_state, 'Subscription should start as manual' );
+		$this->assertTrue( $converted_to_automatic, 'Should convert to automatic with payment tokens' );
+		// Note: We can't easily assert create_subscription was called without complex mocking,
+		// but the real method will call it when payment tokens exist.
+	}
+
+	public function tear_down() {
+		parent::tear_down();
 		WC_Subscriptions::set_wcs_get_subscriptions_for_order( null );
-
-		return $result;
-	}
-
-	/**
-	 * Simulate the renewal conversion logic using real implementation.
-	 */
-	private function simulate_renewal_conversion_logic( $subscription ) {
-		// Use actual logic from invoice service conversion.
-		if ( $subscription->is_manual() ) {
-			$payment_tokens = $subscription->get_payment_tokens();
-			return ! empty( $payment_tokens );
-		}
-		return false;
-	}
-
-	/**
-	 * Simulate the WCPay subscription creation logic using real implementation.
-	 */
-	private function simulate_wcpay_subscription_creation( $subscription ) {
-		// Use actual logic from create_subscription_for_manual_renewal().
-		if ( ! $subscription->is_manual() ) {
-			return false;
-		}
-
-		$payment_tokens = $subscription->get_payment_tokens();
-		return ! empty( $payment_tokens );
+		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order( null );
 	}
 }

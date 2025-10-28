@@ -82,6 +82,7 @@ class WC_Payments_Subscription_Service_Creation_Logic_Test extends WCPAY_UnitTes
 				'price'         => 10,
 			]
 		);
+		$this->mock_subscription_product->save();
 
 		$this->mock_get_product_from_item_callback = function () {
 			return $this->mock_subscription_product;
@@ -99,9 +100,13 @@ class WC_Payments_Subscription_Service_Creation_Logic_Test extends WCPAY_UnitTes
 		$subscription = new WC_Subscription();
 		$subscription->set_requires_manual_renewal( true );
 		$subscription->set_parent( $order );
-		$subscription->payment_method = 'woocommerce_payments';
-		// Mock payment tokens to simulate reusable payment method.
-		$subscription->payment_tokens = [ uniqid( 'pm_' ) ];
+		$subscription->set_props(
+			[
+				'payment_method' => WC_Payment_Gateway_WCPay::GATEWAY_ID,
+				// Payment tokens saved (characteristic of reusable payment methods like cards).
+				'payment_tokens' => [ uniqid( 'pm_' ) ],
+			]
+		);
 		$subscription->update_meta_data( self::SUBSCRIPTION_ID_META_KEY, '' );
 		$subscription->update_meta_data( self::ORDER_INVOICE_ID_KEY, uniqid( 'order_' ) );
 		$subscription->save();

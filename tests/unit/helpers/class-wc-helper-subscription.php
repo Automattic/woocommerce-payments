@@ -287,4 +287,8 @@ class WC_Subscription extends WC_Mock_WC_Data {
 	public function get_payment_tokens() {
 		return $this->payment_tokens;
 	}
+
+	public function set_payment_tokens( $tokens ) {
+		$this->payment_tokens = $tokens;
+	}
 }

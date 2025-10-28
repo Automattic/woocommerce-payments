@@ -1064,7 +1064,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		foreach ( $subscriptions as $subscription ) {
 			// Don't save payment method for manual subscriptions.
 			if ( $subscription->is_manual() ) {
-				return false;
+				return null !== $this->get_payment_token( $subscription );
 			}
 		}
 
