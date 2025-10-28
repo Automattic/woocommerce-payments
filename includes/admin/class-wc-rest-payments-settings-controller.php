@@ -803,13 +803,17 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 * @param WP_REST_Request $request Request object.
 	 */
 	private function update_is_wcpay_subscriptions_enabled( WP_REST_Request $request ) {
-		if ( ! $request->has_param( 'is_wcpay_subscriptions_enabled' ) ) {
+		if ( ! $request->has_param( 'is_wcpay_subscription_enabled' ) ) {
 			return;
 		}
 
-		$is_wcpay_subscriptions_enabled = $request->get_param( 'is_wcpay_subscriptions_enabled' );
+		$is_wcpay_subscriptions_enabled = $request->get_param( 'is_wcpay_subscription_enabled' );
 
-		update_option( WC_Payments_Features::WCPAY_SUBSCRIPTIONS_FLAG_NAME, $is_wcpay_subscriptions_enabled ? '1' : '0' );
+		// Prevent enabling bundled subscriptions - feature has been removed in 10.2.0.
+		// Only allow disabling the feature if it was previously enabled.
+		if ( ! $is_wcpay_subscriptions_enabled ) {
+			update_option( WC_Payments_Features::WCPAY_SUBSCRIPTIONS_FLAG_NAME, '0' );
+		}
 	}
 
 	/**
