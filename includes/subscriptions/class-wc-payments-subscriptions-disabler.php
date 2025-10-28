@@ -87,6 +87,7 @@ class WC_Payments_Subscriptions_Disabler {
 		add_action( 'template_redirect', [ $this, 'maybe_redirect_account_endpoints' ], 5 );
 		add_action( 'init', [ $this, 'remove_related_subscriptions_section' ], 99 );
 		add_filter( 'woocommerce_is_purchasable', [ $this, 'make_subscription_products_unpurchasable' ], 10, 2 );
+		add_filter( 'woocommerce_cart_item_removed_message', [ $this, 'filter_subscription_removal_message' ], 10, 2 );
 	}
 
 	/**
@@ -393,6 +394,30 @@ class WC_Payments_Subscriptions_Disabler {
 		}
 
 		return $is_purchasable;
+	}
+
+	/**
+	 * Filters the cart item removal message for subscription products.
+	 *
+	 * When WooCommerce removes unpurchasable products from the cart, this filter
+	 * customizes the message for subscription products to be more customer-friendly.
+	 *
+	 * @param string     $message The default removal message from WooCommerce.
+	 * @param WC_Product $product The product being removed.
+	 * @return string The filtered message.
+	 */
+	public function filter_subscription_removal_message( $message, $product ) {
+		// Only modify the message if this is a subscription product.
+		if ( ! $product || ! $product->is_type( [ 'subscription', 'variable-subscription', 'subscription_variation' ] ) ) {
+			return $message;
+		}
+
+		// Return a customer-friendly message that matches WooCommerce's standard format.
+		return sprintf(
+			/* translators: %s: product name */
+			__( '%s has been removed from your cart because it can no longer be purchased. Please contact us if you need assistance.', 'woocommerce-payments' ),
+			$product->get_name()
+		);
 	}
 
 	/**
