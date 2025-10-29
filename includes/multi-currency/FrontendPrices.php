@@ -65,7 +65,7 @@ class FrontendPrices {
 		add_filter( 'woocommerce_get_variation_prices_hash', [ $this, 'add_exchange_rate_to_variation_prices_hash' ], 99 );
 
 		// Shipping methods hooks.
-		add_action( 'init', [ $this, 'register_free_shipping_filters' ], 99 );
+		add_filter( 'woocommerce_shipping_zone_shipping_methods', [ $this, 'convert_free_shipping_method_min_amount' ], 99 );
 		add_filter( 'woocommerce_shipping_method_add_rate_args', [ $this, 'convert_shipping_method_rate_cost' ], 99 );
 
 		// Coupon hooks.
@@ -336,42 +336,20 @@ class FrontendPrices {
 	}
 
 	/**
-	 * Returns the free shipping zone settings with converted min_amount.
+	 * Converts the min_amount of free shipping methods.
 	 *
-	 * @param array $data The shipping zone settings.
-	 *
-	 * @return array The shipping zone settings with converted min_amount.
+	 * @param array $methods The shipping methods.
 	 */
-	public function get_free_shipping_min_amount( $data ) {
-		if ( empty( $data['min_amount'] ) ) {
-			return $data;
-		}
-
-		// Free shipping min amount is treated as products to avoid inconsistencies with charm pricing
-		// making a method invalid when its min amount is the same as the product's price.
-		$data['min_amount'] = $this->multi_currency->get_price( $data['min_amount'], 'product' );
-		return $data;
-	}
-
-	/**
-	 * Register the hooks to set the min amount for free shipping methods.
-	 */
-	public function register_free_shipping_filters() {
-		$shipping_zones = \WC_Shipping_Zones::get_zones();
-
-		$default_zone = \WC_Shipping_Zones::get_zone( 0 );
-		if ( $default_zone ) {
-			$shipping_zones[] = [ 'shipping_methods' => $default_zone->get_shipping_methods() ];
-		}
-
-		foreach ( $shipping_zones as $shipping_zone ) {
-			foreach ( $shipping_zone['shipping_methods'] as $shipping_method ) {
-				if ( 'free_shipping' === $shipping_method->id ) {
-					$option_name = 'option_woocommerce_' . trim( $shipping_method->id ) . '_' . (int) $shipping_method->instance_id . '_settings';
-					add_filter( $option_name, [ $this, 'get_free_shipping_min_amount' ], 99 );
-				}
+	public function convert_free_shipping_method_min_amount( $methods ) {
+		foreach ( $methods as $method ) {
+			// Free shipping min amount is treated as products to avoid inconsistencies with charm pricing
+			// making a method invalid when its min amount is the same as the product's price.
+			if ( 'free_shipping' === $method->id && ! empty( $method->min_amount ) ) {
+				$method->min_amount = $this->multi_currency->get_price( $method->min_amount, 'product' );
 			}
 		}
+
+		return $methods;
 	}
 
 	/**
