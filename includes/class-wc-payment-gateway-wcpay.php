@@ -1600,7 +1600,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// Make sure that setting fingerprint is performed after setting metadata because metadata will override any values you set before for metadata param.
 				$request->set_fingerprint( $payment_information->get_fingerprint() );
 				if ( $save_payment_method_to_store ) {
-					$request->setup_future_usage();
+					// Only set setup_future_usage for reusable payment methods.
+					// Non-reusable payment methods (e.g., iDEAL) will be used for manual renewals and don't support setup_future_usage.
+					if ( $this->payment_method->is_reusable() ) {
+						$request->setup_future_usage();
+					}
 				}
 				if ( $scheduled_subscription_payment ) {
 					$mandate = $this->get_mandate_param_for_renewal_order( $order );
