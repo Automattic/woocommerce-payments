@@ -5,7 +5,7 @@ import Visa from 'assets/images/payment-method-icons/visa.svg?asset';
 import Mastercard from 'assets/images/payment-method-icons/mastercard.svg?asset';
 import Amex from 'assets/images/payment-method-icons/amex.svg?asset';
 import Discover from 'assets/images/payment-method-icons/discover.svg?asset';
-import Jcb from 'assets/images/payment-method-icons/jcb.svg?asset';
+import Jcb from 'assets/images/cards/jcb.svg?asset';
 import UnionPay from 'assets/images/cards/unionpay.svg?asset';
 import Cartebancaire from 'assets/images/cards/cartes_bancaires.svg?asset';
 import { getUPEConfig } from 'wcpay/utils/checkout';
