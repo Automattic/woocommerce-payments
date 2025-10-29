@@ -193,6 +193,11 @@ class UPE_Payment_Method {
 	 */
 	public function is_enabled_at_checkout( string $account_country, bool $skip_limits_per_currency_check = false ) {
 		if ( $this->is_subscription_item_in_cart() || $this->is_changing_payment_method_for_subscription() ) {
+			// Allow non-reusable payment methods if manual renewals are accepted.
+			if ( $this->are_manual_renewals_accepted() ) {
+				return true; // Allow both reusable and non-reusable payment methods.
+			}
+			// Otherwise, only allow reusable payment methods.
 			return $this->is_reusable();
 		}
 
@@ -475,5 +480,23 @@ class UPE_Payment_Method {
 			return $order->get_currency();
 		}
 		return get_woocommerce_currency();
+	}
+
+	/**
+	 * Check if manual renewals are accepted in WooCommerce Subscriptions settings.
+	 *
+	 * @return bool True if manual renewals are accepted in settings.
+	 */
+	private function are_manual_renewals_accepted() {
+		// Check if WooCommerce Subscriptions is active.
+		if ( ! class_exists( 'WC_Subscriptions' ) ) {
+			return false;
+		}
+
+		// Check the 'accept_manual_renewals' setting.
+		// This is the WC Subscriptions setting that controls whether manual renewals are allowed.
+		$accept_manual_renewals = get_option( 'woocommerce_subscriptions_accept_manual_renewals', 'no' );
+
+		return 'yes' === $accept_manual_renewals;
 	}
 }

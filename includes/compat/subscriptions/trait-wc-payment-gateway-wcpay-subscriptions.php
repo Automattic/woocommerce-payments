@@ -183,6 +183,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		add_filter( 'woocommerce_email_classes', [ $this, 'add_emails' ], 20 );
 		add_filter( 'woocommerce_available_payment_gateways', [ $this, 'prepare_order_pay_page' ] );
 
+		add_action( 'woocommerce_checkout_subscription_created', [ $this, 'maybe_force_subscription_to_manual' ], 10, 1 );
 		add_action( 'woocommerce_scheduled_subscription_payment_' . $this->id, [ $this, 'scheduled_subscription_payment' ], 10, 2 );
 		add_action( 'woocommerce_subscription_failing_payment_method_updated_' . $this->id, [ $this, 'update_failing_payment_method' ], 10, 2 );
 		add_filter( 'wc_payments_display_save_payment_method_checkbox', [ $this, 'display_save_payment_method_checkbox' ], 10 );
@@ -1062,7 +1063,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		$subscriptions = wcs_get_subscriptions_for_order( $order_id );
 
 		foreach ( $subscriptions as $subscription ) {
-			// Don't save payment method for manual subscriptions.
+			// Don't save payment method for manual subscriptions if no tokens present.
 			if ( $subscription->is_manual() ) {
 				return null !== $this->get_payment_token( $subscription );
 			}
@@ -1070,5 +1071,31 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 
 		// For automatic subscriptions, always save payment method.
 		return true;
+	}
+
+	/**
+	 * Force subscription to manual renewal if non-reusable payment method was used.
+	 * This should be hooked into 'woocommerce_checkout_subscription_created' action.
+	 *
+	 * @param WC_Subscription $subscription The subscription being created.
+	 */
+	public function maybe_force_subscription_to_manual( $subscription ) {
+		// Only process WCPay subscriptions.
+		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID !== $subscription->get_payment_method() ) {
+			return;
+		}
+
+		// Check if the subscription has payment tokens (reusable payment method).
+		$payment_tokens = $subscription->get_payment_tokens();
+
+		// If no payment tokens, this was a non-reusable payment method.
+		if ( empty( $payment_tokens ) ) {
+			$subscription->set_requires_manual_renewal( true );
+			$subscription->save();
+
+			$subscription->add_order_note(
+				__( 'Subscription set to manual renewal because a non-reusable payment method was used.', 'woocommerce-payments' )
+			);
+		}
 	}
 }
