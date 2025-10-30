@@ -192,13 +192,42 @@ class UPE_Payment_Method {
 	 * @return bool
 	 */
 	public function is_enabled_at_checkout( string $account_country, bool $skip_limits_per_currency_check = false ) {
-		if ( $this->is_subscription_item_in_cart() || $this->is_changing_payment_method_for_subscription() ) {
-			// Allow non-reusable payment methods if manual renewals are accepted.
+		// Check if we're in a subscription context (cart checkout, changing payment method, or renewal).
+		$is_subscription_context = $this->is_subscription_item_in_cart() || $this->is_changing_payment_method_for_subscription();
+
+		// Also check if we're on the order-pay page for a renewal order.
+		if ( ! $is_subscription_context && is_wc_endpoint_url( 'order-pay' ) && function_exists( 'wcs_order_contains_renewal' ) ) {
+			$order = wc_get_order( absint( get_query_var( 'order-pay' ) ) );
+			if ( $order && wcs_order_contains_renewal( $order ) ) {
+				$is_subscription_context = true;
+			}
+		}
+
+		if ( $is_subscription_context ) {
+			// Check if we're changing payment method for a specific subscription.
+			if ( $this->is_changing_payment_method_for_subscription() && function_exists( 'wcs_get_subscription' ) ) {
+				$subscription_id = absint( $_GET['change_payment_method'] ?? 0 ); // phpcs:ignore WordPress.Security.NonceVerification
+				if ( $subscription_id ) {
+					$subscription = wcs_get_subscription( $subscription_id );
+					// Allow non-reusable methods if this specific subscription is manual.
+					if ( $subscription && $subscription->is_manual() ) {
+						return true;
+					}
+				}
+			}
+
+			// Allow non-reusable payment methods if manual renewals are accepted globally.
 			if ( $this->are_manual_renewals_accepted() ) {
 				return true; // Allow both reusable and non-reusable payment methods.
 			}
 			// Otherwise, only allow reusable payment methods.
 			return $this->is_reusable();
+		}
+
+		// If manual renewals are accepted, allow non-reusable payment methods globally.
+		// This ensures gateways appear as "available" on My Subscriptions page so "Renew now" button shows.
+		if ( $this->are_manual_renewals_accepted() ) {
+			return true;
 		}
 
 		// This part ensures that when payment limits for the currency declared, those will be respected (e.g. BNPLs).
