@@ -654,7 +654,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			->method( 'store_setup_sync' );
 
 		$request = new WP_REST_Request();
-		$request->set_param( 'is_wcpay_subscription_enabled', false );
+		$request->set_param( 'is_wcpay_subscriptions_enabled', false );
 
 		$this->controller->update_settings( $request );
 
@@ -670,7 +670,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			->method( 'store_setup_sync' );
 
 		$request = new WP_REST_Request();
-		$request->set_param( 'is_wcpay_subscription_enabled', true );
+		$request->set_param( 'is_wcpay_subscriptions_enabled', true );
 
 		$this->controller->update_settings( $request );
 
