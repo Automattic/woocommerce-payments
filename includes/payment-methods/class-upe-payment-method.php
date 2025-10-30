@@ -209,9 +209,13 @@ class UPE_Payment_Method {
 				$subscription_id = absint( $_GET['change_payment_method'] ?? 0 ); // phpcs:ignore WordPress.Security.NonceVerification
 				if ( $subscription_id ) {
 					$subscription = wcs_get_subscription( $subscription_id );
-					// Allow non-reusable methods if this specific subscription is manual.
-					if ( $subscription && $subscription->is_manual() ) {
-						return true;
+					if ( $subscription ) {
+						// Allow non-reusable methods ONLY if this specific subscription is manual.
+						if ( $subscription->is_manual() ) {
+							return true;
+						}
+						// For automatic subscriptions, only allow reusable methods.
+						return $this->is_reusable();
 					}
 				}
 			}
