@@ -1079,26 +1079,6 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	}
 
 	/**
-	 * Determines if payment method should be saved for subscription.
-	 *
-	 * @param int $order_id The order ID.
-	 * @return bool Whether to save the payment method.
-	 */
-	public function should_save_payment_method_for_subscription( $order_id ) {
-		$subscriptions = wcs_get_subscriptions_for_order( $order_id );
-
-		foreach ( $subscriptions as $subscription ) {
-			// Don't save payment method for manual subscriptions if no tokens present.
-			if ( $subscription->is_manual() ) {
-				return null !== $this->get_payment_token( $subscription );
-			}
-		}
-
-		// For automatic subscriptions, always save payment method.
-		return true;
-	}
-
-	/**
 	 * Force subscription to manual renewal if non-reusable payment method was used.
 	 * This should be hooked into 'woocommerce_checkout_subscription_created' action.
 	 *
