@@ -87,6 +87,10 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 
 == Changelog ==
 
+= 10.2.0-test-1 - unreleased =
+* Fix - Comment: fix JCB logo.
+* Fix - Fix - WCPay Subscriptions setting not persisting when unchecked
+
 = 10.2.0 - 2025-11-05 =
 * Add - Add WooCommerce Tool to delete test orders.
 * Add - Sync store setup details with the Transact Platform.
