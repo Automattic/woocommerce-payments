@@ -73,6 +73,21 @@ const getColumns = ( sortByDate?: boolean ): DepositsTableHeader[] => [
 		isSortable: true,
 	},
 	{
+		key: 'fees',
+		label: __( 'Fees', 'woocommerce-payments' ),
+		screenReaderLabel: __( 'Fees', 'woocommerce-payments' ),
+		isNumeric: true,
+		isSortable: true,
+	},
+	{
+		key: 'net',
+		label: __( 'Net', 'woocommerce-payments' ),
+		screenReaderLabel: __( 'Net', 'woocommerce-payments' ),
+		isNumeric: true,
+		required: true,
+		isSortable: true,
+	},
+	{
 		key: 'status',
 		label: __( 'Status', 'woocommerce-payments' ),
 		screenReaderLabel: __( 'Status', 'woocommerce-payments' ),
@@ -133,6 +148,7 @@ export const DepositsList = (): JSX.Element => {
 		);
 
 		// Map deposit to table row.
+		const netAmount = deposit.amount - deposit.fee;
 		const data = {
 			details: { value: deposit.id, display: detailsLink },
 			date: { value: deposit.date, display: dateDisplay },
@@ -144,6 +160,18 @@ export const DepositsList = (): JSX.Element => {
 				value: formatExportAmount( deposit.amount, deposit.currency ),
 				display: clickable(
 					formatExplicitCurrency( deposit.amount, deposit.currency )
+				),
+			},
+			fees: {
+				value: formatExportAmount( deposit.fee, deposit.currency ),
+				display: clickable(
+					formatExplicitCurrency( deposit.fee, deposit.currency )
+				),
+			},
+			net: {
+				value: formatExportAmount( netAmount, deposit.currency ),
+				display: clickable(
+					formatExplicitCurrency( netAmount, deposit.currency )
 				),
 			},
 			status: {

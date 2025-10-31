@@ -7,6 +7,8 @@ export interface DepositsTableHeader extends TableCardColumn {
 		| 'date'
 		| 'type'
 		| 'amount'
+		| 'fees'
+		| 'net'
 		| 'status'
 		| 'bankAccount'
 		| 'bankReferenceId';

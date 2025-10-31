@@ -439,6 +439,88 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                     </span>
                   </th>
                   <th
+                    aria-sort="none"
+                    class="woocommerce-table__header is-sortable is-numeric"
+                    role="columnheader"
+                    scope="col"
+                  >
+                    <button
+                      aria-describedby="header-1-4"
+                      class="components-button"
+                      type="button"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        focusable="false"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                        />
+                      </svg>
+                      <span
+                        aria-hidden="true"
+                      >
+                        Fees
+                      </span>
+                      <span
+                        class="screen-reader-text"
+                      >
+                        Fees
+                      </span>
+                    </button>
+                    <span
+                      class="screen-reader-text"
+                      id="header-1-4"
+                    >
+                      Sort by Fees in descending order
+                    </span>
+                  </th>
+                  <th
+                    aria-sort="none"
+                    class="woocommerce-table__header is-sortable is-numeric"
+                    role="columnheader"
+                    scope="col"
+                  >
+                    <button
+                      aria-describedby="header-1-5"
+                      class="components-button"
+                      type="button"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        focusable="false"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                        />
+                      </svg>
+                      <span
+                        aria-hidden="true"
+                      >
+                        Net
+                      </span>
+                      <span
+                        class="screen-reader-text"
+                      >
+                        Net
+                      </span>
+                    </button>
+                    <span
+                      class="screen-reader-text"
+                      id="header-1-5"
+                    >
+                      Sort by Net in descending order
+                    </span>
+                  </th>
+                  <th
                     class="woocommerce-table__header is-left-aligned"
                     role="columnheader"
                     scope="col"
@@ -546,6 +628,30 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                     </a>
                   </td>
                   <td
+                    class="woocommerce-table__item is-numeric"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock1"
+                      tabindex="-1"
+                    >
+                      $0.50
+                    </a>
+                  </td>
+                  <td
+                    class="woocommerce-table__item is-numeric"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock1"
+                      tabindex="-1"
+                    >
+                      $19.50
+                    </a>
+                  </td>
+                  <td
                     class="woocommerce-table__item is-left-aligned"
                   >
                     <a
@@ -645,6 +751,30 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                     </a>
                   </td>
                   <td
+                    class="woocommerce-table__item is-numeric"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock2"
+                      tabindex="-1"
+                    >
+                      $0.75
+                    </a>
+                  </td>
+                  <td
+                    class="woocommerce-table__item is-numeric"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock2"
+                      tabindex="-1"
+                    >
+                      $29.25
+                    </a>
+                  </td>
+                  <td
                     class="woocommerce-table__item is-left-aligned"
                   >
                     <a
@@ -729,6 +859,30 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                       tabindex="-1"
                     >
                       Withdrawal
+                    </a>
+                  </td>
+                  <td
+                    class="woocommerce-table__item is-numeric"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock3"
+                      tabindex="-1"
+                    >
+                      $40.00
+                    </a>
+                  </td>
+                  <td
+                    class="woocommerce-table__item is-numeric"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock3"
+                      tabindex="-1"
+                    >
+                      $0.00
                     </a>
                   </td>
                   <td
@@ -1284,6 +1438,88 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                     </span>
                   </th>
                   <th
+                    aria-sort="none"
+                    class="woocommerce-table__header is-sortable is-numeric"
+                    role="columnheader"
+                    scope="col"
+                  >
+                    <button
+                      aria-describedby="header-0-4"
+                      class="components-button"
+                      type="button"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        focusable="false"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                        />
+                      </svg>
+                      <span
+                        aria-hidden="true"
+                      >
+                        Fees
+                      </span>
+                      <span
+                        class="screen-reader-text"
+                      >
+                        Fees
+                      </span>
+                    </button>
+                    <span
+                      class="screen-reader-text"
+                      id="header-0-4"
+                    >
+                      Sort by Fees in descending order
+                    </span>
+                  </th>
+                  <th
+                    aria-sort="none"
+                    class="woocommerce-table__header is-sortable is-numeric"
+                    role="columnheader"
+                    scope="col"
+                  >
+                    <button
+                      aria-describedby="header-0-5"
+                      class="components-button"
+                      type="button"
+                    >
+                      <svg
+                        aria-hidden="true"
+                        focusable="false"
+                        height="24"
+                        viewBox="0 0 24 24"
+                        width="24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M17.5 11.6L12 16l-5.5-4.4.9-1.2L12 14l4.5-3.6 1 1.2z"
+                        />
+                      </svg>
+                      <span
+                        aria-hidden="true"
+                      >
+                        Net
+                      </span>
+                      <span
+                        class="screen-reader-text"
+                      >
+                        Net
+                      </span>
+                    </button>
+                    <span
+                      class="screen-reader-text"
+                      id="header-0-5"
+                    >
+                      Sort by Net in descending order
+                    </span>
+                  </th>
+                  <th
                     class="woocommerce-table__header is-left-aligned"
                     role="columnheader"
                     scope="col"
@@ -1391,6 +1627,30 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                     </a>
                   </td>
                   <td
+                    class="woocommerce-table__item is-numeric"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock1"
+                      tabindex="-1"
+                    >
+                      $0.50
+                    </a>
+                  </td>
+                  <td
+                    class="woocommerce-table__item is-numeric"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock1"
+                      tabindex="-1"
+                    >
+                      $19.50
+                    </a>
+                  </td>
+                  <td
                     class="woocommerce-table__item is-left-aligned"
                   >
                     <a
@@ -1490,6 +1750,30 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                     </a>
                   </td>
                   <td
+                    class="woocommerce-table__item is-numeric"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock2"
+                      tabindex="-1"
+                    >
+                      $0.75
+                    </a>
+                  </td>
+                  <td
+                    class="woocommerce-table__item is-numeric"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock2"
+                      tabindex="-1"
+                    >
+                      $29.25
+                    </a>
+                  </td>
+                  <td
                     class="woocommerce-table__item is-left-aligned"
                   >
                     <a
@@ -1574,6 +1858,30 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                       tabindex="-1"
                     >
                       Withdrawal
+                    </a>
+                  </td>
+                  <td
+                    class="woocommerce-table__item is-numeric"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock3"
+                      tabindex="-1"
+                    >
+                      $40.00
+                    </a>
+                  </td>
+                  <td
+                    class="woocommerce-table__item is-numeric"
+                  >
+                    <a
+                      class="woocommerce-table__clickable-cell"
+                      data-link-type="wc-admin"
+                      href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock3"
+                      tabindex="-1"
+                    >
+                      $0.00
                     </a>
                   </td>
                   <td
