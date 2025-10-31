@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix - WCPay Subscriptions setting not persisting when unchecked
