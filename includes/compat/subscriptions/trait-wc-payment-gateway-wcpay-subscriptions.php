@@ -195,7 +195,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		add_filter( 'wcs_view_subscription_actions', [ $this, 'maybe_hide_change_payment_for_manual_subscriptions' ], 10, 2 );
 
 		// Hide "Auto-renew" toggle for manual subscriptions with non-reusable payment methods.
-		add_filter( 'user_has_cap', [ $this, 'maybe_hide_auto_renew_toggle_for_manual_subscriptions' ], 100, 3 );')
+		add_filter( 'user_has_cap', [ $this, 'maybe_hide_auto_renew_toggle_for_manual_subscriptions' ], 100, 3 );
 
 		// Used to filter out unwanted metadata on new renewal orders.
 		if ( ! class_exists( 'WC_Subscriptions_Data_Copier' ) ) {
