@@ -94,13 +94,13 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 		$this->assertArrayHasKey( 'desc', $delete_tool );
 		$this->assertArrayHasKey( 'callback', $delete_tool );
 
-		$this->assertEquals( 'Delete test orders', $delete_tool['name'] );
+		$this->assertEquals( 'Delete WooPayments test orders', $delete_tool['name'] );
 		$this->assertEquals( 'Delete', $delete_tool['button'] );
 		$this->assertStringContainsString( 'Note:', $delete_tool['desc'] );
 		$this->assertStringContainsString( 'strong class="red"', $delete_tool['desc'] );
-		$this->assertStringContainsString( 'delete ALL orders created while', $delete_tool['desc'] );
-		$this->assertStringContainsString( 'test mode was enabled', $delete_tool['desc'] );
-		$this->assertStringContainsString( 'cannot be reversed', $delete_tool['desc'] );
+		$this->assertStringContainsString( 'deletes all test mode orders placed via', $delete_tool['desc'] );
+		$this->assertStringContainsString( 'Orders placed via other gateways will not be affected', $delete_tool['desc'] );
+		$this->assertStringContainsString( 'cannot be undone', $delete_tool['desc'] );
 	}
 
 	/**

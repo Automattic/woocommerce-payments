@@ -81,11 +81,15 @@ class WC_Payments_Status {
 					'callback' => [ $this->account, 'refresh_account_data' ],
 				],
 				'delete_wcpay_test_orders'  => [
-					'name'     => __( 'Delete test orders', 'woocommerce-payments' ),
+					'name'     => sprintf(
+						/* translators: %s: WooPayments */
+						__( 'Delete %s test orders', 'woocommerce-payments' ),
+						'WooPayments'
+					),
 					'button'   => __( 'Delete', 'woocommerce-payments' ),
 					'desc'     => sprintf(
 						/* translators: %s: WooPayments */
-						__( '<strong class="red">Note:</strong> This option will delete ALL orders created while %s test mode was enabled, use with caution. This action cannot be reversed.', 'woocommerce-payments' ),
+						__( '<strong class="red">Note:</strong> This option deletes all test mode orders placed via %s. Orders placed via other gateways will not be affected. Use with caution, as this action cannot be undone.', 'woocommerce-payments' ),
 						'WooPayments'
 					),
 					'callback' => [ $this, 'delete_test_orders' ],
