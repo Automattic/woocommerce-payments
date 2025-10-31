@@ -181,19 +181,15 @@ jQuery( function ( $ ) {
 		const paymentMethods = getCardBrands();
 
 		function getMaxElements() {
-			const paymentMethodElement = document.querySelector(
-				'.payment_method_woocommerce_payments'
-			);
-			if ( ! paymentMethodElement ) {
-				return 4; // Default fallback
-			}
+			// Use viewport width as primary indicator (similar to blocks checkout)
+			const viewportWidth = window.innerWidth;
 
-			const elementWidth = paymentMethodElement.offsetWidth;
-			if ( elementWidth <= 300 ) {
+			// Specific tablet viewport range (768-781px) - needs room for Test Mode badge
+			if ( viewportWidth >= 768 && viewportWidth <= 900 ) {
 				return 1;
-			} else if ( elementWidth <= 330 ) {
-				return 2;
 			}
+			// Default - show 3 logos + counter badge = 4 visual elements total
+			return 3;
 		}
 
 		function shouldHavePopover() {
