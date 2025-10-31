@@ -642,6 +642,59 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 'no', $this->gateway->get_option( 'saved_cards' ) );
 	}
 
+	public function test_update_settings_disables_wcpay_subscriptions() {
+		// Set initial value to enabled.
+		$flag_name = WC_Payments_Features::WCPAY_SUBSCRIPTIONS_FLAG_NAME;
+		update_option( $flag_name, '1' );
+		// Verify it was set correctly.
+		$this->assertEquals( '1', get_option( $flag_name ) );
+
+		// Mock store_setup_sync to avoid side effects.
+		$this->mock_wcpay_account->expects( $this->once() )
+			->method( 'store_setup_sync' );
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_wcpay_subscriptions_enabled', false );
+
+		$this->controller->update_settings( $request );
+
+		$this->assertEquals( '0', get_option( $flag_name ) );
+	}
+
+	public function test_update_settings_does_not_enable_wcpay_subscriptions() {
+		// Set initial value to disabled.
+		update_option( WC_Payments_Features::WCPAY_SUBSCRIPTIONS_FLAG_NAME, '0' );
+
+		// Mock store_setup_sync to avoid side effects.
+		$this->mock_wcpay_account->expects( $this->once() )
+			->method( 'store_setup_sync' );
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_wcpay_subscriptions_enabled', true );
+
+		$this->controller->update_settings( $request );
+
+		// Should remain disabled - feature is deprecated and cannot be re-enabled.
+		$this->assertEquals( '0', get_option( WC_Payments_Features::WCPAY_SUBSCRIPTIONS_FLAG_NAME ) );
+	}
+
+	public function test_update_settings_does_not_toggle_wcpay_subscriptions_if_not_supplied() {
+		// Set initial value to enabled.
+		update_option( WC_Payments_Features::WCPAY_SUBSCRIPTIONS_FLAG_NAME, '1' );
+		$status_before_request = get_option( WC_Payments_Features::WCPAY_SUBSCRIPTIONS_FLAG_NAME );
+
+		// Mock store_setup_sync to avoid side effects.
+		$this->mock_wcpay_account->expects( $this->once() )
+			->method( 'store_setup_sync' );
+
+		$request = new WP_REST_Request();
+
+		$this->controller->update_settings( $request );
+
+		// Should remain unchanged when parameter is not supplied.
+		$this->assertEquals( $status_before_request, get_option( WC_Payments_Features::WCPAY_SUBSCRIPTIONS_FLAG_NAME ) );
+	}
+
 	public function deposit_schedules_data_provider() {
 		return [
 			[

@@ -134,7 +134,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
-					'is_wcpay_subscription_enabled'        => [
+					'is_wcpay_subscriptions_enabled'       => [
 						'description'       => sprintf(
 							/* translators: %s: WooPayments */
 							__( '%s Subscriptions feature flag setting.', 'woocommerce-payments' ),
@@ -809,7 +809,11 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 
 		$is_wcpay_subscriptions_enabled = $request->get_param( 'is_wcpay_subscriptions_enabled' );
 
-		update_option( WC_Payments_Features::WCPAY_SUBSCRIPTIONS_FLAG_NAME, $is_wcpay_subscriptions_enabled ? '1' : '0' );
+		// Prevent enabling bundled subscriptions - feature has been removed in 10.2.0.
+		// Only allow disabling the feature if it was previously enabled.
+		if ( ! $is_wcpay_subscriptions_enabled ) {
+			update_option( WC_Payments_Features::WCPAY_SUBSCRIPTIONS_FLAG_NAME, '0' );
+		}
 	}
 
 	/**
