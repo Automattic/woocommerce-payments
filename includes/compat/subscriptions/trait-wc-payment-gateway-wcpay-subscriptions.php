@@ -662,7 +662,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
      * @param array $args    Arguments, in our case user ID and subscription ID.
      * @return array
 	 */
-	public function maybe_hide_auto_renew_toggle_for_manual_subscriptions( $actions, $subscription ) {
+	public function maybe_hide_auto_renew_toggle_for_manual_subscriptions( $allcaps, $caps, $args ) {
 		if ( ! isset( $caps[0] ) || 'toggle_shop_subscription_auto_renewal' !== $caps[0] ) {
 			// Do not interfere with other capabilities.
 			return;
