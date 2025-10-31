@@ -53,3 +53,9 @@
 		box-shadow: 0 0 0 1px rgba( 0, 0, 0, 0.1 );
 	}
 }
+
+.payment-methods--logos-popover {
+	> img {
+		object-position: center !important;
+	}
+}
