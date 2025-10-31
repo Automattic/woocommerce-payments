@@ -46,16 +46,12 @@ function _manually_load_plugin() {
 	update_option( 'woocommerce_currency', 'USD' );
 
 	// Enable the WCPay Subscriptions feature flag in tests to ensure we can test
-	// subscriptions functionality. Using 'default_option_' filter provides a default
-	// only when the option doesn't exist in the database, allowing tests to override
-	// via update_option().
+	// subscriptions funtionality.
 	add_filter(
-		'default_option__wcpay_feature_subscriptions',
-		function ( $default ) {
+		'pre_option__wcpay_feature_subscriptions',
+		function () {
 			return '1';
-		},
-		10,
-		1
+		}
 	);
 
 	$_plugin_dir = __DIR__ . '/../../';
