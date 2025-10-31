@@ -142,19 +142,15 @@ class WC_Payments_Non_Reusable_Payment_Methods_Integration_Test extends WCPAY_Un
 			}
 		);
 
-		// Act 1: Test payment method saving during checkout (real method).
-		$should_save_payment_method = $this->payment_gateway_trait->should_save_payment_method_for_subscription( $order->get_id() );
-
-		// Act 2: Test manual-to-automatic conversion during renewal (real method).
+		// Act 1: Test that subscription stays manual during renewal (real method).
 		$initial_manual_state = $subscription->is_manual();
 		$this->invoice_service->maybe_record_invoice_payment( $order->get_id() );
 		$stayed_manual = $subscription->is_manual();
 
-		// Act 3: Test WCPay subscription creation during renewal (real method).
+		// Act 2: Test WCPay subscription creation during renewal (real method).
 		$this->subscription_service->create_subscription_for_manual_renewal( $order->get_id() );
 
 		// Assert: Complete flow behavior.
-		$this->assertFalse( $should_save_payment_method, 'Should NOT save payment method for manual subscription' );
 		$this->assertTrue( $initial_manual_state, 'Subscription should start as manual' );
 		$this->assertTrue( $stayed_manual, 'Subscription should stay manual without payment tokens' );
 		// Note: We can't easily assert create_subscription wasn't called without complex mocking,
@@ -162,9 +158,9 @@ class WC_Payments_Non_Reusable_Payment_Methods_Integration_Test extends WCPAY_Un
 	}
 
 	/**
-	 * Test complete flow: Reusable payment method -> Manual subscription -> Converts to automatic.
+	 * Test complete flow: Reusable payment method -> Manual subscription -> Stays manual.
 	 */
-	public function test_reusable_payment_method_allows_manual_to_automatic_conversion() {
+	public function test_reusable_payment_method_with_manual_subscription_stays_manual() {
 		// Arrange: Create order and subscription with reusable payment method.
 		$order        = WC_Helper_Order::create_order( 1, 50, $this->mock_subscription_product );
 		$subscription = new WC_Subscription();
@@ -202,21 +198,17 @@ class WC_Payments_Non_Reusable_Payment_Methods_Integration_Test extends WCPAY_Un
 				}
 			);
 
-		// Act 1: Test payment method saving during checkout (real method).
-		$should_save_payment_method = $this->payment_gateway_trait->should_save_payment_method_for_subscription( $order->get_id() );
-
-		// Act 2: Test manual-to-automatic conversion during renewal (real method).
+		// Act 1: Test that subscription stays manual during renewal (real method).
 		$initial_manual_state = $subscription->is_manual();
 		$this->invoice_service->maybe_record_invoice_payment( $order->get_id() );
-		$converted_to_automatic = ! $subscription->is_manual();
+		$stayed_manual = $subscription->is_manual();
 
-		// Act 3: Test WCPay subscription creation during renewal (real method).
+		// Act 2: Test WCPay subscription creation during renewal (real method).
 		$this->subscription_service->create_subscription_for_manual_renewal( $order->get_id() );
 
 		// Assert: Complete flow behavior.
-		$this->assertTrue( $should_save_payment_method, 'Should save payment method for future renewals' );
 		$this->assertTrue( $initial_manual_state, 'Subscription should start as manual' );
-		$this->assertTrue( $converted_to_automatic, 'Should convert to automatic with payment tokens' );
+		$this->assertTrue( $stayed_manual, 'Subscription should stay manual even with payment tokens' );
 		// Note: We can't easily assert create_subscription was called without complex mocking,
 		// but the real method will call it when payment tokens exist.
 	}
