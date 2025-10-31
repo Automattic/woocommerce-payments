@@ -677,7 +677,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			unset( $allcaps['toggle_shop_subscription_auto_renewal'] );
 		}
 
-		return $actions;
+		return $allcaps;
 	}
 
 	/**
