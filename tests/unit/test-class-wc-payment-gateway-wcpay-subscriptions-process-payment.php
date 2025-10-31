@@ -145,6 +145,7 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Process_Payment_Test extends WCPAY_
 
 		$mock_dpps           = $this->createMock( Duplicate_Payment_Prevention_Service::class );
 		$mock_payment_method = $this->createMock( CC_Payment_Method::class );
+		$mock_payment_method->method( 'is_reusable' )->willReturn( true );
 
 		$this->mock_wcpay_gateway = $this->getMockBuilder( '\WC_Payment_Gateway_WCPay' )
 			->setConstructorArgs(
