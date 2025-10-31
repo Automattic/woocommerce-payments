@@ -194,6 +194,9 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		// Hide "Change payment" button for manual subscriptions with non-reusable payment methods.
 		add_filter( 'wcs_view_subscription_actions', [ $this, 'maybe_hide_change_payment_for_manual_subscriptions' ], 10, 2 );
 
+		// Hide "Auto-renew" toggle for manual subscriptions with non-reusable payment methods.
+		add_filter( 'user_has_cap', [ $this, 'maybe_hide_auto_renew_toggle_for_manual_subscriptions' ], 100, 3 );')
+
 		// Used to filter out unwanted metadata on new renewal orders.
 		if ( ! class_exists( 'WC_Subscriptions_Data_Copier' ) ) {
 			add_filter( 'wcs_renewal_order_meta_query', [ $this, 'update_renewal_meta_data' ], 10, 3 );
@@ -646,6 +649,32 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 		if ( $subscription->is_manual() && ! empty( $original_payment_method_id ) ) {
 			// Remove the "Change payment" action since they'll choose payment method during renewal.
 			unset( $actions['change_payment_method'] );
+		}
+
+		return $actions;
+	}
+
+	/**
+	 * Hide "Auto renew" toggle for manual subscriptions with non-reusable payment methods.
+	 *
+     * @param array $allcaps List of user capabilities
+     * @param array $caps    Which capabilities are being checked.
+     * @param array $args    Arguments, in our case user ID and subscription ID.
+     * @return array
+	 */
+	public function maybe_hide_change_payment_for_manual_subscriptions( $actions, $subscription ) {
+		if ( ! isset( $caps[0] ) || 'toggle_shop_subscription_auto_renewal' !== $caps[0] ) {
+			// Do not interfere with other capabilities.
+			return;
+		}
+
+		$subscription = wcs_get_subscription( $args[2] );
+		// Only process manual subscriptions with non-reusable payment methods.
+		$original_payment_method_id = $subscription->get_meta( '_wcpay_original_payment_method_id', true );
+
+		if ( $subscription->is_manual() && ! empty( $original_payment_method_id ) ) {
+			// Remove the capability as this subscription won't work with automatic renewals.
+			unset( $allcaps['toggle_shop_subscription_auto_renewal'] );
 		}
 
 		return $actions;
