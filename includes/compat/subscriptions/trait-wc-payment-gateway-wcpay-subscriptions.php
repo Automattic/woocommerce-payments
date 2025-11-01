@@ -657,15 +657,15 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	/**
 	 * Hide "Auto renew" toggle for manual subscriptions with non-reusable payment methods.
 	 *
-     * @param array $allcaps List of user capabilities
-     * @param array $caps    Which capabilities are being checked.
-     * @param array $args    Arguments, in our case user ID and subscription ID.
-     * @return array
+	 * @param array $allcaps List of user capabilities.
+	 * @param array $caps    Which capabilities are being checked.
+	 * @param array $args    Arguments, in our case user ID and subscription ID.
+	 * @return array
 	 */
 	public function maybe_hide_auto_renew_toggle_for_manual_subscriptions( $allcaps, $caps, $args ) {
 		if ( ! isset( $caps[0] ) || 'toggle_shop_subscription_auto_renewal' !== $caps[0] ) {
 			// Do not interfere with other capabilities.
-			return;
+			return $allcaps;
 		}
 
 		$subscription = wcs_get_subscription( $args[2] );
