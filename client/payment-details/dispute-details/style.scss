@@ -48,6 +48,10 @@
 			}
 		}
 
+		&__visa-compliance-checkbox {
+			margin: 0;
+		}
+
 		&__actions {
 			display: flex;
 			justify-content: start;
@@ -87,6 +91,10 @@
 			}
 		}
 	}
+}
+
+div.transaction-details-dispute-details-body__visa-compliance-checkbox + div {
+	margin-top: 16px !important;
 }
 
 .dispute-reason-tooltip {
