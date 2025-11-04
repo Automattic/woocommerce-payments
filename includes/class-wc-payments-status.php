@@ -131,7 +131,7 @@ class WC_Payments_Status {
 			$deleted_count = 0;
 			foreach ( $test_orders as $order ) {
 				// Permanently delete the order (skip trash).
-				if ( $order->delete() ) {
+				if ( $order->delete( true ) ) {
 					++$deleted_count;
 				}
 			}
