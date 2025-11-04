@@ -58,7 +58,7 @@ export const NewAccountWaitingPeriodNotice: React.FC = () => (
 	>
 		{ interpolateComponents( {
 			mixedString: __(
-				'Your first payout is held for 7-14 days. {{whyLink}}Why?{{/whyLink}}',
+				'Payout scheduling becomes available after the standard 7-day waiting period for new accounts is complete. {{whyLink}}Learn more{{/whyLink}}',
 				'woocommerce-payments'
 			),
 			components: {
