@@ -111,21 +111,20 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_delete_test_orders_with_no_orders() {
 		// Mock wc_get_orders to return empty array.
-		add_filter(
-			'woocommerce_order_data_store_cpt_get_orders_query',
-			function ( $query, $query_vars ) {
-				if ( isset( $query_vars['meta_key'] ) && '_wcpay_mode' === $query_vars['meta_key'] ) {
-					$query['post__in'] = [ 0 ]; // Force no results.
-				}
-				return $query;
-			},
-			10,
-			2
-		);
+		$filter_callback = function ( $query, $query_vars ) {
+			if ( isset( $query_vars['meta_key'] ) && '_wcpay_mode' === $query_vars['meta_key'] ) {
+				$query['post__in'] = [ 0 ]; // Force no results.
+			}
+			return $query;
+		};
+		add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $filter_callback, 10, 2 );
 
 		$result = $this->status->delete_test_orders();
 
 		$this->assertEquals( 'No test orders found.', $result );
+
+		// Clean up filter.
+		remove_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $filter_callback, 10 );
 	}
 
 	/**
@@ -187,18 +186,17 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_delete_test_orders_handles_exception() {
 		// Mock wc_get_orders to throw an exception.
-		add_filter(
-			'woocommerce_order_data_store_cpt_get_orders_query',
-			function ( $query, $query_vars ) {
-				throw new Exception( 'Database error' );
-			},
-			10,
-			2
-		);
+		$filter_callback = function () {
+			throw new Exception( 'Database error' );
+		};
+		add_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $filter_callback, 10, 2 );
 
 		$result = $this->status->delete_test_orders();
 
 		$this->assertStringContainsString( 'Error deleting test orders:', $result );
 		$this->assertStringContainsString( 'Database error', $result );
+
+		// Clean up filter.
+		remove_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $filter_callback, 10 );
 	}
 }
