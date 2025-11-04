@@ -43,6 +43,9 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
+		// Set up an admin user with proper capabilities.
+		wp_set_current_user( 1 );
+
 		$this->mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
 		$this->mock_http    = $this->createMock( WC_Payments_Http_Interface::class );
 		$this->mock_account = $this->createMock( WC_Payments_Account::class );
@@ -148,14 +151,12 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 		// Verify result message.
 		$this->assertStringContainsString( '2 test orders have been permanently deleted.', $result );
 
-		// Verify test orders were moved to trash.
-		$trashed_order1 = wc_get_order( $order1->get_id() );
-		$this->assertInstanceOf( WC_Order::class, $trashed_order1 );
-		$this->assertEquals( 'trash', $trashed_order1->get_status() );
+		// Verify test orders were permanently deleted (no longer exist).
+		$deleted_order1 = wc_get_order( $order1->get_id() );
+		$this->assertFalse( $deleted_order1, 'Test order 1 should be permanently deleted' );
 
-		$trashed_order2 = wc_get_order( $order2->get_id() );
-		$this->assertInstanceOf( WC_Order::class, $trashed_order2 );
-		$this->assertEquals( 'trash', $trashed_order2->get_status() );
+		$deleted_order2 = wc_get_order( $order2->get_id() );
+		$this->assertFalse( $deleted_order2, 'Test order 2 should be permanently deleted' );
 
 		// Verify non-test order was not deleted.
 		$order3_check = wc_get_order( $order3->get_id() );
@@ -176,10 +177,9 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 
 		$this->assertStringContainsString( '1 test order has been permanently deleted.', $result );
 
-		// Verify order was moved to trash.
-		$trashed_order = wc_get_order( $order->get_id() );
-		$this->assertInstanceOf( WC_Order::class, $trashed_order );
-		$this->assertEquals( 'trash', $trashed_order->get_status() );
+		// Verify order was permanently deleted (no longer exists).
+		$deleted_order = wc_get_order( $order->get_id() );
+		$this->assertFalse( $deleted_order, 'Test order should be permanently deleted' );
 	}
 
 	/**
