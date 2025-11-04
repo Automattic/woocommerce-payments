@@ -199,4 +199,37 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 		// Clean up filter.
 		remove_filter( 'woocommerce_order_data_store_cpt_get_orders_query', $filter_callback, 10 );
 	}
+
+	/**
+	 * Test delete_test_orders denies access for users without manage_woocommerce capability.
+	 */
+	public function test_delete_test_orders_requires_manage_woocommerce_capability() {
+		// Create test orders with _wcpay_mode meta.
+		$order1 = wc_create_order();
+		$order1->update_meta_data( '_wcpay_mode', 'test' );
+		$order1->save();
+
+		$order2 = wc_create_order();
+		$order2->update_meta_data( '_wcpay_mode', 'test' );
+		$order2->save();
+
+		// Mock that the current user is missing the manage_woocommerce capability.
+		$filter_callback = fn( $caps ) => [ 'manage_woocommerce' => false ];
+		add_filter( 'user_has_cap', $filter_callback );
+
+		$result = $this->status->delete_test_orders();
+
+		// Verify permission denied message.
+		$this->assertEquals( 'You do not have permission to delete orders.', $result );
+
+		// Verify orders were NOT deleted.
+		$order1_check = wc_get_order( $order1->get_id() );
+		$this->assertInstanceOf( WC_Order::class, $order1_check );
+
+		$order2_check = wc_get_order( $order2->get_id() );
+		$this->assertInstanceOf( WC_Order::class, $order2_check );
+
+		// Clean up filter.
+		remove_filter( 'user_has_cap', $filter_callback );
+	}
 }
