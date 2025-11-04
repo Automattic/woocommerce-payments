@@ -214,7 +214,11 @@ class WC_Payments_Status_Test extends WCPAY_UnitTestCase {
 		$order2->save();
 
 		// Mock that the current user is missing the manage_woocommerce capability.
-		$filter_callback = fn( $caps ) => [ 'manage_woocommerce' => false ];
+		$filter_callback = function ( $allcaps ) {
+			$allcaps['manage_woocommerce'] = false;
+
+			return $allcaps;
+		};
 		add_filter( 'user_has_cap', $filter_callback );
 
 		$result = $this->status->delete_test_orders();
