@@ -14,7 +14,7 @@ import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import Chip from 'wcpay/components/chip';
 import { ClickTooltip } from 'wcpay/components/tooltip';
 import { AccountDetailsData } from 'wcpay/types/account/account-details';
-import { getChipTypeFromColor, getIconByName } from './utils';
+import { getChipTypeFromColor } from './utils';
 
 const PayoutStatus: React.FC< {
 	payoutStatus: AccountDetailsData[ 'payout_status' ];
