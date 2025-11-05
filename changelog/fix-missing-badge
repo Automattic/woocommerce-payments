@@ -1,4 +1,5 @@
 Significance: patch
 Type: fix
+Comment: Fix regression caused by PR #11085
 
-Fix strict CSS selector.
+
