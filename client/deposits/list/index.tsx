@@ -148,7 +148,6 @@ export const DepositsList = (): JSX.Element => {
 		);
 
 		// Map deposit to table row.
-		const netAmount = deposit.amount - deposit.fee;
 		const data = {
 			details: { value: deposit.id, display: detailsLink },
 			date: { value: deposit.date, display: dateDisplay },
@@ -169,9 +168,9 @@ export const DepositsList = (): JSX.Element => {
 				),
 			},
 			net: {
-				value: formatExportAmount( netAmount, deposit.currency ),
+				value: formatExportAmount( deposit.net, deposit.currency ),
 				display: clickable(
-					formatExplicitCurrency( netAmount, deposit.currency )
+					formatExplicitCurrency( deposit.net, deposit.currency )
 				),
 			},
 			status: {
