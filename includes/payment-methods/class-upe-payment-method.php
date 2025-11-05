@@ -183,8 +183,11 @@ class UPE_Payment_Method {
 	}
 
 	/**
-	 * Returns boolean dependent on whether payment method
-	 * can be used at checkout
+	 * Returns boolean dependent on whether payment method can be used at checkout.
+	 *
+	 * Payment method can be used at checkout if:
+	 *  - If there are payment amount limits, order total is within limits.
+	 *  - If it is a subscription order, payment method is either reusable, or subscription is manual.
 	 *
 	 * @param string $account_country Country of merchants account.
 	 * @param bool   $skip_limits_per_currency_check Whether to skip limits per currency check.
@@ -203,37 +206,10 @@ class UPE_Payment_Method {
 			}
 		}
 
-		if ( $is_subscription_context ) {
-			// Check if we're changing payment method for a specific subscription.
-			if ( $this->is_changing_payment_method_for_subscription() && function_exists( 'wcs_get_subscription' ) ) {
-				$subscription_id = absint( $_GET['change_payment_method'] ?? 0 ); // phpcs:ignore WordPress.Security.NonceVerification
-				if ( $subscription_id ) {
-					$subscription = wcs_get_subscription( $subscription_id );
-					if ( $subscription ) {
-						// Allow non-reusable methods ONLY if this specific subscription is manual.
-						if ( $subscription->is_manual() ) {
-							return true;
-						}
-						// For automatic subscriptions, only allow reusable methods.
-						return $this->is_reusable();
-					}
-				}
-			}
+		// Reusable methods are always available for subscriptions. Other methods are available if manual renewal is allowed.
+		$is_available_for_subscription = $this->are_manual_renewals_accepted() || $this->is_reusable();
 
-			// Allow non-reusable payment methods if manual renewals are accepted globally.
-			if ( $this->are_manual_renewals_accepted() ) {
-				return true; // Allow both reusable and non-reusable payment methods.
-			}
-			// Otherwise, only allow reusable payment methods.
-			return $this->is_reusable();
-		}
-
-		// If manual renewals are accepted, allow non-reusable payment methods globally.
-		// This ensures gateways appear as "available" on My Subscriptions page so "Renew now" button shows.
-		if ( $this->are_manual_renewals_accepted() ) {
-			return true;
-		}
-
+		$order_is_within_currency_limits = true;
 		// This part ensures that when payment limits for the currency declared, those will be respected (e.g. BNPLs).
 		if ( [] !== $this->limits_per_currency && ! $skip_limits_per_currency_check ) {
 			$order = null;
@@ -267,16 +243,18 @@ class UPE_Payment_Method {
 					}
 					// If there is no range specified for the currency-country pair we don't support it and return false.
 					if ( null === $range ) {
-						return false;
+						$order_is_within_currency_limits = false;
+					} else {
+						$is_valid_minimum                = null === $range['min'] || $amount >= $range['min'];
+						$is_valid_maximum                = null === $range['max'] || $amount <= $range['max'];
+						$order_is_within_currency_limits = $is_valid_minimum && $is_valid_maximum;
 					}
-					$is_valid_minimum = null === $range['min'] || $amount >= $range['min'];
-					$is_valid_maximum = null === $range['max'] || $amount <= $range['max'];
-					return $is_valid_minimum && $is_valid_maximum;
 				}
 			}
 		}
 
-		return true;
+		return $order_is_within_currency_limits
+			&& ( ( ! $is_subscription_context ) || $is_available_for_subscription );
 	}
 
 	/**
