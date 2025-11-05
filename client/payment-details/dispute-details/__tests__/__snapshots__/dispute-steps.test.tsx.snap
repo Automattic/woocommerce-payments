@@ -127,7 +127,7 @@ exports[`NonCompliantDisputeSteps renders the Visa compliance dispute steps 1`] 
                 >
                   <a
                     class="components-button is-secondary"
-                    href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#challenge-or-accept"
+                    href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#visa-compliance-disputes"
                     rel="noopener noreferrer"
                     target="_blank"
                   >
@@ -174,7 +174,7 @@ exports[`NonCompliantDisputeSteps renders the Visa compliance dispute steps 1`] 
                 >
                   <a
                     class="components-button is-secondary"
-                    href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#challenge-or-accept"
+                    href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#visa-compliance-disputes"
                     rel="noopener noreferrer"
                     target="_blank"
                   >

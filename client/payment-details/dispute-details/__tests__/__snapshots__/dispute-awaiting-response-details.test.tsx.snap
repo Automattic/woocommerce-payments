@@ -340,7 +340,7 @@ exports[`DisputeAwaitingResponseDetails - Visa Compliance renders Visa complianc
                     >
                       <a
                         class="components-button is-secondary"
-                        href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#challenge-or-accept"
+                        href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#visa-compliance-disputes"
                         rel="noopener noreferrer"
                         target="_blank"
                       >
@@ -387,7 +387,7 @@ exports[`DisputeAwaitingResponseDetails - Visa Compliance renders Visa complianc
                     >
                       <a
                         class="components-button is-secondary"
-                        href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#challenge-or-accept"
+                        href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#visa-compliance-disputes"
                         rel="noopener noreferrer"
                         target="_blank"
                       >
@@ -464,7 +464,7 @@ exports[`DisputeAwaitingResponseDetails - Visa Compliance renders Visa complianc
       >
         <a
           class="components-external-link"
-          href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/"
+          href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#visa-compliance-disputes"
           rel="external noreferrer noopener"
           target="_blank"
         >
