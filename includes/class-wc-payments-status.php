@@ -106,6 +106,11 @@ class WC_Payments_Status {
 	 * @return string Success or error message.
 	 */
 	public function delete_test_orders() {
+		// Add explicit capability check.
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return __( 'You do not have permission to delete orders.', 'woocommerce-payments' );
+		}
+
 		try {
 			// Get all orders with test mode meta.
 			$test_orders = wc_get_orders(
@@ -126,7 +131,7 @@ class WC_Payments_Status {
 			$deleted_count = 0;
 			foreach ( $test_orders as $order ) {
 				// Permanently delete the order (skip trash).
-				if ( $order->delete() ) {
+				if ( $order->delete( true ) ) {
 					++$deleted_count;
 				}
 			}
