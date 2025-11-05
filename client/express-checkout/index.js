@@ -213,9 +213,14 @@ jQuery( ( $ ) => {
 				mode: 'payment',
 				amount: creationOptions.total,
 				currency: creationOptions.currency,
-				paymentMethodCreation: 'manual',
+				// TODO ~FR: remove this for Amazon Pay
+				// paymentMethodCreation: 'manual',
 				appearance: getExpressCheckoutButtonAppearance(),
 				locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',
+				// TODO ~FR: tweak this for Amazon Pay
+				// paymentMethodTypes: [ 'card' ],
+				// paymentMethodTypes: [ 'amazon_pay' ],
+				paymentMethodTypes: [ 'card', 'amazon_pay' ],
 			} );
 
 			const eceButton = elements.create(

@@ -241,7 +241,9 @@ export const getExpressCheckoutButtonStyleSettings = () => {
 		paymentMethods: {
 			applePay: 'always',
 			googlePay: 'always',
-			amazonPay: 'never',
+			// TODO ~FR: tweak this for Amazon Pay
+			// amazonPay: 'never',
+			amazonPay: 'auto',
 			link: 'never',
 			paypal: 'never',
 			klarna: 'never',

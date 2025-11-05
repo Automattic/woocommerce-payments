@@ -108,9 +108,26 @@ export const onConfirmHandler = async (
 		return abortPayment( submitError.message );
 	}
 
-	const { paymentMethod, error } = await stripe.createPaymentMethod( {
-		elements,
-	} );
+	let error, confirmationTokenId, paymentMethodId;
+
+	if ( event.expressPaymentType === 'amazon_pay' ) {
+		const result = await stripe.createConfirmationToken( {
+			elements,
+			params: {
+				// Required by Amazon Pay, but is not used by express checkout
+				// as it uses a payment modal instead of redirection.
+				return_url: window.location.href,
+			},
+		} );
+		confirmationTokenId = result.confirmationToken.id;
+		error = result.error;
+	} else {
+		const result = await stripe.createPaymentMethod( {
+			elements,
+		} );
+		paymentMethodId = result.paymentMethod.id;
+		error = result.error;
+	}
 
 	if ( error ) {
 		return abortPayment( error.message );
@@ -123,7 +140,8 @@ export const onConfirmHandler = async (
 			// so that we make it harder for external plugins to modify or intercept checkout data.
 			...transformStripePaymentMethodForStoreApi(
 				event,
-				paymentMethod.id
+				paymentMethodId,
+				confirmationTokenId
 			),
 			extensions: applyFilters(
 				'wcpay.express-checkout.cart-place-order-extension-data',
