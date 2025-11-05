@@ -163,6 +163,75 @@ export const useDeposits = ( {
 	);
 };
 
+/**
+ * Interface for deposit fee data returned by useDepositsWithFeeData
+ */
+export interface DepositFeeData {
+	totalFees: number;
+	feesCurrency: string;
+	grossAmount: number;
+}
+
+/**
+ * Hook to fetch transaction summaries for multiple deposits and calculate fee-related data.
+ * Returns a map of deposit ID to fee data (total fees, gross amount).
+ *
+ * @param deposits - Array of deposits to fetch fee data for
+ * @return Map of deposit ID to DepositFeeData
+ */
+export const useDepositsWithFeeData = (
+	deposits: CachedDeposit[]
+): Record< string, DepositFeeData > => {
+	// Fetch transaction summaries for all deposits to get total fees
+	// useSelect automatically triggers resolvers when data isn't cached
+	const transactionSummariesByDeposit = useSelect(
+		( select ) => {
+			const { getTransactionsSummary } = select( STORE_NAME );
+			const summaries: Record<
+				string,
+				{ fees?: number; currency?: string }
+			> = {};
+			deposits.forEach( ( deposit ) => {
+				const query = { depositId: deposit.id };
+				const summary = getTransactionsSummary( query ) as {
+					fees?: number;
+					currency?: string;
+				};
+				if (
+					summary &&
+					( summary.fees !== undefined || summary.currency )
+				) {
+					summaries[ deposit.id ] = {
+						fees: summary.fees,
+						currency: summary.currency,
+					};
+				}
+			} );
+			return summaries;
+		},
+		[ deposits ]
+	);
+
+	// Calculate fee data for each deposit
+	const feeDataMap: Record< string, DepositFeeData > = {};
+	deposits.forEach( ( deposit ) => {
+		const transactionSummary = transactionSummariesByDeposit[ deposit.id ];
+		const totalFees =
+			transactionSummary?.fees !== undefined
+				? transactionSummary.fees
+				: deposit.fee;
+		const feesCurrency = transactionSummary?.currency ?? deposit.currency;
+
+		feeDataMap[ deposit.id ] = {
+			totalFees,
+			feesCurrency,
+			grossAmount: deposit.amount + totalFees,
+		};
+	} );
+
+	return feeDataMap;
+};
+
 export const useDepositsSummary = ( {
 	match,
 	store_currency_is: storeCurrencyIs,

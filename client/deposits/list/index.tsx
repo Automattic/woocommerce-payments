@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useState } from 'react';
 import { recordEvent } from 'tracks';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { TableCard, Link } from '@woocommerce/components';
@@ -15,7 +15,11 @@ import { parseInt } from 'lodash';
  * Internal dependencies.
  */
 import type { DepositsTableHeader } from 'wcpay/types/deposits';
-import { useDeposits, useDepositsSummary } from 'wcpay/data';
+import {
+	useDeposits,
+	useDepositsSummary,
+	useDepositsWithFeeData,
+} from 'wcpay/data';
 import { displayType, depositStatusLabels } from '../strings';
 import {
 	formatExplicitCurrency,
@@ -113,7 +117,6 @@ export const DepositsList = (): JSX.Element => {
 	const { depositsSummary, isLoading: isSummaryLoading } = useDepositsSummary(
 		getQuery()
 	);
-
 	const { requestReportExport, isExportInProgress } = useReportExport();
 	const { createNotice } = useDispatch( 'core/notices' );
 
@@ -122,6 +125,9 @@ export const DepositsList = (): JSX.Element => {
 	const { columnsToDisplay, onColumnsChange } = usePersistedColumnVisibility<
 		DepositsTableHeader
 	>( 'wc_payments_payouts_hidden_columns', columns );
+
+	// Fetch transaction summaries and calculate fee data for all deposits
+	const depositsFeeData = useDepositsWithFeeData( deposits );
 
 	const totalRows = depositsSummary.count || 0;
 
@@ -148,6 +154,14 @@ export const DepositsList = (): JSX.Element => {
 		);
 
 		// Map deposit to table row.
+		// Get fee data from hook (includes total fees from transactions summary and gross amount).
+		// If the fee data is not available, default to 0 fees and the deposit currency.
+		const feeData = depositsFeeData[ deposit.id ] ?? {
+			totalFees: 0,
+			feesCurrency: deposit.currency,
+			grossAmount: deposit.amount,
+		};
+
 		const data = {
 			details: { value: deposit.id, display: detailsLink },
 			date: { value: deposit.date, display: dateDisplay },
@@ -156,15 +170,27 @@ export const DepositsList = (): JSX.Element => {
 				display: clickable( displayType[ deposit.type ] ),
 			},
 			amount: {
-				value: formatExportAmount( deposit.amount, deposit.currency ),
+				value: formatExportAmount(
+					feeData.grossAmount,
+					deposit.currency
+				),
 				display: clickable(
-					formatExplicitCurrency( deposit.amount, deposit.currency )
+					formatExplicitCurrency(
+						feeData.grossAmount,
+						deposit.currency
+					)
 				),
 			},
 			fees: {
-				value: formatExportAmount( deposit.fee, deposit.currency ),
+				value: formatExportAmount(
+					feeData.totalFees,
+					feeData.feesCurrency
+				),
 				display: clickable(
-					formatExplicitCurrency( deposit.fee, deposit.currency )
+					formatExplicitCurrency(
+						feeData.totalFees,
+						feeData.feesCurrency
+					)
 				),
 			},
 			net: {
