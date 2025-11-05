@@ -187,7 +187,7 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 									  )
 							}
 							value={ formatExplicitCurrency(
-								deposit.amount,
+								deposit.amount + deposit.fee,
 								deposit.currency
 							) }
 						/>,
@@ -220,7 +220,7 @@ export const DepositOverview: React.FC< DepositOverviewProps > = ( {
 									  )
 							}
 							value={ formatExplicitCurrency(
-								deposit.net,
+								deposit.amount,
 								deposit.currency
 							) }
 							valueClass="wcpay-deposit-net"
