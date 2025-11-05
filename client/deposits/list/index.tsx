@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React, { useState } from 'react';
+import React from 'react';
 import { recordEvent } from 'tracks';
 import { __, _n, sprintf } from '@wordpress/i18n';
 import { TableCard, Link } from '@woocommerce/components';
@@ -194,9 +194,9 @@ export const DepositsList = (): JSX.Element => {
 				),
 			},
 			net: {
-				value: formatExportAmount( deposit.net, deposit.currency ),
+				value: formatExportAmount( deposit.amount, deposit.currency ),
 				display: clickable(
-					formatExplicitCurrency( deposit.net, deposit.currency )
+					formatExplicitCurrency( deposit.amount, deposit.currency )
 				),
 			},
 			status: {
