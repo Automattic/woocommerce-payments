@@ -88,30 +88,47 @@
 
 		&[data-size='medium'] {
 			height: 48px;
-			// Scale down font and spacing to fit in constrained horizontal layouts
-			font-size: 14px;
-			letter-spacing: 0.3px;
 
 			&[data-type='buy'],
 			&[data-type='book'],
 			&[data-type='donate'] {
-				// Reduce min-width to allow flexibility in horizontal layouts
-				min-width: 150px;
+				min-width: 229px;
 
-				svg {
-					// Reduce left margin to save space
-					margin-left: 3px;
+				// Reduce font-size progressively as viewport narrows to prevent clipping
+				@media screen and ( max-width: 1563px ) {
+					font-size: 15px;
+					letter-spacing: 0.5px;
+					min-width: 180px;
+
+					svg {
+						width: 88px;
+						margin-left: 4px;
+					}
+				}
+
+				@media screen and ( max-width: 1118px ) {
+					font-size: 13px;
+					letter-spacing: 0.3px;
+					min-width: 150px;
+
+					svg {
+						width: 83px;
+						margin-left: 3px;
+					}
+				}
+
+				@media screen and ( max-width: 550px ) {
+					font-size: 12px;
+					letter-spacing: 0.2px;
+
+					svg {
+						width: 80px;
+					}
 				}
 			}
 
 			.button-content {
-				// Scale down the entire content to fit in constrained spaces
-				transform: scale( 0.88 );
-			}
-
-			svg {
-				// Scale down SVG for medium buttons to fit better
-				width: 75px;
+				transform: scale( 1 );
 			}
 		}
 
