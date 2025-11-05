@@ -139,16 +139,42 @@
 			&[data-type='book'],
 			&[data-type='donate'] {
 				min-width: 229px;
+
+				// Reduce font-size progressively as viewport narrows to prevent clipping
+				@media screen and ( max-width: 1563px ) {
+					font-size: 16px;
+					letter-spacing: 0.6px;
+					min-width: 180px;
+
+					svg {
+						width: 92px;
+						margin-left: 4px;
+					}
+				}
+
+				@media screen and ( max-width: 1118px ) {
+					font-size: 14px;
+					letter-spacing: 0.4px;
+					min-width: 150px;
+
+					svg {
+						width: 88px;
+						margin-left: 3px;
+					}
+				}
+
+				@media screen and ( max-width: 550px ) {
+					font-size: 13px;
+					letter-spacing: 0.3px;
+
+					svg {
+						width: 85px;
+					}
+				}
 			}
 
 			.button-content {
-				transform: scale( 1.1 );
-			}
-
-			// For this width range, the button's text is too large to fit
-			// in the button. The text is reduced to 22px to fit.
-			@media screen and ( min-width: 785px ) and ( max-width: 850px ) {
-				font-size: 22px;
+				transform: scale( 1 );
 			}
 		}
 	}
