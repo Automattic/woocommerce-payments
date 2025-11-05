@@ -1,0 +1,5 @@
+Significance: patch
+Type: fix
+Comment: Fix regression caused by PR #11085
+
+
