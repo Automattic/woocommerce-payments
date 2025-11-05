@@ -624,7 +624,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock1"
                       tabindex="-1"
                     >
-                      $20.00
+                      $20.50
                     </a>
                   </td>
                   <td
@@ -648,7 +648,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock1"
                       tabindex="-1"
                     >
-                      $19.50
+                      $20.00
                     </a>
                   </td>
                   <td
@@ -747,7 +747,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock2"
                       tabindex="-1"
                     >
-                      $30.00
+                      $30.75
                     </a>
                   </td>
                   <td
@@ -771,7 +771,7 @@ exports[`Deposits list renders correctly a single deposit 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock2"
                       tabindex="-1"
                     >
-                      $29.25
+                      $30.00
                     </a>
                   </td>
                   <td
@@ -1623,7 +1623,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock1"
                       tabindex="-1"
                     >
-                      $20.00
+                      $20.50
                     </a>
                   </td>
                   <td
@@ -1647,7 +1647,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock1"
                       tabindex="-1"
                     >
-                      $19.50
+                      $20.00
                     </a>
                   </td>
                   <td
@@ -1746,7 +1746,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock2"
                       tabindex="-1"
                     >
-                      $30.00
+                      $30.75
                     </a>
                   </td>
                   <td
@@ -1770,7 +1770,7 @@ exports[`Deposits list renders correctly with multiple currencies 1`] = `
                       href="admin.php?page=wc-admin&path=%2Fpayments%2Fpayouts%2Fdetails&id=po_mock2"
                       tabindex="-1"
                     >
-                      $29.25
+                      $30.00
                     </a>
                   </td>
                   <td

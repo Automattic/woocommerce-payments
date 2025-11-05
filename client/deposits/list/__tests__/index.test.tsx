@@ -13,7 +13,11 @@ import { useUserPreferences } from '@woocommerce/data';
  * Internal dependencies
  */
 import { DepositsList } from '../';
-import { useDeposits, useDepositsSummary } from 'wcpay/data';
+import {
+	useDeposits,
+	useDepositsSummary,
+	useDepositsWithFeeData,
+} from 'wcpay/data';
 import {
 	CachedDeposit,
 	CachedDeposits,
@@ -23,6 +27,7 @@ import {
 jest.mock( 'wcpay/data', () => ( {
 	useDeposits: jest.fn(),
 	useDepositsSummary: jest.fn(),
+	useDepositsWithFeeData: jest.fn(),
 } ) );
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
@@ -47,7 +52,10 @@ const mockDeposits = [
 		status: 'paid',
 		bankAccount: 'MOCK BANK •••• 1234 (USD)',
 		currency: 'USD',
+		automatic: true,
 		bank_reference_key: 'mock_reference_key',
+		failure_code: 'insufficient_funds',
+		failure_message: '',
 	} as CachedDeposit,
 	{
 		id: 'po_mock2',
@@ -59,7 +67,10 @@ const mockDeposits = [
 		status: 'pending',
 		bankAccount: 'MOCK BANK •••• 1234 (USD)',
 		currency: 'USD',
+		automatic: true,
 		bank_reference_key: 'mock_reference_key',
+		failure_code: 'insufficient_funds',
+		failure_message: '',
 	} as CachedDeposit,
 	{
 		id: 'po_mock3',
@@ -71,7 +82,10 @@ const mockDeposits = [
 		status: 'paid',
 		bankAccount: 'MOCK BANK •••• 1234 (USD)',
 		currency: 'USD',
+		automatic: true,
 		bank_reference_key: 'mock_reference_key',
+		failure_code: 'insufficient_funds',
+		failure_message: '',
 	} as CachedDeposit,
 ];
 
@@ -113,6 +127,10 @@ const mockUseDepositsSummary = useDepositsSummary as jest.MockedFunction<
 	typeof useDepositsSummary
 >;
 
+const mockUseDepositsWithFeeData = useDepositsWithFeeData as jest.MockedFunction<
+	typeof useDepositsWithFeeData
+>;
+
 const mockUseUserPreferences = useUserPreferences as jest.MockedFunction<
 	typeof useUserPreferences
 >;
@@ -129,6 +147,25 @@ describe( 'Deposits list', () => {
 			wc_payments_payouts_hidden_columns: '',
 			isRequesting: false,
 		} as any );
+
+		// Mock fee data for deposits - maps deposit ID to fee data
+		mockUseDepositsWithFeeData.mockReturnValue( {
+			po_mock1: {
+				totalFees: 50,
+				feesCurrency: 'USD',
+				grossAmount: 2050,
+			},
+			po_mock2: {
+				totalFees: 75,
+				feesCurrency: 'USD',
+				grossAmount: 3075,
+			},
+			po_mock3: {
+				totalFees: 0,
+				feesCurrency: 'USD',
+				grossAmount: 4000,
+			},
+		} );
 
 		global.wcpaySettings = {
 			zeroDecimalCurrencies: [],
