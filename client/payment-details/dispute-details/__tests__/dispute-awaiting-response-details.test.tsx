@@ -316,7 +316,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 		expect( helpLink ).toBeInTheDocument();
 		expect( helpLink ).toHaveAttribute(
 			'href',
-			'https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/'
+			'https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#visa-compliance-disputes'
 		);
 	} );
 
