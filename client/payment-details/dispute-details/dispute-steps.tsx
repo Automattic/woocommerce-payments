@@ -246,7 +246,7 @@ export const NonCompliantDisputeSteps: React.FC = () => {
 									<div className="dispute-steps__item-action">
 										<Button
 											variant="secondary"
-											href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#challenge-or-accept"
+											href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#visa-compliance-disputes"
 											target="_blank"
 											rel="noopener noreferrer"
 										>
@@ -279,7 +279,7 @@ export const NonCompliantDisputeSteps: React.FC = () => {
 									<div className="dispute-steps__item-action">
 										<Button
 											variant="secondary"
-											href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#challenge-or-accept"
+											href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#visa-compliance-disputes"
 											target="_blank"
 											rel="noopener noreferrer"
 										>

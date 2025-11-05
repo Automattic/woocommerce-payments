@@ -202,7 +202,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 			return 'https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries';
 		}
 		if ( isVisaComplianceDispute ) {
-			return 'https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/';
+			return 'https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#visa-compliance-disputes';
 		}
 		return 'https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#responding';
 	};
