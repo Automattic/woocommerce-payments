@@ -18,12 +18,14 @@
 		text-transform: none;
 		list-style-type: none;
 		min-height: auto;
+		overflow: hidden;
 
 		.button-content {
 			display: flex;
-			align-content: center;
+			align-items: center;
 			justify-content: center;
 			transform: scale( 0.9 );
+			max-width: 100%;
 		}
 
 		&:not( :disabled ) {
@@ -86,15 +88,30 @@
 
 		&[data-size='medium'] {
 			height: 48px;
+			// Scale down font and spacing to fit in constrained horizontal layouts
+			font-size: 14px;
+			letter-spacing: 0.3px;
 
 			&[data-type='buy'],
 			&[data-type='book'],
 			&[data-type='donate'] {
-				min-width: 229px;
+				// Reduce min-width to allow flexibility in horizontal layouts
+				min-width: 150px;
+
+				svg {
+					// Reduce left margin to save space
+					margin-left: 3px;
+				}
 			}
 
 			.button-content {
-				transform: scale( 1 );
+				// Scale down the entire content to fit in constrained spaces
+				transform: scale( 0.88 );
+			}
+
+			svg {
+				// Scale down SVG for medium buttons to fit better
+				width: 75px;
 			}
 		}
 
