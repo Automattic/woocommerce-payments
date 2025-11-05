@@ -95,14 +95,26 @@
 				min-width: 229px;
 
 				// Reduce font-size progressively as viewport narrows to prevent clipping
-				@media screen and ( max-width: 1563px ) {
-					font-size: 15px;
-					letter-spacing: 0.5px;
+				// Keep logo size larger to maintain visual balance with other payment buttons
+				@media screen and ( max-width: 1709px ) {
+					font-size: 16px;
+					letter-spacing: 0.6px;
+					min-width: 200px;
+
+					svg {
+						width: 95px;
+						margin-left: 4px;
+					}
+				}
+
+				@media screen and ( max-width: 1350px ) {
+					font-size: 14px;
+					letter-spacing: 0.4px;
 					min-width: 180px;
 
 					svg {
-						width: 88px;
-						margin-left: 4px;
+						width: 95px;
+						margin-left: 3px;
 					}
 				}
 
@@ -112,17 +124,25 @@
 					min-width: 150px;
 
 					svg {
-						width: 83px;
-						margin-left: 3px;
+						width: 92px;
 					}
 				}
 
-				@media screen and ( max-width: 550px ) {
+				@media screen and ( max-width: 720px ) {
 					font-size: 12px;
 					letter-spacing: 0.2px;
 
 					svg {
-						width: 80px;
+						width: 90px;
+					}
+				}
+
+				@media screen and ( max-width: 550px ) {
+					font-size: 11px;
+					letter-spacing: 0.2px;
+
+					svg {
+						width: 87px;
 					}
 				}
 			}
@@ -141,14 +161,26 @@
 				min-width: 229px;
 
 				// Reduce font-size progressively as viewport narrows to prevent clipping
-				@media screen and ( max-width: 1563px ) {
-					font-size: 16px;
-					letter-spacing: 0.6px;
+				// Keep logo size larger to maintain visual balance with other payment buttons
+				@media screen and ( max-width: 1709px ) {
+					font-size: 17px;
+					letter-spacing: 0.7px;
+					min-width: 200px;
+
+					svg {
+						width: 98px;
+						margin-left: 4px;
+					}
+				}
+
+				@media screen and ( max-width: 1350px ) {
+					font-size: 15px;
+					letter-spacing: 0.5px;
 					min-width: 180px;
 
 					svg {
-						width: 92px;
-						margin-left: 4px;
+						width: 98px;
+						margin-left: 3px;
 					}
 				}
 
@@ -158,17 +190,25 @@
 					min-width: 150px;
 
 					svg {
-						width: 88px;
-						margin-left: 3px;
+						width: 95px;
 					}
 				}
 
-				@media screen and ( max-width: 550px ) {
+				@media screen and ( max-width: 720px ) {
 					font-size: 13px;
 					letter-spacing: 0.3px;
 
 					svg {
-						width: 85px;
+						width: 93px;
+					}
+				}
+
+				@media screen and ( max-width: 550px ) {
+					font-size: 12px;
+					letter-spacing: 0.2px;
+
+					svg {
+						width: 90px;
 					}
 				}
 			}
