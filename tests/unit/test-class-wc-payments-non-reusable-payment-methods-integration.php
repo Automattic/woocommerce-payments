@@ -158,7 +158,7 @@ class WC_Payments_Non_Reusable_Payment_Methods_Integration_Test extends WCPAY_Un
 	}
 
 	/**
-	 * Test complete flow: Reusable payment method -> Manual subscription -> Stays manual.
+	 * Test complete flow: Reusable payment method -> Manual subscription -> Converts to automattic if reusable payment method is used.
 	 */
 	public function test_reusable_payment_method_with_manual_subscription_stays_manual() {
 		// Arrange: Create order and subscription with reusable payment method.
@@ -208,7 +208,7 @@ class WC_Payments_Non_Reusable_Payment_Methods_Integration_Test extends WCPAY_Un
 
 		// Assert: Complete flow behavior.
 		$this->assertTrue( $initial_manual_state, 'Subscription should start as manual' );
-		$this->assertTrue( $stayed_manual, 'Subscription should stay manual even with payment tokens' );
+		$this->assertNotTrue( $stayed_manual, 'Subscription should stay manual even with payment tokens' );
 		// Note: We can't easily assert create_subscription was called without complex mocking,
 		// but the real method will call it when payment tokens exist.
 	}

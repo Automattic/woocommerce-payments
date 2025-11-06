@@ -208,6 +208,15 @@ class WC_Payments_Invoice_Service {
 					throw $e;
 				}
 			}
+
+			if ( $subscription->is_manual() ) {
+				$subscription->set_requires_manual_renewal( false );
+				$subscription->set_payment_method( WC_Payment_Gateway_WCPay::GATEWAY_ID );
+
+				// Copy the payment token used to pay for the order to the subscription.
+				WC_Payments::get_gateway()->update_failing_payment_method( $subscription, $order );
+				$subscription->save();
+			}
 		}
 	}
 

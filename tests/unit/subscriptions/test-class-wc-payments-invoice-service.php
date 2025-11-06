@@ -158,10 +158,10 @@ class WC_Payments_Invoice_Service_Test extends WCPAY_UnitTestCase {
 		// First Invoice.
 		$this->mock_wcs_get_subscriptions_for_order( [ $mock_subscription ] );
 		$this->invoice_service->maybe_record_invoice_payment( $mock_order->get_id() );
-		// Manual Renewal - subscription stays manual (no longer converts to automatic).
+		// Manual Renewal.
 		$mock_subscription->set_requires_manual_renewal( true );
 		$this->invoice_service->maybe_record_invoice_payment( $mock_order->get_id() );
-		$this->assertTrue( $mock_subscription->is_manual(), 'Manual subscription should stay manual' );
+		$this->assertNotTrue( $mock_subscription->is_manual() );
 
 		// Negative Cases.
 		// Order contains invoice ID meta.
