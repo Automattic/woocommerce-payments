@@ -1,5 +1,0 @@
-Significance: patch
-Type: fix
-Comment: Just swapping `add_action` for `add_filter` in a previous PR. Does not change behavior.
-
-
