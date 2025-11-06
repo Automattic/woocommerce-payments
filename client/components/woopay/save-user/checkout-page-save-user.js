@@ -64,33 +64,31 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 	const viewportWidth = window.document.documentElement.clientWidth;
 	const viewportHeight = window.document.documentElement.clientHeight;
 
-	const woopayComponent = isBlocksCheckout
-		? document.querySelector( '#remember-me' )
-		: document.querySelector( '.woopay-save-new-user-container' );
-
 	useEffect( () => {
 		if ( ! isBlocksCheckout ) {
 			return;
 		}
 
-		if ( ! woopayComponent ) {
+		const rememberMe = document.querySelector( '#remember-me' );
+
+		if ( ! rememberMe ) {
 			return;
 		}
 
 		if ( checkoutIsProcessing ) {
-			woopayComponent.classList.add(
+			rememberMe.classList.add(
 				'wc-block-components-checkout-step--disabled'
 			);
-			woopayComponent.setAttribute( 'disabled', 'disabled' );
+			rememberMe.setAttribute( 'disabled', 'disabled' );
 
 			return;
 		}
 
-		woopayComponent.classList.remove(
+		rememberMe.classList.remove(
 			'wc-block-components-checkout-step--disabled'
 		);
-		woopayComponent.removeAttribute( 'disabled', 'disabled' );
-	}, [ woopayComponent, checkoutIsProcessing, isBlocksCheckout ] );
+		rememberMe.removeAttribute( 'disabled', 'disabled' );
+	}, [ checkoutIsProcessing, isBlocksCheckout ] );
 
 	const getPhoneFieldValue = useCallback( () => {
 		let phoneFieldValue = '';
@@ -305,12 +303,8 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 		! isWCPayWithNewTokenChosen ||
 		isRegisteredUser
 	) {
-		woopayComponent.style.display = 'none';
-
 		return null;
 	}
-
-	woopayComponent.style.display = 'block';
 
 	return (
 		<Container isBlocksCheckout={ isBlocksCheckout }>

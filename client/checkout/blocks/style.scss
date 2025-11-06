@@ -92,6 +92,10 @@ button.wcpay-stripelink-modal-trigger:hover {
 	}
 }
 
+#remember-me:empty {
+	margin-bottom: 0;
+}
+
 #payment-method {
 	/* stylelint-disable-next-line selector-id-pattern */
 	#radio-control-wc-payment-method-options-woocommerce_payments_affirm__label
