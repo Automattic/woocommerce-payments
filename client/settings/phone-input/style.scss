@@ -1,10 +1,6 @@
 @import '/node_modules/intl-tel-input/build/css/intlTelInput.css';
 
 .woopay-save-new-user-container {
-	display: flex;
-	flex-direction: column;
-	gap: $gap;
-
 	&:not( :empty ) {
 		#payment .wc_payment_methods.payment_methods.methods + & {
 			margin-top: $gap-large;
@@ -91,7 +87,6 @@
 			box-shadow: none;
 			border: 1px solid $gray-300;
 			border-radius: 5px;
-			margin-left: 0.1rem;
 			width: calc( 100% - 0.25rem );
 
 			&::placeholder {
