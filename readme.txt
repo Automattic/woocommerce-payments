@@ -4,7 +4,7 @@ Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.3
-Stable tag: 10.1.1
+Stable tag: 10.2.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -86,6 +86,24 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 4. Manage Disputes
 
 == Changelog ==
+
+= 10.2.0 - 2025-11-06 =
+* Add - Add WooCommerce Tool to delete test orders.
+* Add - Sync store setup details with the Transact Platform.
+* Fix - Comment: fix JCB logo.
+* Fix - Fix - WCPay Subscriptions setting not persisting when unchecked
+* Fix - Fix missing payment method logos (JCB, CUP, CB) in checkout.
+* Fix - Fix payment method logos overflow in shortcode checkout after adding JCB and UnionPay logos.
+* Fix - Only show WooPay error messages for connection errors in available countries.
+* Fix - Prevent Express Checkout from being disabled on product page when updating quantity of variable products.
+* Fix - Prevent WooPayments-specific styles for the Checkout block to leak to other payment methods
+* Fix - Use Woo custom cap `pay_for_order` for validating the owner of order
+* Update - Avoid loading shipping zones when adjusting currencies for free shipping methods.
+* Update - Hide bundled subscription management UI while preserving renewal processing functionality
+* Update - Minor copy update to the delete test orders tool.
+* Update - Show message about bundled subscriptions until 10.2.0.
+* Dev - Add CLAUDE.md file to improve AI code assistance.
+* Dev - Bump WC tested up to version to 10.3.0.
 
 = 10.1.1 - 2025-10-27 =
 * Fix - Overrides the core `AbstractAutomatticAddressProvider`'s `load_scripts` method to only run if the core setting (`woocommerce_address_autocomplete_enabled` is enabled).
