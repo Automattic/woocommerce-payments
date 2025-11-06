@@ -183,6 +183,13 @@
 			font-weight: var( --Regular, 400 );
 			line-height: var( --s, 20px ); /* 153.846% */
 
+			@media screen and ( max-width: $break-small ) {
+				margin-bottom: 8px;
+				width: 100%;
+			}
+		}
+
+		&-content:last-child &-description {
 			width: 80%;
 
 			@media screen and ( max-width: $break-small ) {
