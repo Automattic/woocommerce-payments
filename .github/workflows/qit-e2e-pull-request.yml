@@ -348,3 +348,12 @@ jobs:
             --woo=${WC_VERSION} \
             --wp=${WP_VERSION} \
             --pw_options="--retries=0 --grep '(${SPEC_PATTERN})'"
+
+      - name: Upload Playwright test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qit-results-wc-${{ matrix.woocommerce }}-php-${{ matrix.php }}-${{ matrix.test_name }}-${{ github.run_id }}
+          path: /tmp/qit-results-*/
+          retention-days: 7
+          if-no-files-found: warn
