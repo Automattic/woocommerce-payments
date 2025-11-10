@@ -499,15 +499,6 @@ class UPE_Payment_Method {
 	 * @return bool True if manual renewals are accepted in settings.
 	 */
 	private function are_manual_renewals_accepted() {
-		// Check if WooCommerce Subscriptions is active.
-		if ( ! class_exists( 'WC_Subscriptions' ) ) {
-			return false;
-		}
-
-		// Check the 'accept_manual_renewals' setting.
-		// This is the WC Subscriptions setting that controls whether manual renewals are allowed.
-		$accept_manual_renewals = get_option( 'woocommerce_subscriptions_accept_manual_renewals', 'no' );
-
-		return 'yes' === $accept_manual_renewals;
+		return function_exists( 'wcs_is_manual_renewal_enabled' ) && wcs_is_manual_renewal_enabled();
 	}
 }
