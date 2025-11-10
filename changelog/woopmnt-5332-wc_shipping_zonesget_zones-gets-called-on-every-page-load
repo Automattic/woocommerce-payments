@@ -1,4 +1,0 @@
-Significance: minor
-Type: update
-
-Avoid loading shipping zones when adjusting currencies for free shipping methods.
