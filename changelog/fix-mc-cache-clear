@@ -1,4 +1,0 @@
-Significance: minor
-Type: dev
-
-Removed clear_cache method from the mutli-currency interface

@@ -65,6 +65,13 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 	private $mock_redirect_service;
 
 	/**
+	 * Backup of the original card gateway instance.
+	 *
+	 * @var WC_Payment_Gateway_WCPay
+	 */
+	private $card_gateway_backup;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -75,6 +82,8 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			'page' => 'wc-admin',
 			'path' => '/payments/connect',
 		];
+
+		$this->card_gateway_backup = WC_Payments::get_gateway();
 
 		// Always start off with live mode. If you want another mode, you should set it in the test.
 		WC_Payments::mode()->live();
@@ -94,6 +103,10 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		delete_option( WC_Payments_Onboarding_Service::TEST_MODE_OPTION );
 		unset( $_GET );
 		unset( $_REQUEST );
+
+		// Restore the card gateway instance.
+		WC_Payments::set_gateway( $this->card_gateway_backup );
+
 		parent::tear_down();
 	}
 
@@ -113,7 +126,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertNotFalse( has_action( 'jetpack_site_registered', [ $this->wcpay_account, 'clear_cache' ] ), 'jetpack_site_registered action does not exist.' );
 		$this->assertNotFalse( has_action( 'updated_option', [ $this->wcpay_account, 'possibly_update_wcpay_account_locale' ] ), 'updated_option action does not exist.' );
 		$this->assertNotFalse( has_action( 'woocommerce_woocommerce_payments_updated', [ $this->wcpay_account, 'clear_cache' ] ), 'woocommerce_woocommerce_payments_updated action does not exist.' );
-		$this->assertNotFalse( has_action( 'woocommerce_payments_account_refreshed', [ $this->wcpay_account, 'schedule_store_setup_sync' ] ), 'schedule_store_setup_sync action does not exist.' );
 		$this->assertNotFalse( has_action( WC_Payments_Account::STORE_SETUP_SYNC_ACTION, [ $this->wcpay_account, 'store_setup_sync' ] ), 'store_setup_sync action does not exist.' );
 	}
 
@@ -3584,5 +3596,262 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$result = $this->wcpay_account->get_account_details();
 
 		$this->assertEquals( $account_details, $result );
+	}
+
+	public function test_store_setup_sync_returns_early_when_server_not_connected() {
+		// Arrange: Server is not connected.
+		$this->mock_api_client->method( 'is_server_connected' )->willReturn( false );
+
+		// Assert: send_store_setup should not be called.
+		$this->mock_api_client->expects( $this->never() )
+			->method( 'send_store_setup' );
+
+		// Act: Call store_setup_sync.
+		$this->wcpay_account->store_setup_sync();
+	}
+
+	public function test_store_setup_sync_sends_store_setup_when_server_connected() {
+		// Arrange: Server is connected and gateway is available.
+		$this->mock_api_client->method( 'is_server_connected' )->willReturn( true );
+
+		// Mock the gateway and its methods.
+		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_gateway->method( 'is_enabled' )->willReturn( true );
+		$mock_gateway->method( 'get_form_fields' )->willReturn(
+			[
+				'payment_request_button_locations' => [
+					'options' => [
+						'product' => 'Product page',
+						'cart'    => 'Cart page',
+					],
+				],
+			]
+		);
+		$mock_gateway->method( 'get_upe_available_payment_methods' )->willReturn( [ 'card', 'bancontact', 'eps', 'ideal', 'p24', 'klarna', 'multibanco', 'alipay', 'wechat_pay' ] );
+		$mock_gateway->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ 'card', 'klarna' ] );
+
+		$payment_method_capability_map = [
+			'card'       => 'card_payments',
+			'bancontact' => 'bancontact_payments',
+			'eps'        => 'eps_payments',
+			'ideal'      => 'ideal_payments',
+			'p24'        => 'p24_payments',
+			'klarna'     => 'klarna_payments',
+			'multibanco' => 'multibanco_payments',
+			'alipay'     => 'alipay_payments',
+			'wechat_pay' => 'wechat_payments',
+		];
+		$mock_gateway->method( 'get_payment_method_capability_key_map' )->willReturn( $payment_method_capability_map );
+		$mock_gateway->method( 'find_duplicates' )->willReturn( [ 'card' => [ 'woocommerce_payments', 'some_other_gateway' ] ] );
+		$mock_gateway->method( 'get_option' )->willReturnCallback(
+			function ( $key, $default = null ) {
+				$options = [
+					'apple_google_pay_in_payment_methods_options' => 'yes',
+					'manual_capture'                       => 'no',
+					'enable_logging'                       => 'no',
+					'payment_request'                      => 'yes',
+					'payment_request_button_locations'     => [ 'product', 'cart' ],
+					'payment_request_button_type'          => 'default',
+					'payment_request_button_size'          => 'default',
+					'payment_request_button_theme'         => 'dark',
+					'payment_request_button_border_radius' => '4',
+					'platform_checkout_button_locations'   => [ 'product', 'cart' ],
+					'platform_checkout_store_logo'         => '',
+					'platform_checkout_custom_message'     => '',
+				];
+				return $options[ $key ] ?? $default;
+			}
+		);
+		$mock_gateway->method( 'is_saved_cards_enabled' )->willReturn( true );
+
+		// Replace the real gateway with the mock.
+		WC_Payments::set_gateway( $mock_gateway );
+
+		// Set the account mode to test mode.
+		WC_Payments::mode()->test();
+		// Set the onboarding to test mode.
+		WC_Payments::mode()->test_mode_onboarding();
+
+		// Capture the argument passed to send_store_setup.
+		$captured_data = null;
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'send_store_setup' )
+			->with(
+				$this->callback(
+					function ( $data ) use ( &$captured_data ) {
+						$captured_data = $data;
+
+						return is_array( $data );
+					}
+				)
+			);
+
+		// Act: Call store_setup_sync.
+		$this->wcpay_account->store_setup_sync();
+
+		$this->assertIsArray( $captured_data, 'Expected send_store_setup to be called with an array argument.' );
+		// Assert: Verify that the data structure contains expected top-level keys.
+		$this->assertArrayHasKey( 'gateway', $captured_data );
+		$this->assertArrayHasKey( 'payment_methods', $captured_data );
+		$this->assertArrayHasKey( 'provider_capabilities', $captured_data );
+		$this->assertArrayHasKey( 'apple_google_pay_in_payment_methods_options_enabled', $captured_data );
+		$this->assertArrayHasKey( 'saved_cards_enabled', $captured_data );
+		$this->assertArrayHasKey( 'manual_capture_enabled', $captured_data );
+		$this->assertArrayHasKey( 'debug_log_enabled', $captured_data );
+		$this->assertArrayHasKey( 'payment_request', $captured_data );
+		$this->assertArrayHasKey( 'woopay', $captured_data );
+		$this->assertArrayHasKey( 'multi_currency_enabled', $captured_data );
+		$this->assertArrayHasKey( 'stripe_billing_enabled', $captured_data );
+		$this->assertArrayHasKey( 'plugin', $captured_data );
+		$this->assertArrayHasKey( 'wp_setup', $captured_data );
+		$this->assertArrayHasKey( 'wc_setup', $captured_data );
+
+		// Assert: Verify gateway sub-entries and values.
+		$this->assertArrayHasKey( 'enabled', $captured_data['gateway'] );
+		$this->assertArrayHasKey( 'test_mode', $captured_data['gateway'] );
+		$this->assertArrayHasKey( 'test_mode_onboarding', $captured_data['gateway'] );
+		$this->assertTrue( $captured_data['gateway']['enabled'] );
+		$this->assertTrue( $captured_data['gateway']['test_mode'] );
+		$this->assertTrue( $captured_data['gateway']['test_mode_onboarding'] );
+
+		// Assert: Verify payment_methods sub-entries and values.
+		$this->assertArrayHasKey( 'available', $captured_data['payment_methods'] );
+		$this->assertArrayHasKey( 'enabled', $captured_data['payment_methods'] );
+		$this->assertArrayHasKey( 'disabled', $captured_data['payment_methods'] );
+		$this->assertArrayHasKey( 'duplicates', $captured_data['payment_methods'] );
+		$this->assertEquals( [ 'card', 'bancontact', 'eps', 'ideal', 'p24', 'klarna', 'multibanco', 'alipay', 'wechat_pay' ], $captured_data['payment_methods']['available'] );
+		$this->assertEquals( [ 'card', 'klarna' ], $captured_data['payment_methods']['enabled'] );
+		$this->assertEquals( [ 'bancontact', 'eps', 'ideal', 'p24', 'multibanco', 'alipay', 'wechat_pay' ], $captured_data['payment_methods']['disabled'] );
+		$this->assertEquals( [ 'card' => [ 'woocommerce_payments', 'some_other_gateway' ] ], $captured_data['payment_methods']['duplicates'] );
+
+		// Assert: Verify provider_capabilities sub-entries and values.
+		$this->assertArrayHasKey( 'available', $captured_data['provider_capabilities'] );
+		$this->assertArrayHasKey( 'enabled', $captured_data['provider_capabilities'] );
+		$this->assertArrayHasKey( 'disabled', $captured_data['provider_capabilities'] );
+		$this->assertContains( $payment_method_capability_map['card'], $captured_data['provider_capabilities']['available'] );
+		$this->assertContains( $payment_method_capability_map['klarna'], $captured_data['provider_capabilities']['available'] );
+		$this->assertEquals( [ $payment_method_capability_map['card'], $payment_method_capability_map['klarna'] ], $captured_data['provider_capabilities']['enabled'] );
+		$this->assertEquals(
+			array_values(
+				array_diff(
+					$payment_method_capability_map,
+					[ $payment_method_capability_map['card'], $payment_method_capability_map['klarna'] ]
+				)
+			),
+			$captured_data['provider_capabilities']['disabled']
+		);
+
+		// Assert: Verify simple boolean/string values match mocked data.
+		$this->assertEquals( 'yes', $captured_data['apple_google_pay_in_payment_methods_options_enabled'] );
+		$this->assertTrue( $captured_data['saved_cards_enabled'] );
+		$this->assertFalse( $captured_data['manual_capture_enabled'] );
+		$this->assertFalse( $captured_data['debug_log_enabled'] );
+
+		// Assert: Verify payment_request sub-entries and values.
+		$this->assertArrayHasKey( 'enabled', $captured_data['payment_request'] );
+		$this->assertArrayHasKey( 'enabled_locations', $captured_data['payment_request'] );
+		$this->assertArrayHasKey( 'button_type', $captured_data['payment_request'] );
+		$this->assertArrayHasKey( 'button_size', $captured_data['payment_request'] );
+		$this->assertArrayHasKey( 'button_theme', $captured_data['payment_request'] );
+		$this->assertArrayHasKey( 'button_border_radius', $captured_data['payment_request'] );
+		$this->assertTrue( $captured_data['payment_request']['enabled'] );
+		$this->assertEquals( [ 'product', 'cart' ], $captured_data['payment_request']['enabled_locations'] );
+		$this->assertEquals( 'default', $captured_data['payment_request']['button_type'] );
+		$this->assertEquals( 'default', $captured_data['payment_request']['button_size'] );
+		$this->assertEquals( 'dark', $captured_data['payment_request']['button_theme'] );
+		$this->assertEquals( '4', $captured_data['payment_request']['button_border_radius'] );
+
+		// Assert: Verify woopay sub-entries and values.
+		$this->assertArrayHasKey( 'enabled', $captured_data['woopay'] );
+		$this->assertArrayHasKey( 'enabled_locations', $captured_data['woopay'] );
+		$this->assertArrayHasKey( 'store_logo', $captured_data['woopay'] );
+		$this->assertArrayHasKey( 'custom_message', $captured_data['woopay'] );
+		$this->assertArrayHasKey( 'invalid_extension_found', $captured_data['woopay'] );
+		$this->assertEquals( [ 'product', 'cart' ], $captured_data['woopay']['enabled_locations'] );
+		$this->assertEquals( '', $captured_data['woopay']['store_logo'] );
+		$this->assertEquals( '', $captured_data['woopay']['custom_message'] );
+
+		// Assert: Verify plugin sub-entries.
+		$this->assertArrayHasKey( 'version', $captured_data['plugin'] );
+		$this->assertArrayHasKey( 'activation_timestamp', $captured_data['plugin'] );
+
+		// Assert: Verify wp_setup sub-entries.
+		$this->assertArrayHasKey( 'name', $captured_data['wp_setup'] );
+		$this->assertArrayHasKey( 'url', $captured_data['wp_setup'] );
+		$this->assertArrayHasKey( 'active_theme', $captured_data['wp_setup'] );
+		$this->assertArrayHasKey( 'active_plugins', $captured_data['wp_setup'] );
+		$this->assertArrayHasKey( 'version', $captured_data['wp_setup'] );
+		$this->assertArrayHasKey( 'locale', $captured_data['wp_setup'] );
+		$this->assertSame( get_bloginfo( 'name' ), $captured_data['wp_setup']['name'] );
+		$this->assertSame( get_bloginfo( 'url' ), $captured_data['wp_setup']['url'] );
+		$this->assertSame( get_bloginfo( 'version' ), $captured_data['wp_setup']['version'] );
+		$this->assertSame( get_locale(), $captured_data['wp_setup']['locale'] );
+
+		// Assert: Verify wc_setup sub-entries.
+		$this->assertArrayHasKey( 'version', $captured_data['wc_setup'] );
+		$this->assertArrayHasKey( 'store_id', $captured_data['wc_setup'] );
+		$this->assertArrayHasKey( 'currency', $captured_data['wc_setup'] );
+		$this->assertArrayHasKey( 'tracking_enabled', $captured_data['wc_setup'] );
+		$this->assertArrayHasKey( 'registered_payment_gateways', $captured_data['wc_setup'] );
+		$this->assertArrayHasKey( 'enabled_payment_gateways', $captured_data['wc_setup'] );
+		$this->assertArrayHasKey( 'wc_subscriptions_active', $captured_data['wc_setup'] );
+		$this->assertArrayHasKey( 'wc_subscriptions_version', $captured_data['wc_setup'] );
+	}
+
+	public function test_store_setup_sync_handles_exception_gracefully() {
+		// Arrange: Server is connected but send_store_setup throws an exception.
+		$this->mock_api_client->method( 'is_server_connected' )->willReturn( true );
+
+		// Mock the gateway.
+		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_gateway->method( 'is_enabled' )->willReturn( true );
+		$mock_gateway->method( 'get_form_fields' )->willReturn(
+			[
+				'payment_request_button_locations' => [
+					'options' => [
+						'product' => 'Product page',
+					],
+				],
+			]
+		);
+		$mock_gateway->method( 'get_upe_available_payment_methods' )->willReturn( [ 'card' ] );
+		$mock_gateway->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ 'card' ] );
+		$mock_gateway->method( 'get_payment_method_capability_key_map' )->willReturn( [ 'card' => 'card_payments' ] );
+		$mock_gateway->method( 'find_duplicates' )->willReturn( [] );
+		$mock_gateway->method( 'get_option' )->willReturn( 'yes' );
+		$mock_gateway->method( 'is_saved_cards_enabled' )->willReturn( true );
+
+		// Replace the real gateway with the mock.
+		WC_Payments::set_gateway( $mock_gateway );
+
+		// Mock send_store_setup to throw an exception.
+		$exception = new Exception( 'API Error' );
+		$this->mock_api_client->method( 'send_store_setup' )
+			->willThrowException( $exception );
+
+		// Act: Call store_setup_sync - it should not throw the exception.
+		// The exception should be caught and logged internally.
+		$this->wcpay_account->store_setup_sync();
+
+		// Assert: If we reach here without an exception being thrown, the test passes.
+		// The method should handle the exception gracefully.
+		$this->assertTrue( true );
+	}
+
+	public function test_store_setup_sync_handles_gateway_not_available() {
+		// Arrange: Server is connected but gateway is not available.
+		$this->mock_api_client->method( 'is_server_connected' )->willReturn( true );
+
+		// Mock WC_Payments to return null gateway.
+		WC_Payments::set_gateway( null );
+
+		// Assert: send_store_setup should be called with empty array when gateway is not available.
+		$this->mock_api_client->expects( $this->once() )
+			->method( 'send_store_setup' )
+			->with( [] );
+
+		// Act: Call store_setup_sync.
+		$this->wcpay_account->store_setup_sync();
 	}
 }

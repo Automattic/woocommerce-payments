@@ -18,12 +18,17 @@ const WCPaySubscriptionsToggle = () => {
 	] = useWCPaySubscriptions();
 
 	const handleWCPaySubscriptionsStatusChange = ( value ) => {
+		// Prevent enabling subscriptions - feature has been removed.
+		if ( value ) {
+			return;
+		}
 		updateIsWCPaySubscriptionsEnabled( value );
 	};
 
 	/**
-	 * Only show the toggle if the site doesn't have WC Subscriptions active and is eligible
-	 * for wcpay subscriptions or if wcpay subscriptions are already enabled.
+	 * Show the toggle if the site doesn't have WC Subscriptions active.
+	 * The toggle is disabled to prevent enabling bundled subscriptions.
+	 * However, if subscriptions are currently enabled, allow disabling them.
 	 */
 	return ! wcpaySettings.isSubscriptionsActive &&
 		isWCPaySubscriptionsEligible ? (
@@ -34,24 +39,22 @@ const WCPaySubscriptionsToggle = () => {
 				'WooPayments'
 			) }
 			help={ interpolateComponents( {
-				mixedString: sprintf(
-					/* translators: %s: WooPayments */
-					__(
-						'Sell subscription products and services with %s. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
-						'woocommerce-payments'
-					),
-					'WooPayments'
+				mixedString: __(
+					// eslint-disable-next-line max-len
+					'This feature is deprecated. Existing subscription renewals will continue to work, but creating or managing subscriptions is no longer available. Install {{learnMoreLink}}WooCommerce Subscriptions{{/learnMoreLink}} to continue managing subscriptions.',
+					'woocommerce-payments'
 				),
 				components: {
 					learnMoreLink: (
 						// eslint-disable-next-line max-len
 						// @ts-expect-error: children is provided when interpolating the component
-						<ExternalLink href="https://woocommerce.com/document/woopayments/subscriptions/" />
+						<ExternalLink href="https://woocommerce.com/products/woocommerce-subscriptions/" />
 					),
 				},
 			} ) }
 			checked={ isWCPaySubscriptionsEnabled }
 			onChange={ handleWCPaySubscriptionsStatusChange }
+			disabled={ ! isWCPaySubscriptionsEnabled }
 			__nextHasNoMarginBottom
 		/>
 	) : null;

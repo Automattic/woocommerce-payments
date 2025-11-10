@@ -568,6 +568,7 @@ class WC_Payments {
 		( new WooPay_Scheduler( self::$api_client ) )->init();
 
 		// Initialise hooks.
+		self::$action_scheduler_service->init_hooks();
 		self::$account->init_hooks();
 		self::$fraud_service->init_hooks();
 		self::$onboarding_service->init_hooks();
@@ -1355,7 +1356,7 @@ class WC_Payments {
 	/**
 	 * Sets the card gateway instance.
 	 *
-	 * @param WC_Payment_Gateway_WCPay $gateway The card gateway instance..
+	 * @param WC_Payment_Gateway_WCPay $gateway The card gateway instance.
 	 */
 	public static function set_gateway( $gateway ) {
 		self::$card_gateway = $gateway;
@@ -2130,8 +2131,10 @@ class WC_Payments {
 	 * Update the Stripe Billing deprecation note.
 	 */
 	public static function maybe_update_stripe_billing_deprecation_note() {
-		// If Stripe Billing is not enabled or WooCommerce Subscriptions is active, do not update the note.
-		if ( ! WC_Payments_Features::is_stripe_billing_enabled() || class_exists( 'WC_Subscriptions' ) ) {
+		// If bundled subscriptions are not enabled or WooCommerce Subscriptions is active, do not update the note.
+		$has_bundled_subs = WC_Payments_Features::is_wcpay_subscriptions_enabled() || WC_Payments_Features::is_stripe_billing_enabled();
+
+		if ( ! $has_bundled_subs || class_exists( 'WC_Subscriptions' ) ) {
 			return;
 		}
 
