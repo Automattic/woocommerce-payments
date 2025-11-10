@@ -1378,23 +1378,45 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 				],
 				'expected_product_type' => 'physical_product',
 			],
+			'single_booking_product'       => [
+				'order_items'           => [
+					$this->create_mock_order_item_product( true, true, 'booking' ), // booking product.
+				],
+				'expected_product_type' => 'booking_reservation',
+			],
+			'multiple_booking_products'    => [
+				'order_items'           => [
+					$this->create_mock_order_item_product( true, true, 'booking' ), // booking.
+					$this->create_mock_order_item_product( true, true, 'booking' ), // booking.
+				],
+				'expected_product_type' => 'multiple',
+			],
+			'booking_physical_mixed'       => [
+				'order_items'           => [
+					$this->create_mock_order_item_product( true, true, 'booking' ), // booking.
+					$this->create_mock_order_item_product( false, true, 'simple' ), // physical.
+				],
+				'expected_product_type' => 'multiple',
+			],
 		];
 	}
 
 	/**
 	 * Create a mock order item product for testing.
 	 *
-	 * @param bool $is_virtual Whether the product is virtual.
-	 * @param bool $is_valid Whether the product is valid (can be retrieved).
+	 * @param bool   $is_virtual Whether the product is virtual.
+	 * @param bool   $is_valid Whether the product is valid (can be retrieved).
+	 * @param string $product_type The product type (e.g., 'simple', 'booking', 'variable').
 	 * @return MockObject
 	 */
-	private function create_mock_order_item_product( $is_virtual = false, $is_valid = true ) {
+	private function create_mock_order_item_product( $is_virtual = false, $is_valid = true, $product_type = 'simple' ) {
 		$mock_product = $this->getMockBuilder( 'WC_Product' )
 			->disableOriginalConstructor()
-			->setMethods( [ 'is_virtual' ] )
+			->setMethods( [ 'is_virtual', 'get_type' ] )
 			->getMock();
 
 		$mock_product->method( 'is_virtual' )->willReturn( $is_virtual );
+		$mock_product->method( 'get_type' )->willReturn( $product_type );
 
 		$mock_order_item = $this->getMockBuilder( 'WC_Order_Item_Product' )
 			->disableOriginalConstructor()
