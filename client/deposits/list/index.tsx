@@ -15,11 +15,7 @@ import { parseInt } from 'lodash';
  * Internal dependencies.
  */
 import type { DepositsTableHeader } from 'wcpay/types/deposits';
-import {
-	useDeposits,
-	useDepositsSummary,
-	useDepositsWithFeeData,
-} from 'wcpay/data';
+import { useDeposits, useDepositsSummary } from 'wcpay/data';
 import { displayType, depositStatusLabels } from '../strings';
 import {
 	formatExplicitCurrency,
@@ -126,9 +122,6 @@ export const DepositsList = (): JSX.Element => {
 		DepositsTableHeader
 	>( 'wc_payments_payouts_hidden_columns', columns );
 
-	// Fetch transaction summaries and calculate fee data for all deposits
-	const depositsFeeData = useDepositsWithFeeData( deposits );
-
 	const totalRows = depositsSummary.count || 0;
 
 	const rows = deposits.map( ( deposit ) => {
@@ -153,14 +146,9 @@ export const DepositsList = (): JSX.Element => {
 			</Link>
 		);
 
-		// Map deposit to table row.
-		// Get fee data from hook (includes total fees from transactions summary and gross amount).
-		// If the fee data is not available, default to 0 fees and the deposit currency.
-		const feeData = depositsFeeData[ deposit.id ] ?? {
-			totalFees: 0,
-			feesCurrency: deposit.currency,
-			grossAmount: deposit.amount,
-		};
+		// Calculate fees: processing_fees + instant_payout_fee
+		const totalFees = deposit.processing_fees + deposit.instant_payout_fee;
+		const grossAmount = deposit.amount + totalFees;
 
 		const data = {
 			details: { value: deposit.id, display: detailsLink },
@@ -170,27 +158,15 @@ export const DepositsList = (): JSX.Element => {
 				display: clickable( displayType[ deposit.type ] ),
 			},
 			amount: {
-				value: formatExportAmount(
-					feeData.grossAmount,
-					deposit.currency
-				),
+				value: formatExportAmount( grossAmount, deposit.currency ),
 				display: clickable(
-					formatExplicitCurrency(
-						feeData.grossAmount,
-						deposit.currency
-					)
+					formatExplicitCurrency( grossAmount, deposit.currency )
 				),
 			},
 			fees: {
-				value: formatExportAmount(
-					feeData.totalFees,
-					feeData.feesCurrency
-				),
+				value: formatExportAmount( totalFees, deposit.currency ),
 				display: clickable(
-					formatExplicitCurrency(
-						feeData.totalFees,
-						feeData.feesCurrency
-					)
+					formatExplicitCurrency( totalFees, deposit.currency )
 				),
 			},
 			net: {

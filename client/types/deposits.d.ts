@@ -30,6 +30,8 @@ export interface CachedDeposit {
 	currency: string;
 	fee_percentage: number;
 	fee: number;
+	processing_fees: number;
+	instant_payout_fee: number;
 	status: DepositStatus;
 	bankAccount: string;
 	automatic: boolean;

@@ -13,11 +13,7 @@ import { useUserPreferences } from '@woocommerce/data';
  * Internal dependencies
  */
 import { DepositsList } from '../';
-import {
-	useDeposits,
-	useDepositsSummary,
-	useDepositsWithFeeData,
-} from 'wcpay/data';
+import { useDeposits, useDepositsSummary } from 'wcpay/data';
 import {
 	CachedDeposit,
 	CachedDeposits,
@@ -27,7 +23,6 @@ import {
 jest.mock( 'wcpay/data', () => ( {
 	useDeposits: jest.fn(),
 	useDepositsSummary: jest.fn(),
-	useDepositsWithFeeData: jest.fn(),
 } ) );
 
 jest.mock( '@wordpress/api-fetch', () => jest.fn() );
@@ -49,6 +44,8 @@ const mockDeposits = [
 		amount: 2000,
 		fee: 50,
 		fee_percentage: 2.5,
+		processing_fees: 30,
+		instant_payout_fee: 20,
 		status: 'paid',
 		bankAccount: 'MOCK BANK •••• 1234 (USD)',
 		currency: 'USD',
@@ -64,6 +61,8 @@ const mockDeposits = [
 		amount: 3000,
 		fee: 75,
 		fee_percentage: 2.5,
+		processing_fees: 50,
+		instant_payout_fee: 25,
 		status: 'pending',
 		bankAccount: 'MOCK BANK •••• 1234 (USD)',
 		currency: 'USD',
@@ -79,6 +78,8 @@ const mockDeposits = [
 		amount: 4000,
 		fee: 0,
 		fee_percentage: 0,
+		processing_fees: 0,
+		instant_payout_fee: 0,
 		status: 'paid',
 		bankAccount: 'MOCK BANK •••• 1234 (USD)',
 		currency: 'USD',
@@ -127,10 +128,6 @@ const mockUseDepositsSummary = useDepositsSummary as jest.MockedFunction<
 	typeof useDepositsSummary
 >;
 
-const mockUseDepositsWithFeeData = useDepositsWithFeeData as jest.MockedFunction<
-	typeof useDepositsWithFeeData
->;
-
 const mockUseUserPreferences = useUserPreferences as jest.MockedFunction<
 	typeof useUserPreferences
 >;
@@ -147,25 +144,6 @@ describe( 'Deposits list', () => {
 			wc_payments_payouts_hidden_columns: '',
 			isRequesting: false,
 		} as any );
-
-		// Mock fee data for deposits - maps deposit ID to fee data
-		mockUseDepositsWithFeeData.mockReturnValue( {
-			po_mock1: {
-				totalFees: 50,
-				feesCurrency: 'USD',
-				grossAmount: 2050,
-			},
-			po_mock2: {
-				totalFees: 75,
-				feesCurrency: 'USD',
-				grossAmount: 3075,
-			},
-			po_mock3: {
-				totalFees: 0,
-				feesCurrency: 'USD',
-				grossAmount: 4000,
-			},
-		} );
 
 		global.wcpaySettings = {
 			zeroDecimalCurrencies: [],
