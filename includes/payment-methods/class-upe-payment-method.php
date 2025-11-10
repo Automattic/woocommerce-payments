@@ -207,7 +207,8 @@ class UPE_Payment_Method {
 		}
 
 		// Reusable methods are always available for subscriptions. Other methods are available if manual renewal is allowed.
-		$is_available_for_subscription = $this->are_manual_renewals_accepted() || $this->is_reusable();
+		$are_manual_renewals_accepted  = function_exists( 'wcs_is_manual_renewal_enabled' ) && wcs_is_manual_renewal_enabled();
+		$is_available_for_subscription = $are_manual_renewals_accepted || $this->is_reusable();
 
 		$order_is_within_currency_limits = true;
 		// This part ensures that when payment limits for the currency declared, those will be respected (e.g. BNPLs).
@@ -491,14 +492,5 @@ class UPE_Payment_Method {
 			return $order->get_currency();
 		}
 		return get_woocommerce_currency();
-	}
-
-	/**
-	 * Check if manual renewals are accepted in WooCommerce Subscriptions settings.
-	 *
-	 * @return bool True if manual renewals are accepted in settings.
-	 */
-	private function are_manual_renewals_accepted() {
-		return function_exists( 'wcs_is_manual_renewal_enabled' ) && wcs_is_manual_renewal_enabled();
 	}
 }
