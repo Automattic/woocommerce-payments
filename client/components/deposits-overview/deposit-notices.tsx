@@ -58,11 +58,11 @@ export const NewAccountWaitingPeriodNotice: React.FC = () => (
 	>
 		{ interpolateComponents( {
 			mixedString: __(
-				'Your first payout is held for 7-14 days. {{whyLink}}Why?{{/whyLink}}',
+				'Payout scheduling becomes available after the standard 7-day waiting period for new accounts is complete. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
 				'woocommerce-payments'
 			),
 			components: {
-				whyLink: (
+				learnMoreLink: (
 					// Link content is in the format string above. Consider disabling jsx-a11y/anchor-has-content.
 					// eslint-disable-next-line jsx-a11y/anchor-has-content
 					<a
