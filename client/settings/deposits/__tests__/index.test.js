@@ -163,7 +163,7 @@ describe( 'Deposits', () => {
 		);
 
 		const depositsMessage = screen.getByText(
-			/Your first payout will be held for/,
+			/Payout scheduling becomes available after the standard 7-day waiting period for new accounts is complete/,
 			{
 				ignore: '.a11y-speak-region',
 			}
