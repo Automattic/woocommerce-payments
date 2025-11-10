@@ -146,10 +146,8 @@ export const DepositsList = (): JSX.Element => {
 			</Link>
 		);
 
-		// Calculate fees: processing_fees + instant_payout_fee
-		const totalFees = deposit.processing_fees + deposit.instant_payout_fee;
-		const grossAmount = deposit.amount + totalFees;
-
+		// Gross amount is the amount plus the fee
+		const grossAmount = deposit.amount + deposit.fee;
 		const data = {
 			details: { value: deposit.id, display: detailsLink },
 			date: { value: deposit.date, display: dateDisplay },
@@ -164,9 +162,9 @@ export const DepositsList = (): JSX.Element => {
 				),
 			},
 			fees: {
-				value: formatExportAmount( totalFees, deposit.currency ),
+				value: formatExportAmount( deposit.fee, deposit.currency ),
 				display: clickable(
-					formatExplicitCurrency( totalFees, deposit.currency )
+					formatExplicitCurrency( deposit.fee, deposit.currency )
 				),
 			},
 			net: {
