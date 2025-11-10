@@ -53,8 +53,52 @@ class WC_Payments_Action_Scheduler_Service {
 		$this->payments_api_client   = $payments_api_client;
 		$this->order_service         = $order_service;
 		$this->compatibility_service = $compatibility_service;
+	}
 
+	/**
+	 * Initialize all hooks.
+	 *
+	 * @return void
+	 */
+	public function init_hooks() {
+		$this->ensure_recurring_actions();
 		$this->add_action_scheduler_hooks();
+	}
+
+	/**
+	 * Ensure all recurring actions are scheduled.
+	 *
+	 * @return void
+	 */
+	public function ensure_recurring_actions() {
+		if ( function_exists( 'as_supports' ) && as_supports( 'ensure_recurring_actions_hook' ) ) {
+			// Preferred since AS v3.9.3 (WC 10.1): runs periodically in the background.
+			add_action( 'action_scheduler_ensure_recurring_actions', [ $this, 'schedule_recurring_actions' ] );
+		} elseif ( is_admin() ) {
+			// Backward compatible fallback: runs on every admin request.
+			$this->schedule_recurring_actions();
+		}
+	}
+
+	/**
+	 * Schedule all recurring actions.
+	 *
+	 * If the action is already scheduled, it won't be rescheduled again.
+	 *
+	 * @return void
+	 */
+	public function schedule_recurring_actions() {
+		// Check if Action Scheduler is available.
+		if ( ! function_exists( 'as_schedule_recurring_action' ) || ! function_exists( 'as_has_scheduled_action' ) ) {
+			return;
+		}
+
+		if ( ! as_has_scheduled_action( WC_Payments_Account::STORE_SETUP_SYNC_ACTION ) ) {
+			// Delay the first run by 10 to 60 seconds (randomly) so it doesn't occur in the same request.
+			// The random delay is to avoid large number of sites hitting the API at the same time if they all
+			// get updated at the same time (e.g. via WP cron).
+			as_schedule_recurring_action( time() + wp_rand( 10, 60 ), 6 * HOUR_IN_SECONDS, WC_Payments_Account::STORE_SETUP_SYNC_ACTION, [], self::GROUP_ID, true );
+		}
 	}
 
 	/**
@@ -190,15 +234,7 @@ class WC_Payments_Action_Scheduler_Service {
 	 * @return bool
 	 */
 	public function pending_action_exists( string $hook ): bool {
-		$actions = as_get_scheduled_actions(
-			[
-				'hook'   => $hook,
-				'status' => ActionScheduler_Store::STATUS_PENDING,
-				'group'  => self::GROUP_ID,
-			]
-		);
-
-		return ( is_countable( $actions ) ? count( $actions ) : 0 ) > 0;
+		return as_has_scheduled_action( $hook, [], self::GROUP_ID );
 	}
 
 	/**

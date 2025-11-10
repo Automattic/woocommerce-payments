@@ -11,7 +11,7 @@ project.properties
 *.sublime-workspace
 .sublimelinterrc
 .cursor/
-.claude/
+**/.claude/**/*.local.*
 .zed/
 .phpactor.json
 

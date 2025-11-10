@@ -156,7 +156,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 				$this->callback(
 					function ( $data ): bool {
 						$this->validate_default_remote_request_params( $data, 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/customers/cus_test12345', 'POST' );
-						$this->assertSame( 'POST', $data['method'] );
 						return true;
 					}
 				),
@@ -364,7 +363,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 				$this->callback(
 					function ( $data ): bool {
 						$this->validate_default_remote_request_params( $data, 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/links', 'POST' );
-						$this->assertSame( 'POST', $data['method'] );
 						return true;
 					}
 				),
@@ -1109,6 +1107,58 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Test sending store setup data.
+	 */
+	public function test_send_store_setup() {
+		$store_setup_data = [
+			'store_name'    => 'Test Store',
+			'store_url'     => 'https://example.com',
+			'store_country' => 'US',
+		];
+
+		$this->mock_http_client
+			->expects( $this->once() )
+			->method( 'remote_request' )
+			->with(
+				$this->callback(
+					function ( $data ): bool {
+						$this->validate_default_remote_request_params( $data, 'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/accounts/store_setup', 'POST', false );
+						return true;
+					}
+				),
+				wp_json_encode(
+					[
+						'test_mode' => false,
+						'snapshot'  => [
+							'store_name'    => 'Test Store',
+							'store_url'     => 'https://example.com',
+							'store_country' => 'US',
+						],
+					]
+				),
+				true,
+				false
+			)
+			->willReturn(
+				[
+					'body'     => wp_json_encode(
+						[
+							'result' => 'success',
+						]
+					),
+					'response' => [
+						'code'    => 200,
+						'message' => 'OK',
+					],
+				]
+			);
+
+		$result = $this->payments_api_client->send_store_setup( $store_setup_data );
+
+		$this->assertSame( 'success', $result['result'] );
+	}
+
+	/**
 	 * Set up http mock response.
 	 *
 	 * @param int $status_code status code for the mocked response.
@@ -1139,14 +1189,14 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Mock/validate default remote HTTP Params
 	 *
-	 * @param array $data
-	 * @param string $url
-	 * @param string $method
-	 *
+	 * @param array $data The request args.
+	 * @param string $url The expected URL.
+	 * @param string $method The expected HTTP method.
+	 * @param bool $blocking Whether the request is blocking. Default true.
 	 */
-	private function validate_default_remote_request_params( $data, $url, $method ) {
+	private function validate_default_remote_request_params( $data, $url, $method, $blocking = true ) {
 		$this->assertIsArray( $data );
-		$this->assertCount( 5, $data );
+		$this->assertCount( 6, $data );
 		$this->assertArrayHasKey( 'url', $data );
 		$this->assertSame( $url, $data['url'] );
 		$this->assertNotFalse( filter_var( $data['url'], FILTER_VALIDATE_URL ) );
@@ -1164,6 +1214,8 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 70, $data['timeout'] );
 		$this->assertArrayHasKey( 'connect_timeout', $data );
 		$this->assertSame( 70, $data['connect_timeout'] );
+		$this->assertArrayHasKey( 'blocking', $data );
+		$this->assertSame( $blocking, $data['blocking'] );
 	}
 
 	/**

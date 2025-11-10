@@ -44,7 +44,8 @@ button.wcpay-stripelink-modal-trigger:hover {
 
 .wc-block-checkout__payment-method {
 	input:checked ~ div {
-		.wc-block-components-radio-control__label {
+		/* stylelint-disable-next-line selector-id-pattern */
+		.wc-block-components-radio-control__label:where( [id^='radio-control-wc-payment-method-options-woocommerce_payments'][id$='__label'] ) {
 			> .payment-method-label {
 				.test-mode.badge {
 					// hiding the badge when the payment method is not selected
@@ -54,7 +55,8 @@ button.wcpay-stripelink-modal-trigger:hover {
 		}
 	}
 
-	.wc-block-components-radio-control__label {
+	/* stylelint-disable-next-line selector-id-pattern */
+	.wc-block-components-radio-control__label:where( [id^='radio-control-wc-payment-method-options-woocommerce_payments'][id$='__label'] ) {
 		width: 100%;
 		display: block !important;
 

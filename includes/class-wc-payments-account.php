@@ -9,7 +9,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
-use Automattic\WooCommerce\Utilities\PluginUtil;
 use WCPay\Constants\Country_Code;
 use WCPay\Constants\Currency_Code;
 use WCPay\Core\Server\Request\Get_Account;
@@ -135,10 +134,10 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		add_action( 'jetpack_site_registered', [ $this, 'clear_cache' ] );
 		add_action( 'updated_option', [ $this, 'possibly_update_wcpay_account_locale' ], 10, 3 );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'clear_cache' ] );
-		// Hook into the account refreshed action to schedule a store setup sync.
-		add_action( 'woocommerce_payments_account_refreshed', [ $this, 'schedule_store_setup_sync' ] );
-		// Hook into the store setup sync action (triggered by the scheduled job) and do the sync.
+		// Hook into the recurring store setup sync action and do the store setup sync.
 		add_action( self::STORE_SETUP_SYNC_ACTION, [ $this, 'store_setup_sync' ] );
+		// Also do a store setup sync when the client is updated to a new version.
+		add_action( 'woocommerce_woocommerce_payments_updated', [ $this, 'store_setup_sync' ] );
 	}
 
 	/**
@@ -2639,25 +2638,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	}
 
 	/**
-	 * Schedule a store setup sync to run in 5 minutes, if there isn't one already scheduled.
-	 *
-	 * @return void
-	 */
-	public function schedule_store_setup_sync() {
-		$action_hook = self::STORE_SETUP_SYNC_ACTION;
-
-		// If there is already a pending action, do nothing.
-		if ( $this->action_scheduler_service->pending_action_exists( $action_hook ) ) {
-			return;
-		}
-
-		// Schedule the action to run in 5 minutes.
-		// Further attempts to schedule the action will be ignored until it runs.
-		$run_time = time() + 5 * MINUTE_IN_SECONDS;
-		$this->action_scheduler_service->schedule_job( $run_time, $action_hook );
-	}
-
-	/**
 	 * Gather the latest store setup state and send it to the Transact Platform.
 	 *
 	 * @return void
@@ -2670,7 +2650,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		try {
 			// This is a fire-and-forget operation, so we don't care about the result.
 			$this->payments_api_client->send_store_setup( $this->get_store_setup_details() );
-		} catch ( Exception $e ) {
+		} catch ( Throwable $e ) {
 			Logger::error( 'Failed to sync store setup state with the Transact Platform: ' . $e->getMessage() );
 		}
 	}
@@ -2689,7 +2669,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 		$gateway = WC_Payments::get_gateway();
 		// If the gateway is not available, return an empty array.
 		// This should never happen, but better safe than sorry.
-		if ( empty( $gateway ) ) {
+		if ( empty( $gateway ) || ! $gateway instanceof WC_Payment_Gateway_WCPay ) {
 			return [];
 		}
 
@@ -2697,7 +2677,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 		$payment_methods_available = $gateway->get_upe_available_payment_methods();
 		$payment_methods_enabled   = $gateway->get_upe_enabled_payment_method_ids();
-		$payment_methods_disabled  = array_diff( $payment_methods_available, $payment_methods_enabled );
+		$payment_methods_disabled  = array_values( array_diff( $payment_methods_available, $payment_methods_enabled ) );
 
 		// Map enabled payment methods to capabilities.
 		// This is needed because the capabilities in the Transact Platform are named differently.
@@ -2716,16 +2696,6 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			}
 		}
 		$provider_capabilities_available = array_unique( array_merge( $provider_capabilities_enabled, $provider_capabilities_disabled ) );
-
-		// Get active plugins using the PluginUtil from WC, if available.
-		$wc_plugin_util = null;
-		try {
-			$wc_plugin_util = wc_get_container()->get( PluginUtil::class );
-		} catch ( Exception $e ) {
-			// If we can't get the PluginUtil, we won't be able to get the active plugins.
-			// This is not a critical failure, so we can log it and continue.
-			Logger::error( 'Failed to get PluginUtil: ' . $e->getMessage() );
-		}
 
 		return [
 			// The WooPayments setup details.
@@ -2779,22 +2749,30 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			'multi_currency_enabled' => WC_Payments_Features::is_customer_multi_currency_enabled(),
 			'stripe_billing_enabled' => WC_Payments_Features::is_stripe_billing_enabled(),
 
+			// Other WooPayments details.
+			'plugin'                 => [
+				'version'              => defined( 'WCPAY_VERSION_NUMBER' ) ? explode( '-', WCPAY_VERSION_NUMBER, 2 )[0] : '',
+				'activation_timestamp' => get_option( 'wcpay_activation_timestamp', null ),
+			],
+
 			// Other store setup details.
 			'wp_setup'               => [
 				'name'           => get_bloginfo( 'name' ),
 				'url'            => home_url(),
 				'active_theme'   => $this->get_store_theme_details(),
-				'active_plugins' => ! empty( $wc_plugin_util ) ? $wc_plugin_util->get_all_active_valid_plugins() : [],
+				'active_plugins' => $this->get_store_active_plugins(),
 				'version'        => get_bloginfo( 'version' ),
 				'locale'         => get_locale(),
 			],
 			'wc_setup'               => [
-				'version'                  => defined( 'WC_VERSION' ) ? explode( '-', WC_VERSION, 2 )[0] : '',
-				'store_id'                 => get_option( 'woocommerce_store_id', null ),
-				'currency'                 => get_woocommerce_currency(),
-				'tracking_enabled'         => WC_Site_Tracking::is_tracking_enabled(),
-				'wc_subscriptions_active'  => $gateway->is_subscriptions_plugin_active(),
-				'wc_subscriptions_version' => $gateway->get_subscriptions_plugin_version(),
+				'version'                     => defined( 'WC_VERSION' ) ? explode( '-', WC_VERSION, 2 )[0] : '',
+				'store_id'                    => ( class_exists( '\WC_Install' ) && defined( '\WC_Install::STORE_ID_OPTION' ) ) ? get_option( \WC_Install::STORE_ID_OPTION, null ) : null,
+				'currency'                    => get_woocommerce_currency(),
+				'tracking_enabled'            => WC_Site_Tracking::is_tracking_enabled(),
+				'registered_payment_gateways' => $this->get_store_registered_gateway_ids(),
+				'enabled_payment_gateways'    => $this->get_store_enabled_gateway_ids(),
+				'wc_subscriptions_active'     => $gateway->is_subscriptions_plugin_active(),
+				'wc_subscriptions_version'    => $gateway->get_subscriptions_plugin_version(),
 			],
 		];
 	}
@@ -2805,18 +2783,111 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 	 * @return array Store theme details.
 	 */
 	private function get_store_theme_details(): array {
-		$theme_data           = wp_get_theme();
-		$theme_child_theme    = wc_bool_to_string( is_child_theme() );
-		$theme_wc_support     = wc_bool_to_string( current_theme_supports( 'woocommerce' ) );
-		$theme_is_block_theme = wc_bool_to_string( wp_is_block_theme() );
+		$theme_data = wp_get_theme();
 
 		return [
 			'name'        => $theme_data->Name, // @phpcs:ignore
 			'version'     => $theme_data->Version, // @phpcs:ignore
-			'child_theme' => $theme_child_theme,
-			'wc_support'  => $theme_wc_support,
-			'block_theme' => $theme_is_block_theme,
+			'child_theme' => is_child_theme(),
+			'wc_support'  => current_theme_supports( 'woocommerce' ),
+			'block_theme' => wp_is_block_theme(),
 		];
+	}
+
+	/**
+	 * Gathers the current store active (and valid) plugins.
+	 *
+	 * @return array Store active plugins details with each plugin slug and version.
+	 */
+	private function get_store_active_plugins(): array {
+		if ( ! function_exists( 'get_plugins' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+		$all_plugins = get_plugins();
+		if ( empty( $all_plugins ) ) {
+			return [];
+		}
+
+		// Get active plugins using the PluginUtil from WC, if available.
+		$wc_plugin_util = null;
+		if ( class_exists( '\Automattic\WooCommerce\Utilities\PluginUtil' ) ) {
+			try {
+				$wc_plugin_util = wc_get_container()->get( '\Automattic\WooCommerce\Utilities\PluginUtil' );
+			} catch ( Throwable $e ) {
+				// If we can't get the PluginUtil, we won't be able to accurately get the active plugins.
+				// This is not a critical failure, so we can log it and continue.
+				Logger::error( 'Failed to get PluginUtil: ' . $e->getMessage() );
+			}
+		}
+
+		$plugins_list = [];
+
+		$active_plugin_ids = ( is_object( $wc_plugin_util ) && is_callable( [ $wc_plugin_util, 'get_all_active_valid_plugins' ] ) ) ? $wc_plugin_util->get_all_active_valid_plugins() : wp_get_active_and_valid_plugins();
+		foreach ( $active_plugin_ids as $plugin_file ) {
+			if ( isset( $all_plugins[ $plugin_file ] ) ) {
+				$plugin_data                  = $all_plugins[ $plugin_file ];
+				$plugins_list[ $plugin_file ] = [
+					'name'     => $plugin_data['Name'],
+					'slug'     => dirname( $plugin_file ),
+					'version'  => $plugin_data['Version'],
+					'wc_aware' => ( is_object( $wc_plugin_util ) && is_callable( [ $wc_plugin_util, 'is_woocommerce_aware_plugin' ] ) ) ? $wc_plugin_util->is_woocommerce_aware_plugin( $plugin_data ) : null,
+				];
+			}
+		}
+
+		return array_values( $plugins_list );
+	}
+
+	/**
+	 * Gets the IDs of all payment gateways registered in the store.
+	 *
+	 * @return array Array of payment gateway IDs.
+	 */
+	private function get_store_registered_gateway_ids(): array {
+		$payment_gateways = WC()->payment_gateways()->payment_gateways();
+		if ( empty( $payment_gateways ) ) {
+			return [];
+		}
+
+		// Go through the gateways and get their IDs.
+		return array_unique(
+			array_values(
+				array_filter(
+					array_map(
+						function ( $gateway ) {
+							return $gateway->id ?? null;
+						},
+						$payment_gateways
+					)
+				)
+			)
+		);
+	}
+
+	/**
+	 * Gets the IDs of all enabled payment gateways registered in the store.
+	 *
+	 * @return array Array of enabled payment gateway IDs.
+	 */
+	private function get_store_enabled_gateway_ids(): array {
+		$payment_gateways = WC()->payment_gateways()->payment_gateways();
+		if ( empty( $payment_gateways ) ) {
+			return [];
+		}
+
+		// Go through the gateways and get the IDs of enabled ones.
+		return array_unique(
+			array_values(
+				array_filter(
+					array_map(
+						function ( $gateway ) {
+							return ( $gateway instanceof WC_Payment_Gateway && wc_string_to_bool( $gateway->enabled ) ) ? $gateway->id : null;
+						},
+						$payment_gateways
+					)
+				)
+			)
+		);
 	}
 
 	/**

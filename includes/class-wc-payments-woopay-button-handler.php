@@ -156,11 +156,12 @@ class WC_Payments_WooPay_Button_Handler {
 	public function add_woopay_config( $config ) {
 		$user = wp_get_current_user();
 
-		$config['woopayButton']           = $this->get_button_settings();
-		$config['woopayButtonNonce']      = wp_create_nonce( 'woopay_button_nonce' );
-		$config['addToCartNonce']         = wp_create_nonce( 'wcpay-add-to-cart' );
-		$config['shouldShowWooPayButton'] = $this->should_show_woopay_button();
-		$config['woopaySessionEmail']     = WooPay_Session::get_user_email( $user );
+		$config['woopayButton']             = $this->get_button_settings();
+		$config['woopayButtonNonce']        = wp_create_nonce( 'woopay_button_nonce' );
+		$config['addToCartNonce']           = wp_create_nonce( 'wcpay-add-to-cart' );
+		$config['shouldShowWooPayButton']   = $this->should_show_woopay_button();
+		$config['woopaySessionEmail']       = WooPay_Session::get_user_email( $user );
+		$config['woopayIsCountryAvailable'] = $this->woopay_utilities->is_country_available( $this->gateway );
 
 		return $config;
 	}
