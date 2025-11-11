@@ -188,7 +188,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 	} = useContext( WCPaySettingsContext );
 
 	const isVisaComplianceDispute =
-		dispute.reason === 'noncompliant' &&
+		dispute.reason === 'noncompliant' ||
 		( dispute?.enhanced_eligibility_types || [] ).includes(
 			'visa_compliance'
 		);

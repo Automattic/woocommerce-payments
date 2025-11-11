@@ -691,13 +691,14 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 
 		// Add Visa compliance flag for noncompliant disputes.
 		if ( isset( $dispute_details['reason'] ) && 'noncompliant' === $dispute_details['reason'] ) {
-			$request['evidence_details'] = [
-				'enhanced_eligibility' => [
+			$request['evidence']['enhanced_evidence'] = array_merge(
+				$request['evidence']['enhanced_evidence'] ?? [],
+				[
 					'visa_compliance' => [
-						'status' => 'fee_acknowledged',
+						'fee_acknowledged' => 'true',
 					],
-				],
-			];
+				]
+			);
 		}
 
 		$dispute = $this->request( $request, self::DISPUTES_API . '/' . $dispute_id, self::POST );

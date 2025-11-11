@@ -378,7 +378,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 		).not.toBeInTheDocument();
 	} );
 
-	test( 'does not render checkbox when reason is noncompliant but missing visa_compliance eligibility type', () => {
+	test( 'render checkbox when reason is noncompliant but missing visa_compliance eligibility type', () => {
 		const dispute: Dispute = {
 			...getBaseDispute(),
 			enhanced_eligibility_types: [], // Missing visa_compliance
@@ -401,7 +401,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 			screen.queryByRole( 'checkbox', {
 				name: /By checking this box, you acknowledge that challenging this Visa compliance dispute/i,
 			} )
-		).not.toBeInTheDocument();
+		).toBeInTheDocument();
 	} );
 
 	test( 'Challenge button remains disabled during accept request', () => {

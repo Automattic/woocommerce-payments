@@ -1391,7 +1391,19 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 
 						// Verify the standard evidence is present.
 						$this->assertArrayHasKey( 'evidence', $decoded );
-						$this->assertEquals( $evidence, $decoded['evidence'] );
+						// Verify the Visa compliance flag presence based on dispute reason.
+						if ( $should_have_flag ) {
+							$this->assertArrayHasKey( 'enhanced_evidence', $decoded['evidence'] );
+							$this->assertArrayHasKey( 'visa_compliance', $decoded['evidence']['enhanced_evidence'] );
+							$this->assertArrayHasKey( 'fee_acknowledged', $decoded['evidence']['enhanced_evidence']['visa_compliance'] );
+							$this->assertEquals( 'true', $decoded['evidence']['enhanced_evidence']['visa_compliance']['fee_acknowledged'] );
+							$evidence_without_flag = $decoded['evidence'];
+							unset( $evidence_without_flag['enhanced_evidence'] );
+							$this->assertEquals( $evidence, $evidence_without_flag );
+						} else {
+							// Evidence shouldn't be modified.
+							$this->assertEquals( $evidence, $decoded['evidence'] );
+						}
 
 						// Verify the submit flag is set.
 						$this->assertArrayHasKey( 'submit', $decoded );
@@ -1400,17 +1412,6 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 						// Verify the metadata is present.
 						$this->assertArrayHasKey( 'metadata', $decoded );
 						$this->assertEquals( $metadata, $decoded['metadata'] );
-
-						// Verify the Visa compliance flag presence based on dispute reason.
-						if ( $should_have_flag ) {
-							$this->assertArrayHasKey( 'evidence_details', $decoded );
-							$this->assertArrayHasKey( 'enhanced_eligibility', $decoded['evidence_details'] );
-							$this->assertArrayHasKey( 'visa_compliance', $decoded['evidence_details']['enhanced_eligibility'] );
-							$this->assertArrayHasKey( 'status', $decoded['evidence_details']['enhanced_eligibility']['visa_compliance'] );
-							$this->assertEquals( 'fee_acknowledged', $decoded['evidence_details']['enhanced_eligibility']['visa_compliance']['status'] );
-						} else {
-							$this->assertArrayNotHasKey( 'evidence_details', $decoded );
-						}
 
 						return [
 							'body'     => wp_json_encode(
