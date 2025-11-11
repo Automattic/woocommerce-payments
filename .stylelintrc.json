@@ -15,6 +15,15 @@
 		"media-feature-parentheses-space-inside": "always",
 		"no-descending-specificity": null,
 		"no-duplicate-selectors": null,
+		"property-no-unknown": [
+			true,
+			{
+				"ignoreProperties": [
+					"container-type",
+					"container-name"
+				]
+			}
+		],
 		"rule-empty-line-before": null,
 		"selector-class-pattern": null,
 		"selector-pseudo-class-parentheses-space-inside": "always",
