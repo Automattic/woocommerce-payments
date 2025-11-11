@@ -18,8 +18,8 @@ export interface AccountDetailsData {
 		background_color: StatusBackgroundColor;
 		popover?: {
 			text: string;
-			cta_text: string;
-			cta_link: string;
+			cta_text?: string;
+			cta_link?: string;
 		} | null;
 	};
 	banner?: {
