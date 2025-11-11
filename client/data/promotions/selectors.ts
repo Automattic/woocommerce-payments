@@ -6,53 +6,54 @@
 import { PromotionsState, PromotionsData, Promotion } from './types';
 import { ApiError } from '../../types/errors';
 
+// Type for the full Redux state with promotions slice.
+interface State {
+	promotions: PromotionsState;
+}
+
 /**
  * Retrieves the promotions data from the state.
  *
- * @param {PromotionsState} state The current state.
+ * @param {State} state The full Redux state.
  *
  * @return {PromotionsData | undefined} The promotions data or undefined.
  */
-export const getPromotions = (
-	state: PromotionsState
-): PromotionsData | undefined => {
-	return state.promotions;
+export const getPromotions = ( state: State ): PromotionsData | undefined => {
+	return state.promotions?.promotions;
 };
 
 /**
  * Retrieves available promotions from the state.
  *
- * @param {PromotionsState} state The current state.
+ * @param {State} state The full Redux state.
  *
  * @return {Promotion[]} Array of available promotions.
  */
-export const getAvailablePromotions = (
-	state: PromotionsState
-): Promotion[] => {
-	return state.promotions?.available_promotions ?? [];
+export const getAvailablePromotions = ( state: State ): Promotion[] => {
+	return state.promotions?.promotions?.available_promotions ?? [];
 };
 
 /**
  * Retrieves active promotions from the state.
  *
- * @param {PromotionsState} state The current state.
+ * @param {State} state The full Redux state.
  *
  * @return {Promotion[]} Array of active promotions.
  */
-export const getActivePromotions = ( state: PromotionsState ): Promotion[] => {
-	return state.promotions?.active_promotions ?? [];
+export const getActivePromotions = ( state: State ): Promotion[] => {
+	return state.promotions?.promotions?.active_promotions ?? [];
 };
 
 /**
  * Retrieves a specific promotion by identifier.
  *
- * @param {PromotionsState} state The current state.
+ * @param {State} state The full Redux state.
  * @param {string} identifier The promotion identifier.
  *
  * @return {Promotion | undefined} The promotion or undefined.
  */
 export const getPromotionByIdentifier = (
-	state: PromotionsState,
+	state: State,
 	identifier: string
 ): Promotion | undefined => {
 	const allPromotions = [
@@ -65,34 +66,32 @@ export const getPromotionByIdentifier = (
 /**
  * Retrieves any error that occurred while fetching promotions.
  *
- * @param {PromotionsState} state The current state.
+ * @param {State} state The full Redux state.
  *
  * @return {ApiError | undefined} The error or undefined.
  */
-export const getPromotionsError = (
-	state: PromotionsState
-): ApiError | undefined => {
-	return state.promotionsError;
+export const getPromotionsError = ( state: State ): ApiError | undefined => {
+	return state.promotions?.promotionsError;
 };
 
 /**
  * Checks if there are any available promotions.
  *
- * @param {PromotionsState} state The current state.
+ * @param {State} state The full Redux state.
  *
  * @return {boolean} True if there are available promotions.
  */
-export const hasAvailablePromotions = ( state: PromotionsState ): boolean => {
+export const hasAvailablePromotions = ( state: State ): boolean => {
 	return getAvailablePromotions( state ).length > 0;
 };
 
 /**
  * Checks if there are any active promotions.
  *
- * @param {PromotionsState} state The current state.
+ * @param {State} state The full Redux state.
  *
  * @return {boolean} True if there are active promotions.
  */
-export const hasActivePromotions = ( state: PromotionsState ): boolean => {
+export const hasActivePromotions = ( state: State ): boolean => {
 	return getActivePromotions( state ).length > 0;
 };
