@@ -3,13 +3,13 @@
 set -euo pipefail
 IFS=$'\n\t'
 
-# QIT Bootstrap Setup for WooCommerce Payments E2E Tests
+# QIT Bootstrap Setup for WooPayments E2E Tests
 # This script runs before tests to configure the plugin environment
 
-echo "Setting up WooCommerce Payments for E2E testing..."
+echo "Setting up WooPayments for E2E testing..."
 
-# Ensure environment is marked as local so dev-only CLI commands are available
-wp config set WP_ENVIRONMENT_TYPE local --quiet 2>/dev/null || true
+# Ensure environment is marked as development so dev-only CLI commands are available
+wp config set WP_ENVIRONMENT_TYPE development --quiet 2>/dev/null || true
 
 # Create a test product for payment testing
 PRODUCT_ID=$(wp post create \
@@ -41,11 +41,39 @@ wp user create testcustomer test@example.com \
     --last_name="Customer" \
     --quiet
 
-echo "Setting up WooCommerce Payments configuration..."
+echo "Setting up WooPayments configuration..."
 
-# NOTE: Jetpack connection setup will be added in future PRs
-# For now, WooPayments will run in development mode
-echo "Running WooPayments without a Jetpack connection (Jetpack connection setup in upcoming PRs)"
+# Enable WooPayments settings (same as main E2E tests)
+echo "Creating/updating WooPayments settings"
+wp option set woocommerce_woocommerce_payments_settings --format=json '{"enabled":"yes"}'
+
+# Check required environment variables for basic Jetpack authentication
+if [ -n "${E2E_JP_SITE_ID:-}" ] && [ -n "${E2E_JP_BLOG_TOKEN:-}" ] && [ -n "${E2E_JP_USER_TOKEN:-}" ]; then
+    echo "Configuring WCPay with Jetpack authentication..."
+
+    # Set up Jetpack connection and refresh account data from server
+    # Environment variables are automatically available to PHP via getenv()
+    # Note: /qit/bootstrap is a volume mount defined in qit.yml pointing to ./e2e/bootstrap
+    wp eval-file /qit/bootstrap/qit-jetpack-connection.php
+
+    echo "✅ WooPayments connection configured - account data fetched from server"
+
+else
+    echo "No Jetpack credentials configured - WooPayments will show Connect screen"
+    echo "WooPayments will show Connect screen"
+    echo ""
+    echo "For basic connectivity testing, set in tests/qit/config/local.env:"
+    echo "  E2E_JP_SITE_ID=123456789"
+    echo "  E2E_JP_BLOG_TOKEN=123.ABC.QIT"
+    echo "  E2E_JP_USER_TOKEN=123.ABC.QIT.1"
+    echo ""
+fi
+
+# Always check the setup status
+echo ""
+echo "Current WooPayments setup status:"
+# Note: /qit/bootstrap is a volume mount defined in qit.yml pointing to ./e2e/bootstrap
+wp eval-file /qit/bootstrap/qit-jetpack-status.php
 
 # Enable development/test mode for better testing experience
 wp option set wcpay_dev_mode 1 --quiet 2>/dev/null || true
