@@ -3000,8 +3000,8 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 		}
 
 		// At this point, we know there's exactly one product.
-		// Check for specific product types.
-		if ( 'booking' === $product_type ) {
+		// Check for specific product types (gated by feature flag).
+		if ( WC_Payments_Features::is_dispute_additional_evidence_types_enabled() && 'booking' === $product_type ) {
 			return 'booking_reservation';
 		}
 
