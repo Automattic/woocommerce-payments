@@ -499,8 +499,11 @@ class WC_Payments_Webhook_Processing_Service {
 		}
 
 		$application_fee_amount = $charges_data[0]['application_fee_amount'] ?? null;
+		$captured               = $charges_data[0]['captured'] ?? false;
 
-		if ( $application_fee_amount ) {
+		// Only set transaction fee if the charge was actually captured.
+		// Canceled authorizations should not have fees since no payment was processed.
+		if ( $application_fee_amount && $captured ) {
 			$fee = WC_Payments_Utils::interpret_stripe_amount( $application_fee_amount, $currency );
 			$meta_data_to_update['_wcpay_transaction_fee'] = $fee;
 
