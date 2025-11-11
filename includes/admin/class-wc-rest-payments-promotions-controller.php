@@ -1,0 +1,271 @@
+<?php
+/**
+ * Class WC_REST_Payments_Promotions_Controller
+ *
+ * @package WooCommerce\Payments\Admin
+ */
+
+use WCPay\Core\Server\Request;
+use WCPay\Core\Server\Request\Activate_Promotion;
+use WCPay\Core\Server\Request\Dismiss_Promotion;
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * REST controller for promotions functionality.
+ */
+class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller {
+
+	/**
+	 * Endpoint path.
+	 *
+	 * @var string
+	 */
+	protected $rest_base = 'payments/promotions';
+
+	/**
+	 * Transient key for caching promotions.
+	 *
+	 * @var string
+	 */
+	const PROMOTIONS_CACHE_KEY = 'wcpay_promotions';
+
+	/**
+	 * Cache duration in seconds (5 minutes).
+	 *
+	 * @var int
+	 */
+	const CACHE_DURATION = 300;
+
+	/**
+	 * Option key for dismissed promotions.
+	 *
+	 * @var string
+	 */
+	const DISMISSED_PROMOTIONS_OPTION = '_wcpay_dismissed_promotions';
+
+	/**
+	 * Option key for activated promotions.
+	 *
+	 * @var string
+	 */
+	const ACTIVATED_PROMOTIONS_OPTION = '_wcpay_activated_promotions';
+
+	/**
+	 * Configure REST API routes.
+	 */
+	public function register_routes() {
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base,
+			[
+				'methods'             => WP_REST_Server::READABLE,
+				'callback'            => [ $this, 'get_promotions' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+			]
+		);
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/(?P<identifier>[a-zA-Z0-9_-]+)/activate',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'activate_promotion' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+				'args'                => [
+					'identifier'   => [
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					],
+					'accept_terms' => [
+						'required' => false,
+						'type'     => 'boolean',
+						'default'  => true,
+					],
+				],
+			]
+		);
+		register_rest_route(
+			$this->namespace,
+			'/' . $this->rest_base . '/(?P<identifier>[a-zA-Z0-9_-]+)/dismiss',
+			[
+				'methods'             => WP_REST_Server::CREATABLE,
+				'callback'            => [ $this, 'dismiss_promotion' ],
+				'permission_callback' => [ $this, 'check_permission' ],
+				'args'                => [
+					'identifier' => [
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					],
+				],
+			]
+		);
+	}
+
+	/**
+	 * Retrieve promotions list with caching.
+	 *
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function get_promotions() {
+		// Check cache first.
+		$cached_promotions = get_transient( self::PROMOTIONS_CACHE_KEY );
+		if ( false !== $cached_promotions ) {
+			return rest_ensure_response( $cached_promotions );
+		}
+
+		// Fetch from server.
+		$request = Request::get( WC_Payments_API_Client::PROMOTIONS_API );
+		$request->assign_hook( 'wcpay_get_promotions' );
+		$response = $request->handle_rest_request();
+
+		// Cache the response if successful.
+		if ( ! is_wp_error( $response ) && isset( $response->data ) ) {
+			set_transient( self::PROMOTIONS_CACHE_KEY, $response->data, self::CACHE_DURATION );
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Activate a promotion.
+	 *
+	 * @param WP_REST_Request $wp_request Full data about the request.
+	 *
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function activate_promotion( $wp_request ) {
+		$identifier   = $wp_request->get_param( 'identifier' );
+		$accept_terms = $wp_request->get_param( 'accept_terms' );
+
+		$request = Activate_Promotion::create( $identifier );
+		$request->set_accept_terms( $accept_terms );
+		$request->assign_hook( 'wcpay_activate_promotion_request' );
+
+		$response = $request->handle_rest_request();
+
+		// Clear cache and update local state if successful.
+		if ( ! is_wp_error( $response ) ) {
+			$this->clear_promotions_cache();
+			$this->mark_promotion_activated( $identifier );
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Dismiss a promotion.
+	 *
+	 * @param WP_REST_Request $wp_request Full data about the request.
+	 *
+	 * @return WP_REST_Response|WP_Error
+	 */
+	public function dismiss_promotion( $wp_request ) {
+		$identifier = $wp_request->get_param( 'identifier' );
+
+		$request = Dismiss_Promotion::create( $identifier );
+		$request->assign_hook( 'wcpay_dismiss_promotion_request' );
+
+		$response = $request->handle_rest_request();
+
+		// Clear cache and update local state if successful.
+		if ( ! is_wp_error( $response ) ) {
+			$this->clear_promotions_cache();
+			$this->mark_promotion_dismissed( $identifier );
+		}
+
+		return $response;
+	}
+
+	/**
+	 * Clear the promotions cache.
+	 *
+	 * @return void
+	 */
+	private function clear_promotions_cache() {
+		delete_transient( self::PROMOTIONS_CACHE_KEY );
+	}
+
+	/**
+	 * Mark a promotion as dismissed in local state.
+	 *
+	 * @param string $identifier The promotion identifier.
+	 *
+	 * @return void
+	 */
+	private function mark_promotion_dismissed( string $identifier ) {
+		$dismissed = $this->get_dismissed_promotions();
+		if ( ! in_array( $identifier, $dismissed, true ) ) {
+			$dismissed[] = $identifier;
+			update_option( self::DISMISSED_PROMOTIONS_OPTION, $dismissed );
+		}
+	}
+
+	/**
+	 * Mark a promotion as activated in local state.
+	 *
+	 * @param string $identifier The promotion identifier.
+	 *
+	 * @return void
+	 */
+	private function mark_promotion_activated( string $identifier ) {
+		$activated                = $this->get_activated_promotions();
+		$activated[ $identifier ] = time();
+		update_option( self::ACTIVATED_PROMOTIONS_OPTION, $activated );
+	}
+
+	/**
+	 * Get list of dismissed promotions.
+	 *
+	 * @return array Array of dismissed promotion identifiers.
+	 */
+	public static function get_dismissed_promotions() {
+		return get_option( self::DISMISSED_PROMOTIONS_OPTION, [] );
+	}
+
+	/**
+	 * Get list of activated promotions with timestamps.
+	 *
+	 * @return array Associative array of promotion identifiers to activation timestamps.
+	 */
+	public static function get_activated_promotions() {
+		return get_option( self::ACTIVATED_PROMOTIONS_OPTION, [] );
+	}
+
+	/**
+	 * Check if a promotion has been dismissed.
+	 *
+	 * @param string $identifier The promotion identifier.
+	 *
+	 * @return bool True if dismissed, false otherwise.
+	 */
+	public static function is_promotion_dismissed( string $identifier ) {
+		$dismissed = self::get_dismissed_promotions();
+		return in_array( $identifier, $dismissed, true );
+	}
+
+	/**
+	 * Check if a promotion has been activated.
+	 *
+	 * @param string $identifier The promotion identifier.
+	 *
+	 * @return bool True if activated, false otherwise.
+	 */
+	public static function is_promotion_activated( string $identifier ) {
+		$activated = self::get_activated_promotions();
+		return isset( $activated[ $identifier ] );
+	}
+
+	/**
+	 * Get the activation timestamp for a promotion.
+	 *
+	 * @param string $identifier The promotion identifier.
+	 *
+	 * @return int|null The activation timestamp, or null if not activated.
+	 */
+	public static function get_promotion_activation_time( string $identifier ) {
+		$activated = self::get_activated_promotions();
+		return $activated[ $identifier ] ?? null;
+	}
+}

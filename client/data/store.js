@@ -20,6 +20,7 @@ import * as documents from './documents';
 import * as paymentIntents from './payment-intents';
 import * as authorizations from './authorizations';
 import * as files from './files';
+import * as promotions from './promotions';
 
 // Extracted into wrapper function to facilitate testing.
 export const initStore = () =>
@@ -37,6 +38,7 @@ export const initStore = () =>
 			paymentIntents: paymentIntents.reducer,
 			authorizations: authorizations.reducer,
 			files: files.reducer,
+			promotions: promotions.reducer,
 		} ),
 		actions: {
 			...deposits.actions,
@@ -51,6 +53,7 @@ export const initStore = () =>
 			...paymentIntents.actions,
 			...authorizations.actions,
 			...files.actions,
+			...promotions.actions,
 		},
 		controls,
 		selectors: {
@@ -66,6 +69,7 @@ export const initStore = () =>
 			...paymentIntents.selectors,
 			...authorizations.selectors,
 			...files.selectors,
+			...promotions.selectors,
 		},
 		resolvers: {
 			...deposits.resolvers,
@@ -80,5 +84,6 @@ export const initStore = () =>
 			...paymentIntents.resolvers,
 			...authorizations.resolvers,
 			...files.resolvers,
+			...promotions.resolvers,
 		},
 	} );
