@@ -1157,6 +1157,10 @@ class WC_Payments {
 		$capital_controller = new WC_REST_Payments_Capital_Controller( self::$api_client );
 		$capital_controller->register_routes();
 
+		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-promotions-controller.php';
+		$promotions_controller = new WC_REST_Payments_Promotions_Controller( self::$api_client );
+		$promotions_controller->register_routes();
+
 		include_once WCPAY_ABSPATH . 'includes/admin/class-wc-rest-payments-onboarding-controller.php';
 		$onboarding_controller = new WC_REST_Payments_Onboarding_Controller( self::$api_client, self::$onboarding_service );
 		$onboarding_controller->register_routes();
