@@ -817,6 +817,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 							'type' => 'card',
 						],
 						'application_fee_amount' => 100,
+						'captured'               => true,
 					],
 				],
 			],
@@ -1651,6 +1652,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'status'   => 'succeeded',
 			'amount'   => 1800,
 			'currency' => 'usd',
+			'captured' => true,
 		];
 
 		$this->mock_order
@@ -1708,6 +1710,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'status'   => 'succeeded',
 			'amount'   => 1800,
 			'currency' => 'usd',
+			'captured' => true,
 		];
 
 		$this->mock_order
@@ -1755,6 +1758,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'status'   => 'succeeded',
 			'amount'   => 1800,
 			'currency' => 'usd',
+			'captured' => true,
 		];
 
 		$this->mock_order
@@ -1857,6 +1861,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'status'   => 'succeeded',
 			'amount'   => 1800,
 			'currency' => 'usd',
+			'captured' => true,
 		];
 
 		$this->mock_db_wrapper
@@ -1887,6 +1892,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'status'   => 'succeeded',
 			'amount'   => -1800,
 			'currency' => 'usd',
+			'captured' => true,
 		];
 
 		$this->mock_order
@@ -1921,6 +1927,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'status'   => 'succeeded',
 			'amount'   => 1800,
 			'currency' => 'usd',
+			'captured' => true,
 		];
 
 		$this->mock_order
