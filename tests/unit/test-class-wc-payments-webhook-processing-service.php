@@ -902,6 +902,109 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Tests that a payment_intent.succeeded event will not add transaction fee for uncaptured charges.
+	 */
+	public function test_payment_intent_successful_uncaptured_charge_no_fee() {
+		$this->event_body['type']           = 'payment_intent.succeeded';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'       => $id            = 'pi_123123123123123', // payment_intent's ID.
+			'object'   => 'payment_intent',
+			'amount'   => 1500,
+			'charges'  => [
+				'data' => [
+					[
+						'id'                     => $charge_id         = 'py_123123123123123',
+						'payment_method'         => $payment_method_id = 'pm_foo',
+						'payment_method_details' => [
+							'type' => 'card',
+						],
+						'application_fee_amount' => 100,
+						'captured'               => false, // Not captured - this is an authorization only.
+					],
+				],
+			],
+			'currency' => $currency      = 'eur',
+			'status'   => $intent_status = Intent_Status::REQUIRES_CAPTURE,
+			'metadata' => [],
+		];
+
+		$this->mock_api_client
+			->expects( $this->once() )
+			->method( 'deserialize_payment_intention_object_from_array' )
+			->with( $this->event_body['data']['object'] )
+			->willReturn(
+				WC_Helper_Intention::create_intention(
+					[
+						'status'                 => $intent_status,
+						'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
+					]
+				)
+			);
+
+		$this->mock_order
+			->expects( $this->exactly( 5 ) )
+			->method( 'update_meta_data' )
+			->withConsecutive(
+				[ '_intent_id', $id ],
+				[ '_charge_id', $charge_id ],
+				[ '_payment_method_id', $payment_method_id ],
+				[ WC_Payments_Utils::ORDER_INTENT_CURRENCY_META_KEY, $currency ],
+				[ '_intention_status', $intent_status ]
+				// Note: _wcpay_transaction_fee and _wcpay_net should NOT be set for uncaptured charges.
+			);
+
+		$this->mock_order
+			->expects( $this->exactly( 2 ) )
+			->method( 'save' );
+
+		$this->mock_order
+			->method( 'get_total' )
+			->willReturn( 15.00 );
+
+		$this->mock_order
+			->expects( $this->exactly( 3 ) )
+			->method( 'has_status' )
+			->withConsecutive(
+				[
+					[
+						Order_Status::PROCESSING,
+						Order_Status::COMPLETED,
+					],
+				],
+				[
+					[
+						Order_Status::PROCESSING,
+						Order_Status::COMPLETED,
+					],
+				],
+				[ [ Order_Status::ON_HOLD ] ]
+			)
+			->willReturn( false );
+
+		$this->mock_order
+			->expects( $this->once() )
+			->method( 'update_status' );
+
+		$this->mock_db_wrapper
+			->expects( $this->once() )
+			->method( 'order_from_intent_id' )
+			->with( 'pi_123123123123123' )
+			->willReturn( $this->mock_order );
+
+		$this->mock_order
+			->method( 'get_data_store' )
+			->willReturn( new \WC_Mock_WC_Data_Store() );
+
+		$this->mock_order
+			->method( 'get_meta' )
+			->willReturn( '' );
+
+		// Run the test.
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	/**
 	 * Tests that a payment_intent.succeeded event will complete the order even if the intent was not properly attached into the order.
 	 */
 	public function test_payment_intent_successful_and_completes_order_without_intent_id() {
@@ -1941,6 +2044,50 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn( $this->mock_order );
 
 		$this->expectException( Invalid_Webhook_Data_Exception::class );
+
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	public function test_process_refund_ignores_uncaptured_charge(): void {
+		$this->event_body['type']           = 'charge.refunded';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'       => 'test_charge_id',
+			'refunds'  => [
+				'data' => [
+					[
+						'id'                  => 'test_refund_id',
+						'status'              => Refund_Status::SUCCEEDED,
+						'amount'              => 1800,
+						'currency'            => 'usd',
+						'reason'              => 'requested_by_customer',
+						'balance_transaction' => 'txn_123',
+					],
+				],
+			],
+			'status'   => 'succeeded',
+			'amount'   => 1800,
+			'currency' => 'usd',
+			'captured' => false, // Not captured - this is a canceled authorization.
+		];
+
+		// The webhook should return early before fetching the order since captured = false.
+		$this->mock_db_wrapper
+			->expects( $this->never() )
+			->method( 'order_from_charge_id' );
+
+		// Refund processing should be skipped for uncaptured charges.
+		$this->order_service
+			->expects( $this->never() )
+			->method( 'get_wcpay_refund_id_for_order' );
+
+		$this->order_service
+			->expects( $this->never() )
+			->method( 'create_refund_for_order' );
+
+		$this->order_service
+			->expects( $this->never() )
+			->method( 'add_note_and_metadata_for_created_refund' );
 
 		$this->webhook_processing_service->process( $this->event_body );
 	}
