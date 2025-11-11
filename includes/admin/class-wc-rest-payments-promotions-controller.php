@@ -116,34 +116,34 @@ class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller
 		}
 
 		// Fetch from server.
-		$request = Request::get( WC_Payments_API_Client::PROMOTIONS_API );
-		$request->assign_hook( 'wcpay_get_promotions' );
-		$response = $request->handle_rest_request();
+		$wcpay_request = Request::get( WC_Payments_API_Client::PROMOTIONS_API );
+		$wcpay_request->assign_hook( 'wcpay_get_promotions' );
+		$promotions = $wcpay_request->send();
 
 		// Cache the response if successful.
-		if ( ! is_wp_error( $response ) && isset( $response->data ) ) {
-			set_transient( self::PROMOTIONS_CACHE_KEY, $response->data, self::CACHE_DURATION );
+		if ( ! is_wp_error( $promotions ) ) {
+			set_transient( self::PROMOTIONS_CACHE_KEY, $promotions, self::CACHE_DURATION );
 		}
 
-		return $response;
+		return rest_ensure_response( $promotions );
 	}
 
 	/**
 	 * Activate a promotion.
 	 *
-	 * @param WP_REST_Request $wp_request Full data about the request.
+	 * @param WP_REST_Request $request Full data about the request.
 	 *
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public function activate_promotion( $wp_request ) {
-		$identifier   = $wp_request->get_param( 'identifier' );
-		$accept_terms = $wp_request->get_param( 'accept_terms' );
+	public function activate_promotion( $request ) {
+		$identifier   = $request->get_param( 'identifier' );
+		$accept_terms = $request->get_param( 'accept_terms' );
 
-		$request = Activate_Promotion::create( $identifier );
-		$request->set_accept_terms( $accept_terms );
-		$request->assign_hook( 'wcpay_activate_promotion_request' );
+		$wcpay_request = Activate_Promotion::create( $identifier );
+		$wcpay_request->set_accept_terms( $accept_terms );
+		$wcpay_request->assign_hook( 'wcpay_activate_promotion_request' );
 
-		$response = $request->handle_rest_request();
+		$response = $wcpay_request->handle_rest_request();
 
 		// Clear cache and update local state if successful.
 		if ( ! is_wp_error( $response ) ) {
@@ -157,17 +157,17 @@ class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller
 	/**
 	 * Dismiss a promotion.
 	 *
-	 * @param WP_REST_Request $wp_request Full data about the request.
+	 * @param WP_REST_Request $request Full data about the request.
 	 *
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public function dismiss_promotion( $wp_request ) {
-		$identifier = $wp_request->get_param( 'identifier' );
+	public function dismiss_promotion( $request ) {
+		$identifier = $request->get_param( 'identifier' );
 
-		$request = Dismiss_Promotion::create( $identifier );
-		$request->assign_hook( 'wcpay_dismiss_promotion_request' );
+		$wcpay_request = Dismiss_Promotion::create( $identifier );
+		$wcpay_request->assign_hook( 'wcpay_dismiss_promotion_request' );
 
-		$response = $request->handle_rest_request();
+		$response = $wcpay_request->handle_rest_request();
 
 		// Clear cache and update local state if successful.
 		if ( ! is_wp_error( $response ) ) {
