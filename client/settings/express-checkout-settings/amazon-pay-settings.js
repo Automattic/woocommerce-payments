@@ -1,4 +1,3 @@
-/** @format */
 /**
  * External dependencies
  */
@@ -180,7 +179,7 @@ const AmazonPaySettings = ( { section } ) => {
 				</CardBody>
 			) }
 
-			{ section === 'general' && <GeneralSettings type="amazon" /> }
+			{ section === 'general' && <GeneralSettings /> }
 		</Card>
 	);
 };
