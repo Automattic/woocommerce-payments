@@ -1304,9 +1304,9 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 *
 	 * @dataProvider data_determine_suggested_product_type
 	 */
-	public function test_determine_suggested_product_type( $order_items, $expected_product_type, $feature_flag_enabled = true ) {
+	public function test_determine_suggested_product_type( $order_items, $expected_product_type, $evidence_types_flag_enabled = true ) {
 		// Set the feature flag option.
-		update_option( WC_Payments_Features::DISPUTE_ADDITIONAL_EVIDENCE_TYPES, $feature_flag_enabled ? '1' : '0' );
+		update_option( WC_Payments_Features::DISPUTE_ADDITIONAL_EVIDENCE_TYPES, $evidence_types_flag_enabled ? '1' : '0' );
 
 		// Create a mock order.
 		$mock_order = $this->getMockBuilder( 'WC_Order' )
@@ -1382,41 +1382,41 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 				'expected_product_type' => 'physical_product',
 			],
 			'single_booking_product'                   => [
-				'order_items'           => [
+				'order_items'                 => [
 					$this->create_mock_order_item_product( true, true, 'booking' ), // booking product.
 				],
-				'expected_product_type' => 'booking_reservation',
-				'feature_flag_enabled'  => true,
+				'expected_product_type'       => 'booking_reservation',
+				'evidence_types_flag_enabled' => true,
 			],
 			'single_booking_product_flag_off'          => [
-				'order_items'           => [
+				'order_items'                 => [
 					$this->create_mock_order_item_product( true, true, 'booking' ), // booking product (virtual).
 				],
-				'expected_product_type' => 'digital_product_or_service', // Falls back to virtual detection.
-				'feature_flag_enabled'  => false,
+				'expected_product_type'       => 'digital_product_or_service', // Falls back to virtual detection.
+				'evidence_types_flag_enabled' => false,
 			],
 			'single_booking_product_physical_flag_off' => [
-				'order_items'           => [
+				'order_items'                 => [
 					$this->create_mock_order_item_product( false, true, 'booking' ), // booking product (not virtual).
 				],
-				'expected_product_type' => 'physical_product', // Falls back to physical detection.
-				'feature_flag_enabled'  => false,
+				'expected_product_type'       => 'physical_product', // Falls back to physical detection.
+				'evidence_types_flag_enabled' => false,
 			],
 			'multiple_booking_products'                => [
-				'order_items'           => [
+				'order_items'                 => [
 					$this->create_mock_order_item_product( true, true, 'booking' ), // booking.
 					$this->create_mock_order_item_product( true, true, 'booking' ), // booking.
 				],
-				'expected_product_type' => 'multiple',
-				'feature_flag_enabled'  => true,
+				'expected_product_type'       => 'multiple',
+				'evidence_types_flag_enabled' => true,
 			],
 			'booking_physical_mixed'                   => [
-				'order_items'           => [
+				'order_items'                 => [
 					$this->create_mock_order_item_product( true, true, 'booking' ), // booking.
 					$this->create_mock_order_item_product( false, true, 'simple' ), // physical.
 				],
-				'expected_product_type' => 'multiple',
-				'feature_flag_enabled'  => true,
+				'expected_product_type'       => 'multiple',
+				'evidence_types_flag_enabled' => true,
 			],
 		];
 	}
