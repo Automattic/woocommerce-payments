@@ -1,9 +1,3 @@
-.woocommerce-checkout-payment {
-	.woopay-save-new-user-container {
-		padding: 1.41575em;
-	}
-}
-
 .woopay-save-new-user-container {
 	.save-details {
 		.wc-block-components-text-input input:-webkit-autofill {
@@ -37,7 +31,6 @@
 			flex: 1;
 
 			label {
-				gap: unset;
 				display: flex !important;
 				align-items: flex-start;
 				padding: 0;
