@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: text color of payment method icons on checkout page when a dark background is used
