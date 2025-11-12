@@ -27,11 +27,11 @@ const ProductDetails: React.FC< ProductDetailsProps > = ( {
 	return (
 		<section className="wcpay-dispute-evidence-product-details">
 			<h3 className="wcpay-dispute-evidence-product-details__heading">
-				{ __( 'Product details', 'woocommerce-payments' ) }
+				{ __( 'Product or service details', 'woocommerce-payments' ) }
 			</h3>
 			<div className="wcpay-dispute-evidence-product-details__subheading">
 				{ __(
-					'Please ensure the product type and description have been entered accurately.',
+					'Please ensure the product or service type and description have been entered accurately.',
 					'woocommerce-payments'
 				) }
 			</div>
@@ -39,7 +39,10 @@ const ProductDetails: React.FC< ProductDetailsProps > = ( {
 				<SelectControl
 					__nextHasNoMarginBottom
 					__next40pxDefaultSize
-					label={ __( 'PRODUCT TYPE', 'woocommerce-payments' ) }
+					label={ __(
+						'PRODUCT OR SERVICE TYPE',
+						'woocommerce-payments'
+					) }
 					value={ productType }
 					onChange={ onProductTypeChange }
 					data-testid={ 'dispute-challenge-product-type-selector' }
@@ -80,7 +83,7 @@ const ProductDetails: React.FC< ProductDetailsProps > = ( {
 				<TextareaControl
 					__nextHasNoMarginBottom
 					label={ __(
-						'PRODUCT DESCRIPTION',
+						'PRODUCT OR SERVICE DESCRIPTION',
 						'woocommerce-payments'
 					) }
 					value={ productDescription }

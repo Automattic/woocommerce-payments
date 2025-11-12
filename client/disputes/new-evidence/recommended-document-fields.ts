@@ -18,6 +18,7 @@ export const DOCUMENT_FIELD_KEYS = {
 	CUSTOMER_SIGNATURE: 'customer_signature',
 	UNCATEGORIZED_FILE: 'uncategorized_file',
 	REFUND_POLICY: 'refund_policy',
+	REFUND_RECEIPT_DOCUMENTATION: 'uncategorized_file',
 	DUPLICATE_CHARGE_DOCUMENTATION: 'duplicate_charge_documentation',
 	CANCELLATION_POLICY: 'cancellation_policy',
 	ACCESS_ACTIVITY_LOG: 'access_activity_log',
@@ -134,57 +135,46 @@ const getRecommendedDocumentFields = (
 		duplicate:
 			duplicateStatus === 'is_duplicate'
 				? [
-						// For is_duplicate: Order receipt, Customer communication, Proof of active subscription, Store refund policy, Terms of service, Other documents
-						{
-							key: DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
-							label: __(
-								'Proof of active subscription',
-								'woocommerce-payments'
-							),
-							description: __(
-								'Any documents showing the billing history, subscription status, or cancellation logs, for example.',
-								'woocommerce-payments'
-							),
-							order: 30,
-						},
+						// For is_duplicate: Order receipt, Refund policy, Refund receipt, Other documents
 						{
 							key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
 							label: __(
-								'Store refund policy',
+								'Refund policy',
 								'woocommerce-payments'
 							),
 							description: __(
-								"A screenshot of your store's refund policy.",
+								'A copy of the refund policy for the provided service.',
 								'woocommerce-payments'
 							),
-							order: 40,
+							order: 15,
 						},
 						{
-							key: DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
+							key:
+								DOCUMENT_FIELD_KEYS.REFUND_RECEIPT_DOCUMENTATION,
 							label: __(
-								'Terms of service',
+								'Refund receipt',
 								'woocommerce-payments'
 							),
 							description: __(
-								"A screenshot of your store's terms of service.",
+								'A copy of the refund receipt, which can be found in the receipt history for this transaction.',
 								'woocommerce-payments'
 							),
-							order: 50,
+							order: 20,
 						},
 				  ]
 				: [
-						// For is_not_duplicate: Order receipt, Customer communication, Store refund policy, Other documents
+						// For is_not_duplicate: Order receipt, Customer communication, Refund policy, Other documents
 						{
 							key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
 							label: __(
-								'Store refund policy',
+								'Refund policy',
 								'woocommerce-payments'
 							),
 							description: __(
-								"A screenshot of your store's refund policy.",
+								'A copy of the refund policy for the provided service.',
 								'woocommerce-payments'
 							),
-							order: 30,
+							order: 15,
 						},
 				  ],
 		subscription_canceled: [
