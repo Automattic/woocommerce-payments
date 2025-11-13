@@ -2962,9 +2962,9 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			return 'physical_product';
 		}
 
-		$virtual_products  = 0;
-		$physical_products = 0;
-		$product_count     = 0;
+		$virtual_products = 0;
+		$product_count    = 0;
+		$product_type     = null;
 
 		foreach ( $items as $item ) {
 			// Only process product items.
@@ -2979,11 +2979,19 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 
 			++$product_count;
 
+			// Capture first product's type (only used for single-product orders).
+			if ( null === $product_type ) {
+				$product_type = $product->get_type();
+			}
+
 			if ( $product->is_virtual() ) {
 				++$virtual_products;
-			} else {
-				++$physical_products;
 			}
+		}
+
+		// If no valid products found, default to physical.
+		if ( 0 === $product_count ) {
+			return 'physical_product';
 		}
 
 		// If more than one product, suggest multiple.
@@ -2991,8 +2999,14 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 			return 'multiple';
 		}
 
-		// If only one product and it's virtual, suggest digital.
-		if ( 1 === $product_count && 1 === $virtual_products ) {
+		// At this point, we know there's exactly one product.
+		// Check for specific product types (gated by feature flag).
+		if ( WC_Payments_Features::is_dispute_additional_evidence_types_enabled() && 'booking' === $product_type ) {
+			return 'booking_reservation';
+		}
+
+		// Check if it's virtual (digital product or service).
+		if ( 1 === $virtual_products ) {
 			return 'digital_product_or_service';
 		}
 
