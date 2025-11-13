@@ -27,17 +27,20 @@ export const DOCUMENT_FIELD_KEYS = {
 } as const;
 
 /**
- * Get recommended document fields based on dispute reason
+ * Get recommended document fields based on dispute reason and product type
  *
  * @param {string} reason - The dispute reason
  * @param {string} refundStatus - The refund status (for credit_not_processed disputes)
  * @param {string} duplicateStatus - The duplicate status (for duplicate disputes)
+ * @param {string} productType - The product type (for product-specific evidence recommendations)
  * @return {Array<{key: string, label: string}>} Array of recommended document fields
  */
 const getRecommendedDocumentFields = (
 	reason: string,
 	refundStatus?: string,
-	duplicateStatus?: string
+	duplicateStatus?: string,
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	productType?: string // Reserved for future product-type-specific evidence logic
 ): Array< RecommendedDocument > => {
 	// Define fields with their order
 	const orderedFields = [

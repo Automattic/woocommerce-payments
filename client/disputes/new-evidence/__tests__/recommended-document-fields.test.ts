@@ -144,13 +144,12 @@ describe( 'Recommended Documents', () => {
 				undefined,
 				'is_duplicate'
 			);
-			expect( fields ).toHaveLength( 6 );
+			expect( fields ).toHaveLength( 5 );
 			expect( fields[ 0 ].key ).toBe( 'receipt' );
-			expect( fields[ 1 ].key ).toBe( 'customer_communication' );
-			expect( fields[ 2 ].key ).toBe( 'access_activity_log' );
-			expect( fields[ 3 ].key ).toBe( 'refund_policy' );
-			expect( fields[ 4 ].key ).toBe( 'cancellation_policy' );
-			expect( fields[ 5 ].key ).toBe( 'uncategorized_file' );
+			expect( fields[ 1 ].key ).toBe( 'refund_policy' );
+			expect( fields[ 2 ].key ).toBe( 'customer_communication' );
+			expect( fields[ 3 ].key ).toBe( 'uncategorized_file' ); // Refund receipt
+			expect( fields[ 4 ].key ).toBe( 'uncategorized_file' ); // Other documents
 		} );
 
 		it( 'should return fields for duplicate reason with is_not_duplicate status', () => {
@@ -161,32 +160,31 @@ describe( 'Recommended Documents', () => {
 			);
 			expect( fields ).toHaveLength( 4 );
 			expect( fields[ 0 ].key ).toBe( 'receipt' );
-			expect( fields[ 1 ].key ).toBe( 'customer_communication' );
-			expect( fields[ 2 ].key ).toBe( 'refund_policy' );
+			expect( fields[ 1 ].key ).toBe( 'refund_policy' );
+			expect( fields[ 2 ].key ).toBe( 'customer_communication' );
 			expect( fields[ 3 ].key ).toBe( 'uncategorized_file' );
-			// Should not include access_activity_log or cancellation_policy
-			expect(
-				fields.find( ( field ) => field.key === 'access_activity_log' )
-			).toBeUndefined();
-			expect(
-				fields.find( ( field ) => field.key === 'cancellation_policy' )
-			).toBeUndefined();
 		} );
 
 		it( 'should return fields for duplicate reason with missing duplicate status', () => {
 			const fields = getRecommendedDocumentFields( 'duplicate' );
 			expect( fields ).toHaveLength( 4 );
 			expect( fields[ 0 ].key ).toBe( 'receipt' );
-			expect( fields[ 1 ].key ).toBe( 'customer_communication' );
-			expect( fields[ 2 ].key ).toBe( 'refund_policy' );
+			expect( fields[ 1 ].key ).toBe( 'refund_policy' );
+			expect( fields[ 2 ].key ).toBe( 'customer_communication' );
 			expect( fields[ 3 ].key ).toBe( 'uncategorized_file' );
-			// Should default to is_not_duplicate behavior
-			expect(
-				fields.find( ( field ) => field.key === 'access_activity_log' )
-			).toBeUndefined();
-			expect(
-				fields.find( ( field ) => field.key === 'cancellation_policy' )
-			).toBeUndefined();
+		} );
+
+		it( 'should accept productType parameter', () => {
+			// Test that productType parameter is accepted (for future extensibility)
+			const fields = getRecommendedDocumentFields(
+				'duplicate',
+				undefined,
+				'is_duplicate',
+				'booking_reservation'
+			);
+			expect( fields ).toHaveLength( 5 );
+			// Product type doesn't affect duplicate evidence (for now)
+			expect( fields[ 0 ].key ).toBe( 'receipt' );
 		} );
 
 		it( 'should maintain correct order of fields', () => {

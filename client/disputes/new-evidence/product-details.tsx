@@ -24,6 +24,40 @@ const ProductDetails: React.FC< ProductDetailsProps > = ( {
 	onProductDescriptionChange,
 	readOnly = false,
 } ) => {
+	const isAdditionalEvidenceTypesEnabled =
+		wcpaySettings?.featureFlags?.isDisputeAdditionalEvidenceTypesEnabled ||
+		false;
+
+	const productTypeOptions = [
+		{
+			label: __( 'Physical products', 'woocommerce-payments' ),
+			value: 'physical_product',
+		},
+		{
+			label: __( 'Digital products', 'woocommerce-payments' ),
+			value: 'digital_product_or_service',
+		},
+		{
+			label: __( 'Offline service', 'woocommerce-payments' ),
+			value: 'offline_service',
+		},
+		...( isAdditionalEvidenceTypesEnabled
+			? [
+					{
+						label: __(
+							'Booking/Reservation',
+							'woocommerce-payments'
+						),
+						value: 'booking_reservation',
+					},
+			  ]
+			: [] ),
+		{
+			label: __( 'Multiple product types', 'woocommerce-payments' ),
+			value: 'multiple',
+		},
+	];
+
 	return (
 		<section className="wcpay-dispute-evidence-product-details">
 			<h3 className="wcpay-dispute-evidence-product-details__heading">
@@ -46,36 +80,7 @@ const ProductDetails: React.FC< ProductDetailsProps > = ( {
 					value={ productType }
 					onChange={ onProductTypeChange }
 					data-testid={ 'dispute-challenge-product-type-selector' }
-					options={ [
-						{
-							label: __(
-								'Physical products',
-								'woocommerce-payments'
-							),
-							value: 'physical_product',
-						},
-						{
-							label: __(
-								'Digital products',
-								'woocommerce-payments'
-							),
-							value: 'digital_product_or_service',
-						},
-						{
-							label: __(
-								'Offline service',
-								'woocommerce-payments'
-							),
-							value: 'offline_service',
-						},
-						{
-							label: __(
-								'Multiple product types',
-								'woocommerce-payments'
-							),
-							value: 'multiple',
-						},
-					] }
+					options={ productTypeOptions }
 					disabled={ readOnly }
 				/>
 			</div>
