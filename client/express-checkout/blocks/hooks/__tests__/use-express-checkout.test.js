@@ -37,7 +37,6 @@ describe( 'useExpressCheckout', () => {
 	beforeEach( () => {
 		global.$ = jQueryMock;
 		global.jQuery = jQueryMock;
-		// Set default currency decimals for transformPrice
 		window.wcpayExpressCheckoutParams.checkout = {
 			currency_decimals: 2,
 		};
@@ -316,7 +315,6 @@ describe( 'useExpressCheckout', () => {
 	} );
 
 	it( 'should transform amounts correctly with standard 2-decimal currency (USD, EUR)', () => {
-		const onClickMock = jest.fn();
 		const event = { resolve: jest.fn() };
 		window.wcpayExpressCheckoutParams.checkout.currency_decimals = 2;
 
@@ -359,7 +357,7 @@ describe( 'useExpressCheckout', () => {
 						},
 					],
 				},
-				onClick: onClickMock,
+				onClick: jest.fn(),
 				onClose: {},
 				setExpressPaymentError: {},
 			} )
@@ -385,7 +383,6 @@ describe( 'useExpressCheckout', () => {
 	} );
 
 	it( 'should transform amounts correctly with zero-decimal currency (JPY, KRW)', () => {
-		const onClickMock = jest.fn();
 		const event = { resolve: jest.fn() };
 		window.wcpayExpressCheckoutParams.checkout.currency_decimals = 0;
 
@@ -422,7 +419,7 @@ describe( 'useExpressCheckout', () => {
 						},
 					],
 				},
-				onClick: onClickMock,
+				onClick: jest.fn(),
 				onClose: {},
 				setExpressPaymentError: {},
 			} )
@@ -430,7 +427,6 @@ describe( 'useExpressCheckout', () => {
 
 		result.current.onButtonClick( event );
 
-		// With 0 currency_decimals and 0 minorUnit, the transformation is 10^(0-0) = 1
 		expect( event.resolve ).toHaveBeenCalledWith(
 			expect.objectContaining( {
 				lineItems: [ { amount: 1000, name: 'Subtotal:' } ],
@@ -446,9 +442,8 @@ describe( 'useExpressCheckout', () => {
 	} );
 
 	it( 'should transform amounts correctly with USD configured to display zero decimals', () => {
-		const onClickMock = jest.fn();
 		const event = { resolve: jest.fn() };
-		// Store configured to display USD with 0 decimals, but Stripe still expects cents
+		// mocking a configured to display USD with 0 decimals - ensuring that Stripe still receives decimals
 		window.wcpayExpressCheckoutParams.checkout.currency_decimals = 0;
 
 		const { result } = renderHook( () =>
@@ -484,7 +479,7 @@ describe( 'useExpressCheckout', () => {
 						},
 					],
 				},
-				onClick: onClickMock,
+				onClick: jest.fn(),
 				onClose: {},
 				setExpressPaymentError: {},
 			} )
@@ -492,8 +487,6 @@ describe( 'useExpressCheckout', () => {
 
 		result.current.onButtonClick( event );
 
-		// With 0 currency_decimals and 2 minorUnit, transformation is 10^(0-2) = 0.01
-		// So 10 becomes 0.1, and 5 becomes 0.05
 		expect( event.resolve ).toHaveBeenCalledWith(
 			expect.objectContaining( {
 				lineItems: [ { amount: 0.1, name: 'Subtotal:' } ],
@@ -509,7 +502,6 @@ describe( 'useExpressCheckout', () => {
 	} );
 
 	it( 'should transform amounts correctly with 3-decimal currency (BHD, JOD, KWD)', () => {
-		const onClickMock = jest.fn();
 		const event = { resolve: jest.fn() };
 		window.wcpayExpressCheckoutParams.checkout.currency_decimals = 3;
 
@@ -546,7 +538,7 @@ describe( 'useExpressCheckout', () => {
 						},
 					],
 				},
-				onClick: onClickMock,
+				onClick: jest.fn(),
 				onClose: {},
 				setExpressPaymentError: {},
 			} )
@@ -570,7 +562,6 @@ describe( 'useExpressCheckout', () => {
 	} );
 
 	it( 'should exclude line items when transformed cart total is less than transformed line items total', () => {
-		const onClickMock = jest.fn();
 		const event = { resolve: jest.fn() };
 		window.wcpayExpressCheckoutParams.checkout.currency_decimals = 2;
 
@@ -604,7 +595,7 @@ describe( 'useExpressCheckout', () => {
 					needsShipping: false,
 					shippingRates: [],
 				},
-				onClick: onClickMock,
+				onClick: jest.fn(),
 				onClose: {},
 				setExpressPaymentError: {},
 			} )
