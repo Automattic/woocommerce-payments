@@ -15,12 +15,13 @@ import { Link } from '@woocommerce/components';
  */
 import {
 	Button,
+	CheckboxControl,
 	ExternalLink,
 	Flex,
 	FlexItem,
+	HorizontalRule,
 	Icon,
 	Modal,
-	HorizontalRule,
 } from '@wordpress/components';
 import type { Dispute } from 'wcpay/types/disputes';
 import type { ChargeBillingDetails } from 'wcpay/types/charges';
@@ -35,6 +36,7 @@ import {
 	DisputeSteps,
 	InquirySteps,
 	NotDefendableInquirySteps,
+	NonCompliantDisputeSteps,
 } from './dispute-steps';
 import InlineNotice from 'components/inline-notice';
 import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
@@ -173,6 +175,10 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 		isLoading: isDisputeAcceptRequestPending,
 	} = useDisputeAccept( dispute );
 	const [ isModalOpen, setModalOpen ] = useState( false );
+	const [
+		isVisaComplianceConditionAccepted,
+		setVisaComplianceConditionAccepted,
+	] = useState( false );
 
 	const hasStagedEvidence = dispute.evidence_details?.has_evidence;
 	const { createErrorNotice } = useDispatch( 'core/notices' );
@@ -181,6 +187,12 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 		featureFlags: { isDisputeIssuerEvidenceEnabled },
 	} = useContext( WCPaySettingsContext );
 
+	const isVisaComplianceDispute =
+		dispute.reason === 'noncompliant' ||
+		( dispute?.enhanced_eligibility_types || [] ).includes(
+			'visa_compliance'
+		);
+
 	// Get the appropriate documentation URL based on dispute type
 	const getLearnMoreDocsUrl = () => {
 		if ( isInquiry( dispute.status ) ) {
@@ -188,6 +200,9 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 				return 'https://woocommerce.com/document/woopayments/payment-methods/buy-now-pay-later/#klarna-inquiries-returns';
 			}
 			return 'https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries';
+		}
+		if ( isVisaComplianceDispute ) {
+			return 'https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#visa-compliance-disputes';
 		}
 		return 'https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#responding';
 	};
@@ -203,6 +218,12 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 			}
 			return __(
 				'Learn more about payment inquiries',
+				'woocommerce-payments'
+			);
+		}
+		if ( isVisaComplianceDispute ) {
+			return __(
+				'Learn more about Visa compliance disputes',
 				'woocommerce-payments'
 			);
 		}
@@ -245,10 +266,7 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 	 * - Visa Compliance disputes (require confirmation of a specific fee)
 	 */
 	const isDefendable = ! (
-		( paymentMethod === 'klarna' && isInquiry( dispute.status ) ) ||
-		( dispute?.enhanced_eligibility_types || [] ).includes(
-			'visa_compliance'
-		)
+		paymentMethod === 'klarna' && isInquiry( dispute.status )
 	);
 
 	const challengeButtonDefaultText = isInquiry( dispute.status )
@@ -271,9 +289,8 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 		/>
 	);
 
-	// we cannot nest ternary operators, so let's build the steps in a variable
-	const steps = isInquiry( dispute.status ) ? (
-		inquirySteps
+	const disputeSteps = isVisaComplianceDispute ? (
+		<NonCompliantDisputeSteps />
 	) : (
 		<DisputeSteps
 			dispute={ dispute }
@@ -282,6 +299,9 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 			bankName={ bankName }
 		/>
 	);
+
+	// we cannot nest ternary operators, so let's build the steps in a variable
+	const steps = isInquiry( dispute.status ) ? inquirySteps : disputeSteps;
 
 	return (
 		<div className="transaction-details-dispute-details-wrapper">
@@ -330,7 +350,19 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 						{ getHelpLinkText() }
 					</ExternalLink>
 				</div>
-
+				{ /* Checkbox for the Visa Compliance dispute */ }
+				{ isVisaComplianceDispute && (
+					<div className="transaction-details-dispute-details-body__visa-compliance-checkbox">
+						<CheckboxControl
+							onChange={ setVisaComplianceConditionAccepted }
+							label={ __(
+								'By checking this box, you acknowledge that challenging this Visa compliance dispute incurs a $500 USD fee, which will be refunded only if you win the case.',
+								'woocommerce-payments'
+							) }
+							__nextHasNoMarginBottom
+						/>
+					</div>
+				) }
 				{ /* Dispute Actions */ }
 				{
 					<div className="transaction-details-dispute-details-body__actions">
@@ -351,7 +383,12 @@ const DisputeAwaitingResponseDetails: React.FC< Props > = ( {
 								<Button
 									variant="primary"
 									data-testid="challenge-dispute-button"
-									disabled={ isDisputeAcceptRequestPending }
+									disabled={
+										isDisputeAcceptRequestPending ||
+										( isVisaComplianceDispute &&
+											! hasStagedEvidence &&
+											! isVisaComplianceConditionAccepted )
+									}
 									onClick={ () => {
 										recordEvent(
 											'wcpay_dispute_challenge_clicked',

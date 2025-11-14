@@ -1,10 +1,6 @@
 @import '/node_modules/intl-tel-input/build/css/intlTelInput.css';
 
 .woopay-save-new-user-container {
-	display: flex;
-	flex-direction: column;
-	gap: $gap;
-
 	&:not( :empty ) {
 		#payment .wc_payment_methods.payment_methods.methods + & {
 			margin-top: $gap-large;
@@ -63,20 +59,19 @@
 		}
 
 		.additional-information {
-			font-size: 14px;
-			font-weight: 400;
+			font-size: var( --wp--preset--font-size--small, 14px );
 			line-height: 21px;
 			text-align: left;
 		}
 
 		.tos {
-			font-size: 12px;
+			font-size: 13px;
 		}
 
 		#validate-error-invalid-woopay-phone-number {
 			// Using rems to base this on the theme styles.
-			font-size: 0.875rem;
-			line-height: 1.5rem;
+			font-size: 13px;
+			line-height: 1;
 			margin-bottom: 0;
 			color: $alert-red;
 		}
@@ -91,7 +86,6 @@
 			box-shadow: none;
 			border: 1px solid $gray-300;
 			border-radius: 5px;
-			margin-left: 0.1rem;
 			width: calc( 100% - 0.25rem );
 
 			&::placeholder {

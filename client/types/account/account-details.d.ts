@@ -16,11 +16,10 @@ export interface AccountDetailsData {
 	payout_status: {
 		text: string;
 		background_color: StatusBackgroundColor;
-		icon?: IconName;
 		popover?: {
 			text: string;
-			cta_text: string;
-			cta_link: string;
+			cta_text?: string;
+			cta_link?: string;
 		} | null;
 	};
 	banner?: {

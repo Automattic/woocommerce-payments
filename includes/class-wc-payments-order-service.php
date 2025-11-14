@@ -1142,6 +1142,10 @@ class WC_Payments_Order_Service {
 			$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::REVIEW_BLOCKED );
 		}
 
+		// Remove transaction fee since the authorization was canceled and no payment was processed.
+		$order->delete_meta_data( self::WCPAY_TRANSACTION_FEE_META_KEY );
+		$order->delete_meta_data( '_wcpay_net' );
+
 		$this->update_order_status( $order, Order_Status::CANCELLED );
 		$this->complete_order_processing( $order, $intent_data['intent_status'] );
 	}
@@ -1318,7 +1322,9 @@ class WC_Payments_Order_Service {
 	 */
 	public function attach_transaction_fee_to_order( $order, $charge ) {
 		try {
-			if ( $charge && null !== $charge->get_application_fee_amount() ) {
+			// Only set transaction fee if the charge was actually captured.
+			// Canceled authorizations should not have fees since no payment was processed.
+			if ( $charge && null !== $charge->get_application_fee_amount() && $charge->is_captured() ) {
 				$order->update_meta_data(
 					self::WCPAY_TRANSACTION_FEE_META_KEY,
 					WC_Payments_Utils::interpret_stripe_amount( $charge->get_application_fee_amount(), $charge->get_currency() )
@@ -1361,6 +1367,10 @@ class WC_Payments_Order_Service {
 							$intent = $request->send();
 
 							$this->post_unique_capture_cancelled_note( $order, $intent_id, $charge->get_id() );
+
+							// Remove transaction fee since the authorization was canceled and no payment was processed.
+							$order->delete_meta_data( self::WCPAY_TRANSACTION_FEE_META_KEY );
+							$order->delete_meta_data( '_wcpay_net' );
 					}
 
 					$this->set_intention_status_for_order( $order, $intent->get_status() );
