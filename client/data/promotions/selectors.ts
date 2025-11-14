@@ -34,33 +34,30 @@ export const getAvailablePromotions = ( state: State ): Promotion[] => {
 };
 
 /**
- * Retrieves active promotions from the state.
+ * Retrieves active promotion IDs from the state.
  *
  * @param {State} state The full Redux state.
  *
- * @return {Promotion[]} Array of active promotions.
+ * @return {string[]} Array of active promotion IDs.
  */
-export const getActivePromotions = ( state: State ): Promotion[] => {
+export const getActivePromotions = ( state: State ): string[] => {
 	return state.promotions?.promotions?.active_promotions ?? [];
 };
 
 /**
- * Retrieves a specific promotion by identifier.
+ * Retrieves a specific promotion by promo_id.
  *
  * @param {State} state The full Redux state.
- * @param {string} identifier The promotion identifier.
+ * @param {string} promoId The promotion identifier.
  *
  * @return {Promotion | undefined} The promotion or undefined.
  */
 export const getPromotionByIdentifier = (
 	state: State,
-	identifier: string
+	promoId: string
 ): Promotion | undefined => {
-	const allPromotions = [
-		...getAvailablePromotions( state ),
-		...getActivePromotions( state ),
-	];
-	return allPromotions.find( ( promo ) => promo.identifier === identifier );
+	const availablePromotions = getAvailablePromotions( state );
+	return availablePromotions.find( ( promo ) => promo.promo_id === promoId );
 };
 
 /**

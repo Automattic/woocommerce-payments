@@ -115,15 +115,16 @@ class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller
 			return rest_ensure_response( $cached_promotions );
 		}
 
-		// Fetch from server.
-		$wcpay_request = Request::get( WC_Payments_API_Client::PROMOTIONS_API );
-		$wcpay_request->assign_hook( 'wcpay_get_promotions' );
-		$promotions = $wcpay_request->send();
+		// TODO: Replace with actual API call when server endpoints are available.
+		// $wcpay_request = Request::get( WC_Payments_API_Client::PROMOTIONS_API );.
+		// $wcpay_request->assign_hook( 'wcpay_get_promotions' );.
+		// $promotions = $wcpay_request->send();.
 
-		// Cache the response if successful.
-		if ( ! is_wp_error( $promotions ) ) {
-			set_transient( self::PROMOTIONS_CACHE_KEY, $promotions, self::CACHE_DURATION );
-		}
+		// Return mock data for testing.
+		$promotions = $this->get_mock_promotions_data();
+
+		// Cache the response.
+		set_transient( self::PROMOTIONS_CACHE_KEY, $promotions, self::CACHE_DURATION );
 
 		return rest_ensure_response( $promotions );
 	}
@@ -139,19 +140,24 @@ class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller
 		$identifier   = $request->get_param( 'identifier' );
 		$accept_terms = $request->get_param( 'accept_terms' );
 
-		$wcpay_request = Activate_Promotion::create( $identifier );
-		$wcpay_request->set_accept_terms( $accept_terms );
-		$wcpay_request->assign_hook( 'wcpay_activate_promotion_request' );
+		// TODO: Replace with actual API call when server endpoints are available.
+		// $wcpay_request = Activate_Promotion::create( $identifier );.
+		// $wcpay_request->set_accept_terms( $accept_terms );.
+		// $wcpay_request->assign_hook( 'wcpay_activate_promotion_request' );.
+		// $response = $wcpay_request->handle_rest_request();.
 
-		$response = $wcpay_request->handle_rest_request();
+		// Return mock success response.
+		$response = [
+			'success'    => true,
+			'identifier' => $identifier,
+			'status'     => 'active',
+		];
 
-		// Clear cache and update local state if successful.
-		if ( ! is_wp_error( $response ) ) {
-			$this->clear_promotions_cache();
-			$this->mark_promotion_activated( $identifier );
-		}
+		// Clear cache and update local state.
+		$this->clear_promotions_cache();
+		$this->mark_promotion_activated( $identifier );
 
-		return $response;
+		return rest_ensure_response( $response );
 	}
 
 	/**
@@ -164,18 +170,23 @@ class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller
 	public function dismiss_promotion( $request ) {
 		$identifier = $request->get_param( 'identifier' );
 
-		$wcpay_request = Dismiss_Promotion::create( $identifier );
-		$wcpay_request->assign_hook( 'wcpay_dismiss_promotion_request' );
+		// TODO: Replace with actual API call when server endpoints are available.
+		// $wcpay_request = Dismiss_Promotion::create( $identifier );.
+		// $wcpay_request->assign_hook( 'wcpay_dismiss_promotion_request' );.
+		// $response = $wcpay_request->handle_rest_request();.
 
-		$response = $wcpay_request->handle_rest_request();
+		// Return mock success response.
+		$response = [
+			'success'    => true,
+			'identifier' => $identifier,
+			'status'     => 'dismissed',
+		];
 
-		// Clear cache and update local state if successful.
-		if ( ! is_wp_error( $response ) ) {
-			$this->clear_promotions_cache();
-			$this->mark_promotion_dismissed( $identifier );
-		}
+		// Clear cache and update local state.
+		$this->clear_promotions_cache();
+		$this->mark_promotion_dismissed( $identifier );
 
-		return $response;
+		return rest_ensure_response( $response );
 	}
 
 	/**
@@ -185,6 +196,64 @@ class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller
 	 */
 	private function clear_promotions_cache() {
 		delete_transient( self::PROMOTIONS_CACHE_KEY );
+	}
+
+	/**
+	 * Get mock promotions data for testing.
+	 * TODO: Remove this method when server endpoints are available.
+	 *
+	 * @return array Mock promotions data.
+	 */
+	private function get_mock_promotions_data() {
+		$activated = self::get_activated_promotions();
+
+		// Mock available promotions with variations.
+		$available_promotions = [
+			[
+				'promo_id'      => 'promo-card-waive-2024',
+				'discount_rate' => '100%',
+				'duration_days' => 90,
+				'variations'    => [
+					[
+						'id'          => 'promo-card-waive-2024__variation_1',
+						'type'        => 'spotlight',
+						'badge'       => 'Limited time offer',
+						'badge_type'  => 'success',
+						'heading'     => 'Zero Processing Fees for Card Payments',
+						'description' => 'Save on every card transaction with 0% processing fees for 90 days',
+						'cta_label'   => 'Activate Now',
+						'cta_url'     => '#',
+						'tc_url'      => 'https://woocommerce.com/terms',
+					],
+				],
+			],
+			[
+				'promo_id'      => 'promo-affirm-cashback-2024',
+				'discount_rate' => '2%',
+				'duration_days' => 60,
+				'variations'    => [
+					[
+						'id'          => 'promo-affirm-cashback-2024__variation_1',
+						'type'        => 'banner',
+						'badge'       => 'New',
+						'badge_type'  => 'info',
+						'heading'     => '2% Cashback on Affirm Transactions',
+						'description' => 'Earn cashback on all Affirm payments for 60 days',
+						'cta_label'   => 'Learn More',
+						'cta_url'     => '#',
+						'tc_url'      => 'https://woocommerce.com/terms',
+					],
+				],
+			],
+		];
+
+		// Get IDs of activated promotions.
+		$active_promotions = array_keys( $activated );
+
+		return [
+			'available_promotions' => $available_promotions,
+			'active_promotions'    => $active_promotions,
+		];
 	}
 
 	/**
