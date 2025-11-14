@@ -21,7 +21,7 @@ class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller
 	 *
 	 * @var string
 	 */
-	protected $rest_base = 'payments/promotions';
+	protected $rest_base = 'payments/payment-method-promotions';
 
 	/**
 	 * Transient key for caching promotions.
