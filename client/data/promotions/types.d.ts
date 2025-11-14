@@ -6,21 +6,28 @@
 import { ApiError } from '../../types/errors';
 import ACTION_TYPES from './action-types';
 
+export interface PromotionVariation {
+	id: string;
+	type: string;
+	badge?: string;
+	badge_type?: string;
+	heading: string;
+	description: string;
+	cta_label: string;
+	cta_url: string;
+	tc_url?: string;
+}
+
 export interface Promotion {
-	identifier: string;
-	name: string;
-	payment_method: string;
+	promo_id: string;
+	discount_rate: string;
 	duration_days: number;
-	status: 'offered' | 'active' | 'expired' | 'dismissed';
-	activated_at?: string;
-	expires_at?: string;
-	days_remaining?: number;
-	terms_url?: string;
+	variations: PromotionVariation[];
 }
 
 export interface PromotionsData {
 	available_promotions: Promotion[];
-	active_promotions: Promotion[];
+	active_promotions: string[];
 }
 
 export interface PromotionsState {
