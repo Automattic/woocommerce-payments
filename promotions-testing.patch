@@ -1,0 +1,422 @@
+diff --git a/client/overview/index.js b/client/overview/index.js
+index 9672b7a28..2a6c3d9a3 100644
+--- a/client/overview/index.js
++++ b/client/overview/index.js
+@@ -36,6 +36,7 @@ import { recordEvent } from 'wcpay/tracks';
+ import StripeSpinner from 'wcpay/components/stripe-spinner';
+ import { getAdminUrl, isInTestModeOnboarding } from 'wcpay/utils';
+ import { EmbeddedConnectNotificationBanner } from 'wcpay/embedded-components';
++import PromotionsTestDisplay from './promotions-test-display';
+ 
+ const OverviewPageError = () => {
+ 	const queryParams = getQuery();
+@@ -389,6 +390,9 @@ const OverviewPage = () => {
+ 					/>
+ 				) }
+ 			</ErrorBoundary>
++			<ErrorBoundary>
++				<PromotionsTestDisplay />
++			</ErrorBoundary>
+ 			{ hasActiveLoan && (
+ 				<ErrorBoundary>
+ 					<ActiveLoanSummary />
+diff --git a/includes/admin/class-wc-rest-payments-promotions-controller.php b/includes/admin/class-wc-rest-payments-promotions-controller.php
+index 3bd4e5afd..939dcd807 100644
+--- a/includes/admin/class-wc-rest-payments-promotions-controller.php
++++ b/includes/admin/class-wc-rest-payments-promotions-controller.php
+@@ -115,15 +115,16 @@ class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller
+ 			return rest_ensure_response( $cached_promotions );
+ 		}
+ 
+-		// Fetch from server.
+-		$wcpay_request = Request::get( WC_Payments_API_Client::PROMOTIONS_API );
+-		$wcpay_request->assign_hook( 'wcpay_get_promotions' );
+-		$promotions = $wcpay_request->send();
+-
+-		// Cache the response if successful.
+-		if ( ! is_wp_error( $promotions ) ) {
+-			set_transient( self::PROMOTIONS_CACHE_KEY, $promotions, self::CACHE_DURATION );
+-		}
++		// TODO: Replace with actual API call when server endpoints are available.
++		// $wcpay_request = Request::get( WC_Payments_API_Client::PROMOTIONS_API );.
++		// $wcpay_request->assign_hook( 'wcpay_get_promotions' );.
++		// $promotions = $wcpay_request->send();.
++
++		// Return mock data for testing.
++		$promotions = $this->get_mock_promotions_data();
++
++		// Cache the response.
++		set_transient( self::PROMOTIONS_CACHE_KEY, $promotions, self::CACHE_DURATION );
+ 
+ 		return rest_ensure_response( $promotions );
+ 	}
+@@ -139,19 +140,24 @@ class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller
+ 		$identifier   = $request->get_param( 'identifier' );
+ 		$accept_terms = $request->get_param( 'accept_terms' );
+ 
+-		$wcpay_request = Activate_Promotion::create( $identifier );
+-		$wcpay_request->set_accept_terms( $accept_terms );
+-		$wcpay_request->assign_hook( 'wcpay_activate_promotion_request' );
++		// TODO: Replace with actual API call when server endpoints are available.
++		// $wcpay_request = Activate_Promotion::create( $identifier );
++		// $wcpay_request->set_accept_terms( $accept_terms );
++		// $wcpay_request->assign_hook( 'wcpay_activate_promotion_request' );
++		// $response = $wcpay_request->handle_rest_request();
+ 
+-		$response = $wcpay_request->handle_rest_request();
++		// Return mock success response.
++		$response = [
++			'success'    => true,
++			'identifier' => $identifier,
++			'status'     => 'active',
++		];
+ 
+-		// Clear cache and update local state if successful.
+-		if ( ! is_wp_error( $response ) ) {
+-			$this->clear_promotions_cache();
+-			$this->mark_promotion_activated( $identifier );
+-		}
++		// Clear cache and update local state.
++		$this->clear_promotions_cache();
++		$this->mark_promotion_activated( $identifier );
+ 
+-		return $response;
++		return rest_ensure_response( $response );
+ 	}
+ 
+ 	/**
+@@ -164,18 +170,23 @@ class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller
+ 	public function dismiss_promotion( $request ) {
+ 		$identifier = $request->get_param( 'identifier' );
+ 
+-		$wcpay_request = Dismiss_Promotion::create( $identifier );
+-		$wcpay_request->assign_hook( 'wcpay_dismiss_promotion_request' );
++		// TODO: Replace with actual API call when server endpoints are available.
++		// $wcpay_request = Dismiss_Promotion::create( $identifier );
++		// $wcpay_request->assign_hook( 'wcpay_dismiss_promotion_request' );
++		// $response = $wcpay_request->handle_rest_request();
+ 
+-		$response = $wcpay_request->handle_rest_request();
++		// Return mock success response.
++		$response = [
++			'success'    => true,
++			'identifier' => $identifier,
++			'status'     => 'dismissed',
++		];
+ 
+-		// Clear cache and update local state if successful.
+-		if ( ! is_wp_error( $response ) ) {
+-			$this->clear_promotions_cache();
+-			$this->mark_promotion_dismissed( $identifier );
+-		}
++		// Clear cache and update local state.
++		$this->clear_promotions_cache();
++		$this->mark_promotion_dismissed( $identifier );
+ 
+-		return $response;
++		return rest_ensure_response( $response );
+ 	}
+ 
+ 	/**
+@@ -187,6 +198,61 @@ class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller
+ 		delete_transient( self::PROMOTIONS_CACHE_KEY );
+ 	}
+ 
++	/**
++	 * Get mock promotions data for testing.
++	 * TODO: Remove this method when server endpoints are available.
++	 *
++	 * @return array Mock promotions data.
++	 */
++	private function get_mock_promotions_data() {
++		$current_time = time();
++		$activated    = self::get_activated_promotions();
++
++		// Mock available promotions.
++		$available_promotions = [
++			[
++				'identifier'     => 'promo-card-waive-2024',
++				'name'           => 'Zero Processing Fees for Card Payments',
++				'payment_method' => 'card',
++				'duration_days'  => 90,
++				'status'         => 'offered',
++				'terms_url'      => 'https://woocommerce.com/terms',
++			],
++			[
++				'identifier'     => 'promo-affirm-cashback-2024',
++				'name'           => '2% Cashback on Affirm Transactions',
++				'payment_method' => 'affirm',
++				'duration_days'  => 60,
++				'status'         => 'offered',
++				'terms_url'      => 'https://woocommerce.com/terms',
++			],
++		];
++
++		// Mock active promotions - check if any have been activated.
++		$active_promotions = [];
++		foreach ( $activated as $identifier => $activated_at ) {
++			$duration_days  = 90; // Default duration.
++			$expires_at     = $activated_at + ( $duration_days * DAY_IN_SECONDS );
++			$days_remaining = max( 0, ceil( ( $expires_at - $current_time ) / DAY_IN_SECONDS ) );
++
++			$active_promotions[] = [
++				'identifier'     => $identifier,
++				'name'           => 'Activated Promotion: ' . $identifier,
++				'payment_method' => 'card',
++				'duration_days'  => $duration_days,
++				'status'         => 'active',
++				'activated_at'   => gmdate( 'Y-m-d\TH:i:s\Z', $activated_at ),
++				'expires_at'     => gmdate( 'Y-m-d\TH:i:s\Z', $expires_at ),
++				'days_remaining' => $days_remaining,
++			];
++		}
++
++		return [
++			'available_promotions' => $available_promotions,
++			'active_promotions'    => $active_promotions,
++		];
++	}
++
+ 	/**
+ 	 * Mark a promotion as dismissed in local state.
+ 	 *
+diff --git a/client/overview/promotions-test-display.tsx b/client/overview/promotions-test-display.tsx
+new file mode 100644
+index 000000000..329bd5842
+--- /dev/null
++++ b/client/overview/promotions-test-display.tsx
+@@ -0,0 +1,234 @@
++/** @format */
++
++/**
++ * External dependencies
++ */
++import React from 'react';
++import { Card, CardBody, Button, Notice } from '@wordpress/components';
++
++/**
++ * Internal dependencies
++ */
++import { usePromotions, usePromotionActions } from 'wcpay/data';
++
++/**
++ * Test component to display and interact with promotions.
++ * This is for testing purposes only - DO NOT COMMIT.
++ */
++const PromotionsTestDisplay: React.FC = () => {
++	const { promotions, promotionsError, isLoading } = usePromotions();
++	const { activatePromotion, dismissPromotion } = usePromotionActions();
++
++	// Debug logging
++	console.log( 'PromotionsTestDisplay render:', {
++		promotions,
++		promotionsError,
++		isLoading,
++		hasAvailable: promotions?.available_promotions?.length,
++		availableArray: promotions?.available_promotions,
++	} );
++
++	if ( isLoading ) {
++		return (
++			<Card>
++				<CardBody>
++					<h2>Promotions (Loading...)</h2>
++					<p>Loading promotions data...</p>
++				</CardBody>
++			</Card>
++		);
++	}
++
++	if ( promotionsError ) {
++		return (
++			<Card>
++				<CardBody>
++					<h2>Promotions (Error)</h2>
++					<Notice status="error" isDismissible={ false }>
++						Error loading promotions:{ ' ' }
++						{ promotionsError.code || 'Unknown error' }
++					</Notice>
++				</CardBody>
++			</Card>
++		);
++	}
++
++	const handleActivate = ( identifier: string ) => {
++		if (
++			// eslint-disable-next-line no-alert
++			window.confirm(
++				`Activate promotion "${ identifier }"? This will call the API.`
++			)
++		) {
++			activatePromotion( identifier, true );
++		}
++	};
++
++	const handleDismiss = ( identifier: string ) => {
++		if (
++			// eslint-disable-next-line no-alert
++			window.confirm(
++				`Dismiss promotion "${ identifier }"? This will call the API.`
++			)
++		) {
++			dismissPromotion( identifier );
++		}
++	};
++
++	return (
++		<Card>
++			<CardBody>
++				<h2>🧪 Promotions Test Display</h2>
++
++				<div style={ { marginBottom: '20px' } }>
++					<h3>Available Promotions</h3>
++					{ promotions?.available_promotions?.length ? (
++						<ul>
++							{ promotions.available_promotions.map(
++								( promo ) => (
++									<li
++										key={ promo.identifier }
++										style={ {
++											marginBottom: '15px',
++											padding: '10px',
++											background: '#f0f0f0',
++											borderRadius: '4px',
++										} }
++									>
++										<strong>{ promo.name }</strong>{ ' ' }
++										<code>({ promo.identifier })</code>
++										<br />
++										<small>
++											Payment Method:{ ' ' }
++											{ promo.payment_method } | Duration:
++											{ promo.duration_days } days |
++											Status: { promo.status }
++										</small>
++										<br />
++										{ promo.terms_url && (
++											<small>
++												<a
++													href={ promo.terms_url }
++													target="_blank"
++													rel="noreferrer"
++												>
++													View Terms
++												</a>
++												<br />
++											</small>
++										) }
++										<div
++											style={ { marginTop: '8px' } }
++										>
++											<Button
++												variant="primary"
++												size="small"
++												onClick={ () =>
++													handleActivate(
++														promo.identifier
++													)
++												}
++											>
++												Activate
++											</Button>{ ' ' }
++											<Button
++												variant="secondary"
++												size="small"
++												onClick={ () =>
++													handleDismiss(
++														promo.identifier
++													)
++												}
++											>
++												Dismiss
++											</Button>
++										</div>
++									</li>
++								)
++							) }
++						</ul>
++					) : (
++						<p>No available promotions</p>
++					) }
++				</div>
++
++				<div style={ { marginBottom: '20px' } }>
++					<h3>Active Promotions</h3>
++					{ promotions?.active_promotions?.length ? (
++						<ul>
++							{ promotions.active_promotions.map( ( promo ) => (
++								<li
++									key={ promo.identifier }
++									style={ {
++										marginBottom: '15px',
++										padding: '10px',
++										background: '#e8f5e9',
++										borderRadius: '4px',
++									} }
++								>
++									<strong>{ promo.name }</strong>{ ' ' }
++									<code>({ promo.identifier })</code>
++									<br />
++									<small>
++										Payment Method: { promo.payment_method }{ ' ' }
++										| Duration: { promo.duration_days } days
++										| Status: { promo.status }
++									</small>
++									<br />
++									{ promo.activated_at && (
++										<small>
++											Activated:{ ' ' }
++											{ new Date(
++												promo.activated_at
++											).toLocaleString() }
++											<br />
++										</small>
++									) }
++									{ promo.expires_at && (
++										<small>
++											Expires:{ ' ' }
++											{ new Date(
++												promo.expires_at
++											).toLocaleString() }
++											<br />
++										</small>
++									) }
++									{ promo.days_remaining !== undefined && (
++										<small>
++											Days Remaining:{ ' ' }
++											{ promo.days_remaining }
++										</small>
++									) }
++								</li>
++							) ) }
++						</ul>
++					) : (
++						<p>No active promotions</p>
++					) }
++				</div>
++
++				<div
++					style={ {
++						padding: '10px',
++						background: '#fff3cd',
++						borderRadius: '4px',
++					} }
++				>
++					<strong>Debug Info:</strong>
++					<br />
++					<pre
++						style={ {
++							fontSize: '11px',
++							overflow: 'auto',
++							maxHeight: '200px',
++						} }
++					>
++						{ JSON.stringify( promotions, null, 2 ) }
++					</pre>
++				</div>
++			</CardBody>
++		</Card>
++	);
++};
++
++export default PromotionsTestDisplay;
