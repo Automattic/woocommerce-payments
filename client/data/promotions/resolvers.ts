@@ -19,7 +19,7 @@ import { ApiError } from '../../types/errors';
  * Retrieve promotions data.
  */
 export function* getPromotions(): unknown {
-	const path = `${ NAMESPACE }/promotions`;
+	const path = `${ NAMESPACE }/payment-method-promotions`;
 
 	try {
 		const result = yield apiFetch( { path } );

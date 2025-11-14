@@ -47,7 +47,7 @@ export function* activatePromotion(
 	identifier: string,
 	acceptTerms = true
 ): unknown {
-	const path = `${ NAMESPACE }/promotions/${ identifier }/activate`;
+	const path = `${ NAMESPACE }/payment-method-promotions/${ identifier }/activate`;
 
 	try {
 		yield apiFetch( {
@@ -88,7 +88,7 @@ export function* activatePromotion(
  * @param {string} identifier The promotion identifier.
  */
 export function* dismissPromotion( identifier: string ): unknown {
-	const path = `${ NAMESPACE }/promotions/${ identifier }/dismiss`;
+	const path = `${ NAMESPACE }/payment-method-promotions/${ identifier }/dismiss`;
 
 	try {
 		yield apiFetch( {
