@@ -157,7 +157,7 @@ class WC_Payments_Task_Disputes extends Task {
 	 */
 	public function get_parent_id() {
 		// WC 6.4.0 compatibility.
-		if ( is_callable( 'parent::get_parent_id' ) ) {
+		if ( is_callable( [ parent::class, 'get_parent_id' ] ) ) {
 			return parent::get_parent_id();
 		}
 
