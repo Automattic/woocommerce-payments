@@ -48,6 +48,10 @@
 			}
 		}
 
+		&__visa-compliance-checkbox {
+			margin: 0;
+		}
+
 		&__actions {
 			display: flex;
 			justify-content: start;
@@ -179,7 +183,14 @@
 			font-weight: var( --Regular, 400 );
 			line-height: var( --s, 20px ); /* 153.846% */
 
-			width: 80%;
+			@media screen and ( max-width: $break-small ) {
+				margin-bottom: 8px;
+				width: 100%;
+			}
+		}
+
+		&-content:last-child &-description {
+			width: 90%;
 
 			@media screen and ( max-width: $break-small ) {
 				margin-bottom: 8px;

@@ -225,4 +225,44 @@ describe( 'ExpressCheckout', () => {
 			)
 		).toBeInTheDocument();
 	} );
+
+	it( 'should render Amazon Pay when the feature flag is enabled', () => {
+		const context = {
+			accountStatus: {},
+			featureFlags: { woopay: true, amazonPay: true },
+		};
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
+		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card' ] ] );
+
+		render(
+			<WCPaySettingsContext.Provider value={ context }>
+				<ExpressCheckout />
+			</WCPaySettingsContext.Provider>
+		);
+
+		expect( screen.getByLabelText( 'Amazon Pay' ) ).toBeInTheDocument();
+		expect( screen.getByLabelText( 'WooPay' ) ).toBeInTheDocument();
+		expect( screen.getByLabelText( 'Link by Stripe' ) ).toBeInTheDocument();
+	} );
+
+	it( 'should not render Amazon Pay by default', () => {
+		const context = {
+			accountStatus: {},
+			featureFlags: { woopay: true },
+		};
+		useGetAvailablePaymentMethodIds.mockReturnValue( [ 'link', 'card' ] );
+		useEnabledPaymentMethodIds.mockReturnValue( [ [ 'card' ] ] );
+
+		render(
+			<WCPaySettingsContext.Provider value={ context }>
+				<ExpressCheckout />
+			</WCPaySettingsContext.Provider>
+		);
+
+		expect(
+			screen.queryByLabelText( 'Amazon Pay' )
+		).not.toBeInTheDocument();
+		expect( screen.getByLabelText( 'WooPay' ) ).toBeInTheDocument();
+		expect( screen.getByLabelText( 'Link by Stripe' ) ).toBeInTheDocument();
+	} );
 } );

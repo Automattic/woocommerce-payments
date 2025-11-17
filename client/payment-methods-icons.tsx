@@ -21,6 +21,7 @@ import DiscoverAsset from 'assets/images/cards/discover.svg?asset';
 import CBAsset from 'assets/images/cards/cb.svg?asset';
 import UnionPayAsset from 'assets/images/cards/unionpay.svg?asset';
 import LinkAsset from 'assets/images/payment-methods/link.svg?asset';
+import AmazonPayAsset from 'assets/images/payment-methods/amazon-pay.svg?asset';
 import './style.scss';
 
 const iconComponent = (
@@ -40,6 +41,10 @@ const iconComponent = (
 	/>
 );
 
+export const AmazonPayIcon = iconComponent(
+	AmazonPayAsset,
+	__( 'Amazon Pay', 'woocommerce-payments' )
+);
 export const AmericanExpressIcon = iconComponent(
 	AmexAsset,
 	__( 'American Express', 'woocommerce-payments' )

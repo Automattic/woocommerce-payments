@@ -1327,6 +1327,153 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Test updating a dispute with or without Visa compliance flag based on dispute reason.
+	 *
+	 * @dataProvider data_update_dispute_visa_compliance
+	 * @throws API_Exception
+	 */
+	public function test_update_dispute_visa_compliance_flag( $dispute_reason, $should_have_flag ) {
+		$dispute_id = 'dp_test123';
+		$evidence   = [
+			'product_description'    => 'Product description',
+			'customer_name'          => 'Customer Name',
+			'uncategorized_text'     => 'Additional details',
+			'customer_email_address' => 'customer@example.com',
+			'customer_purchase_ip'   => '1.2.3.4',
+			'billing_address'        => '123 Main St',
+			'receipt'                => 'file_123',
+			'customer_signature'     => 'file_456',
+			'shipping_documentation' => 'file_789',
+		];
+		$submit     = true;
+		$metadata   = [ 'order_id' => '123' ];
+
+		// Mock the dispute cache to avoid errors.
+		$mock_cache = $this->createMock( \WCPay\Database_Cache::class );
+		$mock_cache->method( 'delete_dispute_caches' )
+			->willReturn( null );
+
+		// Replace the database cache in the container.
+		wcpay_get_test_container()->replace( \WCPay\Database_Cache::class, $mock_cache );
+
+		// Mock the HTTP client to first return dispute details, then accept the update.
+		$this->mock_http_client
+			->expects( $this->exactly( 2 ) )
+			->method( 'remote_request' )
+			->willReturnCallback(
+				function ( $data, $body ) use ( $dispute_id, $evidence, $metadata, $dispute_reason, $should_have_flag ) {
+					// First call: GET dispute to check the reason.
+					if ( strpos( $data['url'], '/disputes/' . $dispute_id ) !== false && 'GET' === $data['method'] ) {
+						return [
+							'body'     => wp_json_encode(
+								[
+									'id'     => $dispute_id,
+									'charge' => 'ch_test123',
+									'reason' => $dispute_reason,
+									'status' => 'needs_response',
+								]
+							),
+							'response' => [
+								'code'    => 200,
+								'message' => 'OK',
+							],
+						];
+					}
+
+					// Second call: POST to update the dispute.
+					if ( strpos( $data['url'], '/disputes/' . $dispute_id ) !== false && 'POST' === $data['method'] ) {
+						// Validate the request parameters.
+						$this->validate_default_remote_request_params(
+							$data,
+							'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/disputes/' . $dispute_id,
+							'POST'
+						);
+
+						// Validate the body contains or doesn't contain the Visa compliance flag.
+						$decoded = json_decode( $body, true );
+
+						// Verify the standard evidence is present.
+						$this->assertArrayHasKey( 'evidence', $decoded );
+						// Verify the Visa compliance flag presence based on dispute reason.
+						if ( $should_have_flag ) {
+							$this->assertArrayHasKey( 'enhanced_evidence', $decoded['evidence'] );
+							$this->assertArrayHasKey( 'visa_compliance', $decoded['evidence']['enhanced_evidence'] );
+							$this->assertArrayHasKey( 'fee_acknowledged', $decoded['evidence']['enhanced_evidence']['visa_compliance'] );
+							$this->assertEquals( 'true', $decoded['evidence']['enhanced_evidence']['visa_compliance']['fee_acknowledged'] );
+							$evidence_without_flag = $decoded['evidence'];
+							unset( $evidence_without_flag['enhanced_evidence'] );
+							$this->assertEquals( $evidence, $evidence_without_flag );
+						} else {
+							// Evidence shouldn't be modified.
+							$this->assertEquals( $evidence, $decoded['evidence'] );
+						}
+
+						// Verify the submit flag is set.
+						$this->assertArrayHasKey( 'submit', $decoded );
+						$this->assertTrue( $decoded['submit'] );
+
+						// Verify the metadata is present.
+						$this->assertArrayHasKey( 'metadata', $decoded );
+						$this->assertEquals( $metadata, $decoded['metadata'] );
+
+						return [
+							'body'     => wp_json_encode(
+								[
+									'id'       => $dispute_id,
+									'charge'   => 'ch_test123',
+									'reason'   => $dispute_reason,
+									'status'   => 'needs_response',
+									'evidence' => $evidence,
+								]
+							),
+							'response' => [
+								'code'    => 200,
+								'message' => 'OK',
+							],
+						];
+					}
+
+					return [
+						'body'     => wp_json_encode( [] ),
+						'response' => [
+							'code'    => 404,
+							'message' => 'Not Found',
+						],
+					];
+				}
+			);
+
+		// Call the method under test.
+		$result = $this->payments_api_client->update_dispute( $dispute_id, $evidence, $submit, $metadata );
+
+		// Assert the response is correct.
+		$this->assertEquals( $dispute_id, $result['id'] );
+
+		// Clean up.
+		wcpay_get_test_container()->reset_all_replacements();
+	}
+
+	/**
+	 * Data provider for test_update_dispute_visa_compliance_flag.
+	 */
+	public function data_update_dispute_visa_compliance() {
+		return [
+			'noncompliant_dispute_should_have_flag'   => [
+				'dispute_reason'   => 'noncompliant',
+				'should_have_flag' => true,
+			],
+			'fraudulent_dispute_should_not_have_flag' => [
+				'dispute_reason'   => 'fraudulent',
+				'should_have_flag' => false,
+			],
+			'product_unacceptable_dispute_should_not_have_flag' => [
+				'dispute_reason'   => 'product_unacceptable',
+				'should_have_flag' => false,
+			],
+		];
+	}
+
+	/**
 	 * Data provider for test_determine_suggested_product_type.
 	 */
 	public function data_determine_suggested_product_type() {

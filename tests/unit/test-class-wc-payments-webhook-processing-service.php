@@ -817,6 +817,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 							'type' => 'card',
 						],
 						'application_fee_amount' => 100,
+						'captured'               => true,
 					],
 				],
 			],
@@ -1651,6 +1652,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'status'   => 'succeeded',
 			'amount'   => 1800,
 			'currency' => 'usd',
+			'captured' => true,
 		];
 
 		$this->mock_order
@@ -1708,6 +1710,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'status'   => 'succeeded',
 			'amount'   => 1800,
 			'currency' => 'usd',
+			'captured' => true,
 		];
 
 		$this->mock_order
@@ -1755,6 +1758,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'status'   => 'succeeded',
 			'amount'   => 1800,
 			'currency' => 'usd',
+			'captured' => true,
 		];
 
 		$this->mock_order
@@ -1857,6 +1861,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'status'   => 'succeeded',
 			'amount'   => 1800,
 			'currency' => 'usd',
+			'captured' => true,
 		];
 
 		$this->mock_db_wrapper
@@ -1887,6 +1892,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'status'   => 'succeeded',
 			'amount'   => -1800,
 			'currency' => 'usd',
+			'captured' => true,
 		];
 
 		$this->mock_order
@@ -1921,6 +1927,7 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			'status'   => 'succeeded',
 			'amount'   => 1800,
 			'currency' => 'usd',
+			'captured' => true,
 		];
 
 		$this->mock_order
@@ -1934,6 +1941,50 @@ class WC_Payments_Webhook_Processing_Service_Test extends WCPAY_UnitTestCase {
 			->willReturn( $this->mock_order );
 
 		$this->expectException( Invalid_Webhook_Data_Exception::class );
+
+		$this->webhook_processing_service->process( $this->event_body );
+	}
+
+	public function test_process_refund_ignores_uncaptured_charge(): void {
+		$this->event_body['type']           = 'charge.refunded';
+		$this->event_body['livemode']       = true;
+		$this->event_body['data']['object'] = [
+			'id'       => 'test_charge_id',
+			'refunds'  => [
+				'data' => [
+					[
+						'id'                  => 'test_refund_id',
+						'status'              => Refund_Status::SUCCEEDED,
+						'amount'              => 1800,
+						'currency'            => 'usd',
+						'reason'              => 'requested_by_customer',
+						'balance_transaction' => 'txn_123',
+					],
+				],
+			],
+			'status'   => 'succeeded',
+			'amount'   => 1800,
+			'currency' => 'usd',
+			'captured' => false, // Not captured - this is a canceled authorization.
+		];
+
+		// The webhook should return early before fetching the order since captured = false.
+		$this->mock_db_wrapper
+			->expects( $this->never() )
+			->method( 'order_from_charge_id' );
+
+		// Refund processing should be skipped for uncaptured charges.
+		$this->order_service
+			->expects( $this->never() )
+			->method( 'get_wcpay_refund_id_for_order' );
+
+		$this->order_service
+			->expects( $this->never() )
+			->method( 'create_refund_for_order' );
+
+		$this->order_service
+			->expects( $this->never() )
+			->method( 'add_note_and_metadata_for_created_refund' );
 
 		$this->webhook_processing_service->process( $this->event_body );
 	}
