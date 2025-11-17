@@ -389,6 +389,7 @@ class WC_Payments_Features {
 				'isFRTReviewFeatureActive'                 => self::is_frt_review_feature_active(),
 				'isDynamicCheckoutPlaceOrderButtonEnabled' => self::is_dynamic_checkout_place_order_button_enabled(),
 				'isAccountDetailsEnabled'                  => self::is_account_details_enabled(),
+				'amazonPay'                                => self::is_amazon_pay_enabled(),
 			]
 		);
 	}
