@@ -349,6 +349,19 @@ export const reasons: Record<
 			),
 		],
 	},
+	noncompliant: {
+		display: __( 'Non-compliant', 'woocommerce-payments' ),
+		claim: __(
+			'Your customer’s bank claims this payment violates Visa’s rules.',
+			'woocommerce-payments'
+		),
+		summary: [
+			__(
+				'The customer’s bank claims this transaction doesn’t conform to Visa’s network rules.',
+				'woocommerce-payments'
+			),
+		],
+	},
 };
 
 // Mapping of disputes status to display string.

@@ -857,6 +857,14 @@ class WC_Payments_Webhook_Processing_Service {
 			return;
 		}
 
+		// Check if the charge was actually captured before processing the refund.
+		// Stripe sends charge.refunded webhooks for cancelled authorizations even though no payment was captured.
+		// We should not create WooCommerce refund objects for these cases as they cause negative values in analytics.
+		$captured = $event_object['captured'] ?? false;
+		if ( ! $captured ) {
+			return;
+		}
+
 		// Fetch the details of the refund so that we can find the associated order and write a note.
 		$charge_id                     = $this->read_webhook_property( $event_object, 'id' );
 		$refund                        = $this->read_webhook_property( $event_object, 'refunds' )['data'][0]; // Most recent refund.

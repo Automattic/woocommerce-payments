@@ -1363,20 +1363,26 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_attach_transaction_fee_to_order() {
-		$order = WC_Helper_Order::create_order();
-		$this->order_service->attach_transaction_fee_to_order( $order, new WC_Payments_API_Charge( 'ch_mock', 1500, new DateTime(), null, null, null, null, 113, [], [], 'usd' ) );
+		$order  = WC_Helper_Order::create_order();
+		$charge = new WC_Payments_API_Charge( 'ch_mock', 1500, new DateTime(), null, null, null, null, 113, [], [], 'usd' );
+		$charge->set_captured( true );
+		$this->order_service->attach_transaction_fee_to_order( $order, $charge );
 		$this->assertEquals( 1.13, $order->get_meta( '_wcpay_transaction_fee', true ) );
 	}
 
 	public function test_attach_transaction_fee_to_order_zero_fee() {
-		$order = WC_Helper_Order::create_order();
-		$this->order_service->attach_transaction_fee_to_order( $order, new WC_Payments_API_Charge( 'ch_mock', 1500, new DateTime(), null, null, null, null, 0, [], [], 'eur' ) );
+		$order  = WC_Helper_Order::create_order();
+		$charge = new WC_Payments_API_Charge( 'ch_mock', 1500, new DateTime(), null, null, null, null, 0, [], [], 'eur' );
+		$charge->set_captured( true );
+		$this->order_service->attach_transaction_fee_to_order( $order, $charge );
 		$this->assertEquals( 0, $order->get_meta( '_wcpay_transaction_fee', true ) );
 	}
 
 	public function test_attach_transaction_fee_to_order_zero_decimal_fee() {
-		$order = WC_Helper_Order::create_order();
-		$this->order_service->attach_transaction_fee_to_order( $order, new WC_Payments_API_Charge( 'ch_mock', 1500, new DateTime(), null, null, null, null, 30000, [], [], 'jpy' ) );
+		$order  = WC_Helper_Order::create_order();
+		$charge = new WC_Payments_API_Charge( 'ch_mock', 1500, new DateTime(), null, null, null, null, 30000, [], [], 'jpy' );
+		$charge->set_captured( true );
+		$this->order_service->attach_transaction_fee_to_order( $order, $charge );
 		$this->assertEquals( 30000, $order->get_meta( '_wcpay_transaction_fee', true ) );
 	}
 
@@ -1386,6 +1392,19 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 			->expects( $this->never() )
 			->method( 'update_meta_data' );
 		$this->order_service->attach_transaction_fee_to_order( $mock_order, new WC_Payments_API_Charge( 'ch_mock', 1500, new DateTime(), null, null, null, null, null, [], [], 'eur' ) );
+	}
+
+	public function test_attach_transaction_fee_to_order_uncaptured_charge() {
+		$mock_order = $this->createMock( 'WC_Order' );
+		$mock_order
+			->expects( $this->never() )
+			->method( 'update_meta_data' );
+
+		$charge = new WC_Payments_API_Charge( 'ch_mock', 1500, new DateTime(), null, null, null, null, 113, [], [], 'usd' );
+		$charge->set_captured( false );
+
+		// Fee should not be set for uncaptured charges.
+		$this->order_service->attach_transaction_fee_to_order( $mock_order, $charge );
 	}
 
 	public function test_add_note_and_metadata_for_created_refund_successful_fully_refunded(): void {
