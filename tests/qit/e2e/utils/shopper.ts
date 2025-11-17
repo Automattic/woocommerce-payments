@@ -10,6 +10,40 @@ import { config, CustomerAddress, Product } from '../config/default';
 import { isUIUnblocked } from './helpers';
 
 /**
+ * Generic condition-based waiting helper.
+ * Polls for a condition to become true instead of guessing at timing.
+ *
+ * @param condition Function that returns truthy value when condition is met
+ * @param description Human-readable description for error messages
+ * @param timeoutMs Maximum time to wait in milliseconds
+ * @param pollIntervalMs How often to check the condition
+ * @return The truthy value returned by condition
+ */
+async function waitFor< T >(
+	condition: () => Promise< T > | T,
+	description: string,
+	timeoutMs = 30000,
+	pollIntervalMs = 100
+): Promise< T > {
+	const startTime = Date.now();
+
+	while ( true ) {
+		const result = await condition();
+		if ( result ) {
+			return result;
+		}
+
+		if ( Date.now() - startTime > timeoutMs ) {
+			throw new Error(
+				`Timeout waiting for ${ description } after ${ timeoutMs }ms`
+			);
+		}
+
+		await new Promise( ( r ) => setTimeout( r, pollIntervalMs ) );
+	}
+}
+
+/**
  * Waits for the UI to refresh after a user interaction.
  *
  * Woo core blocks and refreshes the UI after 1s after each key press
@@ -262,13 +296,24 @@ export const fillCardDetails = async (
 	card = config.cards.basic
 ) => {
 	await ensureSavedCardNotSelected( page );
-	if (
-		await page.$(
-			'#payment .payment_method_woocommerce_payments .wcpay-upe-element'
-		)
-	) {
-		const frameHandle = await page.waitForSelector(
-			'#payment .payment_method_woocommerce_payments .wcpay-upe-element iframe'
+
+	// Wait for payment methods to be loaded and UI to be stable
+	await isUIUnblocked( page );
+
+	// Check which payment element type is being used (UPE vs Classic)
+	const isUPE = await page.$(
+		'#payment .payment_method_woocommerce_payments .wcpay-upe-element'
+	);
+
+	if ( isUPE ) {
+		// UPE flow - wait for UPE iframe to be created by Stripe
+		const frameHandle = await waitFor(
+			async () =>
+				page.$(
+					'#payment .payment_method_woocommerce_payments .wcpay-upe-element iframe'
+				),
+			'UPE Stripe iframe to be created',
+			30000
 		);
 
 		const stripeFrame = await frameHandle.contentFrame();
@@ -289,8 +334,15 @@ export const fillCardDetails = async (
 			await zip.fill( '90210' );
 		}
 	} else {
-		const frameHandle = await page.waitForSelector(
-			'#payment #wcpay-card-element iframe[name^="__privateStripeFrame"]'
+		// Classic flow - wait for classic Stripe iframe to be created
+		// This polls for the iframe instead of guessing at timeout
+		const frameHandle = await waitFor(
+			async () =>
+				page.$(
+					'#payment #wcpay-card-element iframe[name^="__privateStripeFrame"]'
+				),
+			'Classic Stripe iframe to be created (waiting for Stripe.js load + account data + Elements init)',
+			30000
 		);
 		const stripeFrame = await frameHandle.contentFrame();
 
