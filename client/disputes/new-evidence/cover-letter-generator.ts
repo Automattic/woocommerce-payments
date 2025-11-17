@@ -434,6 +434,17 @@ export const generateBodyDuplicate = (
 	attachmentsList: string
 ): string => {
 	if ( data.duplicateStatus === 'is_duplicate' ) {
+		// Hardcoded attachment list for duplicate + is_duplicate scenario to match UI labels
+		const duplicateAttachments = `${ __(
+			'• Refund Receipt: Confirmation the refund was processed (Attachment A)',
+			'woocommerce-payments'
+		) }
+${ __( '• Original order receipt (Attachment B)', 'woocommerce-payments' ) }
+${ __(
+	'• Copy of the store refund policy (Attachment C)',
+	'woocommerce-payments'
+) }`;
+
 		return `${ sprintf(
 			/* translators: %1$s: case number, %2$s: transaction ID, %3$s: transaction date */
 			__(
@@ -462,7 +473,7 @@ ${ __(
 	'To support our case, we are providing the following documentation:',
 	'woocommerce-payments'
 ) }
-${ attachmentsList }
+${ duplicateAttachments }
 
 ${ __(
 	'Based on this information, we respectfully request that the chargeback be reversed. Please let us know if any further details are required.',

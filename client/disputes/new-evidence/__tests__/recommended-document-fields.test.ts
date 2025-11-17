@@ -146,10 +146,20 @@ describe( 'Recommended Documents', () => {
 			);
 			expect( fields ).toHaveLength( 5 );
 			expect( fields[ 0 ].key ).toBe( 'receipt' );
-			expect( fields[ 1 ].key ).toBe( 'refund_policy' );
+			expect( fields[ 0 ].label ).toBe( 'Original order receipt' );
+			expect( fields[ 1 ].key ).toBe( 'uncategorized_file' ); // Refund receipt
+			expect( fields[ 1 ].label ).toBe( 'Refund receipt' );
+			expect( fields[ 1 ].description ).toBe(
+				'Confirmation the refund was processed.'
+			);
 			expect( fields[ 2 ].key ).toBe( 'customer_communication' );
-			expect( fields[ 3 ].key ).toBe( 'uncategorized_file' ); // Refund receipt
+			expect( fields[ 2 ].label ).toBe( 'Customer communication' );
+			expect( fields[ 3 ].key ).toBe( 'refund_policy' );
+			expect( fields[ 3 ].label ).toBe(
+				'Copy of the store refund policy'
+			);
 			expect( fields[ 4 ].key ).toBe( 'uncategorized_file' ); // Other documents
+			expect( fields[ 4 ].label ).toBe( 'Other documents' );
 		} );
 
 		it( 'should return fields for duplicate reason with is_not_duplicate status', () => {
@@ -185,6 +195,8 @@ describe( 'Recommended Documents', () => {
 			expect( fields ).toHaveLength( 5 );
 			// Product type doesn't affect duplicate evidence (for now)
 			expect( fields[ 0 ].key ).toBe( 'receipt' );
+			expect( fields[ 0 ].label ).toBe( 'Original order receipt' );
+			expect( fields[ 1 ].key ).toBe( 'uncategorized_file' ); // Refund receipt
 		} );
 
 		it( 'should maintain correct order of fields', () => {

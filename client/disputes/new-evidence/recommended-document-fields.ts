@@ -138,18 +138,18 @@ const getRecommendedDocumentFields = (
 		duplicate:
 			duplicateStatus === 'is_duplicate'
 				? [
-						// For is_duplicate: Order receipt, Refund policy, Refund receipt, Other documents
+						// For is_duplicate: Original order receipt, Refund receipt, Copy of store refund policy, Other documents
 						{
-							key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+							key: DOCUMENT_FIELD_KEYS.RECEIPT,
 							label: __(
-								'Refund policy',
+								'Original order receipt',
 								'woocommerce-payments'
 							),
 							description: __(
-								'A copy of the refund policy for the provided service.',
+								"A copy of the customer's receipt, which can be found in the receipt history for this transaction.",
 								'woocommerce-payments'
 							),
-							order: 15,
+							order: 10,
 						},
 						{
 							key:
@@ -159,7 +159,19 @@ const getRecommendedDocumentFields = (
 								'woocommerce-payments'
 							),
 							description: __(
-								'A copy of the refund receipt, which can be found in the receipt history for this transaction.',
+								'Confirmation the refund was processed.',
+								'woocommerce-payments'
+							),
+							order: 15,
+						},
+						{
+							key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+							label: __(
+								'Copy of the store refund policy',
+								'woocommerce-payments'
+							),
+							description: __(
+								"A screenshot of your store's refund policy.",
 								'woocommerce-payments'
 							),
 							order: 20,
@@ -170,11 +182,11 @@ const getRecommendedDocumentFields = (
 						{
 							key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
 							label: __(
-								'Refund policy',
+								'Copy of the store refund policy',
 								'woocommerce-payments'
 							),
 							description: __(
-								'A copy of the refund policy for the provided service.',
+								"A screenshot of your store's refund policy.",
 								'woocommerce-payments'
 							),
 							order: 15,
@@ -338,8 +350,17 @@ const getRecommendedDocumentFields = (
 		],
 	};
 
-	// For credit_not_processed with refund_was_not_owed, we need to filter out customer_signature from orderedFields
-	const baseFields = orderedFields;
+	// Filter base fields based on reason and status
+	let baseFields = orderedFields;
+
+	// For duplicate disputes with is_duplicate status, exclude receipt only
+	// as it's handled in reason-specific fields with a different label
+	// Customer communication is kept as it's recommended for all reason codes
+	if ( reason === 'duplicate' && duplicateStatus === 'is_duplicate' ) {
+		baseFields = orderedFields.filter(
+			( field ) => field.key !== DOCUMENT_FIELD_KEYS.RECEIPT
+		);
+	}
 
 	// Combine default fields with reason-specific fields
 	const allFields = [
