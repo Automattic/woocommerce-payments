@@ -1,0 +1,369 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DisputeNotice - Visa Compliance renders Visa compliance notice with bank name 1`] = `
+.emotion-2 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  gap: calc(4px * 2);
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-2>* {
+  min-width: 0;
+}
+
+.emotion-4 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+<div>
+  <div
+    class="wcpay-inline-notice wcpay-inline-error-notice dispute-notice components-notice is-error"
+  >
+    <div
+      class="components-visually-hidden emotion-0 emotion-1"
+      data-wp-c16t="true"
+      data-wp-component="VisuallyHidden"
+      style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+    >
+      Error notice
+    </div>
+    <div
+      class="components-notice__content"
+    >
+      <div
+        class="components-flex emotion-2 emotion-1"
+        data-wp-c16t="true"
+        data-wp-component="Flex"
+      >
+        <div
+          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-error-notice__icon emotion-4 emotion-1"
+          data-wp-c16t="true"
+          data-wp-component="FlexItem"
+        >
+          <svg
+            class="gridicon gridicons-notice-outline"
+            height="24"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <g>
+              <path
+                d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+              />
+            </g>
+          </svg>
+        </div>
+        <div
+          class="components-flex-item wcpay-inline-notice__content wcpay-inline-error-notice__content emotion-4 emotion-1"
+          data-wp-c16t="true"
+          data-wp-component="FlexItem"
+        >
+          Your customer’s bank, Chase Bank, claims this payment violates Visa’s rules. 
+          <strong>
+            You can challenge the dispute by 11:59 PM on September 9, 2023, or accept it.
+          </strong>
+           If you accept the dispute, you will forfeit the funds and pay the dispute fee. Challenging adds an additional $500 USD dispute fee that is only returned to you if you win.
+        </div>
+      </div>
+      <div
+        class="components-notice__actions"
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`DisputeNotice - Visa Compliance renders Visa compliance notice without bank name 1`] = `
+.emotion-2 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  gap: calc(4px * 2);
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-2>* {
+  min-width: 0;
+}
+
+.emotion-4 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+<div>
+  <div
+    class="wcpay-inline-notice wcpay-inline-error-notice dispute-notice components-notice is-error"
+  >
+    <div
+      class="components-visually-hidden emotion-0 emotion-1"
+      data-wp-c16t="true"
+      data-wp-component="VisuallyHidden"
+      style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+    >
+      Error notice
+    </div>
+    <div
+      class="components-notice__content"
+    >
+      <div
+        class="components-flex emotion-2 emotion-1"
+        data-wp-c16t="true"
+        data-wp-component="Flex"
+      >
+        <div
+          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-error-notice__icon emotion-4 emotion-1"
+          data-wp-c16t="true"
+          data-wp-component="FlexItem"
+        >
+          <svg
+            class="gridicon gridicons-notice-outline"
+            height="24"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <g>
+              <path
+                d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+              />
+            </g>
+          </svg>
+        </div>
+        <div
+          class="components-flex-item wcpay-inline-notice__content wcpay-inline-error-notice__content emotion-4 emotion-1"
+          data-wp-c16t="true"
+          data-wp-component="FlexItem"
+        >
+          Your customer’s bank claims this payment violates Visa’s rules. 
+          <strong>
+            You can challenge the dispute by 11:59 PM on September 9, 2023, or accept it.
+          </strong>
+           If you accept the dispute, you will forfeit the funds and pay the dispute fee. Challenging adds an additional $500 USD dispute fee that is only returned to you if you win.
+        </div>
+      </div>
+      <div
+        class="components-notice__actions"
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`DisputeNotice - Visa Compliance renders urgent error status for Visa compliance disputes 1`] = `
+.emotion-2 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  gap: calc(4px * 2);
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-2>* {
+  min-width: 0;
+}
+
+.emotion-4 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+<div>
+  <div
+    class="wcpay-inline-notice wcpay-inline-error-notice dispute-notice components-notice is-error"
+  >
+    <div
+      class="components-visually-hidden emotion-0 emotion-1"
+      data-wp-c16t="true"
+      data-wp-component="VisuallyHidden"
+      style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+    >
+      Error notice
+    </div>
+    <div
+      class="components-notice__content"
+    >
+      <div
+        class="components-flex emotion-2 emotion-1"
+        data-wp-c16t="true"
+        data-wp-component="Flex"
+      >
+        <div
+          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-error-notice__icon emotion-4 emotion-1"
+          data-wp-c16t="true"
+          data-wp-component="FlexItem"
+        >
+          <svg
+            class="gridicon gridicons-notice-outline"
+            height="24"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <g>
+              <path
+                d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+              />
+            </g>
+          </svg>
+        </div>
+        <div
+          class="components-flex-item wcpay-inline-notice__content wcpay-inline-error-notice__content emotion-4 emotion-1"
+          data-wp-c16t="true"
+          data-wp-component="FlexItem"
+        >
+          Your customer’s bank, Chase Bank, claims this payment violates Visa’s rules. 
+          <strong>
+            You can challenge the dispute by 11:59 PM on September 9, 2023, or accept it.
+          </strong>
+           If you accept the dispute, you will forfeit the funds and pay the dispute fee. Challenging adds an additional $500 USD dispute fee that is only returned to you if you win.
+        </div>
+      </div>
+      <div
+        class="components-notice__actions"
+      />
+    </div>
+  </div>
+</div>
+`;
+
+exports[`DisputeNotice - Visa Compliance renders with warning status when not urgent 1`] = `
+.emotion-2 {
+  display: -webkit-box;
+  display: -webkit-flex;
+  display: -ms-flexbox;
+  display: flex;
+  -webkit-align-items: center;
+  -webkit-box-align: center;
+  -ms-flex-align: center;
+  align-items: center;
+  -webkit-flex-direction: row;
+  -ms-flex-direction: row;
+  flex-direction: row;
+  gap: calc(4px * 2);
+  -webkit-box-pack: start;
+  -ms-flex-pack: start;
+  -webkit-justify-content: flex-start;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+.emotion-2>* {
+  min-width: 0;
+}
+
+.emotion-4 {
+  display: block;
+  max-height: 100%;
+  max-width: 100%;
+  min-height: 0;
+  min-width: 0;
+}
+
+<div>
+  <div
+    class="wcpay-inline-notice wcpay-inline-warning-notice dispute-notice components-notice is-warning"
+  >
+    <div
+      class="components-visually-hidden emotion-0 emotion-1"
+      data-wp-c16t="true"
+      data-wp-component="VisuallyHidden"
+      style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+    >
+      Warning notice
+    </div>
+    <div
+      class="components-notice__content"
+    >
+      <div
+        class="components-flex emotion-2 emotion-1"
+        data-wp-c16t="true"
+        data-wp-component="Flex"
+      >
+        <div
+          class="components-flex-item wcpay-inline-notice__icon wcpay-inline-warning-notice__icon emotion-4 emotion-1"
+          data-wp-c16t="true"
+          data-wp-component="FlexItem"
+        >
+          <svg
+            class="gridicon gridicons-notice-outline"
+            height="24"
+            viewBox="0 0 24 24"
+            width="24"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <g>
+              <path
+                d="M12 4c4.411 0 8 3.589 8 8s-3.589 8-8 8-8-3.589-8-8 3.589-8 8-8m0-2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm1 13h-2v2h2v-2zm-2-2h2l.5-6h-3l.5 6z"
+              />
+            </g>
+          </svg>
+        </div>
+        <div
+          class="components-flex-item wcpay-inline-notice__content wcpay-inline-warning-notice__content emotion-4 emotion-1"
+          data-wp-c16t="true"
+          data-wp-component="FlexItem"
+        >
+          Your customer’s bank, Chase Bank, claims this payment violates Visa’s rules. 
+          <strong>
+            You can challenge the dispute by 11:59 PM on September 9, 2023, or accept it.
+          </strong>
+           If you accept the dispute, you will forfeit the funds and pay the dispute fee. Challenging adds an additional $500 USD dispute fee that is only returned to you if you win.
+        </div>
+      </div>
+      <div
+        class="components-notice__actions"
+      />
+    </div>
+  </div>
+</div>
+`;

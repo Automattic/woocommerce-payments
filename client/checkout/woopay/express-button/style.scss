@@ -1,4 +1,8 @@
 #wcpay-woopay-button {
+	// Enable container queries on the button wrapper
+	container-type: inline-size;
+	container-name: woopay-button;
+
 	.woopay-express-button {
 		font-size: 18px;
 		font-weight: 500;
@@ -18,12 +22,15 @@
 		text-transform: none;
 		list-style-type: none;
 		min-height: auto;
+		overflow: hidden;
+		position: relative;
 
 		.button-content {
 			display: flex;
-			align-content: center;
+			align-items: center;
 			justify-content: center;
 			transform: scale( 0.9 );
+			max-width: 100%;
 		}
 
 		&:not( :disabled ) {
@@ -56,10 +63,41 @@
 		&[data-type='buy'],
 		&[data-type='book'],
 		&[data-type='donate'] {
-			min-width: 200px;
+			min-width: 150px;
 
 			svg {
 				margin-left: 5px;
+			}
+
+			// Container queries for small buttons (40px height)
+			@container woopay-button (max-width: 280px) {
+				font-size: 14px;
+				letter-spacing: 0.5px;
+
+				svg {
+					width: 88px;
+					margin-left: 4px;
+				}
+			}
+
+			@container woopay-button (max-width: 240px) {
+				font-size: 12px;
+				letter-spacing: 0.3px;
+
+				svg {
+					width: 84px;
+					margin-left: 3px;
+				}
+			}
+
+			@container woopay-button (max-width: 200px) {
+				font-size: 10px;
+				letter-spacing: 0.2px;
+
+				svg {
+					width: 80px;
+					margin-left: 2px;
+				}
 			}
 		}
 
@@ -90,7 +128,46 @@
 			&[data-type='buy'],
 			&[data-type='book'],
 			&[data-type='donate'] {
-				min-width: 229px;
+				min-width: 150px;
+
+				// Container queries: respond to actual button container width
+				// These trigger based on the button's actual width in the layout
+
+				// Default state for wide containers (> 280px)
+				// Uses default 18px font, 99px logo from parent
+
+				// When container is moderately constrained
+				@container woopay-button (max-width: 280px) {
+					font-size: 15px;
+					letter-spacing: 0.5px;
+
+					svg {
+						width: 90px;
+						margin-left: 4px;
+					}
+				}
+
+				// When container is squeezed (common in 3-button horizontal layouts)
+				@container woopay-button (max-width: 240px) {
+					font-size: 13px;
+					letter-spacing: 0.3px;
+
+					svg {
+						width: 86px;
+						margin-left: 3px;
+					}
+				}
+
+				// When container is very tight
+				@container woopay-button (max-width: 200px) {
+					font-size: 11px;
+					letter-spacing: 0.2px;
+
+					svg {
+						width: 82px;
+						margin-left: 2px;
+					}
+				}
 			}
 
 			.button-content {
@@ -104,7 +181,40 @@
 			&[data-type='buy'],
 			&[data-type='book'],
 			&[data-type='donate'] {
-				min-width: 229px;
+				min-width: 150px;
+
+				// Container queries for large buttons
+				// Slightly larger than medium buttons at each breakpoint
+
+				@container woopay-button (max-width: 280px) {
+					font-size: 16px;
+					letter-spacing: 0.6px;
+
+					svg {
+						width: 93px;
+						margin-left: 4px;
+					}
+				}
+
+				@container woopay-button (max-width: 240px) {
+					font-size: 14px;
+					letter-spacing: 0.4px;
+
+					svg {
+						width: 89px;
+						margin-left: 3px;
+					}
+				}
+
+				@container woopay-button (max-width: 200px) {
+					font-size: 12px;
+					letter-spacing: 0.3px;
+
+					svg {
+						width: 85px;
+						margin-left: 2px;
+					}
+				}
 			}
 
 			.button-content {

@@ -1,5 +1,0 @@
-Significance: patch
-Type: dev
-Comment: Remove unused method WC_Payment_Gateway_WCPay::create_intent
-
-

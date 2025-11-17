@@ -576,6 +576,13 @@ export default ( { query }: { query: { id: string } } ) => {
 		dispute.status !== 'needs_response' &&
 		dispute.status !== 'warning_needs_response';
 
+	const isVisaComplianceDispute =
+		dispute &&
+		( dispute.reason === 'noncompliant' ||
+			( dispute?.enhanced_eligibility_types || [] ).includes(
+				'visa_compliance'
+			) );
+
 	// --- Accordion summary content (must be before any early returns) ---
 	const summaryItems = useMemo( () => {
 		if ( ! dispute ) return [];
@@ -933,6 +940,25 @@ export default ( { query }: { query: { id: string } } ) => {
 		</InlineNotice>
 	);
 
+	const inlineNoticeVisaCompliance = () => (
+		<InlineNotice
+			icon
+			isDismissible={ false }
+			status="info"
+			className="dispute-steps__notice-content"
+		>
+			{ createInterpolateElement(
+				__(
+					'<strong>The outcome of this dispute will be determined by Visa.</strong> WooPayments has no influence over the decision and is not liable for any chargebacks.',
+					'woocommerce-payments'
+				),
+				{
+					strong: <strong />,
+				}
+			) }
+		</InlineNotice>
+	);
+
 	// --- Step content ---
 	const renderStepContent = () => {
 		// if ( ! fields.length ) return null;
@@ -981,7 +1007,9 @@ export default ( { query }: { query: { id: string } } ) => {
 						fields={ recommendedDocumentsFields }
 						readOnly={ readOnly }
 					/>
-					{ inlineNotice( bankName ) }
+					{ isVisaComplianceDispute
+						? inlineNoticeVisaCompliance()
+						: inlineNotice( bankName ) }
 				</>
 			);
 		}
@@ -1015,7 +1043,9 @@ export default ( { query }: { query: { id: string } } ) => {
 						fields={ recommendedShippingDocumentsFields }
 						readOnly={ readOnly }
 					/>
-					{ inlineNotice( bankName ) }
+					{ isVisaComplianceDispute
+						? inlineNoticeVisaCompliance()
+						: inlineNotice( bankName ) }
 				</>
 			);
 		}
@@ -1118,7 +1148,9 @@ export default ( { query }: { query: { id: string } } ) => {
 						} }
 						readOnly={ readOnly }
 					/>
-					{ inlineNotice( bankName ) }
+					{ isVisaComplianceDispute
+						? inlineNoticeVisaCompliance()
+						: inlineNotice( bankName ) }
 				</>
 			);
 		}
