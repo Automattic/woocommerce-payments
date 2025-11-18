@@ -125,4 +125,12 @@
 
 .wcpay-spotlight__primary-btn {
 	flex-shrink: 0;
+
+	&.is-primary {
+		background: $studio-wordpress-blue-50;
+
+		&:hover {
+			background: $studio-wordpress-blue-40;
+		}
+	}
 }
