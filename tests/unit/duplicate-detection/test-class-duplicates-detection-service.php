@@ -78,12 +78,12 @@ class Duplicates_Detection_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_two_apms_enabled() {
-		$this->set_duplicates( Ideal_Payment_Method::PAYMENT_METHOD_STRIPE_ID, 'yes', 'yes' );
+		$this->set_duplicates( \WCPay\PaymentMethods\Configs\Definitions\IdealDefinition::get_id(), 'yes', 'yes' );
 
 		$result = $this->service->find_duplicates();
 
 		$this->assertCount( 1, $result );
-		$this->assertEquals( Ideal_Payment_Method::PAYMENT_METHOD_STRIPE_ID, array_keys( $result )[0] );
+		$this->assertEquals( \WCPay\PaymentMethods\Configs\Definitions\IdealDefinition::get_id(), array_keys( $result )[0] );
 	}
 
 	public function test_two_bnpls_enabled() {
