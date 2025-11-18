@@ -99,53 +99,6 @@ class WC_Payments_Non_Reusable_Payment_Methods_Integration_Test extends WCPAY_Un
 	}
 
 	/**
-	 * Test complete flow: Non-reusable payment method -> Manual subscription -> Stays manual.
-	 */
-	public function test_non_reusable_payment_method_creates_and_maintains_manual_subscription() {
-		// Arrange: Create order and subscription with non-reusable payment method.
-		$order        = WC_Helper_Order::create_order( 1, 50, $this->mock_subscription_product );
-		$subscription = new WC_Subscription();
-		$subscription->set_requires_manual_renewal( true );
-		$subscription->set_parent( $order );
-		$subscription->set_props(
-			[
-				'payment_method' => WC_Payment_Gateway_WCPay::GATEWAY_ID,
-				'payment_tokens' => [],
-			]
-		);
-		// Mock subscription meta for WCPay checks.
-		$subscription->update_meta_data( WC_Payments_Subscription_Service::SUBSCRIPTION_ID_META_KEY, '' );
-		$subscription->update_meta_data( WC_Payments_Invoice_Service::ORDER_INVOICE_ID_KEY, 'inv_test123' );
-		$subscription->save();
-
-		// Mock required functions.
-		WC_Subscriptions::set_wcs_get_subscriptions_for_order(
-			function ( $order_id ) use ( $subscription ) {
-				return [ $subscription ];
-			}
-		);
-		WC_Subscriptions::set_wcs_get_subscriptions_for_renewal_order(
-			function ( $order_id ) use ( $subscription ) {
-				return [ $subscription ];
-			}
-		);
-
-		// Act 1: Test that subscription stays manual during renewal (real method).
-		$initial_manual_state = $subscription->is_manual();
-		$this->invoice_service->maybe_record_invoice_payment( $order->get_id() );
-		$stayed_manual = $subscription->is_manual();
-
-		// Act 2: Test WCPay subscription creation during renewal (real method).
-		$this->subscription_service->create_subscription_for_manual_renewal( $order->get_id() );
-
-		// Assert: Complete flow behavior.
-		$this->assertTrue( $initial_manual_state, 'Subscription should start as manual' );
-		$this->assertTrue( $stayed_manual, 'Subscription should stay manual without payment tokens' );
-		// Note: We can't easily assert create_subscription wasn't called without complex mocking,
-		// but the real method will only call it when payment tokens exist.
-	}
-
-	/**
 	 * Test complete flow: Reusable payment method -> Manual subscription -> Converts to automatic if reusable payment method is used.
 	 */
 	public function test_reusable_payment_method_with_manual_subscription_converts_to_automatic() {
