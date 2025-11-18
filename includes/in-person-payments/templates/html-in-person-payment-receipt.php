@@ -12,7 +12,7 @@
  * @param  string $currency The currency to display.
  * @return string
  */
-function format_price_helper( array $product, string $currency ): string {
+function wcpay_format_price_helper( array $product, string $currency ): string {
 	$active_price  = $product['price'];
 	$regular_price = $product['regular_price'];
 	$has_discount  = $active_price !== $regular_price;
@@ -139,7 +139,7 @@ function format_price_helper( array $product, string $currency ): string {
 				<tr>
 					<td class="align-left">
 						<div><?php echo esc_html( $item['name'] ); ?></div>
-						<div><?php echo esc_html( $item['quantity'] ); ?> @ <?php echo wp_kses( format_price_helper( $item['product'], $order['currency'] ), 'post' ); ?></div>
+						<div><?php echo esc_html( $item['quantity'] ); ?> @ <?php echo wp_kses( wcpay_format_price_helper( $item['product'], $order['currency'] ), 'post' ); ?></div>
 						<div><?php printf( '%s: %s', esc_html__( 'SKU', 'woocommerce-payments' ), esc_html( $item['product']['id'] ) ); ?></div> <!-- TODO SKU or ID? -->
 					</td>
 					<td class="align-right align-top"><?php echo wp_kses( wc_price( $item['subtotal'], [ 'currency' => $order['currency'] ] ), 'post' ); ?></td>
