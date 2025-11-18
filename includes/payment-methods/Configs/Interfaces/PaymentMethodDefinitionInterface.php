@@ -20,7 +20,7 @@ interface PaymentMethodDefinitionInterface {
 	public static function get_id(): string;
 
 	/**
-	 * Get the keywords for the payment method. These are used by the duplicates detection service.
+	 * Get the keywords for the payment method. These are used by the duplicate detection service.
 	 *
 	 * @return string[]
 	 */
