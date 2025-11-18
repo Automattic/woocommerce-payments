@@ -15,14 +15,14 @@ export interface SpotlightProps {
 	heading: string;
 
 	/**
-	 * Description text (can include HTML).
+	 * Description content (can be a string or React component).
 	 */
-	description: string;
+	description: React.ReactNode;
 
 	/**
-	 * Optional disclaimer text shown at the bottom.
+	 * Optional disclaimer content shown at the bottom (can be a string or React component).
 	 */
-	disclaimer?: string;
+	disclaimer?: React.ReactNode;
 
 	/**
 	 * Image element or URL to display in the spotlight.

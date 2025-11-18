@@ -74,6 +74,21 @@ describe( 'Spotlight Component', () => {
 		).toBeInTheDocument();
 	} );
 
+	it( 'renders disclaimer with React component content', () => {
+		const propsWithReactDisclaimer = {
+			...defaultProps,
+			disclaimer: (
+				<>
+					*Terms and <em>conditions</em> apply
+				</>
+			),
+		};
+		render( <Spotlight { ...propsWithReactDisclaimer } /> );
+
+		expect( screen.getByText( /Terms and/i ) ).toBeInTheDocument();
+		expect( screen.getByText( 'conditions' ) ).toBeInTheDocument();
+	} );
+
 	it( 'renders image when provided as string', () => {
 		const propsWithImage = {
 			...defaultProps,
@@ -187,15 +202,19 @@ describe( 'Spotlight Component', () => {
 		jest.useRealTimers();
 	} );
 
-	it( 'renders description with HTML content', () => {
-		const propsWithHTML = {
+	it( 'renders description with React component content', () => {
+		const propsWithReactContent = {
 			...defaultProps,
-			description: 'Test with <strong>bold</strong> text',
+			description: (
+				<>
+					Test with <strong>bold</strong> text
+				</>
+			),
 		};
-		render( <Spotlight { ...propsWithHTML } /> );
+		render( <Spotlight { ...propsWithReactContent } /> );
 
-		const description = screen.getByText( /Test with/i );
-		expect( description.innerHTML ).toContain( '<strong>bold</strong>' );
+		expect( screen.getByText( /Test with/i ) ).toBeInTheDocument();
+		expect( screen.getByText( 'bold' ) ).toBeInTheDocument();
 	} );
 
 	it( 'applies correct CSS classes', () => {

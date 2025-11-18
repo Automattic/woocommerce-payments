@@ -133,18 +133,13 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 						<h2 className="wcpay-spotlight__heading">
 							{ heading }
 						</h2>
-						{ /* eslint-disable react/no-danger */ }
-						<p
-							className="wcpay-spotlight__description"
-							dangerouslySetInnerHTML={ {
-								__html: description,
-							} }
-						/>
-						{ /* eslint-enable react/no-danger */ }
+						<div className="wcpay-spotlight__description">
+							{ description }
+						</div>
 						{ disclaimer && (
-							<p className="wcpay-spotlight__disclaimer">
+							<div className="wcpay-spotlight__disclaimer">
 								{ disclaimer }
-							</p>
+							</div>
 						) }
 					</CardBody>
 

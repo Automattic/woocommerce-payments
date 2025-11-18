@@ -75,8 +75,14 @@ const KlarnaPromotionSpotlightExample: React.FC = () => {
 			<Spotlight
 				badge="Limited time offer"
 				heading="Save 50% on Klarna processing fees for 3 months"
-				description="In 2024, shoppers spent $52.4B using buy now, pay later. Enable flexible payments with Klarna in WooPayments for 50% off processing fees for 3 months."
-				disclaimer="*Nasdaq Oct. 2025"
+				description={
+					<>
+						In 2024, shoppers spent $52.4B using buy now, pay later.
+						Enable flexible payments with Klarna in WooPayments for
+						50% off processing fees for 3 months.
+					</>
+				}
+				disclaimer={ <>*Nasdaq Oct. 2025</> }
 				image={ <KlarnaIllustration /> }
 				primaryButtonLabel="Activate Klarna"
 				onPrimaryClick={ handleActivate }
