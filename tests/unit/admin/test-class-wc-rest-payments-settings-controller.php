@@ -284,9 +284,12 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			Payment_Method::LINK,
 		];
 
+		sort( $expected_method_ids );
+		sort( $available_method_ids );
+
 		$this->assertEquals(
-			sort( $expected_method_ids ),
-			sort( $available_method_ids )
+			$expected_method_ids,
+			$available_method_ids
 		);
 	}
 
