@@ -217,7 +217,11 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 		$ideal_method->method( 'is_subscription_item_in_cart' )->willReturn( true );
 
 		// Enable manual renewals.
-		WC_Subscriptions::set_wcs_is_manual_renewal_enabled( fn() => true );
+		WC_Subscriptions::set_wcs_is_manual_renewal_enabled(
+			function () {
+				return true;
+			}
+		);
 
 		// Act.
 		$result = $ideal_method->is_enabled_at_checkout( Country_Code::NETHERLANDS, true );
@@ -242,7 +246,11 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 		$ideal_method->method( 'is_subscription_item_in_cart' )->willReturn( true );
 
 		// Disable manual renewals.
-		WC_Subscriptions::set_wcs_is_manual_renewal_enabled( fn() => false );
+		WC_Subscriptions::set_wcs_is_manual_renewal_enabled(
+			function () {
+				return true;
+			}
+		);
 
 		// Act.
 		$result = $ideal_method->is_enabled_at_checkout( Country_Code::NETHERLANDS, true );
