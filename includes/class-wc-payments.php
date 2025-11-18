@@ -325,6 +325,13 @@ class WC_Payments {
 	private static $payment_method_service;
 
 	/**
+	 * Instance of WC_Payments_Remediate_Canceled_Auth_Fees, created in init function
+	 *
+	 * @var WC_Payments_Remediate_Canceled_Auth_Fees
+	 */
+	private static $fee_remediation;
+
+	/**
 	 * Entry point to the initialization logic.
 	 */
 	public static function init() {
@@ -357,6 +364,7 @@ class WC_Payments {
 		add_action( 'admin_init', [ __CLASS__, 'add_woo_admin_notes' ] );
 		add_action( 'admin_init', [ __CLASS__, 'remove_deprecated_notes' ] );
 		add_action( 'init', [ __CLASS__, 'install_actions' ] );
+		add_action( 'upgrader_process_complete', [ __CLASS__, 'on_plugin_update' ], 10, 2 );
 
 		add_action( 'woocommerce_blocks_payment_method_type_registration', [ __CLASS__, 'register_checkout_gateway' ] );
 
@@ -504,6 +512,7 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-order-service.php';
 		include_once __DIR__ . '/class-wc-payments-order-success-page.php';
 		include_once __DIR__ . '/class-wc-payments-file-service.php';
+		include_once __DIR__ . '/migrations/class-wc-payments-remediate-canceled-auth-fees.php';
 		include_once __DIR__ . '/class-wc-payments-webhook-processing-service.php';
 		include_once __DIR__ . '/class-wc-payments-webhook-reliability-service.php';
 		include_once __DIR__ . '/fraud-prevention/class-fraud-prevention-service.php';
@@ -564,6 +573,7 @@ class WC_Payments {
 		self::$incentives_service                   = new WC_Payments_Incentives_Service( self::$database_cache );
 		self::$duplicate_payment_prevention_service = new Duplicate_Payment_Prevention_Service();
 		self::$duplicates_detection_service         = new Duplicates_Detection_Service();
+		self::$fee_remediation                      = new WC_Payments_Remediate_Canceled_Auth_Fees();
 
 		( new WooPay_Scheduler( self::$api_client ) )->init();
 
@@ -576,6 +586,7 @@ class WC_Payments {
 		self::$compatibility_service->init_hooks();
 		self::$customer_service->init_hooks();
 		self::$token_service->init_hooks();
+		self::$fee_remediation->init();
 
 		/**
 		 * FLAG: PAYMENT_METHODS_LIST
@@ -712,6 +723,7 @@ class WC_Payments {
 		require_once __DIR__ . '/migrations/class-erase-bnpl-announcement-meta.php';
 		require_once __DIR__ . '/migrations/class-erase-deprecated-flags-and-options.php';
 		require_once __DIR__ . '/migrations/class-manual-capture-payment-method-settings-update.php';
+		require_once __DIR__ . '/migrations/class-wc-payments-remediate-canceled-auth-fees.php';
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new Allowed_Payment_Request_Button_Types_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Allowed_Payment_Request_Button_Sizes_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Update_Service_Data_From_Server( self::get_account_service() ), 'maybe_migrate' ] );
@@ -1526,6 +1538,34 @@ class WC_Payments {
 	 */
 	public static function update_plugin_version() {
 		update_option( 'woocommerce_woocommerce_payments_version', WCPAY_VERSION_NUMBER );
+	}
+
+	/**
+	 * Handle plugin updates.
+	 *
+	 * @param WP_Upgrader $upgrader WP_Upgrader instance.
+	 * @param array       $options  Array of update data.
+	 * @return void
+	 */
+	public static function on_plugin_update( $upgrader, $options ) {
+		if ( 'update' !== $options['action'] || 'plugin' !== $options['type'] ) {
+			return;
+		}
+
+		// Check if WooPayments was updated.
+		$plugins = isset( $options['plugins'] ) ? $options['plugins'] : [];
+		if ( ! in_array( plugin_basename( WCPAY_PLUGIN_FILE ), $plugins, true ) ) {
+			return;
+		}
+
+		// Get new version.
+		$plugin_data = get_plugin_data( WCPAY_PLUGIN_FILE );
+		$new_version = $plugin_data['Version'];
+
+		// Trigger version gate check.
+		if ( isset( self::$fee_remediation ) ) {
+			self::$fee_remediation->maybe_schedule_remediation( $new_version );
+		}
 	}
 
 	/**
