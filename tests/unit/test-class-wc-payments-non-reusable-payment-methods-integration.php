@@ -196,7 +196,7 @@ class WC_Payments_Non_Reusable_Payment_Methods_Integration_Test extends WCPAY_Un
 
 		// Assert: Complete flow behavior.
 		$this->assertTrue( $initial_manual_state, 'Subscription should start as manual' );
-		$this->assertNotTrue( $stayed_manual, 'Subscription should stay manual even with payment tokens' );
+		$this->assertNotTrue( $stayed_manual, 'Subscription should become automatic when payment tokens are present' );
 		// Note: We can't easily assert create_subscription was called without complex mocking,
 		// but the real method will call it when payment tokens exist.
 	}
