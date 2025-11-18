@@ -146,9 +146,9 @@ class WC_Payments_Non_Reusable_Payment_Methods_Integration_Test extends WCPAY_Un
 	}
 
 	/**
-	 * Test complete flow: Reusable payment method -> Manual subscription -> Converts to automattic if reusable payment method is used.
+	 * Test complete flow: Reusable payment method -> Manual subscription -> Converts to automatic if reusable payment method is used.
 	 */
-	public function test_reusable_payment_method_with_manual_subscription_stays_manual() {
+	public function test_reusable_payment_method_with_manual_subscription_converts_to_automatic() {
 		// Arrange: Create order and subscription with reusable payment method.
 		$order        = WC_Helper_Order::create_order( 1, 50, $this->mock_subscription_product );
 		$subscription = new WC_Subscription();
