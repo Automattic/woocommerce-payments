@@ -13,6 +13,7 @@ use WCPAY_UnitTestCase;
 use WC_Payments_Account;
 use WC_Payments_Token_Service;
 use WC_Payments;
+use WC_Subscriptions;
 
 /**
  * UPE_Payment_Method unit tests
@@ -208,30 +209,24 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_is_enabled_at_checkout_allows_non_reusable_when_manual_renewals_accepted() {
 		// Arrange: Mock a non-reusable payment method (iDEAL).
-		$ideal_method = $this->createMock( UPE_Payment_Method::class );
+		$ideal_method = $this->getMockBuilder( UPE_Payment_Method::class )
+			->onlyMethods( [ 'is_reusable', 'is_subscription_item_in_cart' ] )
+			->disableOriginalConstructor()
+			->getMock();
 		$ideal_method->method( 'is_reusable' )->willReturn( false );
-		$ideal_method->method( 'is_enabled_at_checkout' )->willReturnCallback(
-			function ( $account_country, $skip_limits = false ) {
-				// Simulate the actual logic: if manual renewals are accepted, allow non-reusable methods.
-				$accept_manual_renewals = get_option( 'woocommerce_subscriptions_accept_manual_renewals', 'no' );
-				if ( 'yes' === $accept_manual_renewals ) {
-					return true;
-				}
-				return false; // Simplified for test.
-			}
-		);
+		$ideal_method->method( 'is_subscription_item_in_cart' )->willReturn( true );
 
 		// Enable manual renewals.
-		update_option( 'woocommerce_subscriptions_accept_manual_renewals', 'yes' );
+		WC_Subscriptions::set_wcs_is_manual_renewal_enabled( fn() => true );
 
 		// Act.
-		$result = $ideal_method->is_enabled_at_checkout( Country_Code::NETHERLANDS );
+		$result = $ideal_method->is_enabled_at_checkout( Country_Code::NETHERLANDS, true );
 
 		// Assert.
 		$this->assertTrue( $result, 'Non-reusable payment methods should be enabled when manual renewals are accepted' );
 
 		// Cleanup.
-		delete_option( 'woocommerce_subscriptions_accept_manual_renewals' );
+		WC_Subscriptions::set_wcs_is_manual_renewal_enabled( null );
 	}
 
 	/**
@@ -239,31 +234,23 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 	 */
 	public function test_is_enabled_at_checkout_disables_non_reusable_without_manual_renewals() {
 		// Arrange: Mock a non-reusable payment method.
-		$ideal_method = $this->createMock( UPE_Payment_Method::class );
+		$ideal_method = $this->getMockBuilder( UPE_Payment_Method::class )
+			->onlyMethods( [ 'is_reusable', 'is_subscription_item_in_cart' ] )
+			->disableOriginalConstructor()
+			->getMock();
 		$ideal_method->method( 'is_reusable' )->willReturn( false );
-		$ideal_method->method( 'is_enabled_at_checkout' )->willReturnCallback(
-			function ( $account_country, $skip_limits = false ) {
-				// Simulate: without manual renewals, non-reusable methods should be disabled for subscriptions.
-				$accept_manual_renewals = get_option( 'woocommerce_subscriptions_accept_manual_renewals', 'no' );
-				if ( 'yes' !== $accept_manual_renewals ) {
-					// Check if in subscription context.
-					// For this test, we'll assume we're in subscription context.
-					return false;
-				}
-				return true;
-			}
-		);
+		$ideal_method->method( 'is_subscription_item_in_cart' )->willReturn( true );
 
 		// Disable manual renewals.
-		update_option( 'woocommerce_subscriptions_accept_manual_renewals', 'no' );
+		WC_Subscriptions::set_wcs_is_manual_renewal_enabled( fn() => false );
 
 		// Act.
-		$result = $ideal_method->is_enabled_at_checkout( Country_Code::NETHERLANDS );
+		$result = $ideal_method->is_enabled_at_checkout( Country_Code::NETHERLANDS, true );
 
 		// Assert.
 		$this->assertFalse( $result, 'Non-reusable payment methods should be disabled for subscriptions when manual renewals are not accepted' );
 
 		// Cleanup.
-		delete_option( 'woocommerce_subscriptions_accept_manual_renewals' );
+		WC_Subscriptions::set_wcs_is_manual_renewal_enabled( null );
 	}
 }
