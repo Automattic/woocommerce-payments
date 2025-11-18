@@ -132,8 +132,8 @@ class WC_Payments_Non_Reusable_Payment_Methods_Integration_Test extends WCPAY_Un
 			->willReturnCallback(
 				function ( $subscription_or_order ) {
 					if ( is_a( $subscription_or_order, 'WC_Subscription' ) ) {
-							$tokens = $subscription_or_order->get_payment_tokens();
-							return ! empty( $tokens ) ? $tokens[0] : null;
+						$tokens = $subscription_or_order->get_payment_tokens();
+						return ! empty( $tokens ) ? $tokens[0] : null;
 					}
 					return null;
 				}
