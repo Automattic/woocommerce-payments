@@ -149,7 +149,7 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 						size="small"
 						className="wcpay-spotlight__footer"
 					>
-						<div className="wcpay-spotlight__actions">
+						<Flex justify="flex-end" gap={ 3 }>
 							{ secondaryButtonLabel && (
 								<Button
 									className="wcpay-spotlight__secondary-btn"
@@ -166,7 +166,7 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 							>
 								{ primaryButtonLabel }
 							</Button>
-						</div>
+						</Flex>
 					</CardFooter>
 				</Card>
 			</div>
