@@ -19,7 +19,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { SpotlightProps } from './types';
-import Badge from 'components/badge';
+import Chip from 'components/chip';
 import './style.scss';
 
 const showDelayMs = 4000; // 4 seconds
@@ -128,7 +128,7 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 					<CardBody className="wcpay-spotlight__body" size="small">
 						{ badge && (
 							<div className="wcpay-spotlight__badge">
-								<Badge variant="info">{ badge }</Badge>
+								<Chip message={ badge } type="primary" />
 							</div>
 						) }
 						<h2 className="wcpay-spotlight__heading">
