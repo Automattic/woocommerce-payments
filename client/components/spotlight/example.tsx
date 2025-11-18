@@ -7,28 +7,7 @@ import React from 'react';
  * Internal dependencies
  */
 import Spotlight from './index';
-
-/**
- * Example SVG illustration for Klarna promotion.
- * Replace this with the actual SVG provided by design.
- */
-const KlarnaIllustration = () => (
-	<svg
-		width="100%"
-		height="auto"
-		viewBox="0 0 300 200"
-		fill="none"
-		xmlns="http://www.w3.org/2000/svg"
-	>
-		<rect width="300" height="200" fill="#F0F6FC" />
-		<text x="150" y="100" textAnchor="middle" fill="#1D4ED8" fontSize="16">
-			Klarna + WooPayments Illustration
-		</text>
-		<text x="150" y="120" textAnchor="middle" fill="#757575" fontSize="12">
-			(Replace with actual SVG)
-		</text>
-	</svg>
-);
+import KlarnaPromotionIllustration from 'assets/images/illustrations/klarna-promotion-spotlight.svg?asset';
 
 /**
  * Example usage of the Spotlight component with Klarna promotion.
@@ -83,7 +62,7 @@ const KlarnaPromotionSpotlightExample: React.FC = () => {
 					</>
 				}
 				disclaimer={ <>*Nasdaq Oct. 2025</> }
-				image={ <KlarnaIllustration /> }
+				image={ KlarnaPromotionIllustration }
 				primaryButtonLabel="Activate Klarna"
 				onPrimaryClick={ handleActivate }
 				secondaryButtonLabel="Learn more"
