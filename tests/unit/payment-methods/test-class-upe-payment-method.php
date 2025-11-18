@@ -248,7 +248,7 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 		// Disable manual renewals.
 		WC_Subscriptions::set_wcs_is_manual_renewal_enabled(
 			function () {
-				return true;
+				return false;
 			}
 		);
 
