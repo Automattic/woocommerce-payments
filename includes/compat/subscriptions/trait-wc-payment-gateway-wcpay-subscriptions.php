@@ -668,6 +668,9 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			return $allcaps;
 		}
 
+		if ( ! isset( $args[2] ) ) {
+			return $allcaps;
+		}
 		$subscription = wcs_get_subscription( $args[2] );
 		// Only process manual subscriptions with non-reusable payment methods.
 		$original_payment_method_id = $subscription->get_meta( '_wcpay_original_payment_method_id', true );
