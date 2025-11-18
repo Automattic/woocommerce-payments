@@ -209,7 +209,7 @@ class WC_Subscriptions {
 	public static $wcs_is_manual_renewal_required = null;
 
 	/**
-	 * wcs_is_manual_renewal_required mock.
+	 * wcs_is_manual_renewal_enabled mock.
 	 *
 	 * @var function
 	 */
