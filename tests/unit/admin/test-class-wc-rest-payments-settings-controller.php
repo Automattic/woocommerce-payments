@@ -26,6 +26,7 @@ use WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\IdealDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\P24Definition;
 use WCPay\PaymentMethods\Configs\Definitions\SofortDefinition;
+use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 use WCPay\Session_Rate_Limiter;
 
 /**
@@ -168,6 +169,11 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			->method( 'is_subscription_item_in_cart' )
 			->will( $this->returnValue( false ) );
 
+		$registry = PaymentMethodDefinitionRegistry::instance();
+		foreach ( $payment_method_definitions as $definition_class ) {
+			$registry->register_payment_method( $definition_class );
+		}
+
 		foreach ( $payment_method_definitions as $definition_class ) {
 			$mock_payment_method_instance = $this->getMockBuilder( UPE_Payment_Method::class )
 				->setConstructorArgs( [ $token_service, $definition_class ] )
@@ -238,6 +244,13 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		WC_Blocks_REST_API_Registration_Preventer::stop_preventing();
 		// Restore the cache service in the main class.
 		WC_Payments::set_database_cache( $this->_cache );
+
+		// resetting to prevent test pollution.
+		$reflection        = new \ReflectionClass( PaymentMethodDefinitionRegistry::class );
+		$instance_property = $reflection->getProperty( 'instance' );
+		$instance_property->setAccessible( true );
+		$instance_property->setValue( null, null );
+		$instance_property->setAccessible( false );
 	}
 
 	public function test_get_settings_request_returns_status_code_200() {
@@ -278,9 +291,11 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			Payment_Method::BECS,
 			Payment_Method::BANCONTACT,
 			Payment_Method::EPS,
+			Payment_Method::GIROPAY,
 			Payment_Method::IDEAL,
 			Payment_Method::SEPA,
 			Payment_Method::P24,
+			Payment_Method::SOFORT,
 			Payment_Method::LINK,
 		];
 

@@ -9,6 +9,7 @@ use WCPay\Duplicates_Detection_Service;
 use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Klarna_Payment_Method;
+use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 
 /**
  * WCPay\Duplicates_Detection_Service_Test unit tests.
@@ -54,10 +55,20 @@ class Duplicates_Detection_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->cached_gateways                     = WC()->payment_gateways()->payment_gateways;
 		WC()->payment_gateways()->payment_gateways = [ $this->woopayments_gateway, $this->gateway_from_another_plugin ];
+
+		$registry = PaymentMethodDefinitionRegistry::instance();
+		$registry->register_payment_method( \WCPay\PaymentMethods\Configs\Definitions\IdealDefinition::class );
 	}
 
 	public function tear_down() {
 		WC()->payment_gateways()->payment_gateways = $this->cached_gateways;
+
+		// resetting to prevent test pollution.
+		$reflection        = new \ReflectionClass( PaymentMethodDefinitionRegistry::class );
+		$instance_property = $reflection->getProperty( 'instance' );
+		$instance_property->setAccessible( true );
+		$instance_property->setValue( null, null );
+		$instance_property->setAccessible( false );
 	}
 
 	public function test_two_cc_both_enabled() {
