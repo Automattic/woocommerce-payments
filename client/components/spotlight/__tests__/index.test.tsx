@@ -96,7 +96,7 @@ describe( 'Spotlight Component', () => {
 		};
 		render( <Spotlight { ...propsWithImage } /> );
 
-		const image = screen.getByAltText( 'Promotion image' );
+		const image = screen.getByAltText( 'Spotlight image' );
 		expect( image ).toBeInTheDocument();
 		expect( image ).toHaveAttribute(
 			'src',
