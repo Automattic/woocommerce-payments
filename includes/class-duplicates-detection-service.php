@@ -14,6 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 use WC_Payments;
 use WCPay\Payment_Methods\Afterpay_Payment_Method;
 use WCPay\Payment_Methods\Becs_Payment_Method;
+use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Payment_Methods\Klarna_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\Grabpay_Payment_Method;

@@ -28,7 +28,7 @@ class GiropayDefinition implements PaymentMethodDefinitionInterface {
 	}
 
 	/**
-	 * Get the keywords for the payment method. These are used by the duplicates detection service.
+	 * Get the keywords for the payment method. These are used by the duplicate detection service.
 	 *
 	 * @return string[]
 	 */
@@ -74,7 +74,7 @@ class GiropayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_description( ?string $account_country = null ): string {
-		return __( 'Expand your business with giropay — Germany\'s second most popular payment system . ', 'woocommerce-payments' );
+		return __( 'Expand your business with giropay — Germany\'s second most popular payment system.', 'woocommerce-payments' );
 	}
 
 	/**
@@ -150,7 +150,7 @@ class GiropayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_icon_url( ?string $account_country = null ): string {
-		return plugins_url( 'assets / images / payment - methods / giropay . svg', WCPAY_PLUGIN_FILE );
+		return plugins_url( 'assets/images/payment-methods/giropay.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**

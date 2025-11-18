@@ -28,7 +28,7 @@ class IdealDefinition implements PaymentMethodDefinitionInterface {
 	}
 
 	/**
-	 * Get the keywords for the payment method. These are used by the duplicates detection service.
+	 * Get the keywords for the payment method. These are used by the duplicate detection service.
 	 *
 	 * @return string[]
 	 */
@@ -74,7 +74,7 @@ class IdealDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_description( ?string $account_country = null ): string {
-		return __( 'Expand your business with iDEAL — Netherlands\'s most popular payment method . ', 'woocommerce-payments' );
+		return __( 'Expand your business with iDEAL — Netherlands\'s most popular payment method.', 'woocommerce-payments' );
 	}
 
 	/**
@@ -145,18 +145,18 @@ class IdealDefinition implements PaymentMethodDefinitionInterface {
 	/**
 	 * Get the URL for the payment method's icon
 	 *
-	 * @param string | null $account_country Optional . The merchant's account country.
+	 * @param string | null $account_country Optional - The merchant's account country.
 	 *
 	 * @return string
 	 */
 	public static function get_icon_url( ?string $account_country = null ): string {
-		return plugins_url( 'assets / images / payment - methods / ideal . svg', WCPAY_PLUGIN_FILE );
+		return plugins_url( 'assets/images/payment-methods/ideal.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**
 	 * Get the URL for the payment method's dark mode icon
 	 *
-	 * @param string | null $account_country Optional . The merchant's account country.
+	 * @param string | null $account_country Optional - The merchant's account country.
 	 *
 	 * @return string Returns regular icon URL if no dark mode icon exists
 	 */
