@@ -7,7 +7,14 @@
 
 namespace WCPay\PaymentMethods\Configs\Registry;
 
+use WCPay\PaymentMethods\Configs\Definitions\AffirmDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\AlipayDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\EpsDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\IdealDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\P24Definition;
+use WCPay\PaymentMethods\Configs\Definitions\SofortDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\WechatPayDefinition;
 use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface;
 
@@ -30,7 +37,14 @@ class PaymentMethodDefinitionRegistry {
 	 */
 	private $available_definitions = [
 		// Add new payment method definitions here.
+		AffirmDefinition::class,
 		AlipayDefinition::class,
+		BancontactDefinition::class,
+		EpsDefinition::class,
+		GiropayDefinition::class,
+		IdealDefinition::class,
+		P24Definition::class,
+		SofortDefinition::class,
 		WechatPayDefinition::class,
 	];
 
