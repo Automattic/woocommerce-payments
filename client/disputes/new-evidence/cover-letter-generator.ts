@@ -59,13 +59,19 @@ const isEvidenceString = (
 	return typeof evidence === 'string';
 };
 
-export const generateAttachments = ( dispute: ExtendedDispute ): string => {
+export const generateAttachments = (
+	dispute: ExtendedDispute,
+	duplicateStatus?: string
+): string => {
 	const attachments: string[] = [];
 	let attachmentCount = 0;
 
-	// For duplicate disputes, check for refund receipt first (uses uncategorized_file)
+	// For duplicate disputes with is_duplicate status, check for refund receipt first (uses uncategorized_file)
 	// This ensures it shows as "Refund receipt" rather than "Other documents"
-	if ( dispute.reason === 'duplicate' ) {
+	if (
+		dispute.reason === 'duplicate' &&
+		duplicateStatus === 'is_duplicate'
+	) {
 		const refundReceipt =
 			dispute.evidence?.[
 				DOCUMENT_FIELD_KEYS.REFUND_RECEIPT_DOCUMENTATION
@@ -125,9 +131,10 @@ export const generateAttachments = ( dispute: ExtendedDispute ): string => {
 
 	standardAttachments.forEach( ( { key, label } ) => {
 		const evidence = dispute.evidence?.[ key ];
-		// For duplicate disputes, skip uncategorized_file since we already processed it as refund receipt
+		// For duplicate disputes with is_duplicate status, skip uncategorized_file since we already processed it as refund receipt
 		if (
 			dispute.reason === 'duplicate' &&
+			duplicateStatus === 'is_duplicate' &&
 			key === DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE
 		) {
 			return;
@@ -620,7 +627,7 @@ export const generateCoverLetter = (
 		duplicateStatus: duplicateStatus,
 	};
 
-	const attachmentsList = generateAttachments( dispute );
+	const attachmentsList = generateAttachments( dispute, duplicateStatus );
 	const header = generateHeader( data );
 	const recipient = generateRecipient( data );
 	const greeting = __(
