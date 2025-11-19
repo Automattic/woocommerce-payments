@@ -61,6 +61,8 @@ export const useExpressCheckout = ( {
 				return;
 			}
 
+			// console.log( '###', billing, shippingData );
+
 			const shippingAddressRequired = shippingData?.needsShipping;
 
 			let shippingRates;
@@ -136,6 +138,8 @@ export const useExpressCheckout = ( {
 				allowedShippingCountries: getExpressCheckoutData( 'checkout' )
 					.allowed_shipping_countries,
 			};
+
+			// console.log( '### options', options );
 
 			// Click event from WC Blocks.
 			onClick();

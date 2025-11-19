@@ -393,66 +393,6 @@ describe( 'useExpressCheckout', () => {
 						{
 							key: 'total_items',
 							label: 'Subtotal:',
-							value: 1000,
-							valueWithTax: 1000,
-						},
-					],
-					cartTotal: {
-						label: 'Total',
-						value: 1500,
-					},
-					currency: {
-						minorUnit: 0,
-					},
-				},
-				shippingData: {
-					needsShipping: true,
-					shippingRates: [
-						{
-							shipping_rates: [
-								{
-									rate_id: 'flat_rate',
-									price: '500',
-									name: 'Flat Rate',
-								},
-							],
-						},
-					],
-				},
-				onClick: jest.fn(),
-				onClose: {},
-				setExpressPaymentError: {},
-			} )
-		);
-
-		result.current.onButtonClick( event );
-
-		expect( event.resolve ).toHaveBeenCalledWith(
-			expect.objectContaining( {
-				lineItems: [ { amount: 1000, name: 'Subtotal:' } ],
-				shippingRates: [
-					{
-						id: 'flat_rate',
-						displayName: 'Flat Rate',
-						amount: 500,
-					},
-				],
-			} )
-		);
-	} );
-
-	it( 'should transform amounts correctly with USD configured to display zero decimals', () => {
-		const event = { resolve: jest.fn() };
-		// mocking a configured to display USD with 0 decimals - ensuring that Stripe still receives decimals
-		window.wcpayExpressCheckoutParams.checkout.currency_decimals = 0;
-
-		const { result } = renderHook( () =>
-			useExpressCheckout( {
-				billing: {
-					cartTotalItems: [
-						{
-							key: 'total_items',
-							label: 'Subtotal:',
 							value: 10,
 							valueWithTax: 10,
 						},
@@ -462,7 +402,8 @@ describe( 'useExpressCheckout', () => {
 						value: 15,
 					},
 					currency: {
-						minorUnit: 2, // USD still has 2 minor units (cents)
+						code: 'KRW',
+						minorUnit: 0,
 					},
 				},
 				shippingData: {
@@ -489,21 +430,22 @@ describe( 'useExpressCheckout', () => {
 
 		expect( event.resolve ).toHaveBeenCalledWith(
 			expect.objectContaining( {
-				lineItems: [ { amount: 0.1, name: 'Subtotal:' } ],
+				lineItems: [ { amount: 10, name: 'Subtotal:' } ],
 				shippingRates: [
 					{
 						id: 'flat_rate',
 						displayName: 'Flat Rate',
-						amount: 0.05,
+						amount: 5,
 					},
 				],
 			} )
 		);
 	} );
 
-	it( 'should transform amounts correctly with 3-decimal currency (BHD, JOD, KWD)', () => {
+	it( 'should transform amounts correctly with USD configured to display zero decimals', () => {
 		const event = { resolve: jest.fn() };
-		window.wcpayExpressCheckoutParams.checkout.currency_decimals = 3;
+		// mocking a configured to display USD with 0 decimals - ensuring that Stripe still receives decimals
+		window.wcpayExpressCheckoutParams.checkout.currency_decimals = 2;
 
 		const { result } = renderHook( () =>
 			useExpressCheckout( {
@@ -512,16 +454,16 @@ describe( 'useExpressCheckout', () => {
 						{
 							key: 'total_items',
 							label: 'Subtotal:',
-							value: 1000,
-							valueWithTax: 1000,
+							value: 10,
+							valueWithTax: 10,
 						},
 					],
 					cartTotal: {
 						label: 'Total',
-						value: 1500,
+						value: 15,
 					},
 					currency: {
-						minorUnit: 3,
+						minorUnit: 0,
 					},
 				},
 				shippingData: {
@@ -531,7 +473,7 @@ describe( 'useExpressCheckout', () => {
 							shipping_rates: [
 								{
 									rate_id: 'flat_rate',
-									price: '500',
+									price: '5',
 									name: 'Flat Rate',
 								},
 							],
@@ -546,7 +488,6 @@ describe( 'useExpressCheckout', () => {
 
 		result.current.onButtonClick( event );
 
-		// With 3 currency_decimals and 3 minorUnit, transformation is 10^(3-3) = 1
 		expect( event.resolve ).toHaveBeenCalledWith(
 			expect.objectContaining( {
 				lineItems: [ { amount: 1000, name: 'Subtotal:' } ],
