@@ -144,22 +144,16 @@ describe( 'Recommended Documents', () => {
 				undefined,
 				'is_duplicate'
 			);
-			expect( fields ).toHaveLength( 5 );
+			expect( fields ).toHaveLength( 3 );
 			expect( fields[ 0 ].key ).toBe( 'receipt' );
-			expect( fields[ 0 ].label ).toBe( 'Original order receipt' );
+			expect( fields[ 0 ].label ).toBe( 'Order receipt' );
 			expect( fields[ 1 ].key ).toBe( 'uncategorized_file' ); // Refund receipt
 			expect( fields[ 1 ].label ).toBe( 'Refund receipt' );
 			expect( fields[ 1 ].description ).toBe(
-				'Confirmation the refund was processed.'
+				'A confirmation that the refund was processed.'
 			);
-			expect( fields[ 2 ].key ).toBe( 'customer_communication' );
-			expect( fields[ 2 ].label ).toBe( 'Customer communication' );
-			expect( fields[ 3 ].key ).toBe( 'refund_policy' );
-			expect( fields[ 3 ].label ).toBe(
-				'Copy of the store refund policy'
-			);
-			expect( fields[ 4 ].key ).toBe( 'uncategorized_file' ); // Other documents
-			expect( fields[ 4 ].label ).toBe( 'Other documents' );
+			expect( fields[ 2 ].key ).toBe( 'refund_policy' );
+			expect( fields[ 2 ].label ).toBe( 'Refund policy' );
 		} );
 
 		it( 'should return fields for duplicate reason with is_not_duplicate status', () => {
@@ -182,21 +176,6 @@ describe( 'Recommended Documents', () => {
 			expect( fields[ 1 ].key ).toBe( 'refund_policy' );
 			expect( fields[ 2 ].key ).toBe( 'customer_communication' );
 			expect( fields[ 3 ].key ).toBe( 'uncategorized_file' );
-		} );
-
-		it( 'should accept productType parameter', () => {
-			// Test that productType parameter is accepted (for future extensibility)
-			const fields = getRecommendedDocumentFields(
-				'duplicate',
-				undefined,
-				'is_duplicate',
-				'booking_reservation'
-			);
-			expect( fields ).toHaveLength( 5 );
-			// Product type doesn't affect duplicate evidence (for now)
-			expect( fields[ 0 ].key ).toBe( 'receipt' );
-			expect( fields[ 0 ].label ).toBe( 'Original order receipt' );
-			expect( fields[ 1 ].key ).toBe( 'uncategorized_file' ); // Refund receipt
 		} );
 
 		it( 'should maintain correct order of fields', () => {

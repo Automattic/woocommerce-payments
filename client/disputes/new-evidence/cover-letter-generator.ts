@@ -63,7 +63,27 @@ export const generateAttachments = ( dispute: ExtendedDispute ): string => {
 	const attachments: string[] = [];
 	let attachmentCount = 0;
 
-	// Standard attachment logic for other dispute reasons
+	// For duplicate disputes, check for refund receipt first (uses uncategorized_file)
+	// This ensures it shows as "Refund receipt" rather than "Other documents"
+	if ( dispute.reason === 'duplicate' ) {
+		const refundReceipt =
+			dispute.evidence?.[
+				DOCUMENT_FIELD_KEYS.REFUND_RECEIPT_DOCUMENTATION
+			];
+		if ( refundReceipt && isEvidenceString( refundReceipt ) ) {
+			attachmentCount++;
+			attachments.push(
+				sprintf(
+					/* translators: %1$s: label, %2$s: attachment letter */
+					__( '• %1$s (Attachment %2$s)', 'woocommerce-payments' ),
+					__( 'Refund receipt', 'woocommerce-payments' ),
+					String.fromCharCode( 64 + attachmentCount )
+				)
+			);
+		}
+	}
+
+	// Standard attachment logic for all dispute reasons
 	const standardAttachments = [
 		{
 			key: DOCUMENT_FIELD_KEYS.RECEIPT,
@@ -80,10 +100,6 @@ export const generateAttachments = ( dispute: ExtendedDispute ): string => {
 		{
 			key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
 			label: __( 'Store refund policy', 'woocommerce-payments' ),
-		},
-		{
-			key: DOCUMENT_FIELD_KEYS.REFUND_RECEIPT_DOCUMENTATION,
-			label: __( 'Refund receipt', 'woocommerce-payments' ),
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.SHIPPING_DOCUMENTATION,
@@ -109,6 +125,14 @@ export const generateAttachments = ( dispute: ExtendedDispute ): string => {
 
 	standardAttachments.forEach( ( { key, label } ) => {
 		const evidence = dispute.evidence?.[ key ];
+		// For duplicate disputes, skip uncategorized_file since we already processed it as refund receipt
+		if (
+			dispute.reason === 'duplicate' &&
+			key === DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE
+		) {
+			return;
+		}
+
 		if ( evidence && isEvidenceString( evidence ) ) {
 			attachmentCount++;
 			attachments.push(

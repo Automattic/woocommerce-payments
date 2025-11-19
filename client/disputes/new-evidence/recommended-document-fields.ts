@@ -18,7 +18,7 @@ export const DOCUMENT_FIELD_KEYS = {
 	CUSTOMER_SIGNATURE: 'customer_signature',
 	UNCATEGORIZED_FILE: 'uncategorized_file',
 	REFUND_POLICY: 'refund_policy',
-	REFUND_RECEIPT_DOCUMENTATION: 'duplicate_charge_documentation',
+	REFUND_RECEIPT_DOCUMENTATION: 'uncategorized_file',
 	CANCELLATION_POLICY: 'cancellation_policy',
 	ACCESS_ACTIVITY_LOG: 'access_activity_log',
 	SERVICE_DOCUMENTATION: 'service_documentation',
@@ -26,20 +26,17 @@ export const DOCUMENT_FIELD_KEYS = {
 } as const;
 
 /**
- * Get recommended document fields based on dispute reason and product type
+ * Get recommended document fields based on dispute reason
  *
  * @param {string} reason - The dispute reason
  * @param {string} refundStatus - The refund status (for credit_not_processed disputes)
  * @param {string} duplicateStatus - The duplicate status (for duplicate disputes)
- * @param {string} productType - The product type (for product-specific evidence recommendations)
  * @return {Array<{key: string, label: string}>} Array of recommended document fields
  */
 const getRecommendedDocumentFields = (
 	reason: string,
 	refundStatus?: string,
-	duplicateStatus?: string,
-	// eslint-disable-next-line @typescript-eslint/no-unused-vars
-	productType?: string // Reserved for future product-type-specific evidence logic
+	duplicateStatus?: string
 ): Array< RecommendedDocument > => {
 	// Define fields with their order
 	const orderedFields = [
@@ -137,11 +134,11 @@ const getRecommendedDocumentFields = (
 		duplicate:
 			duplicateStatus === 'is_duplicate'
 				? [
-						// For is_duplicate: Original order receipt, Refund receipt, Customer communication, Copy of store refund policy, Other documents
+						// For is_duplicate: Order receipt, Refund receipt, Refund policy
 						{
 							key: DOCUMENT_FIELD_KEYS.RECEIPT,
 							label: __(
-								'Original order receipt',
+								'Order receipt',
 								'woocommerce-payments'
 							),
 							description: __(
@@ -166,7 +163,7 @@ const getRecommendedDocumentFields = (
 						{
 							key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
 							label: __(
-								'Copy of the store refund policy',
+								'Refund policy',
 								'woocommerce-payments'
 							),
 							description: __(
@@ -178,10 +175,12 @@ const getRecommendedDocumentFields = (
 				  ]
 				: [
 						// For is_not_duplicate: Order receipt, Customer communication, Refund policy, Other documents
+						// NOTE: This is a basic implementation. Full implementation should include duplicate_charge_documentation
+						// field as per spec (to be implemented in WOOPMNT-5436)
 						{
 							key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
 							label: __(
-								'Copy of the store refund policy',
+								'Refund policy',
 								'woocommerce-payments'
 							),
 							description: __(
@@ -352,13 +351,11 @@ const getRecommendedDocumentFields = (
 	// Filter base fields based on reason and status
 	let baseFields = orderedFields;
 
-	// For duplicate disputes with is_duplicate status, exclude receipt only
-	// as it's handled in reason-specific fields with a different label
-	// Customer communication is kept as it's recommended for all reason codes
+	// For duplicate disputes with is_duplicate status, exclude all base fields
+	// The spec provides a complete list of exactly 3 fields for Scenario A:
+	// Order receipt, Refund receipt, Refund policy
 	if ( reason === 'duplicate' && duplicateStatus === 'is_duplicate' ) {
-		baseFields = orderedFields.filter(
-			( field ) => field.key !== DOCUMENT_FIELD_KEYS.RECEIPT
-		);
+		baseFields = [];
 	}
 
 	// Combine default fields with reason-specific fields
