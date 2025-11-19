@@ -203,11 +203,7 @@ class BancontactDefinition implements PaymentMethodDefinitionInterface {
 	 * @return bool
 	 */
 	public static function is_available_for( string $currency, string $account_country ): bool {
-		if ( ! PaymentMethodUtils::is_available_for( self::get_supported_currencies(), self::get_supported_countries(), $currency, $account_country ) ) {
-			return false;
-		}
-
-		return true;
+		return PaymentMethodUtils::is_available_for( self::get_supported_currencies(), self::get_supported_countries(), $currency, $account_country );
 	}
 
 	/**
