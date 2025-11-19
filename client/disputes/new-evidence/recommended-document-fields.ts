@@ -158,7 +158,7 @@ const getRecommendedDocumentFields = (
 								'woocommerce-payments'
 							),
 							description: __(
-								'Confirmation the refund was processed.',
+								'A confirmation that the refund was processed.',
 								'woocommerce-payments'
 							),
 							order: 15,
