@@ -36,6 +36,7 @@ use WCPay\Database_Cache;
 use WCPay\Duplicates_Detection_Service;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
+use WC_Subscriptions;
 /**
  * WC_Payment_Gateway_WCPay unit tests
  */
@@ -1071,6 +1072,12 @@ class UPE_Split_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 		// Setup $this->mock_payment_methods.
 
 		$this->set_cart_contains_subscription_items( true );
+		// Disable manual renewals to test only reusable methods are enabled.
+		WC_Subscriptions::set_wcs_is_manual_renewal_enabled(
+			function () {
+				return false;
+			}
+		);
 
 		$card_method       = $this->mock_payment_methods['card'];
 		$giropay_method    = $this->mock_payment_methods['giropay'];
