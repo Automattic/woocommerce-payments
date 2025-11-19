@@ -137,7 +137,7 @@ const getRecommendedDocumentFields = (
 		duplicate:
 			duplicateStatus === 'is_duplicate'
 				? [
-						// For is_duplicate: Original order receipt, Refund receipt, Copy of store refund policy, Other documents
+						// For is_duplicate: Original order receipt, Refund receipt, Customer communication, Copy of store refund policy, Other documents
 						{
 							key: DOCUMENT_FIELD_KEYS.RECEIPT,
 							label: __(
