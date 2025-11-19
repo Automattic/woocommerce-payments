@@ -63,6 +63,12 @@ class WC_Payments_WooPay_Button_Handler_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
+		// Clean up orphaned product meta lookup entries from previous tests.
+		// WooCommerce's product deletion doesn't always clean up the lookup table properly in test environments,
+		// which can cause duplicate primary key errors when product IDs get reused.
+		global $wpdb;
+		$wpdb->query( "DELETE FROM {$wpdb->prefix}wc_product_meta_lookup WHERE product_id NOT IN (SELECT ID FROM {$wpdb->posts} WHERE post_type = 'product')" );
+
 		$this->mock_api_client = $this->getMockBuilder( 'WC_Payments_API_Client' )
 			->disableOriginalConstructor()
 			->setMethods(
