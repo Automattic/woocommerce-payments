@@ -280,7 +280,7 @@ class WC_Payments_Admin_Settings {
 
 		// is this a payment-method-specific URL? (e.g.: woocommerce_payments_klarna, woocommerce_payments_wechat_pay).
 		$section = $url_params['section'];
-		if ( ! str_starts_with( $section, 'woocommerce_payments_' ) ) {
+		if ( 0 !== strpos( $section, 'woocommerce_payments_' ) ) {
 			return;
 		}
 
