@@ -224,6 +224,7 @@ class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller
 						'cta_label'   => 'Activate Now',
 						'cta_url'     => '#',
 						'tc_url'      => 'https://woocommerce.com/terms',
+						'footnote'    => '*Terms and conditions apply. Offer valid for new customers only.',
 					],
 				],
 			],

@@ -16,6 +16,7 @@ export interface PromotionVariation {
 	cta_label: string;
 	cta_url: string;
 	tc_url?: string;
+	footnote?: string;
 }
 
 export interface Promotion {
