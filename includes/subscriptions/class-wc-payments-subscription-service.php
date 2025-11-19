@@ -769,9 +769,14 @@ class WC_Payments_Subscription_Service {
 
 		$subscriptions = wcs_get_subscriptions_for_renewal_order( $order_id );
 
-		foreach ( $subscriptions as $subscription_id => $subscription ) {
+		foreach ( $subscriptions as $subscription ) {
 			if ( ! self::get_wcpay_subscription_id( $subscription ) && $subscription->is_manual() ) {
-				$this->create_subscription( $subscription );
+				// Only create WCPay subscription if subscription has payment tokens (reusable payment methods).
+				$payment_tokens = $subscription->get_payment_tokens();
+				if ( ! empty( $payment_tokens ) ) {
+					$this->create_subscription( $subscription );
+				}
+				// If no payment tokens, don't create WCPay subscription (non-reusable payment methods).
 			}
 		}
 	}
