@@ -78,14 +78,7 @@ const getTotalAmount = () => {
 const getOnClickOptions = () => {
 	if ( cachedCartData ) {
 		return {
-			// pay-for-order should never display the shipping selection.
-			shippingAddressRequired:
-				getExpressCheckoutData( 'button_context' ) !==
-					'pay_for_order' && cachedCartData.needs_shipping,
 			shippingRates: transformCartDataForShippingRates( cachedCartData ),
-			phoneNumberRequired:
-				getExpressCheckoutData( 'checkout' )?.needs_payer_phone ??
-				false,
 			lineItems: transformCartDataForDisplayItems( cachedCartData ),
 		};
 	}
@@ -95,11 +88,6 @@ const getOnClickOptions = () => {
 		getExpressCheckoutData( 'product' )
 	) {
 		return {
-			shippingAddressRequired:
-				getExpressCheckoutData( 'product' )?.needs_shipping ?? false,
-			phoneNumberRequired:
-				getExpressCheckoutData( 'checkout' )?.needs_payer_phone ??
-				false,
 			lineItems: (
 				getExpressCheckoutData( 'product' )?.displayItems ?? []
 			).map( ( { label, amount } ) => ( {
@@ -108,6 +96,28 @@ const getOnClickOptions = () => {
 			} ) ),
 		};
 	}
+};
+
+const getShippingAddressRequired = () => {
+	return getExpressCheckoutData( 'button_context' ) === 'product'
+		? getExpressCheckoutData( 'product' )?.needs_shipping ?? false
+		: getExpressCheckoutData( 'button_context' ) !== 'pay_for_order' &&
+				( cachedCartData?.needs_shipping ?? false );
+};
+
+const getCreateOptions = () => {
+	return {
+		...getExpressCheckoutButtonStyleSettings(),
+		allowedShippingCountries: getExpressCheckoutData( 'checkout' )
+			.allowed_shipping_countries,
+		business: {
+			name: getExpressCheckoutData( 'store_name' ),
+		},
+		emailRequired: true,
+		phoneNumberRequired:
+			getExpressCheckoutData( 'checkout' )?.needs_payer_phone ?? false,
+		shippingAddressRequired: getShippingAddressRequired(),
+	};
 };
 
 let elements;
@@ -220,7 +230,7 @@ jQuery( ( $ ) => {
 
 			const eceButton = elements.create(
 				'expressCheckout',
-				getExpressCheckoutButtonStyleSettings()
+				getCreateOptions()
 			);
 
 			expressCheckoutButtonUi.renderButton( eceButton );
@@ -326,22 +336,15 @@ jQuery( ( $ ) => {
 
 				onClickHandler( event );
 				event.resolve( {
-					// `options.displayItems`, `options.shippingAddressRequired`, `options.requestPhone`, `options.shippingRates`,
+					// `options.displayItems`, `options.shippingRates`,
 					// are all coming from prior of the initialization.
 					// The "real" values will be updated once the button loads.
 					// They are preemptively initialized because the `event.resolve({})`
 					// needs to be called within 1 second of the `click` event.
-					business: {
-						name: getExpressCheckoutData( 'store_name' ),
-					},
-					emailRequired: true,
 					...options,
-					shippingRates: options.shippingAddressRequired
+					shippingRates: getShippingAddressRequired()
 						? shippingOptionsWithFallback
 						: undefined,
-					allowedShippingCountries: getExpressCheckoutData(
-						'checkout'
-					).allowed_shipping_countries,
 				} );
 			} );
 
