@@ -694,22 +694,31 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @param string          $field_value  The field_value to be selected by default.
 	 */
 	public function render_custom_payment_meta_input( $subscription, $field_id, $field_value ) {
-		$tokens         = $this->get_user_formatted_tokens_array( $subscription->get_user_id() );
-		$is_valid_value = false;
-
-		foreach ( $tokens as $token ) {
-			$is_valid_value = $is_valid_value || (int) $field_value === $token['tokenId'];
-		}
-
 		echo '<select name="' . esc_attr( $field_id ) . '" id="' . esc_attr( $field_id ) . '">';
-		// If no token matches the selected ID, add a default option.
-		if ( ! $is_valid_value ) {
-			echo '<option value="" selected disabled>' . esc_html__( 'Please select a payment method', 'woocommerce-payments' ) . '</option>';
+
+		$user_id = $subscription->get_user_id();
+		if ( $user_id > 0 ) {
+			$tokens         = $this->get_user_formatted_tokens_array( $user_id );
+			$is_valid_value = false;
+
+			foreach ( $tokens as $token ) {
+				$is_valid_value = $is_valid_value || (int) $field_value === $token['tokenId'];
+			}
+
+			// If no token matches the selected ID, add a default option.
+			if ( ! $is_valid_value ) {
+				echo '<option value="" selected disabled>' . esc_html__( 'Please select a payment method', 'woocommerce-payments' ) . '</option>';
+			}
+			foreach ( $tokens as $token ) {
+				$is_selected = (int) $field_value === $token['tokenId'] ? 'selected' : '';
+				echo '<option value="' . esc_attr( $token['tokenId'] ) . '" ' . esc_attr( $is_selected ) . '>' . esc_html( $token['displayName'] ) . '</option>';
+			}
+		} else {
+			echo '<option value="0" selected="selected"disabled>';
+				echo esc_html__( 'Please select a customer first', 'woocommerce-payments' );
+			echo '</option>';
 		}
-		foreach ( $tokens as $token ) {
-			$is_selected = (int) $field_value === $token['tokenId'] ? 'selected' : '';
-			echo '<option value="' . esc_attr( $token['tokenId'] ) . '" ' . esc_attr( $is_selected ) . '>' . esc_html( $token['displayName'] ) . '</option>';
-		}
+
 		echo '</select>';
 	}
 
