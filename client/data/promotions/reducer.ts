@@ -4,7 +4,7 @@
  * Internal dependencies
  */
 import ACTION_TYPES from './action-types';
-import { PromotionsState, PromotionsActions } from './types';
+import type { PromotionsState, PromotionsActions } from './types';
 
 const defaultState: PromotionsState = {
 	promotions: undefined,

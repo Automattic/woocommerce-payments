@@ -12,8 +12,8 @@ import { __ } from '@wordpress/i18n';
  */
 import { NAMESPACE } from '../constants';
 import { updatePromotions, updateErrorForPromotions } from './actions';
-import { PromotionsData } from './types';
-import { ApiError } from '../../types/errors';
+import type { PromotionsData } from './types';
+import type { ApiError } from '../../types/errors';
 
 /**
  * Retrieve promotions data.

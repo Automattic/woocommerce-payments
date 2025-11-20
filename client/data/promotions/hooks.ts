@@ -9,7 +9,7 @@ import { useSelect, useDispatch } from '@wordpress/data';
  * Internal dependencies
  */
 import { STORE_NAME } from '../constants';
-import { PromotionsResponse } from './types';
+import type { PromotionsResponse } from './types';
 
 /**
  * Hook to retrieve promotions data.

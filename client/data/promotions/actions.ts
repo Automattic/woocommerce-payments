@@ -11,12 +11,12 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import ACTION_TYPES from './action-types';
-import {
+import type {
 	PromotionsData,
 	UpdatePromotionsAction,
 	ErrorPromotionsAction,
 } from './types';
-import { ApiError } from '../../types/errors';
+import type { ApiError } from '../../types/errors';
 import { NAMESPACE } from '../constants';
 
 export function updatePromotions(

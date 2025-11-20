@@ -3,8 +3,8 @@
 /**
  * Internal dependencies
  */
-import { PromotionsState, PromotionsData, Promotion } from './types';
-import { ApiError } from '../../types/errors';
+import type { PromotionsState, PromotionsData, Promotion } from './types';
+import type { ApiError } from '../../types/errors';
 
 // Type for the full Redux state with promotions slice.
 interface State {
