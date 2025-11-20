@@ -16,10 +16,14 @@
 	}
 
 	@media screen and ( max-width: 782px ) {
-		right: 16px;
-		left: 16px;
-		bottom: 16px;
+		right: 0;
+		left: 0;
+		bottom: 0;
 		max-width: none;
+
+		.wcpay-spotlight__card {
+			margin: 0;
+		}
 	}
 }
 
@@ -29,7 +33,25 @@
 
 .wcpay-spotlight__card {
 	margin: 0;
+	border-radius: 4px;
 	box-shadow: 0 8px 16px rgba( 0, 0, 0, 0.15 );
+	position: relative;
+	overflow: hidden;
+
+	&.has-image {
+		.wcpay-spotlight__header {
+			position: absolute;
+			top: 0;
+			right: 0;
+			width: 100%;
+			z-index: 1;
+			background: transparent;
+		}
+
+		.wcpay-spotlight__image {
+			padding: 0;
+		}
+	}
 }
 
 .wcpay-spotlight__header {
@@ -42,6 +64,8 @@
 
 .wcpay-spotlight__close-btn {
 	min-width: auto;
+	width: 32px;
+	height: 32px;
 	padding: 4px;
 
 	&:hover {
@@ -74,9 +98,9 @@
 }
 
 .wcpay-spotlight__heading {
-	font-size: 18px;
+	font-size: 15px;
 	font-weight: 500;
-	line-height: 1.4;
+	line-height: 20px;
 	margin: 0 0 12px;
 	color: #1e1e1e;
 }
@@ -98,8 +122,8 @@
 }
 
 .wcpay-spotlight__disclaimer {
-	font-size: 11px;
-	line-height: 1.5;
+	font-size: 12px;
+	line-height: 16px;
 	color: #757575;
 	margin: 12px 0 0;
 	font-style: italic;
@@ -107,30 +131,4 @@
 
 .wcpay-spotlight__footer {
 	padding: 16px 24px 24px;
-}
-
-.wcpay-spotlight__secondary-btn {
-	color: #2271b1;
-	text-decoration: none;
-	padding: 0;
-	height: auto;
-	min-height: auto;
-
-	&:hover {
-		text-decoration: underline;
-		background: transparent;
-		color: #135e96;
-	}
-}
-
-.wcpay-spotlight__primary-btn {
-	flex-shrink: 0;
-
-	&.is-primary {
-		background: $studio-wordpress-blue-50;
-
-		&:hover {
-			background: $studio-wordpress-blue-40;
-		}
-	}
 }

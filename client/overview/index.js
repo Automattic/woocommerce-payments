@@ -36,6 +36,8 @@ import { recordEvent } from 'wcpay/tracks';
 import StripeSpinner from 'wcpay/components/stripe-spinner';
 import { getAdminUrl, isInTestModeOnboarding } from 'wcpay/utils';
 import { EmbeddedConnectNotificationBanner } from 'wcpay/embedded-components';
+import Spotlight from 'components/spotlight';
+import KlarnaPromotionIllustration from 'assets/images/illustrations/klarna-promotion-spotlight.svg?asset';
 
 const OverviewPageError = () => {
 	const queryParams = getQuery();
@@ -82,6 +84,7 @@ const OverviewPage = () => {
 		stripeNotificationsBannerErrorType,
 		setStripeNotificationsBannerErrorType,
 	] = useState( '' );
+	const [ showSpotlight, setShowSpotlight ] = useState( true );
 	const [
 		notificationsBannerMessage,
 		setNotificationsBannerMessage,
@@ -244,6 +247,26 @@ const OverviewPage = () => {
 		setStripeComponentLoading( false );
 	};
 
+	const handleActivateKlarna = () => {
+		// eslint-disable-next-line no-console
+		console.log( 'Activate Klarna clicked' );
+		// TODO: Call the activate promotion API
+		setShowSpotlight( false );
+	};
+
+	const handleLearnMore = () => {
+		// eslint-disable-next-line no-console
+		console.log( 'Learn more clicked' );
+		// TODO: Open T&Cs link
+	};
+
+	const handleDismissSpotlight = () => {
+		// eslint-disable-next-line no-console
+		console.log( 'Spotlight dismissed' );
+		// TODO: Call the dismiss promotion API
+		setShowSpotlight( false );
+	};
+
 	return (
 		<Page isNarrow className="wcpay-overview">
 			<MaybeShowMerchantFeedbackPrompt />
@@ -403,6 +426,28 @@ const OverviewPage = () => {
 				<ErrorBoundary>
 					<ConnectionSuccessModal />
 				</ErrorBoundary>
+			) }
+			{ showSpotlight && (
+				<Spotlight
+					badge="Limited time offer"
+					heading="Save 50% on Klarna processing fees for 3 months"
+					description={
+						<>
+							In 2024, shoppers spent $52.4B using buy now, pay
+							later. Enable flexible payments with Klarna in
+							WooPayments for 50% off processing fees for 3
+							months.
+						</>
+					}
+					disclaimer={ <>*Nasdaq Oct. 2025</> }
+					image={ KlarnaPromotionIllustration }
+					primaryButtonLabel="Activate Klarna"
+					onPrimaryClick={ handleActivateKlarna }
+					secondaryButtonLabel="Learn more"
+					onSecondaryClick={ handleLearnMore }
+					onDismiss={ handleDismissSpotlight }
+					showImmediately={ true }
+				/>
 			) }
 		</Page>
 	);

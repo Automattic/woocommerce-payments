@@ -84,7 +84,28 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 			}` }
 		>
 			<div className="wcpay-spotlight__container">
-				<Card className="wcpay-spotlight__card" elevation={ 2 }>
+				<Card
+					className={ `wcpay-spotlight__card ${
+						image ? 'has-image' : ''
+					}` }
+					elevation={ 2 }
+				>
+					{ image && (
+						<CardMedia className="wcpay-spotlight__image">
+							{ typeof image === 'string' ? (
+								<img
+									src={ image }
+									alt={ __(
+										'Spotlight image',
+										'woocommerce-payments'
+									) }
+								/>
+							) : (
+								image
+							) }
+						</CardMedia>
+					) }
+
 					<CardHeader
 						isBorderless={ true }
 						size="small"
@@ -103,27 +124,11 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 										viewBox="6 4 12 14"
 									/>
 								}
-								iconSize={ 16 }
+								iconSize={ 24 }
 								onClick={ handleClose }
 							/>
 						</Flex>
 					</CardHeader>
-
-					{ image && (
-						<CardMedia className="wcpay-spotlight__image">
-							{ typeof image === 'string' ? (
-								<img
-									src={ image }
-									alt={ __(
-										'Spotlight image',
-										'woocommerce-payments'
-									) }
-								/>
-							) : (
-								image
-							) }
-						</CardMedia>
-					) }
 
 					<CardBody className="wcpay-spotlight__body" size="small">
 						{ badge && (
