@@ -9,9 +9,19 @@ cwd=$(pwd)
 WCP_ROOT="$cwd"
 QIT_ROOT="$cwd/tests/qit"
 
-# Load local env variables if present
+# Read local.env and build --env arguments for QIT
 if [[ -f "$QIT_ROOT/config/local.env" ]]; then
-    . "$QIT_ROOT/config/local.env"
+    while IFS='=' read -r key value; do
+        # Skip comments and empty lines
+        [[ "$key" =~ ^[[:space:]]*# ]] && continue
+        [[ -z "$key" ]] && continue
+
+        # Remove leading/trailing whitespace and quotes from value
+        value=$(echo "$value" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//' -e 's/^["'\'']//' -e 's/["'\'']$//')
+
+        # Export for build scripts that might need it
+        export "${key}=${value}"
+    done < "$QIT_ROOT/config/local.env"
 fi
 
 echo "Running E2E tests..."
