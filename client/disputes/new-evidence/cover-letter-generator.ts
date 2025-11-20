@@ -96,6 +96,10 @@ export const generateAttachments = (
 			label: __( 'Order receipt', 'woocommerce-payments' ),
 		},
 		{
+			key: DOCUMENT_FIELD_KEYS.DUPLICATE_CHARGE_DOCUMENTATION,
+			label: __( 'Any additional receipts', 'woocommerce-payments' ),
+		},
+		{
 			key: DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
 			label: __( 'Customer communication', 'woocommerce-payments' ),
 		},
