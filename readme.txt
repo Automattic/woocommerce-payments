@@ -87,6 +87,9 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 
 == Changelog ==
 
+= 10.3.0-test-1 - unreleased =
+
+
 = 10.3.0 - 2025-11-26 =
 * Add - Add backend support for additional dispute evidence types (event, booking, other) behind feature flag.
 * Add - Allow non-reusable payment methods to be used for the manually renewed subscriptions.
