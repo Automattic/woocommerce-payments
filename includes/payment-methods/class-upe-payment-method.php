@@ -183,8 +183,11 @@ class UPE_Payment_Method {
 	}
 
 	/**
-	 * Returns boolean dependent on whether payment method
-	 * can be used at checkout
+	 * Returns boolean dependent on whether payment method can be used at checkout.
+	 *
+	 * Payment method can be used at checkout if:
+	 *  - If there are payment amount limits, order total is within limits.
+	 *  - If it is a subscription order, payment method is either reusable, or subscription is manual.
 	 *
 	 * @param string $account_country Country of merchants account.
 	 * @param bool   $skip_limits_per_currency_check Whether to skip limits per currency check.
@@ -192,10 +195,22 @@ class UPE_Payment_Method {
 	 * @return bool
 	 */
 	public function is_enabled_at_checkout( string $account_country, bool $skip_limits_per_currency_check = false ) {
-		if ( $this->is_subscription_item_in_cart() || $this->is_changing_payment_method_for_subscription() ) {
-			return $this->is_reusable();
+		// Check if we're in a subscription context (cart checkout, changing payment method, or renewal).
+		$is_subscription_context = $this->is_subscription_item_in_cart() || $this->is_changing_payment_method_for_subscription();
+
+		// Also check if we're on the order-pay page for a renewal order.
+		if ( ! $is_subscription_context && is_wc_endpoint_url( 'order-pay' ) && function_exists( 'wcs_order_contains_renewal' ) ) {
+			$order = wc_get_order( absint( get_query_var( 'order-pay' ) ) );
+			if ( $order && wcs_order_contains_renewal( $order ) ) {
+				$is_subscription_context = true;
+			}
 		}
 
+		// Reusable methods are always available for subscriptions. Other methods are available if manual renewal is allowed.
+		$are_manual_renewals_accepted  = function_exists( 'wcs_is_manual_renewal_enabled' ) && wcs_is_manual_renewal_enabled();
+		$is_available_for_subscription = $are_manual_renewals_accepted || $this->is_reusable();
+
+		$order_is_within_currency_limits = true;
 		// This part ensures that when payment limits for the currency declared, those will be respected (e.g. BNPLs).
 		if ( [] !== $this->limits_per_currency && ! $skip_limits_per_currency_check ) {
 			$order = null;
@@ -229,16 +244,18 @@ class UPE_Payment_Method {
 					}
 					// If there is no range specified for the currency-country pair we don't support it and return false.
 					if ( null === $range ) {
-						return false;
+						$order_is_within_currency_limits = false;
+					} else {
+						$is_valid_minimum                = null === $range['min'] || $amount >= $range['min'];
+						$is_valid_maximum                = null === $range['max'] || $amount <= $range['max'];
+						$order_is_within_currency_limits = $is_valid_minimum && $is_valid_maximum;
 					}
-					$is_valid_minimum = null === $range['min'] || $amount >= $range['min'];
-					$is_valid_maximum = null === $range['max'] || $amount <= $range['max'];
-					return $is_valid_minimum && $is_valid_maximum;
 				}
 			}
 		}
 
-		return true;
+		return $order_is_within_currency_limits
+			&& ( ( ! $is_subscription_context ) || $is_available_for_subscription );
 	}
 
 	/**
