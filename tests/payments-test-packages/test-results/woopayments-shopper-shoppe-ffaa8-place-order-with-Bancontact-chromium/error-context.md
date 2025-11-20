@@ -1,0 +1,790 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - navigation "Main menu":
+      - link "Skip to main content" [ref=e3] [cursor=pointer]:
+        - /url: "#wpbody-content"
+      - link "Skip to toolbar" [ref=e4] [cursor=pointer]:
+        - /url: "#wp-toolbar"
+      - list [ref=e7]:
+        - listitem [ref=e8]:
+          - link "Dashboard" [ref=e9] [cursor=pointer]:
+            - /url: index.php
+            - generic [ref=e10]: 
+            - generic [ref=e11]: Dashboard
+          - list [ref=e12]:
+            - listitem [ref=e13]:
+              - link "Home" [ref=e14] [cursor=pointer]:
+                - /url: index.php
+            - listitem [ref=e15]:
+              - link "Updates" [ref=e16] [cursor=pointer]:
+                - /url: update-core.php
+        - listitem [ref=e17]:
+          - link "Jetpack" [ref=e18] [cursor=pointer]:
+            - /url: http://localhost:32780/wp-admin/admin.php?page=jetpack#/settings
+            - generic [ref=e20]: Jetpack
+          - list [ref=e21]:
+            - listitem [ref=e22]:
+              - link "Settings" [ref=e23] [cursor=pointer]:
+                - /url: http://localhost:32780/wp-admin/admin.php?page=jetpack#/settings
+        - listitem [ref=e24]
+        - listitem [ref=e26]:
+          - link "Posts" [ref=e27] [cursor=pointer]:
+            - /url: edit.php
+            - generic [ref=e28]: 
+            - generic [ref=e29]: Posts
+          - list [ref=e30]:
+            - listitem [ref=e31]:
+              - link "All Posts" [ref=e32] [cursor=pointer]:
+                - /url: edit.php
+            - listitem [ref=e33]:
+              - link "Add Post" [ref=e34] [cursor=pointer]:
+                - /url: post-new.php
+            - listitem [ref=e35]:
+              - link "Categories" [ref=e36] [cursor=pointer]:
+                - /url: edit-tags.php?taxonomy=category
+            - listitem [ref=e37]:
+              - link "Tags" [ref=e38] [cursor=pointer]:
+                - /url: edit-tags.php?taxonomy=post_tag
+        - listitem [ref=e39]:
+          - link "Media" [ref=e40] [cursor=pointer]:
+            - /url: upload.php
+            - generic [ref=e41]: 
+            - generic [ref=e42]: Media
+          - list [ref=e43]:
+            - listitem [ref=e44]:
+              - link "Library" [ref=e45] [cursor=pointer]:
+                - /url: upload.php
+            - listitem [ref=e46]:
+              - link "Add Media File" [ref=e47] [cursor=pointer]:
+                - /url: media-new.php
+        - listitem [ref=e48]:
+          - link "Pages" [ref=e49] [cursor=pointer]:
+            - /url: edit.php?post_type=page
+            - generic [ref=e50]: 
+            - generic [ref=e51]: Pages
+          - list [ref=e52]:
+            - listitem [ref=e53]:
+              - link "All Pages" [ref=e54] [cursor=pointer]:
+                - /url: edit.php?post_type=page
+            - listitem [ref=e55]:
+              - link "Add Page" [ref=e56] [cursor=pointer]:
+                - /url: post-new.php?post_type=page
+        - listitem [ref=e57]:
+          - link "Comments" [ref=e58] [cursor=pointer]:
+            - /url: edit-comments.php
+            - generic [ref=e59]: 
+            - generic [ref=e60]: Comments
+        - listitem [ref=e61]
+        - listitem [ref=e63]:
+          - link "WooCommerce" [ref=e64] [cursor=pointer]:
+            - /url: admin.php?page=wc-admin
+            - generic [ref=e66]: WooCommerce
+          - list [ref=e67]:
+            - listitem [ref=e68]:
+              - link "Home 4" [ref=e69] [cursor=pointer]:
+                - /url: admin.php?page=wc-admin
+                - text: Home
+                - generic [ref=e70]: "4"
+            - listitem [ref=e71]:
+              - link "Orders 6" [ref=e72] [cursor=pointer]:
+                - /url: admin.php?page=wc-orders
+                - text: Orders
+                - generic [ref=e73]: "6"
+            - listitem [ref=e74]:
+              - link "Customers" [ref=e75] [cursor=pointer]:
+                - /url: admin.php?page=wc-admin&path=/customers
+            - listitem [ref=e76]:
+              - link "Coupons" [ref=e77] [cursor=pointer]:
+                - /url: admin.php?page=coupons-moved
+            - listitem [ref=e78]:
+              - link "Reports" [ref=e79] [cursor=pointer]:
+                - /url: admin.php?page=wc-reports
+            - listitem [ref=e80]:
+              - link "Settings" [ref=e81] [cursor=pointer]:
+                - /url: admin.php?page=wc-settings
+            - listitem [ref=e82]:
+              - link "Status" [ref=e83] [cursor=pointer]:
+                - /url: admin.php?page=wc-status
+            - listitem [ref=e84]:
+              - link "Extensions" [ref=e85] [cursor=pointer]:
+                - /url: admin.php?page=wc-admin&path=/extensions
+        - listitem [ref=e86]:
+          - link "Products" [ref=e87] [cursor=pointer]:
+            - /url: edit.php?post_type=product
+            - generic [ref=e88]: 
+            - generic [ref=e89]: Products
+          - list [ref=e90]:
+            - listitem [ref=e91]:
+              - link "All Products" [ref=e92] [cursor=pointer]:
+                - /url: edit.php?post_type=product
+            - listitem [ref=e93]:
+              - link "Add new product" [ref=e94] [cursor=pointer]:
+                - /url: post-new.php?post_type=product
+            - listitem [ref=e95]:
+              - link "Brands" [ref=e96] [cursor=pointer]:
+                - /url: edit-tags.php?taxonomy=product_brand&post_type=product
+            - listitem [ref=e97]:
+              - link "Categories" [ref=e98] [cursor=pointer]:
+                - /url: edit-tags.php?taxonomy=product_cat&post_type=product
+            - listitem [ref=e99]:
+              - link "Tags" [ref=e100] [cursor=pointer]:
+                - /url: edit-tags.php?taxonomy=product_tag&post_type=product
+            - listitem [ref=e101]:
+              - link "Attributes" [ref=e102] [cursor=pointer]:
+                - /url: edit.php?post_type=product&page=product_attributes
+            - listitem [ref=e103]:
+              - link "Reviews" [ref=e104] [cursor=pointer]:
+                - /url: edit.php?post_type=product&page=product-reviews
+        - listitem [ref=e105]:
+          - link "Payments" [ref=e106] [cursor=pointer]:
+            - /url: admin.php?page=wc-admin&path=/payments/overview
+            - generic [ref=e108]: Payments
+          - list [ref=e109]:
+            - listitem [ref=e110]:
+              - link "Overview" [ref=e111] [cursor=pointer]:
+                - /url: admin.php?page=wc-admin&path=/payments/overview
+            - listitem [ref=e112]:
+              - link "Payouts" [ref=e113] [cursor=pointer]:
+                - /url: admin.php?page=wc-admin&path=/payments/payouts
+            - listitem [ref=e114]:
+              - link "Transactions" [ref=e115] [cursor=pointer]:
+                - /url: admin.php?page=wc-admin&path=/payments/transactions
+            - listitem [ref=e116]:
+              - link "Disputes" [ref=e117] [cursor=pointer]:
+                - /url: admin.php?page=wc-admin&path=/payments/disputes
+            - listitem [ref=e118]:
+              - link "Settings" [ref=e119] [cursor=pointer]:
+                - /url: http://localhost:32780/wp-admin/admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments
+        - listitem [ref=e120]:
+          - link "Analytics" [ref=e121] [cursor=pointer]:
+            - /url: admin.php?page=wc-admin&path=/analytics/overview
+            - generic [ref=e122]: 
+            - generic [ref=e123]: Analytics
+          - list [ref=e124]:
+            - listitem [ref=e125]:
+              - link "Overview" [ref=e126] [cursor=pointer]:
+                - /url: admin.php?page=wc-admin&path=/analytics/overview
+            - listitem [ref=e127]:
+              - link "Products" [ref=e128] [cursor=pointer]:
+                - /url: admin.php?page=wc-admin&path=/analytics/products
+            - listitem [ref=e129]:
+              - link "Revenue" [ref=e130] [cursor=pointer]:
+                - /url: admin.php?page=wc-admin&path=/analytics/revenue
+            - listitem [ref=e131]:
+              - link "Orders" [ref=e132] [cursor=pointer]:
+                - /url: admin.php?page=wc-admin&path=/analytics/orders
+            - listitem [ref=e133]:
+              - link "Variations" [ref=e134] [cursor=pointer]:
+                - /url: admin.php?page=wc-admin&path=/analytics/variations
+            - listitem [ref=e135]:
+              - link "Categories" [ref=e136] [cursor=pointer]:
+                - /url: admin.php?page=wc-admin&path=/analytics/categories
+            - listitem [ref=e137]:
+              - link "Coupons" [ref=e138] [cursor=pointer]:
+                - /url: admin.php?page=wc-admin&path=/analytics/coupons
+            - listitem [ref=e139]:
+              - link "Taxes" [ref=e140] [cursor=pointer]:
+                - /url: admin.php?page=wc-admin&path=/analytics/taxes
+            - listitem [ref=e141]:
+              - link "Downloads" [ref=e142] [cursor=pointer]:
+                - /url: admin.php?page=wc-admin&path=/analytics/downloads
+            - listitem [ref=e143]:
+              - link "Stock" [ref=e144] [cursor=pointer]:
+                - /url: admin.php?page=wc-admin&path=/analytics/stock
+            - listitem [ref=e145]:
+              - link "Settings" [ref=e146] [cursor=pointer]:
+                - /url: admin.php?page=wc-admin&path=/analytics/settings
+        - listitem [ref=e147]:
+          - link "Marketing" [ref=e148] [cursor=pointer]:
+            - /url: admin.php?page=wc-admin&path=/marketing
+            - generic [ref=e149]: 
+            - generic [ref=e150]: Marketing
+          - list [ref=e151]:
+            - listitem [ref=e152]:
+              - link "Overview" [ref=e153] [cursor=pointer]:
+                - /url: admin.php?page=wc-admin&path=/marketing
+            - listitem [ref=e154]:
+              - link "Coupons" [ref=e155] [cursor=pointer]:
+                - /url: edit.php?post_type=shop_coupon
+        - listitem [ref=e156]
+        - listitem [ref=e158]:
+          - link "Appearance" [ref=e159] [cursor=pointer]:
+            - /url: themes.php
+            - generic [ref=e160]: 
+            - generic [ref=e161]: Appearance
+          - list [ref=e162]:
+            - listitem [ref=e163]:
+              - link "Themes" [ref=e164] [cursor=pointer]:
+                - /url: themes.php
+            - listitem [ref=e165]:
+              - link "Design" [ref=e166] [cursor=pointer]:
+                - /url: site-editor.php
+            - listitem [ref=e167]:
+              - link "Customize" [ref=e168] [cursor=pointer]:
+                - /url: customize.php?return=%2Fwp-admin%2Fadmin.php%3Fpage%3Dwc-settings%26tab%3Dcheckout%26section%3Dwoocommerce_payments
+            - listitem [ref=e169]:
+              - link "Widgets" [ref=e170] [cursor=pointer]:
+                - /url: widgets.php
+            - listitem [ref=e171]:
+              - link "Menus" [ref=e172] [cursor=pointer]:
+                - /url: nav-menus.php
+            - listitem [ref=e173]:
+              - link "Header" [ref=e174] [cursor=pointer]:
+                - /url: customize.php?return=%2Fwp-admin%2Fadmin.php%3Fpage%3Dwc-settings%26tab%3Dcheckout%26section%3Dwoocommerce_payments&autofocus%5Bcontrol%5D=header_image
+            - listitem [ref=e175]:
+              - link "Background" [ref=e176] [cursor=pointer]:
+                - /url: customize.php?return=%2Fwp-admin%2Fadmin.php%3Fpage%3Dwc-settings%26tab%3Dcheckout%26section%3Dwoocommerce_payments&autofocus%5Bcontrol%5D=background_image
+            - listitem [ref=e177]:
+              - link "Storefront" [ref=e178] [cursor=pointer]:
+                - /url: themes.php?page=storefront-welcome
+            - listitem
+            - listitem
+            - listitem [ref=e179]:
+              - link "Theme File Editor" [ref=e180] [cursor=pointer]:
+                - /url: theme-editor.php
+        - listitem [ref=e181]:
+          - link "Plugins" [ref=e182] [cursor=pointer]:
+            - /url: plugins.php
+            - generic [ref=e183]: 
+            - generic [ref=e184]: Plugins
+          - list [ref=e185]:
+            - listitem [ref=e186]:
+              - link "Installed Plugins" [ref=e187] [cursor=pointer]:
+                - /url: plugins.php
+            - listitem [ref=e188]:
+              - link "Add Plugin" [ref=e189] [cursor=pointer]:
+                - /url: plugin-install.php
+            - listitem [ref=e190]:
+              - link "Plugin File Editor" [ref=e191] [cursor=pointer]:
+                - /url: plugin-editor.php
+        - listitem [ref=e192]:
+          - link "Users" [ref=e193] [cursor=pointer]:
+            - /url: users.php
+            - generic [ref=e194]: 
+            - generic [ref=e195]: Users
+          - list [ref=e196]:
+            - listitem [ref=e197]:
+              - link "All Users" [ref=e198] [cursor=pointer]:
+                - /url: users.php
+            - listitem [ref=e199]:
+              - link "Add User" [ref=e200] [cursor=pointer]:
+                - /url: user-new.php
+            - listitem [ref=e201]:
+              - link "Profile" [ref=e202] [cursor=pointer]:
+                - /url: profile.php
+        - listitem [ref=e203]:
+          - link "Tools" [ref=e204] [cursor=pointer]:
+            - /url: tools.php
+            - generic [ref=e205]: 
+            - generic [ref=e206]: Tools
+          - list [ref=e207]:
+            - listitem [ref=e208]:
+              - link "Available Tools" [ref=e209] [cursor=pointer]:
+                - /url: tools.php
+            - listitem [ref=e210]:
+              - link "Import" [ref=e211] [cursor=pointer]:
+                - /url: import.php
+            - listitem [ref=e212]:
+              - link "Export" [ref=e213] [cursor=pointer]:
+                - /url: export.php
+            - listitem [ref=e214]:
+              - link "Site Health" [ref=e215] [cursor=pointer]:
+                - /url: site-health.php
+            - listitem [ref=e216]:
+              - link "Export Personal Data" [ref=e217] [cursor=pointer]:
+                - /url: export-personal-data.php
+            - listitem [ref=e218]:
+              - link "Erase Personal Data" [ref=e219] [cursor=pointer]:
+                - /url: erase-personal-data.php
+            - listitem [ref=e220]:
+              - link "Scheduled Actions" [ref=e221] [cursor=pointer]:
+                - /url: tools.php?page=action-scheduler
+        - listitem [ref=e222]:
+          - link "Settings" [ref=e223] [cursor=pointer]:
+            - /url: options-general.php
+            - generic [ref=e224]: 
+            - generic [ref=e225]: Settings
+          - list [ref=e226]:
+            - listitem [ref=e227]:
+              - link "General" [ref=e228] [cursor=pointer]:
+                - /url: options-general.php
+            - listitem [ref=e229]:
+              - link "Writing" [ref=e230] [cursor=pointer]:
+                - /url: options-writing.php
+            - listitem [ref=e231]:
+              - link "Reading" [ref=e232] [cursor=pointer]:
+                - /url: options-reading.php
+            - listitem [ref=e233]:
+              - link "Discussion" [ref=e234] [cursor=pointer]:
+                - /url: options-discussion.php
+            - listitem [ref=e235]:
+              - link "Media" [ref=e236] [cursor=pointer]:
+                - /url: options-media.php
+            - listitem [ref=e237]:
+              - link "Permalinks" [ref=e238] [cursor=pointer]:
+                - /url: options-permalink.php
+            - listitem [ref=e239]:
+              - link "Privacy" [ref=e240] [cursor=pointer]:
+                - /url: options-privacy.php
+        - listitem [ref=e241]:
+          - button "Collapse Main menu" [expanded] [ref=e242] [cursor=pointer]:
+            - generic [ref=e243]: 
+            - generic [ref=e244]: Collapse Menu
+    - generic [ref=e245]:
+      - generic [ref=e246]:
+        - navigation "Toolbar":
+          - menu:
+            - group [ref=e247]:
+              - menuitem "About WordPress" [ref=e248] [cursor=pointer]:
+                - generic [ref=e249]: 
+                - generic [ref=e250]: About WordPress
+            - group [ref=e251]:
+              - menuitem " Test Site" [ref=e252] [cursor=pointer]
+            - group [ref=e253]:
+              - menuitem "Live" [ref=e254] [cursor=pointer]
+            - group [ref=e255]:
+              - menuitem "0 Comments in moderation" [ref=e256] [cursor=pointer]:
+                - generic [ref=e257]: 
+                - generic [ref=e258]: "0"
+                - generic [ref=e259]: 0 Comments in moderation
+            - group [ref=e260]:
+              - menuitem "New" [ref=e261] [cursor=pointer]:
+                - generic [ref=e262]: 
+                - generic [ref=e263]: New
+          - menu [ref=e264]:
+            - group [ref=e265]:
+              - menuitem "Howdy, admin" [ref=e266] [cursor=pointer]
+      - heading "Settings" [level=1] [ref=e269]
+      - main [ref=e271]:
+        - generic [ref=e274]:
+          - navigation [ref=e275]:
+            - link "General" [ref=e276] [cursor=pointer]:
+              - /url: http://localhost:32780/wp-admin/admin.php?page=wc-settings&tab=general
+            - link "Products" [ref=e277] [cursor=pointer]:
+              - /url: http://localhost:32780/wp-admin/admin.php?page=wc-settings&tab=products
+            - link "Shipping" [ref=e278] [cursor=pointer]:
+              - /url: http://localhost:32780/wp-admin/admin.php?page=wc-settings&tab=shipping
+            - link "Payments" [ref=e279] [cursor=pointer]:
+              - /url: http://localhost:32780/wp-admin/admin.php?page=wc-settings&tab=checkout
+            - link "Accounts & Privacy" [ref=e280] [cursor=pointer]:
+              - /url: http://localhost:32780/wp-admin/admin.php?page=wc-settings&tab=account
+            - link "Emails" [ref=e281] [cursor=pointer]:
+              - /url: http://localhost:32780/wp-admin/admin.php?page=wc-settings&tab=email
+            - link "Integration" [ref=e282] [cursor=pointer]:
+              - /url: http://localhost:32780/wp-admin/admin.php?page=wc-settings&tab=integration
+            - link "Site visibility" [ref=e283] [cursor=pointer]:
+              - /url: http://localhost:32780/wp-admin/admin.php?page=wc-settings&tab=site-visibility
+            - link "Point of Sale" [ref=e284] [cursor=pointer]:
+              - /url: http://localhost:32780/wp-admin/admin.php?page=wc-settings&tab=point-of-sale
+            - link "Multi-currency" [ref=e285] [cursor=pointer]:
+              - /url: http://localhost:32780/wp-admin/admin.php?page=wc-settings&tab=wcpay_multi_currency
+            - link "Advanced" [ref=e286] [cursor=pointer]:
+              - /url: http://localhost:32780/wp-admin/admin.php?page=wc-settings&tab=advanced
+          - heading "Payments" [level=1] [ref=e287]
+          - generic [ref=e288]:
+            - link " Dismiss" [ref=e289] [cursor=pointer]:
+              - /url: /wp-admin/admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&wc-hide-notice=no_secure_connection&_wc_notice_nonce=7a95b80dc4
+            - paragraph [ref=e290]:
+              - text: Your store does not appear to be using a secure connection. We highly recommend serving your entire website over an HTTPS connection to help keep customer data secure.
+              - link "Learn more here." [ref=e291] [cursor=pointer]:
+                - /url: https://woocommerce.com/document/ssl-and-https/
+          - generic [ref=e292]:
+            - link " Cancel thumbnail regeneration" [ref=e293] [cursor=pointer]:
+              - /url: /wp-admin/admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&wc-hide-notice=regenerating_thumbnails&_wc_notice_nonce=7a95b80dc4
+            - paragraph [ref=e294]: Thumbnail regeneration is running in the background. Depending on the amount of images in your store this may take a while.
+          - paragraph [ref=e296]:
+            - text: You are using a test account. ⚠️ Development mode is enabled for the store! There can be no live onboarding process while using development, testing, or staging WordPress environments!
+            - text: To begin accepting real payments, please go to the live store or change your
+            - link "WordPress environment" [ref=e297] [cursor=pointer]:
+              - /url: https://make.wordpress.org/core/2020/08/27/wordpress-environment-types/
+            - text: to a production one.
+            - link "Learn more" [ref=e298] [cursor=pointer]:
+              - /url: https://woocommerce.com/document/woopayments/testing-and-troubleshooting/test-accounts/#developer-notes
+          - heading "Return to paymentsWooPayments" [level=2] [ref=e299]:
+            - link "Return to payments" [ref=e301] [cursor=pointer]:
+              - /url: admin.php?page=wc-settings&tab=checkout
+              - generic [ref=e302]: 
+            - text: WooPayments
+          - generic [ref=e304]:
+            - generic [ref=e305]:
+              - generic [ref=e306]:
+                - heading "General" [level=2] [ref=e307]
+                - paragraph [ref=e308]: Enable or disable WooPayments on your store.
+              - generic [ref=e313]:
+                - generic [ref=e315]:
+                  - generic [ref=e316]:
+                    - checkbox "Enable WooPayments" [checked] [ref=e317] [cursor=pointer]
+                    - img
+                  - generic [ref=e318] [cursor=pointer]: Enable WooPayments
+                - paragraph [ref=e319]:
+                  - generic [ref=e320]: When enabled, payment methods powered by WooPayments will appear on checkout.
+            - generic [ref=e321]:
+              - generic [ref=e322]:
+                - heading "Payments accepted on checkout" [level=2] [ref=e323]
+                - paragraph [ref=e324]: Add and edit payments available to customers at checkout. Based on their device type, location, and purchase history, your customers will only see the most relevant payment methods.
+              - list [ref=e329]:
+                - listitem [ref=e330]:
+                  - generic [ref=e331]:
+                    - generic [ref=e336]:
+                      - checkbox "Credit / Debit Cards" [checked] [disabled] [ref=e337]
+                      - img
+                    - generic [ref=e338]:
+                      - img "Credit / Debit Cards" [ref=e340]
+                      - generic [ref=e341]:
+                        - generic [ref=e342]:
+                          - generic [ref=e343]: Credit / Debit Cards(Required)
+                          - generic [ref=e344]: Let your customers pay with major credit and debit cards without leaving your store.
+                          - generic [ref=e347]:
+                            - img "visa" [ref=e348]
+                            - img "mastercard" [ref=e349]
+                            - img "amex" [ref=e350]
+                            - img "discover" [ref=e351]
+                            - img "diners" [ref=e352]
+                            - img "jcb" [ref=e353]
+                            - img "cartes_bancaires" [ref=e354]
+                            - img "unionpay" [ref=e355]
+                        - button "From 2.9% + $0.30" [ref=e357]:
+                          - generic [ref=e359]: From 2.9% + $0.30
+                - listitem [ref=e360]:
+                  - generic [ref=e361]:
+                    - generic [ref=e366]:
+                      - checkbox "Bancontact" [checked] [ref=e367] [cursor=pointer]
+                      - img
+                    - generic [ref=e368]:
+                      - img "Bancontact" [ref=e370]
+                      - generic [ref=e371]:
+                        - generic [ref=e372]:
+                          - generic [ref=e373]: Bancontact
+                          - generic [ref=e374]: Bancontact is a bank redirect payment method offered by more than 80% of online businesses in Belgium.
+                        - button "From 1.4% + $0.30" [ref=e376]:
+                          - generic [ref=e378]: From 1.4% + $0.30
+                - listitem [ref=e379]:
+                  - generic [ref=e380]:
+                    - checkbox "EPS" [ref=e386] [cursor=pointer]
+                    - generic [ref=e387]:
+                      - img "EPS" [ref=e389]
+                      - generic [ref=e390]:
+                        - generic [ref=e391]:
+                          - generic [ref=e392]: EPS
+                          - generic [ref=e393]: Accept your payment with EPS — a common payment method in Austria.
+                        - button "From 1.8% + $0.30" [ref=e395]:
+                          - generic [ref=e397]: From 1.8% + $0.30
+                - listitem [ref=e398]:
+                  - generic [ref=e399]:
+                    - checkbox "iDEAL" [ref=e405] [cursor=pointer]
+                    - generic [ref=e406]:
+                      - img "iDEAL" [ref=e408]
+                      - generic [ref=e409]:
+                        - generic [ref=e410]:
+                          - generic [ref=e411]: iDEAL
+                          - generic [ref=e412]: Expand your business with iDEAL — Netherlands’s most popular payment method.
+                        - button "From 0% + $0.80" [ref=e414]:
+                          - generic [ref=e416]: From 0% + $0.80
+                - listitem [ref=e417]:
+                  - generic [ref=e418]:
+                    - checkbox "Przelewy24 (P24)" [ref=e424] [cursor=pointer]
+                    - generic [ref=e425]:
+                      - img "Przelewy24 (P24)" [ref=e427]
+                      - generic [ref=e428]:
+                        - generic [ref=e429]:
+                          - generic [ref=e430]: Przelewy24 (P24)
+                          - generic [ref=e431]: Accept payments with Przelewy24 (P24), the most popular payment method in Poland.
+                        - button "From 2.2% + $0.30" [ref=e433]:
+                          - generic [ref=e435]: From 2.2% + $0.30
+                - listitem [ref=e436]:
+                  - generic [ref=e437]:
+                    - checkbox "Multibanco" [ref=e443] [cursor=pointer]
+                    - generic [ref=e444]:
+                      - img "Multibanco" [ref=e446]
+                      - generic [ref=e447]:
+                        - generic [ref=e448]:
+                          - generic [ref=e449]: Multibanco
+                          - generic [ref=e450]: A voucher based payment method for your customers in Portugal.
+                        - button "From 2.95% + $0.30" [ref=e452]:
+                          - generic [ref=e454]: From 2.95% + $0.30
+                - listitem [ref=e455]:
+                  - generic [ref=e456]:
+                    - checkbox "Alipay" [ref=e462] [cursor=pointer]
+                    - generic [ref=e463]:
+                      - img "Alipay" [ref=e465]
+                      - generic [ref=e466]:
+                        - generic [ref=e467]:
+                          - generic [ref=e468]: Alipay
+                          - generic [ref=e469]: Alipay is a popular wallet in China, operated by Ant Financial Services Group, a financial services provider affiliated with Alibaba.
+                        - button "From 2.9% + $0.30" [ref=e471]:
+                          - generic [ref=e473]: From 2.9% + $0.30
+                - listitem [ref=e474]:
+                  - generic [ref=e475]:
+                    - checkbox "WeChat Pay" [ref=e481] [cursor=pointer]
+                    - generic [ref=e482]:
+                      - img "WeChat Pay" [ref=e484]
+                      - generic [ref=e485]:
+                        - generic [ref=e486]:
+                          - generic [ref=e487]: WeChat Pay
+                          - generic [ref=e488]: A digital wallet popular with customers from China.
+                        - button "From 2.9% + $0.30" [ref=e490]:
+                          - generic [ref=e492]: From 2.9% + $0.30
+            - generic [ref=e493]:
+              - generic [ref=e494]:
+                - heading "Buy now, pay later" [level=2] [ref=e495]
+                - paragraph [ref=e496]: Boost sales by offering customers additional buying power and flexible payment options.
+                - link "Learn more(opens in a new tab)" [ref=e497] [cursor=pointer]:
+                  - /url: https://woocommerce.com/document/woopayments/payment-methods/buy-now-pay-later/
+                  - text: Learn more↗
+              - list [ref=e502]:
+                - listitem [ref=e503]:
+                  - generic [ref=e504]:
+                    - checkbox "Affirm" [ref=e510] [cursor=pointer]
+                    - generic [ref=e511]:
+                      - img "Affirm" [ref=e513]
+                      - generic [ref=e514]:
+                        - generic [ref=e515]:
+                          - generic [ref=e516]: Affirm
+                          - generic [ref=e517]: Allow customers to pay over time with Affirm.
+                        - button "From 6% + $0.30" [ref=e519]:
+                          - generic [ref=e521]: From 6% + $0.30
+                - listitem [ref=e522]:
+                  - generic [ref=e523]:
+                    - checkbox "Cash App Afterpay" [ref=e529] [cursor=pointer]
+                    - generic [ref=e530]:
+                      - img "Cash App Afterpay" [ref=e532]
+                      - generic [ref=e533]:
+                        - generic [ref=e534]:
+                          - generic [ref=e535]: Cash App Afterpay
+                          - generic [ref=e536]: Allow customers to pay over time with Afterpay.
+                        - button "From 6% + $0.30" [ref=e538]:
+                          - generic [ref=e540]: From 6% + $0.30
+                - listitem [ref=e541]:
+                  - generic [ref=e542]:
+                    - checkbox "Klarna" [ref=e548] [cursor=pointer]
+                    - generic [ref=e549]:
+                      - img "Klarna" [ref=e551]
+                      - generic [ref=e552]:
+                        - generic [ref=e553]:
+                          - generic [ref=e554]: Klarna
+                          - generic [ref=e555]: Allow customers to pay over time or pay now with Klarna.
+                        - button "From 5.99% + $0.30" [ref=e557]:
+                          - generic [ref=e559]: From 5.99% + $0.30
+            - generic [ref=e560]:
+              - generic [ref=e561]:
+                - heading "Express checkouts" [level=2] [ref=e562]
+                - paragraph [ref=e563]: Let your customers use their favorite express payment methods and digital wallets for faster, more secure checkouts across different parts of your store.
+                - link "Learn more(opens in a new tab)" [ref=e564] [cursor=pointer]:
+                  - /url: https://woocommerce.com/document/woopayments/settings-guide/#express-checkouts
+                  - text: Learn more↗
+              - list [ref=e569]:
+                - listitem [ref=e570]:
+                  - generic [ref=e571]:
+                    - checkbox "WooPay" [ref=e577] [cursor=pointer]
+                    - generic [ref=e578]:
+                      - generic [ref=e580]:
+                        - img "WooPay" [ref=e582]
+                        - generic [ref=e583]:
+                          - generic [ref=e584]: WooPay
+                          - generic [ref=e585]:
+                            - text: Boost conversion and customer loyalty by offering a single click, secure way to pay. In order to use
+                            - link "WooPay" [ref=e586] [cursor=pointer]:
+                              - /url: https://woocommerce.com/document/woopay-merchant-documentation/
+                            - text: ", you must agree to our"
+                            - link "WooCommerce Terms of Service" [ref=e587] [cursor=pointer]:
+                              - /url: https://wordpress.com/tos/
+                            - text: and
+                            - link "Privacy Policy" [ref=e588] [cursor=pointer]:
+                              - /url: https://automattic.com/privacy/
+                            - text: .
+                            - link "Click here" [ref=e589] [cursor=pointer]:
+                              - /url: https://woocommerce.com/usage-tracking/
+                            - text: to learn more about the data you will be sharing and opt-out options.
+                      - link "Customize" [ref=e591] [cursor=pointer]:
+                        - /url: admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&method=woopay
+                - listitem [ref=e592]:
+                  - generic [ref=e593]:
+                    - checkbox "Apple Pay / Google Pay" [ref=e599] [cursor=pointer]
+                    - generic [ref=e600]:
+                      - generic [ref=e601]:
+                        - generic [ref=e602]:
+                          - img "Apple Pay" [ref=e604]
+                          - generic [ref=e605]:
+                            - generic [ref=e606]: Apple Pay
+                            - generic [ref=e607]:
+                              - text: Apple Pay is an easy and secure way for customers to pay on your store. By enabling this feature, you agree to
+                              - link "Stripe" [ref=e608] [cursor=pointer]:
+                                - /url: https://stripe.com/apple-pay/legal
+                              - text: and
+                              - link "Apple" [ref=e609] [cursor=pointer]:
+                                - /url: https://developer.apple.com/apple-pay/acceptable-use-guidelines-for-websites/
+                              - text: "'s terms of use."
+                        - generic [ref=e610]:
+                          - img "Google Pay" [ref=e612]
+                          - generic [ref=e613]:
+                            - generic [ref=e614]: Google Pay
+                            - generic [ref=e615]:
+                              - text: Offer customers a fast, secure checkout experience with Google Pay. By enabling this feature, you agree to
+                              - link "Stripe" [ref=e616] [cursor=pointer]:
+                                - /url: https://stripe.com/apple-pay/legal
+                              - text: ", and"
+                              - link "Google" [ref=e617] [cursor=pointer]:
+                                - /url: https://androidpay.developers.google.com/terms/sellertos
+                              - text: "'s terms of use."
+                      - link "Customize" [ref=e619] [cursor=pointer]:
+                        - /url: admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments&method=payment_request
+                - listitem [ref=e620]:
+                  - generic [ref=e621]:
+                    - checkbox "Link by Stripe" [ref=e627] [cursor=pointer]
+                    - generic [ref=e628]:
+                      - generic [ref=e630]:
+                        - img "Link" [ref=e632]
+                        - generic [ref=e633]:
+                          - generic [ref=e634]: Link by Stripe
+                          - generic [ref=e635]:
+                            - text: Link autofills your customers’ payment and shipping details to deliver an easy and seamless checkout experience. By enabling this feature, you agree to the
+                            - link "Link by Stripe terms" [ref=e636] [cursor=pointer]:
+                              - /url: https://link.com/terms
+                            - text: ", and"
+                            - link "Privacy Policy" [ref=e637] [cursor=pointer]:
+                              - /url: https://link.com/privacy
+                            - text: .
+                      - link "Read more" [ref=e639] [cursor=pointer]:
+                        - /url: https://woocommerce.com/document/woopayments/payment-methods/link-by-stripe/
+            - generic [ref=e640]:
+              - generic [ref=e641]:
+                - heading "Transactions" [level=2] [ref=e642]
+                - paragraph [ref=e643]: Update your store's configuration to ensure smooth transactions.
+                - link "View our documentation(opens in a new tab)" [ref=e644] [cursor=pointer]:
+                  - /url: https://woocommerce.com/document/woopayments/
+                  - text: View our documentation↗
+              - generic [ref=e648]:
+                - heading "Transaction preferences" [level=4] [ref=e649]
+                - generic [ref=e650]:
+                  - generic [ref=e652]:
+                    - generic [ref=e653]:
+                      - checkbox "Enable payments via saved cards" [checked] [ref=e654] [cursor=pointer]
+                      - img
+                    - generic [ref=e655] [cursor=pointer]: Enable payments via saved cards
+                  - paragraph [ref=e656]:
+                    - generic [ref=e657]: When enabled, users will be able to pay with a saved card during checkout. Card details are stored in our platform, not on your store.
+                - generic [ref=e658]:
+                  - generic [ref=e660]:
+                    - checkbox "Enable manual capture" [ref=e662] [cursor=pointer]
+                    - generic [ref=e663] [cursor=pointer]: Enable manual capture
+                  - paragraph [ref=e664]:
+                    - generic [ref=e665]: Charge must be captured on the order details screen within 7 days of authorization, otherwise the authorization and order will be canceled.
+                - heading "Customer statements" [level=4] [ref=e666]
+                - paragraph [ref=e667]: Edit the way your store name appears on your customers' bank statements.
+                - generic [ref=e668]:
+                  - generic [ref=e670]:
+                    - generic [ref=e671]: Customer bank statement
+                    - textbox "Customer bank statement" [ref=e672]: RETICULATED OF FLORAS
+                  - generic [ref=e673]: 21 / 22
+                - heading "Customer support" [level=4] [ref=e674]
+                - paragraph [ref=e675]: Provide contact information where customers can reach you for support.
+                - generic [ref=e676]:
+                  - generic [ref=e677]:
+                    - generic [ref=e678]:
+                      - generic [ref=e679]: Support email
+                      - textbox "Support email" [ref=e680]: plenty.helpful@example.com
+                    - paragraph [ref=e681]: This may be visible on receipts, invoices, and automated emails from your store.
+                  - generic [ref=e682]:
+                    - generic [ref=e683]:
+                      - generic [ref=e684]: Support phone number
+                      - generic [ref=e686]:
+                        - 'combobox "United States: +1" [ref=e688]':
+                          - generic [ref=e690]: "+1"
+                        - textbox "Support phone number" [ref=e692]:
+                          - /placeholder: Mobile number
+                          - text: "0000000000"
+                    - paragraph [ref=e693]:
+                      - text: This may be visible on receipts, invoices, and automated emails from your store.
+                      - text: (+1 0000000000 can be used for test accounts)
+            - generic [ref=e694]:
+              - generic [ref=e695]:
+                - heading "Payouts" [level=2] [ref=e696]
+                - paragraph [ref=e697]: Funds are available for payout 2 business days after they’re received.
+                - link "Learn more about pending schedules(opens in a new tab)" [ref=e698] [cursor=pointer]:
+                  - /url: https://woocommerce.com/document/woopayments/payouts/payout-schedule/
+                  - text: Learn more about pending schedules↗
+              - generic [ref=e703]:
+                - heading "Payout schedule" [level=4] [ref=e704]
+                - generic [ref=e705]:
+                  - generic [ref=e706]: Warning notice
+                  - generic [ref=e708]:
+                    - img [ref=e710]
+                    - generic [ref=e713]:
+                      - text: Payout scheduling becomes available after the standard 7-day waiting period for new accounts is complete.
+                      - link "Learn more" [ref=e714] [cursor=pointer]:
+                        - /url: https://woocommerce.com/document/woopayments/payouts/payout-schedule/
+                - heading "Payout bank account" [level=4] [ref=e715]
+                - paragraph [ref=e716]: Manage and update your bank account information to receive payouts.
+            - generic [ref=e717]:
+              - generic [ref=e718]:
+                - heading "Fraud protection" [level=2] [ref=e719]
+                - paragraph [ref=e720]: Help avoid unauthorized transactions and disputes by setting your fraud protection level.
+                - link "Learn more about fraud protection(opens in a new tab)" [ref=e721] [cursor=pointer]:
+                  - /url: https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/
+                  - text: Learn more about fraud protection↗
+              - generic [ref=e725]:
+                - heading "Set your payment risk level" [level=4] [ref=e726]
+                - group [ref=e727]:
+                  - list [ref=e728]:
+                    - listitem [ref=e729]:
+                      - generic [ref=e730]:
+                        - radio "Basic" [checked] [ref=e731] [cursor=pointer]
+                        - generic [ref=e732]: Basic
+                        - img "Basic level help icon" [ref=e733] [cursor=pointer]
+                      - paragraph [ref=e736]: Provides the base level of platform protection.
+                    - listitem [ref=e737]:
+                      - generic [ref=e738]:
+                        - generic [ref=e739]:
+                          - radio "Advanced Allows you to fine-tune the level of filtering according to your business needs." [ref=e740] [cursor=pointer]
+                          - paragraph [ref=e741]: Advanced
+                        - paragraph [ref=e742]: Allows you to fine-tune the level of filtering according to your business needs.
+                      - button "Configure" [disabled] [ref=e743]
+            - generic [ref=e744]:
+              - generic [ref=e745]:
+                - heading "Advanced settings" [level=2] [ref=e746]
+                - paragraph [ref=e747]: More options for specific payment needs.
+                - link "View our documentation(opens in a new tab)" [ref=e748] [cursor=pointer]:
+                  - /url: https://woocommerce.com/document/woopayments/settings-guide/#advanced-settings
+                  - text: View our documentation↗
+              - generic [ref=e752]:
+                - generic [ref=e753]:
+                  - generic [ref=e755]:
+                    - generic [ref=e756]:
+                      - checkbox "Enable Multi-Currency" [checked] [ref=e757] [cursor=pointer]
+                      - img
+                    - generic [ref=e758] [cursor=pointer]: Enable Multi-Currency
+                  - paragraph [ref=e759]:
+                    - generic [ref=e760]:
+                      - text: Allow customers to shop and pay in multiple currencies.
+                      - link "Learn more(opens in a new tab)" [ref=e761] [cursor=pointer]:
+                        - /url: https://woocommerce.com/document/woopayments/currencies/multi-currency-setup/
+                        - text: Learn more↗
+                - heading "Debug mode" [level=4] [ref=e762]
+                - generic [ref=e763]:
+                  - generic [ref=e765]:
+                    - generic [ref=e766]:
+                      - checkbox "Log error messages (defaulted on for test accounts)" [checked] [disabled] [ref=e767]
+                      - img
+                    - generic [ref=e768] [cursor=pointer]: Log error messages (defaulted on for test accounts)
+                  - paragraph [ref=e769]:
+                    - generic [ref=e770]: When enabled, payment error logs will be saved to WooCommerce > Status > Logs.
+            - button "Save changes" [disabled] [ref=e774]
+          - paragraph [ref=e775]
+    - contentinfo [ref=e776]:
+      - paragraph [ref=e777]:
+        - generic [ref=e778]:
+          - text: If you like
+          - strong [ref=e779]: WooCommerce
+          - text: please leave us a
+          - link "five star" [ref=e780] [cursor=pointer]:
+            - /url: https://wordpress.org/support/plugin/woocommerce/reviews?rate=5#new-post
+            - text: ★★★★★
+          - text: rating. A huge thanks in advance!
+      - paragraph [ref=e781]: Version 10.3.5
+    - text: 
+  - paragraph [ref=e782]: Notifications
+  - generic [ref=e784]: Settings saved.
+```

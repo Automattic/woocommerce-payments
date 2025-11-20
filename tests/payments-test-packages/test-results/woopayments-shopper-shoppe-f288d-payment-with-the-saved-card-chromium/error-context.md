@@ -1,0 +1,247 @@
+# Page snapshot
+
+```yaml
+- generic [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - link "Skip to navigation" [ref=e5] [cursor=pointer]:
+          - /url: "#site-navigation"
+        - link "Skip to content" [ref=e6] [cursor=pointer]:
+          - /url: "#content"
+        - link "Test Site" [ref=e9] [cursor=pointer]:
+          - /url: http://localhost:32780/
+        - search [ref=e12]:
+          - text: 
+          - generic [ref=e13]: "Search for:"
+          - searchbox "Search for:" [ref=e14]
+          - button "Search" [ref=e15] [cursor=pointer]
+      - generic [ref=e17]:
+        - navigation "Primary Navigation" [ref=e18]:
+          - list [ref=e20]:
+            - listitem [ref=e21]:
+              - link "Home" [ref=e22] [cursor=pointer]:
+                - /url: http://localhost:32780/
+            - listitem [ref=e23]:
+              - link "Cart" [ref=e24] [cursor=pointer]:
+                - /url: http://localhost:32780/cart/
+            - listitem [ref=e25]:
+              - link "Checkout" [ref=e26] [cursor=pointer]:
+                - /url: http://localhost:32780/checkout/
+            - listitem [ref=e27]:
+              - link "Checkout WCB" [ref=e28] [cursor=pointer]:
+                - /url: http://localhost:32780/checkout-wcb/
+            - listitem [ref=e29]:
+              - link "My account" [ref=e30] [cursor=pointer]:
+                - /url: http://localhost:32780/my-account/
+            - listitem [ref=e31]:
+              - link "Sample Page" [ref=e32] [cursor=pointer]:
+                - /url: http://localhost:32780/sample-page/
+            - listitem [ref=e33]:
+              - link "Shop" [ref=e34] [cursor=pointer]:
+                - /url: http://localhost:32780/shop/
+          - generic:
+            - list:
+              - listitem [ref=e35]:
+                - link "Home" [ref=e36] [cursor=pointer]:
+                  - /url: http://localhost:32780/
+              - listitem [ref=e37]:
+                - link "Cart" [ref=e38] [cursor=pointer]:
+                  - /url: http://localhost:32780/cart/
+              - listitem [ref=e39]:
+                - link "Checkout" [ref=e40] [cursor=pointer]:
+                  - /url: http://localhost:32780/checkout/
+              - listitem [ref=e41]:
+                - link "Checkout WCB" [ref=e42] [cursor=pointer]:
+                  - /url: http://localhost:32780/checkout-wcb/
+              - listitem [ref=e43]:
+                - link "My account" [ref=e44] [cursor=pointer]:
+                  - /url: http://localhost:32780/my-account/
+              - listitem [ref=e45]:
+                - link "Sample Page" [ref=e46] [cursor=pointer]:
+                  - /url: http://localhost:32780/sample-page/
+              - listitem [ref=e47]:
+                - link "Shop" [ref=e48] [cursor=pointer]:
+                  - /url: http://localhost:32780/shop/
+        - list [ref=e49]:
+          - listitem [ref=e50]:
+            - link "$45.00 1 item " [ref=e51] [cursor=pointer]:
+              - /url: http://localhost:32780/cart/
+              - generic [ref=e52]: $45.00
+              - text: 1 item 
+          - listitem
+    - navigation "breadcrumbs" [ref=e55]:
+      - link " Home" [ref=e56] [cursor=pointer]:
+        - /url: http://localhost:32780
+      - generic [ref=e57]: / 
+      - text: Checkout
+    - main [ref=e61]:
+      - article [ref=e62]:
+        - heading "Checkout" [level=1] [ref=e64]
+        - generic [ref=e66]:
+          - status [ref=e68]:
+            - text:  Have a coupon?
+            - button "Enter your coupon code" [ref=e69] [cursor=pointer]: Click here to enter your code
+          - form "Checkout" [ref=e70]:
+            - generic [ref=e71]:
+              - generic [ref=e73]:
+                - heading "Billing details" [level=3] [ref=e74]
+                - generic [ref=e75]:
+                  - paragraph [ref=e76]:
+                    - generic [ref=e77]: First name *
+                    - textbox "First name" [ref=e79]:
+                      - /placeholder: ""
+                      - text: I am
+                  - paragraph [ref=e80]:
+                    - generic [ref=e81]: Last name *
+                    - textbox "Last name" [ref=e83]:
+                      - /placeholder: ""
+                      - text: Customer
+                  - paragraph [ref=e84]:
+                    - generic [ref=e85]: Company name (optional)
+                    - textbox "Company name (optional)" [ref=e87]:
+                      - /placeholder: ""
+                      - text: Automattic
+                  - paragraph [ref=e88]:
+                    - generic [ref=e89]: Country / Region *
+                    - generic [ref=e90]:
+                      - combobox [ref=e91]
+                      - combobox "Country / Region" [ref=e94] [cursor=pointer]:
+                        - textbox "United States (US)" [ref=e95]
+                  - paragraph [ref=e96]:
+                    - generic [ref=e97]: Street address *
+                    - textbox "Street address" [ref=e99]:
+                      - /placeholder: House number and street name
+                      - text: "60 29th Street #343"
+                  - paragraph [ref=e100]:
+                    - generic [ref=e101]: Apartment, suite, unit, etc. (optional)
+                    - textbox "Apartment, suite, unit, etc. (optional)" [ref=e103]: billing
+                  - paragraph [ref=e104]:
+                    - generic [ref=e105]: Town / City *
+                    - textbox "Town / City" [ref=e107]:
+                      - /placeholder: ""
+                      - text: San Francisco
+                  - paragraph [ref=e108]:
+                    - generic [ref=e109]: State *
+                    - generic [ref=e110]:
+                      - combobox [ref=e111]
+                      - combobox "State" [ref=e114] [cursor=pointer]:
+                        - textbox "California" [ref=e115]
+                  - paragraph [ref=e116]:
+                    - generic [ref=e117]: ZIP Code *
+                    - textbox "ZIP Code" [ref=e119]:
+                      - /placeholder: ""
+                      - text: "94110"
+                  - paragraph [ref=e120]:
+                    - generic [ref=e121]: Phone (optional)
+                    - textbox "Phone (optional)" [ref=e123]:
+                      - /placeholder: ""
+                      - text: "123456789"
+                  - paragraph [ref=e124]:
+                    - generic [ref=e125]: Email address *
+                    - textbox "Email address" [ref=e127]:
+                      - /placeholder: ""
+                      - text: e2e-wcpay-customer@woocommerce.com
+              - generic [ref=e129]:
+                - heading "Additional information" [level=3] [ref=e130]
+                - paragraph [ref=e132]:
+                  - generic [ref=e133]: Order notes (optional)
+                  - textbox "Order notes (optional)" [ref=e135]:
+                    - /placeholder: Notes about your order, e.g. special notes for delivery.
+            - heading "Your order" [level=3] [ref=e136]
+            - generic [ref=e137]:
+              - table [ref=e138]:
+                - rowgroup [ref=e139]:
+                  - row "Product Subtotal" [ref=e140]:
+                    - cell "Product" [ref=e141]
+                    - cell "Subtotal" [ref=e142]
+                - rowgroup [ref=e143]:
+                  - row "Hoodie with Logo × 1 $45.00" [ref=e144]:
+                    - cell "Hoodie with Logo × 1" [ref=e145]:
+                      - text: Hoodie with Logo
+                      - strong [ref=e146]: × 1
+                    - cell "$45.00" [ref=e147]:
+                      - generic [ref=e149]: $45.00
+                - rowgroup [ref=e150]:
+                  - row "Subtotal $45.00" [ref=e151]:
+                    - cell "Subtotal" [ref=e152]
+                    - cell "$45.00" [ref=e153]:
+                      - generic [ref=e155]: $45.00
+                  - row "Total $45.00 USD" [ref=e156]:
+                    - cell "Total" [ref=e157]
+                    - cell "$45.00 USD" [ref=e158]:
+                      - strong [ref=e159]:
+                        - generic [ref=e161]: $45.00
+                        - text: USD
+              - generic [ref=e162]:
+                - list [ref=e163]:
+                  - listitem [ref=e164]:
+                    - generic [ref=e165] [cursor=pointer]:
+                      - text:  Card
+                      - button "visa mastercard amex + 3" [ref=e167]:
+                        - img "visa" [ref=e168]
+                        - img "mastercard" [ref=e169]
+                        - img "amex" [ref=e170]
+                        - generic [ref=e171]: + 3
+                    - generic [ref=e173]:
+                      - paragraph [ref=e174]:
+                        - text: Use test card
+                        - button "Click to copy the test number to clipboard" [ref=e175] [cursor=pointer]:
+                          - generic [ref=e177]: 4242 4242 4242 4242
+                        - text: or refer to our
+                        - link "testing guide" [ref=e178] [cursor=pointer]:
+                          - /url: https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards
+                        - text: .
+                      - group [ref=e179]:
+                        - iframe [ref=e182]:
+                          - tabpanel [ref=f1e8]:
+                            - generic [ref=f1e11]:
+                              - generic [ref=f1e14]:
+                                - generic [ref=f1e16]:
+                                  - generic [ref=f1e17]: Card number
+                                  - generic [ref=f1e19]:
+                                    - textbox "Card number" [ref=f1e21]:
+                                      - /placeholder: 1234 1234 1234 1234
+                                    - generic:
+                                      - option "Select card brand (optional)" [disabled] [selected]
+                                    - generic:
+                                      - generic:
+                                        - generic:
+                                          - paragraph: Supported cards include Visa, Mastercard, and American Express.
+                                          - generic:
+                                            - img
+                                            - img
+                                - generic [ref=f1e23]:
+                                  - generic [ref=f1e24]:
+                                    - text: Expiration date
+                                    - generic [ref=f1e25]: MM / YY
+                                  - textbox "Expiration date MM / YY" [ref=f1e29]:
+                                    - /placeholder: MM / YY
+                                - generic [ref=f1e31]:
+                                  - generic [ref=f1e32]: Security code
+                                  - generic [ref=f1e34]:
+                                    - textbox "Security code" [ref=f1e36]:
+                                      - /placeholder: CVC
+                                    - generic:
+                                      - generic: 3-digit code on back of card
+                                      - generic:
+                                        - img
+                              - generic: 0123456789０１２３４５６７８９
+                              - button
+                - generic [ref=e183]:
+                  - paragraph [ref=e186]:
+                    - text: Your personal data will be used to process your order, support your experience throughout this website, and for other purposes described in our
+                    - link "privacy policy" [ref=e187] [cursor=pointer]:
+                      - /url: http://localhost:32780/?page_id=3
+                    - text: .
+                  - button "Place order" [ref=e188] [cursor=pointer]
+    - contentinfo [ref=e189]:
+      - generic [ref=e190]:
+        - generic [ref=e191]:
+          - text: © Test Site 2025
+          - link "Built with WooCommerce" [ref=e192] [cursor=pointer]:
+            - /url: https://woocommerce.com
+          - text: .
+        - text:    
+  - status [ref=e193]
+```

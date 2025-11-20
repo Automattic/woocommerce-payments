@@ -1,0 +1,145 @@
+# Page snapshot
+
+```yaml
+- generic [active] [ref=e1]:
+  - generic [ref=e2]:
+    - banner [ref=e3]:
+      - generic [ref=e4]:
+        - link "Skip to navigation" [ref=e5] [cursor=pointer]:
+          - /url: "#site-navigation"
+        - link "Skip to content" [ref=e6] [cursor=pointer]:
+          - /url: "#content"
+        - heading "Test Site" [level=1] [ref=e8]:
+          - link "Test Site" [ref=e9] [cursor=pointer]:
+            - /url: http://localhost:32780/
+        - search [ref=e12]:
+          - text: 
+          - generic [ref=e13]: "Search for:"
+          - searchbox "Search for:" [ref=e14]
+          - button "Search" [ref=e15] [cursor=pointer]
+      - generic [ref=e17]:
+        - navigation "Primary Navigation" [ref=e18]:
+          - list [ref=e20]:
+            - listitem [ref=e21]:
+              - link "Home" [ref=e22] [cursor=pointer]:
+                - /url: http://localhost:32780/
+            - listitem [ref=e23]:
+              - link "Cart" [ref=e24] [cursor=pointer]:
+                - /url: http://localhost:32780/cart/
+            - listitem [ref=e25]:
+              - link "Checkout" [ref=e26] [cursor=pointer]:
+                - /url: http://localhost:32780/checkout/
+            - listitem [ref=e27]:
+              - link "Checkout WCB" [ref=e28] [cursor=pointer]:
+                - /url: http://localhost:32780/checkout-wcb/
+            - listitem [ref=e29]:
+              - link "My account" [ref=e30] [cursor=pointer]:
+                - /url: http://localhost:32780/my-account/
+            - listitem [ref=e31]:
+              - link "Sample Page" [ref=e32] [cursor=pointer]:
+                - /url: http://localhost:32780/sample-page/
+            - listitem [ref=e33]:
+              - link "Shop" [ref=e34] [cursor=pointer]:
+                - /url: http://localhost:32780/shop/
+          - generic:
+            - list:
+              - listitem [ref=e35]:
+                - link "Home" [ref=e36] [cursor=pointer]:
+                  - /url: http://localhost:32780/
+              - listitem [ref=e37]:
+                - link "Cart" [ref=e38] [cursor=pointer]:
+                  - /url: http://localhost:32780/cart/
+              - listitem [ref=e39]:
+                - link "Checkout" [ref=e40] [cursor=pointer]:
+                  - /url: http://localhost:32780/checkout/
+              - listitem [ref=e41]:
+                - link "Checkout WCB" [ref=e42] [cursor=pointer]:
+                  - /url: http://localhost:32780/checkout-wcb/
+              - listitem [ref=e43]:
+                - link "My account" [ref=e44] [cursor=pointer]:
+                  - /url: http://localhost:32780/my-account/
+              - listitem [ref=e45]:
+                - link "Sample Page" [ref=e46] [cursor=pointer]:
+                  - /url: http://localhost:32780/sample-page/
+              - listitem [ref=e47]:
+                - link "Shop" [ref=e48] [cursor=pointer]:
+                  - /url: http://localhost:32780/shop/
+        - list [ref=e49]:
+          - listitem [ref=e50]:
+            - link "$0.00 0 items " [ref=e51] [cursor=pointer]:
+              - /url: http://localhost:32780/cart/
+              - generic [ref=e52]: $0.00
+              - text: 0 items 
+          - listitem:
+            - paragraph [ref=e55]: No products in the cart.
+    - generic [ref=e57]:
+      - main [ref=e59]:
+        - article [ref=e60]:
+          - generic [ref=e61]:
+            - generic [ref=e62]:
+              - text: Posted on
+              - link "November 20, 2025" [ref=e63] [cursor=pointer]:
+                - /url: http://localhost:32780/hello-world/
+                - time [ref=e64]: November 20, 2025
+            - generic [ref=e65]:
+              - text: by
+              - link "admin" [ref=e66] [cursor=pointer]:
+                - /url: http://localhost:32780/author/admin/
+            - generic [ref=e67]:
+              - text: —
+              - link "1 Comment" [ref=e68] [cursor=pointer]:
+                - /url: http://localhost:32780/hello-world/#comments
+            - heading "Hello world!" [level=2] [ref=e69]:
+              - link "Hello world!" [ref=e70] [cursor=pointer]:
+                - /url: http://localhost:32780/hello-world/
+          - paragraph [ref=e72]: Welcome to WordPress. This is your first post. Edit or delete it, then start writing!
+          - complementary [ref=e73]:
+            - generic [ref=e74]:
+              - text: "Category:"
+              - link "Uncategorized" [ref=e75] [cursor=pointer]:
+                - /url: http://localhost:32780/category/uncategorized/
+      - complementary [ref=e76]:
+        - search [ref=e78]:
+          - text: Search
+          - generic [ref=e79]:
+            - searchbox "Search" [ref=e80]
+            - button "Search" [ref=e81] [cursor=pointer]
+        - generic [ref=e84]:
+          - heading "Recent Posts" [level=2] [ref=e85]
+          - list [ref=e86]:
+            - listitem [ref=e87]:
+              - link "Hello world!" [ref=e88] [cursor=pointer]:
+                - /url: http://localhost:32780/hello-world/
+        - generic [ref=e91]:
+          - heading "Recent Comments" [level=2] [ref=e92]
+          - list [ref=e93]:
+            - listitem [ref=e94]:
+              - article [ref=e95]:
+                - generic [ref=e96]:
+                  - link "A WordPress Commenter" [ref=e97] [cursor=pointer]:
+                    - /url: https://wordpress.org/
+                  - text: "on"
+                  - link "Hello world!" [ref=e98] [cursor=pointer]:
+                    - /url: http://localhost:32780/hello-world/#comment-1
+        - generic [ref=e101]:
+          - heading "Archives" [level=2] [ref=e102]
+          - list [ref=e103]:
+            - listitem [ref=e104]:
+              - link "November 2025" [ref=e105] [cursor=pointer]:
+                - /url: http://localhost:32780/2025/11/
+        - generic [ref=e108]:
+          - heading "Categories" [level=2] [ref=e109]
+          - list [ref=e110]:
+            - listitem [ref=e111]:
+              - link "Uncategorized" [ref=e112] [cursor=pointer]:
+                - /url: http://localhost:32780/category/uncategorized/
+    - contentinfo [ref=e113]:
+      - generic [ref=e114]:
+        - generic [ref=e115]:
+          - text: © Test Site 2025
+          - link "Built with WooCommerce" [ref=e116] [cursor=pointer]:
+            - /url: https://woocommerce.com
+          - text: .
+        - text:    
+  - status [ref=e117]
+```
