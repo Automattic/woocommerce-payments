@@ -1120,39 +1120,50 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 	 * @param WC_Subscription $subscription The subscription being created.
 	 */
 	public function maybe_force_subscription_to_manual( $subscription ) {
-		// Only process WCPay subscriptions (including split UPE gateways like woocommerce_payments_ideal).
-		$payment_method_id = $subscription->get_payment_method();
-		if ( 0 !== strpos( $payment_method_id, WC_Payment_Gateway_WCPay::GATEWAY_ID ) ) {
-			return;
+		try {
+			// Validate subscription object.
+			if ( ! $subscription || ! is_a( $subscription, 'WC_Subscription' ) ) {
+				Logger::info( 'Invalid subscription object passed to maybe_force_subscription_to_manual' );
+				return;
+			}
+
+			// Only process WCPay subscriptions (including split UPE gateways like woocommerce_payments_ideal).
+			$payment_method_id = $subscription->get_payment_method();
+			if ( ! $payment_method_id || 0 !== strpos( $payment_method_id, WC_Payment_Gateway_WCPay::GATEWAY_ID ) ) {
+				return;
+			}
+
+			// Check if this is a split UPE gateway (e.g., woocommerce_payments_ideal).
+			// Split UPE gateways are used for non-reusable payment methods like iDEAL, Bancontact, etc.
+			// The base gateway (woocommerce_payments) is used for cards, which are reusable.
+			if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $payment_method_id ) {
+				// This is the base gateway (card), which is reusable - no action needed.
+				return;
+			}
+
+			// This is a split UPE gateway (non-reusable payment method).
+			// Extract the payment method type from the gateway ID (e.g., "ideal" from "woocommerce_payments_ideal").
+			$payment_method_type = str_replace( WC_Payment_Gateway_WCPay::GATEWAY_ID . '_', '', $payment_method_id );
+
+			// Store the original payment method ID for reference.
+			$subscription->update_meta_data( '_wcpay_original_payment_method_id', $payment_method_id );
+
+			// Set to manual renewal (keep the original split payment method ID).
+			$subscription->set_requires_manual_renewal( true );
+
+			$subscription->save();
+
+			// Add order note confirming the subscription was set to manual.
+			$subscription->add_order_note(
+				sprintf(
+					/* translators: %s: payment method type */
+					__( 'Subscription set to manual renewal because %s is a non-reusable payment method.', 'woocommerce-payments' ),
+					$payment_method_type
+				)
+			);
+		} catch ( \Exception $e ) {
+			Logger::error( 'Failed to force subscription to manual for subscription #' . ( $subscription ? $subscription->get_id() : 'unknown' ) . ': ' . $e->getMessage() );
+			// Don't throw - allow checkout to continue even if this fails.
 		}
-
-		// Check if this is a split UPE gateway (e.g., woocommerce_payments_ideal).
-		// Split UPE gateways are used for non-reusable payment methods like iDEAL, Bancontact, etc.
-		// The base gateway (woocommerce_payments) is used for cards, which are reusable.
-		if ( WC_Payment_Gateway_WCPay::GATEWAY_ID === $payment_method_id ) {
-			// This is the base gateway (card), which is reusable - no action needed.
-			return;
-		}
-
-		// This is a split UPE gateway (non-reusable payment method).
-		// Extract the payment method type from the gateway ID (e.g., "ideal" from "woocommerce_payments_ideal").
-		$payment_method_type = str_replace( WC_Payment_Gateway_WCPay::GATEWAY_ID . '_', '', $payment_method_id );
-
-		// Store the original payment method ID for reference.
-		$subscription->update_meta_data( '_wcpay_original_payment_method_id', $payment_method_id );
-
-		// Set to manual renewal (keep the original split payment method ID).
-		$subscription->set_requires_manual_renewal( true );
-
-		$subscription->save();
-
-		// Add order note confirming the subscription was set to manual.
-		$subscription->add_order_note(
-			sprintf(
-				/* translators: %s: payment method type */
-				__( 'Subscription set to manual renewal because %s is a non-reusable payment method.', 'woocommerce-payments' ),
-				$payment_method_type
-			)
-		);
 	}
 }
