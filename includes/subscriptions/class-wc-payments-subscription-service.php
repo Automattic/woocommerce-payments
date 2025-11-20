@@ -395,14 +395,24 @@ class WC_Payments_Subscription_Service {
 		}
 
 		$checkout_error_message = __( 'There was a problem creating your subscription. Please try again or contact us for assistance.', 'woocommerce-payments' );
-		$wcpay_customer_id      = $this->customer_service->get_customer_id_for_order( $subscription );
-
-		if ( ! $wcpay_customer_id ) {
-			Logger::error( 'There was a problem creating the WooPayments subscription. WooPayments customer ID missing.' );
-			throw new Exception( $checkout_error_message );
-		}
 
 		try {
+			$wcpay_customer_id = $this->customer_service->get_customer_id_for_order( $subscription );
+
+			if ( ! $wcpay_customer_id ) {
+				$user = $subscription->get_user();
+				Logger::error(
+					sprintf(
+						'Cannot create WooPayments subscription - customer ID missing for subscription #%d. User ID: %s, User exists: %s, Payment method: %s',
+						$subscription->get_id(),
+						$user ? $user->ID : 'none',
+						$user ? 'yes' : 'no',
+						$subscription->get_payment_method()
+					)
+				);
+				throw new Exception( $checkout_error_message );
+			}
+
 			$subscription_data = $this->prepare_wcpay_subscription_data( $wcpay_customer_id, $subscription );
 			$this->validate_subscription_data( $subscription_data );
 
