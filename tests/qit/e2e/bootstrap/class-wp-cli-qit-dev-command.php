@@ -182,63 +182,7 @@ class WP_CLI_QIT_Dev_Command {
 			$account_service = \WC_Payments::get_account_service();
 			\WP_CLI::log( 'Attempting to refresh account data...' );
 
-			// Enable WP_DEBUG temporarily to catch any errors.
-			$original_wp_debug = defined( 'WP_DEBUG' ) ? WP_DEBUG : false;
-			if ( ! defined( 'WP_DEBUG' ) ) {
-				define( 'WP_DEBUG', true );
-			}
-
-			// DIAGNOSTIC: Call API directly to see raw response before validation.
-			\WP_CLI::log( "\n=== DIAGNOSTIC: Calling API directly ===" );
-			try {
-				$request        = \WCPay\Core\Server\Request\Get_Account::create();
-				$response       = $request->send();
-				$raw_api_data   = $response->to_array();
-				$available_keys = array_keys( $raw_api_data );
-
-				\WP_CLI::log( 'API call succeeded!' );
-				\WP_CLI::log( 'Raw API response fields: ' . implode( ', ', $available_keys ) );
-				\WP_CLI::log( 'Has is_live field: ' . ( isset( $raw_api_data['is_live'] ) ? 'YES' : 'NO' ) );
-				if ( isset( $raw_api_data['is_live'] ) ) {
-					\WP_CLI::log( 'is_live value: ' . ( $raw_api_data['is_live'] ? 'true' : 'false' ) );
-				}
-				\WP_CLI::log( '=========================================\n' );
-			} catch ( \Exception $e ) {
-				\WP_CLI::log( 'Direct API call failed: ' . $e->getMessage() );
-
-				// Check if it's an authentication error.
-				if ( strpos( $e->getMessage(), 'cannot access this resource' ) !== false ) {
-					\WP_CLI::log( "\n*** AUTHENTICATION ERROR DETECTED ***" );
-					\WP_CLI::log( 'Jetpack connection works, but WooPayments API rejects the request.' );
-					\WP_CLI::log( '**************************************' );
-				}
-
-				\WP_CLI::log( '=========================================\n' );
-			}
-
-			// Add error handler to capture any warnings/errors during account refresh.
-			$api_errors = [];
-			// phpcs:ignore WordPress.PHP.DevelopmentFunctions.error_log_set_error_handler -- Intentional for E2E test diagnostics.
-			set_error_handler(
-				function ( $errno, $errstr, $errfile, $errline ) use ( &$api_errors ) {
-					$api_errors[] = "[$errno] $errstr in $errfile:$errline";
-					return false; // Let default handler also run.
-				}
-			);
-
 			$result = $account_service->refresh_account_data();
-
-			// Restore error handler.
-			restore_error_handler();
-
-			// Log any errors that occurred during API call.
-			if ( ! empty( $api_errors ) ) {
-				\WP_CLI::log( "\n=== ERRORS DURING ACCOUNT REFRESH ===" );
-				foreach ( $api_errors as $error ) {
-					\WP_CLI::log( "  $error" );
-				}
-				\WP_CLI::log( "======================================\n" );
-			}
 
 			// Check if data was actually set.
 			$database_cache = \WC_Payments::get_database_cache();
@@ -345,6 +289,18 @@ class WP_CLI_QIT_Dev_Command {
 				);
 			}
 		} catch ( \Exception $e ) {
+			// Check if it's an authentication error.
+			if ( strpos( $e->getMessage(), 'cannot access this resource' ) !== false ) {
+				\WP_CLI::error(
+					"Authentication error: Jetpack tokens are invalid.\n\n" .
+					"SOLUTION - Reconnect Jetpack:\n" .
+					"1. Disconnect Jetpack from test site (wp-admin → Jetpack → Disconnect)\n" .
+					"2. Reconnect Jetpack\n" .
+					"3. Extract new tokens and update tests/qit/config/local.env\n" .
+					'4. Re-run QIT tests'
+				);
+			}
+
 			\WP_CLI::warning( 'Account refresh failed: ' . $e->getMessage() );
 		}
 	}
