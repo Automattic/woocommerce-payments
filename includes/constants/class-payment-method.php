@@ -43,6 +43,8 @@ class Payment_Method extends Base_Constant {
 	const MULTIBANCO      = 'multibanco';
 	const GRABPAY         = 'grabpay';
 	const WECHAT_PAY      = 'wechat_pay';
+	const GOOGLE_PAY      = 'google_pay';
+	const APPLE_PAY       = 'apple_pay';
 
 	const IPP_ALLOWED_PAYMENT_METHODS = [
 		self::CARD_PRESENT,

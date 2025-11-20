@@ -8,6 +8,8 @@
 namespace WCPay\PaymentMethods\Configs\Registry;
 
 use WCPay\PaymentMethods\Configs\Definitions\AlipayDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\ApplePayDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\GooglePayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\WechatPayDefinition;
 use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface;
 
@@ -32,6 +34,8 @@ class PaymentMethodDefinitionRegistry {
 		// Add new payment method definitions here.
 		AlipayDefinition::class,
 		WechatPayDefinition::class,
+		ApplePayDefinition::class,
+		GooglePayDefinition::class,
 	];
 
 	/**

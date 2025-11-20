@@ -342,8 +342,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// to have a map for it instead, just in case the pattern changes.
 		$this->payment_method_capability_key_map = [
 			'alipay'            => 'alipay_payments',
+			'apple_pay'         => 'card_payments',
 			'sofort'            => 'sofort_payments',
 			'giropay'           => 'giropay_payments',
+			'google_pay'        => 'card_payments',
 			'bancontact'        => 'bancontact_payments',
 			'eps'               => 'eps_payments',
 			'ideal'             => 'ideal_payments',
@@ -1814,7 +1816,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$this->maybe_add_customer_notification_note( $order, $processing );
 
 		// ensuring the payment method title is set before any early return paths to avoid incomplete order data.
-		if ( empty( $_POST['payment_request_type'] ) && empty( $_POST['express_payment_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
+		if ( empty( $_POST['express_payment_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			// Extract payment method details for setting the payment method title.
 			if ( $payment_needed ) {
 				$charge                 = $intent ? $intent->get_charge() : null;
@@ -4115,6 +4117,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		);
 
 		$methods_with_fees = array_keys( $this->account->get_fees() );
+
+		// Google Pay and Apple Pay use card payment fees, so if card is available, they should be too.
+		if ( in_array( 'card', $methods_with_fees, true ) ) {
+			if ( in_array( 'google_pay', $available_methods, true ) ) {
+				$methods_with_fees[] = 'google_pay';
+			}
+			if ( in_array( 'apple_pay', $available_methods, true ) ) {
+				$methods_with_fees[] = 'apple_pay';
+			}
+		}
 
 		return array_values( array_intersect( $available_methods, $methods_with_fees ) );
 	}
