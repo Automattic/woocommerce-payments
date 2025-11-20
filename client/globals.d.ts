@@ -35,6 +35,7 @@ declare global {
 			isFRTReviewFeatureActive: boolean;
 			isDynamicCheckoutPlaceOrderButtonEnabled: boolean;
 			isAccountDetailsEnabled: boolean;
+			amazonPay: boolean;
 		};
 		accountFees: Record< string, any >;
 		fraudServices: unknown[];
