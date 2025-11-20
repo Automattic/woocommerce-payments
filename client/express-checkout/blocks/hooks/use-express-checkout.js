@@ -61,8 +61,6 @@ export const useExpressCheckout = ( {
 				return;
 			}
 
-			// console.log( '###', billing, shippingData );
-
 			const shippingAddressRequired = shippingData?.needsShipping;
 
 			let shippingRates;
