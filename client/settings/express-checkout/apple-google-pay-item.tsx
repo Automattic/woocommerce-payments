@@ -31,8 +31,8 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 	} = useContext( DuplicatedPaymentMethodsContext );
 	const isDuplicate = Object.keys( duplicates ).includes( id );
 
-	const ApplePayIcon = methodsConfiguration.apple_pay.icon;
-	const GooglePayIcon = methodsConfiguration.google_pay.icon;
+	const { icon: ApplePayIcon } = methodsConfiguration.apple_pay;
+	const { icon: GooglePayIcon } = methodsConfiguration.google_pay;
 
 	return (
 		<li
