@@ -14,6 +14,16 @@ import { PromotionVariation } from 'data/promotions/types';
 import KlarnaIllustration from 'assets/images/illustrations/klarna-promotion-spotlight.svg?asset';
 
 /**
+ * Mapping of promotion IDs to their corresponding spotlight images.
+ * Images are bundled as local assets for fast loading and version control.
+ * Promotions without a mapped image will render without an image.
+ */
+const spotlightImages: Record< string, string > = {
+	'klarna-2026-promo': KlarnaIllustration,
+	// Add more promotion images here as needed
+};
+
+/**
  * Container component that fetches promotions and renders the Spotlight component.
  *
  * This component:
@@ -90,13 +100,16 @@ const SpotlightPromotion: React.FC = () => {
 		dismissPromotion( promotionId as string );
 	};
 
+	// Get the image for this promotion (undefined if not mapped)
+	const image = spotlightImages[ promotionId ];
+
 	return (
 		<Spotlight
 			badge={ spotlightVariation.badge }
 			heading={ spotlightVariation.heading }
 			description={ spotlightVariation.description }
 			disclaimer={ disclaimer }
-			image={ KlarnaIllustration }
+			image={ image }
 			primaryButtonLabel={ spotlightVariation.cta_label }
 			onPrimaryClick={ handlePrimaryClick }
 			secondaryButtonLabel="Learn more"
