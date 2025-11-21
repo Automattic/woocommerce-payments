@@ -456,4 +456,110 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 
 		$this->assertSame( 'Transactions', $transactions_menu_item );
 	}
+
+	public function test_enqueue_wc_payment_settings_spotlight_does_not_enqueue_on_wrong_page() {
+		global $wp_scripts, $wp_styles;
+		$wp_scripts = null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		$wp_styles  = null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		$_GET = [
+			'page' => 'wc-settings',
+			'tab'  => 'products', // Wrong tab.
+		];
+
+		if ( ! defined( 'WC_VERSION' ) ) {
+			define( 'WC_VERSION', '9.9.2' );
+		}
+
+		set_current_screen( 'woocommerce_page_wc-settings' );
+		$this->payments_admin->enqueue_wc_payment_settings_spotlight();
+
+		$this->assertFalse( wp_script_is( 'WCPAY_WC_PAYMENT_SETTINGS_SPOTLIGHT', 'enqueued' ) );
+		$this->assertFalse( wp_style_is( 'WCPAY_WC_PAYMENT_SETTINGS_SPOTLIGHT', 'enqueued' ) );
+
+		unset( $_GET );
+	}
+
+	public function test_enqueue_wc_payment_settings_spotlight_does_not_enqueue_on_old_wc_version() {
+		global $wp_scripts, $wp_styles;
+		$wp_scripts = null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+		$wp_styles  = null; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+
+		$_GET = [
+			'page' => 'wc-settings',
+			'tab'  => 'checkout',
+		];
+
+		// Mock old WC version.
+		if ( defined( 'WC_VERSION' ) ) {
+			// Can't redefine constant in tests, so skip this test if WC_VERSION is already defined as newer version.
+			$this->markTestSkipped( 'WC_VERSION already defined' );
+		}
+
+		unset( $_GET );
+	}
+
+	public function test_inject_payment_settings_spotlight_container_outputs_div_on_correct_page() {
+		$_GET = [
+			'page' => 'wc-settings',
+			'tab'  => 'checkout',
+		];
+
+		if ( ! defined( 'WC_VERSION' ) ) {
+			define( 'WC_VERSION', '9.9.2' );
+		}
+
+		set_current_screen( 'woocommerce_page_wc-settings' );
+
+		ob_start();
+		$this->payments_admin->inject_payment_settings_spotlight_container();
+		$output = ob_get_clean();
+
+		$this->assertStringContainsString( '<div id="wcpay-payment-settings-spotlight"></div>', $output );
+
+		unset( $_GET );
+	}
+
+	public function test_inject_payment_settings_spotlight_container_does_not_output_on_wrong_page() {
+		$_GET = [
+			'page' => 'wc-settings',
+			'tab'  => 'products', // Wrong tab.
+		];
+
+		if ( ! defined( 'WC_VERSION' ) ) {
+			define( 'WC_VERSION', '9.9.2' );
+		}
+
+		set_current_screen( 'woocommerce_page_wc-settings' );
+
+		ob_start();
+		$this->payments_admin->inject_payment_settings_spotlight_container();
+		$output = ob_get_clean();
+
+		$this->assertEmpty( $output );
+
+		unset( $_GET );
+	}
+
+	public function test_inject_payment_settings_spotlight_container_does_not_output_with_section_param() {
+		$_GET = [
+			'page'    => 'wc-settings',
+			'tab'     => 'checkout',
+			'section' => 'woocommerce_payments', // Should not output when section is set.
+		];
+
+		if ( ! defined( 'WC_VERSION' ) ) {
+			define( 'WC_VERSION', '9.9.2' );
+		}
+
+		set_current_screen( 'woocommerce_page_wc-settings' );
+
+		ob_start();
+		$this->payments_admin->inject_payment_settings_spotlight_container();
+		$output = ob_get_clean();
+
+		$this->assertEmpty( $output );
+
+		unset( $_GET );
+	}
 }
