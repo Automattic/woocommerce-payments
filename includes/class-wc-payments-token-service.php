@@ -105,8 +105,7 @@ class WC_Payments_Token_Service {
 				$token->set_card_type( strtolower( $payment_method[ Payment_Method::CARD ]['display_brand'] ?? $payment_method[ Payment_Method::CARD ]['networks']['preferred'] ?? $payment_method[ Payment_Method::CARD ]['brand'] ) );
 				$token->set_last4( $payment_method[ Payment_Method::CARD ]['last4'] );
 				if ( ! empty( $payment_method[ Payment_Method::CARD ]['wallet']['type'] ) ) {
-					$wallet_type = $payment_method[ Payment_Method::CARD ]['wallet']['type'] ?? null;
-					$token->add_meta_data( '_wcpay_wallet_type', $wallet_type, true );
+					$token->add_meta_data( '_wcpay_wallet_type', $payment_method[ Payment_Method::CARD ]['wallet']['type'], true );
 				}
 		}
 		$token->set_token( $payment_method['id'] );
@@ -397,7 +396,7 @@ class WC_Payments_Token_Service {
 
 		$original_brand          = $item['method']['brand'] ?? '';
 		$item['method']['brand'] = sprintf(
-			/* translators: 1: card brand, 2: wallet name */
+			/* translators: 1: wallet name, 2: card brand */
 			_x( '%1$s %2$s', 'Payment token with wallet', 'woocommerce-payments' ),
 			$payment_method->get_title(),
 			$original_brand
