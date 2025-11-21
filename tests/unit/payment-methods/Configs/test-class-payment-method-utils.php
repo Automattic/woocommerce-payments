@@ -299,9 +299,9 @@ class PaymentMethodUtilsTest extends WCPAY_UnitTestCase {
 		// Verify required fields are present.
 		foreach ( $decoded as $method ) {
 			$this->assertArrayHasKey( 'id', $method );
-			$this->assertArrayHasKey( 'stripe_key', $method );
 			$this->assertArrayHasKey( 'title', $method );
 			$this->assertArrayHasKey( 'description', $method );
+			$this->assertArrayHasKey( 'icon', $method );
 			$this->assertArrayHasKey( 'settings_icon_url', $method );
 			$this->assertArrayHasKey( 'currencies', $method );
 			$this->assertArrayHasKey( 'allows_manual_capture', $method );
@@ -311,15 +311,15 @@ class PaymentMethodUtilsTest extends WCPAY_UnitTestCase {
 	}
 
 	/**
-	 * Test that get_payment_method_definitions_json() returns valid JSON structure.
+	 * Test that get_payment_method_definitions_json() returns empty string for empty registry.
 	 */
-	public function test_get_payment_method_definitions_json_structure() {
-		$json = PaymentMethodUtils::get_payment_method_definitions_json();
+	public function test_get_payment_method_definitions_json_empty_registry() {
+		$registry = PaymentMethodDefinitionRegistry::instance();
+		$json     = PaymentMethodUtils::get_payment_method_definitions_json();
 
 		$this->assertJson( $json );
 		$decoded = json_decode( $json, true );
 		$this->assertIsArray( $decoded );
-		// Registry is a singleton, so it may have entries from previous tests.
-		// We just verify it returns valid JSON structure.
+		$this->assertEmpty( $decoded );
 	}
 }
