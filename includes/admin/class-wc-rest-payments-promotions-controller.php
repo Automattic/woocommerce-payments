@@ -235,6 +235,25 @@ class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller
 			$delay_seconds       = $dismissal_config['reshow_delay_days'] * DAY_IN_SECONDS;
 			$filtered_variations = [];
 
+			// Find the most recent dismissal timestamp (any variation).
+			$most_recent_dismissal = 0;
+			foreach ( $variation_dismissals as $timestamp ) {
+				if ( $timestamp > $most_recent_dismissal ) {
+					$most_recent_dismissal = $timestamp;
+				}
+			}
+
+			// If there was a recent dismissal, check if delay period has passed.
+			if ( $most_recent_dismissal > 0 ) {
+				$time_since_dismissal = $current_time - $most_recent_dismissal;
+				if ( $time_since_dismissal < $delay_seconds ) {
+					// Still in delay period - don't show any variation.
+					$promotion['variations'] = [];
+					continue;
+				}
+			}
+
+			// Delay period has passed (or no dismissals yet) - show first appropriate variation.
 			foreach ( $promotion['variations'] as $variation ) {
 				$variation_id = $variation['id'];
 				$dismissed_at = $variation_dismissals[ $variation_id ] ?? null;
@@ -245,7 +264,7 @@ class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller
 					break;
 				}
 
-				// Check if enough time has passed to re-show.
+				// Check if enough time has passed to re-show this specific variation.
 				if ( ( $current_time - $dismissed_at ) >= $delay_seconds ) {
 					// Enough time passed - show this variation.
 					$filtered_variations = [ $variation ];
