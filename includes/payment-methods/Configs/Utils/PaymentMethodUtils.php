@@ -8,7 +8,6 @@
 namespace WCPay\PaymentMethods\Configs\Utils;
 
 use WCPay\PaymentMethods\Configs\Constants\PaymentMethodCapability;
-use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 
 /**
