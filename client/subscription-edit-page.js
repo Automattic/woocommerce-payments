@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 /* global jQuery */
 
 /**
@@ -6,6 +7,80 @@
 import React, { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { __ } from '@wordpress/i18n';
+
+const generateInitialCache = ( initialUser, tokens ) => {
+	return [
+		{
+			userId: initialUser,
+			tokens,
+		},
+	];
+};
+
+const addToCache = ( cachedUserData, userId, tokens ) => {
+	return [
+		...cachedUserData,
+		{
+			userId,
+			tokens,
+		},
+	];
+};
+
+const hasUserTokensInCache = ( cachedUserData, userId ) => {
+	return cachedUserData.some( ( userData ) => userData.userId === userId );
+};
+
+const getUserTokensFromCache = ( cachedUserData, userId ) => {
+	return cachedUserData.find( ( userData ) => userData.userId === userId )
+		?.tokens;
+};
+
+const userHasToken = ( cachedUserData, userId, tokenId ) => {
+	const userTokens = getUserTokensFromCache( cachedUserData, userId );
+
+	if ( typeof userTokens === 'undefined' ) {
+		return false;
+	}
+
+	return userTokens.some( ( token ) => token.tokenId === tokenId );
+};
+
+const fetchUserTokens = async ( userId, ajaxUrl, nonce ) => {
+	const formData = new FormData();
+	formData.append( 'action', 'wcpay_get_user_payment_tokens' );
+	formData.append( 'nonce', nonce );
+	formData.append( 'user_id', userId );
+
+	const response = await fetch( ajaxUrl, {
+		method: 'POST',
+		body: formData,
+	} );
+	if ( ! response.ok ) {
+		return undefined;
+	}
+
+	const result = await response.json();
+	return result.data;
+};
+
+const addCustomerSelectListener = ( callback ) => {
+	const customerUserSelect = document.getElementById( 'customer_user' );
+
+	// Wrap in an internal callback to load the select's value.
+	const internalCallback = () =>
+		callback( parseInt( customerUserSelect.value, 10 ) || 0 );
+
+	// Add the listner with the right technique, as select2 does not emit <select> events.
+	jQuery( customerUserSelect ).on( 'select2:select', internalCallback );
+	customerUserSelect.addEventListener( 'change', internalCallback );
+
+	// If the effect is unmounted, remove the listener.
+	return () => {
+		jQuery( customerUserSelect ).off( 'select2:select', internalCallback );
+		customerUserSelect.removeEventListener( 'change', internalCallback );
+	};
+};
 
 const PaymentMethodSelect = ( {
 	inputName,
@@ -17,81 +92,47 @@ const PaymentMethodSelect = ( {
 } ) => {
 	const [ selectValue, setSelectValue ] = useState( initialValue ?? 0 );
 	const [ userId, setUserId ] = useState( initialUser ?? 0 );
-	const [ cachedUserData, setCachedUserData ] = useState( [
-		{
-			userId: initialUser,
-			tokens,
-		},
-	] );
+	const [ cachedUserData, setCachedUserData ] = useState(
+		generateInitialCache( initialUser, tokens )
+	);
 
-	const options = [];
-
-	/**
-	 * Listen for customer changes.
-	 */
-	useEffect( () => {
-		const customerUserSelect = document.getElementById( 'customer_user' );
-
-		const handler = () => {
-			setUserId( parseInt( customerUserSelect.value, 10 ) || 0 );
+	useEffect( () =>
+		addCustomerSelectListener( ( newUserId ) => {
+			setUserId( newUserId );
+			// Once the customer is changed, the selected payment method is lost.
 			setSelectValue( 0 );
-		};
+		} )
+	);
 
-		// Add the listner with the right technique, as select2 does not emit <select> events.
-		jQuery( customerUserSelect ).on( 'select2:select', handler );
-		customerUserSelect.addEventListener( 'change', handler );
-
-		// If the effect is unmounted, remove the listener.
-		return () => {
-			jQuery( customerUserSelect ).off( 'select2:select', handler );
-			customerUserSelect.removeEventListener( 'change', handler );
-		};
-	} );
-
-	/**
-	 * When the customer changes and methods are not loaded, load them.
-	 */
 	useEffect( () => {
-		const inCache = cachedUserData.some(
-			( userData ) => userData.userId === userId
-		);
-		if ( inCache ) {
+		if ( hasUserTokensInCache( cachedUserData, userId ) ) {
 			return;
 		}
 
-		jQuery.post(
-			ajaxUrl,
-			{
-				action: 'wcpay_get_user_payment_tokens',
-				nonce: nonce,
-				user_id: userId,
-			},
-			( { data } ) => {
-				setCachedUserData( [
-					...cachedUserData,
-					{
-						userId: userId,
-						tokens: data.tokens,
-					},
-				] );
-			}
-		);
+		( async () => {
+			const data = await fetchUserTokens(
+				userId,
+				ajaxUrl,
+				nonce,
+				setCachedUserData
+			);
+			setCachedUserData(
+				addToCache( cachedUserData, userId, data.tokens )
+			);
+		} )();
 	}, [ cachedUserData, userId, ajaxUrl, nonce ] );
 
+	/**
+	 * Generate options for the select.
+	 */
+	const options = [];
 	if ( userId > 0 ) {
-		const userTokens = cachedUserData.find(
-			( userData ) => userData.userId === userId
-		)?.tokens;
-
+		const userTokens = getUserTokensFromCache( cachedUserData, userId );
 		if ( typeof userTokens === 'undefined' ) {
 			return __( 'Loading…', 'woocommerce-payments' );
 		}
 
-		const currentValueIsValid = userTokens.some(
-			( token ) => token.tokenId === selectValue
-		);
-
-		if ( ! currentValueIsValid ) {
+		if ( ! userHasToken( cachedUserData, userId, selectValue ) ) {
 			options.push(
 				<option value={ 0 } key={ 'select' } disabled>
 					{ __(
