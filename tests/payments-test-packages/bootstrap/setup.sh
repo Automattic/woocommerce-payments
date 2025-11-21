@@ -96,13 +96,32 @@ wp theme activate storefront
 
 
 
-# Create a test customer
-wp user create testcustomer test@example.com \
+# Create test users that match config/users.json
+# Customer user (required for shopper tests)
+wp user create customer customer@woocommercecoree2etestsuite.com \
     --role=customer \
-    --user_pass=testpass123 \
-    --first_name="Test" \
+    --user_pass=password \
+    --first_name="Jane" \
+    --last_name="Smith" \
+    --quiet 2>/dev/null || wp user update customer --user_pass=password --quiet
+
+# Subscriptions customer user (required for subscription tests)
+wp user create subscriptions-customer subscriptions-customer@woocommercecoree2etestsuite.com \
+    --role=customer \
+    --user_pass=password \
+    --first_name="Sub" \
     --last_name="Customer" \
-    --quiet
+    --quiet 2>/dev/null || wp user update subscriptions-customer --user_pass=password --quiet
+
+# Editor user (required for editor tests)
+wp user create editor editor@woocommercecoree2etestsuite.com \
+    --role=editor \
+    --user_pass=password \
+    --first_name="Ed" \
+    --last_name="Itor" \
+    --quiet 2>/dev/null || wp user update editor --user_pass=password --quiet
+
+echo "✅ Test users created (customer, subscriptions-customer, editor)"
 
 echo "Setting up WooPayments configuration..."
 
