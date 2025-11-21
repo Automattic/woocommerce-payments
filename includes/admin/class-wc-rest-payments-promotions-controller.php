@@ -253,20 +253,13 @@ class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller
 				}
 			}
 
-			// Delay period has passed (or no dismissals yet) - show first appropriate variation.
+			// Delay period has passed (or no dismissals yet) - show first non-dismissed variation.
 			foreach ( $promotion['variations'] as $variation ) {
 				$variation_id = $variation['id'];
 				$dismissed_at = $variation_dismissals[ $variation_id ] ?? null;
 
 				if ( null === $dismissed_at ) {
 					// Not dismissed - show this variation.
-					$filtered_variations = [ $variation ];
-					break;
-				}
-
-				// Check if enough time has passed to re-show this specific variation.
-				if ( ( $current_time - $dismissed_at ) >= $delay_seconds ) {
-					// Enough time passed - show this variation.
 					$filtered_variations = [ $variation ];
 					break;
 				}
