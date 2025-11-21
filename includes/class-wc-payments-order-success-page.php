@@ -233,21 +233,19 @@ class WC_Payments_Order_Success_Page {
 			return 'Payment Request';
 		}
 
-		$payment_method_title = $payment_method->get_title();
-		$last4                = $order->get_meta( 'last4' );
-
-		// If we have the last 4 digits, show "Google Pay ending in 1234".
-		if ( $last4 ) {
-			return sprintf(
-				/* translators: 1: payment method name (e.g. Google Pay), 2: last 4 digits of card */
-				__( '%1$s ending in %2$s', 'woocommerce-payments' ),
-				esc_html( $payment_method_title ),
-				esc_html( $last4 )
-			);
-		}
-
-		// Otherwise just show "Google Pay".
-		return esc_html( $payment_method_title );
+		ob_start();
+		?>
+		<div class="wc-payment-gateway-method-logo-wrapper wc-payment-card-logo">
+			<img alt="<?php echo esc_attr( $payment_method->get_title() ); ?>" src="<?php echo esc_url_raw( $payment_method->get_icon() ); ?>">
+			<?php
+			if ( $order->get_meta( 'last4' ) ) {
+				echo esc_html_e( '•••', 'woocommerce-payments' ) . ' ';
+				echo esc_html( $order->get_meta( 'last4' ) );
+			}
+			?>
+		</div>
+		<?php
+		return ob_get_clean();
 	}
 
 	/**
