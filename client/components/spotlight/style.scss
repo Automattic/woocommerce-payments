@@ -1,0 +1,134 @@
+/** @format */
+
+.wcpay-spotlight {
+	position: fixed;
+	bottom: 24px;
+	right: 24px;
+	z-index: 999;
+	max-width: 380px;
+	opacity: 0;
+	transform: translateX( 100% );
+	transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+
+	&--visible {
+		opacity: 1;
+		transform: translateX( 0 );
+	}
+
+	@media screen and ( max-width: 782px ) {
+		right: 0;
+		left: 0;
+		bottom: 0;
+		max-width: none;
+
+		.wcpay-spotlight__card {
+			margin: 0;
+		}
+	}
+}
+
+.wcpay-spotlight__container {
+	width: 100%;
+}
+
+.wcpay-spotlight__card {
+	margin: 0;
+	border-radius: 4px;
+	box-shadow: 0 8px 16px rgba( 0, 0, 0, 0.15 );
+	position: relative;
+	overflow: hidden;
+
+	&.has-image {
+		.wcpay-spotlight__header {
+			position: absolute;
+			top: 0;
+			right: 0;
+			width: 100%;
+			z-index: 1;
+			background: transparent;
+		}
+
+		.wcpay-spotlight__image {
+			padding: 0;
+		}
+	}
+}
+
+.wcpay-spotlight__header {
+	padding: 12px 12px 0;
+}
+
+.wcpay-spotlight__controls {
+	width: 100%;
+}
+
+.wcpay-spotlight__close-btn {
+	min-width: auto;
+	width: 32px;
+	height: 32px;
+	padding: 4px;
+
+	&:hover {
+		background: transparent;
+	}
+
+	.components-icon {
+		color: #1e1e1e;
+	}
+}
+
+.wcpay-spotlight__image {
+	padding: 0 24px;
+	margin: 0;
+
+	img,
+	svg {
+		width: 100%;
+		height: auto;
+		display: block;
+	}
+}
+
+.wcpay-spotlight__body {
+	padding: 16px 24px;
+}
+
+.wcpay-spotlight__badge {
+	margin-bottom: 12px;
+}
+
+.wcpay-spotlight__heading {
+	font-size: 15px;
+	font-weight: 500;
+	line-height: 20px;
+	margin: 0 0 12px;
+	color: #1e1e1e;
+}
+
+.wcpay-spotlight__description {
+	font-size: 13px;
+	line-height: 1.6;
+	color: #50575e;
+	margin: 0;
+
+	a {
+		color: #2271b1;
+		text-decoration: none;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+}
+
+.wcpay-spotlight__disclaimer {
+	font-size: 12px;
+	line-height: 16px;
+	color: #757575;
+	margin: 12px 0 0;
+	font-style: italic;
+}
+
+.wcpay-spotlight__footer {
+	padding: 16px 24px 24px;
+}
