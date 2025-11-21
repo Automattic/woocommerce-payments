@@ -36,6 +36,7 @@ import { recordEvent } from 'wcpay/tracks';
 import StripeSpinner from 'wcpay/components/stripe-spinner';
 import { getAdminUrl, isInTestModeOnboarding } from 'wcpay/utils';
 import { EmbeddedConnectNotificationBanner } from 'wcpay/embedded-components';
+import SpotlightPromotion from 'promotions/spotlight';
 
 const OverviewPageError = () => {
 	const queryParams = getQuery();
@@ -404,6 +405,9 @@ const OverviewPage = () => {
 					<ConnectionSuccessModal />
 				</ErrorBoundary>
 			) }
+			<ErrorBoundary>
+				<SpotlightPromotion />
+			</ErrorBoundary>
 		</Page>
 	);
 };

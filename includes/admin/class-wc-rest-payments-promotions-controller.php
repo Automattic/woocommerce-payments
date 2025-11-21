@@ -210,12 +210,12 @@ class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller
 		// Mock available promotions with variations.
 		$available_promotions = [
 			[
-				'promo_id'      => 'promo-card-waive-2024',
+				'promo_id'      => 'klarna-2026-promo',
 				'discount_rate' => '100%',
 				'duration_days' => 90,
 				'variations'    => [
 					[
-						'id'          => 'promo-card-waive-2024__variation_1',
+						'id'          => 'klarna-2026-promo__variation_1',
 						'type'        => 'spotlight',
 						'badge'       => 'Limited time offer',
 						'badge_type'  => 'success',

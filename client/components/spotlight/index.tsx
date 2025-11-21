@@ -50,9 +50,11 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 		// Show the spotlight after a delay
 		const timer = setTimeout( () => {
 			setIsVisible( true );
-			// Trigger animation slightly after visibility for smooth transition
+			// Double RAF to ensure browser paints initial state before animating
 			requestAnimationFrame( () => {
-				setIsAnimatingIn( true );
+				requestAnimationFrame( () => {
+					setIsAnimatingIn( true );
+				} );
 			} );
 		}, showDelayMs );
 

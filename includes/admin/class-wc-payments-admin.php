@@ -172,6 +172,8 @@ class WC_Payments_Admin {
 		add_action( 'admin_init', [ $this, 'redirect_deposits_to_payouts' ] );
 		add_action( 'woocommerce_update_options_site-visibility', [ $this, 'inform_stripe_when_store_goes_live' ] );
 		add_action( 'admin_init', [ $this, 'add_css_classes' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_wc_payment_settings_spotlight' ] );
+		add_action( 'admin_footer', [ $this, 'inject_payment_settings_spotlight_container' ] );
 	}
 
 	/**
@@ -662,6 +664,17 @@ class WC_Payments_Admin {
 			plugins_url( 'dist/plugins-page.css', WCPAY_PLUGIN_FILE ),
 			[ 'wp-components', 'wc-components' ],
 			WC_Payments::get_file_version( 'dist/plugins-page.css' ),
+			'all'
+		);
+
+		WC_Payments::register_script_with_dependencies( 'WCPAY_WC_PAYMENT_SETTINGS_SPOTLIGHT', 'dist/wc-payment-settings-spotlight' );
+		wp_set_script_translations( 'WCPAY_WC_PAYMENT_SETTINGS_SPOTLIGHT', 'woocommerce-payments' );
+
+		WC_Payments_Utils::register_style(
+			'WCPAY_WC_PAYMENT_SETTINGS_SPOTLIGHT',
+			plugins_url( 'dist/wc-payment-settings-spotlight.css', WCPAY_PLUGIN_FILE ),
+			[],
+			WC_Payments::get_file_version( 'dist/wc-payment-settings-spotlight.css' ),
 			'all'
 		);
 	}
@@ -1393,5 +1406,67 @@ class WC_Payments_Admin {
 		}
 
 		return $authorization_summary['count'];
+	}
+
+	/**
+	 * Enqueue the spotlight promotion script on WooCommerce payment settings page.
+	 * Only runs on WooCommerce 9.9.2+ (when new payment settings were enabled for all stores).
+	 */
+	public function enqueue_wc_payment_settings_spotlight() {
+		// Check for minimum WooCommerce version 9.9.2.
+		if ( ! defined( 'WC_VERSION' ) || version_compare( WC_VERSION, '9.9.2', '<' ) ) {
+			return;
+		}
+
+		// Only enqueue on the WooCommerce payment settings page.
+		if ( ! $this->is_wc_payment_settings_page() ) {
+			return;
+		}
+
+		// Localize the script with wcpaySettings data.
+		wp_localize_script(
+			'WCPAY_WC_PAYMENT_SETTINGS_SPOTLIGHT',
+			'wcpaySettings',
+			$this->get_js_settings()
+		);
+
+		wp_enqueue_script( 'WCPAY_WC_PAYMENT_SETTINGS_SPOTLIGHT' );
+		wp_enqueue_style( 'WCPAY_WC_PAYMENT_SETTINGS_SPOTLIGHT' );
+	}
+
+	/**
+	 * Inject the container div for the spotlight promotion on WooCommerce payment settings page.
+	 * Only runs on WooCommerce 9.9.2+ (when new payment settings were enabled for all stores).
+	 */
+	public function inject_payment_settings_spotlight_container() {
+		// Check for minimum WooCommerce version 9.9.2.
+		if ( ! defined( 'WC_VERSION' ) || version_compare( WC_VERSION, '9.9.2', '<' ) ) {
+			return;
+		}
+
+		// Only inject on the WooCommerce payment settings page.
+		if ( ! $this->is_wc_payment_settings_page() ) {
+			return;
+		}
+
+		echo '<div id="wcpay-payment-settings-spotlight"></div>';
+	}
+
+	/**
+	 * Check if we're on the WooCommerce payment settings page.
+	 *
+	 * @return bool True if on the WC payment settings page.
+	 */
+	private function is_wc_payment_settings_page() {
+		// phpcs:disable WordPress.Security.NonceVerification
+		return (
+			is_admin()
+			&& isset( $_GET['page'] )
+			&& 'wc-settings' === $_GET['page']
+			&& isset( $_GET['tab'] )
+			&& 'checkout' === $_GET['tab']
+			&& ! isset( $_GET['section'] ) // No section parameter means we're on the main payment settings page.
+		);
+		// phpcs:enable WordPress.Security.NonceVerification
 	}
 }
