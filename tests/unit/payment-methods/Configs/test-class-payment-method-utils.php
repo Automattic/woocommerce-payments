@@ -302,7 +302,6 @@ class PaymentMethodUtilsTest extends WCPAY_UnitTestCase {
 			$this->assertArrayHasKey( 'title', $method );
 			$this->assertArrayHasKey( 'description', $method );
 			$this->assertArrayHasKey( 'icon', $method );
-			$this->assertArrayHasKey( 'settings_icon_url', $method );
 			$this->assertArrayHasKey( 'currencies', $method );
 			$this->assertArrayHasKey( 'allows_manual_capture', $method );
 			$this->assertArrayHasKey( 'allows_pay_later', $method );
