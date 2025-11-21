@@ -101,21 +101,22 @@ cp /path/to/my-plugin/tests/qit/e2e/bootstrap/*.sh ./bootstrap/
 cp /path/to/my-plugin/tests/qit/e2e/bootstrap/*.php ./bootstrap/
 ```
 
-**IMPORTANT**: Old tests used absolute paths (`/qit/bootstrap/`). These need to change to relative paths (`./bootstrap/`):
+**IMPORTANT**: Two changes are needed in bootstrap scripts:
+
+1. **Fix paths** - Replace `/qit/bootstrap/` with `./bootstrap/`
+
+2. **Create correct test users** - Your bootstrap must create users matching `config/users.json`:
 
 ```bash
-# Find files with old paths
-grep -r "/qit/bootstrap" ./bootstrap/
+# In bootstrap/setup.sh, create users with these exact credentials:
+wp user create customer customer@example.com \
+    --role=customer --user_pass=password --quiet
 
-# Replace with relative paths (macOS)
-find ./bootstrap -type f -exec sed -i '' 's|/qit/bootstrap|./bootstrap|g' {} +
-
-# Or on Linux
-find ./bootstrap -type f -exec sed -i 's|/qit/bootstrap|./bootstrap|g' {} +
-
-# Verify the change worked (should return nothing)
-grep -r "/qit/bootstrap" ./bootstrap/
+wp user create editor editor@example.com \
+    --role=editor --user_pass=password --quiet
 ```
+
+See [CODE_CHANGES.md](./CODE_CHANGES.md#1-bootstrap-path-changes) for details.
 
 ---
 

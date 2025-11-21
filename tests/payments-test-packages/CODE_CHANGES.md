@@ -48,7 +48,42 @@ find ./bootstrap -type f -exec sed -i 's|/qit/bootstrap|./bootstrap|g' {} +
 
 ---
 
-## 2. QIT Helpers Import Changes
+## 2. Bootstrap Test User Creation
+
+**Why**: Tests expect specific users (from `config/users.json`) to exist. Your bootstrap must create them with matching credentials.
+
+### bootstrap/setup.sh
+
+Add user creation commands:
+
+```bash
+# Create test users matching config/users.json
+wp user create customer customer@example.com \
+    --role=customer \
+    --user_pass=password \
+    --first_name="Jane" \
+    --last_name="Smith" \
+    --quiet 2>/dev/null || wp user update customer --user_pass=password --quiet
+
+wp user create subscriptions-customer subscriptions-customer@example.com \
+    --role=customer \
+    --user_pass=password \
+    --quiet 2>/dev/null || wp user update subscriptions-customer --user_pass=password --quiet
+
+wp user create editor editor@example.com \
+    --role=editor \
+    --user_pass=password \
+    --quiet 2>/dev/null || wp user update editor --user_pass=password --quiet
+```
+
+**Important**:
+- Usernames and passwords must match `config/users.json`
+- The `|| wp user update` fallback handles cases where the user already exists
+- Without these users, authentication will fail in tests
+
+---
+
+## 3. QIT Helpers Import Changes
 
 **Why**: Legacy tests used global `/qitHelpers` module. Test packages use local `@qit/helpers` package.
 
@@ -78,7 +113,7 @@ find . -name "*.ts" -o -name "*.js" | xargs sed -i "s|from '/qitHelpers'|from '@
 
 ---
 
-## 3. JSON Import Changes
+## 4. JSON Import Changes
 
 **Why**: ES modules require import attributes for JSON files.
 
@@ -121,7 +156,7 @@ grep -r "from.*\.json" . --include="*.ts" --include="*.js"
 
 ---
 
-## 4. `__dirname` Shim for ES Modules
+## 5. `__dirname` Shim for ES Modules
 
 **Why**: ES modules don't provide `__dirname` global like CommonJS does.
 
@@ -163,7 +198,7 @@ grep -r "__dirname" . --include="*.ts" --include="*.js"
 
 ---
 
-## 5. Required Dependencies
+## 6. Required Dependencies
 
 **Why**: ES modules need Node.js type definitions, and QIT requires Allure reports.
 
@@ -195,7 +230,7 @@ grep -r "__dirname" . --include="*.ts" --include="*.js"
 
 ---
 
-## 6. RestAPI Import
+## 7. RestAPI Import
 
 **Why**: `RestAPI` class needs to be imported if used in helper functions.
 
@@ -235,7 +270,7 @@ export const getShopper = async (
 
 ---
 
-## 7. Playwright Reporter Configuration
+## 8. Playwright Reporter Configuration
 
 **Why**: QIT requires specific reporters to be configured for test results and Allure reports.
 
@@ -284,7 +319,7 @@ export default defineConfig({
 
 ---
 
-## 8. Test Package Manifest - Allure Directory
+## 9. Test Package Manifest - Allure Directory
 
 **Why**: QIT needs to know where to find Allure results to upload them with test reports.
 
@@ -318,6 +353,7 @@ Add `allure-dir` to the `results` section:
 When migrating tests to test packages, check for these code changes:
 
 - [ ] Replace `/qit/bootstrap/` with `./bootstrap/` in all bootstrap scripts
+- [ ] Create test users in bootstrap matching `config/users.json` (customer, editor, etc.)
 - [ ] Replace `/qitHelpers` with `@qit/helpers` in all test files
 - [ ] Add `with { type: 'json' }` to JSON imports
 - [ ] Use default imports for JSON files
