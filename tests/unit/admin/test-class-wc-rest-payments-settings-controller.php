@@ -265,6 +265,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 				Payment_Method::SEPA,
 				Payment_Method::P24,
 				Payment_Method::LINK,
+				Payment_Method::APPLE_PAY,
+				Payment_Method::GOOGLE_PAY,
 			],
 			$enabled_method_ids
 		);
