@@ -55,6 +55,7 @@ test.describe(
 			);
 			await fillCardDetailsWCB( shopperPage, config.cards.basic );
 			await placeOrderWCB( shopperPage );
+			await waitForOrderConfirmationWCB( shopperPage );
 		} );
 
 		test( 'using a 3DS card', async () => {
