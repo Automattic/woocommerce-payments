@@ -1,6 +1,6 @@
 <?php
 /**
- * Alipay Payment Method Definition
+ * Affirm Payment Method Definition
  *
  * @package WCPay\PaymentMethods\Configs\Definitions
  */
@@ -14,9 +14,9 @@ use WCPay\Constants\Currency_Code;
 use WCPay\PaymentMethods\Configs\Utils\PaymentMethodUtils;
 
 /**
- * Class implementing the Alipay payment method definition.
+ * Class implementing the Affirm payment method definition.
  */
-class AlipayDefinition implements PaymentMethodDefinitionInterface {
+class AffirmDefinition implements PaymentMethodDefinitionInterface {
 
 	/**
 	 * Get the internal ID for the payment method
@@ -24,7 +24,7 @@ class AlipayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_id(): string {
-		return 'alipay';
+		return 'affirm';
 	}
 
 	/**
@@ -33,7 +33,7 @@ class AlipayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string[]
 	 */
 	public static function get_keywords(): array {
-		return [ 'alipay' ];
+		return [ 'affirm' ];
 	}
 
 	/**
@@ -53,7 +53,7 @@ class AlipayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_title( ?string $account_country = null ): string {
-		return __( 'Alipay', 'woocommerce-payments' );
+		return __( 'Affirm', 'woocommerce-payments' );
 	}
 
 	/**
@@ -74,7 +74,7 @@ class AlipayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_description( ?string $account_country = null ): string {
-		return __( 'Alipay is a popular wallet in China, operated by Ant Financial Services Group, a financial services provider affiliated with Alibaba.', 'woocommerce-payments' );
+		return __( 'Allow customers to pay over time with Affirm.', 'woocommerce-payments' );
 	}
 
 	/**
@@ -119,83 +119,10 @@ class AlipayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string[] Array of currency codes
 	 */
 	public static function get_supported_currencies(): array {
-		$account         = \WC_Payments::get_account_service()->get_cached_account_data();
-		$account_country = isset( $account['country'] ) ? strtoupper( $account['country'] ) : '';
-
-		if ( Country_Code::AUSTRALIA === $account_country ) {
-			return [ Currency_Code::AUSTRALIAN_DOLLAR ];
-		}
-
-		if ( Country_Code::CANADA === $account_country ) {
-			return [ Currency_Code::CANADIAN_DOLLAR ];
-		}
-
-		if ( Country_Code::UNITED_KINGDOM === $account_country ) {
-			return [ Currency_Code::POUND_STERLING ];
-		}
-
-		if ( Country_Code::HONG_KONG === $account_country ) {
-			return [ Currency_Code::HONG_KONG_DOLLAR ];
-		}
-
-		if ( Country_Code::JAPAN === $account_country ) {
-			return [ Currency_Code::JAPANESE_YEN ];
-		}
-
-		if ( Country_Code::NEW_ZEALAND === $account_country ) {
-			return [ Currency_Code::NEW_ZEALAND_DOLLAR ];
-		}
-
-		if ( Country_Code::SINGAPORE === $account_country ) {
-			return [ Currency_Code::SINGAPORE_DOLLAR ];
-		}
-
-		if ( Country_Code::UNITED_STATES === $account_country ) {
-			return [ Currency_Code::UNITED_STATES_DOLLAR ];
-		}
-
-		if ( Country_Code::HUNGARY === $account_country ) {
-			return [ Currency_Code::HUNGARIAN_FORINT ];
-		}
-
-		if ( in_array(
-			$account_country,
-			[
-				Country_Code::AUSTRIA,
-				Country_Code::BELGIUM,
-				Country_Code::BULGARIA,
-				Country_Code::CYPRUS,
-				Country_Code::CZECHIA,
-				Country_Code::DENMARK,
-				Country_Code::ESTONIA,
-				Country_Code::FINLAND,
-				Country_Code::FRANCE,
-				Country_Code::GERMANY,
-				Country_Code::GREECE,
-				Country_Code::IRELAND,
-				Country_Code::ITALY,
-				Country_Code::LATVIA,
-				Country_Code::LITHUANIA,
-				Country_Code::LUXEMBOURG,
-				Country_Code::MALTA,
-				Country_Code::NETHERLANDS,
-				Country_Code::NORWAY,
-				Country_Code::PORTUGAL,
-				Country_Code::ROMANIA,
-				Country_Code::SLOVAKIA,
-				Country_Code::SLOVENIA,
-				Country_Code::SPAIN,
-				Country_Code::SWEDEN,
-				Country_Code::SWITZERLAND,
-				Country_Code::CROATIA,
-			],
-			true
-		) ) {
-			return [ Currency_Code::EURO ];
-		}
-
-		// fallback currency code, just in case.
-		return [ Currency_Code::CHINESE_YUAN ];
+		return [
+			Currency_Code::UNITED_STATES_DOLLAR,
+			Currency_Code::CANADIAN_DOLLAR,
+		];
 	}
 
 	/**
@@ -204,7 +131,10 @@ class AlipayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string[] Array of country codes
 	 */
 	public static function get_supported_countries(): array {
-		return [];
+		return [
+			Country_Code::UNITED_STATES,
+			Country_Code::CANADA,
+		];
 	}
 
 	/**
@@ -214,8 +144,9 @@ class AlipayDefinition implements PaymentMethodDefinitionInterface {
 	 */
 	public static function get_capabilities(): array {
 		return [
+			PaymentMethodCapability::BUY_NOW_PAY_LATER,
 			PaymentMethodCapability::REFUNDS,
-			PaymentMethodCapability::MULTI_CURRENCY,
+			PaymentMethodCapability::DOMESTIC_TRANSACTIONS_ONLY,
 		];
 	}
 
@@ -227,7 +158,7 @@ class AlipayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_icon_url( ?string $account_country = null ): string {
-		return plugins_url( 'assets/images/payment-methods/alipay-logo.svg', WCPAY_PLUGIN_FILE );
+		return plugins_url( 'assets/images/payment-methods/affirm-logo.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**
@@ -238,7 +169,7 @@ class AlipayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string Returns regular icon URL if no dark mode icon exists
 	 */
 	public static function get_dark_icon_url( ?string $account_country = null ): string {
-		return self::get_icon_url( $account_country );
+		return plugins_url( 'assets/images/payment-methods/affirm-logo-dark.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**
@@ -249,7 +180,7 @@ class AlipayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_settings_icon_url( ?string $account_country = null ): string {
-		return self::get_icon_url( $account_country );
+		return plugins_url( 'assets/images/payment-methods/affirm-badge.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**
@@ -268,7 +199,20 @@ class AlipayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return array<string,array<string,array{min:int,max:int}>>
 	 */
 	public static function get_limits_per_currency(): array {
-		return [];
+		return [
+			Currency_Code::CANADIAN_DOLLAR      => [
+				Country_Code::CANADA => [
+					'min' => 5000,
+					'max' => 3000000,
+				],
+			],
+			Currency_Code::UNITED_STATES_DOLLAR => [
+				Country_Code::UNITED_STATES => [
+					'min' => 5000,
+					'max' => 3000000,
+				],
+			],
+		];
 	}
 
 	/**
@@ -301,6 +245,12 @@ class AlipayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return int|null The minimum amount or null if no minimum.
 	 */
 	public static function get_minimum_amount( string $currency, string $country ): ?int {
+		$limits = self::get_limits_per_currency();
+
+		if ( isset( $limits[ $currency ][ $country ]['min'] ) ) {
+			return $limits[ $currency ][ $country ]['min'];
+		}
+
 		return null;
 	}
 
@@ -313,6 +263,12 @@ class AlipayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return int|null The maximum amount or null if no maximum.
 	 */
 	public static function get_maximum_amount( string $currency, string $country ): ?int {
+		$limits = self::get_limits_per_currency();
+
+		if ( isset( $limits[ $currency ][ $country ]['max'] ) ) {
+			return $limits[ $currency ][ $country ]['max'];
+		}
+
 		return null;
 	}
 }
