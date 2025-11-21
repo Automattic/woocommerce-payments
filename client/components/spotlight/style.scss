@@ -132,3 +132,10 @@
 .wcpay-spotlight__footer {
 	padding: 16px 24px 24px;
 }
+
+// Override WC settings page styles that remove box-shadow from cards
+body.woocommerce_page_wc-settings
+	.wcpay-spotlight
+	.wcpay-spotlight__card.components-surface.components-card {
+	box-shadow: 0 8px 16px rgba( 0, 0, 0, 0.15 );
+}
