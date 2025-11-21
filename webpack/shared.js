@@ -20,7 +20,7 @@ module.exports = {
 			cart: './client/cart/index.js',
 			checkout: './client/checkout/classic/event-handlers.js',
 			'express-checkout': './client/express-checkout/index.js',
-			'subscription-edit-page': './client/subscription-edit-page.js',
+			'subscription-edit-page': './client/subscription-edit-page/index.tsx',
 			tos: './client/tos/index.tsx',
 			'multi-currency': './includes/multi-currency/client/index.js',
 			'multi-currency-switcher-block':
