@@ -89,25 +89,6 @@ const WalletIcon = ( { payment }: PaymentMethodDetailsProps ) => {
 		</HoverTooltip>
 	);
 };
-const PaymentMethodIcon = ( { payment }: PaymentMethodDetailsProps ) => {
-	if ( ! payment?.type ) return null;
-
-	const paymentMethod = paymentMethodsMap[ payment.type ];
-	if ( ! paymentMethod ) return null;
-
-	const { icon: Icon, label } = paymentMethod;
-
-	return (
-		<HoverTooltip
-			isVisible={ false }
-			content={ label }
-			className="payment-method-details__brand-tooltip"
-		>
-			<Icon />
-		</HoverTooltip>
-	);
-};
-
 interface PaymentMethodDetailsProps {
 	payment: Payment;
 }
