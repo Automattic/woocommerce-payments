@@ -28,7 +28,7 @@ class WechatPayDefinition implements PaymentMethodDefinitionInterface {
 	}
 
 	/**
-	 * Get the keywords for the payment method. These are used by the duplicates detection service.
+	 * Get the keywords for the payment method. These are used by the duplicate detection service.
 	 *
 	 * @return string[]
 	 */
@@ -295,11 +295,7 @@ class WechatPayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return bool
 	 */
 	public static function is_available_for( string $currency, string $account_country ): bool {
-		if ( ! PaymentMethodUtils::is_available_for( self::get_supported_currencies(), self::get_supported_countries(), $currency, $account_country ) ) {
-			return false;
-		}
-
-		return true;
+		return PaymentMethodUtils::is_available_for( self::get_supported_currencies(), self::get_supported_countries(), $currency, $account_country );
 	}
 
 	/**

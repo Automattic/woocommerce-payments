@@ -9,12 +9,13 @@ use WCPay\WC_Payments_Checkout;
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Constants\Payment_Method;
 use WCPay\WooPay\WooPay_Utilities;
-use WCPay\Payment_Methods\Bancontact_Payment_Method;
+use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\Payment_Methods\CC_Payment_Method;
-use WCPay\Payment_Methods\Eps_Payment_Method;
-use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Link_Payment_Method;
-use WCPay\Payment_Methods\P24_Payment_Method;
+use WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\EpsDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\IdealDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\P24Definition;
 
 /**
  * Class WC_Payments_Checkout_Test
@@ -435,7 +436,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 		$this->mock_wcpay_gateway
 			->method( 'wc_payments_get_payment_method_by_id' )
 			->willReturn(
-				new $payment_method_class( $this->mock_token_service )
+				new UPE_Payment_Method( $this->mock_token_service, $payment_method_class )
 			);
 
 		$this->assertSame( false, $this->system_under_test->get_payment_fields_js_config()['paymentMethodsConfig'][ $payment_method_id ]['showSaveOption'] );
@@ -443,10 +444,10 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 
 	public function non_reusable_payment_method_provider() {
 		return [
-			[ Payment_Method::BANCONTACT, Bancontact_Payment_Method::class ],
-			[ Payment_Method::EPS, Eps_Payment_Method::class ],
-			[ Payment_Method::IDEAL, Ideal_Payment_Method::class ],
-			[ Payment_Method::P24, P24_Payment_Method::class ],
+			[ Payment_Method::BANCONTACT, BancontactDefinition::class ],
+			[ Payment_Method::EPS, EpsDefinition::class ],
+			[ Payment_Method::IDEAL, IdealDefinition::class ],
+			[ Payment_Method::P24, P24Definition::class ],
 		];
 	}
 
