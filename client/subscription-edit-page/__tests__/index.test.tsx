@@ -1,24 +1,17 @@
+/* eslint-disable prettier/prettier */
 /** @format */
 /**
  * External dependencies
  */
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import React from 'react';
 
 /**
  * Internal dependencies
  */
-import {
-	PaymentMethodSelect,
-	generateInitialCache,
-	addLoadingState,
-	userTokensLoaded,
-	userTokensLoadingFailed,
-	userHasEntryInCache,
-	getUserTokensFromCache,
-	userHasToken,
-} from '../index';
+import { PaymentMethodSelect } from '../index';
+import UserTokenCache from '../user-token-cache';
 import type { Token } from '../types';
 
 // Mock jQuery
@@ -29,7 +22,8 @@ const mockOff = jest.fn();
 mockJQuery.mockReturnValue( { on: mockOn, off: mockOff } );
 
 // Mock fetch
-global.fetch = jest.fn();
+const mockFetch = jest.fn();
+global.fetch = mockFetch;
 
 // Mock @wordpress/i18n
 jest.mock( '@wordpress/i18n', () => ( {
@@ -37,266 +31,502 @@ jest.mock( '@wordpress/i18n', () => ( {
 	__: ( text: string ) => text,
 } ) );
 
-describe( 'PaymentMethodSelect', () => {
+describe( 'PaymentMethodSelect Component', () => {
+	const mockTokens: Token[] = [
+		{ tokenId: 1, displayName: 'Visa •••• 1234' },
+		{ tokenId: 2, displayName: 'Mastercard •••• 5678' },
+		{ tokenId: 3, displayName: 'Amex •••• 9012' },
+	];
+
+	let cache: UserTokenCache;
+	let mockOnChange: jest.Mock;
+
+	beforeEach( () => {
+		jest.clearAllMocks();
+		cache = new UserTokenCache();
+		mockOnChange = jest.fn();
+	} );
+
+	describe( 'Rendering States', () => {
+		test( 'renders select with tokens', () => {
+			cache.add( 1, mockTokens );
+
+			render(
+				<PaymentMethodSelect
+					inputName="payment_method"
+					value={ 1 }
+					userId={ 1 }
+					cache={ cache }
+					onChange={ mockOnChange }
+				/>
+			);
+
+			const select = screen.getByRole( 'combobox' );
+			expect( select ).toBeInTheDocument();
+			expect( select ).toHaveAttribute( 'name', 'payment_method' );
+			expect( select ).toHaveValue( '1' );
+
+			mockTokens.forEach( ( token ) => {
+				expect(
+					screen.getByText( token.displayName )
+				).toBeInTheDocument();
+			} );
+		} );
+
+		test( 'renders loading state', () => {
+			cache.startLoading( 1 );
+
+			render(
+				<PaymentMethodSelect
+					inputName="payment_method"
+					value={ 0 }
+					userId={ 1 }
+					cache={ cache }
+					onChange={ mockOnChange }
+				/>
+			);
+
+			expect( screen.getByText( 'Loading…' ) ).toBeInTheDocument();
+		} );
+
+		test( 'renders error state', () => {
+			cache.startLoading( 1 );
+			cache.loadingFailed( 1, 'Failed to fetch user tokens' );
+
+			render(
+				<PaymentMethodSelect
+					inputName="payment_method"
+					value={ 0 }
+					userId={ 1 }
+					cache={ cache }
+					onChange={ mockOnChange }
+				/>
+			);
+
+			expect(
+				screen.getByText( 'Failed to fetch user tokens' )
+			).toBeInTheDocument();
+		} );
+
+		test( 'renders no customer selected message', () => {
+			render(
+				<PaymentMethodSelect
+					inputName="payment_method"
+					value={ 0 }
+					userId={ 0 }
+					cache={ cache }
+					onChange={ mockOnChange }
+				/>
+			);
+
+			expect(
+				screen.getByText( 'Please select a customer first' )
+			).toBeInTheDocument();
+		} );
+
+		test( 'renders no customer selected message for undefined userId', () => {
+			render(
+				<PaymentMethodSelect
+					inputName="payment_method"
+					value={ 0 }
+					userId={ undefined as any }
+					cache={ cache }
+					onChange={ mockOnChange }
+				/>
+			);
+
+			expect(
+				screen.getByText( 'Please select a customer first' )
+			).toBeInTheDocument();
+		} );
+
+		test( 'renders placeholder when no tokens match value', () => {
+			cache.add( 1, mockTokens );
+
+			render(
+				<PaymentMethodSelect
+					inputName="payment_method"
+					value={ 999 }
+					userId={ 1 }
+					cache={ cache }
+					onChange={ mockOnChange }
+				/>
+			);
+
+			expect(
+				screen.getByText( 'Please select a payment method' )
+			).toBeInTheDocument();
+		} );
+
+		test( 'renders empty token list', () => {
+			cache.add( 1, [] );
+
+			render(
+				<PaymentMethodSelect
+					inputName="payment_method"
+					value={ 0 }
+					userId={ 1 }
+					cache={ cache }
+					onChange={ mockOnChange }
+				/>
+			);
+
+			const select = screen.getByRole( 'combobox' );
+			expect( select ).toBeInTheDocument();
+		} );
+	} );
+
+	describe( 'User Interaction', () => {
+		test( 'calls onChange when user selects a payment method', async () => {
+			cache.add( 1, mockTokens );
+
+			render(
+				<PaymentMethodSelect
+					inputName="payment_method"
+					value={ 1 }
+					userId={ 1 }
+					cache={ cache }
+					onChange={ mockOnChange }
+				/>
+			);
+
+			const select = screen.getByRole( 'combobox' ) as HTMLSelectElement;
+
+			await userEvent.selectOptions( select, '2' );
+
+			expect( mockOnChange ).toHaveBeenCalledWith( 2 );
+		} );
+
+		test( 'placeholder option is disabled', () => {
+			cache.add( 1, mockTokens );
+
+			render(
+				<PaymentMethodSelect
+					inputName="payment_method"
+					value={ 999 }
+					userId={ 1 }
+					cache={ cache }
+					onChange={ mockOnChange }
+				/>
+			);
+
+			const placeholderOption = screen.getByText(
+				'Please select a payment method'
+			) as HTMLOptionElement;
+
+			expect( placeholderOption ).toHaveAttribute( 'disabled' );
+			expect( placeholderOption ).toHaveAttribute( 'value', '0' );
+		} );
+	} );
+
+	describe( 'Value Display', () => {
+		test( 'displays correct initial value', () => {
+			cache.add( 1, mockTokens );
+
+			render(
+				<PaymentMethodSelect
+					inputName="payment_method"
+					value={ 2 }
+					userId={ 1 }
+					cache={ cache }
+					onChange={ mockOnChange }
+				/>
+			);
+
+			const select = screen.getByRole( 'combobox' ) as HTMLSelectElement;
+			expect( select.value ).toBe( '2' );
+		} );
+
+		test( 'updates when value prop changes', () => {
+			cache.add( 1, mockTokens );
+
+			const { rerender } = render(
+				<PaymentMethodSelect
+					inputName="payment_method"
+					value={ 1 }
+					userId={ 1 }
+					cache={ cache }
+					onChange={ mockOnChange }
+				/>
+			);
+
+			let select = screen.getByRole( 'combobox' ) as HTMLSelectElement;
+			expect( select.value ).toBe( '1' );
+
+			rerender(
+				<PaymentMethodSelect
+					inputName="payment_method"
+					value={ 2 }
+					userId={ 1 }
+					cache={ cache }
+					onChange={ mockOnChange }
+				/>
+			);
+
+			select = screen.getByRole( 'combobox' ) as HTMLSelectElement;
+			expect( select.value ).toBe( '2' );
+		} );
+	} );
+} );
+
+describe( 'UserTokenCache', () => {
+	let cache: UserTokenCache;
 	const mockTokens: Token[] = [
 		{ tokenId: 1, displayName: 'Visa •••• 1234' },
 		{ tokenId: 2, displayName: 'Mastercard •••• 5678' },
 	];
 
 	beforeEach( () => {
-		jest.clearAllMocks();
-		document.body.innerHTML = '';
+		cache = new UserTokenCache();
 	} );
 
-	describe( 'Select Rendering', () => {
-		test( 'renders select with tokens', () => {
-			render(
-				<PaymentMethodSelect
-					inputName="payment_method"
-					initialValue={ 1 }
-					initialUser={ 1 }
-					tokens={ mockTokens }
-					ajaxUrl="/ajax"
-					nonce="nonce"
-				/>
-			);
+	describe( 'add()', () => {
+		test( 'adds user with tokens to cache', () => {
+			cache.add( 1, mockTokens );
 
-			expect( screen.getByRole( 'combobox' ) ).toBeInTheDocument();
-			expect( screen.getByText( 'Visa •••• 1234' ) ).toBeInTheDocument();
-			expect(
-				screen.getByText( 'Mastercard •••• 5678' )
-			).toBeInTheDocument();
+			expect( cache.hasEntry( 1 ) ).toBe( true );
+			const entry = cache.getUserEntry( 1 );
+			expect( entry ).toEqual( {
+				userId: 1,
+				tokens: mockTokens,
+				loading: false,
+				loadingError: null,
+			} );
 		} );
 
-		test( 'renders with no customer selected message', async () => {
-			render(
-				<PaymentMethodSelect
-					inputName="payment_method"
-					initialValue={ 0 }
-					initialUser={ undefined }
-					tokens={ [] }
-					ajaxUrl="/ajax"
-					nonce="nonce"
-				/>
-			);
+		test( 'adds user with empty tokens', () => {
+			cache.add( 1, [] );
 
-			expect(
-				await screen.findByText( 'Please select a customer first' )
-			).toBeInTheDocument();
+			expect( cache.hasEntry( 1 ) ).toBe( true );
+			const entry = cache.getUserEntry( 1 );
+			expect( entry?.tokens ).toEqual( [] );
 		} );
 
-		test( 'allows selecting a payment method', async () => {
-			render(
-				<PaymentMethodSelect
-					inputName="payment_method"
-					initialValue={ 1 }
-					initialUser={ 1 }
-					tokens={ mockTokens }
-					ajaxUrl="/ajax"
-					nonce="nonce"
-				/>
-			);
+		test( 'can add multiple users', () => {
+			cache.add( 1, mockTokens );
+			cache.add( 2, [] );
 
-			const select = screen.getByRole( 'combobox' ) as HTMLSelectElement;
-			await userEvent.selectOptions( select, '2' );
-
-			expect( select.value ).toBe( '2' );
+			expect( cache.hasEntry( 1 ) ).toBe( true );
+			expect( cache.hasEntry( 2 ) ).toBe( true );
 		} );
 	} );
 
-	describe( 'Customer Select Listener', () => {
-		test( 'sets up event listeners when customer select exists', () => {
-			const customerSelect = document.createElement( 'select' );
-			customerSelect.id = 'customer_user';
-			customerSelect.value = '1';
-			document.body.appendChild( customerSelect );
+	describe( 'startLoading()', () => {
+		test( 'adds user in loading state', () => {
+			cache.startLoading( 1 );
 
-			const addEventListenerSpy = jest.spyOn(
-				customerSelect,
-				'addEventListener'
-			);
-
-			render(
-				<PaymentMethodSelect
-					inputName="payment_method"
-					initialValue={ 0 }
-					initialUser={ 1 }
-					tokens={ [] }
-					ajaxUrl="/ajax"
-					nonce="nonce"
-				/>
-			);
-
-			// Verify change listener
-			expect( addEventListenerSpy ).toHaveBeenCalledWith(
-				'change',
-				expect.any( Function )
-			);
-
-			// Verify jQuery select2 listener
-			expect( mockJQuery ).toHaveBeenCalledWith( customerSelect );
-			expect( mockOn ).toHaveBeenCalledWith(
-				'select2:select',
-				expect.any( Function )
-			);
+			const entry = cache.getUserEntry( 1 );
+			expect( entry ).toEqual( {
+				userId: 1,
+				loading: true,
+				loadingError: null,
+				tokens: [],
+			} );
 		} );
 
-		test( 'does not throw when customer select is missing', () => {
-			expect( () => {
-				render(
-					<PaymentMethodSelect
-						inputName="payment_method"
-						initialValue={ 0 }
-						initialUser={ 1 }
-						tokens={ [] }
-						ajaxUrl="/ajax"
-						nonce="nonce"
-					/>
-				);
-			} ).not.toThrow();
+		test( 'adds loading state for new user', () => {
+			cache.add( 1, mockTokens );
+			cache.startLoading( 2 );
+
+			expect( cache.hasEntry( 1 ) ).toBe( true );
+			expect( cache.hasEntry( 2 ) ).toBe( true );
+			expect( cache.getUserEntry( 2 )?.loading ).toBe( true );
 		} );
 	} );
 
-	describe( 'Cache Functions', () => {
-		describe( 'generateInitialCache', () => {
-			test( 'creates cache with initial user and tokens', () => {
-				const cache = generateInitialCache( 1, mockTokens );
+	describe( 'tokensLoaded()', () => {
+		test( 'updates loading entry with tokens', () => {
+			cache.startLoading( 1 );
+			cache.tokensLoaded( 1, mockTokens );
 
-				expect( cache ).toHaveLength( 1 );
-				expect( cache[ 0 ] ).toEqual( {
-					userId: 1,
-					tokens: mockTokens,
-					loading: false,
-					loadingError: null,
-				} );
-			} );
-
-			test( 'creates empty cache when no user provided', () => {
-				const cache = generateInitialCache( undefined, [] );
-
-				expect( cache ).toHaveLength( 0 );
+			const entry = cache.getUserEntry( 1 );
+			expect( entry ).toEqual( {
+				userId: 1,
+				tokens: mockTokens,
+				loading: false,
+				loadingError: null,
 			} );
 		} );
 
-		describe( 'addLoadingState', () => {
-			test( 'adds loading entry for new user', () => {
-				const initialCache = generateInitialCache( 1, mockTokens );
-				const updatedCache = addLoadingState( initialCache, 2 );
+		test( 'does not affect other users', () => {
+			cache.add( 1, mockTokens );
+			cache.startLoading( 2 );
+			cache.tokensLoaded( 2, [] );
 
-				expect( updatedCache ).toHaveLength( 2 );
-				expect( updatedCache[ 1 ] ).toEqual( {
-					userId: 2,
-					loading: true,
-					loadingError: null,
-					tokens: [],
-				} );
+			const user1Entry = cache.getUserEntry( 1 );
+			expect( user1Entry?.tokens ).toEqual( mockTokens );
+		} );
+
+		test( 'clears loading state', () => {
+			cache.startLoading( 1 );
+			expect( cache.getUserEntry( 1 )?.loading ).toBe( true );
+
+			cache.tokensLoaded( 1, mockTokens );
+			expect( cache.getUserEntry( 1 )?.loading ).toBe( false );
+		} );
+	} );
+
+	describe( 'loadingFailed()', () => {
+		test( 'sets error message', () => {
+			cache.startLoading( 1 );
+			cache.loadingFailed( 1, 'Network error' );
+
+			const entry = cache.getUserEntry( 1 );
+			expect( entry ).toEqual( {
+				userId: 1,
+				tokens: [],
+				loading: false,
+				loadingError: 'Network error',
 			} );
 		} );
 
-		describe( 'userTokensLoaded', () => {
-			test( 'updates cache with loaded tokens', () => {
-				const initialCache = generateInitialCache( 1, [] );
-				const loadingCache = addLoadingState( initialCache, 2 );
-				const updatedCache = userTokensLoaded(
-					loadingCache,
-					2,
-					mockTokens
-				);
+		test( 'clears loading state', () => {
+			cache.startLoading( 1 );
+			cache.loadingFailed( 1, 'Error' );
 
-				const user2Entry = updatedCache.find(
-					( entry ) => entry.userId === 2
-				);
-				expect( user2Entry ).toEqual( {
-					userId: 2,
-					tokens: mockTokens,
-					loading: false,
-					loadingError: null,
-				} );
-			} );
-
-			test( 'does not affect other users in cache', () => {
-				const initialCache = generateInitialCache( 1, mockTokens );
-				const loadingCache = addLoadingState( initialCache, 2 );
-				const updatedCache = userTokensLoaded( loadingCache, 2, [] );
-
-				const user1Entry = updatedCache.find(
-					( entry ) => entry.userId === 1
-				);
-				expect( user1Entry?.tokens ).toEqual( mockTokens );
-			} );
+			expect( cache.getUserEntry( 1 )?.loading ).toBe( false );
 		} );
 
-		describe( 'userTokensLoadingFailed', () => {
-			test( 'sets error message for user', () => {
-				const initialCache = generateInitialCache( 1, [] );
-				const loadingCache = addLoadingState( initialCache, 2 );
-				const errorCache = userTokensLoadingFailed(
-					loadingCache,
-					2,
-					'Failed to load'
-				);
+		test( 'preserves existing tokens', () => {
+			cache.startLoading( 1 );
+			cache.loadingFailed( 1, 'Error' );
 
-				const user2Entry = errorCache.find(
-					( entry ) => entry.userId === 2
-				);
-				expect( user2Entry ).toEqual( {
-					userId: 2,
-					tokens: [],
-					loading: false,
-					loadingError: 'Failed to load',
-				} );
-			} );
+			expect( cache.getUserEntry( 1 )?.tokens ).toEqual( [] );
+		} );
+	} );
+
+	describe( 'hasEntry()', () => {
+		test( 'returns true when user exists', () => {
+			cache.add( 1, mockTokens );
+
+			expect( cache.hasEntry( 1 ) ).toBe( true );
 		} );
 
-		describe( 'userHasEntryInCache', () => {
-			test( 'returns true when user exists in cache', () => {
-				const cache = generateInitialCache( 1, mockTokens );
-
-				expect( userHasEntryInCache( cache, 1 ) ).toBe( true );
-			} );
-
-			test( 'returns false when user not in cache', () => {
-				const cache = generateInitialCache( 1, mockTokens );
-
-				expect( userHasEntryInCache( cache, 2 ) ).toBe( false );
-			} );
+		test( 'returns false when user does not exist', () => {
+			expect( cache.hasEntry( 999 ) ).toBe( false );
 		} );
 
-		describe( 'getUserTokensFromCache', () => {
-			test( 'returns tokens for user in cache', () => {
-				const cache = generateInitialCache( 1, mockTokens );
+		test( 'returns true for loading entries', () => {
+			cache.startLoading( 1 );
 
-				expect( getUserTokensFromCache( cache, 1 ) ).toEqual(
-					mockTokens
-				);
-			} );
+			expect( cache.hasEntry( 1 ) ).toBe( true );
+		} );
+	} );
 
-			test( 'returns empty array when user not in cache', () => {
-				const cache = generateInitialCache( 1, mockTokens );
+	describe( 'getUserEntry()', () => {
+		test( 'returns user entry when exists', () => {
+			cache.add( 1, mockTokens );
 
-				expect( getUserTokensFromCache( cache, 2 ) ).toEqual( [] );
-			} );
+			const entry = cache.getUserEntry( 1 );
+			expect( entry?.userId ).toBe( 1 );
+			expect( entry?.tokens ).toEqual( mockTokens );
 		} );
 
-		describe( 'userHasToken', () => {
-			test( 'returns true when user has token', () => {
-				const cache = generateInitialCache( 1, mockTokens );
+		test( 'returns undefined when user does not exist', () => {
+			const entry = cache.getUserEntry( 999 );
 
-				expect( userHasToken( cache, 1, 1 ) ).toBe( true );
-				expect( userHasToken( cache, 1, 2 ) ).toBe( true );
-			} );
+			expect( entry ).toBeUndefined();
+		} );
+	} );
 
-			test( 'returns false when user does not have token', () => {
-				const cache = generateInitialCache( 1, mockTokens );
+	describe( 'userHasToken()', () => {
+		test( 'returns true when user has token', () => {
+			cache.add( 1, mockTokens );
 
-				expect( userHasToken( cache, 1, 999 ) ).toBe( false );
-			} );
+			expect( cache.userHasToken( 1, 1 ) ).toBe( true );
+			expect( cache.userHasToken( 1, 2 ) ).toBe( true );
+		} );
 
-			test( 'returns false when user not in cache', () => {
-				const cache = generateInitialCache( 1, mockTokens );
+		test( 'returns false when user does not have token', () => {
+			cache.add( 1, mockTokens );
 
-				expect( userHasToken( cache, 2, 1 ) ).toBe( false );
-			} );
+			expect( cache.userHasToken( 1, 999 ) ).toBe( false );
+		} );
+
+		test( 'returns false when user does not exist', () => {
+			expect( cache.userHasToken( 999, 1 ) ).toBe( false );
+		} );
+
+		test( 'returns false for user with empty tokens', () => {
+			cache.add( 1, [] );
+
+			expect( cache.userHasToken( 1, 1 ) ).toBe( false );
+		} );
+	} );
+
+	describe( 'subscribe()', () => {
+		test( 'calls subscriber when cache updates', () => {
+			const subscriber = jest.fn();
+			cache.subscribe( subscriber );
+
+			cache.add( 1, mockTokens );
+
+			expect( subscriber ).toHaveBeenCalledTimes( 1 );
+		} );
+
+		test( 'calls all subscribers on update', () => {
+			const subscriber1 = jest.fn();
+			const subscriber2 = jest.fn();
+
+			cache.subscribe( subscriber1 );
+			cache.subscribe( subscriber2 );
+
+			cache.add( 1, mockTokens );
+
+			expect( subscriber1 ).toHaveBeenCalledTimes( 1 );
+			expect( subscriber2 ).toHaveBeenCalledTimes( 1 );
+		} );
+
+		test( 'calls subscribers on startLoading', () => {
+			const subscriber = jest.fn();
+			cache.subscribe( subscriber );
+
+			cache.startLoading( 1 );
+
+			expect( subscriber ).toHaveBeenCalled();
+		} );
+
+		test( 'calls subscribers on tokensLoaded', () => {
+			const subscriber = jest.fn();
+			cache.subscribe( subscriber );
+
+			cache.startLoading( 1 );
+			subscriber.mockClear();
+
+			cache.tokensLoaded( 1, mockTokens );
+
+			expect( subscriber ).toHaveBeenCalled();
+		} );
+
+		test( 'calls subscribers on loadingFailed', () => {
+			const subscriber = jest.fn();
+			cache.subscribe( subscriber );
+
+			cache.startLoading( 1 );
+			subscriber.mockClear();
+
+			cache.loadingFailed( 1, 'Error' );
+
+			expect( subscriber ).toHaveBeenCalled();
+		} );
+	} );
+
+	describe( 'getCache()', () => {
+		test( 'returns current cache state', () => {
+			cache.add( 1, mockTokens );
+			cache.add( 2, [] );
+
+			const cacheState = cache.getCache();
+
+			expect( cacheState ).toHaveLength( 2 );
+			expect( cacheState[ 0 ].userId ).toBe( 1 );
+			expect( cacheState[ 1 ].userId ).toBe( 2 );
+		} );
+
+		test( 'returns empty array for new cache', () => {
+			const cacheState = cache.getCache();
+
+			expect( cacheState ).toEqual( [] );
 		} );
 	} );
 } );

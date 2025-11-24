@@ -1,4 +1,16 @@
 /**
+ * Internal dependencies
+ */
+import UserTokenCache from './user-token-cache';
+
+/**
+ * Props for the WCPayPaymentMethodElement component
+ */
+export interface PaymentMethodElementProps {
+	element: HTMLSpanElement;
+}
+
+/**
  * Token represents a payment method token for a user
  */
 export interface Token {
@@ -26,11 +38,10 @@ export type CachedUserData = CachedUserDataItem[];
  */
 export interface PaymentMethodSelectProps {
 	inputName: string;
-	initialValue?: number;
-	initialUser?: number;
-	tokens: Token[];
-	ajaxUrl: string;
-	nonce: string;
+	value: number;
+	userId: number;
+	cache: UserTokenCache;
+	onChange: ( value: number ) => void;
 }
 
 /**
