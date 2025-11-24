@@ -8,16 +8,38 @@ import React, { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { __ } from '@wordpress/i18n';
 
-const generateInitialCache = ( initialUser, tokens ) => {
-	return [
-		{
+/**
+ * Internal dependencies
+ */
+import type {
+	Token,
+	CachedUserData,
+	PaymentMethodSelectProps,
+	WCPayPMSelectorData,
+	FetchUserTokensResponse,
+} from './types';
+
+const generateInitialCache = (
+	initialUser: number | undefined,
+	tokens: Token[]
+): CachedUserData => {
+	const data = [];
+
+	if ( initialUser !== undefined ) {
+		data.push( {
 			userId: initialUser,
-			tokens,
-		},
-	];
+			tokens: [ ...tokens ],
+		} );
+	}
+
+	return data;
 };
 
-const addToCache = ( cachedUserData, userId, tokens ) => {
+const addToCache = (
+	cachedUserData: CachedUserData,
+	userId: number,
+	tokens: Token[]
+): CachedUserData => {
 	return [
 		...cachedUserData,
 		{
@@ -27,45 +49,68 @@ const addToCache = ( cachedUserData, userId, tokens ) => {
 	];
 };
 
-const hasUserTokensInCache = ( cachedUserData, userId ) => {
+const hasUserTokensInCache = (
+	cachedUserData: CachedUserData,
+	userId: number
+): boolean => {
 	return cachedUserData.some( ( userData ) => userData.userId === userId );
 };
 
-const getUserTokensFromCache = ( cachedUserData, userId ) => {
-	return cachedUserData.find( ( userData ) => userData.userId === userId )
-		?.tokens;
+const getUserTokensFromCache = (
+	cachedUserData: CachedUserData,
+	userId: number
+): Token[] => {
+	return (
+		cachedUserData.find( ( userData ) => userData.userId === userId )
+			?.tokens ?? []
+	);
 };
 
-const userHasToken = ( cachedUserData, userId, tokenId ) => {
+const userHasToken = (
+	cachedUserData: CachedUserData,
+	userId: number,
+	tokenId: number
+): boolean => {
 	const userTokens = getUserTokensFromCache( cachedUserData, userId );
-
-	if ( typeof userTokens === 'undefined' ) {
-		return false;
-	}
-
 	return userTokens.some( ( token ) => token.tokenId === tokenId );
 };
 
-const fetchUserTokens = async ( userId, ajaxUrl, nonce ) => {
+const fetchUserTokens = async (
+	userId: number,
+	ajaxUrl: string,
+	nonce: string
+): Promise< FetchUserTokensResponse | undefined > => {
 	const formData = new FormData();
 	formData.append( 'action', 'wcpay_get_user_payment_tokens' );
 	formData.append( 'nonce', nonce );
-	formData.append( 'user_id', userId );
+	formData.append( 'user_id', userId.toString() );
 
 	const response = await fetch( ajaxUrl, {
 		method: 'POST',
 		body: formData,
 	} );
 	if ( ! response.ok ) {
-		return undefined;
+		throw new Error(
+			__( 'Failed to fetch user tokens', 'woocommerce-payments' )
+		);
 	}
 
 	const result = await response.json();
-	return result.data;
+	return result.data as FetchUserTokensResponse;
 };
 
-const addCustomerSelectListener = ( callback ) => {
-	const customerUserSelect = document.getElementById( 'customer_user' );
+const addCustomerSelectListener = (
+	callback: ( userId: number ) => void
+): ( () => void ) => {
+	const customerUserSelect = document.getElementById(
+		'customer_user'
+	) as HTMLSelectElement | null;
+
+	if ( ! customerUserSelect ) {
+		return (): void => {
+			// No-op cleanup function when element is not found
+		};
+	}
 
 	// Wrap in an internal callback to load the select's value.
 	const internalCallback = () =>
@@ -89,10 +134,12 @@ const PaymentMethodSelect = ( {
 	tokens,
 	ajaxUrl,
 	nonce,
-} ) => {
-	const [ selectValue, setSelectValue ] = useState( initialValue ?? 0 );
-	const [ userId, setUserId ] = useState( initialUser ?? 0 );
-	const [ cachedUserData, setCachedUserData ] = useState(
+}: PaymentMethodSelectProps ) => {
+	const [ selectValue, setSelectValue ] = useState< number >(
+		initialValue ?? 0
+	);
+	const [ userId, setUserId ] = useState< number >( initialUser ?? 0 );
+	const [ cachedUserData, setCachedUserData ] = useState< CachedUserData >(
 		generateInitialCache( initialUser, tokens )
 	);
 
@@ -110,26 +157,24 @@ const PaymentMethodSelect = ( {
 		}
 
 		( async () => {
-			const data = await fetchUserTokens(
-				userId,
-				ajaxUrl,
-				nonce,
-				setCachedUserData
-			);
-			setCachedUserData(
-				addToCache( cachedUserData, userId, data.tokens )
-			);
+			const data = await fetchUserTokens( userId, ajaxUrl, nonce );
+
+			if ( data ) {
+				setCachedUserData(
+					addToCache( cachedUserData, userId, data.tokens )
+				);
+			}
 		} )();
 	}, [ cachedUserData, userId, ajaxUrl, nonce ] );
 
 	/**
 	 * Generate options for the select.
 	 */
-	const options = [];
+	const options: JSX.Element[] = [];
 	if ( userId > 0 ) {
 		const userTokens = getUserTokensFromCache( cachedUserData, userId );
 		if ( typeof userTokens === 'undefined' ) {
-			return __( 'Loading…', 'woocommerce-payments' );
+			return <span>{ __( 'Loading…', 'woocommerce-payments' ) }</span>;
 		}
 
 		if ( ! userHasToken( cachedUserData, userId, selectValue ) ) {
@@ -175,12 +220,21 @@ const PaymentMethodSelect = ( {
 	);
 };
 
-const addWCPayCards = () => {
+const addWCPayCards = (): void => {
 	document
 		.querySelectorAll( '.wcpay-subscription-payment-method' )
 		.forEach( ( element ) => {
-			const data = JSON.parse( element.dataset.wcpayPmSelector );
-			const inputName = element.querySelector( 'select,input' ).name;
+			const data = JSON.parse(
+				element.getAttribute( 'data-wcpay-pm-selector' ) || '{}'
+			) as WCPayPMSelectorData;
+			const inputElement = element.querySelector( 'select,input' ) as
+				| HTMLSelectElement
+				| HTMLInputElement
+				| null;
+			if ( ! inputElement ) {
+				return;
+			}
+			const inputName = inputElement.name;
 
 			createRoot( element ).render(
 				<PaymentMethodSelect
