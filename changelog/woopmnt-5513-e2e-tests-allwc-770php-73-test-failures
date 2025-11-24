@@ -1,0 +1,5 @@
+Significance: patch
+Type: dev
+Comment: Temporarily disable subscription tests for WC 7.7.0 due to a fatal error in WooCommerce Subscriptions
+
+
