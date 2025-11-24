@@ -71,21 +71,33 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 			->onlyMethods( [ 'add_payment_method_to_user' ] )
 			->getMock();
 
+		$payment_method_definitions = [
+			\WCPay\PaymentMethods\Configs\Definitions\AffirmDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\SofortDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\EpsDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\P24Definition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\IdealDefinition::class,
+		];
+
 		$payment_method_classes = [
 			CC_Payment_Method::class,
-			Giropay_Payment_Method::class,
-			Sofort_Payment_Method::class,
-			Bancontact_Payment_Method::class,
-			EPS_Payment_Method::class,
-			P24_Payment_Method::class,
-			Ideal_Payment_Method::class,
 			Sepa_Payment_Method::class,
 			Becs_Payment_Method::class,
 			Link_Payment_Method::class,
-			Affirm_Payment_Method::class,
 			Afterpay_Payment_Method::class,
 			Klarna_Payment_Method::class,
 		];
+
+		foreach ( $payment_method_definitions as $definition_class ) {
+			/** @var UPE_Payment_Method|MockObject */
+			$mock_payment_method = $this->getMockBuilder( UPE_Payment_Method::class )
+				->setConstructorArgs( [ $this->mock_token_service, $definition_class ] )
+				->onlyMethods( [] )
+				->getMock();
+			$this->mock_payment_methods[ $mock_payment_method->get_id() ] = $mock_payment_method;
+		}
 
 		foreach ( $payment_method_classes as $payment_method_class ) {
 			/** @var UPE_Payment_Method|MockObject */
