@@ -8,6 +8,14 @@ import React, { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { __ } from '@wordpress/i18n';
 
+// TypeScript declaration for jQuery
+declare const jQuery: (
+	selector: any
+) => {
+	on: ( event: string, handler: () => void ) => void;
+	off: ( event: string, handler: () => void ) => void;
+};
+
 /**
  * Internal dependencies
  */
@@ -61,7 +69,7 @@ const addCustomerSelectListener = (
  * @param tokens The pre-loaded tokens.
  * @return The initial cached data.
  */
-const generateInitialCache = (
+export const generateInitialCache = (
 	initialUser: number | undefined,
 	tokens: Token[]
 ): CachedUserData => {
@@ -87,7 +95,7 @@ const generateInitialCache = (
  * @param userId The user ID.
  * @return The cached data with the loading state.
  */
-const addLoadingState = (
+export const addLoadingState = (
 	cachedUserData: CachedUserData,
 	userId: number
 ): CachedUserData => {
@@ -110,7 +118,7 @@ const addLoadingState = (
  * @param tokens The loaded tokens.
  * @return The cached data with the tokens and the loading state removed.
  */
-const userTokensLoaded = (
+export const userTokensLoaded = (
 	cachedUserData: CachedUserData,
 	userId: number,
 	tokens: Token[]
@@ -137,7 +145,7 @@ const userTokensLoaded = (
  * @param errorMessage The error message.
  * @return The cached data with the loading state removed and the error message set.
  */
-const userTokensLoadingFailed = (
+export const userTokensLoadingFailed = (
 	cachedUserData: CachedUserData,
 	userId: number,
 	errorMessage: string
@@ -161,7 +169,7 @@ const userTokensLoadingFailed = (
  * @param userId The user ID.
  * @return True if the cached data for the user contains tokens, false otherwise.
  */
-const userHasEntryInCache = (
+export const userHasEntryInCache = (
 	cachedUserData: CachedUserData,
 	userId: number
 ): boolean => {
@@ -189,7 +197,7 @@ const getUserEntryFromCache = (
  * @param userId The user ID.
  * @return The tokens for the user.
  */
-const getUserTokensFromCache = (
+export const getUserTokensFromCache = (
 	cachedUserData: CachedUserData,
 	userId: number
 ): Token[] => {
@@ -207,7 +215,7 @@ const getUserTokensFromCache = (
  * @param tokenId The token ID.
  * @return True if the user has the token, false otherwise.
  */
-const userHasToken = (
+export const userHasToken = (
 	cachedUserData: CachedUserData,
 	userId: number,
 	tokenId: number
@@ -248,7 +256,7 @@ const fetchUserTokens = async (
 	return result.data as FetchUserTokensResponse;
 };
 
-const PaymentMethodSelect = ( {
+export const PaymentMethodSelect = ( {
 	inputName,
 	initialValue,
 	initialUser,
