@@ -78,42 +78,6 @@ class SofortDefinition implements PaymentMethodDefinitionInterface {
 	}
 
 	/**
-	 * Is the payment method a BNPL (Buy Now Pay Later) payment method?
-	 *
-	 * @return boolean
-	 */
-	public static function is_bnpl(): bool {
-		return PaymentMethodUtils::is_bnpl( self::get_capabilities() );
-	}
-
-	/**
-	 * Is the payment method a reusable payment method?
-	 *
-	 * @return boolean
-	 */
-	public static function is_reusable(): bool {
-		return PaymentMethodUtils::is_reusable( self::get_capabilities() );
-	}
-
-	/**
-	 * Does the payment method accept only domestic payments?
-	 *
-	 * @return boolean
-	 */
-	public static function accepts_only_domestic_payments(): bool {
-		return PaymentMethodUtils::accepts_only_domestic_payments( self::get_capabilities() );
-	}
-
-	/**
-	 * Does the payment method allow manual capture?
-	 *
-	 * @return boolean
-	 */
-	public static function allows_manual_capture(): bool {
-		return PaymentMethodUtils::allows_manual_capture( self::get_capabilities() );
-	}
-
-	/**
 	 * Get the list of supported currencies
 	 *
 	 * @return string[] Array of currency codes
@@ -210,15 +174,6 @@ class SofortDefinition implements PaymentMethodDefinitionInterface {
 	 */
 	public static function is_available_for( string $currency, string $account_country ): bool {
 		return PaymentMethodUtils::is_available_for( self::get_supported_currencies(), self::get_supported_countries(), $currency, $account_country );
-	}
-
-	/**
-	 * Whether this payment method should be enabled by default
-	 *
-	 * @return bool
-	 */
-	public static function is_enabled_by_default(): bool {
-		return false;
 	}
 
 	/**

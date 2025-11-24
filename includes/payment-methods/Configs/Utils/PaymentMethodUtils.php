@@ -51,41 +51,41 @@ class PaymentMethodUtils {
 	/**
 	 * Is the payment method a BNPL (Buy Now Pay Later) payment method?
 	 *
-	 * @param array<string> $capabilities The payment method capabilities.
+	 * @param string $payment_method_definition The payment method definition class name.
 	 * @return boolean
 	 */
-	public static function is_bnpl( array $capabilities ): bool {
-		return in_array( PaymentMethodCapability::BUY_NOW_PAY_LATER, $capabilities, true );
+	public static function is_bnpl( string $payment_method_definition ): bool {
+		return in_array( PaymentMethodCapability::BUY_NOW_PAY_LATER, $payment_method_definition::get_capabilities(), true );
 	}
 
 	/**
 	 * Is the payment method a reusable payment method?
 	 *
-	 * @param array<string> $capabilities The payment method capabilities.
+	 * @param string $payment_method_definition The payment method definition class name.
 	 * @return boolean
 	 */
-	public static function is_reusable( array $capabilities ): bool {
-		return in_array( PaymentMethodCapability::TOKENIZATION, $capabilities, true );
+	public static function is_reusable( string $payment_method_definition ): bool {
+		return in_array( PaymentMethodCapability::TOKENIZATION, $payment_method_definition::get_capabilities(), true );
 	}
 
 	/**
 	 * Does the payment method accept only domestic payments?
 	 *
-	 * @param array<string> $capabilities The payment method capabilities.
+	 * @param string $payment_method_definition The payment method definition class name.
 	 * @return boolean
 	 */
-	public static function accepts_only_domestic_payments( array $capabilities ): bool {
-		return in_array( PaymentMethodCapability::DOMESTIC_TRANSACTIONS_ONLY, $capabilities, true );
+	public static function accepts_only_domestic_payments( string $payment_method_definition ): bool {
+		return in_array( PaymentMethodCapability::DOMESTIC_TRANSACTIONS_ONLY, $payment_method_definition::get_capabilities(), true );
 	}
 
 	/**
 	 * Does the payment method allow manual capture?
 	 *
-	 * @param array<string> $capabilities The payment method capabilities.
+	 * @param string $payment_method_definition The payment method definition class name.
 	 * @return boolean
 	 */
-	public static function allows_manual_capture( array $capabilities ): bool {
-		return in_array( PaymentMethodCapability::CAPTURE_LATER, $capabilities, true );
+	public static function allows_manual_capture( string $payment_method_definition ): bool {
+		return in_array( PaymentMethodCapability::CAPTURE_LATER, $payment_method_definition::get_capabilities(), true );
 	}
 
 	/**
@@ -124,9 +124,9 @@ class PaymentMethodUtils {
 				'description'                   => $payment_method_definition::get_description(),
 				'settings_icon_url'             => $payment_method_definition::get_settings_icon_url(),
 				'currencies'                    => $payment_method_definition::get_supported_currencies(),
-				'allows_manual_capture'         => $payment_method_definition::allows_manual_capture(),
-				'allows_pay_later'              => $payment_method_definition::is_bnpl(),
-				'accepts_only_domestic_payment' => $payment_method_definition::accepts_only_domestic_payments(),
+				'allows_manual_capture'         => self::allows_manual_capture( $payment_method_definition ),
+				'allows_pay_later'              => self::is_bnpl( $payment_method_definition ),
+				'accepts_only_domestic_payment' => self::accepts_only_domestic_payments( $payment_method_definition ),
 			];
 		}
 
