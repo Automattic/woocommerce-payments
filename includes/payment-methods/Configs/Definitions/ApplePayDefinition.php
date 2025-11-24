@@ -76,15 +76,6 @@ class ApplePayDefinition implements PaymentMethodDefinitionInterface {
 	}
 
 	/**
-	 * Is the payment method a BNPL (Buy Now Pay Later) payment method?
-	 *
-	 * @return boolean
-	 */
-	public static function is_bnpl(): bool {
-		return PaymentMethodUtils::is_bnpl( self::get_capabilities() );
-	}
-
-	/**
 	 * Is the payment method a reusable payment method?
 	 *
 	 * @return boolean
