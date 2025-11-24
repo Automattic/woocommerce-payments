@@ -14,91 +14,18 @@ import { __ } from '@wordpress/i18n';
 import type {
 	Token,
 	CachedUserData,
+	CachedUserDataItem,
 	PaymentMethodSelectProps,
 	WCPayPMSelectorData,
 	FetchUserTokensResponse,
 } from './types';
 
-const generateInitialCache = (
-	initialUser: number | undefined,
-	tokens: Token[]
-): CachedUserData => {
-	const data = [];
-
-	if ( initialUser !== undefined ) {
-		data.push( {
-			userId: initialUser,
-			tokens: [ ...tokens ],
-		} );
-	}
-
-	return data;
-};
-
-const addToCache = (
-	cachedUserData: CachedUserData,
-	userId: number,
-	tokens: Token[]
-): CachedUserData => {
-	return [
-		...cachedUserData,
-		{
-			userId,
-			tokens,
-		},
-	];
-};
-
-const hasUserTokensInCache = (
-	cachedUserData: CachedUserData,
-	userId: number
-): boolean => {
-	return cachedUserData.some( ( userData ) => userData.userId === userId );
-};
-
-const getUserTokensFromCache = (
-	cachedUserData: CachedUserData,
-	userId: number
-): Token[] => {
-	return (
-		cachedUserData.find( ( userData ) => userData.userId === userId )
-			?.tokens ?? []
-	);
-};
-
-const userHasToken = (
-	cachedUserData: CachedUserData,
-	userId: number,
-	tokenId: number
-): boolean => {
-	const userTokens = getUserTokensFromCache( cachedUserData, userId );
-	return userTokens.some( ( token ) => token.tokenId === tokenId );
-};
-
-const fetchUserTokens = async (
-	userId: number,
-	ajaxUrl: string,
-	nonce: string
-): Promise< FetchUserTokensResponse | undefined > => {
-	const formData = new FormData();
-	formData.append( 'action', 'wcpay_get_user_payment_tokens' );
-	formData.append( 'nonce', nonce );
-	formData.append( 'user_id', userId.toString() );
-
-	const response = await fetch( ajaxUrl, {
-		method: 'POST',
-		body: formData,
-	} );
-	if ( ! response.ok ) {
-		throw new Error(
-			__( 'Failed to fetch user tokens', 'woocommerce-payments' )
-		);
-	}
-
-	const result = await response.json();
-	return result.data as FetchUserTokensResponse;
-};
-
+/**
+ * Add a listener to the customer select.
+ *
+ * @param callback The callback to call when the customer is changed.
+ * @return The cleanup function.
+ */
 const addCustomerSelectListener = (
 	callback: ( userId: number ) => void
 ): ( () => void ) => {
@@ -127,6 +54,200 @@ const addCustomerSelectListener = (
 	};
 };
 
+/**
+ * Generates the initial user-token cache in a proper format.
+ *
+ * @param initialUser Initial user ID.
+ * @param tokens The pre-loaded tokens.
+ * @return The initial cached data.
+ */
+const generateInitialCache = (
+	initialUser: number | undefined,
+	tokens: Token[]
+): CachedUserData => {
+	const data = [];
+
+	if ( initialUser !== undefined ) {
+		data.push( {
+			userId: initialUser,
+			tokens: [ ...tokens ],
+			loading: false,
+			loadingError: null,
+		} );
+	}
+
+	return data;
+};
+
+/**
+ * Add a new entry for a new user in the cache.
+ * The new entry can only land in a loading state.
+ *
+ * @param cachedUserData Existing cached data.
+ * @param userId The user ID.
+ * @return The cached data with the loading state.
+ */
+const addLoadingState = (
+	cachedUserData: CachedUserData,
+	userId: number
+): CachedUserData => {
+	return [
+		...cachedUserData,
+		{
+			userId,
+			loading: true,
+			loadingError: null,
+			tokens: [],
+		},
+	];
+};
+
+/**
+ * Update the cached data for a user when the tokens are loaded.
+ *
+ * @param cachedUserData Existing cached data.
+ * @param userId The user ID.
+ * @param tokens The loaded tokens.
+ * @return The cached data with the tokens and the loading state removed.
+ */
+const userTokensLoaded = (
+	cachedUserData: CachedUserData,
+	userId: number,
+	tokens: Token[]
+): CachedUserData => {
+	return cachedUserData.map( ( userData ) => {
+		if ( userData.userId !== userId ) {
+			return userData;
+		}
+
+		return {
+			...userData,
+			tokens,
+			loading: false,
+			loadingError: null,
+		};
+	} );
+};
+
+/**
+ * Update the cached data for a user when loading the tokens for a user failed.
+ *
+ * @param cachedUserData Existing cached data.
+ * @param userId The user ID.
+ * @param errorMessage The error message.
+ * @return The cached data with the loading state removed and the error message set.
+ */
+const userTokensLoadingFailed = (
+	cachedUserData: CachedUserData,
+	userId: number,
+	errorMessage: string
+): CachedUserData => {
+	return cachedUserData.map( ( userData ) => {
+		if ( userData.userId !== userId ) {
+			return userData;
+		}
+		return {
+			...userData,
+			loading: false,
+			loadingError: errorMessage,
+		};
+	} );
+};
+
+/**
+ * Check if the cached data for a user contains tokens.
+ *
+ * @param cachedUserData Existing cached data.
+ * @param userId The user ID.
+ * @return True if the cached data for the user contains tokens, false otherwise.
+ */
+const userHasEntryInCache = (
+	cachedUserData: CachedUserData,
+	userId: number
+): boolean => {
+	return cachedUserData.some( ( userData ) => userData.userId === userId );
+};
+
+/**
+ * Get the user entry from the cached data.
+ *
+ * @param cachedUserData Existing cached data.
+ * @param userId The user ID.
+ * @return The user entry.
+ */
+const getUserEntryFromCache = (
+	cachedUserData: CachedUserData,
+	userId: number
+): CachedUserDataItem | undefined => {
+	return cachedUserData.find( ( userData ) => userData.userId === userId );
+};
+
+/**
+ * Get the tokens for a user from the cached data.
+ *
+ * @param cachedUserData Existing cached data.
+ * @param userId The user ID.
+ * @return The tokens for the user.
+ */
+const getUserTokensFromCache = (
+	cachedUserData: CachedUserData,
+	userId: number
+): Token[] => {
+	return (
+		cachedUserData.find( ( userData ) => userData.userId === userId )
+			?.tokens ?? []
+	);
+};
+
+/**
+ * Check if a user has a specific token.
+ *
+ * @param cachedUserData Existing cached data.
+ * @param userId The user ID.
+ * @param tokenId The token ID.
+ * @return True if the user has the token, false otherwise.
+ */
+const userHasToken = (
+	cachedUserData: CachedUserData,
+	userId: number,
+	tokenId: number
+): boolean => {
+	const userTokens = getUserTokensFromCache( cachedUserData, userId );
+	return userTokens.some( ( token ) => token.tokenId === tokenId );
+};
+
+/**
+ * Fetch the tokens for a user from the server.
+ *
+ * @param userId The user ID.
+ * @param ajaxUrl The AJAX URL.
+ * @param nonce The nonce.
+ * @return The tokens for the user.
+ */
+const fetchUserTokens = async (
+	userId: number,
+	ajaxUrl: string,
+	nonce: string
+): Promise< FetchUserTokensResponse | undefined > => {
+	const formData = new FormData();
+	formData.append( 'action', 'wcpay_get_user_payment_tokens' );
+	formData.append( 'nonce', nonce );
+	formData.append( 'user_id', userId.toString() );
+
+	const response = await fetch( ajaxUrl, {
+		method: 'POST',
+		body: formData,
+	} );
+	if ( ! response.ok ) {
+		throw new Error(
+			__( 'Failed to fetch user tokens', 'woocommerce-payments' )
+		);
+	}
+
+	const result = await response.json();
+	return result.data as FetchUserTokensResponse;
+};
+
 const PaymentMethodSelect = ( {
 	inputName,
 	initialValue,
@@ -152,16 +273,43 @@ const PaymentMethodSelect = ( {
 	);
 
 	useEffect( () => {
-		if ( hasUserTokensInCache( cachedUserData, userId ) ) {
+		// Loader, loading, or errored out, we do not need to load anything.
+		if ( userHasEntryInCache( cachedUserData, userId ) ) {
 			return;
 		}
 
-		( async () => {
-			const data = await fetchUserTokens( userId, ajaxUrl, nonce );
+		const dataWithLoadingState = addLoadingState( cachedUserData, userId );
+		setCachedUserData( dataWithLoadingState );
 
-			if ( data ) {
+		( async () => {
+			try {
+				const data = await fetchUserTokens( userId, ajaxUrl, nonce );
+				if ( undefined === data ) {
+					throw new Error(
+						__(
+							'Failed to fetch user tokens. Please reload the page and try again.',
+							'woocommerce-payments'
+						)
+					);
+				}
 				setCachedUserData(
-					addToCache( cachedUserData, userId, data.tokens )
+					userTokensLoaded(
+						dataWithLoadingState,
+						userId,
+						data.tokens
+					)
+				);
+			} catch ( error ) {
+				const errorMessage =
+					error instanceof Error
+						? error.message
+						: __( 'Unknown error', 'woocommerce-payments' );
+				setCachedUserData(
+					userTokensLoadingFailed(
+						dataWithLoadingState,
+						userId,
+						errorMessage
+					)
 				);
 			}
 		} )();
@@ -172,9 +320,11 @@ const PaymentMethodSelect = ( {
 	 */
 	const options: JSX.Element[] = [];
 	if ( userId > 0 ) {
-		const userTokens = getUserTokensFromCache( cachedUserData, userId );
-		if ( typeof userTokens === 'undefined' ) {
-			return <span>{ __( 'Loading…', 'woocommerce-payments' ) }</span>;
+		const entry = getUserEntryFromCache( cachedUserData, userId );
+		if ( undefined === entry || entry.loading ) {
+			return <>{ __( 'Loading…', 'woocommerce-payments' ) }</>;
+		} else if ( entry.loadingError ) {
+			return <strong>{ entry.loadingError }</strong>;
 		}
 
 		if ( ! userHasToken( cachedUserData, userId, selectValue ) ) {
@@ -188,7 +338,7 @@ const PaymentMethodSelect = ( {
 			);
 		}
 
-		userTokens.forEach( ( token ) => {
+		entry.tokens.forEach( ( token ) => {
 			options.push(
 				<option value={ token.tokenId } key={ token.tokenId }>
 					{ token.displayName }

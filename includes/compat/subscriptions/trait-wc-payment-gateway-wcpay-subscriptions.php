@@ -755,7 +755,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 			$disabled   = true;
 		}
 		?>
-		<div class="wcpay-subscription-payment-method" data-wcpay-pm-selector="<?php echo esc_attr( wp_json_encode( $prepared_data ) ); ?>">
+		<span class="wcpay-subscription-payment-method" data-wcpay-pm-selector="<?php echo esc_attr( wp_json_encode( $prepared_data ) ); ?>">
 			<select name="<?php echo esc_attr( $field_id ); ?>" id="<?php echo esc_attr( $field_id ); ?>">
 				<?php if ( $field_value && $field_value !== $selected ) : ?>
 					<option value="" selected disabled><?php echo esc_html__( 'Please select a payment method', 'woocommerce-payments' ); ?></option>
@@ -766,7 +766,7 @@ trait WC_Payment_Gateway_WCPay_Subscriptions_Trait {
 					</option>
 				<?php endforeach; ?>
 			</select>
-		</div>
+		</span>
 		<?php
 	}
 

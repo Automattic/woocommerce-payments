@@ -11,6 +11,8 @@ export interface Token {
  */
 export interface CachedUserDataItem {
 	userId: number;
+	loading: boolean;
+	loadingError: string | null;
 	tokens: Token[];
 }
 
