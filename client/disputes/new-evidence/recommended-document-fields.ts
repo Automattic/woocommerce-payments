@@ -18,7 +18,7 @@ export const DOCUMENT_FIELD_KEYS = {
 	CUSTOMER_SIGNATURE: 'customer_signature',
 	UNCATEGORIZED_FILE: 'uncategorized_file',
 	REFUND_POLICY: 'refund_policy',
-	DUPLICATE_CHARGE_DOCUMENTATION: 'duplicate_charge_documentation',
+	REFUND_RECEIPT_DOCUMENTATION: 'uncategorized_file',
 	CANCELLATION_POLICY: 'cancellation_policy',
 	ACCESS_ACTIVITY_LOG: 'access_activity_log',
 	SERVICE_DOCUMENTATION: 'service_documentation',
@@ -134,57 +134,60 @@ const getRecommendedDocumentFields = (
 		duplicate:
 			duplicateStatus === 'is_duplicate'
 				? [
-						// For is_duplicate: Order receipt, Customer communication, Proof of active subscription, Store refund policy, Terms of service, Other documents
+						// For is_duplicate: Order receipt, Refund receipt, Refund policy
 						{
-							key: DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
+							key: DOCUMENT_FIELD_KEYS.RECEIPT,
 							label: __(
-								'Proof of active subscription',
+								'Order receipt',
 								'woocommerce-payments'
 							),
 							description: __(
-								'Any documents showing the billing history, subscription status, or cancellation logs, for example.',
+								"A copy of the customer's receipt, which can be found in the receipt history for this transaction.",
 								'woocommerce-payments'
 							),
-							order: 30,
+							order: 10,
+						},
+						{
+							key:
+								DOCUMENT_FIELD_KEYS.REFUND_RECEIPT_DOCUMENTATION,
+							label: __(
+								'Refund receipt',
+								'woocommerce-payments'
+							),
+							description: __(
+								'A confirmation that the refund was processed.',
+								'woocommerce-payments'
+							),
+							order: 15,
 						},
 						{
 							key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
 							label: __(
-								'Store refund policy',
+								'Refund policy',
 								'woocommerce-payments'
 							),
 							description: __(
 								"A screenshot of your store's refund policy.",
 								'woocommerce-payments'
 							),
-							order: 40,
-						},
-						{
-							key: DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
-							label: __(
-								'Terms of service',
-								'woocommerce-payments'
-							),
-							description: __(
-								"A screenshot of your store's terms of service.",
-								'woocommerce-payments'
-							),
-							order: 50,
+							order: 20,
 						},
 				  ]
 				: [
-						// For is_not_duplicate: Order receipt, Customer communication, Store refund policy, Other documents
+						// For is_not_duplicate: Order receipt, Customer communication, Refund policy, Other documents
+						// NOTE: This is a basic implementation. Full implementation should include duplicate_charge_documentation
+						// field as per spec (to be implemented in WOOPMNT-5436)
 						{
 							key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
 							label: __(
-								'Store refund policy',
+								'Refund policy',
 								'woocommerce-payments'
 							),
 							description: __(
 								"A screenshot of your store's refund policy.",
 								'woocommerce-payments'
 							),
-							order: 30,
+							order: 15,
 						},
 				  ],
 		subscription_canceled: [
@@ -345,8 +348,15 @@ const getRecommendedDocumentFields = (
 		],
 	};
 
-	// For credit_not_processed with refund_was_not_owed, we need to filter out customer_signature from orderedFields
-	const baseFields = orderedFields;
+	// Filter base fields based on reason and status
+	let baseFields = orderedFields;
+
+	// For duplicate disputes with is_duplicate status, exclude all base fields
+	// The spec provides a complete list of exactly 3 fields for Scenario A:
+	// Order receipt, Refund receipt, Refund policy
+	if ( reason === 'duplicate' && duplicateStatus === 'is_duplicate' ) {
+		baseFields = [];
+	}
 
 	// Combine default fields with reason-specific fields
 	const allFields = [
