@@ -47,11 +47,10 @@ const SpotlightPromotion: React.FC = () => {
 	}
 
 	// Find the first available promotion with a 'spotlight' variation
-	const availablePromotions = promotions ?? [];
 	let spotlightVariation: PromotionVariation | null = null;
 	let promotionId: string | null = null;
 
-	for ( const promotion of availablePromotions ) {
+	for ( const promotion of promotions ) {
 		const variation = promotion.variations.find(
 			( v ) => v.type === 'spotlight'
 		);

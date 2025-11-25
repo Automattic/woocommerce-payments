@@ -48,7 +48,7 @@ export interface PromotionsState {
 
 export interface PromotionsResponse {
 	isLoading: boolean;
-	promotions?: PromotionsData;
+	promotions: Promotion[];
 	promotionsError?: ApiError;
 }
 
