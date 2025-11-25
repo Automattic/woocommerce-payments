@@ -11,4 +11,4 @@ fi
 
 command=${command:-bash}
 
-docker compose exec -u ${user} wordpress ${command}
+docker compose exec -u ${user} -e XDEBUG_MODE=debug -e XDEBUG_SESSION=1 wordpress ${command}
