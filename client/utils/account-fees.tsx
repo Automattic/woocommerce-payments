@@ -19,9 +19,9 @@ import { createInterpolateElement } from '@wordpress/element';
 import PAYMENT_METHOD_IDS from 'constants/payment-method';
 
 const countryFeeStripeDocsBaseLink =
-	'https://woocommerce.com/document/woopayments/fees-and-debits/fees/#';
+	'https://woocommerce.com/document/woopayments/fees/#';
 const countryFeeStripeDocsBaseLinkNoCountry =
-	'https://woocommerce.com/document/woopayments/fees-and-debits/fees/';
+	'https://woocommerce.com/document/woopayments/fees/';
 const countryFeeStripeDocsSectionNumbers: Record< string, string > = {
 	AE: 'united-arab-emirates',
 	AU: 'australia',

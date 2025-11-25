@@ -14,16 +14,19 @@ use WCPay\Constants\Payment_Method;
 use WCPay\Database_Cache;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Duplicates_Detection_Service;
-use WCPay\Payment_Methods\Eps_Payment_Method;
+use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\Payment_Methods\CC_Payment_Method;
-use WCPay\Payment_Methods\Bancontact_Payment_Method;
 use WCPay\Payment_Methods\Becs_Payment_Method;
-use WCPay\Payment_Methods\Giropay_Payment_Method;
-use WCPay\Payment_Methods\Sofort_Payment_Method;
-use WCPay\Payment_Methods\P24_Payment_Method;
-use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\Link_Payment_Method;
+use WCPay\PaymentMethods\Configs\Definitions\AffirmDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\EpsDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\IdealDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\P24Definition;
+use WCPay\PaymentMethods\Configs\Definitions\SofortDefinition;
+use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 use WCPay\Session_Rate_Limiter;
 
 /**
@@ -139,33 +142,54 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->mock_fraud_service                = $this->createMock( WC_Payments_Fraud_Service::class );
 		$this->mock_duplicates_detection_service = $this->createMock( Duplicates_Detection_Service::class );
 
-		$mock_payment_methods   = [];
+		$mock_payment_methods = [];
+
+		$payment_method_definitions = [
+			BancontactDefinition::class,
+			EpsDefinition::class,
+			GiropayDefinition::class,
+			IdealDefinition::class,
+			P24Definition::class,
+			SofortDefinition::class,
+		];
+
 		$payment_method_classes = [
 			Becs_Payment_Method::class,
 			CC_Payment_Method::class,
-			Bancontact_Payment_Method::class,
-			Eps_Payment_Method::class,
-			Giropay_Payment_Method::class,
-			Sofort_Payment_Method::class,
 			Sepa_Payment_Method::class,
-			P24_Payment_Method::class,
-			Ideal_Payment_Method::class,
 			Link_Payment_Method::class,
 		];
 
 		// Create the main payment method (CC) for the gateway constructor.
 		$mock_cc_payment_method = $this->getMockBuilder( CC_Payment_Method::class )
 			->setConstructorArgs( [ $token_service ] )
-			->setMethods( [ 'is_subscription_item_in_cart' ] )
+			->onlyMethods( [ 'is_subscription_item_in_cart' ] )
 			->getMock();
 		$mock_cc_payment_method->expects( $this->any() )
 			->method( 'is_subscription_item_in_cart' )
 			->will( $this->returnValue( false ) );
 
+		$registry = PaymentMethodDefinitionRegistry::instance();
+		foreach ( $payment_method_definitions as $definition_class ) {
+			$registry->register_payment_method( $definition_class );
+		}
+
+		foreach ( $payment_method_definitions as $definition_class ) {
+			$mock_payment_method_instance = $this->getMockBuilder( UPE_Payment_Method::class )
+				->setConstructorArgs( [ $token_service, $definition_class ] )
+				->onlyMethods( [ 'is_subscription_item_in_cart' ] )
+				->getMock();
+			$mock_payment_method_instance->expects( $this->any() )
+				->method( 'is_subscription_item_in_cart' )
+				->will( $this->returnValue( false ) );
+
+			$mock_payment_methods[ $mock_payment_method_instance->get_id() ] = $mock_payment_method_instance;
+		}
+
 		foreach ( $payment_method_classes as $payment_method_class ) {
 			$mock_payment_method_instance = $this->getMockBuilder( $payment_method_class )
 				->setConstructorArgs( [ $token_service ] )
-				->setMethods( [ 'is_subscription_item_in_cart' ] )
+				->onlyMethods( [ 'is_subscription_item_in_cart' ] )
 				->getMock();
 			$mock_payment_method_instance->expects( $this->any() )
 				->method( 'is_subscription_item_in_cart' )
@@ -220,6 +244,13 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		WC_Blocks_REST_API_Registration_Preventer::stop_preventing();
 		// Restore the cache service in the main class.
 		WC_Payments::set_database_cache( $this->_cache );
+
+		// resetting to prevent test pollution.
+		$reflection        = new \ReflectionClass( PaymentMethodDefinitionRegistry::class );
+		$instance_property = $reflection->getProperty( 'instance' );
+		$instance_property->setAccessible( true );
+		$instance_property->setValue( null, null );
+		$instance_property->setAccessible( false );
 	}
 
 	public function test_get_settings_request_returns_status_code_200() {
@@ -252,21 +283,28 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 				'currency_code' => 'usd',
 			]
 		);
-		$response           = $this->controller->get_settings();
-		$enabled_method_ids = $response->get_data()['available_payment_method_ids'];
+		$response             = $this->controller->get_settings();
+		$available_method_ids = $response->get_data()['available_payment_method_ids'];
+
+		$expected_method_ids = [
+			Payment_Method::CARD,
+			Payment_Method::BECS,
+			Payment_Method::BANCONTACT,
+			Payment_Method::EPS,
+			Payment_Method::GIROPAY,
+			Payment_Method::IDEAL,
+			Payment_Method::SEPA,
+			Payment_Method::P24,
+			Payment_Method::SOFORT,
+			Payment_Method::LINK,
+		];
+
+		sort( $expected_method_ids );
+		sort( $available_method_ids );
 
 		$this->assertEquals(
-			[
-				Payment_Method::CARD,
-				Payment_Method::BECS,
-				Payment_Method::BANCONTACT,
-				Payment_Method::EPS,
-				Payment_Method::IDEAL,
-				Payment_Method::SEPA,
-				Payment_Method::P24,
-				Payment_Method::LINK,
-			],
-			$enabled_method_ids
+			$expected_method_ids,
+			$available_method_ids
 		);
 	}
 
