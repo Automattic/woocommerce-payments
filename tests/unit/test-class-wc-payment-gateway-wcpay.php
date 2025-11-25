@@ -27,23 +27,18 @@ use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
 use WCPay\Payment_Information;
-use WCPay\Payment_Methods\Affirm_Payment_Method;
+use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\Payment_Methods\Afterpay_Payment_Method;
-use WCPay\Payment_Methods\Bancontact_Payment_Method;
 use WCPay\Payment_Methods\Becs_Payment_Method;
 use WCPay\Payment_Methods\CC_Payment_Method;
-use WCPay\Payment_Methods\Eps_Payment_Method;
-use WCPay\Payment_Methods\Giropay_Payment_Method;
 use WCPay\Payment_Methods\Grabpay_Payment_Method;
-use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Klarna_Payment_Method;
 use WCPay\Payment_Methods\Link_Payment_Method;
-use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
-use WCPay\Payment_Methods\Sofort_Payment_Method;
 use WCPay\Payment_Methods\WC_Helper_Site_Currency;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
+use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 use WC_Subscriptions;
 
 // Need to use WC_Mock_Data_Store.
@@ -334,6 +329,13 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		global $wp_query;
 		$wp->query_vars       = $this->wp_query_vars_backup;
 		$wp_query->query_vars = $this->wp_query_query_vars_backup;
+
+		// resetting to prevent test pollution.
+		$reflection        = new \ReflectionClass( PaymentMethodDefinitionRegistry::class );
+		$instance_property = $reflection->getProperty( 'instance' );
+		$instance_property->setAccessible( true );
+		$instance_property->setValue( null, null );
+		$instance_property->setAccessible( false );
 	}
 
 	public function test_process_redirect_payment_intent_processing() {
@@ -4153,22 +4155,21 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	private function init_payment_methods() {
 		$payment_methods = [];
 
-		/**
-		 * FLAG: PAYMENT_METHODS_LIST
-		 * As payment methods are converted to use definitions, they need to be removed from the list below.
-		 */
+		$payment_method_definitions = [
+			\WCPay\PaymentMethods\Configs\Definitions\AffirmDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\EpsDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\IdealDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\P24Definition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\SofortDefinition::class,
+		];
+
 		$payment_method_classes = [
 			CC_Payment_Method::class,
-			Bancontact_Payment_Method::class,
 			Sepa_Payment_Method::class,
-			Giropay_Payment_Method::class,
-			Sofort_Payment_Method::class,
-			P24_Payment_Method::class,
-			Ideal_Payment_Method::class,
 			Becs_Payment_Method::class,
-			Eps_Payment_Method::class,
 			Link_Payment_Method::class,
-			Affirm_Payment_Method::class,
 			Afterpay_Payment_Method::class,
 			Klarna_Payment_Method::class,
 			Grabpay_Payment_Method::class,
@@ -4176,8 +4177,16 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		foreach ( $payment_method_classes as $payment_method_class ) {
 			$payment_method                               = new $payment_method_class( $this->mock_token_service );
-			$payment_methods[ $payment_method->get_id() ] = new $payment_method_class( $this->mock_token_service );
+			$payment_methods[ $payment_method->get_id() ] = $payment_method;
 		}
+
+		$registry = PaymentMethodDefinitionRegistry::instance();
+		foreach ( $payment_method_definitions as $definition_class ) {
+			$registry->register_payment_method( $definition_class );
+			$payment_method                               = new UPE_Payment_Method( $this->mock_token_service, $definition_class );
+			$payment_methods[ $payment_method->get_id() ] = $payment_method;
+		}
+
 		$this->payment_methods = $payment_methods;
 	}
 

@@ -13,22 +13,17 @@ use WCPay\Core\Mode;
 use WCPay\Core\Server\Request;
 use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
 use WCPay\Payment_Methods\CC_Payment_Method;
-use WCPay\Payment_Methods\Bancontact_Payment_Method;
 use WCPay\Payment_Methods\Becs_Payment_Method;
-use WCPay\Payment_Methods\Giropay_Payment_Method;
 use WCPay\Payment_Methods\Klarna_Payment_Method;
-use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
-use WCPay\Payment_Methods\Sofort_Payment_Method;
-use WCPay\Payment_Methods\Ideal_Payment_Method;
-use WCPay\Payment_Methods\Eps_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\Payment_Methods\Multibanco_Payment_Method;
+use WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\SofortDefinition;
 use WCPay\WooPay_Tracker;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\WooPay\WooPay_Order_Status_Sync;
 use WCPay\Payment_Methods\Link_Payment_Method;
-use WCPay\Payment_Methods\Affirm_Payment_Method;
 use WCPay\Payment_Methods\Afterpay_Payment_Method;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Database_Cache;
@@ -434,16 +429,9 @@ class WC_Payments {
 		include_once __DIR__ . '/payment-methods/class-cc-payment-gateway.php';
 		include_once __DIR__ . '/payment-methods/class-upe-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-cc-payment-method.php';
-		include_once __DIR__ . '/payment-methods/class-bancontact-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-sepa-payment-method.php';
-		include_once __DIR__ . '/payment-methods/class-giropay-payment-method.php';
-		include_once __DIR__ . '/payment-methods/class-p24-payment-method.php';
-		include_once __DIR__ . '/payment-methods/class-sofort-payment-method.php';
-		include_once __DIR__ . '/payment-methods/class-ideal-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-becs-payment-method.php';
-		include_once __DIR__ . '/payment-methods/class-eps-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-link-payment-method.php';
-		include_once __DIR__ . '/payment-methods/class-affirm-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-afterpay-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-klarna-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-multibanco-payment-method.php';
@@ -583,16 +571,9 @@ class WC_Payments {
 		 */
 		$payment_method_classes = [
 			CC_Payment_Method::class,
-			Bancontact_Payment_Method::class,
 			Sepa_Payment_Method::class,
-			Giropay_Payment_Method::class,
-			Sofort_Payment_Method::class,
-			P24_Payment_Method::class,
-			Ideal_Payment_Method::class,
 			Becs_Payment_Method::class,
-			Eps_Payment_Method::class,
 			Link_Payment_Method::class,
-			Affirm_Payment_Method::class,
 			Afterpay_Payment_Method::class,
 			Klarna_Payment_Method::class,
 			Multibanco_Payment_Method::class,
@@ -719,8 +700,8 @@ class WC_Payments {
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Link_WooPay_Mutual_Exclusion_Handler( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Gateway_Settings_Sync( self::get_gateway(), self::get_payment_gateway_map() ), 'maybe_sync' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ '\WCPay\Migrations\Delete_Active_WooPay_Webhook', 'maybe_delete' ] );
-		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Payment_Method_Deprecation_Settings_Update( self::get_gateway(), self::get_payment_gateway_map(), Giropay_Payment_Method::PAYMENT_METHOD_STRIPE_ID, '7.9.0' ), 'maybe_migrate' ] );
-		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Payment_Method_Deprecation_Settings_Update( self::get_gateway(), self::get_payment_gateway_map(), Sofort_Payment_Method::PAYMENT_METHOD_STRIPE_ID, '8.9.0' ), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Payment_Method_Deprecation_Settings_Update( self::get_gateway(), self::get_payment_gateway_map(), GiropayDefinition::get_stripe_id(), '7.9.0' ), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Payment_Method_Deprecation_Settings_Update( self::get_gateway(), self::get_payment_gateway_map(), SofortDefinition::get_stripe_id(), '8.9.0' ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Erase_Bnpl_Announcement_Meta(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Erase_Deprecated_Flags_And_Options(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Manual_Capture_Payment_Method_Settings_Update( self::get_gateway(), self::get_payment_gateway_map() ), 'maybe_migrate' ] );
