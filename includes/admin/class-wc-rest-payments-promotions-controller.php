@@ -207,7 +207,7 @@ class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller
 	}
 
 	/**
-	 * Filter variations based on dismissal config and history.
+	 * Filter variations based on config and dismissal history.
 	 *
 	 * @param array $promotions Array of promotions with variations.
 	 *
@@ -215,53 +215,66 @@ class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller
 	 */
 	private function filter_variations_by_dismissals( array $promotions ) {
 		foreach ( $promotions as &$promotion ) {
-			if ( empty( $promotion['variations'] ) || empty( $promotion['dismissal_config'] ) ) {
+			if ( empty( $promotion['variations'] ) ) {
 				continue;
 			}
 
 			$promo_id             = $promotion['promo_id'];
-			$dismissal_config     = $promotion['dismissal_config'];
 			$variation_dismissals = self::get_promotion_variation_dismissals( $promo_id );
 
-			// Check if max dismissals reached.
-			if ( count( $variation_dismissals ) >= $dismissal_config['max_dismissals'] ) {
-				// All allowed dismissals used - remove all variations.
-				$promotion['variations'] = [];
-				continue;
+			// Group variations by type to apply type-specific config.
+			$variations_by_type = [];
+			foreach ( $promotion['variations'] as $variation ) {
+				$type = $variation['type'] ?? 'default';
+				if ( ! isset( $variations_by_type[ $type ] ) ) {
+					$variations_by_type[ $type ] = [];
+				}
+				$variations_by_type[ $type ][] = $variation;
 			}
 
-			// Filter to show only the first non-dismissed or re-showable variation.
-			$current_time        = time();
-			$delay_seconds       = $dismissal_config['reshow_delay_days'] * DAY_IN_SECONDS;
 			$filtered_variations = [];
 
-			// Find the most recent dismissal timestamp (any variation).
-			$most_recent_dismissal = 0;
-			foreach ( $variation_dismissals as $timestamp ) {
-				if ( $timestamp > $most_recent_dismissal ) {
-					$most_recent_dismissal = $timestamp;
-				}
-			}
+			foreach ( $variations_by_type as $type => $type_variations ) {
+				// Get config for this variation type.
+				// Defaults: 1 dismissal allowed, no delay (must configure to show multiple variations).
+				$type_config    = $promotion['config'][ $type ] ?? [];
+				$max_dismissals = $type_config['max_dismissals'] ?? 1;
+				$reshow_delay   = $type_config['reshow_delay_days'] ?? 0;
+				$delay_seconds  = $reshow_delay * DAY_IN_SECONDS;
 
-			// If there was a recent dismissal, check if delay period has passed.
-			if ( $most_recent_dismissal > 0 ) {
-				$time_since_dismissal = $current_time - $most_recent_dismissal;
-				if ( $time_since_dismissal < $delay_seconds ) {
-					// Still in delay period - don't show any variation.
-					$promotion['variations'] = [];
+				// Count dismissals for variations of this type.
+				$type_dismissals       = 0;
+				$most_recent_dismissal = 0;
+				foreach ( $type_variations as $variation ) {
+					$dismissed_at = $variation_dismissals[ $variation['id'] ] ?? null;
+					if ( null !== $dismissed_at ) {
+						++$type_dismissals;
+						if ( $dismissed_at > $most_recent_dismissal ) {
+							$most_recent_dismissal = $dismissed_at;
+						}
+					}
+				}
+
+				// Check if max dismissals reached for this type.
+				if ( $type_dismissals >= $max_dismissals ) {
 					continue;
 				}
-			}
 
-			// Delay period has passed (or no dismissals yet) - show first non-dismissed variation.
-			foreach ( $promotion['variations'] as $variation ) {
-				$variation_id = $variation['id'];
-				$dismissed_at = $variation_dismissals[ $variation_id ] ?? null;
+				// Check if still in delay period.
+				if ( $most_recent_dismissal > 0 && $delay_seconds > 0 ) {
+					$time_since_dismissal = time() - $most_recent_dismissal;
+					if ( $time_since_dismissal < $delay_seconds ) {
+						continue;
+					}
+				}
 
-				if ( null === $dismissed_at ) {
-					// Not dismissed - show this variation.
-					$filtered_variations = [ $variation ];
-					break;
+				// Find first non-dismissed variation of this type.
+				foreach ( $type_variations as $variation ) {
+					$dismissed_at = $variation_dismissals[ $variation['id'] ] ?? null;
+					if ( null === $dismissed_at ) {
+						$filtered_variations[] = $variation;
+						break;
+					}
 				}
 			}
 
@@ -275,24 +288,24 @@ class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller
 	 * Get mock promotions data for testing.
 	 * TODO: Remove this method when server endpoints are available.
 	 *
-	 * @return array Mock promotions data.
+	 * @return array Mock promotions data (array of promotions).
 	 */
 	private function get_mock_promotions_data() {
-		$activated = self::get_activated_promotions();
-
 		// Mock available promotions with variations.
-		$available_promotions = [
+		$promotions = [
 			[
-				'promo_id'         => 'klarna-2026-promo',
-				'discount_rate'    => '100%',
-				'duration_days'    => 90,
-				'dismissal_config' => [
-					'reshow_delay_days' => 7,   // Days to wait before showing next variation.
-					'max_dismissals'    => 2,   // Total dismissals before permanent hide.
+				'promo_id'      => 'klarna-2026-promo',
+				'discount_rate' => '100%',
+				'duration_days' => 90,
+				'config'        => [
+					'spotlight' => [
+						'reshow_delay_days' => 7,   // Days to wait before showing next variation.
+						'max_dismissals'    => 2,   // Total dismissals before permanent hide.
+					],
 				],
-				'variations'       => [
+				'variations'    => [
 					[
-						'id'          => 'klarna-2026-promo__variation_1',
+						'id'          => 'klarna-2026-promo__spotlight_primary',
 						'type'        => 'spotlight',
 						'badge'       => 'Limited time offer',
 						'badge_type'  => 'success',
@@ -304,7 +317,7 @@ class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller
 						'footnote'    => '*Terms and conditions apply. Offer valid for new customers only.',
 					],
 					[
-						'id'          => 'klarna-2026-promo__variation_2',
+						'id'          => 'klarna-2026-promo__spotlight_secondary',
 						'type'        => 'spotlight',
 						'badge'       => 'Last chance',
 						'badge_type'  => 'warning',
@@ -323,7 +336,7 @@ class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller
 				'duration_days' => 60,
 				'variations'    => [
 					[
-						'id'          => 'promo-affirm-cashback-2024__variation_1',
+						'id'          => 'promo-affirm-cashback-2024__banner_primary',
 						'type'        => 'banner',
 						'badge'       => 'New',
 						'badge_type'  => 'info',
@@ -337,16 +350,8 @@ class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller
 			],
 		];
 
-		// Filter variations based on dismissal config and history.
-		$available_promotions = $this->filter_variations_by_dismissals( $available_promotions );
-
-		// Get IDs of activated promotions.
-		$active_promotions = array_keys( $activated );
-
-		return [
-			'available_promotions' => $available_promotions,
-			'active_promotions'    => $active_promotions,
-		];
+		// Filter variations based on config and dismissal history.
+		return $this->filter_variations_by_dismissals( $promotions );
 	}
 
 	/**
