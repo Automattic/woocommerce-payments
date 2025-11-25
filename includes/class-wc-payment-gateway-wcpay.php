@@ -2117,23 +2117,33 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_methods = $this->get_payment_methods_from_gateway_id( $token->get_gateway_id(), $order_id );
 		}
 
-		// Ensure Link is included when it's being used, regardless of filtering logic.
-		// This handles both first-time Link users and saved Link payment methods.
-		$should_include_link = false;
+		// Ensure Link is included when using the card gateway and Link is enabled.
+		// This bypasses the filtering logic that can incorrectly exclude Link.
+		// Link works alongside card payments, so both should always be included when Link is enabled.
 
-		// Check if using a saved Link token.
-		if ( ! is_null( $token ) && WC_Payment_Token_WCPay_Link::TYPE === $token->get_type() ) {
-			$should_include_link = true;
-		}
+		// DEBUG logging
+		error_log( '=== WCPay get_payment_method_types DEBUG ===' );
+		error_log( 'Selected payment type: ' . $this->get_selected_stripe_payment_type_id() );
+		error_log( 'UPE enabled methods: ' . wp_json_encode( $this->get_upe_enabled_payment_method_ids() ) );
+		error_log( 'Payment methods before Link check: ' . wp_json_encode( $payment_methods ) );
 
-		// Check if Link is enabled and mandate data is required (indicates Link is being used).
-		if ( ! $should_include_link && Payment_Method::CARD === $this->get_selected_stripe_payment_type_id() && in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true ) ) {
-			$should_include_link = true;
-		}
+		$check1 = Payment_Method::CARD === $this->get_selected_stripe_payment_type_id();
+		$check2 = in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true );
+		$check3 = ! in_array( Payment_Method::LINK, $payment_methods, true );
 
-		if ( $should_include_link && ! in_array( Payment_Method::LINK, $payment_methods, true ) ) {
+		error_log( 'Check 1 (is card gateway): ' . ( $check1 ? 'TRUE' : 'FALSE' ) );
+		error_log( 'Check 2 (Link enabled): ' . ( $check2 ? 'TRUE' : 'FALSE' ) );
+		error_log( 'Check 3 (Link not in array): ' . ( $check3 ? 'TRUE' : 'FALSE' ) );
+
+		if ( $check1 && $check2 && $check3 ) {
+			error_log( 'ADDING Link to payment_methods array!' );
 			$payment_methods[] = Payment_Method::LINK;
+		} else {
+			error_log( 'NOT adding Link - one or more checks failed' );
 		}
+
+		error_log( 'Payment methods after Link check: ' . wp_json_encode( $payment_methods ) );
+		error_log( '=== END DEBUG ===' );
 
 		return $payment_methods;
 	}
