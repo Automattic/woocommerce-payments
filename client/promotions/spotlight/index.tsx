@@ -46,6 +46,11 @@ const SpotlightPromotion: React.FC = () => {
 		return null;
 	}
 
+	// Don't render if no promotions available
+	if ( ! promotions || promotions.length === 0 ) {
+		return null;
+	}
+
 	// Find the first available promotion with a 'spotlight' variation
 	let spotlightVariation: PromotionVariation | null = null;
 	let promotionId: string | null = null;
