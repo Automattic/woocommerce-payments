@@ -2114,6 +2114,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$order           = $payment_information->get_order();
 			$order_id        = $order instanceof WC_Order ? $order->get_id() : null;
 			$payment_methods = $this->get_payment_methods_from_gateway_id( $token->get_gateway_id(), $order_id );
+
+			// If using a Link token, ensure 'link' is included in payment_method_types.
+			if ( WC_Payment_Token_WCPay_Link::TYPE === $token->get_type() && ! in_array( Payment_Method::LINK, $payment_methods, true ) ) {
+				$payment_methods[] = Payment_Method::LINK;
+			}
 		}
 
 		return $payment_methods;
