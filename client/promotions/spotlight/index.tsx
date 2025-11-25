@@ -101,13 +101,10 @@ const SpotlightPromotion: React.FC = () => {
 	};
 
 	const handleDismiss = () => {
-		if ( ! spotlightVariation ) {
+		if ( ! promotionId || ! spotlightVariation ) {
 			return;
 		}
-		dismissPromotion(
-			promotionId as string,
-			spotlightVariation.id as string
-		);
+		dismissPromotion( promotionId, spotlightVariation.id as string );
 	};
 
 	// Get the image for this promotion (undefined if not mapped)
