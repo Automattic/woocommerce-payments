@@ -40,6 +40,10 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 
 		$this->order_service = new WC_Payments_Order_Service( $this->createMock( WC_Payments_API_Client::class ) );
 		$this->order         = WC_Helper_Order::create_order();
+
+		$gateways = WC()->payment_gateways->payment_gateways();
+		$this->order->set_payment_method( $gateways[ WC_Payment_Gateway_WCPay::GATEWAY_ID ] );
+		$this->order->save();
 	}
 
 	/**
@@ -155,7 +159,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 				'order_status'            => false,
 				'intent_args'             => [],
 				'expected_note_old'       => 'Pending payment to Processing',
-				'expected_note_new'       => 'Payment via Direct bank transfer (pi_mock)',
+				'expected_note_new'       => 'Payment via Card (pi_mock)',
 				'expected_fraud_outcome'  => false,
 				'expected_fraud_meta_box' => Fraud_Meta_Box_Type::NOT_CARD,
 			],
@@ -165,7 +169,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 					'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 				],
 				'expected_note_old'       => 'Pending payment to Processing',
-				'expected_note_new'       => 'Payment via Direct bank transfer (pi_mock)',
+				'expected_note_new'       => 'Payment via Card (pi_mock)',
 				'expected_fraud_outcome'  => false,
 				'expected_fraud_meta_box' => false,
 			],
@@ -178,7 +182,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 					'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 				],
 				'expected_note_old'       => 'Pending payment to Processing',
-				'expected_note_new'       => 'Payment via Direct bank transfer (pi_mock)',
+				'expected_note_new'       => 'Payment via Card (pi_mock)',
 				'expected_fraud_outcome'  => Rule::FRAUD_OUTCOME_ALLOW,
 				'expected_fraud_meta_box' => Fraud_Meta_Box_Type::ALLOW,
 			],
@@ -191,7 +195,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 					'payment_method_options' => [ 'card' => [ 'request_three_d_secure' => 'automatic' ] ],
 				],
 				'expected_note_old'       => 'On hold to Processing',
-				'expected_note_new'       => 'Payment via Direct bank transfer (pi_mock)',
+				'expected_note_new'       => 'Payment via Card (pi_mock)',
 				'expected_fraud_outcome'  => Rule::FRAUD_OUTCOME_ALLOW,
 				'expected_fraud_meta_box' => Fraud_Meta_Box_Type::REVIEW_ALLOWED,
 			],
@@ -231,7 +235,7 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 		// Assert: Check that the notes were updated.
 		$notes         = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
 		$expected_note = version_compare( constant( 'WC_VERSION' ), '10.4', '>=' )
-			? 'Payment via Direct bank transfer (pi_mock).'
+			? 'Payment via Card (pi_mock).'
 			: 'On hold to Processing';
 		$this->assertStringContainsString( $expected_note, $notes[1]->content );
 		$this->assertStringContainsString( 'successfully captured</strong> using WooPayments', $notes[0]->content );
