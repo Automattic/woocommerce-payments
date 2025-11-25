@@ -60,25 +60,26 @@ describe( 'SpotlightPromotion', () => {
 	const mockActivatePromotion = jest.fn();
 	const mockDismissPromotion = jest.fn();
 
-	const mockPromotionData = {
-		available_promotions: [
-			{
-				promo_id: 'promo_123',
-				variations: [
-					{
-						type: 'spotlight',
-						badge: 'Limited time offer',
-						heading: 'Activate Klarna',
-						description: 'Offer your customers flexible payments',
-						cta_label: 'Activate now',
-						cta_url: 'https://example.com/learn-more',
-						footnote: '*Terms apply',
-						tc_url: 'https://example.com/terms',
-					},
-				],
-			},
-		],
-	};
+	const mockPromotionData = [
+		{
+			promo_id: 'promo_123',
+			discount_rate: '100%',
+			duration_days: 90,
+			variations: [
+				{
+					id: 'promo_123__spotlight_1',
+					type: 'spotlight',
+					badge: 'Limited time offer',
+					heading: 'Activate Klarna',
+					description: 'Offer your customers flexible payments',
+					cta_label: 'Activate now',
+					cta_url: 'https://example.com/learn-more',
+					footnote: '*Terms apply',
+					tc_url: 'https://example.com/terms',
+				},
+			],
+		},
+	];
 
 	beforeEach( () => {
 		jest.clearAllMocks();
@@ -142,19 +143,23 @@ describe( 'SpotlightPromotion', () => {
 
 	it( 'does not render when no spotlight variation available', () => {
 		( usePromotions as jest.Mock ).mockReturnValue( {
-			promotions: {
-				available_promotions: [
-					{
-						promo_id: 'promo_123',
-						variations: [
-							{
-								type: 'banner', // Not a spotlight type
-								heading: 'Different promotion',
-							},
-						],
-					},
-				],
-			},
+			promotions: [
+				{
+					promo_id: 'promo_123',
+					discount_rate: '100%',
+					duration_days: 90,
+					variations: [
+						{
+							id: 'promo_123__banner_1',
+							type: 'banner', // Not a spotlight type
+							heading: 'Different promotion',
+							description: 'Banner description',
+							cta_label: 'Click',
+							cta_url: '#',
+						},
+					],
+				},
+			],
 			isLoading: false,
 		} );
 
@@ -165,9 +170,7 @@ describe( 'SpotlightPromotion', () => {
 
 	it( 'does not render when no promotions available', () => {
 		( usePromotions as jest.Mock ).mockReturnValue( {
-			promotions: {
-				available_promotions: [],
-			},
+			promotions: [],
 			isLoading: false,
 		} );
 
@@ -201,7 +204,10 @@ describe( 'SpotlightPromotion', () => {
 		const closeButton = screen.getByText( 'Close' );
 		closeButton.click();
 
-		expect( mockDismissPromotion ).toHaveBeenCalledWith( 'promo_123' );
+		expect( mockDismissPromotion ).toHaveBeenCalledWith(
+			'promo_123',
+			'promo_123__spotlight_1'
+		);
 	} );
 
 	it( 'opens learn more URL when secondary button is clicked', () => {
@@ -242,25 +248,25 @@ describe( 'SpotlightPromotion', () => {
 	} );
 
 	it( 'renders disclaimer without link when only footnote provided', () => {
-		const dataWithoutTcUrl = {
-			available_promotions: [
-				{
-					promo_id: 'promo_123',
-					variations: [
-						{
-							type: 'spotlight',
-							badge: 'Limited time offer',
-							heading: 'Activate Klarna',
-							description:
-								'Offer your customers flexible payments',
-							cta_label: 'Activate now',
-							cta_url: 'https://example.com/learn-more',
-							footnote: '*Terms apply',
-						},
-					],
-				},
-			],
-		};
+		const dataWithoutTcUrl = [
+			{
+				promo_id: 'promo_123',
+				discount_rate: '100%',
+				duration_days: 90,
+				variations: [
+					{
+						id: 'promo_123__spotlight_1',
+						type: 'spotlight',
+						badge: 'Limited time offer',
+						heading: 'Activate Klarna',
+						description: 'Offer your customers flexible payments',
+						cta_label: 'Activate now',
+						cta_url: 'https://example.com/learn-more',
+						footnote: '*Terms apply',
+					},
+				],
+			},
+		];
 
 		( usePromotions as jest.Mock ).mockReturnValue( {
 			promotions: dataWithoutTcUrl,

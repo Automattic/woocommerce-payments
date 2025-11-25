@@ -3,7 +3,7 @@
 /**
  * Internal dependencies
  */
-import { PromotionsState, PromotionsData, Promotion } from './types';
+import { PromotionsState, Promotion } from './types';
 import { ApiError } from '../../types/errors';
 
 // Type for the full Redux state with promotions slice.
@@ -12,36 +12,14 @@ interface State {
 }
 
 /**
- * Retrieves the promotions data from the state.
+ * Retrieves the promotions array from the state.
  *
  * @param {State} state The full Redux state.
  *
- * @return {PromotionsData | undefined} The promotions data or undefined.
+ * @return {Promotion[]} Array of promotions, or empty array if not loaded.
  */
-export const getPromotions = ( state: State ): PromotionsData | undefined => {
-	return state.promotions?.promotions;
-};
-
-/**
- * Retrieves available promotions from the state.
- *
- * @param {State} state The full Redux state.
- *
- * @return {Promotion[]} Array of available promotions.
- */
-export const getAvailablePromotions = ( state: State ): Promotion[] => {
-	return state.promotions?.promotions?.available_promotions ?? [];
-};
-
-/**
- * Retrieves active promotion IDs from the state.
- *
- * @param {State} state The full Redux state.
- *
- * @return {string[]} Array of active promotion IDs.
- */
-export const getActivePromotions = ( state: State ): string[] => {
-	return state.promotions?.promotions?.active_promotions ?? [];
+export const getPromotions = ( state: State ): Promotion[] => {
+	return state.promotions?.promotions ?? ( [] as Promotion[] );
 };
 
 /**
@@ -52,12 +30,13 @@ export const getActivePromotions = ( state: State ): string[] => {
  *
  * @return {Promotion | undefined} The promotion or undefined.
  */
-export const getPromotionByIdentifier = (
+export const getPromotionById = (
 	state: State,
 	promoId: string
 ): Promotion | undefined => {
-	const availablePromotions = getAvailablePromotions( state );
-	return availablePromotions.find( ( promo ) => promo.promo_id === promoId );
+	return getPromotions( state ).find(
+		( promo ) => promo.promo_id === promoId
+	);
 };
 
 /**
@@ -72,23 +51,12 @@ export const getPromotionsError = ( state: State ): ApiError | undefined => {
 };
 
 /**
- * Checks if there are any available promotions.
+ * Checks if there are any promotions available.
  *
  * @param {State} state The full Redux state.
  *
- * @return {boolean} True if there are available promotions.
+ * @return {boolean} True if there are promotions available.
  */
-export const hasAvailablePromotions = ( state: State ): boolean => {
-	return getAvailablePromotions( state ).length > 0;
-};
-
-/**
- * Checks if there are any active promotions.
- *
- * @param {State} state The full Redux state.
- *
- * @return {boolean} True if there are active promotions.
- */
-export const hasActivePromotions = ( state: State ): boolean => {
-	return getActivePromotions( state ).length > 0;
+export const hasPromotions = ( state: State ): boolean => {
+	return getPromotions( state ).length > 0;
 };

@@ -83,17 +83,22 @@ export function* activatePromotion(
 }
 
 /**
- * Dismiss a promotion.
+ * Dismiss a promotion variation.
  *
  * @param {string} identifier The promotion identifier.
+ * @param {string} variationId The variation identifier.
  */
-export function* dismissPromotion( identifier: string ): unknown {
+export function* dismissPromotion(
+	identifier: string,
+	variationId: string
+): unknown {
 	const path = `${ NAMESPACE }/payment-method-promotions/${ identifier }/dismiss`;
 
 	try {
 		yield apiFetch( {
 			path,
 			method: 'POST',
+			data: { variation_id: variationId },
 		} );
 
 		yield controls.dispatch(

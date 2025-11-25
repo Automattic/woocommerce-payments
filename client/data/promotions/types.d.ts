@@ -19,17 +19,27 @@ export interface PromotionVariation {
 	footnote?: string;
 }
 
+export interface PromotionTypeConfig {
+	reshow_delay_days?: number;
+	max_dismissals?: number;
+}
+
+export interface PromotionConfig {
+	[ key: string ]: PromotionTypeConfig | undefined;
+}
+
 export interface Promotion {
 	promo_id: string;
 	discount_rate: string;
 	duration_days: number;
+	config?: PromotionConfig;
 	variations: PromotionVariation[];
 }
 
-export interface PromotionsData {
-	available_promotions: Promotion[];
-	active_promotions: string[];
-}
+/**
+ * The API returns an array of promotions directly.
+ */
+export type PromotionsData = Promotion[];
 
 export interface PromotionsState {
 	promotions?: PromotionsData;
@@ -38,7 +48,7 @@ export interface PromotionsState {
 
 export interface PromotionsResponse {
 	isLoading: boolean;
-	promotions?: PromotionsData;
+	promotions: Promotion[];
 	promotionsError?: ApiError;
 }
 

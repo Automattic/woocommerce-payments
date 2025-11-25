@@ -46,12 +46,16 @@ const SpotlightPromotion: React.FC = () => {
 		return null;
 	}
 
+	// Don't render if no promotions available
+	if ( ! promotions || promotions.length === 0 ) {
+		return null;
+	}
+
 	// Find the first available promotion with a 'spotlight' variation
-	const availablePromotions = promotions?.available_promotions ?? [];
 	let spotlightVariation: PromotionVariation | null = null;
 	let promotionId: string | null = null;
 
-	for ( const promotion of availablePromotions ) {
+	for ( const promotion of promotions ) {
 		const variation = promotion.variations.find(
 			( v ) => v.type === 'spotlight'
 		);
@@ -97,7 +101,10 @@ const SpotlightPromotion: React.FC = () => {
 	};
 
 	const handleDismiss = () => {
-		dismissPromotion( promotionId as string );
+		if ( ! promotionId || ! spotlightVariation ) {
+			return;
+		}
+		dismissPromotion( promotionId, spotlightVariation.id as string );
 	};
 
 	// Get the image for this promotion (undefined if not mapped)

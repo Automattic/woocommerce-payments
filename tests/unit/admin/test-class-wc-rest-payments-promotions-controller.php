@@ -37,22 +37,27 @@ class WC_REST_Payments_Promotions_Controller_Test extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		parent::tear_down();
 		delete_transient( WC_REST_Payments_Promotions_Controller::PROMOTIONS_CACHE_KEY );
-		delete_option( WC_REST_Payments_Promotions_Controller::DISMISSED_PROMOTIONS_OPTION );
+		delete_option( WC_REST_Payments_Promotions_Controller::PROMOTION_DISMISSALS_OPTION );
 		delete_option( WC_REST_Payments_Promotions_Controller::ACTIVATED_PROMOTIONS_OPTION );
 	}
 
 	public function test_get_promotions_returns_cached_data() {
 		$mock_promotions = [
-			'available_promotions' => [
-				[
-					'identifier'     => 'test_promo',
-					'name'           => 'Test Promotion',
-					'payment_method' => 'klarna',
-					'duration_days'  => 90,
-					'status'         => 'offered',
+			[
+				'promo_id'      => 'test_promo',
+				'discount_rate' => '100%',
+				'duration_days' => 90,
+				'variations'    => [
+					[
+						'id'          => 'test_promo__spotlight_1',
+						'type'        => 'spotlight',
+						'heading'     => 'Test Promotion',
+						'description' => 'Test description',
+						'cta_label'   => 'Activate',
+						'cta_url'     => '#',
+					],
 				],
 			],
-			'active_promotions'    => [],
 		];
 
 		// Set the cache.
@@ -65,36 +70,51 @@ class WC_REST_Payments_Promotions_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $mock_promotions, $response->get_data() );
 	}
 
-	public function test_mark_promotion_dismissed() {
-		$identifier = 'test_promo';
+	public function test_get_promotion_dismissals() {
+		$dismissals = [
+			'promo1' => [
+				'promo1__spotlight_1' => 1234567890,
+			],
+			'promo2' => [
+				'promo2__spotlight_1' => 1234567900,
+			],
+		];
+		update_option( WC_REST_Payments_Promotions_Controller::PROMOTION_DISMISSALS_OPTION, $dismissals );
 
-		// Verify it's not dismissed initially.
-		$this->assertFalse( WC_REST_Payments_Promotions_Controller::is_promotion_dismissed( $identifier ) );
+		$result = WC_REST_Payments_Promotions_Controller::get_promotion_dismissals();
 
-		// Simulate dismissing the promotion.
-		$request = new WP_REST_Request( 'POST' );
-		$request->set_param( 'identifier', $identifier );
-
-		// We need to mock the API call since we can't actually call the server.
-		$this->markTestIncomplete( 'This test requires mocking the Request::create() static method.' );
+		$this->assertSame( $dismissals, $result );
 	}
 
-	public function test_get_dismissed_promotions() {
-		$dismissed = [ 'promo1', 'promo2' ];
-		update_option( WC_REST_Payments_Promotions_Controller::DISMISSED_PROMOTIONS_OPTION, $dismissed );
+	public function test_get_promotion_variation_dismissals() {
+		$dismissals = [
+			'promo1' => [
+				'promo1__spotlight_1' => 1234567890,
+				'promo1__spotlight_2' => 1234567900,
+			],
+		];
+		update_option( WC_REST_Payments_Promotions_Controller::PROMOTION_DISMISSALS_OPTION, $dismissals );
 
-		$result = WC_REST_Payments_Promotions_Controller::get_dismissed_promotions();
+		$result = WC_REST_Payments_Promotions_Controller::get_promotion_variation_dismissals( 'promo1' );
 
-		$this->assertSame( $dismissed, $result );
+		$this->assertSame( $dismissals['promo1'], $result );
+		$this->assertSame( [], WC_REST_Payments_Promotions_Controller::get_promotion_variation_dismissals( 'promo3' ) );
 	}
 
-	public function test_is_promotion_dismissed() {
-		$dismissed = [ 'promo1', 'promo2' ];
-		update_option( WC_REST_Payments_Promotions_Controller::DISMISSED_PROMOTIONS_OPTION, $dismissed );
+	public function test_get_variation_dismissal_time() {
+		$timestamp  = 1234567890;
+		$dismissals = [
+			'promo1' => [
+				'promo1__spotlight_1' => $timestamp,
+			],
+		];
+		update_option( WC_REST_Payments_Promotions_Controller::PROMOTION_DISMISSALS_OPTION, $dismissals );
 
-		$this->assertTrue( WC_REST_Payments_Promotions_Controller::is_promotion_dismissed( 'promo1' ) );
-		$this->assertTrue( WC_REST_Payments_Promotions_Controller::is_promotion_dismissed( 'promo2' ) );
-		$this->assertFalse( WC_REST_Payments_Promotions_Controller::is_promotion_dismissed( 'promo3' ) );
+		$result = WC_REST_Payments_Promotions_Controller::get_variation_dismissal_time( 'promo1', 'promo1__spotlight_1' );
+
+		$this->assertSame( $timestamp, $result );
+		$this->assertNull( WC_REST_Payments_Promotions_Controller::get_variation_dismissal_time( 'promo1', 'promo1__spotlight_2' ) );
+		$this->assertNull( WC_REST_Payments_Promotions_Controller::get_variation_dismissal_time( 'promo2', 'promo2__spotlight_1' ) );
 	}
 
 	public function test_get_activated_promotions() {

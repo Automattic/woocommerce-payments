@@ -38,11 +38,12 @@ class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller
 	const CACHE_DURATION = 300;
 
 	/**
-	 * Option key for dismissed promotions.
+	 * Option key for promotion dismissals.
+	 * Stores array of [promo_id => [variation_id => timestamp]].
 	 *
 	 * @var string
 	 */
-	const DISMISSED_PROMOTIONS_OPTION = '_wcpay_dismissed_promotions';
+	const PROMOTION_DISMISSALS_OPTION = '_wcpay_promotion_dismissals';
 
 	/**
 	 * Option key for activated promotions.
@@ -93,7 +94,12 @@ class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller
 				'callback'            => [ $this, 'dismiss_promotion' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 				'args'                => [
-					'identifier' => [
+					'identifier'   => [
+						'required'          => true,
+						'type'              => 'string',
+						'sanitize_callback' => 'sanitize_text_field',
+					],
+					'variation_id' => [
 						'required'          => true,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
@@ -161,30 +167,32 @@ class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller
 	}
 
 	/**
-	 * Dismiss a promotion.
+	 * Dismiss a promotion variation.
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 *
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function dismiss_promotion( $request ) {
-		$identifier = $request->get_param( 'identifier' );
+		$identifier   = $request->get_param( 'identifier' );
+		$variation_id = $request->get_param( 'variation_id' );
 
 		// TODO: Replace with actual API call when server endpoints are available.
-		// $wcpay_request = Dismiss_Promotion::create( $identifier );.
+		// $wcpay_request = Dismiss_Promotion::create( $identifier, $variation_id );.
 		// $wcpay_request->assign_hook( 'wcpay_dismiss_promotion_request' );.
 		// $response = $wcpay_request->handle_rest_request();.
 
 		// Return mock success response.
 		$response = [
-			'success'    => true,
-			'identifier' => $identifier,
-			'status'     => 'dismissed',
+			'success'      => true,
+			'identifier'   => $identifier,
+			'variation_id' => $variation_id,
+			'status'       => 'dismissed',
 		];
 
 		// Clear cache and update local state.
 		$this->clear_promotions_cache();
-		$this->mark_promotion_dismissed( $identifier );
+		$this->mark_variation_dismissed( $identifier, $variation_id );
 
 		return rest_ensure_response( $response );
 	}
@@ -199,23 +207,105 @@ class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller
 	}
 
 	/**
+	 * Filter variations based on config and dismissal history.
+	 *
+	 * @param array $promotions Array of promotions with variations.
+	 *
+	 * @return array Filtered promotions array.
+	 */
+	private function filter_variations_by_dismissals( array $promotions ) {
+		foreach ( $promotions as &$promotion ) {
+			if ( empty( $promotion['variations'] ) ) {
+				continue;
+			}
+
+			$promo_id             = $promotion['promo_id'];
+			$variation_dismissals = self::get_promotion_variation_dismissals( $promo_id );
+
+			// Group variations by type to apply type-specific config.
+			$variations_by_type = [];
+			foreach ( $promotion['variations'] as $variation ) {
+				$type = $variation['type'] ?? 'default';
+				if ( ! isset( $variations_by_type[ $type ] ) ) {
+					$variations_by_type[ $type ] = [];
+				}
+				$variations_by_type[ $type ][] = $variation;
+			}
+
+			$filtered_variations = [];
+
+			foreach ( $variations_by_type as $type => $type_variations ) {
+				// Get config for this variation type.
+				// Defaults: 1 dismissal allowed, no delay (must configure to show multiple variations).
+				$type_config    = $promotion['config'][ $type ] ?? [];
+				$max_dismissals = $type_config['max_dismissals'] ?? 1;
+				$reshow_delay   = $type_config['reshow_delay_days'] ?? 0;
+				$delay_seconds  = $reshow_delay * DAY_IN_SECONDS;
+
+				// Count dismissals for variations of this type.
+				$type_dismissals       = 0;
+				$most_recent_dismissal = 0;
+				foreach ( $type_variations as $variation ) {
+					$dismissed_at = $variation_dismissals[ $variation['id'] ] ?? null;
+					if ( null !== $dismissed_at ) {
+						++$type_dismissals;
+						if ( $dismissed_at > $most_recent_dismissal ) {
+							$most_recent_dismissal = $dismissed_at;
+						}
+					}
+				}
+
+				// Check if max dismissals reached for this type.
+				if ( $type_dismissals >= $max_dismissals ) {
+					continue;
+				}
+
+				// Check if still in delay period.
+				if ( $most_recent_dismissal > 0 && $delay_seconds > 0 ) {
+					$time_since_dismissal = time() - $most_recent_dismissal;
+					if ( $time_since_dismissal < $delay_seconds ) {
+						continue;
+					}
+				}
+
+				// Find first non-dismissed variation of this type.
+				foreach ( $type_variations as $variation ) {
+					$dismissed_at = $variation_dismissals[ $variation['id'] ] ?? null;
+					if ( null === $dismissed_at ) {
+						$filtered_variations[] = $variation;
+						break;
+					}
+				}
+			}
+
+			$promotion['variations'] = $filtered_variations;
+		}
+
+		return $promotions;
+	}
+
+	/**
 	 * Get mock promotions data for testing.
 	 * TODO: Remove this method when server endpoints are available.
 	 *
-	 * @return array Mock promotions data.
+	 * @return array Mock promotions data (array of promotions).
 	 */
 	private function get_mock_promotions_data() {
-		$activated = self::get_activated_promotions();
-
 		// Mock available promotions with variations.
-		$available_promotions = [
+		$promotions = [
 			[
 				'promo_id'      => 'klarna-2026-promo',
 				'discount_rate' => '100%',
 				'duration_days' => 90,
+				'config'        => [
+					'spotlight' => [
+						'reshow_delay_days' => 7,   // Days to wait before showing next variation.
+						'max_dismissals'    => 2,   // Total dismissals before permanent hide.
+					],
+				],
 				'variations'    => [
 					[
-						'id'          => 'klarna-2026-promo__variation_1',
+						'id'          => 'klarna-2026-promo__spotlight_primary',
 						'type'        => 'spotlight',
 						'badge'       => 'Limited time offer',
 						'badge_type'  => 'success',
@@ -226,6 +316,18 @@ class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller
 						'tc_url'      => 'https://woocommerce.com/terms',
 						'footnote'    => '*Terms and conditions apply. Offer valid for new customers only.',
 					],
+					[
+						'id'          => 'klarna-2026-promo__spotlight_secondary',
+						'type'        => 'spotlight',
+						'badge'       => 'Last chance',
+						'badge_type'  => 'warning',
+						'heading'     => 'Final Reminder: Zero Processing Fees',
+						'description' => 'Don\'t miss out! Get 0% processing fees for 90 days on all card payments',
+						'cta_label'   => 'Activate Now',
+						'cta_url'     => '#',
+						'tc_url'      => 'https://woocommerce.com/terms',
+						'footnote'    => '*Terms and conditions apply. Limited time offer.',
+					],
 				],
 			],
 			[
@@ -234,7 +336,7 @@ class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller
 				'duration_days' => 60,
 				'variations'    => [
 					[
-						'id'          => 'promo-affirm-cashback-2024__variation_1',
+						'id'          => 'promo-affirm-cashback-2024__banner_primary',
 						'type'        => 'banner',
 						'badge'       => 'New',
 						'badge_type'  => 'info',
@@ -248,28 +350,27 @@ class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller
 			],
 		];
 
-		// Get IDs of activated promotions.
-		$active_promotions = array_keys( $activated );
-
-		return [
-			'available_promotions' => $available_promotions,
-			'active_promotions'    => $active_promotions,
-		];
+		// Filter variations based on config and dismissal history.
+		return $this->filter_variations_by_dismissals( $promotions );
 	}
 
 	/**
-	 * Mark a promotion as dismissed in local state.
+	 * Mark a promotion variation as dismissed in local state.
 	 *
-	 * @param string $identifier The promotion identifier.
+	 * @param string $promo_id The promotion identifier.
+	 * @param string $variation_id The variation identifier.
 	 *
 	 * @return void
 	 */
-	private function mark_promotion_dismissed( string $identifier ) {
-		$dismissed = $this->get_dismissed_promotions();
-		if ( ! in_array( $identifier, $dismissed, true ) ) {
-			$dismissed[] = $identifier;
-			update_option( self::DISMISSED_PROMOTIONS_OPTION, $dismissed );
+	private function mark_variation_dismissed( string $promo_id, string $variation_id ) {
+		$dismissals = $this->get_promotion_dismissals();
+
+		if ( ! isset( $dismissals[ $promo_id ] ) ) {
+			$dismissals[ $promo_id ] = [];
 		}
+
+		$dismissals[ $promo_id ][ $variation_id ] = time();
+		update_option( self::PROMOTION_DISMISSALS_OPTION, $dismissals );
 	}
 
 	/**
@@ -286,12 +387,12 @@ class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller
 	}
 
 	/**
-	 * Get list of dismissed promotions.
+	 * Get all promotion dismissals.
 	 *
-	 * @return array Array of dismissed promotion identifiers.
+	 * @return array Associative array of [promo_id => [variation_id => timestamp]].
 	 */
-	public static function get_dismissed_promotions() {
-		return get_option( self::DISMISSED_PROMOTIONS_OPTION, [] );
+	public static function get_promotion_dismissals() {
+		return get_option( self::PROMOTION_DISMISSALS_OPTION, [] );
 	}
 
 	/**
@@ -304,15 +405,28 @@ class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller
 	}
 
 	/**
-	 * Check if a promotion has been dismissed.
+	 * Get dismissal timestamp for a specific variation.
 	 *
-	 * @param string $identifier The promotion identifier.
+	 * @param string $promo_id The promotion identifier.
+	 * @param string $variation_id The variation identifier.
 	 *
-	 * @return bool True if dismissed, false otherwise.
+	 * @return int|null Dismissal timestamp, or null if not dismissed.
 	 */
-	public static function is_promotion_dismissed( string $identifier ) {
-		$dismissed = self::get_dismissed_promotions();
-		return in_array( $identifier, $dismissed, true );
+	public static function get_variation_dismissal_time( string $promo_id, string $variation_id ) {
+		$dismissals = self::get_promotion_dismissals();
+		return $dismissals[ $promo_id ][ $variation_id ] ?? null;
+	}
+
+	/**
+	 * Get all dismissal timestamps for a promotion.
+	 *
+	 * @param string $promo_id The promotion identifier.
+	 *
+	 * @return array Array of [variation_id => timestamp].
+	 */
+	public static function get_promotion_variation_dismissals( string $promo_id ) {
+		$dismissals = self::get_promotion_dismissals();
+		return $dismissals[ $promo_id ] ?? [];
 	}
 
 	/**
