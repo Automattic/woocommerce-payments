@@ -2105,6 +2105,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function get_payment_method_types( $payment_information ): array {
 		$requested_payment_method = sanitize_text_field( wp_unslash( $_POST['payment_method'] ?? '' ) ); // phpcs:ignore WordPress.Security.NonceVerification
 		$token                    = $payment_information->get_payment_token();
+		$payment_methods          = [];
 
 		if ( ! empty( $requested_payment_method ) ) {
 			// All checkout requests should contain $_POST context, so we check this first.
@@ -2114,11 +2115,24 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$order           = $payment_information->get_order();
 			$order_id        = $order instanceof WC_Order ? $order->get_id() : null;
 			$payment_methods = $this->get_payment_methods_from_gateway_id( $token->get_gateway_id(), $order_id );
+		}
 
-			// If using a Link token, ensure 'link' is included in payment_method_types.
-			if ( WC_Payment_Token_WCPay_Link::TYPE === $token->get_type() && ! in_array( Payment_Method::LINK, $payment_methods, true ) ) {
-				$payment_methods[] = Payment_Method::LINK;
-			}
+		// Ensure Link is included when it's being used, regardless of filtering logic.
+		// This handles both first-time Link users and saved Link payment methods.
+		$should_include_link = false;
+
+		// Check if using a saved Link token.
+		if ( ! is_null( $token ) && WC_Payment_Token_WCPay_Link::TYPE === $token->get_type() ) {
+			$should_include_link = true;
+		}
+
+		// Check if Link is enabled and mandate data is required (indicates Link is being used).
+		if ( ! $should_include_link && Payment_Method::CARD === $this->get_selected_stripe_payment_type_id() && in_array( Payment_Method::LINK, $this->get_upe_enabled_payment_method_ids(), true ) ) {
+			$should_include_link = true;
+		}
+
+		if ( $should_include_link && ! in_array( Payment_Method::LINK, $payment_methods, true ) ) {
+			$payment_methods[] = Payment_Method::LINK;
 		}
 
 		return $payment_methods;
