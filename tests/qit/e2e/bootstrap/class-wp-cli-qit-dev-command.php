@@ -188,17 +188,119 @@ class WP_CLI_QIT_Dev_Command {
 			$database_cache = \WC_Payments::get_database_cache();
 			$account_data   = $database_cache ? $database_cache->get( Database_Cache::ACCOUNT_KEY ) : null;
 
+			// Debug: Log what refresh_account_data() actually returned.
+			\WP_CLI::log( 'Refresh result type: ' . gettype( $result ) );
+			if ( is_bool( $result ) ) {
+				\WP_CLI::log( 'Refresh result value: ' . ( $result ? 'true' : 'false' ) );
+			} elseif ( is_array( $result ) ) {
+				\WP_CLI::log( 'Refresh result is array with ' . count( $result ) . ' elements' );
+			}
+
 			if ( $account_data ) {
 				\WP_CLI::log( 'Account data refreshed successfully from server' );
+
 				// Verify key fields exist without exposing sensitive data.
 				$has_account_id = isset( $account_data['account_id'] ) && ! empty( $account_data['account_id'] );
 				$has_keys       = isset( $account_data['live_publishable_key'] ) || isset( $account_data['test_publishable_key'] );
+				$has_is_live    = isset( $account_data['is_live'] );
 				$status         = $account_data['status'] ?? 'unknown';
-				\WP_CLI::log( 'Account validation: ID=' . ( $has_account_id ? 'present' : 'missing' ) . ', Keys=' . ( $has_keys ? 'present' : 'missing' ) . ', Status=' . $status );
+				$is_live_value  = $has_is_live ? ( $account_data['is_live'] ? 'true' : 'false' ) : 'MISSING';
+
+				\WP_CLI::log( 'Account validation:' );
+				\WP_CLI::log( '  - Account ID: ' . ( $has_account_id ? 'present' : 'MISSING' ) );
+				\WP_CLI::log( '  - Publishable Keys: ' . ( $has_keys ? 'present' : 'MISSING' ) );
+				\WP_CLI::log( '  - is_live field: ' . $is_live_value );
+				\WP_CLI::log( '  - Status: ' . $status );
+
+				// Check for common issues.
+				$missing_fields = [];
+				if ( ! $has_account_id ) {
+					$missing_fields[] = 'account_id';
+				}
+				if ( ! $has_keys ) {
+					$missing_fields[] = 'publishable_key';
+				}
+				if ( ! $has_is_live ) {
+					$missing_fields[] = 'is_live';
+				}
+
+				if ( ! empty( $missing_fields ) ) {
+					// Diagnostic dump for troubleshooting - sanitize sensitive data.
+					\WP_CLI::log( "\n=== DIAGNOSTIC DATA FOR TROUBLESHOOTING ===" );
+					\WP_CLI::log( 'Account data structure (fields present):' );
+					$sanitized_keys = array_keys( $account_data );
+					\WP_CLI::log( '  Available fields: ' . implode( ', ', $sanitized_keys ) );
+
+					// Log Jetpack connection info.
+					if ( class_exists( 'Jetpack_Options' ) ) {
+						$blog_id = Jetpack_Options::get_option( 'id' );
+						\WP_CLI::log( 'Jetpack Blog ID: ' . ( $blog_id ? $blog_id : 'Not Set' ) );
+					}
+
+					\WP_CLI::log( '===========================================\n' );
+
+					\WP_CLI::error(
+						'Account data incomplete! Missing required fields: ' . implode( ', ', $missing_fields ) . "\n\n" .
+						'TROUBLESHOOTING STEPS:' . "\n" .
+						'1. Check the diagnostic data above to see which fields are present' . "\n" .
+						'2. Compare with a working setup to identify differences' . "\n" .
+						'3. Possible causes:' . "\n" .
+						'   - Jetpack tokens from wrong environment (sandbox vs production)' . "\n" .
+						'   - Incomplete Stripe onboarding' . "\n" .
+						'   - Expired/invalid tokens' . "\n" .
+						'   - API version mismatch' . "\n\n" .
+						'See: tests/qit/QIT-E2E-SETUP-GUIDE.md for troubleshooting guide'
+					);
+				}
 			} else {
-				\WP_CLI::warning( 'Account refresh completed but no account data cached - connection may be invalid' );
+				\WP_CLI::log( "\n=== ACCOUNT DATA NOT CACHED - INVESTIGATING ===" );
+				\WP_CLI::log( 'refresh_account_data() completed but returned no cached data' );
+
+				// Check if it's a validation failure or API failure.
+				if ( false === $result ) {
+					\WP_CLI::log( 'Result is FALSE - indicates API error or validation failure' );
+				} elseif ( is_array( $result ) && empty( $result ) ) {
+					\WP_CLI::log( 'Result is EMPTY ARRAY - may indicate account not found or onboarding incomplete' );
+				}
+
+				// Check Jetpack connection status.
+				if ( class_exists( 'Jetpack_Options' ) ) {
+					$blog_id     = Jetpack_Options::get_option( 'id' );
+					$blog_token  = Jetpack_Options::get_option( 'blog_token' );
+					$user_tokens = Jetpack_Options::get_option( 'user_tokens' );
+
+					\WP_CLI::log( "\nJetpack Connection Details:" );
+					\WP_CLI::log( '  - Blog ID: ' . ( $blog_id ? $blog_id : 'NOT SET' ) );
+					\WP_CLI::log( '  - Blog Token: ' . ( $blog_token ? 'present (length: ' . strlen( $blog_token ) . ')' : 'NOT SET' ) );
+					\WP_CLI::log( '  - User Tokens: ' . ( $user_tokens ? 'present (' . count( $user_tokens ) . ' users)' : 'NOT SET' ) );
+				}
+
+				\WP_CLI::log( '==============================================\n' );
+
+				\WP_CLI::error(
+					"Account refresh failed - no account data retrieved from WooPayments API.\n\n" .
+					'POSSIBLE CAUSES:' . "\n" .
+					'1. API returned error (check errors above)' . "\n" .
+					'2. Account validation failed (missing required fields)' . "\n" .
+					'3. Jetpack tokens invalid/expired for this environment' . "\n" .
+					'4. Account not found in WooPayments system' . "\n" .
+					'5. Stripe onboarding not completed' . "\n\n" .
+					'See diagnostic data above for details.'
+				);
 			}
 		} catch ( \Exception $e ) {
+			// Check if it's an authentication error.
+			if ( strpos( $e->getMessage(), 'cannot access this resource' ) !== false ) {
+				\WP_CLI::error(
+					"Authentication error: Jetpack tokens are invalid.\n\n" .
+					"SOLUTION - Reconnect Jetpack:\n" .
+					"1. Disconnect Jetpack from test site (wp-admin → Jetpack → Disconnect)\n" .
+					"2. Reconnect Jetpack\n" .
+					"3. Extract new tokens and update tests/qit/config/local.env\n" .
+					'4. Re-run QIT tests'
+				);
+			}
+
 			\WP_CLI::warning( 'Account refresh failed: ' . $e->getMessage() );
 		}
 	}
