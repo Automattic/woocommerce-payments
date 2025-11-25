@@ -49,8 +49,3 @@ export interface PaymentMethodDetails {
 	email: null | string;
 	formattedAddress?: string;
 }
-
-export interface Token {
-	tokenId: number;
-	displayName: string;
-}
