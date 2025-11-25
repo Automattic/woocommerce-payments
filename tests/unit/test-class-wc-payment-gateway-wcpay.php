@@ -39,7 +39,6 @@ use WCPay\Payment_Methods\WC_Helper_Site_Currency;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
-use WC_Subscriptions;
 
 // Need to use WC_Mock_Data_Store.
 require_once __DIR__ . '/helpers/class-wc-mock-wc-data-store.php';

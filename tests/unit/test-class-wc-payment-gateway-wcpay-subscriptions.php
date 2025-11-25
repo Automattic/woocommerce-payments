@@ -194,6 +194,24 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		parent::tear_down_after_class();
 	}
 
+	/**
+	 * Returns a custom wp_die handler that prevents script termination.
+	 *
+	 * @return string The handler function name.
+	 */
+	public function get_ajax_wp_die_handler() {
+		return [ $this, 'ajax_wp_die_handler' ];
+	}
+
+	/**
+	 * Custom wp_die handler that does nothing (prevents script termination).
+	 *
+	 * @param string $message The die message.
+	 */
+	public function ajax_wp_die_handler( $message ) {
+		// Do nothing - prevents wp_die from terminating the test.
+	}
+
 	public function test_add_token_to_order_should_add_token_to_subscriptions() {
 		$original_order = WC_Helper_Order::create_order( self::USER_ID );
 		$subscriptions  = [
@@ -1098,18 +1116,27 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 		];
 
 		// Set up the AJAX request.
-		$_POST['user_id'] = self::USER_ID;
-		$_POST['nonce']   = wp_create_nonce( 'wcpay-subscription-edit' );
+		$_POST['user_id']  = self::USER_ID;
+		$_POST['nonce']    = wp_create_nonce( 'wcpay-subscription-edit' );
+		$_REQUEST['nonce'] = $_POST['nonce'];
 
 		// Mock the current user as admin.
 		wp_set_current_user( self::USER_ID );
 		$user = wp_get_current_user();
 		$user->add_cap( 'manage_woocommerce' );
 
+		// Prevent wp_die() from terminating the test.
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		add_filter( 'wp_die_ajax_handler', [ $this, 'get_ajax_wp_die_handler' ] );
+
 		// Capture the JSON output.
 		ob_start();
 		$this->wcpay_gateway->ajax_get_user_payment_tokens();
-		$output   = ob_get_clean();
+		$output = ob_get_clean();
+
+		remove_filter( 'wp_doing_ajax', '__return_true' );
+		remove_filter( 'wp_die_ajax_handler', [ $this, 'get_ajax_wp_die_handler' ] );
+
 		$response = json_decode( $output, true );
 
 		$this->assertTrue( $response['success'] );
@@ -1118,16 +1145,25 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_ajax_get_user_payment_tokens_no_user() {
-		$_POST['user_id'] = 0;
-		$_POST['nonce']   = wp_create_nonce( 'wcpay-subscription-edit' );
+		$_POST['user_id']  = 0;
+		$_POST['nonce']    = wp_create_nonce( 'wcpay-subscription-edit' );
+		$_REQUEST['nonce'] = $_POST['nonce'];
 
 		wp_set_current_user( self::USER_ID );
 		$user = wp_get_current_user();
 		$user->add_cap( 'manage_woocommerce' );
 
+		// Prevent wp_die() from terminating the test.
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		add_filter( 'wp_die_ajax_handler', [ $this, 'get_ajax_wp_die_handler' ] );
+
 		ob_start();
 		$this->wcpay_gateway->ajax_get_user_payment_tokens();
-		$output   = ob_get_clean();
+		$output = ob_get_clean();
+
+		remove_filter( 'wp_doing_ajax', '__return_true' );
+		remove_filter( 'wp_die_ajax_handler', [ $this, 'get_ajax_wp_die_handler' ] );
+
 		$response = json_decode( $output, true );
 
 		$this->assertTrue( $response['success'] );
@@ -1136,16 +1172,25 @@ class WC_Payment_Gateway_WCPay_Subscriptions_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_ajax_get_user_payment_tokens_invalid_user() {
-		$_POST['user_id'] = 99999; // Non-existent user.
-		$_POST['nonce']   = wp_create_nonce( 'wcpay-subscription-edit' );
+		$_POST['user_id']  = 99999; // Non-existent user.
+		$_POST['nonce']    = wp_create_nonce( 'wcpay-subscription-edit' );
+		$_REQUEST['nonce'] = $_POST['nonce'];
 
 		wp_set_current_user( self::USER_ID );
 		$user = wp_get_current_user();
 		$user->add_cap( 'manage_woocommerce' );
 
+		// Prevent wp_die() from terminating the test.
+		add_filter( 'wp_doing_ajax', '__return_true' );
+		add_filter( 'wp_die_ajax_handler', [ $this, 'get_ajax_wp_die_handler' ] );
+
 		ob_start();
 		$this->wcpay_gateway->ajax_get_user_payment_tokens();
-		$output   = ob_get_clean();
+		$output = ob_get_clean();
+
+		remove_filter( 'wp_doing_ajax', '__return_true' );
+		remove_filter( 'wp_die_ajax_handler', [ $this, 'get_ajax_wp_die_handler' ] );
+
 		$response = json_decode( $output, true );
 
 		$this->assertFalse( $response['success'] );
