@@ -4,7 +4,7 @@
 /**
  * External dependencies
  */
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { __ } from '@wordpress/i18n';
 
@@ -29,8 +29,11 @@ import UserTokenCache from './user-token-cache';
 /**
  * Add a listener to the customer select.
  *
- * @param callback The callback to call when the customer is changed.
- * @return The cleanup function.
+ * This could be a shorter method, but because the customer select
+ * element uses select2, it does not emit the typical `change` event.
+ *
+ * @param {(userId: number) => void} callback The callback to call when the customer is changed.
+ * @return {() => void} The cleanup function.
  */
 const addCustomerSelectListener = (
 	callback: ( userId: number ) => void
@@ -53,7 +56,6 @@ const addCustomerSelectListener = (
 	jQuery( customerUserSelect ).on( 'select2:select', internalCallback );
 	customerUserSelect.addEventListener( 'change', internalCallback );
 
-	// If the effect is unmounted, remove the listener.
 	return () => {
 		jQuery( customerUserSelect ).off( 'select2:select', internalCallback );
 		customerUserSelect.removeEventListener( 'change', internalCallback );
@@ -61,12 +63,12 @@ const addCustomerSelectListener = (
 };
 
 /**
- * Fetch the tokens for a user from the server.
+ * Fetch the tokens for a user from the back-end.
  *
- * @param userId The user ID.
- * @param ajaxUrl The AJAX URL.
- * @param nonce The nonce.
- * @return The tokens for the user.
+ * @param {number} userId The user ID.
+ * @param {string} ajaxUrl The AJAX URL.
+ * @param {string} nonce The nonce.
+ * @return {Promise<FetchUserTokensResponse | undefined>} The tokens for the user.
  */
 const fetchUserTokens = async (
 	userId: number,
@@ -92,6 +94,17 @@ const fetchUserTokens = async (
 	return result.data as FetchUserTokensResponse;
 };
 
+/**
+ * Renders a payment method select or loading indicator.
+ *
+ * @param {PaymentMethodSelectProps} props The props for the payment method select.
+ * @param {string} props.inputName The name attribute for the select element.
+ * @param {number} props.value The currently selected payment method token ID.
+ * @param {(value: number) => void} props.onChange Callback when the selected value changes.
+ * @param {number} props.userId The ID of the customer whose payment methods to display.
+ * @param {UserTokenCache} props.cache The cache containing user payment token data.
+ * @return {JSX.Element} The payment method select or loading indicator.
+ */
 export const PaymentMethodSelect = ( {
 	inputName,
 	value,
@@ -154,6 +167,13 @@ export const PaymentMethodSelect = ( {
 	);
 };
 
+/**
+ * Setup the payment method select for a given element.
+ *
+ * @param {HTMLSpanElement} element The <span> where the payment method select should be rendered.
+ * @param {UserTokenCache} cache The cache of user tokens.
+ * @return {void}
+ */
 const setupPaymentSelector = (
 	element: HTMLSpanElement,
 	cache: UserTokenCache
@@ -162,25 +182,25 @@ const setupPaymentSelector = (
 		element.getAttribute( 'data-wcpay-pm-selector' ) || '{}'
 	) as WCPayPMSelectorData;
 
+	// Use the values from the data instead of input to ensure correct types.
+	let userId = data.userId ?? 0;
+	let value = data.value ?? 0;
+
+	// Initial population.
+	if ( userId ) {
+		cache.add( userId, data.tokens ?? [] );
+	}
+
+	// In older Subscriptions versions, there was just a simple input.
 	const input = element.querySelector( 'select,input' ) as
 		| HTMLSelectElement
 		| HTMLInputElement
 		| null;
-
 	if ( ! input ) {
 		return;
 	}
+
 	const root = createRoot( element );
-
-	// Use the values from the data to ensure correct types.
-	let userId = data.userId ?? 0;
-	let value = data.value ?? 0;
-
-	if ( userId ) {
-		// Initial population.
-		cache.add( userId, data.tokens ?? [] );
-	}
-
 	const render = () => {
 		root.render(
 			<PaymentMethodSelect
@@ -197,16 +217,14 @@ const setupPaymentSelector = (
 	};
 
 	render();
-
 	cache.subscribe( render );
-
 	addCustomerSelectListener( async ( newUserId ) => {
 		// Once the customer is changed, the selected payment method is lost.
 		value = 0;
 		userId = newUserId;
 		render();
 
-		// Loader, loading, or errored out, we do not need to load anything.
+		// Looaded, loading, or errored out, we do not need to load anything.
 		if ( cache.hasEntry( userId ) ) {
 			return;
 		}
@@ -239,8 +257,19 @@ const setupPaymentSelector = (
 	} );
 };
 
-const addWCPayCards = (): void => {
+/**
+ * Initializes all payment method dropdown elements on the page.
+ *
+ * Creates a shared cache for user tokens and sets up payment method
+ * selectors for all elements with the .wcpay-subscription-payment-method class.
+ *
+ * @return {void}
+ */
+const addPaymentMethodDropdowns = (): void => {
+	// Use a centralized cache for user tokens.
 	const cache = new UserTokenCache();
+
+	// There should be a single element on the page, but still make sure to iterate over all of them.
 	document
 		.querySelectorAll( '.wcpay-subscription-payment-method' )
 		.forEach( ( element ) => {
@@ -248,4 +277,4 @@ const addWCPayCards = (): void => {
 		} );
 };
 
-addWCPayCards();
+addPaymentMethodDropdowns();
