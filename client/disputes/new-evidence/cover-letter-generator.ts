@@ -144,6 +144,14 @@ export const generateAttachments = (
 			return;
 		}
 
+		// Skip duplicate_charge_documentation for non-duplicate disputes
+		if (
+			key === DOCUMENT_FIELD_KEYS.DUPLICATE_CHARGE_DOCUMENTATION &&
+			dispute.reason !== 'duplicate'
+		) {
+			return;
+		}
+
 		if ( evidence && isEvidenceString( evidence ) ) {
 			attachmentCount++;
 			attachments.push(

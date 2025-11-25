@@ -199,7 +199,7 @@ const getRecommendedDocumentFields = (
 								'A screenshot of the refund policy for the provided service.',
 								'woocommerce-payments'
 							),
-							order: 15,
+							order: 25,
 						},
 				  ],
 		subscription_canceled: [
