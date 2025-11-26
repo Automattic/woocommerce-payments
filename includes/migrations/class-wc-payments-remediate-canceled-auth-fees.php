@@ -246,7 +246,8 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 
 		// Build the SQL query to find orders with canceled intent status that have either:
 		// 1. Incorrect fee metadata (_wcpay_transaction_fee or _wcpay_net), OR
-		// 2. Refund objects (which shouldn't exist for never-captured authorizations).
+		// 2. Refund objects (which shouldn't exist for never-captured authorizations), OR
+		// 3. Incorrect order status of 'wc-refunded' (should be 'wc-cancelled').
 		$sql = "
 			SELECT DISTINCT o.id
 			FROM {$orders_table} o
@@ -259,7 +260,7 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 			AND o.date_created_gmt >= %s
 			AND pm_status.meta_key = '_intention_status'
 			AND pm_status.meta_value = %s
-			AND (pm_fee.order_id IS NOT NULL OR refunds.id IS NOT NULL)
+			AND (pm_fee.order_id IS NOT NULL OR refunds.id IS NOT NULL OR o.status = 'wc-refunded')
 		";
 
 		$params = [ self::BUG_START_DATE, Intent_Status::CANCELED ];
@@ -293,7 +294,8 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 
 		// Build the SQL query to find orders with canceled intent status that have either:
 		// 1. Incorrect fee metadata (_wcpay_transaction_fee or _wcpay_net), OR
-		// 2. Refund objects (which shouldn't exist for never-captured authorizations).
+		// 2. Refund objects (which shouldn't exist for never-captured authorizations), OR
+		// 3. Incorrect order status of 'wc-refunded' (should be 'wc-cancelled').
 		$sql = "
 			SELECT DISTINCT p.ID
 			FROM {$wpdb->posts} p
@@ -306,7 +308,7 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 			AND p.post_date >= %s
 			AND pm_status.meta_key = '_intention_status'
 			AND pm_status.meta_value = %s
-			AND (pm_fee.post_id IS NOT NULL OR refunds.ID IS NOT NULL)
+			AND (pm_fee.post_id IS NOT NULL OR refunds.ID IS NOT NULL OR p.post_status = 'wc-refunded')
 		";
 
 		$params = [ self::BUG_START_DATE, Intent_Status::CANCELED ];
@@ -477,9 +479,10 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 	public function remediate_order( WC_Order $order ): bool {
 		try {
 			// Capture current values for the note.
-			$fee     = $order->get_meta( '_wcpay_transaction_fee', true );
-			$net     = $order->get_meta( '_wcpay_net', true );
-			$refunds = $order->get_refunds();
+			$fee            = $order->get_meta( '_wcpay_transaction_fee', true );
+			$net            = $order->get_meta( '_wcpay_net', true );
+			$refunds        = $order->get_refunds();
+			$current_status = $order->get_status();
 
 			// Only delete refunds that were created by WCPay (have _wcpay_refund_id metadata).
 			// This avoids deleting manually-created refunds or refunds from other plugins.
@@ -499,8 +502,19 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 			$order->delete_meta_data( '_wcpay_refund_id' );
 			$order->delete_meta_data( '_wcpay_refund_status' );
 
+			// Fix incorrect order status: 'refunded' should be 'cancelled' for never-captured authorizations.
+			$status_changed = false;
+			if ( 'refunded' === $current_status ) {
+				$order->set_status( 'cancelled', '', false ); // Don't trigger status change emails.
+				$status_changed = true;
+			}
+
 			// Build detailed note.
 			$note_parts = [ 'Removed incorrect data from canceled authorization:' ];
+
+			if ( $status_changed ) {
+				$note_parts[] = '- Changed order status from "Refunded" to "Cancelled"';
+			}
 
 			if ( $wcpay_refund_count > 0 ) {
 				$note_parts[] = sprintf(

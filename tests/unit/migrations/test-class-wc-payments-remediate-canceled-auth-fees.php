@@ -359,6 +359,70 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $result );
 	}
 
+	public function test_remediate_order_changes_refunded_status_to_cancelled() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( 'refunded' );
+		$order->save();
+
+		$this->assertEquals( 'refunded', $order->get_status() );
+
+		$this->remediation->remediate_order( $order );
+
+		$order = wc_get_order( $order->get_id() ); // Refresh.
+		$this->assertEquals( 'cancelled', $order->get_status() );
+	}
+
+	public function test_remediate_order_does_not_change_non_refunded_status() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( 'on-hold' );
+		$order->save();
+
+		$this->assertEquals( 'on-hold', $order->get_status() );
+
+		$this->remediation->remediate_order( $order );
+
+		$order = wc_get_order( $order->get_id() ); // Refresh.
+		$this->assertEquals( 'on-hold', $order->get_status() );
+	}
+
+	public function test_remediate_order_adds_status_change_to_note() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( 'refunded' );
+		$order->save();
+
+		$initial_notes_count = count( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ) );
+
+		$this->remediation->remediate_order( $order );
+
+		$notes     = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
+		$new_notes = array_slice( $notes, 0, count( $notes ) - $initial_notes_count );
+
+		// Check that our remediation note contains the status change info.
+		// Note: WooCommerce may add additional notes when status changes.
+		$found_remediation_note = false;
+		foreach ( $new_notes as $note ) {
+			if ( strpos( $note->content, 'Changed order status from "Refunded" to "Cancelled"' ) !== false ) {
+				$found_remediation_note = true;
+				break;
+			}
+		}
+		$this->assertTrue( $found_remediation_note, 'Remediation note with status change should be present' );
+	}
+
+	public function test_get_affected_orders_finds_orders_with_refunded_status() {
+		// Create order with canceled intent and refunded status (no fees, no refunds).
+		$order = WC_Helper_Order::create_order();
+		$order->set_date_created( '2023-05-01' );
+		$order->set_status( 'refunded' );
+		$order->update_meta_data( '_intention_status', Intent_Status::CANCELED );
+		$order->save();
+
+		$orders = $this->remediation->get_affected_orders( 10 );
+
+		$this->assertCount( 1, $orders );
+		$this->assertEquals( $order->get_id(), $orders[0]->get_id() );
+	}
+
 	public function test_adjust_batch_size_doubles_on_fast_execution() {
 		$this->remediation->update_batch_size( 20 );
 		$this->remediation->adjust_batch_size( 3 ); // 3 seconds < 5 seconds.
