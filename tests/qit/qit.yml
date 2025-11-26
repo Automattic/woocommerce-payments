@@ -18,4 +18,4 @@ plugin:
 # This mounts ./e2e/bootstrap (relative to this qit.yml file) to /qit/bootstrap
 # inside the QIT test container (read-only for safety).
 volumes:
-  - "./e2e/bootstrap:/qit/bootstrap:ro"
+  - "./tests/qit/e2e/bootstrap:/qit/bootstrap:ro"
