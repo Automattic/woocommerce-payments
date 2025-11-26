@@ -19,6 +19,30 @@ import {
 import { ApiError } from '../../types/errors';
 import { NAMESPACE } from '../constants';
 
+/**
+ * Type guard to check if an error is an ApiError.
+ */
+function isApiError( error: unknown ): error is ApiError {
+	return (
+		typeof error === 'object' &&
+		error !== null &&
+		'code' in error &&
+		typeof ( error as ApiError ).code === 'string'
+	);
+}
+
+/**
+ * Normalizes an unknown error to an ApiError.
+ */
+function normalizeError( error: unknown ): ApiError {
+	if ( isApiError( error ) ) {
+		return error;
+	}
+	return {
+		code: 'unknown_error',
+	};
+}
+
 export function updatePromotions(
 	data: PromotionsData
 ): UpdatePromotionsAction {
@@ -78,7 +102,11 @@ export function* activatePromotion(
 				'woocommerce-payments'
 			)
 		);
-		yield updateErrorForPromotions( e as ApiError );
+		yield controls.dispatch(
+			'wc/payments',
+			'updateErrorForPromotions',
+			normalizeError( e )
+		);
 	}
 }
 
@@ -123,6 +151,10 @@ export function* dismissPromotion(
 				'woocommerce-payments'
 			)
 		);
-		yield updateErrorForPromotions( e as ApiError );
+		yield controls.dispatch(
+			'wc/payments',
+			'updateErrorForPromotions',
+			normalizeError( e )
+		);
 	}
 }
