@@ -14,7 +14,7 @@ class WC_REST_Payments_Promotions_Controller_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Controller under test.
 	 *
-	 * @var WC_REST_Payments_Promotions_Controller
+	 * @var WC_REST_Payments_PM_Promotions_Controller
 	 */
 	private $controller;
 
@@ -31,14 +31,14 @@ class WC_REST_Payments_Promotions_Controller_Test extends WCPAY_UnitTestCase {
 
 		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
 
-		$this->controller = new WC_REST_Payments_Promotions_Controller( $this->mock_api_client );
+		$this->controller = new WC_REST_Payments_PM_Promotions_Controller( $this->mock_api_client );
 	}
 
 	public function tear_down() {
 		parent::tear_down();
-		delete_transient( WC_REST_Payments_Promotions_Controller::PROMOTIONS_CACHE_KEY );
-		delete_option( WC_REST_Payments_Promotions_Controller::PROMOTION_DISMISSALS_OPTION );
-		delete_option( WC_REST_Payments_Promotions_Controller::ACTIVATED_PROMOTIONS_OPTION );
+		delete_transient( WC_REST_Payments_PM_Promotions_Controller::PROMOTIONS_CACHE_KEY );
+		delete_option( WC_REST_Payments_PM_Promotions_Controller::PROMOTION_DISMISSALS_OPTION );
+		delete_option( WC_REST_Payments_PM_Promotions_Controller::ACTIVATED_PROMOTIONS_OPTION );
 	}
 
 	public function test_get_promotions_returns_cached_data() {
@@ -61,7 +61,7 @@ class WC_REST_Payments_Promotions_Controller_Test extends WCPAY_UnitTestCase {
 		];
 
 		// Set the cache.
-		set_transient( WC_REST_Payments_Promotions_Controller::PROMOTIONS_CACHE_KEY, $mock_promotions, 300 );
+		set_transient( WC_REST_Payments_PM_Promotions_Controller::PROMOTIONS_CACHE_KEY, $mock_promotions, 300 );
 
 		$request  = new WP_REST_Request( 'GET' );
 		$response = $this->controller->get_promotions( $request );
@@ -79,9 +79,9 @@ class WC_REST_Payments_Promotions_Controller_Test extends WCPAY_UnitTestCase {
 				'promo2__spotlight_1' => 1234567900,
 			],
 		];
-		update_option( WC_REST_Payments_Promotions_Controller::PROMOTION_DISMISSALS_OPTION, $dismissals );
+		update_option( WC_REST_Payments_PM_Promotions_Controller::PROMOTION_DISMISSALS_OPTION, $dismissals );
 
-		$result = WC_REST_Payments_Promotions_Controller::get_promotion_dismissals();
+		$result = WC_REST_Payments_PM_Promotions_Controller::get_promotion_dismissals();
 
 		$this->assertSame( $dismissals, $result );
 	}
@@ -93,12 +93,12 @@ class WC_REST_Payments_Promotions_Controller_Test extends WCPAY_UnitTestCase {
 				'promo1__spotlight_2' => 1234567900,
 			],
 		];
-		update_option( WC_REST_Payments_Promotions_Controller::PROMOTION_DISMISSALS_OPTION, $dismissals );
+		update_option( WC_REST_Payments_PM_Promotions_Controller::PROMOTION_DISMISSALS_OPTION, $dismissals );
 
-		$result = WC_REST_Payments_Promotions_Controller::get_promotion_variation_dismissals( 'promo1' );
+		$result = WC_REST_Payments_PM_Promotions_Controller::get_promotion_variation_dismissals( 'promo1' );
 
 		$this->assertSame( $dismissals['promo1'], $result );
-		$this->assertSame( [], WC_REST_Payments_Promotions_Controller::get_promotion_variation_dismissals( 'promo3' ) );
+		$this->assertSame( [], WC_REST_Payments_PM_Promotions_Controller::get_promotion_variation_dismissals( 'promo3' ) );
 	}
 
 	public function test_get_variation_dismissal_time() {
@@ -108,13 +108,13 @@ class WC_REST_Payments_Promotions_Controller_Test extends WCPAY_UnitTestCase {
 				'promo1__spotlight_1' => $timestamp,
 			],
 		];
-		update_option( WC_REST_Payments_Promotions_Controller::PROMOTION_DISMISSALS_OPTION, $dismissals );
+		update_option( WC_REST_Payments_PM_Promotions_Controller::PROMOTION_DISMISSALS_OPTION, $dismissals );
 
-		$result = WC_REST_Payments_Promotions_Controller::get_variation_dismissal_time( 'promo1', 'promo1__spotlight_1' );
+		$result = WC_REST_Payments_PM_Promotions_Controller::get_variation_dismissal_time( 'promo1', 'promo1__spotlight_1' );
 
 		$this->assertSame( $timestamp, $result );
-		$this->assertNull( WC_REST_Payments_Promotions_Controller::get_variation_dismissal_time( 'promo1', 'promo1__spotlight_2' ) );
-		$this->assertNull( WC_REST_Payments_Promotions_Controller::get_variation_dismissal_time( 'promo2', 'promo2__spotlight_1' ) );
+		$this->assertNull( WC_REST_Payments_PM_Promotions_Controller::get_variation_dismissal_time( 'promo1', 'promo1__spotlight_2' ) );
+		$this->assertNull( WC_REST_Payments_PM_Promotions_Controller::get_variation_dismissal_time( 'promo2', 'promo2__spotlight_1' ) );
 	}
 
 	public function test_get_activated_promotions() {
@@ -122,9 +122,9 @@ class WC_REST_Payments_Promotions_Controller_Test extends WCPAY_UnitTestCase {
 			'promo1' => 1234567890,
 			'promo2' => 1234567900,
 		];
-		update_option( WC_REST_Payments_Promotions_Controller::ACTIVATED_PROMOTIONS_OPTION, $activated );
+		update_option( WC_REST_Payments_PM_Promotions_Controller::ACTIVATED_PROMOTIONS_OPTION, $activated );
 
-		$result = WC_REST_Payments_Promotions_Controller::get_activated_promotions();
+		$result = WC_REST_Payments_PM_Promotions_Controller::get_activated_promotions();
 
 		$this->assertSame( $activated, $result );
 	}
@@ -134,11 +134,11 @@ class WC_REST_Payments_Promotions_Controller_Test extends WCPAY_UnitTestCase {
 			'promo1' => 1234567890,
 			'promo2' => 1234567900,
 		];
-		update_option( WC_REST_Payments_Promotions_Controller::ACTIVATED_PROMOTIONS_OPTION, $activated );
+		update_option( WC_REST_Payments_PM_Promotions_Controller::ACTIVATED_PROMOTIONS_OPTION, $activated );
 
-		$this->assertTrue( WC_REST_Payments_Promotions_Controller::is_promotion_activated( 'promo1' ) );
-		$this->assertTrue( WC_REST_Payments_Promotions_Controller::is_promotion_activated( 'promo2' ) );
-		$this->assertFalse( WC_REST_Payments_Promotions_Controller::is_promotion_activated( 'promo3' ) );
+		$this->assertTrue( WC_REST_Payments_PM_Promotions_Controller::is_promotion_activated( 'promo1' ) );
+		$this->assertTrue( WC_REST_Payments_PM_Promotions_Controller::is_promotion_activated( 'promo2' ) );
+		$this->assertFalse( WC_REST_Payments_PM_Promotions_Controller::is_promotion_activated( 'promo3' ) );
 	}
 
 	public function test_get_promotion_activation_time() {
@@ -146,11 +146,11 @@ class WC_REST_Payments_Promotions_Controller_Test extends WCPAY_UnitTestCase {
 		$activated = [
 			'promo1' => $timestamp,
 		];
-		update_option( WC_REST_Payments_Promotions_Controller::ACTIVATED_PROMOTIONS_OPTION, $activated );
+		update_option( WC_REST_Payments_PM_Promotions_Controller::ACTIVATED_PROMOTIONS_OPTION, $activated );
 
-		$result = WC_REST_Payments_Promotions_Controller::get_promotion_activation_time( 'promo1' );
+		$result = WC_REST_Payments_PM_Promotions_Controller::get_promotion_activation_time( 'promo1' );
 
 		$this->assertSame( $timestamp, $result );
-		$this->assertNull( WC_REST_Payments_Promotions_Controller::get_promotion_activation_time( 'promo2' ) );
+		$this->assertNull( WC_REST_Payments_PM_Promotions_Controller::get_promotion_activation_time( 'promo2' ) );
 	}
 }

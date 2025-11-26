@@ -12,23 +12,23 @@ use WCPay\Core\Server\Request\Dismiss_Promotion;
 defined( 'ABSPATH' ) || exit;
 
 /**
- * REST controller for promotions functionality.
+ * REST controller for payment methods (PM) promotions functionality.
  */
-class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller {
+class WC_REST_Payments_PM_Promotions_Controller extends WC_Payments_REST_Controller {
 
 	/**
 	 * Endpoint path.
 	 *
 	 * @var string
 	 */
-	protected $rest_base = 'payments/payment-method-promotions';
+	protected $rest_base = 'payments/pm-promotions';
 
 	/**
 	 * Transient key for caching promotions.
 	 *
 	 * @var string
 	 */
-	const PROMOTIONS_CACHE_KEY = 'wcpay_promotions';
+	const PROMOTIONS_CACHE_KEY = 'wcpay_pm_promotions';
 
 	/**
 	 * Cache duration in seconds (5 minutes).
@@ -43,14 +43,14 @@ class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller
 	 *
 	 * @var string
 	 */
-	const PROMOTION_DISMISSALS_OPTION = '_wcpay_promotion_dismissals';
+	const PROMOTION_DISMISSALS_OPTION = '_wcpay_pm_promotion_dismissals';
 
 	/**
 	 * Option key for activated promotions.
 	 *
 	 * @var string
 	 */
-	const ACTIVATED_PROMOTIONS_OPTION = '_wcpay_activated_promotions';
+	const ACTIVATED_PROMOTIONS_OPTION = '_wcpay_activated_pm_promotions';
 
 	/**
 	 * Configure REST API routes.
@@ -110,29 +110,72 @@ class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller
 	}
 
 	/**
-	 * Retrieve promotions list with caching.
+	 * Retrieve the active promotions list.
 	 *
-	 * @return WP_REST_Response|WP_Error
+	 * @return WP_REST_Response
 	 */
 	public function get_promotions() {
-		// Check cache first.
-		$cached_promotions = get_transient( self::PROMOTIONS_CACHE_KEY );
-		if ( false !== $cached_promotions ) {
-			return rest_ensure_response( $cached_promotions );
+		// First, try to use the cached data.
+		$cache = get_transient( self::PROMOTIONS_CACHE_KEY );
+
+		// If the cached data is not expired, and it's a WP_Error,
+		// it means there was an API error previously, and we should not retry just yet.
+		if ( is_wp_error( $cache ) ) {
+			return rest_ensure_response( [] );
+		} elseif ( false !== $cache ) {
+			return rest_ensure_response( $cache['promotions'] ?? [] );
 		}
 
 		// TODO: Replace with actual API call when server endpoints are available.
-		// $wcpay_request = Request::get( WC_Payments_API_Client::PROMOTIONS_API );.
-		// $wcpay_request->assign_hook( 'wcpay_get_promotions' );.
-		// $promotions = $wcpay_request->send();.
-
+		// $wcpay_request = Request\Get_PM_Promotions::create();.
+		// $response      = $wcpay_request->handle_rest_request();.
 		// Return mock data for testing.
-		$promotions = $this->get_mock_promotions_data();
+		$response = $this->get_mock_promotions_data();
 
-		// Cache the response.
-		set_transient( self::PROMOTIONS_CACHE_KEY, $promotions, self::CACHE_DURATION );
+		// Return early if there is an error, waiting 6 hours before the next attempt.
+		if ( is_wp_error( $response ) ) {
+			// Store a trimmed down, lightweight error.
+			$error = new \WP_Error(
+				$response->get_error_code(),
+				$response->get_error_message(),
+				wp_remote_retrieve_response_code( $response )
+			);
+			// Store the error in the transient so we know this is due to an API error.
+			set_transient( self::PROMOTIONS_CACHE_KEY, $error, HOUR_IN_SECONDS * 6 );
 
-		return rest_ensure_response( $promotions );
+			return rest_ensure_response( [] );
+		}
+
+		$cache_for  = wp_remote_retrieve_header( $response, 'cache-for' );
+		$promotions = [];
+		if ( 200 === wp_remote_retrieve_response_code( $response ) ) {
+			// Decode the results, falling back to an empty array.
+			$promotions = json_decode( wp_remote_retrieve_body( $response ), true ) ?? [];
+		}
+
+		// Skip transient cache if `cache-for` header equals zero.
+		if ( '0' === $cache_for ) {
+			// Remove any transients so there are no leftovers.
+			delete_transient( self::PROMOTIONS_CACHE_KEY );
+
+			return $promotions;
+		}
+
+		// Store promotions in transient cache for the given number of seconds or 1 day in seconds.
+		// Also attach a timestamp to the transient data so we know when we last fetched.
+		set_transient(
+			self::PROMOTIONS_CACHE_KEY,
+			[
+				'promotions' => $promotions,
+				'timestamp'  => time(),
+			],
+			! empty( $cache_for ) ? (int) $cache_for : DAY_IN_SECONDS
+		);
+
+		// Finally, filter variations based on config and dismissal history.
+		$filtered_promotions = $this->filter_variations_by_dismissals( $promotions );
+
+		return rest_ensure_response( $filtered_promotions );
 	}
 
 	/**
@@ -351,8 +394,12 @@ class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller
 			],
 		];
 
-		// Filter variations based on config and dismissal history.
-		return $this->filter_variations_by_dismissals( $promotions );
+		return [
+			'response' => [
+				'code' => 200,
+			],
+			'body'     => wp_json_encode( $promotions ),
+		];
 	}
 
 	/**
