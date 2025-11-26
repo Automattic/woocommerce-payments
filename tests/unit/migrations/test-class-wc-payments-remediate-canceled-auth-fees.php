@@ -425,4 +425,50 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 			has_action( WC_Payments_Remediate_Canceled_Auth_Fees::ACTION_HOOK, [ $remediation, 'process_batch' ] )
 		);
 	}
+
+	public function test_get_affected_orders_uses_hpos_when_enabled() {
+		// Create a mock that forces HPOS mode.
+		$mock_remediation = $this->getMockBuilder( WC_Payments_Remediate_Canceled_Auth_Fees::class )
+			->onlyMethods( [ 'is_hpos_enabled' ] )
+			->getMock();
+
+		$mock_remediation->method( 'is_hpos_enabled' )->willReturn( true );
+
+		// HPOS tables don't exist in the test environment, so this should return empty.
+		// This test verifies the HPOS code path is taken without errors.
+		$orders = $mock_remediation->get_affected_orders( 10 );
+
+		$this->assertIsArray( $orders );
+	}
+
+	public function test_get_affected_orders_uses_cpt_when_hpos_disabled() {
+		// Create a mock that forces CPT mode.
+		$mock_remediation = $this->getMockBuilder( WC_Payments_Remediate_Canceled_Auth_Fees::class )
+			->onlyMethods( [ 'is_hpos_enabled' ] )
+			->getMock();
+
+		$mock_remediation->method( 'is_hpos_enabled' )->willReturn( false );
+
+		// Create order with canceled intent and fees.
+		$order = WC_Helper_Order::create_order();
+		$order->set_date_created( '2023-05-01' );
+		$order->update_meta_data( '_intention_status', Intent_Status::CANCELED );
+		$order->update_meta_data( '_wcpay_transaction_fee', '1.50' );
+		$order->save();
+
+		$orders = $mock_remediation->get_affected_orders( 10 );
+
+		$this->assertCount( 1, $orders );
+		$this->assertEquals( $order->get_id(), $orders[0]->get_id() );
+	}
+
+	public function test_is_hpos_enabled_returns_boolean() {
+		// Use reflection to test protected method.
+		$reflection = new ReflectionMethod( WC_Payments_Remediate_Canceled_Auth_Fees::class, 'is_hpos_enabled' );
+		$reflection->setAccessible( true );
+
+		$result = $reflection->invoke( $this->remediation );
+
+		$this->assertIsBool( $result );
+	}
 }

@@ -204,18 +204,86 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 	}
 
 	/**
+	 * Check if HPOS is enabled.
+	 *
+	 * This method is protected to allow mocking in tests.
+	 *
+	 * @return bool True if HPOS is enabled.
+	 */
+	protected function is_hpos_enabled(): bool {
+		return WC_Payments_Utils::is_hpos_tables_usage_enabled();
+	}
+
+	/**
 	 * Get affected orders that need remediation.
 	 *
 	 * @param int $limit Number of orders to retrieve.
 	 * @return WC_Order[] Array of WC_Order objects.
 	 */
 	public function get_affected_orders( int $limit ): array {
+		if ( $this->is_hpos_enabled() ) {
+			return $this->get_affected_orders_hpos( $limit );
+		}
+
+		return $this->get_affected_orders_cpt( $limit );
+	}
+
+	/**
+	 * Get affected orders using HPOS custom tables.
+	 *
+	 * @param int $limit Number of orders to retrieve.
+	 * @return WC_Order[] Array of WC_Order objects.
+	 */
+	private function get_affected_orders_hpos( int $limit ): array {
+		global $wpdb;
+
+		$last_order_id = $this->get_last_order_id();
+		$orders_table  = $wpdb->prefix . 'wc_orders';
+		$meta_table    = $wpdb->prefix . 'wc_orders_meta';
+
+		// Build the SQL query to find orders with canceled intent status and fees.
+		$sql = "
+			SELECT DISTINCT o.id
+			FROM {$orders_table} o
+			INNER JOIN {$meta_table} pm_status ON o.id = pm_status.order_id
+			INNER JOIN {$meta_table} pm_fee ON o.id = pm_fee.order_id
+			WHERE o.type = 'shop_order'
+			AND o.date_created_gmt >= %s
+			AND pm_status.meta_key = '_intention_status'
+			AND pm_status.meta_value = %s
+			AND (pm_fee.meta_key = '_wcpay_transaction_fee' OR pm_fee.meta_key = '_wcpay_net')
+		";
+
+		$params = [ self::BUG_START_DATE, Intent_Status::CANCELED ];
+
+		// Add offset based on last order ID.
+		if ( $last_order_id > 0 ) {
+			$sql     .= ' AND o.id > %d';
+			$params[] = $last_order_id;
+		}
+
+		// Add ordering and limit.
+		$sql     .= ' ORDER BY o.id ASC LIMIT %d';
+		$params[] = $limit;
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
+		$order_ids = $wpdb->get_col( $wpdb->prepare( $sql, $params ) );
+
+		return $this->convert_ids_to_orders( $order_ids );
+	}
+
+	/**
+	 * Get affected orders using CPT (posts) storage.
+	 *
+	 * @param int $limit Number of orders to retrieve.
+	 * @return WC_Order[] Array of WC_Order objects.
+	 */
+	private function get_affected_orders_cpt( int $limit ): array {
 		global $wpdb;
 
 		$last_order_id = $this->get_last_order_id();
 
 		// Build the SQL query to find orders with canceled intent status and fees.
-		// We need to join the postmeta table multiple times to check for the different conditions.
 		$sql = "
 			SELECT DISTINCT p.ID
 			FROM {$wpdb->posts} p
@@ -243,7 +311,16 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared
 		$order_ids = $wpdb->get_col( $wpdb->prepare( $sql, $params ) );
 
-		// Convert order IDs to WC_Order objects.
+		return $this->convert_ids_to_orders( $order_ids );
+	}
+
+	/**
+	 * Convert order IDs to WC_Order objects.
+	 *
+	 * @param array $order_ids Array of order IDs.
+	 * @return WC_Order[] Array of WC_Order objects.
+	 */
+	private function convert_ids_to_orders( array $order_ids ): array {
 		$orders = [];
 		foreach ( $order_ids as $order_id ) {
 			$order = wc_get_order( $order_id );
