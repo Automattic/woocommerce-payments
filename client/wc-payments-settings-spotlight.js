@@ -11,8 +11,10 @@ import { createRoot } from 'react-dom/client';
  */
 import SpotlightPromotion from 'promotions/spotlight';
 
-// Wait for DOM to be ready
-window.addEventListener( 'DOMContentLoaded', () => {
+/**
+ * Mounts the SpotlightPromotion component to the DOM.
+ */
+const mountSpotlightPromotion = () => {
 	const container = document.getElementById(
 		'wcpay-payments-settings-spotlight'
 	);
@@ -21,4 +23,14 @@ window.addEventListener( 'DOMContentLoaded', () => {
 		const root = createRoot( container );
 		root.render( <SpotlightPromotion /> );
 	}
-} );
+};
+
+// Mount immediately if DOM is already ready, otherwise wait for DOMContentLoaded
+if (
+	document.readyState === 'interactive' ||
+	document.readyState === 'complete'
+) {
+	mountSpotlightPromotion();
+} else {
+	window.addEventListener( 'DOMContentLoaded', mountSpotlightPromotion );
+}
