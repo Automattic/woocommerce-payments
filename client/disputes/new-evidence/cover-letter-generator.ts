@@ -89,11 +89,24 @@ export const generateAttachments = (
 		}
 	}
 
-	// Standard attachment logic for all dispute reasons
-	const standardAttachments = [
+	// Standard attachment definitions with optional restriction rules
+	// Each attachment can specify:
+	// - `onlyForReasons`: only include for these dispute reasons
+	// - `excludeWhen`: exclude when this condition is true (for complex conditions)
+	const standardAttachments: Array< {
+		key: string;
+		label: string;
+		onlyForReasons?: string[];
+		excludeWhen?: ( reason: string, status?: string ) => boolean;
+	} > = [
 		{
 			key: DOCUMENT_FIELD_KEYS.RECEIPT,
 			label: __( 'Order receipt', 'woocommerce-payments' ),
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.DUPLICATE_CHARGE_DOCUMENTATION,
+			label: __( 'Any additional receipts', 'woocommerce-payments' ),
+			onlyForReasons: [ 'duplicate' ],
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
@@ -126,32 +139,43 @@ export const generateAttachments = (
 		{
 			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
 			label: __( 'Other documents', 'woocommerce-payments' ),
+			// Skip for duplicate + is_duplicate since we already processed it as refund receipt above
+			excludeWhen: ( reason, status ) =>
+				reason === 'duplicate' && status === 'is_duplicate',
 		},
-	] as const;
+	];
 
-	standardAttachments.forEach( ( { key, label } ) => {
-		const evidence = dispute.evidence?.[ key ];
-		// For duplicate disputes with is_duplicate status, skip uncategorized_file since we already processed it as refund receipt
-		if (
-			dispute.reason === 'duplicate' &&
-			duplicateStatus === 'is_duplicate' &&
-			key === DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE
-		) {
-			return;
-		}
+	standardAttachments.forEach(
+		( { key, label, onlyForReasons, excludeWhen } ) => {
+			const evidence = dispute.evidence?.[ key ];
 
-		if ( evidence && isEvidenceString( evidence ) ) {
-			attachmentCount++;
-			attachments.push(
-				sprintf(
-					/* translators: %1$s: label, %2$s: attachment letter */
-					__( '• %1$s (Attachment %2$s)', 'woocommerce-payments' ),
-					label,
-					String.fromCharCode( 64 + attachmentCount )
-				)
-			);
+			// Check if this attachment should be skipped based on rules
+			if (
+				onlyForReasons &&
+				! onlyForReasons.includes( dispute.reason )
+			) {
+				return;
+			}
+			if ( excludeWhen?.( dispute.reason, duplicateStatus ) ) {
+				return;
+			}
+
+			if ( evidence && isEvidenceString( evidence ) ) {
+				attachmentCount++;
+				attachments.push(
+					sprintf(
+						/* translators: %1$s: label, %2$s: attachment letter */
+						__(
+							'• %1$s (Attachment %2$s)',
+							'woocommerce-payments'
+						),
+						label,
+						String.fromCharCode( 64 + attachmentCount )
+					)
+				);
+			}
 		}
-	} );
+	);
 
 	// If no attachments were provided, use default list
 	if ( attachments.length === 0 ) {

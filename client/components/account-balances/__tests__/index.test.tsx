@@ -254,7 +254,7 @@ describe( 'AccountBalances', () => {
 		} );
 		expect( within( tooltip ).getAllByRole( 'link' )[ 1 ] ).toHaveAttribute(
 			'href',
-			'https://woocommerce.com/document/woopayments/fees-and-debits/account-showing-negative-balance/'
+			'https://woocommerce.com/document/woopayments/fees/account-showing-negative-balance/'
 		);
 	} );
 
@@ -273,7 +273,7 @@ describe( 'AccountBalances', () => {
 		} );
 		expect( within( tooltip ).getAllByRole( 'link' )[ 1 ] ).toHaveAttribute(
 			'href',
-			'https://woocommerce.com/document/woopayments/fees-and-debits/account-showing-negative-balance/'
+			'https://woocommerce.com/document/woopayments/fees/account-showing-negative-balance/'
 		);
 	} );
 
