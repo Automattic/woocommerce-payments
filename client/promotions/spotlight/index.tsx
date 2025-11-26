@@ -38,7 +38,7 @@ const SpotlightPromotion: React.FC = () => {
 	const { activatePromotion, dismissPromotion } = usePromotionActions();
 
 	// Check if account is onboarded - only show if status is 'complete' or 'enabled'
-	const accountStatus = wcpaySettings?.accountStatus?.status;
+	const accountStatus = window.wcpaySettings?.accountStatus?.status;
 	const isAccountOnboarded =
 		accountStatus === 'complete' || accountStatus === 'enabled';
 
