@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
 	Card,
 	CardBody,
@@ -42,6 +42,8 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 	const closeTimeoutRef = useRef< ReturnType< typeof setTimeout > | null >(
 		null
 	);
+	const dialogRef = useRef< HTMLDivElement >( null );
+	const previouslyFocusedElementRef = useRef< HTMLElement | null >( null );
 
 	useEffect( () => {
 		if ( showImmediately ) {
@@ -73,14 +75,72 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 		};
 	}, [] );
 
-	const handleClose = () => {
+	const handleClose = useCallback( () => {
 		setIsAnimatingIn( false );
 		// Wait for animation to complete before hiding
 		closeTimeoutRef.current = setTimeout( () => {
 			setIsVisible( false );
 			onDismiss();
 		}, 300 );
-	};
+	}, [ onDismiss ] );
+
+	// Focus management: save previous focus, focus dialog, handle Escape, trap focus, restore on close
+	useEffect( () => {
+		if ( ! isVisible || ! dialogRef.current ) {
+			return;
+		}
+
+		const dialog = dialogRef.current;
+		const ownerDocument = dialog.ownerDocument;
+
+		// Save the currently focused element to restore later
+		previouslyFocusedElementRef.current = ownerDocument.activeElement as HTMLElement;
+
+		// Focus the dialog
+		dialog.focus();
+
+		const handleKeyDown = ( event: KeyboardEvent ) => {
+			if ( event.key === 'Escape' ) {
+				event.preventDefault();
+				handleClose();
+				return;
+			}
+
+			// Focus trapping
+			if ( event.key === 'Tab' ) {
+				const focusableElements = dialog.querySelectorAll<
+					HTMLElement
+				>(
+					'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+				);
+				const firstElement = focusableElements[ 0 ];
+				const lastElement =
+					focusableElements[ focusableElements.length - 1 ];
+				const activeElement = ownerDocument.activeElement;
+
+				if ( event.shiftKey && activeElement === firstElement ) {
+					// Shift + Tab: if on first element, wrap to last
+					event.preventDefault();
+					lastElement?.focus();
+				} else if (
+					! event.shiftKey &&
+					activeElement === lastElement
+				) {
+					// Tab: if on last element, wrap to first
+					event.preventDefault();
+					firstElement?.focus();
+				}
+			}
+		};
+
+		ownerDocument.addEventListener( 'keydown', handleKeyDown );
+
+		return () => {
+			ownerDocument.removeEventListener( 'keydown', handleKeyDown );
+			// Restore focus to previously focused element
+			previouslyFocusedElementRef.current?.focus();
+		};
+	}, [ isVisible, handleClose ] );
 
 	const handlePrimaryClick = () => {
 		onPrimaryClick();
@@ -97,7 +157,14 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 				isAnimatingIn ? 'wcpay-spotlight--visible' : ''
 			}` }
 		>
-			<div className="wcpay-spotlight__container">
+			<div
+				ref={ dialogRef }
+				role="dialog"
+				aria-modal="true"
+				aria-labelledby="spotlight-heading"
+				tabIndex={ -1 }
+				className="wcpay-spotlight__container"
+			>
 				<Card
 					className={ `wcpay-spotlight__card ${
 						image ? 'has-image' : ''
@@ -150,7 +217,10 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 								<Chip message={ badge } type="primary" />
 							</div>
 						) }
-						<h2 className="wcpay-spotlight__heading">
+						<h2
+							id="spotlight-heading"
+							className="wcpay-spotlight__heading"
+						>
 							{ heading }
 						</h2>
 						<div className="wcpay-spotlight__description">

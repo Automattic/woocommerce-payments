@@ -25,6 +25,10 @@
 			margin: 0;
 		}
 	}
+
+	@media ( prefers-reduced-motion: reduce ) {
+		transition: none;
+	}
 }
 
 .wcpay-spotlight__container {
