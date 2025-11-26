@@ -4,6 +4,7 @@
  * External dependencies
  */
 import React from 'react';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -82,7 +83,7 @@ const SpotlightPromotion: React.FC = () => {
 					target="_blank"
 					rel="noopener noreferrer"
 				>
-					Terms and conditions
+					{ __( 'Terms and conditions', 'woocommerce-payments' ) }
 				</a>
 			</>
 		);
@@ -119,7 +120,7 @@ const SpotlightPromotion: React.FC = () => {
 			image={ image }
 			primaryButtonLabel={ spotlightVariation.cta_label }
 			onPrimaryClick={ handlePrimaryClick }
-			secondaryButtonLabel="Learn more"
+			secondaryButtonLabel={ __( 'Learn more', 'woocommerce-payments' ) }
 			onSecondaryClick={ handleSecondaryClick }
 			onDismiss={ handleDismiss }
 		/>
