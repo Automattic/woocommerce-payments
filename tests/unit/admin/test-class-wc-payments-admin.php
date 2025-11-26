@@ -495,8 +495,8 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->payments_admin->enqueue_wc_payment_settings_spotlight();
 
 		// Assert.
-		$this->assertFalse( wp_script_is( 'WCPAY_WC_PAYMENT_SETTINGS_SPOTLIGHT', 'enqueued' ) );
-		$this->assertFalse( wp_style_is( 'WCPAY_WC_PAYMENT_SETTINGS_SPOTLIGHT', 'enqueued' ) );
+		$this->assertFalse( wp_script_is( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT', 'enqueued' ) );
+		$this->assertFalse( wp_style_is( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT', 'enqueued' ) );
 
 		// Clean up.
 		unset( $_GET['page'], $_GET['tab'] );
@@ -523,8 +523,8 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 		$this->payments_admin->enqueue_wc_payment_settings_spotlight();
 
 		// Assert.
-		$this->assertFalse( wp_script_is( 'WCPAY_WC_PAYMENT_SETTINGS_SPOTLIGHT', 'enqueued' ) );
-		$this->assertFalse( wp_style_is( 'WCPAY_WC_PAYMENT_SETTINGS_SPOTLIGHT', 'enqueued' ) );
+		$this->assertFalse( wp_script_is( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT', 'enqueued' ) );
+		$this->assertFalse( wp_style_is( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT', 'enqueued' ) );
 
 		// Clean up.
 		unset( $_GET['page'], $_GET['tab'] );

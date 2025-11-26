@@ -668,14 +668,14 @@ class WC_Payments_Admin {
 			'all'
 		);
 
-		WC_Payments::register_script_with_dependencies( 'WCPAY_WC_PAYMENT_SETTINGS_SPOTLIGHT', 'dist/wc-payment-settings-spotlight' );
-		wp_set_script_translations( 'WCPAY_WC_PAYMENT_SETTINGS_SPOTLIGHT', 'woocommerce-payments' );
+		WC_Payments::register_script_with_dependencies( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT', 'dist/wc-payments-settings-spotlight' );
+		wp_set_script_translations( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT', 'woocommerce-payments' );
 
 		WC_Payments_Utils::register_style(
-			'WCPAY_WC_PAYMENT_SETTINGS_SPOTLIGHT',
-			plugins_url( 'dist/wc-payment-settings-spotlight.css', WCPAY_PLUGIN_FILE ),
+			'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT',
+			plugins_url( 'dist/wc-payments-settings-spotlight.css', WCPAY_PLUGIN_FILE ),
 			[],
-			WC_Payments::get_file_version( 'dist/wc-payment-settings-spotlight.css' ),
+			WC_Payments::get_file_version( 'dist/wc-payments-settings-spotlight.css' ),
 			'all'
 		);
 	}
@@ -1425,14 +1425,17 @@ class WC_Payments_Admin {
 		}
 
 		// Localize the script with wcpaySettings data.
+		// It is OK to use the same global variable name (`wcpaySettings`) since we localize the same data.
+		// If the data changes, we must use a different variable name since when multiple scripts use the same
+		// localized variable name, the last call overwrites previous data.
 		wp_localize_script(
-			'WCPAY_WC_PAYMENT_SETTINGS_SPOTLIGHT',
+			'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT',
 			'wcpaySettings',
 			$this->get_js_settings()
 		);
 
-		wp_enqueue_script( 'WCPAY_WC_PAYMENT_SETTINGS_SPOTLIGHT' );
-		wp_enqueue_style( 'WCPAY_WC_PAYMENT_SETTINGS_SPOTLIGHT' );
+		wp_enqueue_script( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT' );
+		wp_enqueue_style( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT' );
 	}
 
 	/**
@@ -1450,7 +1453,7 @@ class WC_Payments_Admin {
 			return;
 		}
 
-		echo '<div id="wcpay-payment-settings-spotlight"></div>';
+		echo '<div id="wcpay-payments-settings-spotlight"></div>';
 	}
 
 	/**

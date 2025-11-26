@@ -14,7 +14,7 @@ import SpotlightPromotion from 'promotions/spotlight';
 // Wait for DOM to be ready
 window.addEventListener( 'DOMContentLoaded', () => {
 	const container = document.getElementById(
-		'wcpay-payment-settings-spotlight'
+		'wcpay-payments-settings-spotlight'
 	);
 
 	if ( container ) {
