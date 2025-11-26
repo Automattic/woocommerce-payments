@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
 	Card,
 	CardBody,
@@ -39,6 +39,9 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 } ) => {
 	const [ isVisible, setIsVisible ] = useState( false );
 	const [ isAnimatingIn, setIsAnimatingIn ] = useState( false );
+	const closeTimeoutRef = useRef< ReturnType< typeof setTimeout > | null >(
+		null
+	);
 
 	useEffect( () => {
 		if ( showImmediately ) {
@@ -61,10 +64,19 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 		return () => clearTimeout( timer );
 	}, [ showImmediately ] );
 
+	// Cleanup close timeout on unmount
+	useEffect( () => {
+		return () => {
+			if ( closeTimeoutRef.current ) {
+				clearTimeout( closeTimeoutRef.current );
+			}
+		};
+	}, [] );
+
 	const handleClose = () => {
 		setIsAnimatingIn( false );
 		// Wait for animation to complete before hiding
-		setTimeout( () => {
+		closeTimeoutRef.current = setTimeout( () => {
 			setIsVisible( false );
 			onDismiss();
 		}, 300 );
