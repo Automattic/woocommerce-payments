@@ -192,15 +192,18 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 	}
 
 	/**
-	 * Clean up all remediation options.
+	 * Clean up temporary remediation options.
+	 *
+	 * Preserves the status and stats options so merchants can see completion
+	 * information in the Tools page. Only removes temporary processing options.
 	 *
 	 * @return void
 	 */
 	private function cleanup(): void {
-		delete_option( self::STATUS_OPTION_KEY );
+		// Delete only temporary processing options.
+		// Keep STATUS_OPTION_KEY and STATS_OPTION_KEY so merchants can see completion info.
 		delete_option( self::LAST_ORDER_ID_OPTION_KEY );
 		delete_option( self::BATCH_SIZE_OPTION_KEY );
-		delete_option( self::STATS_OPTION_KEY );
 	}
 
 	/**

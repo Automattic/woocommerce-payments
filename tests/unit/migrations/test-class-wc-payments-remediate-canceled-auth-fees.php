@@ -406,10 +406,10 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 
 		$this->remediation->process_batch();
 
-		// After completion with partial batch, cleanup() is called and stats are deleted.
+		// Stats should be preserved after completion for display in Tools page.
 		$stats = $this->remediation->get_stats();
-		$this->assertEquals( 0, $stats['processed'] );
-		$this->assertEquals( 0, $stats['remediated'] );
+		$this->assertEquals( 3, $stats['processed'] );
+		$this->assertEquals( 3, $stats['remediated'] );
 	}
 
 	public function test_process_batch_updates_last_order_id() {
@@ -434,9 +434,8 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 	public function test_process_batch_marks_complete_when_no_orders() {
 		$this->remediation->process_batch();
 
-		// After completion with no orders, cleanup() is called and status is deleted.
-		// is_complete() will return false because the status option no longer exists.
-		$this->assertFalse( $this->remediation->is_complete() );
+		// Status should be preserved as 'completed' for display in Tools page.
+		$this->assertTrue( $this->remediation->is_complete() );
 	}
 
 	public function test_process_batch_increments_error_count_on_failure() {
@@ -455,9 +454,9 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 
 		$mock_remediation->process_batch();
 
-		// After completion with partial batch, cleanup() is called and stats are deleted.
+		// Stats should be preserved after completion for display in Tools page.
 		$stats = $mock_remediation->get_stats();
-		$this->assertEquals( 0, $stats['errors'] );
+		$this->assertEquals( 1, $stats['errors'] );
 	}
 
 	public function test_schedule_remediation_schedules_action() {

@@ -96,9 +96,10 @@ class WC_Payments_Status {
 				],
 				'remediate_canceled_auth_fees' => [
 					'name'     => __( 'Fix canceled authorization analytics', 'woocommerce-payments' ),
-					'button'   => __( 'Run', 'woocommerce-payments' ),
-					'desc'     => __( 'This tool removes incorrect refund records and fee data from orders where payment authorization was canceled (not captured). This fixes negative values appearing in WooCommerce Analytics for stores using manual capture. The process runs in the background and may take several minutes for stores with many affected orders.', 'woocommerce-payments' ),
+					'button'   => $this->get_remediation_button_text(),
+					'desc'     => $this->get_remediation_description(),
 					'callback' => [ $this, 'schedule_canceled_auth_remediation' ],
+					'disabled' => $this->is_remediation_running_or_complete(),
 				],
 			]
 		);
@@ -201,6 +202,109 @@ class WC_Payments_Status {
 				$e->getMessage()
 			);
 		}
+	}
+
+	/**
+	 * Get the button text for the remediation tool based on current status.
+	 *
+	 * @return string Button text.
+	 */
+	private function get_remediation_button_text(): string {
+		$status = get_option( 'wcpay_fee_remediation_status', '' );
+
+		if ( 'completed' === $status ) {
+			return __( 'Completed', 'woocommerce-payments' );
+		}
+
+		if ( 'running' === $status || $this->is_remediation_action_scheduled() ) {
+			return __( 'Running...', 'woocommerce-payments' );
+		}
+
+		return __( 'Run', 'woocommerce-payments' );
+	}
+
+	/**
+	 * Get the description for the remediation tool including current status.
+	 *
+	 * @return string Tool description with status.
+	 */
+	private function get_remediation_description(): string {
+		$base_desc = __( 'This tool removes incorrect refund records and fee data from orders where payment authorization was canceled (not captured). This fixes negative values appearing in WooCommerce Analytics for stores using manual capture.', 'woocommerce-payments' );
+
+		$status = get_option( 'wcpay_fee_remediation_status', '' );
+
+		if ( 'completed' === $status ) {
+			$stats      = get_option( 'wcpay_fee_remediation_stats', [] );
+			$processed  = isset( $stats['processed'] ) ? (int) $stats['processed'] : 0;
+			$remediated = isset( $stats['remediated'] ) ? (int) $stats['remediated'] : 0;
+
+			if ( $processed > 0 ) {
+				return sprintf(
+					/* translators: 1: base description, 2: number of orders processed, 3: number of orders remediated */
+					__( '%1$s <strong>Status: Completed.</strong> Processed %2$d orders, remediated %3$d.', 'woocommerce-payments' ),
+					$base_desc,
+					$processed,
+					$remediated
+				);
+			}
+
+			return sprintf(
+				/* translators: %s: base description */
+				__( '%s <strong>Status: Completed.</strong> No affected orders found.', 'woocommerce-payments' ),
+				$base_desc
+			);
+		}
+
+		if ( 'running' === $status || $this->is_remediation_action_scheduled() ) {
+			$stats     = get_option( 'wcpay_fee_remediation_stats', [] );
+			$processed = isset( $stats['processed'] ) ? (int) $stats['processed'] : 0;
+
+			if ( $processed > 0 ) {
+				return sprintf(
+					/* translators: 1: base description, 2: number of orders processed so far */
+					__( '%1$s <strong>Status: Running...</strong> Processed %2$d orders so far. Check the Action Scheduler for details.', 'woocommerce-payments' ),
+					$base_desc,
+					$processed
+				);
+			}
+
+			return sprintf(
+				/* translators: %s: base description */
+				__( '%s <strong>Status: Running...</strong> Check the Action Scheduler for details.', 'woocommerce-payments' ),
+				$base_desc
+			);
+		}
+
+		return $base_desc;
+	}
+
+	/**
+	 * Check if the remediation is currently running or already complete.
+	 *
+	 * @return bool True if running or complete.
+	 */
+	private function is_remediation_running_or_complete(): bool {
+		$status = get_option( 'wcpay_fee_remediation_status', '' );
+
+		if ( 'completed' === $status || 'running' === $status ) {
+			return true;
+		}
+
+		return $this->is_remediation_action_scheduled();
+	}
+
+	/**
+	 * Check if the remediation action is scheduled in Action Scheduler.
+	 *
+	 * @return bool True if action is scheduled.
+	 */
+	private function is_remediation_action_scheduled(): bool {
+		if ( ! function_exists( 'as_has_scheduled_action' ) ) {
+			return false;
+		}
+
+		include_once WCPAY_ABSPATH . 'includes/migrations/class-wc-payments-remediate-canceled-auth-fees.php';
+		return as_has_scheduled_action( WC_Payments_Remediate_Canceled_Auth_Fees::ACTION_HOOK );
 	}
 
 	/**
