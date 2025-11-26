@@ -1454,20 +1454,16 @@ class WC_Payments_Admin {
 	}
 
 	/**
-	 * Check if we're on the WooCommerce payment settings page.
+	 * Check if we're on the WooCommerce Payments Settings page.
 	 *
 	 * @return bool True if on the WC payment settings page.
 	 */
-	private function is_wc_payment_settings_page() {
-		// phpcs:disable WordPress.Security.NonceVerification
-		return (
-			is_admin()
-			&& isset( $_GET['page'] )
-			&& 'wc-settings' === $_GET['page']
-			&& isset( $_GET['tab'] )
-			&& 'checkout' === $_GET['tab']
-			&& ! isset( $_GET['section'] ) // No section parameter means we're on the main payment settings page.
-		);
-		// phpcs:enable WordPress.Security.NonceVerification
+	private function is_wc_admin_payments_settings_page(): bool {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		return isset( $_REQUEST['page'] ) && 'wc-settings' === wp_unslash( $_REQUEST['page'] ) &&
+			isset( $_REQUEST['tab'] ) && 'checkout' === wp_unslash( $_REQUEST['tab'] ) &&
+			! isset( $_REQUEST['section'] )
+			&& is_admin();
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 	}
 }
