@@ -55,6 +55,12 @@ export interface SpotlightProps {
 	onDismiss: () => void;
 
 	/**
+	 * Callback when the spotlight becomes visible (after delay and animation starts).
+	 * Useful for tracking view events.
+	 */
+	onView?: () => void;
+
+	/**
 	 * Whether to show the spotlight immediately without delay (for testing).
 	 *
 	 * @default false
