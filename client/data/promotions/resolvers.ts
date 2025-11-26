@@ -79,7 +79,7 @@ function normalizeError( error: unknown ): ApiError {
  * Retrieve promotions data.
  */
 export function* getPromotions(): unknown {
-	const path = `${ NAMESPACE }/payment-method-promotions`;
+	const path = `${ NAMESPACE }/pm-promotions`;
 
 	try {
 		const result = yield apiFetch( { path } );
