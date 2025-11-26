@@ -6,7 +6,6 @@
  */
 
 use WCPay\Constants\Intent_Status;
-use WCPay\Constants\Order_Status;
 
 /**
  * WC_Payments_Remediate_Canceled_Auth_Fees unit tests.
@@ -259,7 +258,7 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 		$order->save();
 
 		// Create a non-WCPay refund (no _wcpay_refund_id metadata).
-		$refund = wc_create_refund(
+		wc_create_refund(
 			[
 				'order_id' => $order->get_id(),
 				'amount'   => 10.00,

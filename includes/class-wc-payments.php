@@ -1526,21 +1526,6 @@ class WC_Payments {
 	}
 
 	/**
-	 * Handle plugin updates.
-	 *
-	 * Previously used to trigger automatic remediation of canceled authorization fees.
-	 * Now remediation is triggered manually via WooCommerce > Status > Tools.
-	 *
-	 * @param WP_Upgrader $upgrader WP_Upgrader instance.
-	 * @param array       $options  Array of update data.
-	 * @return void
-	 */
-	public static function on_plugin_update( $upgrader, $options ) {
-		// Method kept for potential future plugin update hooks.
-		// Canceled auth fee remediation is now triggered manually via WooCommerce > Status > Tools.
-	}
-
-	/**
 	 * Sets the plugin activation timestamp.
 	 *
 	 * Use add_option so that we don't overwrite the value.
