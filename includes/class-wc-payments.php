@@ -704,7 +704,6 @@ class WC_Payments {
 		require_once __DIR__ . '/migrations/class-erase-bnpl-announcement-meta.php';
 		require_once __DIR__ . '/migrations/class-erase-deprecated-flags-and-options.php';
 		require_once __DIR__ . '/migrations/class-manual-capture-payment-method-settings-update.php';
-		require_once __DIR__ . '/migrations/class-wc-payments-remediate-canceled-auth-fees.php';
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new Allowed_Payment_Request_Button_Types_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Allowed_Payment_Request_Button_Sizes_Update( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Update_Service_Data_From_Server( self::get_account_service() ), 'maybe_migrate' ] );
@@ -1539,14 +1538,23 @@ class WC_Payments {
 			return;
 		}
 
+		// Ensure get_plugin_data() is available.
+		if ( ! function_exists( 'get_plugin_data' ) ) {
+			require_once ABSPATH . 'wp-admin/includes/plugin.php';
+		}
+
 		// Get new version.
 		$plugin_data = get_plugin_data( WCPAY_PLUGIN_FILE );
 		$new_version = $plugin_data['Version'];
 
-		// Trigger version gate check.
-		if ( isset( self::$fee_remediation ) ) {
-			self::$fee_remediation->maybe_schedule_remediation( $new_version );
+		// Initialize fee_remediation if not already set.
+		if ( ! isset( self::$fee_remediation ) ) {
+			include_once __DIR__ . '/migrations/class-wc-payments-remediate-canceled-auth-fees.php';
+			self::$fee_remediation = new WC_Payments_Remediate_Canceled_Auth_Fees();
 		}
+
+		// Trigger version gate check.
+		self::$fee_remediation->maybe_schedule_remediation( $new_version );
 	}
 
 	/**
