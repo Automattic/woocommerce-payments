@@ -239,7 +239,8 @@ describe( 'SpotlightPromotion', () => {
 
 		expect( windowOpenSpy ).toHaveBeenCalledWith(
 			'https://example.com/learn-more',
-			'_blank'
+			'_blank',
+			'noopener,noreferrer'
 		);
 
 		windowOpenSpy.mockRestore();

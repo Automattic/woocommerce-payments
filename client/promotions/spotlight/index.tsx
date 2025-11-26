@@ -92,12 +92,24 @@ const SpotlightPromotion: React.FC = () => {
 	}
 
 	const handlePrimaryClick = () => {
-		activatePromotion( promotionId as string );
+		void activatePromotion( promotionId as string );
 	};
 
 	const handleSecondaryClick = () => {
-		if ( spotlightVariation?.cta_url ) {
-			window.open( spotlightVariation.cta_url, '_blank' );
+		const url = spotlightVariation?.cta_url;
+		if ( url ) {
+			// Validate URL has a safe protocol before opening
+			try {
+				const parsedUrl = new URL( url );
+				if (
+					parsedUrl.protocol === 'https:' ||
+					parsedUrl.protocol === 'http:'
+				) {
+					window.open( url, '_blank', 'noopener,noreferrer' );
+				}
+			} catch {
+				// Invalid URL, don't open
+			}
 		}
 	};
 
@@ -105,7 +117,7 @@ const SpotlightPromotion: React.FC = () => {
 		if ( ! promotionId || ! spotlightVariation ) {
 			return;
 		}
-		dismissPromotion( promotionId, spotlightVariation.id as string );
+		void dismissPromotion( promotionId, spotlightVariation.id as string );
 	};
 
 	// Get the image for this promotion (undefined if not mapped)
