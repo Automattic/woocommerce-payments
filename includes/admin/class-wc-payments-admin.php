@@ -6,6 +6,7 @@
  */
 
 use Automattic\Jetpack\Identity_Crisis as Jetpack_Identity_Crisis;
+use Automattic\Jetpack\Constants;
 use Automattic\WooCommerce\Admin\Features\Features;
 use WCPay\Constants\Intent_Status;
 use WCPay\Core\Server\Request;
@@ -1409,17 +1410,17 @@ class WC_Payments_Admin {
 	}
 
 	/**
-	 * Enqueue the spotlight promotion script on WooCommerce payment settings page.
-	 * Only runs on WooCommerce 9.9.2+ (when new payment settings were enabled for all stores).
+	 * Enqueue the spotlight promotion script on WooCommerce Payments Settings page.
+	 * Only runs on WooCommerce 9.9.2+ (when the new WooCommerce Payments Settings UI was enabled for all stores).
 	 */
 	public function enqueue_wc_payment_settings_spotlight() {
 		// Check for minimum WooCommerce version 9.9.2.
-		if ( ! defined( 'WC_VERSION' ) || version_compare( WC_VERSION, '9.9.2', '<' ) ) {
+		if ( ! Constants::is_defined( 'WC_VERSION' ) || version_compare( Constants::get_constant( 'WC_VERSION' ), '9.9.2', '<' ) ) {
 			return;
 		}
 
-		// Only enqueue on the WooCommerce payment settings page.
-		if ( ! $this->is_wc_payment_settings_page() ) {
+		// Only enqueue on the WooCommerce Payments Settings page.
+		if ( ! $this->is_wc_admin_payments_settings_page() ) {
 			return;
 		}
 
@@ -1436,16 +1437,16 @@ class WC_Payments_Admin {
 
 	/**
 	 * Inject the container div for the spotlight promotion on WooCommerce payment settings page.
-	 * Only runs on WooCommerce 9.9.2+ (when new payment settings were enabled for all stores).
+	 * Only runs on WooCommerce 9.9.2+ (when the new WooCommerce Payments Settings UI was enabled for all stores).
 	 */
 	public function inject_payment_settings_spotlight_container() {
 		// Check for minimum WooCommerce version 9.9.2.
-		if ( ! defined( 'WC_VERSION' ) || version_compare( WC_VERSION, '9.9.2', '<' ) ) {
+		if ( ! Constants::is_defined( 'WC_VERSION' ) || version_compare( Constants::get_constant( 'WC_VERSION' ), '9.9.2', '<' ) ) {
 			return;
 		}
 
-		// Only inject on the WooCommerce payment settings page.
-		if ( ! $this->is_wc_payment_settings_page() ) {
+		// Only inject on the WooCommerce Payments settings page.
+		if ( ! $this->is_wc_admin_payments_settings_page() ) {
 			return;
 		}
 
