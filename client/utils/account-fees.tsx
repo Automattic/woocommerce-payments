@@ -19,8 +19,6 @@ import { createInterpolateElement } from '@wordpress/element';
 import PAYMENT_METHOD_IDS from 'constants/payment-method';
 
 const countryFeeStripeDocsBaseLink =
-	'https://woocommerce.com/document/woopayments/fees/#';
-const countryFeeStripeDocsBaseLinkNoCountry =
 	'https://woocommerce.com/document/woopayments/fees/';
 const countryFeeStripeDocsSectionNumbers: Record< string, string > = {
 	AE: 'united-arab-emirates',
@@ -63,16 +61,8 @@ const countryFeeStripeDocsSectionNumbers: Record< string, string > = {
 	RO: 'romania',
 };
 
-const stripeFeeSectionExistsForCountry = ( country: string ): boolean => {
-	return countryFeeStripeDocsSectionNumbers.hasOwnProperty( country );
-};
-
 const getStripeFeeSectionUrl = ( country: string ): string => {
-	return sprintf(
-		'%s%s',
-		countryFeeStripeDocsBaseLink,
-		countryFeeStripeDocsSectionNumbers[ country ]
-	);
+	return `${ countryFeeStripeDocsBaseLink }#${ countryFeeStripeDocsSectionNumbers[ country ] }`;
 };
 
 const getFeeDescriptionString = (
@@ -195,31 +185,27 @@ export const formatMethodFeesTooltip = (
 			wcpaySettings.connect.country ? (
 				<div className="wcpay-fees-tooltip__hint-text">
 					<span>
-						{ stripeFeeSectionExistsForCountry(
+						{ countryFeeStripeDocsSectionNumbers.hasOwnProperty(
 							wcpaySettings.connect.country
 						)
 							? interpolateComponents( {
 									mixedString: sprintf(
 										/* translators: %s: WooPayments */
 										__(
-											'{{linkToStripePage /}} about %s Fees in your country',
+											'{{linkToStripePage}}Learn more{{/linkToStripePage}} about %s Fees in your country',
 											'woocommerce-payments'
 										),
 										'WooPayments'
 									),
 									components: {
 										linkToStripePage: (
+											// @ts-expect-error: children is provided when interpolating the component
 											<ExternalLink
 												href={ getStripeFeeSectionUrl(
 													wcpaySettings.connect
 														.country
 												) }
-											>
-												{ __(
-													'Learn more',
-													'woocommerce-payments'
-												) }
-											</ExternalLink>
+											/>
 										),
 									},
 							  } )
@@ -236,7 +222,7 @@ export const formatMethodFeesTooltip = (
 										linkToStripePage: (
 											<ExternalLink
 												href={
-													countryFeeStripeDocsBaseLinkNoCountry
+													countryFeeStripeDocsBaseLink
 												}
 											>
 												{ __(
