@@ -280,6 +280,7 @@ class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller
 
 			$promotion['variations'] = $filtered_variations;
 		}
+		unset( $promotion );
 
 		return $promotions;
 	}
