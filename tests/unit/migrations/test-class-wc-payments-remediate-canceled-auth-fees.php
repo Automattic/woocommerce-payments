@@ -632,4 +632,84 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 
 		$mock_remediation->remediate_order( $order );
 	}
+
+	public function test_remediate_order_calls_delete_refund_stats_with_refund_ids() {
+		// Create a mock that tracks if delete_refund_stats is called with correct IDs.
+		$mock_remediation = $this->getMockBuilder( WC_Payments_Remediate_Canceled_Auth_Fees::class )
+			->onlyMethods( [ 'delete_refund_stats', 'sync_order_stats' ] )
+			->getMock();
+
+		$order = WC_Helper_Order::create_order();
+		$order->save();
+
+		// Create a WCPay refund.
+		$refund = wc_create_refund(
+			[
+				'order_id' => $order->get_id(),
+				'amount'   => 10.00,
+				'reason'   => 'Test refund',
+			]
+		);
+		$refund->update_meta_data( '_wcpay_refund_id', 're_test123' );
+		$refund->save();
+
+		$refund_id = $refund->get_id();
+
+		$mock_remediation->expects( $this->once() )
+			->method( 'delete_refund_stats' )
+			->with( [ $refund_id ] );
+
+		$mock_remediation->remediate_order( $order );
+	}
+
+	public function test_delete_refund_stats_removes_entries_from_order_stats() {
+		global $wpdb;
+
+		// Insert fake refund stats entries.
+		$wpdb->insert(
+			$wpdb->prefix . 'wc_order_stats',
+			[
+				'order_id'    => 99991,
+				'parent_id'   => 99990,
+				'net_total'   => -50,
+				'total_sales' => -50,
+				'status'      => 'wc-refunded',
+			]
+		);
+		$wpdb->insert(
+			$wpdb->prefix . 'wc_order_stats',
+			[
+				'order_id'    => 99992,
+				'parent_id'   => 99990,
+				'net_total'   => -75,
+				'total_sales' => -75,
+				'status'      => 'wc-refunded',
+			]
+		);
+
+		// Verify entries exist.
+		$count_before = $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}wc_order_stats WHERE order_id IN (99991, 99992)" );
+		$this->assertEquals( 2, $count_before );
+
+		// Use reflection to call protected method.
+		$reflection = new ReflectionMethod( WC_Payments_Remediate_Canceled_Auth_Fees::class, 'delete_refund_stats' );
+		$reflection->setAccessible( true );
+		$reflection->invoke( $this->remediation, [ 99991, 99992 ] );
+
+		// Verify entries are deleted.
+		$count_after = $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}wc_order_stats WHERE order_id IN (99991, 99992)" );
+		$this->assertEquals( 0, $count_after );
+	}
+
+	public function test_delete_refund_stats_does_nothing_with_empty_array() {
+		// Use reflection to call protected method.
+		$reflection = new ReflectionMethod( WC_Payments_Remediate_Canceled_Auth_Fees::class, 'delete_refund_stats' );
+		$reflection->setAccessible( true );
+
+		// This should not throw or cause any issues.
+		$reflection->invoke( $this->remediation, [] );
+
+		// If we get here without exception, the test passes.
+		$this->assertTrue( true );
+	}
 }

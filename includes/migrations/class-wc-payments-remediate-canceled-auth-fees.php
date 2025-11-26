@@ -491,10 +491,16 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 			$wcpay_refund_total = 0;
 
 			// Calculate total WCPay refund amount and delete them.
+			$deleted_refund_ids = [];
 			foreach ( $wcpay_refunds as $refund ) {
-				$wcpay_refund_total += abs( $refund->get_amount() );
+				$wcpay_refund_total  += abs( $refund->get_amount() );
+				$deleted_refund_ids[] = $refund->get_id();
 				$refund->delete( true ); // Force delete, bypass trash.
 			}
+
+			// Delete orphaned refund stats from wp_wc_order_stats.
+			// WooCommerce doesn't automatically clean these up when refunds are deleted.
+			$this->delete_refund_stats( $deleted_refund_ids );
 
 			// Remove fee metadata from the order.
 			$order->delete_meta_data( '_wcpay_transaction_fee' );
@@ -608,6 +614,29 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 				[ 'source' => 'wcpay-fee-remediation' ]
 			);
 		}
+	}
+
+	/**
+	 * Delete refund stats from wp_wc_order_stats table.
+	 *
+	 * When refund objects are deleted with $refund->delete(), WooCommerce doesn't
+	 * automatically clean up the corresponding entries in wp_wc_order_stats.
+	 * This causes orphaned negative values in analytics reports.
+	 *
+	 * @param array $refund_ids Array of refund order IDs to delete stats for.
+	 * @return void
+	 */
+	protected function delete_refund_stats( array $refund_ids ): void {
+		if ( empty( $refund_ids ) ) {
+			return;
+		}
+
+		global $wpdb;
+
+		$placeholders = implode( ', ', array_fill( 0, count( $refund_ids ), '%d' ) );
+
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
+		$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}wc_order_stats WHERE order_id IN ({$placeholders})", $refund_ids ) );
 	}
 
 	/**
