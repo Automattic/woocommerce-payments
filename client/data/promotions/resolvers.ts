@@ -11,7 +11,6 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { NAMESPACE } from '../constants';
-import { updatePromotions } from './actions';
 import { Promotion, PromotionVariation, PromotionsData } from './types';
 import { ApiError } from '../../types/errors';
 
@@ -89,7 +88,7 @@ export function* getPromotions(): unknown {
 			throw new Error( 'Invalid promotions data received from API' );
 		}
 
-		yield updatePromotions( result );
+		yield controls.dispatch( 'wc/payments', 'updatePromotions', result );
 	} catch ( e ) {
 		yield controls.dispatch(
 			'core/notices',
