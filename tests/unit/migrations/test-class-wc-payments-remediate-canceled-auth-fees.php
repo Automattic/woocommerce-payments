@@ -140,8 +140,8 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 		$this->assertCount( 0, $orders );
 	}
 
-	public function test_get_affected_orders_excludes_orders_without_fees() {
-		// Create order with canceled intent but no fees.
+	public function test_get_affected_orders_excludes_orders_without_fees_or_refunds() {
+		// Create order with canceled intent but no fees and no refunds.
 		$order = WC_Helper_Order::create_order();
 		$order->set_date_created( '2023-05-01' );
 		$order->update_meta_data( '_intention_status', Intent_Status::CANCELED );
@@ -150,6 +150,28 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 		$orders = $this->remediation->get_affected_orders( 10 );
 
 		$this->assertCount( 0, $orders );
+	}
+
+	public function test_get_affected_orders_finds_orders_with_refunds_but_no_fees() {
+		// Create order with canceled intent and refund, but no fee metadata.
+		$order = WC_Helper_Order::create_order();
+		$order->set_date_created( '2023-05-01' );
+		$order->update_meta_data( '_intention_status', Intent_Status::CANCELED );
+		$order->save();
+
+		// Create a refund for this order.
+		wc_create_refund(
+			[
+				'order_id' => $order->get_id(),
+				'amount'   => 10.00,
+				'reason'   => 'Test refund',
+			]
+		);
+
+		$orders = $this->remediation->get_affected_orders( 10 );
+
+		$this->assertCount( 1, $orders );
+		$this->assertEquals( $order->get_id(), $orders[0]->get_id() );
 	}
 
 	public function test_get_affected_orders_respects_batch_size() {
@@ -209,11 +231,11 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( '', $order->get_meta( '_wcpay_net', true ) );
 	}
 
-	public function test_remediate_order_deletes_refund_objects() {
+	public function test_remediate_order_deletes_wcpay_refund_objects() {
 		$order = WC_Helper_Order::create_order();
 		$order->save();
 
-		// Create a refund.
+		// Create a WCPay refund (has _wcpay_refund_id metadata).
 		$refund = wc_create_refund(
 			[
 				'order_id' => $order->get_id(),
@@ -221,6 +243,8 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 				'reason'   => 'Test refund',
 			]
 		);
+		$refund->update_meta_data( '_wcpay_refund_id', 're_test123' );
+		$refund->save();
 
 		$this->assertCount( 1, $order->get_refunds() );
 
@@ -230,20 +254,79 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 		$this->assertCount( 0, $order->get_refunds() );
 	}
 
+	public function test_remediate_order_preserves_non_wcpay_refund_objects() {
+		$order = WC_Helper_Order::create_order();
+		$order->save();
+
+		// Create a non-WCPay refund (no _wcpay_refund_id metadata).
+		$refund = wc_create_refund(
+			[
+				'order_id' => $order->get_id(),
+				'amount'   => 10.00,
+				'reason'   => 'Manual refund',
+			]
+		);
+
+		$this->assertCount( 1, $order->get_refunds() );
+
+		$this->remediation->remediate_order( $order );
+
+		$order = wc_get_order( $order->get_id() ); // Refresh.
+		// Non-WCPay refunds should be preserved.
+		$this->assertCount( 1, $order->get_refunds() );
+	}
+
+	public function test_remediate_order_deletes_only_wcpay_refunds_among_mixed() {
+		$order = WC_Helper_Order::create_order();
+		$order->save();
+
+		// Create a WCPay refund.
+		$wcpay_refund = wc_create_refund(
+			[
+				'order_id' => $order->get_id(),
+				'amount'   => 10.00,
+				'reason'   => 'WCPay refund',
+			]
+		);
+		$wcpay_refund->update_meta_data( '_wcpay_refund_id', 're_test123' );
+		$wcpay_refund->save();
+
+		// Create a manual refund.
+		wc_create_refund(
+			[
+				'order_id' => $order->get_id(),
+				'amount'   => 5.00,
+				'reason'   => 'Manual refund',
+			]
+		);
+
+		$this->assertCount( 2, $order->get_refunds() );
+
+		$this->remediation->remediate_order( $order );
+
+		$order = wc_get_order( $order->get_id() ); // Refresh.
+		// Only the manual refund should remain.
+		$refunds = $order->get_refunds();
+		$this->assertCount( 1, $refunds );
+		$this->assertEquals( 'Manual refund', $refunds[0]->get_reason() );
+	}
+
 	public function test_remediate_order_adds_detailed_note() {
 		$order = WC_Helper_Order::create_order();
 		$order->update_meta_data( '_wcpay_transaction_fee', '1.50' );
 		$order->update_meta_data( '_wcpay_net', '48.50' );
 		$order->save();
 
-		// Create a refund.
-		wc_create_refund(
+		// Create a WCPay refund (has _wcpay_refund_id metadata).
+		$refund = wc_create_refund(
 			[
 				'order_id' => $order->get_id(),
 				'amount'   => 10.00,
 				'reason'   => 'Test refund',
 			]
 		);
+		$refund->update_meta_data( '_wcpay_refund_id', 're_test123' );
+		$refund->save();
 
 		$initial_notes_count = count( wc_get_order_notes( [ 'order_id' => $order->get_id() ] ) );
 
@@ -254,7 +337,7 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 
 		$this->assertCount( 1, $new_notes );
 		$this->assertStringContainsString( 'Removed incorrect data from canceled authorization', $new_notes[0]->content );
-		$this->assertStringContainsString( 'Deleted 1 refund object', $new_notes[0]->content );
+		$this->assertStringContainsString( 'WooPayments refund object', $new_notes[0]->content );
 		$this->assertStringContainsString( 'transaction fee', $new_notes[0]->content );
 	}
 
@@ -470,5 +553,34 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 		$result = $reflection->invoke( $this->remediation );
 
 		$this->assertIsBool( $result );
+	}
+
+	public function test_sync_order_stats_does_not_throw_when_class_unavailable() {
+		// Use reflection to test protected method.
+		$reflection = new ReflectionMethod( WC_Payments_Remediate_Canceled_Auth_Fees::class, 'sync_order_stats' );
+		$reflection->setAccessible( true );
+
+		// This should not throw, even if OrdersStatsDataStore is unavailable.
+		$reflection->invoke( $this->remediation, 123 );
+
+		// If we get here without exception, the test passes.
+		$this->assertTrue( true );
+	}
+
+	public function test_remediate_order_calls_sync_order_stats() {
+		// Create a mock that tracks if sync_order_stats is called.
+		$mock_remediation = $this->getMockBuilder( WC_Payments_Remediate_Canceled_Auth_Fees::class )
+			->onlyMethods( [ 'sync_order_stats' ] )
+			->getMock();
+
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_wcpay_transaction_fee', '1.50' );
+		$order->save();
+
+		$mock_remediation->expects( $this->once() )
+			->method( 'sync_order_stats' )
+			->with( $order->get_id() );
+
+		$mock_remediation->remediate_order( $order );
 	}
 }

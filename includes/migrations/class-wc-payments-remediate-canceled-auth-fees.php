@@ -241,17 +241,22 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 		$orders_table  = $wpdb->prefix . 'wc_orders';
 		$meta_table    = $wpdb->prefix . 'wc_orders_meta';
 
-		// Build the SQL query to find orders with canceled intent status and fees.
+		// Build the SQL query to find orders with canceled intent status that have either:
+		// 1. Incorrect fee metadata (_wcpay_transaction_fee or _wcpay_net), OR
+		// 2. Refund objects (which shouldn't exist for never-captured authorizations).
 		$sql = "
 			SELECT DISTINCT o.id
 			FROM {$orders_table} o
 			INNER JOIN {$meta_table} pm_status ON o.id = pm_status.order_id
-			INNER JOIN {$meta_table} pm_fee ON o.id = pm_fee.order_id
+			LEFT JOIN {$meta_table} pm_fee ON o.id = pm_fee.order_id
+				AND (pm_fee.meta_key = '_wcpay_transaction_fee' OR pm_fee.meta_key = '_wcpay_net')
+			LEFT JOIN {$orders_table} refunds ON o.id = refunds.parent_order_id
+				AND refunds.type = 'shop_order_refund'
 			WHERE o.type = 'shop_order'
 			AND o.date_created_gmt >= %s
 			AND pm_status.meta_key = '_intention_status'
 			AND pm_status.meta_value = %s
-			AND (pm_fee.meta_key = '_wcpay_transaction_fee' OR pm_fee.meta_key = '_wcpay_net')
+			AND (pm_fee.order_id IS NOT NULL OR refunds.id IS NOT NULL)
 		";
 
 		$params = [ self::BUG_START_DATE, Intent_Status::CANCELED ];
@@ -283,17 +288,22 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 
 		$last_order_id = $this->get_last_order_id();
 
-		// Build the SQL query to find orders with canceled intent status and fees.
+		// Build the SQL query to find orders with canceled intent status that have either:
+		// 1. Incorrect fee metadata (_wcpay_transaction_fee or _wcpay_net), OR
+		// 2. Refund objects (which shouldn't exist for never-captured authorizations).
 		$sql = "
 			SELECT DISTINCT p.ID
 			FROM {$wpdb->posts} p
 			INNER JOIN {$wpdb->postmeta} pm_status ON p.ID = pm_status.post_id
-			INNER JOIN {$wpdb->postmeta} pm_fee ON p.ID = pm_fee.post_id
+			LEFT JOIN {$wpdb->postmeta} pm_fee ON p.ID = pm_fee.post_id
+				AND (pm_fee.meta_key = '_wcpay_transaction_fee' OR pm_fee.meta_key = '_wcpay_net')
+			LEFT JOIN {$wpdb->posts} refunds ON p.ID = refunds.post_parent
+				AND refunds.post_type = 'shop_order_refund'
 			WHERE p.post_type IN ('shop_order', 'shop_order_placehold')
 			AND p.post_date >= %s
 			AND pm_status.meta_key = '_intention_status'
 			AND pm_status.meta_value = %s
-			AND (pm_fee.meta_key = '_wcpay_transaction_fee' OR pm_fee.meta_key = '_wcpay_net')
+			AND (pm_fee.post_id IS NOT NULL OR refunds.ID IS NOT NULL)
 		";
 
 		$params = [ self::BUG_START_DATE, Intent_Status::CANCELED ];
@@ -464,23 +474,23 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 	public function remediate_order( WC_Order $order ): bool {
 		try {
 			// Capture current values for the note.
-			$fee          = $order->get_meta( '_wcpay_transaction_fee', true );
-			$net          = $order->get_meta( '_wcpay_net', true );
-			$refunds      = $order->get_refunds();
-			$refund_count = count( $refunds );
-			$refund_total = 0;
+			$fee     = $order->get_meta( '_wcpay_transaction_fee', true );
+			$net     = $order->get_meta( '_wcpay_net', true );
+			$refunds = $order->get_refunds();
 
-			// Calculate total refund amount.
-			foreach ( $refunds as $refund ) {
-				$refund_total += abs( $refund->get_amount() );
-			}
+			// Only delete refunds that were created by WCPay (have _wcpay_refund_id metadata).
+			// This avoids deleting manually-created refunds or refunds from other plugins.
+			$wcpay_refunds      = $this->get_wcpay_refunds( $refunds );
+			$wcpay_refund_count = count( $wcpay_refunds );
+			$wcpay_refund_total = 0;
 
-			// Delete all refund objects.
-			foreach ( $refunds as $refund ) {
+			// Calculate total WCPay refund amount and delete them.
+			foreach ( $wcpay_refunds as $refund ) {
+				$wcpay_refund_total += abs( $refund->get_amount() );
 				$refund->delete( true ); // Force delete, bypass trash.
 			}
 
-			// Remove fee metadata.
+			// Remove fee metadata from the order.
 			$order->delete_meta_data( '_wcpay_transaction_fee' );
 			$order->delete_meta_data( '_wcpay_net' );
 			$order->delete_meta_data( '_wcpay_refund_id' );
@@ -489,12 +499,12 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 			// Build detailed note.
 			$note_parts = [ 'Removed incorrect data from canceled authorization:' ];
 
-			if ( $refund_count > 0 ) {
+			if ( $wcpay_refund_count > 0 ) {
 				$note_parts[] = sprintf(
-					'- Deleted %d refund object%s totaling %s',
-					$refund_count,
-					$refund_count > 1 ? 's' : '',
-					wc_price( $refund_total, [ 'currency' => $order->get_currency() ] )
+					'- Deleted %d WooPayments refund object%s totaling %s',
+					$wcpay_refund_count,
+					$wcpay_refund_count > 1 ? 's' : '',
+					wc_price( $wcpay_refund_total, [ 'currency' => $order->get_currency() ] )
 				);
 			}
 
@@ -519,6 +529,10 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 			$order->add_order_note( implode( "\n", $note_parts ) );
 			$order->save();
 
+			// Trigger analytics sync to update wc_order_stats table. This is necessary because
+			// WooCommerce doesn't automatically sync when refunds are deleted (see issue #1073).
+			$this->sync_order_stats( $order->get_id() );
+
 			return true;
 
 		} catch ( Exception $e ) {
@@ -528,6 +542,54 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 				[ 'source' => 'wcpay-fee-remediation' ]
 			);
 			return false;
+		}
+	}
+
+	/**
+	 * Filter refunds to only include those created by WooPayments.
+	 *
+	 * WooPayments-created refunds have the _wcpay_refund_id metadata.
+	 * This ensures we don't delete manually-created refunds or refunds from other plugins.
+	 *
+	 * @param WC_Order_Refund[] $refunds Array of refund objects.
+	 * @return WC_Order_Refund[] Array of WooPayments-created refunds.
+	 */
+	private function get_wcpay_refunds( array $refunds ): array {
+		return array_filter(
+			$refunds,
+			function ( $refund ) {
+				// Check if this refund was created by WCPay (has the refund ID metadata).
+				$wcpay_refund_id = $refund->get_meta( '_wcpay_refund_id', true );
+				return ! empty( $wcpay_refund_id );
+			}
+		);
+	}
+
+	/**
+	 * Sync order stats to WooCommerce Analytics.
+	 *
+	 * WooCommerce doesn't automatically update the wc_order_stats table when refunds are deleted.
+	 * This method ensures the order stats are updated after remediation.
+	 *
+	 * @see https://github.com/woocommerce/woocommerce-admin/issues/1073
+	 *
+	 * @param int $order_id Order ID to sync.
+	 * @return void
+	 */
+	protected function sync_order_stats( int $order_id ): void {
+		// Check if the OrdersStatsDataStore class exists (requires WooCommerce Admin / WooCommerce 4.0+).
+		if ( ! class_exists( 'Automattic\WooCommerce\Admin\API\Reports\Orders\Stats\DataStore' ) ) {
+			return;
+		}
+
+		try {
+			\Automattic\WooCommerce\Admin\API\Reports\Orders\Stats\DataStore::sync_order( $order_id );
+		} catch ( Exception $e ) {
+			// Log but don't fail - analytics sync is not critical.
+			wc_get_logger()->warning(
+				sprintf( 'Failed to sync order %d to analytics: %s', $order_id, $e->getMessage() ),
+				[ 'source' => 'wcpay-fee-remediation' ]
+			);
 		}
 	}
 
