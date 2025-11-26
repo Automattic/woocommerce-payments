@@ -563,6 +563,11 @@ class WC_Payments {
 		self::$duplicates_detection_service         = new Duplicates_Detection_Service();
 		self::$fee_remediation                      = new WC_Payments_Remediate_Canceled_Auth_Fees();
 
+		// Initialize admin notice for canceled auth fee remediation.
+		include_once __DIR__ . '/admin/class-wc-payments-admin-notice-canceled-auth-remediation.php';
+		$canceled_auth_notice = new WC_Payments_Admin_Notice_Canceled_Auth_Remediation();
+		$canceled_auth_notice->init_hooks();
+
 		( new WooPay_Scheduler( self::$api_client ) )->init();
 
 		// Initialise hooks.
@@ -1523,38 +1528,16 @@ class WC_Payments {
 	/**
 	 * Handle plugin updates.
 	 *
+	 * Previously used to trigger automatic remediation of canceled authorization fees.
+	 * Now remediation is triggered manually via WooCommerce > Status > Tools.
+	 *
 	 * @param WP_Upgrader $upgrader WP_Upgrader instance.
 	 * @param array       $options  Array of update data.
 	 * @return void
 	 */
 	public static function on_plugin_update( $upgrader, $options ) {
-		if ( 'update' !== $options['action'] || 'plugin' !== $options['type'] ) {
-			return;
-		}
-
-		// Check if WooPayments was updated.
-		$plugins = isset( $options['plugins'] ) ? $options['plugins'] : [];
-		if ( ! in_array( plugin_basename( WCPAY_PLUGIN_FILE ), $plugins, true ) ) {
-			return;
-		}
-
-		// Ensure get_plugin_data() is available.
-		if ( ! function_exists( 'get_plugin_data' ) ) {
-			require_once ABSPATH . 'wp-admin/includes/plugin.php';
-		}
-
-		// Get new version.
-		$plugin_data = get_plugin_data( WCPAY_PLUGIN_FILE );
-		$new_version = $plugin_data['Version'];
-
-		// Initialize fee_remediation if not already set.
-		if ( ! isset( self::$fee_remediation ) ) {
-			include_once __DIR__ . '/migrations/class-wc-payments-remediate-canceled-auth-fees.php';
-			self::$fee_remediation = new WC_Payments_Remediate_Canceled_Auth_Fees();
-		}
-
-		// Trigger version gate check.
-		self::$fee_remediation->maybe_schedule_remediation( $new_version );
+		// Method kept for potential future plugin update hooks.
+		// Canceled auth fee remediation is now triggered manually via WooCommerce > Status > Tools.
 	}
 
 	/**

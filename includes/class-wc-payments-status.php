@@ -66,7 +66,7 @@ class WC_Payments_Status {
 		return array_merge(
 			$tools,
 			[
-				'clear_wcpay_account_cache' => [
+				'clear_wcpay_account_cache'    => [
 					'name'     => sprintf(
 						/* translators: %s: WooPayments */
 						__( 'Clear %s account cache', 'woocommerce-payments' ),
@@ -80,7 +80,7 @@ class WC_Payments_Status {
 					),
 					'callback' => [ $this->account, 'refresh_account_data' ],
 				],
-				'delete_wcpay_test_orders'  => [
+				'delete_wcpay_test_orders'     => [
 					'name'     => sprintf(
 						/* translators: %s: WooPayments */
 						__( 'Delete %s test orders', 'woocommerce-payments' ),
@@ -93,6 +93,12 @@ class WC_Payments_Status {
 						'WooPayments'
 					),
 					'callback' => [ $this, 'delete_test_orders' ],
+				],
+				'remediate_canceled_auth_fees' => [
+					'name'     => __( 'Fix canceled authorization analytics', 'woocommerce-payments' ),
+					'button'   => __( 'Run', 'woocommerce-payments' ),
+					'desc'     => __( 'This tool removes incorrect refund records and fee data from orders where payment authorization was canceled (not captured). This fixes negative values appearing in WooCommerce Analytics for stores using manual capture. The process runs in the background and may take several minutes for stores with many affected orders.', 'woocommerce-payments' ),
+					'callback' => [ $this, 'schedule_canceled_auth_remediation' ],
 				],
 			]
 		);
@@ -150,6 +156,48 @@ class WC_Payments_Status {
 			return sprintf(
 				/* translators: %s: error message */
 				__( 'Error deleting test orders: %s', 'woocommerce-payments' ),
+				$e->getMessage()
+			);
+		}
+	}
+
+	/**
+	 * Schedules the canceled authorization fee remediation.
+	 *
+	 * This tool fixes incorrect refund records and fee data from orders where
+	 * payment authorization was canceled but never captured.
+	 *
+	 * @return string Success or error message.
+	 */
+	public function schedule_canceled_auth_remediation() {
+		// Add explicit capability check.
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return __( 'You do not have permission to run this tool.', 'woocommerce-payments' );
+		}
+
+		try {
+			include_once WCPAY_ABSPATH . 'includes/migrations/class-wc-payments-remediate-canceled-auth-fees.php';
+			$remediation = new WC_Payments_Remediate_Canceled_Auth_Fees();
+
+			// Check if already complete.
+			if ( $remediation->is_complete() ) {
+				return __( 'Remediation has already been completed.', 'woocommerce-payments' );
+			}
+
+			// Check if already running.
+			if ( function_exists( 'as_has_scheduled_action' ) && as_has_scheduled_action( WC_Payments_Remediate_Canceled_Auth_Fees::ACTION_HOOK ) ) {
+				return __( 'Remediation is already in progress. Check the Action Scheduler for status.', 'woocommerce-payments' );
+			}
+
+			// Schedule the remediation.
+			$remediation->schedule_remediation();
+
+			return __( 'Remediation has been scheduled and will run in the background. You can monitor progress in the Action Scheduler.', 'woocommerce-payments' );
+
+		} catch ( Exception $e ) {
+			return sprintf(
+				/* translators: %s: error message */
+				__( 'Error scheduling remediation: %s', 'woocommerce-payments' ),
 				$e->getMessage()
 			);
 		}

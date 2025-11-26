@@ -594,54 +594,38 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 	}
 
 	/**
-	 * Maybe schedule remediation if version gate conditions are met.
+	 * Schedule remediation to run in the background.
 	 *
-	 * @param string $new_version New plugin version.
+	 * This is the public method called from the WooCommerce Tools page.
+	 *
 	 * @return void
 	 */
-	public function maybe_schedule_remediation( string $new_version ): void {
-		// Check if already complete.
-		if ( $this->is_complete() ) {
-			return;
-		}
-
-		// Get previous version.
-		$previous_version = get_option( 'woocommerce_woocommerce_payments_version', '' );
-
-		// Skip if new install (no previous version).
-		if ( empty( $previous_version ) ) {
-			return;
-		}
-
-		// Skip if previous version was before bug introduction.
-		if ( version_compare( $previous_version, self::BUG_INTRODUCED_VERSION, '<' ) ) {
-			return;
-		}
-
-		// Skip if already scheduled.
-		if ( function_exists( 'as_has_scheduled_action' ) && as_has_scheduled_action( self::ACTION_HOOK ) ) {
-			return;
-		}
-
+	public function schedule_remediation(): void {
 		// Mark as running and schedule first batch.
 		$this->mark_running();
 
 		if ( function_exists( 'as_schedule_single_action' ) ) {
 			as_schedule_single_action(
-				time() + 60, // Start in 1 minute.
+				time() + 10, // Start in 10 seconds.
 				self::ACTION_HOOK,
 				[],
 				'woocommerce-payments'
 			);
 
 			wc_get_logger()->info(
-				sprintf(
-					'Scheduled fee remediation. Upgrading from %s to %s',
-					$previous_version,
-					$new_version
-				),
+				'Scheduled fee remediation from WooCommerce Tools.',
 				[ 'source' => 'wcpay-fee-remediation' ]
 			);
 		}
+	}
+
+	/**
+	 * Check if there are any orders that need remediation.
+	 *
+	 * @return bool True if there are affected orders.
+	 */
+	public function has_affected_orders(): bool {
+		$orders = $this->get_affected_orders( 1 );
+		return ! empty( $orders );
 	}
 }

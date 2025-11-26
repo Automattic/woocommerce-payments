@@ -461,42 +461,29 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( 0, $stats['errors'] );
 	}
 
-	public function test_maybe_schedule_remediation_schedules_when_conditions_met() {
-		// Set previous version to one affected by the bug.
-		update_option( 'woocommerce_woocommerce_payments_version', '5.9.0' );
-
-		// Current version would be the plugin version (mock it).
-		$this->remediation->maybe_schedule_remediation( '7.0.0' );
+	public function test_schedule_remediation_schedules_action() {
+		$this->remediation->schedule_remediation();
 
 		// Should have scheduled the action.
 		$this->assertTrue( as_has_scheduled_action( WC_Payments_Remediate_Canceled_Auth_Fees::ACTION_HOOK ) );
+
+		// Should have marked as running.
+		$this->assertEquals( 'running', get_option( WC_Payments_Remediate_Canceled_Auth_Fees::STATUS_OPTION_KEY ) );
 	}
 
-	public function test_maybe_schedule_remediation_skips_when_already_complete() {
-		update_option( WC_Payments_Remediate_Canceled_Auth_Fees::STATUS_OPTION_KEY, 'completed' );
-		update_option( 'woocommerce_woocommerce_payments_version', '5.9.0' );
+	public function test_has_affected_orders_returns_true_when_orders_exist() {
+		// Create an affected order.
+		$order = WC_Helper_Order::create_order();
+		$order->set_date_created( '2023-05-01' );
+		$order->update_meta_data( '_intention_status', Intent_Status::CANCELED );
+		$order->update_meta_data( '_wcpay_transaction_fee', '1.50' );
+		$order->save();
 
-		$this->remediation->maybe_schedule_remediation( '7.0.0' );
-
-		$this->assertFalse( as_has_scheduled_action( WC_Payments_Remediate_Canceled_Auth_Fees::ACTION_HOOK ) );
+		$this->assertTrue( $this->remediation->has_affected_orders() );
 	}
 
-	public function test_maybe_schedule_remediation_skips_when_version_too_old() {
-		// Previous version before bug introduction.
-		update_option( 'woocommerce_woocommerce_payments_version', '5.7.0' );
-
-		$this->remediation->maybe_schedule_remediation( '7.0.0' );
-
-		$this->assertFalse( as_has_scheduled_action( WC_Payments_Remediate_Canceled_Auth_Fees::ACTION_HOOK ) );
-	}
-
-	public function test_maybe_schedule_remediation_skips_when_new_install() {
-		// No previous version = new install.
-		delete_option( 'woocommerce_woocommerce_payments_version' );
-
-		$this->remediation->maybe_schedule_remediation( '7.0.0' );
-
-		$this->assertFalse( as_has_scheduled_action( WC_Payments_Remediate_Canceled_Auth_Fees::ACTION_HOOK ) );
+	public function test_has_affected_orders_returns_false_when_no_orders() {
+		$this->assertFalse( $this->remediation->has_affected_orders() );
 	}
 
 	public function test_init_hooks_into_action_scheduler() {
