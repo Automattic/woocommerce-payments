@@ -253,7 +253,7 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 			FROM {$orders_table} o
 			INNER JOIN {$meta_table} pm_status ON o.id = pm_status.order_id
 			LEFT JOIN {$meta_table} pm_fee ON o.id = pm_fee.order_id
-				AND (pm_fee.meta_key = '_wcpay_transaction_fee' OR pm_fee.meta_key = '_wcpay_net')
+				AND pm_fee.meta_key IN ('_wcpay_transaction_fee', '_wcpay_net')
 			LEFT JOIN {$orders_table} refunds ON o.id = refunds.parent_order_id
 				AND refunds.type = 'shop_order_refund'
 			WHERE o.type = 'shop_order'
@@ -301,10 +301,10 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 			FROM {$wpdb->posts} p
 			INNER JOIN {$wpdb->postmeta} pm_status ON p.ID = pm_status.post_id
 			LEFT JOIN {$wpdb->postmeta} pm_fee ON p.ID = pm_fee.post_id
-				AND (pm_fee.meta_key = '_wcpay_transaction_fee' OR pm_fee.meta_key = '_wcpay_net')
+				AND pm_fee.meta_key IN ('_wcpay_transaction_fee', '_wcpay_net')
 			LEFT JOIN {$wpdb->posts} refunds ON p.ID = refunds.post_parent
 				AND refunds.post_type = 'shop_order_refund'
-			WHERE p.post_type IN ('shop_order', 'shop_order_placehold')
+			WHERE p.post_type IN ('shop_order', 'shop_order_placeholder')
 			AND p.post_date >= %s
 			AND pm_status.meta_key = '_intention_status'
 			AND pm_status.meta_value = %s
@@ -440,6 +440,10 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 	 */
 	private function schedule_next_batch(): void {
 		if ( ! function_exists( 'as_schedule_single_action' ) ) {
+			wc_get_logger()->warning(
+				'Action Scheduler is not available. Cannot schedule next batch for fee remediation.',
+				[ 'source' => 'wcpay-fee-remediation' ]
+			);
 			return;
 		}
 
