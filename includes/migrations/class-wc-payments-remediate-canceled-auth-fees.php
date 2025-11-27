@@ -528,9 +528,10 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 
 			if ( $wcpay_refund_count > 0 ) {
 				$note_parts[] = sprintf(
-					'- Deleted %d WooPayments refund object%s totaling %s',
+					'- Deleted %d WooPayments refund object%s (IDs: %s) totaling %s',
 					$wcpay_refund_count,
 					$wcpay_refund_count > 1 ? 's' : '',
+					implode( ', ', $deleted_refund_ids ),
 					wc_price( $wcpay_refund_total, [ 'currency' => $order->get_currency() ] )
 				);
 			}
