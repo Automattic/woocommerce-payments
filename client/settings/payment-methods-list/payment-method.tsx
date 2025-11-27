@@ -5,23 +5,22 @@
 import clsx from 'clsx';
 import React, { useContext } from 'react';
 import { CheckboxControl } from '@wordpress/components';
-import InfoOutlineIcon from 'gridicons/dist/info-outline';
 
 /**
  * Internal dependencies
  */
 import { __, sprintf } from '@wordpress/i18n';
-import { ClickTooltip, HoverTooltip } from 'components/tooltip';
-import { DiscountFee, FeeStructure } from 'wcpay/types/fees';
+import { HoverTooltip } from 'components/tooltip';
+import { FeeStructure } from 'wcpay/types/fees';
 import {
 	formatMethodFeesDescription,
 	formatMethodFeesTooltip,
+	getDiscountBadgeText,
+	getDiscountTooltipText,
 } from 'wcpay/utils/account-fees';
-import { formatFee } from 'wcpay/utils/fees';
-import { formatDateTimeFromString } from 'wcpay/utils/date-time';
-import { formatCurrency } from 'multi-currency/interface/functions';
 import WCPaySettingsContext from '../wcpay-settings-context';
 import Chip from 'wcpay/components/chip';
+import PromotionalBadge from 'wcpay/components/promotional-badge';
 import Pill from 'wcpay/components/pill';
 import './payment-method.scss';
 import DuplicateNotice from 'wcpay/components/duplicate-notice';
@@ -52,72 +51,6 @@ interface PaymentMethodProps {
 	locked: boolean;
 }
 
-const getDiscountBadgeText = ( discountFee: DiscountFee ): string => {
-	const discountPercentage = formatFee( discountFee.discount ?? 0 );
-
-	if ( discountFee.end_time ) {
-		return sprintf(
-			/* translators: %1$s: discount percentage, %2$s: expiration date */
-			__( '%1$s%% off fees through %2$s', 'woocommerce-payments' ),
-			discountPercentage,
-			formatDateTimeFromString( discountFee.end_time )
-		);
-	}
-
-	return sprintf(
-		/* translators: %s: discount percentage */
-		__( '%s%% off fees', 'woocommerce-payments' ),
-		discountPercentage
-	);
-};
-
-const getDiscountTooltipText = ( discountFee: DiscountFee ): string => {
-	const discountPercentage = formatFee( discountFee.discount ?? 0 );
-	const currencyCode = discountFee.volume_currency ?? discountFee.currency;
-
-	if ( discountFee.volume_allowance && discountFee.end_time ) {
-		return sprintf(
-			/* translators: %1$s: discount percentage, %2$s: total payment volume until this promotion expires, %3$s: End date of the promotion */
-			__(
-				'You are getting %1$s%% off on processing fees for the first %2$s of total payment volume or through %3$s.',
-				'woocommerce-payments'
-			),
-			discountPercentage,
-			formatCurrency( discountFee.volume_allowance, currencyCode ),
-			formatDateTimeFromString( discountFee.end_time )
-		);
-	} else if ( discountFee.volume_allowance ) {
-		return sprintf(
-			/* translators: %1$s: discount percentage, %2$s: total payment volume until this promotion expires */
-			__(
-				'You are getting %1$s%% off on processing fees for the first %2$s of total payment volume.',
-				'woocommerce-payments'
-			),
-			discountPercentage,
-			formatCurrency( discountFee.volume_allowance, currencyCode )
-		);
-	} else if ( discountFee.end_time ) {
-		return sprintf(
-			/* translators: %1$s: discount percentage, %2$s: End date of the promotion */
-			__(
-				'You are getting %1$s%% off on processing fees through %2$s.',
-				'woocommerce-payments'
-			),
-			discountPercentage,
-			formatDateTimeFromString( discountFee.end_time )
-		);
-	}
-
-	return sprintf(
-		/* translators: %s: discount percentage */
-		__(
-			'You are getting %s%% off on processing fees.',
-			'woocommerce-payments'
-		),
-		discountPercentage
-	);
-};
-
 const PaymentMethodLabel = ( {
 	id,
 	label,
@@ -145,20 +78,14 @@ const PaymentMethodLabel = ( {
 			) }
 			{ chip && <Chip message={ chip } type={ chipType } /> }
 			{ hasDiscount && (
-				<>
-					<Chip
-						message={ getDiscountBadgeText( discountFee ) }
-						type="success"
-					/>
-					<ClickTooltip
-						buttonIcon={ <InfoOutlineIcon /> }
-						buttonLabel={ __(
-							'Discount details',
-							'woocommerce-payments'
-						) }
-						content={ getDiscountTooltipText( discountFee ) }
-					/>
-				</>
+				<PromotionalBadge
+					message={ getDiscountBadgeText( discountFee ) }
+					tooltip={ getDiscountTooltipText( discountFee ) }
+					tooltipLabel={ __(
+						'Discount details',
+						'woocommerce-payments'
+					) }
+				/>
 			) }
 		</>
 	);
