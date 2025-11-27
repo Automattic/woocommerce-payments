@@ -112,6 +112,7 @@ const SpotlightPromotion: React.FC = () => {
 		variation_id: variationId,
 		display_context: 'spotlight',
 		source: getPageSource(),
+		path: window.location.pathname + window.location.search,
 	} );
 
 	const handleView = () => {

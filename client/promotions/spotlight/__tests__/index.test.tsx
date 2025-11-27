@@ -315,6 +315,7 @@ describe( 'SpotlightPromotion', () => {
 			variation_id: 'promo_123__spotlight_1',
 			display_context: 'spotlight',
 			source: 'unknown',
+			path: '/',
 		};
 
 		beforeEach( () => {
