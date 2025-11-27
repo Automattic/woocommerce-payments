@@ -416,7 +416,7 @@ class WC_REST_Payments_PM_Promotions_Controller extends WC_Payments_REST_Control
 		}
 
 		$dismissals[ $promo_id ][ $variation_id ] = time();
-		update_option( self::PROMOTION_DISMISSALS_OPTION, $dismissals );
+		update_option( self::PROMOTION_DISMISSALS_OPTION, $dismissals, false );
 	}
 
 	/**
@@ -429,7 +429,7 @@ class WC_REST_Payments_PM_Promotions_Controller extends WC_Payments_REST_Control
 	private function mark_promotion_activated( string $identifier ) {
 		$activated                = $this->get_activated_promotions();
 		$activated[ $identifier ] = time();
-		update_option( self::ACTIVATED_PROMOTIONS_OPTION, $activated );
+		update_option( self::ACTIVATED_PROMOTIONS_OPTION, $activated, false );
 	}
 
 	/**
