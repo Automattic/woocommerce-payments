@@ -4,13 +4,14 @@
  * External dependencies
  */
 import React from 'react';
+import clsx from 'clsx';
 import InfoOutlineIcon from 'gridicons/dist/info-outline';
 import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
  */
-import Chip, { ChipType } from 'wcpay/components/chip';
+import { ChipType } from 'wcpay/components/chip';
 import { ClickTooltip } from 'wcpay/components/tooltip';
 import './style.scss';
 
@@ -31,9 +32,15 @@ const PromotionalBadge: React.FC< PromotionalBadgeProps > = ( {
 	type = 'success',
 	tooltipLabel = __( 'More information', 'woocommerce-payments' ),
 } ) => {
+	const classNames = clsx(
+		'chip',
+		`chip-${ type }`,
+		'wcpay-promotional-badge'
+	);
+
 	return (
-		<span className="wcpay-promotional-badge">
-			<Chip message={ message } type={ type } />
+		<span className={ classNames }>
+			{ message }
 			<ClickTooltip
 				buttonIcon={ <InfoOutlineIcon /> }
 				buttonLabel={ tooltipLabel }

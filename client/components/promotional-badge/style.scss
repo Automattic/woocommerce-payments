@@ -4,4 +4,18 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 4px;
+
+	.wcpay-tooltip__content-wrapper {
+		display: inline-flex;
+		align-items: center;
+		background: none;
+		border: none;
+		padding: 0;
+		margin: 0;
+		cursor: pointer;
+
+		> div {
+			margin-right: 0;
+		}
+	}
 }
