@@ -278,4 +278,82 @@ class Duplicate_Payment_Prevention_Service_Test extends WCPAY_UnitTestCase {
 
 		return $ret;
 	}
+
+	/**
+	 * Test that when duplicate payment is prevented with amount mismatch,
+	 * the order note should indicate the mismatch and not mark order as completed.
+	 *
+	 * This reproduces the issue from WOOPMNT-5519 where admins see misleading order notes
+	 * suggesting a new charge was made when duplicate prevention kicked in.
+	 */
+	public function test_check_payment_intent_attached_to_order_succeeded_with_amount_mismatch() {
+		$attached_intent_id = 'pi_attached_intent_id';
+		$attached_charge_id = 'ch_attached_charge_id';
+		$return_url         = 'https://example.com';
+		$original_amount    = 1000; // $10.00 in cents.
+		$updated_amount     = 1500; // $15.00 in cents.
+
+		// Arrange the redirect URL.
+		$this->mock_gateway
+			->expects( $this->once() )
+			->method( 'get_return_url' )
+			->willReturn( $return_url );
+
+		// Arrange order that was already paid at $10.
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $attached_intent_id );
+		$order->set_total( $original_amount / 100 ); // Original amount.
+		$order->save();
+		$order_id = $order->get_id();
+
+		// Simulate admin changing the order total (adding items).
+		$order->set_total( $updated_amount / 100 ); // Updated amount.
+		$order->set_status( 'pending' ); // Admin changed status to add items.
+		$order->save();
+
+		// Arrange mock get_intention with the original $10 charge.
+		$attached_intent = WC_Helper_Intention::create_intention(
+			[
+				'id'       => $attached_intent_id,
+				'status'   => Intent_Status::SUCCEEDED,
+				'metadata' => [ 'order_id' => $order_id ],
+				'amount'   => $original_amount,
+				'charge'   => [
+					'id'     => $attached_charge_id,
+					'amount' => $original_amount,
+				],
+			]
+		);
+
+		$this->mock_wcpay_request( Get_Intention::class, 1, $attached_intent_id )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $attached_intent );
+
+		// Act: Check for duplicate payment.
+		$result = $this->service->check_payment_intent_attached_to_order_succeeded( $order );
+
+		// Assert: Redirect is returned (duplicate prevention worked).
+		$this->assertSame( 'success', $result['result'] );
+		$this->assertStringContainsString( $return_url, $result['redirect'] );
+		$this->assertStringContainsString( Duplicate_Payment_Prevention_Service::FLAG_PREVIOUS_SUCCESSFUL_INTENT, $result['redirect'] );
+
+		// Reload order to check final state.
+		$order = wc_get_order( $order_id );
+
+		// Assert: Order should NOT be marked as completed (it's underpaid).
+		$this->assertNotEquals( 'completed', $order->get_status(), 'Order should not be marked completed when amount mismatch exists' );
+		$this->assertNotEquals( 'processing', $order->get_status(), 'Order should not be marked processing when amount mismatch exists' );
+
+		// Assert: Order notes should indicate amount mismatch.
+		$notes       = wc_get_order_notes( [ 'order_id' => $order_id ] );
+		$latest_note = $notes[0]->content ?? '';
+
+		// The note should NOT claim a payment was "successfully charged" for the full amount.
+		$this->assertStringNotContainsString( '$15', $latest_note, 'Order note should not show updated amount as charged' );
+
+		// The note SHOULD indicate duplicate payment was prevented with amount info.
+		$this->assertStringContainsString( 'prevented', strtolower( $latest_note ), 'Order note should indicate duplicate payment was prevented' );
+		$this->assertStringContainsString( $attached_intent_id, $latest_note, 'Order note should reference the payment intent ID' );
+	}
 }

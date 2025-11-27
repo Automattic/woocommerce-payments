@@ -115,7 +115,28 @@ class Duplicate_Payment_Prevention_Service {
 		if ( Intent_Status::SUCCEEDED === $intent_status ) {
 			$this->remove_session_processing_order( $order->get_id() );
 		}
-		$this->order_service->update_order_status_from_intent( $order, $intent );
+
+		// Check if the order amount matches the charged amount.
+		$order_total_in_cents = (int) ( $order->get_total() * 100 );
+		$charge               = $intent->get_charge();
+		$charged_amount       = $charge ? $charge->get_amount() : 0;
+
+		// If amounts don't match, this indicates the order was modified after payment.
+		// Add a note explaining the situation instead of marking it as paid.
+		if ( $order_total_in_cents !== $charged_amount ) {
+			$order->add_order_note(
+				sprintf(
+					/* translators: 1: payment intent ID, 2: charged amount, 3: current order total */
+					__( 'Duplicate payment attempt prevented. Order was already paid with payment intent %1$s for %2$s, but current order total is %3$s. Please review the order and create a new order for any additional items.', 'woocommerce-payments' ),
+					$intent_id,
+					wc_price( $charged_amount / 100, [ 'currency' => $order->get_currency() ] ),
+					wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] )
+				)
+			);
+		} else {
+			// Amounts match, proceed with normal status update.
+			$this->order_service->update_order_status_from_intent( $order, $intent );
+		}
 
 		$return_url = $this->gateway->get_return_url( $order );
 		$return_url = add_query_arg( self::FLAG_PREVIOUS_SUCCESSFUL_INTENT, 'yes', $return_url );
