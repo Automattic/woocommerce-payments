@@ -8,7 +8,6 @@
 namespace WCPay\Core\Server\Request;
 
 use WC_Payments_API_Client;
-use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Core\Server\Request;
 
 /**
@@ -41,5 +40,26 @@ class Get_PM_Promotions extends Request {
 	 */
 	public function should_return_raw_response(): bool {
 		return true;
+	}
+
+	/**
+	 * Attaches store context details to the request.
+	 *
+	 * @param array $context The store context to send along with the request.
+	 */
+	public function set_store_context_params( array $context ): void {
+		// Go through each context entry, validate, and set as param.
+		foreach ( $context as $key => $value ) {
+			// If the key is not a string, skip it.
+			if ( ! is_string( $key ) ) {
+				continue;
+			}
+			// If the value is null or empty, skip it.
+			if ( is_null( $value ) || '' === $value ) {
+				continue;
+			}
+
+			$this->set_param( $key, $value );
+		}
 	}
 }
