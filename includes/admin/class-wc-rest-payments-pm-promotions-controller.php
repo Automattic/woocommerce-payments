@@ -31,13 +31,6 @@ class WC_REST_Payments_PM_Promotions_Controller extends WC_Payments_REST_Control
 	const PROMOTIONS_CACHE_KEY = 'wcpay_pm_promotions';
 
 	/**
-	 * Cache duration in seconds (5 minutes).
-	 *
-	 * @var int
-	 */
-	const CACHE_DURATION = 300;
-
-	/**
 	 * Option key for promotion dismissals.
 	 * Stores array of [promo_id => [variation_id => timestamp]].
 	 *
