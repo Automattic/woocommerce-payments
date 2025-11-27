@@ -162,20 +162,38 @@ describe( 'Recommended Documents', () => {
 				undefined,
 				'is_not_duplicate'
 			);
-			expect( fields ).toHaveLength( 4 );
+			expect( fields ).toHaveLength( 5 );
 			expect( fields[ 0 ].key ).toBe( 'receipt' );
-			expect( fields[ 1 ].key ).toBe( 'refund_policy' );
+			expect( fields[ 1 ].key ).toBe( 'duplicate_charge_documentation' );
+			expect( fields[ 1 ].label ).toBe( 'Any additional receipts' );
+			expect( fields[ 1 ].description ).toBe(
+				'Receipt(s) for any other order(s) from this customer.'
+			);
 			expect( fields[ 2 ].key ).toBe( 'customer_communication' );
-			expect( fields[ 3 ].key ).toBe( 'uncategorized_file' );
+			expect( fields[ 3 ].key ).toBe( 'refund_policy' );
+			expect( fields[ 3 ].label ).toBe( 'Refund policy' );
+			expect( fields[ 3 ].description ).toBe(
+				'A screenshot of the refund policy for the provided service.'
+			);
+			expect( fields[ 4 ].key ).toBe( 'uncategorized_file' );
 		} );
 
 		it( 'should return fields for duplicate reason with missing duplicate status', () => {
 			const fields = getRecommendedDocumentFields( 'duplicate' );
-			expect( fields ).toHaveLength( 4 );
+			expect( fields ).toHaveLength( 5 );
 			expect( fields[ 0 ].key ).toBe( 'receipt' );
-			expect( fields[ 1 ].key ).toBe( 'refund_policy' );
+			expect( fields[ 1 ].key ).toBe( 'duplicate_charge_documentation' );
+			expect( fields[ 1 ].label ).toBe( 'Any additional receipts' );
+			expect( fields[ 1 ].description ).toBe(
+				'Receipt(s) for any other order(s) from this customer.'
+			);
 			expect( fields[ 2 ].key ).toBe( 'customer_communication' );
-			expect( fields[ 3 ].key ).toBe( 'uncategorized_file' );
+			expect( fields[ 3 ].key ).toBe( 'refund_policy' );
+			expect( fields[ 3 ].label ).toBe( 'Refund policy' );
+			expect( fields[ 3 ].description ).toBe(
+				'A screenshot of the refund policy for the provided service.'
+			);
+			expect( fields[ 4 ].key ).toBe( 'uncategorized_file' );
 		} );
 
 		it( 'should maintain correct order of fields', () => {
