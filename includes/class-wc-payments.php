@@ -563,11 +563,6 @@ class WC_Payments {
 		self::$duplicates_detection_service         = new Duplicates_Detection_Service();
 		self::$fee_remediation                      = new WC_Payments_Remediate_Canceled_Auth_Fees();
 
-		// Initialize admin notice for canceled auth fee remediation.
-		include_once __DIR__ . '/admin/class-wc-payments-admin-notice-canceled-auth-remediation.php';
-		$canceled_auth_notice = new WC_Payments_Admin_Notice_Canceled_Auth_Remediation();
-		$canceled_auth_notice->init_hooks();
-
 		( new WooPay_Scheduler( self::$api_client ) )->init();
 
 		// Initialise hooks.
@@ -1553,6 +1548,9 @@ class WC_Payments {
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-stripe-billing-deprecation.php';
 			WC_Payments_Notes_Stripe_Billing_Deprecation::possibly_add_note();
+
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-canceled-auth-remediation.php';
+			WC_Payments_Notes_Canceled_Auth_Remediation::possibly_add_note();
 		}
 
 		if ( defined( 'WC_VERSION' ) && version_compare( WC_VERSION, '7.5', '<' ) && get_woocommerce_currency() === 'NOK' ) {
@@ -1619,6 +1617,9 @@ class WC_Payments {
 
 			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-stripe-billing-deprecation.php';
 			WC_Payments_Notes_Stripe_Billing_Deprecation::possibly_delete_note();
+
+			require_once WCPAY_ABSPATH . 'includes/notes/class-wc-payments-notes-canceled-auth-remediation.php';
+			WC_Payments_Notes_Canceled_Auth_Remediation::possibly_delete_note();
 		}
 	}
 
