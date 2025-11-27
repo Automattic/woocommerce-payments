@@ -314,7 +314,7 @@ describe( 'SpotlightPromotion', () => {
 			payment_method: 'klarna',
 			variation_id: 'promo_123__spotlight_1',
 			display_context: 'spotlight',
-			page: 'http://localhost/',
+			source: 'unknown',
 		};
 
 		beforeEach( () => {

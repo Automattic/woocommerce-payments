@@ -25,6 +25,30 @@ const spotlightImages: Record< string, string > = {
 };
 
 /**
+ * Determine a human-readable source identifier based on the current page.
+ *
+ * @return {string} Source identifier for tracking.
+ */
+const getPageSource = (): string => {
+	const path = window.location.pathname + window.location.search;
+
+	if ( path.includes( 'path=%2Fpayments%2Foverview' ) ) {
+		return 'wcpay-overview';
+	}
+	if ( path.includes( 'path=%2Fpayments%2Fsettings' ) ) {
+		return 'wcpay-settings';
+	}
+	if (
+		path.includes( 'page=wc-settings' ) &&
+		path.includes( 'tab=checkout' )
+	) {
+		return 'wc-settings-payments';
+	}
+
+	return 'unknown';
+};
+
+/**
  * Container component that fetches promotions and renders the Spotlight component.
  *
  * This component:
@@ -87,7 +111,7 @@ const SpotlightPromotion: React.FC = () => {
 		payment_method: paymentMethod,
 		variation_id: variationId,
 		display_context: 'spotlight',
-		page: window.location.href,
+		source: getPageSource(),
 	} );
 
 	const handleView = () => {
