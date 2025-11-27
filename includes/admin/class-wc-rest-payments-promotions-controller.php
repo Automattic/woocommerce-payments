@@ -294,16 +294,17 @@ class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller
 		// Mock available promotions with variations.
 		$promotions = [
 			[
-				'promo_id'      => 'klarna-2026-promo',
-				'discount_rate' => '100%',
-				'duration_days' => 90,
-				'config'        => [
+				'promo_id'       => 'klarna-2026-promo',
+				'payment_method' => 'klarna',
+				'discount_rate'  => '100%',
+				'duration_days'  => 90,
+				'config'         => [
 					'spotlight' => [
 						'reshow_delay_days' => 7,   // Days to wait before showing next variation.
 						'max_dismissals'    => 2,   // Total dismissals before permanent hide.
 					],
 				],
-				'variations'    => [
+				'variations'     => [
 					[
 						'id'          => 'klarna-2026-promo__spotlight_primary',
 						'type'        => 'spotlight',
@@ -331,10 +332,11 @@ class WC_REST_Payments_Promotions_Controller extends WC_Payments_REST_Controller
 				],
 			],
 			[
-				'promo_id'      => 'promo-affirm-cashback-2024',
-				'discount_rate' => '2%',
-				'duration_days' => 60,
-				'variations'    => [
+				'promo_id'       => 'promo-affirm-cashback-2024',
+				'payment_method' => 'affirm',
+				'discount_rate'  => '2%',
+				'duration_days'  => 60,
+				'variations'     => [
 					[
 						'id'          => 'promo-affirm-cashback-2024__banner_primary',
 						'type'        => 'banner',

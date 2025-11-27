@@ -230,4 +230,45 @@ describe( 'Spotlight Component', () => {
 			container.querySelector( '.wcpay-spotlight__card' )
 		).toBeInTheDocument();
 	} );
+
+	it( 'calls onView when spotlight becomes visible with showImmediately', () => {
+		const onView = jest.fn();
+
+		render( <Spotlight { ...defaultProps } onView={ onView } /> );
+
+		expect( onView ).toHaveBeenCalledTimes( 1 );
+	} );
+
+	it( 'calls onView after delay when showImmediately is false', async () => {
+		jest.useFakeTimers();
+		const onView = jest.fn();
+
+		render(
+			<Spotlight
+				{ ...defaultProps }
+				showImmediately={ false }
+				onView={ onView }
+			/>
+		);
+
+		// onView should not be called initially
+		expect( onView ).not.toHaveBeenCalled();
+
+		// Fast forward time by 4 seconds
+		act( () => {
+			jest.advanceTimersByTime( 4000 );
+		} );
+
+		// Flush requestAnimationFrame calls
+		await act( async () => {
+			await Promise.resolve();
+		} );
+
+		// onView should now be called
+		await waitFor( () => {
+			expect( onView ).toHaveBeenCalledTimes( 1 );
+		} );
+
+		jest.useRealTimers();
+	} );
 } );

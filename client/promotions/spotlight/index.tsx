@@ -10,7 +10,8 @@ import React from 'react';
  */
 import Spotlight from 'components/spotlight';
 import { usePromotions, usePromotionActions } from 'data';
-import { PromotionVariation } from 'data/promotions/types';
+import { Promotion, PromotionVariation } from 'data/promotions/types';
+import { recordEvent } from 'tracks';
 import KlarnaIllustration from 'assets/images/illustrations/klarna-promotion-spotlight.svg?asset';
 
 /**
@@ -21,6 +22,30 @@ import KlarnaIllustration from 'assets/images/illustrations/klarna-promotion-spo
 const spotlightImages: Record< string, string > = {
 	'klarna-2026-promo': KlarnaIllustration,
 	// Add more promotion images here as needed
+};
+
+/**
+ * Determine a human-readable source identifier based on the current page.
+ *
+ * @return {string} Source identifier for tracking.
+ */
+const getPageSource = (): string => {
+	const path = window.location.pathname + window.location.search;
+
+	if ( path.includes( 'path=%2Fpayments%2Foverview' ) ) {
+		return 'wcpay-overview';
+	}
+	if ( path.includes( 'path=%2Fpayments%2Fsettings' ) ) {
+		return 'wcpay-settings';
+	}
+	if (
+		path.includes( 'page=wc-settings' ) &&
+		path.includes( 'tab=checkout' )
+	) {
+		return 'wc-settings-payments';
+	}
+
+	return 'unknown';
 };
 
 /**
@@ -53,7 +78,7 @@ const SpotlightPromotion: React.FC = () => {
 
 	// Find the first available promotion with a 'spotlight' variation
 	let spotlightVariation: PromotionVariation | null = null;
-	let promotionId: string | null = null;
+	let activePromotion: Promotion | null = null;
 
 	for ( const promotion of promotions ) {
 		const variation = promotion.variations.find(
@@ -61,15 +86,73 @@ const SpotlightPromotion: React.FC = () => {
 		);
 		if ( variation ) {
 			spotlightVariation = variation;
-			promotionId = promotion.promo_id;
+			activePromotion = promotion;
 			break;
 		}
 	}
 
 	// No spotlight promotion available
-	if ( ! spotlightVariation || ! promotionId ) {
+	if ( ! spotlightVariation || ! activePromotion ) {
 		return null;
 	}
+
+	// Extract values after null check for TypeScript
+	const promotionId = activePromotion.promo_id;
+	const paymentMethod = activePromotion.payment_method;
+	const variationId = spotlightVariation.id;
+	const ctaUrl = spotlightVariation.cta_url;
+
+	/**
+	 * Get common event properties for tracking.
+	 */
+	const getEventProperties = () => ( {
+		promotion_id: promotionId,
+		payment_method: paymentMethod,
+		variation_id: variationId,
+		display_context: 'spotlight',
+		source: getPageSource(),
+		path: window.location.pathname + window.location.search,
+	} );
+
+	const handleView = () => {
+		recordEvent(
+			'wcpay_payment_method_promotion_view',
+			getEventProperties()
+		);
+	};
+
+	const handlePrimaryClick = () => {
+		recordEvent(
+			'wcpay_payment_method_promotion_activate_click',
+			getEventProperties()
+		);
+		activatePromotion( promotionId );
+	};
+
+	const handleSecondaryClick = () => {
+		recordEvent(
+			'wcpay_payment_method_promotion_secondary_click',
+			getEventProperties()
+		);
+		if ( ctaUrl ) {
+			window.open( ctaUrl, '_blank' );
+		}
+	};
+
+	const handleDismiss = () => {
+		recordEvent(
+			'wcpay_payment_method_promotion_dismiss',
+			getEventProperties()
+		);
+		dismissPromotion( promotionId, variationId as string );
+	};
+
+	const handleTermsClick = () => {
+		recordEvent( 'wcpay_payment_method_promotion_link_click', {
+			...getEventProperties(),
+			link_type: 'terms',
+		} );
+	};
 
 	// Build disclaimer content if footnote and tc_url exist
 	let disclaimer: React.ReactNode | undefined;
@@ -81,6 +164,7 @@ const SpotlightPromotion: React.FC = () => {
 					href={ spotlightVariation.tc_url }
 					target="_blank"
 					rel="noopener noreferrer"
+					onClick={ handleTermsClick }
 				>
 					Terms and conditions
 				</a>
@@ -89,23 +173,6 @@ const SpotlightPromotion: React.FC = () => {
 	} else if ( spotlightVariation.footnote ) {
 		disclaimer = spotlightVariation.footnote;
 	}
-
-	const handlePrimaryClick = () => {
-		activatePromotion( promotionId as string );
-	};
-
-	const handleSecondaryClick = () => {
-		if ( spotlightVariation?.cta_url ) {
-			window.open( spotlightVariation.cta_url, '_blank' );
-		}
-	};
-
-	const handleDismiss = () => {
-		if ( ! promotionId || ! spotlightVariation ) {
-			return;
-		}
-		dismissPromotion( promotionId, spotlightVariation.id as string );
-	};
 
 	// Get the image for this promotion (undefined if not mapped)
 	const image = spotlightImages[ promotionId ];
@@ -122,6 +189,7 @@ const SpotlightPromotion: React.FC = () => {
 			secondaryButtonLabel="Learn more"
 			onSecondaryClick={ handleSecondaryClick }
 			onDismiss={ handleDismiss }
+			onView={ handleView }
 		/>
 	);
 };

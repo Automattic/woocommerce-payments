@@ -11,11 +11,16 @@ import { render, screen } from '@testing-library/react';
  */
 import SpotlightPromotion from '../index';
 import { usePromotions, usePromotionActions } from 'data';
+import { recordEvent } from 'tracks';
 
 // Mock the dependencies
 jest.mock( 'data', () => ( {
 	usePromotions: jest.fn(),
 	usePromotionActions: jest.fn(),
+} ) );
+
+jest.mock( 'tracks', () => ( {
+	recordEvent: jest.fn(),
 } ) );
 
 jest.mock( 'components/spotlight', () => ( {
@@ -37,6 +42,7 @@ jest.mock( 'components/spotlight', () => ( {
 				{ props.secondaryButtonLabel }
 			</button>
 			<button onClick={ props.onDismiss }>Close</button>
+			<button onClick={ props.onView }>View</button>
 		</div>
 	),
 } ) );
@@ -63,6 +69,7 @@ describe( 'SpotlightPromotion', () => {
 	const mockPromotionData = [
 		{
 			promo_id: 'promo_123',
+			payment_method: 'klarna',
 			discount_rate: '100%',
 			duration_days: 90,
 			variations: [
@@ -299,5 +306,88 @@ describe( 'SpotlightPromotion', () => {
 
 		// Reset to original
 		( global as any ).wcpaySettings = mockWcpaySettings;
+	} );
+
+	describe( 'tracks events', () => {
+		const expectedBaseProperties = {
+			promotion_id: 'promo_123',
+			payment_method: 'klarna',
+			variation_id: 'promo_123__spotlight_1',
+			display_context: 'spotlight',
+			source: 'unknown',
+			path: '/',
+		};
+
+		beforeEach( () => {
+			( usePromotions as jest.Mock ).mockReturnValue( {
+				promotions: mockPromotionData,
+				isLoading: false,
+			} );
+		} );
+
+		it( 'records view event when spotlight becomes visible', () => {
+			render( <SpotlightPromotion /> );
+
+			const viewButton = screen.getByText( 'View' );
+			viewButton.click();
+
+			expect( recordEvent ).toHaveBeenCalledWith(
+				'wcpay_payment_method_promotion_view',
+				expectedBaseProperties
+			);
+		} );
+
+		it( 'records activate_click event when primary button is clicked', () => {
+			render( <SpotlightPromotion /> );
+
+			const activateButton = screen.getByText( 'Activate now' );
+			activateButton.click();
+
+			expect( recordEvent ).toHaveBeenCalledWith(
+				'wcpay_payment_method_promotion_activate_click',
+				expectedBaseProperties
+			);
+		} );
+
+		it( 'records secondary_click event when secondary button is clicked', () => {
+			jest.spyOn( window, 'open' ).mockImplementation( () => null );
+
+			render( <SpotlightPromotion /> );
+
+			const learnMoreButton = screen.getByText( 'Learn more' );
+			learnMoreButton.click();
+
+			expect( recordEvent ).toHaveBeenCalledWith(
+				'wcpay_payment_method_promotion_secondary_click',
+				expectedBaseProperties
+			);
+		} );
+
+		it( 'records dismiss event when close button is clicked', () => {
+			render( <SpotlightPromotion /> );
+
+			const closeButton = screen.getByText( 'Close' );
+			closeButton.click();
+
+			expect( recordEvent ).toHaveBeenCalledWith(
+				'wcpay_payment_method_promotion_dismiss',
+				expectedBaseProperties
+			);
+		} );
+
+		it( 'records link_click event when terms link is clicked', () => {
+			render( <SpotlightPromotion /> );
+
+			const termsLink = screen.getByText( 'Terms and conditions' );
+			termsLink.click();
+
+			expect( recordEvent ).toHaveBeenCalledWith(
+				'wcpay_payment_method_promotion_link_click',
+				{
+					...expectedBaseProperties,
+					link_type: 'terms',
+				}
+			);
+		} );
 	} );
 } );
