@@ -30,6 +30,7 @@ export interface PromotionConfig {
 
 export interface Promotion {
 	promo_id: string;
+	payment_method: string;
 	discount_rate: string;
 	duration_days: number;
 	config?: PromotionConfig;

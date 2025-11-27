@@ -35,6 +35,7 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 	secondaryButtonLabel,
 	onSecondaryClick,
 	onDismiss,
+	onView,
 	showImmediately = false,
 } ) => {
 	const [ isVisible, setIsVisible ] = useState( false );
@@ -74,6 +75,14 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 			}
 		};
 	}, [] );
+
+	// Call onView when spotlight becomes visible
+	useEffect( () => {
+		if ( isAnimatingIn && onView ) {
+			onView();
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [ isAnimatingIn ] );
 
 	const handleClose = useCallback( () => {
 		setIsAnimatingIn( false );
