@@ -1,6 +1,11 @@
 /** @format */
 
 /**
+ * External dependencies
+ */
+import type { ReactNode } from 'react';
+
+/**
  * Props for the Spotlight component.
  */
 export interface SpotlightProps {
@@ -17,17 +22,17 @@ export interface SpotlightProps {
 	/**
 	 * Description content (can be a string or React component).
 	 */
-	description: React.ReactNode;
+	description: ReactNode;
 
 	/**
 	 * Optional disclaimer content shown at the bottom (can be a string or React component).
 	 */
-	disclaimer?: React.ReactNode;
+	disclaimer?: ReactNode;
 
 	/**
 	 * Image element or URL to display in the spotlight.
 	 */
-	image?: React.ReactNode | string;
+	image?: ReactNode | string;
 
 	/**
 	 * Primary button label.

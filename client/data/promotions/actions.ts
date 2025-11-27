@@ -19,6 +19,30 @@ import {
 import { ApiError } from '../../types/errors';
 import { NAMESPACE } from '../constants';
 
+/**
+ * Type guard to check if an error is an ApiError.
+ */
+function isApiError( error: unknown ): error is ApiError {
+	return (
+		typeof error === 'object' &&
+		error !== null &&
+		'code' in error &&
+		typeof ( error as ApiError ).code === 'string'
+	);
+}
+
+/**
+ * Normalizes an unknown error to an ApiError.
+ */
+function normalizeError( error: unknown ): ApiError {
+	if ( isApiError( error ) ) {
+		return error;
+	}
+	return {
+		code: 'unknown_error',
+	};
+}
+
 export function updatePromotions(
 	data: PromotionsData
 ): UpdatePromotionsAction {
@@ -47,7 +71,7 @@ export function* activatePromotion(
 	identifier: string,
 	acceptTerms = true
 ): unknown {
-	const path = `${ NAMESPACE }/payment-method-promotions/${ identifier }/activate`;
+	const path = `${ NAMESPACE }/pm-promotions/${ identifier }/activate`;
 
 	try {
 		yield apiFetch( {
@@ -78,7 +102,11 @@ export function* activatePromotion(
 				'woocommerce-payments'
 			)
 		);
-		yield updateErrorForPromotions( e as ApiError );
+		yield controls.dispatch(
+			'wc/payments',
+			'updateErrorForPromotions',
+			normalizeError( e )
+		);
 	}
 }
 
@@ -92,7 +120,7 @@ export function* dismissPromotion(
 	identifier: string,
 	variationId: string
 ): unknown {
-	const path = `${ NAMESPACE }/payment-method-promotions/${ identifier }/dismiss`;
+	const path = `${ NAMESPACE }/pm-promotions/${ identifier }/dismiss`;
 
 	try {
 		yield apiFetch( {
@@ -123,6 +151,10 @@ export function* dismissPromotion(
 				'woocommerce-payments'
 			)
 		);
-		yield updateErrorForPromotions( e as ApiError );
+		yield controls.dispatch(
+			'wc/payments',
+			'updateErrorForPromotions',
+			normalizeError( e )
+		);
 	}
 }

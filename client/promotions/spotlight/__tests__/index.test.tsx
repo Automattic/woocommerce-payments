@@ -13,6 +13,19 @@ import SpotlightPromotion from '../index';
 import { usePromotions, usePromotionActions } from 'data';
 import { recordEvent } from 'tracks';
 
+interface MockSpotlightProps {
+	badge?: React.ReactNode;
+	heading?: React.ReactNode;
+	description?: React.ReactNode;
+	disclaimer?: React.ReactNode;
+	primaryButtonLabel?: string;
+	secondaryButtonLabel?: string;
+	onPrimaryClick?: () => void;
+	onSecondaryClick?: () => void;
+	onDismiss?: () => void;
+	onView?: () => void;
+}
+
 // Mock the dependencies
 jest.mock( 'data', () => ( {
 	usePromotions: jest.fn(),
@@ -25,7 +38,7 @@ jest.mock( 'tracks', () => ( {
 
 jest.mock( 'components/spotlight', () => ( {
 	__esModule: true,
-	default: ( props: any ) => (
+	default: ( props: MockSpotlightProps ) => (
 		<div data-testid="spotlight-mock">
 			<div data-testid="spotlight-badge">{ props.badge }</div>
 			<div data-testid="spotlight-heading">{ props.heading }</div>
@@ -53,14 +66,14 @@ jest.mock(
 	() => 'mocked-image-url'
 );
 
-// Mock the global wcpaySettings
+// Mock window.wcpaySettings
 const mockWcpaySettings = {
 	accountStatus: {
 		status: 'complete',
 	},
 };
 
-( global as any ).wcpaySettings = mockWcpaySettings;
+( window as any ).wcpaySettings = mockWcpaySettings;
 
 describe( 'SpotlightPromotion', () => {
 	const mockActivatePromotion = jest.fn();
@@ -118,7 +131,7 @@ describe( 'SpotlightPromotion', () => {
 	} );
 
 	it( 'does not render when account is not onboarded', () => {
-		( global as any ).wcpaySettings = {
+		( window as any ).wcpaySettings = {
 			accountStatus: {
 				status: 'pending',
 			},
@@ -134,7 +147,7 @@ describe( 'SpotlightPromotion', () => {
 		expect( container.firstChild ).toBeNull();
 
 		// Reset to original
-		( global as any ).wcpaySettings = mockWcpaySettings;
+		( window as any ).wcpaySettings = mockWcpaySettings;
 	} );
 
 	it( 'does not render when promotions are loading', () => {
@@ -234,7 +247,8 @@ describe( 'SpotlightPromotion', () => {
 
 		expect( windowOpenSpy ).toHaveBeenCalledWith(
 			'https://example.com/learn-more',
-			'_blank'
+			'_blank',
+			'noopener,noreferrer'
 		);
 
 		windowOpenSpy.mockRestore();
@@ -289,7 +303,7 @@ describe( 'SpotlightPromotion', () => {
 	} );
 
 	it( 'renders for enabled account status', () => {
-		( global as any ).wcpaySettings = {
+		( window as any ).wcpaySettings = {
 			accountStatus: {
 				status: 'enabled',
 			},
@@ -305,7 +319,7 @@ describe( 'SpotlightPromotion', () => {
 		expect( screen.getByTestId( 'spotlight-mock' ) ).toBeInTheDocument();
 
 		// Reset to original
-		( global as any ).wcpaySettings = mockWcpaySettings;
+		( window as any ).wcpaySettings = mockWcpaySettings;
 	} );
 
 	describe( 'tracks events', () => {

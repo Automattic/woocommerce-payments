@@ -6,6 +6,7 @@
  */
 
 use Automattic\Jetpack\Identity_Crisis as Jetpack_Identity_Crisis;
+use Automattic\Jetpack\Constants;
 use Automattic\WooCommerce\Admin\Features\Features;
 use WCPay\Constants\Intent_Status;
 use WCPay\Core\Server\Request;
@@ -667,14 +668,14 @@ class WC_Payments_Admin {
 			'all'
 		);
 
-		WC_Payments::register_script_with_dependencies( 'WCPAY_WC_PAYMENT_SETTINGS_SPOTLIGHT', 'dist/wc-payment-settings-spotlight' );
-		wp_set_script_translations( 'WCPAY_WC_PAYMENT_SETTINGS_SPOTLIGHT', 'woocommerce-payments' );
+		WC_Payments::register_script_with_dependencies( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT', 'dist/wc-payments-settings-spotlight' );
+		wp_set_script_translations( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT', 'woocommerce-payments' );
 
 		WC_Payments_Utils::register_style(
-			'WCPAY_WC_PAYMENT_SETTINGS_SPOTLIGHT',
-			plugins_url( 'dist/wc-payment-settings-spotlight.css', WCPAY_PLUGIN_FILE ),
+			'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT',
+			plugins_url( 'dist/wc-payments-settings-spotlight.css', WCPAY_PLUGIN_FILE ),
 			[],
-			WC_Payments::get_file_version( 'dist/wc-payment-settings-spotlight.css' ),
+			WC_Payments::get_file_version( 'dist/wc-payments-settings-spotlight.css' ),
 			'all'
 		);
 	}
@@ -1409,64 +1410,63 @@ class WC_Payments_Admin {
 	}
 
 	/**
-	 * Enqueue the spotlight promotion script on WooCommerce payment settings page.
-	 * Only runs on WooCommerce 9.9.2+ (when new payment settings were enabled for all stores).
+	 * Enqueue the spotlight promotion script on WooCommerce Payments Settings page.
+	 * Only runs on WooCommerce 9.9.2+ (when the new WooCommerce Payments Settings UI was enabled for all stores).
 	 */
 	public function enqueue_wc_payment_settings_spotlight() {
 		// Check for minimum WooCommerce version 9.9.2.
-		if ( ! defined( 'WC_VERSION' ) || version_compare( WC_VERSION, '9.9.2', '<' ) ) {
+		if ( ! Constants::is_defined( 'WC_VERSION' ) || version_compare( Constants::get_constant( 'WC_VERSION' ), '9.9.2', '<' ) ) {
 			return;
 		}
 
-		// Only enqueue on the WooCommerce payment settings page.
-		if ( ! $this->is_wc_payment_settings_page() ) {
+		// Only enqueue on the WooCommerce Payments Settings page.
+		if ( ! $this->is_wc_admin_payments_settings_page() ) {
 			return;
 		}
 
 		// Localize the script with wcpaySettings data.
+		// It is OK to use the same global variable name (`wcpaySettings`) since we localize the same data.
+		// If the data changes, we must use a different variable name since when multiple scripts use the same
+		// localized variable name, the last call overwrites previous data.
 		wp_localize_script(
-			'WCPAY_WC_PAYMENT_SETTINGS_SPOTLIGHT',
+			'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT',
 			'wcpaySettings',
 			$this->get_js_settings()
 		);
 
-		wp_enqueue_script( 'WCPAY_WC_PAYMENT_SETTINGS_SPOTLIGHT' );
-		wp_enqueue_style( 'WCPAY_WC_PAYMENT_SETTINGS_SPOTLIGHT' );
+		wp_enqueue_script( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT' );
+		wp_enqueue_style( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT' );
 	}
 
 	/**
 	 * Inject the container div for the spotlight promotion on WooCommerce payment settings page.
-	 * Only runs on WooCommerce 9.9.2+ (when new payment settings were enabled for all stores).
+	 * Only runs on WooCommerce 9.9.2+ (when the new WooCommerce Payments Settings UI was enabled for all stores).
 	 */
 	public function inject_payment_settings_spotlight_container() {
 		// Check for minimum WooCommerce version 9.9.2.
-		if ( ! defined( 'WC_VERSION' ) || version_compare( WC_VERSION, '9.9.2', '<' ) ) {
+		if ( ! Constants::is_defined( 'WC_VERSION' ) || version_compare( Constants::get_constant( 'WC_VERSION' ), '9.9.2', '<' ) ) {
 			return;
 		}
 
-		// Only inject on the WooCommerce payment settings page.
-		if ( ! $this->is_wc_payment_settings_page() ) {
+		// Only inject on the WooCommerce Payments settings page.
+		if ( ! $this->is_wc_admin_payments_settings_page() ) {
 			return;
 		}
 
-		echo '<div id="wcpay-payment-settings-spotlight"></div>';
+		echo '<div id="wcpay-payments-settings-spotlight"></div>';
 	}
 
 	/**
-	 * Check if we're on the WooCommerce payment settings page.
+	 * Check if we're on the WooCommerce Payments Settings page.
 	 *
 	 * @return bool True if on the WC payment settings page.
 	 */
-	private function is_wc_payment_settings_page() {
-		// phpcs:disable WordPress.Security.NonceVerification
-		return (
-			is_admin()
-			&& isset( $_GET['page'] )
-			&& 'wc-settings' === $_GET['page']
-			&& isset( $_GET['tab'] )
-			&& 'checkout' === $_GET['tab']
-			&& ! isset( $_GET['section'] ) // No section parameter means we're on the main payment settings page.
-		);
-		// phpcs:enable WordPress.Security.NonceVerification
+	private function is_wc_admin_payments_settings_page(): bool {
+		// phpcs:disable WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
+		return isset( $_REQUEST['page'] ) && 'wc-settings' === wp_unslash( $_REQUEST['page'] ) &&
+			isset( $_REQUEST['tab'] ) && 'checkout' === wp_unslash( $_REQUEST['tab'] ) &&
+			! isset( $_REQUEST['section'] )
+			&& is_admin();
+		// phpcs:enable WordPress.Security.NonceVerification.Recommended, WordPress.Security.ValidatedSanitizedInput.InputNotSanitized
 	}
 }

@@ -4,6 +4,7 @@
  * External dependencies
  */
 import React from 'react';
+import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -62,7 +63,7 @@ const SpotlightPromotion: React.FC = () => {
 	const { activatePromotion, dismissPromotion } = usePromotionActions();
 
 	// Check if account is onboarded - only show if status is 'complete' or 'enabled'
-	const accountStatus = wcpaySettings?.accountStatus?.status;
+	const accountStatus = window.wcpaySettings?.accountStatus?.status;
 	const isAccountOnboarded =
 		accountStatus === 'complete' || accountStatus === 'enabled';
 
@@ -134,8 +135,20 @@ const SpotlightPromotion: React.FC = () => {
 			'wcpay_payment_method_promotion_secondary_click',
 			getEventProperties()
 		);
-		if ( ctaUrl ) {
-			window.open( ctaUrl, '_blank' );
+		const url = spotlightVariation?.cta_url;
+		if ( url ) {
+			// Validate URL has a safe protocol before opening
+			try {
+				const parsedUrl = new URL( url );
+				if (
+					parsedUrl.protocol === 'https:' ||
+					parsedUrl.protocol === 'http:'
+				) {
+					window.open( url, '_blank', 'noopener,noreferrer' );
+				}
+			} catch {
+				// Invalid URL, don't open
+			}
 		}
 	};
 
@@ -166,7 +179,7 @@ const SpotlightPromotion: React.FC = () => {
 					rel="noopener noreferrer"
 					onClick={ handleTermsClick }
 				>
-					Terms and conditions
+					{ __( 'Terms and conditions', 'woocommerce-payments' ) }
 				</a>
 			</>
 		);
@@ -186,7 +199,7 @@ const SpotlightPromotion: React.FC = () => {
 			image={ image }
 			primaryButtonLabel={ spotlightVariation.cta_label }
 			onPrimaryClick={ handlePrimaryClick }
-			secondaryButtonLabel="Learn more"
+			secondaryButtonLabel={ __( 'Learn more', 'woocommerce-payments' ) }
 			onSecondaryClick={ handleSecondaryClick }
 			onDismiss={ handleDismiss }
 			onView={ handleView }

@@ -114,7 +114,7 @@ describe( 'Spotlight Component', () => {
 		expect( screen.getByTestId( 'custom-image' ) ).toBeInTheDocument();
 	} );
 
-	it( 'calls onPrimaryClick and onDismiss when primary button is clicked', () => {
+	it( 'calls onPrimaryClick and onDismiss when primary button is clicked', async () => {
 		const onPrimaryClick = jest.fn();
 		const onDismiss = jest.fn();
 
@@ -127,10 +127,17 @@ describe( 'Spotlight Component', () => {
 		);
 
 		const primaryButton = screen.getByText( 'Activate' );
-		userEvent.click( primaryButton );
+		await userEvent.click( primaryButton );
 
 		expect( onPrimaryClick ).toHaveBeenCalledTimes( 1 );
-		// onDismiss is called after animation timeout
+
+		// onDismiss is called after animation timeout (300ms)
+		await waitFor(
+			() => {
+				expect( onDismiss ).toHaveBeenCalledTimes( 1 );
+			},
+			{ timeout: 500 }
+		);
 	} );
 
 	it( 'calls onSecondaryClick when secondary button is clicked', () => {
