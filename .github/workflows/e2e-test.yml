@@ -87,8 +87,10 @@ jobs:
           # Add WC 7.7.0 with PHP 7.3 only (legacy - NO blocks tests)
           MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
           MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
-          MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
+          # The following tests are temporarily disabled due to a fatal error with WC 7.7.0.
+          # See: https://linear.app/a8c/issue/WOOSUBS-1190/wc-770-class-wc-site-tracking-not-found-during-checkout-with
+          # MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")
+          # MATRIX_ENTRIES+=("{\"woocommerce\":\"7.7.0\",\"php\":\"$PHP_LEGACY\",\"test_groups\":\"$TEST_GROUPS_SUBSCRIPTIONS\",\"test_branches\":\"$TEST_BRANCHES_SHOPPER\"}")
 
           # Add L-1 version with PHP 8.3 only (INCLUDE blocks tests - recent version with full support)
           MATRIX_ENTRIES+=("{\"woocommerce\":\"$L1_VERSION\",\"php\":\"$PHP_STABLE\",\"test_groups\":\"$TEST_GROUPS_WCPAY\",\"test_branches\":\"$TEST_BRANCHES_MERCHANT\"}")

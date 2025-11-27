@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Refunds and fees should not be tracked for canceled authorizations
