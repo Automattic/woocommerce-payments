@@ -100,7 +100,7 @@ class WC_REST_Payments_PM_Promotions_Controller extends WC_Payments_REST_Control
 	/**
 	 * Retrieve the active promotions list.
 	 *
-	 * @return WP_REST_Response
+	 * @return WP_REST_Response|WP_Error
 	 */
 	public function get_promotions() {
 		$promotions = $this->promotions_service->get_visible_promotions();
@@ -112,7 +112,7 @@ class WC_REST_Payments_PM_Promotions_Controller extends WC_Payments_REST_Control
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 *
-	 * @return WP_REST_Response
+	 * @return WP_REST_Response|WP_Error
 	 */
 	public function activate_promotion( $request ) {
 		$identifier   = $request->get_param( 'identifier' );
@@ -128,7 +128,7 @@ class WC_REST_Payments_PM_Promotions_Controller extends WC_Payments_REST_Control
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 *
-	 * @return WP_REST_Response
+	 * @return WP_REST_Response|WP_Error
 	 */
 	public function dismiss_promotion( $request ) {
 		$identifier   = $request->get_param( 'identifier' );
