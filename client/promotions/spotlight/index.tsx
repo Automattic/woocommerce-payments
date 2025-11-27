@@ -100,7 +100,6 @@ const SpotlightPromotion: React.FC = () => {
 	const promotionId = activePromotion.promo_id;
 	const paymentMethod = activePromotion.payment_method;
 	const variationId = spotlightVariation.id;
-	const ctaLabel = spotlightVariation.cta_label;
 	const ctaUrl = spotlightVariation.cta_url;
 
 	/**
@@ -123,10 +122,10 @@ const SpotlightPromotion: React.FC = () => {
 	};
 
 	const handlePrimaryClick = () => {
-		recordEvent( 'wcpay_payment_method_promotion_cta_click', {
-			...getEventProperties(),
-			cta_label: ctaLabel,
-		} );
+		recordEvent(
+			'wcpay_payment_method_promotion_activate_click',
+			getEventProperties()
+		);
 		activatePromotion( promotionId );
 	};
 

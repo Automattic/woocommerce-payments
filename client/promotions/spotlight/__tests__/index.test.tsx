@@ -337,18 +337,15 @@ describe( 'SpotlightPromotion', () => {
 			);
 		} );
 
-		it( 'records cta_click event when primary button is clicked', () => {
+		it( 'records activate_click event when primary button is clicked', () => {
 			render( <SpotlightPromotion /> );
 
 			const activateButton = screen.getByText( 'Activate now' );
 			activateButton.click();
 
 			expect( recordEvent ).toHaveBeenCalledWith(
-				'wcpay_payment_method_promotion_cta_click',
-				{
-					...expectedBaseProperties,
-					cta_label: 'Activate now',
-				}
+				'wcpay_payment_method_promotion_activate_click',
+				expectedBaseProperties
 			);
 		} );
 
