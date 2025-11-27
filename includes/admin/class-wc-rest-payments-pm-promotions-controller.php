@@ -112,7 +112,7 @@ class WC_REST_Payments_PM_Promotions_Controller extends WC_Payments_REST_Control
 	/**
 	 * Retrieve the active promotions list.
 	 *
-	 * @return WP_REST_Response
+	 * @return WP_REST_Response|WP_Error
 	 */
 	public function get_promotions() {
 		// First, try to use the cached data.
@@ -135,6 +135,11 @@ class WC_REST_Payments_PM_Promotions_Controller extends WC_Payments_REST_Control
 		// Return early if there is an error, waiting 6 hours before the next attempt.
 		if ( is_wp_error( $response ) ) {
 			// Store a trimmed down, lightweight error.
+			/**
+			 * Type hint for static analysis.
+			 *
+			 * @var WP_Error $response
+			 */
 			$error = new \WP_Error(
 				$response->get_error_code(),
 				$response->get_error_message(),
@@ -158,7 +163,7 @@ class WC_REST_Payments_PM_Promotions_Controller extends WC_Payments_REST_Control
 			// Remove any transients so there are no leftovers.
 			delete_transient( self::PROMOTIONS_CACHE_KEY );
 
-			return $promotions;
+			return rest_ensure_response( $promotions );
 		}
 
 		// Store promotions in transient cache for the given number of seconds or 1 day in seconds.
