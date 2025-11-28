@@ -15,9 +15,12 @@ import { FeeStructure } from 'wcpay/types/fees';
 import {
 	formatMethodFeesDescription,
 	formatMethodFeesTooltip,
+	getDiscountBadgeText,
+	getDiscountTooltipText,
 } from 'wcpay/utils/account-fees';
 import WCPaySettingsContext from '../wcpay-settings-context';
 import Chip from 'wcpay/components/chip';
+import PromotionalBadge from 'wcpay/components/promotional-badge';
 import Pill from 'wcpay/components/pill';
 import './payment-method.scss';
 import DuplicateNotice from 'wcpay/components/duplicate-notice';
@@ -51,11 +54,16 @@ interface PaymentMethodProps {
 const PaymentMethodLabel = ( {
 	id,
 	label,
+	accountFees,
 }: {
 	id: string;
 	label: string;
+	accountFees?: Record< string, FeeStructure >;
 } ): React.ReactElement => {
 	const { chip, chipType = 'warning' } = usePaymentMethodAvailability( id );
+
+	const discountFee = accountFees?.[ id ]?.discount?.[ 0 ];
+	const hasDiscount = discountFee?.discount;
 
 	return (
 		<>
@@ -66,6 +74,16 @@ const PaymentMethodLabel = ( {
 				</span>
 			) }
 			{ chip && <Chip message={ chip } type={ chipType } /> }
+			{ hasDiscount && (
+				<PromotionalBadge
+					message={ getDiscountBadgeText( discountFee ) }
+					tooltip={ getDiscountTooltipText( discountFee ) }
+					tooltipLabel={ __(
+						'Discount details',
+						'woocommerce-payments'
+					) }
+				/>
+			) }
 		</>
 	);
 };
@@ -142,12 +160,20 @@ const PaymentMethod = ( {
 						<Icon />
 					</div>
 					<div className="payment-method__label payment-method__label-mobile">
-						<PaymentMethodLabel label={ label } id={ id } />
+						<PaymentMethodLabel
+							label={ label }
+							id={ id }
+							accountFees={ accountFees }
+						/>
 					</div>
 					<div className="payment-method__text">
 						<div className="payment-method__label-container">
 							<div className="payment-method__label payment-method__label-desktop">
-								<PaymentMethodLabel label={ label } id={ id } />
+								<PaymentMethodLabel
+									label={ label }
+									id={ id }
+									accountFees={ accountFees }
+								/>
 							</div>
 							<div className="payment-method__description">
 								{ description }
