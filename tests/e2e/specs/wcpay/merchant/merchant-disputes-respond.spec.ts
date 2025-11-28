@@ -643,11 +643,6 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 					hasText: 'Evidence saved!',
 				} )
 			).toBeVisible( { timeout: 10000 } );
-
-			// Note: We don't check the field value immediately after save here because
-			// the UI may be updating state asynchronously. The real verification that
-			// the save persisted correctly happens in the next steps when we navigate
-			// away and come back to verify the saved values are restored from the server.
 		} );
 
 		await test.step( 'Go back to the payment details page', async () => {
