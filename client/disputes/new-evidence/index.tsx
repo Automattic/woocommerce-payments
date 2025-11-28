@@ -862,7 +862,8 @@ export default ( { query }: { query: { id: string } } ) => {
 	const recommendedDocumentFields = getRecommendedDocumentFields(
 		disputeReason,
 		disputeReason === 'credit_not_processed' ? refundStatus : undefined,
-		disputeReason === 'duplicate' ? duplicateStatus : undefined
+		disputeReason === 'duplicate' ? duplicateStatus : undefined,
+		productType
 	);
 
 	const recommendedShippingDocumentFields = getRecommendedShippingDocumentFields();
