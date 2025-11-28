@@ -62,11 +62,8 @@ const PaymentMethodLabel = ( {
 } ): React.ReactElement => {
 	const { chip, chipType = 'warning' } = usePaymentMethodAvailability( id );
 
-	const discountFee =
-		accountFees?.[ id ]?.discount && accountFees[ id ].discount.length > 0
-			? accountFees[ id ].discount[ 0 ]
-			: null;
-	const hasDiscount = discountFee && discountFee.discount;
+	const discountFee = accountFees?.[ id ]?.discount?.[ 0 ];
+	const hasDiscount = discountFee?.discount;
 
 	return (
 		<>

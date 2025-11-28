@@ -363,7 +363,11 @@ export const getTransactionsPaymentMethodName = (
 };
 
 export const getDiscountBadgeText = ( discountFee: DiscountFee ): string => {
-	const discountPercentage = formatFee( discountFee.discount ?? 0 );
+	if ( ! discountFee.discount ) {
+		return '';
+	}
+
+	const discountPercentage = formatFee( discountFee.discount );
 
 	if ( discountFee.end_time ) {
 		return sprintf(
@@ -382,7 +386,11 @@ export const getDiscountBadgeText = ( discountFee: DiscountFee ): string => {
 };
 
 export const getDiscountTooltipText = ( discountFee: DiscountFee ): string => {
-	const discountPercentage = formatFee( discountFee.discount ?? 0 );
+	if ( ! discountFee.discount ) {
+		return '';
+	}
+
+	const discountPercentage = formatFee( discountFee.discount );
 	const currencyCode = discountFee.volume_currency ?? discountFee.currency;
 
 	if ( discountFee.volume_allowance && discountFee.end_time ) {
