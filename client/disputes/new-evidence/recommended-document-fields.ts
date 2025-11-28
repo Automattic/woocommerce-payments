@@ -26,6 +26,12 @@ export const DOCUMENT_FIELD_KEYS = {
 	SHIPPING_DOCUMENTATION: 'shipping_documentation',
 } as const;
 
+/**
+ * Get recommended document fields for the subscription_canceled dispute reason
+ *
+ * @param {string} productType - The product type (for subscription_canceled disputes)
+ * @return {Array<{key: string, label: string}>} Array of recommended document fields
+ */
 const getRecommendedDocumentFieldsForSubscriptionCanceled = (
 	productType?: string
 ): Array< RecommendedDocument > => {
@@ -89,6 +95,7 @@ const getRecommendedDocumentFieldsForSubscriptionCanceled = (
  * @param {string} reason - The dispute reason
  * @param {string} refundStatus - The refund status (for credit_not_processed disputes)
  * @param {string} duplicateStatus - The duplicate status (for duplicate disputes)
+ * @param {string} productType - The product type (for subscription_canceled disputes)
  * @return {Array<{key: string, label: string}>} Array of recommended document fields
  */
 const getRecommendedDocumentFields = (
