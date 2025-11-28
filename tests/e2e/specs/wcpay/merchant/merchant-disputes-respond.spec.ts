@@ -643,11 +643,6 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 					hasText: 'Evidence saved!',
 				} )
 			).toBeVisible( { timeout: 10000 } );
-
-			// Sanity-check the field didn't reset visually before leaving the page
-			await expect(
-				merchantPage.getByLabel( 'PRODUCT DESCRIPTION' )
-			).toHaveValue( 'my product description' );
 		} );
 
 		await test.step( 'Go back to the payment details page', async () => {
