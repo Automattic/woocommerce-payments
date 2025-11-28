@@ -388,7 +388,7 @@ describe( 'Account fees utility functions', () => {
 			expect( result ).toBe( '25% off fees' );
 		} );
 
-		it( 'handles zero discount gracefully', () => {
+		it( 'returns empty string for zero discount', () => {
 			const discountFee: DiscountFee = {
 				discount: 0,
 				end_time: null,
@@ -402,10 +402,10 @@ describe( 'Account fees utility functions', () => {
 
 			const result = getDiscountBadgeText( discountFee );
 
-			expect( result ).toBe( '0% off fees' );
+			expect( result ).toBe( '' );
 		} );
 
-		it( 'handles undefined discount gracefully', () => {
+		it( 'returns empty string for undefined discount', () => {
 			const discountFee: DiscountFee = {
 				end_time: null,
 				volume_allowance: null,
@@ -418,7 +418,7 @@ describe( 'Account fees utility functions', () => {
 
 			const result = getDiscountBadgeText( discountFee );
 
-			expect( result ).toBe( '0% off fees' );
+			expect( result ).toBe( '' );
 		} );
 	} );
 
