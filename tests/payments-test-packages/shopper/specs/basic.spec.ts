@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { test, expect } from '../fixtures/auth';
+import { test, expect } from '../../shared/fixtures/auth';
 
 test.describe(
 	'A basic set of tests to ensure WP, wp-admin and my-account load',

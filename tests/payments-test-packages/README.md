@@ -1,68 +1,72 @@
-# WooCommerce Payments E2E Test Package
+# WooCommerce Payments QIT E2E Test Packages
 
-E2E test package for WooCommerce Payments checkout flows, payment methods, and Jetpack integration.
+This directory contains end-to-end tests for WooCommerce Payments, organized as QIT test subpackages.
 
-## Quick Start
+## Package Structure
 
-### Prerequisites
+```
+payments-test-packages/
+├── shared/          # Utility package: bootstrap, config, utilities
+│   ├── bootstrap/   # Environment setup scripts
+│   ├── config/      # Test configuration
+│   ├── fixtures/    # Playwright fixtures
+│   ├── utils/       # Test utilities
+│   └── qit-helpers/ # QIT helper utilities
+├── shopper/         # Test package: customer checkout tests
+│   ├── specs/       # Shopper test specs
+│   └── package.json # Package configuration
+├── merchant/        # Test package: admin/merchant tests (coming soon)
+└── subscriptions/   # Test package: subscription tests (coming soon)
+```
 
-- QIT CLI installed (`composer global require "woocommerce/qit-cli:*"`)
-- WooCommerce Payments plugin built (`.zip` file)
-- Jetpack credentials (site ID, blog token, user token)
+## Running Tests
 
-### Run Tests Locally
+### Individual Package
+
+Run tests from a specific package:
 
 ```bash
-# From the woocommerce-payments directory, build the plugin
-cd /path/to/woocommerce-payments
-npm run build:release  # Creates woocommerce-payments.zip
+# Run shopper tests
+cd shopper
+npm ci
+npx playwright install chromium --with-deps
+npx playwright test
+```
 
-# Run the test package
-cd /path/to/woocommerce-payments-e2e-tests
-qit run:e2e woocommerce-payments . \
-  --source ../woocommerce-payments/woocommerce-payments.zip \
+### With QIT
+
+Run using QIT CLI:
+
+```bash
+# Run shopper tests via QIT
+qit run:e2e woocommerce-payments ./shopper \
+  --source path/to/woocommerce-payments.zip \
   --env E2E_JP_SITE_ID=your_site_id \
   --env E2E_JP_BLOG_TOKEN=your_blog_token \
   --env E2E_JP_USER_TOKEN=your_user_token
 ```
 
-### Using qit.json
+## Package Details
 
-Alternatively, configure secrets in `qit.json` and run:
+### Shared Utility Package (`shared/`)
 
-```bash
-qit run:e2e woocommerce-payments . --config qit.json
-```
+Contains shared resources used by all test packages:
+- **bootstrap/**: Environment setup scripts for WP/WC configuration
+- **config/**: Test configuration (users, products, cards)
+- **fixtures/**: Playwright fixtures for authentication
+- **utils/**: Test helper utilities (shopper, merchant, devtools)
+- **qit-helpers/**: QIT-specific utilities for WP-CLI and REST API
 
-## Structure
+### Shopper Test Package (`shopper/`)
 
-```
-woocommerce-payments-e2e-tests/
-├── qit-test.json              # Package manifest
-├── package.json               # NPM dependencies
-├── playwright.config.js       # Playwright configuration
-├── qit.json                   # QIT configuration for local runs
-├── bootstrap/
-│   ├── setup.sh               # Environment setup script
-│   ├── class-wp-cli-qit-dev-command.php
-│   ├── qit-jetpack-connection.php
-│   └── qit-jetpack-status.php
-├── specs/                     # Test specs
-│   ├── basic.spec.ts
-│   └── woopayments/
-│       └── shopper/
-├── utils/                     # Test utilities
-│   ├── shopper.ts
-│   ├── merchant.ts
-│   ├── devtools.ts
-│   └── helpers.ts
-├── fixtures/                  # Playwright fixtures
-│   └── auth.ts
-├── config/                    # Configuration files
-│   ├── default.ts
-│   └── users.json
-└── results/                   # Test results output
-```
+E2E tests for customer checkout flows:
+- Basic checkout purchases
+- Card payment failures
+- 3DS authentication
+- Coupon handling
+- Saved card functionality
+- UPE payment methods
+- Site editor checkout
 
 ## Configuration
 
@@ -79,28 +83,39 @@ The following environment variables are required:
 - `woocommerce` >= 8.0.0
 - `jetpack` >= 12.0.0
 
-## Lifecycle Phases
+## Development
 
-1. **globalSetup**: Runs `bootstrap/setup.sh` to configure the WordPress environment
-   - Installs WordPress importer and sample products
-   - Configures WooCommerce settings
-   - Sets up Jetpack connection
-   - Creates test users
+### Run Tests with UI
 
-2. **setup**: Installs NPM dependencies and Playwright browsers
-   ```bash
-   npm ci
-   npx playwright install chromium --with-deps
-   ```
+```bash
+cd shopper
+npx playwright test --headed
+```
 
-3. **run**: Executes Playwright tests
-   ```bash
-   npx playwright test
-   ```
+### Debug Tests
 
-4. **teardown**: (Empty - no cleanup needed)
+```bash
+cd shopper
+npx playwright test --debug
+```
 
-5. **globalTeardown**: (Empty - no cleanup needed)
+### Run Specific Tests
+
+```bash
+cd shopper
+npx playwright test specs/shopper-checkout-purchase.spec.ts
+```
+
+## Adding New Test Packages
+
+To add a new test package (e.g., merchant tests):
+
+1. Create directory: `mkdir merchant`
+2. Create `qit-test.json` manifest
+3. Create `package.json` with dependencies
+4. Create `playwright.config.js`
+5. Add specs in `specs/` directory
+6. Import shared utilities from `../../shared/`
 
 ## Test Results
 
@@ -110,83 +125,9 @@ Test results are output in the following formats:
 - **HTML Report**: `./results/html/index.html`
 - **Artifacts**: `./results/blob/` (screenshots, videos, traces)
 
-## Development
-
-### Run Tests with UI
-
-```bash
-npm run test:headed
-```
-
-### Debug Tests
-
-```bash
-npm run test:debug
-```
-
-### Run Specific Tests
-
-```bash
-npx playwright test specs/woopayments/shopper/shopper-checkout-purchase.spec.ts
-```
-
-## Publishing
-
-To publish this test package to the QIT registry:
-
-```bash
-qit package:publish .
-```
-
-Once published, others can run your tests:
-
-```bash
-qit run:e2e their-plugin \
-  --test-package woocommerce-payments/wcpay-e2e-tests:1.0.0
-```
-
-## Migration Notes
-
-This test package was migrated from the legacy custom tests format. See [MIGRATION.md](./MIGRATION.md) for details on the migration process and how to migrate your own tests.
-
-## Troubleshooting
-
-### Tests can't authenticate with WooPayments
-
-Ensure Jetpack credentials are correct and valid:
-- Check that `E2E_JP_SITE_ID`, `E2E_JP_BLOG_TOKEN`, and `E2E_JP_USER_TOKEN` are set
-- Verify the credentials are from the correct environment (sandbox vs production)
-
-### Bootstrap setup fails
-
-Check the bootstrap logs for specific errors:
-- WordPress/WooCommerce installation issues
-- Jetpack connection problems
-- Sample data import failures
-
-### Tests timeout
-
-Increase the timeout in `qit-test.json`:
-```json
-{
-    "timeout": 3600
-}
-```
-
-Or in `playwright.config.js`:
-```javascript
-{
-    timeout: 180 * 1000  // 3 minutes
-}
-```
-
 ## Additional Resources
 
 - [QIT Documentation](https://qit.woo.com/docs/test-packages)
 - [Playwright Documentation](https://playwright.dev)
-- [Migration Guide](./MIGRATION.md)
-
-## Support
-
-- **Issues**: Report issues at https://github.com/woocommerce/qit-cli/issues
-- **Contact**: qit@woocommerce.com
+- [GETTING_STARTED.md](./GETTING_STARTED.md) - Detailed setup guide
+- [CODE_CHANGES.md](./CODE_CHANGES.md) - Migration notes
