@@ -31,6 +31,7 @@ const chunkArray = < T >( items: T[], size: number ): T[][] => {
 	return chunks;
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const shouldRemoveWidget = ( widget: WidgetEntry ) => {
 	if ( widget.id_base === 'currency_switcher_widget' ) {
 		return true;

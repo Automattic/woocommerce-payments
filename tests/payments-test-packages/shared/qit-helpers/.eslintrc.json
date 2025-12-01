@@ -1,0 +1,12 @@
+{
+  "rules": {
+    "wpcalypso/import-docblock": "off",
+    "jsdoc/newline-after-description": "off",
+    "jsdoc/check-tag-names": "off",
+    "no-shadow": "off",
+    "no-console": "off",
+    "no-else-return": "off",
+    "prefer-const": "off",
+    "valid-jsdoc": "off"
+  }
+}

@@ -1,0 +1,30 @@
+{
+    "$schema": "https://qit.woo.com/json-schema/test-package",
+    "package": "woocommerce-payments/wcpay-shared",
+    "test_type": "e2e",
+    "description": "Shared bootstrap and utilities for WooCommerce Payments E2E tests",
+    "tags": ["woopayments", "shared", "utility"],
+    "requires": {
+        "network": true,
+        "secrets": [
+            "E2E_JP_SITE_ID",
+            "E2E_JP_BLOG_TOKEN",
+            "E2E_JP_USER_TOKEN"
+        ],
+        "plugins": {
+            "woocommerce": "woocommerce",
+            "jetpack": "jetpack"
+        }
+    },
+    "test": {
+        "phases": {
+            "globalSetup": [
+                "./bootstrap/setup.sh"
+            ],
+            "setup": [],
+            "teardown": [],
+            "globalTeardown": []
+        }
+    },
+    "timeout": 600
+}

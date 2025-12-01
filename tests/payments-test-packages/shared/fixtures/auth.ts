@@ -58,6 +58,7 @@ const getState = ( browser: Browser, role: Role ) => {
 		);
 	}
 
+	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 	return stateCache.get( role )!;
 };
 

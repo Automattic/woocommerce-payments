@@ -1,9 +1,7 @@
 /**
  * Internal dependencies
  */
-import usersData from './users.json' with { type: 'json' };
-
-const users = usersData.users;
+import { users } from './users.json';
 
 export const config = {
 	users: {
