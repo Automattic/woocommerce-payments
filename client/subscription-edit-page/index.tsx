@@ -41,7 +41,7 @@ import {
  * @param {string} nonce The nonce.
  * @return {Promise<FetchUserTokensResponse | undefined>} The tokens for the user.
  */
-const fetchUserTokens = async (
+export const fetchUserTokens = async (
 	userId: number,
 	ajaxUrl: string,
 	nonce: string
@@ -74,7 +74,7 @@ const fetchUserTokens = async (
  * @param {(userId: number) => void} callback The callback to call when the customer is changed.
  * @return {() => void} The cleanup function.
  */
-const addCustomerSelectListener = (
+export const addCustomerSelectListener = (
 	cache: CachedUserData,
 	ajaxUrl: string,
 	nonce: string,

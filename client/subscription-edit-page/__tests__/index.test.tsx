@@ -9,7 +9,11 @@ import React from 'react';
 /**
  * Internal dependencies
  */
-import { PaymentMethodSelect } from '../index';
+import {
+	PaymentMethodSelect,
+	fetchUserTokens,
+	addCustomerSelectListener,
+} from '../index';
 import {
 	startLoading,
 	tokensLoaded,
@@ -27,10 +31,6 @@ const mockOn = jest.fn();
 const mockOff = jest.fn();
 ( global as any ).jQuery = mockJQuery;
 mockJQuery.mockReturnValue( { on: mockOn, off: mockOff } );
-
-// Mock fetch
-const mockFetch = jest.fn();
-global.fetch = mockFetch;
 
 // Mock @wordpress/i18n
 jest.mock( '@wordpress/i18n', () => ( {
@@ -590,5 +590,170 @@ describe( 'User Token Cache Functions', () => {
 
 			expect( getDefaultTokenId( cache, 1 ) ).toBe( 0 );
 		} );
+	} );
+} );
+
+describe( 'fetchUserTokens', () => {
+	// Store original fetch to restore later
+	const originalFetch = global.fetch;
+
+	afterEach( () => {
+		global.fetch = originalFetch;
+	} );
+
+	test( 'sends correct request parameters', async () => {
+		let capturedUrl = '';
+		let capturedOptions: RequestInit | undefined;
+
+		// Use a direct mock for this test to capture FormData
+		global.fetch = jest.fn().mockImplementation( ( url, options ) => {
+			capturedUrl = url;
+			capturedOptions = options;
+			return Promise.resolve( {
+				ok: true,
+				json: () => Promise.resolve( { data: { tokens: [] } } ),
+			} );
+		} );
+
+		await fetchUserTokens( 123, 'http://test.com/ajax', 'test-nonce' );
+
+		expect( capturedUrl ).toBe( 'http://test.com/ajax' );
+		expect( capturedOptions?.method ).toBe( 'POST' );
+
+		const formData = capturedOptions?.body as FormData;
+		expect( formData.get( 'action' ) ).toBe(
+			'wcpay_get_user_payment_tokens'
+		);
+		expect( formData.get( 'nonce' ) ).toBe( 'test-nonce' );
+		expect( formData.get( 'user_id' ) ).toBe( '123' );
+	} );
+
+	test( 'returns tokens on successful response', async () => {
+		const mockTokens: Token[] = [
+			{ tokenId: 1, displayName: 'Visa •••• 1234', isDefault: true },
+		];
+
+		global.fetch = jest.fn().mockResolvedValue( {
+			ok: true,
+			json: () => Promise.resolve( { data: { tokens: mockTokens } } ),
+		} );
+
+		const result = await fetchUserTokens(
+			1,
+			'http://test.com/ajax',
+			'nonce'
+		);
+
+		expect( result ).toEqual( { tokens: mockTokens } );
+	} );
+
+	test( 'throws error when response is not ok', async () => {
+		global.fetch = jest.fn().mockResolvedValue( {
+			ok: false,
+		} );
+
+		await expect(
+			fetchUserTokens( 1, 'http://test.com/ajax', 'nonce' )
+		).rejects.toThrow( 'Failed to fetch user tokens' );
+	} );
+} );
+
+describe( 'addCustomerSelectListener', () => {
+	const mockJQueryFn = ( global as any ).jQuery as jest.Mock;
+	const mockOnFn = mockJQueryFn().on as jest.Mock;
+	const mockOffFn = mockJQueryFn().off as jest.Mock;
+
+	beforeEach( () => {
+		mockJQueryFn.mockClear();
+		mockOnFn.mockClear();
+		mockOffFn.mockClear();
+		document.body.innerHTML = '';
+	} );
+
+	test( 'returns no-op cleanup when customer_user element not found', () => {
+		const setUser = jest.fn();
+		const setCache = jest.fn();
+
+		const cleanup = addCustomerSelectListener(
+			[],
+			'http://test.com/ajax',
+			'nonce',
+			setUser,
+			setCache
+		);
+
+		// Should return a function
+		expect( typeof cleanup ).toBe( 'function' );
+
+		// Cleanup should not throw
+		expect( () => cleanup() ).not.toThrow();
+
+		// No listeners should have been attached
+		expect( mockOnFn ).not.toHaveBeenCalled();
+	} );
+
+	test( 'attaches listeners when customer_user element exists', () => {
+		document.body.innerHTML =
+			'<select id="customer_user"><option value="1">User 1</option></select>';
+
+		const setUser = jest.fn();
+		const setCache = jest.fn();
+
+		addCustomerSelectListener(
+			[],
+			'http://test.com/ajax',
+			'nonce',
+			setUser,
+			setCache
+		);
+
+		// jQuery listener should be attached
+		expect( mockJQueryFn ).toHaveBeenCalled();
+		expect( mockOnFn ).toHaveBeenCalledWith(
+			'select2:select',
+			expect.any( Function )
+		);
+	} );
+
+	test( 'cleanup removes listeners', () => {
+		document.body.innerHTML =
+			'<select id="customer_user"><option value="1">User 1</option></select>';
+
+		const setUser = jest.fn();
+		const setCache = jest.fn();
+
+		const cleanup = addCustomerSelectListener(
+			[],
+			'http://test.com/ajax',
+			'nonce',
+			setUser,
+			setCache
+		);
+
+		cleanup();
+
+		// jQuery off should be called
+		expect( mockOffFn ).toHaveBeenCalledWith(
+			'select2:select',
+			expect.any( Function )
+		);
+	} );
+
+	test( 'returns no-op when element is not a select', () => {
+		document.body.innerHTML = '<div id="customer_user"></div>';
+
+		const setUser = jest.fn();
+		const setCache = jest.fn();
+
+		const cleanup = addCustomerSelectListener(
+			[],
+			'http://test.com/ajax',
+			'nonce',
+			setUser,
+			setCache
+		);
+
+		expect( typeof cleanup ).toBe( 'function' );
+		expect( mockOnFn ).not.toHaveBeenCalled();
 	} );
 } );
