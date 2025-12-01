@@ -1,16 +1,17 @@
 #!/bin/bash
+# QIT Bootstrap Setup for WooPayments E2E Tests
+#
+# This script runs before tests to configure the plugin environment.
 
 set -euo pipefail
 IFS=$'\n\t'
 
-# QIT Bootstrap Setup for WooPayments E2E Tests
-# This script runs before tests to configure the plugin environment
-
 echo "Setting up WooPayments for E2E testing..."
 
-# Ensure environment is marked as development so dev-only CLI commands are available
+# Ensure environment is marked as development so dev-only CLI commands are available.
 wp config set WP_ENVIRONMENT_TYPE development --quiet 2>/dev/null || true
 
+# Install WordPress importer and import sample products.
 echo "Installing WordPress importer for sample data..."
 if ! wp plugin is-installed wordpress-importer >/dev/null 2>&1; then
     wp plugin install wordpress-importer --activate
@@ -30,7 +31,7 @@ else
     fi
 fi
 
-# Ensure WooCommerce core pages exist and capture IDs
+# Ensure WooCommerce core pages exist and configure checkout/cart.
 echo "Ensuring WooCommerce core pages exist..."
 wp wc --user=admin tool run install_pages >/dev/null 2>&1 || true
 
@@ -45,14 +46,14 @@ if [ -z "$CART_PAGE_ID" ] || [ "$CART_PAGE_ID" = "0" ]; then
     CART_PAGE_ID=$(wp post list --post_type=page --name=cart --field=ID --format=ids)
 fi
 
-# Default to shortcode-based templates for classic checkout/cart flows
+# Default to shortcode-based templates for classic checkout/cart flows.
 if [ -n "${CHECKOUT_PAGE_ID}" ] && [ -n "${CART_PAGE_ID}" ]; then
     echo "Configuring classic checkout and cart pages..."
 
     CHECKOUT_SHORTCODE="<!-- wp:shortcode -->[woocommerce_checkout]<!-- /wp:shortcode -->"
     CART_SHORTCODE="<!-- wp:shortcode -->[woocommerce_cart]<!-- /wp:shortcode -->"
 
-    # Provision a dedicated WooCommerce Blocks checkout clone if it does not exist yet
+    # Provision a dedicated WooCommerce Blocks checkout clone if it does not exist yet.
     CHECKOUT_WCB_PAGE_ID=$(wp post list --post_type=page --name=checkout-wcb --field=ID --format=ids)
     if [ -z "$CHECKOUT_WCB_PAGE_ID" ]; then
         echo "Creating WooCommerce Blocks checkout page..."
@@ -64,7 +65,7 @@ if [ -n "${CHECKOUT_PAGE_ID}" ] && [ -n "${CART_PAGE_ID}" ]; then
             --post_name="checkout-wcb" \
             --porcelain)
     else
-        echo "WooCommerce Blocks checkout page already exists (ID: $CHECKOUT_WCB_PAGE_ID)"
+        echo "WooCommerce Blocks checkout page already exists (ID: $CHECKOUT_WCB_PAGE_ID)."
     fi
 
     wp post update "$CART_PAGE_ID" --post_content="$CART_SHORTCODE"
@@ -75,12 +76,12 @@ if [ -n "${CHECKOUT_PAGE_ID}" ] && [ -n "${CART_PAGE_ID}" ]; then
     fi
 fi
 
-# Double check option points to the classic checkout page
+# Ensure option points to the classic checkout page.
 if [ -n "$CHECKOUT_PAGE_ID" ]; then
     wp option update woocommerce_checkout_page_id "$CHECKOUT_PAGE_ID"
 fi
 
-# Configure WooCommerce for testing
+# Configure WooCommerce checkout settings.
 wp option update woocommerce_currency "USD"
 wp option update woocommerce_enable_guest_checkout "yes"
 wp option update woocommerce_force_ssl_checkout "no"
@@ -88,16 +89,9 @@ wp option set woocommerce_checkout_company_field "optional" --quiet 2>/dev/null 
 wp option set woocommerce_coming_soon "no" --quiet 2>/dev/null || true
 wp option set woocommerce_store_pages_only "no" --quiet 2>/dev/null || true
 
-# Ensure Storefront theme is active for consistent storefront markup
-if ! wp theme is-installed storefront > /dev/null 2>&1; then
-    wp theme install storefront --force
-fi
-wp theme activate storefront
+# Create test users.
+echo "Creating test users..."
 
-
-
-# Create test users that match config/users.json
-# Customer user (required for shopper tests)
 wp user create customer customer@woocommercecoree2etestsuite.com \
     --role=customer \
     --user_pass=password \
@@ -105,7 +99,6 @@ wp user create customer customer@woocommercecoree2etestsuite.com \
     --last_name="Smith" \
     --quiet 2>/dev/null || wp user update customer --user_pass=password --quiet
 
-# Subscriptions customer user (required for subscription tests)
 wp user create subscriptions-customer subscriptions-customer@woocommercecoree2etestsuite.com \
     --role=customer \
     --user_pass=password \
@@ -113,7 +106,6 @@ wp user create subscriptions-customer subscriptions-customer@woocommercecoree2et
     --last_name="Customer" \
     --quiet 2>/dev/null || wp user update subscriptions-customer --user_pass=password --quiet
 
-# Editor user (required for editor tests)
 wp user create editor editor@woocommercecoree2etestsuite.com \
     --role=editor \
     --user_pass=password \
@@ -121,55 +113,10 @@ wp user create editor editor@woocommercecoree2etestsuite.com \
     --last_name="Itor" \
     --quiet 2>/dev/null || wp user update editor --user_pass=password --quiet
 
-echo "✅ Test users created (customer, subscriptions-customer, editor)"
+echo "Test users created (customer, subscriptions-customer, editor)."
 
-echo "Setting up WooPayments configuration..."
-
-# Enable WooPayments settings (same as main E2E tests)
-echo "Creating/updating WooPayments settings"
-wp option set woocommerce_woocommerce_payments_settings --format=json '{"enabled":"yes"}'
-
-# Check required environment variables for basic Jetpack authentication
-if [ -n "${E2E_JP_SITE_ID:-}" ] && [ -n "${E2E_JP_BLOG_TOKEN:-}" ] && [ -n "${E2E_JP_USER_TOKEN:-}" ]; then
-    echo "Configuring WCPay with Jetpack authentication..."
-
-    # Set up Jetpack connection and refresh account data from server
-    # Environment variables are automatically available to PHP via getenv()
-    # In test packages, bootstrap files are at ./bootstrap/ (relative to test package root)
-    wp eval-file ./bootstrap/qit-jetpack-connection.php
-
-    echo "✅ WooPayments connection configured - account data fetched from server"
-
-else
-    echo "No Jetpack credentials configured - WooPayments will show Connect screen"
-    echo "WooPayments will show Connect screen"
-    echo ""
-    echo "For basic connectivity testing, set in tests/qit/config/local.env:"
-    echo "  E2E_JP_SITE_ID=123456789"
-    echo "  E2E_JP_BLOG_TOKEN=123.ABC.QIT"
-    echo "  E2E_JP_USER_TOKEN=123.ABC.QIT.1"
-    echo ""
-fi
-
-# Always check the setup status
-echo ""
-echo "Current WooPayments setup status:"
-# In test packages, bootstrap files are at ./bootstrap/ (relative to test package root)
-wp eval-file ./bootstrap/qit-jetpack-status.php
-
-# Enable development/test mode for better testing experience
-wp option set wcpay_dev_mode 1 --quiet 2>/dev/null || true
-
-# Disable proxy mode (we want direct production API access)
-wp option set wcpaydev_proxy 0 --quiet 2>/dev/null || true
-
-# Disable onboarding redirect for E2E testing
-wp option set wcpay_should_redirect_to_onboarding 0 --quiet 2>/dev/null || true
-
-echo "Dismissing fraud protection welcome tour in E2E tests"
-wp option set wcpay_fraud_protection_welcome_tour_dismissed 1 --quiet 2>/dev/null || true
-
-echo "Resetting coupons and creating standard free coupon"
+# Create test coupons.
+echo "Resetting coupons and creating standard free coupon..."
 wp post delete $(wp post list --post_type=shop_coupon --format=ids) --force --quiet 2>/dev/null || true
 wp db query "DELETE FROM wp_postmeta WHERE post_id NOT IN (SELECT ID FROM wp_posts)" --skip-column-names 2>/dev/null || true
 wp wc --user=admin shop_coupon create \
@@ -179,4 +126,45 @@ wp wc --user=admin shop_coupon create \
     --individual_use=true \
     --free_shipping=true
 
-echo "WooPayments configuration completed"
+echo "Test coupons created (free)."
+
+# Configure WooPayments.
+echo "Setting up WooPayments configuration..."
+
+# Ensure Storefront theme is active for consistent storefront markup.
+if ! wp theme is-installed storefront > /dev/null 2>&1; then
+    wp theme install storefront --force
+fi
+wp theme activate storefront
+
+# Enable WooPayments settings.
+echo "Enabling WooPayments settings..."
+wp option set woocommerce_woocommerce_payments_settings --format=json '{"enabled":"yes"}'
+
+# Check required environment variables for Jetpack authentication.
+if [ -n "${E2E_JP_SITE_ID:-}" ] && [ -n "${E2E_JP_BLOG_TOKEN:-}" ] && [ -n "${E2E_JP_USER_TOKEN:-}" ]; then
+    echo "Configuring WooPayments with Jetpack authentication..."
+    wp eval-file ./bootstrap/qit-jetpack-connection.php
+    echo "WooPayments connection configured - account data fetched from server."
+else
+    echo "No Jetpack credentials configured - WooPayments will show Connect screen."
+    echo ""
+    echo "For connectivity testing, set in tests/qit/config/local.env:"
+    echo "  E2E_JP_SITE_ID=123456789"
+    echo "  E2E_JP_BLOG_TOKEN=123.ABC.QIT"
+    echo "  E2E_JP_USER_TOKEN=123.ABC.QIT.1"
+    echo ""
+fi
+
+# Display current setup status.
+echo ""
+echo "Current WooPayments setup status:"
+wp eval-file ./bootstrap/qit-jetpack-status.php
+
+# Enable development/test mode for better testing experience.
+wp option set wcpay_dev_mode 1 --quiet 2>/dev/null || true
+wp option set wcpaydev_proxy 0 --quiet 2>/dev/null || true
+wp option set wcpay_should_redirect_to_onboarding 0 --quiet 2>/dev/null || true
+wp option set wcpay_fraud_protection_welcome_tour_dismissed 1 --quiet 2>/dev/null || true
+
+echo "WooPayments E2E setup complete."
