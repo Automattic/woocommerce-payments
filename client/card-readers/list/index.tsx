@@ -26,7 +26,7 @@ const ReadersListDescription = () => (
 						'To connect or disconnect card readers, use the %s mobile application.',
 					'woocommerce-payments'
 				),
-				'WooPayments'
+				'WooCommerce'
 			) }
 		</p>
 	</>

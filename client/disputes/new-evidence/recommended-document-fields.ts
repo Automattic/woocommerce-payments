@@ -19,6 +19,7 @@ export const DOCUMENT_FIELD_KEYS = {
 	UNCATEGORIZED_FILE: 'uncategorized_file',
 	REFUND_POLICY: 'refund_policy',
 	REFUND_RECEIPT_DOCUMENTATION: 'uncategorized_file',
+	DUPLICATE_CHARGE_DOCUMENTATION: 'duplicate_charge_documentation',
 	CANCELLATION_POLICY: 'cancellation_policy',
 	ACCESS_ACTIVITY_LOG: 'access_activity_log',
 	SERVICE_DOCUMENTATION: 'service_documentation',
@@ -174,9 +175,20 @@ const getRecommendedDocumentFields = (
 						},
 				  ]
 				: [
-						// For is_not_duplicate: Order receipt, Customer communication, Refund policy, Other documents
-						// NOTE: This is a basic implementation. Full implementation should include duplicate_charge_documentation
-						// field as per spec (to be implemented in WOOPMNT-5436)
+						// For is_not_duplicate: Order receipt, Any additional receipts, Customer communication, Refund policy, Other documents
+						{
+							key:
+								DOCUMENT_FIELD_KEYS.DUPLICATE_CHARGE_DOCUMENTATION,
+							label: __(
+								'Any additional receipts',
+								'woocommerce-payments'
+							),
+							description: __(
+								'Receipt(s) for any other order(s) from this customer.',
+								'woocommerce-payments'
+							),
+							order: 12,
+						},
 						{
 							key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
 							label: __(
@@ -184,10 +196,10 @@ const getRecommendedDocumentFields = (
 								'woocommerce-payments'
 							),
 							description: __(
-								"A screenshot of your store's refund policy.",
+								'A screenshot of the refund policy for the provided service.',
 								'woocommerce-payments'
 							),
-							order: 15,
+							order: 25,
 						},
 				  ],
 		subscription_canceled: [
