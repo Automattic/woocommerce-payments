@@ -88,73 +88,43 @@ const fetchUserTokens = async (
 
 /**
  * Renders a payment method select or loading indicator.
- *
- * @param {PaymentMethodSelectProps} props The props for the payment method select.
- * @param {string} props.inputName The name attribute for the select element.
- * @param {number} props.value The currently selected payment method token ID.
- * @param {(value: number) => void} props.onChange Callback when the selected value changes.
- * @param {number} props.userId The ID of the customer whose payment methods to display.
- * @param {UserTokenCache} props.cache The cache containing user payment token data.
- * @return {JSX.Element} The payment method select or loading indicator.
  */
 export const PaymentMethodSelect = ( {
 	inputName,
 	value,
-	onChange,
 	userId,
 	cache,
 }: PaymentMethodSelectProps ) => {
-	/**
-	 * Generate options for the select.
-	 */
-	const options: JSX.Element[] = [];
-	if ( userId > 0 ) {
-		const entry = cache.getUserEntry( userId );
-		if ( undefined === entry || entry.loading ) {
-			return <>{ __( 'Loading…', 'woocommerce-payments' ) }</>;
-		} else if ( entry.loadingError ) {
-			return <strong>{ entry.loadingError }</strong>;
-		}
-
-		if ( ! cache.userHasToken( userId, value ) ) {
-			options.push(
-				<option value={ 0 } key={ 'select' } disabled>
-					{ __(
-						'Please select a payment method',
-						'woocommerce-payments'
-					) }
-				</option>
-			);
-		}
-
-		entry.tokens.forEach( ( token ) => {
-			options.push(
-				<option value={ token.tokenId } key={ token.tokenId }>
-					{ token.displayName }
-				</option>
-			);
-		} );
-	} else {
-		options.push(
+	if ( userId <= 0 ) {
+		return <select name={ inputName } defaultValue={ 0 } key={ 'no-customer' }>
 			<option value={ 0 } key={ 'no-customer' } disabled>
 				{ __(
 					'Please select a customer first',
 					'woocommerce-payments'
 				) }
 			</option>
-		);
+		</select>;
+	}
+
+	const entry = cache.getUserEntry( userId );
+	if ( undefined === entry || entry.loading ) {
+		return <>{ __( 'Loading…', 'woocommerce-payments' ) }</>;
+	} else if ( entry.loadingError ) {
+		return <strong>{ entry.loadingError }</strong>;
 	}
 
 	return (
 		// eslint-disable-next-line
-		<select
-			name={ inputName }
-			value={ value }
-			onChange={ ( event ) =>
-				onChange( parseInt( event.target.value, 10 ) )
-			}
-		>
-			{ options }
+		<select name={ inputName } defaultValue={ value } key={ userId }>
+			{ 0 === value && <option value={ 0 } key={ 'select' } disabled>
+				{ __(
+					'Please select a payment method',
+					'woocommerce-payments'
+				) }
+			</option> }
+			{ entry.tokens.map( token => <option value={ token.tokenId } key={ token.tokenId }>
+				{ token.displayName }
+			</option> ) }
 		</select>
 	);
 };
@@ -207,6 +177,9 @@ const setupPaymentSelector = (
 			);
 			if ( entry && entry.tokens.length > 0 && defaultToken ) {
 				value = defaultToken.tokenId;
+			} else {
+				// Make sure that value is a numeric zero.
+				value = 0;
 			}
 		}
 
@@ -216,10 +189,6 @@ const setupPaymentSelector = (
 				value={ value }
 				userId={ userId }
 				cache={ cache }
-				onChange={ ( newValue: number ) => {
-					value = newValue;
-					render();
-				} }
 			/>
 		);
 	};
@@ -253,6 +222,7 @@ const setupPaymentSelector = (
 					)
 				);
 			}
+
 			cache.tokensLoaded( userId, response.tokens );
 		} catch ( error ) {
 			cache.loadingFailed(

@@ -35,7 +35,7 @@ export interface PaymentMethodSelectProps {
 	value: number;
 	userId: number;
 	cache: UserTokenCache;
-	onChange: ( value: number ) => void;
+	// onChange: ( value: number ) => void;
 }
 
 /**
