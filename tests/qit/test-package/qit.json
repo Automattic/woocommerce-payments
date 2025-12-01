@@ -11,8 +11,8 @@
     "environments": {
         "default": {
             "plugins": [
-                "woocommerce",
-                "jetpack"
+                { "slug": "woocommerce", "from": "wporg", "version": "stable" },
+                { "slug": "jetpack", "from": "wporg", "version": "stable" }
             ]
         }
     },
