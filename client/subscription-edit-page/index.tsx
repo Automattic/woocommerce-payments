@@ -44,7 +44,7 @@ const addCustomerSelectListener = (
 
 	if ( ! customerUserSelect ) {
 		return (): void => {
-			// No-op cleanup function when element is not found
+			// No-op cleanup function when an element is not found.
 		};
 	}
 
@@ -52,7 +52,7 @@ const addCustomerSelectListener = (
 	const internalCallback = () =>
 		callback( parseInt( customerUserSelect.value, 10 ) || 0 );
 
-	// Add the listner with the right technique, as select2 does not emit <select> events.
+	// Add the listener with the right technique, as select2 does not emit <select> events.
 	jQuery( customerUserSelect ).on( 'select2:select', internalCallback );
 	customerUserSelect.addEventListener( 'change', internalCallback );
 
@@ -224,7 +224,7 @@ const setupPaymentSelector = (
 		userId = newUserId;
 		render();
 
-		// Looaded, loading, or errored out, we do not need to load anything.
+		// Loaded, loading, or errored out, we do not need to load anything.
 		if ( cache.hasEntry( userId ) ) {
 			return;
 		}
