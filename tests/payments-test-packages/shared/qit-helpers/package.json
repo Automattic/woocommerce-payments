@@ -8,8 +8,10 @@
     ".": "./index.js"
   },
   "dependencies": {
-    "@playwright/test": "^1.54.2",
     "axios": "^1.6.0"
+  },
+  "peerDependencies": {
+    "@playwright/test": "^1.40.0"
   },
   "keywords": [
     "qit",
