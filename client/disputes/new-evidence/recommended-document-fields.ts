@@ -57,18 +57,20 @@ const getRecommendedDocumentFieldsForSubscriptionCanceled = (
 		},
 	];
 
-	// Add subscription logs for single product types
-	if ( 'multiple' !== productType ) {
-		fields.push( {
-			key: DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
-			label: __( 'Subscription logs', 'woocommerce-payments' ),
-			description: __(
-				'Order notes or the history of related orders. This should clearly show successful renewals before the dispute.',
-				'woocommerce-payments'
-			),
-			order: 30,
-		} );
+	// For the multiple product type only core fields are needed.
+	if ( 'multiple' === productType ) {
+		return fields;
 	}
+
+	fields.push( {
+		key: DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
+		label: __( 'Subscription logs', 'woocommerce-payments' ),
+		description: __(
+			'Order notes or the history of related orders. This should clearly show successful renewals before the dispute.',
+			'woocommerce-payments'
+		),
+		order: 30,
+	} );
 
 	return fields;
 };
