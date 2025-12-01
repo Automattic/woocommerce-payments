@@ -37,5 +37,16 @@
             "allure-dir": "./results/allure"
         }
     },
+    "subpackages": {
+        "woocommerce-payments/shopper": {
+            "description": "Shopper checkout flow tests for WooPayments",
+            "tags": ["woopayments", "shopper", "checkout", "critical"],
+            "test": {
+                "phases": {
+                    "run": ["npx playwright test --project=shopper"]
+                }
+            }
+        }
+    },
     "timeout": 1800
 }

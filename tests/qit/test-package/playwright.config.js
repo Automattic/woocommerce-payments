@@ -70,11 +70,19 @@ export default defineConfig( {
 		timeout: 20 * 1000, // 20 seconds for assertions
 	},
 
-	/* Configure projects for major browsers */
+	/* Configure projects for subpackages */
 	projects: [
 		{
 			name: 'chromium',
 			use: { ...devices[ 'Desktop Chrome' ] },
+			testMatch: /.*\.spec\.ts$/,
 		},
+		{
+			name: 'shopper',
+			testDir: './tests/shopper',
+			use: { ...devices[ 'Desktop Chrome' ] },
+		},
+		// Additional projects for merchant and subscriptions subpackages
+		// will be added when those tests are migrated.
 	],
 } );
