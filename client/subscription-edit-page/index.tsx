@@ -8,14 +8,6 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { __ } from '@wordpress/i18n';
 
-// TypeScript declaration for jQuery
-declare const jQuery: (
-	selector: any
-) => {
-	on: ( event: string, handler: () => void ) => void;
-	off: ( event: string, handler: () => void ) => void;
-};
-
 /**
  * Internal dependencies
  */
@@ -38,9 +30,9 @@ import UserTokenCache from './user-token-cache';
 const addCustomerSelectListener = (
 	callback: ( userId: number ) => void
 ): ( () => void ) => {
-	const customerUserSelect = document.getElementById(
-		'customer_user'
-	) as HTMLSelectElement | null;
+	const element = document.getElementById( 'customer_user' );
+	const customerUserSelect =
+		element instanceof HTMLSelectElement ? element : null;
 
 	if ( ! customerUserSelect ) {
 		return (): void => {
@@ -192,11 +184,16 @@ const setupPaymentSelector = (
 	}
 
 	// In older Subscriptions versions, there was just a simple input.
-	const input = element.querySelector( 'select,input' ) as
-		| HTMLSelectElement
-		| HTMLInputElement
-		| null;
+	const input = element.querySelector( 'select,input' );
 	if ( ! input ) {
+		return;
+	}
+	if (
+		! (
+			input instanceof HTMLSelectElement ||
+			input instanceof HTMLInputElement
+		)
+	) {
 		return;
 	}
 
@@ -271,9 +268,11 @@ const addPaymentMethodDropdowns = (): void => {
 
 	// There should be a single element on the page, but still make sure to iterate over all of them.
 	document
-		.querySelectorAll( '.wcpay-subscription-payment-method' )
+		.querySelectorAll< HTMLSpanElement >(
+			'.wcpay-subscription-payment-method'
+		)
 		.forEach( ( element ) => {
-			setupPaymentSelector( element as HTMLSpanElement, cache );
+			setupPaymentSelector( element, cache );
 		} );
 };
 

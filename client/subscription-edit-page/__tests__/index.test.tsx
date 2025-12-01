@@ -33,9 +33,9 @@ jest.mock( '@wordpress/i18n', () => ( {
 
 describe( 'PaymentMethodSelect Component', () => {
 	const mockTokens: Token[] = [
-		{ tokenId: 1, displayName: 'Visa •••• 1234' },
-		{ tokenId: 2, displayName: 'Mastercard •••• 5678' },
-		{ tokenId: 3, displayName: 'Amex •••• 9012' },
+		{ tokenId: 1, displayName: 'Visa •••• 1234', isDefault: true },
+		{ tokenId: 2, displayName: 'Mastercard •••• 5678', isDefault: false },
+		{ tokenId: 3, displayName: 'Amex •••• 9012', isDefault: false },
 	];
 
 	let cache: UserTokenCache;
@@ -272,8 +272,8 @@ describe( 'PaymentMethodSelect Component', () => {
 describe( 'UserTokenCache', () => {
 	let cache: UserTokenCache;
 	const mockTokens: Token[] = [
-		{ tokenId: 1, displayName: 'Visa •••• 1234' },
-		{ tokenId: 2, displayName: 'Mastercard •••• 5678' },
+		{ tokenId: 1, displayName: 'Visa •••• 1234', isDefault: true },
+		{ tokenId: 2, displayName: 'Mastercard •••• 5678', isDefault: false },
 	];
 
 	beforeEach( () => {

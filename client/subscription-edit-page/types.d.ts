@@ -4,18 +4,12 @@
 import UserTokenCache from './user-token-cache';
 
 /**
- * Props for the WCPayPaymentMethodElement component
- */
-export interface PaymentMethodElementProps {
-	element: HTMLSpanElement;
-}
-
-/**
  * Token represents a payment method token for a user
  */
 export interface Token {
 	tokenId: number;
 	displayName: string;
+	isDefault: boolean;
 }
 
 /**
