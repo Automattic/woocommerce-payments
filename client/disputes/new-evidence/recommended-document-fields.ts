@@ -35,39 +35,8 @@ export const DOCUMENT_FIELD_KEYS = {
 const getRecommendedDocumentFieldsForSubscriptionCanceled = (
 	productType?: string
 ): Array< RecommendedDocument > => {
-	if ( 'multiple' === productType ) {
-		return [
-			{
-				key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
-				label: __( 'Store refund policy', 'woocommerce-payments' ),
-				description: __(
-					"A screenshot of your store's refund policy.",
-					'woocommerce-payments'
-				),
-				order: 40,
-			},
-			{
-				key: DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
-				label: __( 'Terms of service', 'woocommerce-payments' ),
-				description: __(
-					"A screenshot of your store's terms of service.",
-					'woocommerce-payments'
-				),
-				order: 50,
-			},
-		];
-	}
-
-	return [
-		{
-			key: DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
-			label: __( 'Subscription logs', 'woocommerce-payments' ),
-			description: __(
-				'Order notes or the history of related orders. This should clearly show successful renewals before the dispute.',
-				'woocommerce-payments'
-			),
-			order: 30,
-		},
+	// Common fields for all subscription cancellation disputes
+	const fields: Array< RecommendedDocument > = [
 		{
 			key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
 			label: __( 'Store refund policy', 'woocommerce-payments' ),
@@ -87,6 +56,21 @@ const getRecommendedDocumentFieldsForSubscriptionCanceled = (
 			order: 50,
 		},
 	];
+
+	// Add subscription logs for single product types
+	if ( 'multiple' !== productType ) {
+		fields.push( {
+			key: DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
+			label: __( 'Subscription logs', 'woocommerce-payments' ),
+			description: __(
+				'Order notes or the history of related orders. This should clearly show successful renewals before the dispute.',
+				'woocommerce-payments'
+			),
+			order: 30,
+		} );
+	}
+
+	return fields;
 };
 
 /**
