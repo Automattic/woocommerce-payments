@@ -2409,7 +2409,7 @@ class WC_Payments_Order_Service {
 	 * @return string
 	 */
 	private function get_frod_support_note( $formatted_amount ) {
-		$learn_more_url = 'https://woocommerce.com/document/woopayments/fees-and-debits/preventing-negative-balances/#adding-funds';
+		$learn_more_url = 'https://woocommerce.com/document/woopayments/fees/preventing-negative-balances/#adding-funds';
 		return sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %s: Formatted refund amount */

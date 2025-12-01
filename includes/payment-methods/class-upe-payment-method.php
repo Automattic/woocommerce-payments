@@ -15,6 +15,7 @@ use WC_Payments_Token_Service;
 use WC_Payment_Token_CC;
 use WC_Payment_Token_WCPay_SEPA;
 use WC_Payments_Subscriptions_Utilities;
+use WCPay\PaymentMethods\Configs\Utils\PaymentMethodUtils;
 
 /**
  * Extendable class for payment methods.
@@ -125,11 +126,11 @@ class UPE_Payment_Method {
 		if ( null !== $this->definition ) {
 			// Cache values that don't require context.
 			$this->stripe_id                    = $this->definition::get_id();
-			$this->is_reusable                  = $this->definition::is_reusable();
+			$this->is_reusable                  = PaymentMethodUtils::is_reusable( $this->definition );
 			$this->currencies                   = $this->definition::get_supported_currencies();
-			$this->accept_only_domestic_payment = $this->definition::accepts_only_domestic_payments();
+			$this->accept_only_domestic_payment = PaymentMethodUtils::accepts_only_domestic_payments( $this->definition );
 			$this->limits_per_currency          = $this->definition::get_limits_per_currency();
-			$this->is_bnpl                      = $this->definition::is_bnpl();
+			$this->is_bnpl                      = PaymentMethodUtils::is_bnpl( $this->definition );
 			$this->countries                    = $this->definition::get_supported_countries();
 		}
 	}
@@ -434,7 +435,7 @@ class UPE_Payment_Method {
 	 */
 	public function allows_manual_capture() {
 		if ( null !== $this->definition ) {
-			return $this->definition::allows_manual_capture();
+			return PaymentMethodUtils::allows_manual_capture( $this->definition );
 		}
 
 		return false;
