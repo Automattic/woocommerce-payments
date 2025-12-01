@@ -1,9 +1,4 @@
 /**
- * Internal dependencies
- */
-import UserTokenCache from './user-token-cache';
-
-/**
  * Token represents a payment method token for a user
  */
 export interface Token {
@@ -32,10 +27,11 @@ export type CachedUserData = CachedUserDataItem[];
  */
 export interface PaymentMethodSelectProps {
 	inputName: string;
-	value: number;
-	userId: number;
-	cache: UserTokenCache;
-	// onChange: ( value: number ) => void;
+	initialValue: number;
+	initialUserId: number;
+	initialCache: CachedUserData;
+	nonce: string;
+	ajaxUrl: string;
 }
 
 /**
