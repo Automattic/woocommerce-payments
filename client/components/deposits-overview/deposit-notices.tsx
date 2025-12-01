@@ -102,7 +102,7 @@ export const NegativeBalanceDepositsPausedNotice: React.FC = () => (
 					<a
 						target="_blank"
 						rel="noopener noreferrer"
-						href="https://woocommerce.com/document/woopayments/fees-and-debits/account-showing-negative-balance/"
+						href="https://woocommerce.com/document/woopayments/fees/account-showing-negative-balance/"
 					/>
 				),
 			},

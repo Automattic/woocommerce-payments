@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+refactor: update payment method definition classes to delegate capabilities to PaymentMethodUtils

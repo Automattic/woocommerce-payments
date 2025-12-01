@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+refactor: updating some payment methods to use payment definitions instead

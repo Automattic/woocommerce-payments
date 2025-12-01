@@ -231,6 +231,62 @@ describe( 'Cover Letter Generator', () => {
 				'<Attachment description> (Attachment B)'
 			);
 		} );
+
+		it( 'should include "Any additional receipts" for duplicate disputes when duplicate_charge_documentation is provided', () => {
+			const duplicateDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'duplicate' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					duplicate_charge_documentation:
+						'duplicate_charge_documentation_url',
+				},
+			};
+			const result = generateAttachments( duplicateDispute );
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain(
+				'Any additional receipts (Attachment B)'
+			);
+		} );
+
+		it( 'should not include "Any additional receipts" for non-duplicate disputes', () => {
+			const nonDuplicateDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'product_not_received' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					duplicate_charge_documentation:
+						'duplicate_charge_documentation_url',
+				},
+			};
+			const result = generateAttachments( nonDuplicateDispute );
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).not.toContain( 'Any additional receipts' );
+		} );
+
+		it( 'should maintain correct attachment ordering for duplicate disputes', () => {
+			const duplicateDispute: ExtendedDispute = {
+				...mockDispute,
+				reason: 'duplicate' as DisputeReason,
+				evidence: {
+					receipt: 'receipt_url',
+					duplicate_charge_documentation:
+						'duplicate_charge_documentation_url',
+					customer_communication: 'customer_communication_url',
+					refund_policy: 'refund_policy_url',
+				},
+			};
+			const result = generateAttachments( duplicateDispute );
+			// Verify the order: Order receipt, Any additional receipts, Customer communication, Store refund policy
+			expect( result ).toContain( 'Order receipt (Attachment A)' );
+			expect( result ).toContain(
+				'Any additional receipts (Attachment B)'
+			);
+			expect( result ).toContain(
+				'Customer communication (Attachment C)'
+			);
+			expect( result ).toContain( 'Store refund policy (Attachment D)' );
+		} );
 	} );
 
 	describe( 'generateHeader', () => {
