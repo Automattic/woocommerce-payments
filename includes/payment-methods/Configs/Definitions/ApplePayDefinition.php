@@ -76,33 +76,6 @@ class ApplePayDefinition implements PaymentMethodDefinitionInterface {
 	}
 
 	/**
-	 * Is the payment method a reusable payment method?
-	 *
-	 * @return boolean
-	 */
-	public static function is_reusable(): bool {
-		return PaymentMethodUtils::is_reusable( self::get_capabilities() );
-	}
-
-	/**
-	 * Does the payment method accept only domestic payments?
-	 *
-	 * @return boolean
-	 */
-	public static function accepts_only_domestic_payments(): bool {
-		return PaymentMethodUtils::accepts_only_domestic_payments( self::get_capabilities() );
-	}
-
-	/**
-	 * Does the payment method allow manual capture?
-	 *
-	 * @return boolean
-	 */
-	public static function allows_manual_capture(): bool {
-		return PaymentMethodUtils::allows_manual_capture( self::get_capabilities() );
-	}
-
-	/**
 	 * Get the list of supported currencies
 	 *
 	 * @return string[] Array of currency codes
