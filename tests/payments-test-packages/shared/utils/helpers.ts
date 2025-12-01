@@ -17,6 +17,7 @@ import {
  * Internal dependencies
  */
 import { config } from '../config/default';
+import RestAPI from './rest-api';
 
 // ES module equivalent of __dirname
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -101,14 +102,13 @@ export const getMerchant = async (
  */
 export const getShopper = async (
 	browser: Browser,
-	asNewCustomer = false,
-	baseURL = '' // Needed for recreating customer
+	asNewCustomer = false
 ): Promise< {
 	shopperPage: Page;
 	shopperContext: BrowserContext;
 } > => {
 	if ( asNewCustomer ) {
-		const restApi = new RestAPI( baseURL );
+		const restApi = new RestAPI();
 		await restApi.recreateCustomer(
 			config.users.customer,
 			config.addresses.customer.billing,

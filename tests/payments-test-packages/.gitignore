@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Test results
+results/
+test-media/
+test-results/
+
+# Playwright
+.auth/
+playwright-report/
+
+# Environment
+.env
+.env.local
+
+# OS files
+.DS_Store
+Thumbs.db
