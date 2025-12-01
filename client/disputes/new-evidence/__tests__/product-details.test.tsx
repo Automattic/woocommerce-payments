@@ -37,11 +37,9 @@ describe( 'ProductDetails', () => {
 
 	it( 'renders product type selector and description', () => {
 		render( <ProductDetails { ...baseProps } /> );
+		expect( screen.getByLabelText( /PRODUCT TYPE/i ) ).toBeInTheDocument();
 		expect(
-			screen.getByLabelText( /PRODUCT OR SERVICE TYPE/i )
-		).toBeInTheDocument();
-		expect(
-			screen.getByLabelText( /PRODUCT OR SERVICE DESCRIPTION/i )
+			screen.getByLabelText( /PRODUCT DESCRIPTION/i )
 		).toBeInTheDocument();
 		expect(
 			screen.getByDisplayValue( 'A great product' )
@@ -50,26 +48,21 @@ describe( 'ProductDetails', () => {
 
 	it( 'disables fields when readOnly', () => {
 		render( <ProductDetails { ...baseProps } readOnly={ true } /> );
+		expect( screen.getByLabelText( /PRODUCT TYPE/i ) ).toBeDisabled();
 		expect(
-			screen.getByLabelText( /PRODUCT OR SERVICE TYPE/i )
-		).toBeDisabled();
-		expect(
-			screen.getByLabelText( /PRODUCT OR SERVICE DESCRIPTION/i )
+			screen.getByLabelText( /PRODUCT DESCRIPTION/i )
 		).toBeDisabled();
 	} );
 
 	it( 'calls change handlers', () => {
 		render( <ProductDetails { ...baseProps } /> );
-		fireEvent.change(
-			screen.getByLabelText( /PRODUCT OR SERVICE DESCRIPTION/i ),
-			{
-				target: { value: 'New desc' },
-			}
-		);
+		fireEvent.change( screen.getByLabelText( /PRODUCT DESCRIPTION/i ), {
+			target: { value: 'New desc' },
+		} );
 		expect( baseProps.onProductDescriptionChange ).toHaveBeenCalledWith(
 			'New desc'
 		);
-		fireEvent.change( screen.getByLabelText( /PRODUCT OR SERVICE TYPE/i ), {
+		fireEvent.change( screen.getByLabelText( /PRODUCT TYPE/i ), {
 			target: { value: 'digital_product_or_service' },
 		} );
 		expect( baseProps.onProductTypeChange ).toHaveBeenCalled();
@@ -78,7 +71,7 @@ describe( 'ProductDetails', () => {
 	it( 'does not show Booking/Reservation option when feature flag is disabled', () => {
 		global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = false;
 		render( <ProductDetails { ...baseProps } /> );
-		const select = screen.getByLabelText( /PRODUCT OR SERVICE TYPE/i );
+		const select = screen.getByLabelText( /PRODUCT TYPE/i );
 		const options = Array.from( select.querySelectorAll( 'option' ) ).map(
 			( option ) => ( option as HTMLOptionElement ).value
 		);
