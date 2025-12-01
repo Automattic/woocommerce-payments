@@ -118,8 +118,7 @@ class Duplicate_Payment_Prevention_Service {
 
 		// Check if the order amount matches the charged amount.
 		$order_total_in_cents = \WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() );
-		$charge               = $intent->get_charge();
-		$charged_amount       = $charge ? $charge->get_amount() : 0;
+		$charged_amount       = $intent->get_amount();
 
 		// If amounts don't match, this indicates the order was modified after payment.
 		// Add a note explaining the situation instead of marking it as paid.
