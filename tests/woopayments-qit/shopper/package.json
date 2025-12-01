@@ -1,5 +1,5 @@
 {
-  "name": "wcpay-shopper-tests",
+  "name": "woopayments-shopper-tests",
   "version": "1.0.0",
   "description": "WooCommerce Payments Shopper E2E Tests",
   "private": true,

@@ -1,6 +1,6 @@
 {
     "$schema": "https://qit.woo.com/json-schema/test-package",
-    "package": "woocommerce-payments/wcpay-shopper-tests",
+    "package": "woocommerce-payments/woopayments-shopper-tests",
     "test_type": "e2e",
     "description": "WooCommerce Payments shopper checkout E2E tests",
     "tags": ["woopayments", "checkout", "shopper", "payments"],

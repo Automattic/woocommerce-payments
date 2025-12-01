@@ -1,11 +1,11 @@
-# WooCommerce Payments QIT E2E Test Packages
+# WooPayments QIT E2E Test Packages
 
-This directory contains end-to-end tests for WooCommerce Payments, organized as QIT test subpackages.
+This directory contains end-to-end tests for WooPayments, organized as QIT test subpackages.
 
 ## Package Structure
 
 ```
-payments-test-packages/
+woopayments-qit/
 ├── shared/          # Utility package: bootstrap, config, utilities
 │   ├── bootstrap/   # Environment setup scripts
 │   ├── config/      # Test configuration

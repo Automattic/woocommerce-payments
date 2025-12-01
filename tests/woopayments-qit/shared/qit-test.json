@@ -1,6 +1,6 @@
 {
     "$schema": "https://qit.woo.com/json-schema/test-package",
-    "package": "woocommerce-payments/wcpay-shared",
+    "package": "woocommerce-payments/woopayments-shared",
     "test_type": "e2e",
     "description": "Shared bootstrap and utilities for WooCommerce Payments E2E tests",
     "tags": ["woopayments", "shared", "utility"],
