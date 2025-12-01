@@ -1,0 +1,28 @@
+{
+    "$schema": "https://qit.woo.com/json-schema/test-package",
+    "package": "woocommerce-payments/wcpay-shopper-tests",
+    "test_type": "e2e",
+    "description": "WooCommerce Payments shopper checkout E2E tests",
+    "tags": ["woopayments", "checkout", "shopper", "payments"],
+    "requires": {
+        "network": true
+    },
+    "test": {
+        "phases": {
+            "setup": [
+                "npm ci",
+                "npx playwright install chromium --with-deps"
+            ],
+            "run": [
+                "npx playwright test"
+            ],
+            "teardown": []
+        },
+        "results": {
+            "ctrf-json": "./results/ctrf.json",
+            "blob-dir": "./results/blob",
+            "allure-dir": "./results/allure"
+        }
+    },
+    "timeout": 1200
+}

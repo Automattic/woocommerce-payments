@@ -1,15 +1,15 @@
 /**
  * External dependencies
  */
-import { test, expect, getAuthState } from '../../../fixtures/auth';
+import { test, expect, getAuthState } from '../../shared/fixtures/auth';
 import type { Page, BrowserContext } from '@playwright/test';
 
 /**
  * Internal dependencies
  */
-import { config } from '../../../config/default';
-import * as shopper from '../../../utils/shopper';
-import { goToMyAccount } from '../../../utils/shopper-navigation';
+import { config } from '../../shared/config/default';
+import * as shopper from '../../shared/utils/shopper';
+import { goToMyAccount } from '../../shared/utils/shopper-navigation';
 
 type ConfigProduct = typeof config.products[ keyof typeof config.products ];
 type CardType = [ string, typeof config.cards.basic, ConfigProduct[] ];

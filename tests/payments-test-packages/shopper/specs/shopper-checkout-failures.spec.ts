@@ -1,14 +1,14 @@
 /**
  * External dependencies
  */
-import { test, expect } from '../../../fixtures/auth';
+import { test, expect } from '../../shared/fixtures/auth';
 import type { Page } from '@playwright/test';
 
 /**
  * Internal dependencies
  */
-import { config } from '../../../config/default';
-import * as shopper from '../../../utils/shopper';
+import { config } from '../../shared/config/default';
+import * as shopper from '../../shared/utils/shopper';
 
 test.describe(
 	'Shopper > Checkout > Failures with various cards',

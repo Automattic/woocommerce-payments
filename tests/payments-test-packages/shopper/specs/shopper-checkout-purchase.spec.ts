@@ -2,15 +2,15 @@
  * External dependencies
  */
 import { Page, BrowserContext } from '@playwright/test';
-import { test, expect, getAuthState } from '../../../fixtures/auth';
+import { test, expect, getAuthState } from '../../shared/fixtures/auth';
 
 /**
  * Internal dependencies
  */
 
-import { config } from '../../../config/default';
-import * as shopper from '../../../utils/shopper';
-import * as devtools from '../../../utils/devtools';
+import { config } from '../../shared/config/default';
+import * as shopper from '../../shared/utils/shopper';
+import * as devtools from '../../shared/utils/devtools';
 
 test.describe( 'Successful purchase', { tag: '@shopper' }, () => {
 	let merchantPage: Page;

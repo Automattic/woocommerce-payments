@@ -1,14 +1,14 @@
 /**
  * External dependencies
  */
-import { test, expect, getAuthState } from '../../../fixtures/auth';
+import { test, expect, getAuthState } from '../../shared/fixtures/auth';
 import type { BrowserContext, Page } from '@playwright/test';
 
 /**
  * Internal dependencies
  */
-import { config } from '../../../config/default';
-import { goToCart, goToCheckout } from '../../../utils/shopper-navigation';
+import { config } from '../../shared/config/default';
+import { goToCart, goToCheckout } from '../../shared/utils/shopper-navigation';
 import {
 	addToCartFromShopPage,
 	emptyCart,
@@ -17,7 +17,7 @@ import {
 	placeOrder,
 	removeCoupon,
 	setupCheckout,
-} from '../../../utils/shopper';
+} from '../../shared/utils/shopper';
 
 const couponCode = 'free';
 

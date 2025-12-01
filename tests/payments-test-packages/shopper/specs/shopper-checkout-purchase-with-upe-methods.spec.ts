@@ -2,16 +2,16 @@
  * External dependencies
  */
 import type { BrowserContext, Page } from '@playwright/test';
-import { test, expect, getAuthState } from '../../../fixtures/auth';
+import { test, expect, getAuthState } from '../../shared/fixtures/auth';
 
 /**
  * Internal dependencies
  */
-import { config } from '../../../config/default';
-import * as merchant from '../../../utils/merchant';
-import * as shopper from '../../../utils/shopper';
-import * as devtools from '../../../utils/devtools';
-import { goToCheckout } from '../../../utils/shopper-navigation';
+import { config } from '../../shared/config/default';
+import * as merchant from '../../shared/utils/merchant';
+import * as shopper from '../../shared/utils/shopper';
+import * as devtools from '../../shared/utils/devtools';
+import { goToCheckout } from '../../shared/utils/shopper-navigation';
 
 test.describe(
 	'Local payment method checkout with card testing',

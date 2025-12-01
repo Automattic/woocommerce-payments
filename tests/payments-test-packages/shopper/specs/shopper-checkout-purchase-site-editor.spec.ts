@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { test, expect, getAuthState } from '../../../fixtures/auth';
+import { test, expect, getAuthState } from '../../shared/fixtures/auth';
 import type { BrowserContext, Page } from '@playwright/test';
 
 /**
@@ -10,9 +10,9 @@ import type { BrowserContext, Page } from '@playwright/test';
 import {
 	disableCardTestingProtection,
 	enableCardTestingProtection,
-} from '../../../utils/devtools';
-import { activateTheme } from '../../../utils/merchant';
-import { config } from '../../../config/default';
+} from '../../shared/utils/devtools';
+import { activateTheme } from '../../shared/utils/merchant';
+import { config } from '../../shared/config/default';
 import {
 	addToCartFromShopPage,
 	confirmCardAuthentication,
@@ -21,7 +21,7 @@ import {
 	fillCardDetails,
 	placeOrder,
 	setupCheckout,
-} from '../../../utils/shopper';
+} from '../../shared/utils/shopper';
 
 /**
  * Tests for successful purchases with both card testing prevention enabled
