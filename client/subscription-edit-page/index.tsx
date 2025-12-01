@@ -199,6 +199,17 @@ const setupPaymentSelector = (
 
 	const root = createRoot( element );
 	const render = () => {
+		// If there is no value, but user tokens are loaded and there is a token, use it.
+		if ( ! value ) {
+			const entry = cache.getUserEntry( userId );
+			const defaultToken = entry?.tokens.find(
+				( token ) => token.isDefault
+			);
+			if ( entry && entry.tokens.length > 0 && defaultToken ) {
+				value = defaultToken.tokenId;
+			}
+		}
+
 		root.render(
 			<PaymentMethodSelect
 				inputName={ input.name }
