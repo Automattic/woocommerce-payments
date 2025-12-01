@@ -117,7 +117,7 @@ class Duplicate_Payment_Prevention_Service {
 		}
 
 		// Check if the order amount matches the charged amount.
-		$order_total_in_cents = (int) ( $order->get_total() * 100 );
+		$order_total_in_cents = \WC_Payments_Utils::prepare_amount( $order->get_total(), $order->get_currency() );
 		$charge               = $intent->get_charge();
 		$charged_amount       = $charge ? $charge->get_amount() : 0;
 
@@ -129,8 +129,8 @@ class Duplicate_Payment_Prevention_Service {
 					/* translators: 1: payment intent ID, 2: charged amount, 3: current order total */
 					__( 'Duplicate payment attempt prevented. Order was already paid with payment intent %1$s for %2$s, but current order total is %3$s. Please review the order and create a new order for any additional items.', 'woocommerce-payments' ),
 					$intent_id,
-					wc_price( $charged_amount / 100, [ 'currency' => $order->get_currency() ] ),
-					wc_price( $order->get_total(), [ 'currency' => $order->get_currency() ] )
+					wc_price( \WC_Payments_Utils::interpret_stripe_amount( $charged_amount, $order->get_currency() ), [ 'currency' => $order->get_currency() ] ),
+					wc_price( \WC_Payments_Utils::interpret_stripe_amount( $order_total_in_cents, $order->get_currency() ), [ 'currency' => $order->get_currency() ] )
 				)
 			);
 		} else {
