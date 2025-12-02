@@ -24,6 +24,10 @@ interface PromotionalBadgeProps {
 	type?: ChipType;
 	/** Accessible label for the tooltip button */
 	tooltipLabel?: string;
+	/** Optional terms & conditions URL - when provided, a link is appended to the tooltip */
+	tcUrl?: string;
+	/** Optional terms & conditions link label */
+	tcLabel?: string;
 }
 
 const PromotionalBadge: React.FC< PromotionalBadgeProps > = ( {
@@ -31,11 +35,29 @@ const PromotionalBadge: React.FC< PromotionalBadgeProps > = ( {
 	tooltip,
 	type = 'success',
 	tooltipLabel = __( 'More information', 'woocommerce-payments' ),
+	tcUrl,
+	tcLabel,
 } ) => {
 	const classNames = clsx(
 		'chip',
 		`chip-${ type }`,
 		'wcpay-promotional-badge'
+	);
+
+	// Use backend-provided tc_label when available, otherwise fall back to default.
+	const tcLinkLabel =
+		tcLabel || __( 'See terms and conditions', 'woocommerce-payments' );
+
+	// Build tooltip content with optional T&C link.
+	const tooltipContent = tcUrl ? (
+		<>
+			{ tooltip }{ ' ' }
+			<a href={ tcUrl } target="_blank" rel="noopener noreferrer">
+				{ tcLinkLabel }
+			</a>
+		</>
+	) : (
+		tooltip
 	);
 
 	return (
@@ -44,7 +66,7 @@ const PromotionalBadge: React.FC< PromotionalBadgeProps > = ( {
 			<ClickTooltip
 				buttonIcon={ <InfoOutlineIcon /> }
 				buttonLabel={ tooltipLabel }
-				content={ tooltip }
+				content={ tooltipContent }
 			/>
 		</span>
 	);
