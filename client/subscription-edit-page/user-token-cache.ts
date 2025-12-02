@@ -11,15 +11,14 @@ export const startLoading = (
 	cachedData: CachedUserData,
 	userId: number
 ): CachedUserData => {
-	return [
+	return {
 		...cachedData,
-		{
-			userId,
+		[ userId ]: {
 			loading: true,
 			loadingError: null,
 			tokens: [],
 		},
-	];
+	};
 };
 
 /**
@@ -30,18 +29,15 @@ export const tokensLoaded = (
 	userId: number,
 	tokens: Token[]
 ): CachedUserData => {
-	return cachedData.map( ( userData ) => {
-		if ( userData.userId !== userId ) {
-			return userData;
-		}
-
-		return {
-			...userData,
+	return {
+		...cachedData,
+		[ userId ]: {
+			...cachedData[ userId ],
 			tokens,
 			loading: false,
 			loadingError: null,
-		};
-	} );
+		},
+	};
 };
 
 /**
@@ -52,17 +48,14 @@ export const loadingFailed = (
 	userId: number,
 	errorMessage: string
 ): CachedUserData => {
-	return cachedData.map( ( userData ) => {
-		if ( userData.userId !== userId ) {
-			return userData;
-		}
-
-		return {
-			...userData,
+	return {
+		...cachedData,
+		[ userId ]: {
+			...cachedData[ userId ],
 			loading: false,
 			loadingError: errorMessage,
-		};
-	} );
+		},
+	};
 };
 
 /**
@@ -72,7 +65,7 @@ export const hasEntry = (
 	cachedData: CachedUserData,
 	userId: number
 ): boolean => {
-	return cachedData.some( ( userData ) => userData.userId === userId );
+	return userId in cachedData;
 };
 
 /**
@@ -82,7 +75,7 @@ export const getUserEntry = (
 	cachedData: CachedUserData,
 	userId: number
 ): CachedUserDataItem | undefined => {
-	return cachedData.find( ( userData ) => userData.userId === userId );
+	return cachedData[ userId ];
 };
 
 /**

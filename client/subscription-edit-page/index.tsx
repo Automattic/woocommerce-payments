@@ -239,14 +239,13 @@ const setupPaymentSelector = ( element: HTMLSpanElement ): void => {
 	const value = data.value ?? 0;
 
 	// Initial population.
-	const cache: CachedUserData = [];
+	const cache: CachedUserData = {};
 	if ( userId ) {
-		cache.push( {
-			userId,
+		cache[ userId ] = {
 			loading: false,
 			loadingError: null,
 			tokens: data.tokens ?? [],
-		} );
+		};
 	}
 
 	// In older Subscriptions versions, there was just a simple input.

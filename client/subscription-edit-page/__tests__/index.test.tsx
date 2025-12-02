@@ -53,14 +53,13 @@ describe( 'PaymentMethodSelect Component', () => {
 
 	describe( 'Rendering States', () => {
 		test( 'renders select with tokens', () => {
-			const cache: CachedUserData = [
-				{
-					userId: 1,
+			const cache: CachedUserData = {
+				1: {
 					tokens: mockTokens,
 					loading: false,
 					loadingError: null,
 				},
-			];
+			};
 
 			render(
 				<PaymentMethodSelect
@@ -85,14 +84,13 @@ describe( 'PaymentMethodSelect Component', () => {
 		} );
 
 		test( 'renders loading state', () => {
-			const cache: CachedUserData = [
-				{
-					userId: 1,
+			const cache: CachedUserData = {
+				1: {
 					tokens: [],
 					loading: true,
 					loadingError: null,
 				},
-			];
+			};
 
 			render(
 				<PaymentMethodSelect
@@ -109,14 +107,13 @@ describe( 'PaymentMethodSelect Component', () => {
 		} );
 
 		test( 'renders error state', () => {
-			const cache: CachedUserData = [
-				{
-					userId: 1,
+			const cache: CachedUserData = {
+				1: {
 					tokens: [],
 					loading: false,
 					loadingError: 'Failed to fetch user tokens',
 				},
-			];
+			};
 
 			render(
 				<PaymentMethodSelect
@@ -140,7 +137,7 @@ describe( 'PaymentMethodSelect Component', () => {
 					inputName="payment_method"
 					initialValue={ 0 }
 					initialUserId={ 0 }
-					initialCache={ [] }
+					initialCache={ {} }
 					nonce="test-nonce"
 					ajaxUrl="http://test.com/ajax"
 				/>
@@ -159,7 +156,7 @@ describe( 'PaymentMethodSelect Component', () => {
 					inputName="payment_method"
 					initialValue={ 0 }
 					initialUserId={ undefined as any }
-					initialCache={ [] }
+					initialCache={ {} }
 					nonce="test-nonce"
 					ajaxUrl="http://test.com/ajax"
 				/>
@@ -178,14 +175,13 @@ describe( 'PaymentMethodSelect Component', () => {
 					isDefault: false,
 				},
 			];
-			const cache: CachedUserData = [
-				{
-					userId: 1,
+			const cache: CachedUserData = {
+				1: {
 					tokens: tokensWithoutDefault,
 					loading: false,
 					loadingError: null,
 				},
-			];
+			};
 
 			render(
 				<PaymentMethodSelect
@@ -204,14 +200,13 @@ describe( 'PaymentMethodSelect Component', () => {
 		} );
 
 		test( 'auto-selects default token when value is zero', () => {
-			const cache: CachedUserData = [
-				{
-					userId: 1,
+			const cache: CachedUserData = {
+				1: {
 					tokens: mockTokens,
 					loading: false,
 					loadingError: null,
 				},
-			];
+			};
 
 			render(
 				<PaymentMethodSelect
@@ -235,14 +230,13 @@ describe( 'PaymentMethodSelect Component', () => {
 
 		test( 'renders tokens without placeholder when value does not match', () => {
 			// In the new implementation, placeholder only shows when value === 0
-			const cache: CachedUserData = [
-				{
-					userId: 1,
+			const cache: CachedUserData = {
+				1: {
 					tokens: mockTokens,
 					loading: false,
 					loadingError: null,
 				},
-			];
+			};
 
 			render(
 				<PaymentMethodSelect
@@ -267,14 +261,13 @@ describe( 'PaymentMethodSelect Component', () => {
 		} );
 
 		test( 'renders empty token list', () => {
-			const cache: CachedUserData = [
-				{
-					userId: 1,
+			const cache: CachedUserData = {
+				1: {
 					tokens: [],
 					loading: false,
 					loadingError: null,
 				},
-			];
+			};
 
 			render(
 				<PaymentMethodSelect
@@ -303,14 +296,13 @@ describe( 'PaymentMethodSelect Component', () => {
 					isDefault: false,
 				},
 			];
-			const cache: CachedUserData = [
-				{
-					userId: 1,
+			const cache: CachedUserData = {
+				1: {
 					tokens: tokensWithoutDefault,
 					loading: false,
 					loadingError: null,
 				},
-			];
+			};
 
 			render(
 				<PaymentMethodSelect
@@ -334,14 +326,13 @@ describe( 'PaymentMethodSelect Component', () => {
 
 	describe( 'Value Display', () => {
 		test( 'displays correct initial value', () => {
-			const cache: CachedUserData = [
-				{
-					userId: 1,
+			const cache: CachedUserData = {
+				1: {
 					tokens: mockTokens,
 					loading: false,
 					loadingError: null,
 				},
-			];
+			};
 
 			render(
 				<PaymentMethodSelect
@@ -368,12 +359,11 @@ describe( 'User Token Cache Functions', () => {
 
 	describe( 'startLoading()', () => {
 		test( 'adds user in loading state', () => {
-			const cache: CachedUserData = [];
+			const cache: CachedUserData = {};
 			const newCache = startLoading( cache, 1 );
 
 			const entry = getUserEntry( newCache, 1 );
 			expect( entry ).toEqual( {
-				userId: 1,
 				loading: true,
 				loadingError: null,
 				tokens: [],
@@ -381,14 +371,13 @@ describe( 'User Token Cache Functions', () => {
 		} );
 
 		test( 'adds loading state for new user while preserving existing', () => {
-			const cache: CachedUserData = [
-				{
-					userId: 1,
+			const cache: CachedUserData = {
+				1: {
 					tokens: mockTokens,
 					loading: false,
 					loadingError: null,
 				},
-			];
+			};
 			const newCache = startLoading( cache, 2 );
 
 			expect( hasEntry( newCache, 1 ) ).toBe( true );
@@ -397,22 +386,21 @@ describe( 'User Token Cache Functions', () => {
 		} );
 
 		test( 'does not mutate original cache', () => {
-			const cache: CachedUserData = [];
+			const cache: CachedUserData = {};
 			startLoading( cache, 1 );
 
-			expect( cache ).toEqual( [] );
+			expect( cache ).toEqual( {} );
 		} );
 	} );
 
 	describe( 'tokensLoaded()', () => {
 		test( 'updates loading entry with tokens', () => {
-			let cache: CachedUserData = [];
+			let cache: CachedUserData = {};
 			cache = startLoading( cache, 1 );
 			cache = tokensLoaded( cache, 1, mockTokens );
 
 			const entry = getUserEntry( cache, 1 );
 			expect( entry ).toEqual( {
-				userId: 1,
 				tokens: mockTokens,
 				loading: false,
 				loadingError: null,
@@ -420,14 +408,13 @@ describe( 'User Token Cache Functions', () => {
 		} );
 
 		test( 'does not affect other users', () => {
-			let cache: CachedUserData = [
-				{
-					userId: 1,
+			let cache: CachedUserData = {
+				1: {
 					tokens: mockTokens,
 					loading: false,
 					loadingError: null,
 				},
-			];
+			};
 			cache = startLoading( cache, 2 );
 			cache = tokensLoaded( cache, 2, [] );
 
@@ -436,7 +423,7 @@ describe( 'User Token Cache Functions', () => {
 		} );
 
 		test( 'clears loading state', () => {
-			let cache: CachedUserData = [];
+			let cache: CachedUserData = {};
 			cache = startLoading( cache, 1 );
 			expect( getUserEntry( cache, 1 )?.loading ).toBe( true );
 
@@ -445,7 +432,7 @@ describe( 'User Token Cache Functions', () => {
 		} );
 
 		test( 'does not mutate original cache', () => {
-			const cache = startLoading( [], 1 );
+			const cache = startLoading( {}, 1 );
 			const originalEntry = getUserEntry( cache, 1 );
 			tokensLoaded( cache, 1, mockTokens );
 
@@ -455,13 +442,12 @@ describe( 'User Token Cache Functions', () => {
 
 	describe( 'loadingFailed()', () => {
 		test( 'sets error message', () => {
-			let cache: CachedUserData = [];
+			let cache: CachedUserData = {};
 			cache = startLoading( cache, 1 );
 			cache = loadingFailed( cache, 1, 'Network error' );
 
 			const entry = getUserEntry( cache, 1 );
 			expect( entry ).toEqual( {
-				userId: 1,
 				tokens: [],
 				loading: false,
 				loadingError: 'Network error',
@@ -469,7 +455,7 @@ describe( 'User Token Cache Functions', () => {
 		} );
 
 		test( 'clears loading state', () => {
-			let cache: CachedUserData = [];
+			let cache: CachedUserData = {};
 			cache = startLoading( cache, 1 );
 			cache = loadingFailed( cache, 1, 'Error' );
 
@@ -477,7 +463,7 @@ describe( 'User Token Cache Functions', () => {
 		} );
 
 		test( 'preserves existing tokens', () => {
-			let cache: CachedUserData = [];
+			let cache: CachedUserData = {};
 			cache = startLoading( cache, 1 );
 			cache = loadingFailed( cache, 1, 'Error' );
 
@@ -485,7 +471,7 @@ describe( 'User Token Cache Functions', () => {
 		} );
 
 		test( 'does not mutate original cache', () => {
-			const cache = startLoading( [], 1 );
+			const cache = startLoading( {}, 1 );
 			const originalEntry = getUserEntry( cache, 1 );
 			loadingFailed( cache, 1, 'Error' );
 
@@ -495,24 +481,23 @@ describe( 'User Token Cache Functions', () => {
 
 	describe( 'hasEntry()', () => {
 		test( 'returns true when user exists', () => {
-			const cache: CachedUserData = [
-				{
-					userId: 1,
+			const cache: CachedUserData = {
+				1: {
 					tokens: mockTokens,
 					loading: false,
 					loadingError: null,
 				},
-			];
+			};
 
 			expect( hasEntry( cache, 1 ) ).toBe( true );
 		} );
 
 		test( 'returns false when user does not exist', () => {
-			expect( hasEntry( [], 999 ) ).toBe( false );
+			expect( hasEntry( {}, 999 ) ).toBe( false );
 		} );
 
 		test( 'returns true for loading entries', () => {
-			const cache = startLoading( [], 1 );
+			const cache = startLoading( {}, 1 );
 
 			expect( hasEntry( cache, 1 ) ).toBe( true );
 		} );
@@ -520,22 +505,20 @@ describe( 'User Token Cache Functions', () => {
 
 	describe( 'getUserEntry()', () => {
 		test( 'returns user entry when exists', () => {
-			const cache: CachedUserData = [
-				{
-					userId: 1,
+			const cache: CachedUserData = {
+				1: {
 					tokens: mockTokens,
 					loading: false,
 					loadingError: null,
 				},
-			];
+			};
 
 			const entry = getUserEntry( cache, 1 );
-			expect( entry?.userId ).toBe( 1 );
 			expect( entry?.tokens ).toEqual( mockTokens );
 		} );
 
 		test( 'returns undefined when user does not exist', () => {
-			const entry = getUserEntry( [], 999 );
+			const entry = getUserEntry( {}, 999 );
 
 			expect( entry ).toBeUndefined();
 		} );
@@ -543,45 +526,42 @@ describe( 'User Token Cache Functions', () => {
 
 	describe( 'userHasToken()', () => {
 		test( 'returns true when user has token', () => {
-			const cache: CachedUserData = [
-				{
-					userId: 1,
+			const cache: CachedUserData = {
+				1: {
 					tokens: mockTokens,
 					loading: false,
 					loadingError: null,
 				},
-			];
+			};
 
 			expect( userHasToken( cache, 1, 1 ) ).toBe( true );
 			expect( userHasToken( cache, 1, 2 ) ).toBe( true );
 		} );
 
 		test( 'returns false when user does not have token', () => {
-			const cache: CachedUserData = [
-				{
-					userId: 1,
+			const cache: CachedUserData = {
+				1: {
 					tokens: mockTokens,
 					loading: false,
 					loadingError: null,
 				},
-			];
+			};
 
 			expect( userHasToken( cache, 1, 999 ) ).toBe( false );
 		} );
 
 		test( 'returns false when user does not exist', () => {
-			expect( userHasToken( [], 999, 1 ) ).toBe( false );
+			expect( userHasToken( {}, 999, 1 ) ).toBe( false );
 		} );
 
 		test( 'returns false for user with empty tokens', () => {
-			const cache: CachedUserData = [
-				{
-					userId: 1,
+			const cache: CachedUserData = {
+				1: {
 					tokens: [],
 					loading: false,
 					loadingError: null,
 				},
-			];
+			};
 
 			expect( userHasToken( cache, 1, 1 ) ).toBe( false );
 		} );
@@ -589,14 +569,13 @@ describe( 'User Token Cache Functions', () => {
 
 	describe( 'getDefaultTokenId()', () => {
 		test( 'returns default token id when exists', () => {
-			const cache: CachedUserData = [
-				{
-					userId: 1,
+			const cache: CachedUserData = {
+				1: {
 					tokens: mockTokens,
 					loading: false,
 					loadingError: null,
 				},
-			];
+			};
 
 			expect( getDefaultTokenId( cache, 1 ) ).toBe( 1 );
 		} );
@@ -610,31 +589,30 @@ describe( 'User Token Cache Functions', () => {
 					isDefault: false,
 				},
 			];
-			const cache: CachedUserData = [
-				{
-					userId: 1,
+
+			const cache: CachedUserData = {
+				1: {
 					tokens: tokensWithoutDefault,
 					loading: false,
 					loadingError: null,
 				},
-			];
+			};
 
 			expect( getDefaultTokenId( cache, 1 ) ).toBe( 0 );
 		} );
 
 		test( 'returns 0 when user does not exist', () => {
-			expect( getDefaultTokenId( [], 999 ) ).toBe( 0 );
+			expect( getDefaultTokenId( {}, 999 ) ).toBe( 0 );
 		} );
 
 		test( 'returns 0 for user with empty tokens', () => {
-			const cache: CachedUserData = [
-				{
-					userId: 1,
+			const cache: CachedUserData = {
+				1: {
 					tokens: [],
 					loading: false,
 					loadingError: null,
 				},
-			];
+			};
 
 			expect( getDefaultTokenId( cache, 1 ) ).toBe( 0 );
 		} );
@@ -723,7 +701,7 @@ describe( 'addCustomerSelectListener', () => {
 		const setCache = jest.fn();
 
 		const cleanup = addCustomerSelectListener(
-			[],
+			{},
 			'http://test.com/ajax',
 			'nonce',
 			setUser,
@@ -748,7 +726,7 @@ describe( 'addCustomerSelectListener', () => {
 		const setCache = jest.fn();
 
 		addCustomerSelectListener(
-			[],
+			{},
 			'http://test.com/ajax',
 			'nonce',
 			setUser,
@@ -771,7 +749,7 @@ describe( 'addCustomerSelectListener', () => {
 		const setCache = jest.fn();
 
 		const cleanup = addCustomerSelectListener(
-			[],
+			{},
 			'http://test.com/ajax',
 			'nonce',
 			setUser,
@@ -794,7 +772,7 @@ describe( 'addCustomerSelectListener', () => {
 		const setCache = jest.fn();
 
 		const cleanup = addCustomerSelectListener(
-			[],
+			{},
 			'http://test.com/ajax',
 			'nonce',
 			setUser,
