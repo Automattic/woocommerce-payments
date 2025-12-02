@@ -278,4 +278,143 @@ describe( 'Spotlight Component', () => {
 
 		jest.useRealTimers();
 	} );
+
+	describe( 'Accessibility', () => {
+		it( 'has correct dialog ARIA attributes', () => {
+			render( <Spotlight { ...defaultProps } /> );
+
+			const dialog = screen.getByRole( 'dialog' );
+			expect( dialog ).toHaveAttribute( 'aria-modal', 'true' );
+			expect( dialog ).toHaveAttribute(
+				'aria-labelledby',
+				'spotlight-heading'
+			);
+		} );
+
+		it( 'heading has correct id for aria-labelledby', () => {
+			render( <Spotlight { ...defaultProps } /> );
+
+			const heading = screen.getByRole( 'heading', {
+				name: 'Test Heading',
+			} );
+			expect( heading ).toHaveAttribute( 'id', 'spotlight-heading' );
+		} );
+
+		it( 'closes spotlight when Escape key is pressed', async () => {
+			const onDismiss = jest.fn();
+
+			render( <Spotlight { ...defaultProps } onDismiss={ onDismiss } /> );
+
+			// Press Escape key
+			await userEvent.keyboard( '{Escape}' );
+
+			// onDismiss is called after animation timeout
+			await waitFor(
+				() => {
+					expect( onDismiss ).toHaveBeenCalledTimes( 1 );
+				},
+				{ timeout: 500 }
+			);
+		} );
+
+		it( 'traps focus within the dialog on Tab', async () => {
+			const propsWithSecondary = {
+				...defaultProps,
+				secondaryButtonLabel: 'Learn more',
+				onSecondaryClick: jest.fn(),
+			};
+
+			render( <Spotlight { ...propsWithSecondary } /> );
+
+			const closeButton = screen.getByLabelText( 'Close' );
+			const primaryButton = screen.getByText( 'Activate' );
+
+			// Focus the last element (primary button)
+			primaryButton.focus();
+			expect( primaryButton.ownerDocument.activeElement ).toBe(
+				primaryButton
+			);
+
+			// Tab should wrap to the first focusable element (close button)
+			await userEvent.tab();
+			expect( primaryButton.ownerDocument.activeElement ).toBe(
+				closeButton
+			);
+		} );
+
+		it( 'traps focus within the dialog on Shift+Tab', async () => {
+			const propsWithSecondary = {
+				...defaultProps,
+				secondaryButtonLabel: 'Learn more',
+				onSecondaryClick: jest.fn(),
+			};
+
+			render( <Spotlight { ...propsWithSecondary } /> );
+
+			const closeButton = screen.getByLabelText( 'Close' );
+			const primaryButton = screen.getByText( 'Activate' );
+
+			// Focus the first element (close button)
+			closeButton.focus();
+			expect( closeButton.ownerDocument.activeElement ).toBe(
+				closeButton
+			);
+
+			// Shift+Tab should wrap to the last focusable element (primary button)
+			await userEvent.tab( { shift: true } );
+			expect( closeButton.ownerDocument.activeElement ).toBe(
+				primaryButton
+			);
+		} );
+
+		it( 'focuses the dialog when it becomes visible', () => {
+			render( <Spotlight { ...defaultProps } /> );
+
+			const dialog = screen.getByRole( 'dialog' );
+			expect( dialog.ownerDocument.activeElement ).toBe( dialog );
+		} );
+	} );
+
+	describe( 'CSS class variations', () => {
+		it( 'applies has-image class when image is provided', () => {
+			const propsWithImage = {
+				...defaultProps,
+				image: 'https://example.com/image.png',
+			};
+			const { container } = render( <Spotlight { ...propsWithImage } /> );
+
+			expect(
+				container.querySelector( '.wcpay-spotlight__card.has-image' )
+			).toBeInTheDocument();
+		} );
+
+		it( 'does not apply has-image class when no image provided', () => {
+			const { container } = render( <Spotlight { ...defaultProps } /> );
+
+			const card = container.querySelector( '.wcpay-spotlight__card' );
+			expect( card ).toBeInTheDocument();
+			expect( card ).not.toHaveClass( 'has-image' );
+		} );
+
+		it( 'removes visible class during close animation', async () => {
+			const onDismiss = jest.fn();
+			const { container } = render(
+				<Spotlight { ...defaultProps } onDismiss={ onDismiss } />
+			);
+
+			// Initially visible
+			expect(
+				container.querySelector( '.wcpay-spotlight--visible' )
+			).toBeInTheDocument();
+
+			// Click close
+			const closeButton = screen.getByLabelText( 'Close' );
+			await userEvent.click( closeButton );
+
+			// Class should be removed immediately (before timeout completes)
+			expect(
+				container.querySelector( '.wcpay-spotlight--visible' )
+			).not.toBeInTheDocument();
+		} );
+	} );
 } );
