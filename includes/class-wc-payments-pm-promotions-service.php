@@ -47,10 +47,19 @@ class WC_Payments_PM_Promotions_Service {
 	private $promotions_memo = null;
 
 	/**
-	 * Class constructor.
+	 * WC_Payment_Gateway_WCPay instance.
+	 *
+	 * @var WC_Payment_Gateway_WCPay|null
 	 */
-	public function __construct() {
-		// No dependencies needed for now.
+	private $gateway;
+
+	/**
+	 * Class constructor.
+	 *
+	 * @param WC_Payment_Gateway_WCPay|null $gateway Optional gateway instance.
+	 */
+	public function __construct( $gateway = null ) {
+		$this->gateway = $gateway;
 	}
 
 	/**
@@ -608,6 +617,66 @@ class WC_Payments_PM_Promotions_Service {
 	 */
 	private function is_valid_payment_method( string $payment_method_id ): bool {
 		return in_array( $payment_method_id, $this->get_valid_payment_method_ids(), true );
+	}
+
+	/**
+	 * Get list of enabled payment method IDs.
+	 *
+	 * @return array List of enabled payment method IDs.
+	 */
+	private function get_enabled_payment_method_ids(): array {
+		if ( null === $this->gateway ) {
+			$this->gateway = WC_Payments::get_gateway();
+		}
+
+		if ( null === $this->gateway ) {
+			return [];
+		}
+
+		return $this->gateway->get_upe_enabled_payment_method_ids();
+	}
+
+	/**
+	 * Filter promotions by payment method validity and enabled status.
+	 * Also keeps only the first promo_id per payment method.
+	 *
+	 * @param array $promotions Array of promotions.
+	 *
+	 * @return array Filtered promotions.
+	 */
+	private function filter_promotions( array $promotions ): array {
+		$enabled_pms    = $this->get_enabled_payment_method_ids();
+		$seen_promo_ids = []; // Track first promo_id per PM.
+		$filtered       = [];
+
+		foreach ( $promotions as $promotion ) {
+			$pm_id    = $promotion['payment_method'] ?? '';
+			$promo_id = $promotion['promo_id'] ?? '';
+
+			// Skip invalid payment methods.
+			if ( ! $this->is_valid_payment_method( $pm_id ) ) {
+				continue;
+			}
+
+			// Skip already enabled payment methods.
+			if ( in_array( $pm_id, $enabled_pms, true ) ) {
+				continue;
+			}
+
+			// Track first promo_id per PM - keep all surfaces for that promo_id.
+			if ( ! isset( $seen_promo_ids[ $pm_id ] ) ) {
+				$seen_promo_ids[ $pm_id ] = $promo_id;
+			}
+
+			// Skip if this is a different promo_id for an already-seen PM.
+			if ( $seen_promo_ids[ $pm_id ] !== $promo_id ) {
+				continue;
+			}
+
+			$filtered[] = $promotion;
+		}
+
+		return $filtered;
 	}
 
 	/**
