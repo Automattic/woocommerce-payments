@@ -172,7 +172,7 @@ describe( 'PromotionalBadge', () => {
 		).not.toBeInTheDocument();
 	} );
 
-	test( 'uses default T&C label when tcUrl is provided but tcLabel is not', () => {
+	test( 'does not show T&C link when tcUrl is provided but tcLabel is not', () => {
 		render(
 			<PromotionalBadge
 				message="50% off fees"
@@ -186,13 +186,11 @@ describe( 'PromotionalBadge', () => {
 		} );
 		fireEvent.click( tooltipButton );
 
-		const tcLink = screen.getByRole( 'link', {
-			name: /see terms/i,
-		} );
-		expect( tcLink ).toBeInTheDocument();
+		// No link should be shown when tcLabel is not provided.
+		expect( screen.queryByRole( 'link' ) ).not.toBeInTheDocument();
 	} );
 
-	test( 'uses default T&C label when tcLabel is empty string', () => {
+	test( 'does not show T&C link when tcLabel is empty string', () => {
 		render(
 			<PromotionalBadge
 				message="50% off fees"
@@ -207,10 +205,8 @@ describe( 'PromotionalBadge', () => {
 		} );
 		fireEvent.click( tooltipButton );
 
-		const tcLink = screen.getByRole( 'link', {
-			name: /see terms/i,
-		} );
-		expect( tcLink ).toBeInTheDocument();
+		// Empty tcLabel signals that the link is already in the description.
+		expect( screen.queryByRole( 'link' ) ).not.toBeInTheDocument();
 	} );
 
 	test( 'does not show T&C link when tcUrl is not provided', () => {

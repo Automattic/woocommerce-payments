@@ -44,20 +44,20 @@ const PromotionalBadge: React.FC< PromotionalBadgeProps > = ( {
 		'wcpay-promotional-badge'
 	);
 
-	// Use backend-provided tc_label when available, otherwise fall back to default.
-	const tcLinkLabel = tcLabel || __( 'See terms', 'woocommerce-payments' );
-
 	// Build tooltip content with optional T&C link.
-	const tooltipContent = tcUrl ? (
-		<>
-			{ tooltip }{ ' ' }
-			<a href={ tcUrl } target="_blank" rel="noopener noreferrer">
-				{ tcLinkLabel }
-			</a>
-		</>
-	) : (
-		tooltip
-	);
+	// Only show the link if both tcUrl and tcLabel are provided.
+	// An empty tcLabel signals that the link is already in the description.
+	const tooltipContent =
+		tcUrl && tcLabel ? (
+			<>
+				{ tooltip }{ ' ' }
+				<a href={ tcUrl } target="_blank" rel="noopener noreferrer">
+					{ tcLabel }
+				</a>
+			</>
+		) : (
+			tooltip
+		);
 
 	return (
 		<span className={ classNames }>

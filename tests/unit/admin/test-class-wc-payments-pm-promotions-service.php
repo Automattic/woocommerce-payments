@@ -486,6 +486,21 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertNotEmpty( $result[0]['payment_method_title'] );
 	}
 
+	public function test_normalize_promotions_keeps_existing_payment_method_title() {
+		$promotions = [
+			$this->create_valid_promotion(
+				[
+					'payment_method'       => 'klarna',
+					'payment_method_title' => 'Custom Klarna Title',
+				]
+			),
+		];
+
+		$result = $this->invoke_private_method( 'normalize_promotions', [ $promotions ] );
+
+		$this->assertSame( 'Custom Klarna Title', $result[0]['payment_method_title'] );
+	}
+
 	public function test_normalize_promotions_applies_cta_label_fallback() {
 		$promotion = $this->create_valid_promotion( [ 'payment_method' => 'klarna' ] );
 		unset( $promotion['cta_label'] );
@@ -523,6 +538,46 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 		$result = $this->invoke_private_method( 'normalize_promotions', [ $promotions ] );
 
 		$this->assertSame( 'Custom Terms', $result[0]['tc_label'] );
+	}
+
+	public function test_normalize_promotions_skips_tc_label_fallback_when_tc_url_in_description() {
+		$tc_url     = 'https://example.com/terms';
+		$promotions = [
+			$this->create_valid_promotion(
+				[
+					'tc_url'      => $tc_url,
+					'description' => 'Get 50% off! <a href="' . $tc_url . '">See terms</a>.',
+				]
+			),
+		];
+		// Remove tc_label to test fallback behavior.
+		unset( $promotions[0]['tc_label'] );
+
+		$result = $this->invoke_private_method( 'normalize_promotions', [ $promotions ] );
+
+		// tc_label should remain empty when tc_url is already in description.
+		$this->assertArrayHasKey( 'tc_label', $result[0] );
+		$this->assertEmpty( $result[0]['tc_label'] );
+	}
+
+	public function test_normalize_promotions_applies_tc_label_fallback_when_tc_url_not_in_description() {
+		$promotions = [
+			$this->create_valid_promotion(
+				[
+					'tc_url'      => 'https://example.com/terms',
+					'description' => 'Get 50% off on processing fees.',
+				]
+			),
+		];
+		// Remove tc_label to test fallback behavior.
+		unset( $promotions[0]['tc_label'] );
+
+		$result = $this->invoke_private_method( 'normalize_promotions', [ $promotions ] );
+
+		// tc_label should get fallback when tc_url is not in description.
+		$this->assertArrayHasKey( 'tc_label', $result[0] );
+		$this->assertNotEmpty( $result[0]['tc_label'] );
+		$this->assertSame( 'See terms', $result[0]['tc_label'] );
 	}
 
 	public function test_normalize_promotions_sanitizes_title_strips_all_html() {

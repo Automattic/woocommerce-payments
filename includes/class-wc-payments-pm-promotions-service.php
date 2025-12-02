@@ -260,15 +260,15 @@ class WC_Payments_PM_Promotions_Service {
 	/**
 	 * Activate a promotion.
 	 *
-	 * @param string $identifier   The promotion identifier.
-	 * @param bool   $accept_terms Whether the user accepted the terms.
+	 * Activating a promotion implies acceptance of terms.
+	 *
+	 * @param string $identifier The promotion identifier.
 	 *
 	 * @return array The activation response.
 	 */
-	public function activate_promotion( string $identifier, bool $accept_terms = true ): array {
+	public function activate_promotion( string $identifier ): array {
 		// TODO: Replace with actual API call when server endpoints are available.
 		// $wcpay_request = Request\Activate_Promotion::create( $identifier );.
-		// $wcpay_request->set_accept_terms( $accept_terms );.
 		// $wcpay_request->assign_hook( 'wcpay_activate_promotion_request' );.
 		// $response = $wcpay_request->handle_rest_request();.
 
@@ -610,12 +610,12 @@ class WC_Payments_PM_Promotions_Service {
 				continue;
 			}
 
-			// Skip already enabled payment methods.
+			// Skip promotions for already enabled payment methods.
 			if ( in_array( $pm_id, $enabled_pms, true ) ) {
 				continue;
 			}
 
-			// Skip payment methods that already have an active discount.
+			// Skip promotions for payment methods that already have an active discount.
 			if ( $this->payment_method_has_discount( $pm_id ) ) {
 				continue;
 			}
@@ -647,25 +647,35 @@ class WC_Payments_PM_Promotions_Service {
 		$normalized = [];
 
 		foreach ( $promotions as $promotion ) {
-			$pm_id    = $promotion['payment_method'] ?? '';
-			$pm_title = $this->get_payment_method_title( $pm_id );
+			// These fields are validated as required before normalization.
+			$pm_id  = $promotion['payment_method'];
+			$tc_url = $promotion['tc_url'];
 
-			// Add derived payment_method_title.
-			$promotion['payment_method_title'] = $pm_title;
+			// Add derived payment_method_title if not provided.
+			if ( empty( $promotion['payment_method_title'] ) ) {
+				$promotion['payment_method_title'] = $this->get_payment_method_title( $pm_id );
+			}
 
-			// Apply fallback for cta_label.
+			// Apply fallback for cta_label using the final payment_method_title.
 			if ( empty( $promotion['cta_label'] ) ) {
 				/* translators: %s is the payment method title, e.g., "Klarna" */
-				$promotion['cta_label'] = sprintf( __( 'Enable %s', 'woocommerce-payments' ), $pm_title );
+				$promotion['cta_label'] = sprintf( __( 'Enable %s', 'woocommerce-payments' ), $promotion['payment_method_title'] );
 			}
 
-			// Apply fallback for tc_label.
-			if ( empty( $promotion['tc_label'] ) ) {
-				$promotion['tc_label'] = __( 'See terms', 'woocommerce-payments' );
-			}
-
-			// Apply type-specific sanitization.
+			// Apply type-specific sanitization BEFORE tc_label fallback.
+			// This ensures we check against the sanitized description (which might lose the link).
 			$promotion = $this->sanitize_promotion( $promotion );
+
+			// Apply fallback for tc_label only if tc_url is not already in the sanitized description.
+			// If tc_url is in the description, leaving tc_label empty signals frontend to not add a link.
+			if ( empty( $promotion['tc_label'] ) ) {
+				if ( strpos( $promotion['description'], $tc_url ) === false ) {
+					$promotion['tc_label'] = __( 'See terms', 'woocommerce-payments' );
+				} else {
+					// Explicitly set to empty string when skipping fallback.
+					$promotion['tc_label'] = '';
+				}
+			}
 
 			$normalized[] = $promotion;
 		}
