@@ -416,7 +416,7 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 	public function test_process_payment_returns_correct_redirect_when_using_payment_request() {
 		$order                         = WC_Helper_Order::create_order();
 		$intent                        = WC_Helper_Intention::create_intention();
-		$_POST['payment_request_type'] = 'google_pay';
+		$_POST['express_payment_type'] = 'google_pay';
 
 		$this->mock_gateway->expects( $this->once() )
 			->method( 'manage_customer_details_for_order' )

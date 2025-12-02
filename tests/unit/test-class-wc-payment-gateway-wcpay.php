@@ -3917,7 +3917,7 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 	public function test_process_payment_returns_correct_redirect_when_using_payment_request() {
 		$order                         = WC_Helper_Order::create_order();
-		$_POST['payment_request_type'] = 'google_pay';
+		$_POST['express_payment_type'] = 'google_pay';
 		$_POST                         = [
 			'wcpay-payment-method' => 'pm_mock',
 			'payment_method'       => 'woocommerce_payments',

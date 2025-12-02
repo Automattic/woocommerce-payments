@@ -188,6 +188,12 @@ class WC_Payments_Order_Success_Page {
 			return $this->show_woopay_payment_method_name( $order );
 		}
 
+		// Check if this is an Express Checkout payment (Google Pay, Apple Pay, etc.).
+		$express_checkout_payment_method = $order->get_meta( '_wcpay_express_checkout_payment_method' );
+		if ( ! empty( $express_checkout_payment_method ) ) {
+			return $this->show_express_checkout_payment_method_name( $order, $express_checkout_payment_method );
+		}
+
 		$gateway = WC()->payment_gateways()->payment_gateways()[ $payment_method_id ];
 
 		if ( ! is_object( $gateway ) || ! method_exists( $gateway, 'get_payment_method' ) ) {
@@ -195,8 +201,9 @@ class WC_Payments_Order_Success_Page {
 		}
 
 		$payment_method = $gateway->get_payment_method( $order );
-		// GooglePay/ApplePay/Link/Card to be supported later.
-		if ( $payment_method->get_id() === Payment_Method::CARD ) {
+
+		// Handle card-based payments (Card, Link).
+		if ( in_array( $payment_method->get_id(), [ Payment_Method::CARD ], true ) ) {
 			return $this->show_card_payment_method_name( $order, $payment_method );
 		}
 
@@ -208,6 +215,37 @@ class WC_Payments_Order_Success_Page {
 		}
 
 		return $payment_method_title;
+	}
+
+	/**
+	 * Returns the HTML to add the Express Checkout payment method logo and last 4 digits
+	 * of the card used to the payment method name on the order received page.
+	 *
+	 * @param WC_Order $order the order being shown.
+	 * @param string   $express_checkout_payment_method the express checkout payment method (e.g., 'google_pay', 'apple_pay').
+	 *
+	 * @return string
+	 */
+	public function show_express_checkout_payment_method_name( $order, $express_checkout_payment_method ) {
+		$payment_method = WC_Payments::get_payment_method_by_id( $express_checkout_payment_method );
+
+		if ( ! $payment_method ) {
+			return 'Payment Request';
+		}
+
+		ob_start();
+		?>
+		<div class="wc-payment-gateway-method-logo-wrapper wc-payment-card-logo">
+			<img alt="<?php echo esc_attr( $payment_method->get_title() ); ?>" src="<?php echo esc_url_raw( $payment_method->get_icon() ); ?>">
+			<?php
+			if ( $order->get_meta( 'last4' ) ) {
+				echo esc_html_e( '•••', 'woocommerce-payments' ) . ' ';
+				echo esc_html( $order->get_meta( 'last4' ) );
+			}
+			?>
+		</div>
+		<?php
+		return ob_get_clean();
 	}
 
 	/**

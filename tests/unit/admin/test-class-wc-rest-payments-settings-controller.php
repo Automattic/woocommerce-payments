@@ -20,9 +20,11 @@ use WCPay\Payment_Methods\Becs_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\PaymentMethods\Configs\Definitions\AffirmDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\ApplePayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\EpsDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\GooglePayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\IdealDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\P24Definition;
 use WCPay\PaymentMethods\Configs\Definitions\SofortDefinition;
@@ -145,9 +147,11 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$mock_payment_methods = [];
 
 		$payment_method_definitions = [
+			ApplePayDefinition::class,
 			BancontactDefinition::class,
 			EpsDefinition::class,
 			GiropayDefinition::class,
+			GooglePayDefinition::class,
 			IdealDefinition::class,
 			P24Definition::class,
 			SofortDefinition::class,
@@ -297,6 +301,8 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			Payment_Method::P24,
 			Payment_Method::SOFORT,
 			Payment_Method::LINK,
+			Payment_Method::APPLE_PAY,
+			Payment_Method::GOOGLE_PAY,
 		];
 
 		sort( $expected_method_ids );
