@@ -6,35 +6,21 @@
 import { ApiError } from '../../types/errors';
 import ACTION_TYPES from './action-types';
 
-export interface PromotionVariation {
-	id: string;
-	type: string;
-	badge?: string;
-	badge_type?: string;
-	heading: string;
-	description: string;
-	cta_label: string;
-	cta_url: string;
-	tc_url?: string;
-	footnote?: string;
-}
-
-export interface PromotionTypeConfig {
-	reshow_delay_days?: number;
-	max_dismissals?: number;
-}
-
-export interface PromotionConfig {
-	[ key: string ]: PromotionTypeConfig | undefined;
-}
+export type PromotionType = 'spotlight' | 'badge';
 
 export interface Promotion {
+	id: string;
 	promo_id: string;
 	payment_method: string;
-	discount_rate: string;
-	duration_days: number;
-	config?: PromotionConfig;
-	variations: PromotionVariation[];
+	payment_method_title: string;
+	type: PromotionType;
+	title: string;
+	description: string;
+	cta_label: string;
+	tc_url: string;
+	tc_label: string;
+	footnote?: string;
+	image?: string;
 }
 
 /**
