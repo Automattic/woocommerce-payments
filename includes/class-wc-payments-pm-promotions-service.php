@@ -53,12 +53,21 @@ class WC_Payments_PM_Promotions_Service {
 	private $gateway;
 
 	/**
+	 * WC_Payments_Account instance.
+	 *
+	 * @var WC_Payments_Account|null
+	 */
+	private $account;
+
+	/**
 	 * Class constructor.
 	 *
 	 * @param WC_Payment_Gateway_WCPay|null $gateway Optional gateway instance.
+	 * @param WC_Payments_Account|null      $account Optional account instance.
 	 */
-	public function __construct( $gateway = null ) {
+	public function __construct( $gateway = null, $account = null ) {
 		$this->gateway = $gateway;
+		$this->account = $account;
 	}
 
 	/**
@@ -282,27 +291,15 @@ class WC_Payments_PM_Promotions_Service {
 	 *
 	 * @param string $id The promotion unique identifier (e.g., 'klarna-2026-promo__spotlight').
 	 *
-	 * @return array The dismissal response.
+	 * @return bool True if dismissed, false if already dismissed or error.
 	 */
-	public function dismiss_promotion( string $id ): array {
-		// Extract promo_id from id for the API endpoint (e.g., 'klarna-2026-promo__spotlight' -> 'klarna-2026-promo').
-		$promo_id = explode( '__', $id )[0];
-
-		// Return mock success response (server-side dismissal tracking not implemented yet).
-		$response = [
-			'success'  => true,
-			'id'       => $id,
-			'promo_id' => $promo_id,
-			'status'   => 'dismissed',
-		];
-
-		// Update local state. Cache invalidation happens automatically via context hash
+	public function dismiss_promotion( string $id ): bool {
+		// Cache invalidation happens automatically via context hash
 		// when dismissals change - the next get_promotions() call will detect the hash
 		// mismatch and refetch from the server.
 		$this->reset_memo();
-		$this->mark_promotion_dismissed( $id );
 
-		return $response;
+		return $this->mark_promotion_dismissed( $id );
 	}
 
 	/**
@@ -320,11 +317,11 @@ class WC_Payments_PM_Promotions_Service {
 				'payment_method' => 'klarna',
 				'type'           => 'spotlight',
 				'title'          => 'Zero Processing Fees for 90 Days',
-				'description'    => 'Save on every Klarna transaction with 0% processing fees for 90 days from activation.',
+				'description'    => 'Save on every Klarna transaction with <b>0% processing fees</b> for 90 days from activation.',
 				'cta_label'      => 'Enable Klarna',
 				'tc_url'         => 'https://woocommerce.com/terms',
 				'tc_label'       => 'Learn more',
-				'footnote'       => '*Offer valid for new activations only.',
+				'footnote'       => '* Offer valid for new activations only.',
 				'image'          => '',
 			],
 			[
@@ -335,6 +332,7 @@ class WC_Payments_PM_Promotions_Service {
 				'title'          => 'Zero fees for 90 days',
 				'description'    => 'Enable Klarna and pay no processing fees.',
 				'tc_url'         => 'https://woocommerce.com/terms',
+				'tc_label'       => 'Learn more',
 			],
 			[
 				'id'             => 'affirm-2026-promo__spotlight',
@@ -358,12 +356,18 @@ class WC_Payments_PM_Promotions_Service {
 	 *
 	 * @param string $id The promotion unique identifier (e.g., 'klarna-2026-promo__spotlight').
 	 *
-	 * @return void
+	 * @return bool True if dismissed, false if already dismissed.
 	 */
-	private function mark_promotion_dismissed( string $id ): void {
+	private function mark_promotion_dismissed( string $id ): bool {
+		// Don't dismiss if already dismissed.
+		if ( self::is_promotion_dismissed( $id ) ) {
+			return false;
+		}
+
 		$dismissals        = self::get_promotion_dismissals();
 		$dismissals[ $id ] = time();
-		update_option( self::PROMOTION_DISMISSALS_OPTION, $dismissals, false );
+
+		return update_option( self::PROMOTION_DISMISSALS_OPTION, $dismissals, false );
 	}
 
 	/**
@@ -543,7 +547,49 @@ class WC_Payments_PM_Promotions_Service {
 	}
 
 	/**
-	 * Filter promotions by payment method validity and enabled status.
+	 * Get the account fees.
+	 *
+	 * @return array Account fees indexed by payment method ID.
+	 */
+	private function get_account_fees(): array {
+		if ( null === $this->account ) {
+			$this->account = WC_Payments::get_account_service();
+		}
+
+		if ( null === $this->account ) {
+			return [];
+		}
+
+		return $this->account->get_fees();
+	}
+
+	/**
+	 * Check if a payment method has an active discount.
+	 *
+	 * @param string $payment_method_id The payment method ID.
+	 *
+	 * @return bool True if the payment method has an active discount.
+	 */
+	private function payment_method_has_discount( string $payment_method_id ): bool {
+		$fees = $this->get_account_fees();
+
+		if ( empty( $fees[ $payment_method_id ] ) ) {
+			return false;
+		}
+
+		$pm_fees = $fees[ $payment_method_id ];
+
+		// Check if there's a discount array with at least one entry that has a discount value.
+		if ( ! empty( $pm_fees['discount'] ) && is_array( $pm_fees['discount'] ) ) {
+			$first_discount = $pm_fees['discount'][0] ?? [];
+			return ! empty( $first_discount['discount'] );
+		}
+
+		return false;
+	}
+
+	/**
+	 * Filter promotions by payment method validity, enabled status, and discount status.
 	 * Also keeps only the first promo_id per payment method.
 	 *
 	 * @param array $promotions Array of promotions.
@@ -566,6 +612,11 @@ class WC_Payments_PM_Promotions_Service {
 
 			// Skip already enabled payment methods.
 			if ( in_array( $pm_id, $enabled_pms, true ) ) {
+				continue;
+			}
+
+			// Skip payment methods that already have an active discount.
+			if ( $this->payment_method_has_discount( $pm_id ) ) {
 				continue;
 			}
 

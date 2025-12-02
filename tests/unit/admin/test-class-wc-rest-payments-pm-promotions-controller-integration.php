@@ -307,14 +307,7 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 		$this->mock_promotions_service->expects( $this->once() )
 			->method( 'dismiss_promotion' )
 			->with( $id )
-			->willReturn(
-				[
-					'success'  => true,
-					'id'       => $id,
-					'promo_id' => 'test-promo',
-					'status'   => 'dismissed',
-				]
-			);
+			->willReturn( true );
 
 		// URL params must be set explicitly when calling controller directly (not routed via REST API).
 		$request = new WP_REST_Request( 'POST', $this->rest_base . '/' . $id . '/dismiss' );
@@ -325,18 +318,11 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 		$this->assertSame( 200, $response->status );
 	}
 
-	public function test_dismiss_promotion_returns_success_response() {
+	public function test_dismiss_promotion_returns_success_true_when_dismissed() {
 		$id = 'test-promo__spotlight';
 
 		$this->mock_promotions_service->method( 'dismiss_promotion' )
-			->willReturn(
-				[
-					'success'  => true,
-					'id'       => $id,
-					'promo_id' => 'test-promo',
-					'status'   => 'dismissed',
-				]
-			);
+			->willReturn( true );
 
 		// URL params must be set explicitly when calling controller directly (not routed via REST API).
 		$request = new WP_REST_Request( 'POST', $this->rest_base . '/' . $id . '/dismiss' );
@@ -346,9 +332,22 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 		$data     = $response->get_data();
 
 		$this->assertTrue( $data['success'] );
-		$this->assertSame( 'dismissed', $data['status'] );
-		$this->assertSame( $id, $data['id'] );
-		$this->assertSame( 'test-promo', $data['promo_id'] );
+	}
+
+	public function test_dismiss_promotion_returns_success_false_when_already_dismissed() {
+		$id = 'test-promo__spotlight';
+
+		$this->mock_promotions_service->method( 'dismiss_promotion' )
+			->willReturn( false );
+
+		// URL params must be set explicitly when calling controller directly (not routed via REST API).
+		$request = new WP_REST_Request( 'POST', $this->rest_base . '/' . $id . '/dismiss' );
+		$request->set_param( 'id', $id );
+
+		$response = $this->controller_with_mock->dismiss_promotion( $request );
+		$data     = $response->get_data();
+
+		$this->assertFalse( $data['success'] );
 	}
 
 	public function test_dismiss_promotion_integration_stores_dismissal() {
@@ -361,29 +360,6 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 		$this->controller->dismiss_promotion( $request );
 
 		$this->assertTrue( WC_Payments_PM_Promotions_Service::is_promotion_dismissed( $id ) );
-	}
-
-	public function test_dismiss_promotion_extracts_promo_id_from_id() {
-		$id = 'klarna-2026-promo__spotlight';
-
-		$this->mock_promotions_service->method( 'dismiss_promotion' )
-			->willReturn(
-				[
-					'success'  => true,
-					'id'       => $id,
-					'promo_id' => 'klarna-2026-promo',
-					'status'   => 'dismissed',
-				]
-			);
-
-		// URL params must be set explicitly when calling controller directly (not routed via REST API).
-		$request = new WP_REST_Request( 'POST', $this->rest_base . '/' . $id . '/dismiss' );
-		$request->set_param( 'id', $id );
-
-		$response = $this->controller_with_mock->dismiss_promotion( $request );
-		$data     = $response->get_data();
-
-		$this->assertSame( 'klarna-2026-promo', $data['promo_id'] );
 	}
 
 	/*

@@ -356,6 +356,118 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertCount( 2, $result );
 	}
 
+	public function test_filter_promotions_removes_pm_with_active_discount() {
+		// Create a mock account that returns fees with a discount for klarna.
+		$mock_account = $this->createMock( WC_Payments_Account::class );
+		$mock_account->method( 'get_fees' )
+			->willReturn(
+				[
+					'klarna' => [
+						'base'     => [
+							'percentage_rate' => 0.029,
+							'fixed_rate'      => 30,
+						],
+						'discount' => [
+							[
+								'discount'        => 50,
+								'end_time'        => strtotime( '+30 days' ),
+								'volume_currency' => 'usd',
+							],
+						],
+					],
+				]
+			);
+
+		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )
+			->willReturn( [] );
+
+		// Create service with mock account.
+		$service = new WC_Payments_PM_Promotions_Service( $this->mock_gateway, $mock_account );
+
+		$promotions = [
+			$this->create_valid_promotion(
+				[
+					'id'             => 'promo__klarna',
+					'promo_id'       => 'promo',
+					'payment_method' => 'klarna',
+				]
+			),
+			$this->create_valid_promotion(
+				[
+					'id'             => 'promo__affirm',
+					'promo_id'       => 'promo',
+					'payment_method' => 'affirm',
+				]
+			),
+		];
+
+		$reflection = new ReflectionClass( $service );
+		$method     = $reflection->getMethod( 'filter_promotions' );
+		$method->setAccessible( true );
+
+		$result = $method->invokeArgs( $service, [ $promotions ] );
+
+		// Only affirm promotion should remain (klarna has active discount).
+		$this->assertCount( 1, $result );
+		$this->assertSame( 'affirm', $result[0]['payment_method'] );
+	}
+
+	public function test_filter_promotions_keeps_pm_without_discount() {
+		// Create a mock account that returns fees without discounts.
+		$mock_account = $this->createMock( WC_Payments_Account::class );
+		$mock_account->method( 'get_fees' )
+			->willReturn(
+				[
+					'klarna' => [
+						'base'     => [
+							'percentage_rate' => 0.029,
+							'fixed_rate'      => 30,
+						],
+						'discount' => [], // Empty discount array.
+					],
+					'affirm' => [
+						'base' => [
+							'percentage_rate' => 0.029,
+							'fixed_rate'      => 30,
+						],
+						// No discount key at all.
+					],
+				]
+			);
+
+		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )
+			->willReturn( [] );
+
+		// Create service with mock account.
+		$service = new WC_Payments_PM_Promotions_Service( $this->mock_gateway, $mock_account );
+
+		$promotions = [
+			$this->create_valid_promotion(
+				[
+					'id'             => 'promo__klarna',
+					'promo_id'       => 'promo',
+					'payment_method' => 'klarna',
+				]
+			),
+			$this->create_valid_promotion(
+				[
+					'id'             => 'promo__affirm',
+					'promo_id'       => 'promo',
+					'payment_method' => 'affirm',
+				]
+			),
+		];
+
+		$reflection = new ReflectionClass( $service );
+		$method     = $reflection->getMethod( 'filter_promotions' );
+		$method->setAccessible( true );
+
+		$result = $method->invokeArgs( $service, [ $promotions ] );
+
+		// Both promotions should remain (neither has active discount).
+		$this->assertCount( 2, $result );
+	}
+
 	/*
 	 * =========================================================================
 	 * NORMALIZATION TESTS
@@ -557,22 +669,24 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertIsInt( $dismissals[ $id ] );
 	}
 
-	public function test_dismiss_promotion_extracts_promo_id_from_id() {
+	public function test_dismiss_promotion_returns_true_on_success() {
 		$id = 'test-promo__spotlight';
 
-		$response = $this->service->dismiss_promotion( $id );
+		$result = $this->service->dismiss_promotion( $id );
 
-		$this->assertSame( 'test-promo', $response['promo_id'] );
-		$this->assertSame( $id, $response['id'] );
+		$this->assertTrue( $result );
 	}
 
-	public function test_dismiss_promotion_returns_success_response() {
+	public function test_dismiss_promotion_returns_false_when_already_dismissed() {
 		$id = 'test-promo__spotlight';
 
-		$response = $this->service->dismiss_promotion( $id );
+		// First dismissal should succeed.
+		$first_result = $this->service->dismiss_promotion( $id );
+		$this->assertTrue( $first_result );
 
-		$this->assertTrue( $response['success'] );
-		$this->assertSame( 'dismissed', $response['status'] );
+		// Second dismissal should return false (already dismissed).
+		$second_result = $this->service->dismiss_promotion( $id );
+		$this->assertFalse( $second_result );
 	}
 
 	public function test_dismiss_promotion_invalidates_cache_via_context_hash() {

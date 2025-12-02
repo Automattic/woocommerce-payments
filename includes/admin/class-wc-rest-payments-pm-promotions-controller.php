@@ -119,10 +119,8 @@ class WC_REST_Payments_PM_Promotions_Controller extends WC_Payments_REST_Control
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function dismiss_promotion( $request ) {
-		$id = $request->get_param( 'id' );
+		$result = $this->promotions_service->dismiss_promotion( $request->get_param( 'id' ) );
 
-		$response = $this->promotions_service->dismiss_promotion( $id );
-
-		return rest_ensure_response( $response );
+		return rest_ensure_response( [ 'success' => $result ] );
 	}
 }
