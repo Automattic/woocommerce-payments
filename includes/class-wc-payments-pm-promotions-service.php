@@ -522,42 +522,29 @@ class WC_Payments_PM_Promotions_Service {
 
 	/**
 	 * Check whether the promotion data is valid.
-	 * Expects an array with at least `promo_id` and `variations`.
-	 * Variations must be a non-empty array.
+	 * Validates required fields based on promotion type.
 	 *
 	 * @param mixed $promotion_data The promotion data.
 	 *
 	 * @return bool Whether the promotion data is valid.
 	 */
 	private function validate_promotion( $promotion_data ): bool {
-		if ( ! is_array( $promotion_data )
-			|| empty( $promotion_data )
-			|| ! isset( $promotion_data['promo_id'] )
-			|| empty( $promotion_data['variations'] )
-			|| ! is_array( $promotion_data['variations'] ) ) {
-
+		if ( ! is_array( $promotion_data ) || empty( $promotion_data ) ) {
 			return false;
 		}
 
-		return true;
-	}
+		// Required fields for all promotions.
+		$required_fields = [ 'id', 'promo_id', 'payment_method', 'type', 'title', 'description', 'tc_url' ];
 
-	/**
-	 * Check whether the promotion variation data is valid.
-	 * Expects an array with at least `id`, `type`, `description`, and `tc_url`.
-	 *
-	 * @param mixed $variation_data The promotion variation data.
-	 *
-	 * @return bool Whether the promotion variation data is valid.
-	 */
-	private function validate_promotion_variation( $variation_data ): bool {
-		if ( ! is_array( $variation_data )
-			|| empty( $variation_data )
-			|| ! isset( $variation_data['id'] )
-			|| ! isset( $variation_data['type'] )
-			|| ! isset( $variation_data['description'] )
-			|| ! isset( $variation_data['tc_url'] ) ) {
+		foreach ( $required_fields as $field ) {
+			if ( ! isset( $promotion_data[ $field ] ) || ! is_string( $promotion_data[ $field ] ) ) {
+				return false;
+			}
+		}
 
+		// Validate type is supported.
+		$valid_types = [ 'spotlight', 'badge' ];
+		if ( ! in_array( $promotion_data['type'], $valid_types, true ) ) {
 			return false;
 		}
 
