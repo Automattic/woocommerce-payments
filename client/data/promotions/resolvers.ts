@@ -11,26 +11,8 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { NAMESPACE } from '../constants';
-import { Promotion, PromotionVariation, PromotionsData } from './types';
+import { Promotion, PromotionsData } from './types';
 import { ApiError } from '../../types/errors';
-
-/**
- * Type guard to check if an object is a valid PromotionVariation.
- */
-function isPromotionVariation( value: unknown ): value is PromotionVariation {
-	if ( typeof value !== 'object' || value === null ) {
-		return false;
-	}
-	const obj = value as Record< string, unknown >;
-	return (
-		typeof obj.id === 'string' &&
-		typeof obj.type === 'string' &&
-		typeof obj.heading === 'string' &&
-		typeof obj.description === 'string' &&
-		typeof obj.cta_label === 'string' &&
-		typeof obj.cta_url === 'string'
-	);
-}
 
 /**
  * Type guard to check if an object is a valid Promotion.
@@ -41,11 +23,17 @@ function isPromotion( value: unknown ): value is Promotion {
 	}
 	const obj = value as Record< string, unknown >;
 	return (
+		typeof obj.id === 'string' &&
 		typeof obj.promo_id === 'string' &&
-		typeof obj.discount_rate === 'string' &&
-		typeof obj.duration_days === 'number' &&
-		Array.isArray( obj.variations ) &&
-		obj.variations.every( isPromotionVariation )
+		typeof obj.payment_method === 'string' &&
+		typeof obj.payment_method_title === 'string' &&
+		typeof obj.type === 'string' &&
+		( obj.type === 'spotlight' || obj.type === 'badge' ) &&
+		typeof obj.title === 'string' &&
+		typeof obj.description === 'string' &&
+		typeof obj.cta_label === 'string' &&
+		typeof obj.tc_url === 'string' &&
+		typeof obj.tc_label === 'string'
 	);
 }
 

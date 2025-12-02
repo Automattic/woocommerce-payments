@@ -3,7 +3,7 @@
 /**
  * Internal dependencies
  */
-import { PromotionsState, Promotion } from './types';
+import { PromotionsState, Promotion, PromotionType } from './types';
 import { ApiError } from '../../types/errors';
 
 // Type for the full Redux state with promotions slice.
@@ -23,20 +23,50 @@ export const getPromotions = ( state: State ): Promotion[] => {
 };
 
 /**
- * Retrieves a specific promotion by promo_id.
+ * Retrieves a specific promotion by id.
  *
- * @param {State} state The full Redux state.
- * @param {string} promoId The promotion identifier.
+ * @param {State}  state The full Redux state.
+ * @param {string} id    The promotion unique identifier.
  *
  * @return {Promotion | undefined} The promotion or undefined.
  */
 export const getPromotionById = (
 	state: State,
-	promoId: string
+	id: string
 ): Promotion | undefined => {
-	return getPromotions( state ).find(
-		( promo ) => promo.promo_id === promoId
+	return getPromotions( state ).find( ( promo ) => promo.id === id );
+};
+
+/**
+ * Retrieves promotions for a specific payment method.
+ *
+ * @param {State}  state         The full Redux state.
+ * @param {string} paymentMethod The payment method ID.
+ *
+ * @return {Promotion[]} Array of promotions for the payment method.
+ */
+export const getPromotionsByPaymentMethod = (
+	state: State,
+	paymentMethod: string
+): Promotion[] => {
+	return getPromotions( state ).filter(
+		( promo ) => promo.payment_method === paymentMethod
 	);
+};
+
+/**
+ * Retrieves the first promotion of a specific type.
+ *
+ * @param {State}         state The full Redux state.
+ * @param {PromotionType} type  The promotion type ('spotlight' or 'badge').
+ *
+ * @return {Promotion | undefined} The first promotion of the type or undefined.
+ */
+export const getPromotionByType = (
+	state: State,
+	type: PromotionType
+): Promotion | undefined => {
+	return getPromotions( state ).find( ( promo ) => promo.type === type );
 };
 
 /**

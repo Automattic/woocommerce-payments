@@ -11,19 +11,8 @@ import { __ } from '@wordpress/i18n';
  */
 import Spotlight from 'components/spotlight';
 import { usePromotions, usePromotionActions } from 'data';
-import { Promotion, PromotionVariation } from 'data/promotions/types';
+import { Promotion } from 'data/promotions/types';
 import { recordEvent } from 'tracks';
-import KlarnaIllustration from 'assets/images/illustrations/klarna-promotion-spotlight.svg?asset';
-
-/**
- * Mapping of promotion IDs to their corresponding spotlight images.
- * Images are bundled as local assets for fast loading and version control.
- * Promotions without a mapped image will render without an image.
- */
-const spotlightImages: Record< string, string > = {
-	'klarna-2026-promo': KlarnaIllustration,
-	// Add more promotion images here as needed
-};
 
 /**
  * Determine a human-readable source identifier based on the current page.
@@ -54,7 +43,7 @@ const getPageSource = (): string => {
  *
  * This component:
  * - Fetches promotions from the API
- * - Filters for 'spotlight' type variations
+ * - Filters for 'spotlight' type promotions
  * - Only displays if account is onboarded (status is 'complete' or 'enabled')
  * - Handles activation and dismissal of promotions
  */
@@ -77,39 +66,23 @@ const SpotlightPromotion: React.FC = () => {
 		return null;
 	}
 
-	// Find the first available promotion with a 'spotlight' variation
-	let spotlightVariation: PromotionVariation | null = null;
-	let activePromotion: Promotion | null = null;
-
-	for ( const promotion of promotions ) {
-		const variation = promotion.variations.find(
-			( v ) => v.type === 'spotlight'
-		);
-		if ( variation ) {
-			spotlightVariation = variation;
-			activePromotion = promotion;
-			break;
-		}
-	}
+	// Find the first spotlight promotion
+	const spotlightPromotion: Promotion | undefined = promotions.find(
+		( promo ) => promo.type === 'spotlight'
+	);
 
 	// No spotlight promotion available
-	if ( ! spotlightVariation || ! activePromotion ) {
+	if ( ! spotlightPromotion ) {
 		return null;
 	}
-
-	// Extract values after null check for TypeScript
-	const promotionId = activePromotion.promo_id;
-	const paymentMethod = activePromotion.payment_method;
-	const variationId = spotlightVariation.id;
-	const ctaUrl = spotlightVariation.cta_url;
 
 	/**
 	 * Get common event properties for tracking.
 	 */
 	const getEventProperties = () => ( {
-		promotion_id: promotionId,
-		payment_method: paymentMethod,
-		variation_id: variationId,
+		promotion_id: spotlightPromotion.promo_id,
+		payment_method: spotlightPromotion.payment_method,
+		id: spotlightPromotion.id,
 		display_context: 'spotlight',
 		source: getPageSource(),
 		path: window.location.pathname + window.location.search,
@@ -127,7 +100,7 @@ const SpotlightPromotion: React.FC = () => {
 			'wcpay_payment_method_promotion_activate_click',
 			getEventProperties()
 		);
-		activatePromotion( promotionId );
+		activatePromotion( spotlightPromotion.promo_id );
 	};
 
 	const handleSecondaryClick = () => {
@@ -135,16 +108,18 @@ const SpotlightPromotion: React.FC = () => {
 			'wcpay_payment_method_promotion_secondary_click',
 			getEventProperties()
 		);
-		const url = spotlightVariation?.cta_url;
-		if ( url ) {
-			// Validate URL has a safe protocol before opening
+		if ( spotlightPromotion.tc_url ) {
 			try {
-				const parsedUrl = new URL( url );
+				const parsedUrl = new URL( spotlightPromotion.tc_url );
 				if (
 					parsedUrl.protocol === 'https:' ||
 					parsedUrl.protocol === 'http:'
 				) {
-					window.open( url, '_blank', 'noopener,noreferrer' );
+					window.open(
+						spotlightPromotion.tc_url,
+						'_blank',
+						'noopener,noreferrer'
+					);
 				}
 			} catch {
 				// Invalid URL, don't open
@@ -157,7 +132,7 @@ const SpotlightPromotion: React.FC = () => {
 			'wcpay_payment_method_promotion_dismiss',
 			getEventProperties()
 		);
-		dismissPromotion( promotionId, variationId as string );
+		dismissPromotion( spotlightPromotion.id );
 	};
 
 	const handleTermsClick = () => {
@@ -167,37 +142,31 @@ const SpotlightPromotion: React.FC = () => {
 		} );
 	};
 
-	// Build disclaimer content if footnote and tc_url exist
+	// Build disclaimer content if footnote exists
 	let disclaimer: React.ReactNode | undefined;
-	if ( spotlightVariation.footnote && spotlightVariation.tc_url ) {
+	if ( spotlightPromotion.footnote ) {
 		disclaimer = (
 			<>
-				{ spotlightVariation.footnote }{ ' ' }
+				{ spotlightPromotion.footnote }{ ' ' }
 				<a
-					href={ spotlightVariation.tc_url }
+					href={ spotlightPromotion.tc_url }
 					target="_blank"
 					rel="noopener noreferrer"
 					onClick={ handleTermsClick }
 				>
-					{ __( 'Terms and conditions', 'woocommerce-payments' ) }
+					{ spotlightPromotion.tc_label }
 				</a>
 			</>
 		);
-	} else if ( spotlightVariation.footnote ) {
-		disclaimer = spotlightVariation.footnote;
 	}
-
-	// Get the image for this promotion (undefined if not mapped)
-	const image = spotlightImages[ promotionId ];
 
 	return (
 		<Spotlight
-			badge={ spotlightVariation.badge }
-			heading={ spotlightVariation.heading }
-			description={ spotlightVariation.description }
+			heading={ spotlightPromotion.title }
+			description={ spotlightPromotion.description }
 			disclaimer={ disclaimer }
-			image={ image }
-			primaryButtonLabel={ spotlightVariation.cta_label }
+			image={ spotlightPromotion.image }
+			primaryButtonLabel={ spotlightPromotion.cta_label }
 			onPrimaryClick={ handlePrimaryClick }
 			secondaryButtonLabel={ __( 'Learn more', 'woocommerce-payments' ) }
 			onSecondaryClick={ handleSecondaryClick }

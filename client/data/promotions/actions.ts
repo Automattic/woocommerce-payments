@@ -111,22 +111,20 @@ export function* activatePromotion(
 }
 
 /**
- * Dismiss a promotion variation.
+ * Dismiss a promotion.
  *
- * @param {string} identifier The promotion identifier.
- * @param {string} variationId The variation identifier.
+ * @param {string} id The promotion unique identifier.
  */
-export function* dismissPromotion(
-	identifier: string,
-	variationId: string
-): unknown {
-	const path = `${ NAMESPACE }/pm-promotions/${ identifier }/dismiss`;
+export function* dismissPromotion( id: string ): unknown {
+	// Extract promo_id from id for the API endpoint (e.g., 'klarna-2026-promo__spotlight' -> 'klarna-2026-promo')
+	const promoId = id.split( '__' )[ 0 ];
+	const path = `${ NAMESPACE }/pm-promotions/${ promoId }/dismiss`;
 
 	try {
 		yield apiFetch( {
 			path,
 			method: 'POST',
-			data: { variation_id: variationId },
+			data: { id },
 		} );
 
 		yield controls.dispatch(
