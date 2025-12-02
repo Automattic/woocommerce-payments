@@ -61,15 +61,10 @@ class WC_REST_Payments_PM_Promotions_Controller extends WC_Payments_REST_Control
 				'callback'            => [ $this, 'activate_promotion' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 				'args'                => [
-					'identifier'   => [
+					'identifier' => [
 						'required'          => true,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
-					],
-					'accept_terms' => [
-						'required' => false,
-						'type'     => 'boolean',
-						'default'  => true,
 					],
 				],
 			]
@@ -102,11 +97,8 @@ class WC_REST_Payments_PM_Promotions_Controller extends WC_Payments_REST_Control
 	 *
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public function activate_promotion( $request ) {
-		$identifier   = $request->get_param( 'identifier' );
-		$accept_terms = $request->get_param( 'accept_terms' );
-
-		$response = $this->promotions_service->activate_promotion( $identifier, $accept_terms );
+	public function activate_promotion( WP_REST_Request $request ) {
+		$response = $this->promotions_service->activate_promotion( $request->get_param( 'identifier' ) );
 
 		return rest_ensure_response( $response );
 	}
@@ -118,7 +110,7 @@ class WC_REST_Payments_PM_Promotions_Controller extends WC_Payments_REST_Control
 	 *
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public function dismiss_promotion( $request ) {
+	public function dismiss_promotion( WP_REST_Request $request ) {
 		$result = $this->promotions_service->dismiss_promotion( $request->get_param( 'id' ) );
 
 		return rest_ensure_response( [ 'success' => $result ] );

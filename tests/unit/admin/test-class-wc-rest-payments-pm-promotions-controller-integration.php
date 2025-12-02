@@ -210,7 +210,7 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 
 		$this->mock_promotions_service->expects( $this->once() )
 			->method( 'activate_promotion' )
-			->with( $identifier, true )
+			->with( $identifier )
 			->willReturn(
 				[
 					'success'    => true,
@@ -221,7 +221,6 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 
 		$request = new WP_REST_Request( 'POST', $this->rest_base . '/' . $identifier . '/activate' );
 		$request->set_param( 'identifier', $identifier );
-		$request->set_param( 'accept_terms', true );
 
 		$response = $this->controller_with_mock->activate_promotion( $request );
 
@@ -242,7 +241,6 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 
 		$request = new WP_REST_Request( 'POST', $this->rest_base . '/' . $identifier . '/activate' );
 		$request->set_param( 'identifier', $identifier );
-		$request->set_param( 'accept_terms', true );
 
 		$response = $this->controller_with_mock->activate_promotion( $request );
 		$data     = $response->get_data();
@@ -252,43 +250,11 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 		$this->assertSame( $identifier, $data['identifier'] );
 	}
 
-	public function test_activate_promotion_passes_accept_terms_false() {
-		$identifier = 'test-promo';
-
-		$this->mock_promotions_service->expects( $this->once() )
-			->method( 'activate_promotion' )
-			->with( $identifier, false )
-			->willReturn( [ 'success' => true ] );
-
-		$request = new WP_REST_Request( 'POST', $this->rest_base . '/' . $identifier . '/activate' );
-		$request->set_param( 'identifier', $identifier );
-		$request->set_param( 'accept_terms', false );
-
-		$this->controller_with_mock->activate_promotion( $request );
-	}
-
-	public function test_activate_promotion_defaults_accept_terms_to_true() {
-		$identifier = 'test-promo';
-
-		$this->mock_promotions_service->expects( $this->once() )
-			->method( 'activate_promotion' )
-			->with( $identifier, true )
-			->willReturn( [ 'success' => true ] );
-
-		$request = new WP_REST_Request( 'POST', $this->rest_base . '/' . $identifier . '/activate' );
-		$request->set_param( 'identifier', $identifier );
-		// Not setting accept_terms - should default to true.
-		$request->set_default_params( [ 'accept_terms' => true ] );
-
-		$this->controller_with_mock->activate_promotion( $request );
-	}
-
 	public function test_activate_promotion_integration_stores_activation() {
 		$identifier = 'test-promo';
 
 		$request = new WP_REST_Request( 'POST', $this->rest_base . '/' . $identifier . '/activate' );
 		$request->set_param( 'identifier', $identifier );
-		$request->set_param( 'accept_terms', true );
 
 		$this->controller->activate_promotion( $request );
 
@@ -472,7 +438,6 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 		// Step 1: Activate the promotion.
 		$request = new WP_REST_Request( 'POST', $this->rest_base . '/' . $identifier . '/activate' );
 		$request->set_param( 'identifier', $identifier );
-		$request->set_param( 'accept_terms', true );
 
 		$response = $this->controller->activate_promotion( $request );
 
