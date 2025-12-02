@@ -13,6 +13,7 @@ use WC_Payment_Gateway_WCPay;
 use WC_Payments_Order_Service;
 use WCPay\Constants\Intent_Status;
 use WCPay\Core\Server\Request\Get_Intention;
+use WCPay\Exceptions\Process_Payment_Exception;
 
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
@@ -74,6 +75,7 @@ class Duplicate_Payment_Prevention_Service {
 	 * @param WC_Order $order Current order to check.
 	 *
 	 * @return array|void A successful response in case the attached intent was successful, null if none.
+	 * @throws Process_Payment_Exception When order amount doesn't match the charged amount.
 	 */
 	public function check_payment_intent_attached_to_order_succeeded( WC_Order $order ) {
 		$intent_id = (string) $order->get_meta( '_intent_id', true );
@@ -121,21 +123,22 @@ class Duplicate_Payment_Prevention_Service {
 		$charged_amount       = $intent->get_amount();
 
 		// If amounts don't match, this indicates the order was modified after payment.
-		// Add a note explaining the situation instead of marking it as paid.
+		// Throw an exception to prevent duplicate payment and inform the customer.
 		if ( $order_total_in_cents !== $charged_amount ) {
-			$order->add_order_note(
+			// Throw exception with customer-friendly message.
+			throw new Process_Payment_Exception(
 				sprintf(
-					/* translators: 1: payment intent ID, 2: charged amount, 3: current order total */
-					__( 'Duplicate payment attempt prevented. Order was already paid with payment intent %1$s for %2$s, but current order total is %3$s. Please review the order and create a new order for any additional items.', 'woocommerce-payments' ),
-					$intent_id,
+					/* translators: 1: charged amount, 2: current order total */
+					__( 'This order was already paid for %1$s, but the order total has since changed to %2$s, so we prevented an overpayment. Please create a new order for any additional items.', 'woocommerce-payments' ),
 					wc_price( \WC_Payments_Utils::interpret_stripe_amount( $charged_amount, $order->get_currency() ), [ 'currency' => $order->get_currency() ] ),
 					wc_price( \WC_Payments_Utils::interpret_stripe_amount( $order_total_in_cents, $order->get_currency() ), [ 'currency' => $order->get_currency() ] )
-				)
+				),
+				'duplicate_payment_amount_mismatch'
 			);
-		} else {
-			// Amounts match, proceed with normal status update.
-			$this->order_service->update_order_status_from_intent( $order, $intent );
 		}
+
+		// Amounts match, proceed with normal status update.
+		$this->order_service->update_order_status_from_intent( $order, $intent );
 
 		$return_url = $this->gateway->get_return_url( $order );
 		$return_url = add_query_arg( self::FLAG_PREVIOUS_SUCCESSFUL_INTENT, 'yes', $return_url );
