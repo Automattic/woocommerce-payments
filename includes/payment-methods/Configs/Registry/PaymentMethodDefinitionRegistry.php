@@ -9,6 +9,8 @@ namespace WCPay\PaymentMethods\Configs\Registry;
 
 use WCPay\PaymentMethods\Configs\Definitions\AffirmDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\AlipayDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\ApplePayDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\GooglePayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\EpsDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition;
@@ -46,6 +48,8 @@ class PaymentMethodDefinitionRegistry {
 		P24Definition::class,
 		SofortDefinition::class,
 		WechatPayDefinition::class,
+		ApplePayDefinition::class,
+		GooglePayDefinition::class,
 	];
 
 	/**

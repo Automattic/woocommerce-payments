@@ -27,17 +27,68 @@ export const DOCUMENT_FIELD_KEYS = {
 } as const;
 
 /**
+ * Get recommended document fields for the subscription_canceled dispute reason
+ *
+ * @param {string} productType - The product type (for subscription_canceled disputes)
+ * @return {Array<{key: string, label: string}>} Array of recommended document fields
+ */
+const getRecommendedDocumentFieldsForSubscriptionCanceled = (
+	productType?: string
+): Array< RecommendedDocument > => {
+	// Common fields for all subscription cancellation disputes
+	const fields: Array< RecommendedDocument > = [
+		{
+			key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+			label: __( 'Store refund policy', 'woocommerce-payments' ),
+			description: __(
+				"A screenshot of your store's refund policy.",
+				'woocommerce-payments'
+			),
+			order: 40,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
+			label: __( 'Terms of service', 'woocommerce-payments' ),
+			description: __(
+				"A screenshot of your store's terms of service.",
+				'woocommerce-payments'
+			),
+			order: 50,
+		},
+	];
+
+	// For the multiple product type only core fields are needed.
+	if ( 'multiple' === productType ) {
+		return fields;
+	}
+
+	fields.push( {
+		key: DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
+		label: __( 'Subscription logs', 'woocommerce-payments' ),
+		description: __(
+			'Order notes or the history of related orders. This should clearly show successful renewals before the dispute.',
+			'woocommerce-payments'
+		),
+		order: 30,
+	} );
+
+	return fields;
+};
+
+/**
  * Get recommended document fields based on dispute reason
  *
  * @param {string} reason - The dispute reason
  * @param {string} refundStatus - The refund status (for credit_not_processed disputes)
  * @param {string} duplicateStatus - The duplicate status (for duplicate disputes)
+ * @param {string} productType - The product type (for subscription_canceled disputes)
  * @return {Array<{key: string, label: string}>} Array of recommended document fields
  */
 const getRecommendedDocumentFields = (
 	reason: string,
 	refundStatus?: string,
-	duplicateStatus?: string
+	duplicateStatus?: string,
+	productType?: string
 ): Array< RecommendedDocument > => {
 	// Define fields with their order
 	const orderedFields = [
@@ -202,38 +253,9 @@ const getRecommendedDocumentFields = (
 							order: 25,
 						},
 				  ],
-		subscription_canceled: [
-			{
-				key: DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
-				label: __(
-					'Proof of active subscription',
-					'woocommerce-payments'
-				),
-				description: __(
-					'Any documents showing the billing history, subscription status, or cancellation logs, for example.',
-					'woocommerce-payments'
-				),
-				order: 30,
-			},
-			{
-				key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
-				label: __( 'Store refund policy', 'woocommerce-payments' ),
-				description: __(
-					"A screenshot of your store's refund policy.",
-					'woocommerce-payments'
-				),
-				order: 40,
-			},
-			{
-				key: DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
-				label: __( 'Terms of service', 'woocommerce-payments' ),
-				description: __(
-					"A screenshot of your store's terms of service.",
-					'woocommerce-payments'
-				),
-				order: 50,
-			},
-		],
+		subscription_canceled: getRecommendedDocumentFieldsForSubscriptionCanceled(
+			productType
+		),
 		fraudulent: [
 			{
 				key: DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE,

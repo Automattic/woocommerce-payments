@@ -28,6 +28,11 @@ class WC_Payments_Admin_Settings_Test extends WCPAY_UnitTestCase {
 	 */
 	private $payments_admin_settings;
 
+	/**
+	 * @var string
+	 */
+	private $attempted_redirect_location;
+
 	public function set_up() {
 		$this->mock_gateway = $this->getMockBuilder( WC_Payment_Gateway_WCPay::class )
 			->disableOriginalConstructor()
@@ -38,6 +43,20 @@ class WC_Payments_Admin_Settings_Test extends WCPAY_UnitTestCase {
 			->getMock();
 
 		$this->payments_admin_settings = new WC_Payments_Admin_Settings( $this->mock_gateway, $this->mock_account );
+		add_filter( 'wp_redirect', [ $this, 'block_and_save_attempted_redirect' ] );
+	}
+
+	public function tear_down() {
+		unset( $_GET );
+		remove_filter( 'wp_redirect', [ $this, 'block_and_save_attempted_redirect' ] );
+		$this->attempted_redirect_location = '';
+		parent::tear_down();
+	}
+
+	public function block_and_save_attempted_redirect( $location ) {
+		$this->attempted_redirect_location = $location;
+
+		return false;
 	}
 
 	public function test_it_does_not_show_test_mode_notice_when_not_connected() {
@@ -487,5 +506,69 @@ class WC_Payments_Admin_Settings_Test extends WCPAY_UnitTestCase {
 		$links = $this->payments_admin_settings->add_plugin_links( [ '<a href="#some-link">Mock link</a>' ] );
 
 		$this->assertCount( 2, $links );
+	}
+
+	public function test_maybe_redirect_payment_method_settings_redirects_payment_method_urls() {
+		$_GET = [
+			'page'    => 'wc-settings',
+			'tab'     => 'checkout',
+			'section' => 'woocommerce_payments_klarna',
+		];
+
+		$this->mock_current_user_is_admin();
+
+		$this->payments_admin_settings->maybe_redirect_payment_method_settings();
+
+		$this->assertStringContainsString( '/wp-admin/admin.php?page=wc-settings&tab=checkout&section=woocommerce_payments', $this->attempted_redirect_location );
+	}
+
+	public function test_maybe_redirect_payment_method_settings_does_not_redirect_main_settings() {
+		$_GET = [
+			'page'    => 'wc-settings',
+			'tab'     => 'checkout',
+			'section' => 'woocommerce_payments',
+		];
+
+		$this->mock_current_user_is_admin();
+
+		$this->payments_admin_settings->maybe_redirect_payment_method_settings();
+
+		$this->assertEmpty( $this->attempted_redirect_location );
+	}
+
+	public function test_maybe_redirect_payment_method_settings_does_not_redirect_other_sections() {
+		$_GET = [
+			'page'    => 'wc-settings',
+			'tab'     => 'checkout',
+			'section' => 'stripe',
+		];
+
+		$this->mock_current_user_is_admin();
+
+		$this->payments_admin_settings->maybe_redirect_payment_method_settings();
+
+		$this->assertEmpty( $this->attempted_redirect_location );
+	}
+
+	public function test_maybe_redirect_payment_method_settings_does_not_redirect_without_permissions() {
+		$_GET = [
+			'page'    => 'wc-settings',
+			'tab'     => 'checkout',
+			'section' => 'woocommerce_payments_klarna',
+		];
+
+		wp_set_current_user( 0 );
+
+		$this->payments_admin_settings->maybe_redirect_payment_method_settings();
+
+		$this->assertEmpty( $this->attempted_redirect_location );
+	}
+
+	/**
+	 * Helper method to mock current user as admin.
+	 */
+	private function mock_current_user_is_admin() {
+		$admin_user = self::factory()->user->create( [ 'role' => 'administrator' ] );
+		wp_set_current_user( $admin_user );
 	}
 }
