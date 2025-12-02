@@ -8,27 +8,12 @@ export interface Token {
 }
 
 /**
- * CachedUserDataItem represents cached token data for a specific user
- */
-export interface CachedUserDataItem {
-	loading: boolean;
-	loadingError: string | null;
-	tokens: Token[];
-}
-
-/**
- * CachedUserData is a map of user IDs to their cached token data
- */
-export type CachedUserData = Record< number, CachedUserDataItem >;
-
-/**
  * Props for the PaymentMethodSelect component
  */
 export interface PaymentMethodSelectProps {
 	inputName: string;
 	initialValue: number;
 	initialUserId: number;
-	initialCache: CachedUserData;
 	nonce: string;
 	ajaxUrl: string;
 }

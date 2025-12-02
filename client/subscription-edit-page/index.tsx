@@ -11,19 +11,16 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import type {
-	CachedUserData,
 	PaymentMethodSelectProps,
 	WCPayPMSelectorData,
 	FetchUserTokensResponse,
+	Token,
 } from './types';
-import {
-	startLoading,
-	tokensLoaded,
-	loadingFailed,
-	hasEntry,
-	getUserEntry,
-	getDefaultTokenId,
-} from './user-token-cache';
+
+/**
+ * Cache for all tokens, may be shared between multiple selects.
+ */
+const cachedTokens = new Map< number, Token[] >();
 
 /**
  * Fetch the tokens for a user from the back-end.
@@ -63,19 +60,10 @@ export const fetchUserTokens = async (
  * This could be a shorter method, but because the customer select
  * element uses select2, it does not emit the typical `change` event.
  *
- * @param {CachedUserData} cache The cache of user data.
- * @param {string} ajaxUrl The AJAX URL.
- * @param {string} nonce The nonce.
- * @param {(userId: number) => void} setUser The function to set the user ID.
- * @param {(cache: CachedUserData) => void} setCache The function to set the cache.
  * @return {() => void} The cleanup function.
  */
 export const addCustomerSelectListener = (
-	cache: CachedUserData,
-	ajaxUrl: string,
-	nonce: string,
-	setUser: ( userId: number ) => void,
-	setCache: ( cache: CachedUserData ) => void
+	callback: ( userId: number ) => void
 ): ( () => void ) => {
 	const element = document.getElementById( 'customer_user' );
 	const customerUserSelect =
@@ -90,42 +78,7 @@ export const addCustomerSelectListener = (
 	// Wrap in an internal callback to load the select's value and tokens.
 	const internalCallback = async () => {
 		const newUserId = parseInt( customerUserSelect.value, 10 ) || 0;
-
-		setUser( newUserId );
-
-		// Loaded, loading, or errored out, we do not need to load anything.
-		if ( hasEntry( cache, newUserId ) ) {
-			return;
-		}
-
-		const cacheWithLoading = startLoading( cache, newUserId );
-		setCache( cacheWithLoading );
-
-		try {
-			const response = await fetchUserTokens( newUserId, ajaxUrl, nonce );
-			if ( undefined === response ) {
-				throw new Error(
-					__(
-						'Failed to fetch user tokens. Please reload the page and try again.',
-						'woocommerce-payments'
-					)
-				);
-			}
-
-			setCache(
-				tokensLoaded( cacheWithLoading, newUserId, response.tokens )
-			);
-		} catch ( error ) {
-			setCache(
-				loadingFailed(
-					cacheWithLoading,
-					newUserId,
-					error instanceof Error
-						? error.message
-						: __( 'Unknown error', 'woocommerce-payments' )
-				)
-			);
-		}
+		callback( newUserId );
 	};
 
 	// Add the listener with the right technique, as select2 does not emit <select> events.
@@ -145,34 +98,69 @@ export const PaymentMethodSelect = ( {
 	inputName,
 	initialValue,
 	initialUserId,
-	initialCache,
 	nonce,
 	ajaxUrl,
 }: PaymentMethodSelectProps ) => {
 	const [ value, setValue ] = useState< number >( initialValue );
 	const [ userId, setUserId ] = useState< number >( initialUserId );
-	const [ cache, setCache ] = useState< CachedUserData >( initialCache );
+
+	const [ isLoading, setIsLoading ] = useState< boolean >( false );
+	const [ loadingError, setLoadingError ] = useState< string | null >( null );
 
 	// If there is no value but a user, try to fall back to the default token.
 	useEffect( () => {
-		if ( 0 !== userId && value === 0 ) {
-			const defaultTokenId = getDefaultTokenId( cache, userId );
-			if ( value !== defaultTokenId ) {
-				setValue( defaultTokenId );
-			}
+		if ( 0 === userId || 0 !== value || isLoading ) {
+			return;
 		}
-	}, [ userId, value, cache ] );
+		const tokens = cachedTokens.get( userId );
+		if ( undefined === tokens ) {
+			return;
+		}
+
+		const defaultToken = tokens.find( ( token ) => token.isDefault );
+		if ( undefined !== defaultToken ) {
+			setValue( defaultToken.tokenId );
+		}
+	}, [ userId, value, isLoading ] );
 
 	// Use the listener to update the user ID and cache.
 	useEffect( () => {
-		return addCustomerSelectListener(
-			cache,
-			ajaxUrl,
-			nonce,
-			setUserId,
-			setCache
-		);
-	}, [ cache, ajaxUrl, nonce ] );
+		return addCustomerSelectListener( async ( newUserId ) => {
+			setUserId( newUserId );
+
+			// Loaded, loading, or errored out, we do not need to load anything.
+			if ( cachedTokens.has( newUserId ) ) {
+				return;
+			}
+
+			setIsLoading( true );
+			try {
+				const response = await fetchUserTokens(
+					newUserId,
+					ajaxUrl,
+					nonce
+				);
+				if ( undefined === response ) {
+					throw new Error(
+						__(
+							'Failed to fetch user tokens. Please reload the page and try again.',
+							'woocommerce-payments'
+						)
+					);
+				}
+
+				cachedTokens.set( newUserId, response.tokens );
+				setIsLoading( false );
+			} catch ( error ) {
+				setIsLoading( false );
+				setLoadingError(
+					error instanceof Error
+						? error.message
+						: __( 'Unknown error', 'woocommerce-payments' )
+				);
+			}
+		} );
+	}, [ ajaxUrl, nonce ] );
 
 	if ( userId <= 0 ) {
 		return (
@@ -188,12 +176,12 @@ export const PaymentMethodSelect = ( {
 	}
 
 	// There might be a user, but tokens could still be loading.
-	const entry = getUserEntry( cache, userId );
-	if ( undefined === entry || entry.loading ) {
+	// const entry = getUserEntry( cache, userId );
+	if ( isLoading ) {
 		return <>{ __( 'Loading…', 'woocommerce-payments' ) }</>;
 	}
-	if ( entry.loadingError ) {
-		return <strong>{ entry.loadingError }</strong>;
+	if ( loadingError ) {
+		return <strong>{ loadingError }</strong>;
 	}
 
 	return (
@@ -207,7 +195,7 @@ export const PaymentMethodSelect = ( {
 					) }
 				</option>
 			) }
-			{ entry.tokens.map( ( token ) => (
+			{ cachedTokens.get( userId )?.map( ( token ) => (
 				<option value={ token.tokenId } key={ token.tokenId }>
 					{ token.displayName }
 				</option>
@@ -230,14 +218,9 @@ const setupPaymentSelector = ( element: HTMLSpanElement ): void => {
 	const userId = data.userId ?? 0;
 	const value = data.value ?? 0;
 
-	// Initial population.
-	const cache: CachedUserData = {};
 	if ( userId ) {
-		cache[ userId ] = {
-			loading: false,
-			loadingError: null,
-			tokens: data.tokens ?? [],
-		};
+		// Initial cache population.
+		cachedTokens.set( userId, data.tokens ?? [] );
 	}
 
 	// In older Subscriptions versions, there was just a simple input.
@@ -258,7 +241,6 @@ const setupPaymentSelector = ( element: HTMLSpanElement ): void => {
 			inputName={ input.name }
 			initialValue={ value }
 			initialUserId={ userId }
-			initialCache={ cache }
 			nonce={ data.nonce }
 			ajaxUrl={ data.ajaxUrl }
 		/>
