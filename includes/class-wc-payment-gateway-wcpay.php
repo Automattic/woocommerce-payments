@@ -2860,7 +2860,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				return $this->account->get_communications_email();
 			}
 		} catch ( Exception $e ) {
-			Logger::error( 'Failed to get account\'s communications email.' . $e );
+			Logger::error( 'Failed to get account\'s communication email.' . $e );
 		}
 
 		return $default_value;
