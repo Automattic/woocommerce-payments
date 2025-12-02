@@ -109,6 +109,22 @@ export const addCustomerSelectListener = (
 };
 
 /**
+ * Get the default token for a user.
+ *
+ * @param {number} userId The user ID.
+ * @return {number} The default token ID or 0 if no default token is found.
+ */
+export const getDefaultUserToken = ( userId: number ): number => {
+	const userTokens = cachedTokens.get( userId );
+	if ( undefined === userTokens ) {
+		return 0;
+	}
+
+	const defaultToken = userTokens.find( ( token ) => token.isDefault );
+	return undefined !== defaultToken ? defaultToken.tokenId : 0;
+};
+
+/**
  * Renders a payment method select or loading indicator.
  */
 export const PaymentMethodSelect = ( {
@@ -126,8 +142,9 @@ export const PaymentMethodSelect = ( {
 
 	useEffect( () => {
 		return addCustomerSelectListener( async ( newUserId ) => {
+			const newValue = getDefaultUserToken( newUserId );
+			setValue( newValue );
 			setUserId( newUserId );
-			setValue( 0 );
 
 			// Loaded, loading, or errored out, we do not need to load anything.
 			if ( cachedTokens.has( newUserId ) ) {
@@ -143,16 +160,12 @@ export const PaymentMethodSelect = ( {
 				);
 
 				cachedTokens.set( newUserId, tokens );
+				const defaultToken = getDefaultUserToken( newUserId );
+				if ( newValue !== defaultToken ) {
+					setValue( defaultToken );
+				}
 				setIsLoading( false );
 				setLoadingError( null );
-
-				// Now that we have the new tokens, look for a default and use it.
-				const defaultToken = tokens.find(
-					( token ) => token.isDefault
-				);
-				if ( undefined !== defaultToken ) {
-					setValue( defaultToken.tokenId );
-				}
 			} catch ( error ) {
 				setIsLoading( false );
 				setLoadingError(
