@@ -19,21 +19,11 @@ export interface PromotionVariation {
 	footnote?: string;
 }
 
-export interface PromotionTypeConfig {
-	reshow_delay_days?: number;
-	max_dismissals?: number;
-}
-
-export interface PromotionConfig {
-	[ key: string ]: PromotionTypeConfig | undefined;
-}
-
 export interface Promotion {
 	promo_id: string;
 	payment_method: string;
 	discount_rate: string;
 	duration_days: number;
-	config?: PromotionConfig;
 	variations: PromotionVariation[];
 }
 

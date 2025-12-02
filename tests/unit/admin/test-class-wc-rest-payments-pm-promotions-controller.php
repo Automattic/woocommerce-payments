@@ -183,4 +183,77 @@ class WC_REST_Payments_Promotions_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $timestamp, $result );
 		$this->assertNull( WC_Payments_PM_Promotions_Service::get_promotion_activation_time( 'promo2' ) );
 	}
+
+	/**
+	 * Test that dismissing a promotion records the timestamp and clears cache.
+	 */
+	public function test_dismiss_promotion_records_timestamp_and_clears_cache() {
+		// First, get promotions to populate cache.
+		$this->controller->get_promotions();
+
+		// Verify cache is set.
+		$cache_before = get_transient( WC_Payments_PM_Promotions_Service::PROMOTIONS_CACHE_KEY );
+		$this->assertNotFalse( $cache_before, 'Cache should be set after getting promotions' );
+
+		// Dismiss the primary spotlight.
+		$request = new WP_REST_Request( 'POST' );
+		$request->set_param( 'identifier', 'klarna-2026-promo' );
+		$request->set_param( 'variation_id', 'klarna-2026-promo__spotlight_primary' );
+
+		$response = $this->controller->dismiss_promotion( $request );
+		$data     = $response->get_data();
+
+		$this->assertTrue( $data['success'] );
+		$this->assertSame( 'dismissed', $data['status'] );
+
+		// Verify dismissal was recorded.
+		$dismissal_time = WC_Payments_PM_Promotions_Service::get_variation_dismissal_time(
+			'klarna-2026-promo',
+			'klarna-2026-promo__spotlight_primary'
+		);
+		$this->assertNotNull( $dismissal_time );
+		$this->assertEqualsWithDelta( time(), $dismissal_time, 5 ); // Within 5 seconds.
+
+		// Verify cache was cleared.
+		$cache_after = get_transient( WC_Payments_PM_Promotions_Service::PROMOTIONS_CACHE_KEY );
+		$this->assertFalse( $cache_after, 'Cache should be cleared after dismissal' );
+	}
+
+	/**
+	 * Test that dismissals are included in store context for server requests.
+	 *
+	 * When dismissals change, the context hash changes, which triggers a fresh
+	 * request to the server (instead of using cached data).
+	 */
+	public function test_dismissals_invalidate_cache_for_fresh_server_request() {
+		// Get promotions to populate cache.
+		$this->controller->get_promotions();
+
+		// Store the current cache.
+		$cache_before = get_transient( WC_Payments_PM_Promotions_Service::PROMOTIONS_CACHE_KEY );
+		$this->assertNotFalse( $cache_before );
+		$hash_before = $cache_before['context_hash'];
+
+		// Add a dismissal (simulating what happens after dismiss_promotion clears cache).
+		$dismissals = [
+			'klarna-2026-promo' => [
+				'klarna-2026-promo__spotlight_primary' => time(),
+			],
+		];
+		update_option( WC_Payments_PM_Promotions_Service::PROMOTION_DISMISSALS_OPTION, $dismissals );
+
+		// Clear cache and memo to simulate fresh request.
+		delete_transient( WC_Payments_PM_Promotions_Service::PROMOTIONS_CACHE_KEY );
+		$this->promotions_service->reset_memo();
+
+		// Get promotions again - this should create a new cache with different hash.
+		$this->controller->get_promotions();
+
+		$cache_after = get_transient( WC_Payments_PM_Promotions_Service::PROMOTIONS_CACHE_KEY );
+		$this->assertNotFalse( $cache_after );
+		$hash_after = $cache_after['context_hash'];
+
+		// The context hash should be different because dismissals changed.
+		$this->assertNotSame( $hash_before, $hash_after, 'Context hash should change when dismissals change' );
+	}
 }

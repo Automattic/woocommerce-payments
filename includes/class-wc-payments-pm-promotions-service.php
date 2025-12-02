@@ -295,104 +295,24 @@ class WC_Payments_PM_Promotions_Service {
 	}
 
 	/**
-	 * Filter variations based on config and dismissal history.
-	 *
-	 * @param array $promotions Array of promotions with variations.
-	 *
-	 * @return array Filtered promotions array.
-	 */
-	private function filter_variations_by_dismissals( array $promotions ): array {
-		foreach ( $promotions as &$promotion ) {
-			if ( empty( $promotion['variations'] ) ) {
-				continue;
-			}
-
-			$promo_id             = $promotion['promo_id'];
-			$variation_dismissals = self::get_promotion_variation_dismissals( $promo_id );
-
-			// Group variations by type to apply type-specific config.
-			$variations_by_type = [];
-			foreach ( $promotion['variations'] as $variation ) {
-				$type = $variation['type'] ?? 'default';
-				if ( ! isset( $variations_by_type[ $type ] ) ) {
-					$variations_by_type[ $type ] = [];
-				}
-				$variations_by_type[ $type ][] = $variation;
-			}
-
-			$filtered_variations = [];
-
-			foreach ( $variations_by_type as $type => $type_variations ) {
-				// Get config for this variation type.
-				// Defaults: 1 dismissal allowed, no delay (must configure to show multiple variations).
-				$type_config    = $promotion['config'][ $type ] ?? [];
-				$max_dismissals = $type_config['max_dismissals'] ?? 1;
-				$reshow_delay   = $type_config['reshow_delay_days'] ?? 0;
-				$delay_seconds  = $reshow_delay * DAY_IN_SECONDS;
-
-				// Count dismissals for variations of this type.
-				$type_dismissals       = 0;
-				$most_recent_dismissal = 0;
-				foreach ( $type_variations as $variation ) {
-					$dismissed_at = $variation_dismissals[ $variation['id'] ] ?? null;
-					if ( null !== $dismissed_at ) {
-						++$type_dismissals;
-						if ( $dismissed_at > $most_recent_dismissal ) {
-							$most_recent_dismissal = $dismissed_at;
-						}
-					}
-				}
-
-				// Check if max dismissals reached for this type.
-				if ( $type_dismissals >= $max_dismissals ) {
-					continue;
-				}
-
-				// Check if still in delay period.
-				if ( $most_recent_dismissal > 0 && $delay_seconds > 0 ) {
-					$time_since_dismissal = time() - $most_recent_dismissal;
-					if ( $time_since_dismissal < $delay_seconds ) {
-						continue;
-					}
-				}
-
-				// Find first non-dismissed variation of this type.
-				foreach ( $type_variations as $variation ) {
-					$dismissed_at = $variation_dismissals[ $variation['id'] ] ?? null;
-					if ( null === $dismissed_at ) {
-						$filtered_variations[] = $variation;
-						break;
-					}
-				}
-			}
-
-			$promotion['variations'] = $filtered_variations;
-		}
-		unset( $promotion );
-
-		return $promotions;
-	}
-
-	/**
 	 * Get mock promotions data for testing.
 	 * TODO: Remove this method when server endpoints are available.
 	 *
-	 * @return array Mock promotions data (array of promotions).
+	 * The real server will receive dismissals via store_context and determine
+	 * which variation (if any) to return based on dismissal history and timing.
+	 *
+	 * @return array Mock API response with promotions data.
 	 */
 	private function get_mock_promotions_data(): array {
-		// Mock available promotions with variations.
+		// Simple mock data with a single spotlight variation.
+		// The real server will handle filtering based on dismissals sent in store_context.
 		$promotions = [
 			[
-				'promo_id'      => 'klarna-2026-promo',
-				'discount_rate' => '100%',
-				'duration_days' => 90,
-				'config'        => [
-					'spotlight' => [
-						'reshow_delay_days' => 7,   // Days to wait before showing next variation.
-						'max_dismissals'    => 2,   // Total dismissals before permanent hide.
-					],
-				],
-				'variations'    => [
+				'promo_id'       => 'klarna-2026-promo',
+				'payment_method' => 'klarna',
+				'discount_rate'  => '100%',
+				'duration_days'  => 90,
+				'variations'     => [
 					[
 						'id'          => 'klarna-2026-promo__spotlight_primary',
 						'type'        => 'spotlight',
@@ -404,36 +324,6 @@ class WC_Payments_PM_Promotions_Service {
 						'cta_url'     => '#',
 						'tc_url'      => 'https://woocommerce.com/terms',
 						'footnote'    => '*Terms and conditions apply. Offer valid for new customers only.',
-					],
-					[
-						'id'          => 'klarna-2026-promo__spotlight_secondary',
-						'type'        => 'spotlight',
-						'badge'       => 'Last chance',
-						'badge_type'  => 'warning',
-						'heading'     => 'Final Reminder: Zero Processing Fees',
-						'description' => 'Don\'t miss out! Get 0% processing fees for 90 days on all card payments',
-						'cta_label'   => 'Activate Now',
-						'cta_url'     => '#',
-						'tc_url'      => 'https://woocommerce.com/terms',
-						'footnote'    => '*Terms and conditions apply. Limited time offer.',
-					],
-				],
-			],
-			[
-				'promo_id'      => 'promo-affirm-cashback-2024',
-				'discount_rate' => '2%',
-				'duration_days' => 60,
-				'variations'    => [
-					[
-						'id'          => 'promo-affirm-cashback-2024__banner_primary',
-						'type'        => 'banner',
-						'badge'       => 'New',
-						'badge_type'  => 'info',
-						'heading'     => '2% Cashback on Affirm Transactions',
-						'description' => 'Earn cashback on all Affirm payments for 60 days',
-						'cta_label'   => 'Learn More',
-						'cta_url'     => '#',
-						'tc_url'      => 'https://woocommerce.com/terms',
 					],
 				],
 			],
