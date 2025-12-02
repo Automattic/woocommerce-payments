@@ -26,7 +26,7 @@ class WC_Payments_PM_Promotions_Service {
 
 	/**
 	 * Option key for promotion dismissals.
-	 * Stores array of [promo_id => [variation_id => timestamp]].
+	 * Stores array of [id => timestamp].
 	 *
 	 * @var string
 	 */
@@ -266,30 +266,33 @@ class WC_Payments_PM_Promotions_Service {
 	}
 
 	/**
-	 * Dismiss a promotion variation.
+	 * Dismiss a promotion.
 	 *
-	 * @param string $identifier   The promotion identifier.
-	 * @param string $variation_id The variation identifier.
+	 * @param string $id The promotion unique identifier (e.g., 'klarna-2026-promo__spotlight').
 	 *
 	 * @return array The dismissal response.
 	 */
-	public function dismiss_promotion( string $identifier, string $variation_id ): array {
+	public function dismiss_promotion( string $id ): array {
+		// Extract promo_id from id for the API endpoint (e.g., 'klarna-2026-promo__spotlight' -> 'klarna-2026-promo').
+		$promo_id = explode( '__', $id )[0];
+
 		// TODO: Replace with actual API call when server endpoints are available.
-		// $wcpay_request = Request\Dismiss_Promotion::create( $identifier, $variation_id );.
+		// $wcpay_request = Request\Dismiss_Promotion::create( $promo_id );.
+		// $wcpay_request->set_params( [ 'id' => $id ] );.
 		// $wcpay_request->assign_hook( 'wcpay_dismiss_promotion_request' );.
 		// $response = $wcpay_request->handle_rest_request();.
 
 		// Return mock success response.
 		$response = [
-			'success'      => true,
-			'identifier'   => $identifier,
-			'variation_id' => $variation_id,
-			'status'       => 'dismissed',
+			'success'  => true,
+			'id'       => $id,
+			'promo_id' => $promo_id,
+			'status'   => 'dismissed',
 		];
 
 		// Clear cache and update local state.
 		$this->clear_cache();
-		$this->mark_variation_dismissed( $identifier, $variation_id );
+		$this->mark_promotion_dismissed( $id );
 
 		return $response;
 	}
@@ -343,21 +346,15 @@ class WC_Payments_PM_Promotions_Service {
 	}
 
 	/**
-	 * Mark a promotion variation as dismissed in local state.
+	 * Mark a promotion as dismissed in local state.
 	 *
-	 * @param string $promo_id     The promotion identifier.
-	 * @param string $variation_id The variation identifier.
+	 * @param string $id The promotion unique identifier (e.g., 'klarna-2026-promo__spotlight').
 	 *
 	 * @return void
 	 */
-	private function mark_variation_dismissed( string $promo_id, string $variation_id ): void {
-		$dismissals = self::get_promotion_dismissals();
-
-		if ( ! isset( $dismissals[ $promo_id ] ) ) {
-			$dismissals[ $promo_id ] = [];
-		}
-
-		$dismissals[ $promo_id ][ $variation_id ] = time();
+	private function mark_promotion_dismissed( string $id ): void {
+		$dismissals        = self::get_promotion_dismissals();
+		$dismissals[ $id ] = time();
 		update_option( self::PROMOTION_DISMISSALS_OPTION, $dismissals, false );
 	}
 
@@ -377,7 +374,7 @@ class WC_Payments_PM_Promotions_Service {
 	/**
 	 * Get all promotion dismissals.
 	 *
-	 * @return array Associative array of [promo_id => [variation_id => timestamp]].
+	 * @return array Associative array of [id => timestamp].
 	 */
 	public static function get_promotion_dismissals(): array {
 		return get_option( self::PROMOTION_DISMISSALS_OPTION, [] );
@@ -393,28 +390,27 @@ class WC_Payments_PM_Promotions_Service {
 	}
 
 	/**
-	 * Get dismissal timestamp for a specific variation.
+	 * Check if a promotion has been dismissed.
 	 *
-	 * @param string $promo_id     The promotion identifier.
-	 * @param string $variation_id The variation identifier.
+	 * @param string $id The promotion unique identifier.
 	 *
-	 * @return int|null Dismissal timestamp, or null if not dismissed.
+	 * @return bool True if dismissed, false otherwise.
 	 */
-	public static function get_variation_dismissal_time( string $promo_id, string $variation_id ): ?int {
+	public static function is_promotion_dismissed( string $id ): bool {
 		$dismissals = self::get_promotion_dismissals();
-		return $dismissals[ $promo_id ][ $variation_id ] ?? null;
+		return isset( $dismissals[ $id ] );
 	}
 
 	/**
-	 * Get all dismissal timestamps for a promotion.
+	 * Get dismissal timestamp for a specific promotion.
 	 *
-	 * @param string $promo_id The promotion identifier.
+	 * @param string $id The promotion unique identifier.
 	 *
-	 * @return array Array of [variation_id => timestamp].
+	 * @return int|null Dismissal timestamp, or null if not dismissed.
 	 */
-	public static function get_promotion_variation_dismissals( string $promo_id ): array {
+	public static function get_promotion_dismissal_time( string $id ): ?int {
 		$dismissals = self::get_promotion_dismissals();
-		return $dismissals[ $promo_id ] ?? [];
+		return $dismissals[ $id ] ?? null;
 	}
 
 	/**
