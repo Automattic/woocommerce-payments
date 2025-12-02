@@ -1,4 +1,4 @@
-# Payment Method (PM) Promotions - Client Implementation
+# Payment Method (PM) Promotions
 
 ## Overview
 
@@ -7,18 +7,20 @@ PM Promotions display promotional offers for payment methods that merchants have
 ## Data Flow
 
 ```
-Server API → Redux Store → Components
-     ↓
-  validate → filter → normalize
+Server API → WC_Payments_PM_Promotions_Service → REST API → Redux Store → Components
+                        ↓
+              validate → filter → normalize
 ```
 
 **Server responsibilities:**
-- Provide flat array of promotions
-- Handle re-show delays and dismissal limits
-- Filter by locale, dismissals, activated promos
+- Fetch promotions from WooPayments API (with store context)
+- Validate promotion structure
+- Filter by: locale, dismissals, activated promos, PM validity, enabled status, **active discounts**
+- Normalize data (apply fallbacks, derive titles)
+- Cache results with context-aware invalidation
 
 **Client responsibilities:**
-- Validate promotion structure (type guards)
+- Validate promotion structure (type guards, defense in depth)
 - Filter dismissed promotions (defense in depth)
 - Render appropriate UI based on `type`
 - Track analytics events
@@ -69,6 +71,8 @@ interface PromotionsState {
 
 ## Key Files
 
+### Client (Frontend)
+
 | File | Purpose |
 |------|---------|
 | `client/data/promotions/types.d.ts` | TypeScript interfaces |
@@ -77,6 +81,16 @@ interface PromotionsState {
 | `client/data/promotions/actions.ts` | `activatePromotion`, `dismissPromotion` |
 | `client/data/promotions/resolvers.ts` | API fetch with type guards |
 | `client/promotions/spotlight/index.tsx` | Spotlight promotion component |
+| `client/components/promotional-badge/index.tsx` | Badge promotion component with T&C tooltip |
+| `client/settings/payment-methods-list/payment-method.tsx` | PM settings item (uses PromotionalBadge) |
+
+### Server (Backend)
+
+| File | Purpose |
+|------|---------|
+| `includes/class-wc-payments-pm-promotions-service.php` | Main service: fetch, filter, normalize promotions |
+| `includes/admin/class-wc-rest-payments-pm-promotions-controller.php` | REST API controller |
+| `tests/unit/admin/test-class-wc-payments-pm-promotions-service.php` | Service unit tests |
 
 ## Hooks API
 
@@ -269,4 +283,215 @@ const mockPromotion = {
 ### Test Files
 
 - `client/promotions/spotlight/__tests__/index.test.tsx`
+- `client/components/promotional-badge/__tests__/index.test.tsx`
 - `client/data/promotions/__tests__/*.test.ts`
+- `tests/unit/admin/test-class-wc-payments-pm-promotions-service.php`
+
+---
+
+## Server-Side Implementation
+
+### WC_Payments_PM_Promotions_Service
+
+The main service class handles fetching, filtering, and normalizing promotions.
+
+#### Dependencies
+
+```php
+// Constructor accepts optional dependencies for testing
+public function __construct( $gateway = null, $account = null ) {
+    $this->gateway = $gateway;  // WC_Payment_Gateway_WCPay
+    $this->account = $account;  // WC_Payments_Account
+}
+```
+
+If not provided, dependencies are lazily resolved via `WC_Payments::get_gateway()` and `WC_Payments::get_account_service()`.
+
+#### Key Methods
+
+| Method | Purpose |
+|--------|---------|
+| `get_visible_promotions()` | Main entry point - returns filtered, normalized promotions |
+| `activate_promotion($identifier, $accept_terms)` | Activate a promotion (enable PM) |
+| `dismiss_promotion($id)` | Dismiss a promotion |
+| `clear_cache()` | Clear the promotions transient cache |
+
+#### Filtering Logic (`filter_promotions`)
+
+Promotions are filtered out if:
+1. **Invalid PM**: Payment method not in `get_upe_available_payment_methods()`
+2. **Already enabled**: Payment method already in `get_upe_enabled_payment_method_ids()`
+3. **Has active discount**: Payment method has an existing discount (see below)
+4. **Different promo_id**: Only the first `promo_id` per payment method is kept
+
+```php
+private function filter_promotions( array $promotions ): array {
+    foreach ( $promotions as $promotion ) {
+        // Skip invalid PMs
+        if ( ! $this->is_valid_payment_method( $pm_id ) ) continue;
+
+        // Skip already enabled PMs
+        if ( in_array( $pm_id, $enabled_pms, true ) ) continue;
+
+        // Skip PMs with active discounts
+        if ( $this->payment_method_has_discount( $pm_id ) ) continue;
+
+        // Keep only first promo_id per PM
+        // ...
+    }
+}
+```
+
+#### Caching
+
+- Cache key: `wcpay_pm_promotions` (transient)
+- Cache invalidation: Context hash based on dismissals + locale
+- Error caching: API errors cached for 6 hours to prevent hammering
+
+---
+
+## Account Fees & Discount Detection
+
+### Fee Structure
+
+Account fees are retrieved via `WC_Payments_Account::get_fees()` and indexed by payment method ID:
+
+```php
+$fees = [
+    'klarna' => [
+        'base' => [
+            'percentage_rate' => 0.029,
+            'fixed_rate' => 30,
+            'currency' => 'usd',
+        ],
+        'discount' => [
+            [
+                'discount' => 50,           // Percentage off (50 = 50% off)
+                'end_time' => 1735689600,   // Unix timestamp
+                'volume_currency' => 'usd',
+                'volume_allowance' => 100000, // Optional: volume limit in cents
+            ],
+        ],
+    ],
+    'card' => [
+        'base' => [ /* ... */ ],
+        // No 'discount' key = no active discount
+    ],
+];
+```
+
+### Discount Detection
+
+A payment method has an active discount if:
+1. `fees[pm_id]['discount']` exists and is an array
+2. `fees[pm_id]['discount'][0]['discount']` is non-empty (truthy)
+
+```php
+private function payment_method_has_discount( string $payment_method_id ): bool {
+    $fees = $this->get_account_fees();
+
+    if ( empty( $fees[ $payment_method_id ] ) ) {
+        return false;
+    }
+
+    $pm_fees = $fees[ $payment_method_id ];
+
+    if ( ! empty( $pm_fees['discount'] ) && is_array( $pm_fees['discount'] ) ) {
+        $first_discount = $pm_fees['discount'][0] ?? [];
+        return ! empty( $first_discount['discount'] );
+    }
+
+    return false;
+}
+```
+
+**Important**: Promotions are filtered out for payment methods with active discounts to prevent showing promotional offers when the merchant already has a discount applied.
+
+---
+
+## PromotionalBadge Component
+
+The `PromotionalBadge` component displays badge-type promotions in the payment methods settings list.
+
+### Props
+
+```typescript
+interface PromotionalBadgeProps {
+    message: string;      // Badge text (e.g., "Zero fees for 90 days")
+    tooltip: string;      // Tooltip content
+    type?: ChipType;      // Visual style (default: 'success')
+    tooltipLabel?: string; // Accessible label for tooltip button
+    tcUrl?: string;       // Optional T&C URL - appends link to tooltip
+    tcLabel?: string;     // Optional T&C link text (fallback: "See terms and conditions")
+}
+```
+
+### T&C Link Behavior
+
+When `tcUrl` is provided:
+1. A link is appended to the tooltip content
+2. If `tcLabel` is provided and non-empty, it's used as the link text
+3. Otherwise, falls back to "See terms and conditions"
+4. Link opens in new tab with `rel="noopener noreferrer"`
+
+```tsx
+// Use backend-provided tc_label when available, otherwise fall back to default.
+const tcLinkLabel = tcLabel || __( 'See terms and conditions', 'woocommerce-payments' );
+
+// Build tooltip content with optional T&C link.
+const tooltipContent = tcUrl ? (
+    <>
+        { tooltip }{ ' ' }
+        <a href={ tcUrl } target="_blank" rel="noopener noreferrer">
+            { tcLinkLabel }
+        </a>
+    </>
+) : (
+    tooltip
+);
+```
+
+### Usage in PaymentMethod Component
+
+The `PaymentMethod` component (`payment-method.tsx`) shows badges for:
+1. **Active discounts** from account fees (via `accountFees[id].discount`)
+2. **Badge-type promotions** from the promotions API
+
+```tsx
+// Get badge-type promotion for this payment method.
+const { promotions = [] } = usePromotions();
+const badgePromotion = promotions?.find(
+    ( promo ) => promo.payment_method === id && promo.type === 'badge'
+);
+
+// Priority: active discount > badge promotion
+const showPromotionalBadge = hasDiscount || badgePromotion;
+
+// Get badge content from appropriate source
+if ( hasDiscount ) {
+    return {
+        message: getDiscountBadgeText( discountFee ),
+        tooltip: getDiscountTooltipText( discountFee ),
+        tooltipLabel: __( 'Discount details', 'woocommerce-payments' ),
+    };
+}
+if ( badgePromotion ) {
+    return {
+        message: badgePromotion.title,
+        tooltip: badgePromotion.description,
+        tooltipLabel: __( 'Promotion details', 'woocommerce-payments' ),
+        tcUrl: badgePromotion.tc_url,
+        tcLabel: badgePromotion.tc_label,
+    };
+}
+```
+
+---
+
+## Storage Keys
+
+| Option/Transient | Purpose |
+|------------------|---------|
+| `wcpay_pm_promotions` | Transient cache for promotions |
+| `_wcpay_pm_promotion_dismissals` | Option: [id => timestamp] |
+| `_wcpay_activated_pm_promotions` | Option: [identifier => timestamp] |
