@@ -7,14 +7,6 @@ import React, { useState, useEffect } from 'react';
 import { createRoot } from 'react-dom/client';
 import { __ } from '@wordpress/i18n';
 
-// TypeScript declaration for jQuery
-declare const jQuery: (
-	selector: any
-) => {
-	on: ( event: string, handler: () => void ) => void;
-	off: ( event: string, handler: () => void ) => void;
-};
-
 /**
  * Internal dependencies
  */
