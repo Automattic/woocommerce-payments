@@ -30,6 +30,9 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
+		// Set an admin user (required for get_visible_promotions capability check).
+		wp_set_current_user( 1 );
+
 		$this->mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
 
 		// Default available payment methods for validation tests.
@@ -665,6 +668,30 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 	 * INTEGRATION TESTS - get_visible_promotions()
 	 * =========================================================================
 	 */
+
+	public function test_get_visible_promotions_returns_null_for_user_without_manage_woocommerce() {
+		// Create a subscriber user (doesn't have manage_woocommerce capability).
+		$subscriber_id = $this->factory->user->create( [ 'role' => 'subscriber' ] );
+		wp_set_current_user( $subscriber_id );
+
+		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )
+			->willReturn( [] );
+
+		$result = $this->service->get_visible_promotions();
+
+		$this->assertNull( $result );
+	}
+
+	public function test_get_visible_promotions_returns_null_for_guest_user() {
+		wp_set_current_user( 0 );
+
+		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )
+			->willReturn( [] );
+
+		$result = $this->service->get_visible_promotions();
+
+		$this->assertNull( $result );
+	}
 
 	public function test_get_visible_promotions_returns_null_when_no_promotions() {
 		// The mock data has promotions, but they should all be filtered out

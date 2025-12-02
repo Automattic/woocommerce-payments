@@ -97,6 +97,11 @@ class WC_Payments_PM_Promotions_Service {
 	 * @return array|null The promotions or null if there is no eligible promotion.
 	 */
 	public function get_visible_promotions(): ?array {
+		// Promotions are only visible to users who can manage WooCommerce (aka act on the promotions).
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return null;
+		}
+
 		$promotions = $this->get_promotions();
 
 		// Validate each promotion's structure.
