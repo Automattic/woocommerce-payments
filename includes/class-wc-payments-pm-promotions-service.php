@@ -295,85 +295,6 @@ class WC_Payments_PM_Promotions_Service {
 	}
 
 	/**
-	 * Filter variations based on config and dismissal history.
-	 *
-	 * @param array $promotions Array of promotions with variations.
-	 *
-	 * @return array Filtered promotions array.
-	 */
-	private function filter_variations_by_dismissals( array $promotions ): array {
-		foreach ( $promotions as &$promotion ) {
-			if ( empty( $promotion['variations'] ) ) {
-				continue;
-			}
-
-			$promo_id             = $promotion['promo_id'];
-			$variation_dismissals = self::get_promotion_variation_dismissals( $promo_id );
-
-			// Group variations by type to apply type-specific config.
-			$variations_by_type = [];
-			foreach ( $promotion['variations'] as $variation ) {
-				$type = $variation['type'] ?? 'default';
-				if ( ! isset( $variations_by_type[ $type ] ) ) {
-					$variations_by_type[ $type ] = [];
-				}
-				$variations_by_type[ $type ][] = $variation;
-			}
-
-			$filtered_variations = [];
-
-			foreach ( $variations_by_type as $type => $type_variations ) {
-				// Get config for this variation type.
-				// Defaults: 1 dismissal allowed, no delay (must configure to show multiple variations).
-				$type_config    = $promotion['config'][ $type ] ?? [];
-				$max_dismissals = $type_config['max_dismissals'] ?? 1;
-				$reshow_delay   = $type_config['reshow_delay_days'] ?? 0;
-				$delay_seconds  = $reshow_delay * DAY_IN_SECONDS;
-
-				// Count dismissals for variations of this type.
-				$type_dismissals       = 0;
-				$most_recent_dismissal = 0;
-				foreach ( $type_variations as $variation ) {
-					$dismissed_at = $variation_dismissals[ $variation['id'] ] ?? null;
-					if ( null !== $dismissed_at ) {
-						++$type_dismissals;
-						if ( $dismissed_at > $most_recent_dismissal ) {
-							$most_recent_dismissal = $dismissed_at;
-						}
-					}
-				}
-
-				// Check if max dismissals reached for this type.
-				if ( $type_dismissals >= $max_dismissals ) {
-					continue;
-				}
-
-				// Check if still in delay period.
-				if ( $most_recent_dismissal > 0 && $delay_seconds > 0 ) {
-					$time_since_dismissal = time() - $most_recent_dismissal;
-					if ( $time_since_dismissal < $delay_seconds ) {
-						continue;
-					}
-				}
-
-				// Find first non-dismissed variation of this type.
-				foreach ( $type_variations as $variation ) {
-					$dismissed_at = $variation_dismissals[ $variation['id'] ] ?? null;
-					if ( null === $dismissed_at ) {
-						$filtered_variations[] = $variation;
-						break;
-					}
-				}
-			}
-
-			$promotion['variations'] = $filtered_variations;
-		}
-		unset( $promotion );
-
-		return $promotions;
-	}
-
-	/**
 	 * Get mock promotions data for testing.
 	 * TODO: Remove this method when server endpoints are available.
 	 *
@@ -677,44 +598,63 @@ class WC_Payments_PM_Promotions_Service {
 	 * @return array Normalized promotions.
 	 */
 	private function normalize_promotions( array $promotions ): array {
-		// TODO: Add normalization logic (apply fallbacks, derive fields).
-		// For now, return promotions as-is.
-		return $promotions;
+		$normalized = [];
+
+		foreach ( $promotions as $promotion ) {
+			$pm_id    = $promotion['payment_method'] ?? '';
+			$pm_title = $this->get_payment_method_title( $pm_id );
+
+			// Add derived payment_method_title.
+			$promotion['payment_method_title'] = $pm_title;
+
+			// Apply fallback for cta_label.
+			if ( empty( $promotion['cta_label'] ) ) {
+				/* translators: %s is the payment method title, e.g., "Klarna" */
+				$promotion['cta_label'] = sprintf( __( 'Enable %s', 'woocommerce-payments' ), $pm_title );
+			}
+
+			// Apply fallback for tc_label.
+			if ( empty( $promotion['tc_label'] ) ) {
+				$promotion['tc_label'] = __( 'See terms', 'woocommerce-payments' );
+			}
+
+			// Sanitize string fields.
+			$string_fields = [ 'id', 'promo_id', 'payment_method', 'payment_method_title', 'type', 'title', 'description', 'cta_label', 'tc_url', 'tc_label' ];
+			foreach ( $string_fields as $field ) {
+				if ( isset( $promotion[ $field ] ) ) {
+					$promotion[ $field ] = sanitize_text_field( $promotion[ $field ] );
+				}
+			}
+
+			// Sanitize optional fields.
+			if ( isset( $promotion['footnote'] ) ) {
+				$promotion['footnote'] = sanitize_text_field( $promotion['footnote'] );
+			}
+			if ( isset( $promotion['image'] ) ) {
+				$promotion['image'] = esc_url_raw( $promotion['image'] );
+			}
+
+			$normalized[] = $promotion;
+		}
+
+		return $normalized;
 	}
 
 	/**
-	 * Check whether the promotion variation data is valid.
-	 * Validates required fields based on variation type.
+	 * Get the human-readable title for a payment method.
 	 *
-	 * @param mixed $variation_data The variation data.
+	 * @param string $payment_method_id The payment method ID.
 	 *
-	 * @return bool Whether the variation data is valid.
+	 * @return string The payment method title or a fallback.
 	 */
-	private function validate_promotion_variation( $variation_data ): bool {
-		if ( ! is_array( $variation_data ) || empty( $variation_data ) ) {
-			return false;
+	private function get_payment_method_title( string $payment_method_id ): string {
+		$payment_method = WC_Payments::get_payment_method_by_id( $payment_method_id );
+
+		if ( false !== $payment_method && method_exists( $payment_method, 'get_title' ) ) {
+			return $payment_method->get_title();
 		}
 
-		// Required fields for all variations.
-		$required_fields = [ 'id', 'promo_id', 'payment_method', 'type', 'title', 'description', 'tc_url' ];
-
-		foreach ( $required_fields as $field ) {
-			if ( ! isset( $variation_data[ $field ] ) || ! is_string( $variation_data[ $field ] ) ) {
-				return false;
-			}
-		}
-
-		// Validate type is supported.
-		$valid_types = [ 'spotlight', 'badge' ];
-		if ( ! in_array( $variation_data['type'], $valid_types, true ) ) {
-			return false;
-		}
-
-		// Validate payment method is valid.
-		if ( ! $this->is_valid_payment_method( $variation_data['payment_method'] ) ) {
-			return false;
-		}
-
-		return true;
+		// Fallback to formatted ID (e.g., 'klarna' -> 'Klarna').
+		return ucfirst( str_replace( '_', ' ', $payment_method_id ) );
 	}
 }
