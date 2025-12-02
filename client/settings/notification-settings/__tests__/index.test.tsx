@@ -12,15 +12,15 @@ import { render, screen } from '@testing-library/react';
 import NotificationSettings, {
 	NotificationSettingsDescription,
 } from '../index';
-import { useCommunicationsEmail, useGetSavingError } from 'wcpay/data';
+import { useAccountCommunicationsEmail, useGetSavingError } from 'wcpay/data';
 
 jest.mock( 'wcpay/data', () => ( {
-	useCommunicationsEmail: jest.fn(),
+	useAccountCommunicationsEmail: jest.fn(),
 	useGetSavingError: jest.fn(),
 } ) );
 
-const mockUseCommunicationsEmail = useCommunicationsEmail as jest.MockedFunction<
-	typeof useCommunicationsEmail
+const mockUseAccountCommunicationsEmail = useAccountCommunicationsEmail as jest.MockedFunction<
+	typeof useAccountCommunicationsEmail
 >;
 const mockUseGetSavingError = useGetSavingError as jest.MockedFunction<
 	typeof useGetSavingError
@@ -28,7 +28,7 @@ const mockUseGetSavingError = useGetSavingError as jest.MockedFunction<
 
 describe( 'NotificationSettings', () => {
 	beforeEach( () => {
-		mockUseCommunicationsEmail.mockReturnValue( [
+		mockUseAccountCommunicationsEmail.mockReturnValue( [
 			'test@example.com',
 			jest.fn(),
 		] );
@@ -45,7 +45,10 @@ describe( 'NotificationSettings', () => {
 
 	it( 'renders with the communications email input', () => {
 		const testEmail = 'communications@example.com';
-		mockUseCommunicationsEmail.mockReturnValue( [ testEmail, jest.fn() ] );
+		mockUseAccountCommunicationsEmail.mockReturnValue( [
+			testEmail,
+			jest.fn(),
+		] );
 
 		render( <NotificationSettings /> );
 
@@ -81,7 +84,7 @@ describe( 'NotificationSettingsDescription', () => {
 		expect( link ).toBeInTheDocument();
 		expect( link ).toHaveAttribute(
 			'href',
-			'https://woocommerce.com/document/woopayments/'
+			'https://woocommerce.com/document/woopayments/account-management/change-email-for-woopayments-alerts/'
 		);
 	} );
 } );

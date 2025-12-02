@@ -267,8 +267,8 @@ export function updateIsStripeBillingEnabled( isEnabled ) {
 	return updateSettingsValues( { is_stripe_billing_enabled: isEnabled } );
 }
 
-export function updateCommunicationsEmail( email ) {
-	return updateSettingsValues( { communications_email: email } );
+export function updateAccountCommunicationsEmail( email ) {
+	return updateSettingsValues( { account_communications_email: email } );
 }
 
 export function* submitStripeBillingSubscriptionMigration() {

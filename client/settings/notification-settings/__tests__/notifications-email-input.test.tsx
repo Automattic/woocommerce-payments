@@ -10,15 +10,15 @@ import { fireEvent, render, screen } from '@testing-library/react';
  * Internal dependencies
  */
 import NotificationsEmailInput from '../notifications-email-input';
-import { useGetSavingError, useCommunicationsEmail } from 'wcpay/data';
+import { useGetSavingError, useAccountCommunicationsEmail } from 'wcpay/data';
 
 jest.mock( 'wcpay/data', () => ( {
-	useCommunicationsEmail: jest.fn(),
+	useAccountCommunicationsEmail: jest.fn(),
 	useGetSavingError: jest.fn(),
 } ) );
 
-const mockUseCommunicationsEmail = useCommunicationsEmail as jest.MockedFunction<
-	typeof useCommunicationsEmail
+const mockUseAccountCommunicationsEmail = useAccountCommunicationsEmail as jest.MockedFunction<
+	typeof useAccountCommunicationsEmail
 >;
 const mockUseGetSavingError = useGetSavingError as jest.MockedFunction<
 	typeof useGetSavingError
@@ -26,7 +26,7 @@ const mockUseGetSavingError = useGetSavingError as jest.MockedFunction<
 
 describe( 'NotificationsEmailInput', () => {
 	beforeEach( () => {
-		mockUseCommunicationsEmail.mockReturnValue( [
+		mockUseAccountCommunicationsEmail.mockReturnValue( [
 			'communications@test.com',
 			jest.fn(),
 		] );
@@ -35,10 +35,10 @@ describe( 'NotificationsEmailInput', () => {
 
 	it( 'displays and updates email address', () => {
 		const oldEmail = 'old.communications@test.com';
-		const setCommunicationsEmail = jest.fn();
-		mockUseCommunicationsEmail.mockReturnValue( [
+		const setAccountCommunicationsEmail = jest.fn();
+		mockUseAccountCommunicationsEmail.mockReturnValue( [
 			oldEmail,
-			setCommunicationsEmail,
+			setAccountCommunicationsEmail,
 		] );
 
 		render( <NotificationsEmailInput /> );
@@ -50,22 +50,24 @@ describe( 'NotificationsEmailInput', () => {
 			target: { value: newEmail },
 		} );
 
-		expect( setCommunicationsEmail ).toHaveBeenCalledWith( newEmail );
+		expect( setAccountCommunicationsEmail ).toHaveBeenCalledWith(
+			newEmail
+		);
 	} );
 
 	it( 'displays error message for empty email', () => {
-		mockUseCommunicationsEmail.mockReturnValue( [ '', jest.fn() ] );
+		mockUseAccountCommunicationsEmail.mockReturnValue( [ '', jest.fn() ] );
 		mockUseGetSavingError.mockReturnValue( {
 			code: 'rest_invalid_param',
-			message: 'Invalid parameter(s): communications_email',
+			message: 'Invalid parameter(s): account_communications_email',
 			data: {
 				status: 400,
 				params: {
-					communications_email:
+					account_communications_email:
 						'Error: Communications email is required.',
 				},
 				details: {
-					communications_email: {
+					account_communications_email: {
 						code: 'rest_invalid_pattern',
 						message: 'Error: Communications email is required.',
 						data: null,
@@ -82,21 +84,21 @@ describe( 'NotificationsEmailInput', () => {
 	} );
 
 	it( 'displays the error message for invalid email', () => {
-		mockUseCommunicationsEmail.mockReturnValue( [
+		mockUseAccountCommunicationsEmail.mockReturnValue( [
 			'invalid.email',
 			jest.fn(),
 		] );
 		mockUseGetSavingError.mockReturnValue( {
 			code: 'rest_invalid_param',
-			message: 'Invalid parameter(s): communications_email',
+			message: 'Invalid parameter(s): account_communications_email',
 			data: {
 				status: 400,
 				params: {
-					communications_email:
+					account_communications_email:
 						'Error: Invalid email address: invalid.email',
 				},
 				details: {
-					communications_email: {
+					account_communications_email: {
 						code: 'rest_invalid_pattern',
 						message: 'Error: Invalid email address: invalid.email',
 						data: null,
@@ -113,7 +115,7 @@ describe( 'NotificationsEmailInput', () => {
 	} );
 
 	it( 'does not display error when saving error is null', () => {
-		mockUseCommunicationsEmail.mockReturnValue( [
+		mockUseAccountCommunicationsEmail.mockReturnValue( [
 			'valid@test.com',
 			jest.fn(),
 		] );
@@ -133,5 +135,83 @@ describe( 'NotificationsEmailInput', () => {
 				'Email address used for WooPayments communications.'
 			)
 		).toBeInTheDocument();
+	} );
+
+	it( 'displays client-side validation error for invalid email after blur', () => {
+		mockUseAccountCommunicationsEmail.mockReturnValue( [
+			'invalid-email',
+			jest.fn(),
+		] );
+		mockUseGetSavingError.mockReturnValue( null );
+
+		const { container } = render( <NotificationsEmailInput /> );
+
+		// Error should not be shown before blur
+		expect(
+			container.querySelector( '.components-notice.is-error' )
+		).toBeNull();
+
+		// Trigger blur event
+		fireEvent.blur( screen.getByLabelText( 'Communications email' ) );
+
+		// Error should be shown after blur
+		expect(
+			container.querySelector( '.components-notice.is-error' )
+				?.textContent
+		).toMatch( /Please enter a valid email address./ );
+	} );
+
+	it( 'does not display client-side validation error for valid email after blur', () => {
+		mockUseAccountCommunicationsEmail.mockReturnValue( [
+			'valid@test.com',
+			jest.fn(),
+		] );
+		mockUseGetSavingError.mockReturnValue( null );
+
+		const { container } = render( <NotificationsEmailInput /> );
+
+		// Trigger blur event
+		fireEvent.blur( screen.getByLabelText( 'Communications email' ) );
+
+		// No error should be shown for valid email
+		expect(
+			container.querySelector( '.components-notice.is-error' )
+		).toBeNull();
+	} );
+
+	it( 'server error takes precedence over client-side validation error', () => {
+		mockUseAccountCommunicationsEmail.mockReturnValue( [
+			'invalid-email',
+			jest.fn(),
+		] );
+		mockUseGetSavingError.mockReturnValue( {
+			code: 'rest_invalid_param',
+			message: 'Invalid parameter(s): account_communications_email',
+			data: {
+				status: 400,
+				params: {
+					account_communications_email:
+						'Error: Invalid email address: invalid-email',
+				},
+				details: {
+					account_communications_email: {
+						code: 'rest_invalid_pattern',
+						message: 'Error: Invalid email address: invalid-email',
+						data: null,
+					},
+				},
+			},
+		} );
+
+		const { container } = render( <NotificationsEmailInput /> );
+
+		// Trigger blur to enable client-side validation
+		fireEvent.blur( screen.getByLabelText( 'Communications email' ) );
+
+		// Server error should be shown instead of client-side error
+		expect(
+			container.querySelector( '.components-notice.is-error' )
+				?.textContent
+		).toMatch( /Error: Invalid email address: invalid-email/ );
 	} );
 } );

@@ -23,7 +23,7 @@ export const NotificationSettingsDescription: React.FC = () => (
 				'woocommerce-payments'
 			) }
 		</p>
-		<ExternalLink href="https://woocommerce.com/document/woopayments/">
+		<ExternalLink href="https://woocommerce.com/document/woopayments/account-management/change-email-for-woopayments-alerts/">
 			{ __( 'Learn more', 'woocommerce-payments' ) }
 		</ExternalLink>
 	</>

@@ -614,12 +614,12 @@ export const useStripeBillingMigration = () => {
 /**
  * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
  */
-export const useCommunicationsEmail = () => {
-	const { updateCommunicationsEmail } = useDispatch( STORE_NAME );
+export const useAccountCommunicationsEmail = () => {
+	const { updateAccountCommunicationsEmail } = useDispatch( STORE_NAME );
 
-	const communicationsEmail = useSelect( ( select ) =>
-		select( STORE_NAME ).getCommunicationsEmail()
+	const accountCommunicationsEmail = useSelect( ( select ) =>
+		select( STORE_NAME ).getAccountCommunicationsEmail()
 	);
 
-	return [ communicationsEmail, updateCommunicationsEmail ];
+	return [ accountCommunicationsEmail, updateAccountCommunicationsEmail ];
 };
