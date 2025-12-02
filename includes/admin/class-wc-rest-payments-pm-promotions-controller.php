@@ -76,24 +76,11 @@ class WC_REST_Payments_PM_Promotions_Controller extends WC_Payments_REST_Control
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/(?P<identifier>[a-zA-Z0-9_-]+)/dismiss',
+			'/' . $this->rest_base . '/(?P<id>[a-zA-Z0-9_-]+)/dismiss',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => [ $this, 'dismiss_promotion' ],
 				'permission_callback' => [ $this, 'check_permission' ],
-				'args'                => [
-					'identifier' => [
-						'required'          => true,
-						'type'              => 'string',
-						'sanitize_callback' => 'sanitize_text_field',
-					],
-					'id'         => [
-						'required'          => true,
-						'type'              => 'string',
-						'sanitize_callback' => 'sanitize_text_field',
-						'description'       => 'The promotion unique identifier (e.g., klarna-2026-promo__spotlight).',
-					],
-				],
 			]
 		);
 	}

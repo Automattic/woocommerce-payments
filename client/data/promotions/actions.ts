@@ -116,15 +116,12 @@ export function* activatePromotion(
  * @param {string} id The promotion unique identifier.
  */
 export function* dismissPromotion( id: string ): unknown {
-	// Extract promo_id from id for the API endpoint (e.g., 'klarna-2026-promo__spotlight' -> 'klarna-2026-promo')
-	const promoId = id.split( '__' )[ 0 ];
-	const path = `${ NAMESPACE }/pm-promotions/${ promoId }/dismiss`;
+	const path = `${ NAMESPACE }/pm-promotions/${ id }/dismiss`;
 
 	try {
 		yield apiFetch( {
 			path,
 			method: 'POST',
-			data: { id },
 		} );
 
 		yield controls.dispatch(
