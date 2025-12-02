@@ -10,7 +10,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Core\Server\Request;
-use WCPay\Constants\Payment_Method;
 
 /**
  * Class handling WooPayments payment method promotions related business logic.
@@ -490,29 +489,20 @@ class WC_Payments_PM_Promotions_Service {
 	}
 
 	/**
-	 * Get list of valid payment method IDs from Payment_Method constants.
+	 * Get list of valid payment method IDs from the gateway.
 	 *
 	 * @return array List of valid payment method IDs.
 	 */
 	private function get_valid_payment_method_ids(): array {
-		return [
-			Payment_Method::CARD,
-			Payment_Method::KLARNA,
-			Payment_Method::AFFIRM,
-			Payment_Method::AFTERPAY,
-			Payment_Method::LINK,
-			Payment_Method::SEPA,
-			Payment_Method::BECS,
-			Payment_Method::BANCONTACT,
-			Payment_Method::EPS,
-			Payment_Method::GIROPAY,
-			Payment_Method::IDEAL,
-			Payment_Method::P24,
-			Payment_Method::SOFORT,
-			Payment_Method::MULTIBANCO,
-			Payment_Method::GRABPAY,
-			Payment_Method::WECHAT_PAY,
-		];
+		if ( null === $this->gateway ) {
+			$this->gateway = WC_Payments::get_gateway();
+		}
+
+		if ( null === $this->gateway ) {
+			return [];
+		}
+
+		return $this->gateway->get_upe_available_payment_methods();
 	}
 
 	/**

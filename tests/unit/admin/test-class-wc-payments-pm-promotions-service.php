@@ -6,7 +6,6 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
-use WCPay\Constants\Payment_Method;
 
 /**
  * WC_Payments_PM_Promotions_Service unit tests.
@@ -32,7 +31,12 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 		parent::set_up();
 
 		$this->mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
-		$this->service      = new WC_Payments_PM_Promotions_Service( $this->mock_gateway );
+
+		// Default available payment methods for validation tests.
+		$this->mock_gateway->method( 'get_upe_available_payment_methods' )
+			->willReturn( [ 'card', 'klarna', 'affirm', 'afterpay_clearpay', 'link', 'sepa_debit' ] );
+
+		$this->service = new WC_Payments_PM_Promotions_Service( $this->mock_gateway );
 	}
 
 	public function tear_down() {

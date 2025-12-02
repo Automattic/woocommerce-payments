@@ -24,6 +24,11 @@ class WC_REST_Payments_Promotions_Controller_Test extends WCPAY_UnitTestCase {
 	private $mock_api_client;
 
 	/**
+	 * @var WC_Payment_Gateway_WCPay|MockObject
+	 */
+	private $mock_gateway;
+
+	/**
 	 * @var WC_Payments_PM_Promotions_Service
 	 */
 	private $promotions_service;
@@ -34,8 +39,16 @@ class WC_REST_Payments_Promotions_Controller_Test extends WCPAY_UnitTestCase {
 		// Set the user so that we can pass the authentication.
 		wp_set_current_user( 1 );
 
-		$this->mock_api_client    = $this->createMock( WC_Payments_API_Client::class );
-		$this->promotions_service = new WC_Payments_PM_Promotions_Service();
+		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
+
+		// Create mock gateway with available payment methods.
+		$this->mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$this->mock_gateway->method( 'get_upe_available_payment_methods' )
+			->willReturn( [ 'card', 'klarna', 'affirm', 'afterpay_clearpay' ] );
+		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )
+			->willReturn( [] );
+
+		$this->promotions_service = new WC_Payments_PM_Promotions_Service( $this->mock_gateway );
 
 		$this->controller = new WC_REST_Payments_PM_Promotions_Controller( $this->mock_api_client, $this->promotions_service );
 	}
