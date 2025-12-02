@@ -677,17 +677,23 @@ export const placeOrderWithCurrency = async (
 };
 
 export const setSavePaymentMethod = async ( page: Page, save = true ) => {
+	// If on WC Blocks checkout, wait for it to finish loading before interacting.
+	// The blocks checkout shows "Loading..." text while updating.
+	const blocksOrderSummary = page.locator(
+		'.wc-block-components-order-summary'
+	);
+	if ( ( await blocksOrderSummary.count() ) > 0 ) {
+		await expect( blocksOrderSummary ).not.toContainText( 'Loading', {
+			timeout: 15000,
+		} );
+	}
+
 	const checkbox = page.getByLabel(
 		'Save payment information to my account for future purchases.'
 	);
 
-	const isChecked = await checkbox.isChecked();
-
-	if ( save && ! isChecked ) {
-		await checkbox.check();
-	} else if ( ! save && isChecked ) {
-		await checkbox.uncheck();
-	}
+	// Use setChecked instead of check/uncheck for better reliability with React components.
+	await checkbox.setChecked( save );
 };
 
 export const emptyCart = async ( page: Page ) => {
