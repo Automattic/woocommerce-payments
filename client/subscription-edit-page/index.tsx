@@ -22,6 +22,13 @@ import type {
 const cachedTokens = new Map< number, Token[] >();
 
 /**
+ * Clears the token cache. Exported for testing purposes.
+ */
+export const clearTokenCache = (): void => {
+	cachedTokens.clear();
+};
+
+/**
  * Fetch the tokens for a user from the back-end.
  *
  * @param {number} userId The user ID.

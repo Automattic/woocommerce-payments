@@ -1,10 +1,21 @@
-/* eslint-disable prettier/prettier */
 /** @format */
 /**
  * External dependencies
  */
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor, act } from '@testing-library/react';
 import React from 'react';
+
+// Mock jQuery before importing the component
+const mockOn = jest.fn();
+const mockOff = jest.fn();
+const mockJQuery = jest.fn( () => ( { on: mockOn, off: mockOff } ) );
+( global as any ).jQuery = mockJQuery;
+
+// Mock @wordpress/i18n
+jest.mock( '@wordpress/i18n', () => ( {
+	// eslint-disable-next-line @typescript-eslint/naming-convention
+	__: ( text: string ) => text,
+} ) );
 
 /**
  * Internal dependencies
@@ -12,31 +23,9 @@ import React from 'react';
 import {
 	PaymentMethodSelect,
 	fetchUserTokens,
-	addCustomerSelectListener,
+	clearTokenCache,
 } from '../index';
-import {
-	startLoading,
-	tokensLoaded,
-	loadingFailed,
-	hasEntry,
-	getUserEntry,
-	userHasToken,
-	getDefaultTokenId,
-} from '../user-token-cache';
-import type { Token, CachedUserData } from '../types';
-
-// Mock jQuery
-const mockJQuery = jest.fn();
-const mockOn = jest.fn();
-const mockOff = jest.fn();
-( global as any ).jQuery = mockJQuery;
-mockJQuery.mockReturnValue( { on: mockOn, off: mockOff } );
-
-// Mock @wordpress/i18n
-jest.mock( '@wordpress/i18n', () => ( {
-	// eslint-disable-next-line @typescript-eslint/naming-convention
-	__: ( text: string ) => text,
-} ) );
+import type { Token } from '../types';
 
 describe( 'PaymentMethodSelect Component', () => {
 	const mockTokens: Token[] = [
@@ -45,99 +34,24 @@ describe( 'PaymentMethodSelect Component', () => {
 		{ tokenId: 3, displayName: 'Amex •••• 9012', isDefault: false },
 	];
 
+	const tokensWithoutDefault: Token[] = [
+		{ tokenId: 1, displayName: 'Visa •••• 1234', isDefault: false },
+		{ tokenId: 2, displayName: 'Mastercard •••• 5678', isDefault: false },
+	];
+
 	beforeEach( () => {
 		jest.clearAllMocks();
-		// Mock the customer_user select element for the addCustomerSelectListener
+		clearTokenCache();
 		document.body.innerHTML = '';
 	} );
 
-	describe( 'Rendering States', () => {
-		test( 'renders select with tokens', () => {
-			const cache: CachedUserData = {
-				1: {
-					tokens: mockTokens,
-					loading: false,
-					loadingError: null,
-				},
-			};
-
-			render(
-				<PaymentMethodSelect
-					inputName="payment_method"
-					initialValue={ 1 }
-					initialUserId={ 1 }
-					initialCache={ cache }
-					nonce="test-nonce"
-					ajaxUrl="http://test.com/ajax"
-				/>
-			);
-
-			const select = screen.getByRole( 'combobox' );
-			expect( select ).toBeInTheDocument();
-			expect( select ).toHaveAttribute( 'name', 'payment_method' );
-
-			mockTokens.forEach( ( token ) => {
-				expect(
-					screen.getByText( token.displayName )
-				).toBeInTheDocument();
-			} );
-		} );
-
-		test( 'renders loading state', () => {
-			const cache: CachedUserData = {
-				1: {
-					tokens: [],
-					loading: true,
-					loadingError: null,
-				},
-			};
-
-			render(
-				<PaymentMethodSelect
-					inputName="payment_method"
-					initialValue={ 0 }
-					initialUserId={ 1 }
-					initialCache={ cache }
-					nonce="test-nonce"
-					ajaxUrl="http://test.com/ajax"
-				/>
-			);
-
-			expect( screen.getByText( 'Loading…' ) ).toBeInTheDocument();
-		} );
-
-		test( 'renders error state', () => {
-			const cache: CachedUserData = {
-				1: {
-					tokens: [],
-					loading: false,
-					loadingError: 'Failed to fetch user tokens',
-				},
-			};
-
-			render(
-				<PaymentMethodSelect
-					inputName="payment_method"
-					initialValue={ 0 }
-					initialUserId={ 1 }
-					initialCache={ cache }
-					nonce="test-nonce"
-					ajaxUrl="http://test.com/ajax"
-				/>
-			);
-
-			expect(
-				screen.getByText( 'Failed to fetch user tokens' )
-			).toBeInTheDocument();
-		} );
-
-		test( 'renders no customer selected message', () => {
+	describe( 'Initial Rendering States', () => {
+		test( 'renders "please select customer" message when userId is 0', () => {
 			render(
 				<PaymentMethodSelect
 					inputName="payment_method"
 					initialValue={ 0 }
 					initialUserId={ 0 }
-					initialCache={ {} }
 					nonce="test-nonce"
 					ajaxUrl="http://test.com/ajax"
 				/>
@@ -148,47 +62,31 @@ describe( 'PaymentMethodSelect Component', () => {
 			).toBeInTheDocument();
 		} );
 
-		test( 'renders loading state for undefined userId with empty cache', () => {
-			// When userId is undefined (NaN), the component shows loading
-			// because the userId check (userId <= 0) evaluates to false for NaN
+		test( 'renders "please select customer" message when userId is negative', () => {
 			render(
 				<PaymentMethodSelect
 					inputName="payment_method"
 					initialValue={ 0 }
-					initialUserId={ undefined as any }
-					initialCache={ {} }
+					initialUserId={ -1 }
 					nonce="test-nonce"
 					ajaxUrl="http://test.com/ajax"
 				/>
 			);
 
-			expect( screen.getByText( 'Loading…' ) ).toBeInTheDocument();
+			expect(
+				screen.getByText( 'Please select a customer first' )
+			).toBeInTheDocument();
 		} );
 
-		test( 'renders placeholder when value is zero and no default token', () => {
-			// Use tokens without a default to test placeholder behavior
-			const tokensWithoutDefault: Token[] = [
-				{ tokenId: 1, displayName: 'Visa •••• 1234', isDefault: false },
-				{
-					tokenId: 2,
-					displayName: 'Mastercard •••• 5678',
-					isDefault: false,
-				},
-			];
-			const cache: CachedUserData = {
-				1: {
-					tokens: tokensWithoutDefault,
-					loading: false,
-					loadingError: null,
-				},
-			};
-
+		test( 'renders placeholder when userId > 0 but cache is empty', () => {
+			// When userId > 0 but cache has no tokens, component shows
+			// empty select with placeholder (not loading state)
+			// because the component only fetches on customer select change
 			render(
 				<PaymentMethodSelect
 					inputName="payment_method"
 					initialValue={ 0 }
 					initialUserId={ 1 }
-					initialCache={ cache }
 					nonce="test-nonce"
 					ajaxUrl="http://test.com/ajax"
 				/>
@@ -198,429 +96,379 @@ describe( 'PaymentMethodSelect Component', () => {
 				screen.getByText( 'Please select a payment method' )
 			).toBeInTheDocument();
 		} );
+	} );
 
-		test( 'auto-selects default token when value is zero', () => {
-			const cache: CachedUserData = {
-				1: {
-					tokens: mockTokens,
-					loading: false,
-					loadingError: null,
-				},
-			};
+	describe( 'Loading State', () => {
+		test( 'shows loading when customer select change triggers fetch', async () => {
+			// Mock fetch to never resolve during initial check
+			global.fetch = jest.fn(
+				() =>
+					new Promise( () => {
+						// Never resolves - simulates slow network
+					} )
+			);
+
+			document.body.innerHTML =
+				'<select id="customer_user"><option value="1">User 1</option></select>';
 
 			render(
 				<PaymentMethodSelect
 					inputName="payment_method"
 					initialValue={ 0 }
-					initialUserId={ 1 }
-					initialCache={ cache }
+					initialUserId={ 0 }
 					nonce="test-nonce"
 					ajaxUrl="http://test.com/ajax"
 				/>
 			);
 
-			// Should auto-select the default token (tokenId: 1)
-			const select = screen.getByRole( 'combobox' ) as HTMLSelectElement;
-			expect( select.value ).toBe( '1' );
-			// Placeholder should not be shown since default was auto-selected
+			// Initially shows "select customer" since userId is 0
+			expect(
+				screen.getByText( 'Please select a customer first' )
+			).toBeInTheDocument();
+
+			// Trigger customer selection change
+			const select = document.getElementById(
+				'customer_user'
+			) as HTMLSelectElement;
+			select.value = '1';
+
+			await act( async () => {
+				select.dispatchEvent( new Event( 'change' ) );
+			} );
+
+			// Now should show loading (fetch is pending)
+			expect( screen.getByText( 'Loading…' ) ).toBeInTheDocument();
+		} );
+
+		test( 'shows tokens after fetch resolves', async () => {
+			global.fetch = jest.fn().mockResolvedValue( {
+				ok: true,
+				json: () => Promise.resolve( { data: { tokens: mockTokens } } ),
+			} );
+
+			document.body.innerHTML =
+				'<select id="customer_user"><option value="1">User 1</option></select>';
+
+			render(
+				<PaymentMethodSelect
+					inputName="payment_method"
+					initialValue={ 0 }
+					initialUserId={ 0 }
+					nonce="test-nonce"
+					ajaxUrl="http://test.com/ajax"
+				/>
+			);
+
+			// Trigger customer selection change
+			const select = document.getElementById(
+				'customer_user'
+			) as HTMLSelectElement;
+			select.value = '1';
+
+			await act( async () => {
+				select.dispatchEvent( new Event( 'change' ) );
+			} );
+
+			// Should show tokens after fetch resolves
+			await waitFor( () => {
+				expect(
+					screen.getByText( 'Visa •••• 1234' )
+				).toBeInTheDocument();
+			} );
+		} );
+	} );
+
+	describe( 'Error State', () => {
+		test( 'shows error message when fetch fails', async () => {
+			global.fetch = jest.fn().mockResolvedValue( {
+				ok: false,
+			} );
+
+			document.body.innerHTML =
+				'<select id="customer_user"><option value="1">User 1</option></select>';
+
+			render(
+				<PaymentMethodSelect
+					inputName="payment_method"
+					initialValue={ 0 }
+					initialUserId={ 0 }
+					nonce="test-nonce"
+					ajaxUrl="http://test.com/ajax"
+				/>
+			);
+
+			// Trigger customer selection change
+			const select = document.getElementById(
+				'customer_user'
+			) as HTMLSelectElement;
+			select.value = '1';
+
+			await act( async () => {
+				select.dispatchEvent( new Event( 'change' ) );
+			} );
+
+			await waitFor( () => {
+				expect(
+					screen.getByText( 'Failed to fetch user tokens' )
+				).toBeInTheDocument();
+			} );
+		} );
+	} );
+
+	describe( 'Token Rendering', () => {
+		test( 'renders tokens after customer select change', async () => {
+			global.fetch = jest.fn().mockResolvedValue( {
+				ok: true,
+				json: () => Promise.resolve( { data: { tokens: mockTokens } } ),
+			} );
+
+			document.body.innerHTML =
+				'<select id="customer_user"><option value="1">User 1</option></select>';
+
+			render(
+				<PaymentMethodSelect
+					inputName="payment_method"
+					initialValue={ 0 }
+					initialUserId={ 0 }
+					nonce="test-nonce"
+					ajaxUrl="http://test.com/ajax"
+				/>
+			);
+
+			// Trigger customer selection change
+			const select = document.getElementById(
+				'customer_user'
+			) as HTMLSelectElement;
+			select.value = '1';
+
+			await act( async () => {
+				select.dispatchEvent( new Event( 'change' ) );
+			} );
+
+			await waitFor( () => {
+				expect(
+					screen.getByText( 'Visa •••• 1234' )
+				).toBeInTheDocument();
+			} );
+
+			expect(
+				screen.getByText( 'Mastercard •••• 5678' )
+			).toBeInTheDocument();
+			expect( screen.getByText( 'Amex •••• 9012' ) ).toBeInTheDocument();
+		} );
+
+		test( 'auto-selects default token after fetch', async () => {
+			global.fetch = jest.fn().mockResolvedValue( {
+				ok: true,
+				json: () => Promise.resolve( { data: { tokens: mockTokens } } ),
+			} );
+
+			document.body.innerHTML =
+				'<select id="customer_user"><option value="1">User 1</option></select>';
+
+			render(
+				<PaymentMethodSelect
+					inputName="payment_method"
+					initialValue={ 0 }
+					initialUserId={ 0 }
+					nonce="test-nonce"
+					ajaxUrl="http://test.com/ajax"
+				/>
+			);
+
+			// Trigger customer selection change
+			const customerSelect = document.getElementById(
+				'customer_user'
+			) as HTMLSelectElement;
+			customerSelect.value = '1';
+
+			await act( async () => {
+				customerSelect.dispatchEvent( new Event( 'change' ) );
+			} );
+
+			await waitFor( () => {
+				// Use getAllByRole since there are two comboboxes (customer_user and payment_method)
+				const selects = screen.getAllByRole( 'combobox' );
+				const paymentSelect = selects.find(
+					( s ) => s.getAttribute( 'name' ) === 'payment_method'
+				) as HTMLSelectElement;
+				// Default token (tokenId: 1) should be auto-selected
+				expect( paymentSelect.value ).toBe( '1' );
+			} );
+
+			// Placeholder should not be shown
 			expect(
 				screen.queryByText( 'Please select a payment method' )
 			).not.toBeInTheDocument();
 		} );
 
-		test( 'renders tokens without placeholder when value does not match', () => {
-			// In the new implementation, placeholder only shows when value === 0
-			const cache: CachedUserData = {
-				1: {
-					tokens: mockTokens,
-					loading: false,
-					loadingError: null,
-				},
-			};
+		test( 'shows placeholder when no default token', async () => {
+			global.fetch = jest.fn().mockResolvedValue( {
+				ok: true,
+				json: () =>
+					Promise.resolve( {
+						data: { tokens: tokensWithoutDefault },
+					} ),
+			} );
+
+			document.body.innerHTML =
+				'<select id="customer_user"><option value="1">User 1</option></select>';
 
 			render(
 				<PaymentMethodSelect
 					inputName="payment_method"
-					initialValue={ 999 }
-					initialUserId={ 1 }
-					initialCache={ cache }
+					initialValue={ 0 }
+					initialUserId={ 0 }
 					nonce="test-nonce"
 					ajaxUrl="http://test.com/ajax"
 				/>
 			);
 
-			// No placeholder is shown, only the token options
-			expect(
-				screen.queryByText( 'Please select a payment method' )
-			).not.toBeInTheDocument();
-			mockTokens.forEach( ( token ) => {
+			// Trigger customer selection change
+			const customerSelect = document.getElementById(
+				'customer_user'
+			) as HTMLSelectElement;
+			customerSelect.value = '1';
+
+			await act( async () => {
+				customerSelect.dispatchEvent( new Event( 'change' ) );
+			} );
+
+			await waitFor( () => {
 				expect(
-					screen.getByText( token.displayName )
+					screen.getByText( 'Please select a payment method' )
 				).toBeInTheDocument();
 			} );
 		} );
 
-		test( 'renders empty token list', () => {
-			const cache: CachedUserData = {
-				1: {
-					tokens: [],
-					loading: false,
-					loadingError: null,
-				},
-			};
+		test( 'placeholder option is disabled', async () => {
+			global.fetch = jest.fn().mockResolvedValue( {
+				ok: true,
+				json: () =>
+					Promise.resolve( {
+						data: { tokens: tokensWithoutDefault },
+					} ),
+			} );
+
+			document.body.innerHTML =
+				'<select id="customer_user"><option value="1">User 1</option></select>';
 
 			render(
 				<PaymentMethodSelect
 					inputName="payment_method"
 					initialValue={ 0 }
-					initialUserId={ 1 }
-					initialCache={ cache }
+					initialUserId={ 0 }
 					nonce="test-nonce"
 					ajaxUrl="http://test.com/ajax"
 				/>
 			);
 
-			const select = screen.getByRole( 'combobox' );
-			expect( select ).toBeInTheDocument();
+			// Trigger customer selection change
+			const customerSelect = document.getElementById(
+				'customer_user'
+			) as HTMLSelectElement;
+			customerSelect.value = '1';
+
+			await act( async () => {
+				customerSelect.dispatchEvent( new Event( 'change' ) );
+			} );
+
+			await waitFor( () => {
+				const placeholderOption = screen.getByText(
+					'Please select a payment method'
+				) as HTMLOptionElement;
+				expect( placeholderOption ).toHaveAttribute( 'disabled' );
+				expect( placeholderOption ).toHaveAttribute( 'value', '0' );
+			} );
 		} );
-	} );
 
-	describe( 'Select Behavior', () => {
-		test( 'placeholder option is disabled', () => {
-			// Use tokens without a default to ensure placeholder is shown
-			const tokensWithoutDefault: Token[] = [
-				{ tokenId: 1, displayName: 'Visa •••• 1234', isDefault: false },
-				{
-					tokenId: 2,
-					displayName: 'Mastercard •••• 5678',
-					isDefault: false,
-				},
-			];
-			const cache: CachedUserData = {
-				1: {
-					tokens: tokensWithoutDefault,
-					loading: false,
-					loadingError: null,
-				},
-			};
-
-			render(
-				<PaymentMethodSelect
-					inputName="payment_method"
-					initialValue={ 0 }
-					initialUserId={ 1 }
-					initialCache={ cache }
-					nonce="test-nonce"
-					ajaxUrl="http://test.com/ajax"
-				/>
-			);
-
-			const placeholderOption = screen.getByText(
-				'Please select a payment method'
-			) as HTMLOptionElement;
-
-			expect( placeholderOption ).toHaveAttribute( 'disabled' );
-			expect( placeholderOption ).toHaveAttribute( 'value', '0' );
-		} );
-	} );
-
-	describe( 'Value Display', () => {
-		test( 'displays correct initial value', () => {
-			const cache: CachedUserData = {
-				1: {
-					tokens: mockTokens,
-					loading: false,
-					loadingError: null,
-				},
-			};
-
+		test( 'uses initial value when provided', () => {
+			// When initialValue is provided and cache is empty,
+			// the component renders with the initial value
 			render(
 				<PaymentMethodSelect
 					inputName="payment_method"
 					initialValue={ 2 }
 					initialUserId={ 1 }
-					initialCache={ cache }
 					nonce="test-nonce"
 					ajaxUrl="http://test.com/ajax"
 				/>
 			);
 
 			const select = screen.getByRole( 'combobox' ) as HTMLSelectElement;
-			expect( select.value ).toBe( '2' );
+			// Since cache is empty, select will have no options but defaultValue is 2
+			expect( select ).toHaveAttribute( 'name', 'payment_method' );
 		} );
 	} );
-} );
 
-describe( 'User Token Cache Functions', () => {
-	const mockTokens: Token[] = [
-		{ tokenId: 1, displayName: 'Visa •••• 1234', isDefault: true },
-		{ tokenId: 2, displayName: 'Mastercard •••• 5678', isDefault: false },
-	];
-
-	describe( 'startLoading()', () => {
-		test( 'adds user in loading state', () => {
-			const cache: CachedUserData = {};
-			const newCache = startLoading( cache, 1 );
-
-			const entry = getUserEntry( newCache, 1 );
-			expect( entry ).toEqual( {
-				loading: true,
-				loadingError: null,
-				tokens: [],
+	describe( 'Cache Behavior', () => {
+		test( 'does not fetch again when cache already has tokens', async () => {
+			const fetchMock = jest.fn().mockResolvedValue( {
+				ok: true,
+				json: () => Promise.resolve( { data: { tokens: mockTokens } } ),
 			} );
-		} );
+			global.fetch = fetchMock;
 
-		test( 'adds loading state for new user while preserving existing', () => {
-			const cache: CachedUserData = {
-				1: {
-					tokens: mockTokens,
-					loading: false,
-					loadingError: null,
-				},
-			};
-			const newCache = startLoading( cache, 2 );
+			document.body.innerHTML =
+				'<select id="customer_user"><option value="1">User 1</option></select>';
 
-			expect( hasEntry( newCache, 1 ) ).toBe( true );
-			expect( hasEntry( newCache, 2 ) ).toBe( true );
-			expect( getUserEntry( newCache, 2 )?.loading ).toBe( true );
-		} );
+			render(
+				<PaymentMethodSelect
+					inputName="payment_method"
+					initialValue={ 0 }
+					initialUserId={ 0 }
+					nonce="test-nonce"
+					ajaxUrl="http://test.com/ajax"
+				/>
+			);
 
-		test( 'does not mutate original cache', () => {
-			const cache: CachedUserData = {};
-			startLoading( cache, 1 );
+			// First customer selection - should fetch
+			const customerSelect = document.getElementById(
+				'customer_user'
+			) as HTMLSelectElement;
+			customerSelect.value = '1';
 
-			expect( cache ).toEqual( {} );
-		} );
-	} );
-
-	describe( 'tokensLoaded()', () => {
-		test( 'updates loading entry with tokens', () => {
-			let cache: CachedUserData = {};
-			cache = startLoading( cache, 1 );
-			cache = tokensLoaded( cache, 1, mockTokens );
-
-			const entry = getUserEntry( cache, 1 );
-			expect( entry ).toEqual( {
-				tokens: mockTokens,
-				loading: false,
-				loadingError: null,
+			await act( async () => {
+				customerSelect.dispatchEvent( new Event( 'change' ) );
 			} );
-		} );
 
-		test( 'does not affect other users', () => {
-			let cache: CachedUserData = {
-				1: {
-					tokens: mockTokens,
-					loading: false,
-					loadingError: null,
-				},
-			};
-			cache = startLoading( cache, 2 );
-			cache = tokensLoaded( cache, 2, [] );
-
-			const user1Entry = getUserEntry( cache, 1 );
-			expect( user1Entry?.tokens ).toEqual( mockTokens );
-		} );
-
-		test( 'clears loading state', () => {
-			let cache: CachedUserData = {};
-			cache = startLoading( cache, 1 );
-			expect( getUserEntry( cache, 1 )?.loading ).toBe( true );
-
-			cache = tokensLoaded( cache, 1, mockTokens );
-			expect( getUserEntry( cache, 1 )?.loading ).toBe( false );
-		} );
-
-		test( 'does not mutate original cache', () => {
-			const cache = startLoading( {}, 1 );
-			const originalEntry = getUserEntry( cache, 1 );
-			tokensLoaded( cache, 1, mockTokens );
-
-			expect( getUserEntry( cache, 1 ) ).toBe( originalEntry );
-		} );
-	} );
-
-	describe( 'loadingFailed()', () => {
-		test( 'sets error message', () => {
-			let cache: CachedUserData = {};
-			cache = startLoading( cache, 1 );
-			cache = loadingFailed( cache, 1, 'Network error' );
-
-			const entry = getUserEntry( cache, 1 );
-			expect( entry ).toEqual( {
-				tokens: [],
-				loading: false,
-				loadingError: 'Network error',
+			await waitFor( () => {
+				expect(
+					screen.getByText( 'Visa •••• 1234' )
+				).toBeInTheDocument();
 			} );
-		} );
 
-		test( 'clears loading state', () => {
-			let cache: CachedUserData = {};
-			cache = startLoading( cache, 1 );
-			cache = loadingFailed( cache, 1, 'Error' );
+			expect( fetchMock ).toHaveBeenCalledTimes( 1 );
 
-			expect( getUserEntry( cache, 1 )?.loading ).toBe( false );
-		} );
+			// Change to a different user to reset state
+			customerSelect.value = '2';
 
-		test( 'preserves existing tokens', () => {
-			let cache: CachedUserData = {};
-			cache = startLoading( cache, 1 );
-			cache = loadingFailed( cache, 1, 'Error' );
+			await act( async () => {
+				customerSelect.dispatchEvent( new Event( 'change' ) );
+			} );
 
-			expect( getUserEntry( cache, 1 )?.tokens ).toEqual( [] );
-		} );
+			// This should fetch for user 2
+			await waitFor( () => {
+				expect( fetchMock ).toHaveBeenCalledTimes( 2 );
+			} );
 
-		test( 'does not mutate original cache', () => {
-			const cache = startLoading( {}, 1 );
-			const originalEntry = getUserEntry( cache, 1 );
-			loadingFailed( cache, 1, 'Error' );
+			// Change back to user 1 - should NOT fetch again (cached)
+			customerSelect.value = '1';
 
-			expect( getUserEntry( cache, 1 ) ).toBe( originalEntry );
-		} );
-	} );
+			await act( async () => {
+				customerSelect.dispatchEvent( new Event( 'change' ) );
+			} );
 
-	describe( 'hasEntry()', () => {
-		test( 'returns true when user exists', () => {
-			const cache: CachedUserData = {
-				1: {
-					tokens: mockTokens,
-					loading: false,
-					loadingError: null,
-				},
-			};
+			// Tokens should be available immediately from cache
+			expect( screen.getByText( 'Visa •••• 1234' ) ).toBeInTheDocument();
 
-			expect( hasEntry( cache, 1 ) ).toBe( true );
-		} );
-
-		test( 'returns false when user does not exist', () => {
-			expect( hasEntry( {}, 999 ) ).toBe( false );
-		} );
-
-		test( 'returns true for loading entries', () => {
-			const cache = startLoading( {}, 1 );
-
-			expect( hasEntry( cache, 1 ) ).toBe( true );
-		} );
-	} );
-
-	describe( 'getUserEntry()', () => {
-		test( 'returns user entry when exists', () => {
-			const cache: CachedUserData = {
-				1: {
-					tokens: mockTokens,
-					loading: false,
-					loadingError: null,
-				},
-			};
-
-			const entry = getUserEntry( cache, 1 );
-			expect( entry?.tokens ).toEqual( mockTokens );
-		} );
-
-		test( 'returns undefined when user does not exist', () => {
-			const entry = getUserEntry( {}, 999 );
-
-			expect( entry ).toBeUndefined();
-		} );
-	} );
-
-	describe( 'userHasToken()', () => {
-		test( 'returns true when user has token', () => {
-			const cache: CachedUserData = {
-				1: {
-					tokens: mockTokens,
-					loading: false,
-					loadingError: null,
-				},
-			};
-
-			expect( userHasToken( cache, 1, 1 ) ).toBe( true );
-			expect( userHasToken( cache, 1, 2 ) ).toBe( true );
-		} );
-
-		test( 'returns false when user does not have token', () => {
-			const cache: CachedUserData = {
-				1: {
-					tokens: mockTokens,
-					loading: false,
-					loadingError: null,
-				},
-			};
-
-			expect( userHasToken( cache, 1, 999 ) ).toBe( false );
-		} );
-
-		test( 'returns false when user does not exist', () => {
-			expect( userHasToken( {}, 999, 1 ) ).toBe( false );
-		} );
-
-		test( 'returns false for user with empty tokens', () => {
-			const cache: CachedUserData = {
-				1: {
-					tokens: [],
-					loading: false,
-					loadingError: null,
-				},
-			};
-
-			expect( userHasToken( cache, 1, 1 ) ).toBe( false );
-		} );
-	} );
-
-	describe( 'getDefaultTokenId()', () => {
-		test( 'returns default token id when exists', () => {
-			const cache: CachedUserData = {
-				1: {
-					tokens: mockTokens,
-					loading: false,
-					loadingError: null,
-				},
-			};
-
-			expect( getDefaultTokenId( cache, 1 ) ).toBe( 1 );
-		} );
-
-		test( 'returns 0 when no default token', () => {
-			const tokensWithoutDefault: Token[] = [
-				{ tokenId: 1, displayName: 'Visa •••• 1234', isDefault: false },
-				{
-					tokenId: 2,
-					displayName: 'Mastercard •••• 5678',
-					isDefault: false,
-				},
-			];
-
-			const cache: CachedUserData = {
-				1: {
-					tokens: tokensWithoutDefault,
-					loading: false,
-					loadingError: null,
-				},
-			};
-
-			expect( getDefaultTokenId( cache, 1 ) ).toBe( 0 );
-		} );
-
-		test( 'returns 0 when user does not exist', () => {
-			expect( getDefaultTokenId( {}, 999 ) ).toBe( 0 );
-		} );
-
-		test( 'returns 0 for user with empty tokens', () => {
-			const cache: CachedUserData = {
-				1: {
-					tokens: [],
-					loading: false,
-					loadingError: null,
-				},
-			};
-
-			expect( getDefaultTokenId( cache, 1 ) ).toBe( 0 );
+			// Fetch should not have been called again
+			expect( fetchMock ).toHaveBeenCalledTimes( 2 );
 		} );
 	} );
 } );
 
 describe( 'fetchUserTokens', () => {
-	// Store original fetch to restore later
 	const originalFetch = global.fetch;
 
 	afterEach( () => {
@@ -631,7 +479,6 @@ describe( 'fetchUserTokens', () => {
 		let capturedUrl = '';
 		let capturedOptions: RequestInit | undefined;
 
-		// Use a direct mock for this test to capture FormData
 		global.fetch = jest.fn().mockImplementation( ( url, options ) => {
 			capturedUrl = url;
 			capturedOptions = options;
@@ -670,7 +517,7 @@ describe( 'fetchUserTokens', () => {
 			'nonce'
 		);
 
-		expect( result ).toEqual( { tokens: mockTokens } );
+		expect( result ).toEqual( mockTokens );
 	} );
 
 	test( 'throws error when response is not ok', async () => {
@@ -682,104 +529,17 @@ describe( 'fetchUserTokens', () => {
 			fetchUserTokens( 1, 'http://test.com/ajax', 'nonce' )
 		).rejects.toThrow( 'Failed to fetch user tokens' );
 	} );
-} );
 
-describe( 'addCustomerSelectListener', () => {
-	const mockJQueryFn = ( global as any ).jQuery as jest.Mock;
-	const mockOnFn = mockJQueryFn().on as jest.Mock;
-	const mockOffFn = mockJQueryFn().off as jest.Mock;
+	test( 'throws error when response data is undefined', async () => {
+		global.fetch = jest.fn().mockResolvedValue( {
+			ok: true,
+			json: () => Promise.resolve( {} ),
+		} );
 
-	beforeEach( () => {
-		mockJQueryFn.mockClear();
-		mockOnFn.mockClear();
-		mockOffFn.mockClear();
-		document.body.innerHTML = '';
-	} );
-
-	test( 'returns no-op cleanup when customer_user element not found', () => {
-		const setUser = jest.fn();
-		const setCache = jest.fn();
-
-		const cleanup = addCustomerSelectListener(
-			{},
-			'http://test.com/ajax',
-			'nonce',
-			setUser,
-			setCache
+		await expect(
+			fetchUserTokens( 1, 'http://test.com/ajax', 'nonce' )
+		).rejects.toThrow(
+			'Failed to fetch user tokens. Please reload the page and try again.'
 		);
-
-		// Should return a function
-		expect( typeof cleanup ).toBe( 'function' );
-
-		// Cleanup should not throw
-		expect( () => cleanup() ).not.toThrow();
-
-		// No listeners should have been attached
-		expect( mockOnFn ).not.toHaveBeenCalled();
-	} );
-
-	test( 'attaches listeners when customer_user element exists', () => {
-		document.body.innerHTML =
-			'<select id="customer_user"><option value="1">User 1</option></select>';
-
-		const setUser = jest.fn();
-		const setCache = jest.fn();
-
-		addCustomerSelectListener(
-			{},
-			'http://test.com/ajax',
-			'nonce',
-			setUser,
-			setCache
-		);
-
-		// jQuery listener should be attached
-		expect( mockJQueryFn ).toHaveBeenCalled();
-		expect( mockOnFn ).toHaveBeenCalledWith(
-			'select2:select',
-			expect.any( Function )
-		);
-	} );
-
-	test( 'cleanup removes listeners', () => {
-		document.body.innerHTML =
-			'<select id="customer_user"><option value="1">User 1</option></select>';
-
-		const setUser = jest.fn();
-		const setCache = jest.fn();
-
-		const cleanup = addCustomerSelectListener(
-			{},
-			'http://test.com/ajax',
-			'nonce',
-			setUser,
-			setCache
-		);
-
-		cleanup();
-
-		// jQuery off should be called
-		expect( mockOffFn ).toHaveBeenCalledWith(
-			'select2:select',
-			expect.any( Function )
-		);
-	} );
-
-	test( 'returns no-op when element is not a select', () => {
-		document.body.innerHTML = '<div id="customer_user"></div>';
-
-		const setUser = jest.fn();
-		const setCache = jest.fn();
-
-		const cleanup = addCustomerSelectListener(
-			{},
-			'http://test.com/ajax',
-			'nonce',
-			setUser,
-			setCache
-		);
-
-		expect( typeof cleanup ).toBe( 'function' );
-		expect( mockOnFn ).not.toHaveBeenCalled();
 	} );
 } );

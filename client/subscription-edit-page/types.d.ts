@@ -1,4 +1,16 @@
 /**
+ * Minimal jQuery type declaration for select2 event handling.
+ */
+declare global {
+	const jQuery: (
+		selector: HTMLElement
+	) => {
+		on: ( event: string, handler: () => void ) => void;
+		off: ( event: string, handler: () => void ) => void;
+	};
+}
+
+/**
  * Token represents a payment method token for a user
  */
 export interface Token {
