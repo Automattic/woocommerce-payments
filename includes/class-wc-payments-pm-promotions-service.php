@@ -10,6 +10,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Core\Server\Request;
+use WCPay\Constants\Payment_Method;
 
 /**
  * Class handling WooPayments payment method promotions related business logic.
@@ -570,5 +571,78 @@ class WC_Payments_PM_Promotions_Service {
 				]
 			)
 		);
+	}
+
+	/**
+	 * Get list of valid payment method IDs from Payment_Method constants.
+	 *
+	 * @return array List of valid payment method IDs.
+	 */
+	private function get_valid_payment_method_ids(): array {
+		return [
+			Payment_Method::CARD,
+			Payment_Method::KLARNA,
+			Payment_Method::AFFIRM,
+			Payment_Method::AFTERPAY,
+			Payment_Method::LINK,
+			Payment_Method::SEPA,
+			Payment_Method::BECS,
+			Payment_Method::BANCONTACT,
+			Payment_Method::EPS,
+			Payment_Method::GIROPAY,
+			Payment_Method::IDEAL,
+			Payment_Method::P24,
+			Payment_Method::SOFORT,
+			Payment_Method::MULTIBANCO,
+			Payment_Method::GRABPAY,
+			Payment_Method::WECHAT_PAY,
+		];
+	}
+
+	/**
+	 * Check if a payment method ID is valid.
+	 *
+	 * @param string $payment_method_id The payment method ID to check.
+	 *
+	 * @return bool Whether the payment method ID is valid.
+	 */
+	private function is_valid_payment_method( string $payment_method_id ): bool {
+		return in_array( $payment_method_id, $this->get_valid_payment_method_ids(), true );
+	}
+
+	/**
+	 * Check whether the promotion variation data is valid.
+	 * Validates required fields based on variation type.
+	 *
+	 * @param mixed $variation_data The variation data.
+	 *
+	 * @return bool Whether the variation data is valid.
+	 */
+	private function validate_promotion_variation( $variation_data ): bool {
+		if ( ! is_array( $variation_data ) || empty( $variation_data ) ) {
+			return false;
+		}
+
+		// Required fields for all variations.
+		$required_fields = [ 'id', 'promo_id', 'payment_method', 'type', 'title', 'description', 'tc_url' ];
+
+		foreach ( $required_fields as $field ) {
+			if ( ! isset( $variation_data[ $field ] ) || ! is_string( $variation_data[ $field ] ) ) {
+				return false;
+			}
+		}
+
+		// Validate type is supported.
+		$valid_types = [ 'spotlight', 'badge' ];
+		if ( ! in_array( $variation_data['type'], $valid_types, true ) ) {
+			return false;
+		}
+
+		// Validate payment method is valid.
+		if ( ! $this->is_valid_payment_method( $variation_data['payment_method'] ) ) {
+			return false;
+		}
+
+		return true;
 	}
 }
