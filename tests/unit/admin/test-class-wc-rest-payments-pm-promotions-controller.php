@@ -57,7 +57,6 @@ class WC_REST_Payments_Promotions_Controller_Test extends WCPAY_UnitTestCase {
 		parent::tear_down();
 		delete_transient( WC_Payments_PM_Promotions_Service::PROMOTIONS_CACHE_KEY );
 		delete_option( WC_Payments_PM_Promotions_Service::PROMOTION_DISMISSALS_OPTION );
-		delete_option( WC_Payments_PM_Promotions_Service::ACTIVATED_PROMOTIONS_OPTION );
 		$this->promotions_service->reset_memo();
 	}
 
@@ -164,42 +163,5 @@ class WC_REST_Payments_Promotions_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( $timestamp, $result );
 		$this->assertNull( WC_Payments_PM_Promotions_Service::get_promotion_dismissal_time( 'promo1__badge' ) );
 		$this->assertNull( WC_Payments_PM_Promotions_Service::get_promotion_dismissal_time( 'promo2__spotlight' ) );
-	}
-
-	public function test_get_activated_promotions() {
-		$activated = [
-			'promo1' => 1234567890,
-			'promo2' => 1234567900,
-		];
-		update_option( WC_Payments_PM_Promotions_Service::ACTIVATED_PROMOTIONS_OPTION, $activated );
-
-		$result = WC_Payments_PM_Promotions_Service::get_activated_promotions();
-
-		$this->assertSame( $activated, $result );
-	}
-
-	public function test_is_promotion_activated() {
-		$activated = [
-			'promo1' => 1234567890,
-			'promo2' => 1234567900,
-		];
-		update_option( WC_Payments_PM_Promotions_Service::ACTIVATED_PROMOTIONS_OPTION, $activated );
-
-		$this->assertTrue( WC_Payments_PM_Promotions_Service::is_promotion_activated( 'promo1' ) );
-		$this->assertTrue( WC_Payments_PM_Promotions_Service::is_promotion_activated( 'promo2' ) );
-		$this->assertFalse( WC_Payments_PM_Promotions_Service::is_promotion_activated( 'promo3' ) );
-	}
-
-	public function test_get_promotion_activation_time() {
-		$timestamp = 1234567890;
-		$activated = [
-			'promo1' => $timestamp,
-		];
-		update_option( WC_Payments_PM_Promotions_Service::ACTIVATED_PROMOTIONS_OPTION, $activated );
-
-		$result = WC_Payments_PM_Promotions_Service::get_promotion_activation_time( 'promo1' );
-
-		$this->assertSame( $timestamp, $result );
-		$this->assertNull( WC_Payments_PM_Promotions_Service::get_promotion_activation_time( 'promo2' ) );
 	}
 }

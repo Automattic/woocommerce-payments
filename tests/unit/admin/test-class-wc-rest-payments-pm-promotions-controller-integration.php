@@ -92,7 +92,6 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 		parent::tear_down();
 		delete_transient( WC_Payments_PM_Promotions_Service::PROMOTIONS_CACHE_KEY );
 		delete_option( WC_Payments_PM_Promotions_Service::PROMOTION_DISMISSALS_OPTION );
-		delete_option( WC_Payments_PM_Promotions_Service::ACTIVATED_PROMOTIONS_OPTION );
 		$this->promotions_service->reset_memo();
 	}
 
@@ -205,22 +204,16 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 	 * =========================================================================
 	 */
 
-	public function test_activate_promotion_calls_service_with_identifier() {
-		$identifier = 'test-promo';
+	public function test_activate_promotion_calls_service_with_id() {
+		$id = 'test-promo';
 
 		$this->mock_promotions_service->expects( $this->once() )
 			->method( 'activate_promotion' )
-			->with( $identifier )
-			->willReturn(
-				[
-					'success'    => true,
-					'identifier' => $identifier,
-					'status'     => 'active',
-				]
-			);
+			->with( $id )
+			->willReturn( true );
 
-		$request = new WP_REST_Request( 'POST', $this->rest_base . '/' . $identifier . '/activate' );
-		$request->set_param( 'identifier', $identifier );
+		$request = new WP_REST_Request( 'POST', $this->rest_base . '/' . $id . '/activate' );
+		$request->set_param( 'id', $id );
 
 		$response = $this->controller_with_mock->activate_promotion( $request );
 
@@ -228,37 +221,18 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 	}
 
 	public function test_activate_promotion_returns_success_response() {
-		$identifier = 'test-promo';
+		$id = 'test-promo';
 
 		$this->mock_promotions_service->method( 'activate_promotion' )
-			->willReturn(
-				[
-					'success'    => true,
-					'identifier' => $identifier,
-					'status'     => 'active',
-				]
-			);
+			->willReturn( true );
 
-		$request = new WP_REST_Request( 'POST', $this->rest_base . '/' . $identifier . '/activate' );
-		$request->set_param( 'identifier', $identifier );
+		$request = new WP_REST_Request( 'POST', $this->rest_base . '/' . $id . '/activate' );
+		$request->set_param( 'id', $id );
 
 		$response = $this->controller_with_mock->activate_promotion( $request );
 		$data     = $response->get_data();
 
 		$this->assertTrue( $data['success'] );
-		$this->assertSame( 'active', $data['status'] );
-		$this->assertSame( $identifier, $data['identifier'] );
-	}
-
-	public function test_activate_promotion_integration_stores_activation() {
-		$identifier = 'test-promo';
-
-		$request = new WP_REST_Request( 'POST', $this->rest_base . '/' . $identifier . '/activate' );
-		$request->set_param( 'identifier', $identifier );
-
-		$this->controller->activate_promotion( $request );
-
-		$this->assertTrue( WC_Payments_PM_Promotions_Service::is_promotion_activated( $identifier ) );
 	}
 
 	/*
@@ -354,7 +328,7 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 		$this->controller->register_routes();
 
 		$routes = rest_get_server()->get_routes();
-		$route  = '/wc/v3/payments/pm-promotions/(?P<identifier>[a-zA-Z0-9_-]+)/activate';
+		$route  = '/wc/v3/payments/pm-promotions/(?P<id>[a-zA-Z0-9_-]+)/activate';
 
 		$this->assertArrayHasKey( $route, $routes );
 		$this->assertContains( 'POST', array_keys( $routes[ $route ][0]['methods'] ) );
@@ -432,23 +406,14 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 		$this->assertTrue( WC_Payments_PM_Promotions_Service::is_promotion_dismissed( $first_promo_id ) );
 	}
 
-	public function test_full_workflow_activate_verify() {
-		$identifier = 'test-promo';
+	public function test_full_workflow_activate_returns_success() {
+		$id = 'test-promo';
 
-		// Step 1: Activate the promotion.
-		$request = new WP_REST_Request( 'POST', $this->rest_base . '/' . $identifier . '/activate' );
-		$request->set_param( 'identifier', $identifier );
+		$request = new WP_REST_Request( 'POST', $this->rest_base . '/' . $id . '/activate' );
+		$request->set_param( 'id', $id );
 
 		$response = $this->controller->activate_promotion( $request );
 
 		$this->assertTrue( $response->get_data()['success'] );
-
-		// Step 2: Verify activation was recorded.
-		$this->assertTrue( WC_Payments_PM_Promotions_Service::is_promotion_activated( $identifier ) );
-
-		// Step 3: Verify timestamp was set.
-		$activation_time = WC_Payments_PM_Promotions_Service::get_promotion_activation_time( $identifier );
-		$this->assertNotNull( $activation_time );
-		$this->assertGreaterThan( 0, $activation_time );
 	}
 }

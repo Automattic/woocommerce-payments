@@ -46,7 +46,6 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 		parent::tear_down();
 		delete_transient( WC_Payments_PM_Promotions_Service::PROMOTIONS_CACHE_KEY );
 		delete_option( WC_Payments_PM_Promotions_Service::PROMOTION_DISMISSALS_OPTION );
-		delete_option( WC_Payments_PM_Promotions_Service::ACTIVATED_PROMOTIONS_OPTION );
 		$this->service->reset_memo();
 	}
 
@@ -790,22 +789,12 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 	 * =========================================================================
 	 */
 
-	public function test_activate_promotion_stores_activation() {
-		$identifier = 'test-promo';
+	public function test_activate_promotion_returns_true() {
+		$id = 'test-promo';
 
-		$this->service->activate_promotion( $identifier );
+		$result = $this->service->activate_promotion( $id );
 
-		$this->assertTrue( WC_Payments_PM_Promotions_Service::is_promotion_activated( $identifier ) );
-	}
-
-	public function test_activate_promotion_returns_success_response() {
-		$identifier = 'test-promo';
-
-		$response = $this->service->activate_promotion( $identifier );
-
-		$this->assertTrue( $response['success'] );
-		$this->assertSame( 'active', $response['status'] );
-		$this->assertSame( $identifier, $response['identifier'] );
+		$this->assertTrue( $result );
 	}
 
 	public function test_activate_promotion_clears_cache() {
@@ -819,17 +808,6 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 		$this->service->activate_promotion( 'test-promo' );
 
 		$this->assertFalse( get_transient( WC_Payments_PM_Promotions_Service::PROMOTIONS_CACHE_KEY ) );
-	}
-
-	public function test_activate_promotion_records_timestamp() {
-		$identifier = 'test-promo';
-		$before     = time();
-
-		$this->service->activate_promotion( $identifier );
-
-		$timestamp = WC_Payments_PM_Promotions_Service::get_promotion_activation_time( $identifier );
-		$this->assertGreaterThanOrEqual( $before, $timestamp );
-		$this->assertLessThanOrEqual( time(), $timestamp );
 	}
 
 	/*

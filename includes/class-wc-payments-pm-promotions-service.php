@@ -32,13 +32,6 @@ class WC_Payments_PM_Promotions_Service {
 	const PROMOTION_DISMISSALS_OPTION = '_wcpay_pm_promotion_dismissals';
 
 	/**
-	 * Option key for activated promotions.
-	 *
-	 * @var string
-	 */
-	const ACTIVATED_PROMOTIONS_OPTION = '_wcpay_activated_pm_promotions';
-
-	/**
 	 * The memoized promotions to avoid fetching multiple times during a request.
 	 *
 	 * @var array|null
@@ -262,28 +255,20 @@ class WC_Payments_PM_Promotions_Service {
 	 *
 	 * Activating a promotion implies acceptance of terms.
 	 *
-	 * @param string $identifier The promotion identifier.
+	 * @param string $id The promotion identifier.
 	 *
-	 * @return array The activation response.
+	 * @return bool True on success.
 	 */
-	public function activate_promotion( string $identifier ): array {
+	public function activate_promotion( string $id ): bool {
 		// TODO: Replace with actual API call when server endpoints are available.
-		// $wcpay_request = Request\Activate_Promotion::create( $identifier );.
+		// $wcpay_request = Request\Activate_Promotion::create( $id );.
 		// $wcpay_request->assign_hook( 'wcpay_activate_promotion_request' );.
 		// $response = $wcpay_request->handle_rest_request();.
 
-		// Return mock success response.
-		$response = [
-			'success'    => true,
-			'identifier' => $identifier,
-			'status'     => 'active',
-		];
-
-		// Clear cache and update local state.
+		// Clear cache to ensure fresh data on next fetch.
 		$this->clear_cache();
-		$this->mark_promotion_activated( $identifier );
 
-		return $response;
+		return true;
 	}
 
 	/**
@@ -371,34 +356,12 @@ class WC_Payments_PM_Promotions_Service {
 	}
 
 	/**
-	 * Mark a promotion as activated in local state.
-	 *
-	 * @param string $identifier The promotion identifier.
-	 *
-	 * @return void
-	 */
-	private function mark_promotion_activated( string $identifier ): void {
-		$activated                = self::get_activated_promotions();
-		$activated[ $identifier ] = time();
-		update_option( self::ACTIVATED_PROMOTIONS_OPTION, $activated, false );
-	}
-
-	/**
 	 * Get all promotion dismissals.
 	 *
 	 * @return array Associative array of [id => timestamp].
 	 */
 	public static function get_promotion_dismissals(): array {
 		return get_option( self::PROMOTION_DISMISSALS_OPTION, [] );
-	}
-
-	/**
-	 * Get list of activated promotions with timestamps.
-	 *
-	 * @return array Associative array of promotion identifiers to activation timestamps.
-	 */
-	public static function get_activated_promotions(): array {
-		return get_option( self::ACTIVATED_PROMOTIONS_OPTION, [] );
 	}
 
 	/**
@@ -423,30 +386,6 @@ class WC_Payments_PM_Promotions_Service {
 	public static function get_promotion_dismissal_time( string $id ): ?int {
 		$dismissals = self::get_promotion_dismissals();
 		return $dismissals[ $id ] ?? null;
-	}
-
-	/**
-	 * Check if a promotion has been activated.
-	 *
-	 * @param string $identifier The promotion identifier.
-	 *
-	 * @return bool True if activated, false otherwise.
-	 */
-	public static function is_promotion_activated( string $identifier ): bool {
-		$activated = self::get_activated_promotions();
-		return isset( $activated[ $identifier ] );
-	}
-
-	/**
-	 * Get the activation timestamp for a promotion.
-	 *
-	 * @param string $identifier The promotion identifier.
-	 *
-	 * @return int|null The activation timestamp, or null if not activated.
-	 */
-	public static function get_promotion_activation_time( string $identifier ): ?int {
-		$activated = self::get_activated_promotions();
-		return $activated[ $identifier ] ?? null;
 	}
 
 	/**

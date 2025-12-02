@@ -55,18 +55,11 @@ class WC_REST_Payments_PM_Promotions_Controller extends WC_Payments_REST_Control
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/(?P<identifier>[a-zA-Z0-9_-]+)/activate',
+			'/' . $this->rest_base . '/(?P<id>[a-zA-Z0-9_-]+)/activate',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => [ $this, 'activate_promotion' ],
 				'permission_callback' => [ $this, 'check_permission' ],
-				'args'                => [
-					'identifier' => [
-						'required'          => true,
-						'type'              => 'string',
-						'sanitize_callback' => 'sanitize_text_field',
-					],
-				],
 			]
 		);
 		register_rest_route(
@@ -98,9 +91,9 @@ class WC_REST_Payments_PM_Promotions_Controller extends WC_Payments_REST_Control
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function activate_promotion( WP_REST_Request $request ) {
-		$response = $this->promotions_service->activate_promotion( $request->get_param( 'identifier' ) );
+		$result = $this->promotions_service->activate_promotion( $request->get_param( 'id' ) );
 
-		return rest_ensure_response( $response );
+		return rest_ensure_response( [ 'success' => $result ] );
 	}
 
 	/**
