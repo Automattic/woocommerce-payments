@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "82ae2b86cd431fd736751ad4c4460abb",
+    "content-hash": "dc2e50629f4ea7ed368df386842eac1b",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -6746,16 +6746,16 @@
         },
         {
             "name": "woocommerce/qit-cli",
-            "version": "0.4.0",
+            "version": "0.10.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/woocommerce/qit-cli.git",
-                "reference": "8c71a1ffd67879d43bde45512bb7fe3ff399814b"
+                "reference": "42c4722bb71940dc0435103775439588e923e1cd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/woocommerce/qit-cli/zipball/8c71a1ffd67879d43bde45512bb7fe3ff399814b",
-                "reference": "8c71a1ffd67879d43bde45512bb7fe3ff399814b",
+                "url": "https://api.github.com/repos/woocommerce/qit-cli/zipball/42c4722bb71940dc0435103775439588e923e1cd",
+                "reference": "42c4722bb71940dc0435103775439588e923e1cd",
                 "shasum": ""
             },
             "require": {
@@ -6773,9 +6773,9 @@
             "description": "A command line interface for WooCommerce Quality Insights Toolkit (QIT).",
             "support": {
                 "issues": "https://github.com/woocommerce/qit-cli/issues",
-                "source": "https://github.com/woocommerce/qit-cli/tree/0.4.0"
+                "source": "https://github.com/woocommerce/qit-cli/tree/0.10.0"
             },
-            "time": "2024-01-29T16:27:45+00:00"
+            "time": "2025-05-20T15:58:42+00:00"
         },
         {
             "name": "woocommerce/woocommerce-sniffs",
@@ -7023,5 +7023,5 @@
     "platform-overrides": {
         "php": "7.3"
     },
-    "plugin-api-version": "2.3.0"
+    "plugin-api-version": "2.6.0"
 }

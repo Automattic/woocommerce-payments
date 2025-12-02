@@ -37,7 +37,6 @@ use WCPay\Core\Server\Request\Cancel_Intention;
 use WCPay\Core\Server\Request\Capture_Intention;
 use WCPay\Core\Server\Request\Create_And_Confirm_Intention;
 use WCPay\Core\Server\Request\Create_And_Confirm_Setup_Intention;
-use WCPay\Core\Server\Request\Create_Intention;
 use WCPay\Core\Server\Request\Get_Charge;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Core\Server\Request\Get_Setup_Intention;
@@ -52,20 +51,14 @@ use WCPay\Payment_Information;
 use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\WooPay\WooPay_Order_Status_Sync;
 use WCPay\WooPay\WooPay_Utilities;
-use WCPay\WooPay\WooPay_Session;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Tracker;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
-use WCPay\Payment_Methods\Affirm_Payment_Method;
 use WCPay\Payment_Methods\Afterpay_Payment_Method;
-use WCPay\Payment_Methods\Bancontact_Payment_Method;
 use WCPay\Payment_Methods\Becs_Payment_Method;
 use WCPay\Payment_Methods\CC_Payment_Method;
-use WCPay\Payment_Methods\Eps_Payment_Method;
-use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Klarna_Payment_Method;
-use WCPay\Payment_Methods\P24_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\Payment_Methods\Multibanco_Payment_Method;
@@ -344,8 +337,10 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// to have a map for it instead, just in case the pattern changes.
 		$this->payment_method_capability_key_map = [
 			'alipay'            => 'alipay_payments',
+			'apple_pay'         => 'card_payments',
 			'sofort'            => 'sofort_payments',
 			'giropay'           => 'giropay_payments',
+			'google_pay'        => 'card_payments',
 			'bancontact'        => 'bancontact_payments',
 			'eps'               => 'eps_payments',
 			'ideal'             => 'ideal_payments',
@@ -1268,7 +1263,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// This allows WC to check if WP_DEBUG mode is enabled before returning previous Exception and expose Exception class name to frontend.
 			add_filter( 'woocommerce_return_previous_exceptions', '__return_true' );
 			wc_add_notice( wp_strip_all_tags( WC_Payments_Utils::get_filtered_error_message( $e, $blocked_by_fraud_rules ) ), 'error' );
-			do_action( 'update_payment_result_on_error', $e, $order );
+			do_action( 'wcpay_update_payment_result_on_error', $e, $order );
 
 			return [
 				'result'   => 'fail',
@@ -1342,7 +1337,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Sets up a handler to add error details to the payment result.
-	 * Registers an action to handle 'update_payment_result_on_error',
+	 * Registers an action to handle 'wcpay_update_payment_result_on_error',
 	 * using the payment result object from 'woocommerce_rest_checkout_process_payment_with_context'.
 	 *
 	 * @param PaymentContext $context The payment context.
@@ -1350,7 +1345,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function setup_payment_error_handler( PaymentContext $context, PaymentResult &$result ) {
 		add_action(
-			'update_payment_result_on_error',
+			'wcpay_update_payment_result_on_error',
 			function ( $error ) use ( &$result ) {
 				$result->set_payment_details(
 					array_merge(
@@ -1602,7 +1597,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				// Make sure that setting fingerprint is performed after setting metadata because metadata will override any values you set before for metadata param.
 				$request->set_fingerprint( $payment_information->get_fingerprint() );
 				if ( $save_payment_method_to_store ) {
-					$request->setup_future_usage();
+					// Only set setup_future_usage for reusable payment methods.
+					// Non-reusable payment methods (e.g., iDEAL) will be used for manual renewals and don't support setup_future_usage.
+					if ( $this->payment_method->is_reusable() ) {
+						$request->setup_future_usage();
+					}
 				}
 				if ( $scheduled_subscription_payment ) {
 					$mandate = $this->get_mandate_param_for_renewal_order( $order );
@@ -1811,31 +1810,31 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$this->maybe_add_customer_notification_note( $order, $processing );
 
-		// ensuring the payment method title is set before any early return paths to avoid incomplete order data.
-		if ( empty( $_POST['payment_request_type'] ) && empty( $_POST['express_payment_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
-			// Extract payment method details for setting the payment method title.
-			if ( $payment_needed ) {
-				$charge                 = $intent ? $intent->get_charge() : null;
-				$payment_method_details = $charge ? $charge->get_payment_method_details() : [];
-				// For payment intents, get payment method type from the intent itself, fallback to charge details.
-				$payment_method_type = $intent ? $intent->get_payment_method_type() : null;
-				if ( ! $payment_method_type && $payment_method_details ) {
-					$payment_method_type = $payment_method_details['type'] ?? null;
-				}
-
-				if ( 'card' === $payment_method_type && isset( $payment_method_details['card']['last4'] ) ) {
-					$order->add_meta_data( 'last4', $payment_method_details['card']['last4'], true );
-					if ( isset( $payment_method_details['card']['brand'] ) ) {
-						$order->add_meta_data( '_card_brand', $payment_method_details['card']['brand'], true );
-					}
-					$order->save_meta_data();
-				}
-			} else {
-				$payment_method_details = false;
-				$token                  = $payment_information->is_using_saved_payment_method() ? $payment_information->get_payment_token() : null;
-				$payment_method_type    = $token ? $this->get_payment_method_type_for_setup_intent( $intent, $token ) : null;
+		// Extract payment method details for setting the payment method title.
+		if ( $payment_needed ) {
+			$charge                 = $intent ? $intent->get_charge() : null;
+			$payment_method_details = $charge ? $charge->get_payment_method_details() : [];
+			// For payment intents, get payment method type from the intent itself, fallback to charge details.
+			$payment_method_type = $intent ? $intent->get_payment_method_type() : null;
+			if ( ! $payment_method_type && $payment_method_details ) {
+				$payment_method_type = $payment_method_details['type'] ?? null;
 			}
 
+			if ( 'card' === $payment_method_type && isset( $payment_method_details['card']['last4'] ) ) {
+				$order->add_meta_data( 'last4', $payment_method_details['card']['last4'], true );
+				if ( isset( $payment_method_details['card']['brand'] ) ) {
+					$order->add_meta_data( '_card_brand', $payment_method_details['card']['brand'], true );
+				}
+				$order->save_meta_data();
+			}
+		} else {
+			$payment_method_details = false;
+			$token                  = $payment_information->is_using_saved_payment_method() ? $payment_information->get_payment_token() : null;
+			$payment_method_type    = $token ? $this->get_payment_method_type_for_setup_intent( $intent, $token ) : null;
+		}
+
+		// ensuring the payment method title is set before any early return paths to avoid incomplete order data.
+		if ( empty( $_POST['express_payment_type'] ) ) { // phpcs:ignore WordPress.Security.NonceVerification
 			$this->set_payment_method_title_for_order( $order, $payment_method_type, $payment_method_details );
 		}
 
@@ -4086,13 +4085,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		 * As payment methods are converted to use definitions, they need to be removed from the list below.
 		 */
 		$available_methods[] = Becs_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$available_methods[] = Bancontact_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$available_methods[] = Eps_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$available_methods[] = Ideal_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Sepa_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$available_methods[] = P24_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$available_methods[] = Affirm_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Afterpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Multibanco_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
@@ -4113,6 +4107,16 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		);
 
 		$methods_with_fees = array_keys( $this->account->get_fees() );
+
+		// Google Pay and Apple Pay use card payment fees, so if card is available, they should be too.
+		if ( in_array( 'card', $methods_with_fees, true ) ) {
+			if ( in_array( 'google_pay', $available_methods, true ) ) {
+				$methods_with_fees[] = 'google_pay';
+			}
+			if ( in_array( 'apple_pay', $available_methods, true ) ) {
+				$methods_with_fees[] = 'apple_pay';
+			}
+		}
 
 		return array_values( array_intersect( $available_methods, $methods_with_fees ) );
 	}

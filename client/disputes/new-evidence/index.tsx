@@ -267,14 +267,11 @@ export default ( { query }: { query: { id: string } } ) => {
 			}
 		};
 		fetchDispute();
-	}, [
-		path,
-		createErrorNotice,
-		settings,
-		bankName,
-		refundStatus,
-		duplicateStatus,
-	] );
+		// We intentionally exclude duplicateStatus from dependencies to prevent re-fetching dispute data
+		// when duplicate status changes (which would reset the product type selection).
+		// Cover letter regeneration on status changes is handled by the evidence update effect.
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [ path, createErrorNotice, settings, bankName, refundStatus ] );
 
 	// --- File name display logic ---
 	useEffect( () => {
@@ -576,6 +573,13 @@ export default ( { query }: { query: { id: string } } ) => {
 		dispute.status !== 'needs_response' &&
 		dispute.status !== 'warning_needs_response';
 
+	const isVisaComplianceDispute =
+		dispute &&
+		( dispute.reason === 'noncompliant' ||
+			( dispute?.enhanced_eligibility_types || [] ).includes(
+				'visa_compliance'
+			) );
+
 	// --- Accordion summary content (must be before any early returns) ---
 	const summaryItems = useMemo( () => {
 		if ( ! dispute ) return [];
@@ -858,7 +862,8 @@ export default ( { query }: { query: { id: string } } ) => {
 	const recommendedDocumentFields = getRecommendedDocumentFields(
 		disputeReason,
 		disputeReason === 'credit_not_processed' ? refundStatus : undefined,
-		disputeReason === 'duplicate' ? duplicateStatus : undefined
+		disputeReason === 'duplicate' ? duplicateStatus : undefined,
+		productType
 	);
 
 	const recommendedShippingDocumentFields = getRecommendedShippingDocumentFields();
@@ -933,6 +938,25 @@ export default ( { query }: { query: { id: string } } ) => {
 		</InlineNotice>
 	);
 
+	const inlineNoticeVisaCompliance = () => (
+		<InlineNotice
+			icon
+			isDismissible={ false }
+			status="info"
+			className="dispute-steps__notice-content"
+		>
+			{ createInterpolateElement(
+				__(
+					'<strong>The outcome of this dispute will be determined by Visa.</strong> WooPayments has no influence over the decision and is not liable for any chargebacks.',
+					'woocommerce-payments'
+				),
+				{
+					strong: <strong />,
+				}
+			) }
+		</InlineNotice>
+	);
+
 	// --- Step content ---
 	const renderStepContent = () => {
 		// if ( ! fields.length ) return null;
@@ -981,7 +1005,9 @@ export default ( { query }: { query: { id: string } } ) => {
 						fields={ recommendedDocumentsFields }
 						readOnly={ readOnly }
 					/>
-					{ inlineNotice( bankName ) }
+					{ isVisaComplianceDispute
+						? inlineNoticeVisaCompliance()
+						: inlineNotice( bankName ) }
 				</>
 			);
 		}
@@ -1015,7 +1041,9 @@ export default ( { query }: { query: { id: string } } ) => {
 						fields={ recommendedShippingDocumentsFields }
 						readOnly={ readOnly }
 					/>
-					{ inlineNotice( bankName ) }
+					{ isVisaComplianceDispute
+						? inlineNoticeVisaCompliance()
+						: inlineNotice( bankName ) }
 				</>
 			);
 		}
@@ -1118,7 +1146,9 @@ export default ( { query }: { query: { id: string } } ) => {
 						} }
 						readOnly={ readOnly }
 					/>
-					{ inlineNotice( bankName ) }
+					{ isVisaComplianceDispute
+						? inlineNoticeVisaCompliance()
+						: inlineNotice( bankName ) }
 				</>
 			);
 		}

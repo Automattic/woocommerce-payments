@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Overrides the core `AbstractAutomatticAddressProvider`'s `load_scripts` method to only run if the core setting (`woocommerce_address_autocomplete_enabled` is enabled).

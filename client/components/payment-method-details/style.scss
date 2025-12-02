@@ -1,6 +1,13 @@
 /** @format **/
 
 .payment-method-details {
+	gap: 5px;
+
+	.payment-method__icon {
+		width: 28px;
+		width: 1.75rem;
+	}
+
 	.payment-method__brand {
 		width: 28px;
 		width: 1.75rem;

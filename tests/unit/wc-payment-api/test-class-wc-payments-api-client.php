@@ -1304,7 +1304,10 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	 *
 	 * @dataProvider data_determine_suggested_product_type
 	 */
-	public function test_determine_suggested_product_type( $order_items, $expected_product_type ) {
+	public function test_determine_suggested_product_type( $order_items, $expected_product_type, $evidence_types_flag_enabled = true ) {
+		// Set the feature flag option.
+		update_option( WC_Payments_Features::DISPUTE_ADDITIONAL_EVIDENCE_TYPES, $evidence_types_flag_enabled ? '1' : '0' );
+
 		// Create a mock order.
 		$mock_order = $this->getMockBuilder( 'WC_Order' )
 			->disableOriginalConstructor()
@@ -1324,59 +1327,243 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Test updating a dispute with or without Visa compliance flag based on dispute reason.
+	 *
+	 * @dataProvider data_update_dispute_visa_compliance
+	 * @throws API_Exception
+	 */
+	public function test_update_dispute_visa_compliance_flag( $dispute_reason, $should_have_flag ) {
+		$dispute_id = 'dp_test123';
+		$evidence   = [
+			'product_description'    => 'Product description',
+			'customer_name'          => 'Customer Name',
+			'uncategorized_text'     => 'Additional details',
+			'customer_email_address' => 'customer@example.com',
+			'customer_purchase_ip'   => '1.2.3.4',
+			'billing_address'        => '123 Main St',
+			'receipt'                => 'file_123',
+			'customer_signature'     => 'file_456',
+			'shipping_documentation' => 'file_789',
+		];
+		$submit     = true;
+		$metadata   = [ 'order_id' => '123' ];
+
+		// Mock the dispute cache to avoid errors.
+		$mock_cache = $this->createMock( \WCPay\Database_Cache::class );
+		$mock_cache->method( 'delete_dispute_caches' )
+			->willReturn( null );
+
+		// Replace the database cache in the container.
+		wcpay_get_test_container()->replace( \WCPay\Database_Cache::class, $mock_cache );
+
+		// Mock the HTTP client to first return dispute details, then accept the update.
+		$this->mock_http_client
+			->expects( $this->exactly( 2 ) )
+			->method( 'remote_request' )
+			->willReturnCallback(
+				function ( $data, $body ) use ( $dispute_id, $evidence, $metadata, $dispute_reason, $should_have_flag ) {
+					// First call: GET dispute to check the reason.
+					if ( strpos( $data['url'], '/disputes/' . $dispute_id ) !== false && 'GET' === $data['method'] ) {
+						return [
+							'body'     => wp_json_encode(
+								[
+									'id'     => $dispute_id,
+									'charge' => 'ch_test123',
+									'reason' => $dispute_reason,
+									'status' => 'needs_response',
+								]
+							),
+							'response' => [
+								'code'    => 200,
+								'message' => 'OK',
+							],
+						];
+					}
+
+					// Second call: POST to update the dispute.
+					if ( strpos( $data['url'], '/disputes/' . $dispute_id ) !== false && 'POST' === $data['method'] ) {
+						// Validate the request parameters.
+						$this->validate_default_remote_request_params(
+							$data,
+							'https://public-api.wordpress.com/wpcom/v2/sites/%s/wcpay/disputes/' . $dispute_id,
+							'POST'
+						);
+
+						// Validate the body contains or doesn't contain the Visa compliance flag.
+						$decoded = json_decode( $body, true );
+
+						// Verify the standard evidence is present.
+						$this->assertArrayHasKey( 'evidence', $decoded );
+						// Verify the Visa compliance flag presence based on dispute reason.
+						if ( $should_have_flag ) {
+							$this->assertArrayHasKey( 'enhanced_evidence', $decoded['evidence'] );
+							$this->assertArrayHasKey( 'visa_compliance', $decoded['evidence']['enhanced_evidence'] );
+							$this->assertArrayHasKey( 'fee_acknowledged', $decoded['evidence']['enhanced_evidence']['visa_compliance'] );
+							$this->assertEquals( 'true', $decoded['evidence']['enhanced_evidence']['visa_compliance']['fee_acknowledged'] );
+							$evidence_without_flag = $decoded['evidence'];
+							unset( $evidence_without_flag['enhanced_evidence'] );
+							$this->assertEquals( $evidence, $evidence_without_flag );
+						} else {
+							// Evidence shouldn't be modified.
+							$this->assertEquals( $evidence, $decoded['evidence'] );
+						}
+
+						// Verify the submit flag is set.
+						$this->assertArrayHasKey( 'submit', $decoded );
+						$this->assertTrue( $decoded['submit'] );
+
+						// Verify the metadata is present.
+						$this->assertArrayHasKey( 'metadata', $decoded );
+						$this->assertEquals( $metadata, $decoded['metadata'] );
+
+						return [
+							'body'     => wp_json_encode(
+								[
+									'id'       => $dispute_id,
+									'charge'   => 'ch_test123',
+									'reason'   => $dispute_reason,
+									'status'   => 'needs_response',
+									'evidence' => $evidence,
+								]
+							),
+							'response' => [
+								'code'    => 200,
+								'message' => 'OK',
+							],
+						];
+					}
+
+					return [
+						'body'     => wp_json_encode( [] ),
+						'response' => [
+							'code'    => 404,
+							'message' => 'Not Found',
+						],
+					];
+				}
+			);
+
+		// Call the method under test.
+		$result = $this->payments_api_client->update_dispute( $dispute_id, $evidence, $submit, $metadata );
+
+		// Assert the response is correct.
+		$this->assertEquals( $dispute_id, $result['id'] );
+
+		// Clean up.
+		wcpay_get_test_container()->reset_all_replacements();
+	}
+
+	/**
+	 * Data provider for test_update_dispute_visa_compliance_flag.
+	 */
+	public function data_update_dispute_visa_compliance() {
+		return [
+			'noncompliant_dispute_should_have_flag'   => [
+				'dispute_reason'   => 'noncompliant',
+				'should_have_flag' => true,
+			],
+			'fraudulent_dispute_should_not_have_flag' => [
+				'dispute_reason'   => 'fraudulent',
+				'should_have_flag' => false,
+			],
+			'product_unacceptable_dispute_should_not_have_flag' => [
+				'dispute_reason'   => 'product_unacceptable',
+				'should_have_flag' => false,
+			],
+		];
+	}
+
+	/**
 	 * Data provider for test_determine_suggested_product_type.
 	 */
 	public function data_determine_suggested_product_type() {
 		return [
-			'empty_order'                  => [
+			'empty_order'                              => [
 				'order_items'           => [],
 				'expected_product_type' => 'physical_product',
 			],
-			'single_physical_product'      => [
+			'single_physical_product'                  => [
 				'order_items'           => [
 					$this->create_mock_order_item_product( false ), // not virtual.
 				],
 				'expected_product_type' => 'physical_product',
 			],
-			'single_virtual_product'       => [
+			'single_virtual_product'                   => [
 				'order_items'           => [
 					$this->create_mock_order_item_product( true ), // virtual.
 				],
 				'expected_product_type' => 'digital_product_or_service',
 			],
-			'multiple_products_mixed'      => [
+			'multiple_products_mixed'                  => [
 				'order_items'           => [
 					$this->create_mock_order_item_product( false ), // physical.
 					$this->create_mock_order_item_product( true ),  // virtual.
 				],
 				'expected_product_type' => 'multiple',
 			],
-			'multiple_physical_products'   => [
+			'multiple_physical_products'               => [
 				'order_items'           => [
 					$this->create_mock_order_item_product( false ), // physical.
 					$this->create_mock_order_item_product( false ), // physical.
 				],
 				'expected_product_type' => 'multiple',
 			],
-			'multiple_virtual_products'    => [
+			'multiple_virtual_products'                => [
 				'order_items'           => [
 					$this->create_mock_order_item_product( true ), // virtual.
 					$this->create_mock_order_item_product( true ), // virtual.
 				],
 				'expected_product_type' => 'multiple',
 			],
-			'order_with_non_product_items' => [
+			'order_with_non_product_items'             => [
 				'order_items'           => [
 					$this->create_mock_order_item_product( true ), // virtual product.
 					$this->create_mock_order_item_shipping(), // shipping item (not a product).
 				],
 				'expected_product_type' => 'digital_product_or_service',
 			],
-			'order_with_invalid_product'   => [
+			'order_with_invalid_product'               => [
 				'order_items'           => [
 					$this->create_mock_order_item_product( true, false ), // virtual but invalid product.
 				],
 				'expected_product_type' => 'physical_product',
+			],
+			'single_booking_product'                   => [
+				'order_items'                 => [
+					$this->create_mock_order_item_product( true, true, 'booking' ), // booking product.
+				],
+				'expected_product_type'       => 'booking_reservation',
+				'evidence_types_flag_enabled' => true,
+			],
+			'single_booking_product_flag_off'          => [
+				'order_items'                 => [
+					$this->create_mock_order_item_product( true, true, 'booking' ), // booking product (virtual).
+				],
+				'expected_product_type'       => 'digital_product_or_service', // Falls back to virtual detection.
+				'evidence_types_flag_enabled' => false,
+			],
+			'single_booking_product_physical_flag_off' => [
+				'order_items'                 => [
+					$this->create_mock_order_item_product( false, true, 'booking' ), // booking product (not virtual).
+				],
+				'expected_product_type'       => 'physical_product', // Falls back to physical detection.
+				'evidence_types_flag_enabled' => false,
+			],
+			'multiple_booking_products'                => [
+				'order_items'                 => [
+					$this->create_mock_order_item_product( true, true, 'booking' ), // booking.
+					$this->create_mock_order_item_product( true, true, 'booking' ), // booking.
+				],
+				'expected_product_type'       => 'multiple',
+				'evidence_types_flag_enabled' => true,
+			],
+			'booking_physical_mixed'                   => [
+				'order_items'                 => [
+					$this->create_mock_order_item_product( true, true, 'booking' ), // booking.
+					$this->create_mock_order_item_product( false, true, 'simple' ), // physical.
+				],
+				'expected_product_type'       => 'multiple',
+				'evidence_types_flag_enabled' => true,
 			],
 		];
 	}
@@ -1384,17 +1571,19 @@ class WC_Payments_API_Client_Test extends WCPAY_UnitTestCase {
 	/**
 	 * Create a mock order item product for testing.
 	 *
-	 * @param bool $is_virtual Whether the product is virtual.
-	 * @param bool $is_valid Whether the product is valid (can be retrieved).
+	 * @param bool   $is_virtual Whether the product is virtual.
+	 * @param bool   $is_valid Whether the product is valid (can be retrieved).
+	 * @param string $product_type The product type (e.g., 'simple', 'booking', 'variable').
 	 * @return MockObject
 	 */
-	private function create_mock_order_item_product( $is_virtual = false, $is_valid = true ) {
+	private function create_mock_order_item_product( $is_virtual = false, $is_valid = true, $product_type = 'simple' ) {
 		$mock_product = $this->getMockBuilder( 'WC_Product' )
 			->disableOriginalConstructor()
-			->setMethods( [ 'is_virtual' ] )
+			->setMethods( [ 'is_virtual', 'get_type' ] )
 			->getMock();
 
 		$mock_product->method( 'is_virtual' )->willReturn( $is_virtual );
+		$mock_product->method( 'get_type' )->willReturn( $product_type );
 
 		$mock_order_item = $this->getMockBuilder( 'WC_Order_Item_Product' )
 			->disableOriginalConstructor()

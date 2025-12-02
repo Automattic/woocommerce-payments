@@ -6,7 +6,7 @@
 import React from 'react';
 import { __ } from '@wordpress/i18n';
 import { addQueryArgs } from '@wordpress/url';
-import { Card, CardBody, CardHeader, Flex } from '@wordpress/components';
+import { Card, CardBody, CardHeader } from '@wordpress/components';
 
 /**
  * Internal dependencies
