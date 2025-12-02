@@ -149,8 +149,8 @@ const PaymentMethod = ( {
 	);
 
 	// Get badge-type promotion for this payment method.
-	const { promotions } = usePromotions();
-	const badgePromotion = promotions.find(
+	const { promotions = [] } = usePromotions();
+	const badgePromotion = promotions?.find(
 		( promo ) => promo.payment_method === id && promo.type === 'badge'
 	);
 

@@ -45,6 +45,11 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 	private $promotions_service;
 
 	/**
+	 * @var WC_Payment_Gateway_WCPay|MockObject
+	 */
+	private $mock_gateway;
+
+	/**
 	 * REST route base.
 	 *
 	 * @var string
@@ -59,7 +64,16 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 
 		$this->mock_api_client         = $this->createMock( WC_Payments_API_Client::class );
 		$this->mock_promotions_service = $this->createMock( WC_Payments_PM_Promotions_Service::class );
-		$this->promotions_service      = new WC_Payments_PM_Promotions_Service();
+
+		// Create mock gateway with available payment methods for integration tests.
+		$this->mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$this->mock_gateway->method( 'get_upe_available_payment_methods' )
+			->willReturn( [ 'card', 'klarna', 'affirm', 'afterpay_clearpay' ] );
+		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )
+			->willReturn( [] ); // No PMs enabled, so promotions will show.
+
+		// Real service with mock gateway for integration tests.
+		$this->promotions_service = new WC_Payments_PM_Promotions_Service( $this->mock_gateway );
 
 		// Controller with real service for integration tests.
 		$this->controller = new WC_REST_Payments_PM_Promotions_Controller(

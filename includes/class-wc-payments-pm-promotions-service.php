@@ -314,7 +314,7 @@ class WC_Payments_PM_Promotions_Service {
 				'description'    => 'Save on every Klarna transaction with 0% processing fees for 90 days from activation.',
 				'cta_label'      => 'Enable Klarna',
 				'tc_url'         => 'https://woocommerce.com/terms',
-				'tc_label'       => 'Learn moree',
+				'tc_label'       => 'Learn more',
 				'footnote'       => '*Offer valid for new activations only.',
 				'image'          => '',
 			],
