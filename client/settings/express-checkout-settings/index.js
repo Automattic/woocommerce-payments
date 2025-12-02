@@ -17,12 +17,8 @@ import SettingsLayout from '../settings-layout';
 import LoadableSettingsSection from '../loadable-settings-section';
 import SaveSettingsSection from '../save-settings-section';
 import ErrorBoundary from '../../components/error-boundary';
-import {
-	AmazonPayIcon,
-	ApplePayIcon,
-	GooglePayIcon,
-	WooIcon,
-} from 'wcpay/payment-methods-icons';
+import { AmazonPayIcon, WooIcon } from 'wcpay/payment-methods-icons';
+import methodsConfiguration from 'wcpay/payment-methods-map';
 
 const methods = {
 	woopay: {
@@ -76,24 +72,33 @@ const methods = {
 		sections: [
 			{
 				section: 'enable',
-				description: () => (
-					<>
-						<div className="express-checkout-settings__icons">
-							<div className="express-checkout-settings__icon">
-								<ApplePayIcon />
+				description: () => {
+					const {
+						icon: ApplePayIcon,
+					} = methodsConfiguration.apple_pay;
+					const {
+						icon: GooglePayIcon,
+					} = methodsConfiguration.google_pay;
+
+					return (
+						<>
+							<div className="express-checkout-settings__icons">
+								<div className="express-checkout-settings__icon">
+									<ApplePayIcon />
+								</div>
+								<div className="express-checkout-settings__icon">
+									<GooglePayIcon />
+								</div>
 							</div>
-							<div className="express-checkout-settings__icon">
-								<GooglePayIcon />
-							</div>
-						</div>
-						<p>
-							{ __(
-								'Allow your customers to collect payments via Apple Pay and Google Pay.',
-								'woocommerce-payments'
-							) }
-						</p>
-					</>
-				),
+							<p>
+								{ __(
+									'Allow your customers to collect payments via Apple Pay and Google Pay.',
+									'woocommerce-payments'
+								) }
+							</p>
+						</>
+					);
+				},
 			},
 			{
 				section: 'general',
