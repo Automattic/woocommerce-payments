@@ -5,7 +5,7 @@
         "slug": "woocommerce-payments",
         "source": {
             "type": "local",
-            "path": "../../../woocommerce-payments.zip"
+            "path": "woocommerce-payments.zip"
         }
     },
     "environments": {
@@ -21,7 +21,7 @@
             "default": {
                 "environment": "default",
                 "test_packages": [
-                    "./tests/qit/test-package"
+                    "tests/qit/test-package"
                 ]
             }
         }
