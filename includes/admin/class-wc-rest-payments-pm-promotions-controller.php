@@ -82,15 +82,16 @@ class WC_REST_Payments_PM_Promotions_Controller extends WC_Payments_REST_Control
 				'callback'            => [ $this, 'dismiss_promotion' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 				'args'                => [
-					'identifier'   => [
+					'identifier' => [
 						'required'          => true,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
 					],
-					'variation_id' => [
+					'id'         => [
 						'required'          => true,
 						'type'              => 'string',
 						'sanitize_callback' => 'sanitize_text_field',
+						'description'       => 'The promotion unique identifier (e.g., klarna-2026-promo__spotlight).',
 					],
 				],
 			]
@@ -124,17 +125,16 @@ class WC_REST_Payments_PM_Promotions_Controller extends WC_Payments_REST_Control
 	}
 
 	/**
-	 * Dismiss a promotion variation.
+	 * Dismiss a promotion.
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 *
 	 * @return WP_REST_Response|WP_Error
 	 */
 	public function dismiss_promotion( $request ) {
-		$identifier   = $request->get_param( 'identifier' );
-		$variation_id = $request->get_param( 'variation_id' );
+		$id = $request->get_param( 'id' );
 
-		$response = $this->promotions_service->dismiss_promotion( $identifier, $variation_id );
+		$response = $this->promotions_service->dismiss_promotion( $id );
 
 		return rest_ensure_response( $response );
 	}
