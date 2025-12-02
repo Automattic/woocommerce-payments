@@ -19,6 +19,7 @@ import {
 	getDiscountTooltipText,
 } from 'wcpay/utils/account-fees';
 import WCPaySettingsContext from '../wcpay-settings-context';
+import { Promotion } from 'wcpay/data/promotions/types';
 import Chip from 'wcpay/components/chip';
 import PromotionalBadge from 'wcpay/components/promotional-badge';
 import Pill from 'wcpay/components/pill';
@@ -37,7 +38,7 @@ import UnionPay from 'assets/images/cards/unionpay.svg?asset';
 import PAYMENT_METHOD_IDS from 'wcpay/constants/payment-method';
 import usePaymentMethodAvailability from './use-payment-method-availability';
 import InlineNotice from 'wcpay/components/inline-notice';
-import { useEnabledPaymentMethodIds } from 'wcpay/data';
+import { useEnabledPaymentMethodIds, usePromotions } from 'wcpay/data';
 
 interface PaymentMethodProps {
 	id: string;
@@ -55,15 +56,41 @@ const PaymentMethodLabel = ( {
 	id,
 	label,
 	accountFees,
+	badgePromotion,
 }: {
 	id: string;
 	label: string;
 	accountFees?: Record< string, FeeStructure >;
+	badgePromotion?: Promotion;
 } ): React.ReactElement => {
 	const { chip, chipType = 'warning' } = usePaymentMethodAvailability( id );
 
 	const discountFee = accountFees?.[ id ]?.discount?.[ 0 ];
 	const hasDiscount = discountFee?.discount;
+
+	// Show badge for either: active discount fee OR badge-type promotion.
+	const showPromotionalBadge = hasDiscount || badgePromotion;
+
+	// Determine badge content based on source.
+	const getBadgeContent = () => {
+		if ( hasDiscount ) {
+			return {
+				message: getDiscountBadgeText( discountFee ),
+				tooltip: getDiscountTooltipText( discountFee ),
+				tooltipLabel: __( 'Discount details', 'woocommerce-payments' ),
+			};
+		}
+		if ( badgePromotion ) {
+			return {
+				message: badgePromotion.title,
+				tooltip: badgePromotion.description,
+				tooltipLabel: __( 'Promotion details', 'woocommerce-payments' ),
+			};
+		}
+		return null;
+	};
+
+	const badgeContent = getBadgeContent();
 
 	return (
 		<>
@@ -74,14 +101,11 @@ const PaymentMethodLabel = ( {
 				</span>
 			) }
 			{ chip && <Chip message={ chip } type={ chipType } /> }
-			{ hasDiscount && (
+			{ showPromotionalBadge && badgeContent && (
 				<PromotionalBadge
-					message={ getDiscountBadgeText( discountFee ) }
-					tooltip={ getDiscountTooltipText( discountFee ) }
-					tooltipLabel={ __(
-						'Discount details',
-						'woocommerce-payments'
-					) }
+					message={ badgeContent.message }
+					tooltip={ badgeContent.tooltip }
+					tooltipLabel={ badgeContent.tooltipLabel }
 				/>
 			) }
 		</>
@@ -124,6 +148,12 @@ const PaymentMethod = ( {
 		WCPaySettingsContext
 	);
 
+	// Get badge-type promotion for this payment method.
+	const { promotions } = usePromotions();
+	const badgePromotion = promotions.find(
+		( promo ) => promo.payment_method === id && promo.type === 'badge'
+	);
+
 	const {
 		duplicates,
 		dismissedDuplicateNotices,
@@ -164,6 +194,7 @@ const PaymentMethod = ( {
 							label={ label }
 							id={ id }
 							accountFees={ accountFees }
+							badgePromotion={ badgePromotion }
 						/>
 					</div>
 					<div className="payment-method__text">
@@ -173,6 +204,7 @@ const PaymentMethod = ( {
 									label={ label }
 									id={ id }
 									accountFees={ accountFees }
+									badgePromotion={ badgePromotion }
 								/>
 							</div>
 							<div className="payment-method__description">
