@@ -25,6 +25,14 @@ npm run test:qit-phpstan-local  # Against local development build
 
 E2E tests use the [QIT Test Packages](https://qit.woo.com/docs/test-packages/) approach. Tests are located in `tests/qit/test-package/`.
 
+Before running E2E tests, build the plugin package:
+
+```bash
+npm run build:release
+```
+
+This creates `woocommerce-payments.zip` which is used by QIT. Then run the tests:
+
 ```bash
 # Run all E2E tests
 npm run test:qit-e2e
