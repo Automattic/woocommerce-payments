@@ -23,7 +23,6 @@ if ( empty( $site_id ) ) {
 }
 
 // Load the QIT command class.
-// In test packages, bootstrap files are at ./bootstrap/ (relative to test package root).
 $command_file = './bootstrap/class-wp-cli-qit-dev-command.php';
 
 if ( ! file_exists( $command_file ) ) {
