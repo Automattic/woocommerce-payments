@@ -117,28 +117,10 @@ export const PaymentMethodSelect = ( {
 	const [ isLoading, setIsLoading ] = useState< boolean >( false );
 	const [ loadingError, setLoadingError ] = useState< string | null >( null );
 
-	// If there is no value but a user, try to fall back to the default token.
-	useEffect( () => {
-		const tokens = cachedTokens.get( userId );
-		if (
-			0 === userId ||
-			0 !== value ||
-			isLoading ||
-			undefined === tokens
-		) {
-			return;
-		}
-
-		const defaultToken = tokens.find( ( token ) => token.isDefault );
-		if ( undefined !== defaultToken ) {
-			setValue( defaultToken.tokenId );
-		}
-	}, [ userId, value, isLoading ] );
-
-	// Use the listener to update the user ID and cache.
 	useEffect( () => {
 		return addCustomerSelectListener( async ( newUserId ) => {
 			setUserId( newUserId );
+			setValue( 0 );
 
 			// Loaded, loading, or errored out, we do not need to load anything.
 			if ( cachedTokens.has( newUserId ) ) {
@@ -156,6 +138,14 @@ export const PaymentMethodSelect = ( {
 				cachedTokens.set( newUserId, tokens );
 				setIsLoading( false );
 				setLoadingError( null );
+
+				// Now that we have the new tokens, look for a default and use it.
+				const defaultToken = tokens.find(
+					( token ) => token.isDefault
+				);
+				if ( undefined !== defaultToken ) {
+					setValue( defaultToken.tokenId );
+				}
 			} catch ( error ) {
 				setIsLoading( false );
 				setLoadingError(
@@ -165,7 +155,7 @@ export const PaymentMethodSelect = ( {
 				);
 			}
 		} );
-	}, [ ajaxUrl, nonce ] );
+	}, [ value, ajaxUrl, nonce ] );
 
 	if ( userId <= 0 ) {
 		return (
