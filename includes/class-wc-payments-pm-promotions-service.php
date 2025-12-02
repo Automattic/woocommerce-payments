@@ -98,25 +98,9 @@ class WC_Payments_PM_Promotions_Service {
 	 * @return array|null The promotions or null if there is no eligible promotion.
 	 */
 	public function get_visible_promotions(): ?array {
-		// Get all the valid promotions.
-		$promotions = array_filter(
-			$this->get_promotions(),
-			function ( $promotion ) {
-				return $this->validate_promotion( $promotion );
-			}
-		);
+		$promotions = $this->get_promotions();
 
-		// Go through each promotion and filter out invalid variations.
-		foreach ( $promotions as $key => $promotion ) {
-			$valid_variations                 = array_filter(
-				$promotion['variations'],
-				function ( $variation ) {
-					return $this->validate_promotion_variation( $variation );
-				}
-			);
-			$promotions[ $key ]['variations'] = $valid_variations;
-		}
-		// Validate promotions again after filtering variations.
+		// Validate each promotion's structure.
 		$promotions = array_filter(
 			$promotions,
 			function ( $promotion ) {
@@ -124,12 +108,18 @@ class WC_Payments_PM_Promotions_Service {
 			}
 		);
 
+		// Filter by PM validity, enabled status, and first promo_id per PM.
+		$promotions = $this->filter_promotions( $promotions );
+
+		// Normalize the promotions (apply fallbacks, derive fields).
+		$promotions = $this->normalize_promotions( $promotions );
+
 		// Return early if there are no promotions left.
 		if ( empty( $promotions ) ) {
 			return null;
 		}
 
-		return $promotions;
+		return array_values( $promotions );
 	}
 
 	/**
@@ -677,6 +667,19 @@ class WC_Payments_PM_Promotions_Service {
 		}
 
 		return $filtered;
+	}
+
+	/**
+	 * Normalize promotions by applying fallbacks and deriving fields.
+	 *
+	 * @param array $promotions Array of promotions.
+	 *
+	 * @return array Normalized promotions.
+	 */
+	private function normalize_promotions( array $promotions ): array {
+		// TODO: Add normalization logic (apply fallbacks, derive fields).
+		// For now, return promotions as-is.
+		return $promotions;
 	}
 
 	/**
