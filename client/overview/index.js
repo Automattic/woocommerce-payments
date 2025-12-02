@@ -65,7 +65,6 @@ const OverviewPage = () => {
 		accountLoans: { has_active_loan: hasActiveLoan },
 		overviewTasksVisibility,
 		wpcomReconnectUrl,
-		featureFlags: { isAccountDetailsEnabled },
 		accountDetails,
 	} = wcpaySettings;
 
@@ -376,7 +375,7 @@ const OverviewPage = () => {
 				</ErrorBoundary>
 			) }
 			<ErrorBoundary>
-				{ isAccountDetailsEnabled && accountDetails ? (
+				{ accountDetails ? (
 					<AccountDetails
 						accountDetails={ accountDetails }
 						accountFees={ activeAccountFees }
