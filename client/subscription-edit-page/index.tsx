@@ -13,7 +13,6 @@ import { __ } from '@wordpress/i18n';
 import type {
 	PaymentMethodSelectProps,
 	WCPayPMSelectorData,
-	FetchUserTokensResponse,
 	Token,
 } from './types';
 
@@ -28,13 +27,14 @@ const cachedTokens = new Map< number, Token[] >();
  * @param {number} userId The user ID.
  * @param {string} ajaxUrl The AJAX URL.
  * @param {string} nonce The nonce.
- * @return {Promise<FetchUserTokensResponse | undefined>} The tokens for the user.
+ * @return {Promise<Token[]>} The tokens for the user.
+ * @throws {Error} If the tokens cannot be fetched or the response is invalid.
  */
 export const fetchUserTokens = async (
 	userId: number,
 	ajaxUrl: string,
 	nonce: string
-): Promise< FetchUserTokensResponse | undefined > => {
+): Promise< Token[] > => {
 	const formData = new FormData();
 	formData.append( 'action', 'wcpay_get_user_payment_tokens' );
 	formData.append( 'nonce', nonce );
@@ -51,7 +51,18 @@ export const fetchUserTokens = async (
 	}
 
 	const result = await response.json();
-	return result.data as FetchUserTokensResponse;
+	const data = result.data as { tokens: Token[] };
+
+	if ( undefined === data ) {
+		throw new Error(
+			__(
+				'Failed to fetch user tokens. Please reload the page and try again.',
+				'woocommerce-payments'
+			)
+		);
+	}
+
+	return data.tokens;
 };
 
 /**
@@ -77,8 +88,7 @@ export const addCustomerSelectListener = (
 
 	// Wrap in an internal callback to load the select's value and tokens.
 	const internalCallback = async () => {
-		const newUserId = parseInt( customerUserSelect.value, 10 ) || 0;
-		callback( newUserId );
+		callback( parseInt( customerUserSelect.value, 10 ) || 0 );
 	};
 
 	// Add the listener with the right technique, as select2 does not emit <select> events.
@@ -109,11 +119,13 @@ export const PaymentMethodSelect = ( {
 
 	// If there is no value but a user, try to fall back to the default token.
 	useEffect( () => {
-		if ( 0 === userId || 0 !== value || isLoading ) {
-			return;
-		}
 		const tokens = cachedTokens.get( userId );
-		if ( undefined === tokens ) {
+		if (
+			0 === userId ||
+			0 !== value ||
+			isLoading ||
+			undefined === tokens
+		) {
 			return;
 		}
 
@@ -135,22 +147,15 @@ export const PaymentMethodSelect = ( {
 
 			setIsLoading( true );
 			try {
-				const response = await fetchUserTokens(
+				const tokens = await fetchUserTokens(
 					newUserId,
 					ajaxUrl,
 					nonce
 				);
-				if ( undefined === response ) {
-					throw new Error(
-						__(
-							'Failed to fetch user tokens. Please reload the page and try again.',
-							'woocommerce-payments'
-						)
-					);
-				}
 
-				cachedTokens.set( newUserId, response.tokens );
+				cachedTokens.set( newUserId, tokens );
 				setIsLoading( false );
+				setLoadingError( null );
 			} catch ( error ) {
 				setIsLoading( false );
 				setLoadingError(
@@ -175,11 +180,10 @@ export const PaymentMethodSelect = ( {
 		);
 	}
 
-	// There might be a user, but tokens could still be loading.
-	// const entry = getUserEntry( cache, userId );
 	if ( isLoading ) {
 		return <>{ __( 'Loading…', 'woocommerce-payments' ) }</>;
 	}
+
 	if ( loadingError ) {
 		return <strong>{ loadingError }</strong>;
 	}

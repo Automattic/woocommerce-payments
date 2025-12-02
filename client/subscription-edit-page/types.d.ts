@@ -28,10 +28,3 @@ export interface WCPayPMSelectorData {
 	ajaxUrl: string;
 	nonce: string;
 }
-
-/**
- * Response structure from the fetchUserTokens API call
- */
-export interface FetchUserTokensResponse {
-	tokens: Token[];
-}
