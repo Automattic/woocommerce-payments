@@ -1,5 +1,5 @@
 /**
- * External dependencies
+ * Internal dependencies
  */
 import usersData from './users.json' with { type: 'json' };
 
