@@ -167,7 +167,7 @@ describe( 'PromotionalBadge', () => {
 		// Ensure the default is NOT used.
 		expect(
 			screen.queryByRole( 'link', {
-				name: /^see terms and conditions$/i,
+				name: /^see terms$/i,
 			} )
 		).not.toBeInTheDocument();
 	} );
@@ -187,7 +187,7 @@ describe( 'PromotionalBadge', () => {
 		fireEvent.click( tooltipButton );
 
 		const tcLink = screen.getByRole( 'link', {
-			name: /see terms and conditions/i,
+			name: /see terms/i,
 		} );
 		expect( tcLink ).toBeInTheDocument();
 	} );
@@ -208,7 +208,7 @@ describe( 'PromotionalBadge', () => {
 		fireEvent.click( tooltipButton );
 
 		const tcLink = screen.getByRole( 'link', {
-			name: /see terms and conditions/i,
+			name: /see terms/i,
 		} );
 		expect( tcLink ).toBeInTheDocument();
 	} );

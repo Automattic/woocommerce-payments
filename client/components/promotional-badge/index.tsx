@@ -45,8 +45,7 @@ const PromotionalBadge: React.FC< PromotionalBadgeProps > = ( {
 	);
 
 	// Use backend-provided tc_label when available, otherwise fall back to default.
-	const tcLinkLabel =
-		tcLabel || __( 'See terms and conditions', 'woocommerce-payments' );
+	const tcLinkLabel = tcLabel || __( 'See terms', 'woocommerce-payments' );
 
 	// Build tooltip content with optional T&C link.
 	const tooltipContent = tcUrl ? (
