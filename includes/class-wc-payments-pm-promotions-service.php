@@ -112,6 +112,14 @@ class WC_Payments_PM_Promotions_Service {
 			}
 		);
 
+		// Filter out dismissed promotions.
+		$promotions = array_filter(
+			$promotions,
+			function ( $promotion ) {
+				return ! self::is_promotion_dismissed( $promotion['id'] ?? '' );
+			}
+		);
+
 		// Filter by PM validity, enabled status, and first promo_id per PM.
 		$promotions = $this->filter_promotions( $promotions );
 

@@ -732,6 +732,36 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( array_values( $result ), $result );
 	}
 
+	public function test_get_visible_promotions_excludes_dismissed_promotions() {
+		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )
+			->willReturn( [] );
+
+		// Dismiss the klarna spotlight promotion.
+		$this->service->dismiss_promotion( 'klarna-2026-promo__spotlight' );
+
+		$result = $this->service->get_visible_promotions();
+
+		// The dismissed promotion should not be in the results.
+		$this->assertIsArray( $result );
+		foreach ( $result as $promotion ) {
+			$this->assertNotSame( 'klarna-2026-promo__spotlight', $promotion['id'] );
+		}
+	}
+
+	public function test_get_visible_promotions_returns_null_when_all_dismissed() {
+		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )
+			->willReturn( [] );
+
+		// Dismiss all promotions from the mock data.
+		$this->service->dismiss_promotion( 'klarna-2026-promo__spotlight' );
+		$this->service->dismiss_promotion( 'klarna-2026-promo__badge' );
+		$this->service->dismiss_promotion( 'affirm-2026-promo__spotlight' );
+
+		$result = $this->service->get_visible_promotions();
+
+		$this->assertNull( $result );
+	}
+
 	/*
 	 * =========================================================================
 	 * CACHE TESTS
