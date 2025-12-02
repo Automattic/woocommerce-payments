@@ -9,6 +9,8 @@ We use the [QIT toolkit](https://qit.woo.com/docs/) for automated testing includ
 3. Use standard `KEY=VALUE` format (no `export` keyword needed).
 4. Once configured, the first time you run a test command, it will create a local auth file for subsequent runs.
 
+**Note:** E2E tests require the dev version of `qit-cli`. Run `composer require woocommerce/qit-cli:dev-trunk --dev` to install it locally.
+
 ### Running Tests
 
 #### Security and PHPStan tests
