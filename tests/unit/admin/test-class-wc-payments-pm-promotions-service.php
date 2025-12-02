@@ -572,17 +572,33 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'dismissed', $response['status'] );
 	}
 
-	public function test_dismiss_promotion_clears_cache() {
-		// Set up a cache entry.
-		set_transient(
-			WC_Payments_PM_Promotions_Service::PROMOTIONS_CACHE_KEY,
-			[ 'promotions' => [] ],
-			300
-		);
+	public function test_dismiss_promotion_invalidates_cache_via_context_hash() {
+		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )
+			->willReturn( [] );
 
+		// First call - populates cache with context hash.
+		$this->service->get_visible_promotions();
+		$this->service->reset_memo();
+
+		// Capture the original context hash.
+		$cache_before = get_transient( WC_Payments_PM_Promotions_Service::PROMOTIONS_CACHE_KEY );
+		$hash_before  = $cache_before['context_hash'] ?? '';
+		$this->assertNotEmpty( $hash_before, 'Cache should have a context hash' );
+
+		// Dismiss a promotion - this changes the dismissals, which changes the context hash.
 		$this->service->dismiss_promotion( 'test-promo__spotlight' );
 
-		$this->assertFalse( get_transient( WC_Payments_PM_Promotions_Service::PROMOTIONS_CACHE_KEY ) );
+		// The transient cache still exists (we don't explicitly delete it anymore).
+		$this->assertNotFalse( get_transient( WC_Payments_PM_Promotions_Service::PROMOTIONS_CACHE_KEY ) );
+
+		// But when we fetch promotions again, the hash mismatch triggers a refetch.
+		$this->service->get_visible_promotions();
+
+		// The cache should now have a new context hash that includes the dismissal.
+		$cache_after = get_transient( WC_Payments_PM_Promotions_Service::PROMOTIONS_CACHE_KEY );
+		$hash_after  = $cache_after['context_hash'] ?? '';
+
+		$this->assertNotEquals( $hash_before, $hash_after, 'Context hash should change after dismissal' );
 	}
 
 	public function test_dismiss_promotion_allows_multiple_dismissals() {

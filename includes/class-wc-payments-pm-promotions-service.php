@@ -275,13 +275,7 @@ class WC_Payments_PM_Promotions_Service {
 		// Extract promo_id from id for the API endpoint (e.g., 'klarna-2026-promo__spotlight' -> 'klarna-2026-promo').
 		$promo_id = explode( '__', $id )[0];
 
-		// TODO: Replace with actual API call when server endpoints are available.
-		// $wcpay_request = Request\Dismiss_Promotion::create( $promo_id );.
-		// $wcpay_request->set_params( [ 'id' => $id ] );.
-		// $wcpay_request->assign_hook( 'wcpay_dismiss_promotion_request' );.
-		// $response = $wcpay_request->handle_rest_request();.
-
-		// Return mock success response.
+		// Return mock success response (server-side dismissal tracking not implemented yet).
 		$response = [
 			'success'  => true,
 			'id'       => $id,
@@ -289,8 +283,10 @@ class WC_Payments_PM_Promotions_Service {
 			'status'   => 'dismissed',
 		];
 
-		// Clear cache and update local state.
-		$this->clear_cache();
+		// Update local state. Cache invalidation happens automatically via context hash
+		// when dismissals change - the next get_promotions() call will detect the hash
+		// mismatch and refetch from the server.
+		$this->reset_memo();
 		$this->mark_promotion_dismissed( $id );
 
 		return $response;

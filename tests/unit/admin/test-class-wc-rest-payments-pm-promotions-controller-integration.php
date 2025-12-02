@@ -159,14 +159,15 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 		$this->assertCount( 2, $data );
 	}
 
-	public function test_get_promotions_returns_null_when_no_promotions() {
+	public function test_get_promotions_returns_empty_array_when_no_promotions() {
 		$this->mock_promotions_service->method( 'get_visible_promotions' )
 			->willReturn( null );
 
 		$request  = new WP_REST_Request( 'GET', $this->rest_base );
 		$response = $this->controller_with_mock->get_promotions( $request );
 
-		$this->assertNull( $response->get_data() );
+		// Controller converts null to empty array for consistent REST response.
+		$this->assertSame( [], $response->get_data() );
 	}
 
 	public function test_get_promotions_returns_promotion_with_all_fields() {
