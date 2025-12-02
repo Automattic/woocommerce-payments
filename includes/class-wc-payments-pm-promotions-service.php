@@ -380,69 +380,43 @@ class WC_Payments_PM_Promotions_Service {
 	 * @return array Mock promotions data (array of promotions).
 	 */
 	private function get_mock_promotions_data(): array {
-		// Mock available promotions with variations.
+		// Mock available promotions - flat structure, no nested variations.
 		$promotions = [
 			[
-				'promo_id'      => 'klarna-2026-promo',
-				'discount_rate' => '100%',
-				'duration_days' => 90,
-				'config'        => [
-					'spotlight' => [
-						'reshow_delay_days' => 7,   // Days to wait before showing next variation.
-						'max_dismissals'    => 2,   // Total dismissals before permanent hide.
-					],
-				],
-				'variations'    => [
-					[
-						'id'          => 'klarna-2026-promo__spotlight_primary',
-						'type'        => 'spotlight',
-						'badge'       => 'Limited time offer',
-						'badge_type'  => 'success',
-						'heading'     => 'Zero Processing Fees for Card Payments',
-						'description' => 'Save on every card transaction with 0% processing fees for 90 days',
-						'cta_label'   => 'Activate Now',
-						'cta_url'     => '#',
-						'tc_url'      => 'https://woocommerce.com/terms',
-						'footnote'    => '*Terms and conditions apply. Offer valid for new customers only.',
-					],
-					[
-						'id'          => 'klarna-2026-promo__spotlight_secondary',
-						'type'        => 'spotlight',
-						'badge'       => 'Last chance',
-						'badge_type'  => 'warning',
-						'heading'     => 'Final Reminder: Zero Processing Fees',
-						'description' => 'Don\'t miss out! Get 0% processing fees for 90 days on all card payments',
-						'cta_label'   => 'Activate Now',
-						'cta_url'     => '#',
-						'tc_url'      => 'https://woocommerce.com/terms',
-						'footnote'    => '*Terms and conditions apply. Limited time offer.',
-					],
-				],
+				'id'             => 'klarna-2026-promo__spotlight',
+				'promo_id'       => 'klarna-2026-promo',
+				'payment_method' => 'klarna',
+				'type'           => 'spotlight',
+				'title'          => 'Zero Processing Fees for 90 Days',
+				'description'    => 'Save on every Klarna transaction with 0% processing fees for 90 days from activation.',
+				'cta_label'      => 'Enable Klarna',
+				'tc_url'         => 'https://woocommerce.com/terms',
+				'tc_label'       => 'See terms',
+				'footnote'       => '*Offer valid for new activations only.',
+				'image'          => '',
 			],
 			[
-				'promo_id'      => 'promo-affirm-cashback-2024',
-				'discount_rate' => '2%',
-				'duration_days' => 60,
-				'variations'    => [
-					[
-						'id'          => 'promo-affirm-cashback-2024__banner_primary',
-						'type'        => 'banner',
-						'badge'       => 'New',
-						'badge_type'  => 'info',
-						'heading'     => '2% Cashback on Affirm Transactions',
-						'description' => 'Earn cashback on all Affirm payments for 60 days',
-						'cta_label'   => 'Learn More',
-						'cta_url'     => '#',
-						'tc_url'      => 'https://woocommerce.com/terms',
-					],
-				],
+				'id'             => 'klarna-2026-promo__badge',
+				'promo_id'       => 'klarna-2026-promo',
+				'payment_method' => 'klarna',
+				'type'           => 'badge',
+				'title'          => 'Zero fees for 90 days',
+				'description'    => 'Enable Klarna and pay no processing fees.',
+				'tc_url'         => 'https://woocommerce.com/terms',
+			],
+			[
+				'id'             => 'affirm-2026-promo__spotlight',
+				'promo_id'       => 'affirm-2026-promo',
+				'payment_method' => 'affirm',
+				'type'           => 'spotlight',
+				'title'          => '2% Cashback on Affirm Transactions',
+				'description'    => 'Earn cashback on all Affirm payments for 60 days.',
+				'tc_url'         => 'https://woocommerce.com/terms',
 			],
 		];
 
 		return [
-			'response' => [
-				'code' => 200,
-			],
+			'response' => [ 'code' => 200 ],
 			'body'     => wp_json_encode( $promotions ),
 		];
 	}
