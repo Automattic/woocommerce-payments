@@ -168,7 +168,42 @@ describe( 'PaymentMethodSelect Component', () => {
 			expect( screen.getByText( 'Loading…' ) ).toBeInTheDocument();
 		} );
 
-		test( 'renders placeholder when value is zero', () => {
+		test( 'renders placeholder when value is zero and no default token', () => {
+			// Use tokens without a default to test placeholder behavior
+			const tokensWithoutDefault: Token[] = [
+				{ tokenId: 1, displayName: 'Visa •••• 1234', isDefault: false },
+				{
+					tokenId: 2,
+					displayName: 'Mastercard •••• 5678',
+					isDefault: false,
+				},
+			];
+			const cache: CachedUserData = [
+				{
+					userId: 1,
+					tokens: tokensWithoutDefault,
+					loading: false,
+					loadingError: null,
+				},
+			];
+
+			render(
+				<PaymentMethodSelect
+					inputName="payment_method"
+					initialValue={ 0 }
+					initialUserId={ 1 }
+					initialCache={ cache }
+					nonce="test-nonce"
+					ajaxUrl="http://test.com/ajax"
+				/>
+			);
+
+			expect(
+				screen.getByText( 'Please select a payment method' )
+			).toBeInTheDocument();
+		} );
+
+		test( 'auto-selects default token when value is zero', () => {
 			const cache: CachedUserData = [
 				{
 					userId: 1,
@@ -189,9 +224,13 @@ describe( 'PaymentMethodSelect Component', () => {
 				/>
 			);
 
+			// Should auto-select the default token (tokenId: 1)
+			const select = screen.getByRole( 'combobox' ) as HTMLSelectElement;
+			expect( select.value ).toBe( '1' );
+			// Placeholder should not be shown since default was auto-selected
 			expect(
-				screen.getByText( 'Please select a payment method' )
-			).toBeInTheDocument();
+				screen.queryByText( 'Please select a payment method' )
+			).not.toBeInTheDocument();
 		} );
 
 		test( 'renders tokens without placeholder when value does not match', () => {
@@ -255,10 +294,19 @@ describe( 'PaymentMethodSelect Component', () => {
 
 	describe( 'Select Behavior', () => {
 		test( 'placeholder option is disabled', () => {
+			// Use tokens without a default to ensure placeholder is shown
+			const tokensWithoutDefault: Token[] = [
+				{ tokenId: 1, displayName: 'Visa •••• 1234', isDefault: false },
+				{
+					tokenId: 2,
+					displayName: 'Mastercard •••• 5678',
+					isDefault: false,
+				},
+			];
 			const cache: CachedUserData = [
 				{
 					userId: 1,
-					tokens: mockTokens,
+					tokens: tokensWithoutDefault,
 					loading: false,
 					loadingError: null,
 				},

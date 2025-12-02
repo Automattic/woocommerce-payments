@@ -71,7 +71,11 @@ export const fetchUserTokens = async (
  * This could be a shorter method, but because the customer select
  * element uses select2, it does not emit the typical `change` event.
  *
- * @param {(userId: number) => void} callback The callback to call when the customer is changed.
+ * @param {CachedUserData} cache The cache of user data.
+ * @param {string} ajaxUrl The AJAX URL.
+ * @param {string} nonce The nonce.
+ * @param {(userId: number) => void} setUser The function to set the user ID.
+ * @param {(cache: CachedUserData) => void} setCache The function to set the cache.
  * @return {() => void} The cleanup function.
  */
 export const addCustomerSelectListener = (
@@ -162,7 +166,7 @@ export const PaymentMethodSelect = ( {
 		if ( 0 !== userId && value === 0 ) {
 			const defaultTokenId = getDefaultTokenId( cache, userId );
 			if ( value !== defaultTokenId ) {
-				setValue( value );
+				setValue( defaultTokenId );
 			}
 		}
 	}, [ userId, value, cache ] );
@@ -176,7 +180,7 @@ export const PaymentMethodSelect = ( {
 			setUserId,
 			setCache
 		);
-	}, [ userId, cache, ajaxUrl, nonce ] );
+	}, [ cache, ajaxUrl, nonce ] );
 
 	if ( userId <= 0 ) {
 		return (
@@ -195,7 +199,8 @@ export const PaymentMethodSelect = ( {
 	const entry = getUserEntry( cache, userId );
 	if ( undefined === entry || entry.loading ) {
 		return <>{ __( 'Loading…', 'woocommerce-payments' ) }</>;
-	} else if ( entry.loadingError ) {
+	}
+	if ( entry.loadingError ) {
 		return <strong>{ entry.loadingError }</strong>;
 	}
 
@@ -248,8 +253,10 @@ const setupPaymentSelector = ( element: HTMLSpanElement ): void => {
 	const input = element.querySelector( 'select,input' );
 	if (
 		! input ||
-		! ( input instanceof HTMLSelectElement ) ||
-		! ( input instanceof HTMLInputElement )
+		! (
+			input instanceof HTMLSelectElement ||
+			input instanceof HTMLInputElement
+		)
 	) {
 		return;
 	}
