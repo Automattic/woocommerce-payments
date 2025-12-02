@@ -110,6 +110,23 @@ class WC_REST_Payments_Promotions_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertIsArray( $response->get_data() );
 	}
 
+	public function test_get_promotions_returns_empty_array_when_no_promotions() {
+		// Create a mock service that returns null (no promotions).
+		$mock_service = $this->createMock( WC_Payments_PM_Promotions_Service::class );
+		$mock_service->method( 'get_visible_promotions' )
+			->willReturn( null );
+
+		// Create controller with mock service.
+		$controller = new WC_REST_Payments_PM_Promotions_Controller( $this->mock_api_client, $mock_service );
+
+		$request  = new WP_REST_Request( 'GET' );
+		$response = $controller->get_promotions( $request );
+
+		$this->assertSame( 200, $response->status );
+		$this->assertIsArray( $response->get_data() );
+		$this->assertEmpty( $response->get_data() );
+	}
+
 	public function test_get_promotion_dismissals() {
 		// New flat structure: [id => timestamp].
 		$dismissals = [

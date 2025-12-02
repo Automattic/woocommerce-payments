@@ -410,37 +410,132 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 'Custom Terms', $result[0]['tc_label'] );
 	}
 
-	public function test_normalize_promotions_sanitizes_text_fields() {
+	public function test_normalize_promotions_sanitizes_title_strips_all_html() {
 		$promotions = [
 			$this->create_valid_promotion(
 				[
-					'title'       => '<script>alert("xss")</script>Test Title',
-					'description' => '<b>Bold</b> description',
+					'title' => '<script>alert("xss")</script>Test Title',
 				]
 			),
 		];
 
 		$result = $this->invoke_private_method( 'normalize_promotions', [ $promotions ] );
 
-		// sanitize_text_field strips HTML.
+		// Title should strip all HTML.
 		$this->assertStringNotContainsString( '<script>', $result[0]['title'] );
-		$this->assertStringNotContainsString( '<b>', $result[0]['description'] );
+		$this->assertStringContainsString( 'Test Title', $result[0]['title'] );
 	}
 
-	public function test_normalize_promotions_preserves_optional_fields() {
+	public function test_normalize_promotions_sanitizes_key_fields_with_sanitize_key() {
 		$promotions = [
 			$this->create_valid_promotion(
 				[
-					'footnote' => 'Test footnote',
-					'image'    => 'https://example.com/image.png',
+					'id'             => 'Test-Promo__Spotlight',
+					'promo_id'       => 'Test-Promo',
+					'payment_method' => 'Klarna',
+					'type'           => 'Spotlight',
 				]
 			),
 		];
 
 		$result = $this->invoke_private_method( 'normalize_promotions', [ $promotions ] );
 
-		$this->assertSame( 'Test footnote', $result[0]['footnote'] );
+		// sanitize_key converts to lowercase and removes special chars.
+		$this->assertSame( 'test-promo__spotlight', $result[0]['id'] );
+		$this->assertSame( 'test-promo', $result[0]['promo_id'] );
+		$this->assertSame( 'klarna', $result[0]['payment_method'] );
+		$this->assertSame( 'spotlight', $result[0]['type'] );
+	}
+
+	public function test_normalize_promotions_spotlight_description_allows_light_html() {
+		$promotions = [
+			$this->create_valid_promotion(
+				[
+					'type'        => 'spotlight',
+					'description' => '<p>Paragraph with <strong>bold</strong>, <em>italic</em>, and <a href="https://example.com">link</a>.</p><br>',
+				]
+			),
+		];
+
+		$result = $this->invoke_private_method( 'normalize_promotions', [ $promotions ] );
+
+		// Spotlight allows p, strong, b, em, i, a, br tags.
+		$this->assertStringContainsString( '<p>', $result[0]['description'] );
+		$this->assertStringContainsString( '<strong>', $result[0]['description'] );
+		$this->assertStringContainsString( '<em>', $result[0]['description'] );
+		$this->assertStringContainsString( '<a href="https://example.com">', $result[0]['description'] );
+		$this->assertStringContainsString( '<br', $result[0]['description'] );
+	}
+
+	public function test_normalize_promotions_spotlight_description_strips_disallowed_html() {
+		$promotions = [
+			$this->create_valid_promotion(
+				[
+					'type'        => 'spotlight',
+					'description' => '<script>alert("xss")</script><div>Content</div><span>Text</span>',
+				]
+			),
+		];
+
+		$result = $this->invoke_private_method( 'normalize_promotions', [ $promotions ] );
+
+		// Script, div, span should be stripped.
+		$this->assertStringNotContainsString( '<script>', $result[0]['description'] );
+		$this->assertStringNotContainsString( '<div>', $result[0]['description'] );
+		$this->assertStringNotContainsString( '<span>', $result[0]['description'] );
+		$this->assertStringContainsString( 'Content', $result[0]['description'] );
+		$this->assertStringContainsString( 'Text', $result[0]['description'] );
+	}
+
+	public function test_normalize_promotions_badge_description_only_allows_links() {
+		$promotions = [
+			$this->create_valid_promotion(
+				[
+					'type'        => 'badge',
+					'description' => '<p>Paragraph</p> <strong>bold</strong> <a href="https://example.com">link</a>',
+				]
+			),
+		];
+
+		$result = $this->invoke_private_method( 'normalize_promotions', [ $promotions ] );
+
+		// Badge only allows a tags.
+		$this->assertStringNotContainsString( '<p>', $result[0]['description'] );
+		$this->assertStringNotContainsString( '<strong>', $result[0]['description'] );
+		$this->assertStringContainsString( '<a href="https://example.com">', $result[0]['description'] );
+		$this->assertStringContainsString( 'Paragraph', $result[0]['description'] );
+		$this->assertStringContainsString( 'bold', $result[0]['description'] );
+	}
+
+	public function test_normalize_promotions_sanitizes_url_fields() {
+		$promotions = [
+			$this->create_valid_promotion(
+				[
+					'tc_url' => 'https://example.com/terms?param=value',
+					'image'  => 'https://example.com/image.png',
+				]
+			),
+		];
+
+		$result = $this->invoke_private_method( 'normalize_promotions', [ $promotions ] );
+
+		$this->assertSame( 'https://example.com/terms?param=value', $result[0]['tc_url'] );
 		$this->assertSame( 'https://example.com/image.png', $result[0]['image'] );
+	}
+
+	public function test_normalize_promotions_footnote_allows_light_html() {
+		$promotions = [
+			$this->create_valid_promotion(
+				[
+					'footnote' => 'Terms apply. <a href="https://example.com">See details</a>.',
+				]
+			),
+		];
+
+		$result = $this->invoke_private_method( 'normalize_promotions', [ $promotions ] );
+
+		// Footnote should allow light HTML like spotlight description.
+		$this->assertStringContainsString( '<a href="https://example.com">', $result[0]['footnote'] );
 	}
 
 	/*

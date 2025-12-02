@@ -62,28 +62,28 @@ describe( 'Spotlight Component', () => {
 		expect( screen.getByText( 'Learn more' ) ).toBeInTheDocument();
 	} );
 
-	it( 'renders disclaimer when provided', () => {
-		const propsWithDisclaimer = {
+	it( 'renders footnote when provided', () => {
+		const propsWithFootnote = {
 			...defaultProps,
-			disclaimer: '*Terms and conditions apply',
+			footnote: '*Terms and conditions apply',
 		};
-		render( <Spotlight { ...propsWithDisclaimer } /> );
+		render( <Spotlight { ...propsWithFootnote } /> );
 
 		expect(
 			screen.getByText( '*Terms and conditions apply' )
 		).toBeInTheDocument();
 	} );
 
-	it( 'renders disclaimer with React component content', () => {
-		const propsWithReactDisclaimer = {
+	it( 'renders footnote with React component content', () => {
+		const propsWithReactFootnote = {
 			...defaultProps,
-			disclaimer: (
+			footnote: (
 				<>
 					*Terms and <em>conditions</em> apply
 				</>
 			),
 		};
-		render( <Spotlight { ...propsWithReactDisclaimer } /> );
+		render( <Spotlight { ...propsWithReactFootnote } /> );
 
 		expect( screen.getByText( /Terms and/i ) ).toBeInTheDocument();
 		expect( screen.getByText( 'conditions' ) ).toBeInTheDocument();

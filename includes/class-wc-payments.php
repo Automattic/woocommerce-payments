@@ -737,6 +737,7 @@ class WC_Payments {
 				self::$onboarding_service,
 				self::$order_service,
 				self::$incentives_service,
+				self::$pm_promotions_service,
 				self::$fraud_service,
 				self::$database_cache
 			);

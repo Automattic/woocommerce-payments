@@ -28,7 +28,7 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 	badge,
 	heading,
 	description,
-	disclaimer,
+	footnote,
 	image,
 	primaryButtonLabel,
 	onPrimaryClick,
@@ -235,9 +235,9 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 						<div className="wcpay-spotlight__description">
 							{ description }
 						</div>
-						{ disclaimer && (
-							<div className="wcpay-spotlight__disclaimer">
-								{ disclaimer }
+						{ footnote && (
+							<div className="wcpay-spotlight__footnote">
+								{ footnote }
 							</div>
 						) }
 					</CardBody>

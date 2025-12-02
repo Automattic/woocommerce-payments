@@ -16,7 +16,7 @@ import { recordEvent } from 'tracks';
 interface MockSpotlightProps {
 	heading?: React.ReactNode;
 	description?: React.ReactNode;
-	disclaimer?: React.ReactNode;
+	footnote?: React.ReactNode;
 	image?: string;
 	primaryButtonLabel?: string;
 	secondaryButtonLabel?: string;
@@ -42,10 +42,8 @@ jest.mock( 'components/spotlight', () => ( {
 		<div data-testid="spotlight-mock">
 			<div data-testid="spotlight-heading">{ props.heading }</div>
 			<div data-testid="spotlight-description">{ props.description }</div>
-			{ props.disclaimer && (
-				<div data-testid="spotlight-disclaimer">
-					{ props.disclaimer }
-				</div>
+			{ props.footnote && (
+				<div data-testid="spotlight-footnote">{ props.footnote }</div>
 			) }
 			{ props.image && (
 				<div data-testid="spotlight-image">{ props.image }</div>
@@ -61,18 +59,6 @@ jest.mock( 'components/spotlight', () => ( {
 		</div>
 	),
 } ) );
-
-// Mock window.wcpaySettings
-const mockWcpaySettings = {
-	accountStatus: {
-		status: 'complete',
-	},
-};
-
-( ( window as unknown ) as Record<
-	string,
-	unknown
-> ).wcpaySettings = mockWcpaySettings;
 
 describe( 'SpotlightPromotion', () => {
 	const mockActivatePromotion = jest.fn();
@@ -103,14 +89,9 @@ describe( 'SpotlightPromotion', () => {
 			activatePromotion: mockActivatePromotion,
 			dismissPromotion: mockDismissPromotion,
 		} );
-
-		( ( window as unknown ) as Record<
-			string,
-			unknown
-		> ).wcpaySettings = mockWcpaySettings;
 	} );
 
-	it( 'renders spotlight when account is onboarded and promotion available', () => {
+	it( 'renders spotlight when promotion available', () => {
 		( usePromotions as jest.Mock ).mockReturnValue( {
 			promotions: mockPromotionData,
 			isLoading: false,
@@ -125,23 +106,6 @@ describe( 'SpotlightPromotion', () => {
 		expect(
 			screen.getByTestId( 'spotlight-description' )
 		).toHaveTextContent( 'Offer your customers flexible payments' );
-	} );
-
-	it( 'does not render when account is not onboarded', () => {
-		( ( window as unknown ) as Record< string, unknown > ).wcpaySettings = {
-			accountStatus: {
-				status: 'pending',
-			},
-		};
-
-		( usePromotions as jest.Mock ).mockReturnValue( {
-			promotions: mockPromotionData,
-			isLoading: false,
-		} );
-
-		const { container } = render( <SpotlightPromotion /> );
-
-		expect( container.firstChild ).toBeNull();
 	} );
 
 	it( 'does not render when promotions are loading', () => {
@@ -233,8 +197,9 @@ describe( 'SpotlightPromotion', () => {
 
 		render( <SpotlightPromotion /> );
 
-		const learnMoreButton = screen.getByText( 'Learn more' );
-		learnMoreButton.click();
+		// Secondary button uses tc_label from promotion data.
+		const termsButton = screen.getByText( 'See terms' );
+		termsButton.click();
 
 		expect( windowOpenSpy ).toHaveBeenCalledWith(
 			'https://example.com/terms',
@@ -245,7 +210,7 @@ describe( 'SpotlightPromotion', () => {
 		windowOpenSpy.mockRestore();
 	} );
 
-	it( 'renders disclaimer with terms link when footnote and tc_url provided', () => {
+	it( 'renders footnote text', () => {
 		( usePromotions as jest.Mock ).mockReturnValue( {
 			promotions: mockPromotionData,
 			isLoading: false,
@@ -254,10 +219,9 @@ describe( 'SpotlightPromotion', () => {
 		render( <SpotlightPromotion /> );
 
 		expect( screen.getByText( /Terms apply/i ) ).toBeInTheDocument();
-		expect( screen.getByText( 'See terms' ) ).toBeInTheDocument();
 	} );
 
-	it( 'does not render disclaimer when no footnote provided', () => {
+	it( 'does not render footnote when not provided', () => {
 		const dataWithoutFootnote = [
 			{
 				id: 'klarna-promo__spotlight',
@@ -283,25 +247,8 @@ describe( 'SpotlightPromotion', () => {
 
 		expect( screen.getByTestId( 'spotlight-mock' ) ).toBeInTheDocument();
 		expect(
-			screen.queryByTestId( 'spotlight-disclaimer' )
+			screen.queryByTestId( 'spotlight-footnote' )
 		).not.toBeInTheDocument();
-	} );
-
-	it( 'renders for enabled account status', () => {
-		( ( window as unknown ) as Record< string, unknown > ).wcpaySettings = {
-			accountStatus: {
-				status: 'enabled',
-			},
-		};
-
-		( usePromotions as jest.Mock ).mockReturnValue( {
-			promotions: mockPromotionData,
-			isLoading: false,
-		} );
-
-		render( <SpotlightPromotion /> );
-
-		expect( screen.getByTestId( 'spotlight-mock' ) ).toBeInTheDocument();
 	} );
 
 	describe( 'tracks events', () => {
@@ -345,17 +292,21 @@ describe( 'SpotlightPromotion', () => {
 			);
 		} );
 
-		it( 'records secondary_click event when secondary button is clicked', () => {
+		it( 'records link_click event when secondary button is clicked', () => {
 			jest.spyOn( window, 'open' ).mockImplementation( () => null );
 
 			render( <SpotlightPromotion /> );
 
-			const learnMoreButton = screen.getByText( 'Learn more' );
-			learnMoreButton.click();
+			// Secondary button now uses tc_label.
+			const termsButton = screen.getByText( 'See terms' );
+			termsButton.click();
 
 			expect( recordEvent ).toHaveBeenCalledWith(
-				'wcpay_payment_method_promotion_secondary_click',
-				expectedBaseProperties
+				'wcpay_payment_method_promotion_link_click',
+				{
+					...expectedBaseProperties,
+					link_type: 'terms',
+				}
 			);
 		} );
 
@@ -368,21 +319,6 @@ describe( 'SpotlightPromotion', () => {
 			expect( recordEvent ).toHaveBeenCalledWith(
 				'wcpay_payment_method_promotion_dismiss',
 				expectedBaseProperties
-			);
-		} );
-
-		it( 'records link_click event when terms link is clicked', () => {
-			render( <SpotlightPromotion /> );
-
-			const termsLink = screen.getByText( 'See terms' );
-			termsLink.click();
-
-			expect( recordEvent ).toHaveBeenCalledWith(
-				'wcpay_payment_method_promotion_link_click',
-				{
-					...expectedBaseProperties,
-					link_type: 'terms',
-				}
 			);
 		} );
 	} );

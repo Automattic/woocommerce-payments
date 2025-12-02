@@ -25,9 +25,9 @@ export interface SpotlightProps {
 	description: ReactNode;
 
 	/**
-	 * Optional disclaimer content shown at the bottom (can be a string or React component).
+	 * Optional footnote content shown at the bottom (can be a string or React component).
 	 */
-	disclaimer?: ReactNode;
+	footnote?: ReactNode;
 
 	/**
 	 * Image element or URL to display in the spotlight.

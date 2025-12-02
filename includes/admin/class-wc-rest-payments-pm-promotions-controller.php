@@ -105,7 +105,7 @@ class WC_REST_Payments_PM_Promotions_Controller extends WC_Payments_REST_Control
 	 */
 	public function get_promotions() {
 		$promotions = $this->promotions_service->get_visible_promotions();
-		return rest_ensure_response( $promotions );
+		return rest_ensure_response( $promotions ?? [] );
 	}
 
 	/**

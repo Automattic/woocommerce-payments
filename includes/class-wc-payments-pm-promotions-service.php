@@ -314,7 +314,7 @@ class WC_Payments_PM_Promotions_Service {
 				'description'    => 'Save on every Klarna transaction with 0% processing fees for 90 days from activation.',
 				'cta_label'      => 'Enable Klarna',
 				'tc_url'         => 'https://woocommerce.com/terms',
-				'tc_label'       => 'See terms',
+				'tc_label'       => 'Learn moree',
 				'footnote'       => '*Offer valid for new activations only.',
 				'image'          => '',
 			],
@@ -604,26 +604,106 @@ class WC_Payments_PM_Promotions_Service {
 				$promotion['tc_label'] = __( 'See terms', 'woocommerce-payments' );
 			}
 
-			// Sanitize string fields.
-			$string_fields = [ 'id', 'promo_id', 'payment_method', 'payment_method_title', 'type', 'title', 'description', 'cta_label', 'tc_url', 'tc_label' ];
-			foreach ( $string_fields as $field ) {
-				if ( isset( $promotion[ $field ] ) ) {
-					$promotion[ $field ] = sanitize_text_field( $promotion[ $field ] );
-				}
-			}
-
-			// Sanitize optional fields.
-			if ( isset( $promotion['footnote'] ) ) {
-				$promotion['footnote'] = sanitize_text_field( $promotion['footnote'] );
-			}
-			if ( isset( $promotion['image'] ) ) {
-				$promotion['image'] = esc_url_raw( $promotion['image'] );
-			}
+			// Apply type-specific sanitization.
+			$promotion = $this->sanitize_promotion( $promotion );
 
 			$normalized[] = $promotion;
 		}
 
 		return $normalized;
+	}
+
+	/**
+	 * Sanitize a promotion's fields based on its type.
+	 *
+	 * @param array $promotion The promotion data.
+	 *
+	 * @return array Sanitized promotion.
+	 */
+	private function sanitize_promotion( array $promotion ): array {
+		$type = $promotion['type'] ?? '';
+
+		// Sanitize identifier fields strictly with sanitize_key.
+		$key_fields = [ 'id', 'promo_id', 'payment_method', 'type' ];
+		foreach ( $key_fields as $field ) {
+			if ( isset( $promotion[ $field ] ) ) {
+				$promotion[ $field ] = sanitize_key( $promotion[ $field ] );
+			}
+		}
+
+		// Sanitize text fields (no HTML allowed).
+		$text_fields = [ 'payment_method_title', 'title', 'cta_label', 'tc_label' ];
+		foreach ( $text_fields as $field ) {
+			if ( isset( $promotion[ $field ] ) ) {
+				$promotion[ $field ] = sanitize_text_field( $promotion[ $field ] );
+			}
+		}
+
+		// Sanitize URL fields.
+		if ( isset( $promotion['tc_url'] ) ) {
+			$promotion['tc_url'] = esc_url_raw( $promotion['tc_url'] );
+		}
+		if ( isset( $promotion['image'] ) ) {
+			$promotion['image'] = esc_url_raw( $promotion['image'] );
+		}
+
+		// Sanitize description based on type.
+		if ( isset( $promotion['description'] ) ) {
+			$promotion['description'] = $this->sanitize_description( $promotion['description'], $type );
+		}
+
+		// Sanitize footnote (same as spotlight description - allows light HTML).
+		if ( isset( $promotion['footnote'] ) ) {
+			$promotion['footnote'] = $this->sanitize_description( $promotion['footnote'], 'spotlight' );
+		}
+
+		return $promotion;
+	}
+
+	/**
+	 * Sanitize description field based on promotion type.
+	 *
+	 * Spotlight type allows light HTML: paragraphs, bold, italic, links, breaks.
+	 * Badge type only allows links.
+	 *
+	 * @param string $description The description to sanitize.
+	 * @param string $type        The promotion type.
+	 *
+	 * @return string Sanitized description.
+	 */
+	private function sanitize_description( string $description, string $type ): string {
+		if ( 'spotlight' === $type ) {
+			// Allow light HTML for spotlight: paragraphs, bold, italic, links, breaks.
+			$allowed_html = [
+				'p'      => [],
+				'strong' => [],
+				'b'      => [],
+				'em'     => [],
+				'i'      => [],
+				'a'      => [
+					'href'   => [],
+					'target' => [],
+					'rel'    => [],
+				],
+				'br'     => [],
+			];
+			return wp_kses( $description, $allowed_html );
+		}
+
+		if ( 'badge' === $type ) {
+			// Badge type: only allow links.
+			$allowed_html = [
+				'a' => [
+					'href'   => [],
+					'target' => [],
+					'rel'    => [],
+				],
+			];
+			return wp_kses( $description, $allowed_html );
+		}
+
+		// Default: strip all HTML.
+		return sanitize_text_field( $description );
 	}
 
 	/**

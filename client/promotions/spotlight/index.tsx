@@ -4,7 +4,6 @@
  * External dependencies
  */
 import React from 'react';
-import { __ } from '@wordpress/i18n';
 
 /**
  * Internal dependencies
@@ -44,20 +43,14 @@ const getPageSource = (): string => {
  * This component:
  * - Fetches promotions from the API
  * - Filters for 'spotlight' type promotions
- * - Only displays if account is onboarded (status is 'complete' or 'enabled')
  * - Handles activation and dismissal of promotions
  */
 const SpotlightPromotion: React.FC = () => {
 	const { promotions, isLoading } = usePromotions();
 	const { activatePromotion, dismissPromotion } = usePromotionActions();
 
-	// Check if account is onboarded - only show if status is 'complete' or 'enabled'
-	const accountStatus = window.wcpaySettings?.accountStatus?.status;
-	const isAccountOnboarded =
-		accountStatus === 'complete' || accountStatus === 'enabled';
-
-	// Don't render if account is not onboarded or data is still loading
-	if ( ! isAccountOnboarded || isLoading ) {
+	// Don't render if data is still loading
+	if ( isLoading ) {
 		return null;
 	}
 
@@ -104,10 +97,10 @@ const SpotlightPromotion: React.FC = () => {
 	};
 
 	const handleSecondaryClick = () => {
-		recordEvent(
-			'wcpay_payment_method_promotion_secondary_click',
-			getEventProperties()
-		);
+		recordEvent( 'wcpay_payment_method_promotion_link_click', {
+			...getEventProperties(),
+			link_type: 'terms',
+		} );
 		if ( spotlightPromotion.tc_url ) {
 			try {
 				const parsedUrl = new URL( spotlightPromotion.tc_url );
@@ -135,40 +128,15 @@ const SpotlightPromotion: React.FC = () => {
 		dismissPromotion( spotlightPromotion.id );
 	};
 
-	const handleTermsClick = () => {
-		recordEvent( 'wcpay_payment_method_promotion_link_click', {
-			...getEventProperties(),
-			link_type: 'terms',
-		} );
-	};
-
-	// Build disclaimer content if footnote exists
-	let disclaimer: React.ReactNode | undefined;
-	if ( spotlightPromotion.footnote ) {
-		disclaimer = (
-			<>
-				{ spotlightPromotion.footnote }{ ' ' }
-				<a
-					href={ spotlightPromotion.tc_url }
-					target="_blank"
-					rel="noopener noreferrer"
-					onClick={ handleTermsClick }
-				>
-					{ spotlightPromotion.tc_label }
-				</a>
-			</>
-		);
-	}
-
 	return (
 		<Spotlight
 			heading={ spotlightPromotion.title }
 			description={ spotlightPromotion.description }
-			disclaimer={ disclaimer }
+			footnote={ spotlightPromotion.footnote }
 			image={ spotlightPromotion.image }
 			primaryButtonLabel={ spotlightPromotion.cta_label }
 			onPrimaryClick={ handlePrimaryClick }
-			secondaryButtonLabel={ __( 'Learn more', 'woocommerce-payments' ) }
+			secondaryButtonLabel={ spotlightPromotion.tc_label }
 			onSecondaryClick={ handleSecondaryClick }
 			onDismiss={ handleDismiss }
 			onView={ handleView }

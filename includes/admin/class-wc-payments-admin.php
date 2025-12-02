@@ -88,6 +88,13 @@ class WC_Payments_Admin {
 	private $incentives_service;
 
 	/**
+	 * WC_Payments_PM_Promotions_Service instance to get information for payment method promotions.
+	 *
+	 * @var WC_Payments_PM_Promotions_Service
+	 */
+	private $pm_promotions_service;
+
+	/**
 	 * WC_Payments_Fraud_Service instance to get information about fraud services.
 	 *
 	 * @var WC_Payments_Fraud_Service
@@ -122,14 +129,15 @@ class WC_Payments_Admin {
 	/**
 	 * Hook in admin menu items.
 	 *
-	 * @param WC_Payments_API_Client         $payments_api_client WooCommerce Payments API client.
-	 * @param WC_Payment_Gateway_WCPay       $gateway             WCPay Gateway instance to get information regarding WooCommerce Payments setup.
-	 * @param WC_Payments_Account            $account             Account instance.
-	 * @param WC_Payments_Onboarding_Service $onboarding_service  Onboarding service instance.
-	 * @param WC_Payments_Order_Service      $order_service       Order service instance.
-	 * @param WC_Payments_Incentives_Service $incentives_service  Incentives service instance.
-	 * @param WC_Payments_Fraud_Service      $fraud_service       Fraud service instance.
-	 * @param Database_Cache                 $database_cache      Database Cache instance.
+	 * @param WC_Payments_API_Client            $payments_api_client   WooCommerce Payments API client.
+	 * @param WC_Payment_Gateway_WCPay          $gateway               WCPay Gateway instance to get information regarding WooCommerce Payments setup.
+	 * @param WC_Payments_Account               $account               Account instance.
+	 * @param WC_Payments_Onboarding_Service    $onboarding_service    Onboarding service instance.
+	 * @param WC_Payments_Order_Service         $order_service         Order service instance.
+	 * @param WC_Payments_Incentives_Service    $incentives_service    Incentives service instance.
+	 * @param WC_Payments_PM_Promotions_Service $pm_promotions_service PM Promotions service instance.
+	 * @param WC_Payments_Fraud_Service         $fraud_service         Fraud service instance.
+	 * @param Database_Cache                    $database_cache        Database Cache instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $payments_api_client,
@@ -138,17 +146,19 @@ class WC_Payments_Admin {
 		WC_Payments_Onboarding_Service $onboarding_service,
 		WC_Payments_Order_Service $order_service,
 		WC_Payments_Incentives_Service $incentives_service,
+		WC_Payments_PM_Promotions_Service $pm_promotions_service,
 		WC_Payments_Fraud_Service $fraud_service,
 		Database_Cache $database_cache
 	) {
-		$this->payments_api_client = $payments_api_client;
-		$this->wcpay_gateway       = $gateway;
-		$this->account             = $account;
-		$this->onboarding_service  = $onboarding_service;
-		$this->order_service       = $order_service;
-		$this->incentives_service  = $incentives_service;
-		$this->fraud_service       = $fraud_service;
-		$this->database_cache      = $database_cache;
+		$this->payments_api_client   = $payments_api_client;
+		$this->wcpay_gateway         = $gateway;
+		$this->account               = $account;
+		$this->onboarding_service    = $onboarding_service;
+		$this->order_service         = $order_service;
+		$this->incentives_service    = $incentives_service;
+		$this->pm_promotions_service = $pm_promotions_service;
+		$this->fraud_service         = $fraud_service;
+		$this->database_cache        = $database_cache;
 	}
 
 	/**
@@ -1424,15 +1434,23 @@ class WC_Payments_Admin {
 			return;
 		}
 
-		// Localize the script with wcpaySettings data.
-		// It is OK to use the same global variable name (`wcpaySettings`) since we localize the same data.
-		// If the data changes, we must use a different variable name since when multiple scripts use the same
-		// localized variable name, the last call overwrites previous data.
-		wp_localize_script(
-			'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT',
-			'wcpaySettings',
-			$this->get_js_settings()
-		);
+		// Only enqueue if there are visible spotlight promotions.
+		$promotions = $this->pm_promotions_service->get_visible_promotions();
+		if ( empty( $promotions ) ) {
+			return;
+		}
+
+		$has_spotlight = false;
+		foreach ( $promotions as $promotion ) {
+			if ( isset( $promotion['type'] ) && 'spotlight' === $promotion['type'] ) {
+				$has_spotlight = true;
+				break;
+			}
+		}
+
+		if ( ! $has_spotlight ) {
+			return;
+		}
 
 		wp_enqueue_script( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT' );
 		wp_enqueue_style( 'WCPAY_WC_PAYMENTS_SETTINGS_SPOTLIGHT' );
