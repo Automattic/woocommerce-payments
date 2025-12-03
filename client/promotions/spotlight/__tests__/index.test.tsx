@@ -253,9 +253,8 @@ describe( 'SpotlightPromotion', () => {
 
 	describe( 'tracks events', () => {
 		const expectedBaseProperties = {
-			promotion_id: 'klarna-promo',
+			promo_id: 'klarna-promo',
 			payment_method: 'klarna',
-			id: 'klarna-promo__spotlight',
 			display_context: 'spotlight',
 			source: 'unknown',
 			path: '/',
@@ -317,7 +316,7 @@ describe( 'SpotlightPromotion', () => {
 			closeButton.click();
 
 			expect( recordEvent ).toHaveBeenCalledWith(
-				'wcpay_payment_method_promotion_dismiss',
+				'wcpay_payment_method_promotion_dismiss_click',
 				expectedBaseProperties
 			);
 		} );
