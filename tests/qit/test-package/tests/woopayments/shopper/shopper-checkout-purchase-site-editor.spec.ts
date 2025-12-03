@@ -53,7 +53,7 @@ test.describe(
 		test.afterAll( async () => {
 			await emptyCart( shopperPage );
 			await activateTheme( 'storefront' );
-			await disableCardTestingProtection( merchantPage );
+			await disableCardTestingProtection();
 			await merchantContext?.close();
 			await shopperContext?.close();
 		} );
@@ -64,9 +64,9 @@ test.describe(
 				() => {
 					test.beforeAll( async () => {
 						if ( cardTestingPreventionEnabled ) {
-							await enableCardTestingProtection( merchantPage );
+							await enableCardTestingProtection();
 						} else {
-							await disableCardTestingProtection( merchantPage );
+							await disableCardTestingProtection();
 						}
 					} );
 

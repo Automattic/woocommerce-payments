@@ -31,13 +31,13 @@ test.describe( 'Successful purchase', { tag: '@shopper' }, () => {
 				} );
 				shopperPage = await shopperContext.newPage();
 				if ( ctpEnabled ) {
-					await devtools.enableCardTestingProtection( merchantPage );
+					await devtools.enableCardTestingProtection();
 				}
 			} );
 
 			test.afterAll( async () => {
 				if ( ctpEnabled ) {
-					await devtools.disableCardTestingProtection( merchantPage );
+					await devtools.disableCardTestingProtection();
 				}
 				await merchantContext?.close();
 				await shopperContext?.close();

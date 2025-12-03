@@ -779,7 +779,7 @@ export const addSavedCard = async (
 	// Wait for one of the expected outcomes:
 	//  - 3DS modal appears (Stripe iframe)
 	//  - Success notice
-	//  - Error notice (e.g., too soon after previous)
+	//  - Error notice (any WooCommerce alert including declines)
 	//  - Redirect back to Payment methods page
 	const threeDSFrame = page.locator(
 		'body > div > iframe[name^="__privateStripeFrame"]'
@@ -787,21 +787,16 @@ export const addSavedCard = async (
 	const successNotice = page.getByText(
 		'Payment method successfully added.'
 	);
-	const tooSoonNotice = page.getByText(
-		'You cannot add a new payment method so soon after the previous one.'
-	);
-	const genericError = page.getByText(
-		"We're not able to add this payment method. Please refresh the page and try again."
-	);
 	const methodsHeading = page.getByRole( 'heading', {
 		name: 'Payment methods',
 	} );
+	// Wait for any WooCommerce error notice (role="alert")
+	const errorAlert = page.getByRole( 'alert' );
 
 	await Promise.race( [
 		threeDSFrame.waitFor( { state: 'visible', timeout: 20000 } ),
 		successNotice.waitFor( { state: 'visible', timeout: 20000 } ),
-		tooSoonNotice.waitFor( { state: 'visible', timeout: 20000 } ),
-		genericError.waitFor( { state: 'visible', timeout: 20000 } ),
+		errorAlert.waitFor( { state: 'visible', timeout: 20000 } ),
 		methodsHeading.waitFor( { state: 'visible', timeout: 20000 } ),
 	] ).catch( () => {
 		/* ignore and let the caller continue; downstream assertions will catch real issues */

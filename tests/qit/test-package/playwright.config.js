@@ -75,7 +75,7 @@ export default defineConfig( {
 		{
 			name: 'chromium',
 			use: { ...devices[ 'Desktop Chrome' ] },
-			testMatch: /.*\.spec\.ts$/,
+			testMatch: /tests\/basic\.spec\.ts$/,
 		},
 		{
 			name: 'shopper',

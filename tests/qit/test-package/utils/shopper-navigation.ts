@@ -2,11 +2,34 @@
  * External dependencies
  */
 import { Page } from 'playwright/test';
+import qit from '@qit/helpers';
 
 /**
  * Internal dependencies
  */
 import { isUIUnblocked } from './helpers';
+import { config } from '../config/default';
+
+/**
+ * Helper to ensure customer is logged in after navigating to a protected page.
+ * If a login form is shown, re-authenticate and navigate again.
+ */
+const ensureAuthAfterNavigation = async (
+	page: Page,
+	targetUrl: string
+): Promise< void > => {
+	const loginForm = page.locator( 'form.woocommerce-form-login' );
+	const loginFormVisible = await loginForm.isVisible().catch( () => false );
+
+	if ( loginFormVisible ) {
+		// Re-login the customer
+		const { username, password } = config.users.customer;
+		await qit.loginAs( page, username, password );
+		await page.waitForLoadState( 'domcontentloaded' );
+		// Navigate to the intended page after re-auth
+		await page.goto( targetUrl, { waitUntil: 'load' } );
+	}
+};
 
 export const goToShop = async (
 	page: Page,
@@ -62,21 +85,21 @@ export const goToCheckoutWCB = async ( page: Page ) => {
 };
 
 export const goToOrders = async ( page: Page ) => {
-	await page.goto( '/my-account/orders/', {
-		waitUntil: 'load',
-	} );
+	const url = '/my-account/orders/';
+	await page.goto( url, { waitUntil: 'load' } );
+	await ensureAuthAfterNavigation( page, url );
 };
 
 export const goToOrder = async ( page: Page, orderId: string ) => {
-	await page.goto( `/my-account/view-order/${ orderId }`, {
-		waitUntil: 'load',
-	} );
+	const url = `/my-account/view-order/${ orderId }`;
+	await page.goto( url, { waitUntil: 'load' } );
+	await ensureAuthAfterNavigation( page, url );
 };
 
 export const goToMyAccount = async ( page: Page, subPage?: string ) => {
-	await page.goto( '/my-account/' + ( subPage ?? '' ), {
-		waitUntil: 'load',
-	} );
+	const url = '/my-account/' + ( subPage ?? '' );
+	await page.goto( url, { waitUntil: 'load' } );
+	await ensureAuthAfterNavigation( page, url );
 };
 
 export const goToSubscriptions = async ( page: Page ) =>

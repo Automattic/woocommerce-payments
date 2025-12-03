@@ -22,6 +22,8 @@ test.describe( 'Shopper Multi-Currency widget', { tag: '@shopper' }, () => {
 	// Increase the beforeAll timeout because creating contexts and fetching
 	// auth state can be slow in CI/docker. 60s should be sufficient.
 	test.beforeAll( async ( { browser } ) => {
+		test.setTimeout( 60000 );
+
 		merchantContext = await browser.newContext( {
 			storageState: await getAuthState( browser, 'admin' ),
 		} );
@@ -41,7 +43,7 @@ test.describe( 'Shopper Multi-Currency widget', { tag: '@shopper' }, () => {
 		);
 		await merchant.addCurrency( merchantPage, 'EUR' );
 		await merchant.addMulticurrencyWidget( merchantPage );
-	}, 60000 );
+	} );
 
 	test.afterAll( async () => {
 		await merchant.removeMultiCurrencyWidgets();

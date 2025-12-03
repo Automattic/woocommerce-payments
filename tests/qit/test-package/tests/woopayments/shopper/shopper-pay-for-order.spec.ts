@@ -43,7 +43,7 @@ test.describe(
 		} );
 
 		test.afterAll( async () => {
-			await devtools.disableCardTestingProtection( merchantPage );
+			await devtools.disableCardTestingProtection();
 			await merchantContext?.close();
 			await shopperContext?.close();
 		} );
@@ -52,13 +52,9 @@ test.describe(
 			( { cardTestingPreventionEnabled } ) => {
 				test( `should be able to pay for a failed order with card testing protection ${ cardTestingPreventionEnabled }`, async () => {
 					if ( cardTestingPreventionEnabled ) {
-						await devtools.enableCardTestingProtection(
-							merchantPage
-						);
+						await devtools.enableCardTestingProtection();
 					} else {
-						await devtools.disableCardTestingProtection(
-							merchantPage
-						);
+						await devtools.disableCardTestingProtection();
 					}
 
 					await shopper.addToCartFromShopPage( shopperPage );
