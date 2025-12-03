@@ -73,9 +73,8 @@ const SpotlightPromotion: React.FC = () => {
 	 * Get common event properties for tracking.
 	 */
 	const getEventProperties = () => ( {
-		promotion_id: spotlightPromotion.promo_id,
+		promo_id: spotlightPromotion.promo_id,
 		payment_method: spotlightPromotion.payment_method,
-		id: spotlightPromotion.id,
 		display_context: 'spotlight',
 		source: getPageSource(),
 		path: window.location.pathname + window.location.search,
@@ -122,7 +121,7 @@ const SpotlightPromotion: React.FC = () => {
 
 	const handleDismiss = () => {
 		recordEvent(
-			'wcpay_payment_method_promotion_dismiss',
+			'wcpay_payment_method_promotion_dismiss_click',
 			getEventProperties()
 		);
 		dismissPromotion( spotlightPromotion.id );
