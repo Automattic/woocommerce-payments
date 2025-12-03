@@ -12,7 +12,10 @@ import * as merchant from '../../../utils/merchant';
 import * as shopper from '../../../utils/shopper';
 import { goToCheckoutWCB } from '../../../utils/shopper-navigation';
 
-test.describe( 'Alipay Checkout', { tag: '@shopper' }, () => {
+// Skip: Alipay payments require specific Stripe account configuration that
+// is not available in the QIT test environment. The payment method can be
+// enabled in settings but checkout fails with "Invalid or missing payment details".
+test.describe.skip( 'Alipay Checkout', { tag: '@shopper' }, () => {
 	let merchantContext: BrowserContext;
 	let merchantPage: Page;
 	let shopperContext: BrowserContext;
