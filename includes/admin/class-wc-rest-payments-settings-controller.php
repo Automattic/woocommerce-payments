@@ -583,7 +583,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	/**
 	 * Schedule a migration of Stripe Billing subscriptions.
 	 *
-	 * @param WP_REST_Request $request The request object. Optional. If passed, the function will return a REST response.
+	 * @param WP_REST_Request|null $request The request object. Optional. If passed, the function will return a REST response.
 	 *
 	 * @return WP_REST_Response|null The response object, if this is a REST request.
 	 */

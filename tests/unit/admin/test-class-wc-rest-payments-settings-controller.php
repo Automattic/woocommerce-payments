@@ -19,7 +19,6 @@ use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Payment_Methods\Becs_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\Link_Payment_Method;
-use WCPay\PaymentMethods\Configs\Definitions\AffirmDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\EpsDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition;
@@ -100,6 +99,13 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	private $mock_session_service;
 
 	/**
+	 * Mock PM Promotions Service.
+	 *
+	 * @var WC_Payments_PM_Promotions_Service|MockObject
+	 */
+	private $mock_pm_promotions_service;
+
+	/**
 	 * Domestic currency.
 	 *
 	 * @var string
@@ -141,6 +147,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->mock_localization_service         = $this->createMock( WC_Payments_Localization_Service::class );
 		$this->mock_fraud_service                = $this->createMock( WC_Payments_Fraud_Service::class );
 		$this->mock_duplicates_detection_service = $this->createMock( Duplicates_Detection_Service::class );
+		$this->mock_pm_promotions_service        = $this->createMock( WC_Payments_PM_Promotions_Service::class );
 
 		$mock_payment_methods = [];
 
@@ -217,7 +224,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			$this->mock_duplicates_detection_service,
 			$mock_rate_limiter
 		);
-		$this->controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->gateway, $this->mock_wcpay_account );
+		$this->controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->gateway, $this->mock_wcpay_account, $this->mock_pm_promotions_service );
 
 		$this->mock_api_client
 			->method( 'is_server_connected' )
@@ -435,6 +442,54 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->controller->update_settings( $request );
 
 		$this->assertEquals( [ Payment_Method::CARD, Payment_Method::IDEAL ], WC_Payments::get_gateway()->get_option( 'upe_enabled_payment_method_ids' ) );
+	}
+
+	public function test_update_settings_calls_promotion_activation_for_newly_enabled_payment_methods() {
+		// Set up initial state: CARD is already enabled.
+		WC_Payments::get_gateway()->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD ] );
+
+		// Create a mock that expects maybe_activate_promotion_for_payment_method to be called only for IDEAL (the newly enabled method).
+		$mock_pm_promotions_service = $this->createMock( WC_Payments_PM_Promotions_Service::class );
+		$mock_pm_promotions_service->expects( $this->once() )
+			->method( 'maybe_activate_promotion_for_payment_method' )
+			->with( Payment_Method::IDEAL );
+
+		// Create controller with the specific mock.
+		$controller = new WC_REST_Payments_Settings_Controller(
+			$this->mock_api_client,
+			$this->gateway,
+			$this->mock_wcpay_account,
+			$mock_pm_promotions_service
+		);
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::IDEAL ] );
+
+		$controller->update_settings( $request );
+	}
+
+	public function test_update_settings_does_not_call_promotion_activation_when_no_new_payment_methods() {
+		// Set up initial state: CARD is already enabled.
+		WC_Payments::get_gateway()->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD ] );
+
+		// Create a mock that expects maybe_activate_promotion_for_payment_method to never be called.
+		$mock_pm_promotions_service = $this->createMock( WC_Payments_PM_Promotions_Service::class );
+		$mock_pm_promotions_service->expects( $this->never() )
+			->method( 'maybe_activate_promotion_for_payment_method' );
+
+		// Create controller with the specific mock.
+		$controller = new WC_REST_Payments_Settings_Controller(
+			$this->mock_api_client,
+			$this->gateway,
+			$this->mock_wcpay_account,
+			$mock_pm_promotions_service
+		);
+
+		$request = new WP_REST_Request();
+		// Request with the same enabled payment methods (no change).
+		$request->set_param( 'enabled_payment_method_ids', [ Payment_Method::CARD ] );
+
+		$controller->update_settings( $request );
 	}
 
 	public function test_update_settings_fails_if_user_cannot_manage_woocommerce() {
