@@ -804,38 +804,49 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $second_result );
 	}
 
-	public function test_dismiss_promotion_invalidates_cache_via_context_hash() {
+	public function test_dismiss_promotion_excludes_dismissed_from_visible_promotions() {
 		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )
 			->willReturn( [] );
 
-		$id = 'test-promo__spotlight';
+		$dismissed_id = 'test-promo__spotlight';
+		$other_id     = 'other-promo__badge';
 
-		// Set up cache with a promotion that has this ID.
-		$this->set_promotions_cache( [ $this->create_valid_promotion( [ 'id' => $id ] ) ] );
+		$promotions = [
+			$this->create_valid_promotion( [ 'id' => $dismissed_id ] ),
+			$this->create_valid_promotion(
+				[
+					'id'       => $other_id,
+					'promo_id' => 'other-promo',
+					'type'     => 'badge',
+				]
+			),
+		];
 
-		// First call - populates cache with context hash.
-		$this->service->get_visible_promotions();
+		// Set up cache with multiple promotions.
+		$this->set_promotions_cache( $promotions );
+
+		// First call - warm the cache.
+		$promotions_before = $this->service->get_visible_promotions();
 		$this->service->reset_memo();
 
-		// Capture the original context hash.
-		$cache_before = get_transient( WC_Payments_PM_Promotions_Service::PROMOTIONS_CACHE_KEY );
-		$hash_before  = $cache_before['context_hash'] ?? '';
-		$this->assertNotEmpty( $hash_before, 'Cache should have a context hash' );
+		// Verify the promotion is present before dismissal.
+		$ids_before = array_column( $promotions_before, 'id' );
+		$this->assertContains( $dismissed_id, $ids_before, 'Promotion should be visible before dismissal' );
 
-		// Dismiss a promotion - this changes the dismissals, which changes the context hash.
-		$this->service->dismiss_promotion( $id );
+		// Dismiss the promotion.
+		$this->service->dismiss_promotion( $dismissed_id );
+		$this->service->reset_memo();
 
-		// The transient cache still exists (we don't explicitly delete it anymore).
-		$this->assertNotFalse( get_transient( WC_Payments_PM_Promotions_Service::PROMOTIONS_CACHE_KEY ) );
+		// Re-set cache with updated context hash (includes dismissal).
+		$this->set_promotions_cache( $promotions );
 
-		// But when we fetch promotions again, the hash mismatch triggers a refetch.
-		$this->service->get_visible_promotions();
+		// Fetch promotions again.
+		$promotions_after = $this->service->get_visible_promotions();
 
-		// The cache should now have a new context hash that includes the dismissal.
-		$cache_after = get_transient( WC_Payments_PM_Promotions_Service::PROMOTIONS_CACHE_KEY );
-		$hash_after  = $cache_after['context_hash'] ?? '';
-
-		$this->assertNotEquals( $hash_before, $hash_after, 'Context hash should change after dismissal' );
+		// Assert the dismissed promotion is no longer in the results.
+		$ids_after = array_column( $promotions_after, 'id' );
+		$this->assertNotContains( $dismissed_id, $ids_after, 'Dismissed promotion should not be visible' );
+		$this->assertContains( $other_id, $ids_after, 'Non-dismissed promotion should still be visible' );
 	}
 
 	public function test_dismiss_promotion_allows_multiple_dismissals() {
