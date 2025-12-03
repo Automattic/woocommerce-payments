@@ -39,6 +39,13 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_gateway->method( 'get_upe_available_payment_methods' )
 			->willReturn( [ 'card', 'klarna', 'affirm', 'afterpay_clearpay', 'link', 'sepa_debit' ] );
 
+		// Note: get_upe_enabled_payment_method_ids is NOT mocked here by default.
+		// Tests that need it must configure it explicitly via $this->mock_gateway->method().
+
+		// Default capability key map for tracks events.
+		$this->mock_gateway->method( 'get_payment_method_capability_key_map' )
+			->willReturn( [] );
+
 		$this->service = new WC_Payments_PM_Promotions_Service( $this->mock_gateway );
 	}
 
@@ -97,7 +104,7 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 	private function set_promotions_cache( array $promotions ): void {
 		// Generate the context hash to match what the service will generate.
 		$store_context = [
-			'dismissals' => WC_Payments_PM_Promotions_Service::get_promotion_dismissals(),
+			'dismissals' => $this->service->get_promotion_dismissals(),
 			'locale'     => get_locale(),
 		];
 		$context_hash  = md5(
@@ -745,17 +752,29 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 	 */
 
 	public function test_dismiss_promotion_stores_dismissal_with_id() {
+		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )
+			->willReturn( [] );
+
 		$id = 'test-promo__spotlight';
+
+		// Set up cache with a promotion that has this ID.
+		$this->set_promotions_cache( [ $this->create_valid_promotion( [ 'id' => $id ] ) ] );
 
 		$this->service->dismiss_promotion( $id );
 
-		$dismissals = WC_Payments_PM_Promotions_Service::get_promotion_dismissals();
+		$dismissals = $this->service->get_promotion_dismissals();
 		$this->assertArrayHasKey( $id, $dismissals );
 		$this->assertIsInt( $dismissals[ $id ] );
 	}
 
 	public function test_dismiss_promotion_returns_true_on_success() {
+		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )
+			->willReturn( [] );
+
 		$id = 'test-promo__spotlight';
+
+		// Set up cache with a promotion that has this ID.
+		$this->set_promotions_cache( [ $this->create_valid_promotion( [ 'id' => $id ] ) ] );
 
 		$result = $this->service->dismiss_promotion( $id );
 
@@ -763,11 +782,21 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_dismiss_promotion_returns_false_when_already_dismissed() {
+		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )
+			->willReturn( [] );
+
 		$id = 'test-promo__spotlight';
+
+		// Set up cache with a promotion that has this ID.
+		$this->set_promotions_cache( [ $this->create_valid_promotion( [ 'id' => $id ] ) ] );
 
 		// First dismissal should succeed.
 		$first_result = $this->service->dismiss_promotion( $id );
 		$this->assertTrue( $first_result );
+
+		// Reset memo and re-set cache with updated dismissals context.
+		$this->service->reset_memo();
+		$this->set_promotions_cache( [ $this->create_valid_promotion( [ 'id' => $id ] ) ] );
 
 		// Second dismissal should return false (already dismissed).
 		$second_result = $this->service->dismiss_promotion( $id );
@@ -777,6 +806,11 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 	public function test_dismiss_promotion_invalidates_cache_via_context_hash() {
 		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )
 			->willReturn( [] );
+
+		$id = 'test-promo__spotlight';
+
+		// Set up cache with a promotion that has this ID.
+		$this->set_promotions_cache( [ $this->create_valid_promotion( [ 'id' => $id ] ) ] );
 
 		// First call - populates cache with context hash.
 		$this->service->get_visible_promotions();
@@ -788,7 +822,7 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertNotEmpty( $hash_before, 'Cache should have a context hash' );
 
 		// Dismiss a promotion - this changes the dismissals, which changes the context hash.
-		$this->service->dismiss_promotion( 'test-promo__spotlight' );
+		$this->service->dismiss_promotion( $id );
 
 		// The transient cache still exists (we don't explicitly delete it anymore).
 		$this->assertNotFalse( get_transient( WC_Payments_PM_Promotions_Service::PROMOTIONS_CACHE_KEY ) );
@@ -804,10 +838,37 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_dismiss_promotion_allows_multiple_dismissals() {
+		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )
+			->willReturn( [] );
+
+		// Set up cache with multiple promotions.
+		$promotions = [
+			$this->create_valid_promotion(
+				[
+					'id'       => 'promo1__spotlight',
+					'promo_id' => 'promo1',
+					'type'     => 'spotlight',
+				]
+			),
+			$this->create_valid_promotion(
+				[
+					'id'       => 'promo1__badge',
+					'promo_id' => 'promo1',
+					'type'     => 'badge',
+				]
+			),
+		];
+		$this->set_promotions_cache( $promotions );
+
 		$this->service->dismiss_promotion( 'promo1__spotlight' );
+
+		// Reset memo and re-set cache with updated dismissals context.
+		$this->service->reset_memo();
+		$this->set_promotions_cache( $promotions );
+
 		$this->service->dismiss_promotion( 'promo1__badge' );
 
-		$dismissals = WC_Payments_PM_Promotions_Service::get_promotion_dismissals();
+		$dismissals = $this->service->get_promotion_dismissals();
 
 		$this->assertCount( 2, $dismissals );
 		$this->assertArrayHasKey( 'promo1__spotlight', $dismissals );
