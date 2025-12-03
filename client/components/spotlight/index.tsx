@@ -13,7 +13,8 @@ import {
 	Icon,
 } from '@wordpress/components';
 import { closeSmall } from '@wordpress/icons';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
+import { speak } from '@wordpress/a11y';
 
 /**
  * Internal dependencies
@@ -77,10 +78,22 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 		};
 	}, [] );
 
-	// Call onView when spotlight becomes visible
+	// Call onView and announce to screen readers when spotlight becomes visible
 	useEffect( () => {
-		if ( isAnimatingIn && onView ) {
-			onView();
+		if ( isAnimatingIn ) {
+			// Announce to screen readers that a dialog has appeared
+			speak(
+				sprintf(
+					/* translators: %s: heading text of the spotlight dialog */
+					__( 'Dialog opened: %s', 'woocommerce-payments' ),
+					heading
+				),
+				'polite'
+			);
+
+			if ( onView ) {
+				onView();
+			}
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [ isAnimatingIn ] );
@@ -184,13 +197,7 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 					{ image && (
 						<CardMedia className="wcpay-spotlight__image">
 							{ typeof image === 'string' ? (
-								<img
-									src={ image }
-									alt={ __(
-										'Spotlight image',
-										'woocommerce-payments'
-									) }
-								/>
+								<img src={ image } alt="" />
 							) : (
 								image
 							) }

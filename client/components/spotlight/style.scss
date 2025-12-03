@@ -76,6 +76,12 @@
 		background: transparent;
 	}
 
+	&:focus-visible {
+		outline: 2px solid #007cba;
+		outline-offset: 2px;
+		box-shadow: none;
+	}
+
 	.components-icon {
 		color: #1e1e1e;
 	}
@@ -135,6 +141,15 @@
 
 .wcpay-spotlight__footer {
 	padding: 16px 24px 24px;
+}
+
+.wcpay-spotlight__primary-btn,
+.wcpay-spotlight__secondary-btn {
+	&:focus-visible {
+		outline: 2px solid #007cba;
+		outline-offset: 2px;
+		box-shadow: none;
+	}
 }
 
 // Override WC settings page styles that remove box-shadow from cards
