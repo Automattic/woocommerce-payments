@@ -23,11 +23,11 @@ export const tableDataHasLoaded = async ( page: Page ) => {
 	// First wait for the table to exist.
 	await page
 		.locator( '.woocommerce-table__table' )
-		.waitFor( { state: 'attached' } );
+		.waitFor( { state: 'attached', timeout: 30000 } );
 	// Then wait for the loading state to finish
 	await page
 		.locator( '.woocommerce-table__table.is-loading' )
-		.waitFor( { state: 'hidden' } );
+		.waitFor( { state: 'hidden', timeout: 30000 } );
 };
 
 export const waitAndSkipTourComponent = async (
@@ -385,10 +385,21 @@ export const disablePaymentMethods = async (
 
 export const ensureOrderIsProcessed = async ( page: Page, orderId: string ) => {
 	await navigation.goToActionScheduler( page, 'pending', orderId );
-	await page.$eval(
-		'td:has-text("wc-admin_import_orders") a:has-text("Run")',
-		( el: HTMLLinkElement ) => el.click()
+
+	// Check if there's a pending action to run
+	const runLink = page.locator(
+		'td:has-text("wc-admin_import_orders") a:has-text("Run")'
 	);
+	if ( ( await runLink.count() ) > 0 ) {
+		await runLink.first().click();
+
+		// Wait for the success message indicating the action was executed
+		await page
+			.locator( '.notice-success', {
+				hasText: 'Successfully executed action',
+			} )
+			.waitFor( { state: 'visible', timeout: 30000 } );
+	}
 };
 
 export const isWooPayEnabled = async ( page: Page ) => {
