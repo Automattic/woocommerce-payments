@@ -79,7 +79,7 @@ export default defineConfig( {
 		},
 		{
 			name: 'shopper',
-			testDir: './tests/shopper',
+			testDir: './tests/woopayments/shopper',
 			use: { ...devices[ 'Desktop Chrome' ] },
 		},
 		// Additional projects for merchant and subscriptions subpackages
