@@ -9,8 +9,8 @@ import React from 'react';
  * Internal dependencies
  */
 import Spotlight from 'components/spotlight';
-import { usePromotions, usePromotionActions } from 'data';
-import { Promotion } from 'data/promotions/types';
+import { usePmPromotions, usePmPromotionActions } from 'wcpay/data';
+import { PmPromotion } from 'data/pm-promotions/types';
 import { recordEvent } from 'tracks';
 
 /**
@@ -46,8 +46,8 @@ const getPageSource = (): string => {
  * - Handles activation and dismissal of promotions
  */
 const SpotlightPromotion: React.FC = () => {
-	const { promotions, isLoading } = usePromotions();
-	const { activatePromotion, dismissPromotion } = usePromotionActions();
+	const { pmPromotions, isLoading } = usePmPromotions();
+	const { activatePmPromotion, dismissPmPromotion } = usePmPromotionActions();
 
 	// Don't render if data is still loading
 	if ( isLoading ) {
@@ -55,12 +55,12 @@ const SpotlightPromotion: React.FC = () => {
 	}
 
 	// Don't render if no promotions available
-	if ( ! promotions || promotions.length === 0 ) {
+	if ( ! pmPromotions || pmPromotions.length === 0 ) {
 		return null;
 	}
 
 	// Find the first spotlight promotion
-	const spotlightPromotion: Promotion | undefined = promotions.find(
+	const spotlightPromotion: PmPromotion | undefined = pmPromotions.find(
 		( promo ) => promo.type === 'spotlight'
 	);
 
@@ -92,7 +92,7 @@ const SpotlightPromotion: React.FC = () => {
 			'wcpay_payment_method_promotion_activate_click',
 			getEventProperties()
 		);
-		activatePromotion( spotlightPromotion.promo_id );
+		activatePmPromotion( spotlightPromotion.promo_id );
 	};
 
 	const handleSecondaryClick = () => {
@@ -124,7 +124,7 @@ const SpotlightPromotion: React.FC = () => {
 			'wcpay_payment_method_promotion_dismiss_click',
 			getEventProperties()
 		);
-		dismissPromotion( spotlightPromotion.id );
+		dismissPmPromotion( spotlightPromotion.id );
 	};
 
 	return (

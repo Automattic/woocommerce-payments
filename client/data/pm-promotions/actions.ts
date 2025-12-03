@@ -12,9 +12,9 @@ import { __ } from '@wordpress/i18n';
  */
 import ACTION_TYPES from './action-types';
 import {
-	PromotionsData,
-	UpdatePromotionsAction,
-	ErrorPromotionsAction,
+	PmPromotionsData,
+	UpdatePmPromotionsAction,
+	ErrorPmPromotionsAction,
 } from './types';
 import { ApiError } from '../../types/errors';
 import { NAMESPACE } from '../constants';
@@ -43,31 +43,31 @@ function normalizeError( error: unknown ): ApiError {
 	};
 }
 
-export function updatePromotions(
-	data: PromotionsData
-): UpdatePromotionsAction {
+export function updatePmPromotions(
+	data: PmPromotionsData
+): UpdatePmPromotionsAction {
 	return {
-		type: ACTION_TYPES.SET_PROMOTIONS,
+		type: ACTION_TYPES.SET_PM_PROMOTIONS,
 		data,
 	};
 }
 
-export function updateErrorForPromotions(
+export function updateErrorForPmPromotions(
 	error: ApiError
-): ErrorPromotionsAction {
+): ErrorPmPromotionsAction {
 	return {
-		type: ACTION_TYPES.SET_ERROR_FOR_PROMOTIONS,
+		type: ACTION_TYPES.SET_ERROR_FOR_PM_PROMOTIONS,
 		error,
 	};
 }
 
 /**
- * Activate a promotion.
+ * Activate a PM promotion.
  *
  * @param {string} identifier The promotion identifier.
  * @param {boolean} acceptTerms Whether to accept the promotion terms.
  */
-export function* activatePromotion(
+export function* activatePmPromotion(
 	identifier: string,
 	acceptTerms = true
 ): unknown {
@@ -90,7 +90,7 @@ export function* activatePromotion(
 		yield controls.dispatch(
 			'wc/payments',
 			'invalidateResolution',
-			'getPromotions',
+			'getPmPromotions',
 			[]
 		);
 	} catch ( e ) {
@@ -104,18 +104,18 @@ export function* activatePromotion(
 		);
 		yield controls.dispatch(
 			'wc/payments',
-			'updateErrorForPromotions',
+			'updateErrorForPmPromotions',
 			normalizeError( e )
 		);
 	}
 }
 
 /**
- * Dismiss a promotion.
+ * Dismiss a PM promotion.
  *
  * @param {string} id The promotion unique identifier.
  */
-export function* dismissPromotion( id: string ): unknown {
+export function* dismissPmPromotion( id: string ): unknown {
 	const path = `${ NAMESPACE }/pm-promotions/${ id }/dismiss`;
 
 	try {
@@ -134,7 +134,7 @@ export function* dismissPromotion( id: string ): unknown {
 		yield controls.dispatch(
 			'wc/payments',
 			'invalidateResolution',
-			'getPromotions',
+			'getPmPromotions',
 			[]
 		);
 	} catch ( e ) {
@@ -148,7 +148,7 @@ export function* dismissPromotion( id: string ): unknown {
 		);
 		yield controls.dispatch(
 			'wc/payments',
-			'updateErrorForPromotions',
+			'updateErrorForPmPromotions',
 			normalizeError( e )
 		);
 	}

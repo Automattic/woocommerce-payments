@@ -19,7 +19,7 @@ import {
 	getDiscountTooltipText,
 } from 'wcpay/utils/account-fees';
 import WCPaySettingsContext from '../wcpay-settings-context';
-import { Promotion } from 'wcpay/data/promotions/types';
+import { PmPromotion } from 'wcpay/data/pm-promotions/types';
 import Chip from 'wcpay/components/chip';
 import PromotionalBadge from 'wcpay/components/promotional-badge';
 import Pill from 'wcpay/components/pill';
@@ -38,7 +38,7 @@ import UnionPay from 'assets/images/cards/unionpay.svg?asset';
 import PAYMENT_METHOD_IDS from 'wcpay/constants/payment-method';
 import usePaymentMethodAvailability from './use-payment-method-availability';
 import InlineNotice from 'wcpay/components/inline-notice';
-import { useEnabledPaymentMethodIds, usePromotions } from 'wcpay/data';
+import { useEnabledPaymentMethodIds, usePmPromotions } from 'wcpay/data';
 
 interface PaymentMethodProps {
 	id: string;
@@ -61,7 +61,7 @@ const PaymentMethodLabel = ( {
 	id: string;
 	label: string;
 	accountFees?: Record< string, FeeStructure >;
-	badgePromotion?: Promotion;
+	badgePromotion?: PmPromotion;
 } ): React.ReactElement => {
 	const { chip, chipType = 'warning' } = usePaymentMethodAvailability( id );
 
@@ -155,8 +155,8 @@ const PaymentMethod = ( {
 	);
 
 	// Get badge-type promotion for this payment method.
-	const { promotions = [] } = usePromotions();
-	const badgePromotion = promotions?.find(
+	const { pmPromotions = [] } = usePmPromotions();
+	const badgePromotion = pmPromotions?.find(
 		( promo ) => promo.payment_method === id && promo.type === 'badge'
 	);
 

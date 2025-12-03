@@ -11,13 +11,13 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { NAMESPACE } from '../constants';
-import { Promotion, PromotionsData } from './types';
+import { PmPromotion, PmPromotionsData } from './types';
 import { ApiError } from '../../types/errors';
 
 /**
- * Type guard to check if an object is a valid Promotion.
+ * Type guard to check if an object is a valid PmPromotion.
  */
-function isPromotion( value: unknown ): value is Promotion {
+function isPmPromotion( value: unknown ): value is PmPromotion {
 	if ( typeof value !== 'object' || value === null ) {
 		return false;
 	}
@@ -38,10 +38,10 @@ function isPromotion( value: unknown ): value is Promotion {
 }
 
 /**
- * Type guard to check if a value is valid PromotionsData.
+ * Type guard to check if a value is valid PmPromotionsData.
  */
-function isPromotionsData( value: unknown ): value is PromotionsData {
-	return Array.isArray( value ) && value.every( isPromotion );
+function isPmPromotionsData( value: unknown ): value is PmPromotionsData {
+	return Array.isArray( value ) && value.every( isPmPromotion );
 }
 
 /**
@@ -64,19 +64,19 @@ function normalizeError( error: unknown ): ApiError {
 }
 
 /**
- * Retrieve promotions data.
+ * Retrieve PM promotions data.
  */
-export function* getPromotions(): unknown {
+export function* getPmPromotions(): unknown {
 	const path = `${ NAMESPACE }/pm-promotions`;
 
 	try {
 		const result = yield apiFetch( { path } );
 
-		if ( ! isPromotionsData( result ) ) {
+		if ( ! isPmPromotionsData( result ) ) {
 			throw new Error( 'Invalid promotions data received from API' );
 		}
 
-		yield controls.dispatch( 'wc/payments', 'updatePromotions', result );
+		yield controls.dispatch( 'wc/payments', 'updatePmPromotions', result );
 	} catch ( e ) {
 		yield controls.dispatch(
 			'core/notices',
@@ -88,7 +88,7 @@ export function* getPromotions(): unknown {
 		);
 		yield controls.dispatch(
 			'wc/payments',
-			'updateErrorForPromotions',
+			'updateErrorForPmPromotions',
 			normalizeError( e )
 		);
 	}

@@ -10,7 +10,7 @@ import { render, screen } from '@testing-library/react';
  * Internal dependencies
  */
 import SpotlightPromotion from '../index';
-import { usePromotions, usePromotionActions } from 'data';
+import { usePmPromotions, usePmPromotionActions } from 'wcpay/data';
 import { recordEvent } from 'tracks';
 
 interface MockSpotlightProps {
@@ -27,9 +27,9 @@ interface MockSpotlightProps {
 }
 
 // Mock the dependencies
-jest.mock( 'data', () => ( {
-	usePromotions: jest.fn(),
-	usePromotionActions: jest.fn(),
+jest.mock( 'wcpay/data', () => ( {
+	usePmPromotions: jest.fn(),
+	usePmPromotionActions: jest.fn(),
 } ) );
 
 jest.mock( 'tracks', () => ( {
@@ -61,8 +61,8 @@ jest.mock( 'components/spotlight', () => ( {
 } ) );
 
 describe( 'SpotlightPromotion', () => {
-	const mockActivatePromotion = jest.fn();
-	const mockDismissPromotion = jest.fn();
+	const mockActivatePmPromotion = jest.fn();
+	const mockDismissPmPromotion = jest.fn();
 
 	// New flat promotion structure (no nested variations).
 	const mockPromotionData = [
@@ -85,15 +85,15 @@ describe( 'SpotlightPromotion', () => {
 	beforeEach( () => {
 		jest.clearAllMocks();
 
-		( usePromotionActions as jest.Mock ).mockReturnValue( {
-			activatePromotion: mockActivatePromotion,
-			dismissPromotion: mockDismissPromotion,
+		( usePmPromotionActions as jest.Mock ).mockReturnValue( {
+			activatePmPromotion: mockActivatePmPromotion,
+			dismissPmPromotion: mockDismissPmPromotion,
 		} );
 	} );
 
 	it( 'renders spotlight when promotion available', () => {
-		( usePromotions as jest.Mock ).mockReturnValue( {
-			promotions: mockPromotionData,
+		( usePmPromotions as jest.Mock ).mockReturnValue( {
+			pmPromotions: mockPromotionData,
 			isLoading: false,
 		} );
 
@@ -109,8 +109,8 @@ describe( 'SpotlightPromotion', () => {
 	} );
 
 	it( 'does not render when promotions are loading', () => {
-		( usePromotions as jest.Mock ).mockReturnValue( {
-			promotions: mockPromotionData,
+		( usePmPromotions as jest.Mock ).mockReturnValue( {
+			pmPromotions: mockPromotionData,
 			isLoading: true,
 		} );
 
@@ -120,8 +120,8 @@ describe( 'SpotlightPromotion', () => {
 	} );
 
 	it( 'does not render when no spotlight type promotion available', () => {
-		( usePromotions as jest.Mock ).mockReturnValue( {
-			promotions: [
+		( usePmPromotions as jest.Mock ).mockReturnValue( {
+			pmPromotions: [
 				{
 					id: 'klarna-promo__badge',
 					promo_id: 'klarna-promo',
@@ -144,8 +144,8 @@ describe( 'SpotlightPromotion', () => {
 	} );
 
 	it( 'does not render when no promotions available', () => {
-		( usePromotions as jest.Mock ).mockReturnValue( {
-			promotions: [],
+		( usePmPromotions as jest.Mock ).mockReturnValue( {
+			pmPromotions: [],
 			isLoading: false,
 		} );
 
@@ -154,9 +154,9 @@ describe( 'SpotlightPromotion', () => {
 		expect( container.firstChild ).toBeNull();
 	} );
 
-	it( 'calls activatePromotion when primary button is clicked', () => {
-		( usePromotions as jest.Mock ).mockReturnValue( {
-			promotions: mockPromotionData,
+	it( 'calls activatePmPromotion when primary button is clicked', () => {
+		( usePmPromotions as jest.Mock ).mockReturnValue( {
+			pmPromotions: mockPromotionData,
 			isLoading: false,
 		} );
 
@@ -165,12 +165,14 @@ describe( 'SpotlightPromotion', () => {
 		const activateButton = screen.getByText( 'Activate now' );
 		activateButton.click();
 
-		expect( mockActivatePromotion ).toHaveBeenCalledWith( 'klarna-promo' );
+		expect( mockActivatePmPromotion ).toHaveBeenCalledWith(
+			'klarna-promo'
+		);
 	} );
 
-	it( 'calls dismissPromotion with single id when close button is clicked', () => {
-		( usePromotions as jest.Mock ).mockReturnValue( {
-			promotions: mockPromotionData,
+	it( 'calls dismissPmPromotion with single id when close button is clicked', () => {
+		( usePmPromotions as jest.Mock ).mockReturnValue( {
+			pmPromotions: mockPromotionData,
 			isLoading: false,
 		} );
 
@@ -179,15 +181,15 @@ describe( 'SpotlightPromotion', () => {
 		const closeButton = screen.getByText( 'Close' );
 		closeButton.click();
 
-		// Now dismissPromotion is called with just the id (flat structure).
-		expect( mockDismissPromotion ).toHaveBeenCalledWith(
+		// Now dismissPmPromotion is called with just the id (flat structure).
+		expect( mockDismissPmPromotion ).toHaveBeenCalledWith(
 			'klarna-promo__spotlight'
 		);
 	} );
 
 	it( 'opens tc_url when secondary button is clicked', () => {
-		( usePromotions as jest.Mock ).mockReturnValue( {
-			promotions: mockPromotionData,
+		( usePmPromotions as jest.Mock ).mockReturnValue( {
+			pmPromotions: mockPromotionData,
 			isLoading: false,
 		} );
 
@@ -211,8 +213,8 @@ describe( 'SpotlightPromotion', () => {
 	} );
 
 	it( 'renders footnote text', () => {
-		( usePromotions as jest.Mock ).mockReturnValue( {
-			promotions: mockPromotionData,
+		( usePmPromotions as jest.Mock ).mockReturnValue( {
+			pmPromotions: mockPromotionData,
 			isLoading: false,
 		} );
 
@@ -238,8 +240,8 @@ describe( 'SpotlightPromotion', () => {
 			},
 		];
 
-		( usePromotions as jest.Mock ).mockReturnValue( {
-			promotions: dataWithoutFootnote,
+		( usePmPromotions as jest.Mock ).mockReturnValue( {
+			pmPromotions: dataWithoutFootnote,
 			isLoading: false,
 		} );
 
@@ -261,8 +263,8 @@ describe( 'SpotlightPromotion', () => {
 		};
 
 		beforeEach( () => {
-			( usePromotions as jest.Mock ).mockReturnValue( {
-				promotions: mockPromotionData,
+			( usePmPromotions as jest.Mock ).mockReturnValue( {
+				pmPromotions: mockPromotionData,
 				isLoading: false,
 			} );
 		} );

@@ -24,7 +24,7 @@ export * from './documents/hooks';
 export * from './payment-intents/hooks';
 export * from './authorizations/hooks';
 export * from './files/hooks';
-export * from './promotions/hooks';
+export * from './pm-promotions/hooks';
 
 import { TimelineItem } from './timeline/types';
 import { ApiError } from '../types/errors';
