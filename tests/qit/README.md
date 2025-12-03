@@ -5,11 +5,13 @@ We use the [QIT toolkit](https://qit.woo.com/docs/) for automated testing includ
 ### Setup
 
 1. Create `local.env` inside the `tests/qit/config/` directory by copying the variables from `default.env`.
-2. To get the actual values for local config, refer to this [secret store](https://mc.a8c.com/secret-store/?secret_id=11043) link.
-3. Use standard `KEY=VALUE` format (no `export` keyword needed).
+2. Use standard `KEY=VALUE` format (no `export` keyword needed).
+3. Configure the required credentials:
+   - **QIT authentication**: Get credentials from the [secret store](https://mc.a8c.com/secret-store/?secret_id=11043). These authenticate you with the QIT service.
+   - **E2E Jetpack credentials** (`E2E_JP_SITE_ID`, `E2E_JP_BLOG_TOKEN`, `E2E_JP_USER_TOKEN`): Get these from a Jurassic Ninja site already onboarded in test mode.
 4. Once configured, the first time you run a test command, it will create a local auth file for subsequent runs.
 
-**Note:** E2E tests require the dev version of `qit-cli`. Run `composer require woocommerce/qit-cli:dev-trunk --dev` to install it locally.
+**Note:** E2E tests require the dev version of `qit-cli` (test packages are not yet in stable releases). Run `composer require woocommerce/qit-cli:dev-trunk --dev --ignore-platform-reqs` to install it locally.
 
 ### Running Tests
 
@@ -31,42 +33,25 @@ Before running E2E tests, build the plugin package:
 npm run build:release
 ```
 
-This creates `woocommerce-payments.zip` which is used by QIT. Then run the tests:
+This creates `woocommerce-payments.zip` which is used by QIT. Then run the tests with the required environment variables:
 
 ```bash
-# Run all E2E tests
+# Run all E2E tests (prepend with env vars from local.env)
+E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>' npm run test:qit-e2e
+
+# Run specific test file (passthrough to Playwright)
+E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>' npm run test:qit-e2e -- -- shopper-checkout-purchase.spec.ts
+
+# Run tests filtered by tag (e.g., @blocks, @shopper)
+E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>' npm run test:qit-e2e -- -- --grep "@blocks"
+```
+
+**Tip:** You can export the variables once per shell session instead of prepending each command:
+
+```bash
+set -a && source tests/qit/config/local.env && set +a
 npm run test:qit-e2e
-
-# Run tests matching a pattern (e.g., @shopper tag, test name, or file path)
-npm run test:qit-e2e:args -- --grep "@shopper"
-npm run test:qit-e2e:args -- --grep "shopper-checkout-purchase"
 ```
-
-You can also run QIT directly for more control:
-
-```bash
-# Run all tests
-./vendor/bin/qit run:e2e woocommerce-payments \
-  --config tests/qit/qit.json \
-  --profile=default \
-  --env_file tests/qit/config/local.env
-
-# Run specific test file via Playwright options
-./vendor/bin/qit run:e2e woocommerce-payments \
-  --config tests/qit/qit.json \
-  --profile=default \
-  --env_file tests/qit/config/local.env \
-  --pw_options "woopayments/shopper/shopper-checkout-purchase.spec.ts"
-
-# Run tests with specific tag
-./vendor/bin/qit run:e2e woocommerce-payments \
-  --config tests/qit/qit.json \
-  --profile=default \
-  --env_file tests/qit/config/local.env \
-  --pw_test_tag="@critical"
-```
-
-**Note:** E2E tests require valid Jetpack credentials in `local.env` (`E2E_JP_SITE_ID`, `E2E_JP_BLOG_TOKEN`, `E2E_JP_USER_TOKEN`).
 
 ### Analyzing Results
 
