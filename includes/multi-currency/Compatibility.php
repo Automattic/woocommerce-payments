@@ -212,7 +212,7 @@ class Compatibility extends BaseCompatibility {
 			}
 
 			$exchange_rate = $order->get_meta( '_wcpay_multi_currency_order_exchange_rate', true );
-			$order->set_total( number_format( $order->get_total() * ( 1 / $exchange_rate ), wc_get_price_decimals() ) );
+			$order->set_total( wc_format_decimal( $order->get_total() * ( 1 / $exchange_rate ), wc_get_price_decimals() ) );
 		}
 
 		remove_filter( 'woocommerce_order_query', [ $this, 'convert_order_prices' ] );
