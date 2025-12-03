@@ -386,16 +386,18 @@ export const disablePaymentMethods = async (
 export const ensureOrderIsProcessed = async ( page: Page, orderId: string ) => {
 	await navigation.goToActionScheduler( page, 'pending', orderId );
 
-	// Check if there's a pending action to run
+	// Check if there's a pending action to run for importing orders
 	const runLink = page.locator(
 		'td:has-text("wc-admin_import_orders") a:has-text("Run")'
 	);
 	if ( ( await runLink.count() ) > 0 ) {
-		await runLink.first().click();
+		// Use force click because the element may be outside viewport
+		await runLink.first().click( { force: true } );
 
-		// Wait for the success message indicating the action was executed
+		// Wait for the page to reload and show success message
+		// WordPress uses 'notice notice-success' class for admin notices
 		await page
-			.locator( '.notice-success', {
+			.locator( '.notice.notice-success', {
 				hasText: 'Successfully executed action',
 			} )
 			.waitFor( { state: 'visible', timeout: 30000 } );
