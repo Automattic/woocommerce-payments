@@ -13,6 +13,7 @@ import { __ } from '@wordpress/i18n';
  */
 import { ChipType } from 'wcpay/components/chip';
 import { ClickTooltip } from 'wcpay/components/tooltip';
+import { sanitizeHTML } from 'utils/sanitize';
 import './style.scss';
 
 interface PromotionalBadgeProps {
@@ -50,13 +51,19 @@ const PromotionalBadge: React.FC< PromotionalBadgeProps > = ( {
 	const tooltipContent =
 		tcUrl && tcLabel ? (
 			<>
-				{ tooltip }{ ' ' }
+				<span
+					// eslint-disable-next-line react/no-danger
+					dangerouslySetInnerHTML={ sanitizeHTML( tooltip ) }
+				/>{ ' ' }
 				<a href={ tcUrl } target="_blank" rel="noopener noreferrer">
 					{ tcLabel }
 				</a>
 			</>
 		) : (
-			tooltip
+			<span
+				// eslint-disable-next-line react/no-danger
+				dangerouslySetInnerHTML={ sanitizeHTML( tooltip ) }
+			/>
 		);
 
 	return (

@@ -20,6 +20,7 @@ import { __ } from '@wordpress/i18n';
  */
 import { SpotlightProps } from './types';
 import Chip from 'components/chip';
+import { sanitizeHTML } from 'utils/sanitize';
 import './style.scss';
 
 const showDelayMs = 4000; // 4 seconds
@@ -232,14 +233,33 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 						>
 							{ heading }
 						</h2>
-						<div className="wcpay-spotlight__description">
-							{ description }
-						</div>
-						{ footnote && (
-							<div className="wcpay-spotlight__footnote">
-								{ footnote }
+						{ typeof description === 'string' ? (
+							<div
+								className="wcpay-spotlight__description"
+								// eslint-disable-next-line react/no-danger
+								dangerouslySetInnerHTML={ sanitizeHTML(
+									description
+								) }
+							/>
+						) : (
+							<div className="wcpay-spotlight__description">
+								{ description }
 							</div>
 						) }
+						{ footnote &&
+							( typeof footnote === 'string' ? (
+								<div
+									className="wcpay-spotlight__footnote"
+									// eslint-disable-next-line react/no-danger
+									dangerouslySetInnerHTML={ sanitizeHTML(
+										footnote
+									) }
+								/>
+							) : (
+								<div className="wcpay-spotlight__footnote">
+									{ footnote }
+								</div>
+							) ) }
 					</CardBody>
 
 					<CardFooter
