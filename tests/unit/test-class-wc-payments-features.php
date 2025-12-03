@@ -26,7 +26,8 @@ class WC_Payments_Features_Test extends WCPAY_UnitTestCase {
 	private $mock_wcpay_account;
 
 	const FLAG_OPTION_NAME_TO_FRONTEND_KEY_MAPPING = [
-		'_wcpay_feature_customer_multi_currency' => 'multiCurrency',
+		'_wcpay_feature_customer_multi_currency'        => 'multiCurrency',
+		WC_Payments_Features::ACCOUNT_DETAILS_FLAG_NAME => 'isAccountDetailsEnabled',
 	];
 
 	public function set_up() {
