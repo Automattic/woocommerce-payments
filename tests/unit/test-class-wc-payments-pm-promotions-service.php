@@ -31,8 +31,9 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
-		// Set an admin user (required for get_visible_promotions capability check).
-		wp_set_current_user( 1 );
+		// Create and set an admin user (required for get_visible_promotions capability check).
+		$admin_user = self::factory()->user->create( [ 'role' => 'administrator' ] );
+		wp_set_current_user( $admin_user );
 
 		$this->mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
 
