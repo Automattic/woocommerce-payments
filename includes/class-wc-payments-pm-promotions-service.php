@@ -401,6 +401,8 @@ class WC_Payments_PM_Promotions_Service {
 	 * This method should be called BEFORE the payment method is enabled for checkout,
 	 * as visible promotions are filtered out for already-enabled payment methods.
 	 *
+	 * Handles its own exception catching, logging, and tracking internally.
+	 *
 	 * @param string $payment_method_id The payment method ID (e.g., 'klarna').
 	 * @param bool   $should_enable     Whether to enable the payment method for checkout.
 	 *
@@ -421,13 +423,13 @@ class WC_Payments_PM_Promotions_Service {
 		 * $wcpay_request->assign_hook( 'wcpay_activate_promotion_request' );
 		 * $response = $wcpay_request->handle_rest_request();
 		 * if ( is_wp_error( $response ) ) {
-		 *     return false;
+		 *     return $this->handle_promotion_activation_failure( $payment_method_id, $promotion, 'Server activation failed' );
 		 * }
 		 */
 
 		// Enable the payment method for checkout if requested.
 		if ( $should_enable && ! $this->enable_payment_method_gateway( $payment_method_id, $promotion ) ) {
-			return false;
+			return $this->handle_promotion_activation_failure( $payment_method_id, $promotion, 'Failed to enable payment method gateway' );
 		}
 
 		// Clear the promotions cache to ensure fresh data on next fetch.
@@ -437,7 +439,48 @@ class WC_Payments_PM_Promotions_Service {
 			$this->account->clear_cache();
 		}
 
+		// Track successful activation.
+		$this->tracks_event(
+			Track_Events::PAYMENT_METHOD_PROMOTION_ACTIVATED,
+			[
+				'payment_method_id' => $payment_method_id,
+				'promo_id'          => $promotion['promo_id'] ?? null,
+				'unique_promo_id'   => $promotion['id'] ?? null,
+			]
+		);
+
 		return true;
+	}
+
+	/**
+	 * Handle promotion activation failure by logging and tracking.
+	 *
+	 * @param string $payment_method_id The payment method ID.
+	 * @param array  $promotion         The promotion data.
+	 * @param string $error_message     The error message.
+	 *
+	 * @return bool Always returns false.
+	 */
+	private function handle_promotion_activation_failure( string $payment_method_id, array $promotion, string $error_message ): bool {
+		// Log the error.
+		if ( function_exists( 'wc_get_logger' ) ) {
+			$logger = wc_get_logger();
+			/* translators: 1: Payment method ID, 2: Error message */
+			$logger->error( sprintf( 'Failed to activate promotion for payment method %1$s: %2$s', $payment_method_id, $error_message ), [ 'source' => 'woopayments' ] );
+		}
+
+		// Track the failure.
+		$this->tracks_event(
+			Track_Events::PAYMENT_METHOD_PROMOTION_ACTIVATION_FAILED,
+			[
+				'payment_method_id' => $payment_method_id,
+				'promo_id'          => $promotion['promo_id'] ?? null,
+				'unique_promo_id'   => $promotion['id'] ?? null,
+				'error_message'     => $error_message,
+			]
+		);
+
+		return false;
 	}
 
 	/**
