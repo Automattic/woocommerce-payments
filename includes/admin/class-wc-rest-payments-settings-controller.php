@@ -679,12 +679,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			);
 		}
 
-		// Activate any promotions for newly enabled payment methods BEFORE enabling them.
-		// This is done first because visible promotions are filtered out for already-enabled PMs.
-		foreach ( $enabled_payment_methods as $payment_method_id ) {
-			$this->pm_promotions_service->maybe_activate_promotion_for_payment_method( $payment_method_id );
-		}
-
 		foreach ( $enabled_payment_methods as $payment_method_id ) {
 			$gateway = WC_Payments::get_payment_gateway_by_id( $payment_method_id );
 			if ( ! $gateway ) {
@@ -695,6 +689,37 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				}
 				continue;
 			}
+
+			// Try to activate any promotions for this payment method BEFORE enabling it.
+			// This is done first because visible promotions are filtered out for already-enabled PMs.
+			try {
+				$promotion_activated = $this->pm_promotions_service->maybe_activate_promotion_for_payment_method( $payment_method_id );
+				if ( $promotion_activated ) {
+					$this->tracks_event(
+						Track_Events::PAYMENT_METHOD_PROMOTION_ACTIVATED,
+						[
+							'payment_method_id' => $payment_method_id,
+							'capability_id'     => $pm_to_capability_key_map[ $payment_method_id ] ?? null,
+						]
+					);
+				}
+			} catch ( \Exception $e ) {
+				// Log the error but continue with enabling the gateway.
+				if ( function_exists( 'wc_get_logger' ) ) {
+					$logger = wc_get_logger();
+					/* translators: 1: Payment method ID, 2: Error message */
+					$logger->error( sprintf( 'Failed to activate promotion for payment method %1$s: %2$s', $payment_method_id, $e->getMessage() ), [ 'source' => 'woopayments' ] );
+				}
+				$this->tracks_event(
+					Track_Events::PAYMENT_METHOD_PROMOTION_ACTIVATION_FAILED,
+					[
+						'payment_method_id' => $payment_method_id,
+						'capability_id'     => $pm_to_capability_key_map[ $payment_method_id ] ?? null,
+						'error_message'     => $e->getMessage(),
+					]
+				);
+			}
+
 			$gateway->enable();
 		}
 
