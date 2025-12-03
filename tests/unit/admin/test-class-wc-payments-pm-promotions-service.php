@@ -89,6 +89,37 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 		);
 	}
 
+	/**
+	 * Helper to set up the promotions cache with given promotions.
+	 *
+	 * @param array $promotions Array of promotions to cache.
+	 */
+	private function set_promotions_cache( array $promotions ): void {
+		// Generate the context hash to match what the service will generate.
+		$store_context = [
+			'dismissals' => WC_Payments_PM_Promotions_Service::get_promotion_dismissals(),
+			'locale'     => get_locale(),
+		];
+		$context_hash  = md5(
+			wp_json_encode(
+				[
+					'dismissals' => $store_context['dismissals'],
+					'locale'     => $store_context['locale'],
+				]
+			)
+		);
+
+		set_transient(
+			WC_Payments_PM_Promotions_Service::PROMOTIONS_CACHE_KEY,
+			[
+				'promotions'   => $promotions,
+				'context_hash' => $context_hash,
+				'timestamp'    => time(),
+			],
+			DAY_IN_SECONDS
+		);
+	}
+
 	/*
 	 * =========================================================================
 	 * VALIDATION TESTS
@@ -789,23 +820,52 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 	 * =========================================================================
 	 */
 
-	public function test_activate_promotion_returns_true() {
-		$id = 'test-promo';
+	public function test_activate_promotion_returns_false_for_invalid_id() {
+		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )
+			->willReturn( [] );
 
-		$result = $this->service->activate_promotion( $id );
+		// Set up cache with a valid promotion.
+		$this->set_promotions_cache( [ $this->create_valid_promotion() ] );
+
+		$result = $this->service->activate_promotion( 'non-existent-promo' );
+
+		$this->assertFalse( $result );
+	}
+
+	public function test_activate_promotion_returns_false_when_promotion_not_visible() {
+		// When the PM is enabled, the promotion is not visible.
+		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )
+			->willReturn( [ 'klarna' ] );
+
+		// Set up cache with a klarna promotion.
+		$this->set_promotions_cache( [ $this->create_valid_promotion() ] );
+
+		$result = $this->service->activate_promotion( 'test-promo__spotlight' );
+
+		$this->assertFalse( $result );
+	}
+
+	public function test_activate_promotion_returns_true_for_valid_promotion() {
+		// Promotion is visible (PM not enabled) and gateway is available.
+		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )
+			->willReturn( [] );
+
+		// Set up cache with a valid promotion.
+		$this->set_promotions_cache( [ $this->create_valid_promotion() ] );
+
+		$result = $this->service->activate_promotion( 'test-promo__spotlight' );
 
 		$this->assertTrue( $result );
 	}
 
 	public function test_activate_promotion_clears_cache() {
-		// Set up a cache entry.
-		set_transient(
-			WC_Payments_PM_Promotions_Service::PROMOTIONS_CACHE_KEY,
-			[ 'promotions' => [] ],
-			300
-		);
+		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )
+			->willReturn( [] );
 
-		$this->service->activate_promotion( 'test-promo' );
+		// Set up cache with a valid promotion.
+		$this->set_promotions_cache( [ $this->create_valid_promotion() ] );
+
+		$this->service->activate_promotion( 'test-promo__spotlight' );
 
 		$this->assertFalse( get_transient( WC_Payments_PM_Promotions_Service::PROMOTIONS_CACHE_KEY ) );
 	}
@@ -818,7 +878,7 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_get_visible_promotions_returns_null_for_user_without_manage_woocommerce() {
 		// Create a subscriber user (doesn't have manage_woocommerce capability).
-		$subscriber_id = $this->factory->user->create( [ 'role' => 'subscriber' ] );
+		$subscriber_id = self::factory()->user->create( [ 'role' => 'subscriber' ] );
 		wp_set_current_user( $subscriber_id );
 
 		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )
@@ -883,26 +943,60 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )
 			->willReturn( [] );
 
-		// Dismiss the klarna spotlight promotion.
-		$this->service->dismiss_promotion( 'klarna-2026-promo__spotlight' );
+		// Set up cache with multiple promotions.
+		$promotions = [
+			$this->create_valid_promotion(
+				[
+					'id'       => 'promo1__spotlight',
+					'promo_id' => 'promo1',
+				]
+			),
+			$this->create_valid_promotion(
+				[
+					'id'             => 'promo2__spotlight',
+					'promo_id'       => 'promo2',
+					'payment_method' => 'affirm',
+				]
+			),
+		];
+		$this->set_promotions_cache( $promotions );
+
+		// Dismiss the first promotion.
+		$this->service->dismiss_promotion( 'promo1__spotlight' );
+
+		// Need to reset memo and re-set cache with updated dismissals context.
+		$this->service->reset_memo();
+		$this->set_promotions_cache( $promotions );
 
 		$result = $this->service->get_visible_promotions();
 
 		// The dismissed promotion should not be in the results.
 		$this->assertIsArray( $result );
-		foreach ( $result as $promotion ) {
-			$this->assertNotSame( 'klarna-2026-promo__spotlight', $promotion['id'] );
-		}
+		$this->assertCount( 1, $result );
+		$this->assertSame( 'promo2__spotlight', $result[0]['id'] );
 	}
 
 	public function test_get_visible_promotions_returns_null_when_all_dismissed() {
 		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )
 			->willReturn( [] );
 
-		// Dismiss all promotions from the mock data.
-		$this->service->dismiss_promotion( 'klarna-2026-promo__spotlight' );
-		$this->service->dismiss_promotion( 'klarna-2026-promo__badge' );
-		$this->service->dismiss_promotion( 'affirm-2026-promo__spotlight' );
+		// Set up cache with promotions.
+		$promotions = [
+			$this->create_valid_promotion(
+				[
+					'id'       => 'promo1__spotlight',
+					'promo_id' => 'promo1',
+				]
+			),
+		];
+		$this->set_promotions_cache( $promotions );
+
+		// Dismiss all promotions.
+		$this->service->dismiss_promotion( 'promo1__spotlight' );
+
+		// Need to reset memo and re-set cache with updated dismissals context.
+		$this->service->reset_memo();
+		$this->set_promotions_cache( $promotions );
 
 		$result = $this->service->get_visible_promotions();
 

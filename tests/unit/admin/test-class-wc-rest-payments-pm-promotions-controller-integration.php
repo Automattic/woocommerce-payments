@@ -120,6 +120,37 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 		);
 	}
 
+	/**
+	 * Helper to set up the promotions cache with given promotions.
+	 *
+	 * @param array $promotions Array of promotions to cache.
+	 */
+	private function set_promotions_cache( array $promotions ): void {
+		// Generate the context hash to match what the service will generate.
+		$store_context = [
+			'dismissals' => WC_Payments_PM_Promotions_Service::get_promotion_dismissals(),
+			'locale'     => get_locale(),
+		];
+		$context_hash  = md5(
+			wp_json_encode(
+				[
+					'dismissals' => $store_context['dismissals'],
+					'locale'     => $store_context['locale'],
+				]
+			)
+		);
+
+		set_transient(
+			WC_Payments_PM_Promotions_Service::PROMOTIONS_CACHE_KEY,
+			[
+				'promotions'   => $promotions,
+				'context_hash' => $context_hash,
+				'timestamp'    => time(),
+			],
+			DAY_IN_SECONDS
+		);
+	}
+
 	/*
 	 * =========================================================================
 	 * GET PROMOTIONS ENDPOINT TESTS
@@ -364,7 +395,7 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 
 	public function test_check_permission_returns_false_for_non_admin() {
 		// Create a subscriber user.
-		$subscriber_id = $this->factory->user->create( [ 'role' => 'subscriber' ] );
+		$subscriber_id = self::factory()->user->create( [ 'role' => 'subscriber' ] );
 		wp_set_current_user( $subscriber_id );
 
 		$result = $this->controller->check_permission();
@@ -387,11 +418,15 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 	 */
 
 	public function test_full_workflow_get_dismiss_verify() {
-		// Step 1: Get promotions (they exist from mock data).
+		// Set up cache with a test promotion.
+		$this->set_promotions_cache( [ $this->create_valid_promotion() ] );
+
+		// Step 1: Get promotions.
 		$get_response = $this->controller->get_promotions();
 
 		$promotions = $get_response->get_data();
 		$this->assertNotNull( $promotions );
+		$this->assertNotEmpty( $promotions );
 
 		// Step 2: Dismiss a promotion using the full id.
 		$first_promo_id  = $promotions[0]['id'];
@@ -407,7 +442,10 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 	}
 
 	public function test_full_workflow_activate_returns_success() {
-		$id = 'test-promo';
+		// Set up cache with a test promotion.
+		$this->set_promotions_cache( [ $this->create_valid_promotion() ] );
+
+		$id = 'test-promo__spotlight';
 
 		$request = new WP_REST_Request( 'POST', $this->rest_base . '/' . $id . '/activate' );
 		$request->set_param( 'id', $id );
@@ -415,5 +453,19 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 		$response = $this->controller->activate_promotion( $request );
 
 		$this->assertTrue( $response->get_data()['success'] );
+	}
+
+	public function test_full_workflow_activate_returns_false_for_invalid_id() {
+		// Set up cache with a test promotion.
+		$this->set_promotions_cache( [ $this->create_valid_promotion() ] );
+
+		$id = 'non-existent-promo';
+
+		$request = new WP_REST_Request( 'POST', $this->rest_base . '/' . $id . '/activate' );
+		$request->set_param( 'id', $id );
+
+		$response = $this->controller->activate_promotion( $request );
+
+		$this->assertFalse( $response->get_data()['success'] );
 	}
 }

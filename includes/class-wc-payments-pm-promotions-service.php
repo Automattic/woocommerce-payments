@@ -254,21 +254,94 @@ class WC_Payments_PM_Promotions_Service {
 	 * Activate a promotion.
 	 *
 	 * Activating a promotion implies acceptance of terms.
+	 * This will:
+	 * 1. Send a request to the server to apply the promotion discount
+	 * 2. Enable the payment method locally
 	 *
-	 * @param string $id The promotion identifier.
+	 * @param string $id The promotion identifier (e.g., 'klarna-2026-promo__spotlight').
 	 *
-	 * @return bool True on success.
+	 * @return bool True on success, false on failure.
 	 */
 	public function activate_promotion( string $id ): bool {
-		// TODO: Replace with actual API call when server endpoints are available.
-		// $wcpay_request = Request\Activate_Promotion::create( $id );.
-		// $wcpay_request->assign_hook( 'wcpay_activate_promotion_request' );.
-		// $response = $wcpay_request->handle_rest_request();.
+		// Find the promotion to get the payment method.
+		$promotion = $this->find_promotion_by_id( $id );
+		if ( null === $promotion ) {
+			return false;
+		}
 
-		// Clear cache to ensure fresh data on next fetch.
+		$payment_method_id = $promotion['payment_method'] ?? '';
+		if ( empty( $payment_method_id ) ) {
+			return false;
+		}
+
+		/*
+		 * Send request to server to apply the promotion discount.
+		 * The server should also handle capability requesting if it is not already requested.
+		 * This way we can keep things in sync and avoid applying discounts without having the capability requested.
+		 *
+		 * TODO: Replace with actual API call when server endpoints are available.
+		 * $wcpay_request = Request\Activate_Promotion::create( $id );
+		 * $wcpay_request->assign_hook( 'wcpay_activate_promotion_request' );
+		 * $response = $wcpay_request->handle_rest_request();
+		 * if ( is_wp_error( $response ) ) {
+		 *     return false;
+		 * }
+		 */
+
+		// Enable the payment method locally.
+		$gateway = WC_Payments::get_payment_gateway_by_id( $payment_method_id );
+		if ( ! $gateway ) {
+			if ( function_exists( 'wc_get_logger' ) ) {
+				$logger = wc_get_logger();
+				/* translators: 1: Payment method ID, 2: Error message */
+				$logger->warning( sprintf( 'Failed to enable payment method %1$s: %2$s', $payment_method_id, 'payment gateway instance not available' ), [ 'source' => 'woopayments' ] );
+			}
+			return false;
+		}
+		$gateway->enable();
+
+		// Keep the enabled payment method IDs list synchronized across gateway setting objects unless we remove this list with all dependencies.
+		foreach ( WC_Payments::get_payment_gateway_map() as $payment_gateway ) {
+			// Get the current enabled PM IDs.
+			$enabled_pm_ids = $payment_gateway->get_upe_enabled_payment_method_ids();
+			// Add the newly enabled PM ID if not already present.
+			if ( ! in_array( $payment_method_id, $enabled_pm_ids, true ) ) {
+				$enabled_pm_ids[] = $payment_method_id;
+				$payment_gateway->update_option( 'upe_enabled_payment_method_ids', $enabled_pm_ids );
+			}
+		}
+
+		// Clear the promotions cache to ensure fresh data on next fetch.
 		$this->clear_cache();
+		// Clear the account cache.
+		if ( null !== $this->account ) {
+			$this->account->clear_cache();
+		}
 
 		return true;
+	}
+
+	/**
+	 * Find a promotion by its ID.
+	 *
+	 * @param string $id The promotion ID (e.g., 'klarna-2026-promo__spotlight').
+	 *
+	 * @return array|null The promotion data or null if not found.
+	 */
+	private function find_promotion_by_id( string $id ): ?array {
+		$promotions = $this->get_visible_promotions();
+
+		if ( null === $promotions ) {
+			return null;
+		}
+
+		foreach ( $promotions as $promotion ) {
+			if ( isset( $promotion['id'] ) && $promotion['id'] === $id ) {
+				return $promotion;
+			}
+		}
+
+		return null;
 	}
 
 	/**
