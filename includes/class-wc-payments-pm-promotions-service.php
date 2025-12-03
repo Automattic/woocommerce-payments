@@ -60,7 +60,7 @@ class WC_Payments_PM_Promotions_Service {
 	 * @param WC_Payment_Gateway_WCPay|null $gateway Optional gateway instance.
 	 * @param WC_Payments_Account|null      $account Optional account instance.
 	 */
-	public function __construct( WC_Payment_Gateway_WCPay $gateway = null, WC_Payments_Account $account = null ) {
+	public function __construct( ?WC_Payment_Gateway_WCPay $gateway = null, ?WC_Payments_Account $account = null ) {
 		$this->gateway = $gateway;
 		$this->account = $account;
 	}
