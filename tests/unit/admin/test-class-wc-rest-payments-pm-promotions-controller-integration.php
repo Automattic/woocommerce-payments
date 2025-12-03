@@ -128,7 +128,7 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 	private function set_promotions_cache( array $promotions ): void {
 		// Generate the context hash to match what the service will generate.
 		$store_context = [
-			'dismissals' => WC_Payments_PM_Promotions_Service::get_promotion_dismissals(),
+			'dismissals' => $this->promotions_service->get_promotion_dismissals(),
 			'locale'     => get_locale(),
 		];
 		$context_hash  = md5(
@@ -324,13 +324,16 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 	public function test_dismiss_promotion_integration_stores_dismissal() {
 		$id = 'test-promo__spotlight';
 
+		// Set up cache with a test promotion so dismiss_promotion can find it.
+		$this->set_promotions_cache( [ $this->create_valid_promotion() ] );
+
 		// URL params must be set explicitly when calling controller directly (not routed via REST API).
 		$request = new WP_REST_Request( 'POST', $this->rest_base . '/' . $id . '/dismiss' );
 		$request->set_param( 'id', $id );
 
 		$this->controller->dismiss_promotion( $request );
 
-		$this->assertTrue( WC_Payments_PM_Promotions_Service::is_promotion_dismissed( $id ) );
+		$this->assertTrue( $this->promotions_service->is_promotion_dismissed( $id ) );
 	}
 
 	/*
@@ -438,7 +441,7 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 		$this->assertTrue( $dismiss_response->get_data()['success'] );
 
 		// Step 3: Verify dismissal was recorded.
-		$this->assertTrue( WC_Payments_PM_Promotions_Service::is_promotion_dismissed( $first_promo_id ) );
+		$this->assertTrue( $this->promotions_service->is_promotion_dismissed( $first_promo_id ) );
 	}
 
 	public function test_full_workflow_activate_returns_success() {
