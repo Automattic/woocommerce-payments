@@ -20,6 +20,11 @@ export const dataHasLoaded = async ( page: Page ) => {
 };
 
 export const tableDataHasLoaded = async ( page: Page ) => {
+	// First wait for the table to exist.
+	await page
+		.locator( '.woocommerce-table__table' )
+		.waitFor( { state: 'attached' } );
+	// Then wait for the loading state to finish
 	await page
 		.locator( '.woocommerce-table__table.is-loading' )
 		.waitFor( { state: 'hidden' } );
