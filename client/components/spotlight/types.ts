@@ -6,6 +6,11 @@
 import type { ReactNode } from 'react';
 
 /**
+ * Internal dependencies
+ */
+import { ChipType } from 'wcpay/components/chip';
+
+/**
  * Props for the Spotlight component.
  */
 export interface SpotlightProps {
@@ -13,6 +18,12 @@ export interface SpotlightProps {
 	 * Badge text to display at the top (e.g., "Limited time offer").
 	 */
 	badge?: string;
+
+	/**
+	 * Badge type/color for the Chip component.
+	 * Defaults to "success" if not provided or invalid.
+	 */
+	badgeType?: ChipType;
 
 	/**
 	 * Main heading text.

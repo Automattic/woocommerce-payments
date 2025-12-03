@@ -87,6 +87,7 @@ const PaymentMethodLabel = ( {
 				tooltipLabel: __( 'Promotion details', 'woocommerce-payments' ),
 				tcUrl: badgePromotion.tc_url,
 				tcLabel: badgePromotion.tc_label,
+				type: badgePromotion.badge_type,
 			};
 		}
 		return null;
@@ -110,6 +111,7 @@ const PaymentMethodLabel = ( {
 					tooltipLabel={ badgeContent.tooltipLabel }
 					tcUrl={ badgeContent.tcUrl }
 					tcLabel={ badgeContent.tcLabel }
+					type={ badgeContent.type }
 				/>
 			) }
 		</>

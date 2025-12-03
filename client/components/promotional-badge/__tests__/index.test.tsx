@@ -48,6 +48,45 @@ describe( 'PromotionalBadge', () => {
 		expect( badge ).toHaveClass( 'chip-warning' );
 	} );
 
+	test( 'renders with alert chip type', () => {
+		const { container } = render(
+			<PromotionalBadge
+				message="Urgent offer"
+				tooltip="Discount details"
+				type="alert"
+			/>
+		);
+
+		const badge = container.querySelector( '.wcpay-promotional-badge' );
+		expect( badge ).toHaveClass( 'chip-alert' );
+	} );
+
+	test( 'renders with light chip type', () => {
+		const { container } = render(
+			<PromotionalBadge
+				message="Light offer"
+				tooltip="Discount details"
+				type="light"
+			/>
+		);
+
+		const badge = container.querySelector( '.wcpay-promotional-badge' );
+		expect( badge ).toHaveClass( 'chip-light' );
+	} );
+
+	test( 'renders with primary chip type', () => {
+		const { container } = render(
+			<PromotionalBadge
+				message="Primary offer"
+				tooltip="Discount details"
+				type="primary"
+			/>
+		);
+
+		const badge = container.querySelector( '.wcpay-promotional-badge' );
+		expect( badge ).toHaveClass( 'chip-primary' );
+	} );
+
 	test( 'renders the info icon button', () => {
 		render(
 			<PromotionalBadge

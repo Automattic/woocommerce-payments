@@ -377,6 +377,68 @@ describe( 'Spotlight Component', () => {
 		} );
 	} );
 
+	describe( 'Badge type variations', () => {
+		it( 'renders badge with default success type when badgeType is not provided', () => {
+			const { container } = render( <Spotlight { ...defaultProps } /> );
+
+			const badge = container.querySelector( '.chip-success' );
+			expect( badge ).toBeInTheDocument();
+		} );
+
+		it( 'renders badge with specified badgeType', () => {
+			const propsWithBadgeType = {
+				...defaultProps,
+				badgeType: 'warning' as const,
+			};
+			const { container } = render(
+				<Spotlight { ...propsWithBadgeType } />
+			);
+
+			const badge = container.querySelector( '.chip-warning' );
+			expect( badge ).toBeInTheDocument();
+		} );
+
+		it( 'renders badge with alert type', () => {
+			const propsWithAlertType = {
+				...defaultProps,
+				badgeType: 'alert' as const,
+			};
+			const { container } = render(
+				<Spotlight { ...propsWithAlertType } />
+			);
+
+			const badge = container.querySelector( '.chip-alert' );
+			expect( badge ).toBeInTheDocument();
+		} );
+
+		it( 'defaults to success type when invalid badgeType is provided', () => {
+			const propsWithInvalidType = {
+				...defaultProps,
+				badgeType: 'invalid-type' as any,
+			};
+			const { container } = render(
+				<Spotlight { ...propsWithInvalidType } />
+			);
+
+			// Should fall back to success type
+			const badge = container.querySelector( '.chip-success' );
+			expect( badge ).toBeInTheDocument();
+		} );
+
+		it( 'defaults to success type when badgeType is undefined', () => {
+			const propsWithUndefinedType = {
+				...defaultProps,
+				badgeType: undefined,
+			};
+			const { container } = render(
+				<Spotlight { ...propsWithUndefinedType } />
+			);
+
+			const badge = container.querySelector( '.chip-success' );
+			expect( badge ).toBeInTheDocument();
+		} );
+	} );
+
 	describe( 'CSS class variations', () => {
 		it( 'applies has-image class when image is provided', () => {
 			const propsWithImage = {

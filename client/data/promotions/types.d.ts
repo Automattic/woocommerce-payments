@@ -4,6 +4,7 @@
  * Internal Dependencies
  */
 import { ApiError } from '../../types/errors';
+import { ChipType } from 'wcpay/components/chip';
 import ACTION_TYPES from './action-types';
 
 export type PromotionType = 'spotlight' | 'badge';
@@ -15,7 +16,8 @@ export interface Promotion {
 	payment_method_title: string;
 	type: PromotionType;
 	title: string;
-	badge?: string;
+	badge_text?: string;
+	badge_type?: ChipType;
 	description: string;
 	cta_label: string;
 	tc_url: string;

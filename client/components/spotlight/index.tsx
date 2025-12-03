@@ -20,14 +20,39 @@ import { speak } from '@wordpress/a11y';
  * Internal dependencies
  */
 import { SpotlightProps } from './types';
-import Chip from 'components/chip';
+import Chip, { ChipType } from 'components/chip';
 import { sanitizeHTML } from 'utils/sanitize';
 import './style.scss';
 
 const showDelayMs = 4000; // 4 seconds
 
+/**
+ * Valid chip types for the badge.
+ */
+const validBadgeTypes: ChipType[] = [
+	'primary',
+	'success',
+	'light',
+	'warning',
+	'alert',
+];
+
+/**
+ * Get a valid badge type, defaulting to 'success' if invalid or not provided.
+ *
+ * @param type - The badge type to validate.
+ * @return A valid ChipType.
+ */
+const getValidBadgeType = ( type?: ChipType ): ChipType => {
+	if ( type && validBadgeTypes.includes( type ) ) {
+		return type;
+	}
+	return 'success';
+};
+
 const Spotlight: React.FC< SpotlightProps > = ( {
 	badge,
+	badgeType,
 	heading,
 	description,
 	footnote,
@@ -40,6 +65,7 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 	onView,
 	showImmediately = false,
 } ) => {
+	const validBadgeType = getValidBadgeType( badgeType );
 	const [ isVisible, setIsVisible ] = useState( false );
 	const [ isAnimatingIn, setIsAnimatingIn ] = useState( false );
 	const closeTimeoutRef = useRef< ReturnType< typeof setTimeout > | null >(
@@ -217,7 +243,10 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 							{ /* When no image: show badge if available, otherwise show heading */ }
 							{ ! image && badge && (
 								<div className="wcpay-spotlight__badge">
-									<Chip message={ badge } type="success" />
+									<Chip
+										message={ badge }
+										type={ validBadgeType }
+									/>
 								</div>
 							) }
 							{ ! image && ! badge && (
@@ -249,7 +278,10 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 						{ /* When image present OR when no image but badge is in header: show badge in body only if image */ }
 						{ image && badge && (
 							<div className="wcpay-spotlight__badge">
-								<Chip message={ badge } type="success" />
+								<Chip
+									message={ badge }
+									type={ validBadgeType }
+								/>
 							</div>
 						) }
 						{ /* When no image and badge shown in header: show heading in body */ }

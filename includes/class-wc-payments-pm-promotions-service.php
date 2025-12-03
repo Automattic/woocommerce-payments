@@ -534,9 +534,10 @@ class WC_Payments_PM_Promotions_Service {
 				'promo_id'       => 'klarna-2026-promo',
 				'payment_method' => 'klarna',
 				'type'           => 'spotlight',
-				'title'          => 'Zero Processing Fees for 90 Days',
-				'badge'          => 'Limited time offer',
-				'description'    => 'Save on every Klarna transaction with <b>0% processing fees</b> for 90 days from activation.',
+				'title'          => 'Zero Fees for 90 Days',
+				'badge_text'     => '',
+				'badge_type'     => 'success',
+				'description'    => 'In 2024, shoppers spent $82.4B using buy now, pay later. Enable flexible payments with Klarna in WooPayments for 50% off processing fees for 3 months.',
 				'cta_label'      => 'Enable Klarna',
 				'tc_url'         => 'https://woocommerce.com/terms',
 				'tc_label'       => 'Learn more',
@@ -549,6 +550,7 @@ class WC_Payments_PM_Promotions_Service {
 				'payment_method' => 'klarna',
 				'type'           => 'badge',
 				'title'          => 'Zero fees for 90 days',
+				'badge_type'     => 'warning',
 				'description'    => 'Enable Klarna and pay no processing fees.',
 				'tc_url'         => 'https://woocommerce.com/terms',
 				'tc_label'       => 'Learn more',
@@ -866,12 +868,18 @@ class WC_Payments_PM_Promotions_Service {
 		}
 
 		// Sanitize text fields (no HTML allowed).
-		$text_fields = [ 'payment_method_title', 'title', 'cta_label', 'tc_label', 'badge' ];
+		$text_fields = [ 'payment_method_title', 'title', 'cta_label', 'tc_label', 'badge_text' ];
 		foreach ( $text_fields as $field ) {
 			if ( isset( $promotion[ $field ] ) ) {
 				$promotion[ $field ] = sanitize_text_field( $promotion[ $field ] );
 			}
 		}
+
+		// Normalize badge_type: ensure it's a valid type, defaulting to 'success'.
+		$valid_badge_types       = [ 'primary', 'success', 'light', 'warning', 'alert' ];
+		$promotion['badge_type'] = isset( $promotion['badge_type'] ) && in_array( $promotion['badge_type'], $valid_badge_types, true )
+			? $promotion['badge_type']
+			: 'success';
 
 		// Sanitize URL fields.
 		if ( isset( $promotion['tc_url'] ) ) {
