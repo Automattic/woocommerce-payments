@@ -6,6 +6,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Constants\Payment_Method;
 
 /**
  * WC_Payments_PM_Promotions_Service unit tests.
@@ -37,7 +38,7 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 
 		// Default available payment methods for validation tests.
 		$this->mock_gateway->method( 'get_upe_available_payment_methods' )
-			->willReturn( [ 'card', 'klarna', 'affirm', 'afterpay_clearpay', 'link', 'sepa_debit' ] );
+			->willReturn( [ Payment_Method::CARD, Payment_Method::KLARNA, Payment_Method::AFFIRM, Payment_Method::AFTERPAY, Payment_Method::LINK, Payment_Method::SEPA ] );
 
 		// Note: get_upe_enabled_payment_method_ids is NOT mocked here by default.
 		// Tests that need it must configure it explicitly via $this->mock_gateway->method().
@@ -84,7 +85,7 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 			[
 				'id'             => 'test-promo__spotlight',
 				'promo_id'       => 'test-promo',
-				'payment_method' => 'klarna',
+				'payment_method' => Payment_Method::KLARNA,
 				'type'           => 'spotlight',
 				'title'          => 'Test Promotion',
 				'description'    => 'Test description',
@@ -215,7 +216,7 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 		$promotion = [
 			'id'             => 'test-promo__spotlight',
 			'promo_id'       => 'test-promo',
-			'payment_method' => 'klarna',
+			'payment_method' => Payment_Method::KLARNA,
 			'type'           => 'spotlight',
 			'title'          => 'Test Promotion',
 			'description'    => 'Test description',
@@ -235,19 +236,19 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 	 */
 
 	public function test_is_valid_payment_method_accepts_klarna() {
-		$result = $this->invoke_private_method( 'is_valid_payment_method', [ 'klarna' ] );
+		$result = $this->invoke_private_method( 'is_valid_payment_method', [ Payment_Method::KLARNA ] );
 
 		$this->assertTrue( $result );
 	}
 
 	public function test_is_valid_payment_method_accepts_affirm() {
-		$result = $this->invoke_private_method( 'is_valid_payment_method', [ 'affirm' ] );
+		$result = $this->invoke_private_method( 'is_valid_payment_method', [ Payment_Method::AFFIRM ] );
 
 		$this->assertTrue( $result );
 	}
 
 	public function test_is_valid_payment_method_accepts_card() {
-		$result = $this->invoke_private_method( 'is_valid_payment_method', [ 'card' ] );
+		$result = $this->invoke_private_method( 'is_valid_payment_method', [ Payment_Method::CARD ] );
 
 		$this->assertTrue( $result );
 	}
@@ -285,10 +286,10 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_filter_promotions_removes_already_enabled_pm() {
 		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )
-			->willReturn( [ 'klarna' ] ); // Klarna is enabled.
+			->willReturn( [ Payment_Method::KLARNA ] ); // Klarna is enabled.
 
 		$promotions = [
-			$this->create_valid_promotion( [ 'payment_method' => 'klarna' ] ),
+			$this->create_valid_promotion( [ 'payment_method' => Payment_Method::KLARNA ] ),
 		];
 
 		$result = $this->invoke_private_method( 'filter_promotions', [ $promotions ] );
@@ -298,16 +299,16 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_filter_promotions_keeps_not_enabled_pm() {
 		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )
-			->willReturn( [ 'card' ] ); // Only card is enabled.
+			->willReturn( [ Payment_Method::CARD ] ); // Only card is enabled.
 
 		$promotions = [
-			$this->create_valid_promotion( [ 'payment_method' => 'klarna' ] ),
+			$this->create_valid_promotion( [ 'payment_method' => Payment_Method::KLARNA ] ),
 		];
 
 		$result = $this->invoke_private_method( 'filter_promotions', [ $promotions ] );
 
 		$this->assertCount( 1, $result );
-		$this->assertSame( 'klarna', $result[0]['payment_method'] );
+		$this->assertSame( Payment_Method::KLARNA, $result[0]['payment_method'] );
 	}
 
 	public function test_filter_promotions_keeps_first_promo_id_per_pm() {
@@ -319,14 +320,14 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 				[
 					'id'             => 'first-promo__spotlight',
 					'promo_id'       => 'first-promo',
-					'payment_method' => 'klarna',
+					'payment_method' => Payment_Method::KLARNA,
 				]
 			),
 			$this->create_valid_promotion(
 				[
 					'id'             => 'second-promo__spotlight',
 					'promo_id'       => 'second-promo',
-					'payment_method' => 'klarna',
+					'payment_method' => Payment_Method::KLARNA,
 				]
 			),
 		];
@@ -346,7 +347,7 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 				[
 					'id'             => 'promo__spotlight',
 					'promo_id'       => 'promo',
-					'payment_method' => 'klarna',
+					'payment_method' => Payment_Method::KLARNA,
 					'type'           => 'spotlight',
 				]
 			),
@@ -354,7 +355,7 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 				[
 					'id'             => 'promo__badge',
 					'promo_id'       => 'promo',
-					'payment_method' => 'klarna',
+					'payment_method' => Payment_Method::KLARNA,
 					'type'           => 'badge',
 				]
 			),
@@ -376,14 +377,14 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 				[
 					'id'             => 'promo__klarna',
 					'promo_id'       => 'promo',
-					'payment_method' => 'klarna',
+					'payment_method' => Payment_Method::KLARNA,
 				]
 			),
 			$this->create_valid_promotion(
 				[
 					'id'             => 'promo__affirm',
 					'promo_id'       => 'promo',
-					'payment_method' => 'affirm',
+					'payment_method' => Payment_Method::AFFIRM,
 				]
 			),
 		];
@@ -426,14 +427,14 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 				[
 					'id'             => 'promo__klarna',
 					'promo_id'       => 'promo',
-					'payment_method' => 'klarna',
+					'payment_method' => Payment_Method::KLARNA,
 				]
 			),
 			$this->create_valid_promotion(
 				[
 					'id'             => 'promo__affirm',
 					'promo_id'       => 'promo',
-					'payment_method' => 'affirm',
+					'payment_method' => Payment_Method::AFFIRM,
 				]
 			),
 		];
@@ -446,7 +447,7 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 
 		// Only affirm promotion should remain (klarna has active discount).
 		$this->assertCount( 1, $result );
-		$this->assertSame( 'affirm', $result[0]['payment_method'] );
+		$this->assertSame( Payment_Method::AFFIRM, $result[0]['payment_method'] );
 	}
 
 	public function test_filter_promotions_keeps_pm_without_discount() {
@@ -455,14 +456,14 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 		$mock_account->method( 'get_fees' )
 			->willReturn(
 				[
-					'klarna' => [
+					Payment_Method::KLARNA => [
 						'base'     => [
 							'percentage_rate' => 0.029,
 							'fixed_rate'      => 30,
 						],
 						'discount' => [], // Empty discount array.
 					],
-					'affirm' => [
+					Payment_Method::AFFIRM => [
 						'base' => [
 							'percentage_rate' => 0.029,
 							'fixed_rate'      => 30,
@@ -483,14 +484,14 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 				[
 					'id'             => 'promo__klarna',
 					'promo_id'       => 'promo',
-					'payment_method' => 'klarna',
+					'payment_method' => Payment_Method::KLARNA,
 				]
 			),
 			$this->create_valid_promotion(
 				[
 					'id'             => 'promo__affirm',
 					'promo_id'       => 'promo',
-					'payment_method' => 'affirm',
+					'payment_method' => Payment_Method::AFFIRM,
 				]
 			),
 		];
@@ -513,7 +514,7 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_normalize_promotions_adds_payment_method_title() {
 		$promotions = [
-			$this->create_valid_promotion( [ 'payment_method' => 'klarna' ] ),
+			$this->create_valid_promotion( [ 'payment_method' => Payment_Method::KLARNA ] ),
 		];
 
 		$result = $this->invoke_private_method( 'normalize_promotions', [ $promotions ] );
@@ -527,7 +528,7 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 		$promotions = [
 			$this->create_valid_promotion(
 				[
-					'payment_method'       => 'klarna',
+					'payment_method'       => Payment_Method::KLARNA,
 					'payment_method_title' => 'Custom Klarna Title',
 				]
 			),
@@ -539,7 +540,7 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_normalize_promotions_applies_cta_label_fallback() {
-		$promotion = $this->create_valid_promotion( [ 'payment_method' => 'klarna' ] );
+		$promotion = $this->create_valid_promotion( [ 'payment_method' => Payment_Method::KLARNA ] );
 		unset( $promotion['cta_label'] );
 
 		$result = $this->invoke_private_method( 'normalize_promotions', [ [ $promotion ] ] );
@@ -896,7 +897,7 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 	public function test_activate_promotion_returns_false_when_promotion_not_visible() {
 		// When the PM is enabled, the promotion is not visible.
 		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )
-			->willReturn( [ 'klarna' ] );
+			->willReturn( [ Payment_Method::KLARNA ] );
 
 		// Set up cache with a klarna promotion.
 		$this->set_promotions_cache( [ $this->create_valid_promotion() ] );
@@ -965,7 +966,7 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 		// The mock data has promotions, but they should all be filtered out
 		// when klarna and affirm are enabled.
 		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )
-			->willReturn( [ 'klarna', 'affirm' ] );
+			->willReturn( [ Payment_Method::KLARNA, Payment_Method::AFFIRM ] );
 
 		$result = $this->service->get_visible_promotions();
 
@@ -1016,7 +1017,7 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 				[
 					'id'             => 'promo2__spotlight',
 					'promo_id'       => 'promo2',
-					'payment_method' => 'affirm',
+					'payment_method' => Payment_Method::AFFIRM,
 				]
 			),
 		];
