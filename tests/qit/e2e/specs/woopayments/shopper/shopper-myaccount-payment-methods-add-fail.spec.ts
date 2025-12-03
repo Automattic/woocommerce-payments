@@ -13,7 +13,6 @@ import { isUIUnblocked } from '../../../utils/helpers';
 import {
 	addSavedCard,
 	confirmCardAuthentication,
-	emptyCart,
 } from '../../../utils/shopper';
 
 const cards: Array< [ string, typeof config.cards.declined, string ] > = [
