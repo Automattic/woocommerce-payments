@@ -62,7 +62,6 @@ use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\Payment_Methods\Multibanco_Payment_Method;
 use WCPay\Payment_Methods\Grabpay_Payment_Method;
-use WCPay\PaymentMethods\Configs\Definitions\AfterpayDefinition;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 
 /**
