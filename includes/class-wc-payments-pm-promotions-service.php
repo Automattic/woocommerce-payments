@@ -9,7 +9,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly.
 }
 
+use WCPay\Constants\Track_Events;
 use WCPay\Core\Server\Request;
+use WCPay\Logger;
 
 /**
  * Class handling WooPayments payment method promotions related business logic.
@@ -118,11 +120,11 @@ class WC_Payments_PM_Promotions_Service {
 		$promotions = array_filter(
 			$promotions,
 			function ( $promotion ) {
-				return ! self::is_promotion_dismissed( $promotion['id'] ?? '' );
+				return ! $this->is_promotion_dismissed( $promotion['id'] ?? '' );
 			}
 		);
 
-		// Filter by PM validity, enabled status, and first promo_id per PM.
+		// Filter by PM validity, enabled status, and only keep the first found promo_id per PM.
 		$promotions = $this->filter_promotions( $promotions );
 
 		// Normalize the promotions (apply fallbacks, derive fields).
@@ -162,7 +164,7 @@ class WC_Payments_PM_Promotions_Service {
 		// Gather the store context data.
 		$store_context = [
 			// All the PM promotions dismissals.
-			'dismissals' => self::get_promotion_dismissals(),
+			'dismissals' => $this->get_promotion_dismissals(),
 			// Store locale, e.g. `en_US`.
 			'locale'     => get_locale(),
 		];
@@ -253,12 +255,12 @@ class WC_Payments_PM_Promotions_Service {
 	/**
 	 * Activate a promotion.
 	 *
-	 * Activating a promotion implies acceptance of terms.
 	 * This will:
-	 * 1. Send a request to the server to apply the promotion discount
-	 * 2. Enable the payment method locally
+	 * 1. Send a request to the server to apply the promotion discount.
+	 * 2. Enable the payment method for checkout.
+	 * Activating a promotion implies acceptance of terms and conditions for the promotion.
 	 *
-	 * @param string $id The promotion identifier (e.g., 'klarna-2026-promo__spotlight').
+	 * @param string $id The promotion unique identifier (e.g., 'klarna-2026-promo__spotlight').
 	 *
 	 * @return bool True on success, false on failure.
 	 */
@@ -288,27 +290,9 @@ class WC_Payments_PM_Promotions_Service {
 		 * }
 		 */
 
-		// Enable the payment method locally.
-		$gateway = WC_Payments::get_payment_gateway_by_id( $payment_method_id );
-		if ( ! $gateway ) {
-			if ( function_exists( 'wc_get_logger' ) ) {
-				$logger = wc_get_logger();
-				/* translators: 1: Payment method ID, 2: Error message */
-				$logger->warning( sprintf( 'Failed to enable payment method %1$s: %2$s', $payment_method_id, 'payment gateway instance not available' ), [ 'source' => 'woopayments' ] );
-			}
+		// Enable the payment method for checkout.
+		if ( ! $this->enable_payment_method_gateway( $payment_method_id, $promotion ) ) {
 			return false;
-		}
-		$gateway->enable();
-
-		// Keep the enabled payment method IDs list synchronized across gateway setting objects unless we remove this list with all dependencies.
-		foreach ( WC_Payments::get_payment_gateway_map() as $payment_gateway ) {
-			// Get the current enabled PM IDs.
-			$enabled_pm_ids = $payment_gateway->get_upe_enabled_payment_method_ids();
-			// Add the newly enabled PM ID if not already present.
-			if ( ! in_array( $payment_method_id, $enabled_pm_ids, true ) ) {
-				$enabled_pm_ids[] = $payment_method_id;
-				$payment_gateway->update_option( 'upe_enabled_payment_method_ids', $enabled_pm_ids );
-			}
 		}
 
 		// Clear the promotions cache to ensure fresh data on next fetch.
@@ -345,6 +329,118 @@ class WC_Payments_PM_Promotions_Service {
 	}
 
 	/**
+	 * Find a promotion for a payment method.
+	 *
+	 * We will return the first promotion found for the payment method.
+	 *
+	 * @param string $payment_method_id The payment method ID (e.g., 'klarna').
+	 *
+	 * @return array|null The promotion data or null if not found.
+	 */
+	private function find_promotion_by_payment_method( string $payment_method_id ): ?array {
+		$promotions = $this->get_visible_promotions();
+
+		if ( null === $promotions ) {
+			return null;
+		}
+
+		foreach ( $promotions as $promotion ) {
+			if ( isset( $promotion['payment_method'] ) && $promotion['payment_method'] === $payment_method_id ) {
+				return $promotion;
+			}
+		}
+
+		return null;
+	}
+
+	/**
+	 * Enable a payment method gateway.
+	 *
+	 * @param string $payment_method_id The payment method ID (e.g., 'klarna').
+	 * @param array  $promotion         The promotion data associated with the payment method.
+	 *
+	 * @return bool True on success, false on failure.
+	 */
+	private function enable_payment_method_gateway( string $payment_method_id, array $promotion ): bool {
+		$gateway = WC_Payments::get_payment_gateway_by_id( $payment_method_id );
+		if ( ! $gateway ) {
+			if ( function_exists( 'wc_get_logger' ) ) {
+				$logger = wc_get_logger();
+				/* translators: 1: Payment method ID, 2: Error message */
+				$logger->warning( sprintf( 'Failed to enable payment method %1$s: %2$s', $payment_method_id, 'payment gateway instance not available' ), [ 'source' => 'woopayments' ] );
+			}
+			return false;
+		}
+		$gateway->enable();
+
+		$pm_to_capability_key_map = $gateway->get_payment_method_capability_key_map();
+		$this->tracks_event(
+			Track_Events::PAYMENT_METHOD_ENABLED,
+			[
+				'payment_method_id' => $payment_method_id,
+				'capability_id'     => $pm_to_capability_key_map[ $payment_method_id ] ?? null,
+				'promo_id'          => $promotion['promo_id'] ?? null,
+			]
+		);
+
+		// Keep the enabled payment method IDs list synchronized across gateway setting objects.
+		foreach ( WC_Payments::get_payment_gateway_map() as $payment_gateway ) {
+			$enabled_pm_ids = $payment_gateway->get_upe_enabled_payment_method_ids();
+			if ( ! in_array( $payment_method_id, $enabled_pm_ids, true ) ) {
+				$enabled_pm_ids[] = $payment_method_id;
+				$payment_gateway->update_option( 'upe_enabled_payment_method_ids', $enabled_pm_ids );
+			}
+		}
+
+		return true;
+	}
+
+	/**
+	 * Activate any visible promotions for a payment method being enabled via settings.
+	 *
+	 * This method should be called BEFORE the payment method is enabled for checkout,
+	 * as visible promotions are filtered out for already-enabled payment methods.
+	 *
+	 * @param string $payment_method_id The payment method ID (e.g., 'klarna').
+	 * @param bool   $should_enable     Whether to enable the payment method for checkout.
+	 *
+	 * @return bool True if a promotion was activated, false otherwise.
+	 */
+	public function maybe_activate_promotion_for_payment_method( string $payment_method_id, bool $should_enable = false ): bool {
+		$promotion = $this->find_promotion_by_payment_method( $payment_method_id );
+		if ( null === $promotion ) {
+			return false;
+		}
+
+		/*
+		 * Send request to server to apply the promotion discount.
+		 * The server should also handle capability requesting if it is not already requested.
+		 *
+		 * TODO: Replace with actual API call when server endpoints are available.
+		 * $wcpay_request = Request\Activate_Promotion::create( $promotion['id'] );
+		 * $wcpay_request->assign_hook( 'wcpay_activate_promotion_request' );
+		 * $response = $wcpay_request->handle_rest_request();
+		 * if ( is_wp_error( $response ) ) {
+		 *     return false;
+		 * }
+		 */
+
+		// Enable the payment method for checkout if requested.
+		if ( $should_enable && ! $this->enable_payment_method_gateway( $payment_method_id, $promotion ) ) {
+			return false;
+		}
+
+		// Clear the promotions cache to ensure fresh data on next fetch.
+		$this->clear_cache();
+		// Clear the account cache.
+		if ( null !== $this->account ) {
+			$this->account->clear_cache();
+		}
+
+		return true;
+	}
+
+	/**
 	 * Dismiss a promotion.
 	 *
 	 * @param string $id The promotion unique identifier (e.g., 'klarna-2026-promo__spotlight').
@@ -352,12 +448,32 @@ class WC_Payments_PM_Promotions_Service {
 	 * @return bool True if dismissed, false if already dismissed or error.
 	 */
 	public function dismiss_promotion( string $id ): bool {
+		// Cannot dismiss a non-existing promotion.
+		$promotion = $this->find_promotion_by_id( $id );
+		if ( null === $promotion ) {
+			return false;
+		}
+
+		if ( ! $this->mark_promotion_dismissed( $id ) ) {
+			return false;
+		}
+
+		// Track dismissal event.
+		$this->tracks_event(
+			Track_Events::PAYMENT_METHOD_PROMOTION_DISMISSED,
+			[
+				'payment_method_id' => $promotion['payment_method'] ?? null,
+				'promo_id'          => $promotion['promo_id'] ?? null,
+				'unique_promo_id'   => $id,
+			]
+		);
+
 		// Cache invalidation happens automatically via context hash
 		// when dismissals change - the next get_promotions() call will detect the hash
 		// mismatch and refetch from the server.
 		$this->reset_memo();
 
-		return $this->mark_promotion_dismissed( $id );
+		return true;
 	}
 
 	/**
@@ -418,11 +534,11 @@ class WC_Payments_PM_Promotions_Service {
 	 */
 	private function mark_promotion_dismissed( string $id ): bool {
 		// Don't dismiss if already dismissed.
-		if ( self::is_promotion_dismissed( $id ) ) {
+		if ( $this->is_promotion_dismissed( $id ) ) {
 			return false;
 		}
 
-		$dismissals        = self::get_promotion_dismissals();
+		$dismissals        = $this->get_promotion_dismissals();
 		$dismissals[ $id ] = time();
 
 		return update_option( self::PROMOTION_DISMISSALS_OPTION, $dismissals, false );
@@ -433,32 +549,23 @@ class WC_Payments_PM_Promotions_Service {
 	 *
 	 * @return array Associative array of [id => timestamp].
 	 */
-	public static function get_promotion_dismissals(): array {
+	public function get_promotion_dismissals(): array {
 		return get_option( self::PROMOTION_DISMISSALS_OPTION, [] );
 	}
 
 	/**
 	 * Check if a promotion has been dismissed.
 	 *
+	 * Being dismissed means having an entry in the dismissals option with a timestamp into the past.
+	 *
 	 * @param string $id The promotion unique identifier.
 	 *
 	 * @return bool True if dismissed, false otherwise.
 	 */
-	public static function is_promotion_dismissed( string $id ): bool {
-		$dismissals = self::get_promotion_dismissals();
-		return isset( $dismissals[ $id ] );
-	}
+	public function is_promotion_dismissed( string $id ): bool {
+		$dismissals = $this->get_promotion_dismissals();
 
-	/**
-	 * Get dismissal timestamp for a specific promotion.
-	 *
-	 * @param string $id The promotion unique identifier.
-	 *
-	 * @return int|null Dismissal timestamp, or null if not dismissed.
-	 */
-	public static function get_promotion_dismissal_time( string $id ): ?int {
-		$dismissals = self::get_promotion_dismissals();
-		return $dismissals[ $id ] ?? null;
+		return isset( $dismissals[ $id ] ) && is_int( $dismissals[ $id ] ) && $dismissals[ $id ] > 0 && $dismissals[ $id ] <= time();
 	}
 
 	/**
@@ -804,5 +911,43 @@ class WC_Payments_PM_Promotions_Service {
 
 		// Fallback to formatted ID (e.g., 'klarna' -> 'Klarna').
 		return ucfirst( str_replace( '_', ' ', $payment_method_id ) );
+	}
+
+	/**
+	 * Send a Tracks event.
+	 *
+	 * By default Woo adds `url`, `blog_lang`, `blog_id`, `store_id`, `products_count`, and `wc_version`
+	 * properties to every event.
+	 *
+	 * @todo This is a duplicate of the one in the WC_Payments_Account, WC_REST_Payments_Settings_Controller, and WC_Payments_Onboarding_Service classes.
+	 *
+	 * @param string $name       The event name.
+	 * @param array  $properties Optional. The event custom properties.
+	 *
+	 * @return void
+	 */
+	private function tracks_event( string $name, array $properties = [] ) {
+		if ( ! function_exists( 'wc_admin_record_tracks_event' ) ) {
+			return;
+		}
+
+		// Add default properties to every event.
+		$account_service = WC_Payments::get_account_service();
+		$tracking_info   = $account_service ? $account_service->get_tracking_info() : [];
+
+		$properties = array_merge(
+			$properties,
+			[
+				'is_test_mode'      => WC_Payments::mode()->is_test(),
+				'jetpack_connected' => true, // Any PM promotions require a Jetpack connection.
+				'wcpay_version'     => WCPAY_VERSION_NUMBER,
+				'woo_country_code'  => WC()->countries->get_base_country(),
+			],
+			$tracking_info ?? []
+		);
+
+		wc_admin_record_tracks_event( $name, $properties );
+
+		Logger::info( 'Tracks event: ' . $name . ' with data: ' . wp_json_encode( WC_Payments_Utils::redact_array( $properties, [ 'woo_country_code' ] ) ) );
 	}
 }
