@@ -211,8 +211,25 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 					>
 						<Flex
 							className="wcpay-spotlight__controls"
-							justify="flex-end"
+							justify="space-between"
+							align="center"
 						>
+							{ /* When no image: show badge if available, otherwise show heading */ }
+							{ ! image && badge && (
+								<div className="wcpay-spotlight__badge">
+									<Chip message={ badge } type="success" />
+								</div>
+							) }
+							{ ! image && ! badge && (
+								<h2
+									id="spotlight-heading"
+									className="wcpay-spotlight__heading"
+								>
+									{ heading }
+								</h2>
+							) }
+							{ /* Spacer when image is present (header is overlaid) */ }
+							{ image && <span /> }
 							<Button
 								className="wcpay-spotlight__close-btn"
 								label={ __( 'Close', 'woocommerce-payments' ) }
@@ -229,17 +246,23 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 					</CardHeader>
 
 					<CardBody className="wcpay-spotlight__body" size="small">
-						{ badge && (
+						{ /* When image present OR when no image but badge is in header: show badge in body only if image */ }
+						{ image && badge && (
 							<div className="wcpay-spotlight__badge">
 								<Chip message={ badge } type="success" />
 							</div>
 						) }
-						<h2
-							id="spotlight-heading"
-							className="wcpay-spotlight__heading"
-						>
-							{ heading }
-						</h2>
+						{ /* When no image and badge shown in header: show heading in body */ }
+						{ /* When image present: always show heading in body */ }
+						{ /* When no image and no badge: heading already in header, don't duplicate */ }
+						{ ( image || badge ) && (
+							<h2
+								id="spotlight-heading"
+								className="wcpay-spotlight__heading"
+							>
+								{ heading }
+							</h2>
+						) }
 						{ typeof description === 'string' ? (
 							<div
 								className="wcpay-spotlight__description"
