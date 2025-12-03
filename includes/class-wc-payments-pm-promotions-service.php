@@ -60,7 +60,7 @@ class WC_Payments_PM_Promotions_Service {
 	 * @param WC_Payment_Gateway_WCPay|null $gateway Optional gateway instance.
 	 * @param WC_Payments_Account|null      $account Optional account instance.
 	 */
-	public function __construct( $gateway = null, $account = null ) {
+	public function __construct( WC_Payment_Gateway_WCPay $gateway = null, WC_Payments_Account $account = null ) {
 		$this->gateway = $gateway;
 		$this->account = $account;
 	}
@@ -445,9 +445,7 @@ class WC_Payments_PM_Promotions_Service {
 			[
 				'payment_method_id' => $payment_method_id,
 				'promo_id'          => $promotion['promo_id'] ?? null,
-				// The `unique_promo_id` is excluded intentionally as it's not a reliable data point in this context.
-				// Since we retrieve the promotion by PM, there could be multiple promotion types for the same PM,
-				// and we don't know which one was acted upon.
+				// The `unique_promo_id` is excluded intentionally as it's not a reliable without a specific promo type.
 			]
 		);
 
