@@ -535,6 +535,7 @@ class WC_Payments_PM_Promotions_Service {
 				'payment_method' => 'klarna',
 				'type'           => 'spotlight',
 				'title'          => 'Zero Processing Fees for 90 Days',
+				'badge'          => 'Limited time offer',
 				'description'    => 'Save on every Klarna transaction with <b>0% processing fees</b> for 90 days from activation.',
 				'cta_label'      => 'Enable Klarna',
 				'tc_url'         => 'https://woocommerce.com/terms',
@@ -865,7 +866,7 @@ class WC_Payments_PM_Promotions_Service {
 		}
 
 		// Sanitize text fields (no HTML allowed).
-		$text_fields = [ 'payment_method_title', 'title', 'cta_label', 'tc_label' ];
+		$text_fields = [ 'payment_method_title', 'title', 'cta_label', 'tc_label', 'badge' ];
 		foreach ( $text_fields as $field ) {
 			if ( isset( $promotion[ $field ] ) ) {
 				$promotion[ $field ] = sanitize_text_field( $promotion[ $field ] );

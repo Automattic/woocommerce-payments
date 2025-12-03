@@ -129,6 +129,7 @@ const SpotlightPromotion: React.FC = () => {
 
 	return (
 		<Spotlight
+			badge={ spotlightPromotion.badge }
 			heading={ spotlightPromotion.title }
 			description={ spotlightPromotion.description }
 			footnote={ spotlightPromotion.footnote }

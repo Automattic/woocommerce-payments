@@ -15,6 +15,7 @@ export interface Promotion {
 	payment_method_title: string;
 	type: PromotionType;
 	title: string;
+	badge?: string;
 	description: string;
 	cta_label: string;
 	tc_url: string;

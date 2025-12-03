@@ -231,7 +231,7 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 					<CardBody className="wcpay-spotlight__body" size="small">
 						{ badge && (
 							<div className="wcpay-spotlight__badge">
-								<Chip message={ badge } type="primary" />
+								<Chip message={ badge } type="success" />
 							</div>
 						) }
 						<h2
