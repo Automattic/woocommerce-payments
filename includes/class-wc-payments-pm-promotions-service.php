@@ -445,7 +445,9 @@ class WC_Payments_PM_Promotions_Service {
 			[
 				'payment_method_id' => $payment_method_id,
 				'promo_id'          => $promotion['promo_id'] ?? null,
-				'unique_promo_id'   => $promotion['id'] ?? null,
+				// The `unique_promo_id` is excluded intentionally as it's not a reliable data point in this context.
+				// Since we retrieve the promotion by PM, there could be multiple promotion types for the same PM,
+				// and we don't know which one was acted upon.
 			]
 		);
 
@@ -475,8 +477,6 @@ class WC_Payments_PM_Promotions_Service {
 			[
 				'payment_method_id' => $payment_method_id,
 				'promo_id'          => $promotion['promo_id'] ?? null,
-				'unique_promo_id'   => $promotion['id'] ?? null,
-				'error_message'     => $error_message,
 			]
 		);
 
