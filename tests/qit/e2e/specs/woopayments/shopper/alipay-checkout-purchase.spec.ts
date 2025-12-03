@@ -17,6 +17,7 @@ test.describe( 'Alipay Checkout', { tag: '@shopper' }, () => {
 	let merchantPage: Page;
 	let shopperContext: BrowserContext;
 	let shopperPage: Page;
+	let wasMulticurrencyEnabled = false;
 
 	test.beforeAll( async ( { browser } ) => {
 		merchantContext = await browser.newContext( {
@@ -29,6 +30,14 @@ test.describe( 'Alipay Checkout', { tag: '@shopper' }, () => {
 		} );
 		shopperPage = await shopperContext.newPage();
 
+		// Alipay may not work correctly with multi-currency enabled
+		wasMulticurrencyEnabled = await merchant.isMulticurrencyEnabled(
+			merchantPage
+		);
+		if ( wasMulticurrencyEnabled ) {
+			await merchant.deactivateMulticurrency( merchantPage );
+		}
+
 		await merchant.enablePaymentMethods( merchantPage, [ 'alipay' ] );
 	} );
 
@@ -39,6 +48,9 @@ test.describe( 'Alipay Checkout', { tag: '@shopper' }, () => {
 
 		if ( merchantPage ) {
 			await merchant.disablePaymentMethods( merchantPage, [ 'alipay' ] );
+			if ( wasMulticurrencyEnabled ) {
+				await merchant.activateMulticurrency( merchantPage );
+			}
 		}
 
 		await merchantContext?.close();
@@ -62,9 +74,8 @@ test.describe( 'Alipay Checkout', { tag: '@shopper' }, () => {
 			await shopper.selectPaymentMethod( shopperPage, 'Alipay' );
 			await shopper.placeOrder( shopperPage );
 
-			await expect(
-				shopperPage.getByText( /Alipay test payment page/ )
-			).toBeVisible();
+			// Verify redirect to Stripe's Alipay test page
+			await expect( shopperPage ).toHaveURL( /.*stripe\.com.*alipay/ );
 
 			await shopperPage.getByText( 'Authorize Test Payment' ).click();
 
@@ -105,9 +116,10 @@ test.describe( 'Alipay Checkout', { tag: '@shopper' }, () => {
 
 				await shopper.placeOrderWCB( shopperPage, false );
 
-				await expect(
-					shopperPage.getByText( /Alipay test payment page/ )
-				).toBeVisible();
+				// Verify redirect to Stripe's Alipay test page
+				await expect( shopperPage ).toHaveURL(
+					/.*stripe\.com.*alipay/
+				);
 
 				await shopperPage.getByText( 'Authorize Test Payment' ).click();
 
