@@ -511,9 +511,8 @@ class WC_Payments_PM_Promotions_Service {
 			]
 		);
 
-		// Cache invalidation happens automatically via context hash
-		// when dismissals change - the next get_promotions() call will detect the hash
-		// mismatch and refetch from the server.
+		// Reset memo to ensure fresh data on next access.
+		// The context hash change will also invalidate the transient cache.
 		$this->reset_memo();
 
 		return true;
