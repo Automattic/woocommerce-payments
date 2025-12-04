@@ -308,6 +308,16 @@ class WC_Payments_PM_Promotions_Service {
 			$this->account->clear_cache();
 		}
 
+		// Track successful activation.
+		$this->tracks_event(
+			Track_Events::PAYMENT_METHOD_PROMOTION_ACTIVATED,
+			[
+				'payment_method_id' => $payment_method_id,
+				'promo_id'          => $promotion['promo_id'] ?? null,
+				'unique_promo_id'   => $id,
+			]
+		);
+
 		return true;
 	}
 
