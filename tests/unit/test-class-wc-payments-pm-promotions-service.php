@@ -7,6 +7,7 @@
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Constants\Payment_Method;
+use WCPay\Core\Server\Request\Activate_Promotion;
 
 /**
  * WC_Payments_PM_Promotions_Service unit tests.
@@ -127,6 +128,46 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 			],
 			DAY_IN_SECONDS
 		);
+	}
+
+	/**
+	 * Helper to set up a mock payment gateway in WC_Payments for testing.
+	 *
+	 * @param string          $payment_method_id The payment method ID (e.g., 'klarna').
+	 * @param MockObject|null $gateway_mock      Optional gateway mock. Creates one if not provided.
+	 */
+	private function set_payment_gateway_for_testing( string $payment_method_id, $gateway_mock = null ): void {
+		if ( null === $gateway_mock ) {
+			$gateway_mock = $this->createMock( WC_Payment_Gateway_WCPay::class );
+			$gateway_mock->method( 'enable' )->willReturn( true );
+			$gateway_mock->method( 'get_payment_method_capability_key_map' )->willReturn( [] );
+			$gateway_mock->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [] );
+			$gateway_mock->method( 'update_option' )->willReturn( true );
+		}
+
+		// Use reflection to access the private static property.
+		$reflection = new ReflectionClass( WC_Payments::class );
+		$property   = $reflection->getProperty( 'payment_gateway_map' );
+		$property->setAccessible( true );
+
+		$gateway_map                       = $property->getValue();
+		$gateway_map[ $payment_method_id ] = $gateway_mock;
+		$property->setValue( null, $gateway_map );
+	}
+
+	/**
+	 * Helper to clean up the WC_Payments gateway map after testing.
+	 *
+	 * @param string $payment_method_id The payment method ID to remove.
+	 */
+	private function clear_payment_gateway_for_testing( string $payment_method_id ): void {
+		$reflection = new ReflectionClass( WC_Payments::class );
+		$property   = $reflection->getProperty( 'payment_gateway_map' );
+		$property->setAccessible( true );
+
+		$gateway_map = $property->getValue();
+		unset( $gateway_map[ $payment_method_id ] );
+		$property->setValue( null, $gateway_map );
 	}
 
 	/*
@@ -927,7 +968,16 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 		// Set up cache with a valid promotion.
 		$this->set_promotions_cache( [ $this->create_valid_promotion() ] );
 
+		// Mock the API request to return success.
+		$this->mock_wcpay_request( Activate_Promotion::class, 1, 'test-promo__spotlight', [] );
+
+		// Set up the payment gateway in WC_Payments so enable_payment_method_gateway can find it.
+		$this->set_payment_gateway_for_testing( Payment_Method::KLARNA );
+
 		$result = $this->service->activate_promotion( 'test-promo__spotlight' );
+
+		// Clean up the gateway.
+		$this->clear_payment_gateway_for_testing( Payment_Method::KLARNA );
 
 		$this->assertTrue( $result );
 	}
@@ -939,7 +989,16 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 		// Set up cache with a valid promotion.
 		$this->set_promotions_cache( [ $this->create_valid_promotion() ] );
 
+		// Mock the API request to return success.
+		$this->mock_wcpay_request( Activate_Promotion::class, 1, 'test-promo__spotlight', [] );
+
+		// Set up the payment gateway in WC_Payments so enable_payment_method_gateway can find it.
+		$this->set_payment_gateway_for_testing( Payment_Method::KLARNA );
+
 		$this->service->activate_promotion( 'test-promo__spotlight' );
+
+		// Clean up the gateway.
+		$this->clear_payment_gateway_for_testing( Payment_Method::KLARNA );
 
 		$this->assertFalse( get_transient( WC_Payments_PM_Promotions_Service::PROMOTIONS_CACHE_KEY ) );
 	}
@@ -989,9 +1048,24 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )
 			->willReturn( [] ); // No PMs enabled, promotions should show.
 
+		// Set up cache with valid promotions.
+		$this->set_promotions_cache(
+			[
+				$this->create_valid_promotion(),
+				$this->create_valid_promotion(
+					[
+						'id'             => 'affirm-promo__badge',
+						'promo_id'       => 'affirm-promo',
+						'payment_method' => Payment_Method::AFFIRM,
+						'type'           => 'badge',
+					]
+				),
+			]
+		);
+
 		$result = $this->service->get_visible_promotions();
 
-		// Should have promotions from mock data.
+		// Should have promotions from cache.
 		$this->assertIsArray( $result );
 		$this->assertNotEmpty( $result );
 
@@ -1006,6 +1080,21 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 	public function test_get_visible_promotions_returns_array_values() {
 		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )
 			->willReturn( [] );
+
+		// Set up cache with valid promotions.
+		$this->set_promotions_cache(
+			[
+				$this->create_valid_promotion(),
+				$this->create_valid_promotion(
+					[
+						'id'             => 'affirm-promo__badge',
+						'promo_id'       => 'affirm-promo',
+						'payment_method' => Payment_Method::AFFIRM,
+						'type'           => 'badge',
+					]
+				),
+			]
+		);
 
 		$result = $this->service->get_visible_promotions();
 

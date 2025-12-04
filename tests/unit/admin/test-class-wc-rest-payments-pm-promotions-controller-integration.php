@@ -8,6 +8,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
+use WCPay\Core\Server\Request\Activate_Promotion;
 
 /**
  * WC_REST_Payments_PM_Promotions_Controller integration tests.
@@ -149,6 +150,46 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 			],
 			DAY_IN_SECONDS
 		);
+	}
+
+	/**
+	 * Helper to set up a mock payment gateway in WC_Payments for testing.
+	 *
+	 * @param string          $payment_method_id The payment method ID (e.g., 'klarna').
+	 * @param MockObject|null $gateway_mock      Optional gateway mock. Creates one if not provided.
+	 */
+	private function set_payment_gateway_for_testing( string $payment_method_id, $gateway_mock = null ): void {
+		if ( null === $gateway_mock ) {
+			$gateway_mock = $this->createMock( WC_Payment_Gateway_WCPay::class );
+			$gateway_mock->method( 'enable' )->willReturn( true );
+			$gateway_mock->method( 'get_payment_method_capability_key_map' )->willReturn( [] );
+			$gateway_mock->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [] );
+			$gateway_mock->method( 'update_option' )->willReturn( true );
+		}
+
+		// Use reflection to access the private static property.
+		$reflection = new ReflectionClass( WC_Payments::class );
+		$property   = $reflection->getProperty( 'payment_gateway_map' );
+		$property->setAccessible( true );
+
+		$gateway_map                       = $property->getValue();
+		$gateway_map[ $payment_method_id ] = $gateway_mock;
+		$property->setValue( null, $gateway_map );
+	}
+
+	/**
+	 * Helper to clean up the WC_Payments gateway map after testing.
+	 *
+	 * @param string $payment_method_id The payment method ID to remove.
+	 */
+	private function clear_payment_gateway_for_testing( string $payment_method_id ): void {
+		$reflection = new ReflectionClass( WC_Payments::class );
+		$property   = $reflection->getProperty( 'payment_gateway_map' );
+		$property->setAccessible( true );
+
+		$gateway_map = $property->getValue();
+		unset( $gateway_map[ $payment_method_id ] );
+		$property->setValue( null, $gateway_map );
 	}
 
 	/*
@@ -450,10 +491,19 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 
 		$id = 'test-promo__spotlight';
 
+		// Mock the API request to return success.
+		$this->mock_wcpay_request( Activate_Promotion::class, 1, $id, [] );
+
+		// Set up the payment gateway in WC_Payments so enable_payment_method_gateway can find it.
+		$this->set_payment_gateway_for_testing( 'klarna' );
+
 		$request = new WP_REST_Request( 'POST', $this->rest_base . '/' . $id . '/activate' );
 		$request->set_param( 'id', $id );
 
 		$response = $this->controller->activate_promotion( $request );
+
+		// Clean up the gateway.
+		$this->clear_payment_gateway_for_testing( 'klarna' );
 
 		$this->assertTrue( $response->get_data()['success'] );
 	}
