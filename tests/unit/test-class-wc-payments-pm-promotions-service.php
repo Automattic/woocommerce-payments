@@ -140,6 +140,8 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 		if ( null === $gateway_mock ) {
 			$gateway_mock = $this->createMock( WC_Payment_Gateway_WCPay::class );
 			$gateway_mock->method( 'enable' )->willReturn( true );
+			$gateway_mock->method( 'get_option' )->willReturn( 'yes' ); // Simulate enabled state.
+			$gateway_mock->method( 'get_option_key' )->willReturn( 'woocommerce_woocommerce_payments_settings' );
 			$gateway_mock->method( 'get_payment_method_capability_key_map' )->willReturn( [] );
 			$gateway_mock->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [] );
 			$gateway_mock->method( 'update_option' )->willReturn( true );

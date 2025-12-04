@@ -361,14 +361,23 @@ class WC_Payments_PM_Promotions_Service {
 	private function enable_payment_method_gateway( string $payment_method_id, array $promotion ): bool {
 		$gateway = WC_Payments::get_payment_gateway_by_id( $payment_method_id );
 		if ( ! $gateway ) {
-			if ( function_exists( 'wc_get_logger' ) ) {
-				$logger = wc_get_logger();
-				/* translators: 1: Payment method ID, 2: Error message */
-				$logger->warning( sprintf( 'Failed to enable payment method %1$s: %2$s', $payment_method_id, 'payment gateway instance not available' ), [ 'source' => 'woopayments' ] );
-			}
+			$this->log_gateway_error( $payment_method_id, 'payment gateway instance not available' );
 			return false;
 		}
-		$gateway->enable();
+
+		// Attempt to enable the gateway with exception handling.
+		try {
+			$gateway->enable();
+		} catch ( \Exception $e ) {
+			$this->log_gateway_error( $payment_method_id, $e->getMessage() );
+			return false;
+		}
+
+		// Verify the gateway was actually enabled.
+		if ( 'yes' !== $gateway->get_option( 'enabled' ) ) {
+			$this->log_gateway_error( $payment_method_id, 'gateway enable() did not persist enabled state' );
+			return false;
+		}
 
 		$pm_to_capability_key_map = $gateway->get_payment_method_capability_key_map();
 		$this->tracks_event(
@@ -380,16 +389,55 @@ class WC_Payments_PM_Promotions_Service {
 			]
 		);
 
-		// Keep the enabled payment method IDs list synchronized across gateway setting objects.
-		foreach ( WC_Payments::get_payment_gateway_map() as $payment_gateway ) {
-			$enabled_pm_ids = $payment_gateway->get_upe_enabled_payment_method_ids();
-			if ( ! in_array( $payment_method_id, $enabled_pm_ids, true ) ) {
-				$enabled_pm_ids[] = $payment_method_id;
-				$payment_gateway->update_option( 'upe_enabled_payment_method_ids', $enabled_pm_ids );
-			}
-		}
+		// Synchronize enabled payment method IDs across all gateways.
+		$this->sync_enabled_payment_method_across_gateways( $payment_method_id );
 
 		return true;
+	}
+
+	/**
+	 * Log a gateway error.
+	 *
+	 * @param string $payment_method_id The payment method ID.
+	 * @param string $error_message     The error message.
+	 */
+	private function log_gateway_error( string $payment_method_id, string $error_message ): void {
+		if ( function_exists( 'wc_get_logger' ) ) {
+			$logger = wc_get_logger();
+			$logger->warning(
+				sprintf(
+					/* translators: 1: Payment method ID, 2: Error message */
+					'Failed to enable payment method %1$s: %2$s',
+					$payment_method_id,
+					$error_message
+				),
+				[ 'source' => 'woopayments' ]
+			);
+		}
+	}
+
+	/**
+	 * Synchronize enabled payment method ID across all gateways.
+	 *
+	 * @param string $payment_method_id The payment method ID to sync.
+	 */
+	private function sync_enabled_payment_method_across_gateways( string $payment_method_id ): void {
+		$gateway_map = WC_Payments::get_payment_gateway_map();
+		if ( empty( $gateway_map ) ) {
+			return;
+		}
+
+		foreach ( $gateway_map as $payment_gateway ) {
+			$enabled_pm_ids = $payment_gateway->get_upe_enabled_payment_method_ids();
+
+			// Skip if already present or not a valid array.
+			if ( ! is_array( $enabled_pm_ids ) || in_array( $payment_method_id, $enabled_pm_ids, true ) ) {
+				continue;
+			}
+
+			$enabled_pm_ids[] = $payment_method_id;
+			$payment_gateway->update_option( 'upe_enabled_payment_method_ids', $enabled_pm_ids );
+		}
 	}
 
 	/**
