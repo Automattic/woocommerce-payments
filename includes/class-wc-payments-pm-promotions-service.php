@@ -682,10 +682,15 @@ class WC_Payments_PM_Promotions_Service {
 
 		$pm_fees = $fees[ $payment_method_id ];
 
-		// Check if there's a discount array with at least one entry that has a discount value.
-		if ( ! empty( $pm_fees['discount'] ) && is_array( $pm_fees['discount'] ) ) {
-			$first_discount = $pm_fees['discount'][0] ?? [];
-			return ! empty( $first_discount['discount'] );
+		// Verify discount is a non-empty array.
+		if ( ! isset( $pm_fees['discount'] ) || ! is_array( $pm_fees['discount'] ) || empty( $pm_fees['discount'] ) ) {
+			return false;
+		}
+
+		// Check if first discount entry is an array with a non-empty 'discount' value.
+		$first_discount = $pm_fees['discount'][0];
+		if ( is_array( $first_discount ) && array_key_exists( 'discount', $first_discount ) && ! empty( $first_discount['discount'] ) ) {
+			return true;
 		}
 
 		return false;
