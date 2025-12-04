@@ -78,10 +78,6 @@ export const transformStripePaymentMethodForStoreApi = (
 				value: 'card',
 			},
 			{
-				key: 'payment_request_type',
-				value: paymentData.expressPaymentType,
-			},
-			{
 				key: 'wcpay-fraud-prevention-token',
 				value: window.wcpayFraudPreventionToken ?? '',
 			},

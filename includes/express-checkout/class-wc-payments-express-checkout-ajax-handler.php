@@ -175,24 +175,41 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			$payment_data[ sanitize_key( $data['key'] ) ] = wc_clean( $data['value'] );
 		}
 
-		if ( empty( $payment_data['payment_request_type'] ) ) {
+		if ( empty( $payment_data['express_payment_type'] ) ) {
 			return;
 		}
 
-		$payment_request_type = wc_clean( wp_unslash( $payment_data['payment_request_type'] ) );
+		$express_payment_type = wc_clean( wp_unslash( $payment_data['express_payment_type'] ) );
 
-		$payment_method_titles = [
-			'apple_pay'  => 'Apple Pay',
-			'google_pay' => 'Google Pay',
-		];
+		$payment_method_title = $this->get_payment_method_title_from_definition( $express_payment_type );
+		// fallback, just in case.
+		if ( ! $payment_method_title ) {
+			$payment_method_title = 'Payment Request';
+		}
 
 		$suffix = apply_filters( 'wcpay_payment_request_payment_method_title_suffix', 'WooPayments' );
 		if ( ! empty( $suffix ) ) {
 			$suffix = " ($suffix)";
 		}
 
-		$payment_method_title = isset( $payment_method_titles[ $payment_request_type ] ) ? $payment_method_titles[ $payment_request_type ] : 'Payment Request';
 		$order->set_payment_method_title( $payment_method_title . $suffix );
+		$order->update_meta_data( '_wcpay_express_checkout_payment_method', $express_payment_type );
+	}
+
+	/**
+	 * Get the payment method title from the definition.
+	 *
+	 * @param string $payment_method_id The payment method ID (e.g., 'apple_pay', 'google_pay').
+	 * @return string|null The payment method title or null if not found.
+	 */
+	private function get_payment_method_title_from_definition( $payment_method_id ) {
+		$payment_method = WC_Payments::get_payment_method_by_id( $payment_method_id );
+
+		if ( $payment_method && method_exists( $payment_method, 'get_title' ) ) {
+			return $payment_method->get_title();
+		}
+
+		return null;
 	}
 
 	/**
