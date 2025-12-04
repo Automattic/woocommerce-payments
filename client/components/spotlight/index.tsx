@@ -124,14 +124,19 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [ isAnimatingIn ] );
 
-	const handleClose = useCallback( () => {
-		setIsAnimatingIn( false );
-		// Wait for animation to complete before hiding
-		closeTimeoutRef.current = setTimeout( () => {
-			setIsVisible( false );
-			onDismiss();
-		}, 300 );
-	}, [ onDismiss ] );
+	const handleClose = useCallback(
+		( shouldDismiss = true ) => {
+			setIsAnimatingIn( false );
+			// Wait for animation to complete before hiding
+			closeTimeoutRef.current = setTimeout( () => {
+				setIsVisible( false );
+				if ( shouldDismiss ) {
+					onDismiss();
+				}
+			}, 300 );
+		},
+		[ onDismiss ]
+	);
 
 	// Focus management: save previous focus, focus dialog, handle Escape, trap focus, restore on close
 	useEffect( () => {
@@ -193,7 +198,8 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 
 	const handlePrimaryClick = () => {
 		onPrimaryClick();
-		handleClose();
+		// Close without calling onDismiss - the backend handles dismissal on activation.
+		handleClose( false );
 	};
 
 	if ( ! isVisible ) {
@@ -274,7 +280,7 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 									/>
 								}
 								iconSize={ 24 }
-								onClick={ handleClose }
+								onClick={ () => handleClose() }
 							/>
 						</Flex>
 					</CardHeader>

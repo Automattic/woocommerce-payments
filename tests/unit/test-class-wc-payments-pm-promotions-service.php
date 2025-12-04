@@ -995,12 +995,73 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( get_transient( WC_Payments_PM_Promotions_Service::PROMOTIONS_CACHE_KEY ) );
 	}
 
+	public function test_activate_promotion_marks_promotion_as_dismissed() {
+		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )
+			->willReturn( [] );
+
+		// Set up cache with a valid promotion.
+		$this->set_promotions_cache( [ $this->create_valid_promotion() ] );
+
+		// Mock the API request to return success.
+		$this->mock_wcpay_request( Activate_PM_Promotion::class, 1, 'test-promo__spotlight', [] );
+
+		// Set up the payment gateway in WC_Payments so enable_payment_method_gateway can find it.
+		$this->set_payment_gateway_for_testing( Payment_Method::KLARNA );
+
+		$this->service->activate_promotion( 'test-promo__spotlight' );
+
+		// Clean up the gateway.
+		$this->clear_payment_gateway_for_testing( Payment_Method::KLARNA );
+
+		// Verify the promotion is marked as dismissed.
+		$this->assertTrue( $this->service->is_promotion_dismissed( 'test-promo__spotlight' ) );
+	}
+
+	public function test_activate_promotion_dismisses_even_when_gateway_enablement_fails() {
+		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )
+			->willReturn( [] );
+
+		// Set up cache with a valid promotion.
+		$this->set_promotions_cache( [ $this->create_valid_promotion() ] );
+
+		// Mock the API request to return success.
+		$this->mock_wcpay_request( Activate_PM_Promotion::class, 1, 'test-promo__spotlight', [] );
+
+		// Set up a gateway that fails to enable (get_option returns 'no' even after enable()).
+		$gateway_mock = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$gateway_mock->method( 'enable' )->willReturn( true );
+		$gateway_mock->method( 'get_option' )
+			->willReturnCallback(
+				function ( $key ) {
+					// Always return 'no' for enabled, simulating gateway enablement failure.
+					return 'enabled' === $key ? 'no' : '';
+				}
+			);
+		$gateway_mock->method( 'get_option_key' )->willReturn( 'woocommerce_woocommerce_payments_klarna_settings' );
+		$gateway_mock->method( 'get_payment_method_capability_key_map' )->willReturn( [] );
+		$gateway_mock->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [] );
+
+		$this->set_payment_gateway_for_testing( Payment_Method::KLARNA, $gateway_mock );
+
+		$result = $this->service->activate_promotion( 'test-promo__spotlight' );
+
+		// Clean up the gateway.
+		$this->clear_payment_gateway_for_testing( Payment_Method::KLARNA );
+
+		// Activation should return false due to gateway enablement failure.
+		$this->assertFalse( $result );
+
+		// But the promotion should still be marked as dismissed.
+		$this->assertTrue( $this->service->is_promotion_dismissed( 'test-promo__spotlight' ) );
+	}
+
 	// Note: Testing API error handling for activate_promotion is not straightforward
 	// because the Request class uses final methods (send, handle_rest_request) that
-	// cannot be mocked. The error handling paths are exercised when the promotion
-	// cannot be found or when gateway enabling fails - those paths are already tested
-	// above. The API-level error handling is implicitly trusted to work as designed
-	// in the Request class.
+	// cannot be mocked. The code is designed to NOT dismiss the promotion when server
+	// activation fails (see handle_promotion_activation_failure), but this cannot be
+	// directly unit tested. The dismissal happening BEFORE gateway enablement ensures
+	// that dismissal occurs even if gateway enablement fails (tested above), while
+	// server failures prevent dismissal entirely by returning early.
 
 	/*
 	 * =========================================================================

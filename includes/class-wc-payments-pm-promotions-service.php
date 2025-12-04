@@ -296,6 +296,10 @@ class WC_Payments_PM_Promotions_Service {
 			return $this->handle_promotion_activation_failure( $payment_method_id, $promotion, $error_message );
 		}
 
+		// Mark the promotion as dismissed so it won't be shown again.
+		// Do it before the payment method gateway enabling in case that fails.
+		$this->mark_promotion_dismissed( $id );
+
 		// Enable the payment method for checkout.
 		if ( ! $this->enable_payment_method_gateway( $payment_method_id, $promotion ) ) {
 			return false;
@@ -314,7 +318,7 @@ class WC_Payments_PM_Promotions_Service {
 			[
 				'payment_method_id' => $payment_method_id,
 				'promo_id'          => $promotion['promo_id'] ?? null,
-				'unique_promo_id'   => $id,
+				'promo_instance_id' => $id,
 			]
 		);
 
@@ -586,7 +590,7 @@ class WC_Payments_PM_Promotions_Service {
 			[
 				'payment_method_id' => $promotion['payment_method'] ?? null,
 				'promo_id'          => $promotion['promo_id'] ?? null,
-				'unique_promo_id'   => $id,
+				'promo_instance_id' => $id,
 			]
 		);
 

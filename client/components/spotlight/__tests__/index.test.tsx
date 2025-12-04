@@ -118,7 +118,8 @@ describe( 'Spotlight Component', () => {
 		expect( screen.getByTestId( 'custom-image' ) ).toBeInTheDocument();
 	} );
 
-	it( 'calls onPrimaryClick and onDismiss when primary button is clicked', async () => {
+	it( 'calls onPrimaryClick but not onDismiss when primary button is clicked', async () => {
+		jest.useFakeTimers();
 		const onPrimaryClick = jest.fn();
 		const onDismiss = jest.fn();
 
@@ -135,13 +136,15 @@ describe( 'Spotlight Component', () => {
 
 		expect( onPrimaryClick ).toHaveBeenCalledTimes( 1 );
 
-		// onDismiss is called after animation timeout (300ms)
-		await waitFor(
-			() => {
-				expect( onDismiss ).toHaveBeenCalledTimes( 1 );
-			},
-			{ timeout: 500 }
-		);
+		// Fast forward past the animation timeout
+		act( () => {
+			jest.advanceTimersByTime( 500 );
+		} );
+
+		// onDismiss should NOT be called - backend handles dismissal on activation
+		expect( onDismiss ).not.toHaveBeenCalled();
+
+		jest.useRealTimers();
 	} );
 
 	it( 'calls onSecondaryClick when secondary button is clicked', () => {
