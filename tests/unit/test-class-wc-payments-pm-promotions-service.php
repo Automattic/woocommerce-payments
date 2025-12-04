@@ -301,42 +301,6 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 
 	/*
 	 * =========================================================================
-	 * PM VALIDATION TESTS
-	 * =========================================================================
-	 */
-
-	public function test_is_valid_payment_method_accepts_klarna() {
-		$result = $this->invoke_private_method( 'is_valid_payment_method', [ Payment_Method::KLARNA ] );
-
-		$this->assertTrue( $result );
-	}
-
-	public function test_is_valid_payment_method_accepts_affirm() {
-		$result = $this->invoke_private_method( 'is_valid_payment_method', [ Payment_Method::AFFIRM ] );
-
-		$this->assertTrue( $result );
-	}
-
-	public function test_is_valid_payment_method_accepts_card() {
-		$result = $this->invoke_private_method( 'is_valid_payment_method', [ Payment_Method::CARD ] );
-
-		$this->assertTrue( $result );
-	}
-
-	public function test_is_valid_payment_method_rejects_invalid() {
-		$result = $this->invoke_private_method( 'is_valid_payment_method', [ 'invalid_pm' ] );
-
-		$this->assertFalse( $result );
-	}
-
-	public function test_is_valid_payment_method_rejects_empty_string() {
-		$result = $this->invoke_private_method( 'is_valid_payment_method', [ '' ] );
-
-		$this->assertFalse( $result );
-	}
-
-	/*
-	 * =========================================================================
 	 * FILTERING TESTS
 	 * =========================================================================
 	 */

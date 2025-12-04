@@ -674,17 +674,6 @@ class WC_Payments_PM_Promotions_Service {
 	}
 
 	/**
-	 * Check if a payment method ID is valid.
-	 *
-	 * @param string $payment_method_id The payment method ID to check.
-	 *
-	 * @return bool Whether the payment method ID is valid.
-	 */
-	private function is_valid_payment_method( string $payment_method_id ): bool {
-		return in_array( $payment_method_id, $this->get_valid_payment_method_ids(), true );
-	}
-
-	/**
 	 * Get list of enabled payment method IDs.
 	 *
 	 * @return array List of enabled payment method IDs.
@@ -725,18 +714,21 @@ class WC_Payments_PM_Promotions_Service {
 	/**
 	 * Check if a payment method has an active discount.
 	 *
-	 * @param string $payment_method_id The payment method ID.
+	 * @param string     $payment_method_id The payment method ID.
+	 * @param array|null $account_fees      Optional. Pre-fetched account fees. If null, will be fetched.
 	 *
 	 * @return bool True if the payment method has an active discount.
 	 */
-	private function payment_method_has_discount( string $payment_method_id ): bool {
-		$fees = $this->get_account_fees();
+	private function payment_method_has_active_discount( string $payment_method_id, ?array $account_fees = null ): bool {
+		if ( null === $account_fees ) {
+			$account_fees = $this->get_account_fees();
+		}
 
-		if ( empty( $fees[ $payment_method_id ] ) ) {
+		if ( empty( $account_fees[ $payment_method_id ] ) ) {
 			return false;
 		}
 
-		$pm_fees = $fees[ $payment_method_id ];
+		$pm_fees = $account_fees[ $payment_method_id ];
 
 		// Verify discount is a non-empty array.
 		if ( ! isset( $pm_fees['discount'] ) || ! is_array( $pm_fees['discount'] ) || empty( $pm_fees['discount'] ) ) {
@@ -761,7 +753,10 @@ class WC_Payments_PM_Promotions_Service {
 	 * @return array Filtered promotions.
 	 */
 	private function filter_promotions( array $promotions ): array {
+		// Pre-fetch all data needed for filtering to avoid N+1 queries.
 		$enabled_pms    = $this->get_enabled_payment_method_ids();
+		$valid_pms      = $this->get_valid_payment_method_ids();
+		$account_fees   = $this->get_account_fees();
 		$seen_promo_ids = []; // Track first promo_id per PM.
 		$filtered       = [];
 
@@ -770,9 +765,9 @@ class WC_Payments_PM_Promotions_Service {
 			$pm_id    = $promotion['payment_method'] ?? '';
 			$promo_id = $promotion['promo_id'] ?? '';
 
-			// Filters ordered by performance cost (cheapest first).
+			// Filters ordered by performance cost (cheapest first, all use pre-fetched data).
 
-			// 1. Skip promotions for already enabled payment methods (pre-fetched array).
+			// 1. Skip promotions for already enabled payment methods.
 			if ( in_array( $pm_id, $enabled_pms, true ) ) {
 				continue;
 			}
@@ -782,13 +777,13 @@ class WC_Payments_PM_Promotions_Service {
 				continue;
 			}
 
-			// 3. Skip invalid payment methods (gateway method call).
-			if ( ! $this->is_valid_payment_method( $pm_id ) ) {
+			// 3. Skip invalid payment methods.
+			if ( ! in_array( $pm_id, $valid_pms, true ) ) {
 				continue;
 			}
 
-			// 4. Skip promotions for payment methods that already have an active discount (account method call).
-			if ( $this->payment_method_has_discount( $pm_id ) ) {
+			// 4. Skip promotions for payment methods that already have an active discount.
+			if ( $this->payment_method_has_active_discount( $pm_id, $account_fees ) ) {
 				continue;
 			}
 
