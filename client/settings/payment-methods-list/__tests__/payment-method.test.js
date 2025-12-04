@@ -285,16 +285,39 @@ describe( 'PaymentMethod', () => {
 			expect( screen.queryByText( /off fees/i ) ).not.toBeInTheDocument();
 		} );
 
-		it( 'does not render promotional badge when discount is empty array', () => {
-			const accountFeesEmptyDiscount = {
+		it( 'does not render promotional badge when first discount entry has no discount value', () => {
+			// Tests edge case where discount array has multiple entries but
+			// the first entry (which is checked) has no discount value.
+			const accountFeesMultipleDiscounts = {
 				klarna: createFeeStructure( {
-					discount: [],
+					discount: [
+						{
+							currency: 'USD',
+							percentage_rate: 0,
+							fixed_rate: 0,
+							// First entry has no discount value.
+							end_time: '2026-12-31',
+							volume_allowance: null,
+							volume_currency: null,
+							current_volume: null,
+						},
+						{
+							currency: 'USD',
+							percentage_rate: 0,
+							fixed_rate: 0,
+							discount: 0.5, // Second entry has discount but is not checked.
+							end_time: '2026-12-31',
+							volume_allowance: null,
+							volume_currency: null,
+							current_volume: null,
+						},
+					],
 				} ),
 			};
 
 			render(
 				<WCPaySettingsContext.Provider
-					value={ { accountFees: accountFeesEmptyDiscount } }
+					value={ { accountFees: accountFeesMultipleDiscounts } }
 				>
 					<PaymentMethod
 						id="klarna"
@@ -304,7 +327,7 @@ describe( 'PaymentMethod', () => {
 				</WCPaySettingsContext.Provider>
 			);
 
-			// No discount badge should be present.
+			// No discount badge should be present since only first entry is checked.
 			expect( screen.queryByText( /off fees/i ) ).not.toBeInTheDocument();
 		} );
 
