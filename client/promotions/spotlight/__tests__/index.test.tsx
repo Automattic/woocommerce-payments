@@ -166,7 +166,7 @@ describe( 'SpotlightPromotion', () => {
 		activateButton.click();
 
 		expect( mockActivatePmPromotion ).toHaveBeenCalledWith(
-			'klarna-promo'
+			'klarna-promo__spotlight'
 		);
 	} );
 

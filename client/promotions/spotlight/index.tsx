@@ -92,7 +92,7 @@ const SpotlightPromotion: React.FC = () => {
 			'wcpay_payment_method_promotion_activate_click',
 			getEventProperties()
 		);
-		activatePmPromotion( spotlightPromotion.promo_id );
+		activatePmPromotion( spotlightPromotion.id );
 	};
 
 	const handleSecondaryClick = () => {
