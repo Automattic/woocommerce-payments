@@ -19,15 +19,27 @@ export const dataHasLoaded = async ( page: Page ) => {
 	await expect( page.locator( '.is-loadable-placeholder' ) ).toHaveCount( 0 );
 };
 
-export const tableDataHasLoaded = async ( page: Page ) => {
-	// First wait for the table to exist.
-	await page
-		.locator( '.woocommerce-table__table' )
-		.waitFor( { state: 'attached', timeout: 30000 } );
-	// Then wait for the loading state to finish
-	await page
-		.locator( '.woocommerce-table__table.is-loading' )
-		.waitFor( { state: 'hidden', timeout: 30000 } );
+export const tableDataHasLoaded = async ( page: Page, retries = 3 ) => {
+	const tableLocator = page.locator( '.woocommerce-table__table' );
+
+	for ( let attempt = 1; attempt <= retries; attempt++ ) {
+		try {
+			// First wait for the table to exist.
+			await tableLocator.waitFor( { state: 'attached', timeout: 30000 } );
+			// Then wait for the loading state to finish
+			await page
+				.locator( '.woocommerce-table__table.is-loading' )
+				.waitFor( { state: 'hidden', timeout: 30000 } );
+			return; // Success, exit the function
+		} catch ( error ) {
+			if ( attempt < retries ) {
+				// Table not found, reload and retry (helps with analytics data sync in older WC versions)
+				await page.reload();
+			} else {
+				throw error; // Final attempt failed, rethrow the error
+			}
+		}
+	}
 };
 
 export const waitAndSkipTourComponent = async (
