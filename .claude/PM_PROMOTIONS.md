@@ -279,7 +279,9 @@ const mockPromotion: PmPromotion = {
 - `client/promotions/spotlight/__tests__/index.test.tsx`
 - `client/components/promotional-badge/__tests__/index.test.tsx`
 - `client/data/pm-promotions/__tests__/*.test.ts`
-- `tests/unit/admin/test-class-wc-payments-pm-promotions-service.php`
+- `tests/unit/test-class-wc-payments-pm-promotions-service.php`
+- `tests/unit/admin/test-class-wc-rest-payments-pm-promotions-controller.php`
+- `tests/unit/admin/test-class-wc-rest-payments-pm-promotions-controller-integration.php`
 
 ### Test Mock Setup
 
