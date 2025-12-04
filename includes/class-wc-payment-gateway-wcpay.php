@@ -920,7 +920,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		// Disable the gateway if it should not be displayed on the checkout page.
-			$is_gateway_enabled = in_array( $this->stripe_id, $this->get_payment_method_ids_enabled_at_checkout(), true ) ? true : false;
+		$is_gateway_enabled = in_array( $this->stripe_id, $this->get_payment_method_ids_enabled_at_checkout(), true ) ? true : false;
 		if ( ! $is_gateway_enabled ) {
 			return false;
 		}
