@@ -3,7 +3,7 @@
 /**
  * Internal dependencies
  */
-import { PmPromotionsState, PmPromotion } from './types';
+import { PmPromotionsState, PmPromotionsData } from './types';
 import { ApiError } from '../../types/errors';
 
 // Type for the full Redux state with pmPromotions slice.
@@ -16,10 +16,10 @@ interface State {
  *
  * @param {State} state The full Redux state.
  *
- * @return {PmPromotion[]} Array of promotions, or empty array if not loaded.
+ * @return {PmPromotionsData} Array of promotions, or empty array if not loaded.
  */
-export const getPmPromotions = ( state: State ): PmPromotion[] => {
-	return state.pmPromotions?.pmPromotions ?? ( [] as PmPromotion[] );
+export const getPmPromotions = ( state: State ): PmPromotionsData => {
+	return state.pmPromotions?.pmPromotions ?? ( [] as PmPromotionsData );
 };
 
 /**

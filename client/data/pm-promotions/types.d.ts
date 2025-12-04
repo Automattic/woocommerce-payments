@@ -43,7 +43,7 @@ export interface PmPromotionsState {
 
 export interface PmPromotionsResponse {
 	isLoading: boolean;
-	pmPromotions?: PmPromotion[];
+	pmPromotions?: PmPromotionsData;
 	pmPromotionsError?: ApiError;
 }
 
