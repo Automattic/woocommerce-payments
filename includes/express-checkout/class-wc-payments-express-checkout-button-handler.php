@@ -76,8 +76,8 @@ class WC_Payments_Express_Checkout_Button_Handler {
 			return;
 		}
 
-		// Checks if Payment Request is enabled.
-		if ( 'yes' !== $this->gateway->get_option( 'payment_request' ) ) {
+		// Checks if Payment Request is enabled (Google Pay or Apple Pay).
+		if ( ! $this->gateway->is_payment_request_enabled() ) {
 			return;
 		}
 

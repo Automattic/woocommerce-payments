@@ -499,7 +499,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'account_branding_primary_color'         => $this->wcpay_gateway->get_option( 'account_branding_primary_color' ),
 				'account_branding_secondary_color'       => $this->wcpay_gateway->get_option( 'account_branding_secondary_color' ),
 				'account_domestic_currency'              => $this->wcpay_gateway->get_option( 'account_domestic_currency' ),
-				'is_payment_request_enabled'             => 'yes' === $this->wcpay_gateway->get_option( 'payment_request' ),
+				'is_payment_request_enabled'             => $this->get_is_payment_request_enabled(),
 				'is_apple_google_pay_in_payment_methods_options_enabled' => 'yes' === $this->wcpay_gateway->get_option( 'apple_google_pay_in_payment_methods_options' ),
 				'is_debug_log_enabled'                   => 'yes' === $this->wcpay_gateway->get_option( 'enable_logging' ),
 				'payment_request_enabled_locations'      => $this->wcpay_gateway->get_option( 'payment_request_button_locations' ),
@@ -843,6 +843,25 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
+	 * Gets the payment request enabled status.
+	 *
+	 * @return bool
+	 */
+	private function get_is_payment_request_enabled() {
+		$google_pay_gateway = WC_Payments::get_payment_gateway_by_id( 'google_pay' );
+		if ( $google_pay_gateway ) {
+			return $google_pay_gateway->is_enabled();
+		}
+
+		$apple_pay_gateway = WC_Payments::get_payment_gateway_by_id( 'apple_pay' );
+		if ( $apple_pay_gateway ) {
+			return $apple_pay_gateway->is_enabled();
+		}
+
+		return false;
+	}
+
+	/**
 	 * Updates the "payment request" enable/disable settings.
 	 *
 	 * @param WP_REST_Request $request Request object.
@@ -854,7 +873,24 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 
 		$is_payment_request_enabled = $request->get_param( 'is_payment_request_enabled' );
 
-		$this->wcpay_gateway->update_option( 'payment_request', $is_payment_request_enabled ? 'yes' : 'no' );
+		// Update Google Pay and Apple Pay enabled settings to keep them in sync.
+		$google_pay_gateway = WC_Payments::get_payment_gateway_by_id( 'google_pay' );
+		if ( $google_pay_gateway ) {
+			if ( $is_payment_request_enabled ) {
+				$google_pay_gateway->enable();
+			} else {
+				$google_pay_gateway->disable();
+			}
+		}
+
+		$apple_pay_gateway = WC_Payments::get_payment_gateway_by_id( 'apple_pay' );
+		if ( $apple_pay_gateway ) {
+			if ( $is_payment_request_enabled ) {
+				$apple_pay_gateway->enable();
+			} else {
+				$apple_pay_gateway->disable();
+			}
+		}
 	}
 
 	/**

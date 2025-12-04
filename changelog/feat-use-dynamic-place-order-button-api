@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+feat: allow block-based checkout to leverage the dynamic place order button API

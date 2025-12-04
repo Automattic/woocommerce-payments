@@ -203,10 +203,20 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 	private $wp_query_query_vars_backup;
 
 	/**
+	 * Backup of the original payment_gateway_map
+	 *
+	 * @var array
+	 */
+	private $original_payment_gateway_map;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
 		parent::set_up();
+
+		// Save the original payment_gateway_map before any test modifications.
+		$this->original_payment_gateway_map = $this->get_payment_gateway_map();
 
 		$this->mock_api_client = $this
 			->getMockBuilder( 'WC_Payments_API_Client' )
@@ -302,6 +312,9 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 
 		// Restore the gateway in the main class.
 		WC_Payments::set_gateway( $this->_gateway );
+
+		// Restore the original payment gateway map to prevent test pollution.
+		$this->set_payment_gateway_map( $this->original_payment_gateway_map );
 
 		// Fall back to an US store.
 		update_option( 'woocommerce_store_postcode', '94110' );
@@ -4234,5 +4247,116 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 				}
 			)
 		) )[0] ?? null;
+	}
+
+	public function test_is_payment_request_enabled_returns_true_when_google_pay_enabled() {
+		// Mock Google Pay gateway as enabled.
+		$google_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$google_pay_gateway->method( 'is_enabled' )
+			->willReturn( true );
+
+		// Mock WC_Payments::get_payment_gateway_by_id.
+		$this->set_payment_gateway_map(
+			[
+				'google_pay' => $google_pay_gateway,
+			]
+		);
+
+		$this->assertTrue( $this->card_gateway->is_payment_request_enabled() );
+	}
+
+	public function test_is_payment_request_enabled_returns_true_when_apple_pay_enabled() {
+		// Mock Google Pay gateway as unavailable.
+		// Mock Apple Pay gateway as enabled.
+		$apple_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$apple_pay_gateway->method( 'is_enabled' )
+			->willReturn( true );
+
+		// Mock WC_Payments::get_payment_gateway_by_id.
+		$this->set_payment_gateway_map(
+			[
+				'apple_pay' => $apple_pay_gateway,
+			]
+		);
+
+		$this->assertTrue( $this->card_gateway->is_payment_request_enabled() );
+	}
+
+	public function test_is_payment_request_enabled_returns_false_when_both_disabled() {
+		// Mock both gateways as disabled.
+		$google_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$google_pay_gateway->method( 'is_enabled' )
+			->willReturn( false );
+
+		$apple_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$apple_pay_gateway->method( 'is_enabled' )
+			->willReturn( false );
+
+		// Mock WC_Payments::get_payment_gateway_by_id.
+		$this->set_payment_gateway_map(
+			[
+				'google_pay' => $google_pay_gateway,
+				'apple_pay'  => $apple_pay_gateway,
+			]
+		);
+
+		$this->assertFalse( $this->card_gateway->is_payment_request_enabled() );
+	}
+
+	public function test_is_payment_request_enabled_returns_false_when_both_unavailable() {
+		// Mock both gateways as unavailable by setting empty map.
+		$this->set_payment_gateway_map( [] );
+
+		$this->assertFalse( $this->card_gateway->is_payment_request_enabled() );
+	}
+
+	public function test_is_payment_request_enabled_prioritizes_google_pay() {
+		// Mock both gateways as enabled.
+		$google_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$google_pay_gateway->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( true );
+
+		$apple_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		// Apple Pay should not be checked since Google Pay returns true.
+		$apple_pay_gateway->expects( $this->never() )
+			->method( 'is_enabled' );
+
+		// Mock WC_Payments::get_payment_gateway_by_id.
+		$this->set_payment_gateway_map(
+			[
+				'google_pay' => $google_pay_gateway,
+				'apple_pay'  => $apple_pay_gateway,
+			]
+		);
+
+		$this->assertTrue( $this->card_gateway->is_payment_request_enabled() );
+	}
+
+	/**
+	 * Gets the current payment_gateway_map using reflection.
+	 *
+	 * @return array The current payment gateway map.
+	 */
+	private function get_payment_gateway_map() {
+		$reflection = new \ReflectionClass( WC_Payments::class );
+		$property   = $reflection->getProperty( 'payment_gateway_map' );
+		$property->setAccessible( true );
+		$value = $property->getValue( null );
+		$property->setAccessible( false );
+		return $value;
+	}
+
+	/**
+	 * Helper to set up mock gateways in the payment_gateway_map for testing.
+	 *
+	 * @param array $gateway_map Associative array of gateway_id => gateway_instance.
+	 */
+	private function set_payment_gateway_map( $gateway_map ) {
+		$reflection = new \ReflectionClass( WC_Payments::class );
+		$property   = $reflection->getProperty( 'payment_gateway_map' );
+		$property->setAccessible( true );
+		$property->setValue( null, $gateway_map );
+		$property->setAccessible( false );
 	}
 }

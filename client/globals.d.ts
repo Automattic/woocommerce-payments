@@ -268,5 +268,6 @@ declare global {
 		wcSettings: typeof wcSettings;
 		wcpayPluginSettings?: typeof wcpayPluginSettings;
 		wooPaymentsPaymentMethodsConfig?: typeof wooPaymentsPaymentMethodsConfig;
+		wcpayFraudPreventionToken?: string;
 	}
 }

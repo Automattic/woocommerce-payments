@@ -98,7 +98,7 @@ class WC_Payments_Apple_Pay_Registration {
 	 * @return bool Whether Apple Pay required settings are enabled.
 	 */
 	private function is_enabled() {
-		return $this->gateway->is_enabled() && 'yes' === $this->gateway->get_option( 'payment_request' );
+		return $this->gateway->is_enabled() && $this->gateway->is_payment_request_enabled();
 	}
 
 	/**
@@ -109,8 +109,12 @@ class WC_Payments_Apple_Pay_Registration {
 	 * @return bool Whether Apple Pay required settings are enabled.
 	 */
 	private function was_enabled( $prev_settings ) {
-		$gateway_enabled         = 'yes' === ( $prev_settings['enabled'] ?? 'no' );
-		$payment_request_enabled = 'yes' === ( $prev_settings['payment_request'] ?? 'no' );
+		$gateway_enabled = 'yes' === ( $prev_settings['enabled'] ?? 'no' );
+
+		// Check new method first (Google Pay/Apple Pay gateways), fall back to legacy payment_request setting.
+		$payment_request_enabled = $this->gateway->is_payment_request_enabled()
+			|| 'yes' === ( $prev_settings['payment_request'] ?? 'no' );
+
 		return $gateway_enabled && $payment_request_enabled;
 	}
 

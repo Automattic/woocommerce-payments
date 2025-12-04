@@ -19,6 +19,8 @@ import PaymentMethodLabel from './payment-method-label';
 import request from '../utils/request';
 import enqueueFraudScripts from 'fraud-scripts';
 import {
+	dynamicPlaceOrderApplePay,
+	dynamicPlaceOrderGooglePay,
 	expressCheckoutElementApplePay,
 	expressCheckoutElementGooglePay,
 } from 'wcpay/express-checkout/blocks';
@@ -47,6 +49,8 @@ const api = new WCPayAPI(
 
 Object.entries( enabledPaymentMethodsConfig )
 	.filter( ( [ upeName ] ) => upeName !== 'link' )
+	.filter( ( [ upeName ] ) => upeName !== 'google_pay' )
+	.filter( ( [ upeName ] ) => upeName !== 'apple_pay' )
 	.forEach( ( [ upeName, upeConfig ] ) => {
 		registerPaymentMethod( {
 			name: upeConfig.gatewayId,
@@ -127,8 +131,13 @@ if ( getUPEConfig( 'isWooPayEnabled' ) ) {
 }
 
 if ( getUPEConfig( 'isPaymentRequestEnabled' ) ) {
-	registerExpressPaymentMethod( expressCheckoutElementApplePay( api ) );
-	registerExpressPaymentMethod( expressCheckoutElementGooglePay( api ) );
+	if ( getUPEConfig( 'isDynamicCheckoutPlaceOrderButtonEnabled' ) ) {
+		registerPaymentMethod( dynamicPlaceOrderApplePay( api ) );
+		registerPaymentMethod( dynamicPlaceOrderGooglePay( api ) );
+	} else {
+		registerExpressPaymentMethod( expressCheckoutElementApplePay( api ) );
+		registerExpressPaymentMethod( expressCheckoutElementGooglePay( api ) );
+	}
 }
 window.addEventListener( 'load', () => {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
