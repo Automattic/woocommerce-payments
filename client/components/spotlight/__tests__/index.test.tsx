@@ -147,7 +147,7 @@ describe( 'Spotlight Component', () => {
 		jest.useRealTimers();
 	} );
 
-	it( 'calls onSecondaryClick when secondary button is clicked', () => {
+	it( 'calls onSecondaryClick when secondary button is clicked', async () => {
 		const onSecondaryClick = jest.fn();
 
 		render(
@@ -159,7 +159,7 @@ describe( 'Spotlight Component', () => {
 		);
 
 		const secondaryButton = screen.getByText( 'Learn more' );
-		userEvent.click( secondaryButton );
+		await userEvent.click( secondaryButton );
 
 		expect( onSecondaryClick ).toHaveBeenCalledTimes( 1 );
 	} );
@@ -170,7 +170,7 @@ describe( 'Spotlight Component', () => {
 		render( <Spotlight { ...defaultProps } onDismiss={ onDismiss } /> );
 
 		const closeButton = screen.getByLabelText( 'Close' );
-		userEvent.click( closeButton );
+		await userEvent.click( closeButton );
 
 		// onDismiss is called after animation timeout
 		await waitFor(
