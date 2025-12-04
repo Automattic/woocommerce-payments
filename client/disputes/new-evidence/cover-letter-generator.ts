@@ -134,7 +134,7 @@ export const generateAttachments = (
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
-			label: __( 'Proof of active subscription', 'woocommerce-payments' ),
+			label: __( 'Subscription logs', 'woocommerce-payments' ),
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,

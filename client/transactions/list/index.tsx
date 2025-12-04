@@ -492,7 +492,7 @@ export const TransactionsList = (
 							</span>
 						)
 					) : (
-						<span className={ 'payment-method__brand' }>—</span>
+						<span className="payment-method__brand">—</span>
 					),
 			},
 			order: {

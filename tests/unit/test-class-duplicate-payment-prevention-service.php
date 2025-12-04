@@ -9,6 +9,7 @@ use WCPay\Constants\Intent_Status;
 use WCPay\Constants\Order_Status;
 use WCPay\Core\Server\Request\Get_Intention;
 use WCPay\Duplicate_Payment_Prevention_Service;
+use WCPay\Exceptions\Process_Payment_Exception;
 
 /**
  * WCPay\Duplicate_Payment_Prevention_Service unit tests.
@@ -277,5 +278,56 @@ class Duplicate_Payment_Prevention_Service_Test extends WCPAY_UnitTestCase {
 		}
 
 		return $ret;
+	}
+
+	/**
+	 * Test that when duplicate payment is prevented with amount mismatch,
+	 * an exception is thrown to inform the customer.
+	 *
+	 * This reproduces the issue from WOOPMNT-5519 where admins see misleading order notes
+	 * suggesting a new charge was made when duplicate prevention kicked in.
+	 */
+	public function test_check_payment_intent_attached_to_order_succeeded_with_amount_mismatch() {
+		$attached_intent_id = 'pi_attached_intent_id';
+		$attached_charge_id = 'ch_attached_charge_id';
+		$original_amount    = 1000; // $10.00 in cents.
+		$updated_amount     = 1500; // $15.00 in cents.
+
+		// Arrange order that was already paid at $10.
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_intent_id', $attached_intent_id );
+		$order->set_total( $original_amount / 100 ); // Original amount.
+		$order->save();
+		$order_id = $order->get_id();
+
+		// Simulate admin changing the order total (adding items).
+		$order->set_total( $updated_amount / 100 ); // Updated amount.
+		$order->set_status( 'pending' ); // Admin changed status to add items.
+		$order->save();
+
+		// Arrange mock get_intention with the original $10 charge.
+		$attached_intent = WC_Helper_Intention::create_intention(
+			[
+				'id'       => $attached_intent_id,
+				'status'   => Intent_Status::SUCCEEDED,
+				'metadata' => [ 'order_id' => $order_id ],
+				'amount'   => $original_amount,
+				'charge'   => [
+					'id'     => $attached_charge_id,
+					'amount' => $original_amount,
+				],
+			]
+		);
+
+		$this->mock_wcpay_request( Get_Intention::class, 1, $attached_intent_id )
+			->expects( $this->once() )
+			->method( 'format_response' )
+			->willReturn( $attached_intent );
+
+		// Act & Assert: Exception should be thrown when amount mismatch is detected.
+		$this->expectException( Process_Payment_Exception::class );
+		$this->expectExceptionMessage( 'This order was already paid for' );
+
+		$this->service->check_payment_intent_attached_to_order_succeeded( $order );
 	}
 }

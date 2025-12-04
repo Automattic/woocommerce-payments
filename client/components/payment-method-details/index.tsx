@@ -12,6 +12,7 @@ import './style.scss';
 import p24BankList from '../../payment-details/payment-method/p24/bank-list';
 import { HoverTooltip } from '../tooltip';
 import { getTransactionPaymentMethodTitle } from 'wcpay/transactions/utils/getTransactionPaymentMethodTitle';
+import paymentMethodsMap from 'wcpay/payment-methods-map';
 
 interface Payment {
 	type: string;
@@ -67,6 +68,27 @@ const formatDetails = ( payment: Payment ): ReactNode => {
 	}
 };
 
+const WalletIcon = ( { payment }: PaymentMethodDetailsProps ) => {
+	const { wallet } = payment[ payment.type ];
+	if ( ! wallet ) return null;
+
+	if ( ! wallet.type ) return null;
+
+	const paymentMethod = paymentMethodsMap[ wallet.type ];
+	if ( ! paymentMethod ) return null;
+
+	const { icon: Icon, label } = paymentMethod;
+
+	return (
+		<HoverTooltip
+			isVisible={ false }
+			content={ label }
+			className="payment-method-details__brand-tooltip"
+		>
+			<Icon />
+		</HoverTooltip>
+	);
+};
 interface PaymentMethodDetailsProps {
 	payment: Payment;
 }
@@ -78,20 +100,15 @@ const PaymentMethodDetails = ( { payment }: PaymentMethodDetailsProps ) => {
 		return <span>&ndash;</span>;
 	}
 
-	let brand = payment.type;
-	if ( paymentMethod && paymentMethod.brand ) {
-		brand = paymentMethod.brand;
-	}
-	if ( paymentMethod && paymentMethod.network ) {
-		brand = paymentMethod.network;
-	}
-
 	const details = formatDetails( payment );
 
 	const accountCountry = wcpaySettings?.accountStatus?.country || 'US';
+	const brand =
+		paymentMethod?.brand || paymentMethod?.network || payment?.type;
 
 	return (
 		<span className="payment-method-details">
+			<WalletIcon payment={ payment } />
 			<HoverTooltip
 				isVisible={ false }
 				content={ getTransactionPaymentMethodTitle( brand ) }
