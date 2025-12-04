@@ -8,6 +8,7 @@
 namespace WCPay\Core\Server\Request;
 
 use WCPay\Core\Server\Request;
+use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WC_Payments_API_Client;
 
 /**
@@ -25,8 +26,13 @@ class Activate_PM_Promotion extends Request {
 	 * Returns the request's API.
 	 *
 	 * @return string
+	 *
+	 * @throws \InvalidArgumentException If ID is not set.
 	 */
 	public function get_api(): string {
+		if ( empty( $this->id ) ) {
+			throw new \InvalidArgumentException( 'Promotion ID is required for activation' );
+		}
 		return WC_Payments_API_Client::PROMOTIONS_API . '/' . $this->id . '/activate';
 	}
 
