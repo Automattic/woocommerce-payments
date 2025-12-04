@@ -280,7 +280,12 @@ class WC_Payments_PM_Promotions_Service {
 		$wcpay_request->assign_hook( 'wcpay_activate_pm_promotion_request' );
 		$response = $wcpay_request->handle_rest_request();
 		if ( is_wp_error( $response ) ) {
-			return false;
+			$error_message = sprintf(
+				'Server activation request failed [%s]: %s',
+				$response->get_error_code(),
+				$response->get_error_message()
+			);
+			return $this->handle_promotion_activation_failure( $payment_method_id, $promotion, $error_message );
 		}
 
 		// Enable the payment method for checkout.
@@ -465,7 +470,12 @@ class WC_Payments_PM_Promotions_Service {
 		$wcpay_request->assign_hook( 'wcpay_activate_pm_promotion_request' );
 		$response = $wcpay_request->handle_rest_request();
 		if ( is_wp_error( $response ) ) {
-			return $this->handle_promotion_activation_failure( $payment_method_id, $promotion, 'Server activation failed' );
+			$error_message = sprintf(
+				'Server activation request failed [%s]: %s',
+				$response->get_error_code(),
+				$response->get_error_message()
+			);
+			return $this->handle_promotion_activation_failure( $payment_method_id, $promotion, $error_message );
 		}
 
 		// Enable the payment method for checkout if requested.
