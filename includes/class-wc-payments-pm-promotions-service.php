@@ -662,11 +662,13 @@ class WC_Payments_PM_Promotions_Service {
 			$this->gateway = WC_Payments::get_gateway();
 		}
 
-		if ( null === $this->gateway ) {
+		if ( null === $this->gateway || ! is_callable( [ $this->gateway, 'get_upe_available_payment_methods' ] ) ) {
 			return [];
 		}
 
-		return $this->gateway->get_upe_available_payment_methods();
+		$result = $this->gateway->get_upe_available_payment_methods();
+
+		return is_array( $result ) ? $result : [];
 	}
 
 	/**
@@ -690,11 +692,13 @@ class WC_Payments_PM_Promotions_Service {
 			$this->gateway = WC_Payments::get_gateway();
 		}
 
-		if ( null === $this->gateway ) {
+		if ( null === $this->gateway || ! is_callable( [ $this->gateway, 'get_upe_enabled_payment_method_ids' ] ) ) {
 			return [];
 		}
 
-		return $this->gateway->get_upe_enabled_payment_method_ids();
+		$result = $this->gateway->get_upe_enabled_payment_method_ids();
+
+		return is_array( $result ) ? $result : [];
 	}
 
 	/**
@@ -707,11 +711,13 @@ class WC_Payments_PM_Promotions_Service {
 			$this->account = WC_Payments::get_account_service();
 		}
 
-		if ( null === $this->account ) {
+		if ( null === $this->account || ! is_callable( [ $this->account, 'get_fees' ] ) ) {
 			return [];
 		}
 
-		return $this->account->get_fees();
+		$result = $this->account->get_fees();
+
+		return is_array( $result ) ? $result : [];
 	}
 
 	/**
