@@ -30,6 +30,9 @@ class Activate_PM_Promotion extends Request {
 	 * @throws \InvalidArgumentException If ID is not set.
 	 */
 	public function get_api(): string {
+		if ( empty( $this->id ) ) {
+			throw new \InvalidArgumentException( 'Promotion ID is required for activation' );
+		}
 		return WC_Payments_API_Client::PROMOTIONS_API . '/' . $this->id . '/activate';
 	}
 
