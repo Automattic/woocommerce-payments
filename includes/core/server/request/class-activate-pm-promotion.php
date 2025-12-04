@@ -39,4 +39,13 @@ class Activate_PM_Promotion extends Request {
 	public function get_method(): string {
 		return 'POST';
 	}
+
+	/**
+	 * Sets the promotion instance ID, which will be used in the request URL.
+	 *
+	 * @param string $id Sets the promotion instance ID, which will be used in the request URL.
+	 */
+	protected function set_id( string $id ) {
+		$this->id = $id;
+	}
 }
