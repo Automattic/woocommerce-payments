@@ -557,8 +557,8 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 			$order->add_order_note( implode( "\n", $note_parts ) );
 			$order->save();
 
-			// Trigger analytics sync to update wc_order_stats table. This is necessary because
-			// WooCommerce doesn't automatically sync when refunds are deleted (see issue #1073).
+			// Trigger analytics sync. WooCommerce hooks into refund deletion automatically,
+			// but we sync explicitly to ensure stats are updated for this remediation.
 			$this->sync_order_stats( $order->get_id() );
 
 			return true;
@@ -596,10 +596,8 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 	/**
 	 * Sync order stats to WooCommerce Analytics.
 	 *
-	 * WooCommerce doesn't automatically update the wc_order_stats table when refunds are deleted.
-	 * This method ensures the order stats are updated after remediation.
-	 *
-	 * @see https://github.com/woocommerce/woocommerce-admin/issues/1073
+	 * WooCommerce hooks into refund deletion automatically, but we sync explicitly
+	 * to ensure stats are updated for this remediation.
 	 *
 	 * @param int $order_id Order ID to sync.
 	 * @return void

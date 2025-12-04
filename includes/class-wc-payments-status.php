@@ -98,7 +98,7 @@ class WC_Payments_Status {
 					'name'     => __( 'Fix canceled authorization analytics', 'woocommerce-payments' ),
 					'button'   => $this->get_remediation_button_text(),
 					'desc'     => $this->get_remediation_description(),
-					'confirm'  => __( 'This will update order metadata and delete incorrect refund records for affected orders. Make sure you have a recent backup before proceeding. Continue?', 'woocommerce-payments' ),
+					'confirm'  => __( 'This will update order metadata and delete incorrect refund records for affected orders. This fixes negative values in WooCommerce Analytics. Make sure you have a recent backup before proceeding. Continue?', 'woocommerce-payments' ),
 					'callback' => [ $this, 'schedule_canceled_auth_remediation' ],
 					'disabled' => $this->is_remediation_running_or_complete(),
 				],
