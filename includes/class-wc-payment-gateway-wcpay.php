@@ -962,7 +962,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			return true;
 		}
 
-		// fallback, just in case.
+		// Fallback, just in case.
 		$apple_pay_gateway = WC_Payments::get_payment_gateway_by_id( 'apple_pay' );
 		if ( $apple_pay_gateway && $apple_pay_gateway->is_enabled() ) {
 			return true;
