@@ -65,19 +65,14 @@ export function updateErrorForPmPromotions(
  * Activate a PM promotion.
  *
  * @param {string} identifier The promotion identifier.
- * @param {boolean} acceptTerms Whether to accept the promotion terms.
  */
-export function* activatePmPromotion(
-	identifier: string,
-	acceptTerms = true
-): unknown {
+export function* activatePmPromotion( identifier: string ): unknown {
 	const path = `${ NAMESPACE }/pm-promotions/${ identifier }/activate`;
 
 	try {
 		yield apiFetch( {
 			path,
 			method: 'POST',
-			data: { accept_terms: acceptTerms },
 		} );
 
 		yield controls.dispatch(

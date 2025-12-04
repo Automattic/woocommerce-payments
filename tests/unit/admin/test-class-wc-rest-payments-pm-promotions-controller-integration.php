@@ -8,7 +8,7 @@
  */
 
 use PHPUnit\Framework\MockObject\MockObject;
-use WCPay\Core\Server\Request\Activate_Promotion;
+use WCPay\Core\Server\Request\Activate_PM_Promotion;
 
 /**
  * WC_REST_Payments_PM_Promotions_Controller integration tests.
@@ -520,7 +520,7 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 		$id = 'test-promo__spotlight';
 
 		// Mock the API request to return success.
-		$this->mock_wcpay_request( Activate_Promotion::class, 1, $id, [] );
+		$this->mock_wcpay_request( Activate_PM_Promotion::class, 1, $id, [] );
 
 		// Set up the payment gateway in WC_Payments so enable_payment_method_gateway can find it.
 		$this->set_payment_gateway_for_testing( 'klarna' );

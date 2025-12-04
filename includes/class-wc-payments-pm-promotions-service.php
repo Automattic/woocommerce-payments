@@ -276,8 +276,8 @@ class WC_Payments_PM_Promotions_Service {
 		// Send request to server to apply the promotion discount.
 		// The server should also handle capability requesting if it is not already requested.
 		// This way we can keep things in sync and avoid applying discounts without having the capability requested.
-		$wcpay_request = Request\Activate_Promotion::create( $id );
-		$wcpay_request->assign_hook( 'wcpay_activate_promotion_request' );
+		$wcpay_request = Request\Activate_PM_Promotion::create( $id );
+		$wcpay_request->assign_hook( 'wcpay_activate_pm_promotion_request' );
 		$response = $wcpay_request->handle_rest_request();
 		if ( is_wp_error( $response ) ) {
 			return false;
@@ -461,8 +461,8 @@ class WC_Payments_PM_Promotions_Service {
 
 		// Send request to server to apply the promotion discount.
 		// The server should also handle capability requesting if it is not already requested.
-		$wcpay_request = Request\Activate_Promotion::create( $promotion['id'] );
-		$wcpay_request->assign_hook( 'wcpay_activate_promotion_request' );
+		$wcpay_request = Request\Activate_PM_Promotion::create( $promotion['id'] );
+		$wcpay_request->assign_hook( 'wcpay_activate_pm_promotion_request' );
 		$response = $wcpay_request->handle_rest_request();
 		if ( is_wp_error( $response ) ) {
 			return $this->handle_promotion_activation_failure( $payment_method_id, $promotion, 'Server activation failed' );

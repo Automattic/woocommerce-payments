@@ -1,6 +1,6 @@
 <?php
 /**
- * Class file for WCPay\Core\Server\Request\Activate_Promotion.
+ * Class file for WCPay\Core\Server\Request\Activate_PM_Promotion.
  *
  * @package WooCommerce Payments
  */
@@ -11,17 +11,15 @@ use WCPay\Core\Server\Request;
 use WC_Payments_API_Client;
 
 /**
- * Request class for activating a promotion.
+ * Request class for activating a PM promotion.
  */
-class Activate_Promotion extends Request {
-	const IMMUTABLE_PARAMS = [ 'accept_terms' ];
-
+class Activate_PM_Promotion extends Request {
 	/**
 	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
 	 *
 	 * @var string
 	 */
-	protected $hook = 'wcpay_activate_promotion_request';
+	protected $hook = 'wcpay_activate_pm_promotion_request';
 
 	/**
 	 * Returns the request's API.
@@ -37,16 +35,5 @@ class Activate_Promotion extends Request {
 	 */
 	public function get_method(): string {
 		return 'POST';
-	}
-
-	/**
-	 * Sets whether the merchant accepts the promotion terms.
-	 *
-	 * @param  bool $accept_terms Whether the merchant accepts the terms.
-	 *
-	 * @return void
-	 */
-	public function set_accept_terms( bool $accept_terms ) {
-		$this->set_param( 'accept_terms', $accept_terms );
 	}
 }

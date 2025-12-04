@@ -7,7 +7,7 @@
 
 use PHPUnit\Framework\MockObject\MockObject;
 use WCPay\Constants\Payment_Method;
-use WCPay\Core\Server\Request\Activate_Promotion;
+use WCPay\Core\Server\Request\Activate_PM_Promotion;
 
 /**
  * WC_Payments_PM_Promotions_Service unit tests.
@@ -997,7 +997,7 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 		$this->set_promotions_cache( [ $this->create_valid_promotion() ] );
 
 		// Mock the API request to return success.
-		$this->mock_wcpay_request( Activate_Promotion::class, 1, 'test-promo__spotlight', [] );
+		$this->mock_wcpay_request( Activate_PM_Promotion::class, 1, 'test-promo__spotlight', [] );
 
 		// Set up the payment gateway in WC_Payments so enable_payment_method_gateway can find it.
 		$this->set_payment_gateway_for_testing( Payment_Method::KLARNA );
@@ -1018,7 +1018,7 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 		$this->set_promotions_cache( [ $this->create_valid_promotion() ] );
 
 		// Mock the API request to return success.
-		$this->mock_wcpay_request( Activate_Promotion::class, 1, 'test-promo__spotlight', [] );
+		$this->mock_wcpay_request( Activate_PM_Promotion::class, 1, 'test-promo__spotlight', [] );
 
 		// Set up the payment gateway in WC_Payments so enable_payment_method_gateway can find it.
 		$this->set_payment_gateway_for_testing( Payment_Method::KLARNA );
