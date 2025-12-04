@@ -60,6 +60,13 @@ class WC_Payments_Admin_Test extends WCPAY_UnitTestCase {
 	private $mock_fraud_service;
 
 	/**
+	 * Mock PM Promotions Service.
+	 *
+	 * @var WC_Payments_PM_Promotions_Service|MockObject;
+	 */
+	private $mock_pm_promotions_service;
+
+	/**
 	 * Mock database cache.
 	 *
 	 * @var Database_Cache|MockObject;
