@@ -34,11 +34,19 @@ class WC_Payments_PM_Promotions_Service {
 	const PROMOTION_DISMISSALS_OPTION = '_wcpay_pm_promotion_dismissals';
 
 	/**
-	 * The memoized promotions to avoid fetching multiple times during a request.
+	 * The memoized raw promotions to avoid fetching multiple times during a request.
 	 *
 	 * @var array|null
 	 */
 	private $promotions_memo = null;
+
+	/**
+	 * The memoized visible promotions (filtered and normalized) for the current request.
+	 * False means not yet computed, null means computed with no results, array means has results.
+	 *
+	 * @var array|null|false
+	 */
+	private $visible_promotions_memo = false;
 
 	/**
 	 * WC_Payment_Gateway_WCPay instance.
@@ -92,7 +100,8 @@ class WC_Payments_PM_Promotions_Service {
 	 * @return void
 	 */
 	public function reset_memo(): void {
-		$this->promotions_memo = null;
+		$this->promotions_memo         = null;
+		$this->visible_promotions_memo = false;
 	}
 
 	/**
@@ -104,6 +113,11 @@ class WC_Payments_PM_Promotions_Service {
 		// Promotions are only visible to users who can manage WooCommerce (aka act on the promotions).
 		if ( ! current_user_can( 'manage_woocommerce' ) ) {
 			return null;
+		}
+
+		// Return memoized result if available (false means not yet computed).
+		if ( false !== $this->visible_promotions_memo ) {
+			return $this->visible_promotions_memo;
 		}
 
 		$promotions = $this->get_promotions();
@@ -124,10 +138,12 @@ class WC_Payments_PM_Promotions_Service {
 
 		// Return early if there are no promotions left.
 		if ( empty( $promotions ) ) {
+			$this->visible_promotions_memo = null;
 			return null;
 		}
 
-		return array_values( $promotions );
+		$this->visible_promotions_memo = array_values( $promotions );
+		return $this->visible_promotions_memo;
 	}
 
 	/**
@@ -772,13 +788,13 @@ class WC_Payments_PM_Promotions_Service {
 				continue;
 			}
 
-			// 2. Skip dismissed promotions (WP cached option).
-			if ( $this->is_promotion_dismissed( $id ) ) {
+			// 2. Skip invalid payment methods.
+			if ( ! in_array( $pm_id, $valid_pms, true ) ) {
 				continue;
 			}
 
-			// 3. Skip invalid payment methods.
-			if ( ! in_array( $pm_id, $valid_pms, true ) ) {
+			// 3. Skip dismissed promotions (WP cached option).
+			if ( $this->is_promotion_dismissed( $id ) ) {
 				continue;
 			}
 
