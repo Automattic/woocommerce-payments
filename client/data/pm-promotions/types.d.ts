@@ -4,10 +4,15 @@
  * Internal Dependencies
  */
 import { ApiError } from '../../types/errors';
-import { ChipType } from 'wcpay/components/chip';
 import ACTION_TYPES from './action-types';
 
 export type PmPromotionType = 'spotlight' | 'badge';
+
+/**
+ * Badge appearance type for promotion badges.
+ * Self-contained to avoid data layer dependency on presentation components.
+ */
+export type BadgeType = 'primary' | 'success' | 'light' | 'warning' | 'alert';
 
 export interface PmPromotion {
 	id: string;
@@ -17,7 +22,7 @@ export interface PmPromotion {
 	type: PmPromotionType;
 	title: string;
 	badge_text?: string;
-	badge_type?: ChipType;
+	badge_type?: BadgeType;
 	description: string;
 	cta_label: string;
 	tc_url: string;
