@@ -3,7 +3,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useCallback, useMemo } from 'react';
 
 /**
  * Internal dependencies
@@ -49,53 +49,45 @@ const SpotlightPromotion: React.FC = () => {
 	const { pmPromotions, isLoading } = usePmPromotions();
 	const { activatePmPromotion, dismissPmPromotion } = usePmPromotionActions();
 
-	// Don't render if data is still loading
-	if ( isLoading ) {
-		return null;
-	}
-
-	// Don't render if no promotions available
-	if ( ! pmPromotions || pmPromotions.length === 0 ) {
-		return null;
-	}
-
-	// Find the first spotlight promotion
-	const spotlightPromotion: PmPromotion | undefined = pmPromotions.find(
-		( promo ) => promo.type === 'spotlight'
+	// Memoize the spotlight promotion lookup to prevent recalculation on every render.
+	const spotlightPromotion: PmPromotion | undefined = useMemo(
+		() => pmPromotions?.find( ( promo ) => promo.type === 'spotlight' ),
+		[ pmPromotions ]
 	);
-
-	// No spotlight promotion available
-	if ( ! spotlightPromotion ) {
-		return null;
-	}
 
 	/**
 	 * Get common event properties for tracking.
+	 * Memoized to maintain reference equality.
 	 */
-	const getEventProperties = () => ( {
-		promo_id: spotlightPromotion.promo_id,
-		payment_method: spotlightPromotion.payment_method,
-		display_context: 'spotlight',
-		source: getPageSource(),
-		path: window.location.pathname + window.location.search,
-	} );
+	const getEventProperties = useCallback(
+		() => ( {
+			promo_id: spotlightPromotion?.promo_id,
+			payment_method: spotlightPromotion?.payment_method,
+			display_context: 'spotlight',
+			source: getPageSource(),
+			path: window.location.pathname + window.location.search,
+		} ),
+		[ spotlightPromotion?.promo_id, spotlightPromotion?.payment_method ]
+	);
 
-	const handleView = () => {
+	const handleView = useCallback( () => {
 		recordEvent(
 			'wcpay_payment_method_promotion_view',
 			getEventProperties()
 		);
-	};
+	}, [ getEventProperties ] );
 
-	const handlePrimaryClick = () => {
+	const handlePrimaryClick = useCallback( () => {
+		if ( ! spotlightPromotion ) return;
 		recordEvent(
 			'wcpay_payment_method_promotion_activate_click',
 			getEventProperties()
 		);
 		activatePmPromotion( spotlightPromotion.id );
-	};
+	}, [ getEventProperties, activatePmPromotion, spotlightPromotion ] );
 
-	const handleSecondaryClick = () => {
+	const handleSecondaryClick = useCallback( () => {
+		if ( ! spotlightPromotion ) return;
 		recordEvent( 'wcpay_payment_method_promotion_link_click', {
 			...getEventProperties(),
 			link_type: 'terms',
@@ -117,15 +109,31 @@ const SpotlightPromotion: React.FC = () => {
 				// Invalid URL, don't open
 			}
 		}
-	};
+	}, [ getEventProperties, spotlightPromotion ] );
 
-	const handleDismiss = () => {
+	const handleDismiss = useCallback( () => {
+		if ( ! spotlightPromotion ) return;
 		recordEvent(
 			'wcpay_payment_method_promotion_dismiss_click',
 			getEventProperties()
 		);
 		dismissPmPromotion( spotlightPromotion.id );
-	};
+	}, [ getEventProperties, dismissPmPromotion, spotlightPromotion ] );
+
+	// Don't render if data is still loading.
+	if ( isLoading ) {
+		return null;
+	}
+
+	// Don't render if no promotions available.
+	if ( ! pmPromotions || pmPromotions.length === 0 ) {
+		return null;
+	}
+
+	// No spotlight promotion available.
+	if ( ! spotlightPromotion ) {
+		return null;
+	}
 
 	return (
 		<Spotlight
