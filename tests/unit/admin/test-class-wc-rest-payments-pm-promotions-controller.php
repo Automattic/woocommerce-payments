@@ -36,8 +36,9 @@ class WC_REST_Payments_Promotions_Controller_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
-		// Set the user so that we can pass the authentication.
-		wp_set_current_user( 1 );
+		// Create and set an admin user (required for permission checks).
+		$admin_user = self::factory()->user->create( [ 'role' => 'administrator' ] );
+		wp_set_current_user( $admin_user );
 
 		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
 
@@ -111,62 +112,5 @@ class WC_REST_Payments_Promotions_Controller_Test extends WCPAY_UnitTestCase {
 		$this->assertSame( 200, $response->status );
 		$this->assertIsArray( $response->get_data() );
 		$this->assertEmpty( $response->get_data() );
-	}
-
-	public function test_get_promotion_dismissals() {
-		// New flat structure: [id => timestamp].
-		$dismissals = [
-			'promo1__spotlight' => 1234567890,
-			'promo2__spotlight' => 1234567900,
-		];
-		update_option( WC_Payments_PM_Promotions_Service::PROMOTION_DISMISSALS_OPTION, $dismissals );
-
-		$result = $this->promotions_service->get_promotion_dismissals();
-
-		$this->assertSame( $dismissals, $result );
-	}
-
-	public function test_is_promotion_dismissed_returns_true_for_past_timestamp() {
-		$dismissals = [
-			'promo1__spotlight' => time() - 3600, // 1 hour ago.
-			'promo1__badge'     => time() - 1,    // 1 second ago.
-		];
-		update_option( WC_Payments_PM_Promotions_Service::PROMOTION_DISMISSALS_OPTION, $dismissals );
-
-		$this->assertTrue( $this->promotions_service->is_promotion_dismissed( 'promo1__spotlight' ) );
-		$this->assertTrue( $this->promotions_service->is_promotion_dismissed( 'promo1__badge' ) );
-	}
-
-	public function test_is_promotion_dismissed_returns_false_for_non_existent() {
-		$dismissals = [
-			'promo1__spotlight' => time() - 3600,
-		];
-		update_option( WC_Payments_PM_Promotions_Service::PROMOTION_DISMISSALS_OPTION, $dismissals );
-
-		$this->assertFalse( $this->promotions_service->is_promotion_dismissed( 'promo2__spotlight' ) );
-	}
-
-	public function test_is_promotion_dismissed_returns_false_for_future_timestamp() {
-		$dismissals = [
-			'promo1__spotlight' => time() + 3600, // 1 hour from now.
-		];
-		update_option( WC_Payments_PM_Promotions_Service::PROMOTION_DISMISSALS_OPTION, $dismissals );
-
-		$this->assertFalse( $this->promotions_service->is_promotion_dismissed( 'promo1__spotlight' ) );
-	}
-
-	public function test_is_promotion_dismissed_returns_false_for_invalid_values() {
-		$dismissals = [
-			'promo1__spotlight' => 'invalid',
-			'promo2__spotlight' => 0,
-			'promo3__spotlight' => -1,
-			'promo4__spotlight' => null,
-		];
-		update_option( WC_Payments_PM_Promotions_Service::PROMOTION_DISMISSALS_OPTION, $dismissals );
-
-		$this->assertFalse( $this->promotions_service->is_promotion_dismissed( 'promo1__spotlight' ) );
-		$this->assertFalse( $this->promotions_service->is_promotion_dismissed( 'promo2__spotlight' ) );
-		$this->assertFalse( $this->promotions_service->is_promotion_dismissed( 'promo3__spotlight' ) );
-		$this->assertFalse( $this->promotions_service->is_promotion_dismissed( 'promo4__spotlight' ) );
 	}
 }

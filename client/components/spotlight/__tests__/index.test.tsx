@@ -94,16 +94,18 @@ describe( 'Spotlight Component', () => {
 			...defaultProps,
 			image: 'https://example.com/image.png',
 		};
-		render( <Spotlight { ...propsWithImage } /> );
+		const { container } = render( <Spotlight { ...propsWithImage } /> );
 
-		// Image is decorative (empty alt), so we query by role with specific src
-		const image = screen.getByRole( 'img', { hidden: true } );
+		// Image is decorative (role="presentation", aria-hidden="true"), so query by tag directly
+		const image = container.querySelector( 'img' );
 		expect( image ).toBeInTheDocument();
 		expect( image ).toHaveAttribute(
 			'src',
 			'https://example.com/image.png'
 		);
 		expect( image ).toHaveAttribute( 'alt', '' );
+		expect( image ).toHaveAttribute( 'role', 'presentation' );
+		expect( image ).toHaveAttribute( 'aria-hidden', 'true' );
 	} );
 
 	it( 'renders image when provided as React element', () => {

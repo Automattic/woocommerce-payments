@@ -995,6 +995,128 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( get_transient( WC_Payments_PM_Promotions_Service::PROMOTIONS_CACHE_KEY ) );
 	}
 
+	// Note: Testing API error handling for activate_promotion is not straightforward
+	// because the Request class uses final methods (send, handle_rest_request) that
+	// cannot be mocked. The error handling paths are exercised when the promotion
+	// cannot be found or when gateway enabling fails - those paths are already tested
+	// above. The API-level error handling is implicitly trusted to work as designed
+	// in the Request class.
+
+	/*
+	 * =========================================================================
+	 * ACTION TESTS - MAYBE_ACTIVATE_PROMOTION_FOR_PAYMENT_METHOD
+	 * =========================================================================
+	 */
+
+	public function test_maybe_activate_promotion_returns_false_when_no_promotion_for_pm() {
+		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )
+			->willReturn( [] );
+
+		// Set up cache with a promotion for klarna.
+		$this->set_promotions_cache( [ $this->create_valid_promotion( [ 'payment_method' => Payment_Method::KLARNA ] ) ] );
+
+		// Try to activate for affirm (no promotion exists for this PM).
+		$result = $this->service->maybe_activate_promotion_for_payment_method( Payment_Method::AFFIRM );
+
+		$this->assertFalse( $result );
+	}
+
+	public function test_maybe_activate_promotion_returns_true_on_success() {
+		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )
+			->willReturn( [] );
+
+		// Set up cache with a valid promotion.
+		$this->set_promotions_cache( [ $this->create_valid_promotion() ] );
+
+		// Mock the API request to return success.
+		$this->mock_wcpay_request( Activate_PM_Promotion::class, 1, 'test-promo__spotlight', [] );
+
+		$result = $this->service->maybe_activate_promotion_for_payment_method( Payment_Method::KLARNA );
+
+		$this->assertTrue( $result );
+	}
+
+	// Note: Testing API error handling for maybe_activate_promotion_for_payment_method is not
+	// straightforward because the Request class uses final methods (send, handle_rest_request)
+	// that cannot be mocked directly. Mocking format_response() doesn't work because send()
+	// calls api_client->send_request() first, which fails with null api_client when using
+	// disableOriginalConstructor(). The error handling behavior is implicitly covered by
+	// testing the "promotion not found" path which returns false.
+
+	public function test_maybe_activate_promotion_enables_gateway_when_should_enable_is_true() {
+		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )
+			->willReturn( [] );
+
+		// Set up cache with a valid promotion.
+		$this->set_promotions_cache( [ $this->create_valid_promotion() ] );
+
+		// Mock the API request to return success.
+		$this->mock_wcpay_request( Activate_PM_Promotion::class, 1, 'test-promo__spotlight', [] );
+
+		// Track whether enable() has been called to simulate state change.
+		$enabled = false;
+
+		// Set up the payment gateway with expectation that enable will be called.
+		$gateway_mock = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$gateway_mock->expects( $this->once() )->method( 'enable' )->willReturnCallback(
+			function () use ( &$enabled ) {
+				$enabled = true;
+				return true;
+			}
+		);
+		$gateway_mock->method( 'get_option' )->willReturnCallback(
+			function ( $key ) use ( &$enabled ) {
+				// After enable() is called, return 'yes' for enabled check.
+				return 'enabled' === $key ? ( $enabled ? 'yes' : 'no' ) : '';
+			}
+		);
+		$gateway_mock->method( 'get_option_key' )->willReturn( 'woocommerce_woocommerce_payments_klarna_settings' );
+		$gateway_mock->method( 'get_payment_method_capability_key_map' )->willReturn( [] );
+		$gateway_mock->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [] );
+		$gateway_mock->method( 'update_option' )->willReturn( true );
+
+		$this->set_payment_gateway_for_testing( Payment_Method::KLARNA, $gateway_mock );
+
+		$result = $this->service->maybe_activate_promotion_for_payment_method( Payment_Method::KLARNA, true );
+
+		// Clean up the gateway.
+		$this->clear_payment_gateway_for_testing( Payment_Method::KLARNA );
+
+		$this->assertTrue( $result );
+	}
+
+	public function test_maybe_activate_promotion_does_not_enable_gateway_when_should_enable_is_false() {
+		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )
+			->willReturn( [] );
+
+		// Set up cache with a valid promotion.
+		$this->set_promotions_cache( [ $this->create_valid_promotion() ] );
+
+		// Mock the API request to return success.
+		$this->mock_wcpay_request( Activate_PM_Promotion::class, 1, 'test-promo__spotlight', [] );
+
+		// Set up the payment gateway with expectation that enable will NOT be called.
+		$gateway_mock = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$gateway_mock->expects( $this->never() )->method( 'enable' );
+		$gateway_mock->method( 'get_option' )->willReturnCallback(
+			function ( $key ) {
+				return 'enabled' === $key ? 'no' : '';
+			}
+		);
+		$gateway_mock->method( 'get_option_key' )->willReturn( 'woocommerce_woocommerce_payments_klarna_settings' );
+		$gateway_mock->method( 'get_payment_method_capability_key_map' )->willReturn( [] );
+		$gateway_mock->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [] );
+
+		$this->set_payment_gateway_for_testing( Payment_Method::KLARNA, $gateway_mock );
+
+		$result = $this->service->maybe_activate_promotion_for_payment_method( Payment_Method::KLARNA, false );
+
+		// Clean up the gateway.
+		$this->clear_payment_gateway_for_testing( Payment_Method::KLARNA );
+
+		$this->assertTrue( $result );
+	}
+
 	/*
 	 * =========================================================================
 	 * INTEGRATION TESTS - get_visible_promotions()
@@ -1156,6 +1278,69 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 		$result = $this->service->get_visible_promotions();
 
 		$this->assertNull( $result );
+	}
+
+	/*
+	 * =========================================================================
+	 * DISMISSAL HELPER TESTS
+	 * =========================================================================
+	 */
+
+	public function test_get_promotion_dismissals_returns_stored_dismissals() {
+		// New flat structure: [id => timestamp].
+		$dismissals = [
+			'promo1__spotlight' => 1234567890,
+			'promo2__spotlight' => 1234567900,
+		];
+		update_option( WC_Payments_PM_Promotions_Service::PROMOTION_DISMISSALS_OPTION, $dismissals );
+
+		$result = $this->service->get_promotion_dismissals();
+
+		$this->assertSame( $dismissals, $result );
+	}
+
+	public function test_is_promotion_dismissed_returns_true_for_past_timestamp() {
+		$dismissals = [
+			'promo1__spotlight' => time() - 3600, // 1 hour ago.
+			'promo1__badge'     => time() - 1,    // 1 second ago.
+		];
+		update_option( WC_Payments_PM_Promotions_Service::PROMOTION_DISMISSALS_OPTION, $dismissals );
+
+		$this->assertTrue( $this->service->is_promotion_dismissed( 'promo1__spotlight' ) );
+		$this->assertTrue( $this->service->is_promotion_dismissed( 'promo1__badge' ) );
+	}
+
+	public function test_is_promotion_dismissed_returns_false_for_non_existent() {
+		$dismissals = [
+			'promo1__spotlight' => time() - 3600,
+		];
+		update_option( WC_Payments_PM_Promotions_Service::PROMOTION_DISMISSALS_OPTION, $dismissals );
+
+		$this->assertFalse( $this->service->is_promotion_dismissed( 'promo2__spotlight' ) );
+	}
+
+	public function test_is_promotion_dismissed_returns_false_for_future_timestamp() {
+		$dismissals = [
+			'promo1__spotlight' => time() + 3600, // 1 hour from now.
+		];
+		update_option( WC_Payments_PM_Promotions_Service::PROMOTION_DISMISSALS_OPTION, $dismissals );
+
+		$this->assertFalse( $this->service->is_promotion_dismissed( 'promo1__spotlight' ) );
+	}
+
+	public function test_is_promotion_dismissed_returns_false_for_invalid_values() {
+		$dismissals = [
+			'promo1__spotlight' => 'invalid',
+			'promo2__spotlight' => 0,
+			'promo3__spotlight' => -1,
+			'promo4__spotlight' => null,
+		];
+		update_option( WC_Payments_PM_Promotions_Service::PROMOTION_DISMISSALS_OPTION, $dismissals );
+
+		$this->assertFalse( $this->service->is_promotion_dismissed( 'promo1__spotlight' ) );
+		$this->assertFalse( $this->service->is_promotion_dismissed( 'promo2__spotlight' ) );
+		$this->assertFalse( $this->service->is_promotion_dismissed( 'promo3__spotlight' ) );
+		$this->assertFalse( $this->service->is_promotion_dismissed( 'promo4__spotlight' ) );
 	}
 
 	/*
