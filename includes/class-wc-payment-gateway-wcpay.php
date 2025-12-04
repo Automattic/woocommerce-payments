@@ -920,7 +920,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		// Disable the gateway if it should not be displayed on the checkout page.
-		$is_gateway_enabled = in_array( $this->stripe_id, $this->get_payment_method_ids_enabled_at_checkout(), true ) ? true : false;
+			$is_gateway_enabled = in_array( $this->stripe_id, $this->get_payment_method_ids_enabled_at_checkout(), true ) ? true : false;
 		if ( ! $is_gateway_enabled ) {
 			return false;
 		}
@@ -957,7 +957,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool Whether the setting to show the payment request buttons is enabled or not.
 	 */
 	public function is_payment_request_enabled() {
-		return 'yes' === $this->get_option( 'payment_request' );
+		$google_pay_gateway = WC_Payments::get_payment_gateway_by_id( 'google_pay' );
+		if ( $google_pay_gateway && $google_pay_gateway->is_enabled() ) {
+			return true;
+		}
+
+		// fallback, just in case.
+		$apple_pay_gateway = WC_Payments::get_payment_gateway_by_id( 'apple_pay' );
+		if ( $apple_pay_gateway && $apple_pay_gateway->is_enabled() ) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
