@@ -449,7 +449,19 @@ class WC_Payments_PM_Promotions_Service {
 			}
 
 			$enabled_pm_ids[] = $payment_method_id;
-			$payment_gateway->update_option( 'upe_enabled_payment_method_ids', $enabled_pm_ids );
+			$result           = $payment_gateway->update_option( 'upe_enabled_payment_method_ids', $enabled_pm_ids );
+
+			if ( false === $result && function_exists( 'wc_get_logger' ) ) {
+				$logger = wc_get_logger();
+				$logger->warning(
+					sprintf(
+						'Failed to sync payment method %s to gateway %s',
+						$payment_method_id,
+						get_class( $payment_gateway )
+					),
+					[ 'source' => 'woopayments' ]
+				);
+			}
 		}
 	}
 
