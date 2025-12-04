@@ -3,7 +3,7 @@
 /**
  * Internal dependencies
  */
-import ACTION_TYPES from './action-types';
+import { ACTION_TYPES } from './action-types';
 import { PmPromotionsState, PmPromotionsActions } from './types';
 
 const defaultState: PmPromotionsState = {

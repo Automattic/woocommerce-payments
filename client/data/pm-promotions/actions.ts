@@ -10,7 +10,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import ACTION_TYPES from './action-types';
+import { ACTION_TYPES } from './action-types';
 import {
 	PmPromotionsData,
 	UpdatePmPromotionsAction,

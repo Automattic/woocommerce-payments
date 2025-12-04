@@ -4,7 +4,7 @@
  * Internal Dependencies
  */
 import { ApiError } from '../../types/errors';
-import ACTION_TYPES from './action-types';
+import { ACTION_TYPES } from './action-types';
 
 export type PmPromotionType = 'spotlight' | 'badge';
 
