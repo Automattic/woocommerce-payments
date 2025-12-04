@@ -848,17 +848,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 * @return bool
 	 */
 	private function get_is_payment_request_enabled() {
-		$google_pay_gateway = WC_Payments::get_payment_gateway_by_id( 'google_pay' );
-		if ( $google_pay_gateway ) {
-			return $google_pay_gateway->is_enabled();
-		}
-
-		$apple_pay_gateway = WC_Payments::get_payment_gateway_by_id( 'apple_pay' );
-		if ( $apple_pay_gateway ) {
-			return $apple_pay_gateway->is_enabled();
-		}
-
-		return false;
+		return $this->wcpay_gateway->is_payment_request_enabled();
 	}
 
 	/**

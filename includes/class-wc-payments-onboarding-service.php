@@ -1451,10 +1451,10 @@ class WC_Payments_Onboarding_Service {
 			}
 		} else {
 			if ( $apple_pay_gateway ) {
-				$apple_pay_gateway->update_option( 'enabled', 'no' );
+				$apple_pay_gateway->disable();
 			}
 			if ( $google_pay_gateway ) {
-				$google_pay_gateway->update_option( 'enabled', 'no' );
+				$google_pay_gateway->disable();
 			}
 		}
 	}
