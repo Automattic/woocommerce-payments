@@ -223,7 +223,12 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 					{ image && (
 						<CardMedia className="wcpay-spotlight__image">
 							{ typeof image === 'string' ? (
-								<img src={ image } alt="" />
+								<img
+									src={ image }
+									alt=""
+									aria-hidden="true"
+									role="presentation"
+								/>
 							) : (
 								image
 							) }
