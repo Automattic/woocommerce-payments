@@ -763,8 +763,8 @@ class WC_Payments_PM_Promotions_Service {
 			return false;
 		}
 
-		// Check if first discount entry is an array with a non-empty 'discount' value.
-		$first_discount = $pm_fees['discount'][0];
+		// Get first discount entry regardless of array key structure.
+		$first_discount = reset( $pm_fees['discount'] );
 		if ( is_array( $first_discount ) && array_key_exists( 'discount', $first_discount ) && ! empty( $first_discount['discount'] ) ) {
 			return true;
 		}
