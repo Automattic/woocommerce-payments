@@ -79,6 +79,13 @@ jest.mock( 'wcpay/data', () => ( {
 		activatePromotion: jest.fn(),
 		dismissPromotion: jest.fn(),
 	} ),
+	usePmPromotions: jest
+		.fn()
+		.mockReturnValue( { pmPromotions: [], isLoading: false } ),
+	usePmPromotionActions: jest.fn().mockReturnValue( {
+		activatePmPromotion: jest.fn(),
+		dismissPmPromotion: jest.fn(),
+	} ),
 } ) );
 
 select.mockReturnValue( {

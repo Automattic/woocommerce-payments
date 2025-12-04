@@ -44,6 +44,9 @@ jest.mock( 'wcpay/data', () => ( {
 	usePromotions: jest
 		.fn()
 		.mockReturnValue( { promotions: [], isLoading: false } ),
+	usePmPromotions: jest
+		.fn()
+		.mockReturnValue( { pmPromotions: [], isLoading: false } ),
 } ) );
 
 jest.mock( 'multi-currency/interface/data', () => ( {

@@ -17,14 +17,14 @@ import {
 	useEnabledPaymentMethodIds,
 	useGetPaymentMethodStatuses,
 	useManualCapture,
-	usePromotions,
+	usePmPromotions,
 } from 'wcpay/data';
 
 jest.mock( 'wcpay/data', () => ( {
 	useEnabledPaymentMethodIds: jest.fn(),
 	useGetPaymentMethodStatuses: jest.fn(),
 	useManualCapture: jest.fn(),
-	usePromotions: jest.fn(),
+	usePmPromotions: jest.fn(),
 } ) );
 
 describe( 'PaymentMethod', () => {
@@ -34,7 +34,10 @@ describe( 'PaymentMethod', () => {
 		] );
 		useGetPaymentMethodStatuses.mockReturnValue( {} );
 		useManualCapture.mockReturnValue( [ false ] );
-		usePromotions.mockReturnValue( { promotions: [], isLoading: false } );
+		usePmPromotions.mockReturnValue( {
+			pmPromotions: [],
+			isLoading: false,
+		} );
 
 		// Set up wcpaySettings with required properties for discount badge tests.
 		global.wcpaySettings = {
@@ -444,8 +447,8 @@ describe( 'PaymentMethod', () => {
 
 		it( 'renders promotional badge when payment method has badge promotion', () => {
 			const badgePromotion = createBadgePromotion();
-			usePromotions.mockReturnValue( {
-				promotions: [ badgePromotion ],
+			usePmPromotions.mockReturnValue( {
+				pmPromotions: [ badgePromotion ],
 				isLoading: false,
 			} );
 
@@ -467,8 +470,8 @@ describe( 'PaymentMethod', () => {
 			const badgePromotion = createBadgePromotion( {
 				payment_method: 'affirm',
 			} );
-			usePromotions.mockReturnValue( {
-				promotions: [ badgePromotion ],
+			usePmPromotions.mockReturnValue( {
+				pmPromotions: [ badgePromotion ],
 				isLoading: false,
 			} );
 
@@ -491,8 +494,8 @@ describe( 'PaymentMethod', () => {
 				id: 'klarna-promo__spotlight',
 				type: 'spotlight',
 			} );
-			usePromotions.mockReturnValue( {
-				promotions: [ spotlightPromotion ],
+			usePmPromotions.mockReturnValue( {
+				pmPromotions: [ spotlightPromotion ],
 				isLoading: false,
 			} );
 
@@ -546,8 +549,8 @@ describe( 'PaymentMethod', () => {
 
 			// Also have a badge promotion.
 			const badgePromotion = createBadgePromotion();
-			usePromotions.mockReturnValue( {
-				promotions: [ badgePromotion ],
+			usePmPromotions.mockReturnValue( {
+				pmPromotions: [ badgePromotion ],
 				isLoading: false,
 			} );
 
@@ -574,8 +577,8 @@ describe( 'PaymentMethod', () => {
 
 		it( 'renders badge promotion with correct tooltip label', () => {
 			const badgePromotion = createBadgePromotion();
-			usePromotions.mockReturnValue( {
-				promotions: [ badgePromotion ],
+			usePmPromotions.mockReturnValue( {
+				pmPromotions: [ badgePromotion ],
 				isLoading: false,
 			} );
 
@@ -595,8 +598,8 @@ describe( 'PaymentMethod', () => {
 		} );
 
 		it( 'does not render promotional badge when promotions array is empty', () => {
-			usePromotions.mockReturnValue( {
-				promotions: [],
+			usePmPromotions.mockReturnValue( {
+				pmPromotions: [],
 				isLoading: false,
 			} );
 
@@ -615,8 +618,8 @@ describe( 'PaymentMethod', () => {
 		} );
 
 		it( 'does not render promotional badge while promotions are loading', () => {
-			usePromotions.mockReturnValue( {
-				promotions: [],
+			usePmPromotions.mockReturnValue( {
+				pmPromotions: [],
 				isLoading: true,
 			} );
 

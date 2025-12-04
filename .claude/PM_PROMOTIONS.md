@@ -7,19 +7,19 @@ PM Promotions display promotional offers for payment methods that merchants have
 ## Data Flow
 
 ```
-Server API → WC_Payments_PM_Promotions_Service → REST API → Redux Store → Components
+Transact Platform API → WC_Payments_PM_Promotions_Service → REST API → Redux Store → Components
                         ↓
-              validate → filter → normalize
+                        validate → filter → normalize
 ```
 
-**Server responsibilities:**
+**Server-side (backend) responsibilities:**
 - Fetch promotions from WooPayments API (with store context)
 - Validate promotion structure
-- Filter by: locale, dismissals, activated promos, PM validity, enabled status, **active discounts**
+- Filter by: dismissals, PM validity, enabled status, **active discounts**
 - Normalize data (apply fallbacks, derive titles)
 - Cache results with context-aware invalidation
 
-**Client responsibilities:**
+**Client-side (frontend) responsibilities:**
 - Validate promotion structure (type guards, defense in depth)
 - Filter dismissed promotions (defense in depth)
 - Render appropriate UI based on `type`
@@ -30,32 +30,34 @@ Server API → WC_Payments_PM_Promotions_Service → REST API → Redux Store �
 ### Promotion (TypeScript)
 
 ```typescript
-// client/data/promotions/types.d.ts
+// client/data/pm-promotions/types.d.ts
 
-type PromotionType = 'spotlight' | 'badge';
+type PmPromotionType = 'spotlight' | 'badge';
 
-interface Promotion {
-  id: string;                    // Unique: "{promo_id}__{type}" e.g., "klarna-2026-promo__spotlight"
-  promo_id: string;              // Campaign identifier e.g., "klarna-2026-promo"
+interface PmPromotion {
+  id: string;                    // Globally unique promotion variation ID (e.g., "campaign-name-promo__spotlight__blabla"). A campaign can have multiple variations.
+  promo_id: string;              // Campaign identifier e.g., "campaign-name-promo"
   payment_method: string;        // PM ID from Payment_Method constants e.g., "klarna"
-  payment_method_title: string;  // Human-readable e.g., "Klarna" (derived server-side)
-  type: PromotionType;           // Display context: 'spotlight' | 'badge'
+  payment_method_title: string;  // Human-readable payment method title e.g., "Klarna"
+  type: PmPromotionType;         // Display context: 'spotlight' | 'badge'
   title: string;                 // Promotion headline
+  badge_text?: string;           // Optional badge text (for spotlight type)
+  badge_type?: ChipType;         // Optional badge visual style
   description: string;           // Promotion body text
   cta_label: string;             // Primary button text (fallback: "Enable {payment_method_title}")
   tc_url: string;                // Terms & conditions URL (required)
   tc_label: string;              // Terms link text (fallback: "See terms")
-  footnote?: string;             // Optional disclaimer text
-  image?: string;                // Optional image URL
+  footnote?: string;             // Optional footnote text to be displayed below main content
+  image?: string;                // Optional image URL (mostly for spotlight type)
 }
 ```
 
 ### Redux State
 
 ```typescript
-interface PromotionsState {
-  promotions: Promotion[];
-  promotionsError?: ApiError;
+interface PmPromotionsState {
+  pmPromotions?: PmPromotion[];
+  pmPromotionsError?: ApiError;
 }
 ```
 
@@ -75,11 +77,11 @@ interface PromotionsState {
 
 | File | Purpose |
 |------|---------|
-| `client/data/promotions/types.d.ts` | TypeScript interfaces |
-| `client/data/promotions/hooks.ts` | `usePromotions`, `usePromotionActions` hooks |
-| `client/data/promotions/selectors.ts` | Redux selectors |
-| `client/data/promotions/actions.ts` | `activatePromotion`, `dismissPromotion` |
-| `client/data/promotions/resolvers.ts` | API fetch with type guards |
+| `client/data/pm-promotions/types.d.ts` | TypeScript interfaces |
+| `client/data/pm-promotions/hooks.ts` | `usePmPromotions`, `usePmPromotionActions` hooks |
+| `client/data/pm-promotions/selectors.ts` | Redux selectors (`getPmPromotions`, `getPmPromotionsError`) |
+| `client/data/pm-promotions/actions.ts` | `activatePmPromotion`, `dismissPmPromotion` |
+| `client/data/pm-promotions/resolvers.ts` | API fetch with type guards |
 | `client/promotions/spotlight/index.tsx` | Spotlight promotion component |
 | `client/components/promotional-badge/index.tsx` | Badge promotion component with T&C tooltip |
 | `client/settings/payment-methods-list/payment-method.tsx` | PM settings item (uses PromotionalBadge) |
@@ -94,42 +96,33 @@ interface PromotionsState {
 
 ## Hooks API
 
-### usePromotions
+### usePmPromotions
 
 ```typescript
-const { promotions, isLoading } = usePromotions();
-// Returns: { promotions: Promotion[], isLoading: boolean }
+const { pmPromotions, isLoading, pmPromotionsError } = usePmPromotions();
+// Returns: { pmPromotions: PmPromotion[], isLoading: boolean, pmPromotionsError?: ApiError }
 ```
 
-### usePromotionActions
+### usePmPromotionActions
 
 ```typescript
-const { activatePromotion, dismissPromotion } = usePromotionActions();
+const { activatePmPromotion, dismissPmPromotion } = usePmPromotionActions();
 
 // Activate a promotion (enables the payment method)
-activatePromotion(promo_id: string);  // e.g., "klarna-2026-promo"
+activatePmPromotion(promo_id: string);  // e.g., "klarna-2026-promo"
 
 // Dismiss a promotion
-dismissPromotion(id: string);  // e.g., "klarna-2026-promo__spotlight"
+dismissPmPromotion(id: string);  // e.g., "klarna-2026-promo__spotlight"
 ```
 
 ## Selectors
 
 ```typescript
 // Get all promotions
-getPromotions(state): Promotion[]
+getPmPromotions(state): PmPromotion[]
 
-// Get promotion by unique id
-getPromotionById(state, id: string): Promotion | undefined
-
-// Get promotions for a specific payment method
-getPromotionsByPaymentMethod(state, paymentMethod: string): Promotion[]
-
-// Get first promotion of a specific type
-getPromotionByType(state, type: PromotionType): Promotion | undefined
-
-// Check if promotions exist
-hasPromotions(state): boolean
+// Get promotions error
+getPmPromotionsError(state): ApiError | undefined
 ```
 
 ## Component Implementation Pattern
@@ -140,39 +133,44 @@ hasPromotions(state): boolean
 // client/promotions/spotlight/index.tsx
 
 const SpotlightPromotion: React.FC = () => {
-  const { promotions, isLoading } = usePromotions();
-  const { activatePromotion, dismissPromotion } = usePromotionActions();
+  const { pmPromotions, isLoading } = usePmPromotions();
+  const { activatePmPromotion, dismissPmPromotion } = usePmPromotionActions();
 
-  // Check account status
-  const accountStatus = window.wcpaySettings?.accountStatus?.status;
-  const isAccountOnboarded = accountStatus === 'complete' || accountStatus === 'enabled';
+  // Don't render if data is still loading
+  if (isLoading) return null;
 
-  if (!isAccountOnboarded || isLoading) return null;
-  if (!promotions?.length) return null;
+  // Don't render if no promotions available
+  if (!pmPromotions || pmPromotions.length === 0) return null;
 
   // Find spotlight promotion
-  const spotlightPromotion = promotions.find(p => p.type === 'spotlight');
+  const spotlightPromotion = pmPromotions.find(p => p.type === 'spotlight');
   if (!spotlightPromotion) return null;
 
   // Event handlers
   const handlePrimaryClick = () => {
     recordEvent('wcpay_payment_method_promotion_activate_click', getEventProperties());
-    activatePromotion(spotlightPromotion.promo_id);
+    activatePmPromotion(spotlightPromotion.promo_id);
   };
 
   const handleDismiss = () => {
-    recordEvent('wcpay_payment_method_promotion_dismiss', getEventProperties());
-    dismissPromotion(spotlightPromotion.id);  // Use full id, not promo_id
+    recordEvent('wcpay_payment_method_promotion_dismiss_click', getEventProperties());
+    dismissPmPromotion(spotlightPromotion.id);  // Use full id, not promo_id
   };
 
   return (
     <Spotlight
+      badge={spotlightPromotion.badge_text}
+      badgeType={spotlightPromotion.badge_type}
       heading={spotlightPromotion.title}
       description={spotlightPromotion.description}
+      footnote={spotlightPromotion.footnote}
       image={spotlightPromotion.image}
       primaryButtonLabel={spotlightPromotion.cta_label}
       onPrimaryClick={handlePrimaryClick}
+      secondaryButtonLabel={spotlightPromotion.tc_label}
+      onSecondaryClick={handleSecondaryClick}
       onDismiss={handleDismiss}
+      onView={handleView}
     />
   );
 };
@@ -184,9 +182,8 @@ All events include base properties:
 
 ```typescript
 {
-  promotion_id: string,      // promo_id
+  promo_id: string,          // promo_id
   payment_method: string,    // payment_method
-  id: string,                // unique id
   display_context: string,   // 'spotlight' | 'badge'
   source: string,            // page identifier
   path: string,              // window.location.pathname + search
@@ -197,9 +194,8 @@ All events include base properties:
 |-------|---------|
 | `wcpay_payment_method_promotion_view` | Promotion becomes visible |
 | `wcpay_payment_method_promotion_activate_click` | Primary CTA clicked |
-| `wcpay_payment_method_promotion_secondary_click` | Secondary button clicked |
-| `wcpay_payment_method_promotion_dismiss` | Close/dismiss clicked |
 | `wcpay_payment_method_promotion_link_click` | Terms link clicked (+ `link_type: 'terms'`) |
+| `wcpay_payment_method_promotion_dismiss_click` | Close/dismiss clicked |
 
 ## REST API Endpoints
 
@@ -207,30 +203,26 @@ All events include base properties:
 
 Returns array of visible promotions (already filtered server-side).
 
-### POST /wc/v3/payments/pm-promotions/{identifier}/activate
+### POST /wc/v3/payments/pm-promotions/{id}/activate
 
 Activates a promotion (enables the payment method).
 
-**Body:**
-```json
-{ "accept_terms": true }
-```
+**URL Parameter:**
+- `id`: The promotion unique identifier (e.g., `klarna-2026-promo__spotlight`)
 
-### POST /wc/v3/payments/pm-promotions/{identifier}/dismiss
+### POST /wc/v3/payments/pm-promotions/{id}/dismiss
 
 Dismisses a promotion.
 
-**Body:**
-```json
-{ "id": "klarna-2026-promo__spotlight" }
-```
+**URL Parameter:**
+- `id`: The promotion unique identifier (e.g., `klarna-2026-promo__spotlight`)
 
 ## Type Guards (Validation)
 
 The resolver validates API responses:
 
 ```typescript
-function isPromotion(value: unknown): value is Promotion {
+function isPmPromotion(value: unknown): value is PmPromotion {
   if (typeof value !== 'object' || value === null) return false;
   const obj = value as Record<string, unknown>;
   return (
@@ -252,25 +244,27 @@ function isPromotion(value: unknown): value is Promotion {
 ## Important Implementation Notes
 
 1. **ID vs promo_id**: Use `id` for dismissals, `promo_id` for activation
-2. **Account check**: Only show promotions when `accountStatus.status` is 'complete' or 'enabled'
-3. **Type filtering**: Each component filters for its own `type` ('spotlight', 'badge')
-4. **No variations**: The client receives flat promotions - no nested structures
-5. **Server derives titles**: `payment_method_title` comes from server, not client lookup
-6. **Fallbacks applied server-side**: `cta_label` and `tc_label` have server-side defaults
-7. **Image is optional**: Don't display image section if `image` is empty/undefined
+2. **Type filtering**: Each component filters for its own `type` ('spotlight', 'badge')
+3. **No variations**: The client receives flat promotions - no nested structures
+4. **Server derives titles**: `payment_method_title` comes from server, not client lookup
+5. **Fallbacks applied server-side**: `cta_label` and `tc_label` have server-side defaults
+6. **Image is optional**: Don't display image section if `image` is empty/undefined
+7. **Badge fields**: `badge_text` and `badge_type` are optional and primarily used for spotlight type
 
 ## Testing
 
 ### Mock Promotion Data
 
 ```typescript
-const mockPromotion = {
+const mockPromotion: PmPromotion = {
   id: 'klarna-promo__spotlight',
   promo_id: 'klarna-promo',
   payment_method: 'klarna',
   payment_method_title: 'Klarna',
   type: 'spotlight',
   title: 'Zero Processing Fees for 90 Days',
+  badge_text: 'Limited Time',
+  badge_type: 'success',
   description: 'Save on every Klarna transaction.',
   cta_label: 'Enable Klarna',
   tc_url: 'https://example.com/terms',
@@ -284,8 +278,26 @@ const mockPromotion = {
 
 - `client/promotions/spotlight/__tests__/index.test.tsx`
 - `client/components/promotional-badge/__tests__/index.test.tsx`
-- `client/data/promotions/__tests__/*.test.ts`
+- `client/data/pm-promotions/__tests__/*.test.ts`
 - `tests/unit/admin/test-class-wc-payments-pm-promotions-service.php`
+
+### Test Mock Setup
+
+When testing components that use PM promotions, add the following mock to your test file:
+
+```typescript
+jest.mock('wcpay/data', () => ({
+  // ... other mocks
+  usePmPromotions: jest.fn().mockReturnValue({
+    pmPromotions: [],
+    isLoading: false,
+  }),
+  usePmPromotionActions: jest.fn().mockReturnValue({
+    activatePmPromotion: jest.fn(),
+    dismissPmPromotion: jest.fn(),
+  }),
+}));
+```
 
 ---
 
@@ -312,7 +324,7 @@ If not provided, dependencies are lazily resolved via `WC_Payments::get_gateway(
 | Method | Purpose |
 |--------|---------|
 | `get_visible_promotions()` | Main entry point - returns filtered, normalized promotions |
-| `activate_promotion($identifier, $accept_terms)` | Activate a promotion (enable PM) |
+| `activate_promotion($identifier)` | Activate a promotion (enable PM) |
 | `dismiss_promotion($id)` | Dismiss a promotion |
 | `clear_cache()` | Clear the promotions transient cache |
 
@@ -436,7 +448,7 @@ When `tcUrl` is provided:
 
 ```tsx
 // Use backend-provided tc_label when available, otherwise fall back to default.
-const tcLinkLabel = tcLabel || __( 'See terms and conditions', 'woocommerce-payments' );
+const tcLinkLabel = tcLabel || __( 'See terms', 'woocommerce-payments' );
 
 // Build tooltip content with optional T&C link.
 const tooltipContent = tcUrl ? (
@@ -459,8 +471,8 @@ The `PaymentMethod` component (`payment-method.tsx`) shows badges for:
 
 ```tsx
 // Get badge-type promotion for this payment method.
-const { promotions = [] } = usePromotions();
-const badgePromotion = promotions?.find(
+const { pmPromotions = [] } = usePmPromotions();
+const badgePromotion = pmPromotions?.find(
     ( promo ) => promo.payment_method === id && promo.type === 'badge'
 );
 
@@ -494,4 +506,3 @@ if ( badgePromotion ) {
 |------------------|---------|
 | `wcpay_pm_promotions` | Transient cache for promotions |
 | `_wcpay_pm_promotion_dismissals` | Option: [id => timestamp] |
-| `_wcpay_activated_pm_promotions` | Option: [identifier => timestamp] |
