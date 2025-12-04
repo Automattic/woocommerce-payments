@@ -116,15 +116,7 @@ class WC_Payments_PM_Promotions_Service {
 			}
 		);
 
-		// Filter out dismissed promotions.
-		$promotions = array_filter(
-			$promotions,
-			function ( $promotion ) {
-				return ! $this->is_promotion_dismissed( $promotion['id'] ?? '' );
-			}
-		);
-
-		// Filter by PM validity, enabled status, and only keep the first found promo_id per PM.
+		// Filter promotions by dismissal status, PM validity, enabled status, and promo_id uniqueness.
 		$promotions = $this->filter_promotions( $promotions );
 
 		// Normalize the promotions (apply fallbacks, derive fields).
@@ -761,8 +753,8 @@ class WC_Payments_PM_Promotions_Service {
 	}
 
 	/**
-	 * Filter promotions by payment method validity, enabled status, and discount status.
-	 * Also keeps only the first promo_id per payment method.
+	 * Filter promotions by dismissal status, payment method validity, enabled status, discount status,
+	 * and promo_id uniqueness per payment method.
 	 *
 	 * @param array $promotions Array of promotions.
 	 *
@@ -774,8 +766,14 @@ class WC_Payments_PM_Promotions_Service {
 		$filtered       = [];
 
 		foreach ( $promotions as $promotion ) {
+			$id       = $promotion['id'] ?? '';
 			$pm_id    = $promotion['payment_method'] ?? '';
 			$promo_id = $promotion['promo_id'] ?? '';
+
+			// Skip dismissed promotions.
+			if ( $this->is_promotion_dismissed( $id ) ) {
+				continue;
+			}
 
 			// Skip invalid payment methods.
 			if ( ! $this->is_valid_payment_method( $pm_id ) ) {
