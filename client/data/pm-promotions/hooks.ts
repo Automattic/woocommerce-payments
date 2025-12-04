@@ -9,7 +9,7 @@ import { useSelect, useDispatch } from '@wordpress/data';
  * Internal dependencies
  */
 import { STORE_NAME } from '../constants';
-import { PmPromotionsResponse } from './types';
+import { PmPromotionsResponse, PmPromotionActions } from './types';
 
 /**
  * Hook to retrieve PM promotions data.
@@ -32,9 +32,9 @@ export const usePmPromotions = (): PmPromotionsResponse =>
 /**
  * Hook to get PM promotion actions (activate and dismiss).
  *
- * @return {Object} Object with activatePmPromotion and dismissPmPromotion functions.
+ * @return {PmPromotionActions} Object with activatePmPromotion and dismissPmPromotion functions.
  */
-export const usePmPromotionActions = () => {
+export const usePmPromotionActions = (): PmPromotionActions => {
 	const { activatePmPromotion, dismissPmPromotion } = useDispatch(
 		STORE_NAME
 	);

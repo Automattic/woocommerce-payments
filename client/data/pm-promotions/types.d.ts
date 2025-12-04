@@ -60,3 +60,23 @@ export interface ErrorPmPromotionsAction {
 export type PmPromotionsActions =
 	| UpdatePmPromotionsAction
 	| ErrorPmPromotionsAction;
+
+/**
+ * Hook return type for usePmPromotionActions.
+ * These are the dispatched action creators wrapped by @wordpress/data.
+ */
+export interface PmPromotionActions {
+	/**
+	 * Activate a PM promotion by its identifier.
+	 *
+	 * @param identifier - The promotion unique identifier (e.g., 'klarna-2026-promo__spotlight').
+	 */
+	activatePmPromotion: ( identifier: string ) => void;
+
+	/**
+	 * Dismiss a PM promotion by its identifier.
+	 *
+	 * @param id - The promotion unique identifier (e.g., 'klarna-2026-promo__spotlight').
+	 */
+	dismissPmPromotion: ( id: string ) => void;
+}
