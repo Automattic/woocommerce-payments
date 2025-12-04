@@ -39,7 +39,6 @@ use WCPay\Payment_Methods\WC_Helper_Site_Currency;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
-use WC_Subscriptions;
 
 // Need to use WC_Mock_Data_Store.
 require_once __DIR__ . '/helpers/class-wc-mock-wc-data-store.php';
@@ -4330,32 +4329,5 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		);
 
 		$this->assertTrue( $this->card_gateway->is_payment_request_enabled() );
-	}
-
-	/**
-	 * Gets the current payment_gateway_map using reflection.
-	 *
-	 * @return array The current payment gateway map.
-	 */
-	private function get_payment_gateway_map() {
-		$reflection = new \ReflectionClass( WC_Payments::class );
-		$property   = $reflection->getProperty( 'payment_gateway_map' );
-		$property->setAccessible( true );
-		$value = $property->getValue( null );
-		$property->setAccessible( false );
-		return $value;
-	}
-
-	/**
-	 * Helper to set up mock gateways in the payment_gateway_map for testing.
-	 *
-	 * @param array $gateway_map Associative array of gateway_id => gateway_instance.
-	 */
-	private function set_payment_gateway_map( $gateway_map ) {
-		$reflection = new \ReflectionClass( WC_Payments::class );
-		$property   = $reflection->getProperty( 'payment_gateway_map' );
-		$property->setAccessible( true );
-		$property->setValue( null, $gateway_map );
-		$property->setAccessible( false );
 	}
 }

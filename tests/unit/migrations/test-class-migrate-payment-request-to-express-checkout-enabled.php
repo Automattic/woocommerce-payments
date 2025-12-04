@@ -194,31 +194,4 @@ class Migrate_Payment_Request_To_Express_Checkout_Enabled_Test extends WCPAY_Uni
 
 		$this->set_payment_gateway_map( $gateway_map );
 	}
-
-	/**
-	 * Helper to get the current payment_gateway_map for backup purposes.
-	 *
-	 * @return array The current payment_gateway_map.
-	 */
-	private function get_payment_gateway_map() {
-		$reflection = new \ReflectionClass( WC_Payments::class );
-		$property   = $reflection->getProperty( 'payment_gateway_map' );
-		$property->setAccessible( true );
-		$value = $property->getValue( null );
-		$property->setAccessible( false );
-		return $value;
-	}
-
-	/**
-	 * Helper to set up mock gateways in the payment_gateway_map for testing.
-	 *
-	 * @param array $gateway_map Associative array of gateway_id => gateway_instance.
-	 */
-	private function set_payment_gateway_map( $gateway_map ) {
-		$reflection = new \ReflectionClass( WC_Payments::class );
-		$property   = $reflection->getProperty( 'payment_gateway_map' );
-		$property->setAccessible( true );
-		$property->setValue( null, $gateway_map );
-		$property->setAccessible( false );
-	}
 }

@@ -283,31 +283,4 @@ class WC_Payments_Apple_Pay_Registration_Test extends WCPAY_UnitTestCase {
 
 		$this->assertStringContainsString( 'Apple Pay domain verification failed.', $output );
 	}
-
-	/**
-	 * Helper to get the current payment_gateway_map.
-	 *
-	 * @return array The current payment_gateway_map.
-	 */
-	private function get_payment_gateway_map() {
-		$reflection = new \ReflectionClass( WC_Payments::class );
-		$property   = $reflection->getProperty( 'payment_gateway_map' );
-		$property->setAccessible( true );
-		$value = $property->getValue( null );
-		$property->setAccessible( false );
-		return $value;
-	}
-
-	/**
-	 * Helper to set up mock gateways in the payment_gateway_map.
-	 *
-	 * @param array $gateway_map Associative array of gateway_id => gateway_instance.
-	 */
-	private function set_payment_gateway_map( $gateway_map ) {
-		$reflection = new \ReflectionClass( WC_Payments::class );
-		$property   = $reflection->getProperty( 'payment_gateway_map' );
-		$property->setAccessible( true );
-		$property->setValue( null, $gateway_map );
-		$property->setAccessible( false );
-	}
 }
