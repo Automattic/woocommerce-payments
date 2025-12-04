@@ -496,15 +496,17 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 
 			// Calculate total WCPay refund amount and delete them.
 			$deleted_refund_ids = [];
+			$parent_order_id    = $order->get_id();
 			foreach ( $wcpay_refunds as $refund ) {
 				$wcpay_refund_total  += abs( $refund->get_amount() );
-				$deleted_refund_ids[] = $refund->get_id();
+				$refund_id            = $refund->get_id();
+				$deleted_refund_ids[] = $refund_id;
 				$refund->delete( true ); // Force delete, bypass trash.
-			}
 
-			// Delete orphaned refund stats from wp_wc_order_stats.
-			// WooCommerce doesn't automatically clean these up when refunds are deleted.
-			$this->delete_refund_stats( $deleted_refund_ids );
+				// Fire the hook WC expects for refund deletion.
+				// This triggers analytics sync via WC's woocommerce_refund_deleted handler.
+				do_action( 'woocommerce_refund_deleted', $refund_id, $parent_order_id );
+			}
 
 			// Remove fee metadata from the order.
 			$order->delete_meta_data( '_wcpay_transaction_fee' );
@@ -596,8 +598,8 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 	/**
 	 * Sync order stats to WooCommerce Analytics.
 	 *
-	 * WooCommerce hooks into refund deletion automatically, but we sync explicitly
-	 * to ensure stats are updated for this remediation.
+	 * Fallback sync in case the woocommerce_refund_deleted hook doesn't
+	 * fully update analytics for edge cases.
 	 *
 	 * @param int $order_id Order ID to sync.
 	 * @return void
@@ -617,29 +619,6 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 				[ 'source' => 'wcpay-fee-remediation' ]
 			);
 		}
-	}
-
-	/**
-	 * Delete refund stats from wp_wc_order_stats table.
-	 *
-	 * When refund objects are deleted with $refund->delete(), WooCommerce doesn't
-	 * automatically clean up the corresponding entries in wp_wc_order_stats.
-	 * This causes orphaned negative values in analytics reports.
-	 *
-	 * @param array $refund_ids Array of refund order IDs to delete stats for.
-	 * @return void
-	 */
-	protected function delete_refund_stats( array $refund_ids ): void {
-		if ( empty( $refund_ids ) ) {
-			return;
-		}
-
-		global $wpdb;
-
-		$placeholders = implode( ', ', array_fill( 0, count( $refund_ids ), '%d' ) );
-
-		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared, WordPress.DB.PreparedSQLPlaceholders.UnfinishedPrepare
-		$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}wc_order_stats WHERE order_id IN ({$placeholders})", $refund_ids ) );
 	}
 
 	/**
