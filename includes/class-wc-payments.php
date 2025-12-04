@@ -417,6 +417,8 @@ class WC_Payments {
 		include_once __DIR__ . '/core/server/request/class-list-charge-refunds.php';
 		include_once __DIR__ . '/core/server/request/class-get-request.php';
 		include_once __DIR__ . '/core/server/request/class-request-utils.php';
+		include_once __DIR__ . '/core/server/request/class-get-pm-promotions.php';
+		include_once __DIR__ . '/core/server/request/class-activate-promotion.php';
 
 		include_once __DIR__ . '/woopay/services/class-checkout-service.php';
 

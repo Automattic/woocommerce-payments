@@ -187,12 +187,9 @@ class WC_Payments_PM_Promotions_Service {
 
 		// By this point, we have an expired transient or the store context has changed.
 		// Query for promotions by calling the WooPayments API.
-		// TODO: Replace with actual API call when server endpoints are available.
-		// $wcpay_request = Request\Get_PM_Promotions::create();
-		// $wcpay_request->set_store_context_params( $store_context );
-		// $response = $wcpay_request->handle_rest_request();
-		// Return mock data for testing.
-		$response = $this->get_mock_promotions_data();
+		$wcpay_request = Request\Get_PM_Promotions::create();
+		$wcpay_request->set_store_context_params( $store_context );
+		$response = $wcpay_request->handle_rest_request();
 
 		// Return early if there is an error, waiting 6 hours before the next attempt.
 		if ( is_wp_error( $response ) ) {
@@ -276,19 +273,15 @@ class WC_Payments_PM_Promotions_Service {
 			return false;
 		}
 
-		/*
-		 * Send request to server to apply the promotion discount.
-		 * The server should also handle capability requesting if it is not already requested.
-		 * This way we can keep things in sync and avoid applying discounts without having the capability requested.
-		 *
-		 * TODO: Replace with actual API call when server endpoints are available.
-		 * $wcpay_request = Request\Activate_Promotion::create( $id );
-		 * $wcpay_request->assign_hook( 'wcpay_activate_promotion_request' );
-		 * $response = $wcpay_request->handle_rest_request();
-		 * if ( is_wp_error( $response ) ) {
-		 *     return false;
-		 * }
-		 */
+		// Send request to server to apply the promotion discount.
+		// The server should also handle capability requesting if it is not already requested.
+		// This way we can keep things in sync and avoid applying discounts without having the capability requested.
+		$wcpay_request = Request\Activate_Promotion::create( $id );
+		$wcpay_request->assign_hook( 'wcpay_activate_promotion_request' );
+		$response = $wcpay_request->handle_rest_request();
+		if ( is_wp_error( $response ) ) {
+			return false;
+		}
 
 		// Enable the payment method for checkout.
 		if ( ! $this->enable_payment_method_gateway( $payment_method_id, $promotion ) ) {
@@ -418,18 +411,14 @@ class WC_Payments_PM_Promotions_Service {
 			return false;
 		}
 
-		/*
-		 * Send request to server to apply the promotion discount.
-		 * The server should also handle capability requesting if it is not already requested.
-		 *
-		 * TODO: Replace with actual API call when server endpoints are available.
-		 * $wcpay_request = Request\Activate_Promotion::create( $promotion['id'] );
-		 * $wcpay_request->assign_hook( 'wcpay_activate_promotion_request' );
-		 * $response = $wcpay_request->handle_rest_request();
-		 * if ( is_wp_error( $response ) ) {
-		 *     return $this->handle_promotion_activation_failure( $payment_method_id, $promotion, 'Server activation failed' );
-		 * }
-		 */
+		// Send request to server to apply the promotion discount.
+		// The server should also handle capability requesting if it is not already requested.
+		$wcpay_request = Request\Activate_Promotion::create( $promotion['id'] );
+		$wcpay_request->assign_hook( 'wcpay_activate_promotion_request' );
+		$response = $wcpay_request->handle_rest_request();
+		if ( is_wp_error( $response ) ) {
+			return $this->handle_promotion_activation_failure( $payment_method_id, $promotion, 'Server activation failed' );
+		}
 
 		// Enable the payment method for checkout if requested.
 		if ( $should_enable && ! $this->enable_payment_method_gateway( $payment_method_id, $promotion ) ) {
@@ -518,58 +507,6 @@ class WC_Payments_PM_Promotions_Service {
 		$this->reset_memo();
 
 		return true;
-	}
-
-	/**
-	 * Get mock promotions data for testing.
-	 * TODO: Remove this method when server endpoints are available.
-	 *
-	 * @return array Mock promotions data (array of promotions).
-	 */
-	private function get_mock_promotions_data(): array {
-		// Mock available promotions - flat structure, no nested variations.
-		$promotions = [
-			[
-				'id'             => 'klarna-2026-promo__spotlight',
-				'promo_id'       => 'klarna-2026-promo',
-				'payment_method' => 'klarna',
-				'type'           => 'spotlight',
-				'title'          => 'Zero Fees for 90 Days',
-				'badge_text'     => '',
-				'badge_type'     => 'success',
-				'description'    => 'In 2024, shoppers spent $82.4B using buy now, pay later. Enable flexible payments with Klarna in WooPayments for 50% off processing fees for 3 months.',
-				'cta_label'      => 'Enable Klarna',
-				'tc_url'         => 'https://woocommerce.com/terms',
-				'tc_label'       => 'Learn more',
-				'footnote'       => '* Offer valid for new activations only.',
-				'image'          => '',
-			],
-			[
-				'id'             => 'klarna-2026-promo__badge',
-				'promo_id'       => 'klarna-2026-promo',
-				'payment_method' => 'klarna',
-				'type'           => 'badge',
-				'title'          => 'Zero fees for 90 days',
-				'badge_type'     => 'warning',
-				'description'    => 'Enable Klarna and pay no processing fees.',
-				'tc_url'         => 'https://woocommerce.com/terms',
-				'tc_label'       => 'Learn more',
-			],
-			[
-				'id'             => 'affirm-2026-promo__spotlight',
-				'promo_id'       => 'affirm-2026-promo',
-				'payment_method' => 'affirm',
-				'type'           => 'spotlight',
-				'title'          => '2% Cashback on Affirm Transactions',
-				'description'    => 'Earn cashback on all Affirm payments for 60 days.',
-				'tc_url'         => 'https://woocommerce.com/terms',
-			],
-		];
-
-		return [
-			'response' => [ 'code' => 200 ],
-			'body'     => wp_json_encode( $promotions ),
-		];
 	}
 
 	/**

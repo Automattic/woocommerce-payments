@@ -59,6 +59,11 @@ class Get_PM_Promotions extends Request {
 				continue;
 			}
 
+			// JSON encode arrays (like dismissals) as the server expects strings.
+			if ( is_array( $value ) ) {
+				$value = wp_json_encode( $value );
+			}
+
 			$this->set_param( $key, $value );
 		}
 	}
