@@ -8,7 +8,28 @@
 import { getRecommendedDocumentFields } from '../recommended-document-fields';
 import { RecommendedDocument } from '../types';
 
+declare const global: {
+	wcpaySettings: {
+		featureFlags: {
+			isDisputeAdditionalEvidenceTypesEnabled: boolean;
+		};
+	};
+};
+
 describe( 'Recommended Documents', () => {
+	const originalWcpaySettings = global.wcpaySettings;
+
+	beforeEach( () => {
+		global.wcpaySettings = {
+			featureFlags: {
+				isDisputeAdditionalEvidenceTypesEnabled: false,
+			},
+		};
+	} );
+
+	afterEach( () => {
+		global.wcpaySettings = originalWcpaySettings;
+	} );
 	describe( 'getRecommendedDocumentFields', () => {
 		it( 'should return default fields when no specific reason is provided', () => {
 			const result = getRecommendedDocumentFields( '' );
@@ -290,6 +311,193 @@ describe( 'Recommended Documents', () => {
 				expect( result ).toHaveLength( 6 );
 				expect( result[ 2 ].key ).toBe( 'access_activity_log' );
 				expect( result[ 2 ].label ).toBe( 'Subscription logs' );
+			} );
+		} );
+
+		describe( 'evidence matrix with feature flag', () => {
+			it( 'should return matrix fields for fraudulent + booking_reservation when feature flag is enabled', () => {
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
+
+				const result = getRecommendedDocumentFields(
+					'fraudulent',
+					undefined,
+					undefined,
+					'booking_reservation'
+				);
+
+				expect( result ).toHaveLength( 4 );
+				expect( result[ 0 ].key ).toBe( 'uncategorized_file' );
+				expect( result[ 0 ].label ).toBe(
+					'Prior undisputed transaction history'
+				);
+				expect( result[ 0 ].description ).toBe(
+					'Proof of past undisputed transactions from the same customer, with matching billing and device details'
+				);
+				expect( result[ 1 ].key ).toBe( 'receipt' );
+				expect( result[ 2 ].key ).toBe( 'customer_communication' );
+				expect( result[ 3 ].key ).toBe( 'refund_policy' );
+			} );
+
+			it( 'should return default fraudulent fields when feature flag is disabled', () => {
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = false;
+
+				const result = getRecommendedDocumentFields(
+					'fraudulent',
+					undefined,
+					undefined,
+					'booking_reservation'
+				);
+
+				// Should return default fraudulent fields, not matrix fields
+				expect( result ).toHaveLength( 5 );
+				expect( result[ 0 ].key ).toBe( 'receipt' );
+				expect( result[ 1 ].key ).toBe( 'customer_communication' );
+				expect( result[ 2 ].key ).toBe( 'customer_signature' );
+				expect( result[ 3 ].key ).toBe( 'refund_policy' );
+				expect( result[ 4 ].key ).toBe( 'uncategorized_file' );
+			} );
+
+			it( 'should return default fields for fraudulent + physical_product even when feature flag is enabled', () => {
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
+
+				const result = getRecommendedDocumentFields(
+					'fraudulent',
+					undefined,
+					undefined,
+					'physical_product'
+				);
+
+				// Should fall back to default fraudulent fields since no matrix entry exists
+				expect( result ).toHaveLength( 5 );
+				expect( result[ 0 ].key ).toBe( 'receipt' );
+				expect( result[ 2 ].key ).toBe( 'customer_signature' );
+			} );
+
+			it( 'should return default fields for fraudulent when no product type is provided', () => {
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
+
+				const result = getRecommendedDocumentFields( 'fraudulent' );
+
+				// Should fall back to default fraudulent fields
+				expect( result ).toHaveLength( 5 );
+				expect( result[ 0 ].key ).toBe( 'receipt' );
+			} );
+
+			it( 'should return matrix fields for subscription_canceled + multiple when feature flag is enabled', () => {
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
+
+				const result = getRecommendedDocumentFields(
+					'subscription_canceled',
+					undefined,
+					undefined,
+					'multiple'
+				);
+
+				// Matrix entry for subscription_canceled + multiple (no subscription logs)
+				expect( result ).toHaveLength( 5 );
+				expect( result[ 0 ].key ).toBe( 'receipt' );
+				expect( result[ 1 ].key ).toBe( 'customer_communication' );
+				expect( result[ 2 ].key ).toBe( 'refund_policy' );
+				expect( result[ 3 ].key ).toBe( 'cancellation_policy' );
+				expect( result[ 4 ].key ).toBe( 'uncategorized_file' );
+
+				// Verify subscription logs are NOT included
+				const hasSubscriptionLogs = result.some(
+					( field ) => field.key === 'access_activity_log'
+				);
+				expect( hasSubscriptionLogs ).toBe( false );
+			} );
+
+			it( 'should return default fields for subscription_canceled + physical_product when feature flag is enabled', () => {
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
+
+				const result = getRecommendedDocumentFields(
+					'subscription_canceled',
+					undefined,
+					undefined,
+					'physical_product'
+				);
+
+				// Should fall back to default subscription_canceled fields (with subscription logs)
+				expect( result ).toHaveLength( 6 );
+				expect( result[ 2 ].key ).toBe( 'access_activity_log' );
+				expect( result[ 2 ].label ).toBe( 'Subscription logs' );
+			} );
+
+			it( 'should return matrix fields for subscription_canceled + other when feature flag is enabled', () => {
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
+
+				const result = getRecommendedDocumentFields(
+					'subscription_canceled',
+					undefined,
+					undefined,
+					'other'
+				);
+
+				// Matrix entry for subscription_canceled + other (simplified fields)
+				expect( result ).toHaveLength( 2 );
+				expect( result[ 0 ].key ).toBe( 'receipt' );
+				expect( result[ 0 ].label ).toBe( 'Proof of Purchase' );
+				expect( result[ 1 ].key ).toBe( 'uncategorized_file' );
+				expect( result[ 1 ].label ).toBe( 'Order details' );
+			} );
+
+			it( 'should return matrix fields for duplicate + booking_reservation + is_duplicate when feature flag is enabled', () => {
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
+
+				const result = getRecommendedDocumentFields(
+					'duplicate',
+					undefined,
+					'is_duplicate',
+					'booking_reservation'
+				);
+
+				// Matrix entry for duplicate + booking_reservation + is_duplicate (Scenario A)
+				expect( result ).toHaveLength( 3 );
+				expect( result[ 0 ].key ).toBe( 'receipt' );
+				expect( result[ 0 ].label ).toBe( 'Order receipt' );
+				expect( result[ 1 ].key ).toBe( 'uncategorized_file' ); // Refund receipt
+				expect( result[ 1 ].label ).toBe( 'Refund receipt' );
+				expect( result[ 2 ].key ).toBe( 'refund_policy' );
+			} );
+
+			it( 'should return matrix fields for duplicate + booking_reservation + is_not_duplicate when feature flag is enabled', () => {
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
+
+				const result = getRecommendedDocumentFields(
+					'duplicate',
+					undefined,
+					'is_not_duplicate',
+					'booking_reservation'
+				);
+
+				// Matrix entry for duplicate + booking_reservation + is_not_duplicate (Scenario B)
+				expect( result ).toHaveLength( 5 );
+				expect( result[ 0 ].key ).toBe( 'receipt' );
+				expect( result[ 1 ].key ).toBe(
+					'duplicate_charge_documentation'
+				);
+				expect( result[ 1 ].label ).toBe( 'Any additional receipts' );
+				expect( result[ 2 ].key ).toBe( 'customer_communication' );
+				expect( result[ 3 ].key ).toBe( 'refund_policy' );
+				expect( result[ 4 ].key ).toBe( 'uncategorized_file' );
+			} );
+
+			it( 'should fall back to default duplicate fields for physical_product when feature flag is enabled', () => {
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
+
+				const result = getRecommendedDocumentFields(
+					'duplicate',
+					undefined,
+					'is_duplicate',
+					'physical_product'
+				);
+
+				// Should fall back to default duplicate fields since no matrix entry for physical_product
+				expect( result ).toHaveLength( 3 );
+				expect( result[ 0 ].key ).toBe( 'receipt' );
+				expect( result[ 1 ].key ).toBe( 'uncategorized_file' ); // Refund receipt
+				expect( result[ 2 ].key ).toBe( 'refund_policy' );
 			} );
 		} );
 	} );
