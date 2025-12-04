@@ -60,8 +60,8 @@ class WC_REST_Payments_Promotions_Controller_Test extends WCPAY_UnitTestCase {
 		$this->promotions_service->reset_memo();
 	}
 
-	public function test_get_promotions_returns_cached_data() {
-		// Mock promotions in the new flat structure.
+	public function test_get_promotions_returns_promotions_from_service() {
+		// Mock promotions in the flat structure.
 		$mock_promotions = [
 			[
 				'id'             => 'test_promo__spotlight',
@@ -76,37 +76,24 @@ class WC_REST_Payments_Promotions_Controller_Test extends WCPAY_UnitTestCase {
 			],
 		];
 
-		// Generate the context hash to match what the service will generate.
-		$store_context = [
-			'dismissals' => $this->promotions_service->get_promotion_dismissals(),
-			'locale'     => get_locale(),
-		];
-		$context_hash  = md5(
-			wp_json_encode(
-				[
-					'dismissals' => $store_context['dismissals'],
-					'locale'     => $store_context['locale'],
-				]
-			)
-		);
+		// Create a mock service that returns the promotions directly.
+		$mock_service = $this->createMock( WC_Payments_PM_Promotions_Service::class );
+		$mock_service->method( 'get_visible_promotions' )
+			->willReturn( $mock_promotions );
 
-		// Set the cache with the proper structure including context_hash.
-		set_transient(
-			WC_Payments_PM_Promotions_Service::PROMOTIONS_CACHE_KEY,
-			[
-				'promotions'   => $mock_promotions,
-				'context_hash' => $context_hash,
-				'timestamp'    => time(),
-			],
-			300
-		);
+		// Create controller with mock service.
+		$controller = new WC_REST_Payments_PM_Promotions_Controller( $this->mock_api_client, $mock_service );
 
 		$request  = new WP_REST_Request( 'GET' );
-		$response = $this->controller->get_promotions( $request );
+		$response = $controller->get_promotions( $request );
 
 		$this->assertSame( 200, $response->status );
-		// Note: The response may be filtered/transformed by the service.
-		$this->assertIsArray( $response->get_data() );
+		$data = $response->get_data();
+		$this->assertIsArray( $data );
+		$this->assertCount( 1, $data );
+		$this->assertSame( 'test_promo__spotlight', $data[0]['id'] );
+		$this->assertSame( 'klarna', $data[0]['payment_method'] );
+		$this->assertSame( 'spotlight', $data[0]['type'] );
 	}
 
 	public function test_get_promotions_returns_empty_array_when_no_promotions() {
