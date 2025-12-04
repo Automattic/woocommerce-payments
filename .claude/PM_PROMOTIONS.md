@@ -243,7 +243,7 @@ function isPmPromotion(value: unknown): value is PmPromotion {
 
 ## Important Implementation Notes
 
-1. **ID vs promo_id**: Use `id` for dismissals, `promo_id` for activation
+1. **ID vs promo_id**: The `id` is the unique identifier across the system for a certain promotion instance intended for display (spotlight, badge, modal, banner, etc.) - aka promotion variation.`promo_id` is the unique promotion campaign identifier (can have multiple variations) - it is mostly used for attaching to tracking events.
 2. **Type filtering**: Each component filters for its own `type` ('spotlight', 'badge')
 3. **No variations**: The client receives flat promotions - no nested structures
 4. **Server derives titles**: `payment_method_title` comes from server, not client lookup
