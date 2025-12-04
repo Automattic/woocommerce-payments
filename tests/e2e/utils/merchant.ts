@@ -394,12 +394,9 @@ export const ensureOrderIsProcessed = async ( page: Page, orderId: string ) => {
 		// Use force click because the element may be outside viewport
 		await runLink.first().click( { force: true } );
 
-		// Wait for the page to reload and show success message
-		// WordPress uses 'notice notice-success' class for admin notices
+		// Wait for the success message to appear
 		await page
-			.locator( '.notice.notice-success', {
-				hasText: 'Successfully executed action',
-			} )
+			.getByText( 'Successfully executed action: wc-admin_import_orders' )
 			.waitFor( { state: 'visible', timeout: 30000 } );
 	}
 };
