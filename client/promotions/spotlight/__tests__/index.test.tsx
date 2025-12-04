@@ -294,7 +294,9 @@ describe( 'SpotlightPromotion', () => {
 		} );
 
 		it( 'records link_click event when secondary button is clicked', () => {
-			jest.spyOn( window, 'open' ).mockImplementation( () => null );
+			const windowOpenSpy = jest
+				.spyOn( window, 'open' )
+				.mockImplementation( () => null );
 
 			render( <SpotlightPromotion /> );
 
@@ -309,6 +311,8 @@ describe( 'SpotlightPromotion', () => {
 					link_type: 'terms',
 				}
 			);
+
+			windowOpenSpy.mockRestore();
 		} );
 
 		it( 'records dismiss event when close button is clicked', () => {
