@@ -67,6 +67,9 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 	public function set_up() {
 		parent::set_up();
 
+		// Expect the "incorrect usage" notice since we register routes outside rest_api_init.
+		$this->setExpectedIncorrectUsage( 'register_rest_route' );
+
 		// Store original gateway map to restore in tear_down.
 		$reflection = new ReflectionClass( WC_Payments::class );
 		$property   = $reflection->getProperty( 'payment_gateway_map' );
@@ -100,6 +103,10 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 			$this->mock_api_client,
 			$this->mock_promotions_service
 		);
+
+		// Register routes for test controllers so rest_do_request() works.
+		// We register both controllers - the mocked one for isolated tests.
+		$this->controller_with_mock->register_routes();
 	}
 
 	public function tear_down() {
@@ -223,6 +230,9 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 	/*
 	 * =========================================================================
 	 * GET PROMOTIONS ENDPOINT TESTS
+	 *
+	 * Unit tests use direct controller calls to verify logic with mocked service.
+	 * Integration tests use rest_do_request() to verify REST routing and permissions.
 	 * =========================================================================
 	 */
 
@@ -298,6 +308,15 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 		$this->assertArrayHasKey( 'image', $data[0] );
 	}
 
+	public function test_get_promotions_returns_401_for_unauthenticated_user() {
+		wp_set_current_user( 0 );
+
+		$request  = new WP_REST_Request( 'GET', $this->rest_base );
+		$response = rest_do_request( $request );
+
+		$this->assertSame( 401, $response->get_status() );
+	}
+
 	/*
 	 * =========================================================================
 	 * ACTIVATE PROMOTION ENDPOINT TESTS
@@ -335,6 +354,16 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 		$this->assertTrue( $data['success'] );
 	}
 
+	public function test_activate_promotion_returns_401_for_unauthenticated_user() {
+		wp_set_current_user( 0 );
+		$id = 'test-promo';
+
+		$request  = new WP_REST_Request( 'POST', $this->rest_base . '/' . $id . '/activate' );
+		$response = rest_do_request( $request );
+
+		$this->assertSame( 401, $response->get_status() );
+	}
+
 	/*
 	 * =========================================================================
 	 * DISMISS PROMOTION ENDPOINT TESTS
@@ -349,7 +378,6 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 			->with( $id )
 			->willReturn( true );
 
-		// URL params must be set explicitly when calling controller directly (not routed via REST API).
 		$request = new WP_REST_Request( 'POST', $this->rest_base . '/' . $id . '/dismiss' );
 		$request->set_param( 'id', $id );
 
@@ -364,7 +392,6 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 		$this->mock_promotions_service->method( 'dismiss_promotion' )
 			->willReturn( true );
 
-		// URL params must be set explicitly when calling controller directly (not routed via REST API).
 		$request = new WP_REST_Request( 'POST', $this->rest_base . '/' . $id . '/dismiss' );
 		$request->set_param( 'id', $id );
 
@@ -380,7 +407,6 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 		$this->mock_promotions_service->method( 'dismiss_promotion' )
 			->willReturn( false );
 
-		// URL params must be set explicitly when calling controller directly (not routed via REST API).
 		$request = new WP_REST_Request( 'POST', $this->rest_base . '/' . $id . '/dismiss' );
 		$request->set_param( 'id', $id );
 
@@ -390,13 +416,22 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 		$this->assertFalse( $data['success'] );
 	}
 
+	public function test_dismiss_promotion_returns_401_for_unauthenticated_user() {
+		wp_set_current_user( 0 );
+		$id = 'test-promo__spotlight';
+
+		$request  = new WP_REST_Request( 'POST', $this->rest_base . '/' . $id . '/dismiss' );
+		$response = rest_do_request( $request );
+
+		$this->assertSame( 401, $response->get_status() );
+	}
+
 	public function test_dismiss_promotion_integration_stores_dismissal() {
 		$id = 'test-promo__spotlight';
 
 		// Set up cache with a test promotion so dismiss_promotion can find it.
 		$this->set_promotions_cache( [ $this->create_valid_promotion() ] );
 
-		// URL params must be set explicitly when calling controller directly (not routed via REST API).
 		$request = new WP_REST_Request( 'POST', $this->rest_base . '/' . $id . '/dismiss' );
 		$request->set_param( 'id', $id );
 
