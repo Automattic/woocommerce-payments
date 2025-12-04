@@ -339,7 +339,7 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 		$orders = [];
 		foreach ( $order_ids as $order_id ) {
 			$order = wc_get_order( $order_id );
-			if ( $order ) {
+			if ( $order instanceof WC_Order ) {
 				$orders[] = $order;
 			}
 		}
