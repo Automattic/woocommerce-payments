@@ -391,8 +391,9 @@ export const ensureOrderIsProcessed = async ( page: Page, orderId: string ) => {
 		'td:has-text("wc-admin_import_orders") a:has-text("Run")'
 	);
 	if ( ( await runLink.count() ) > 0 ) {
-		// Use force click because the element may be outside viewport
-		await runLink.first().click( { force: true } );
+		// Scroll into view and click
+		await runLink.first().scrollIntoViewIfNeeded();
+		await runLink.first().click();
 
 		// Wait for the success message to appear
 		await page
