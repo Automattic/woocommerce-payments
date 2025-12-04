@@ -19,22 +19,27 @@ export const dataHasLoaded = async ( page: Page ) => {
 	await expect( page.locator( '.is-loadable-placeholder' ) ).toHaveCount( 0 );
 };
 
-export const tableDataHasLoaded = async ( page: Page, retries = 3 ) => {
+export const tableDataHasLoaded = async ( page: Page, retries = 5 ) => {
 	const tableLocator = page.locator( '.woocommerce-table__table' );
+	const tableRowLocator = page.locator(
+		'.woocommerce-table__table tbody tr:not(.woocommerce-table__empty-row)'
+	);
 
 	for ( let attempt = 1; attempt <= retries; attempt++ ) {
 		try {
 			// First wait for the table to exist.
-			await tableLocator.waitFor( { state: 'attached', timeout: 30000 } );
+			await tableLocator.waitFor( { state: 'attached', timeout: 20000 } );
 			// Then wait for the loading state to finish
 			await page
 				.locator( '.woocommerce-table__table.is-loading' )
-				.waitFor( { state: 'hidden', timeout: 30000 } );
+				.waitFor( { state: 'hidden', timeout: 20000 } );
+			// Verify the table has actual data rows (not empty state)
+			await tableRowLocator.first().waitFor( { state: 'visible', timeout: 5000 } );
 			return; // Success, exit the function
 		} catch ( error ) {
 			if ( attempt < retries ) {
-				// Table not found, reload and retry (helps with analytics data sync in older WC versions)
-				await page.reload();
+				// Table not found or empty, reload and retry (helps with analytics data sync in older WC versions)
+				await page.reload( { waitUntil: 'networkidle' } );
 			} else {
 				throw error; // Final attempt failed, rethrow the error
 			}
