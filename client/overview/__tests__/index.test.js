@@ -72,13 +72,6 @@ jest.mock( 'wcpay/data', () => ( {
 		.fn()
 		.mockReturnValue( { overviews: { currencies: [] } } ),
 	useActiveLoanSummary: jest.fn().mockReturnValue( { isLoading: true } ),
-	usePromotions: jest
-		.fn()
-		.mockReturnValue( { promotions: [], isLoading: false } ),
-	usePromotionActions: jest.fn().mockReturnValue( {
-		activatePromotion: jest.fn(),
-		dismissPromotion: jest.fn(),
-	} ),
 	usePmPromotions: jest
 		.fn()
 		.mockReturnValue( { pmPromotions: [], isLoading: false } ),

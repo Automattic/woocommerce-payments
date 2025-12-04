@@ -41,9 +41,6 @@ jest.mock( 'wcpay/data', () => ( {
 	useUnselectedPaymentMethod: jest.fn(),
 	useGetDuplicatedPaymentMethodIds: jest.fn(),
 	useSettings: jest.fn().mockReturnValue( { isLoading: false } ),
-	usePromotions: jest
-		.fn()
-		.mockReturnValue( { promotions: [], isLoading: false } ),
 	usePmPromotions: jest
 		.fn()
 		.mockReturnValue( { pmPromotions: [], isLoading: false } ),
