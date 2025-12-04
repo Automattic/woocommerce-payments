@@ -391,9 +391,11 @@ export const ensureOrderIsProcessed = async ( page: Page, orderId: string ) => {
 		'td:has-text("wc-admin_import_orders") a:has-text("Run")'
 	);
 	if ( ( await runLink.count() ) > 0 ) {
-		// Scroll into view and click
-		await runLink.first().scrollIntoViewIfNeeded();
-		await runLink.first().click();
+		// Get the href and navigate directly to avoid viewport issues with the WordPress admin bar
+		const href = await runLink.first().getAttribute( 'href' );
+		if ( href ) {
+			await page.goto( href );
+		}
 
 		// Wait for the success message to appear
 		await page
