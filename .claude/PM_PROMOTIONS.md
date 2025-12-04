@@ -109,7 +109,7 @@ const { pmPromotions, isLoading, pmPromotionsError } = usePmPromotions();
 const { activatePmPromotion, dismissPmPromotion } = usePmPromotionActions();
 
 // Activate a promotion (enables the payment method)
-activatePmPromotion(promo_id: string);  // e.g., "klarna-2026-promo"
+activatePmPromotion(id: string);  // e.g., "klarna-2026-promo__spotlight"
 
 // Dismiss a promotion
 dismissPmPromotion(id: string);  // e.g., "klarna-2026-promo__spotlight"
@@ -146,15 +146,41 @@ const SpotlightPromotion: React.FC = () => {
   const spotlightPromotion = pmPromotions.find(p => p.type === 'spotlight');
   if (!spotlightPromotion) return null;
 
-  // Event handlers
-  const handlePrimaryClick = () => {
-    recordEvent('wcpay_payment_method_promotion_activate_click', getEventProperties());
-    activatePmPromotion(spotlightPromotion.promo_id);
+  // Common event properties for tracking
+  const getEventProperties = () => ({
+    promo_id: spotlightPromotion.promo_id,
+    payment_method: spotlightPromotion.payment_method,
+    display_context: 'spotlight',
+    source: getPageSource(),  // Helper that returns page identifier
+    path: window.location.pathname + window.location.search,
+  });
+
+  // Track when promotion becomes visible
+  const handleView = () => {
+    recordEvent('wcpay_payment_method_promotion_view', getEventProperties());
   };
 
+  // Activate promotion and enable payment method
+  const handlePrimaryClick = () => {
+    recordEvent('wcpay_payment_method_promotion_activate_click', getEventProperties());
+    activatePmPromotion(spotlightPromotion.id);
+  };
+
+  // Open terms and conditions link
+  const handleSecondaryClick = () => {
+    recordEvent('wcpay_payment_method_promotion_link_click', {
+      ...getEventProperties(),
+      link_type: 'terms',
+    });
+    if (spotlightPromotion.tc_url) {
+      window.open(spotlightPromotion.tc_url, '_blank', 'noopener,noreferrer');
+    }
+  };
+
+  // Dismiss the promotion
   const handleDismiss = () => {
     recordEvent('wcpay_payment_method_promotion_dismiss_click', getEventProperties());
-    dismissPmPromotion(spotlightPromotion.id);  // Use full id, not promo_id
+    dismissPmPromotion(spotlightPromotion.id);
   };
 
   return (
@@ -436,7 +462,7 @@ interface PromotionalBadgeProps {
     type?: ChipType;      // Visual style (default: 'success')
     tooltipLabel?: string; // Accessible label for tooltip button
     tcUrl?: string;       // Optional T&C URL - appends link to tooltip
-    tcLabel?: string;     // Optional T&C link text (fallback: "See terms and conditions")
+    tcLabel?: string;     // Optional T&C link text (fallback: "See terms")
 }
 ```
 
@@ -445,7 +471,7 @@ interface PromotionalBadgeProps {
 When `tcUrl` is provided:
 1. A link is appended to the tooltip content
 2. If `tcLabel` is provided and non-empty, it's used as the link text
-3. Otherwise, falls back to "See terms and conditions"
+3. Otherwise, falls back to "See terms"
 4. Link opens in new tab with `rel="noopener noreferrer"`
 
 ```tsx
