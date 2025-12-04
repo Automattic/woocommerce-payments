@@ -770,27 +770,30 @@ class WC_Payments_PM_Promotions_Service {
 			$pm_id    = $promotion['payment_method'] ?? '';
 			$promo_id = $promotion['promo_id'] ?? '';
 
-			// Skip dismissed promotions.
-			if ( $this->is_promotion_dismissed( $id ) ) {
-				continue;
-			}
+			// Filters ordered by performance cost (cheapest first).
 
-			// Skip invalid payment methods.
-			if ( ! $this->is_valid_payment_method( $pm_id ) ) {
-				continue;
-			}
-
-			// Skip promotions for already enabled payment methods.
+			// 1. Skip promotions for already enabled payment methods (pre-fetched array).
 			if ( in_array( $pm_id, $enabled_pms, true ) ) {
 				continue;
 			}
 
-			// Skip promotions for payment methods that already have an active discount.
+			// 2. Skip dismissed promotions (WP cached option).
+			if ( $this->is_promotion_dismissed( $id ) ) {
+				continue;
+			}
+
+			// 3. Skip invalid payment methods (gateway method call).
+			if ( ! $this->is_valid_payment_method( $pm_id ) ) {
+				continue;
+			}
+
+			// 4. Skip promotions for payment methods that already have an active discount (account method call).
 			if ( $this->payment_method_has_discount( $pm_id ) ) {
 				continue;
 			}
 
-			// Track first promo_id per PM - keep all surfaces for that promo_id.
+			// 5. Track first promo_id per PM - keep all surfaces for that promo_id.
+			// Must be last as it has side effects (tracks seen promo_ids).
 			if ( ! isset( $seen_promo_ids[ $pm_id ] ) ) {
 				$seen_promo_ids[ $pm_id ] = $promo_id;
 			}
