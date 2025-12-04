@@ -44,6 +44,16 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 	const ACTION_HOOK = 'wcpay_remediate_canceled_authorization_fees';
 
 	/**
+	 * Action Scheduler hook name for dry run.
+	 */
+	const DRY_RUN_ACTION_HOOK = 'wcpay_remediate_canceled_authorization_fees_dry_run';
+
+	/**
+	 * Option key for tracking dry run mode.
+	 */
+	const DRY_RUN_OPTION_KEY = 'wcpay_fee_remediation_dry_run';
+
+	/**
 	 * Starting batch size.
 	 */
 	const INITIAL_BATCH_SIZE = 20;
@@ -92,6 +102,34 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 	 */
 	public function init(): void {
 		add_action( self::ACTION_HOOK, [ $this, 'process_batch' ] );
+		add_action( self::DRY_RUN_ACTION_HOOK, [ $this, 'process_batch_dry_run' ] );
+	}
+
+	/**
+	 * Check if dry run mode is enabled.
+	 *
+	 * @return bool True if dry run mode is enabled.
+	 */
+	public function is_dry_run(): bool {
+		return (bool) get_option( self::DRY_RUN_OPTION_KEY, false );
+	}
+
+	/**
+	 * Enable dry run mode.
+	 *
+	 * @return void
+	 */
+	private function enable_dry_run(): void {
+		update_option( self::DRY_RUN_OPTION_KEY, true );
+	}
+
+	/**
+	 * Disable dry run mode.
+	 *
+	 * @return void
+	 */
+	private function disable_dry_run(): void {
+		delete_option( self::DRY_RUN_OPTION_KEY );
 	}
 
 	/**
@@ -204,6 +242,7 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 		// Keep STATUS_OPTION_KEY and STATS_OPTION_KEY so merchants can see completion info.
 		delete_option( self::LAST_ORDER_ID_OPTION_KEY );
 		delete_option( self::BATCH_SIZE_OPTION_KEY );
+		delete_option( self::DRY_RUN_OPTION_KEY );
 	}
 
 	/**
@@ -434,6 +473,62 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 	}
 
 	/**
+	 * Process a batch of orders in dry run mode.
+	 *
+	 * @return void
+	 */
+	public function process_batch_dry_run(): void {
+		// Check if already complete.
+		if ( $this->is_complete() ) {
+			return;
+		}
+
+		$batch_size = $this->get_batch_size();
+		$orders     = $this->get_affected_orders( $batch_size );
+
+		// If no orders found, mark as complete.
+		if ( empty( $orders ) ) {
+			$this->mark_complete();
+			$this->log_completion_dry_run();
+			$this->cleanup();
+			return;
+		}
+
+		// Process each order in dry run mode.
+		foreach ( $orders as $order ) {
+			$this->increment_stat( 'processed' );
+
+			if ( $this->remediate_order( $order, true ) ) {
+				$this->increment_stat( 'remediated' );
+			} else {
+				$this->increment_stat( 'errors' );
+			}
+
+			// Update last order ID.
+			$this->update_last_order_id( $order->get_id() );
+		}
+
+		// Log batch completion.
+		wc_get_logger()->info(
+			sprintf(
+				'[DRY RUN] Processed batch of %d orders.',
+				count( $orders )
+			),
+			[ 'source' => 'wcpay-fee-remediation' ]
+		);
+
+		// Schedule next batch if we got a full batch (indicates more to process).
+		if ( count( $orders ) === $batch_size ) {
+			$this->schedule_next_batch_dry_run();
+		} else {
+			// Last partial batch - mark complete.
+			$this->mark_complete();
+			$this->log_completion_dry_run();
+			$this->cleanup();
+		}
+	}
+
+	/**
 	 * Schedule the next batch.
 	 *
 	 * @return void
@@ -450,6 +545,28 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 		as_schedule_single_action(
 			time() + 60, // 1 minute from now.
 			self::ACTION_HOOK,
+			[],
+			'woocommerce-payments'
+		);
+	}
+
+	/**
+	 * Schedule the next batch for dry run.
+	 *
+	 * @return void
+	 */
+	private function schedule_next_batch_dry_run(): void {
+		if ( ! function_exists( 'as_schedule_single_action' ) ) {
+			wc_get_logger()->warning(
+				'Action Scheduler is not available. Cannot schedule next batch for fee remediation dry run.',
+				[ 'source' => 'wcpay-fee-remediation' ]
+			);
+			return;
+		}
+
+		as_schedule_single_action(
+			time() + 60, // 1 minute from now.
+			self::DRY_RUN_ACTION_HOOK,
 			[],
 			'woocommerce-payments'
 		);
@@ -475,12 +592,29 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 	}
 
 	/**
+	 * Log completion for dry run.
+	 *
+	 * @return void
+	 */
+	private function log_completion_dry_run(): void {
+		$stats = $this->get_stats();
+		wc_get_logger()->info(
+			sprintf(
+				'[DRY RUN] Complete. Found %d orders that would be remediated. No changes were made. Check the WooCommerce logs for details on each order.',
+				$stats['remediated']
+			),
+			[ 'source' => 'wcpay-fee-remediation' ]
+		);
+	}
+
+	/**
 	 * Remediate a single order.
 	 *
-	 * @param WC_Order $order Order to remediate.
+	 * @param WC_Order $order   Order to remediate.
+	 * @param bool     $dry_run If true, only log what would be changed without modifying data.
 	 * @return bool True on success, false on failure.
 	 */
-	public function remediate_order( WC_Order $order ): bool {
+	public function remediate_order( WC_Order $order, bool $dry_run = false ): bool {
 		try {
 			// Capture current values for the note.
 			$fee            = $order->get_meta( '_wcpay_transaction_fee', true );
@@ -494,13 +628,66 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 			$wcpay_refund_count = count( $wcpay_refunds );
 			$wcpay_refund_total = 0;
 
-			// Calculate total WCPay refund amount and delete them.
-			$deleted_refund_ids = [];
-			$parent_order_id    = $order->get_id();
+			// Calculate refund IDs and totals.
+			$refund_ids = [];
 			foreach ( $wcpay_refunds as $refund ) {
-				$wcpay_refund_total  += abs( $refund->get_amount() );
-				$refund_id            = $refund->get_id();
-				$deleted_refund_ids[] = $refund_id;
+				$wcpay_refund_total += abs( $refund->get_amount() );
+				$refund_ids[]        = $refund->get_id();
+			}
+
+			// Check if status would change.
+			$would_change_status = 'refunded' === $current_status;
+
+			// Build log message for dry run or note for actual remediation.
+			$changes = [];
+
+			if ( $would_change_status ) {
+				$changes[] = 'Changed order status from "Refunded" to "Cancelled"';
+			}
+
+			if ( $wcpay_refund_count > 0 ) {
+				$changes[] = sprintf(
+					'Deleted %d WooPayments refund object%s (IDs: %s) totaling %s',
+					$wcpay_refund_count,
+					$wcpay_refund_count > 1 ? 's' : '',
+					implode( ', ', $refund_ids ),
+					wc_price( $wcpay_refund_total, [ 'currency' => $order->get_currency() ] )
+				);
+			}
+
+			if ( ! empty( $fee ) ) {
+				$changes[] = sprintf(
+					'Removed transaction fee: %s',
+					wc_price( $fee, [ 'currency' => $order->get_currency() ] )
+				);
+			}
+
+			if ( ! empty( $net ) ) {
+				$changes[] = sprintf(
+					'Removed net amount: %s',
+					wc_price( $net, [ 'currency' => $order->get_currency() ] )
+				);
+			}
+
+			// In dry run mode, just log what would happen and return.
+			if ( $dry_run ) {
+				if ( ! empty( $changes ) ) {
+					wc_get_logger()->info(
+						sprintf(
+							'[DRY RUN] Order %d would be remediated: %s',
+							$order->get_id(),
+							implode( '; ', $changes )
+						),
+						[ 'source' => 'wcpay-fee-remediation' ]
+					);
+				}
+				return true;
+			}
+
+			// Actually perform the remediation.
+			$parent_order_id = $order->get_id();
+			foreach ( $wcpay_refunds as $refund ) {
+				$refund_id = $refund->get_id();
 				$refund->delete( true ); // Force delete, bypass trash.
 
 				// Fire the hook WC expects for refund deletion.
@@ -515,43 +702,15 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 			$order->delete_meta_data( '_wcpay_refund_status' );
 
 			// Fix incorrect order status: 'refunded' should be 'cancelled' for never-captured authorizations.
-			$status_changed = false;
-			if ( 'refunded' === $current_status ) {
+			if ( $would_change_status ) {
 				$order->set_status( 'cancelled', '', false ); // Don't trigger status change emails.
-				$status_changed = true;
 			}
 
 			// Build detailed note.
 			$note_parts = [ 'Removed incorrect data from canceled authorization:' ];
-
-			if ( $status_changed ) {
-				$note_parts[] = '- Changed order status from "Refunded" to "Cancelled"';
+			foreach ( $changes as $change ) {
+				$note_parts[] = '- ' . $change;
 			}
-
-			if ( $wcpay_refund_count > 0 ) {
-				$note_parts[] = sprintf(
-					'- Deleted %d WooPayments refund object%s (IDs: %s) totaling %s',
-					$wcpay_refund_count,
-					$wcpay_refund_count > 1 ? 's' : '',
-					implode( ', ', $deleted_refund_ids ),
-					wc_price( $wcpay_refund_total, [ 'currency' => $order->get_currency() ] )
-				);
-			}
-
-			if ( ! empty( $fee ) ) {
-				$note_parts[] = sprintf(
-					'- Removed transaction fee: %s',
-					wc_price( $fee, [ 'currency' => $order->get_currency() ] )
-				);
-			}
-
-			if ( ! empty( $net ) ) {
-				$note_parts[] = sprintf(
-					'- Removed net amount: %s',
-					wc_price( $net, [ 'currency' => $order->get_currency() ] )
-				);
-			}
-
 			$note_parts[] = '';
 			$note_parts[] = 'These records were incorrectly created for an authorization that was never captured.';
 			$note_parts[] = 'No actual payment or refund occurred.';
@@ -559,8 +718,8 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 			$order->add_order_note( implode( "\n", $note_parts ) );
 			$order->save();
 
-			// Trigger analytics sync. WooCommerce hooks into refund deletion automatically,
-			// but we sync explicitly to ensure stats are updated for this remediation.
+			// Fallback sync in case the woocommerce_refund_deleted hook doesn't
+			// fully update analytics for edge cases.
 			$this->sync_order_stats( $order->get_id() );
 
 			return true;
@@ -631,6 +790,7 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 	public function schedule_remediation(): void {
 		// Mark as running and schedule first batch.
 		$this->mark_running();
+		$this->disable_dry_run();
 
 		if ( function_exists( 'as_schedule_single_action' ) ) {
 			as_schedule_single_action(
@@ -642,6 +802,34 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 
 			wc_get_logger()->info(
 				'Scheduled fee remediation from WooCommerce Tools.',
+				[ 'source' => 'wcpay-fee-remediation' ]
+			);
+		}
+	}
+
+	/**
+	 * Schedule dry run to preview what would be remediated.
+	 *
+	 * This allows merchants to see what orders would be affected before
+	 * committing to the actual remediation.
+	 *
+	 * @return void
+	 */
+	public function schedule_dry_run(): void {
+		// Mark as running and enable dry run mode.
+		$this->mark_running();
+		$this->enable_dry_run();
+
+		if ( function_exists( 'as_schedule_single_action' ) ) {
+			as_schedule_single_action(
+				time() + 10, // Start in 10 seconds.
+				self::DRY_RUN_ACTION_HOOK,
+				[],
+				'woocommerce-payments'
+			);
+
+			wc_get_logger()->info(
+				'Scheduled fee remediation DRY RUN from WooCommerce Tools.',
 				[ 'source' => 'wcpay-fee-remediation' ]
 			);
 		}

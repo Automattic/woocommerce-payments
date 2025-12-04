@@ -31,6 +31,7 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 		delete_option( WC_Payments_Remediate_Canceled_Auth_Fees::LAST_ORDER_ID_OPTION_KEY );
 		delete_option( WC_Payments_Remediate_Canceled_Auth_Fees::BATCH_SIZE_OPTION_KEY );
 		delete_option( WC_Payments_Remediate_Canceled_Auth_Fees::STATS_OPTION_KEY );
+		delete_option( WC_Payments_Remediate_Canceled_Auth_Fees::DRY_RUN_OPTION_KEY );
 	}
 
 	/**
@@ -42,10 +43,12 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 		delete_option( WC_Payments_Remediate_Canceled_Auth_Fees::LAST_ORDER_ID_OPTION_KEY );
 		delete_option( WC_Payments_Remediate_Canceled_Auth_Fees::BATCH_SIZE_OPTION_KEY );
 		delete_option( WC_Payments_Remediate_Canceled_Auth_Fees::STATS_OPTION_KEY );
+		delete_option( WC_Payments_Remediate_Canceled_Auth_Fees::DRY_RUN_OPTION_KEY );
 
 		// Clean up any scheduled actions.
 		if ( function_exists( 'as_unschedule_all_actions' ) ) {
 			as_unschedule_all_actions( WC_Payments_Remediate_Canceled_Auth_Fees::ACTION_HOOK );
+			as_unschedule_all_actions( WC_Payments_Remediate_Canceled_Auth_Fees::DRY_RUN_ACTION_HOOK );
 		}
 
 		parent::tear_down();
@@ -677,5 +680,125 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( $hook_fired, 'woocommerce_refund_deleted hook should be fired' );
 		$this->assertEquals( $refund_id, $hook_refund_id, 'Hook should receive correct refund ID' );
 		$this->assertEquals( $order_id, $hook_order_id, 'Hook should receive correct order ID' );
+	}
+
+	// ==================== Dry Run Tests ====================
+
+	public function test_is_dry_run_returns_false_by_default() {
+		$this->assertFalse( $this->remediation->is_dry_run() );
+	}
+
+	public function test_is_dry_run_returns_true_when_enabled() {
+		update_option( WC_Payments_Remediate_Canceled_Auth_Fees::DRY_RUN_OPTION_KEY, true );
+		$this->assertTrue( $this->remediation->is_dry_run() );
+	}
+
+	public function test_remediate_order_dry_run_does_not_delete_refunds() {
+		$order = WC_Helper_Order::create_order();
+		$order->save();
+
+		// Create a WCPay refund.
+		$refund = wc_create_refund(
+			[
+				'order_id' => $order->get_id(),
+				'amount'   => 10.00,
+				'reason'   => 'Test refund',
+			]
+		);
+		$refund->update_meta_data( '_wcpay_refund_id', 're_test123' );
+		$refund->save();
+
+		$refund_id = $refund->get_id();
+
+		// Run in dry run mode.
+		$this->remediation->remediate_order( $order, true );
+
+		// Refund should still exist.
+		$refund_after = wc_get_order( $refund_id );
+		$this->assertNotFalse( $refund_after, 'Refund should not be deleted in dry run mode' );
+	}
+
+	public function test_remediate_order_dry_run_does_not_remove_metadata() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_wcpay_transaction_fee', '1.50' );
+		$order->update_meta_data( '_wcpay_net', '48.50' );
+		$order->save();
+
+		// Run in dry run mode.
+		$this->remediation->remediate_order( $order, true );
+
+		// Reload order.
+		$order = wc_get_order( $order->get_id() );
+
+		// Metadata should still exist.
+		$this->assertEquals( '1.50', $order->get_meta( '_wcpay_transaction_fee', true ), 'Fee metadata should not be removed in dry run mode' );
+		$this->assertEquals( '48.50', $order->get_meta( '_wcpay_net', true ), 'Net metadata should not be removed in dry run mode' );
+	}
+
+	public function test_remediate_order_dry_run_does_not_change_status() {
+		$order = WC_Helper_Order::create_order();
+		$order->set_status( 'refunded' );
+		$order->save();
+
+		// Run in dry run mode.
+		$this->remediation->remediate_order( $order, true );
+
+		// Reload order.
+		$order = wc_get_order( $order->get_id() );
+
+		// Status should still be refunded.
+		$this->assertEquals( 'refunded', $order->get_status(), 'Order status should not change in dry run mode' );
+	}
+
+	public function test_remediate_order_dry_run_does_not_add_order_note() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_wcpay_transaction_fee', '1.50' );
+		$order->save();
+
+		$notes_before = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
+		$count_before = count( $notes_before );
+
+		// Run in dry run mode.
+		$this->remediation->remediate_order( $order, true );
+
+		$notes_after = wc_get_order_notes( [ 'order_id' => $order->get_id() ] );
+		$count_after = count( $notes_after );
+
+		$this->assertEquals( $count_before, $count_after, 'No order note should be added in dry run mode' );
+	}
+
+	public function test_remediate_order_dry_run_returns_true() {
+		$order = WC_Helper_Order::create_order();
+		$order->update_meta_data( '_wcpay_transaction_fee', '1.50' );
+		$order->save();
+
+		$result = $this->remediation->remediate_order( $order, true );
+
+		$this->assertTrue( $result, 'Dry run should return true on success' );
+	}
+
+	public function test_schedule_dry_run_enables_dry_run_mode() {
+		// Use reflection to call the protected method indirectly via schedule_dry_run.
+		$this->remediation->schedule_dry_run();
+
+		$this->assertTrue( $this->remediation->is_dry_run(), 'Dry run mode should be enabled after scheduling' );
+	}
+
+	public function test_schedule_dry_run_marks_as_running() {
+		$this->remediation->schedule_dry_run();
+
+		$status = get_option( WC_Payments_Remediate_Canceled_Auth_Fees::STATUS_OPTION_KEY );
+		$this->assertEquals( 'running', $status, 'Status should be running after scheduling dry run' );
+	}
+
+	public function test_schedule_remediation_disables_dry_run_mode() {
+		// First enable dry run.
+		update_option( WC_Payments_Remediate_Canceled_Auth_Fees::DRY_RUN_OPTION_KEY, true );
+		$this->assertTrue( $this->remediation->is_dry_run() );
+
+		// Then schedule actual remediation.
+		$this->remediation->schedule_remediation();
+
+		$this->assertFalse( $this->remediation->is_dry_run(), 'Dry run mode should be disabled when scheduling actual remediation' );
 	}
 }

@@ -66,7 +66,7 @@ class WC_Payments_Status {
 		return array_merge(
 			$tools,
 			[
-				'clear_wcpay_account_cache'    => [
+				'clear_wcpay_account_cache'            => [
 					'name'     => sprintf(
 						/* translators: %s: WooPayments */
 						__( 'Clear %s account cache', 'woocommerce-payments' ),
@@ -80,7 +80,7 @@ class WC_Payments_Status {
 					),
 					'callback' => [ $this->account, 'refresh_account_data' ],
 				],
-				'delete_wcpay_test_orders'     => [
+				'delete_wcpay_test_orders'             => [
 					'name'     => sprintf(
 						/* translators: %s: WooPayments */
 						__( 'Delete %s test orders', 'woocommerce-payments' ),
@@ -94,7 +94,14 @@ class WC_Payments_Status {
 					),
 					'callback' => [ $this, 'delete_test_orders' ],
 				],
-				'remediate_canceled_auth_fees' => [
+				'remediate_canceled_auth_fees_dry_run' => [
+					'name'     => __( 'Preview canceled authorization fix (Dry Run)', 'woocommerce-payments' ),
+					'button'   => $this->get_dry_run_button_text(),
+					'desc'     => __( 'Preview what orders would be affected by the canceled authorization fix without making any changes. Results are logged to WooCommerce > Status > Logs.', 'woocommerce-payments' ),
+					'callback' => [ $this, 'schedule_canceled_auth_dry_run' ],
+					'disabled' => $this->is_remediation_running_or_complete(),
+				],
+				'remediate_canceled_auth_fees'         => [
 					'name'     => __( 'Fix canceled authorization analytics', 'woocommerce-payments' ),
 					'button'   => $this->get_remediation_button_text(),
 					'desc'     => $this->get_remediation_description(),
@@ -203,6 +210,69 @@ class WC_Payments_Status {
 				$e->getMessage()
 			);
 		}
+	}
+
+	/**
+	 * Schedules the canceled authorization fee remediation dry run.
+	 *
+	 * This previews what orders would be affected without making changes.
+	 *
+	 * @return string Success or error message.
+	 */
+	public function schedule_canceled_auth_dry_run() {
+		// Add explicit capability check.
+		if ( ! current_user_can( 'manage_woocommerce' ) ) {
+			return __( 'You do not have permission to run this tool.', 'woocommerce-payments' );
+		}
+
+		try {
+			include_once WCPAY_ABSPATH . 'includes/migrations/class-wc-payments-remediate-canceled-auth-fees.php';
+			$remediation = new WC_Payments_Remediate_Canceled_Auth_Fees();
+
+			// Check if already complete.
+			if ( $remediation->is_complete() ) {
+				return __( 'Remediation has already been completed.', 'woocommerce-payments' );
+			}
+
+			// Check if already running.
+			if ( function_exists( 'as_has_scheduled_action' ) ) {
+				if ( as_has_scheduled_action( WC_Payments_Remediate_Canceled_Auth_Fees::ACTION_HOOK ) ||
+					as_has_scheduled_action( WC_Payments_Remediate_Canceled_Auth_Fees::DRY_RUN_ACTION_HOOK ) ) {
+					return __( 'Remediation is already in progress. Check the Action Scheduler for status.', 'woocommerce-payments' );
+				}
+			}
+
+			// Schedule the dry run.
+			$remediation->schedule_dry_run();
+
+			return __( 'Dry run has been scheduled and will run in the background. Check WooCommerce > Status > Logs for results (source: wcpay-fee-remediation).', 'woocommerce-payments' );
+
+		} catch ( Exception $e ) {
+			return sprintf(
+				/* translators: %s: error message */
+				__( 'Error scheduling dry run: %s', 'woocommerce-payments' ),
+				$e->getMessage()
+			);
+		}
+	}
+
+	/**
+	 * Get the button text for the dry run tool based on current status.
+	 *
+	 * @return string Button text.
+	 */
+	private function get_dry_run_button_text(): string {
+		$status = get_option( 'wcpay_fee_remediation_status', '' );
+
+		if ( 'completed' === $status ) {
+			return __( 'Completed', 'woocommerce-payments' );
+		}
+
+		if ( 'running' === $status || $this->is_remediation_action_scheduled() ) {
+			return __( 'Running...', 'woocommerce-payments' );
+		}
+
+		return __( 'Preview', 'woocommerce-payments' );
 	}
 
 	/**
