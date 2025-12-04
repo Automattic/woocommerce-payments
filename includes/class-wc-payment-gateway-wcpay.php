@@ -442,20 +442,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					'type'        => 'title',
 					'description' => '',
 				],
-				'payment_request'                    => [
-					'title'       => __( 'Enable/disable', 'woocommerce-payments' ),
-					'label'       => sprintf(
-					/* translators: 1) br tag 2) Stripe anchor tag 3) Apple anchor tag */
-						__( 'Enable payment request buttons (Apple Pay, Google Pay, and more). %1$sBy using Apple Pay, you agree to %2$s and %3$s\'s Terms of Service.', 'woocommerce-payments' ),
-						'<br />',
-						'<a href="https://stripe.com/apple-pay/legal" target="_blank">Stripe</a>',
-						'<a href="https://developer.apple.com/apple-pay/acceptable-use-guidelines-for-websites/" target="_blank">Apple</a>'
-					),
-					'type'        => 'checkbox',
-					'description' => __( 'If enabled, users will be able to pay using Apple Pay, Google Pay or the Payment Request API if supported by the browser.', 'woocommerce-payments' ),
-					'default'     => empty( get_option( 'woocommerce_woocommerce_payments_settings' ) ) ? 'yes' : 'no', // Enable by default for new installations only.
-					'desc_tip'    => true,
-				],
 				'payment_request_button_type'        => [
 					'title'       => __( 'Button type', 'woocommerce-payments' ),
 					'type'        => 'select',
