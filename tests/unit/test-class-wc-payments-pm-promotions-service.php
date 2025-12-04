@@ -29,8 +29,21 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 	 */
 	private $mock_gateway;
 
+	/**
+	 * Original payment gateway map to restore after tests.
+	 *
+	 * @var array|null
+	 */
+	private $original_gateway_map;
+
 	public function set_up() {
 		parent::set_up();
+
+		// Store original gateway map to restore in tear_down.
+		$reflection = new ReflectionClass( WC_Payments::class );
+		$property   = $reflection->getProperty( 'payment_gateway_map' );
+		$property->setAccessible( true );
+		$this->original_gateway_map = $property->getValue();
 
 		// Create and set an admin user (required for get_visible_promotions capability check).
 		$admin_user = self::factory()->user->create( [ 'role' => 'administrator' ] );
@@ -54,6 +67,13 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 
 	public function tear_down() {
 		parent::tear_down();
+
+		// Restore original gateway map to prevent test pollution.
+		$reflection = new ReflectionClass( WC_Payments::class );
+		$property   = $reflection->getProperty( 'payment_gateway_map' );
+		$property->setAccessible( true );
+		$property->setValue( null, $this->original_gateway_map );
+
 		delete_transient( WC_Payments_PM_Promotions_Service::PROMOTIONS_CACHE_KEY );
 		delete_option( WC_Payments_PM_Promotions_Service::PROMOTION_DISMISSALS_OPTION );
 		$this->service->reset_memo();
@@ -141,7 +161,7 @@ class WC_Payments_PM_Promotions_Service_Test extends WCPAY_UnitTestCase {
 			$gateway_mock = $this->createMock( WC_Payment_Gateway_WCPay::class );
 			$gateway_mock->method( 'enable' )->willReturn( true );
 			$gateway_mock->method( 'get_option' )->willReturn( 'yes' ); // Simulate enabled state.
-			$gateway_mock->method( 'get_option_key' )->willReturn( 'woocommerce_woocommerce_payments_settings' );
+			$gateway_mock->method( 'get_option_key' )->willReturn( 'woocommerce_woocommerce_payments_' . $payment_method_id . '_settings' );
 			$gateway_mock->method( 'get_payment_method_capability_key_map' )->willReturn( [] );
 			$gateway_mock->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [] );
 			$gateway_mock->method( 'update_option' )->willReturn( true );
