@@ -113,11 +113,10 @@ class WC_Payments_Remote_Note_Service {
 	 */
 	public function delete_notes() {
 		global $wpdb;
-		$prefix = self::NOTE_NAME_PREFIX;
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$wpdb->query( "DELETE FROM {$wpdb->prefix}wc_admin_note_actions WHERE name LIKE '{$prefix}%'" );
-		// phpcs:ignore WordPress.DB.PreparedSQL.NotPrepared, WordPress.DB.PreparedSQL.InterpolatedNotPrepared
-		$wpdb->query( "DELETE FROM {$wpdb->prefix}wc_admin_notes WHERE name LIKE '{$prefix}%'" );
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}wc_admin_note_actions WHERE name LIKE %s", $wpdb->esc_like( self::NOTE_NAME_PREFIX ) . '%' ) );
+		// phpcs:ignore WordPress.DB.PreparedSQL.InterpolatedNotPrepared
+		$wpdb->query( $wpdb->prepare( "DELETE FROM {$wpdb->prefix}wc_admin_notes WHERE name LIKE %s", $wpdb->esc_like( self::NOTE_NAME_PREFIX ) . '%' ) );
 	}
 
 	/**

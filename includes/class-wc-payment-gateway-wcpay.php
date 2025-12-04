@@ -1179,7 +1179,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			 * It seems that the status only needs to change in certain instances, and within those instances the intent
 			 * information is not added to the order, as shown by tests.
 			 */
-			if ( ! $blocked_by_fraud_rules && ( empty( $payment_information ) || ! $payment_information->is_changing_payment_method_for_subscription() ) ) {
+			if ( $e instanceof Process_Payment_Exception && 'duplicate_payment_amount_mismatch' === $e->get_error_code() ) {
+				$order->update_status( Order_Status::FAILED, $e->getMessage() );
+			} elseif ( ! $blocked_by_fraud_rules && ( empty( $payment_information ) || ! $payment_information->is_changing_payment_method_for_subscription() ) ) {
 				$order->update_status( Order_Status::FAILED );
 			}
 
@@ -1261,7 +1263,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			// This allows WC to check if WP_DEBUG mode is enabled before returning previous Exception and expose Exception class name to frontend.
 			add_filter( 'woocommerce_return_previous_exceptions', '__return_true' );
 			wc_add_notice( wp_strip_all_tags( WC_Payments_Utils::get_filtered_error_message( $e, $blocked_by_fraud_rules ) ), 'error' );
-			do_action( 'update_payment_result_on_error', $e, $order );
+			do_action( 'wcpay_update_payment_result_on_error', $e, $order );
 
 			return [
 				'result'   => 'fail',
@@ -1335,7 +1337,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 	/**
 	 * Sets up a handler to add error details to the payment result.
-	 * Registers an action to handle 'update_payment_result_on_error',
+	 * Registers an action to handle 'wcpay_update_payment_result_on_error',
 	 * using the payment result object from 'woocommerce_rest_checkout_process_payment_with_context'.
 	 *
 	 * @param PaymentContext $context The payment context.
@@ -1343,7 +1345,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function setup_payment_error_handler( PaymentContext $context, PaymentResult &$result ) {
 		add_action(
-			'update_payment_result_on_error',
+			'wcpay_update_payment_result_on_error',
 			function ( $error ) use ( &$result ) {
 				$result->set_payment_details(
 					array_merge(

@@ -50,10 +50,11 @@ describe( 'Recommended Documents', () => {
 			const result = getRecommendedDocumentFields(
 				'subscription_canceled'
 			);
-			expect( result ).toHaveLength( 6 ); // Default fields + 2 specific fields
+			expect( result ).toHaveLength( 6 ); // Default fields + 3 specific fields
 			expect( result[ 0 ].key ).toBe( 'receipt' );
 			expect( result[ 1 ].key ).toBe( 'customer_communication' );
 			expect( result[ 2 ].key ).toBe( 'access_activity_log' );
+			expect( result[ 2 ].label ).toBe( 'Subscription logs' );
 			expect( result[ 3 ].key ).toBe( 'refund_policy' );
 			expect( result[ 4 ].key ).toBe( 'cancellation_policy' );
 			expect( result[ 5 ].key ).toBe( 'uncategorized_file' );
@@ -211,6 +212,85 @@ describe( 'Recommended Documents', () => {
 				'refund_policy',
 				'uncategorized_file',
 			] );
+		} );
+
+		describe( 'subscription_canceled with productType variations', () => {
+			it( 'should return fields with subscription logs for subscription_canceled with single product type', () => {
+				const result = getRecommendedDocumentFields(
+					'subscription_canceled',
+					undefined,
+					undefined,
+					'physical_product'
+				);
+				expect( result ).toHaveLength( 6 ); // Default fields + 3 specific fields
+				expect( result[ 0 ].key ).toBe( 'receipt' );
+				expect( result[ 1 ].key ).toBe( 'customer_communication' );
+				expect( result[ 2 ].key ).toBe( 'access_activity_log' );
+				expect( result[ 2 ].label ).toBe( 'Subscription logs' );
+				expect( result[ 2 ].description ).toBe(
+					'Order notes or the history of related orders. This should clearly show successful renewals before the dispute.'
+				);
+				expect( result[ 3 ].key ).toBe( 'refund_policy' );
+				expect( result[ 4 ].key ).toBe( 'cancellation_policy' );
+				expect( result[ 5 ].key ).toBe( 'uncategorized_file' );
+			} );
+
+			it( 'should return fields with subscription logs for subscription_canceled with digital product', () => {
+				const result = getRecommendedDocumentFields(
+					'subscription_canceled',
+					undefined,
+					undefined,
+					'digital_product_or_service'
+				);
+				expect( result ).toHaveLength( 6 );
+				expect( result[ 2 ].key ).toBe( 'access_activity_log' );
+				expect( result[ 2 ].label ).toBe( 'Subscription logs' );
+			} );
+
+			it( 'should return fields without subscription logs for subscription_canceled with multiple product types', () => {
+				const result = getRecommendedDocumentFields(
+					'subscription_canceled',
+					undefined,
+					undefined,
+					'multiple'
+				);
+				expect( result ).toHaveLength( 5 ); // Default fields + 2 specific fields (no subscription logs)
+				expect( result[ 0 ].key ).toBe( 'receipt' );
+				expect( result[ 1 ].key ).toBe( 'customer_communication' );
+				expect( result[ 2 ].key ).toBe( 'refund_policy' );
+				expect( result[ 3 ].key ).toBe( 'cancellation_policy' );
+				expect( result[ 4 ].key ).toBe( 'uncategorized_file' );
+
+				// Verify subscription logs are NOT included
+				const hasSubscriptionLogs = result.some(
+					( field ) => field.key === 'access_activity_log'
+				);
+				expect( hasSubscriptionLogs ).toBe( false );
+			} );
+
+			it( 'should return fields with subscription logs for subscription_canceled with booking_reservation type', () => {
+				const result = getRecommendedDocumentFields(
+					'subscription_canceled',
+					undefined,
+					undefined,
+					'booking_reservation'
+				);
+				expect( result ).toHaveLength( 6 );
+				expect( result[ 2 ].key ).toBe( 'access_activity_log' );
+				expect( result[ 2 ].label ).toBe( 'Subscription logs' );
+			} );
+
+			it( 'should return fields with subscription logs for subscription_canceled with offline_service type', () => {
+				const result = getRecommendedDocumentFields(
+					'subscription_canceled',
+					undefined,
+					undefined,
+					'offline_service'
+				);
+				expect( result ).toHaveLength( 6 );
+				expect( result[ 2 ].key ).toBe( 'access_activity_log' );
+				expect( result[ 2 ].label ).toBe( 'Subscription logs' );
+			} );
 		} );
 	} );
 } );
