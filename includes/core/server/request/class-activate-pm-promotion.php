@@ -1,6 +1,6 @@
 <?php
 /**
- * Class file for WCPay\Core\Server\Request\Dismiss_Promotion.
+ * Class file for WCPay\Core\Server\Request\Activate_PM_Promotion.
  *
  * @package WooCommerce Payments
  */
@@ -11,15 +11,15 @@ use WCPay\Core\Server\Request;
 use WC_Payments_API_Client;
 
 /**
- * Request class for dismissing a promotion.
+ * Request class for activating a PM promotion.
  */
-class Dismiss_Promotion extends Request {
+class Activate_PM_Promotion extends Request {
 	/**
 	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
 	 *
 	 * @var string
 	 */
-	protected $hook = 'wcpay_dismiss_promotion_request';
+	protected $hook = 'wcpay_activate_pm_promotion_request';
 
 	/**
 	 * Returns the request's API.
@@ -27,7 +27,7 @@ class Dismiss_Promotion extends Request {
 	 * @return string
 	 */
 	public function get_api(): string {
-		return WC_Payments_API_Client::PROMOTIONS_API . '/' . $this->id . '/dismiss';
+		return WC_Payments_API_Client::PROMOTIONS_API . '/' . $this->id . '/activate';
 	}
 
 	/**

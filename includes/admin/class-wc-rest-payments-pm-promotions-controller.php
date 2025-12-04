@@ -55,42 +55,36 @@ class WC_REST_Payments_PM_Promotions_Controller extends WC_Payments_REST_Control
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/(?P<identifier>[a-zA-Z0-9_-]+)/activate',
+			'/' . $this->rest_base . '/(?P<id>[a-zA-Z0-9_-]+)/activate',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => [ $this, 'activate_promotion' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 				'args'                => [
-					'identifier'   => [
+					'id' => [
 						'required'          => true,
 						'type'              => 'string',
+						'description'       => __( 'The promotion unique identifier.', 'woocommerce-payments' ),
 						'sanitize_callback' => 'sanitize_text_field',
-					],
-					'accept_terms' => [
-						'required' => false,
-						'type'     => 'boolean',
-						'default'  => true,
+						'validate_callback' => [ $this, 'validate_promotion_id' ],
 					],
 				],
 			]
 		);
 		register_rest_route(
 			$this->namespace,
-			'/' . $this->rest_base . '/(?P<identifier>[a-zA-Z0-9_-]+)/dismiss',
+			'/' . $this->rest_base . '/(?P<id>[a-zA-Z0-9_-]+)/dismiss',
 			[
 				'methods'             => WP_REST_Server::CREATABLE,
 				'callback'            => [ $this, 'dismiss_promotion' ],
 				'permission_callback' => [ $this, 'check_permission' ],
 				'args'                => [
-					'identifier'   => [
+					'id' => [
 						'required'          => true,
 						'type'              => 'string',
+						'description'       => __( 'The promotion unique identifier.', 'woocommerce-payments' ),
 						'sanitize_callback' => 'sanitize_text_field',
-					],
-					'variation_id' => [
-						'required'          => true,
-						'type'              => 'string',
-						'sanitize_callback' => 'sanitize_text_field',
+						'validate_callback' => [ $this, 'validate_promotion_id' ],
 					],
 				],
 			]
@@ -104,7 +98,7 @@ class WC_REST_Payments_PM_Promotions_Controller extends WC_Payments_REST_Control
 	 */
 	public function get_promotions() {
 		$promotions = $this->promotions_service->get_visible_promotions();
-		return rest_ensure_response( $promotions );
+		return rest_ensure_response( $promotions ?? [] );
 	}
 
 	/**
@@ -114,28 +108,40 @@ class WC_REST_Payments_PM_Promotions_Controller extends WC_Payments_REST_Control
 	 *
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public function activate_promotion( $request ) {
-		$identifier   = $request->get_param( 'identifier' );
-		$accept_terms = $request->get_param( 'accept_terms' );
+	public function activate_promotion( WP_REST_Request $request ) {
+		$result = $this->promotions_service->activate_promotion( $request->get_param( 'id' ) );
 
-		$response = $this->promotions_service->activate_promotion( $identifier, $accept_terms );
-
-		return rest_ensure_response( $response );
+		return rest_ensure_response( [ 'success' => $result ] );
 	}
 
 	/**
-	 * Dismiss a promotion variation.
+	 * Dismiss a promotion.
 	 *
 	 * @param WP_REST_Request $request Full data about the request.
 	 *
 	 * @return WP_REST_Response|WP_Error
 	 */
-	public function dismiss_promotion( $request ) {
-		$identifier   = $request->get_param( 'identifier' );
-		$variation_id = $request->get_param( 'variation_id' );
+	public function dismiss_promotion( WP_REST_Request $request ) {
+		$result = $this->promotions_service->dismiss_promotion( $request->get_param( 'id' ) );
 
-		$response = $this->promotions_service->dismiss_promotion( $identifier, $variation_id );
+		return rest_ensure_response( [ 'success' => $result ] );
+	}
 
-		return rest_ensure_response( $response );
+	/**
+	 * Validate the promotion ID parameter.
+	 *
+	 * @param mixed           $value   The parameter value.
+	 * @param WP_REST_Request $request The request object.
+	 * @param string          $param   The parameter name.
+	 *
+	 * @return bool True if valid, false otherwise.
+	 */
+	public function validate_promotion_id( $value, WP_REST_Request $request, string $param ): bool {
+		if ( ! is_string( $value ) || empty( $value ) ) {
+			return false;
+		}
+
+		// Match alphanumeric characters, underscores, and hyphens only.
+		return (bool) preg_match( '/^[a-zA-Z0-9_-]+$/', $value );
 	}
 }

@@ -3,27 +3,15 @@
 /**
  * External dependencies
  */
-import React from 'react';
-import { __ } from '@wordpress/i18n';
+import React, { useCallback, useMemo } from 'react';
 
 /**
  * Internal dependencies
  */
 import Spotlight from 'components/spotlight';
-import { usePromotions, usePromotionActions } from 'data';
-import { Promotion, PromotionVariation } from 'data/promotions/types';
+import { usePmPromotions, usePmPromotionActions } from 'wcpay/data';
+import { PmPromotion } from 'data/pm-promotions/types';
 import { recordEvent } from 'tracks';
-import KlarnaIllustration from 'assets/images/illustrations/klarna-promotion-spotlight.svg?asset';
-
-/**
- * Mapping of promotion IDs to their corresponding spotlight images.
- * Images are bundled as local assets for fast loading and version control.
- * Promotions without a mapped image will render without an image.
- */
-const spotlightImages: Record< string, string > = {
-	'klarna-2026-promo': KlarnaIllustration,
-	// Add more promotion images here as needed
-};
 
 /**
  * Determine a human-readable source identifier based on the current page.
@@ -54,152 +42,110 @@ const getPageSource = (): string => {
  *
  * This component:
  * - Fetches promotions from the API
- * - Filters for 'spotlight' type variations
- * - Only displays if account is onboarded (status is 'complete' or 'enabled')
+ * - Filters for 'spotlight' type promotions
  * - Handles activation and dismissal of promotions
  */
 const SpotlightPromotion: React.FC = () => {
-	const { promotions, isLoading } = usePromotions();
-	const { activatePromotion, dismissPromotion } = usePromotionActions();
+	const { pmPromotions, isLoading } = usePmPromotions();
+	const { activatePmPromotion, dismissPmPromotion } = usePmPromotionActions();
 
-	// Check if account is onboarded - only show if status is 'complete' or 'enabled'
-	const accountStatus = window.wcpaySettings?.accountStatus?.status;
-	const isAccountOnboarded =
-		accountStatus === 'complete' || accountStatus === 'enabled';
-
-	// Don't render if account is not onboarded or data is still loading
-	if ( ! isAccountOnboarded || isLoading ) {
-		return null;
-	}
-
-	// Don't render if no promotions available
-	if ( ! promotions || promotions.length === 0 ) {
-		return null;
-	}
-
-	// Find the first available promotion with a 'spotlight' variation
-	let spotlightVariation: PromotionVariation | null = null;
-	let activePromotion: Promotion | null = null;
-
-	for ( const promotion of promotions ) {
-		const variation = promotion.variations.find(
-			( v ) => v.type === 'spotlight'
-		);
-		if ( variation ) {
-			spotlightVariation = variation;
-			activePromotion = promotion;
-			break;
-		}
-	}
-
-	// No spotlight promotion available
-	if ( ! spotlightVariation || ! activePromotion ) {
-		return null;
-	}
-
-	// Extract values after null check for TypeScript
-	const promotionId = activePromotion.promo_id;
-	const paymentMethod = activePromotion.payment_method;
-	const variationId = spotlightVariation.id;
-	const ctaUrl = spotlightVariation.cta_url;
+	// Memoize the spotlight promotion lookup to prevent recalculation on every render.
+	const spotlightPromotion: PmPromotion | undefined = useMemo(
+		() => pmPromotions?.find( ( promo ) => promo.type === 'spotlight' ),
+		[ pmPromotions ]
+	);
 
 	/**
 	 * Get common event properties for tracking.
+	 * Memoized to maintain reference equality.
 	 */
-	const getEventProperties = () => ( {
-		promotion_id: promotionId,
-		payment_method: paymentMethod,
-		variation_id: variationId,
-		display_context: 'spotlight',
-		source: getPageSource(),
-		path: window.location.pathname + window.location.search,
-	} );
+	const getEventProperties = useCallback(
+		() => ( {
+			promo_id: spotlightPromotion?.promo_id,
+			payment_method: spotlightPromotion?.payment_method,
+			display_context: 'spotlight',
+			source: getPageSource(),
+			path: window.location.pathname + window.location.search,
+		} ),
+		[ spotlightPromotion?.promo_id, spotlightPromotion?.payment_method ]
+	);
 
-	const handleView = () => {
+	const handleView = useCallback( () => {
 		recordEvent(
 			'wcpay_payment_method_promotion_view',
 			getEventProperties()
 		);
-	};
+	}, [ getEventProperties ] );
 
-	const handlePrimaryClick = () => {
+	const handlePrimaryClick = useCallback( () => {
+		if ( ! spotlightPromotion ) return;
 		recordEvent(
 			'wcpay_payment_method_promotion_activate_click',
 			getEventProperties()
 		);
-		activatePromotion( promotionId );
-	};
+		activatePmPromotion( spotlightPromotion.id );
+	}, [ getEventProperties, activatePmPromotion, spotlightPromotion ] );
 
-	const handleSecondaryClick = () => {
-		recordEvent(
-			'wcpay_payment_method_promotion_secondary_click',
-			getEventProperties()
-		);
-		const url = spotlightVariation?.cta_url;
-		if ( url ) {
-			// Validate URL has a safe protocol before opening
+	const handleSecondaryClick = useCallback( () => {
+		if ( ! spotlightPromotion ) return;
+		recordEvent( 'wcpay_payment_method_promotion_link_click', {
+			...getEventProperties(),
+			link_type: 'terms',
+		} );
+		if ( spotlightPromotion.tc_url ) {
 			try {
-				const parsedUrl = new URL( url );
+				const parsedUrl = new URL( spotlightPromotion.tc_url );
 				if (
 					parsedUrl.protocol === 'https:' ||
 					parsedUrl.protocol === 'http:'
 				) {
-					window.open( url, '_blank', 'noopener,noreferrer' );
+					window.open(
+						spotlightPromotion.tc_url,
+						'_blank',
+						'noopener,noreferrer'
+					);
 				}
 			} catch {
 				// Invalid URL, don't open
 			}
 		}
-	};
+	}, [ getEventProperties, spotlightPromotion ] );
 
-	const handleDismiss = () => {
+	const handleDismiss = useCallback( () => {
+		if ( ! spotlightPromotion ) return;
 		recordEvent(
-			'wcpay_payment_method_promotion_dismiss',
+			'wcpay_payment_method_promotion_dismiss_click',
 			getEventProperties()
 		);
-		dismissPromotion( promotionId, variationId as string );
-	};
+		dismissPmPromotion( spotlightPromotion.id );
+	}, [ getEventProperties, dismissPmPromotion, spotlightPromotion ] );
 
-	const handleTermsClick = () => {
-		recordEvent( 'wcpay_payment_method_promotion_link_click', {
-			...getEventProperties(),
-			link_type: 'terms',
-		} );
-	};
-
-	// Build disclaimer content if footnote and tc_url exist
-	let disclaimer: React.ReactNode | undefined;
-	if ( spotlightVariation.footnote && spotlightVariation.tc_url ) {
-		disclaimer = (
-			<>
-				{ spotlightVariation.footnote }{ ' ' }
-				<a
-					href={ spotlightVariation.tc_url }
-					target="_blank"
-					rel="noopener noreferrer"
-					onClick={ handleTermsClick }
-				>
-					{ __( 'Terms and conditions', 'woocommerce-payments' ) }
-				</a>
-			</>
-		);
-	} else if ( spotlightVariation.footnote ) {
-		disclaimer = spotlightVariation.footnote;
+	// Don't render if data is still loading.
+	if ( isLoading ) {
+		return null;
 	}
 
-	// Get the image for this promotion (undefined if not mapped)
-	const image = spotlightImages[ promotionId ];
+	// Don't render if no promotions available.
+	if ( ! pmPromotions || pmPromotions.length === 0 ) {
+		return null;
+	}
+
+	// No spotlight promotion available.
+	if ( ! spotlightPromotion ) {
+		return null;
+	}
 
 	return (
 		<Spotlight
-			badge={ spotlightVariation.badge }
-			heading={ spotlightVariation.heading }
-			description={ spotlightVariation.description }
-			disclaimer={ disclaimer }
-			image={ image }
-			primaryButtonLabel={ spotlightVariation.cta_label }
+			badge={ spotlightPromotion.badge_text }
+			badgeType={ spotlightPromotion.badge_type }
+			heading={ spotlightPromotion.title }
+			description={ spotlightPromotion.description }
+			footnote={ spotlightPromotion.footnote }
+			image={ spotlightPromotion.image }
+			primaryButtonLabel={ spotlightPromotion.cta_label }
 			onPrimaryClick={ handlePrimaryClick }
-			secondaryButtonLabel={ __( 'Learn more', 'woocommerce-payments' ) }
+			secondaryButtonLabel={ spotlightPromotion.tc_label }
 			onSecondaryClick={ handleSecondaryClick }
 			onDismiss={ handleDismiss }
 			onView={ handleView }

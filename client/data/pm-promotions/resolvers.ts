@@ -11,49 +11,37 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import { NAMESPACE } from '../constants';
-import { Promotion, PromotionVariation, PromotionsData } from './types';
+import { PmPromotion, PmPromotionsData } from './types';
 import { ApiError } from '../../types/errors';
 
 /**
- * Type guard to check if an object is a valid PromotionVariation.
+ * Type guard to check if an object is a valid PmPromotion.
  */
-function isPromotionVariation( value: unknown ): value is PromotionVariation {
+function isPmPromotion( value: unknown ): value is PmPromotion {
 	if ( typeof value !== 'object' || value === null ) {
 		return false;
 	}
 	const obj = value as Record< string, unknown >;
 	return (
 		typeof obj.id === 'string' &&
+		typeof obj.promo_id === 'string' &&
+		typeof obj.payment_method === 'string' &&
+		typeof obj.payment_method_title === 'string' &&
 		typeof obj.type === 'string' &&
-		typeof obj.heading === 'string' &&
+		( obj.type === 'spotlight' || obj.type === 'badge' ) &&
+		typeof obj.title === 'string' &&
 		typeof obj.description === 'string' &&
 		typeof obj.cta_label === 'string' &&
-		typeof obj.cta_url === 'string'
+		typeof obj.tc_url === 'string' &&
+		typeof obj.tc_label === 'string'
 	);
 }
 
 /**
- * Type guard to check if an object is a valid Promotion.
+ * Type guard to check if a value is valid PmPromotionsData.
  */
-function isPromotion( value: unknown ): value is Promotion {
-	if ( typeof value !== 'object' || value === null ) {
-		return false;
-	}
-	const obj = value as Record< string, unknown >;
-	return (
-		typeof obj.promo_id === 'string' &&
-		typeof obj.discount_rate === 'string' &&
-		typeof obj.duration_days === 'number' &&
-		Array.isArray( obj.variations ) &&
-		obj.variations.every( isPromotionVariation )
-	);
-}
-
-/**
- * Type guard to check if a value is valid PromotionsData.
- */
-function isPromotionsData( value: unknown ): value is PromotionsData {
-	return Array.isArray( value ) && value.every( isPromotion );
+function isPmPromotionsData( value: unknown ): value is PmPromotionsData {
+	return Array.isArray( value ) && value.every( isPmPromotion );
 }
 
 /**
@@ -76,19 +64,19 @@ function normalizeError( error: unknown ): ApiError {
 }
 
 /**
- * Retrieve promotions data.
+ * Retrieve PM promotions data.
  */
-export function* getPromotions(): unknown {
+export function* getPmPromotions(): unknown {
 	const path = `${ NAMESPACE }/pm-promotions`;
 
 	try {
 		const result = yield apiFetch( { path } );
 
-		if ( ! isPromotionsData( result ) ) {
+		if ( ! isPmPromotionsData( result ) ) {
 			throw new Error( 'Invalid promotions data received from API' );
 		}
 
-		yield controls.dispatch( 'wc/payments', 'updatePromotions', result );
+		yield controls.dispatch( 'wc/payments', 'updatePmPromotions', result );
 	} catch ( e ) {
 		yield controls.dispatch(
 			'core/notices',
@@ -100,7 +88,7 @@ export function* getPromotions(): unknown {
 		);
 		yield controls.dispatch(
 			'wc/payments',
-			'updateErrorForPromotions',
+			'updateErrorForPmPromotions',
 			normalizeError( e )
 		);
 	}

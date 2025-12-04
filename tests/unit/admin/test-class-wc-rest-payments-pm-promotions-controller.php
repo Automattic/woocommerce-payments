@@ -24,6 +24,11 @@ class WC_REST_Payments_Promotions_Controller_Test extends WCPAY_UnitTestCase {
 	private $mock_api_client;
 
 	/**
+	 * @var WC_Payment_Gateway_WCPay|MockObject
+	 */
+	private $mock_gateway;
+
+	/**
 	 * @var WC_Payments_PM_Promotions_Service
 	 */
 	private $promotions_service;
@@ -31,11 +36,20 @@ class WC_REST_Payments_Promotions_Controller_Test extends WCPAY_UnitTestCase {
 	public function set_up() {
 		parent::set_up();
 
-		// Set the user so that we can pass the authentication.
-		wp_set_current_user( 1 );
+		// Create and set an admin user (required for permission checks).
+		$admin_user = self::factory()->user->create( [ 'role' => 'administrator' ] );
+		wp_set_current_user( $admin_user );
 
-		$this->mock_api_client    = $this->createMock( WC_Payments_API_Client::class );
-		$this->promotions_service = new WC_Payments_PM_Promotions_Service();
+		$this->mock_api_client = $this->createMock( WC_Payments_API_Client::class );
+
+		// Create mock gateway with available payment methods.
+		$this->mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$this->mock_gateway->method( 'get_upe_available_payment_methods' )
+			->willReturn( [ 'card', 'klarna', 'affirm', 'afterpay_clearpay' ] );
+		$this->mock_gateway->method( 'get_upe_enabled_payment_method_ids' )
+			->willReturn( [] );
+
+		$this->promotions_service = new WC_Payments_PM_Promotions_Service( $this->mock_gateway );
 
 		$this->controller = new WC_REST_Payments_PM_Promotions_Controller( $this->mock_api_client, $this->promotions_service );
 	}
@@ -44,143 +58,59 @@ class WC_REST_Payments_Promotions_Controller_Test extends WCPAY_UnitTestCase {
 		parent::tear_down();
 		delete_transient( WC_Payments_PM_Promotions_Service::PROMOTIONS_CACHE_KEY );
 		delete_option( WC_Payments_PM_Promotions_Service::PROMOTION_DISMISSALS_OPTION );
-		delete_option( WC_Payments_PM_Promotions_Service::ACTIVATED_PROMOTIONS_OPTION );
 		$this->promotions_service->reset_memo();
 	}
 
-	public function test_get_promotions_returns_cached_data() {
+	public function test_get_promotions_returns_promotions_from_service() {
+		// Mock promotions in the flat structure.
 		$mock_promotions = [
 			[
-				'promo_id'      => 'test_promo',
-				'discount_rate' => '100%',
-				'duration_days' => 90,
-				'variations'    => [
-					[
-						'id'          => 'test_promo__spotlight_1',
-						'type'        => 'spotlight',
-						'heading'     => 'Test Promotion',
-						'description' => 'Test description',
-						'cta_label'   => 'Activate',
-						'cta_url'     => '#',
-						'tc_url'      => 'https://example.com/terms',
-					],
-				],
+				'id'             => 'test_promo__spotlight',
+				'promo_id'       => 'test_promo',
+				'payment_method' => 'klarna',
+				'type'           => 'spotlight',
+				'title'          => 'Test Promotion',
+				'description'    => 'Test description',
+				'cta_label'      => 'Enable Klarna',
+				'tc_url'         => 'https://example.com/terms',
+				'tc_label'       => 'See terms',
 			],
 		];
 
-		// Generate the context hash to match what the service will generate.
-		$store_context = [
-			'dismissals' => WC_Payments_PM_Promotions_Service::get_promotion_dismissals(),
-			'locale'     => get_locale(),
-		];
-		$context_hash  = md5(
-			wp_json_encode(
-				[
-					'dismissals' => $store_context['dismissals'],
-					'locale'     => $store_context['locale'],
-				]
-			)
-		);
+		// Create a mock service that returns the promotions directly.
+		$mock_service = $this->createMock( WC_Payments_PM_Promotions_Service::class );
+		$mock_service->method( 'get_visible_promotions' )
+			->willReturn( $mock_promotions );
 
-		// Set the cache with the proper structure including context_hash.
-		set_transient(
-			WC_Payments_PM_Promotions_Service::PROMOTIONS_CACHE_KEY,
-			[
-				'promotions'   => $mock_promotions,
-				'context_hash' => $context_hash,
-				'timestamp'    => time(),
-			],
-			300
-		);
+		// Create controller with mock service.
+		$controller = new WC_REST_Payments_PM_Promotions_Controller( $this->mock_api_client, $mock_service );
 
 		$request  = new WP_REST_Request( 'GET' );
-		$response = $this->controller->get_promotions( $request );
+		$response = $controller->get_promotions( $request );
 
 		$this->assertSame( 200, $response->status );
-		$this->assertSame( $mock_promotions, $response->get_data() );
+		$data = $response->get_data();
+		$this->assertIsArray( $data );
+		$this->assertCount( 1, $data );
+		$this->assertSame( 'test_promo__spotlight', $data[0]['id'] );
+		$this->assertSame( 'klarna', $data[0]['payment_method'] );
+		$this->assertSame( 'spotlight', $data[0]['type'] );
 	}
 
-	public function test_get_promotion_dismissals() {
-		$dismissals = [
-			'promo1' => [
-				'promo1__spotlight_1' => 1234567890,
-			],
-			'promo2' => [
-				'promo2__spotlight_1' => 1234567900,
-			],
-		];
-		update_option( WC_Payments_PM_Promotions_Service::PROMOTION_DISMISSALS_OPTION, $dismissals );
+	public function test_get_promotions_returns_empty_array_when_no_promotions() {
+		// Create a mock service that returns null (no promotions).
+		$mock_service = $this->createMock( WC_Payments_PM_Promotions_Service::class );
+		$mock_service->method( 'get_visible_promotions' )
+			->willReturn( null );
 
-		$result = WC_Payments_PM_Promotions_Service::get_promotion_dismissals();
+		// Create controller with mock service.
+		$controller = new WC_REST_Payments_PM_Promotions_Controller( $this->mock_api_client, $mock_service );
 
-		$this->assertSame( $dismissals, $result );
-	}
+		$request  = new WP_REST_Request( 'GET' );
+		$response = $controller->get_promotions( $request );
 
-	public function test_get_promotion_variation_dismissals() {
-		$dismissals = [
-			'promo1' => [
-				'promo1__spotlight_1' => 1234567890,
-				'promo1__spotlight_2' => 1234567900,
-			],
-		];
-		update_option( WC_Payments_PM_Promotions_Service::PROMOTION_DISMISSALS_OPTION, $dismissals );
-
-		$result = WC_Payments_PM_Promotions_Service::get_promotion_variation_dismissals( 'promo1' );
-
-		$this->assertSame( $dismissals['promo1'], $result );
-		$this->assertSame( [], WC_Payments_PM_Promotions_Service::get_promotion_variation_dismissals( 'promo3' ) );
-	}
-
-	public function test_get_variation_dismissal_time() {
-		$timestamp  = 1234567890;
-		$dismissals = [
-			'promo1' => [
-				'promo1__spotlight_1' => $timestamp,
-			],
-		];
-		update_option( WC_Payments_PM_Promotions_Service::PROMOTION_DISMISSALS_OPTION, $dismissals );
-
-		$result = WC_Payments_PM_Promotions_Service::get_variation_dismissal_time( 'promo1', 'promo1__spotlight_1' );
-
-		$this->assertSame( $timestamp, $result );
-		$this->assertNull( WC_Payments_PM_Promotions_Service::get_variation_dismissal_time( 'promo1', 'promo1__spotlight_2' ) );
-		$this->assertNull( WC_Payments_PM_Promotions_Service::get_variation_dismissal_time( 'promo2', 'promo2__spotlight_1' ) );
-	}
-
-	public function test_get_activated_promotions() {
-		$activated = [
-			'promo1' => 1234567890,
-			'promo2' => 1234567900,
-		];
-		update_option( WC_Payments_PM_Promotions_Service::ACTIVATED_PROMOTIONS_OPTION, $activated );
-
-		$result = WC_Payments_PM_Promotions_Service::get_activated_promotions();
-
-		$this->assertSame( $activated, $result );
-	}
-
-	public function test_is_promotion_activated() {
-		$activated = [
-			'promo1' => 1234567890,
-			'promo2' => 1234567900,
-		];
-		update_option( WC_Payments_PM_Promotions_Service::ACTIVATED_PROMOTIONS_OPTION, $activated );
-
-		$this->assertTrue( WC_Payments_PM_Promotions_Service::is_promotion_activated( 'promo1' ) );
-		$this->assertTrue( WC_Payments_PM_Promotions_Service::is_promotion_activated( 'promo2' ) );
-		$this->assertFalse( WC_Payments_PM_Promotions_Service::is_promotion_activated( 'promo3' ) );
-	}
-
-	public function test_get_promotion_activation_time() {
-		$timestamp = 1234567890;
-		$activated = [
-			'promo1' => $timestamp,
-		];
-		update_option( WC_Payments_PM_Promotions_Service::ACTIVATED_PROMOTIONS_OPTION, $activated );
-
-		$result = WC_Payments_PM_Promotions_Service::get_promotion_activation_time( 'promo1' );
-
-		$this->assertSame( $timestamp, $result );
-		$this->assertNull( WC_Payments_PM_Promotions_Service::get_promotion_activation_time( 'promo2' ) );
+		$this->assertSame( 200, $response->status );
+		$this->assertIsArray( $response->get_data() );
+		$this->assertEmpty( $response->get_data() );
 	}
 }

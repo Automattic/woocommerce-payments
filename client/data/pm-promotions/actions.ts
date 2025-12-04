@@ -10,11 +10,11 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import ACTION_TYPES from './action-types';
+import { ACTION_TYPES } from './action-types';
 import {
-	PromotionsData,
-	UpdatePromotionsAction,
-	ErrorPromotionsAction,
+	PmPromotionsData,
+	UpdatePmPromotionsAction,
+	ErrorPmPromotionsAction,
 } from './types';
 import { ApiError } from '../../types/errors';
 import { NAMESPACE } from '../constants';
@@ -43,41 +43,36 @@ function normalizeError( error: unknown ): ApiError {
 	};
 }
 
-export function updatePromotions(
-	data: PromotionsData
-): UpdatePromotionsAction {
+export function updatePmPromotions(
+	data: PmPromotionsData
+): UpdatePmPromotionsAction {
 	return {
-		type: ACTION_TYPES.SET_PROMOTIONS,
+		type: ACTION_TYPES.SET_PM_PROMOTIONS,
 		data,
 	};
 }
 
-export function updateErrorForPromotions(
+export function updateErrorForPmPromotions(
 	error: ApiError
-): ErrorPromotionsAction {
+): ErrorPmPromotionsAction {
 	return {
-		type: ACTION_TYPES.SET_ERROR_FOR_PROMOTIONS,
+		type: ACTION_TYPES.SET_ERROR_FOR_PM_PROMOTIONS,
 		error,
 	};
 }
 
 /**
- * Activate a promotion.
+ * Activate a PM promotion.
  *
  * @param {string} identifier The promotion identifier.
- * @param {boolean} acceptTerms Whether to accept the promotion terms.
  */
-export function* activatePromotion(
-	identifier: string,
-	acceptTerms = true
-): unknown {
+export function* activatePmPromotion( identifier: string ): unknown {
 	const path = `${ NAMESPACE }/pm-promotions/${ identifier }/activate`;
 
 	try {
 		yield apiFetch( {
 			path,
 			method: 'POST',
-			data: { accept_terms: acceptTerms },
 		} );
 
 		yield controls.dispatch(
@@ -90,7 +85,7 @@ export function* activatePromotion(
 		yield controls.dispatch(
 			'wc/payments',
 			'invalidateResolution',
-			'getPromotions',
+			'getPmPromotions',
 			[]
 		);
 	} catch ( e ) {
@@ -104,29 +99,24 @@ export function* activatePromotion(
 		);
 		yield controls.dispatch(
 			'wc/payments',
-			'updateErrorForPromotions',
+			'updateErrorForPmPromotions',
 			normalizeError( e )
 		);
 	}
 }
 
 /**
- * Dismiss a promotion variation.
+ * Dismiss a PM promotion.
  *
- * @param {string} identifier The promotion identifier.
- * @param {string} variationId The variation identifier.
+ * @param {string} id The promotion unique identifier.
  */
-export function* dismissPromotion(
-	identifier: string,
-	variationId: string
-): unknown {
-	const path = `${ NAMESPACE }/pm-promotions/${ identifier }/dismiss`;
+export function* dismissPmPromotion( id: string ): unknown {
+	const path = `${ NAMESPACE }/pm-promotions/${ id }/dismiss`;
 
 	try {
 		yield apiFetch( {
 			path,
 			method: 'POST',
-			data: { variation_id: variationId },
 		} );
 
 		yield controls.dispatch(
@@ -139,7 +129,7 @@ export function* dismissPromotion(
 		yield controls.dispatch(
 			'wc/payments',
 			'invalidateResolution',
-			'getPromotions',
+			'getPmPromotions',
 			[]
 		);
 	} catch ( e ) {
@@ -153,7 +143,7 @@ export function* dismissPromotion(
 		);
 		yield controls.dispatch(
 			'wc/payments',
-			'updateErrorForPromotions',
+			'updateErrorForPmPromotions',
 			normalizeError( e )
 		);
 	}

@@ -62,28 +62,28 @@ describe( 'Spotlight Component', () => {
 		expect( screen.getByText( 'Learn more' ) ).toBeInTheDocument();
 	} );
 
-	it( 'renders disclaimer when provided', () => {
-		const propsWithDisclaimer = {
+	it( 'renders footnote when provided', () => {
+		const propsWithFootnote = {
 			...defaultProps,
-			disclaimer: '*Terms and conditions apply',
+			footnote: '*Terms and conditions apply',
 		};
-		render( <Spotlight { ...propsWithDisclaimer } /> );
+		render( <Spotlight { ...propsWithFootnote } /> );
 
 		expect(
 			screen.getByText( '*Terms and conditions apply' )
 		).toBeInTheDocument();
 	} );
 
-	it( 'renders disclaimer with React component content', () => {
-		const propsWithReactDisclaimer = {
+	it( 'renders footnote with React component content', () => {
+		const propsWithReactFootnote = {
 			...defaultProps,
-			disclaimer: (
+			footnote: (
 				<>
 					*Terms and <em>conditions</em> apply
 				</>
 			),
 		};
-		render( <Spotlight { ...propsWithReactDisclaimer } /> );
+		render( <Spotlight { ...propsWithReactFootnote } /> );
 
 		expect( screen.getByText( /Terms and/i ) ).toBeInTheDocument();
 		expect( screen.getByText( 'conditions' ) ).toBeInTheDocument();
@@ -94,14 +94,18 @@ describe( 'Spotlight Component', () => {
 			...defaultProps,
 			image: 'https://example.com/image.png',
 		};
-		render( <Spotlight { ...propsWithImage } /> );
+		const { container } = render( <Spotlight { ...propsWithImage } /> );
 
-		const image = screen.getByAltText( 'Spotlight image' );
+		// Image is decorative (role="presentation", aria-hidden="true"), so query by tag directly
+		const image = container.querySelector( 'img' );
 		expect( image ).toBeInTheDocument();
 		expect( image ).toHaveAttribute(
 			'src',
 			'https://example.com/image.png'
 		);
+		expect( image ).toHaveAttribute( 'alt', '' );
+		expect( image ).toHaveAttribute( 'role', 'presentation' );
+		expect( image ).toHaveAttribute( 'aria-hidden', 'true' );
 	} );
 
 	it( 'renders image when provided as React element', () => {
@@ -114,7 +118,8 @@ describe( 'Spotlight Component', () => {
 		expect( screen.getByTestId( 'custom-image' ) ).toBeInTheDocument();
 	} );
 
-	it( 'calls onPrimaryClick and onDismiss when primary button is clicked', async () => {
+	it( 'calls onPrimaryClick but not onDismiss when primary button is clicked', async () => {
+		jest.useFakeTimers();
 		const onPrimaryClick = jest.fn();
 		const onDismiss = jest.fn();
 
@@ -131,13 +136,15 @@ describe( 'Spotlight Component', () => {
 
 		expect( onPrimaryClick ).toHaveBeenCalledTimes( 1 );
 
-		// onDismiss is called after animation timeout (300ms)
-		await waitFor(
-			() => {
-				expect( onDismiss ).toHaveBeenCalledTimes( 1 );
-			},
-			{ timeout: 500 }
-		);
+		// Fast forward past the animation timeout
+		act( () => {
+			jest.advanceTimersByTime( 500 );
+		} );
+
+		// onDismiss should NOT be called - backend handles dismissal on activation
+		expect( onDismiss ).not.toHaveBeenCalled();
+
+		jest.useRealTimers();
 	} );
 
 	it( 'calls onSecondaryClick when secondary button is clicked', () => {
@@ -277,5 +284,206 @@ describe( 'Spotlight Component', () => {
 		} );
 
 		jest.useRealTimers();
+	} );
+
+	describe( 'Accessibility', () => {
+		it( 'has correct dialog ARIA attributes', () => {
+			render( <Spotlight { ...defaultProps } /> );
+
+			const dialog = screen.getByRole( 'dialog' );
+			expect( dialog ).toHaveAttribute( 'aria-modal', 'true' );
+			expect( dialog ).toHaveAttribute(
+				'aria-labelledby',
+				'spotlight-heading'
+			);
+		} );
+
+		it( 'heading has correct id for aria-labelledby', () => {
+			render( <Spotlight { ...defaultProps } /> );
+
+			const heading = screen.getByRole( 'heading', {
+				name: 'Test Heading',
+			} );
+			expect( heading ).toHaveAttribute( 'id', 'spotlight-heading' );
+		} );
+
+		it( 'closes spotlight when Escape key is pressed', async () => {
+			const onDismiss = jest.fn();
+
+			render( <Spotlight { ...defaultProps } onDismiss={ onDismiss } /> );
+
+			// Press Escape key
+			await userEvent.keyboard( '{Escape}' );
+
+			// onDismiss is called after animation timeout
+			await waitFor(
+				() => {
+					expect( onDismiss ).toHaveBeenCalledTimes( 1 );
+				},
+				{ timeout: 500 }
+			);
+		} );
+
+		it( 'traps focus within the dialog on Tab', async () => {
+			const propsWithSecondary = {
+				...defaultProps,
+				secondaryButtonLabel: 'Learn more',
+				onSecondaryClick: jest.fn(),
+			};
+
+			render( <Spotlight { ...propsWithSecondary } /> );
+
+			const closeButton = screen.getByLabelText( 'Close' );
+			const primaryButton = screen.getByText( 'Activate' );
+
+			// Focus the last element (primary button)
+			primaryButton.focus();
+			expect( primaryButton.ownerDocument.activeElement ).toBe(
+				primaryButton
+			);
+
+			// Tab should wrap to the first focusable element (close button)
+			await userEvent.tab();
+			expect( primaryButton.ownerDocument.activeElement ).toBe(
+				closeButton
+			);
+		} );
+
+		it( 'traps focus within the dialog on Shift+Tab', async () => {
+			const propsWithSecondary = {
+				...defaultProps,
+				secondaryButtonLabel: 'Learn more',
+				onSecondaryClick: jest.fn(),
+			};
+
+			render( <Spotlight { ...propsWithSecondary } /> );
+
+			const closeButton = screen.getByLabelText( 'Close' );
+			const primaryButton = screen.getByText( 'Activate' );
+
+			// Focus the first element (close button)
+			closeButton.focus();
+			expect( closeButton.ownerDocument.activeElement ).toBe(
+				closeButton
+			);
+
+			// Shift+Tab should wrap to the last focusable element (primary button)
+			await userEvent.tab( { shift: true } );
+			expect( closeButton.ownerDocument.activeElement ).toBe(
+				primaryButton
+			);
+		} );
+
+		it( 'focuses the dialog when it becomes visible', () => {
+			render( <Spotlight { ...defaultProps } /> );
+
+			const dialog = screen.getByRole( 'dialog' );
+			expect( dialog.ownerDocument.activeElement ).toBe( dialog );
+		} );
+	} );
+
+	describe( 'Badge type variations', () => {
+		it( 'renders badge with default success type when badgeType is not provided', () => {
+			const { container } = render( <Spotlight { ...defaultProps } /> );
+
+			const badge = container.querySelector( '.chip-success' );
+			expect( badge ).toBeInTheDocument();
+		} );
+
+		it( 'renders badge with specified badgeType', () => {
+			const propsWithBadgeType = {
+				...defaultProps,
+				badgeType: 'warning' as const,
+			};
+			const { container } = render(
+				<Spotlight { ...propsWithBadgeType } />
+			);
+
+			const badge = container.querySelector( '.chip-warning' );
+			expect( badge ).toBeInTheDocument();
+		} );
+
+		it( 'renders badge with alert type', () => {
+			const propsWithAlertType = {
+				...defaultProps,
+				badgeType: 'alert' as const,
+			};
+			const { container } = render(
+				<Spotlight { ...propsWithAlertType } />
+			);
+
+			const badge = container.querySelector( '.chip-alert' );
+			expect( badge ).toBeInTheDocument();
+		} );
+
+		it( 'defaults to success type when invalid badgeType is provided', () => {
+			const propsWithInvalidType = {
+				...defaultProps,
+				badgeType: 'invalid-type' as any,
+			};
+			const { container } = render(
+				<Spotlight { ...propsWithInvalidType } />
+			);
+
+			// Should fall back to success type
+			const badge = container.querySelector( '.chip-success' );
+			expect( badge ).toBeInTheDocument();
+		} );
+
+		it( 'defaults to success type when badgeType is undefined', () => {
+			const propsWithUndefinedType = {
+				...defaultProps,
+				badgeType: undefined,
+			};
+			const { container } = render(
+				<Spotlight { ...propsWithUndefinedType } />
+			);
+
+			const badge = container.querySelector( '.chip-success' );
+			expect( badge ).toBeInTheDocument();
+		} );
+	} );
+
+	describe( 'CSS class variations', () => {
+		it( 'applies has-image class when image is provided', () => {
+			const propsWithImage = {
+				...defaultProps,
+				image: 'https://example.com/image.png',
+			};
+			const { container } = render( <Spotlight { ...propsWithImage } /> );
+
+			expect(
+				container.querySelector( '.wcpay-spotlight__card.has-image' )
+			).toBeInTheDocument();
+		} );
+
+		it( 'does not apply has-image class when no image provided', () => {
+			const { container } = render( <Spotlight { ...defaultProps } /> );
+
+			const card = container.querySelector( '.wcpay-spotlight__card' );
+			expect( card ).toBeInTheDocument();
+			expect( card ).not.toHaveClass( 'has-image' );
+		} );
+
+		it( 'removes visible class during close animation', async () => {
+			const onDismiss = jest.fn();
+			const { container } = render(
+				<Spotlight { ...defaultProps } onDismiss={ onDismiss } />
+			);
+
+			// Initially visible
+			expect(
+				container.querySelector( '.wcpay-spotlight--visible' )
+			).toBeInTheDocument();
+
+			// Click close
+			const closeButton = screen.getByLabelText( 'Close' );
+			await userEvent.click( closeButton );
+
+			// Class should be removed immediately (before timeout completes)
+			expect(
+				container.querySelector( '.wcpay-spotlight--visible' )
+			).not.toBeInTheDocument();
+		} );
 	} );
 } );

@@ -13,22 +13,49 @@ import {
 	Icon,
 } from '@wordpress/components';
 import { closeSmall } from '@wordpress/icons';
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
+import { speak } from '@wordpress/a11y';
 
 /**
  * Internal dependencies
  */
 import { SpotlightProps } from './types';
-import Chip from 'components/chip';
+import Chip, { ChipType } from 'components/chip';
+import { sanitizeHTML } from 'utils/sanitize';
 import './style.scss';
 
 const showDelayMs = 4000; // 4 seconds
 
+/**
+ * Valid chip types for the badge.
+ */
+const validBadgeTypes: ChipType[] = [
+	'primary',
+	'success',
+	'light',
+	'warning',
+	'alert',
+];
+
+/**
+ * Get a valid badge type, defaulting to 'success' if invalid or not provided.
+ *
+ * @param type - The badge type to validate.
+ * @return A valid ChipType.
+ */
+const getValidBadgeType = ( type?: ChipType ): ChipType => {
+	if ( type && validBadgeTypes.includes( type ) ) {
+		return type;
+	}
+	return 'success';
+};
+
 const Spotlight: React.FC< SpotlightProps > = ( {
 	badge,
+	badgeType,
 	heading,
 	description,
-	disclaimer,
+	footnote,
 	image,
 	primaryButtonLabel,
 	onPrimaryClick,
@@ -38,6 +65,7 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 	onView,
 	showImmediately = false,
 } ) => {
+	const validBadgeType = getValidBadgeType( badgeType );
 	const [ isVisible, setIsVisible ] = useState( false );
 	const [ isAnimatingIn, setIsAnimatingIn ] = useState( false );
 	const closeTimeoutRef = useRef< ReturnType< typeof setTimeout > | null >(
@@ -76,22 +104,39 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 		};
 	}, [] );
 
-	// Call onView when spotlight becomes visible
+	// Call onView and announce to screen readers when spotlight becomes visible
 	useEffect( () => {
-		if ( isAnimatingIn && onView ) {
-			onView();
+		if ( isAnimatingIn ) {
+			// Announce to screen readers that a dialog has appeared
+			speak(
+				sprintf(
+					/* translators: %s: heading text of the spotlight dialog */
+					__( 'Dialog opened: %s', 'woocommerce-payments' ),
+					heading
+				),
+				'polite'
+			);
+
+			if ( onView ) {
+				onView();
+			}
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [ isAnimatingIn ] );
 
-	const handleClose = useCallback( () => {
-		setIsAnimatingIn( false );
-		// Wait for animation to complete before hiding
-		closeTimeoutRef.current = setTimeout( () => {
-			setIsVisible( false );
-			onDismiss();
-		}, 300 );
-	}, [ onDismiss ] );
+	const handleClose = useCallback(
+		( shouldDismiss = true ) => {
+			setIsAnimatingIn( false );
+			// Wait for animation to complete before hiding
+			closeTimeoutRef.current = setTimeout( () => {
+				setIsVisible( false );
+				if ( shouldDismiss ) {
+					onDismiss();
+				}
+			}, 300 );
+		},
+		[ onDismiss ]
+	);
 
 	// Focus management: save previous focus, focus dialog, handle Escape, trap focus, restore on close
 	useEffect( () => {
@@ -153,7 +198,8 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 
 	const handlePrimaryClick = () => {
 		onPrimaryClick();
-		handleClose();
+		// Close without calling onDismiss - the backend handles dismissal on activation.
+		handleClose( false );
 	};
 
 	if ( ! isVisible ) {
@@ -185,10 +231,9 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 							{ typeof image === 'string' ? (
 								<img
 									src={ image }
-									alt={ __(
-										'Spotlight image',
-										'woocommerce-payments'
-									) }
+									alt=""
+									aria-hidden="true"
+									role="presentation"
 								/>
 							) : (
 								image
@@ -203,8 +248,28 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 					>
 						<Flex
 							className="wcpay-spotlight__controls"
-							justify="flex-end"
+							justify="space-between"
+							align="center"
 						>
+							{ /* When no image: show badge if available, otherwise show heading */ }
+							{ ! image && badge && (
+								<div className="wcpay-spotlight__badge">
+									<Chip
+										message={ badge }
+										type={ validBadgeType }
+									/>
+								</div>
+							) }
+							{ ! image && ! badge && (
+								<h2
+									id="spotlight-heading"
+									className="wcpay-spotlight__heading"
+								>
+									{ heading }
+								</h2>
+							) }
+							{ /* Spacer when image is present (header is overlaid) */ }
+							{ image && <span /> }
 							<Button
 								className="wcpay-spotlight__close-btn"
 								label={ __( 'Close', 'woocommerce-payments' ) }
@@ -215,31 +280,59 @@ const Spotlight: React.FC< SpotlightProps > = ( {
 									/>
 								}
 								iconSize={ 24 }
-								onClick={ handleClose }
+								onClick={ () => handleClose() }
 							/>
 						</Flex>
 					</CardHeader>
 
 					<CardBody className="wcpay-spotlight__body" size="small">
-						{ badge && (
+						{ /* When image present OR when no image but badge is in header: show badge in body only if image */ }
+						{ image && badge && (
 							<div className="wcpay-spotlight__badge">
-								<Chip message={ badge } type="primary" />
+								<Chip
+									message={ badge }
+									type={ validBadgeType }
+								/>
 							</div>
 						) }
-						<h2
-							id="spotlight-heading"
-							className="wcpay-spotlight__heading"
-						>
-							{ heading }
-						</h2>
-						<div className="wcpay-spotlight__description">
-							{ description }
-						</div>
-						{ disclaimer && (
-							<div className="wcpay-spotlight__disclaimer">
-								{ disclaimer }
+						{ /* When no image and badge shown in header: show heading in body */ }
+						{ /* When image present: always show heading in body */ }
+						{ /* When no image and no badge: heading already in header, don't duplicate */ }
+						{ ( image || badge ) && (
+							<h2
+								id="spotlight-heading"
+								className="wcpay-spotlight__heading"
+							>
+								{ heading }
+							</h2>
+						) }
+						{ typeof description === 'string' ? (
+							<div
+								className="wcpay-spotlight__description"
+								// eslint-disable-next-line react/no-danger
+								dangerouslySetInnerHTML={ sanitizeHTML(
+									description
+								) }
+							/>
+						) : (
+							<div className="wcpay-spotlight__description">
+								{ description }
 							</div>
 						) }
+						{ footnote &&
+							( typeof footnote === 'string' ? (
+								<div
+									className="wcpay-spotlight__footnote"
+									// eslint-disable-next-line react/no-danger
+									dangerouslySetInnerHTML={ sanitizeHTML(
+										footnote
+									) }
+								/>
+							) : (
+								<div className="wcpay-spotlight__footnote">
+									{ footnote }
+								</div>
+							) ) }
 					</CardBody>
 
 					<CardFooter
