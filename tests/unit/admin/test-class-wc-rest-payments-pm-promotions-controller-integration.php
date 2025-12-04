@@ -177,12 +177,18 @@ class WC_REST_Payments_PM_Promotions_Controller_Integration_Test extends WCPAY_U
 	 *
 	 * @param string          $payment_method_id The payment method ID (e.g., 'klarna').
 	 * @param MockObject|null $gateway_mock      Optional gateway mock. Creates one if not provided.
+	 * @param bool            $enabled           Whether the gateway should be mocked as enabled. Default true.
 	 */
-	private function set_payment_gateway_for_testing( string $payment_method_id, $gateway_mock = null ): void {
+	private function set_payment_gateway_for_testing( string $payment_method_id, $gateway_mock = null, bool $enabled = true ): void {
 		if ( null === $gateway_mock ) {
 			$gateway_mock = $this->createMock( WC_Payment_Gateway_WCPay::class );
 			$gateway_mock->method( 'enable' )->willReturn( true );
-			$gateway_mock->method( 'get_option' )->willReturn( 'yes' ); // Simulate enabled state.
+			$gateway_mock->method( 'get_option' )
+				->willReturnCallback(
+					function ( $key ) use ( $enabled ) {
+						return 'enabled' === $key ? ( $enabled ? 'yes' : 'no' ) : '';
+					}
+				);
 			$gateway_mock->method( 'get_option_key' )->willReturn( 'woocommerce_woocommerce_payments_' . $payment_method_id . '_settings' );
 			$gateway_mock->method( 'get_payment_method_capability_key_map' )->willReturn( [] );
 			$gateway_mock->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [] );
