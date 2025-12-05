@@ -2048,7 +2048,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 			}
 		} catch ( Exception $e ) {
-			Logger::exception( 'Error occured during the redirect payment process.', $e );
+			Logger::exception( 'Error occurred during the redirect payment process.', $e );
 
 			$is_order_id_mismatched_exception =
 				$e instanceof Process_Payment_Exception
