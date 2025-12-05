@@ -40,21 +40,31 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	protected $account;
 
 	/**
+	 * WC_Payments_PM_Promotions_Service instance for payment method promotions.
+	 *
+	 * @var WC_Payments_PM_Promotions_Service
+	 */
+	private $pm_promotions_service;
+
+	/**
 	 * WC_REST_Payments_Settings_Controller constructor.
 	 *
-	 * @param WC_Payments_API_Client   $api_client WC_Payments_API_Client instance.
-	 * @param WC_Payment_Gateway_WCPay $wcpay_gateway WC_Payment_Gateway_WCPay instance.
-	 * @param WC_Payments_Account      $account  Account class instance.
+	 * @param WC_Payments_API_Client            $api_client            WC_Payments_API_Client instance.
+	 * @param WC_Payment_Gateway_WCPay          $wcpay_gateway         WC_Payment_Gateway_WCPay instance.
+	 * @param WC_Payments_Account               $account               Account class instance.
+	 * @param WC_Payments_PM_Promotions_Service $pm_promotions_service PM Promotions Service instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $api_client,
 		WC_Payment_Gateway_WCPay $wcpay_gateway,
-		WC_Payments_Account $account
+		WC_Payments_Account $account,
+		WC_Payments_PM_Promotions_Service $pm_promotions_service
 	) {
 		parent::__construct( $api_client );
 
-		$this->wcpay_gateway = $wcpay_gateway;
-		$this->account       = $account;
+		$this->wcpay_gateway         = $wcpay_gateway;
+		$this->account               = $account;
+		$this->pm_promotions_service = $pm_promotions_service;
 	}
 
 	/**
@@ -573,7 +583,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	/**
 	 * Schedule a migration of Stripe Billing subscriptions.
 	 *
-	 * @param WP_REST_Request $request The request object. Optional. If passed, the function will return a REST response.
+	 * @param WP_REST_Request|null $request The request object. Optional. If passed, the function will return a REST response.
 	 *
 	 * @return WP_REST_Response|null The response object, if this is a REST request.
 	 */
@@ -679,6 +689,12 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				}
 				continue;
 			}
+
+			// Try to activate any promotions for this payment method BEFORE enabling it.
+			// This is done first because visible promotions are filtered out for already-enabled PMs.
+			// The service method handles its own exception catching, logging, and tracking internally.
+			$this->pm_promotions_service->maybe_activate_promotion_for_payment_method( $payment_method_id );
+
 			$gateway->enable();
 		}
 

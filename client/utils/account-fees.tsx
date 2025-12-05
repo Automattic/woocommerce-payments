@@ -13,6 +13,7 @@ import './account-fees.scss';
  */
 import { formatCurrency } from 'multi-currency/interface/functions';
 import { formatFee } from 'utils/fees';
+import { formatDateTimeFromString } from 'wcpay/utils/date-time';
 import React from 'react';
 import { BaseFee, DiscountFee, FeeStructure } from 'wcpay/types/fees';
 import { createInterpolateElement } from '@wordpress/element';
@@ -359,4 +360,78 @@ export const getTransactionsPaymentMethodName = (
 
 	// Fallback for unknown payment methods
 	return __( 'Unknown transactions', 'woocommerce-payments' );
+};
+
+export const getDiscountBadgeText = ( discountFee: DiscountFee ): string => {
+	if ( ! discountFee.discount ) {
+		return '';
+	}
+
+	const discountPercentage = formatFee( discountFee.discount );
+
+	if ( discountFee.end_time ) {
+		return sprintf(
+			/* translators: %1$s: discount percentage, %2$s: expiration date */
+			__( '%1$s%% off fees through %2$s', 'woocommerce-payments' ),
+			discountPercentage,
+			formatDateTimeFromString( discountFee.end_time )
+		);
+	}
+
+	return sprintf(
+		/* translators: %s: discount percentage */
+		__( '%s%% off fees', 'woocommerce-payments' ),
+		discountPercentage
+	);
+};
+
+export const getDiscountTooltipText = ( discountFee: DiscountFee ): string => {
+	if ( ! discountFee.discount ) {
+		return '';
+	}
+
+	const discountPercentage = formatFee( discountFee.discount );
+	const currencyCode = discountFee.volume_currency ?? discountFee.currency;
+
+	if ( discountFee.volume_allowance && discountFee.end_time ) {
+		return sprintf(
+			/* translators: %1$s: discount percentage, %2$s: total payment volume until this promotion expires, %3$s: End date of the promotion */
+			__(
+				'You are getting %1$s%% off on processing fees for the first %2$s of total payment volume or through %3$s.',
+				'woocommerce-payments'
+			),
+			discountPercentage,
+			formatCurrency( discountFee.volume_allowance, currencyCode ),
+			formatDateTimeFromString( discountFee.end_time )
+		);
+	} else if ( discountFee.volume_allowance ) {
+		return sprintf(
+			/* translators: %1$s: discount percentage, %2$s: total payment volume until this promotion expires */
+			__(
+				'You are getting %1$s%% off on processing fees for the first %2$s of total payment volume.',
+				'woocommerce-payments'
+			),
+			discountPercentage,
+			formatCurrency( discountFee.volume_allowance, currencyCode )
+		);
+	} else if ( discountFee.end_time ) {
+		return sprintf(
+			/* translators: %1$s: discount percentage, %2$s: End date of the promotion */
+			__(
+				'You are getting %1$s%% off on processing fees through %2$s.',
+				'woocommerce-payments'
+			),
+			discountPercentage,
+			formatDateTimeFromString( discountFee.end_time )
+		);
+	}
+
+	return sprintf(
+		/* translators: %s: discount percentage */
+		__(
+			'You are getting %s%% off on processing fees.',
+			'woocommerce-payments'
+		),
+		discountPercentage
+	);
 };
