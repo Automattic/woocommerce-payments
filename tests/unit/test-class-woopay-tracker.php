@@ -51,9 +51,16 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		WC_Payments::get_gateway()->enable();
 
 		$this->mock_account = $this->createMock( WC_Payments_Account::class );
+
+		// Set store country to US for tracking eligibility.
+		update_option( 'woocommerce_default_country', 'US:CA' );
+
+		// Bypass admin page check for tests.
+		add_filter( 'wcpay_tracker_is_admin_page', '__return_false' );
 	}
 
 	public function tearDown(): void {
+		remove_filter( 'wcpay_tracker_is_admin_page', '__return_false' );
 		WC_Payments::set_database_cache( $this->cache );
 		parent::tearDown();
 	}
@@ -80,11 +87,14 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		$this->setup_woopay_environment( $is_woopay_eligible, $is_account_connected );
 
 		global $wp_roles;
-		$all_roles = array_diff( $wp_roles->get_names(), [ 'administrator' ] );
+		// Filter out administrators - need to use array key 'administrator'.
+		$all_roles = array_keys( array_diff_key( $wp_roles->get_names(), [ 'administrator' => '' ] ) );
 
 		foreach ( $all_roles as $role ) {
-			wp_get_current_user()->set_role( $role );
-			$this->assertTrue( $this->tracker->should_enable_tracking() );
+			// Create a new user with the specific role for each iteration.
+			$user_id = $this->factory->user->create( [ 'role' => $role ] );
+			wp_set_current_user( $user_id );
+			$this->assertTrue( $this->tracker->should_enable_tracking( false, true ), "Tracking should be enabled for role: {$role}" );
 		}
 	}
 
@@ -100,13 +110,16 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		$is_account_connected = true;
 		$this->setup_woopay_environment( $is_woopay_eligible, $is_account_connected );
 
+		// Create a non-admin user for the test.
+		wp_set_current_user( $this->factory->user->create( [ 'role' => 'customer' ] ) );
+
 		// Set WooCommerce global tracking to 'no'.
 		update_option( 'woocommerce_allow_tracking', 'no' );
-		$this->assertFalse( $this->tracker->should_enable_tracking(), 'Tracking should be disabled when woocommerce_allow_tracking is "no"' );
+		$this->assertFalse( $this->tracker->should_enable_tracking( false, true ), 'Tracking should be disabled when woocommerce_allow_tracking is "no"' );
 
 		// Set WooCommerce global tracking to 'yes'.
 		update_option( 'woocommerce_allow_tracking', 'yes' );
-		$this->assertTrue( $this->tracker->should_enable_tracking(), 'Tracking should be enabled when woocommerce_allow_tracking is "yes"' );
+		$this->assertTrue( $this->tracker->should_enable_tracking( false, true ), 'Tracking should be enabled when woocommerce_allow_tracking is "yes"' );
 
 		// Clean up.
 		delete_option( 'woocommerce_allow_tracking' );
@@ -117,13 +130,21 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		$is_account_connected = true;
 		$this->setup_woopay_environment( $is_woopay_eligible, $is_account_connected );
 
+		// Create a non-admin user for the test.
+		wp_set_current_user( $this->factory->user->create( [ 'role' => 'customer' ] ) );
+
+		// Debug: Verify filter is set up correctly.
+		$is_admin_page = apply_filters( 'wcpay_tracker_is_admin_page', true );
+		$this->assertFalse( $is_admin_page, 'Admin page filter should return false' );
+
 		// Add filter to disable tracking.
 		add_filter( 'wcpay_enable_shopper_tracking', '__return_false' );
-		$this->assertFalse( $this->tracker->should_enable_tracking(), 'Tracking should be disabled when wcpay_enable_shopper_tracking filter returns false' );
+		$this->assertFalse( $this->tracker->should_enable_tracking( false, true ), 'Tracking should be disabled when wcpay_enable_shopper_tracking filter returns false' );
 
 		// Remove filter and verify tracking is enabled.
 		remove_filter( 'wcpay_enable_shopper_tracking', '__return_false' );
-		$this->assertTrue( $this->tracker->should_enable_tracking(), 'Tracking should be enabled when wcpay_enable_shopper_tracking filter returns true' );
+		$result = $this->tracker->should_enable_tracking( false, true );
+		$this->assertTrue( $result, 'Tracking should be enabled when wcpay_enable_shopper_tracking filter returns true. Got: ' . var_export( $result, true ) );
 	}
 
 	public function test_filter_has_priority_over_woocommerce_setting(): void {
@@ -131,11 +152,14 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		$is_account_connected = true;
 		$this->setup_woopay_environment( $is_woopay_eligible, $is_account_connected );
 
+		// Create a non-admin user for the test.
+		wp_set_current_user( $this->factory->user->create( [ 'role' => 'customer' ] ) );
+
 		// Set WooCommerce tracking to 'yes' but filter to false.
 		update_option( 'woocommerce_allow_tracking', 'yes' );
 		add_filter( 'wcpay_enable_shopper_tracking', '__return_false' );
 
-		$this->assertFalse( $this->tracker->should_enable_tracking(), 'Filter should take priority over WooCommerce setting' );
+		$this->assertFalse( $this->tracker->should_enable_tracking( false, true ), 'Filter should take priority over WooCommerce setting' );
 
 		// Clean up.
 		remove_filter( 'wcpay_enable_shopper_tracking', '__return_false' );
