@@ -48,6 +48,12 @@ module.exports = {
 		'<rootDir>/tests/e2e',
 		'<rootDir>/tests/qit/e2e',
 	],
+	modulePathIgnorePatterns: [
+		'<rootDir>/docker/',
+		'<rootDir>/vendor/',
+		'<rootDir>/.*/build/',
+		'<rootDir>/.*/build-module/',
+	],
 	watchPathIgnorePatterns: [
 		'/node_modules/',
 		'/vendor/',
