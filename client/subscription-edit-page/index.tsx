@@ -175,7 +175,7 @@ export const PaymentMethodSelect = ( {
 				);
 			}
 		} );
-	}, [ value, ajaxUrl, nonce ] );
+	}, [ ajaxUrl, nonce ] );
 
 	if ( userId <= 0 ) {
 		return (

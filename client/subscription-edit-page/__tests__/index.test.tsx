@@ -20,11 +20,7 @@ jest.mock( '@wordpress/i18n', () => ( {
 /**
  * Internal dependencies
  */
-import {
-	PaymentMethodSelect,
-	fetchUserTokens,
-	clearTokenCache,
-} from '../index';
+import { PaymentMethodSelect, fetchUserTokens, clearTokenCache } from '..';
 import type { Token } from '../types';
 
 describe( 'PaymentMethodSelect Component', () => {
