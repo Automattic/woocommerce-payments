@@ -1169,6 +1169,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			$payment_information = $this->prepare_payment_information( $order );
 			return $this->process_payment_for_order( WC()->cart, $payment_information );
 		} catch ( Exception $e ) {
+			// Log the exception.
+			Logger::exception( 'Error occurred during the payment process.', $e );
+
 			// We set this variable to be used in following checks.
 			$blocked_by_fraud_rules = $this->is_blocked_by_fraud_rules( $e );
 
@@ -2045,7 +2048,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				}
 			}
 		} catch ( Exception $e ) {
-			Logger::log( 'Error: ' . $e->getMessage() );
+			Logger::exception( 'Error occured during the redirect payment process.', $e );
 
 			$is_order_id_mismatched_exception =
 				$e instanceof Process_Payment_Exception
