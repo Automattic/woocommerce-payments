@@ -91,6 +91,9 @@ class WC_Payments_Apple_Pay_Registration {
 		// Listen to Apple Pay gateway settings changes for domain verification.
 		add_action( 'add_option_woocommerce_woocommerce_payments_apple_pay_settings', [ $this, 'verify_domain_on_new_settings' ], 10, 2 );
 		add_action( 'update_option_woocommerce_woocommerce_payments_apple_pay_settings', [ $this, 'verify_domain_on_updated_settings' ], 10, 2 );
+
+		// Also listen to main gateway settings changes, since it's a prerequisite for Apple Pay.
+		add_action( 'update_option_woocommerce_woocommerce_payments_settings', [ $this, 'verify_domain_on_updated_main_gateway_settings' ], 10, 2 );
 	}
 
 	/**
@@ -231,8 +234,23 @@ class WC_Payments_Apple_Pay_Registration {
 	 * @param array $settings      Settings after update.
 	 */
 	public function verify_domain_on_updated_settings( $prev_settings, $settings ) {
-		// If Gateway or Express Checkout Buttons weren't enabled, then might need to verify now.
+		// If Apple Pay wasn't enabled, then might need to verify now.
 		if ( ! $this->was_enabled( $prev_settings ) ) {
+			$this->verify_domain_if_configured();
+		}
+	}
+
+	/**
+	 * Conditionally process the Apple Pay domain verification after main gateway settings are updated.
+	 *
+	 * @param array $prev_settings Settings before update.
+	 * @param array $settings      Settings after update.
+	 */
+	public function verify_domain_on_updated_main_gateway_settings( $prev_settings, $settings ) {
+		$was_main_gateway_enabled = 'yes' === ( $prev_settings['enabled'] ?? 'no' );
+
+		// If main gateway wasn't enabled before, might need to verify now.
+		if ( ! $was_main_gateway_enabled ) {
 			$this->verify_domain_if_configured();
 		}
 	}
