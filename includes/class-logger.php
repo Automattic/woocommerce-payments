@@ -93,9 +93,9 @@ class Logger {
 	/**
 	 * Creates a log entry for exception
 	 *
-	 * @param string               $message message to prepend to an exception.
-	 * @param Throwable            $e       exception to log.
-	 * @param array<string, mixed> $context context data.
+	 * @param string               $message Message to prepend to an exception.
+	 * @param Throwable            $e       Exception to log.
+	 * @param array<string, mixed> $context Context data.
 	 */
 	public static function exception( $message, $e, $context = [] ) {
 		self::error(
