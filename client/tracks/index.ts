@@ -74,7 +74,7 @@ export const recordUserEvent = (
 	// Don't send tracking request if tracking is disabled on the server.
 	const enableShopperTracking =
 		getConfig( 'enableShopperTracking' ) ??
-		getExpressCheckoutConfig( 'enableShopperTracking' );
+		getExpressCheckoutConfig( 'enable_shopper_tracking' );
 	if ( enableShopperTracking === false ) {
 		return;
 	}
