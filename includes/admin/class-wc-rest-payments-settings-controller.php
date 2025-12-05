@@ -509,7 +509,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'account_branding_primary_color'         => $this->wcpay_gateway->get_option( 'account_branding_primary_color' ),
 				'account_branding_secondary_color'       => $this->wcpay_gateway->get_option( 'account_branding_secondary_color' ),
 				'account_domestic_currency'              => $this->wcpay_gateway->get_option( 'account_domestic_currency' ),
-				'is_payment_request_enabled'             => $this->get_is_payment_request_enabled(),
+				'is_payment_request_enabled'             => $this->wcpay_gateway->is_payment_request_enabled(),
 				'is_apple_google_pay_in_payment_methods_options_enabled' => 'yes' === $this->wcpay_gateway->get_option( 'apple_google_pay_in_payment_methods_options' ),
 				'is_debug_log_enabled'                   => 'yes' === $this->wcpay_gateway->get_option( 'enable_logging' ),
 				'payment_request_enabled_locations'      => $this->wcpay_gateway->get_option( 'payment_request_button_locations' ),
@@ -856,15 +856,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		}
 
 		return $this->wcpay_gateway->update_account_settings( $updated_fields );
-	}
-
-	/**
-	 * Gets the payment request enabled status.
-	 *
-	 * @return bool
-	 */
-	private function get_is_payment_request_enabled() {
-		return $this->wcpay_gateway->is_payment_request_enabled();
 	}
 
 	/**
