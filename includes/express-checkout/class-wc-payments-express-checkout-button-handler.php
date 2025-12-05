@@ -226,9 +226,10 @@ class WC_Payments_Express_Checkout_Button_Handler {
 			apply_filters(
 				'wcpay_express_checkout_js_params',
 				[
-					'ajax_url'           => admin_url( 'admin-ajax.php' ),
-					'wc_ajax_url'        => WC_AJAX::get_endpoint( '%%endpoint%%' ),
-					'nonce'              => [
+					'ajax_url'               => admin_url( 'admin-ajax.php' ),
+					'wc_ajax_url'            => WC_AJAX::get_endpoint( '%%endpoint%%' ),
+					'enableShopperTracking'  => apply_filters( 'wcpay_enable_shopper_tracking', true ) && 'no' !== get_option( 'woocommerce_allow_tracking' ),
+					'nonce'                  => [
 						'platform_tracker'             => wp_create_nonce( 'platform_tracks_nonce' ),
 						// needed to communicate via the Store API.
 						'tokenized_cart_nonce'         => wp_create_nonce( 'woopayments_tokenized_cart_nonce' ),
