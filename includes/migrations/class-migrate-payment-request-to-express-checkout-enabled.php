@@ -16,7 +16,7 @@ defined( 'ABSPATH' ) || exit;
  *
  * Migrates the payment_request setting to Google Pay and Apple Pay enabled settings.
  *
- * @since 10.3.0
+ * @since 10.4.0
  */
 class Migrate_Payment_Request_To_Express_Checkout_Enabled {
 
