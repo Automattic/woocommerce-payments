@@ -60,15 +60,8 @@ class Migrate_Payment_Request_To_Express_Checkout_Enabled {
 	private function migrate( $card_settings ) {
 		$payment_request_enabled = ( $card_settings['payment_request'] ?? 'no' ) === 'yes' ? 'yes' : 'no';
 
-		$google_pay_gateway = WC_Payments::get_payment_gateway_by_id( 'google_pay' );
-		if ( $google_pay_gateway ) {
-			$google_pay_gateway->update_option( 'enabled', $payment_request_enabled );
-		}
-
-		$apple_pay_gateway = WC_Payments::get_payment_gateway_by_id( 'apple_pay' );
-		if ( $apple_pay_gateway ) {
-			$apple_pay_gateway->update_option( 'enabled', $payment_request_enabled );
-		}
+		update_option( 'woocommerce_woocommerce_payments_apple_pay_settings', [ 'enabled' => $payment_request_enabled ], true );
+		update_option( 'woocommerce_woocommerce_payments_google_pay_settings', [ 'enabled' => $payment_request_enabled ], true );
 
 		unset( $card_settings['payment_request'] );
 		update_option( 'woocommerce_woocommerce_payments_settings', $card_settings );

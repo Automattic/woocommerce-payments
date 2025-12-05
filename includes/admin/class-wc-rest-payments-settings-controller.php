@@ -871,8 +871,8 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$is_payment_request_enabled = $request->get_param( 'is_payment_request_enabled' );
 
 		// Update Google Pay and Apple Pay enabled settings to keep them in sync.
-		$google_pay_gateway = WC_Payments::get_payment_gateway_by_id( 'google_pay' );
-		$apple_pay_gateway  = WC_Payments::get_payment_gateway_by_id( 'apple_pay' );
+		$google_pay_gateway = WC_Payments::get_payment_gateway_by_id( \WCPay\PaymentMethods\Configs\Definitions\GooglePayDefinition::get_id() );
+		$apple_pay_gateway  = WC_Payments::get_payment_gateway_by_id( \WCPay\PaymentMethods\Configs\Definitions\ApplePayDefinition::get_id() );
 		if ( $is_payment_request_enabled ) {
 			if ( $google_pay_gateway ) {
 				$google_pay_gateway->enable();

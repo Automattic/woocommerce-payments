@@ -943,13 +943,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool Whether the setting to show the payment request buttons is enabled or not.
 	 */
 	public function is_payment_request_enabled() {
-		$google_pay_gateway = WC_Payments::get_payment_gateway_by_id( 'google_pay' );
+		$google_pay_gateway = WC_Payments::get_payment_gateway_by_id( \WCPay\PaymentMethods\Configs\Definitions\GooglePayDefinition::get_id() );
 		if ( $google_pay_gateway && $google_pay_gateway->is_enabled() ) {
 			return true;
 		}
 
 		// Fallback, just in case.
-		$apple_pay_gateway = WC_Payments::get_payment_gateway_by_id( 'apple_pay' );
+		$apple_pay_gateway = WC_Payments::get_payment_gateway_by_id( \WCPay\PaymentMethods\Configs\Definitions\ApplePayDefinition::get_id() );
 		if ( $apple_pay_gateway && $apple_pay_gateway->is_enabled() ) {
 			return true;
 		}
