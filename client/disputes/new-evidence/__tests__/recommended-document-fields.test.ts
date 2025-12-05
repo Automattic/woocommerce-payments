@@ -161,14 +161,14 @@ describe( 'Recommended Documents', () => {
 			).toBeUndefined();
 		} );
 
-		it( 'should return fields for duplicate reason with is_duplicate status', () => {
-			// Duplicate-specific fields require the feature flag to be enabled
+		it( 'should return matrix fields for duplicate + booking_reservation + is_duplicate', () => {
 			global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
 			const fields = getRecommendedDocumentFields(
 				'duplicate',
 				undefined,
-				'is_duplicate'
+				'is_duplicate',
+				'booking_reservation'
 			);
 			expect( fields ).toHaveLength( 3 );
 			expect( fields[ 0 ].key ).toBe( 'receipt' );
@@ -182,14 +182,14 @@ describe( 'Recommended Documents', () => {
 			expect( fields[ 2 ].label ).toBe( 'Refund policy' );
 		} );
 
-		it( 'should return fields for duplicate reason with is_not_duplicate status', () => {
-			// Duplicate-specific fields require the feature flag to be enabled
+		it( 'should return matrix fields for duplicate + booking_reservation + is_not_duplicate', () => {
 			global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
 			const fields = getRecommendedDocumentFields(
 				'duplicate',
 				undefined,
-				'is_not_duplicate'
+				'is_not_duplicate',
+				'booking_reservation'
 			);
 			expect( fields ).toHaveLength( 5 );
 			expect( fields[ 0 ].key ).toBe( 'receipt' );
@@ -366,48 +366,7 @@ describe( 'Recommended Documents', () => {
 				expect( result[ 1 ].label ).toBe( 'Order details' );
 			} );
 
-			it( 'should return matrix fields for duplicate + booking_reservation + is_duplicate when feature flag is enabled', () => {
-				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
-
-				const result = getRecommendedDocumentFields(
-					'duplicate',
-					undefined,
-					'is_duplicate',
-					'booking_reservation'
-				);
-
-				// Matrix entry for duplicate + booking_reservation + is_duplicate (Scenario A)
-				expect( result ).toHaveLength( 3 );
-				expect( result[ 0 ].key ).toBe( 'receipt' );
-				expect( result[ 0 ].label ).toBe( 'Order receipt' );
-				expect( result[ 1 ].key ).toBe( 'uncategorized_file' ); // Refund receipt
-				expect( result[ 1 ].label ).toBe( 'Refund receipt' );
-				expect( result[ 2 ].key ).toBe( 'refund_policy' );
-			} );
-
-			it( 'should return matrix fields for duplicate + booking_reservation + is_not_duplicate when feature flag is enabled', () => {
-				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
-
-				const result = getRecommendedDocumentFields(
-					'duplicate',
-					undefined,
-					'is_not_duplicate',
-					'booking_reservation'
-				);
-
-				// Matrix entry for duplicate + booking_reservation + is_not_duplicate (Scenario B)
-				expect( result ).toHaveLength( 5 );
-				expect( result[ 0 ].key ).toBe( 'receipt' );
-				expect( result[ 1 ].key ).toBe(
-					'duplicate_charge_documentation'
-				);
-				expect( result[ 1 ].label ).toBe( 'Any additional receipts' );
-				expect( result[ 2 ].key ).toBe( 'customer_communication' );
-				expect( result[ 3 ].key ).toBe( 'refund_policy' );
-				expect( result[ 4 ].key ).toBe( 'uncategorized_file' );
-			} );
-
-			it( 'should fall back to default duplicate fields for physical_product when feature flag is enabled', () => {
+			it( 'should fall back to trunk duplicate fields for physical_product when feature flag is enabled', () => {
 				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 
 				const result = getRecommendedDocumentFields(
@@ -417,11 +376,14 @@ describe( 'Recommended Documents', () => {
 					'physical_product'
 				);
 
-				// Should fall back to default duplicate fields since no matrix entry for physical_product
-				expect( result ).toHaveLength( 3 );
+				// Should fall back to trunk duplicate fields since no matrix entry for physical_product
+				expect( result ).toHaveLength( 6 );
 				expect( result[ 0 ].key ).toBe( 'receipt' );
-				expect( result[ 1 ].key ).toBe( 'uncategorized_file' ); // Refund receipt
-				expect( result[ 2 ].key ).toBe( 'refund_policy' );
+				expect( result[ 1 ].key ).toBe( 'customer_communication' );
+				expect( result[ 2 ].key ).toBe( 'access_activity_log' );
+				expect( result[ 3 ].key ).toBe( 'refund_policy' );
+				expect( result[ 4 ].key ).toBe( 'cancellation_policy' );
+				expect( result[ 5 ].key ).toBe( 'uncategorized_file' );
 			} );
 		} );
 	} );

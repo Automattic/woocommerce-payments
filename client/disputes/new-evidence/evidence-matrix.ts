@@ -32,9 +32,8 @@ type EvidenceMatrix = {
 const getDuplicateMatrix = (): {
 	[ key: string ]: Array< RecommendedDocument >;
 } => ( {
-	// Default - It was a duplicate (Scenario A)
-	// Used for all product types unless a specific override exists
-	default__is_duplicate: [
+	// Booking/Reservation - It was a duplicate (Scenario A)
+	booking_reservation__is_duplicate: [
 		{
 			key: DOCUMENT_FIELD_KEYS.RECEIPT,
 			label: __( 'Order receipt', 'woocommerce-payments' ),
@@ -63,9 +62,8 @@ const getDuplicateMatrix = (): {
 			order: 20,
 		},
 	],
-	// Default - It was not a duplicate (Scenario B)
-	// Used for all product types unless a specific override exists
-	default__is_not_duplicate: [
+	// Booking/Reservation - It was not a duplicate (Scenario B)
+	booking_reservation__is_not_duplicate: [
 		{
 			key: DOCUMENT_FIELD_KEYS.RECEIPT,
 			label: __( 'Order receipt', 'woocommerce-payments' ),
@@ -279,11 +277,7 @@ export const getMatrixFields = (
 	// For duplicate disputes, use composite key with status
 	if ( reason === 'duplicate' && status ) {
 		const compositeKey = `${ productType }__${ status }`;
-		// Try product-specific entry first, then fall back to default
-		return (
-			evidenceMatrix[ reason ]?.[ compositeKey ] ??
-			evidenceMatrix[ reason ]?.[ `default__${ status }` ]
-		);
+		return evidenceMatrix[ reason ]?.[ compositeKey ];
 	}
 
 	// Return the matrix entry for the specific productType, or undefined if not found
