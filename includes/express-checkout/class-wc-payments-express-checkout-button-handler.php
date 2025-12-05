@@ -236,7 +236,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 						'tokenized_cart_session_nonce' => wp_create_nonce( 'woopayments_tokenized_cart_session_nonce' ),
 						'store_api_nonce'              => wp_create_nonce( 'wc_store_api' ),
 					],
-					'checkout'           => [
+					'checkout'                => [
 						'currency_code'              => strtolower( get_woocommerce_currency() ),
 						'currency_decimals'          => WC_Payments::get_localization_service()->get_currency_format( get_woocommerce_currency() )['num_decimals'],
 						'country_code'               => substr( get_option( 'woocommerce_default_country' ), 0, 2 ),
@@ -246,12 +246,12 @@ class WC_Payments_Express_Checkout_Button_Handler {
 						'allowed_shipping_countries' => array_keys( WC()->countries->get_shipping_countries() ?? [] ),
 						'display_prices_with_tax'    => 'incl' === get_option( 'woocommerce_tax_display_cart' ),
 					],
-					'button'             => $this->get_button_settings(),
-					'login_confirmation' => $this->get_login_confirmation_settings(),
-					'button_context'     => $this->express_checkout_helper->get_button_context(),
-					'has_block'          => has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ),
-					'product'            => $this->express_checkout_helper->get_product_data(),
-					'store_name'         => get_bloginfo( 'name' ),
+					'button'                  => $this->get_button_settings(),
+					'login_confirmation'      => $this->get_login_confirmation_settings(),
+					'button_context'          => $this->express_checkout_helper->get_button_context(),
+					'has_block'               => has_block( 'woocommerce/cart' ) || has_block( 'woocommerce/checkout' ),
+					'product'                 => $this->express_checkout_helper->get_product_data(),
+					'store_name'              => get_bloginfo( 'name' ),
 				]
 			),
 			[

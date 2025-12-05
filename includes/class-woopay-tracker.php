@@ -223,7 +223,9 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		}
 
 		// Respect WooCommerce global tracking opt-out setting.
-		if ( 'no' === get_option( 'woocommerce_allow_tracking' ) ) {
+		// Only disable if explicitly set to 'no' (not false, null, or empty).
+		$allow_tracking = get_option( 'woocommerce_allow_tracking', '' );
+		if ( 'no' === $allow_tracking ) {
 			return false;
 		}
 
