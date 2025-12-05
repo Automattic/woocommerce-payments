@@ -263,9 +263,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		// 4. Otherwise, track only when WooPay is active.
 
 		// Track only site pages.
-		// Allow tests to bypass this check via filter.
-		$is_admin_page = apply_filters( 'wcpay_tracker_is_admin_page', is_admin() && ! wp_doing_ajax() );
-		if ( $is_admin_page ) {
+		if ( is_admin() && ! wp_doing_ajax() ) {
 			return false;
 		}
 
