@@ -1442,7 +1442,7 @@ class WC_Payments_Onboarding_Service {
 		// Update Apple/Google Pay gateway enabled state.
 		$google_pay_gateway = WC_Payments::get_payment_gateway_by_id( \WCPay\PaymentMethods\Configs\Definitions\GooglePayDefinition::get_id() );
 		$apple_pay_gateway  = WC_Payments::get_payment_gateway_by_id( \WCPay\PaymentMethods\Configs\Definitions\ApplePayDefinition::get_id() );
-		if ( ! empty( $capabilities['apple_google'] ) || ! empty( $capabilities['apple_pay'] ) ) {
+		if ( ! empty( $capabilities['apple_google'] ) || ( ! empty( $capabilities['apple_pay'] ) || ! empty( $capabilities['google_pay'] ) ) ) {
 			if ( $apple_pay_gateway ) {
 				$apple_pay_gateway->enable();
 			}
