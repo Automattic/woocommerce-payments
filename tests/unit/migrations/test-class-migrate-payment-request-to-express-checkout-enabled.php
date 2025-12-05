@@ -67,8 +67,11 @@ class Migrate_Payment_Request_To_Express_Checkout_Enabled_Test extends WCPAY_Uni
 		parent::tear_down();
 	}
 
-	public function test_it_does_nothing_if_version_is_10_4_0_or_higher() {
-		update_option( 'woocommerce_woocommerce_payments_version', '10.4.0' );
+	/**
+	 * @dataProvider versions_that_should_skip_migration_provider
+	 */
+	public function test_it_does_nothing_if_version_is_10_4_0_or_higher( string $stored_version ) {
+		update_option( 'woocommerce_woocommerce_payments_version', $stored_version );
 		update_option( 'woocommerce_woocommerce_payments_settings', [ 'payment_request' => 'yes' ] );
 		$this->mock_get_payment_gateway_by_id();
 
@@ -79,6 +82,15 @@ class Migrate_Payment_Request_To_Express_Checkout_Enabled_Test extends WCPAY_Uni
 
 		$settings = get_option( 'woocommerce_woocommerce_payments_settings', [] );
 		$this->assertArrayHasKey( 'payment_request', $settings );
+	}
+
+	public function versions_that_should_skip_migration_provider(): array {
+		return [
+			'same version'        => [ '10.4.0' ],
+			'newer patch version' => [ '10.4.1' ],
+			'newer minor version' => [ '10.5.0' ],
+			'newer major version' => [ '11.0.0' ],
+		];
 	}
 
 	public function test_it_does_nothing_if_payment_request_setting_does_not_exist() {
