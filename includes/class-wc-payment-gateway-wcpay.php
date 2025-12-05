@@ -920,9 +920,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		// Disable the gateway if it should not be displayed on the checkout page.
-		$is_gateway_enabled = in_array( $this->stripe_id, $this->get_payment_method_ids_enabled_at_checkout(), true ) ? true : false;
-		if ( ! $is_gateway_enabled ) {
-			return false;
+		// Google Pay and Apple Pay are express payment methods with their own enabled settings,
+		// so they don't need to be in the upe_enabled_payment_method_ids list.
+		$is_express_payment_method = in_array( $this->stripe_id, [ 'google_pay', 'apple_pay' ], true );
+		if ( ! $is_express_payment_method ) {
+			$is_gateway_enabled = in_array( $this->stripe_id, $this->get_payment_method_ids_enabled_at_checkout(), true ) ? true : false;
+			if ( ! $is_gateway_enabled ) {
+				return false;
+			}
 		}
 
 		return parent::is_available() && ! $this->needs_setup();
@@ -957,7 +962,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool Whether the setting to show the payment request buttons is enabled or not.
 	 */
 	public function is_payment_request_enabled() {
-		return 'yes' === $this->get_option( 'payment_request' );
+		// Check Google Pay gateway first.
+		$google_pay_gateway = WC_Payments::get_payment_gateway_by_id( 'google_pay' );
+		if ( $google_pay_gateway && $google_pay_gateway->is_enabled() ) {
+			return true;
+		}
+
+		// Fallback to Apple Pay gateway.
+		$apple_pay_gateway = WC_Payments::get_payment_gateway_by_id( 'apple_pay' );
+		if ( $apple_pay_gateway && $apple_pay_gateway->is_enabled() ) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/**

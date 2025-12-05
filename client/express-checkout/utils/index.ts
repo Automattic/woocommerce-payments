@@ -16,6 +16,7 @@ declare let window: MyWindow;
  */
 export interface WCPayExpressCheckoutParams {
 	ajax_url: string;
+	store_name: string;
 
 	/**
 	 * Express Checkout Button style configuration.
@@ -39,6 +40,7 @@ export interface WCPayExpressCheckoutParams {
 		needs_payer_phone: boolean;
 		needs_shipping: boolean;
 		currency_decimals: number;
+		allowed_shipping_countries: string[];
 	};
 
 	/**
@@ -131,6 +133,7 @@ type ExpressPaymentType =
 	| 'google_pay'
 	| 'amazon_pay'
 	| 'paypal'
+	| 'klarna'
 	| 'link';
 
 /**
@@ -153,6 +156,7 @@ export const displayLoginConfirmation = (
 		amazon_pay: 'Amazon Pay',
 		paypal: 'PayPal',
 		link: 'Link',
+		klarna: 'Klarna',
 	};
 	let message = loginConfirmation.message;
 
