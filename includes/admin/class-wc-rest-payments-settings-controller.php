@@ -92,7 +92,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'args'                => [
 					'is_wcpay_enabled'                     => [
 						'description'       => sprintf(
-						/* translators: %s: WooPayments */
+							/* translators: %s: WooPayments */
 							__( 'If %s should be enabled.', 'woocommerce-payments' ),
 							'WooPayments'
 						),
@@ -119,7 +119,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 					],
 					'is_saved_cards_enabled'               => [
 						'description'       => sprintf(
-						/* translators: %s: WooPayments */
+							/* translators: %s: WooPayments */
 							__( 'If %s "Saved cards" should be enabled.', 'woocommerce-payments' ),
 							'WooPayments'
 						),
@@ -128,7 +128,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 					],
 					'is_test_mode_enabled'                 => [
 						'description'       => sprintf(
-						/* translators: %s: WooPayments */
+							/* translators: %s: WooPayments */
 							__( '%s test mode setting.', 'woocommerce-payments' ),
 							'WooPayments'
 						),
@@ -137,7 +137,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 					],
 					'is_multi_currency_enabled'            => [
 						'description'       => sprintf(
-						/* translators: %s: WooPayments */
+							/* translators: %s: WooPayments */
 							__( '%s Multi-Currency feature flag setting.', 'woocommerce-payments' ),
 							'WooPayments'
 						),
@@ -146,7 +146,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 					],
 					'is_wcpay_subscriptions_enabled'       => [
 						'description'       => sprintf(
-						/* translators: %s: WooPayments */
+							/* translators: %s: WooPayments */
 							__( '%s Subscriptions feature flag setting.', 'woocommerce-payments' ),
 							'WooPayments'
 						),
@@ -155,7 +155,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 					],
 					'account_statement_descriptor'         => [
 						'description'       => sprintf(
-						/* translators: %s: WooPayments */
+							/* translators: %s: WooPayments */
 							__( '%s bank account descriptor to be displayed in customers\' bank accounts.', 'woocommerce-payments' ),
 							'WooPayments'
 						),
@@ -215,7 +215,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 					],
 					'is_payment_request_enabled'           => [
 						'description'       => sprintf(
-						/* translators: %s: WooPayments */
+							/* translators: %s: WooPayments */
 							__( 'If %s express checkouts should be enabled.', 'woocommerce-payments' ),
 							'WooPayments'
 						),
@@ -720,7 +720,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	/**
 	 * Requests the capabilities of unrequested payment methods
 	 *
-	 * @param array $payment_method_ids_to_enable Enabled Payment method ID's.
+	 * @param   array $payment_method_ids_to_enable  Enabled Payment method ID's.
 	 *
 	 * @return  void
 	 */
@@ -840,7 +840,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	private function update_account( WP_REST_Request $request ) {
 		$updated_fields_callback = function ( $value, string $key ) {
 			return array_key_exists( $key, WC_Payment_Gateway_WCPay::ACCOUNT_SETTINGS_MAPPING ) &&
-					$this->wcpay_gateway->get_option( $key ) !== $value;
+				$this->wcpay_gateway->get_option( $key ) !== $value;
 		};
 		// Filter out fields that are unchanged or not in the list of fields to update.
 		$updated_fields = array_filter( $request->get_params(), $updated_fields_callback, ARRAY_FILTER_USE_BOTH );
@@ -1158,7 +1158,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	 *
 	 * @todo This is a duplicate of the one in the WC_Payments_Account and WC_Payments_Onboarding_Service classes.
 	 *
-	 * @param string $name The event name.
+	 * @param string $name       The event name.
 	 * @param array  $properties Optional. The event custom properties.
 	 *
 	 * @return void
