@@ -57,11 +57,28 @@ class Migrate_Payment_Request_To_Express_Checkout_Enabled_Test extends WCPAY_Uni
 			->getMock();
 
 		$this->migration = new Migrate_Payment_Request_To_Express_Checkout_Enabled();
+
+		update_option( 'woocommerce_woocommerce_payments_version', '10.3.0' );
 	}
 
 	public function tear_down() {
 		$this->set_payment_gateway_map( $this->original_payment_gateway_map );
+		delete_option( 'woocommerce_woocommerce_payments_version' );
 		parent::tear_down();
+	}
+
+	public function test_it_does_nothing_if_version_is_10_4_0_or_higher() {
+		update_option( 'woocommerce_woocommerce_payments_version', '10.4.0' );
+		update_option( 'woocommerce_woocommerce_payments_settings', [ 'payment_request' => 'yes' ] );
+		$this->mock_get_payment_gateway_by_id();
+
+		$this->google_pay_gateway_mock->expects( $this->never() )->method( 'update_option' );
+		$this->apple_pay_gateway_mock->expects( $this->never() )->method( 'update_option' );
+
+		$this->migration->maybe_migrate();
+
+		$settings = get_option( 'woocommerce_woocommerce_payments_settings', [] );
+		$this->assertArrayHasKey( 'payment_request', $settings );
 	}
 
 	public function test_it_does_nothing_if_payment_request_setting_does_not_exist() {
@@ -176,8 +193,6 @@ class Migrate_Payment_Request_To_Express_Checkout_Enabled_Test extends WCPAY_Uni
 	}
 
 	/**
-	 * Mock WC_Payments::get_payment_gateway_by_id to return gateway mocks.
-	 *
 	 * @param bool $has_google_pay Whether Google Pay gateway should be available.
 	 * @param bool $has_apple_pay  Whether Apple Pay gateway should be available.
 	 */

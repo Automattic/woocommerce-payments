@@ -14,48 +14,62 @@ defined( 'ABSPATH' ) || exit;
 /**
  * Class Migrate_Payment_Request_To_Express_Checkout_Enabled
  *
- * Migrates the payment_request setting to Google Pay and Apple Pay enabled settings.
+ * In PR #11144, Google Pay and Apple Pay were split into individual payment gateways.
+ * In PR #11182, the `payment_request` setting on the card gateway was replaced with
+ * individual `enabled` settings on each of the new gateways.
  *
+ * This migration transfers the old `payment_request` value to the new gateway settings
+ * and removes it from the card gateway.
+ *
+ * @see https://github.com/Automattic/woocommerce-payments/pull/11144
+ * @see https://github.com/Automattic/woocommerce-payments/pull/11182
  * @since 10.4.0
  */
 class Migrate_Payment_Request_To_Express_Checkout_Enabled {
 
 	/**
-	 * Execute the migration if the payment_request setting exists.
+	 * Version in which this migration was introduced.
+	 *
+	 * @var string
+	 */
+	const VERSION_SINCE = '10.4.0';
+
+	/**
+	 * Execute the migration if upgrading from a version before 10.4.0
+	 * and the payment_request setting exists.
 	 */
 	public function maybe_migrate() {
-		// Get card gateway's settings.
-		$card_settings = get_option( 'woocommerce_woocommerce_payments_settings', [] );
+		$previous_version = get_option( 'woocommerce_woocommerce_payments_version' );
+		if ( version_compare( self::VERSION_SINCE, $previous_version, '<=' ) ) {
+			return;
+		}
 
-		// Check if payment_request setting exists (indicates migration not yet done).
+		$card_settings = get_option( 'woocommerce_woocommerce_payments_settings', [] );
 		if ( ! isset( $card_settings['payment_request'] ) ) {
 			return;
 		}
 
-		$this->migrate();
+		$this->migrate( $card_settings );
 	}
 
 	/**
 	 * Does the actual migration as described in the class docblock.
+	 *
+	 * @param array $card_settings The card gateway settings.
 	 */
-	private function migrate() {
-		// Get card gateway's settings.
-		$card_settings           = get_option( 'woocommerce_woocommerce_payments_settings', [] );
+	private function migrate( $card_settings ) {
 		$payment_request_enabled = ( $card_settings['payment_request'] ?? 'no' ) === 'yes' ? 'yes' : 'no';
 
-		// Update Google Pay enabled setting.
 		$google_pay_gateway = WC_Payments::get_payment_gateway_by_id( 'google_pay' );
 		if ( $google_pay_gateway ) {
 			$google_pay_gateway->update_option( 'enabled', $payment_request_enabled );
 		}
 
-		// Update Apple Pay enabled setting.
 		$apple_pay_gateway = WC_Payments::get_payment_gateway_by_id( 'apple_pay' );
 		if ( $apple_pay_gateway ) {
 			$apple_pay_gateway->update_option( 'enabled', $payment_request_enabled );
 		}
 
-		// Delete the payment_request setting from card gateway.
 		unset( $card_settings['payment_request'] );
 		update_option( 'woocommerce_woocommerce_payments_settings', $card_settings );
 	}
