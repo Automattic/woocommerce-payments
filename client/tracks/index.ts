@@ -2,6 +2,7 @@
  * External dependencies
  */
 import domReady from '@wordpress/dom-ready';
+import { debounce } from 'lodash';
 
 /**
  * Internal dependencies
@@ -9,6 +10,17 @@ import domReady from '@wordpress/dom-ready';
 import { MerchantEvent, ShopperEvent } from './event';
 import { getConfig } from 'wcpay/utils/checkout';
 import { getExpressCheckoutConfig } from 'wcpay/utils/express-checkout';
+
+/**
+ * Event queue for batching.
+ */
+interface QueuedEvent {
+	event: string;
+	properties: Record< string, unknown >;
+	timestamp: number;
+}
+
+const eventQueue: QueuedEvent[] = [];
 
 /**
  * Checks if site tracking is enabled.
@@ -60,6 +72,56 @@ export const recordEvent = (
 };
 
 /**
+ * Flush the event queue by sending all queued events in a single batch request.
+ */
+const flushEventQueue = (): void => {
+	if ( eventQueue.length === 0 ) {
+		return;
+	}
+
+	const nonce =
+		getConfig( 'platformTrackerNonce' ) ??
+		getExpressCheckoutConfig( 'nonce' )?.platform_tracker;
+	const ajaxUrl =
+		getConfig( 'ajaxUrl' ) ?? getExpressCheckoutConfig( 'ajax_url' );
+
+	// Create a copy of the queue and clear it immediately.
+	const eventsToSend = [ ...eventQueue ];
+	eventQueue.length = 0;
+
+	const body = new FormData();
+	body.append( 'tracksNonce', nonce );
+	body.append( 'action', 'platform_tracks_batch' );
+	body.append( 'tracksEvents', JSON.stringify( eventsToSend ) );
+
+	fetch( ajaxUrl, {
+		method: 'post',
+		body,
+	} ).catch( ( error ) => {
+		// Silently fail - tracking should not break the user experience.
+		// eslint-disable-next-line no-console
+		console.error( 'Failed to send tracking events:', error );
+	} );
+};
+
+/**
+ * Debounced flush function - waits 2 seconds of inactivity before flushing.
+ * This allows batching multiple rapid events together.
+ */
+const debouncedFlush = debounce( flushEventQueue, 2000 );
+
+/**
+ * Flush events on page unload to ensure they're sent.
+ */
+if ( typeof window !== 'undefined' ) {
+	window.addEventListener( 'beforeunload', () => {
+		// Cancel debounced flush and flush immediately.
+		debouncedFlush.cancel();
+		flushEventQueue();
+	} );
+}
+
+/**
  * Records events from buyers (aka shoppers).
  *
  * Event names will be prefixed with 'wcpay_' when recorded.
@@ -71,21 +133,15 @@ export const recordUserEvent = (
 	eventName: ShopperEvent,
 	eventProperties: Record< string, unknown > = {}
 ): void => {
-	const nonce =
-		getConfig( 'platformTrackerNonce' ) ??
-		getExpressCheckoutConfig( 'nonce' )?.platform_tracker;
-	const ajaxUrl =
-		getConfig( 'ajaxUrl' ) ?? getExpressCheckoutConfig( 'ajax_url' );
-	const body = new FormData();
+	// Add event to queue with current timestamp.
+	eventQueue.push( {
+		event: eventName,
+		properties: eventProperties,
+		timestamp: Date.now(),
+	} );
 
-	body.append( 'tracksNonce', nonce );
-	body.append( 'action', 'platform_tracks' );
-	body.append( 'tracksEventName', eventName );
-	body.append( 'tracksEventProp', JSON.stringify( eventProperties ) );
-	fetch( ajaxUrl, {
-		method: 'post',
-		body,
-	} ).then( ( response ) => response.json() );
+	// Trigger debounced flush.
+	debouncedFlush();
 };
 
 /**

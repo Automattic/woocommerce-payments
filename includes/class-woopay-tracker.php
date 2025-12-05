@@ -61,6 +61,8 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 
 		add_action( 'wp_ajax_platform_tracks', [ $this, 'ajax_tracks' ] );
 		add_action( 'wp_ajax_nopriv_platform_tracks', [ $this, 'ajax_tracks' ] );
+		add_action( 'wp_ajax_platform_tracks_batch', [ $this, 'ajax_tracks_batch' ] );
+		add_action( 'wp_ajax_nopriv_platform_tracks_batch', [ $this, 'ajax_tracks_batch' ] );
 		add_action( 'wp_ajax_get_identity', [ $this, 'ajax_tracks_id' ] );
 		add_action( 'wp_ajax_nopriv_get_identity', [ $this, 'ajax_tracks_id' ] );
 
@@ -111,6 +113,64 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		$this->maybe_record_event( sanitize_text_field( wp_unslash( $_REQUEST['tracksEventName'] ) ), $tracks_data );
 
 		wp_send_json_success();
+	}
+
+	/**
+	 * Handle batch tracking events from frontend.
+	 * Processes multiple events in a single request to reduce server load.
+	 */
+	public function ajax_tracks_batch() {
+		// Check for nonce.
+		if (
+			// phpcs:ignore WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+			empty( $_REQUEST['tracksNonce'] ) || ! wp_verify_nonce( $_REQUEST['tracksNonce'], 'platform_tracks_nonce' )
+		) {
+			wp_send_json_error(
+				__( 'You aren't authorized to do that.', 'woocommerce-payments' ),
+				403
+			);
+		}
+
+		if ( ! isset( $_REQUEST['tracksEvents'] ) ) {
+			wp_send_json_error(
+				__( 'No events provided.', 'woocommerce-payments' ),
+				400
+			);
+		}
+
+		// tracksEvents is a JSON-encoded array of events.
+		$events = json_decode( wc_clean( wp_unslash( $_REQUEST['tracksEvents'] ) ), true );
+		if ( ! is_array( $events ) ) {
+			wp_send_json_error(
+				__( 'Invalid events format.', 'woocommerce-payments' ),
+				400
+			);
+		}
+
+		$recorded_count = 0;
+		foreach ( $events as $event ) {
+			if ( ! isset( $event['event'] ) ) {
+				continue;
+			}
+
+			$event_name       = sanitize_text_field( $event['event'] );
+			$event_properties = isset( $event['properties'] ) && is_array( $event['properties'] ) ? $event['properties'] : [];
+
+			// If client provided a timestamp, preserve it.
+			if ( isset( $event['timestamp'] ) ) {
+				$event_properties['_client_ts'] = absint( $event['timestamp'] );
+			}
+
+			$this->maybe_record_event( $event_name, $event_properties );
+			$recorded_count++;
+		}
+
+		wp_send_json_success(
+			[
+				'recorded' => $recorded_count,
+				'total'    => count( $events ),
+			]
+		);
 	}
 
 	/**
@@ -368,7 +428,13 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 			'blog_lang' => isset( $properties['blog_lang'] ) ? $properties['blog_lang'] : get_bloginfo( 'language' ),
 		];
 
-		$timestamp        = round( microtime( true ) * 1000 );
+		// Use client-provided timestamp if available, otherwise use server time.
+		if ( isset( $properties['_client_ts'] ) ) {
+			$timestamp = $properties['_client_ts'];
+			unset( $properties['_client_ts'] ); // Remove from properties to avoid duplication.
+		} else {
+			$timestamp = round( microtime( true ) * 1000 );
+		}
 		$timestamp_string = is_string( $timestamp ) ? $timestamp : number_format( $timestamp, 0, '', '' );
 
 		/**

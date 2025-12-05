@@ -142,6 +142,31 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		delete_option( 'woocommerce_allow_tracking' );
 	}
 
+	public function test_ajax_tracks_batch_validates_nonce(): void {
+		$_REQUEST['tracksNonce'] = 'invalid_nonce';
+		$_REQUEST['tracksEvents'] = '[]';
+
+		// Expect JSON error response.
+		$this->expectException( \WPDieException::class );
+		$this->tracker->ajax_tracks_batch();
+	}
+
+	public function test_ajax_tracks_batch_requires_events(): void {
+		$_REQUEST['tracksNonce'] = wp_create_nonce( 'platform_tracks_nonce' );
+		// Missing tracksEvents parameter.
+
+		$this->expectException( \WPDieException::class );
+		$this->tracker->ajax_tracks_batch();
+	}
+
+	public function test_ajax_tracks_batch_validates_events_format(): void {
+		$_REQUEST['tracksNonce'] = wp_create_nonce( 'platform_tracks_nonce' );
+		$_REQUEST['tracksEvents'] = 'not valid json';
+
+		$this->expectException( \WPDieException::class );
+		$this->tracker->ajax_tracks_batch();
+	}
+
 	public function test_tracks_build_event_obj_for_admin_events(): void {
 		$this->set_account_connected( true );
 		$event_name = 'wcadmin_test_event';
