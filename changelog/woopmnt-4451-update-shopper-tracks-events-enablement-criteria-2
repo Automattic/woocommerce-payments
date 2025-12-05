@@ -1,0 +1,4 @@
+Significance: minor
+Type: update
+
+Implement request batching for shopper tracking events.
