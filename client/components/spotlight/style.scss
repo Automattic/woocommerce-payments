@@ -1,0 +1,187 @@
+/** @format */
+
+.wcpay-spotlight {
+	position: fixed;
+	bottom: $gap-large;
+	right: $gap-large;
+	z-index: 999;
+	width: 300px;
+	opacity: 0;
+	transform: translateX( 100% );
+	transition: opacity 0.3s ease-out, transform 0.3s ease-out;
+	font-family: 'SF Pro Display', $default-font;
+
+	&--visible {
+		opacity: 1;
+		transform: translateX( 0 );
+	}
+
+	@media screen and ( max-width: 782px ) {
+		right: 0;
+		left: 0;
+		bottom: 0;
+		width: 100%;
+
+		.wcpay-spotlight__card {
+			margin: 0;
+
+			&.components-card {
+				border-radius: 0;
+			}
+		}
+	}
+
+	@media ( prefers-reduced-motion: reduce ) {
+		transition: none;
+	}
+}
+
+.wcpay-spotlight__container {
+	width: 100%;
+}
+
+.wcpay-spotlight__card {
+	margin: 0;
+	position: relative;
+	overflow: hidden;
+
+	// Override WordPress Card component border-radius
+	&.components-card {
+		border-radius: $radius-medium;
+		box-shadow: $elevation-medium;
+	}
+
+	&.has-image {
+		.wcpay-spotlight__header {
+			position: absolute;
+			top: 0;
+			right: 0;
+			width: 100%;
+			z-index: 1;
+			background: transparent;
+		}
+
+		.wcpay-spotlight__image {
+			padding: 0;
+		}
+	}
+}
+
+.wcpay-spotlight__header {
+	padding: $gap-small $gap-small 0;
+
+	&.components-card__header {
+		border-radius: $radius-medium $radius-medium 0 0;
+	}
+
+	// Reset margins for badge/heading when in header
+	.wcpay-spotlight__badge,
+	.wcpay-spotlight__heading {
+		margin: 0;
+	}
+}
+
+.wcpay-spotlight__controls {
+	width: 100%;
+}
+
+.wcpay-spotlight__close-btn {
+	min-width: auto;
+	width: 32px;
+	height: 32px;
+	padding: $gap-smallest;
+
+	&:hover {
+		background: transparent;
+	}
+
+	&:focus-visible {
+		outline: 2px solid $gutenberg-blue;
+		outline-offset: 2px;
+		box-shadow: none;
+	}
+
+	.components-icon {
+		color: $gray-900;
+	}
+}
+
+.wcpay-spotlight__image {
+	padding: 0;
+	margin: 0;
+
+	img,
+	svg {
+		width: 100%;
+		height: auto;
+		display: block;
+	}
+}
+
+.wcpay-spotlight__body {
+	padding: $gap;
+
+	// Remove top padding when there's no image (header is directly above)
+	.wcpay-spotlight__card:not( .has-image ) & {
+		padding-top: 0;
+	}
+}
+
+.wcpay-spotlight__badge {
+	margin-bottom: $gap-small;
+}
+
+.wcpay-spotlight__heading {
+	@include heading-lg;
+
+	margin: 0 0 $gap-small;
+	color: $gray-900;
+}
+
+.wcpay-spotlight__description {
+	@include body-md;
+
+	color: $gray-900;
+	margin: 0;
+
+	a {
+		color: $wp-blue-50;
+		text-decoration: none;
+
+		&:hover {
+			text-decoration: underline;
+		}
+	}
+}
+
+.wcpay-spotlight__footnote {
+	@include body-sm;
+
+	color: $gray-900;
+	margin: $gap-small 0 0;
+}
+
+.wcpay-spotlight__footer {
+	padding: 0 $gap $gap-large;
+
+	&.components-card__footer {
+		border-radius: 0 0 $radius-medium $radius-medium;
+	}
+}
+
+.wcpay-spotlight__primary-btn,
+.wcpay-spotlight__secondary-btn {
+	&:focus-visible {
+		outline: 2px solid $gutenberg-blue;
+		outline-offset: 2px;
+		box-shadow: none;
+	}
+}
+
+// Override WC settings page styles that affect cards
+body.woocommerce_page_wc-settings
+	.wcpay-spotlight
+	.wcpay-spotlight__card.components-surface.components-card {
+	border-radius: $radius-medium;
+	box-shadow: $elevation-medium;
+}

@@ -39,6 +39,8 @@ module.exports = {
 			'plugins-page': './client/plugins-page/index.js',
 			'frontend-tracks': './client/frontend-tracks/index.js',
 			success: './client/success/index.js',
+			'wc-payments-settings-spotlight':
+				'./client/wc-payments-settings-spotlight.js',
 		},
 		// Override webpack public path dynamically on every entry.
 		// Required for chunks loading to work on sites with JS concatenation.

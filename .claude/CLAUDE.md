@@ -186,3 +186,5 @@ npm run i18n:pot                    # Generate translations
 - Test files mirror source structure
 - PHP tests require Docker - ensure it's running before executing tests
 - Use `npm run test:php` to run all tests or edit the command to pass PHPUnit filters
+- When pushing, always push only the current branch: `git push origin HEAD` (not `git push` which tries to push all configured branches)
+- When pulling, always pull only the current branch: `git pull origin $(git branch --show-current)` or `git pull --rebase origin HEAD`

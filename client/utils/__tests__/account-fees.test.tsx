@@ -13,6 +13,8 @@ import {
 	formatMethodFeesDescription,
 	formatMethodFeesTooltip,
 	getCurrentBaseFee,
+	getDiscountBadgeText,
+	getDiscountTooltipText,
 } from '../account-fees';
 import { formatCurrency } from 'multi-currency/interface/functions';
 import { BaseFee, DiscountFee, FeeStructure } from 'wcpay/types/fees';
@@ -28,6 +30,8 @@ declare const global: {
 		connect: {
 			country: string;
 		};
+		dateFormat?: string;
+		timeFormat?: string;
 	};
 };
 
@@ -337,6 +341,205 @@ describe( 'Account fees utility functions', () => {
 			);
 
 			expect( container ).toMatchSnapshot();
+		} );
+	} );
+
+	describe( 'getDiscountBadgeText()', () => {
+		beforeAll( () => {
+			global.wcpaySettings = {
+				...global.wcpaySettings,
+				dateFormat: 'M j, Y',
+				timeFormat: 'g:i a',
+			};
+		} );
+
+		it( 'returns discount percentage with end date when end_time is provided', () => {
+			const discountFee: DiscountFee = {
+				discount: 0.5,
+				end_time: '2026-02-27 04:20:49',
+				volume_allowance: null,
+				volume_currency: null,
+				current_volume: null,
+				currency: 'USD',
+				percentage_rate: 0,
+				fixed_rate: 0,
+			};
+
+			const result = getDiscountBadgeText( discountFee );
+
+			expect( result ).toContain( '50%' );
+			expect( result ).toContain( 'off fees through' );
+		} );
+
+		it( 'returns discount percentage without date when end_time is null', () => {
+			const discountFee: DiscountFee = {
+				discount: 0.25,
+				end_time: null,
+				volume_allowance: null,
+				volume_currency: null,
+				current_volume: null,
+				currency: 'USD',
+				percentage_rate: 0,
+				fixed_rate: 0,
+			};
+
+			const result = getDiscountBadgeText( discountFee );
+
+			expect( result ).toBe( '25% off fees' );
+		} );
+
+		it( 'returns empty string for zero discount', () => {
+			const discountFee: DiscountFee = {
+				discount: 0,
+				end_time: null,
+				volume_allowance: null,
+				volume_currency: null,
+				current_volume: null,
+				currency: 'USD',
+				percentage_rate: 0,
+				fixed_rate: 0,
+			};
+
+			const result = getDiscountBadgeText( discountFee );
+
+			expect( result ).toBe( '' );
+		} );
+
+		it( 'returns empty string for undefined discount', () => {
+			const discountFee: DiscountFee = {
+				end_time: null,
+				volume_allowance: null,
+				volume_currency: null,
+				current_volume: null,
+				currency: 'USD',
+				percentage_rate: 0,
+				fixed_rate: 0,
+			};
+
+			const result = getDiscountBadgeText( discountFee );
+
+			expect( result ).toBe( '' );
+		} );
+	} );
+
+	describe( 'getDiscountTooltipText()', () => {
+		beforeAll( () => {
+			global.wcpaySettings = {
+				...global.wcpaySettings,
+				dateFormat: 'M j, Y',
+				timeFormat: 'g:i a',
+			};
+		} );
+
+		it( 'returns text with volume allowance and end time', () => {
+			const discountFee: DiscountFee = {
+				discount: 0.5,
+				end_time: '2026-02-27 04:20:49',
+				volume_allowance: 100000,
+				volume_currency: 'usd',
+				current_volume: null,
+				currency: 'USD',
+				percentage_rate: 0,
+				fixed_rate: 0,
+			};
+
+			const result = getDiscountTooltipText( discountFee );
+
+			expect( result ).toContain( '50%' );
+			expect( result ).toContain( 'first' );
+			expect( result ).toContain( 'total payment volume' );
+			expect( result ).toContain( 'or through' );
+		} );
+
+		it( 'returns text with only volume allowance when end_time is null', () => {
+			const discountFee: DiscountFee = {
+				discount: 0.3,
+				end_time: null,
+				volume_allowance: 50000,
+				volume_currency: 'usd',
+				current_volume: null,
+				currency: 'USD',
+				percentage_rate: 0,
+				fixed_rate: 0,
+			};
+
+			const result = getDiscountTooltipText( discountFee );
+
+			expect( result ).toContain( '30%' );
+			expect( result ).toContain( 'first' );
+			expect( result ).toContain( 'total payment volume' );
+			expect( result ).not.toContain( 'through' );
+		} );
+
+		it( 'returns text with only end time when volume_allowance is null', () => {
+			const discountFee: DiscountFee = {
+				discount: 0.2,
+				end_time: '2026-02-27 04:20:49',
+				volume_allowance: null,
+				volume_currency: null,
+				current_volume: null,
+				currency: 'USD',
+				percentage_rate: 0,
+				fixed_rate: 0,
+			};
+
+			const result = getDiscountTooltipText( discountFee );
+
+			expect( result ).toContain( '20%' );
+			expect( result ).toContain( 'through' );
+			expect( result ).not.toContain( 'first' );
+			expect( result ).not.toContain( 'total payment volume' );
+		} );
+
+		it( 'returns basic text when neither volume_allowance nor end_time are provided', () => {
+			const discountFee: DiscountFee = {
+				discount: 0.15,
+				end_time: null,
+				volume_allowance: null,
+				volume_currency: null,
+				current_volume: null,
+				currency: 'USD',
+				percentage_rate: 0,
+				fixed_rate: 0,
+			};
+
+			const result = getDiscountTooltipText( discountFee );
+
+			expect( result ).toBe(
+				'You are getting 15% off on processing fees.'
+			);
+		} );
+
+		it( 'uses volume_currency when available, falls back to currency', () => {
+			const discountFeeWithVolumeCurrency: DiscountFee = {
+				discount: 0.1,
+				end_time: null,
+				volume_allowance: 10000,
+				volume_currency: 'eur',
+				current_volume: null,
+				currency: 'USD',
+				percentage_rate: 0,
+				fixed_rate: 0,
+			};
+
+			getDiscountTooltipText( discountFeeWithVolumeCurrency );
+
+			expect( formatCurrency ).toHaveBeenCalledWith( 10000, 'eur' );
+
+			const discountFeeWithoutVolumeCurrency: DiscountFee = {
+				discount: 0.1,
+				end_time: null,
+				volume_allowance: 10000,
+				volume_currency: null,
+				current_volume: null,
+				currency: 'USD',
+				percentage_rate: 0,
+				fixed_rate: 0,
+			};
+
+			getDiscountTooltipText( discountFeeWithoutVolumeCurrency );
+
+			expect( formatCurrency ).toHaveBeenCalledWith( 10000, 'USD' );
 		} );
 	} );
 } );

@@ -334,7 +334,7 @@ class WC_Payments_Incentives_Service {
 			return $this->incentives_memo;
 		}
 
-		// Store incentive in transient cache (together with the context hash) for the given number of seconds
+		// Store incentive in the transient cache (together with the context hash) for the given number of seconds
 		// or 1 day in seconds. Also attach a timestamp to the transient data so we know when we last fetched.
 		set_transient(
 			$this->cache_transient_name,
