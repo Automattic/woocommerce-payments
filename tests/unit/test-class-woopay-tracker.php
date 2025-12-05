@@ -95,6 +95,53 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		$this->assertFalse( $this->tracker->should_enable_tracking() );
 	}
 
+	public function test_respects_woocommerce_global_tracking_opt_out(): void {
+		$is_woopay_eligible   = true;
+		$is_account_connected = true;
+		$this->setup_woopay_environment( $is_woopay_eligible, $is_account_connected );
+
+		// Set WooCommerce global tracking to 'no'.
+		update_option( 'woocommerce_allow_tracking', 'no' );
+		$this->assertFalse( $this->tracker->should_enable_tracking(), 'Tracking should be disabled when woocommerce_allow_tracking is "no"' );
+
+		// Set WooCommerce global tracking to 'yes'.
+		update_option( 'woocommerce_allow_tracking', 'yes' );
+		$this->assertTrue( $this->tracker->should_enable_tracking(), 'Tracking should be enabled when woocommerce_allow_tracking is "yes"' );
+
+		// Clean up.
+		delete_option( 'woocommerce_allow_tracking' );
+	}
+
+	public function test_respects_wcpay_enable_shopper_tracking_filter(): void {
+		$is_woopay_eligible   = true;
+		$is_account_connected = true;
+		$this->setup_woopay_environment( $is_woopay_eligible, $is_account_connected );
+
+		// Add filter to disable tracking.
+		add_filter( 'wcpay_enable_shopper_tracking', '__return_false' );
+		$this->assertFalse( $this->tracker->should_enable_tracking(), 'Tracking should be disabled when wcpay_enable_shopper_tracking filter returns false' );
+
+		// Remove filter and verify tracking is enabled.
+		remove_filter( 'wcpay_enable_shopper_tracking', '__return_false' );
+		$this->assertTrue( $this->tracker->should_enable_tracking(), 'Tracking should be enabled when wcpay_enable_shopper_tracking filter returns true' );
+	}
+
+	public function test_filter_has_priority_over_woocommerce_setting(): void {
+		$is_woopay_eligible   = true;
+		$is_account_connected = true;
+		$this->setup_woopay_environment( $is_woopay_eligible, $is_account_connected );
+
+		// Set WooCommerce tracking to 'yes' but filter to false.
+		update_option( 'woocommerce_allow_tracking', 'yes' );
+		add_filter( 'wcpay_enable_shopper_tracking', '__return_false' );
+
+		$this->assertFalse( $this->tracker->should_enable_tracking(), 'Filter should take priority over WooCommerce setting' );
+
+		// Clean up.
+		remove_filter( 'wcpay_enable_shopper_tracking', '__return_false' );
+		delete_option( 'woocommerce_allow_tracking' );
+	}
+
 	public function test_tracks_build_event_obj_for_admin_events(): void {
 		$this->set_account_connected( true );
 		$event_name = 'wcadmin_test_event';
