@@ -1330,6 +1330,7 @@ export default ( { query }: { query: { id: string } } ) => {
 						<ConfirmationScreen
 							disputeId={ query.id }
 							bankName={ bankName }
+							isVisaComplianceDispute={ isVisaComplianceDispute }
 						/>
 					) : (
 						<div className="wcpay-dispute-evidence-new__stepper-section">

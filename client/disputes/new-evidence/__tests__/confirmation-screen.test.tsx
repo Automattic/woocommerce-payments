@@ -25,6 +25,7 @@ describe( 'ConfirmationScreen', () => {
 	const baseProps = {
 		disputeId: 'dp_test_123',
 		bankName: 'Test Bank',
+		isVisaComplianceDispute: false,
 	};
 
 	beforeEach( () => {

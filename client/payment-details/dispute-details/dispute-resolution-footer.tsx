@@ -18,7 +18,10 @@ import './style.scss';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 
 const DisputeUnderReviewFooter: React.FC< {
-	dispute: Pick< Dispute, 'id' | 'metadata' | 'status' >;
+	dispute: Pick<
+		Dispute,
+		'id' | 'metadata' | 'status' | 'reason' | 'enhanced_eligibility_types'
+	>;
 	bankName: string | null;
 } > = ( { dispute, bankName } ) => {
 	const submissionDateFormatted = dispute.metadata.__evidence_submitted_at
@@ -27,41 +30,70 @@ const DisputeUnderReviewFooter: React.FC< {
 		  )
 		: '-';
 
+	const isVisaComplianceDispute =
+		dispute &&
+		( dispute.reason === 'noncompliant' ||
+			( dispute?.enhanced_eligibility_types || [] ).includes(
+				'visa_compliance'
+			) );
+
 	return (
 		<CardFooter className="transaction-details-dispute-footer transaction-details-dispute-footer--primary">
 			<Flex justify="space-between">
 				<FlexItem>
-					{ createInterpolateElement(
-						bankName
-							? sprintf(
-									/* Translators: %1$s - bank name, %2$s - formatted date, <a> - link to documentation page */
-									__(
-										"<strong>The customer's bank, %1$s, is currently reviewing the evidence you submitted on %2$s.</strong> This process can sometimes take more than 60 days — we'll let you know once a decision has been made. <a>Learn more about the dispute process.</a>",
-										'woocommerce-payments'
-									),
-									bankName,
-									submissionDateFormatted
-							  )
-							: sprintf(
+					{ isVisaComplianceDispute
+						? createInterpolateElement(
+								sprintf(
 									/* Translators: %s - formatted date, <a> - link to documentation page */
 									__(
-										"<strong>The customer's bank is currently reviewing the evidence you submitted on %1$s.</strong> This process can sometimes take more than 60 days — we'll let you know once a decision has been made. <a>Learn more about the dispute process.</a>",
+										"<strong>Visa is currently reviewing the evidence you submitted on %1$s.</strong> This process can sometimes take more than 60 days — we'll let you know once a decision has been made. <a>Learn more about the dispute process.</a>",
 										'woocommerce-payments'
 									),
 									submissionDateFormatted
-							  ),
-						{
-							a: (
-								// eslint-disable-next-line jsx-a11y/anchor-has-content -- Link content is provided by createInterpolateElement
-								<a
-									target="_blank"
-									rel="noopener noreferrer"
-									href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
-								/>
-							),
-							strong: <strong />,
-						}
-					) }
+								),
+								{
+									a: (
+										// eslint-disable-next-line jsx-a11y/anchor-has-content -- Link content is provided by createInterpolateElement
+										<a
+											target="_blank"
+											rel="noopener noreferrer"
+											href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
+										/>
+									),
+									strong: <strong />,
+								}
+						  )
+						: createInterpolateElement(
+								bankName
+									? sprintf(
+											/* Translators: %1$s - bank name, %2$s - formatted date, <a> - link to documentation page */
+											__(
+												"<strong>The customer's bank, %1$s, is currently reviewing the evidence you submitted on %2$s.</strong> This process can sometimes take more than 60 days — we'll let you know once a decision has been made. <a>Learn more about the dispute process.</a>",
+												'woocommerce-payments'
+											),
+											bankName,
+											submissionDateFormatted
+									  )
+									: sprintf(
+											/* Translators: %s - formatted date, <a> - link to documentation page */
+											__(
+												"<strong>The customer's bank is currently reviewing the evidence you submitted on %1$s.</strong> This process can sometimes take more than 60 days — we'll let you know once a decision has been made. <a>Learn more about the dispute process.</a>",
+												'woocommerce-payments'
+											),
+											submissionDateFormatted
+									  ),
+								{
+									a: (
+										// eslint-disable-next-line jsx-a11y/anchor-has-content -- Link content is provided by createInterpolateElement
+										<a
+											target="_blank"
+											rel="noopener noreferrer"
+											href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
+										/>
+									),
+									strong: <strong />,
+								}
+						  ) }
 				</FlexItem>
 				<FlexItem className="transaction-details-dispute-footer__actions">
 					<Link
@@ -96,7 +128,10 @@ const DisputeUnderReviewFooter: React.FC< {
 };
 
 const DisputeWonFooter: React.FC< {
-	dispute: Pick< Dispute, 'id' | 'metadata' | 'status' >;
+	dispute: Pick<
+		Dispute,
+		'id' | 'metadata' | 'status' | 'reason' | 'enhanced_eligibility_types'
+	>;
 	bankName: string | null;
 } > = ( { dispute, bankName } ) => {
 	const closedDateFormatted = dispute.metadata.__dispute_closed_at
@@ -105,41 +140,70 @@ const DisputeWonFooter: React.FC< {
 		  )
 		: '-';
 
+	const isVisaComplianceDispute =
+		dispute &&
+		( dispute.reason === 'noncompliant' ||
+			( dispute?.enhanced_eligibility_types || [] ).includes(
+				'visa_compliance'
+			) );
+
 	return (
 		<CardFooter className="transaction-details-dispute-footer">
 			<Flex justify="space-between">
 				<FlexItem>
-					{ createInterpolateElement(
-						bankName
-							? sprintf(
-									/* Translators: %1$s - bank name, %2$s - formatted date, <a> - link to documentation page */
-									__(
-										"<strong>Good news — you've won this dispute! The customer's bank, %1$s, reached this decision on %2$s.</strong> Your account has been credited with the disputed amount and fee. <a>Learn more about preventing disputes.</a>",
-										'woocommerce-payments'
-									),
-									bankName,
-									closedDateFormatted
-							  )
-							: sprintf(
+					{ isVisaComplianceDispute
+						? createInterpolateElement(
+								sprintf(
 									/* Translators: %s - formatted date, <a> - link to documentation page */
 									__(
-										"<strong>Good news — you've won this dispute! The customer's bank reached this decision on %1$s.</strong> Your account has been credited with the disputed amount and fee. <a>Learn more about preventing disputes.</a>",
+										"<strong>Good news — you've won this dispute! Visa reached this decision on %1$s.</strong> Your account has been credited with the disputed amount and fee. <a>Learn more about preventing disputes.</a>",
 										'woocommerce-payments'
 									),
 									closedDateFormatted
-							  ),
-						{
-							a: (
-								// eslint-disable-next-line jsx-a11y/anchor-has-content -- Link content is provided by createInterpolateElement
-								<a
-									target="_blank"
-									rel="noopener noreferrer"
-									href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
-								/>
-							),
-							strong: <strong />,
-						}
-					) }
+								),
+								{
+									a: (
+										// eslint-disable-next-line jsx-a11y/anchor-has-content -- Link content is provided by createInterpolateElement
+										<a
+											target="_blank"
+											rel="noopener noreferrer"
+											href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
+										/>
+									),
+									strong: <strong />,
+								}
+						  )
+						: createInterpolateElement(
+								bankName
+									? sprintf(
+											/* Translators: %1$s - bank name, %2$s - formatted date, <a> - link to documentation page */
+											__(
+												"<strong>Good news — you've won this dispute! The customer's bank, %1$s, reached this decision on %2$s.</strong> Your account has been credited with the disputed amount and fee. <a>Learn more about preventing disputes.</a>",
+												'woocommerce-payments'
+											),
+											bankName,
+											closedDateFormatted
+									  )
+									: sprintf(
+											/* Translators: %s - formatted date, <a> - link to documentation page */
+											__(
+												"<strong>Good news — you've won this dispute! The customer's bank reached this decision on %1$s.</strong> Your account has been credited with the disputed amount and fee. <a>Learn more about preventing disputes.</a>",
+												'woocommerce-payments'
+											),
+											closedDateFormatted
+									  ),
+								{
+									a: (
+										// eslint-disable-next-line jsx-a11y/anchor-has-content -- Link content is provided by createInterpolateElement
+										<a
+											target="_blank"
+											rel="noopener noreferrer"
+											href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
+										/>
+									),
+									strong: <strong />,
+								}
+						  ) }
 				</FlexItem>
 				<FlexItem className="transaction-details-dispute-footer__actions">
 					<Link
@@ -176,7 +240,12 @@ const DisputeWonFooter: React.FC< {
 const DisputeLostFooter: React.FC< {
 	dispute: Pick<
 		Dispute,
-		'id' | 'metadata' | 'status' | 'balance_transactions'
+		| 'id'
+		| 'metadata'
+		| 'status'
+		| 'balance_transactions'
+		| 'reason'
+		| 'enhanced_eligibility_types'
 	>;
 	bankName: string | null;
 } > = ( { dispute, bankName } ) => {
@@ -189,6 +258,13 @@ const DisputeLostFooter: React.FC< {
 				parseInt( dispute.metadata.__dispute_closed_at, 10 )
 		  )
 		: '-';
+
+	const isVisaComplianceDispute =
+		dispute &&
+		( dispute.reason === 'noncompliant' ||
+			( dispute?.enhanced_eligibility_types || [] ).includes(
+				'visa_compliance'
+			) );
 
 	let messagePrefix = sprintf(
 		/* Translators: %1$s - formatted date */
@@ -219,7 +295,16 @@ const DisputeLostFooter: React.FC< {
 	}
 
 	if ( isSubmitted ) {
-		if ( bankName ) {
+		if ( isVisaComplianceDispute ) {
+			messagePrefix = sprintf(
+				/* Translators: %1$s - formatted date */
+				__(
+					"<strong>Unfortunately, you've lost this dispute. Visa reached this decision on %1$s.</strong>",
+					'woocommerce-payments'
+				),
+				closedDateFormatted
+			);
+		} else if ( bankName ) {
 			messagePrefix = sprintf(
 				/* Translators: %1$s - bank name, %2$s - formatted date */
 				__(
@@ -455,7 +540,12 @@ const InquiryClosedFooter: React.FC< {
 const DisputeResolutionFooter: React.FC< {
 	dispute: Pick<
 		Dispute,
-		'id' | 'metadata' | 'status' | 'balance_transactions'
+		| 'id'
+		| 'metadata'
+		| 'status'
+		| 'balance_transactions'
+		| 'reason'
+		| 'enhanced_eligibility_types'
 	>;
 	bankName: string | null;
 } > = ( { dispute, bankName } ) => {
