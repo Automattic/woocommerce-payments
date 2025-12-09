@@ -179,15 +179,6 @@ class ApplePayDefinition implements PaymentMethodDefinitionInterface {
 	}
 
 	/**
-	 * Whether this payment method should be enabled by default
-	 *
-	 * @return bool
-	 */
-	public static function is_enabled_by_default(): bool {
-		return false;
-	}
-
-	/**
 	 * Get the minimum amount for this payment method for a given currency and country
 	 *
 	 * @param string $currency The currency code.
