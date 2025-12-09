@@ -712,8 +712,8 @@ class WC_Payments {
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Link_WooPay_Mutual_Exclusion_Handler( self::get_gateway() ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Gateway_Settings_Sync( self::get_gateway(), self::get_payment_gateway_map() ), 'maybe_sync' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ '\WCPay\Migrations\Delete_Active_WooPay_Webhook', 'maybe_delete' ] );
-		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Payment_Method_Deprecation_Settings_Update( self::get_gateway(), self::get_payment_gateway_map(), GiropayDefinition::get_stripe_id(), '7.9.0' ), 'maybe_migrate' ] );
-		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Payment_Method_Deprecation_Settings_Update( self::get_gateway(), self::get_payment_gateway_map(), SofortDefinition::get_stripe_id(), '8.9.0' ), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Payment_Method_Deprecation_Settings_Update( self::get_gateway(), self::get_payment_gateway_map(), GiropayDefinition::get_id(), '7.9.0' ), 'maybe_migrate' ] );
+		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Payment_Method_Deprecation_Settings_Update( self::get_gateway(), self::get_payment_gateway_map(), SofortDefinition::get_id(), '8.9.0' ), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Erase_Bnpl_Announcement_Meta(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Erase_Deprecated_Flags_And_Options(), 'maybe_migrate' ] );
 		add_action( 'woocommerce_woocommerce_payments_updated', [ new \WCPay\Migrations\Manual_Capture_Payment_Method_Settings_Update( self::get_gateway(), self::get_payment_gateway_map() ), 'maybe_migrate' ] );
