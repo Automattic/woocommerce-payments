@@ -224,4 +224,111 @@ describe( 'ConfirmationScreen', () => {
 			);
 		} );
 	} );
+
+	describe( 'Visa Compliance disputes', () => {
+		it( 'shows Visa-specific subtitle for Visa compliance disputes', () => {
+			render(
+				<ConfirmationScreen
+					{ ...baseProps }
+					isVisaComplianceDispute={ true }
+				/>
+			);
+
+			expect(
+				screen.getByText(
+					'Your evidence has been sent to Visa for review.'
+				)
+			).toBeInTheDocument();
+
+			expect(
+				screen.queryByText(
+					"Your evidence has been sent to the cardholder's bank for review."
+				)
+			).not.toBeInTheDocument();
+		} );
+
+		it( 'shows Visa-specific next steps for Visa compliance disputes', () => {
+			render(
+				<ConfirmationScreen
+					{ ...baseProps }
+					isVisaComplianceDispute={ true }
+				/>
+			);
+
+			expect(
+				screen.getByText( /Visa will review your response/i )
+			).toBeInTheDocument();
+
+			expect(
+				screen.queryByText(
+					/The cardholder's bank will review your response/i
+				)
+			).not.toBeInTheDocument();
+		} );
+
+		it( 'shows Visa-specific notice for Visa compliance disputes', () => {
+			render(
+				<ConfirmationScreen
+					{ ...baseProps }
+					isVisaComplianceDispute={ true }
+				/>
+			);
+
+			const notice = document.querySelector(
+				'.wcpay-dispute-evidence-confirmation__notice'
+			);
+			expect( notice ).toHaveTextContent(
+				'The outcome of this dispute will be determined by Visa'
+			);
+
+			expect( notice ).not.toHaveTextContent(
+				"The outcome of this dispute will be determined by the cardholder's bank"
+			);
+		} );
+
+		it( 'ignores bank name for Visa compliance disputes', () => {
+			render(
+				<ConfirmationScreen
+					{ ...baseProps }
+					bankName="Chase Bank"
+					isVisaComplianceDispute={ true }
+				/>
+			);
+
+			const notice = document.querySelector(
+				'.wcpay-dispute-evidence-confirmation__notice'
+			);
+
+			// Should show Visa text, not bank name
+			expect( notice ).toHaveTextContent(
+				'The outcome of this dispute will be determined by Visa'
+			);
+			expect( notice ).not.toHaveTextContent( 'Chase Bank' );
+		} );
+
+		it( 'shows regular text for non-Visa compliance disputes', () => {
+			render(
+				<ConfirmationScreen
+					{ ...baseProps }
+					bankName="Chase Bank"
+					isVisaComplianceDispute={ false }
+				/>
+			);
+
+			expect(
+				screen.getByText(
+					"Your evidence has been sent to the cardholder's bank for review."
+				)
+			).toBeInTheDocument();
+
+			expect(
+				screen.getByText( /cardholder.*will review your response/i )
+			).toBeInTheDocument();
+
+			const notice = document.querySelector(
+				'.wcpay-dispute-evidence-confirmation__notice'
+			);
+			expect( notice ).toHaveTextContent( 'Chase Bank' );
+		} );
+	} );
 } );
