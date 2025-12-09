@@ -385,6 +385,10 @@ class UPE_Payment_Method {
 		$account         = \WC_Payments::get_account_service()->get_cached_account_data();
 		$account_country = isset( $account['country'] ) ? strtoupper( $account['country'] ) : '';
 
+		if ( ! empty( $this->definition ) ) {
+			return $this->definition::get_supported_countries( $account_country );
+		}
+
 		return $this->has_domestic_transactions_restrictions() ? [ $account_country ] : $this->countries;
 	}
 
