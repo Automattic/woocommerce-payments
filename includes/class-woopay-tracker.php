@@ -218,7 +218,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 */
 	public function should_enable_tracking( $is_admin_event = false, $track_on_all_stores = false ) {
 		// Allow merchants to disable all shopper tracking via filter.
-		if ( ! apply_filters( 'wcpay_enable_shopper_tracking', true ) ) {
+		if ( ! apply_filters( 'wcpay_shopper_tracking_enabled', true ) ) {
 			return false;
 		}
 

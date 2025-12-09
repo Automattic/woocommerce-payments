@@ -228,7 +228,7 @@ class WC_Payments_Express_Checkout_Button_Handler {
 				[
 					'ajax_url'                => admin_url( 'admin-ajax.php' ),
 					'wc_ajax_url'             => WC_AJAX::get_endpoint( '%%endpoint%%' ),
-					'enable_shopper_tracking' => apply_filters( 'wcpay_enable_shopper_tracking', true ) && 'no' !== get_option( 'woocommerce_allow_tracking' ),
+					'is_shopper_tracking_enabled' => apply_filters( 'wcpay_shopper_tracking_enabled', 'no' !== get_option( 'woocommerce_allow_tracking' ) ),
 					'nonce'                   => [
 						'platform_tracker'             => wp_create_nonce( 'platform_tracks_nonce' ),
 						// needed to communicate via the Store API.
