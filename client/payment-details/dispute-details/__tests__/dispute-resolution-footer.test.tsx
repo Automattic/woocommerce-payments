@@ -33,6 +33,17 @@ jest.mock( 'wcpay/utils', () => ( {
 // Mock dispute utils
 jest.mock( 'wcpay/disputes/utils', () => ( {
 	getDisputeFeeFormatted: jest.fn( () => '$15.00' ),
+	isVisaComplianceDispute: jest.fn( ( dispute ) => {
+		if ( ! dispute ) {
+			return false;
+		}
+		return (
+			dispute.reason === 'noncompliant' ||
+			( dispute?.enhanced_eligibility_types || [] ).includes(
+				'visa_compliance'
+			)
+		);
+	} ),
 } ) );
 
 const getBaseDispute = ( overrides = {} ): Dispute => ( {

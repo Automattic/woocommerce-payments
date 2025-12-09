@@ -13,7 +13,10 @@ import { Button, CardFooter, Flex, FlexItem } from '@wordpress/components';
 import type { Dispute } from 'wcpay/types/disputes';
 import { recordEvent } from 'tracks';
 import { getAdminUrl } from 'wcpay/utils';
-import { getDisputeFeeFormatted } from 'wcpay/disputes/utils';
+import {
+	getDisputeFeeFormatted,
+	isVisaComplianceDispute,
+} from 'wcpay/disputes/utils';
 import './style.scss';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 
@@ -30,18 +33,11 @@ const DisputeUnderReviewFooter: React.FC< {
 		  )
 		: '-';
 
-	const isVisaComplianceDispute =
-		dispute &&
-		( dispute.reason === 'noncompliant' ||
-			( dispute?.enhanced_eligibility_types || [] ).includes(
-				'visa_compliance'
-			) );
-
 	return (
 		<CardFooter className="transaction-details-dispute-footer transaction-details-dispute-footer--primary">
 			<Flex justify="space-between">
 				<FlexItem>
-					{ isVisaComplianceDispute
+					{ isVisaComplianceDispute( dispute )
 						? createInterpolateElement(
 								sprintf(
 									/* Translators: %s - formatted date, <a> - link to documentation page */
@@ -140,18 +136,11 @@ const DisputeWonFooter: React.FC< {
 		  )
 		: '-';
 
-	const isVisaComplianceDispute =
-		dispute &&
-		( dispute.reason === 'noncompliant' ||
-			( dispute?.enhanced_eligibility_types || [] ).includes(
-				'visa_compliance'
-			) );
-
 	return (
 		<CardFooter className="transaction-details-dispute-footer">
 			<Flex justify="space-between">
 				<FlexItem>
-					{ isVisaComplianceDispute
+					{ isVisaComplianceDispute( dispute )
 						? createInterpolateElement(
 								sprintf(
 									/* Translators: %s - formatted date, <a> - link to documentation page */
@@ -259,13 +248,6 @@ const DisputeLostFooter: React.FC< {
 		  )
 		: '-';
 
-	const isVisaComplianceDispute =
-		dispute &&
-		( dispute.reason === 'noncompliant' ||
-			( dispute?.enhanced_eligibility_types || [] ).includes(
-				'visa_compliance'
-			) );
-
 	let messagePrefix = sprintf(
 		/* Translators: %1$s - formatted date */
 		__(
@@ -287,7 +269,7 @@ const DisputeLostFooter: React.FC< {
 	}
 
 	if ( isSubmitted ) {
-		if ( isVisaComplianceDispute ) {
+		if ( isVisaComplianceDispute( dispute ) ) {
 			messagePrefix = sprintf(
 				/* Translators: %1$s - formatted date */
 				__(
