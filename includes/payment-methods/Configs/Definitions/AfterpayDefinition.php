@@ -43,7 +43,7 @@ class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_stripe_id(): string {
-		return self::get_id();
+		return PaymentMethodUtils::get_stripe_id( self::get_id() );
 	}
 
 	/**
@@ -215,7 +215,7 @@ class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return array<string,array<string,array{min:int,max:int}>>
 	 */
 	public static function get_limits_per_currency(): array {
-		return WC_Payments_Utils::get_bnpl_limits_per_currency( self::get_stripe_id() );
+		return WC_Payments_Utils::get_bnpl_limits_per_currency( self::get_id() );
 	}
 
 	/**
