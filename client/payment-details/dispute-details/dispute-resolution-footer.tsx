@@ -287,14 +287,6 @@ const DisputeLostFooter: React.FC< {
 	}
 
 	if ( isSubmitted ) {
-		messagePrefix = sprintf(
-			/* Translators: %1$s - formatted date */
-			__( 'This dispute was lost on %1$s.', 'woocommerce-payments' ),
-			closedDateFormatted
-		);
-	}
-
-	if ( isSubmitted ) {
 		if ( isVisaComplianceDispute ) {
 			messagePrefix = sprintf(
 				/* Translators: %1$s - formatted date */
