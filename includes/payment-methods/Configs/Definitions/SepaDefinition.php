@@ -1,6 +1,6 @@
 <?php
 /**
- * Sofort Payment Method Definition
+ * SEPA Direct Debit Payment Method Definition
  *
  * @package WCPay\PaymentMethods\Configs\Definitions
  */
@@ -14,9 +14,9 @@ use WCPay\Constants\Currency_Code;
 use WCPay\PaymentMethods\Configs\Utils\PaymentMethodUtils;
 
 /**
- * Class implementing the Sofort payment method definition.
+ * Class implementing the SEPA Direct Debit payment method definition.
  */
-class SofortDefinition implements PaymentMethodDefinitionInterface {
+class SepaDefinition implements PaymentMethodDefinitionInterface {
 
 	/**
 	 * Get the internal ID for the payment method
@@ -24,7 +24,7 @@ class SofortDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_id(): string {
-		return 'sofort';
+		return 'sepa_debit';
 	}
 
 	/**
@@ -33,7 +33,7 @@ class SofortDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string[]
 	 */
 	public static function get_keywords(): array {
-		return [ 'sofort' ];
+		return [ 'sepa' ];
 	}
 
 	/**
@@ -53,7 +53,7 @@ class SofortDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_title( ?string $account_country = null ): string {
-		return __( 'Sofort', 'woocommerce-payments' );
+		return __( 'SEPA Direct Debit', 'woocommerce-payments' );
 	}
 
 	/**
@@ -74,7 +74,10 @@ class SofortDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_description( ?string $account_country = null ): string {
-		return __( 'Accept secure bank transfers from Austria, Belgium, Germany, Netherlands, and Spain.', 'woocommerce-payments' );
+		return __(
+			'Reach 500 million customers and over 20 million businesses across the European Union.',
+			'woocommerce-payments'
+		);
 	}
 
 	/**
@@ -90,16 +93,54 @@ class SofortDefinition implements PaymentMethodDefinitionInterface {
 	 * Get the list of supported countries
 	 *
 	 * @param string|null $account_country Optional. The merchant's account country.
+	 *
 	 * @return string[] Array of country codes
 	 */
 	public static function get_supported_countries( ?string $account_country = null ): array {
-		return [
+		// https://stripe.com/en-br/resources/more/sepa-country-list#list-of-sepa-countries.
+		$eu_countries = [
 			Country_Code::AUSTRIA,
 			Country_Code::BELGIUM,
+			Country_Code::BULGARIA,
+			Country_Code::CROATIA,
+			Country_Code::CYPRUS,
+			Country_Code::CZECHIA,
+			Country_Code::DENMARK,
+			Country_Code::ESTONIA,
+			Country_Code::FINLAND,
+			Country_Code::FRANCE,
 			Country_Code::GERMANY,
+			Country_Code::GREECE,
+			Country_Code::HUNGARY,
+			Country_Code::IRELAND,
+			Country_Code::ITALY,
+			Country_Code::LATVIA,
+			Country_Code::LITHUANIA,
+			Country_Code::LUXEMBOURG,
+			Country_Code::MALTA,
 			Country_Code::NETHERLANDS,
+			Country_Code::POLAND,
+			Country_Code::PORTUGAL,
+			Country_Code::ROMANIA,
+			Country_Code::SLOVAKIA,
+			Country_Code::SLOVENIA,
 			Country_Code::SPAIN,
+			Country_Code::SWEDEN,
 		];
+
+		$additional_sepa_countries = [
+			Country_Code::SWITZERLAND,
+			Country_Code::UNITED_KINGDOM,
+			Country_Code::SAN_MARINO,
+			Country_Code::VATICAN_CITY,
+			Country_Code::ANDORRA,
+			Country_Code::MONACO,
+			Country_Code::LIECHTENSTEIN,
+			Country_Code::NORWAY,
+			Country_Code::ICELAND,
+		];
+
+		return array_merge( $eu_countries, $additional_sepa_countries );
 	}
 
 	/**
@@ -121,7 +162,7 @@ class SofortDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_icon_url( ?string $account_country = null ): string {
-		return plugins_url( 'assets/images/payment-methods/sofort.svg', WCPAY_PLUGIN_FILE );
+		return plugins_url( 'assets/images/payment-methods/sepa-debit.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**
@@ -153,7 +194,7 @@ class SofortDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string HTML string containing testing instructions
 	 */
 	public static function get_testing_instructions( string $account_country ): string {
-		return '';
+		return __( '<strong>Test mode:</strong> use the test account number <number>AT611904300234573201</number>. Other payment methods may redirect to a Stripe test page to authorize payment. More test card numbers are listed <a>here</a>.', 'woocommerce-payments' );
 	}
 
 	/**

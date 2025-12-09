@@ -253,13 +253,13 @@ class UPE_Payment_Gateway_Test extends WCPAY_UnitTestCase {
 			\WCPay\PaymentMethods\Configs\Definitions\EpsDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\P24Definition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\IdealDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\SepaDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\BecsDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\LinkDefinition::class,
 		];
 
 		$payment_method_classes = [
 			CC_Payment_Method::class,
-			Sepa_Payment_Method::class,
-			Becs_Payment_Method::class,
-			Link_Payment_Method::class,
 			Afterpay_Payment_Method::class,
 		];
 

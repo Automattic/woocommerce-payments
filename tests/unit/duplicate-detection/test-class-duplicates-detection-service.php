@@ -7,7 +7,6 @@
 
 use WCPay\Duplicates_Detection_Service;
 use WCPay\Payment_Methods\CC_Payment_Method;
-use WCPay\Payment_Methods\Ideal_Payment_Method;
 use WCPay\Payment_Methods\Klarna_Payment_Method;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 

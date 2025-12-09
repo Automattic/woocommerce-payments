@@ -1,6 +1,6 @@
 <?php
 /**
- * Sofort Payment Method Definition
+ * Link Payment Method Definition
  *
  * @package WCPay\PaymentMethods\Configs\Definitions
  */
@@ -9,14 +9,13 @@ namespace WCPay\PaymentMethods\Configs\Definitions;
 
 use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface;
 use WCPay\PaymentMethods\Configs\Constants\PaymentMethodCapability;
-use WCPay\Constants\Country_Code;
 use WCPay\Constants\Currency_Code;
 use WCPay\PaymentMethods\Configs\Utils\PaymentMethodUtils;
 
 /**
- * Class implementing the Sofort payment method definition.
+ * Class implementing the Link payment method definition.
  */
-class SofortDefinition implements PaymentMethodDefinitionInterface {
+class LinkDefinition implements PaymentMethodDefinitionInterface {
 
 	/**
 	 * Get the internal ID for the payment method
@@ -24,7 +23,7 @@ class SofortDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_id(): string {
-		return 'sofort';
+		return 'link';
 	}
 
 	/**
@@ -33,7 +32,7 @@ class SofortDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string[]
 	 */
 	public static function get_keywords(): array {
-		return [ 'sofort' ];
+		return [ 'link', 'stripe link' ];
 	}
 
 	/**
@@ -53,7 +52,7 @@ class SofortDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_title( ?string $account_country = null ): string {
-		return __( 'Sofort', 'woocommerce-payments' );
+		return __( 'Link', 'woocommerce-payments' );
 	}
 
 	/**
@@ -74,7 +73,8 @@ class SofortDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_description( ?string $account_country = null ): string {
-		return __( 'Accept secure bank transfers from Austria, Belgium, Germany, Netherlands, and Spain.', 'woocommerce-payments' );
+		// Description is hardcoded in the React component.
+		return '';
 	}
 
 	/**
@@ -83,23 +83,18 @@ class SofortDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string[] Array of currency codes
 	 */
 	public static function get_supported_currencies(): array {
-		return [ Currency_Code::EURO ];
+		return [ Currency_Code::UNITED_STATES_DOLLAR ];
 	}
 
 	/**
 	 * Get the list of supported countries
 	 *
 	 * @param string|null $account_country Optional. The merchant's account country.
+	 *
 	 * @return string[] Array of country codes
 	 */
 	public static function get_supported_countries( ?string $account_country = null ): array {
-		return [
-			Country_Code::AUSTRIA,
-			Country_Code::BELGIUM,
-			Country_Code::GERMANY,
-			Country_Code::NETHERLANDS,
-			Country_Code::SPAIN,
-		];
+		return [];
 	}
 
 	/**
@@ -110,6 +105,7 @@ class SofortDefinition implements PaymentMethodDefinitionInterface {
 	public static function get_capabilities(): array {
 		return [
 			PaymentMethodCapability::REFUNDS,
+			PaymentMethodCapability::TOKENIZATION,
 		];
 	}
 
@@ -121,7 +117,7 @@ class SofortDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_icon_url( ?string $account_country = null ): string {
-		return plugins_url( 'assets/images/payment-methods/sofort.svg', WCPAY_PLUGIN_FILE );
+		return plugins_url( 'assets/images/payment-methods/link.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**

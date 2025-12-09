@@ -1,6 +1,6 @@
 <?php
 /**
- * Sofort Payment Method Definition
+ * Multibanco Payment Method Definition
  *
  * @package WCPay\PaymentMethods\Configs\Definitions
  */
@@ -14,9 +14,9 @@ use WCPay\Constants\Currency_Code;
 use WCPay\PaymentMethods\Configs\Utils\PaymentMethodUtils;
 
 /**
- * Class implementing the Sofort payment method definition.
+ * Class implementing the Multibanco payment method definition.
  */
-class SofortDefinition implements PaymentMethodDefinitionInterface {
+class MultibancoDefinition implements PaymentMethodDefinitionInterface {
 
 	/**
 	 * Get the internal ID for the payment method
@@ -24,7 +24,7 @@ class SofortDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_id(): string {
-		return 'sofort';
+		return 'multibanco';
 	}
 
 	/**
@@ -33,7 +33,7 @@ class SofortDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string[]
 	 */
 	public static function get_keywords(): array {
-		return [ 'sofort' ];
+		return [ 'multibanco' ];
 	}
 
 	/**
@@ -53,7 +53,7 @@ class SofortDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_title( ?string $account_country = null ): string {
-		return __( 'Sofort', 'woocommerce-payments' );
+		return __( 'Multibanco', 'woocommerce-payments' );
 	}
 
 	/**
@@ -74,7 +74,10 @@ class SofortDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_description( ?string $account_country = null ): string {
-		return __( 'Accept secure bank transfers from Austria, Belgium, Germany, Netherlands, and Spain.', 'woocommerce-payments' );
+		return __(
+			'A voucher based payment method for your customers in Portugal.',
+			'woocommerce-payments'
+		);
 	}
 
 	/**
@@ -90,16 +93,11 @@ class SofortDefinition implements PaymentMethodDefinitionInterface {
 	 * Get the list of supported countries
 	 *
 	 * @param string|null $account_country Optional. The merchant's account country.
+	 *
 	 * @return string[] Array of country codes
 	 */
 	public static function get_supported_countries( ?string $account_country = null ): array {
-		return [
-			Country_Code::AUSTRIA,
-			Country_Code::BELGIUM,
-			Country_Code::GERMANY,
-			Country_Code::NETHERLANDS,
-			Country_Code::SPAIN,
-		];
+		return [ Country_Code::PORTUGAL ];
 	}
 
 	/**
@@ -121,7 +119,7 @@ class SofortDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_icon_url( ?string $account_country = null ): string {
-		return plugins_url( 'assets/images/payment-methods/sofort.svg', WCPAY_PLUGIN_FILE );
+		return plugins_url( 'assets/images/payment-methods/multibanco-logo.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**
@@ -132,7 +130,7 @@ class SofortDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string Returns regular icon URL if no dark mode icon exists
 	 */
 	public static function get_dark_icon_url( ?string $account_country = null ): string {
-		return self::get_icon_url( $account_country );
+		return plugins_url( 'assets/images/payment-methods/multibanco-logo-dark.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**
@@ -143,7 +141,7 @@ class SofortDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_settings_icon_url( ?string $account_country = null ): string {
-		return self::get_icon_url( $account_country );
+		return plugins_url( 'assets/images/payment-methods/multibanco.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**

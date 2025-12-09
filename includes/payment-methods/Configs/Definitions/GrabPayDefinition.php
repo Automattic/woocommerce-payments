@@ -1,6 +1,6 @@
 <?php
 /**
- * Sofort Payment Method Definition
+ * GrabPay Payment Method Definition
  *
  * @package WCPay\PaymentMethods\Configs\Definitions
  */
@@ -14,9 +14,9 @@ use WCPay\Constants\Currency_Code;
 use WCPay\PaymentMethods\Configs\Utils\PaymentMethodUtils;
 
 /**
- * Class implementing the Sofort payment method definition.
+ * Class implementing the GrabPay payment method definition.
  */
-class SofortDefinition implements PaymentMethodDefinitionInterface {
+class GrabPayDefinition implements PaymentMethodDefinitionInterface {
 
 	/**
 	 * Get the internal ID for the payment method
@@ -24,7 +24,7 @@ class SofortDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_id(): string {
-		return 'sofort';
+		return 'grabpay';
 	}
 
 	/**
@@ -33,7 +33,7 @@ class SofortDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string[]
 	 */
 	public static function get_keywords(): array {
-		return [ 'sofort' ];
+		return [ 'grabpay', 'grab_pay', 'grab' ];
 	}
 
 	/**
@@ -53,7 +53,7 @@ class SofortDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_title( ?string $account_country = null ): string {
-		return __( 'Sofort', 'woocommerce-payments' );
+		return __( 'GrabPay', 'woocommerce-payments' );
 	}
 
 	/**
@@ -74,16 +74,20 @@ class SofortDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_description( ?string $account_country = null ): string {
-		return __( 'Accept secure bank transfers from Austria, Belgium, Germany, Netherlands, and Spain.', 'woocommerce-payments' );
+		return __( 'A popular digital wallet for cashless payments in Singapore.', 'woocommerce-payments' );
 	}
 
 	/**
 	 * Get the list of supported currencies
 	 *
+	 * Note: If WooPayments becomes available to merchants from Malaysia in the future, we'll need to not only add MYR here,
+	 * but also implement logic to limit the currency based on the Stripe account country,
+	 * so SG accounts only accept SGD, and MY accounts only accept MYR.
+	 *
 	 * @return string[] Array of currency codes
 	 */
 	public static function get_supported_currencies(): array {
-		return [ Currency_Code::EURO ];
+		return [ Currency_Code::SINGAPORE_DOLLAR ];
 	}
 
 	/**
@@ -93,13 +97,7 @@ class SofortDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string[] Array of country codes
 	 */
 	public static function get_supported_countries( ?string $account_country = null ): array {
-		return [
-			Country_Code::AUSTRIA,
-			Country_Code::BELGIUM,
-			Country_Code::GERMANY,
-			Country_Code::NETHERLANDS,
-			Country_Code::SPAIN,
-		];
+		return [ Country_Code::SINGAPORE ];
 	}
 
 	/**
@@ -110,6 +108,7 @@ class SofortDefinition implements PaymentMethodDefinitionInterface {
 	public static function get_capabilities(): array {
 		return [
 			PaymentMethodCapability::REFUNDS,
+			PaymentMethodCapability::DOMESTIC_TRANSACTIONS_ONLY,
 		];
 	}
 
@@ -121,7 +120,7 @@ class SofortDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_icon_url( ?string $account_country = null ): string {
-		return plugins_url( 'assets/images/payment-methods/sofort.svg', WCPAY_PLUGIN_FILE );
+		return plugins_url( 'assets/images/payment-methods/grabpay.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**

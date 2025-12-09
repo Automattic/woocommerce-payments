@@ -48,7 +48,6 @@ use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
 use WCPay\Logger;
 use WCPay\Payment_Information;
-use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\WooPay\WooPay_Order_Status_Sync;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Session_Rate_Limiter;
@@ -56,13 +55,10 @@ use WCPay\Tracker;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
 use WCPay\Payment_Methods\Afterpay_Payment_Method;
-use WCPay\Payment_Methods\Becs_Payment_Method;
 use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Payment_Methods\Klarna_Payment_Method;
-use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Method;
-use WCPay\Payment_Methods\Multibanco_Payment_Method;
-use WCPay\Payment_Methods\Grabpay_Payment_Method;
+use WCPay\PaymentMethods\Configs\Definitions\LinkDefinition;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 
 /**
@@ -4045,11 +4041,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// if credit card payment method is not enabled, we don't use stripe link.
 		if (
 			! in_array( CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID, $enabled_payment_methods, true ) &&
-			in_array( Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID, $enabled_payment_methods, true ) ) {
+			in_array( LinkDefinition::get_id(), $enabled_payment_methods, true ) ) {
+			$link_stripe_id          = LinkDefinition::get_id();
 			$enabled_payment_methods = array_filter(
 				$enabled_payment_methods,
-				static function ( $method ) {
-					return Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID !== $method;
+				static function ( $method ) use ( $link_stripe_id ) {
+					return $link_stripe_id !== $method;
 				}
 			);
 		}
@@ -4084,13 +4081,8 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		 * FLAG: PAYMENT_METHODS_LIST
 		 * As payment methods are converted to use definitions, they need to be removed from the list below.
 		 */
-		$available_methods[] = Becs_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$available_methods[] = Sepa_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$available_methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Afterpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$available_methods[] = Multibanco_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$available_methods[] = Grabpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 
 		// This gets all the registered payment method definitions. As new payment methods are converted from the legacy style, they need to be removed from the list above.
 		$payment_method_definitions = PaymentMethodDefinitionRegistry::instance()->get_all_payment_method_definitions();
@@ -4314,7 +4306,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	public function checkout_update_email_field_priority( $fields ) {
 		if ( is_checkout() || has_block( 'woocommerce/checkout' ) ) {
 			$is_link_enabled = in_array(
-				Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+				LinkDefinition::get_id(),
 				\WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout_filtered_by_fees( null, true ),
 				true
 			);
@@ -4366,12 +4358,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			if ( CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID === $selected_upe_payment_type ) {
 				$is_link_enabled = in_array(
-					Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
+					LinkDefinition::get_id(),
 					$enabled_payment_methods,
 					true
 				);
 				if ( $is_link_enabled ) {
-					$payment_methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+					$payment_methods[] = LinkDefinition::get_id();
 				}
 			}
 		}
@@ -4406,7 +4398,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return string|null The payment method type.
 	 */
 	private function get_payment_method_type_for_setup_intent( $intent, $token ) {
-		return 'wcpay_link' !== $token->get_type() ? $intent->get_payment_method_type() : Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
+		return 'wcpay_link' !== $token->get_type() ? $intent->get_payment_method_type() : LinkDefinition::get_id();
 	}
 
 	/**
