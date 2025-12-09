@@ -108,16 +108,25 @@ class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 	/**
 	 * Get the list of supported countries
 	 *
+	 * @param string|null $account_country Optional. The merchant's account country.
+	 *
 	 * @return string[] Array of country codes
 	 */
-	public static function get_supported_countries(): array {
-		return [
+	public static function get_supported_countries( ?string $account_country = null ): array {
+		// only domestic transactions are supported.
+		$supported_countries = [
 			Country_Code::UNITED_STATES,
 			Country_Code::CANADA,
 			Country_Code::AUSTRALIA,
 			Country_Code::NEW_ZEALAND,
 			Country_Code::UNITED_KINGDOM,
 		];
+
+		if ( null !== $account_country && in_array( strtoupper( $account_country ), $supported_countries, true ) ) {
+			return [ strtoupper( $account_country ) ];
+		}
+
+		return $supported_countries;
 	}
 
 	/**
