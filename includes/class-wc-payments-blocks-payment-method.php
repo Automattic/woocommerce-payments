@@ -75,19 +75,6 @@ class WC_Payments_Blocks_Payment_Method extends AbstractPaymentMethodType {
 
 		wp_set_script_translations( 'WCPAY_BLOCKS_CHECKOUT', 'woocommerce-payments' );
 
-		wp_add_inline_script(
-			'WCPAY_BLOCKS_CHECKOUT',
-			'var wcBlocksCheckoutData = ' . wp_json_encode(
-				[
-					'amount'         => WC()->cart ? WC()->cart->get_total( '' ) : 0,
-					'currency'       => get_woocommerce_currency(),
-					'storeCountry'   => WC()->countries->get_base_country(),
-					'billingCountry' => WC()->customer ? WC()->customer->get_billing_country() : 'US',
-				]
-			) . ';',
-			'before'
-		);
-
 		Fraud_Prevention_Service::maybe_append_fraud_prevention_token();
 
 		return [ 'WCPAY_BLOCKS_CHECKOUT' ];
