@@ -69,9 +69,14 @@ interface PaymentMethodDefinitionInterface {
 	 * Get the list of supported countries
 	 * Empty array means all countries are supported
 	 *
+	 * When account_country is provided, payment methods with domestic transaction
+	 * restrictions should return only that country (if supported), enabling
+	 * proper filtering at checkout.
+	 *
+	 * @param string|null $account_country Optional. The merchant's account country.
 	 * @return string[] Array of country codes
 	 */
-	public static function get_supported_countries(): array;
+	public static function get_supported_countries( ?string $account_country = null ): array;
 
 	/**
 	 * Get the payment method capabilities
