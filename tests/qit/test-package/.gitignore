@@ -7,5 +7,3 @@ results/
 playwright-report/
 allure-results/
 
-# Package lock (QIT installs dependencies dynamically)
-package-lock.json
