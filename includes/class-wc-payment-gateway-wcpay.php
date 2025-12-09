@@ -1179,7 +1179,9 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 			 * It seems that the status only needs to change in certain instances, and within those instances the intent
 			 * information is not added to the order, as shown by tests.
 			 */
-			if ( ! $blocked_by_fraud_rules && ( empty( $payment_information ) || ! $payment_information->is_changing_payment_method_for_subscription() ) ) {
+			if ( $e instanceof Process_Payment_Exception && 'duplicate_payment_amount_mismatch' === $e->get_error_code() ) {
+				$order->update_status( Order_Status::FAILED, $e->getMessage() );
+			} elseif ( ! $blocked_by_fraud_rules && ( empty( $payment_information ) || ! $payment_information->is_changing_payment_method_for_subscription() ) ) {
 				$order->update_status( Order_Status::FAILED );
 			}
 

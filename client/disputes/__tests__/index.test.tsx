@@ -41,6 +41,13 @@ jest.mock( 'data/index', () => ( {
 	useDisputes: jest.fn(),
 	useDisputesSummary: jest.fn(),
 	useSettings: jest.fn(),
+	usePmPromotions: jest
+		.fn()
+		.mockReturnValue( { pmPromotions: [], isLoading: false } ),
+	usePmPromotionActions: jest.fn().mockReturnValue( {
+		activatePmPromotion: jest.fn(),
+		dismissPmPromotion: jest.fn(),
+	} ),
 } ) );
 
 jest.mock( '@woocommerce/data', () => {
