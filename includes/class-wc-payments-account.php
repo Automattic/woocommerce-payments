@@ -2726,7 +2726,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 			'debug_log_enabled'      => 'yes' === $gateway->get_option( 'enable_logging' ),
 
 			'payment_request'        => [
-				'enabled'              => 'yes' === $gateway->get_option( 'payment_request' ),
+				'enabled'              => $gateway->is_payment_request_enabled(),
 				'enabled_locations'    => $gateway->get_option( 'payment_request_button_locations' ),
 				'button_type'          => $gateway->get_option( 'payment_request_button_type' ),
 				'button_size'          => $gateway->get_option( 'payment_request_button_size' ),
