@@ -55,7 +55,6 @@ use WCPay\Session_Rate_Limiter;
 use WCPay\Tracker;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
-use WCPay\Payment_Methods\Afterpay_Payment_Method;
 use WCPay\Payment_Methods\Becs_Payment_Method;
 use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Payment_Methods\Klarna_Payment_Method;
@@ -378,7 +377,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function get_title() {
 		if ( ! $this->title ) {
-			$this->title        = $this->payment_method->get_title();
+			$this->title        = $this->payment_method->get_title( $this->get_account_country() );
 			$this->method_title = "WooPayments ($this->title)";
 		}
 		return parent::get_title();
@@ -569,6 +568,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function init_hooks() {
 		add_action( 'init', [ $this, 'maybe_update_properties_with_country' ] );
+
 		// Only add certain actions/filter if this is the main gateway (i.e. not split UPE).
 		if ( self::GATEWAY_ID === $this->id ) {
 			add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
@@ -605,13 +605,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Updates icon and title using the account country.
 	 * This method runs on init is not in the controller because get_account_country might
 	 * make a request to the API if the account data is not cached.
+	 * Needed for classic checkout.
 	 *
 	 * @return void
 	 */
 	public function maybe_update_properties_with_country(): void {
-		if ( Afterpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID !== $this->stripe_id ) {
+		if ( \WCPay\PaymentMethods\Configs\Definitions\AfterpayDefinition::get_id() !== $this->stripe_id ) {
 			return;
 		}
+
 		$account_country = $this->get_account_country();
 		$this->icon      = $this->payment_method->get_icon( $account_country );
 		$this->title     = $this->payment_method->get_title( $account_country );
@@ -4087,7 +4089,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$available_methods[] = Becs_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Sepa_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$available_methods[] = Afterpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Multibanco_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Grabpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
