@@ -80,6 +80,7 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 
 		$payment_method_definitions = [
 			\WCPay\PaymentMethods\Configs\Definitions\AffirmDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\AfterpayDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\SofortDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition::class,
@@ -94,7 +95,6 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 			Sepa_Payment_Method::class,
 			Becs_Payment_Method::class,
 			Link_Payment_Method::class,
-			Afterpay_Payment_Method::class,
 		];
 
 		foreach ( $payment_method_definitions as $definition_class ) {
