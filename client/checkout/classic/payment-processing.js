@@ -101,7 +101,7 @@ export function unblockUI( $form ) {
  * If an error occurs, the function removes loading effect from the provided jQuery form and thus unblocks it,
  * and shows an error message in the checkout.
  *
- * @param {Object} elements The Stripe elements object to be validated.
+ * @param {StripeElements} elements The Stripe elements object to be validated.
  * @return {Promise} Promise for the checkout submission.
  */
 export function validateElements( elements ) {
