@@ -238,7 +238,6 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 			name: /By checking this box, you acknowledge that challenging this Visa compliance dispute incurs a \$500 USD fee/i,
 		} );
 
-		expect( checkbox ).toBeInTheDocument();
 		expect( checkbox ).toBeChecked();
 	} );
 
