@@ -98,7 +98,7 @@ export const isVisaComplianceDispute = (
 
 	return (
 		dispute.reason === 'noncompliant' ||
-		( dispute?.enhanced_eligibility_types || [] ).includes(
+		( dispute.enhanced_eligibility_types || [] ).includes(
 			'visa_compliance'
 		)
 	);
