@@ -165,9 +165,9 @@ class Payment_Information {
 		$this->payment_method           = $payment_method;
 		$this->order                    = $order;
 		$this->token                    = $token;
-		$this->payment_initiated_by     = $payment_initiated_by ?? Payment_Initiated_By::CUSTOMER();
-		$this->manual_capture           = $manual_capture ?? Payment_Capture_Type::AUTOMATIC();
-		$this->payment_type             = $payment_type ?? Payment_Type::SINGLE();
+		$this->payment_initiated_by     = $payment_initiated_by ?? Payment_Initiated_By::CUSTOMER;
+		$this->manual_capture           = $manual_capture ?? Payment_Capture_Type::AUTOMATIC;
+		$this->payment_type             = $payment_type ?? Payment_Type::SINGLE;
 		$this->cvc_confirmation         = $cvc_confirmation;
 		$this->fingerprint              = $fingerprint;
 		$this->payment_method_stripe_id = $payment_method_stripe_id;
@@ -180,7 +180,7 @@ class Payment_Information {
 	 * @return bool True if payment was initiated by the merchant, false otherwise.
 	 */
 	public function is_merchant_initiated(): bool {
-		return $this->payment_initiated_by->equals( Payment_Initiated_By::MERCHANT() );
+		return $this->payment_initiated_by->equals( Payment_Initiated_By::MERCHANT );
 	}
 
 	/**
