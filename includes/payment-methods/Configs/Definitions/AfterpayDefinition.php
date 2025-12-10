@@ -87,6 +87,10 @@ class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 			return __( 'Allow customers to pay over time with Clearpay.', 'woocommerce-payments' );
 		}
 
+		if ( Country_Code::UNITED_STATES === $account_country ) {
+			return __( 'Allow customers to pay over time with Cash App Afterpay.', 'woocommerce-payments' );
+		}
+
 		return __( 'Allow customers to pay over time with Afterpay.', 'woocommerce-payments' );
 	}
 
