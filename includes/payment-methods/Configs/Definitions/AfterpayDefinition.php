@@ -174,14 +174,14 @@ class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 	 */
 	public static function get_dark_icon_url( ?string $account_country = null ): string {
 		if ( Country_Code::UNITED_KINGDOM === $account_country ) {
-			return plugins_url( 'assets/images/payment-methods/clearpay-dark.svg', WCPAY_PLUGIN_FILE );
+			return plugins_url( 'assets/images/payment-methods/clearpay.svg', WCPAY_PLUGIN_FILE );
 		}
 
 		if ( Country_Code::UNITED_STATES === $account_country ) {
 			return plugins_url( 'assets/images/payment-methods/afterpay-cashapp-logo-dark.svg', WCPAY_PLUGIN_FILE );
 		}
 
-		return plugins_url( 'assets/images/payment-methods/afterpay-badge-dark.svg', WCPAY_PLUGIN_FILE );
+		return plugins_url( 'assets/images/payment-methods/afterpay-badge.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**
