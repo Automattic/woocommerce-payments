@@ -99,11 +99,10 @@ class Logger {
 	 */
 	public static function exception( $message, $e, $context = [] ) {
 		self::error(
-			$message,
+			$message . ' Exception: ' . $e->getMessage(),
 			array_merge(
 				[
 					'exception' => get_class( $e ),
-					'message'   => $e->getMessage(),
 					'code'      => $e->getCode(),
 					'trace'     => $e->getTraceAsString(),
 				],
