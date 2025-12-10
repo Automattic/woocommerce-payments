@@ -73,6 +73,7 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 
 		$payment_method_definitions = [
 			\WCPay\PaymentMethods\Configs\Definitions\AffirmDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\AfterpayDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\BecsDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\EpsDefinition::class,
@@ -86,7 +87,6 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 
 		$payment_method_classes = [
 			CC_Payment_Method::class,
-			Afterpay_Payment_Method::class,
 			Klarna_Payment_Method::class,
 		];
 

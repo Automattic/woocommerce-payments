@@ -102,11 +102,13 @@ button.wcpay-stripelink-modal-trigger:hover {
 	#radio-control-wc-payment-method-options-woocommerce_payments_affirm__label
 		img {
 		min-width: 50px;
+		height: auto;
 	}
 	/* stylelint-disable-next-line selector-id-pattern */
 	#radio-control-wc-payment-method-options-woocommerce_payments_afterpay_clearpay__label
 		img {
-		min-width: 64px;
+		min-width: auto;
+		height: auto;
 	}
 }
 
