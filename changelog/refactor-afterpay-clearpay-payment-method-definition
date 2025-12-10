@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+refactor: remove Afterpay_Payment_Method in favor of AfterpayDefinition
