@@ -338,59 +338,6 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	}
 
 	/**
-	 * Procedurally build a Tracks Event Object.
-	 *
-	 * @param \WP_User $user                  WP_user object.
-	 * @param string   $event_name            The name of the event.
-	 * @param array    $properties            Custom properties to send with the event.
-	 *
-	 * @return \Jetpack_Tracks_Event|\WP_Error
-	 */
-	private function tracks_build_event_obj( $user, $event_name, $properties = [] ) {
-		$identity = $this->tracks_get_identity();
-		$site_url = get_option( 'siteurl' );
-
-		$properties['_lg']       = isset( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ) : '';
-		$properties['blog_url']  = $site_url;
-		$properties['blog_id']   = \Jetpack_Options::get_option( 'id' );
-		$properties['user_lang'] = $user->get( 'WPLANG' );
-		$properties['store_id']  = $this->get_wc_store_id();
-
-		// Add event property for test mode vs. live mode events.
-		$properties['test_mode']     = WC_Payments::mode()->is_test() ? 1 : 0;
-		$properties['wcpay_version'] = WCPAY_VERSION_NUMBER;
-
-		// Add client's user agent to the event properties.
-		if ( ! empty( $_SERVER['HTTP_USER_AGENT'] ) ) {
-			$properties['_via_ua'] = sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) );
-		}
-
-		$blog_details = [
-			'blog_lang' => isset( $properties['blog_lang'] ) ? $properties['blog_lang'] : get_bloginfo( 'language' ),
-		];
-
-		$timestamp        = round( microtime( true ) * 1000 );
-		$timestamp_string = is_string( $timestamp ) ? $timestamp : number_format( $timestamp, 0, '', '' );
-
-		/**
-		 * Ignore incorrect argument definition in Jetpack_Tracks_Event.
-		 *
-		 * @psalm-suppress InvalidArgument
-		 */
-		return new \Jetpack_Tracks_Event(
-			array_merge(
-				$blog_details,
-				(array) $properties,
-				$identity,
-				[
-					'_en' => $event_name,
-					'_ts' => $timestamp_string,
-				]
-			)
-		);
-	}
-
-	/**
 	 * Returns WC store_id value, if available.
 	 * store_id introduced in WC 8.4.
 	 *
@@ -679,8 +626,8 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		wp_add_inline_script(
 			'wcpay-frontend-tracks',
 			"
-			var wcpayConfig = wcpayConfig || JSON.parse( decodeURIComponent( '" . esc_js( $wcpay_config ) . "' ) );
-			",
+            var wcpayConfig = wcpayConfig || JSON.parse( decodeURIComponent( '" . esc_js( $wcpay_config ) . "' ) );
+            ",
 			'before'
 		);
 
@@ -691,5 +638,58 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		);
 
 		wp_enqueue_script( 'wcpay-frontend-tracks' );
+	}
+
+	/**
+	 * Procedurally build a Tracks Event Object.
+	 *
+	 * @param \WP_User $user                  WP_user object.
+	 * @param string   $event_name            The name of the event.
+	 * @param array    $properties            Custom properties to send with the event.
+	 *
+	 * @return \Jetpack_Tracks_Event|\WP_Error
+	 */
+	private function tracks_build_event_obj( $user, $event_name, $properties = [] ) {
+		$identity = $this->tracks_get_identity();
+		$site_url = get_option( 'siteurl' );
+
+		$properties['_lg']       = isset( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ? sanitize_text_field( wp_unslash( $_SERVER['HTTP_ACCEPT_LANGUAGE'] ) ) : '';
+		$properties['blog_url']  = $site_url;
+		$properties['blog_id']   = \Jetpack_Options::get_option( 'id' );
+		$properties['user_lang'] = $user->get( 'WPLANG' );
+		$properties['store_id']  = $this->get_wc_store_id();
+
+		// Add event property for test mode vs. live mode events.
+		$properties['test_mode']     = WC_Payments::mode()->is_test() ? 1 : 0;
+		$properties['wcpay_version'] = WCPAY_VERSION_NUMBER;
+
+		// Add client's user agent to the event properties.
+		if ( ! empty( $_SERVER['HTTP_USER_AGENT'] ) ) {
+			$properties['_via_ua'] = sanitize_text_field( wp_unslash( $_SERVER['HTTP_USER_AGENT'] ) );
+		}
+
+		$blog_details = [
+			'blog_lang' => isset( $properties['blog_lang'] ) ? $properties['blog_lang'] : get_bloginfo( 'language' ),
+		];
+
+		$timestamp        = round( microtime( true ) * 1000 );
+		$timestamp_string = is_string( $timestamp ) ? $timestamp : number_format( $timestamp, 0, '', '' );
+
+		/**
+		 * Ignore incorrect argument definition in Jetpack_Tracks_Event.
+		 *
+		 * @psalm-suppress InvalidArgument
+		 */
+		return new \Jetpack_Tracks_Event(
+			array_merge(
+				$blog_details,
+				(array) $properties,
+				$identity,
+				[
+					'_en' => $event_name,
+					'_ts' => $timestamp_string,
+				]
+			)
+		);
 	}
 }

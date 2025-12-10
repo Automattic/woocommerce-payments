@@ -334,66 +334,6 @@ class WC_Payments_Checkout {
 	}
 
 	/**
-	 * Gets the config for a payment method.
-	 *
-	 * @param string $payment_method_id The payment method ID.
-	 * @param string $account_country The account country.
-	 * @return array
-	 */
-	private function get_config_for_payment_method( $payment_method_id, $account_country ) {
-		$payment_method = $this->gateway->wc_payments_get_payment_method_by_id( $payment_method_id );
-
-		if ( ! $payment_method ) {
-			return [];
-		}
-
-		$config = [
-			'isReusable'     => $payment_method->is_reusable(),
-			'isBnpl'         => $payment_method->is_bnpl(),
-			'title'          => $payment_method->get_title( $account_country ),
-			'icon'           => $payment_method->get_icon( $account_country ),
-			'darkIcon'       => $payment_method->get_dark_icon( $account_country ),
-			'showSaveOption' => $this->should_upe_payment_method_show_save_option( $payment_method ),
-			'countries'      => $payment_method->get_countries(),
-		];
-
-		$gateway_for_payment_method    = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );
-		$config['gatewayId']           = $gateway_for_payment_method->id;
-		$config['testingInstructions'] = WC_Payments_Utils::esc_interpolated_html(
-			/* translators: link to Stripe testing page */
-			$payment_method->get_testing_instructions( $account_country ),
-			[
-				'a'      => '<a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
-				'strong' => '<strong>',
-				'number' => '<button type="button" class="js-woopayments-copy-test-number" aria-label="' . esc_attr( __( 'Click to copy the test number to clipboard', 'woocommerce-payments' ) ) . '" title="' . esc_attr( __( 'Copy to clipboard', 'woocommerce-payments' ) ) . '"><i></i><span>',
-			]
-		);
-
-		$should_enable_network_saved_cards = Payment_Method::CARD === $payment_method_id && WC_Payments::is_network_saved_cards_enabled();
-		$config['forceNetworkSavedCards']  = $should_enable_network_saved_cards || $gateway_for_payment_method->should_use_stripe_platform_on_checkout_page();
-
-		return $config;
-	}
-
-	/**
-	 * Checks if the save option for a payment method should be displayed or not.
-	 *
-	 * @param UPE_Payment_Method $payment_method UPE Payment Method instance.
-	 * @return bool - True if the payment method is reusable and the saved cards feature is enabled for the gateway and there is no subscription item in the cart, false otherwise.
-	 */
-	private function should_upe_payment_method_show_save_option( $payment_method ) {
-		if ( $payment_method->get_id() === Payment_Method::CARD && is_user_logged_in() && WC_Payments_Features::is_woopay_enabled() ) {
-			return false;
-		}
-
-		if ( $payment_method->is_reusable() ) {
-			return $this->gateway->is_saved_cards_enabled() && ! $this->gateway->is_subscription_item_in_cart();
-		}
-
-		return false;
-	}
-
-	/**
 	 * Renders the UPE input fields needed to get the user's payment information on the checkout page.
 	 *
 	 * We also add the JavaScript which drives the UI.
@@ -467,7 +407,7 @@ class WC_Payments_Checkout {
 					?>
 				<p class="testmode-info">
 					<?php
-						// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+                        // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
 							echo WC_Payments_Utils::esc_interpolated_html(
 							/* translators: link to Stripe testing page */
 								$this->gateway->get_payment_method()->get_testing_instructions( $this->account->get_account_country() ),
@@ -531,6 +471,66 @@ class WC_Payments_Checkout {
 		if ( null !== $payment_method_id ) {
 			$this->gateway = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );
 		}
+	}
+
+	/**
+	 * Gets the config for a payment method.
+	 *
+	 * @param string $payment_method_id The payment method ID.
+	 * @param string $account_country The account country.
+	 * @return array
+	 */
+	private function get_config_for_payment_method( $payment_method_id, $account_country ) {
+		$payment_method = $this->gateway->wc_payments_get_payment_method_by_id( $payment_method_id );
+
+		if ( ! $payment_method ) {
+			return [];
+		}
+
+		$config = [
+			'isReusable'     => $payment_method->is_reusable(),
+			'isBnpl'         => $payment_method->is_bnpl(),
+			'title'          => $payment_method->get_title( $account_country ),
+			'icon'           => $payment_method->get_icon( $account_country ),
+			'darkIcon'       => $payment_method->get_dark_icon( $account_country ),
+			'showSaveOption' => $this->should_upe_payment_method_show_save_option( $payment_method ),
+			'countries'      => $payment_method->get_countries(),
+		];
+
+		$gateway_for_payment_method    = $this->gateway->wc_payments_get_payment_gateway_by_id( $payment_method_id );
+		$config['gatewayId']           = $gateway_for_payment_method->id;
+		$config['testingInstructions'] = WC_Payments_Utils::esc_interpolated_html(
+			/* translators: link to Stripe testing page */
+			$payment_method->get_testing_instructions( $account_country ),
+			[
+				'a'      => '<a href="https://woocommerce.com/document/woopayments/testing-and-troubleshooting/testing/#test-cards" target="_blank">',
+				'strong' => '<strong>',
+				'number' => '<button type="button" class="js-woopayments-copy-test-number" aria-label="' . esc_attr( __( 'Click to copy the test number to clipboard', 'woocommerce-payments' ) ) . '" title="' . esc_attr( __( 'Copy to clipboard', 'woocommerce-payments' ) ) . '"><i></i><span>',
+			]
+		);
+
+		$should_enable_network_saved_cards = Payment_Method::CARD === $payment_method_id && WC_Payments::is_network_saved_cards_enabled();
+		$config['forceNetworkSavedCards']  = $should_enable_network_saved_cards || $gateway_for_payment_method->should_use_stripe_platform_on_checkout_page();
+
+		return $config;
+	}
+
+	/**
+	 * Checks if the save option for a payment method should be displayed or not.
+	 *
+	 * @param UPE_Payment_Method $payment_method UPE Payment Method instance.
+	 * @return bool - True if the payment method is reusable and the saved cards feature is enabled for the gateway and there is no subscription item in the cart, false otherwise.
+	 */
+	private function should_upe_payment_method_show_save_option( $payment_method ) {
+		if ( $payment_method->get_id() === Payment_Method::CARD && is_user_logged_in() && WC_Payments_Features::is_woopay_enabled() ) {
+			return false;
+		}
+
+		if ( $payment_method->is_reusable() ) {
+			return $this->gateway->is_saved_cards_enabled() && ! $this->gateway->is_subscription_item_in_cart();
+		}
+
+		return false;
 	}
 
 	/**
