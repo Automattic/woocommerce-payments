@@ -73,9 +73,9 @@ export default defineConfig( {
 	/* Configure projects for subpackages */
 	projects: [
 		{
-			name: 'chromium',
+			name: 'default',
 			use: { ...devices[ 'Desktop Chrome' ] },
-			testMatch: /tests\/basic\.spec\.ts$/,
+			testMatch: /basic\.spec\.ts$/,
 		},
 		{
 			name: 'shopper',
