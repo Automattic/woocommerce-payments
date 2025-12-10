@@ -20,7 +20,7 @@ use WCPay\Logger;
 /**
  * Address provider implementation for WooCommerce Payments.
  *
- * @psalm-suppress UndefinedClass
+ * @phpstan-ignore-line // UndefinedClass
  */
 class WC_Payments_Address_Provider extends AbstractAutomatticAddressProvider {
 	/**

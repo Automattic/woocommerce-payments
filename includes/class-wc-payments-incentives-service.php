@@ -251,7 +251,7 @@ class WC_Payments_Incentives_Service {
 		/**
 		 * The WC stub uses 'number' as the return type.
 		 *
-		 * @psalm-suppress UndefinedDocblockClass
+		 * @phpstan-ignore-line // UndefinedDocblockClass
 		 */
 		$store_context = [
 			'country'      => $country_code,

@@ -879,7 +879,7 @@ class WC_Payments {
 	/**
 	 * Add the WooCommerce Payments address autocomplete provider, but only if a WCPay gateway is enabled.
 	 *
-	 * @psalm-suppress MissingDependency
+	 * @phpstan-ignore-line // MissingDependency
 	 *
 	 * @param array $providers The address providers.
 	 * @return array The address providers.

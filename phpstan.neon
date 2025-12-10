@@ -1,0 +1,49 @@
+# PHPStan configuration for WooCommerce Payments
+# This replaces the previous Psalm configuration
+
+includes:
+    - vendor/phpstan/phpstan/conf/bleedingEdge.neon
+
+parameters:
+    level: 5
+
+    # Files and directories to analyze
+    paths:
+        - woocommerce-payments.php
+        - includes
+        - src
+
+    # Files and directories to exclude
+    excludePaths:
+        - includes/in-person-payments/templates
+        - includes/subscriptions
+        - includes/compat/subscriptions
+        - vendor
+        - client
+        - docker
+        - release
+        - tests
+        - bin
+        - assets
+        - languages
+        - i18n
+
+    # Bootstrap files
+    bootstrapFiles:
+        - psalm-loader.php
+
+    scanFiles:
+        - phpstan-wordpress-constants.php
+
+    # Handle undefined constants gracefully
+    reportUnmatchedIgnoredErrors: false
+
+    # Allow dynamic properties for WordPress classes
+    dynamicConstantNames:
+        - 'true'
+
+    # Ignore common WordPress patterns that cause false positives
+    ignoreErrors:
+        - '#Call to function (is_admin|is_user_logged_in|current_user_can|__|_e|esc_attr|esc_html|wp_kses|get_option|update_option|do_action|apply_filters|add_action|add_filter|wp_enqueue_script|wp_enqueue_style|wp_localize_script|wp_redirect|wp_safe_redirect|wp_die|wp_mail|get_transient|set_transient|plugin_dir_path|plugin_dir_url|get_plugin_data)#'
+        -
+             identifier: missingType.iterableValue

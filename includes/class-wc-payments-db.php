@@ -101,7 +101,7 @@ class WC_Payments_DB {
 			/**
 			 * As wc_get_orders may also return stdClass, Psalm infers error.
 			 *
-			 * @psalm-suppress UndefinedMethod
+			 * @phpstan-ignore-line // UndefinedMethod
 			 */
 			return (string) $orders[0]->get_id();
 		}

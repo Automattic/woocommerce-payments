@@ -34,7 +34,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 *
 	 * Tell Psalm to ignore the WC_Subscription class, this class is only loaded if Subscriptions is active.
 	 *
-	 * @psalm-suppress UndefinedDocblockClass
+	 * @phpstan-ignore-line // UndefinedDocblockClass
 	 *
 	 * @var WC_Subscription|null
 	 */
@@ -186,7 +186,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 			/**
 			 * Tell Psalm to ignore the WC_Subscription class, this class is only loaded if Subscriptions is active.
 			 *
-			 * @psalm-suppress UndefinedDocblockClass
+			 * @phpstan-ignore-line // UndefinedDocblockClass
 			 */
 			return $this->current_my_account_subscription->get_currency();
 		}
@@ -205,7 +205,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 				/**
 				 * Tell Psalm to ignore the WC_Subscription class, this class is only loaded if Subscriptions is active.
 				 *
-				 * @psalm-suppress UndefinedDocblockClass
+				 * @phpstan-ignore-line // UndefinedDocblockClass
 				 */
 				return $subscription ? $subscription->get_currency() : $return;
 			}
@@ -216,7 +216,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 		/**
 		 * Tell Psalm to ignore the WC_Subscription class, this class is only loaded if Subscriptions is active.
 		 *
-		 * @psalm-suppress UndefinedDocblockClass
+		 * @phpstan-ignore-line // UndefinedDocblockClass
 		 */
 		return $switch_subscription ? $switch_subscription->get_currency() : $return;
 	}
@@ -341,7 +341,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 *
 	 * Tell Psalm to ignore the WC_Subscription class, this class is only loaded if Subscriptions is active.
 	 *
-	 * @psalm-suppress UndefinedDocblockClass
+	 * @phpstan-ignore-line // UndefinedDocblockClass
 	 *
 	 * @param array           $subscription_details The details related to the subscription.
 	 * @param WC_Subscription $subscription         The subscription being acted on.
@@ -371,7 +371,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 *
 	 * Tell Psalm to ignore the WC_Subscription class, this class is only loaded if Subscriptions is active.
 	 *
-	 * @psalm-suppress UndefinedDocblockClass
+	 * @phpstan-ignore-line // UndefinedDocblockClass
 	 *
 	 * @param string          $formatted    The subscription formatted total.
 	 * @param WC_Subscription $subscription The subscription being acted on.
@@ -407,7 +407,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 		 * Get the currency code from the subscription, then return the explicit price.
 		 * Tell Psalm to ignore the WC_Subscription class, this class is only loaded if Subscriptions is active.
 		 *
-		 * @psalm-suppress UndefinedDocblockClass
+		 * @phpstan-ignore-line // UndefinedDocblockClass
 		 */
 		$currency_code = $this->current_my_account_subscription->get_currency() ?? get_woocommerce_currency();
 
@@ -430,7 +430,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 		/**
 		 * Tell Psalm to ignore the WC_Subscription class, this class is only loaded if Subscriptions is active.
 		 *
-		 * @psalm-suppress UndefinedClass
+		 * @phpstan-ignore-line // UndefinedClass
 		 */
 		return is_a( $this->current_my_account_subscription, 'WC_Subscription' );
 	}
@@ -482,7 +482,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 *
 	 * Tell Psalm to ignore the WC_Subscription class, this class is only loaded if Subscriptions is active.
 	 *
-	 * @psalm-suppress UndefinedDocblockClass
+	 * @phpstan-ignore-line // UndefinedDocblockClass
 	 *
 	 * @return WC_Subscription|bool The subscription object, or false if it cannot be found.
 	 */
@@ -500,7 +500,7 @@ class WooCommerceSubscriptions extends BaseCompatibility {
 	 *
 	 * Tell Psalm to ignore the WC_Subscription class, this class is only loaded if Subscriptions is active.
 	 *
-	 * @psalm-suppress UndefinedDocblockClass
+	 * @phpstan-ignore-line // UndefinedDocblockClass
 	 *
 	 * @return WC_Subscription|bool The subscription object, or false if it cannot be found.
 	 */

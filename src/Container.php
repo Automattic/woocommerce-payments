@@ -97,11 +97,11 @@ class Container implements ContainerInterface {
 	 * @throws ContainerException In case the ID could not be resolved or instantiated.
 	 *
 	 * Psalm expects $id to be a string, based on ContainerInterface.
-	 * @psalm-suppress MoreSpecificImplementedParamType
+	 * @phpstan-ignore-line // MoreSpecificImplementedParamType
 	 *
 	 * PSR-11 containers declares to throw an un-throwable interface
 	 * (it does not extend Throwable), and Psalm does not accept it.
-	 * @psalm-suppress MissingThrowsDocblock
+	 * @phpstan-ignore-line // MissingThrowsDocblock
 	 */
 	public function get( $id ) {
 		try {

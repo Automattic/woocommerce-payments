@@ -63,7 +63,7 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 		try {
 			// phpcs:ignore
 			/**
-			 * @psalm-suppress UndefinedClass
+			 * @phpstan-ignore-line // UndefinedClass
 			 */
 			$response = WooPay_Session::get_init_session_request( null, null, null, $request );
 

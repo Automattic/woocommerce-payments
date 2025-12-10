@@ -16,6 +16,7 @@
 	<exclude-pattern>./vendor-dist/*</exclude-pattern>
 	<exclude-pattern>./lib/*</exclude-pattern>
 	<exclude-pattern>./bin/*</exclude-pattern>
+	<exclude-pattern>./phpstan-wordpress-constants.php</exclude-pattern>
 
 	<!-- Configs -->
 	<config name="minimum_supported_wp_version" value="6.0" />

@@ -639,7 +639,7 @@ class WooPay_Session {
 		/**
 		 * Suppress psalm error from Jetpack Connection namespacing WP_Error.
 		 *
-		 * @psalm-suppress UndefinedDocblockClass
+		 * @phpstan-ignore-line // UndefinedDocblockClass
 		 */
 		$response = \Automattic\Jetpack\Connection\Client::remote_request( $args, wp_json_encode( $body ) );
 

@@ -406,7 +406,7 @@ class WC_Payments_WooPay_Button_Handler {
 		/**
 		 * Psalm throws an error here even though we check the class existence.
 		 *
-		 * @psalm-suppress UndefinedClass
+		 * @phpstan-ignore-line // UndefinedClass
 		 */
 		// We don't support pre-order products to be paid upon release.
 		if ( class_exists( 'WC_Pre_Orders_Cart' ) && class_exists( 'WC_Pre_Orders_Product' ) ) {

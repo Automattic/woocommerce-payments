@@ -359,7 +359,7 @@ class Analytics {
 			/**
 			 * Skip implode complaining array_map as wrong argument.
 			 *
-			 * @psalm-suppress InvalidArgument
+			 * @phpstan-ignore-line // InvalidArgument
 			 */
 			$currency_is = sprintf( "'%s'", implode( "', '", array_map( 'esc_sql', $currency_args['currency_is'] ) ) );
 			$clauses[]   = "AND {$currency_field} IN ({$currency_is})";
@@ -369,7 +369,7 @@ class Analytics {
 			/**
 			 * Skip implode complaining array_map as wrong argument.
 			 *
-			 * @psalm-suppress InvalidArgument
+			 * @phpstan-ignore-line // InvalidArgument
 			 */
 			$currency_is_not = sprintf( "'%s'", implode( "', '", array_map( 'esc_sql', $currency_args['currency_is_not'] ) ) );
 			$clauses[]       = "AND {$currency_field} NOT IN ({$currency_is_not})";
