@@ -89,9 +89,10 @@ class IdealDefinition implements PaymentMethodDefinitionInterface {
 	/**
 	 * Get the list of supported countries
 	 *
+	 * @param string|null $account_country Optional. The merchant's account country.
 	 * @return string[] Array of country codes
 	 */
-	public static function get_supported_countries(): array {
+	public static function get_supported_countries( ?string $account_country = null ): array {
 		return [ Country_Code::NETHERLANDS ];
 	}
 
@@ -168,7 +169,7 @@ class IdealDefinition implements PaymentMethodDefinitionInterface {
 	 * @return bool
 	 */
 	public static function is_available_for( string $currency, string $account_country ): bool {
-		return PaymentMethodUtils::is_available_for( self::get_supported_currencies(), self::get_supported_countries(), $currency, $account_country );
+		return PaymentMethodUtils::is_available_for( self::get_supported_currencies(), self::get_supported_countries( $account_country ), $currency, $account_country );
 	}
 
 	/**
