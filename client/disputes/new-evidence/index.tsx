@@ -574,7 +574,7 @@ export default ( { query }: { query: { id: string } } ) => {
 		dispute.status !== 'needs_response' &&
 		dispute.status !== 'warning_needs_response';
 
-	const isVisaCompliance = dispute && isVisaComplianceDispute( dispute );
+	const isVisaCompliance = isVisaComplianceDispute( dispute );
 
 	// --- Accordion summary content (must be before any early returns) ---
 	const summaryItems = useMemo( () => {
