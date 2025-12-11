@@ -70,11 +70,11 @@ class LinkDefinition implements PaymentMethodDefinitionInterface {
 	 * Get the customer-facing description of the payment method
 	 *
 	 * @param string|null $account_country Optional. The merchant's account country.
+	 *
 	 * @return string
 	 */
 	public static function get_description( ?string $account_country = null ): string {
-		// Description is hardcoded in the React component.
-		return '';
+		return __( 'Link autofills your customers’ payment and shipping details to deliver an easy and seamless checkout experience.', 'woocommerce-payments' );
 	}
 
 	/**
@@ -146,6 +146,7 @@ class LinkDefinition implements PaymentMethodDefinitionInterface {
 	 * Get the testing instructions for the payment method
 	 *
 	 * @param string $account_country The merchant's account country.
+	 *
 	 * @return string HTML string containing testing instructions
 	 */
 	public static function get_testing_instructions( string $account_country ): string {
