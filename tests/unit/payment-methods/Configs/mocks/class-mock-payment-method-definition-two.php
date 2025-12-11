@@ -42,7 +42,7 @@ class SecondMockPaymentMethodDefinition implements PaymentMethodDefinitionInterf
 		return 'Second mock payment method for testing';
 	}
 
-	public static function get_supported_countries(): array {
+	public static function get_supported_countries( ?string $account_country = null ): array {
 		return [ 'US' ];
 	}
 
@@ -72,7 +72,7 @@ class SecondMockPaymentMethodDefinition implements PaymentMethodDefinitionInterf
 
 	public static function is_available_for( string $currency, string $account_country ): bool {
 		return in_array( $currency, self::get_supported_currencies(), true ) &&
-			in_array( $account_country, self::get_supported_countries(), true );
+			in_array( $account_country, self::get_supported_countries( $account_country ), true );
 	}
 
 	public static function get_limits_per_currency(): array {

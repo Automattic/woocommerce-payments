@@ -255,7 +255,7 @@ class WC_Payments_Status {
 						<td class="help"><?php echo wc_help_tip( esc_html__( 'Whether the store has Payment Request enabled or not.', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped, WordPress.Security.EscapeOutput.OutputNotEscaped */ ?></td>
 						<td>
 						<?php
-						$payment_request_enabled           = 'yes' === $this->gateway->get_option( 'payment_request' );
+						$payment_request_enabled           = $this->gateway->is_payment_request_enabled();
 						$payment_request_enabled_locations = $this->gateway->get_option( 'payment_request_button_locations', [] );
 						$payment_request_enabled_locations = empty( $payment_request_enabled_locations ) ? 'no locations enabled' : implode( ',', $payment_request_enabled_locations );
 						echo esc_html( $payment_request_enabled ? __( 'Enabled', 'woocommerce-payments' ) . ' (' . $payment_request_enabled_locations . ')' : __( 'Disabled', 'woocommerce-payments' ) );

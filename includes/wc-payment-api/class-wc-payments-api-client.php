@@ -85,6 +85,7 @@ class WC_Payments_API_Client implements MultiCurrencyApiClientInterface {
 	const RECOMMENDED_PAYMENT_METHODS  = 'payment_methods/recommended';
 	const ADDRESS_AUTOCOMPLETE_TOKEN   = 'address-autocomplete-token';
 	const STORE_SETUP_API              = 'accounts/store_setup';
+	const PROMOTIONS_API               = 'payment_method_promotions';
 
 	/**
 	 * Common keys in API requests/responses that we might want to redact.

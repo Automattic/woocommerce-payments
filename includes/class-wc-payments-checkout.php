@@ -207,6 +207,7 @@ class WC_Payments_Checkout {
 			'isWooPayGlobalThemeSupportEnabled' => $this->gateway->is_woopay_global_theme_support_enabled(),
 			'woopayHost'                        => WooPay_Utilities::get_woopay_url(),
 			'platformTrackerNonce'              => wp_create_nonce( 'platform_tracks_nonce' ),
+			'isShopperTrackingEnabled'          => apply_filters( 'wcpay_shopper_tracking_enabled', 'no' !== get_option( 'woocommerce_allow_tracking' ) ),
 			'accountIdForIntentConfirmation'    => apply_filters( 'wc_payments_account_id_for_intent_confirmation', '' ),
 			'wcpayVersionNumber'                => WCPAY_VERSION_NUMBER,
 			'woopaySignatureNonce'              => wp_create_nonce( 'woopay_signature_nonce' ),
