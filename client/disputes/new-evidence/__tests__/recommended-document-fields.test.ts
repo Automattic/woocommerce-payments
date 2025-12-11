@@ -170,7 +170,7 @@ describe( 'Recommended Documents', () => {
 				'is_duplicate',
 				'booking_reservation'
 			);
-			expect( fields ).toHaveLength( 3 );
+			expect( fields ).toHaveLength( 4 );
 			expect( fields[ 0 ].key ).toBe( 'receipt' );
 			expect( fields[ 0 ].label ).toBe( 'Order receipt' );
 			expect( fields[ 1 ].key ).toBe( 'uncategorized_file' ); // Refund receipt
@@ -180,6 +180,7 @@ describe( 'Recommended Documents', () => {
 			);
 			expect( fields[ 2 ].key ).toBe( 'refund_policy' );
 			expect( fields[ 2 ].label ).toBe( 'Refund policy' );
+			expect( fields[ 3 ].key ).toBe( 'customer_communication' ); // Base field
 		} );
 
 		it( 'should return matrix fields for duplicate + booking_reservation + is_not_duplicate', () => {
@@ -198,7 +199,7 @@ describe( 'Recommended Documents', () => {
 			expect( fields[ 1 ].description ).toBe(
 				'Receipt(s) for any other order(s) from this customer.'
 			);
-			expect( fields[ 2 ].key ).toBe( 'customer_communication' );
+			expect( fields[ 2 ].key ).toBe( 'customer_communication' ); // Base field merged
 			expect( fields[ 3 ].key ).toBe( 'refund_policy' );
 			expect( fields[ 3 ].label ).toBe( 'Refund policy' );
 			expect( fields[ 3 ].description ).toBe(
@@ -265,17 +266,15 @@ describe( 'Recommended Documents', () => {
 					'booking_reservation'
 				);
 
-				expect( result ).toHaveLength( 4 );
+				expect( result ).toHaveLength( 2 );
 				expect( result[ 0 ].key ).toBe( 'uncategorized_file' );
 				expect( result[ 0 ].label ).toBe(
 					'Prior undisputed transaction history'
 				);
 				expect( result[ 0 ].description ).toBe(
-					'Proof of past undisputed transactions from the same customer, with matching billing and device details'
+					'Proof of past undisputed transactions from the same customer, with matching billing and device details.'
 				);
-				expect( result[ 1 ].key ).toBe( 'receipt' );
-				expect( result[ 2 ].key ).toBe( 'customer_communication' );
-				expect( result[ 3 ].key ).toBe( 'refund_policy' );
+				expect( result[ 1 ].key ).toBe( 'customer_communication' ); // Base field
 			} );
 
 			it( 'should return default fraudulent fields when feature flag is disabled', () => {
@@ -358,12 +357,13 @@ describe( 'Recommended Documents', () => {
 					'other'
 				);
 
-				// Matrix entry for subscription_canceled + other (simplified fields)
-				expect( result ).toHaveLength( 2 );
+				// Matrix entry for subscription_canceled + other (simplified fields + base Customer communication)
+				expect( result ).toHaveLength( 3 );
 				expect( result[ 0 ].key ).toBe( 'receipt' );
 				expect( result[ 0 ].label ).toBe( 'Proof of Purchase' );
-				expect( result[ 1 ].key ).toBe( 'uncategorized_file' );
-				expect( result[ 1 ].label ).toBe( 'Order details' );
+				expect( result[ 1 ].key ).toBe( 'customer_communication' ); // Base field
+				expect( result[ 2 ].key ).toBe( 'uncategorized_file' );
+				expect( result[ 2 ].label ).toBe( 'Order details' );
 			} );
 
 			it( 'should fall back to trunk duplicate fields for physical_product when feature flag is enabled', () => {

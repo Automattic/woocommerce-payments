@@ -15,7 +15,9 @@ import { DOCUMENT_FIELD_KEYS } from './document-field-keys';
  * This provides a scalable way to define evidence suggestions for different
  * combinations of dispute reasons and product types.
  *
- * Each entry contains the complete list of fields to show (including base fields).
+ * Each entry contains only the fields specific to that combination.
+ * Base fields (Customer communication) are automatically merged in by
+ * getRecommendedDocumentFields() when retrieving matrix entries.
  */
 type EvidenceMatrix = {
 	[ reason: string ]: {
@@ -83,15 +85,6 @@ const getDuplicateMatrix = (): {
 			order: 12,
 		},
 		{
-			key: DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
-			label: __( 'Customer communication', 'woocommerce-payments' ),
-			description: __(
-				'Any correspondence with the customer regarding this purchase.',
-				'woocommerce-payments'
-			),
-			order: 20,
-		},
-		{
 			key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
 			label: __( 'Refund policy', 'woocommerce-payments' ),
 			description: __(
@@ -141,7 +134,7 @@ const getSubscriptionCanceledMatrix = (): {
 				'Description and terms of the product or service.',
 				'woocommerce-payments'
 			),
-			order: 20,
+			order: 30,
 		},
 	],
 	// Multiple product type - no subscription logs
@@ -154,15 +147,6 @@ const getSubscriptionCanceledMatrix = (): {
 				'woocommerce-payments'
 			),
 			order: 10,
-		},
-		{
-			key: DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
-			label: __( 'Customer communication', 'woocommerce-payments' ),
-			description: __(
-				'Any correspondence with the customer regarding this purchase.',
-				'woocommerce-payments'
-			),
-			order: 20,
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,

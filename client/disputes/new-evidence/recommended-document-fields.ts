@@ -47,7 +47,39 @@ const getRecommendedDocumentFields = (
 				status
 			);
 			if ( matrixFields ) {
-				return matrixFields;
+				// Base field that applies to all matrix entries
+				const baseField: RecommendedDocument = {
+					key: DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
+					label: __(
+						'Customer communication',
+						'woocommerce-payments'
+					),
+					description: __(
+						'Any correspondence with the customer regarding this purchase.',
+						'woocommerce-payments'
+					),
+					order: 20,
+				};
+
+				// Merge base field with matrix fields, avoiding duplicates
+				const hasCustomerCommunication = matrixFields.some(
+					( field ) =>
+						field.key === DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION
+				);
+
+				const allFields = hasCustomerCommunication
+					? matrixFields
+					: [ ...matrixFields, baseField ];
+
+				// Sort by order and return
+				return allFields
+					.sort( ( a, b ) => a.order - b.order )
+					.map( ( { key, label, description } ) => ( {
+						key,
+						label,
+						description,
+						order: 0,
+					} ) );
 			}
 		}
 	}
