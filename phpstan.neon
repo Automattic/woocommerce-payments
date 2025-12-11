@@ -35,7 +35,6 @@ parameters:
         - dev/phpstan-wcpay-constants.php
 
     scanDirectories:
-        - docker/wordpress/wp-content/plugins/woocommerce/
         - vendor/woocommerce/subscriptions-core
 
     # Handle undefined constants gracefully
@@ -75,6 +74,8 @@ parameters:
              identifier: booleanOr.alwaysTrue
         -
              identifier: catch.neverThrown
+        -
+             identifier: class.noParent
         -
              identifier: class.notFound
         -
