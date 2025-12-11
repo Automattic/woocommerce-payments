@@ -10,6 +10,7 @@ parameters:
     dynamicConstantNames:
         - 'WCPAY_VERSION_NUMBER'
         - 'WC_ADMIN_VERSION_NUMBER'
+        - 'Automattic\Jetpack\Connection\Package_Version::PACKAGE_VERSION'
 
     # Files and directories to analyze
     paths:
@@ -33,11 +34,10 @@ parameters:
 
     scanDirectories:
         - docker/wordpress/wp-content/plugins/woocommerce/
+        - vendor/woocommerce/subscriptions-core
 
     # Handle undefined constants gracefully
     reportUnmatchedIgnoredErrors: false
-    # While PHP 7.3 is the lowest supported version we need to not rely on the argument types
-    treatPhpDocTypesAsCertain: false
 
     # Ignore common WordPress patterns that cause false positives
     ignoreErrors:

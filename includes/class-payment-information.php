@@ -243,7 +243,7 @@ class Payment_Information {
 	 * @return bool True if the payment should be only authorized, false if it should be captured immediately.
 	 */
 	public function is_using_manual_capture(): bool {
-		return $this->manual_capture->equals( Payment_Capture_Type::MANUAL() );
+		return $this->manual_capture->equals( Payment_Capture_Type::MANUAL );
 	}
 
 	/**

@@ -117,7 +117,7 @@ class OrderService {
 	 * @throws Order_Not_Found_Exception
 	 */
 	public function set_mode( string $order_id, string $mode ): void {
-		$order = $this->get_order( $order_id );
+		$order = $this->get_order( (int) $order_id );
 		$order->update_meta_data( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, $mode );
 		$order->save_meta_data();
 	}
@@ -131,7 +131,7 @@ class OrderService {
 	 * @throws Order_Not_Found_Exception
 	 */
 	public function get_mode( string $order_id ): string {
-		$order = $this->get_order( $order_id );
+		$order = $this->get_order( (int) $order_id );
 		return $order->get_meta( WC_Payments_Order_Service::WCPAY_MODE_META_KEY, true );
 	}
 
