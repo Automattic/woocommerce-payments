@@ -27,7 +27,7 @@ class Migrate_Express_Checkout_Locations_Test extends WCPAY_UnitTestCase {
 
 		$this->migration = new Migrate_Express_Checkout_Locations();
 
-		update_option( 'woocommerce_woocommerce_payments_version', '10.4.0' );
+		update_option( 'woocommerce_woocommerce_payments_version', '10.3.0' );
 	}
 
 	public function tear_down() {
@@ -40,7 +40,7 @@ class Migrate_Express_Checkout_Locations_Test extends WCPAY_UnitTestCase {
 	/**
 	 * @dataProvider versions_that_should_skip_migration_provider
 	 */
-	public function test_it_does_nothing_if_version_is_10_5_0_or_higher( string $stored_version ) {
+	public function test_it_does_nothing_if_version_is_10_4_0_or_higher( string $stored_version ) {
 		update_option( 'woocommerce_woocommerce_payments_version', $stored_version );
 		update_option(
 			self::CARD_SETTINGS_OPTION_KEY,
@@ -66,9 +66,9 @@ class Migrate_Express_Checkout_Locations_Test extends WCPAY_UnitTestCase {
 
 	public function versions_that_should_skip_migration_provider(): array {
 		return [
-			'same version'        => [ '10.5.0' ],
-			'newer patch version' => [ '10.5.1' ],
-			'newer minor version' => [ '10.6.0' ],
+			'same version'        => [ '10.4.0' ],
+			'newer patch version' => [ '10.4.1' ],
+			'newer minor version' => [ '10.5.0' ],
 			'newer major version' => [ '11.0.0' ],
 		];
 	}

@@ -32,7 +32,7 @@ class Migrate_Express_Checkout_Locations {
 	 *
 	 * @var string
 	 */
-	const VERSION_SINCE = '10.5.0';
+	const VERSION_SINCE = '10.4.0';
 
 	/**
 	 * The locations where express checkout buttons can be displayed.
