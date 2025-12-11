@@ -58,6 +58,26 @@ class WC_Payments_Status {
 	}
 
 	/**
+	 * Get the locations where an express checkout method is enabled.
+	 *
+	 * @param string $method_id The method identifier (payment_request, woopay, amazon_pay, link).
+	 * @return array List of locations where the method is enabled.
+	 */
+	private function get_express_checkout_method_locations( $method_id ) {
+		$locations         = [ 'product', 'cart', 'checkout' ];
+		$enabled_locations = [];
+
+		foreach ( $locations as $location ) {
+			$enabled_methods = $this->gateway->get_option( "express_checkout_{$location}_methods", [] );
+			if ( is_array( $enabled_methods ) && in_array( $method_id, $enabled_methods, true ) ) {
+				$enabled_locations[] = $location;
+			}
+		}
+
+		return $enabled_locations;
+	}
+
+	/**
 	 * Add WCPay tools to the Woo debug tools.
 	 *
 	 * @param array $tools List of current available tools.
@@ -237,7 +257,7 @@ class WC_Payments_Status {
 						<td class="help"><?php echo wc_help_tip( esc_html__( 'Whether the new WooPay Express Checkout is enabled or not.', 'woocommerce-payments' ) ); /* phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped, WordPress.Security.EscapeOutput.OutputNotEscaped */ ?></td>
 						<td>
 						<?php
-						$woopay_enabled_locations = $this->gateway->get_option( 'platform_checkout_button_locations', [] );
+						$woopay_enabled_locations = $this->get_express_checkout_method_locations( 'woopay' );
 						$woopay_enabled_locations = empty( $woopay_enabled_locations ) ? 'no locations enabled' : implode( ',', $woopay_enabled_locations );
 						echo esc_html( WC_Payments_Features::is_woopay_enabled() ? __( 'Enabled', 'woocommerce-payments' ) . ' (' . $woopay_enabled_locations . ')' : __( 'Disabled', 'woocommerce-payments' ) );
 						?>
@@ -256,7 +276,7 @@ class WC_Payments_Status {
 						<td>
 						<?php
 						$payment_request_enabled           = $this->gateway->is_payment_request_enabled();
-						$payment_request_enabled_locations = $this->gateway->get_option( 'payment_request_button_locations', [] );
+						$payment_request_enabled_locations = $this->get_express_checkout_method_locations( 'payment_request' );
 						$payment_request_enabled_locations = empty( $payment_request_enabled_locations ) ? 'no locations enabled' : implode( ',', $payment_request_enabled_locations );
 						echo esc_html( $payment_request_enabled ? __( 'Enabled', 'woocommerce-payments' ) . ' (' . $payment_request_enabled_locations . ')' : __( 'Disabled', 'woocommerce-payments' ) );
 						?>

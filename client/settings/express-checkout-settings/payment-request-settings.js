@@ -35,16 +35,7 @@ const PaymentRequestSettings = ( { section } ) => {
 	] = usePaymentRequestLocations();
 
 	const makeLocationChangeHandler = ( location ) => ( isChecked ) => {
-		if ( isChecked ) {
-			updatePaymentRequestLocations( [
-				...paymentRequestLocations,
-				location,
-			] );
-		} else {
-			updatePaymentRequestLocations(
-				paymentRequestLocations.filter( ( name ) => name !== location )
-			);
-		}
+		updatePaymentRequestLocations( location, isChecked );
 	};
 
 	return (

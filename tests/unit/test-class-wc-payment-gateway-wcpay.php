@@ -3766,12 +3766,18 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		delete_option( 'woocommerce_woocommerce_payments_settings' );
 
 		$this->assertEquals(
-			[
-				'product',
-				'cart',
-				'checkout',
-			],
-			$this->card_gateway->get_option( 'platform_checkout_button_locations' )
+			[],
+			$this->card_gateway->get_option( 'express_checkout_product_methods' )
+		);
+
+		$this->assertEquals(
+			[],
+			$this->card_gateway->get_option( 'express_checkout_cart_methods' )
+		);
+
+		$this->assertEquals(
+			[],
+			$this->card_gateway->get_option( 'express_checkout_checkout_methods' )
 		);
 
 		$this->assertEquals(
