@@ -108,9 +108,9 @@ class Duplicates_Detection_Service_Test extends WCPAY_UnitTestCase {
 
 	public function test_two_prbs_enabled() {
 		$this->set_duplicates( CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID, 'yes', 'yes' );
-		$this->woopayments_gateway->update_option( 'payment_request', 'yes' );
-		$this->woopayments_gateway->enabled    = 'yes';
-		$this->gateway_from_another_plugin->id = 'apple_pay';
+		$this->woopayments_gateway->is_payment_request_enabled_value = true;
+		$this->woopayments_gateway->enabled                          = 'yes';
+		$this->gateway_from_another_plugin->id                       = 'apple_pay';
 
 		$result = $this->service->find_duplicates();
 

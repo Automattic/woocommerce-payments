@@ -141,7 +141,10 @@ class Duplicates_Detection_Service {
 					if ( strpos( $gateway->id, $keyword ) !== false ) {
 						$this->gateways_qualified_by_duplicates_detector[ $prb_payment_method ][] = $gateway->id;
 						break;
-					} elseif ( 'yes' === $gateway->get_option( 'payment_request' ) && in_array( $gateway->id, [ 'woocommerce_payments', 'stripe' ], true ) ) {
+					} elseif ( 'woocommerce_payments' === $gateway->id && method_exists( $gateway, 'is_payment_request_enabled' ) && $gateway->is_payment_request_enabled() ) {
+						$this->gateways_qualified_by_duplicates_detector[ $prb_payment_method ][] = $gateway->id;
+						break;
+					} elseif ( 'stripe' === $gateway->id && 'yes' === $gateway->get_option( 'payment_request' ) ) {
 						$this->gateways_qualified_by_duplicates_detector[ $prb_payment_method ][] = $gateway->id;
 						break;
 					} elseif ( 'yes' === $gateway->get_option( 'express_checkout_enabled' ) ) {
