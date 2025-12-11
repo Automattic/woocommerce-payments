@@ -217,6 +217,17 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 * @return bool
 	 */
 	public function should_enable_tracking( $is_admin_event = false, $track_on_all_stores = false ) {
+		// Allow merchants to disable all shopper tracking via filter.
+		if ( ! apply_filters( 'wcpay_shopper_tracking_enabled', true ) ) {
+			return false;
+		}
+
+		// Respect WooCommerce global tracking opt-out setting.
+		// Only disable if explicitly set to 'no' (not false, null, or empty).
+		$allow_tracking = get_option( 'woocommerce_allow_tracking', '' );
+		if ( 'no' === $allow_tracking ) {
+			return false;
+		}
 
 		// Don't track if the gateway is not enabled.
 		$gateway = \WC_Payments::get_gateway();

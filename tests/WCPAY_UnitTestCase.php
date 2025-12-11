@@ -173,4 +173,31 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 
 		return $request;
 	}
+
+	/**
+	 * Gets the current payment_gateway_map from WC_Payments.
+	 *
+	 * @return array|null The current payment_gateway_map.
+	 */
+	protected function get_payment_gateway_map() {
+		$reflection = new \ReflectionClass( WC_Payments::class );
+		$property   = $reflection->getProperty( 'payment_gateway_map' );
+		$property->setAccessible( true );
+		$value = $property->getValue( null );
+		$property->setAccessible( false );
+		return $value;
+	}
+
+	/**
+	 * Sets the payment_gateway_map in WC_Payments.
+	 *
+	 * @param array $gateway_map Associative array of gateway_id => gateway_instance.
+	 */
+	protected function set_payment_gateway_map( $gateway_map ) {
+		$reflection = new \ReflectionClass( WC_Payments::class );
+		$property   = $reflection->getProperty( 'payment_gateway_map' );
+		$property->setAccessible( true );
+		$property->setValue( null, $gateway_map );
+		$property->setAccessible( false );
+	}
 }

@@ -1,20 +1,23 @@
 <?php
 /**
- * Apple Pay Payment Method Definition
+ * Afterpay Payment Method Definition
  *
  * @package WCPay\PaymentMethods\Configs\Definitions
  */
 
 namespace WCPay\PaymentMethods\Configs\Definitions;
 
+use WC_Payments_Utils;
 use WCPay\PaymentMethods\Configs\Interfaces\PaymentMethodDefinitionInterface;
 use WCPay\PaymentMethods\Configs\Constants\PaymentMethodCapability;
+use WCPay\Constants\Country_Code;
+use WCPay\Constants\Currency_Code;
 use WCPay\PaymentMethods\Configs\Utils\PaymentMethodUtils;
 
 /**
- * Class implementing the Apple Pay payment method definition.
+ * Class implementing the Afterpay payment method definition.
  */
-class ApplePayDefinition implements PaymentMethodDefinitionInterface {
+class AfterpayDefinition implements PaymentMethodDefinitionInterface {
 
 	/**
 	 * Get the internal ID for the payment method
@@ -22,16 +25,16 @@ class ApplePayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_id(): string {
-		return 'apple_pay';
+		return 'afterpay_clearpay';
 	}
 
 	/**
-	 * Get the keywords for the payment method. These are used by the duplicates detection service.
+	 * Get the keywords for the payment method. These are used by the duplicate detection service.
 	 *
 	 * @return string[]
 	 */
 	public static function get_keywords(): array {
-		return [ 'apple_pay', 'applepay' ];
+		return [ 'afterpay', 'clearpay' ];
 	}
 
 	/**
@@ -51,7 +54,15 @@ class ApplePayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_title( ?string $account_country = null ): string {
-		return __( 'Apple Pay', 'woocommerce-payments' );
+		if ( Country_Code::UNITED_KINGDOM === $account_country ) {
+			return __( 'Clearpay', 'woocommerce-payments' );
+		}
+
+		if ( Country_Code::UNITED_STATES === $account_country ) {
+			return __( 'Cash App Afterpay', 'woocommerce-payments' );
+		}
+
+		return __( 'Afterpay', 'woocommerce-payments' );
 	}
 
 	/**
@@ -72,7 +83,15 @@ class ApplePayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_description( ?string $account_country = null ): string {
-		return __( 'Apple Pay is an easy and secure way for customers to pay on your store.', 'woocommerce-payments' );
+		if ( Country_Code::UNITED_KINGDOM === $account_country ) {
+			return __( 'Allow customers to pay over time with Clearpay.', 'woocommerce-payments' );
+		}
+
+		if ( Country_Code::UNITED_STATES === $account_country ) {
+			return __( 'Allow customers to pay over time with Cash App Afterpay.', 'woocommerce-payments' );
+		}
+
+		return __( 'Allow customers to pay over time with Afterpay.', 'woocommerce-payments' );
 	}
 
 	/**
@@ -81,19 +100,37 @@ class ApplePayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string[] Array of currency codes
 	 */
 	public static function get_supported_currencies(): array {
-		// Apple Pay supports the same currencies as card payments.
-		// Return all available currencies.
-		return [];
+		return [
+			Currency_Code::UNITED_STATES_DOLLAR,
+			Currency_Code::CANADIAN_DOLLAR,
+			Currency_Code::AUSTRALIAN_DOLLAR,
+			Currency_Code::NEW_ZEALAND_DOLLAR,
+			Currency_Code::POUND_STERLING,
+		];
 	}
 
 	/**
 	 * Get the list of supported countries
 	 *
 	 * @param string|null $account_country Optional. The merchant's account country.
+	 *
 	 * @return string[] Array of country codes
 	 */
 	public static function get_supported_countries( ?string $account_country = null ): array {
-		return [];
+		// only domestic transactions are supported.
+		$supported_countries = [
+			Country_Code::UNITED_STATES,
+			Country_Code::CANADA,
+			Country_Code::AUSTRALIA,
+			Country_Code::NEW_ZEALAND,
+			Country_Code::UNITED_KINGDOM,
+		];
+
+		if ( null !== $account_country && in_array( strtoupper( $account_country ), $supported_countries, true ) ) {
+			return [ strtoupper( $account_country ) ];
+		}
+
+		return $supported_countries;
 	}
 
 	/**
@@ -103,10 +140,9 @@ class ApplePayDefinition implements PaymentMethodDefinitionInterface {
 	 */
 	public static function get_capabilities(): array {
 		return [
+			PaymentMethodCapability::BUY_NOW_PAY_LATER,
 			PaymentMethodCapability::REFUNDS,
-			PaymentMethodCapability::MULTI_CURRENCY,
-			PaymentMethodCapability::TOKENIZATION,
-			PaymentMethodCapability::CAPTURE_LATER,
+			PaymentMethodCapability::DOMESTIC_TRANSACTIONS_ONLY,
 		];
 	}
 
@@ -118,7 +154,15 @@ class ApplePayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_icon_url( ?string $account_country = null ): string {
-		return plugins_url( 'assets/images/cards/apple-pay.svg', WCPAY_PLUGIN_FILE );
+		if ( Country_Code::UNITED_KINGDOM === $account_country ) {
+			return plugins_url( 'assets/images/payment-methods/clearpay.svg', WCPAY_PLUGIN_FILE );
+		}
+
+		if ( Country_Code::UNITED_STATES === $account_country ) {
+			return plugins_url( 'assets/images/payment-methods/afterpay-cashapp-logo.svg', WCPAY_PLUGIN_FILE );
+		}
+
+		return plugins_url( 'assets/images/payment-methods/afterpay-badge.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**
@@ -129,7 +173,15 @@ class ApplePayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string Returns regular icon URL if no dark mode icon exists
 	 */
 	public static function get_dark_icon_url( ?string $account_country = null ): string {
-		return self::get_icon_url( $account_country );
+		if ( Country_Code::UNITED_KINGDOM === $account_country ) {
+			return plugins_url( 'assets/images/payment-methods/clearpay.svg', WCPAY_PLUGIN_FILE );
+		}
+
+		if ( Country_Code::UNITED_STATES === $account_country ) {
+			return plugins_url( 'assets/images/payment-methods/afterpay-cashapp-logo-dark.svg', WCPAY_PLUGIN_FILE );
+		}
+
+		return plugins_url( 'assets/images/payment-methods/afterpay-badge.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**
@@ -140,7 +192,15 @@ class ApplePayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_settings_icon_url( ?string $account_country = null ): string {
-		return self::get_icon_url( $account_country );
+		if ( Country_Code::UNITED_KINGDOM === $account_country ) {
+			return plugins_url( 'assets/images/payment-methods/clearpay.svg', WCPAY_PLUGIN_FILE );
+		}
+
+		if ( Country_Code::UNITED_STATES === $account_country ) {
+			return plugins_url( 'assets/images/payment-methods/afterpay-cashapp-badge.svg', WCPAY_PLUGIN_FILE );
+		}
+
+		return plugins_url( 'assets/images/payment-methods/afterpay-logo.svg', WCPAY_PLUGIN_FILE );
 	}
 
 	/**
@@ -159,7 +219,7 @@ class ApplePayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return array<string,array<string,array{min:int,max:int}>>
 	 */
 	public static function get_limits_per_currency(): array {
-		return [];
+		return WC_Payments_Utils::get_bnpl_limits_per_currency( self::get_id() );
 	}
 
 	/**
@@ -171,11 +231,7 @@ class ApplePayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return bool
 	 */
 	public static function is_available_for( string $currency, string $account_country ): bool {
-		if ( ! PaymentMethodUtils::is_available_for( self::get_supported_currencies(), self::get_supported_countries( $account_country ), $currency, $account_country ) ) {
-			return false;
-		}
-
-		return true;
+		return PaymentMethodUtils::is_available_for( self::get_supported_currencies(), self::get_supported_countries( $account_country ), $currency, $account_country );
 	}
 
 	/**
@@ -187,6 +243,12 @@ class ApplePayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return int|null The minimum amount or null if no minimum.
 	 */
 	public static function get_minimum_amount( string $currency, string $country ): ?int {
+		$limits = self::get_limits_per_currency();
+
+		if ( isset( $limits[ $currency ][ $country ]['min'] ) ) {
+			return $limits[ $currency ][ $country ]['min'];
+		}
+
 		return null;
 	}
 
@@ -199,6 +261,12 @@ class ApplePayDefinition implements PaymentMethodDefinitionInterface {
 	 * @return int|null The maximum amount or null if no maximum.
 	 */
 	public static function get_maximum_amount( string $currency, string $country ): ?int {
+		$limits = self::get_limits_per_currency();
+
+		if ( isset( $limits[ $currency ][ $country ]['max'] ) ) {
+			return $limits[ $currency ][ $country ]['max'];
+		}
+
 		return null;
 	}
 }
