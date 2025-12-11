@@ -170,7 +170,10 @@ const DepositsOverview: React.FC = () => {
 								<DepositMinimumBalanceNotice
 									minimumDepositAmountFormatted={ formatExplicitCurrency(
 										minimumDepositAmount,
-										selectedCurrency
+										selectedCurrency,
+										false,
+										undefined,
+										true
 									) }
 								/>
 							) }

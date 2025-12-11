@@ -226,6 +226,7 @@ const appendCurrencyCode = ( formatted, currencyCode ) => {
  * @param {string} currencyCode Currency code
  * @param {boolean} skipSymbol  If true, trims off the short currency symbol
  * @param {string} baseCurrencyCode Base Currency code to override decimal and thousand separators
+ * @param {boolean} useLocaleFormatting If true, formats based on currency's default locale instead of store's country settings
  *
  * @return {string} formatted currency representation
  */
@@ -233,9 +234,15 @@ export const formatExplicitCurrency = (
 	amount,
 	currencyCode = 'USD',
 	skipSymbol = false,
-	baseCurrencyCode = null
+	baseCurrencyCode = null,
+	useLocaleFormatting = false
 ) => {
-	let formatted = formatCurrency( amount, currencyCode, baseCurrencyCode );
+	let formatted = formatCurrency(
+		amount,
+		currencyCode,
+		baseCurrencyCode,
+		useLocaleFormatting
+	);
 	if ( ! wcpaySettings.shouldUseExplicitPrice ) return formatted;
 	if ( skipSymbol ) {
 		formatted = removeCurrencySymbol( formatted );

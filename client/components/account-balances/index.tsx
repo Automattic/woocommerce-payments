@@ -176,7 +176,10 @@ const AccountBalances: React.FC = () => {
 									),
 									formatCurrency(
 										selectedOverview.instantBalance.amount,
-										selectedOverview.instantBalance.currency
+										selectedOverview.instantBalance
+											.currency,
+										undefined,
+										true
 									),
 									selectedOverview.instantBalance
 										.fee_percentage
