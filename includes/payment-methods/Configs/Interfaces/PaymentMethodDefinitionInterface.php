@@ -74,6 +74,8 @@ interface PaymentMethodDefinitionInterface {
 	 * proper filtering at checkout.
 	 *
 	 * @param string|null $account_country Optional. The merchant's account country.
+	 *                                     Some payment methods (e.g. Klarna) have different
+	 *                                     supported countries based on the merchant's location.
 	 * @return string[] Array of country codes
 	 */
 	public static function get_supported_countries( ?string $account_country = null ): array;

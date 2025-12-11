@@ -16,6 +16,7 @@ use WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\EpsDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\IdealDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\KlarnaDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\P24Definition;
 use WCPay\PaymentMethods\Configs\Definitions\SofortDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\WechatPayDefinition;
@@ -47,6 +48,7 @@ class PaymentMethodDefinitionRegistry {
 		EpsDefinition::class,
 		GiropayDefinition::class,
 		IdealDefinition::class,
+		KlarnaDefinition::class,
 		P24Definition::class,
 		SofortDefinition::class,
 		WechatPayDefinition::class,
