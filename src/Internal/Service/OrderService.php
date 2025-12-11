@@ -70,12 +70,12 @@ class OrderService {
 	/**
 	 * Generates payment metadata from order details.
 	 *
-	 * @param int          $order_id     ID of the order.
-	 * @param Payment_Type $payment_type Type of the payment (recurring or not).
+	 * @param int               $order_id     ID of the order.
+	 * @param Payment_Type|null $payment_type Type of the payment (recurring or not).
 	 * @return array                     The metadat athat will be sent to the server.
 	 * @throws Order_Not_Found_Exception
 	 */
-	public function get_payment_metadata( int $order_id, ?Payment_Type $payment_type = null ) {
+	public function get_payment_metadata( int $order_id, ?Payment_Type $payment_type = null ): array {
 		$order = $this->get_order( $order_id );
 
 		$name     = sanitize_text_field( $order->get_billing_first_name() ) . ' ' . sanitize_text_field( $order->get_billing_last_name() );

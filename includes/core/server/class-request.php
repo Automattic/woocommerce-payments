@@ -27,28 +27,28 @@ abstract class Request {
 	 *
 	 * Overwrite this in your class for individual properties.
 	 *
-	 * @var string[]
+	 * @var array<array-key, mixed>
 	 */
 	const IMMUTABLE_PARAMS = [];
 
 	/**
 	 * Indicates which parameters are required (keys only).
 	 *
-	 * @var string[]
+	 * @var array<array-key, mixed>
 	 */
 	const REQUIRED_PARAMS = [];
 
 	/**
 	 * Contains default values for parameters, which are not set automatically.
 	 *
-	 * @var string[]
+	 * @var array<array-key, mixed>
 	 */
 	const DEFAULT_PARAMS = [];
 
 	/**
 	 * Holds the parameters of the request.
 	 *
-	 * @var []
+	 * @var array<array-key, mixed>
 	 */
 	private $params = [];
 
