@@ -18,6 +18,7 @@ use WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\GooglePayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\GrabPayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\IdealDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\KlarnaDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\LinkDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\MultibancoDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\P24Definition;
@@ -56,6 +57,7 @@ class PaymentMethodDefinitionRegistry {
 		IdealDefinition::class,
 		LinkDefinition::class,
 		MultibancoDefinition::class,
+		KlarnaDefinition::class,
 		P24Definition::class,
 		SepaDefinition::class,
 		SofortDefinition::class,

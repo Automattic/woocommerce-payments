@@ -385,6 +385,8 @@ class UPE_Payment_Method {
 		$account         = \WC_Payments::get_account_service()->get_cached_account_data();
 		$account_country = isset( $account['country'] ) ? strtoupper( $account['country'] ) : '';
 
+		// For definition-based payment methods, call get_supported_countries with account_country.
+		// The definition handles any domestic/regional restrictions (e.g., Klarna's EEA cross-border logic).
 		if ( ! empty( $this->definition ) ) {
 			return $this->definition::get_supported_countries( $account_country );
 		}
