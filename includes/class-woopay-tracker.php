@@ -153,7 +153,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 */
 	public function maybe_record_wcpay_shopper_event( $event, $data = [], $record_on_frontend = true ) {
 		$is_admin_event      = false;
-		$track_on_all_stores = false;
+		$track_on_all_stores = true;
 
 		// Record the event immediately.
 		if ( ! $record_on_frontend ) {
