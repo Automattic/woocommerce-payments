@@ -59,3 +59,9 @@ npm run test:qit-e2e
 - Look at any errors that might have been surfaced and associate with PRs that introduced them using `git blame`.
 - Ping the author for fixing the error, or fix it yourself if it is straightforward enough.
 - For failed tests, check the artifacts directory for screenshots and error context.
+
+### Troubleshooting
+
+#### "Card testing attempt detected" errors
+
+If checkout tests fail with "Card testing attempt detected" errors, the test account may need server-side configuration to disable fraud protection for E2E testing. Contact the payments team for assistance.

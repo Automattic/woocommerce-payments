@@ -11,6 +11,9 @@ echo "Setting up WooPayments for E2E testing..."
 # Ensure environment is marked as development so dev-only CLI commands are available.
 wp config set WP_ENVIRONMENT_TYPE development --quiet 2>/dev/null || true
 
+# Enable WooPayments dev mode via constant (required for payment processing in test environment).
+wp config set WCPAY_DEV_MODE true --raw --type=constant --quiet 2>/dev/null || true
+
 # Install WordPress importer and import sample products.
 echo "Installing WordPress importer for sample data..."
 if ! wp plugin is-installed wordpress-importer >/dev/null 2>&1; then
@@ -167,4 +170,23 @@ wp option set wcpaydev_proxy 0 --quiet 2>/dev/null || true
 wp option set wcpay_should_redirect_to_onboarding 0 --quiet 2>/dev/null || true
 wp option set wcpay_fraud_protection_welcome_tour_dismissed 1 --quiet 2>/dev/null || true
 
+# Disable rate limiters for E2E testing (matches legacy E2E setup).
+echo "Disabling rate limiters for E2E testing..."
+wp option set wcpay_session_rate_limiter_disabled_wcpay_card_declined_registry yes --quiet 2>/dev/null || true
+
+# Disable client-side card testing protection by setting the option.
+# This is also handled in test specs, but pre-setting it ensures consistency.
+wp option set wcpaydev_force_card_testing_protection_on 0 --quiet 2>/dev/null || true
+
+# Disable WooCommerce tour dialogs that interfere with tests.
+wp option set woocommerce_orders_report_date_tour_shown yes --quiet 2>/dev/null || true
+
 echo "WooPayments E2E setup complete."
+
+echo ""
+echo "=== Setup Complete ==="
+echo "Client-side rate limiters and card testing protection have been disabled."
+echo ""
+echo "If you still see 'Card testing attempt detected' errors, the test account"
+echo "may need additional server-side configuration. Contact the payments team."
+echo "======================="
