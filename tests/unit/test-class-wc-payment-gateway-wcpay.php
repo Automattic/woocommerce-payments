@@ -3765,17 +3765,17 @@ class WC_Payment_Gateway_WCPay_Test extends WCPAY_UnitTestCase {
 		delete_option( 'woocommerce_woocommerce_payments_settings' );
 
 		$this->assertEquals(
-			[],
+			[ 'payment_request', 'woopay' ],
 			$this->card_gateway->get_option( 'express_checkout_product_methods' )
 		);
 
 		$this->assertEquals(
-			[],
+			[ 'payment_request', 'woopay' ],
 			$this->card_gateway->get_option( 'express_checkout_cart_methods' )
 		);
 
 		$this->assertEquals(
-			[],
+			[ 'payment_request', 'woopay' ],
 			$this->card_gateway->get_option( 'express_checkout_checkout_methods' )
 		);
 
