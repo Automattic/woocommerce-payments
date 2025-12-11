@@ -116,20 +116,27 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	private $domestic_currency = 'usd';
 
 	/**
+	 * Backup of the original payment_gateway_map
+	 *
+	 * @var array
+	 */
+	private $original_payment_gateway_map;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
 		parent::set_up();
+
+		$this->original_payment_gateway_map = $this->get_payment_gateway_map();
 
 		self::$settings_route = '/wc/v3/' . ( $this->is_wpcom() ? 'sites/3/' : '' ) . 'payments/settings';
 
 		require_once __DIR__ . '/../helpers/class-wc-blocks-rest-api-registration-preventer.php';
 		WC_Blocks_REST_API_Registration_Preventer::prevent();
 
-		// Set the user so that we can pass the authentication.
 		wp_set_current_user( 1 );
 
-		// Mock the main class's cache service.
 		$this->_cache     = WC_Payments::get_database_cache();
 		$this->mock_cache = $this->createMock( Database_Cache::class );
 		WC_Payments::set_database_cache( $this->mock_cache );
@@ -254,10 +261,9 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		parent::tear_down();
 		WC_Blocks_REST_API_Registration_Preventer::stop_preventing();
-		// Restore the cache service in the main class.
 		WC_Payments::set_database_cache( $this->_cache );
+		$this->set_payment_gateway_map( $this->original_payment_gateway_map );
 
-		// resetting to prevent test pollution.
 		$reflection        = new \ReflectionClass( PaymentMethodDefinitionRegistry::class );
 		$instance_property = $reflection->getProperty( 'instance' );
 		$instance_property->setAccessible( true );
@@ -1111,5 +1117,85 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 				new WP_Error( 'rest_invalid_pattern', 'Error: Invalid phone number: 123test' ),
 			],
 		];
+	}
+
+	public function test_update_is_payment_request_enabled_updates_google_pay_and_apple_pay() {
+		$google_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$google_pay_gateway->expects( $this->once() )->method( 'enable' );
+
+		$apple_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$apple_pay_gateway->expects( $this->once() )->method( 'enable' );
+
+		$this->set_payment_gateway_map(
+			[
+				'google_pay' => $google_pay_gateway,
+				'apple_pay'  => $apple_pay_gateway,
+			]
+		);
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_payment_request_enabled', true );
+
+		$this->controller->update_settings( $request );
+	}
+
+	public function test_update_is_payment_request_disabled_updates_google_pay_and_apple_pay() {
+		$google_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$google_pay_gateway->expects( $this->once() )->method( 'disable' );
+
+		$apple_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$apple_pay_gateway->expects( $this->once() )->method( 'disable' );
+
+		$this->set_payment_gateway_map(
+			[
+				'google_pay' => $google_pay_gateway,
+				'apple_pay'  => $apple_pay_gateway,
+			]
+		);
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_payment_request_enabled', false );
+
+		$this->controller->update_settings( $request );
+	}
+
+	public function test_get_is_payment_request_enabled_reads_from_google_pay() {
+		$google_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$google_pay_gateway->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( true );
+
+		$this->set_payment_gateway_map( [ 'google_pay' => $google_pay_gateway ] );
+
+		$request  = new WP_REST_Request();
+		$response = $this->controller->get_settings( $request );
+		$data     = $response->get_data();
+
+		$this->assertTrue( $data['is_payment_request_enabled'] );
+	}
+
+	public function test_get_is_payment_request_enabled_falls_back_to_apple_pay() {
+		$apple_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$apple_pay_gateway->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( true );
+
+		$this->set_payment_gateway_map( [ 'apple_pay' => $apple_pay_gateway ] );
+
+		$request  = new WP_REST_Request();
+		$response = $this->controller->get_settings( $request );
+		$data     = $response->get_data();
+
+		$this->assertTrue( $data['is_payment_request_enabled'] );
+	}
+
+	public function test_get_is_payment_request_enabled_returns_false_when_both_unavailable() {
+		$this->set_payment_gateway_map( [] );
+
+		$request  = new WP_REST_Request();
+		$response = $this->controller->get_settings( $request );
+		$data     = $response->get_data();
+
+		$this->assertFalse( $data['is_payment_request_enabled'] );
 	}
 }

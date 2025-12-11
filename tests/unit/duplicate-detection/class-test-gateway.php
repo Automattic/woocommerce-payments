@@ -17,11 +17,27 @@ class Test_Gateway extends WC_Payment_Gateway {
 	 */
 	public $enabled = 'no';
 
+	/**
+	 * Value returned by is_payment_request_enabled().
+	 *
+	 * @var bool
+	 */
+	public $is_payment_request_enabled_value = false;
+
 	public function __construct() {
 		$this->form_fields = [
 			'payment_request' => [
 				'default' => 'no',
 			],
 		];
+	}
+
+	/**
+	 * Returns whether payment request is enabled.
+	 *
+	 * @return bool
+	 */
+	public function is_payment_request_enabled() {
+		return $this->is_payment_request_enabled_value;
 	}
 }
