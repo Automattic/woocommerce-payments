@@ -5,7 +5,13 @@ import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { Link } from '@woocommerce/components';
 import { createInterpolateElement } from '@wordpress/element';
-import { Button, CardFooter, Flex, FlexItem } from '@wordpress/components';
+import {
+	Button,
+	CardFooter,
+	ExternalLink,
+	Flex,
+	FlexItem,
+} from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -40,56 +46,46 @@ const DisputeUnderReviewFooter: React.FC< {
 					{ isVisaComplianceDispute( dispute )
 						? createInterpolateElement(
 								sprintf(
-									/* Translators: %s - formatted date, <a> - link to documentation page */
+									/* Translators: %s - formatted date */
 									__(
-										"<strong>Visa is currently reviewing the evidence you submitted on %1$s.</strong> This process can sometimes take more than 60 days — we'll let you know once a decision has been made. <a>Learn more about the dispute process.</a>",
+										"<strong>Visa is currently reviewing the evidence you submitted on %1$s.</strong> This process can sometimes take more than 60 days — we'll let you know once a decision has been made.",
 										'woocommerce-payments'
 									),
 									submissionDateFormatted
 								),
 								{
-									a: (
-										// eslint-disable-next-line jsx-a11y/anchor-has-content -- Link content is provided by createInterpolateElement
-										<a
-											target="_blank"
-											rel="noopener noreferrer"
-											href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
-										/>
-									),
 									strong: <strong />,
 								}
 						  )
 						: createInterpolateElement(
 								bankName
 									? sprintf(
-											/* Translators: %1$s - bank name, %2$s - formatted date, <a> - link to documentation page */
+											/* Translators: %1$s - bank name, %2$s - formatted date */
 											__(
-												"<strong>The customer's bank, %1$s, is currently reviewing the evidence you submitted on %2$s.</strong> This process can sometimes take more than 60 days — we'll let you know once a decision has been made. <a>Learn more about the dispute process.</a>",
+												"<strong>The customer's bank, %1$s, is currently reviewing the evidence you submitted on %2$s.</strong> This process can sometimes take more than 60 days — we'll let you know once a decision has been made.",
 												'woocommerce-payments'
 											),
 											bankName,
 											submissionDateFormatted
 									  )
 									: sprintf(
-											/* Translators: %s - formatted date, <a> - link to documentation page */
+											/* Translators: %s - formatted date */
 											__(
-												"<strong>The customer's bank is currently reviewing the evidence you submitted on %1$s.</strong> This process can sometimes take more than 60 days — we'll let you know once a decision has been made. <a>Learn more about the dispute process.</a>",
+												"<strong>The customer's bank is currently reviewing the evidence you submitted on %1$s.</strong> This process can sometimes take more than 60 days — we'll let you know once a decision has been made.",
 												'woocommerce-payments'
 											),
 											submissionDateFormatted
 									  ),
 								{
-									a: (
-										// eslint-disable-next-line jsx-a11y/anchor-has-content -- Link content is provided by createInterpolateElement
-										<a
-											target="_blank"
-											rel="noopener noreferrer"
-											href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
-										/>
-									),
 									strong: <strong />,
 								}
-						  ) }
+						  ) }{ ' ' }
+					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/">
+						{ __(
+							'Learn more about the dispute process.',
+							'woocommerce-payments'
+						) }
+					</ExternalLink>
 				</FlexItem>
 				<FlexItem className="transaction-details-dispute-footer__actions">
 					<Link
@@ -143,56 +139,46 @@ const DisputeWonFooter: React.FC< {
 					{ isVisaComplianceDispute( dispute )
 						? createInterpolateElement(
 								sprintf(
-									/* Translators: %s - formatted date, <a> - link to documentation page */
+									/* Translators: %s - formatted date */
 									__(
-										"<strong>Good news — you've won this dispute! Visa reached this decision on %1$s.</strong> Your account has been credited with the disputed amount and fee. <a>Learn more about preventing disputes.</a>",
+										"<strong>Good news — you've won this dispute! Visa reached this decision on %1$s.</strong> Your account has been credited with the disputed amount and fee.",
 										'woocommerce-payments'
 									),
 									closedDateFormatted
 								),
 								{
-									a: (
-										// eslint-disable-next-line jsx-a11y/anchor-has-content -- Link content is provided by createInterpolateElement
-										<a
-											target="_blank"
-											rel="noopener noreferrer"
-											href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
-										/>
-									),
 									strong: <strong />,
 								}
 						  )
 						: createInterpolateElement(
 								bankName
 									? sprintf(
-											/* Translators: %1$s - bank name, %2$s - formatted date, <a> - link to documentation page */
+											/* Translators: %1$s - bank name, %2$s - formatted date */
 											__(
-												"<strong>Good news — you've won this dispute! The customer's bank, %1$s, reached this decision on %2$s.</strong> Your account has been credited with the disputed amount and fee. <a>Learn more about preventing disputes.</a>",
+												"<strong>Good news — you've won this dispute! The customer's bank, %1$s, reached this decision on %2$s.</strong> Your account has been credited with the disputed amount and fee.",
 												'woocommerce-payments'
 											),
 											bankName,
 											closedDateFormatted
 									  )
 									: sprintf(
-											/* Translators: %s - formatted date, <a> - link to documentation page */
+											/* Translators: %s - formatted date */
 											__(
-												"<strong>Good news — you've won this dispute! The customer's bank reached this decision on %1$s.</strong> Your account has been credited with the disputed amount and fee. <a>Learn more about preventing disputes.</a>",
+												"<strong>Good news — you've won this dispute! The customer's bank reached this decision on %1$s.</strong> Your account has been credited with the disputed amount and fee.",
 												'woocommerce-payments'
 											),
 											closedDateFormatted
 									  ),
 								{
-									a: (
-										// eslint-disable-next-line jsx-a11y/anchor-has-content -- Link content is provided by createInterpolateElement
-										<a
-											target="_blank"
-											rel="noopener noreferrer"
-											href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
-										/>
-									),
 									strong: <strong />,
 								}
-						  ) }
+						  ) }{ ' ' }
+					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/">
+						{ __(
+							'Learn more about preventing disputes.',
+							'woocommerce-payments'
+						) }
+					</ExternalLink>
 				</FlexItem>
 				<FlexItem className="transaction-details-dispute-footer__actions">
 					<Link
@@ -307,26 +293,20 @@ const DisputeLostFooter: React.FC< {
 					{ createInterpolateElement( messagePrefix, {
 						strong: <strong />,
 					} ) }{ ' ' }
-					{ createInterpolateElement(
-						sprintf(
-							/* Translators: %1$s – the formatted dispute fee amount, <a> - link to documentation page */
-							__(
-								'The %1$s fee has been deducted from your account, and the disputed amount has been returned to your customer. <a>Learn more about preventing disputes</a>.',
-								'woocommerce-payments'
-							),
-							disputeFeeFormatted
+					{ sprintf(
+						/* Translators: %1$s – the formatted dispute fee amount */
+						__(
+							'The %1$s fee has been deducted from your account, and the disputed amount has been returned to your customer.',
+							'woocommerce-payments'
 						),
-						{
-							a: (
-								// eslint-disable-next-line jsx-a11y/anchor-has-content -- Link content is provided by createInterpolateElement
-								<a
-									target="_blank"
-									rel="noopener noreferrer"
-									href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
-								/>
-							),
-						}
-					) }
+						disputeFeeFormatted
+					) }{ ' ' }
+					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/">
+						{ __(
+							'Learn more about preventing disputes.',
+							'woocommerce-payments'
+						) }
+					</ExternalLink>
 				</FlexItem>
 
 				{ isSubmitted && (
@@ -380,34 +360,29 @@ const InquiryUnderReviewFooter: React.FC< {
 					{ createInterpolateElement(
 						bankName
 							? sprintf(
-									/* Translators: %1$s - bank name, %2$s - formatted date, <a> - link to documentation page */
+									/* Translators: %1$s - bank name, %2$s - formatted date */
 									__(
-										'You submitted evidence for this inquiry on %1$s. <strong>%2$s</strong> is reviewing the case, which can take 120 days or more. You will be alerted when they make their final decision. <a>Learn more</a>.',
+										'You submitted evidence for this inquiry on %1$s. <strong>%2$s</strong> is reviewing the case, which can take 120 days or more. You will be alerted when they make their final decision.',
 										'woocommerce-payments'
 									),
 									submissionDateFormatted,
 									bankName
 							  )
 							: sprintf(
-									/* Translators: %s - formatted date, <a> - link to documentation page */
+									/* Translators: %s - formatted date */
 									__(
-										'You submitted evidence for this inquiry on %s. The <strong>cardholder’s bank</strong> is reviewing the case, which can take 120 days or more. You will be alerted when they make their final decision. <a>Learn more</a>.',
+										'You submitted evidence for this inquiry on %s. The <strong>cardholder’s bank</strong> is reviewing the case, which can take 120 days or more. You will be alerted when they make their final decision.',
 										'woocommerce-payments'
 									),
 									submissionDateFormatted
 							  ),
 						{
-							a: (
-								// eslint-disable-next-line jsx-a11y/anchor-has-content -- Link content is provided by createInterpolateElement
-								<a
-									target="_blank"
-									rel="noopener noreferrer"
-									href="https://woocommerce.com/document/woopayments/fraud-and-disputes/managing-disputes/#inquiries"
-								/>
-							),
 							strong: <strong />,
 						}
-					) }
+					) }{ ' ' }
+					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/">
+						{ __( 'Learn more.', 'woocommerce-payments' ) }
+					</ExternalLink>
 				</FlexItem>
 				<FlexItem className="transaction-details-dispute-footer__actions">
 					<Link
@@ -455,26 +430,20 @@ const InquiryClosedFooter: React.FC< {
 		<CardFooter className="transaction-details-dispute-footer">
 			<Flex justify="space-between">
 				<FlexItem>
-					{ createInterpolateElement(
-						sprintf(
-							/* Translators: %s - formatted date, <a> - link to documentation page */
-							__(
-								'This inquiry was closed on %s. <a>Learn more about preventing disputes</a>.',
-								'woocommerce-payments'
-							),
-							closedDateFormatted
+					{ sprintf(
+						/* Translators: %s - formatted date */
+						__(
+							'This inquiry was closed on %s.',
+							'woocommerce-payments'
 						),
-						{
-							a: (
-								// eslint-disable-next-line jsx-a11y/anchor-has-content -- Link content is provided by createInterpolateElement
-								<a
-									target="_blank"
-									rel="noopener noreferrer"
-									href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
-								/>
-							),
-						}
-					) }
+						closedDateFormatted
+					) }{ ' ' }
+					<ExternalLink href="https://woocommerce.com/document/woopayments/fraud-and-disputes/">
+						{ __(
+							'Learn more about preventing disputes.',
+							'woocommerce-payments'
+						) }
+					</ExternalLink>
 				</FlexItem>
 
 				{ isSubmitted && (
