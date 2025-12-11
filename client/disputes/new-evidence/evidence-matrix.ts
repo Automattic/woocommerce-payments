@@ -208,37 +208,10 @@ const getFraudulentMatrix = (): {
 				'woocommerce-payments'
 			),
 			description: __(
-				'Proof of past undisputed transactions from the same customer, with matching billing and device details',
+				'Proof of past undisputed transactions from the same customer, with matching billing and device details.',
 				'woocommerce-payments'
 			),
 			order: 10,
-		},
-		{
-			key: DOCUMENT_FIELD_KEYS.RECEIPT,
-			label: __( 'Receipt', 'woocommerce-payments' ),
-			description: __(
-				"A copy of the customer's receipt, which can be found in the receipt history for this transaction.",
-				'woocommerce-payments'
-			),
-			order: 20,
-		},
-		{
-			key: DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
-			label: __( 'Customer communication', 'woocommerce-payments' ),
-			description: __(
-				'Any correspondence with the customer regarding this purchase.',
-				'woocommerce-payments'
-			),
-			order: 30,
-		},
-		{
-			key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
-			label: __( 'Refund policy', 'woocommerce-payments' ),
-			description: __(
-				"A screenshot of your store's refund policy.",
-				'woocommerce-payments'
-			),
-			order: 40,
 		},
 	],
 } );
