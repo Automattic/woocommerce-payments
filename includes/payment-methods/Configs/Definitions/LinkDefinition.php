@@ -74,7 +74,7 @@ class LinkDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string
 	 */
 	public static function get_description( ?string $account_country = null ): string {
-		return __( 'Link autofills your customers’ payment and shipping details to deliver an easy and seamless checkout experience.', 'woocommerce-payments' );
+		return __( 'Link autofills your customers\' payment and shipping details to deliver an easy and seamless checkout experience.', 'woocommerce-payments' );
 	}
 
 	/**
