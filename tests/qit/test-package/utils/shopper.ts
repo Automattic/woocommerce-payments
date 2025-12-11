@@ -692,8 +692,28 @@ export const setSavePaymentMethod = async ( page: Page, save = true ) => {
 		'Save payment information to my account for future purchases.'
 	);
 
-	// Use setChecked instead of check/uncheck for better reliability with React components.
-	await checkbox.setChecked( save );
+	// Wait for checkbox to be visible and stable before interacting.
+	await expect( checkbox ).toBeVisible( { timeout: 10000 } );
+
+	// Check current state first - if already in desired state, skip.
+	const isChecked = await checkbox.isChecked();
+	if ( isChecked === save ) {
+		return; // Already in desired state.
+	}
+
+	// Use click() instead of setChecked() for better reliability with React components.
+	// setChecked() fails if React re-renders and resets the checkbox state during the click.
+	await checkbox.click();
+
+	// Wait a moment for React to process the state change.
+	await page.waitForTimeout( 500 );
+
+	// Verify the checkbox is now in the expected state.
+	const newState = await checkbox.isChecked();
+	if ( newState !== save ) {
+		// Retry once if state didn't change.
+		await checkbox.click( { force: true } );
+	}
 };
 
 export const emptyCart = async ( page: Page ) => {
@@ -751,30 +771,56 @@ export const addSavedCard = async (
 	await isUIUnblocked( page );
 	await expect(
 		page.locator( 'input[name="payment_method"]' ).first()
-	).toBeVisible( { timeout: 5000 } );
+	).toBeVisible( { timeout: 10000 } );
 
 	await page.getByText( 'Card', { exact: true } ).click();
-	const frameHandle = page.getByTitle( 'Secure payment input frame' );
+
+	// Wait for Stripe iframe to be ready
+	const frameHandle = page.locator(
+		'iframe[name^="__privateStripeFrame"][title="Secure payment input frame"]'
+	);
+	await expect( frameHandle ).toBeVisible( { timeout: 15000 } );
 	const stripeFrame = frameHandle.contentFrame();
 
-	if ( ! stripeFrame ) return;
+	if ( ! stripeFrame ) {
+		throw new Error( 'Stripe iframe not found' );
+	}
 
-	await stripeFrame
-		.getByPlaceholder( '1234 1234 1234 1234' )
-		.fill( card.number );
+	// Fill card details with waits between fields.
+	const cardNumberInput = stripeFrame.getByPlaceholder(
+		'1234 1234 1234 1234'
+	);
+	await expect( cardNumberInput ).toBeVisible( { timeout: 10000 } );
+	await cardNumberInput.fill( card.number );
 
-	await stripeFrame
-		.getByPlaceholder( 'MM / YY' )
-		.fill( card.expires.month + card.expires.year );
+	const expiryInput = stripeFrame.getByPlaceholder( 'MM / YY' );
+	await expiryInput.fill( card.expires.month + card.expires.year );
 
-	await stripeFrame.getByPlaceholder( 'CVC' ).fill( card.cvc );
-	await stripeFrame
-		.getByRole( 'combobox', { name: 'country' } )
-		.selectOption( country );
-	const zip = stripeFrame.getByLabel( 'ZIP Code' );
-	if ( zip ) await zip.fill( zipCode ?? '90210' );
+	const cvcInput = stripeFrame.getByPlaceholder( 'CVC' );
+	await cvcInput.fill( card.cvc );
 
-	await page.getByRole( 'button', { name: 'Add payment method' } ).click();
+	// Select country.
+	const countrySelect = stripeFrame.getByRole( 'combobox', {
+		name: /country/i,
+	} );
+	await countrySelect.selectOption( country );
+
+	// Fill ZIP code after country is selected (ZIP field may appear after country selection).
+	const zip = stripeFrame.getByLabel( /ZIP/i );
+	if ( ( await zip.count() ) > 0 ) {
+		await zip.fill( zipCode ?? '90210' );
+	}
+
+	// Click outside the iframe to ensure Stripe finishes processing.
+	await page.locator( 'h1' ).first().click();
+	await page.waitForTimeout( 500 );
+
+	// Click the submit button.
+	const submitButton = page.getByRole( 'button', {
+		name: 'Add payment method',
+	} );
+	await expect( submitButton ).toBeEnabled( { timeout: 5000 } );
+	await submitButton.click();
 
 	// Wait for one of the expected outcomes:
 	//  - 3DS modal appears (Stripe iframe)
@@ -793,11 +839,12 @@ export const addSavedCard = async (
 	// Wait for any WooCommerce error notice (role="alert")
 	const errorAlert = page.getByRole( 'alert' );
 
+	// Wait for navigation or any expected outcome.
 	await Promise.race( [
-		threeDSFrame.waitFor( { state: 'visible', timeout: 20000 } ),
-		successNotice.waitFor( { state: 'visible', timeout: 20000 } ),
-		errorAlert.waitFor( { state: 'visible', timeout: 20000 } ),
-		methodsHeading.waitFor( { state: 'visible', timeout: 20000 } ),
+		threeDSFrame.waitFor( { state: 'visible', timeout: 30000 } ),
+		successNotice.waitFor( { state: 'visible', timeout: 30000 } ),
+		errorAlert.waitFor( { state: 'visible', timeout: 30000 } ),
+		methodsHeading.waitFor( { state: 'visible', timeout: 30000 } ),
 	] ).catch( () => {
 		/* ignore and let the caller continue; downstream assertions will catch real issues */
 	} );
