@@ -141,8 +141,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 			$event = self::$user_prefix . '_' . $event;
 		}
 
-		// Track on all stores regardless of WooPay status for general shopper events.
-		return $this->tracks_record_event( $event, $data, false, true );
+		return $this->tracks_record_event( $event, $data, false, false );
 	}
 
 	/**
@@ -154,7 +153,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 */
 	public function maybe_record_wcpay_shopper_event( $event, $data = [], $record_on_frontend = true ) {
 		$is_admin_event      = false;
-		$track_on_all_stores = true;
+		$track_on_all_stores = false;
 
 		// Record the event immediately.
 		if ( ! $record_on_frontend ) {
@@ -258,8 +257,8 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		// For all other events ensure:
 		// 1. Only site pages are tracked.
 		// 2. Site Admin activity in site pages are not tracked.
-		// 3. If track_on_all_stores is enabled, track all events regardless of WooPay eligibility.
-		// 4. Otherwise, track only when WooPay is active.
+		// 3. If track_on_all_stores is true, tracking is enabled regardless of WooPay eligibility.
+		// 4. Otherwise, tracking requires WooPay to be eligible and enabled.
 
 		// Track only site pages.
 		if ( is_admin() && ! wp_doing_ajax() ) {
@@ -527,7 +526,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 */
 	public function bump_stats( $group, $stat_name ) {
 		$is_admin_event      = false;
-		$track_on_all_stores = true;
+		$track_on_all_stores = false;
 
 		if ( ! $this->should_enable_tracking( $is_admin_event, $track_on_all_stores ) ) {
 			return false;
@@ -641,9 +640,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 * @return array The modified config.
 	 */
 	public function add_tracking_config_to_payment_fields( $config ) {
-		// Pass track_on_all_stores = true to enable tracking for general shopper events
-		// regardless of WooPay eligibility.
-		$config['isShopperTrackingEnabled'] = $this->should_enable_tracking( false, true );
+		$config['isShopperTrackingEnabled'] = $this->should_enable_tracking( false, false );
 		return $config;
 	}
 
@@ -654,9 +651,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 * @return array The modified params.
 	 */
 	public function add_tracking_config_to_express_checkout( $params ) {
-		// Pass track_on_all_stores = true to enable tracking for general shopper events
-		// regardless of WooPay eligibility.
-		$params['is_shopper_tracking_enabled'] = $this->should_enable_tracking( false, true );
+		$params['is_shopper_tracking_enabled'] = $this->should_enable_tracking( false, false );
 		return $params;
 	}
 

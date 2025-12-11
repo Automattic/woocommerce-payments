@@ -80,6 +80,9 @@ class WooPay_Tracker_Test extends WCPAY_UnitTestCase {
 		$is_account_connected = true;
 		$this->setup_woopay_environment( $is_woopay_eligible, $is_account_connected );
 
+		// Enable WooPay in gateway settings.
+		WC_Payments::get_gateway()->update_option( 'platform_checkout', 'yes' );
+
 		global $wp_roles;
 		$all_roles = array_diff( $wp_roles->get_names(), [ 'administrator' ] );
 
