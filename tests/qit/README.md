@@ -11,7 +11,29 @@ We use the [QIT toolkit](https://qit.woo.com/docs/) for automated testing includ
    - **E2E Jetpack credentials** (`E2E_JP_SITE_ID`, `E2E_JP_BLOG_TOKEN`, `E2E_JP_USER_TOKEN`): Get these from a Jurassic Ninja site already onboarded in test mode.
 4. Once configured, the first time you run a test command, it will create a local auth file for subsequent runs.
 
-**Note:** E2E tests require the dev version of `qit-cli` (test packages are not yet in stable releases). Run `composer require woocommerce/qit-cli:dev-trunk --dev --ignore-platform-reqs` to install it locally.
+#### Installing qit-cli for E2E tests
+
+The project includes `qit-cli` 0.10.0 in `composer.json` for security and PHPStan tests. However, **E2E tests require the dev version** (`dev-trunk`) because [test packages](https://qit.woo.com/docs/test-packages/) are not yet available in stable releases.
+
+To avoid PHP platform conflicts with the project's `config.platform.php` setting, install `qit-cli` globally:
+
+```bash
+# Install from outside the project directory to avoid conflicts
+cd /tmp && composer global require woocommerce/qit-cli:dev-trunk
+```
+
+Then add the Composer global bin directory to your PATH. Add this to your `~/.zshrc` (or `~/.bashrc`):
+
+```bash
+export PATH="$HOME/.composer/vendor/bin:$PATH"
+```
+
+Reload your shell and verify:
+
+```bash
+source ~/.zshrc
+qit --version  # Should show: qit_dev_build
+```
 
 ### Running Tests
 
@@ -41,6 +63,7 @@ E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>'
 
 # Run specific test file (passthrough to Playwright)
 E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>' npm run test:qit-e2e -- -- shopper-checkout-purchase.spec.ts
+# The first -- passes args to npm script, second -- passes to Playwright
 
 # Run tests filtered by tag (e.g., @blocks, @shopper)
 E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>' npm run test:qit-e2e -- -- --grep "@blocks"

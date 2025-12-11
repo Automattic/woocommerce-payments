@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "36ffb47b2ac77cabaaa58c339e19241e",
+    "content-hash": "52d66753a7442fbfca11ae0c2605af2c",
     "packages": [
         {
             "name": "automattic/jetpack-a8c-mc-stats",
@@ -6747,23 +6747,22 @@
         },
         {
             "name": "woocommerce/qit-cli",
-            "version": "dev-trunk",
+            "version": "0.10.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/woocommerce/qit-cli.git",
-                "reference": "9b11eac3bccc67cf61bdda4ed3831a34d33e8d8f"
+                "reference": "42c4722bb71940dc0435103775439588e923e1cd"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/woocommerce/qit-cli/zipball/9b11eac3bccc67cf61bdda4ed3831a34d33e8d8f",
-                "reference": "9b11eac3bccc67cf61bdda4ed3831a34d33e8d8f",
+                "url": "https://api.github.com/repos/woocommerce/qit-cli/zipball/42c4722bb71940dc0435103775439588e923e1cd",
+                "reference": "42c4722bb71940dc0435103775439588e923e1cd",
                 "shasum": ""
             },
             "require": {
                 "ext-curl": "*",
-                "php": "^7.4 | ^8"
+                "php": "^7.2.5 | ^8"
             },
-            "default-branch": true,
             "bin": [
                 "qit"
             ],
@@ -6775,9 +6774,9 @@
             "description": "A command line interface for WooCommerce Quality Insights Toolkit (QIT).",
             "support": {
                 "issues": "https://github.com/woocommerce/qit-cli/issues",
-                "source": "https://github.com/woocommerce/qit-cli/tree/trunk"
+                "source": "https://github.com/woocommerce/qit-cli/tree/0.10.0"
             },
-            "time": "2025-12-05T16:23:49+00:00"
+            "time": "2025-05-20T15:58:42+00:00"
         },
         {
             "name": "woocommerce/woocommerce-sniffs",
@@ -7013,7 +7012,6 @@
     "minimum-stability": "dev",
     "stability-flags": {
         "kalessil/production-dependencies-guard": 20,
-        "woocommerce/qit-cli": 20,
         "phpcompatibility/php-compatibility": 20
     },
     "prefer-stable": true,
@@ -7022,7 +7020,7 @@
         "php": ">=7.3",
         "ext-json": "*"
     },
-    "platform-dev": [],
+    "platform-dev": {},
     "platform-overrides": {
         "php": "7.3"
     },
