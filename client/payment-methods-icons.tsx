@@ -63,10 +63,6 @@ export const JCBIcon = iconComponent(
 	JCBAsset,
 	__( 'JCB', 'woocommerce-payments' )
 );
-export const LinkIcon = iconComponent(
-	LinkAsset,
-	__( 'Link', 'woocommerce-payments' )
-);
 export const MastercardIcon = iconComponent(
 	MasterCardAsset,
 	__( 'Mastercard', 'woocommerce-payments' )
