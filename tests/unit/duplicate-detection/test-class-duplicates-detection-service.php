@@ -8,7 +8,7 @@
 use WCPay\Duplicates_Detection_Service;
 use WCPay\Payment_Methods\CC_Payment_Method;
 use WCPay\Payment_Methods\Ideal_Payment_Method;
-use WCPay\Payment_Methods\Klarna_Payment_Method;
+use WCPay\PaymentMethods\Configs\Definitions\KlarnaDefinition;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 
 /**
@@ -58,6 +58,7 @@ class Duplicates_Detection_Service_Test extends WCPAY_UnitTestCase {
 
 		$registry = PaymentMethodDefinitionRegistry::instance();
 		$registry->register_payment_method( \WCPay\PaymentMethods\Configs\Definitions\IdealDefinition::class );
+		$registry->register_payment_method( KlarnaDefinition::class );
 	}
 
 	public function tear_down() {
@@ -98,12 +99,12 @@ class Duplicates_Detection_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_two_bnpls_enabled() {
-		$this->set_duplicates( Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID, 'yes', 'yes' );
+		$this->set_duplicates( KlarnaDefinition::get_id(), 'yes', 'yes' );
 
 		$result = $this->service->find_duplicates();
 
 		$this->assertCount( 1, $result );
-		$this->assertEquals( Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID, array_keys( $result )[0] );
+		$this->assertEquals( KlarnaDefinition::get_id(), array_keys( $result )[0] );
 	}
 
 	public function test_two_prbs_enabled() {
