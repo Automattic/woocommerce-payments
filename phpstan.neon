@@ -43,7 +43,7 @@ parameters:
     # Ignore common WordPress patterns that cause false positives
     ignoreErrors:
         - '#Call to function (is_admin|is_user_logged_in|current_user_can|__|_e|esc_attr|esc_html|wp_kses|get_option|update_option|do_action|apply_filters|add_action|add_filter|wp_enqueue_script|wp_enqueue_style|wp_localize_script|wp_redirect|wp_safe_redirect|wp_die|wp_mail|get_transient|set_transient|plugin_dir_path|plugin_dir_url|get_plugin_data)#'
-        # The list below is define during the migration and is to be reduced over time
+        # The list below is defined during the migration and is to be reduced over time
         -
              identifier: arguments.count
         -

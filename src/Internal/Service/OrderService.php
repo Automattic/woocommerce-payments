@@ -72,7 +72,7 @@ class OrderService {
 	 *
 	 * @param int               $order_id     ID of the order.
 	 * @param Payment_Type|null $payment_type Type of the payment (recurring or not).
-	 * @return array                     The metadat athat will be sent to the server.
+	 * @return array                          The metadata that will be sent to the server.
 	 * @throws Order_Not_Found_Exception
 	 */
 	public function get_payment_metadata( int $order_id, ?Payment_Type $payment_type = null ): array {
