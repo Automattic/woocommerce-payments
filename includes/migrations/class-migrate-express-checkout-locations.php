@@ -23,7 +23,7 @@ defined( 'ABSPATH' ) || exit;
  *   - `express_checkout_cart_methods` = ['payment_request', 'woopay']
  *   - `express_checkout_checkout_methods` = ['payment_request']
  *
- * @since X.X.X
+ * @since 10.4.0
  */
 class Migrate_Express_Checkout_Locations {
 
