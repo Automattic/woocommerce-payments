@@ -141,7 +141,7 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 			$event = self::$user_prefix . '_' . $event;
 		}
 
-		return $this->tracks_record_event( $event, $data, false, false );
+		return $this->tracks_record_event( $event, $data, false );
 	}
 
 	/**
