@@ -182,6 +182,8 @@ function wcpay_init() {
 	$should_init_ece_session_handler = false;
 
 	// Check if this is an order-received page with our custom parameter (cart needs restoration).
+	// Note: We use strpos() on REQUEST_URI instead of is_order_received_page() because this runs
+	// at plugins_loaded, before WordPress parses the URL into $wp->query_vars.
 	// phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
 	if ( ! empty( $_SERVER['REQUEST_URI'] ) &&
 		false !== strpos( $_SERVER['REQUEST_URI'], 'order-received' ) &&
