@@ -1,0 +1,4 @@
+Significance: minor
+Type: fix
+
+Avoid race conditions while capturing payments.
