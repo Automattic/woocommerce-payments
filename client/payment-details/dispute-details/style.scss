@@ -51,6 +51,9 @@
 		&__visa-compliance-checkbox {
 			margin: 0;
 		}
+		&__visa-compliance-checkbox input[type='checkbox'] {
+			appearance: checkbox;
+		}
 
 		&__actions {
 			display: flex;
