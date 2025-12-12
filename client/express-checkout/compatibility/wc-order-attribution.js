@@ -40,7 +40,7 @@ const init = () => {
 };
 
 // Initialize immediately if possible, or wait for DOM ready.
-// Just in case `wc_order_attribution` may not be available yet.
+// Just in case `wc_order_attribution` is loaded too late.
 if ( document.readyState === 'loading' ) {
 	document.addEventListener( 'DOMContentLoaded', init );
 } else {
