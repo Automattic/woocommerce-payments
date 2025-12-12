@@ -1159,9 +1159,16 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	private function mark_payment_completed( $order, $intent_data ) {
-		// Need to have a check for the intention status of `requires_capture`.
 		$note = $this->generate_payment_success_note( $intent_data['intent_id'], $intent_data['charge_id'], $this->get_order_amount( $order ) );
 		if ( $this->order_note_exists( $order, $note ) ) {
+			return;
+		}
+
+		// Check if a capture note already exists for this payment intent.
+		// This prevents adding a duplicate "charged" note when the payment was already
+		// processed via manual capture (race condition between capture flow and webhooks).
+		$capture_note = $this->generate_capture_success_note( $order, $intent_data['intent_id'], $intent_data['charge_id'] );
+		if ( $this->order_note_exists( $order, $capture_note ) ) {
 			return;
 		}
 
