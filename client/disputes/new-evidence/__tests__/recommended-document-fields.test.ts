@@ -385,6 +385,69 @@ describe( 'Recommended Documents', () => {
 				expect( result[ 4 ].key ).toBe( 'cancellation_policy' );
 				expect( result[ 5 ].key ).toBe( 'uncategorized_file' );
 			} );
+
+			it( 'should fall back to trunk subscription_canceled fields for physical_product when feature flag is enabled', () => {
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
+
+				const result = getRecommendedDocumentFields(
+					'subscription_canceled',
+					undefined,
+					undefined,
+					'physical_product'
+				);
+
+				// Should fall back to trunk subscription_canceled fields since no matrix entry for physical_product
+				expect( result ).toHaveLength( 6 );
+				expect( result[ 0 ].key ).toBe( 'receipt' );
+				expect( result[ 1 ].key ).toBe( 'customer_communication' );
+				expect( result[ 2 ].key ).toBe( 'access_activity_log' );
+				expect( result[ 2 ].label ).toBe(
+					'Proof of active subscription'
+				);
+				expect( result[ 3 ].key ).toBe( 'refund_policy' );
+				expect( result[ 4 ].key ).toBe( 'cancellation_policy' );
+				expect( result[ 5 ].key ).toBe( 'uncategorized_file' );
+			} );
+
+			it( 'should fall back to trunk subscription_canceled fields for digital_product_or_service when feature flag is enabled', () => {
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
+
+				const result = getRecommendedDocumentFields(
+					'subscription_canceled',
+					undefined,
+					undefined,
+					'digital_product_or_service'
+				);
+
+				// Should fall back to trunk subscription_canceled fields since no matrix entry for digital_product_or_service
+				expect( result ).toHaveLength( 6 );
+				expect( result[ 0 ].key ).toBe( 'receipt' );
+				expect( result[ 1 ].key ).toBe( 'customer_communication' );
+				expect( result[ 2 ].key ).toBe( 'access_activity_log' );
+				expect( result[ 3 ].key ).toBe( 'refund_policy' );
+				expect( result[ 4 ].key ).toBe( 'cancellation_policy' );
+				expect( result[ 5 ].key ).toBe( 'uncategorized_file' );
+			} );
+
+			it( 'should fall back to trunk subscription_canceled fields for booking_reservation when feature flag is enabled', () => {
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
+
+				const result = getRecommendedDocumentFields(
+					'subscription_canceled',
+					undefined,
+					undefined,
+					'booking_reservation'
+				);
+
+				// Should fall back to trunk subscription_canceled fields since no matrix entry for booking_reservation
+				expect( result ).toHaveLength( 6 );
+				expect( result[ 0 ].key ).toBe( 'receipt' );
+				expect( result[ 1 ].key ).toBe( 'customer_communication' );
+				expect( result[ 2 ].key ).toBe( 'access_activity_log' );
+				expect( result[ 3 ].key ).toBe( 'refund_policy' );
+				expect( result[ 4 ].key ).toBe( 'cancellation_policy' );
+				expect( result[ 5 ].key ).toBe( 'uncategorized_file' );
+			} );
 		} );
 	} );
 } );
