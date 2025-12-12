@@ -495,6 +495,8 @@ describe( 'UPE checkout utils', () => {
 			const upeSettings = getUpeSettings( 'card' );
 
 			expect( upeSettings.terms.card ).toEqual( 'always' );
+
+			document.body.removeChild( container );
 		} );
 
 		it( 'should provide terms when cart contains subscriptions but the saving checkbox is unchecked', () => {
