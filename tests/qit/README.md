@@ -11,29 +11,11 @@ We use the [QIT toolkit](https://qit.woo.com/docs/) for automated testing includ
    - **E2E Jetpack credentials** (`E2E_JP_SITE_ID`, `E2E_JP_BLOG_TOKEN`, `E2E_JP_USER_TOKEN`): Get these from a Jurassic Ninja site already onboarded in test mode.
 4. Once configured, the first time you run a test command, it will create a local auth file for subsequent runs.
 
-#### Installing qit-cli for E2E tests
+#### Note on qit-cli version
 
-The project includes `qit-cli` 0.10.0 in `composer.json` for security and PHPStan tests. However, **E2E tests require the dev version** (`dev-trunk`) because [test packages](https://qit.woo.com/docs/test-packages/) are not yet available in stable releases.
+The project uses `woocommerce/qit-cli:dev-trunk` in `composer.json` because [test packages](https://qit.woo.com/docs/test-packages/) (used for E2E tests) are not yet available in stable releases.
 
-To avoid PHP platform conflicts with the project's `config.platform.php` setting, install `qit-cli` globally:
-
-```bash
-# Install from outside the project directory to avoid conflicts
-cd /tmp && composer global require woocommerce/qit-cli:dev-trunk
-```
-
-Then add the Composer global bin directory to your PATH. Add this to your `~/.zshrc` (or `~/.bashrc`):
-
-```bash
-export PATH="$HOME/.composer/vendor/bin:$PATH"
-```
-
-Reload your shell and verify:
-
-```bash
-source ~/.zshrc
-qit --version  # Should show: qit_dev_build
-```
+Since `qit-cli` requires PHP 7.4+ but the project has `config.platform.php: 7.3` to ensure production compatibility, all `composer install` commands in the project use `--ignore-platform-req=php`. This is safe because `qit-cli` is a dev-only tool that never ships to users.
 
 ### Running Tests
 
