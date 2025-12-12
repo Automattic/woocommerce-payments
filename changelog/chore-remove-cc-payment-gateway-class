@@ -1,0 +1,4 @@
+Significance: patch
+Type: dev
+
+chore: remove CC_Payment_Gateway class in favor of WC_Payment_Gateway_WCPay
