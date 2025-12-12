@@ -56,6 +56,13 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 	private $original_account_service;
 
 	/**
+	 * Currency filter callback for removal in teardown.
+	 *
+	 * @var callable|null
+	 */
+	private $currency_filter_callback = null;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
@@ -80,6 +87,7 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 			\WCPay\PaymentMethods\Configs\Definitions\EpsDefinition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\P24Definition::class,
 			\WCPay\PaymentMethods\Configs\Definitions\IdealDefinition::class,
+			\WCPay\PaymentMethods\Configs\Definitions\KlarnaDefinition::class,
 		];
 
 		$payment_method_classes = [
@@ -87,7 +95,6 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 			Sepa_Payment_Method::class,
 			Becs_Payment_Method::class,
 			Link_Payment_Method::class,
-			Klarna_Payment_Method::class,
 		];
 
 		foreach ( $payment_method_definitions as $definition_class ) {
@@ -118,6 +125,10 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 		parent::tear_down();
 		wcpay_get_test_container()->reset_all_replacements();
 		WC_Payments::set_account_service( $this->original_account_service );
+		if ( null !== $this->currency_filter_callback ) {
+			remove_filter( 'woocommerce_currency', $this->currency_filter_callback, PHP_INT_MAX );
+			$this->currency_filter_callback = null;
+		}
 	}
 
 	/**
@@ -138,8 +149,12 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 	}
 
 	public function test_klarna_get_countries_with_eu_country_and_eu_currency() {
-		WC_Helper_Site_Currency::$mock_site_currency = 'EUR';
-		$payment_method                              = $this->mock_payment_methods['klarna'];
+		$this->currency_filter_callback = function () {
+			return 'EUR';
+		};
+		add_filter( 'woocommerce_currency', $this->currency_filter_callback, PHP_INT_MAX );
+
+		$payment_method = $this->mock_payment_methods['klarna'];
 
 		$this->mock_wcpay_account->method( 'get_cached_account_data' )->willReturn(
 			[
@@ -161,12 +176,15 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 			],
 			$payment_method->get_countries()
 		);
-		WC_Helper_Site_Currency::$mock_site_currency = '';
 	}
 
 	public function test_klarna_get_countries_with_eu_country_and_non_eu_currency() {
-		WC_Helper_Site_Currency::$mock_site_currency = 'AUD';
-		$payment_method                              = $this->mock_payment_methods['klarna'];
+		$this->currency_filter_callback = function () {
+			return 'AUD';
+		};
+		add_filter( 'woocommerce_currency', $this->currency_filter_callback, PHP_INT_MAX );
+
+		$payment_method = $this->mock_payment_methods['klarna'];
 
 		$this->mock_wcpay_account->method( 'get_cached_account_data' )->willReturn(
 			[
@@ -180,7 +198,6 @@ class UPE_Payment_Method_Test extends WCPAY_UnitTestCase {
 			],
 			$payment_method->get_countries()
 		);
-		WC_Helper_Site_Currency::$mock_site_currency = '';
 	}
 
 	public function provider_test_get_countries() {
