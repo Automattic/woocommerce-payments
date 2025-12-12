@@ -18,6 +18,7 @@ import { TestModeNotice } from 'components/test-mode-notice';
 import ErrorBoundary from 'components/error-boundary';
 import Paragraphs from 'components/paragraphs';
 import { reasons } from 'wcpay/disputes/strings';
+import { isVisaComplianceDispute } from 'wcpay/disputes/utils';
 import OrderLink from 'components/order-link';
 import DisputeNotice from 'payment-details/dispute-details/dispute-notice';
 import DisputeDueByDate from 'payment-details/dispute-details/dispute-due-by-date';
@@ -573,12 +574,7 @@ export default ( { query }: { query: { id: string } } ) => {
 		dispute.status !== 'needs_response' &&
 		dispute.status !== 'warning_needs_response';
 
-	const isVisaComplianceDispute =
-		dispute &&
-		( dispute.reason === 'noncompliant' ||
-			( dispute?.enhanced_eligibility_types || [] ).includes(
-				'visa_compliance'
-			) );
+	const isVisaCompliance = isVisaComplianceDispute( dispute );
 
 	// --- Accordion summary content (must be before any early returns) ---
 	const summaryItems = useMemo( () => {
@@ -1005,7 +1001,7 @@ export default ( { query }: { query: { id: string } } ) => {
 						fields={ recommendedDocumentsFields }
 						readOnly={ readOnly }
 					/>
-					{ isVisaComplianceDispute
+					{ isVisaCompliance
 						? inlineNoticeVisaCompliance()
 						: inlineNotice( bankName ) }
 				</>
@@ -1041,7 +1037,7 @@ export default ( { query }: { query: { id: string } } ) => {
 						fields={ recommendedShippingDocumentsFields }
 						readOnly={ readOnly }
 					/>
-					{ isVisaComplianceDispute
+					{ isVisaCompliance
 						? inlineNoticeVisaCompliance()
 						: inlineNotice( bankName ) }
 				</>
@@ -1146,7 +1142,7 @@ export default ( { query }: { query: { id: string } } ) => {
 						} }
 						readOnly={ readOnly }
 					/>
-					{ isVisaComplianceDispute
+					{ isVisaCompliance
 						? inlineNoticeVisaCompliance()
 						: inlineNotice( bankName ) }
 				</>
@@ -1330,6 +1326,7 @@ export default ( { query }: { query: { id: string } } ) => {
 						<ConfirmationScreen
 							disputeId={ query.id }
 							bankName={ bankName }
+							isVisaComplianceDispute={ isVisaCompliance }
 						/>
 					) : (
 						<div className="wcpay-dispute-evidence-new__stepper-section">
