@@ -34,8 +34,8 @@ const getRecommendedDocumentFields = (
 		false;
 
 	if ( isFeatureFlagEnabled ) {
-		// For duplicate disputes, use duplicateStatus for composite key lookup
-		// and fall back to 'default' productType if not provided
+		// For duplicate disputes, use duplicateStatus for composite key lookup.
+		// Use 'default' as placeholder to attempt matrix lookup (will fall back if no entry exists).
 		const status = reason === 'duplicate' ? duplicateStatus : undefined;
 		const effectiveProductType =
 			productType || ( reason === 'duplicate' ? 'default' : undefined );
