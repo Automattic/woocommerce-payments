@@ -76,6 +76,10 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		add_action( 'wp_footer', [ $this, 'add_frontend_tracks_scripts' ] );
 		add_action( 'before_woocommerce_pay_form', [ $this, 'pay_for_order_page_view' ] );
 		add_action( 'woocommerce_thankyou', [ $this, 'thank_you_page_view' ] );
+
+		// Inject tracking configuration into JS configs.
+		add_filter( 'wcpay_payment_fields_js_config', [ $this, 'add_tracking_config_to_payment_fields' ] );
+		add_filter( 'wcpay_express_checkout_js_params', [ $this, 'add_tracking_config_to_express_checkout' ] );
 	}
 
 	/**
@@ -218,14 +222,8 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 	 */
 	public function should_enable_tracking( $is_admin_event = false, $track_on_all_stores = false ) {
 		// Allow merchants to disable all shopper tracking via filter.
-		if ( ! apply_filters( 'wcpay_shopper_tracking_enabled', true ) ) {
-			return false;
-		}
-
-		// Respect WooCommerce global tracking opt-out setting.
-		// Only disable if explicitly set to 'no' (not false, null, or empty).
-		$allow_tracking = get_option( 'woocommerce_allow_tracking', '' );
-		if ( 'no' === $allow_tracking ) {
+		// The filter defaults to the WooCommerce global tracking setting.
+		if ( ! apply_filters( 'wcpay_shopper_tracking_enabled', 'no' !== get_option( 'woocommerce_allow_tracking', '' ) ) ) {
 			return false;
 		}
 
@@ -259,8 +257,8 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		// For all other events ensure:
 		// 1. Only site pages are tracked.
 		// 2. Site Admin activity in site pages are not tracked.
-		// 3. If track_on_all_stores is enabled, track all events regardless of WooPay eligibility.
-		// 4. Otherwise, track only when WooPay is active.
+		// 3. If track_on_all_stores is true, tracking is enabled regardless of WooPay eligibility.
+		// 4. Otherwise, tracking requires WooPay to be eligible and enabled.
 
 		// Track only site pages.
 		if ( is_admin() && ! wp_doing_ajax() ) {
@@ -633,6 +631,28 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 		}
 
 		$this->maybe_record_admin_event( 'woopay_express_button_locations_updated', $props );
+	}
+
+	/**
+	 * Add tracking configuration to payment fields JS config.
+	 *
+	 * @param array $config The payment fields JS config.
+	 * @return array The modified config.
+	 */
+	public function add_tracking_config_to_payment_fields( $config ) {
+		$config['isShopperTrackingEnabled'] = $this->should_enable_tracking( false, false );
+		return $config;
+	}
+
+	/**
+	 * Add tracking configuration to express checkout JS params.
+	 *
+	 * @param array $params The express checkout JS params.
+	 * @return array The modified params.
+	 */
+	public function add_tracking_config_to_express_checkout( $params ) {
+		$params['is_shopper_tracking_enabled'] = $this->should_enable_tracking( false, false );
+		return $params;
 	}
 
 	/**
