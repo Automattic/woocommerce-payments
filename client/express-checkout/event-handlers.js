@@ -51,29 +51,13 @@ export const shippingAddressChangeHandler = async ( event, elements ) => {
 		// when no shipping options are returned, the API still returns a 200 status code.
 		// We need to ensure that shipping options are present - otherwise the ECE dialog won't update correctly.
 		if ( shippingRates.length === 0 ) {
-			// Check if this is because no shipping zones are configured.
-			const hasShippingZones =
-				getExpressCheckoutData( 'checkout' )?.has_shipping_zones ??
-				true;
-
-			if ( ! hasShippingZones ) {
-				// Show error message about missing shipping configuration
-				event.reject( {
-					code: 'shipping_zones_not_configured',
-					message: __(
-						'No shipping methods are available. Please contact the store administrator to configure shipping.',
-						'woocommerce-payments'
-					),
-				} );
-			} else {
-				event.reject( {
-					code: 'no_shipping_options',
-					message: __(
-						'No shipping options are available for this address.',
-						'woocommerce-payments'
-					),
-				} );
-			}
+			event.reject( {
+				code: 'no_shipping_options',
+				message: __(
+					'No shipping options are available. Please ensure shipping is configured for your address.',
+					'woocommerce-payments'
+				),
+			} );
 
 			return;
 		}

@@ -445,29 +445,6 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			return false;
 		}
 
-		// Check if shipping is required but no shipping zones are configured.
-		$needs_shipping = false;
-
-		if ( $this->is_product() ) {
-			$needs_shipping = $this->get_product()->needs_shipping();
-		} elseif ( $this->is_cart() || $this->is_checkout() ) {
-			// Check if any products in cart need shipping.
-			$needs_shipping = false;
-			foreach ( WC()->cart->get_cart() as $cart_item ) {
-				if ( $cart_item['data']->needs_shipping() ) {
-					$needs_shipping = true;
-					break;
-				}
-			}
-		}
-
-		if ( $needs_shipping ) {
-			if ( ! $this->has_shipping_zones_configured() ) {
-				Logger::log( 'Shipping required but no shipping zones configured ( Express Checkout Element button disabled )' );
-				return false;
-			}
-		}
-
 		return true;
 	}
 
@@ -486,38 +463,6 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		return wc_shipping_enabled() && 0 !== wc_get_shipping_method_count( true ) && $product->needs_shipping();
 	}
 
-	/**
-	 * Check if shipping zones are properly configured.
-	 *
-	 * @return bool Returns true if shipping zones are configured; otherwise, returns false.
-	 */
-	public function has_shipping_zones_configured() {
-		if ( ! wc_shipping_enabled() ) {
-			return false;
-		}
-
-		$shipping_zones     = WC_Shipping_Zones::get_zones();
-		$rest_of_world_zone = WC_Shipping_Zones::get_zone_by( 'zone_id', 0 );
-
-		// Check if there are any shipping zones configured.
-		if ( empty( $shipping_zones ) && ( ! $rest_of_world_zone || empty( $rest_of_world_zone->get_shipping_methods() ) ) ) {
-			return false;
-		}
-
-		// Check if any zone has shipping methods.
-		foreach ( $shipping_zones as $zone ) {
-			if ( ! empty( $zone->get_shipping_methods() ) ) {
-				return true;
-			}
-		}
-
-		// Check rest of world zone.
-		if ( $rest_of_world_zone && ! empty( $rest_of_world_zone->get_shipping_methods() ) ) {
-			return true;
-		}
-
-		return false;
-	}
 
 	/**
 	 * Checks to make sure product type is supported.
