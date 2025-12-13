@@ -65,6 +65,15 @@ class WC_Payments_Address_Provider extends AbstractAutomatticAddressProvider {
 		parent::__construct();
 	}
 
+	/**
+	 * Checks if the core setting is enabled before loading scripts.
+	 * The parent method does not check this (will be patched and this override can be removed when WC 10.4 is released)
+	 */
+	public function load_scripts() {
+		if ( wc_string_to_bool( get_option( 'woocommerce_address_autocomplete_enabled', 'no' ) ) === true ) {
+			parent::load_scripts();
+		}
+	}
 
 	/**
 	 * Get address service JWT token from the WCPay server.

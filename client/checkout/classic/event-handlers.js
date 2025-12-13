@@ -32,10 +32,7 @@ import { isPreviewing } from 'wcpay/checkout/preview';
 import { recordUserEvent } from 'tracks';
 import '../utils/copy-test-number';
 import { SHORTCODE_BILLING_ADDRESS_FIELDS } from '../constants';
-import Visa from 'assets/images/payment-method-icons/visa.svg?asset';
-import Mastercard from 'assets/images/payment-method-icons/mastercard.svg?asset';
-import Amex from 'assets/images/payment-method-icons/amex.svg?asset';
-import Discover from 'assets/images/payment-method-icons/discover.svg?asset';
+import { getCardBrands } from 'wcpay/utils/card-brands';
 
 jQuery( function ( $ ) {
 	enqueueFraudScripts( getUPEConfig( 'fraudServices' ) );
@@ -181,27 +178,18 @@ jQuery( function ( $ ) {
 		innerContainer.setAttribute( 'tabindex', '0' );
 		innerContainer.setAttribute( 'data-testid', 'payment-methods-logos' );
 
-		const paymentMethods = [
-			{ name: 'visa', component: Visa },
-			{ name: 'mastercard', component: Mastercard },
-			{ name: 'amex', component: Amex },
-			{ name: 'discover', component: Discover },
-		];
+		const paymentMethods = getCardBrands();
 
 		function getMaxElements() {
-			const paymentMethodElement = document.querySelector(
-				'.payment_method_woocommerce_payments'
-			);
-			if ( ! paymentMethodElement ) {
-				return 4; // Default fallback
-			}
+			// Use viewport width as primary indicator (similar to blocks checkout)
+			const viewportWidth = window.innerWidth;
 
-			const elementWidth = paymentMethodElement.offsetWidth;
-			if ( elementWidth <= 300 ) {
+			// Specific tablet viewport range (768-781px) - needs room for Test Mode badge
+			if ( viewportWidth >= 768 && viewportWidth <= 900 ) {
 				return 1;
-			} else if ( elementWidth <= 330 ) {
-				return 2;
 			}
+			// Default - show 3 logos + counter badge = 4 visual elements total
+			return 3;
 		}
 
 		function shouldHavePopover() {

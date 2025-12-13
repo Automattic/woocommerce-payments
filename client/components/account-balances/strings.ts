@@ -12,5 +12,5 @@ export const documentationUrls = {
 	depositSchedule:
 		'https://woocommerce.com/document/woopayments/payouts/payout-schedule/',
 	negativeBalance:
-		'https://woocommerce.com/document/woopayments/fees-and-debits/account-showing-negative-balance/',
+		'https://woocommerce.com/document/woopayments/fees/account-showing-negative-balance/',
 };

@@ -189,8 +189,9 @@ const DepositsSchedule = () => {
 			<InlineNotice status="warning" isDismissible={ false } icon>
 				{ interpolateComponents( {
 					mixedString: __(
-						'Your first payout will be held for 7-14 days. ' +
-							'Payout scheduling will be available after this period. {{learnMoreLink}}Learn more{{/learnMoreLink}}',
+						'Payout scheduling becomes available after the standard 7-day waiting period for new accounts is complete.' +
+							' ' +
+							'{{learnMoreLink}}Learn more{{/learnMoreLink}}',
 						'woocommerce-payments'
 					),
 					components: {

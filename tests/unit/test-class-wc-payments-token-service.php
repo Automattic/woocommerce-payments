@@ -799,4 +799,219 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$token->save();
 		return $token;
 	}
+
+	/**
+	 * Ensures token added with Google Pay wallet metadata.
+	 */
+	public function test_add_token_to_user_with_google_pay_wallet() {
+		$expiry_year         = intval( gmdate( 'Y' ) ) + 1;
+		$mock_payment_method = [
+			'id'   => 'pm_mock',
+			'card' => [
+				'brand'     => 'visa',
+				'last4'     => '4242',
+				'exp_month' => 6,
+				'exp_year'  => $expiry_year,
+				'wallet'    => [
+					'type' => 'google_pay',
+				],
+			],
+			'type' => Payment_Method::CARD,
+		];
+
+		$token = $this->token_service->add_token_to_user( $mock_payment_method, wp_get_current_user() );
+
+		$this->assertEquals( 'woocommerce_payments', $token->get_gateway_id() );
+		$this->assertEquals( 1, $token->get_user_id() );
+		$this->assertEquals( 'pm_mock', $token->get_token() );
+		$this->assertEquals( 'visa', $token->get_card_type() );
+		$this->assertEquals( '4242', $token->get_last4() );
+		$this->assertEquals( '06', $token->get_expiry_month() );
+		$this->assertEquals( $expiry_year, $token->get_expiry_year() );
+		$this->assertEquals( 'google_pay', $token->get_meta( '_wcpay_wallet_type', true ) );
+	}
+
+	/**
+	 * Ensures token added without wallet metadata.
+	 */
+	public function test_add_token_to_user_without_wallet() {
+		$expiry_year         = intval( gmdate( 'Y' ) ) + 1;
+		$mock_payment_method = [
+			'id'   => 'pm_mock',
+			'card' => [
+				'brand'     => 'visa',
+				'last4'     => '4242',
+				'exp_month' => 6,
+				'exp_year'  => $expiry_year,
+			],
+			'type' => Payment_Method::CARD,
+		];
+
+		$token = $this->token_service->add_token_to_user( $mock_payment_method, wp_get_current_user() );
+
+		$this->assertEquals( 'woocommerce_payments', $token->get_gateway_id() );
+		$this->assertEquals( '', $token->get_meta( '_wcpay_wallet_type', true ) );
+	}
+
+	/**
+	 * Ensures get_account_saved_payment_methods_list_item_wallet returns wallet display name.
+	 */
+	public function test_get_account_saved_payment_methods_list_item_wallet_google_pay() {
+		// Create a mock payment method that returns the title.
+		$mock_payment_method = $this->createMock( WCPay\Payment_Methods\UPE_Payment_Method::class );
+		$mock_payment_method->method( 'get_title' )->willReturn( 'Google Pay' );
+
+		// Use Reflection to inject the mock into WC_Payments' payment method map.
+		$reflection = new ReflectionClass( WC_Payments::class );
+		$property   = $reflection->getProperty( 'payment_method_map' );
+		$property->setAccessible( true );
+		$original_map          = $property->getValue();
+		$new_map               = $original_map;
+		$new_map['google_pay'] = $mock_payment_method;
+		$property->setValue( null, $new_map );
+
+		$token = new WC_Payment_Token_CC();
+		$token->set_gateway_id( 'woocommerce_payments' );
+		$token->set_token( 'pm_mock' );
+		$token->set_card_type( 'visa' );
+		$token->set_last4( '4242' );
+		$token->set_user_id( 1 );
+		$token->set_expiry_month( '12' );
+		$token->set_expiry_year( '2030' );
+		$token->add_meta_data( '_wcpay_wallet_type', 'google_pay', true );
+		$token->save();
+
+		$item = [
+			'method' => [
+				'brand' => 'Visa',
+				'last4' => '4242',
+			],
+		];
+
+		$result = $this->token_service->get_account_saved_payment_methods_list_item_wallet( $item, $token );
+
+		$this->assertEquals( 'Google Pay Visa', $result['method']['brand'] );
+
+		// Restore original payment method map.
+		$property->setValue( null, $original_map );
+	}
+
+	/**
+	 * Ensures get_account_saved_payment_methods_list_item_wallet returns wallet display name for Apple Pay.
+	 */
+	public function test_get_account_saved_payment_methods_list_item_wallet_apple_pay() {
+		// Create a mock payment method that returns the title.
+		$mock_payment_method = $this->createMock( WCPay\Payment_Methods\UPE_Payment_Method::class );
+		$mock_payment_method->method( 'get_title' )->willReturn( 'Apple Pay' );
+
+		// Use Reflection to inject the mock into WC_Payments' payment method map.
+		$reflection = new ReflectionClass( WC_Payments::class );
+		$property   = $reflection->getProperty( 'payment_method_map' );
+		$property->setAccessible( true );
+		$original_map         = $property->getValue();
+		$new_map              = $original_map;
+		$new_map['apple_pay'] = $mock_payment_method;
+		$property->setValue( null, $new_map );
+
+		$token = new WC_Payment_Token_CC();
+		$token->set_gateway_id( 'woocommerce_payments' );
+		$token->set_token( 'pm_mock' );
+		$token->set_card_type( 'mastercard' );
+		$token->set_last4( '5555' );
+		$token->set_user_id( 1 );
+		$token->set_expiry_month( '12' );
+		$token->set_expiry_year( '2030' );
+		$token->add_meta_data( '_wcpay_wallet_type', 'apple_pay', true );
+		$token->save();
+
+		$item = [
+			'method' => [
+				'brand' => 'Mastercard',
+				'last4' => '5555',
+			],
+		];
+
+		$result = $this->token_service->get_account_saved_payment_methods_list_item_wallet( $item, $token );
+
+		$this->assertEquals( 'Apple Pay Mastercard', $result['method']['brand'] );
+
+		// Restore original payment method map.
+		$property->setValue( null, $original_map );
+	}
+
+	/**
+	 * Ensures get_account_saved_payment_methods_list_item_wallet doesn't modify non-wallet tokens.
+	 */
+	public function test_get_account_saved_payment_methods_list_item_wallet_without_wallet() {
+		$token = new WC_Payment_Token_CC();
+		$token->set_gateway_id( 'woocommerce_payments' );
+		$token->set_token( 'pm_mock' );
+		$token->set_card_type( 'visa' );
+		$token->set_last4( '4242' );
+		$token->set_user_id( 1 );
+		$token->set_expiry_month( '12' );
+		$token->set_expiry_year( '2030' );
+		$token->save();
+
+		$item = [
+			'method' => [
+				'brand' => 'Visa',
+				'last4' => '4242',
+			],
+		];
+
+		$result = $this->token_service->get_account_saved_payment_methods_list_item_wallet( $item, $token );
+
+		$this->assertEquals( 'Visa', $result['method']['brand'] );
+	}
+
+	/**
+	 * Ensures get_account_saved_payment_methods_list_item_wallet doesn't modify SEPA tokens.
+	 */
+	public function test_get_account_saved_payment_methods_list_item_wallet_ignores_sepa() {
+		$token = new WC_Payment_Token_WCPay_SEPA();
+		$token->set_gateway_id( 'woocommerce_payments_sepa_debit' );
+		$token->set_token( 'pm_mock' );
+		$token->set_last4( '3000' );
+		$token->save();
+
+		$item = [
+			'method' => [
+				'brand' => 'SEPA IBAN',
+				'last4' => '3000',
+			],
+		];
+
+		$result = $this->token_service->get_account_saved_payment_methods_list_item_wallet( $item, $token );
+
+		$this->assertEquals( 'SEPA IBAN', $result['method']['brand'] );
+	}
+
+	/**
+	 * Ensures get_account_saved_payment_methods_list_item_wallet handles missing payment method gracefully.
+	 */
+	public function test_get_account_saved_payment_methods_list_item_wallet_missing_payment_method() {
+		$token = new WC_Payment_Token_CC();
+		$token->set_gateway_id( 'woocommerce_payments' );
+		$token->set_token( 'pm_mock' );
+		$token->set_card_type( 'visa' );
+		$token->set_last4( '4242' );
+		$token->set_user_id( 1 );
+		$token->set_expiry_month( '12' );
+		$token->set_expiry_year( '2030' );
+		$token->add_meta_data( '_wcpay_wallet_type', 'unknown_wallet', true );
+		$token->save();
+
+		$item = [
+			'method' => [
+				'brand' => 'Visa',
+				'last4' => '4242',
+			],
+		];
+
+		$result = $this->token_service->get_account_saved_payment_methods_list_item_wallet( $item, $token );
+
+		// Should return unchanged when wallet type not found.
+		$this->assertEquals( 'Visa', $result['method']['brand'] );
+	}
 }

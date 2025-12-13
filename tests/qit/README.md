@@ -1,21 +1,37 @@
 ## WooCommerce Payments QIT tests
 
-We currently only use the security tests from the [QIT toolkit](https://qit.woo.com/docs/) and these can be run locally.
+We use the [QIT toolkit](https://qit.woo.com/docs/) for automated testing including security, PHPStan, and E2E tests.
 
-#### Setup and running
+#### Setup
 - Create `local.env` inside the `tests/qit/config/` directory by copying the variables from `default.env`.
 - To get the actual values for local config, refer to this [secret store](https://mc.a8c.com/secret-store/?secret_id=11043) link.
-- Once configured, the first time you run the `npm` command, it should create a local auth file which will be used for subsequent runs.
+- Use standard `KEY=VALUE` format (no `export` keyword needed).
+- Once configured, the first time you run a test command, it will create a local auth file for subsequent runs.
 
-- Currently, two types of tests are available through the `npm` command: Security and PHPStan tests. PHPStan tests can also be run against the local development build.
-- For running, use one of the following commands based on your requirements:
-   ```
-   npm run test:qit-security
-   npm run test:qit-phpstan
-   npm run test:qit-phpstan-local
-   ```
+#### Running Tests
 
-- The commands use the `build:release` to create `woocommerce-payments.zip` at the root of the directory which is then uploaded and used for the QIT tests.
+**Security and PHPStan tests:**
+```bash
+npm run test:qit-security
+npm run test:qit-phpstan
+npm run test:qit-phpstan-local  # Against local development build
+```
+
+**E2E tests:**
+```bash
+# Run all E2E tests
+npm run test:qit-e2e
+
+# Run specific test file
+npm run test:qit-e2e tests/qit/e2e/specs/woopayments/shopper/shopper-checkout-purchase.spec.ts
+
+# Run tests with specific tag
+npm run test:qit-e2e -- --tag=@basic
+```
+
+**Note:** E2E tests require valid Jetpack credentials in `local.env` (`E2E_JP_SITE_ID`, `E2E_JP_BLOG_TOKEN`, `E2E_JP_USER_TOKEN`).
+
+- The commands use `build:release` to create `woocommerce-payments.zip` at the root of the directory which is then uploaded and used for the QIT tests.
 
 
 #### Analysing results

@@ -1,7 +1,8 @@
 /**
  * Internal dependencies
  */
-import { isDueWithin, isInquiry } from '../utils';
+import { isDueWithin, isInquiry, isVisaComplianceDispute } from '../utils';
+import type { Dispute } from 'wcpay/types/disputes';
 
 describe( 'isDueWithin', () => {
 	// 2021-01-01T00:00:00.000Z
@@ -108,5 +109,75 @@ describe( 'isInquiry', () => {
 		expect( isInquiry( 'charge_refunded' ) ).toBe( false );
 		expect( isInquiry( 'won' ) ).toBe( false );
 		expect( isInquiry( 'lost' ) ).toBe( false );
+	} );
+} );
+
+describe( 'isVisaComplianceDispute', () => {
+	test( 'returns true if dispute reason is noncompliant', () => {
+		const dispute = {
+			reason: 'noncompliant',
+			enhanced_eligibility_types: [],
+		} as Pick< Dispute, 'reason' | 'enhanced_eligibility_types' >;
+		expect( isVisaComplianceDispute( dispute ) ).toBe( true );
+	} );
+
+	test( 'returns true if enhanced_eligibility_types includes visa_compliance', () => {
+		const dispute = {
+			reason: 'fraudulent',
+			enhanced_eligibility_types: [ 'visa_compliance' ],
+		} as Pick< Dispute, 'reason' | 'enhanced_eligibility_types' >;
+		expect( isVisaComplianceDispute( dispute ) ).toBe( true );
+	} );
+
+	test( 'returns true if both reason is noncompliant and enhanced_eligibility_types includes visa_compliance', () => {
+		const dispute = {
+			reason: 'noncompliant',
+			enhanced_eligibility_types: [ 'visa_compliance' ],
+		} as Pick< Dispute, 'reason' | 'enhanced_eligibility_types' >;
+		expect( isVisaComplianceDispute( dispute ) ).toBe( true );
+	} );
+
+	test( 'returns true if visa_compliance is in a list of enhanced_eligibility_types', () => {
+		const dispute = {
+			reason: 'duplicate',
+			enhanced_eligibility_types: [
+				'early_fraud_warning',
+				'visa_compliance',
+				'other_type',
+			],
+		} as Pick< Dispute, 'reason' | 'enhanced_eligibility_types' >;
+		expect( isVisaComplianceDispute( dispute ) ).toBe( true );
+	} );
+
+	test( 'returns false if dispute reason is not noncompliant and no visa_compliance in enhanced_eligibility_types', () => {
+		const dispute = {
+			reason: 'fraudulent',
+			enhanced_eligibility_types: [],
+		} as Pick< Dispute, 'reason' | 'enhanced_eligibility_types' >;
+		expect( isVisaComplianceDispute( dispute ) ).toBe( false );
+	} );
+
+	test( 'returns false if enhanced_eligibility_types is undefined', () => {
+		const dispute = {
+			reason: 'product_not_received',
+			enhanced_eligibility_types: undefined,
+		} as Pick< Dispute, 'reason' | 'enhanced_eligibility_types' >;
+		expect( isVisaComplianceDispute( dispute ) ).toBe( false );
+	} );
+
+	test( 'returns false if enhanced_eligibility_types does not include visa_compliance', () => {
+		const dispute = {
+			reason: 'duplicate',
+			enhanced_eligibility_types: [ 'early_fraud_warning', 'other_type' ],
+		} as Pick< Dispute, 'reason' | 'enhanced_eligibility_types' >;
+		expect( isVisaComplianceDispute( dispute ) ).toBe( false );
+	} );
+
+	test( 'returns false if dispute is null', () => {
+		expect( isVisaComplianceDispute( null as any ) ).toBe( false );
+	} );
+
+	test( 'returns false if dispute is undefined', () => {
+		expect( isVisaComplianceDispute( undefined as any ) ).toBe( false );
 	} );
 } );

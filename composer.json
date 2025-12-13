@@ -26,7 +26,8 @@
         "automattic/jetpack-config": "3.0.1",
         "automattic/jetpack-autoloader": "5.0.2",
         "automattic/jetpack-sync": "4.8.3",
-        "woocommerce/subscriptions-core": "6.7.1"
+        "woocommerce/subscriptions-core": "6.7.1",
+        "automattic/jetpack-constants": "3.0.8"
     },
     "require-dev": {
         "composer/installers": "1.10.0",
@@ -42,7 +43,7 @@
         "cweagans/composer-patches": "1.7.1",
         "automattic/jetpack-changelogger": "3.3.2",
         "spatie/phpunit-watcher": "1.23.6",
-        "woocommerce/qit-cli": "0.4.0",
+        "woocommerce/qit-cli": "0.10.0",
         "slevomat/coding-standard": "8.15.0",
         "dg/bypass-finals": "1.5.1",
         "sirbrillig/phpcs-variable-analysis": "^2.11",

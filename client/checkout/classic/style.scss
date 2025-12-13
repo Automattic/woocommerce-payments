@@ -41,6 +41,15 @@
 			img:last-of-type {
 				margin-right: 0;
 			}
+
+			&-count {
+				margin-left: 4px;
+
+				// Tighter spacing on tablet viewports (768-900px) to conserve space for Test Mode badge
+				@media ( min-width: 768px ) and ( max-width: 900px ) {
+					margin-left: 0;
+				}
+			}
 		}
 		img {
 			float: right;
