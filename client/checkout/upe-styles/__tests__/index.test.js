@@ -46,7 +46,7 @@ describe( 'Getting styles for automated theming', () => {
 
 	test( 'getFieldStyles returns correct styles for inputs', () => {
 		const scope = {
-			querySelectorAll: jest.fn( () => [ mockElement ] ),
+			querySelector: jest.fn( () => mockElement ),
 			defaultView: {
 				getComputedStyle: jest.fn( () => mockCSStyleDeclaration ),
 			},
@@ -71,7 +71,7 @@ describe( 'Getting styles for automated theming', () => {
 
 	test( 'getFieldStyles returns empty object if it can not find the element', () => {
 		const scope = {
-			querySelectorAll: jest.fn( () => [] ),
+			querySelector: jest.fn( () => undefined ),
 		};
 
 		const fieldStyles = upeStyles.getFieldStyles(
@@ -133,7 +133,6 @@ describe( 'Getting styles for automated theming', () => {
 	test( 'getAppearance returns the object with filtered CSS rules for UPE theming', () => {
 		const scope = {
 			querySelector: jest.fn( () => mockElement ),
-			querySelectorAll: jest.fn( () => [ mockElement ] ),
 			createElement: jest.fn( ( htmlTag ) =>
 				document.createElement( htmlTag )
 			),
@@ -313,7 +312,6 @@ describe( 'Getting styles for automated theming', () => {
 			test( 'getAppearance uses the correct appearanceSelectors based on the elementsLocation', () => {
 				const scope = {
 					querySelector: jest.fn( () => mockElement ),
-					querySelectorAll: jest.fn( () => [ mockElement ] ),
 					createElement: jest.fn( ( htmlTag ) =>
 						document.createElement( htmlTag )
 					),

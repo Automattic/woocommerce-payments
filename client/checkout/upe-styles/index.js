@@ -423,8 +423,7 @@ export const getFieldStyles = (
 	backgroundColor = null,
 	scope
 ) => {
-	// If the selector is an array, get one element per selector type instead of all elements.
-	// This avoids performance issues with selectors that match too many elements.
+	// getting one element per selector to avoid performance issues with selectors matching too many elements.
 	const elements = ( Array.isArray( selector ) ? selector : [ selector ] )
 		.map( ( s ) => scope.querySelector( s ) )
 		.filter( Boolean );
@@ -458,13 +457,11 @@ export const getFieldStyles = (
 		}
 
 		// `line-height: 0` values are no good - try and find an alternative.
-		// Limit to the first 5 elements to avoid performance issues with large selectors.
 		if (
 			camelCase === 'lineHeight' &&
 			( propertyValue === '0' || propertyValue === '0px' )
 		) {
-			const maxElements = Math.min( elements.length, 5 );
-			for ( let i = 0; i < maxElements; i++ ) {
+			for ( let i = 1; i < elements.length; i++ ) {
 				const lh = windowObject
 					.getComputedStyle( elements[ i ] )
 					.getPropertyValue( 'line-height' );
