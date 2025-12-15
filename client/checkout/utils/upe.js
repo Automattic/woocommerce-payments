@@ -303,44 +303,6 @@ export const getPaymentMethodTypes = ( paymentMethodType ) => {
 };
 
 /**
- * Returns the email value from store API.
- *
- * @return {string} The email value.
- */
-export const getBlocksEmailValue = () => {
-	// .wcpay-payment-element container is rendered only when new payment method is selected
-	return document
-		.querySelector( '.wcpay-payment-element' )
-		?.closest( 'form' )
-		?.querySelector( '#email' )?.value;
-};
-
-/**
- * Function to initialise Stripe Link button on email input field.
- *
- * @param {Object} linkAutofill Stripe Link Autofill instance.
- */
-export const blocksShowLinkButtonHandler = ( linkAutofill ) => {
-	const upeContainer = document.querySelector( '.wcpay-payment-element' );
-	if ( ! upeContainer ) return;
-
-	const emailInput = upeContainer
-		.closest( 'form' )
-		?.querySelector( '#email' );
-	if ( ! emailInput ) return;
-
-	const stripeLinkButton = document.createElement( 'button' );
-	stripeLinkButton.setAttribute( 'class', 'wcpay-stripelink-modal-trigger' );
-	stripeLinkButton.style.display = emailInput.value ? 'inline-block' : 'none';
-	stripeLinkButton.addEventListener( 'click', ( event ) => {
-		event.preventDefault();
-		linkAutofill.launch( { email: emailInput.value } );
-	} );
-
-	emailInput.parentNode.appendChild( stripeLinkButton );
-};
-
-/**
  * Returns true if the payment method has configured with any country restrictions.
  *
  * @param {HTMLElement} upeElement The selector of the DOM element of particular payment method to mount the UPE element to.
