@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import React from 'react';
+import React, { useState } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 
 /**
@@ -29,13 +29,25 @@ useStoreSettings.mockReturnValue( {
 	submitStoreSettingsUpdate: jest.fn(),
 } );
 
+const ContextWrapper = ( { children } ) => {
+	const [ isDirty, setIsDirty ] = useState( false );
+	return (
+		<MultiCurrencySettingsContext.Provider
+			value={ {
+				isCurrentScreenDirty: isDirty,
+				setIsCurrentScreenDirty: setIsDirty,
+			} }
+		>
+			{ children }
+		</MultiCurrencySettingsContext.Provider>
+	);
+};
+
 const createContainer = () => {
 	const { container } = render(
-		<MultiCurrencySettingsContext.Provider
-			value={ { setIsCurrentScreenDirty: () => null } }
-		>
+		<ContextWrapper>
 			<StoreSettings />
-		</MultiCurrencySettingsContext.Provider>
+		</ContextWrapper>
 	);
 	return container;
 };

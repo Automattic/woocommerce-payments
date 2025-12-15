@@ -2,17 +2,8 @@
  * External dependencies
  */
 import React, { useContext, useEffect, useState } from 'react';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
-import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
-import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
-import { CheckboxControl } from 'wcpay/components/wp-components-wrapped/components/checkbox-control';
-import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
 import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement } from '@wordpress/element';
-
-/**
- * Internal dependencies
- */
 import {
 	Button,
 	Card,
@@ -20,6 +11,10 @@ import {
 	CheckboxControl,
 	ExternalLink,
 } from '@wordpress/components';
+
+/**
+ * Internal dependencies
+ */
 import { useStoreSettings } from 'multi-currency/data';
 import {
 	LoadableBlock,

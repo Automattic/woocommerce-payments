@@ -813,7 +813,6 @@ exports[`Single currency settings screen Page renders correctly 1`] = `
         >
           <button
             class="components-button is-next-40px-default-size is-primary"
-            disabled=""
             type="button"
           >
             Save changes
