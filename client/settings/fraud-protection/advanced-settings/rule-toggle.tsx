@@ -8,8 +8,7 @@ import { __ } from '@wordpress/i18n';
  * Internal dependencies
  */
 import './rule-toggle.scss';
-import { ToggleControl } from 'wcpay/components/wp-components-wrapped/components/toggle-control';
-import { RadioControl } from 'wcpay/components/wp-components-wrapped/components/radio-control';
+import { ToggleControl, RadioControl } from '@wordpress/components';
 import FraudPreventionSettingsContext from './context';
 import { FraudPreventionSettings } from '../interfaces';
 
@@ -111,7 +110,6 @@ const FraudProtectionRuleToggle: React.FC< React.PropsWithChildren<
 								options={ radioOptions }
 								selected={ filterAction }
 								onChange={ handleBlockToggleChange }
-								__nextHasNoMarginBottom
 							/>
 						</div>
 					) }

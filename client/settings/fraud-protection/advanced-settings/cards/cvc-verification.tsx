@@ -4,7 +4,7 @@
 import React from 'react';
 import { __ } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
-import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
+import { ExternalLink } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -32,6 +32,7 @@ const CVCVerificationRuleCard: React.FC = () => {
 							),
 							components: {
 								learnMoreLink: (
+									// @ts-expect-error: children is provided when interpolating the component
 									<ExternalLink
 										// eslint-disable-next-line max-len
 										href="https://woocommerce.com/document/woopayments/fraud-and-disputes/fraud-protection/#advanced-configuration"

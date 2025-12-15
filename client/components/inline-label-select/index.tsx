@@ -10,7 +10,7 @@
  * External Dependencies
  */
 import React from 'react';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
+import { Button } from '@wordpress/components';
 import { check, chevronDown, Icon } from '@wordpress/icons';
 import { useCallback } from '@wordpress/element';
 import clsx from 'clsx';

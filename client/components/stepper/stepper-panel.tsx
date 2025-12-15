@@ -3,11 +3,11 @@
  */
 import React from 'react';
 import { check } from '@wordpress/icons';
+import { Icon } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import { Icon } from 'wcpay/components/wp-components-wrapped/components/icon';
 import './style.scss';
 import clsx from 'clsx';
 

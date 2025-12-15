@@ -77,7 +77,7 @@ const BusinessDetails: React.FC = () => {
 				/>
 			</span>
 			{ selectedCountry && selectedCountry.types.length > 0 && (
-				<span data-testid={ 'business-type-select' }>
+				<span data-testid="business-type-select">
 					<OnboardingSelectField
 						name="business_type"
 						options={ selectedCountry.types }

@@ -10,6 +10,7 @@ use WCPay\Constants\Country_Code;
 use WCPay\Fraud_Prevention\Fraud_Risk_Tools;
 use WCPay\Constants\Track_Events;
 use WCPay\Fraud_Prevention\Models\Rule;
+use WCPay\Logger;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -39,21 +40,31 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	protected $account;
 
 	/**
+	 * WC_Payments_PM_Promotions_Service instance for payment method promotions.
+	 *
+	 * @var WC_Payments_PM_Promotions_Service
+	 */
+	private $pm_promotions_service;
+
+	/**
 	 * WC_REST_Payments_Settings_Controller constructor.
 	 *
-	 * @param WC_Payments_API_Client   $api_client WC_Payments_API_Client instance.
-	 * @param WC_Payment_Gateway_WCPay $wcpay_gateway WC_Payment_Gateway_WCPay instance.
-	 * @param WC_Payments_Account      $account  Account class instance.
+	 * @param WC_Payments_API_Client            $api_client            WC_Payments_API_Client instance.
+	 * @param WC_Payment_Gateway_WCPay          $wcpay_gateway         WC_Payment_Gateway_WCPay instance.
+	 * @param WC_Payments_Account               $account               Account class instance.
+	 * @param WC_Payments_PM_Promotions_Service $pm_promotions_service PM Promotions Service instance.
 	 */
 	public function __construct(
 		WC_Payments_API_Client $api_client,
 		WC_Payment_Gateway_WCPay $wcpay_gateway,
-		WC_Payments_Account $account
+		WC_Payments_Account $account,
+		WC_Payments_PM_Promotions_Service $pm_promotions_service
 	) {
 		parent::__construct( $api_client );
 
-		$this->wcpay_gateway = $wcpay_gateway;
-		$this->account       = $account;
+		$this->wcpay_gateway         = $wcpay_gateway;
+		$this->account               = $account;
+		$this->pm_promotions_service = $pm_promotions_service;
 	}
 
 	/**
@@ -133,7 +144,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
-					'is_wcpay_subscription_enabled'        => [
+					'is_wcpay_subscriptions_enabled'       => [
 						'description'       => sprintf(
 							/* translators: %s: WooPayments */
 							__( '%s Subscriptions feature flag setting.', 'woocommerce-payments' ),
@@ -208,6 +219,11 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 							__( 'If %s express checkouts should be enabled.', 'woocommerce-payments' ),
 							'WooPayments'
 						),
+						'type'              => 'boolean',
+						'validate_callback' => 'rest_validate_request_arg',
+					],
+					'is_apple_google_pay_in_payment_methods_options_enabled' => [
+						'description'       => __( 'If Apple Pay / Google Pay should be enabled as an option in the payment methods list.', 'woocommerce-payments' ),
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
@@ -493,7 +509,8 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'account_branding_primary_color'         => $this->wcpay_gateway->get_option( 'account_branding_primary_color' ),
 				'account_branding_secondary_color'       => $this->wcpay_gateway->get_option( 'account_branding_secondary_color' ),
 				'account_domestic_currency'              => $this->wcpay_gateway->get_option( 'account_domestic_currency' ),
-				'is_payment_request_enabled'             => 'yes' === $this->wcpay_gateway->get_option( 'payment_request' ),
+				'is_payment_request_enabled'             => $this->wcpay_gateway->is_payment_request_enabled(),
+				'is_apple_google_pay_in_payment_methods_options_enabled' => 'yes' === $this->wcpay_gateway->get_option( 'apple_google_pay_in_payment_methods_options' ),
 				'is_debug_log_enabled'                   => 'yes' === $this->wcpay_gateway->get_option( 'enable_logging' ),
 				'payment_request_enabled_locations'      => $this->wcpay_gateway->get_option( 'payment_request_button_locations' ),
 				'payment_request_button_size'            => $this->wcpay_gateway->get_option( 'payment_request_button_size' ),
@@ -537,6 +554,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_is_multi_currency_enabled( $request );
 		$this->update_is_wcpay_subscriptions_enabled( $request );
 		$this->update_is_payment_request_enabled( $request );
+		$this->update_is_apple_google_pay_in_payment_methods_options_enabled( $request );
 		$this->update_payment_request_enabled_locations( $request );
 		$this->update_payment_request_appearance( $request );
 		$this->update_is_saved_cards_enabled( $request );
@@ -556,7 +574,33 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 			return new WP_REST_Response( [ 'server_error' => $update_account_result->get_error_message() ], 400 );
 		}
 
+		// Sync the store setup with the Transact Platform.
+		$this->account->store_setup_sync();
+
 		return new WP_REST_Response( $this->get_settings(), 200 );
+	}
+
+	/**
+	 * Schedule a migration of Stripe Billing subscriptions.
+	 *
+	 * @param WP_REST_Request|null $request The request object. Optional. If passed, the function will return a REST response.
+	 *
+	 * @return WP_REST_Response|null The response object, if this is a REST request.
+	 */
+	public function schedule_stripe_billing_migration( ?WP_REST_Request $request = null ) {
+
+		if ( class_exists( 'WC_Payments_Subscriptions' ) ) {
+			$stripe_billing_migrator = WC_Payments_Subscriptions::get_stripe_billing_migrator();
+
+			if ( $stripe_billing_migrator && ! $stripe_billing_migrator->is_migrating() && $stripe_billing_migrator->get_stripe_billing_subscription_count() > 0 ) {
+				$stripe_billing_migrator->schedule_migrate_wcpay_subscriptions_action();
+			}
+		}
+
+		// Return a response if this is a REST request.
+		if ( $request ) {
+			return new WP_REST_Response( [], 200 );
+		}
 	}
 
 	/**
@@ -611,24 +655,28 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$disabled_payment_methods = array_diff( $active_payment_methods, $payment_method_ids_to_enable );
 		$enabled_payment_methods  = array_diff( $payment_method_ids_to_enable, $active_payment_methods );
 
-		if ( function_exists( 'wc_admin_record_tracks_event' ) ) {
-			foreach ( $disabled_payment_methods as $disabled_payment_method ) {
-				wc_admin_record_tracks_event(
-					Track_Events::PAYMENT_METHOD_DISABLED,
-					[
-						'payment_method_id' => $disabled_payment_method,
-					]
-				);
-			}
-
-			foreach ( $enabled_payment_methods as $enabled_payment_method ) {
-				wc_admin_record_tracks_event(
-					Track_Events::PAYMENT_METHOD_ENABLED,
-					[
-						'payment_method_id' => $enabled_payment_method,
-					]
-				);
-			}
+		// Log Tracks events for each enabled/disabled payment method.
+		// We log these events before actually enabling/disabling the payment methods
+		// to ensure that if enabling/disabling fails, we still have a record of the
+		// attempt.
+		$pm_to_capability_key_map = $this->wcpay_gateway->get_payment_method_capability_key_map();
+		foreach ( $disabled_payment_methods as $disabled_payment_method ) {
+			$this->tracks_event(
+				Track_Events::PAYMENT_METHOD_DISABLED,
+				[
+					'payment_method_id' => $disabled_payment_method,
+					'capability_id'     => $pm_to_capability_key_map[ $disabled_payment_method ] ?? null,
+				]
+			);
+		}
+		foreach ( $enabled_payment_methods as $enabled_payment_method ) {
+			$this->tracks_event(
+				Track_Events::PAYMENT_METHOD_ENABLED,
+				[
+					'payment_method_id' => $enabled_payment_method,
+					'capability_id'     => $pm_to_capability_key_map[ $enabled_payment_method ] ?? null,
+				]
+			);
 		}
 
 		foreach ( $enabled_payment_methods as $payment_method_id ) {
@@ -641,6 +689,12 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				}
 				continue;
 			}
+
+			// Try to activate any promotions for this payment method BEFORE enabling it.
+			// This is done first because visible promotions are filtered out for already-enabled PMs.
+			// The service method handles its own exception catching, logging, and tracking internally.
+			$this->pm_promotions_service->maybe_activate_promotion_for_payment_method( $payment_method_id );
+
 			$gateway->enable();
 		}
 
@@ -771,7 +825,11 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 
 		$is_wcpay_subscriptions_enabled = $request->get_param( 'is_wcpay_subscriptions_enabled' );
 
-		update_option( WC_Payments_Features::WCPAY_SUBSCRIPTIONS_FLAG_NAME, $is_wcpay_subscriptions_enabled ? '1' : '0' );
+		// Prevent enabling bundled subscriptions - feature has been removed in 10.2.0.
+		// Only allow disabling the feature if it was previously enabled.
+		if ( ! $is_wcpay_subscriptions_enabled ) {
+			update_option( WC_Payments_Features::WCPAY_SUBSCRIPTIONS_FLAG_NAME, '0' );
+		}
 	}
 
 	/**
@@ -812,7 +870,39 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 
 		$is_payment_request_enabled = $request->get_param( 'is_payment_request_enabled' );
 
-		$this->wcpay_gateway->update_option( 'payment_request', $is_payment_request_enabled ? 'yes' : 'no' );
+		// Update Google Pay and Apple Pay enabled settings to keep them in sync.
+		$google_pay_gateway = WC_Payments::get_payment_gateway_by_id( \WCPay\PaymentMethods\Configs\Definitions\GooglePayDefinition::get_id() );
+		$apple_pay_gateway  = WC_Payments::get_payment_gateway_by_id( \WCPay\PaymentMethods\Configs\Definitions\ApplePayDefinition::get_id() );
+		if ( $is_payment_request_enabled ) {
+			if ( $google_pay_gateway ) {
+				$google_pay_gateway->enable();
+			}
+			if ( $apple_pay_gateway ) {
+				$apple_pay_gateway->enable();
+			}
+		} else {
+			if ( $google_pay_gateway ) {
+				$google_pay_gateway->disable();
+			}
+			if ( $apple_pay_gateway ) {
+				$apple_pay_gateway->disable();
+			}
+		}
+	}
+
+	/**
+	 * Updates the "Apple Pay / Google Pay in payment methods options" enable/disable settings.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	private function update_is_apple_google_pay_in_payment_methods_options_enabled( WP_REST_Request $request ) {
+		if ( ! $request->has_param( 'is_apple_google_pay_in_payment_methods_options_enabled' ) ) {
+			return;
+		}
+
+		$is_apple_google_pay_in_payment_methods_options_enabled = $request->get_param( 'is_apple_google_pay_in_payment_methods_options_enabled' );
+
+		$this->wcpay_gateway->update_option( 'apple_google_pay_in_payment_methods_options', $is_apple_google_pay_in_payment_methods_options_enabled ? 'yes' : 'no' );
 	}
 
 	/**
@@ -1032,29 +1122,6 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 	}
 
 	/**
-	 * Schedule a migration of Stripe Billing subscriptions.
-	 *
-	 * @param WP_REST_Request $request The request object. Optional. If passed, the function will return a REST response.
-	 *
-	 * @return WP_REST_Response|null The response object, if this is a REST request.
-	 */
-	public function schedule_stripe_billing_migration( ?WP_REST_Request $request = null ) {
-
-		if ( class_exists( 'WC_Payments_Subscriptions' ) ) {
-			$stripe_billing_migrator = WC_Payments_Subscriptions::get_stripe_billing_migrator();
-
-			if ( $stripe_billing_migrator && ! $stripe_billing_migrator->is_migrating() && $stripe_billing_migrator->get_stripe_billing_subscription_count() > 0 ) {
-				$stripe_billing_migrator->schedule_migrate_wcpay_subscriptions_action();
-			}
-		}
-
-		// Return a response if this is a REST request.
-		if ( $request ) {
-			return new WP_REST_Response( [], 200 );
-		}
-	}
-
-	/**
 	 * Get the AVS check enabled status from the ruleset config.
 	 *
 	 * @param array $ruleset_config The ruleset config.
@@ -1072,5 +1139,43 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		}
 
 		return $avs_check_enabled;
+	}
+
+	/**
+	 * Send a Tracks event.
+	 *
+	 * By default Woo adds `url`, `blog_lang`, `blog_id`, `store_id`, `products_count`, and `wc_version`
+	 * properties to every event.
+	 *
+	 * @todo This is a duplicate of the one in the WC_Payments_Account and WC_Payments_Onboarding_Service classes.
+	 *
+	 * @param string $name       The event name.
+	 * @param array  $properties Optional. The event custom properties.
+	 *
+	 * @return void
+	 */
+	private function tracks_event( string $name, array $properties = [] ) {
+		if ( ! function_exists( 'wc_admin_record_tracks_event' ) ) {
+			return;
+		}
+
+		// Add default properties to every event.
+		$account_service = WC_Payments::get_account_service();
+		$tracking_info   = $account_service ? $account_service->get_tracking_info() : [];
+
+		$properties = array_merge(
+			$properties,
+			[
+				'is_test_mode'      => WC_Payments::mode()->is_test(),
+				'jetpack_connected' => $this->api_client->is_server_connected(),
+				'wcpay_version'     => WCPAY_VERSION_NUMBER,
+				'woo_country_code'  => WC()->countries->get_base_country(),
+			],
+			$tracking_info ?? []
+		);
+
+		wc_admin_record_tracks_event( $name, $properties );
+
+		Logger::info( 'Tracks event: ' . $name . ' with data: ' . wp_json_encode( WC_Payments_Utils::redact_array( $properties, [ 'woo_country_code' ] ) ) );
 	}
 }

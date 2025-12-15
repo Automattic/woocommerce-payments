@@ -385,24 +385,25 @@ const CheckoutPageSaveUser = ( { isBlocksCheckout } ) => {
 								} }
 								isBlocksCheckout={ isBlocksCheckout }
 							/>
+
+							{ isBlocksCheckout && (
+								<ValidationInputError
+									elementId={ errorId }
+									propertyName={ errorId }
+								/>
+							) }
+							{ ! isBlocksCheckout && ! isPhoneValid && (
+								<p
+									id="validate-error-invalid-woopay-phone-number"
+									hidden={ isPhoneValid !== false }
+								>
+									{ __(
+										'Please enter a valid mobile phone number.',
+										'woocommerce-payments'
+									) }
+								</p>
+							) }
 						</div>
-						{ isBlocksCheckout && (
-							<ValidationInputError
-								elementId={ errorId }
-								propertyName={ errorId }
-							/>
-						) }
-						{ ! isBlocksCheckout && ! isPhoneValid && (
-							<p
-								id="validate-error-invalid-woopay-phone-number"
-								hidden={ isPhoneValid !== false }
-							>
-								{ __(
-									'Please enter a valid mobile phone number.',
-									'woocommerce-payments'
-								) }
-							</p>
-						) }
 						<AdditionalInformation />
 						<Agreement />
 					</div>

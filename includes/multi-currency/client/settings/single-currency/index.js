@@ -12,13 +12,15 @@ import moment from 'moment';
  */
 import CurrencyPreview from './currency-preview';
 import './style.scss';
-import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
-import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
-import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
-import { SelectControl } from 'wcpay/components/wp-components-wrapped/components/select-control';
-import { TextControl } from 'wcpay/components/wp-components-wrapped/components/text-control';
-import { RadioControl } from 'wcpay/components/wp-components-wrapped/components/radio-control';
+import {
+	ExternalLink,
+	Button,
+	Card,
+	CardBody,
+	SelectControl,
+	TextControl,
+	RadioControl,
+} from '@wordpress/components';
 import {
 	decimalCurrencyCharmOptions,
 	decimalCurrencyRoundingOptions,
@@ -234,23 +236,21 @@ const SingleCurrencySettings = () => {
 												} }
 												options={ [
 													{
-														description: __(
-															targetCurrency.last_updated
-																? sprintf(
-																		__(
-																			'Current rate: 1 %s = %s %s (Last updated: %s)',
-																			'woocommerce-payments'
-																		),
-																		storeCurrency.code,
-																		targetCurrency.rate,
-																		targetCurrency.code,
-																		formattedLastUpdatedDateTime
-																  )
-																: __(
-																		'Error - Unable to fetch automatic rate for this currency'
-																  ),
-															'woocommerce-payments'
-														),
+														description: targetCurrency.last_updated
+															? sprintf(
+																	__(
+																		'Current rate: 1 %s = %s %s (Last updated: %s)',
+																		'woocommerce-payments'
+																	),
+																	storeCurrency.code,
+																	targetCurrency.rate,
+																	targetCurrency.code,
+																	formattedLastUpdatedDateTime
+															  )
+															: __(
+																	'Error - Unable to fetch automatic rate for this currency',
+																	'woocommerce-payments'
+															  ),
 														label: __(
 															'Fetch rates automatically',
 															'woocommerce-payments'
@@ -330,6 +330,7 @@ const SingleCurrencySettings = () => {
 													),
 													components: {
 														learnMoreLink: (
+															// @ts-expect-error: children is provided when interpolating the component
 															<ExternalLink href="https://woocommerce.com/document/woopayments/currencies/multi-currency-setup/#price-rounding" />
 														),
 													},
@@ -373,6 +374,7 @@ const SingleCurrencySettings = () => {
 													),
 													components: {
 														learnMoreLink: (
+															// @ts-expect-error: children is provided when interpolating the component
 															<ExternalLink href="https://woocommerce.com/document/woopayments/currencies/multi-currency-setup/#charm-pricing" />
 														),
 													},

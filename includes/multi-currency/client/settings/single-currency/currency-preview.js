@@ -13,8 +13,7 @@ import {
 /**
  * Internal dependencies
  */
-import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
-import { CardBody } from 'wcpay/components/wp-components-wrapped/components/card-body';
+import { Card, CardBody } from '@wordpress/components';
 
 const CurrencyPreview = ( {
 	storeCurrency,

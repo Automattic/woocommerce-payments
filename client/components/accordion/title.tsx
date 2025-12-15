@@ -4,14 +4,13 @@
 import React, { forwardRef } from 'react';
 import clsx from 'clsx';
 import { chevronUp, chevronDown } from '@wordpress/icons';
-import { Icon } from 'wcpay/components/wp-components-wrapped/components/icon';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
+import { Button, Icon } from '@wordpress/components';
+import type { WordPressComponentProps } from '@wordpress/components/ui/context/wordpress-component';
 
 /**
  * Internal dependencies
  */
 import type { AccordionTitleProps } from './types';
-import type { WordPressComponentProps } from '@wordpress/components/ui/context/wordpress-component';
 import AccordionSubtitle from './subtitle';
 import './style.scss';
 
@@ -34,7 +33,6 @@ const AccordionTitle = forwardRef<
 						'is-md': md,
 						'is-lg': lg,
 					} ) }
-					// @ts-expect-error: there is a type discrepancy between the wrapped WP components and the bundled components.
 					ref={ ref }
 					{ ...props }
 				>
@@ -44,7 +42,6 @@ const AccordionTitle = forwardRef<
 			*/ }
 					<span aria-hidden="true">
 						<Icon
-							// @ts-expect-error: className is not a prop defined in the WP Icon component.
 							className="wcpay-accordion__arrow"
 							icon={ isOpened ? chevronUp : chevronDown }
 						/>
@@ -58,7 +55,6 @@ const AccordionTitle = forwardRef<
 					{ icon && (
 						<Icon
 							icon={ icon }
-							// @ts-expect-error: className is not a prop defined in the WP Icon component.
 							className="wcpay-accordion__icon"
 							size={ 20 }
 						/>

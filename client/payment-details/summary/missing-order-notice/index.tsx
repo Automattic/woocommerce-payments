@@ -5,7 +5,7 @@
  */
 
 import React from 'react';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
+import { Button } from '@wordpress/components';
 import { __ } from '@wordpress/i18n';
 
 /**
@@ -38,6 +38,7 @@ const MissingOrderNotice: React.FC< MissingOrderNoticeProps > = ( {
 								variant="primary"
 								isSmall={ false }
 								onClick={ onButtonClick }
+								__next40pxDefaultSize
 							>
 								{ __( 'Refund', 'woocommerce-payments' ) }
 							</Button>

@@ -1,11 +1,9 @@
 /** @format */
 
 /**
- * Internal dependencies
+ * External dependencies
  */
-import { Flex } from 'wcpay/components/wp-components-wrapped/components/flex';
-import { FlexBlock } from 'wcpay/components/wp-components-wrapped/components/flex-block';
-import { FlexItem } from 'wcpay/components/wp-components-wrapped/components/flex-item';
+import { Flex, FlexBlock, FlexItem } from '@wordpress/components';
 
 const AccountStatusItem = ( { label, align, value, children } ) => {
 	return (

@@ -6,6 +6,14 @@ exports[`ProtectionLevelModalNotice renders the high notice when the level prop 
     class="component-notice--is-info components-notice is-info"
   >
     <div
+      class="components-visually-hidden emotion-0 emotion-1"
+      data-wp-c16t="true"
+      data-wp-component="VisuallyHidden"
+      style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+    >
+      Information notice
+    </div>
+    <div
       class="components-notice__content"
     >
       <div
@@ -40,6 +48,14 @@ exports[`ProtectionLevelModalNotice renders the standard notice when the level p
   <div
     class="component-notice--is-info components-notice is-info"
   >
+    <div
+      class="components-visually-hidden emotion-0 emotion-1"
+      data-wp-c16t="true"
+      data-wp-component="VisuallyHidden"
+      style="border: 0px; clip: rect(1px, 1px, 1px, 1px); clip-path: inset( 50% ); height: 1px; margin: -1px; overflow: hidden; padding: 0px; position: absolute; width: 1px; word-wrap: normal;"
+    >
+      Information notice
+    </div>
     <div
       class="components-notice__content"
     >

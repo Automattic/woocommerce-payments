@@ -5,7 +5,7 @@
  */
 import React, { useState } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
+import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -49,6 +49,7 @@ const CancelAuthorizationButton: React.FC< React.PropsWithChildren<
 			} }
 			isBusy={ isLoading && IsCancelRequested } // Button should be in busy state when the cancel is requested
 			disabled={ ( isLoading && IsCancelRequested ) || isRequesting } // Button should be disabled when the cancel is requested
+			__next40pxDefaultSize
 		>
 			{ children || __( 'Cancel', 'woocommerce-payments' ) }
 		</Button>

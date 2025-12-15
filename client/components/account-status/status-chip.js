@@ -17,7 +17,7 @@ const StatusChip = ( props ) => {
 	let description = __( 'Unknown', 'woocommerce-payments' );
 	let type = 'light';
 	let tooltip = '';
-	// Pending status is also shown when the account is PO enabled but not complete and in that case status is restricted.
+
 	if ( accountStatus === 'complete' ) {
 		description = __( 'Complete', 'woocommerce-payments' );
 		type = 'success';

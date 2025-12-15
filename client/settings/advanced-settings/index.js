@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
+import { Card } from '@wordpress/components';
 
 /**
  * Internal dependencies

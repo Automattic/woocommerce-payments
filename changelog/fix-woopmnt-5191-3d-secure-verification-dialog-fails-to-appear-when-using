@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix: Google Pay 3D Secure authentication being bypassed due to redirect URL extraction issue

@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { __ } from '@wordpress/i18n';
+import { __, sprintf } from '@wordpress/i18n';
 import { formatDateTimeFromTimestamp } from 'wcpay/utils/date-time';
 import type { ExtendedDispute, AccountDetails, CoverLetterData } from './types';
 import { DOCUMENT_FIELD_KEYS } from './recommended-document-fields';
@@ -59,15 +59,54 @@ const isEvidenceString = (
 	return typeof evidence === 'string';
 };
 
-export const generateAttachments = ( dispute: ExtendedDispute ): string => {
+export const generateAttachments = (
+	dispute: ExtendedDispute,
+	duplicateStatus?: string
+): string => {
 	const attachments: string[] = [];
 	let attachmentCount = 0;
 
-	// Standard attachment logic for other dispute reasons
-	const standardAttachments = [
+	// For duplicate disputes with is_duplicate status, check for refund receipt first (uses uncategorized_file)
+	// This ensures it shows as "Refund receipt" rather than "Other documents"
+	if (
+		dispute.reason === 'duplicate' &&
+		duplicateStatus === 'is_duplicate'
+	) {
+		const refundReceipt =
+			dispute.evidence?.[
+				DOCUMENT_FIELD_KEYS.REFUND_RECEIPT_DOCUMENTATION
+			];
+		if ( refundReceipt && isEvidenceString( refundReceipt ) ) {
+			attachmentCount++;
+			attachments.push(
+				sprintf(
+					/* translators: %1$s: label, %2$s: attachment letter */
+					__( '• %1$s (Attachment %2$s)', 'woocommerce-payments' ),
+					__( 'Refund receipt', 'woocommerce-payments' ),
+					String.fromCharCode( 64 + attachmentCount )
+				)
+			);
+		}
+	}
+
+	// Standard attachment definitions with optional restriction rules
+	// Each attachment can specify:
+	// - `onlyForReasons`: only include for these dispute reasons
+	// - `excludeWhen`: exclude when this condition is true (for complex conditions)
+	const standardAttachments: Array< {
+		key: string;
+		label: string;
+		onlyForReasons?: string[];
+		excludeWhen?: ( reason: string, status?: string ) => boolean;
+	} > = [
 		{
 			key: DOCUMENT_FIELD_KEYS.RECEIPT,
 			label: __( 'Order receipt', 'woocommerce-payments' ),
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.DUPLICATE_CHARGE_DOCUMENTATION,
+			label: __( 'Any additional receipts', 'woocommerce-payments' ),
+			onlyForReasons: [ 'duplicate' ],
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
@@ -95,37 +134,64 @@ export const generateAttachments = ( dispute: ExtendedDispute ): string => {
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
-			label: __( 'Proof of active subscription', 'woocommerce-payments' ),
+			label: __( 'Subscription logs', 'woocommerce-payments' ),
 		},
 		{
 			key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
 			label: __( 'Other documents', 'woocommerce-payments' ),
+			// Skip for duplicate + is_duplicate since we already processed it as refund receipt above
+			excludeWhen: ( reason, status ) =>
+				reason === 'duplicate' && status === 'is_duplicate',
 		},
-	] as const;
+	];
 
-	standardAttachments.forEach( ( { key, label } ) => {
-		const evidence = dispute.evidence?.[ key ];
-		if ( evidence && isEvidenceString( evidence ) ) {
-			attachmentCount++;
-			attachments.push(
-				`• ${ label } (${ __(
-					'Attachment',
-					'woocommerce-payments'
-				) } ${ String.fromCharCode( 64 + attachmentCount ) })`
-			);
+	standardAttachments.forEach(
+		( { key, label, onlyForReasons, excludeWhen } ) => {
+			const evidence = dispute.evidence?.[ key ];
+
+			// Check if this attachment should be skipped based on rules
+			if (
+				onlyForReasons &&
+				! onlyForReasons.includes( dispute.reason )
+			) {
+				return;
+			}
+			if ( excludeWhen?.( dispute.reason, duplicateStatus ) ) {
+				return;
+			}
+
+			if ( evidence && isEvidenceString( evidence ) ) {
+				attachmentCount++;
+				attachments.push(
+					sprintf(
+						/* translators: %1$s: label, %2$s: attachment letter */
+						__(
+							'• %1$s (Attachment %2$s)',
+							'woocommerce-payments'
+						),
+						label,
+						String.fromCharCode( 64 + attachmentCount )
+					)
+				);
+			}
 		}
-	} );
+	);
 
 	// If no attachments were provided, use default list
 	if ( attachments.length === 0 ) {
-		return `• ${ __(
-			'<Attachment description>',
-			'woocommerce-payments'
-		) } (${ __( 'Attachment', 'woocommerce-payments' ) } A)
-• ${ __( '<Attachment description>', 'woocommerce-payments' ) } (${ __(
-			'Attachment',
-			'woocommerce-payments'
-		) } B)`;
+		return `${ sprintf(
+			/* translators: %s: attachment letter */
+			__(
+				'• <Attachment description> (Attachment %s)',
+				'woocommerce-payments'
+			),
+			'A'
+		) }
+${ sprintf(
+	/* translators: %s: attachment letter */
+	__( '• <Attachment description> (Attachment %s)', 'woocommerce-payments' ),
+	'B'
+) }`;
 	}
 
 	return attachments.join( '\n' );
@@ -142,11 +208,16 @@ ${ data.today }`;
 };
 
 export const generateRecipient = ( data: CoverLetterData ): string => {
-	return `${ __( 'To:', 'woocommerce-payments' ) } ${ data.acquiringBank }
-${ __( 'Subject:', 'woocommerce-payments' ) } ${ __(
-		'Chargeback Dispute',
-		'woocommerce-payments'
-	) } – ${ __( 'Case', 'woocommerce-payments' ) } #${ data.caseNumber }`;
+	return `${ sprintf(
+		/* translators: %s: acquiring bank name */
+		__( 'To: %s', 'woocommerce-payments' ),
+		data.acquiringBank
+	) }
+${ sprintf(
+	/* translators: %s: case number */
+	__( 'Subject: Chargeback Dispute – Case #%s', 'woocommerce-payments' ),
+	data.caseNumber
+) }`;
 };
 
 const generateBodyUnrecognized = (
@@ -154,22 +225,27 @@ const generateBodyUnrecognized = (
 	dispute: ExtendedDispute,
 	attachmentsList: string
 ): string => {
-	return `${ __(
-		'We are submitting evidence in response to chargeback',
-		'woocommerce-payments'
-	) } #${ data.caseNumber } ${ __(
-		'for transaction',
-		'woocommerce-payments'
-	) } #${ data.transactionId } ${ __( 'on', 'woocommerce-payments' ) } ${
+	return `${ sprintf(
+		/* translators: %1$s: case number, %2$s: transaction ID, %3$s: transaction date */
+		__(
+			'We are submitting evidence in response to chargeback #%1$s for transaction #%2$s on %3$s.',
+			'woocommerce-payments'
+		),
+		data.caseNumber,
+		data.transactionId,
 		data.transactionDate
-	}.
+	) }
 
-${ __(
-	'Our records indicate that the customer and legitimate cardholder,',
-	'woocommerce-payments'
-) } ${ data.customerName }, ${ __( 'ordered', 'woocommerce-payments' ) } ${
-		data.product
-	} ${ __( 'on', 'woocommerce-payments' ) } ${ data.orderDate }.
+${ sprintf(
+	/* translators: %1$s: customer name, %2$s: product, %3$s: order date */
+	__(
+		'Our records indicate that the customer and legitimate cardholder, %1$s, ordered %2$s on %3$s.',
+		'woocommerce-payments'
+	),
+	data.customerName,
+	data.product,
+	data.orderDate
+) }
 
 ${ __(
 	'To support our case, we are providing the following documentation:',
@@ -189,30 +265,31 @@ const generateBodyCreditNotProcessed = (
 	attachmentsList: string
 ): string => {
 	if ( data.refundStatus === 'refund_has_been_issued' ) {
-		return `${ __(
-			'We are submitting evidence in response to chargeback',
-			'woocommerce-payments'
-		) } #${ data.caseNumber } ${ __(
-			'for transaction',
-			'woocommerce-payments'
-		) } #${ data.transactionId } ${ __( 'on', 'woocommerce-payments' ) } ${
+		return `${ sprintf(
+			/* translators: %1$s: case number, %2$s: transaction ID, %3$s: transaction date */
+			__(
+				'We are submitting evidence in response to chargeback #%1$s for transaction #%2$s on %3$s.',
+				'woocommerce-payments'
+			),
+			data.caseNumber,
+			data.transactionId,
 			data.transactionDate
-		}.
-
-${ __( 'Our records indicate that the customer,', 'woocommerce-payments' ) } ${
-			data.customerName
-		}, ${ __( 'was refunded on', 'woocommerce-payments' ) } ${
-			data.orderDate
-		} ${ __( 'for the amount of', 'woocommerce-payments' ) } ${
-			dispute.amount
-				? `${ ( dispute.amount / 100 ).toFixed(
-						2
-				  ) } ${ dispute.currency?.toUpperCase() }`
-				: __( '[Refund Amount]', 'woocommerce-payments' )
-		}. ${ __(
-			"The refund was processed through our payment provider and should be visible on the customer's statement within 7 - 10 business days.",
-			'woocommerce-payments'
 		) }
+
+${ sprintf(
+	/* translators: %1$s: customer name, %2$s: order date, %3$s: refund amount */
+	__(
+		"Our records indicate that the customer, %1$s, was refunded on %2$s for the amount of %3$s. The refund was processed through our payment provider and should be visible on the customer's statement within 7 - 10 business days.",
+		'woocommerce-payments'
+	),
+	data.customerName,
+	data.orderDate,
+	dispute.amount
+		? `${ ( dispute.amount / 100 ).toFixed(
+				2
+		  ) } ${ dispute.currency?.toUpperCase() }`
+		: __( '[Refund Amount]', 'woocommerce-payments' )
+) }
 
 ${ __(
 	'To support our case, we are providing the following documentation:',
@@ -226,15 +303,16 @@ ${ __(
 ) }`;
 	}
 	// refund_was_not_owed
-	return `${ __(
-		'We are submitting evidence in response to chargeback',
-		'woocommerce-payments'
-	) } #${ data.caseNumber } ${ __(
-		'for transaction',
-		'woocommerce-payments'
-	) } #${ data.transactionId } ${ __( 'on', 'woocommerce-payments' ) } ${
+	return `${ sprintf(
+		/* translators: %1$s: case number, %2$s: transaction ID, %3$s: transaction date */
+		__(
+			'We are submitting evidence in response to chargeback #%1$s for transaction #%2$s on %3$s.',
+			'woocommerce-payments'
+		),
+		data.caseNumber,
+		data.transactionId,
 		data.transactionDate
-	}.
+	) }
 ${ __(
 	'The customer requested a refund outside of the eligible window outlined in our refund policy, which was clearly presented on the website and on the order confirmation.',
 	'woocommerce-payments'
@@ -257,25 +335,28 @@ const generateBodyGeneral = (
 	dispute: ExtendedDispute,
 	attachmentsList: string
 ): string => {
-	return `${ __(
-		'We are submitting evidence in response to chargeback',
-		'woocommerce-payments'
-	) } #${ data.caseNumber } ${ __(
-		'for transaction',
-		'woocommerce-payments'
-	) } #${ data.transactionId } ${ __( 'on', 'woocommerce-payments' ) } ${
+	return `${ sprintf(
+		/* translators: %1$s: case number, %2$s: transaction ID, %3$s: transaction date */
+		__(
+			'We are submitting evidence in response to chargeback #%1$s for transaction #%2$s on %3$s.',
+			'woocommerce-payments'
+		),
+		data.caseNumber,
+		data.transactionId,
 		data.transactionDate
-	}.
+	) }
 
-${ __( 'Our records indicate that the customer,', 'woocommerce-payments' ) } ${
-		data.customerName
-	}, ${ __( 'ordered', 'woocommerce-payments' ) } ${ data.product } ${ __(
-		'on',
+${ sprintf(
+	/* translators: %1$s: customer name, %2$s: product, %3$s: order date, %4$s: delivery date */
+	__(
+		'Our records indicate that the customer, %1$s, ordered %2$s on %3$s and received it on %4$s.',
 		'woocommerce-payments'
-	) } ${ data.orderDate } ${ __(
-		'and received it on',
-		'woocommerce-payments'
-	) } ${ data.deliveryDate }.
+	),
+	data.customerName,
+	data.product,
+	data.orderDate,
+	data.deliveryDate
+) }
 
 ${ __(
 	'To support our case, we are providing the following documentation:',
@@ -294,25 +375,28 @@ const generateBodyProductNotReceived = (
 	dispute: ExtendedDispute,
 	attachmentsList: string
 ): string => {
-	return `${ __(
-		'We are submitting evidence in response to chargeback',
-		'woocommerce-payments'
-	) } #${ data.caseNumber } ${ __(
-		'for transaction',
-		'woocommerce-payments'
-	) } #${ data.transactionId } ${ __( 'on', 'woocommerce-payments' ) } ${
+	return `${ sprintf(
+		/* translators: %1$s: case number, %2$s: transaction ID, %3$s: transaction date */
+		__(
+			'We are submitting evidence in response to chargeback #%1$s for transaction #%2$s on %3$s.',
+			'woocommerce-payments'
+		),
+		data.caseNumber,
+		data.transactionId,
 		data.transactionDate
-	}.
+	) }
 
-${ __( 'Our records indicate that the customer,', 'woocommerce-payments' ) } ${
-		data.customerName
-	}, ${ __( 'ordered', 'woocommerce-payments' ) } ${ data.product } ${ __(
-		'on',
+${ sprintf(
+	/* translators: %1$s: customer name, %2$s: product, %3$s: order date, %4$s: delivery date */
+	__(
+		'Our records indicate that the customer, %1$s, ordered %2$s on %3$s and received it on %4$s.',
 		'woocommerce-payments'
-	) } ${ data.orderDate } ${ __(
-		'and received it on',
-		'woocommerce-payments'
-	) } ${ data.deliveryDate }.
+	),
+	data.customerName,
+	data.product,
+	data.orderDate,
+	data.deliveryDate
+) }
 
 ${ __(
 	'To support our case, we are providing the following documentation:',
@@ -331,25 +415,27 @@ const generateBodyProductUnacceptable = (
 	dispute: ExtendedDispute,
 	attachmentsList: string
 ): string => {
-	return `${ __(
-		'We are submitting evidence in response to chargeback',
-		'woocommerce-payments'
-	) } #${ data.caseNumber } ${ __(
-		'for transaction',
-		'woocommerce-payments'
-	) } #${ data.transactionId } ${ __( 'on', 'woocommerce-payments' ) } ${
+	return `${ sprintf(
+		/* translators: %1$s: case number, %2$s: transaction ID, %3$s: transaction date */
+		__(
+			'We are submitting evidence in response to chargeback #%1$s for transaction #%2$s on %3$s.',
+			'woocommerce-payments'
+		),
+		data.caseNumber,
+		data.transactionId,
 		data.transactionDate
-	}.
-
-${ __( 'Our records indicate that the customer,', 'woocommerce-payments' ) } ${
-		data.customerName
-	}, ${ __( 'ordered', 'woocommerce-payments' ) } ${ data.product } ${ __(
-		'on',
-		'woocommerce-payments'
-	) } ${ data.orderDate }. ${ __(
-		'The product matched the description provided at the time of sale, and we did not receive any indication from the customer that it was defective or not as described.',
-		'woocommerce-payments'
 	) }
+
+${ sprintf(
+	/* translators: %1$s: customer name, %2$s: product, %3$s: order date */
+	__(
+		'Our records indicate that the customer, %1$s, ordered %2$s on %3$s. The product matched the description provided at the time of sale, and we did not receive any indication from the customer that it was defective or not as described.',
+		'woocommerce-payments'
+	),
+	data.customerName,
+	data.product,
+	data.orderDate
+) }
 
 ${ __(
 	'To support our case, we are providing the following documentation:',
@@ -368,24 +454,26 @@ const generateBodySubscriptionCanceled = (
 	dispute: ExtendedDispute,
 	attachmentsList: string
 ): string => {
-	return `${ __(
-		'We are submitting evidence in response to chargeback',
-		'woocommerce-payments'
-	) } #${ data.caseNumber } ${ __(
-		'for transaction',
-		'woocommerce-payments'
-	) } #${ data.transactionId } ${ __( 'on', 'woocommerce-payments' ) } ${
+	return `${ sprintf(
+		/* translators: %1$s: case number, %2$s: transaction ID, %3$s: transaction date */
+		__(
+			'We are submitting evidence in response to chargeback #%1$s for transaction #%2$s on %3$s.',
+			'woocommerce-payments'
+		),
+		data.caseNumber,
+		data.transactionId,
 		data.transactionDate
-	}.
-
-${ __( 'Our records indicate that the customer,', 'woocommerce-payments' ) } ${
-		data.customerName
-	}, ${ __( 'subscribed to', 'woocommerce-payments' ) } ${
-		data.product
-	} ${ __(
-		"and was billed according to the terms accepted at the time of signup. The customer's account remained active and no cancellation was recorded prior to the billing date.",
-		'woocommerce-payments'
 	) }
+
+${ sprintf(
+	/* translators: %1$s: customer name, %2$s: product */
+	__(
+		"Our records indicate that the customer, %1$s, subscribed to %2$s and was billed according to the terms accepted at the time of signup. The customer's account remained active and no cancellation was recorded prior to the billing date.",
+		'woocommerce-payments'
+	),
+	data.customerName,
+	data.product
+) }
 
 ${ __(
 	'To support our case, we are providing the following documentation:',
@@ -405,31 +493,29 @@ export const generateBodyDuplicate = (
 	attachmentsList: string
 ): string => {
 	if ( data.duplicateStatus === 'is_duplicate' ) {
-		return `${ __(
-			'We are submitting evidence in response to chargeback',
-			'woocommerce-payments'
-		) } #${ data.caseNumber } ${ __(
-			'for transaction',
-			'woocommerce-payments'
-		) } #${ data.transactionId } ${ __( 'on', 'woocommerce-payments' ) } ${
+		return `${ sprintf(
+			/* translators: %1$s: case number, %2$s: transaction ID, %3$s: transaction date */
+			__(
+				'We are submitting evidence in response to chargeback #%1$s for transaction #%2$s on %3$s.',
+				'woocommerce-payments'
+			),
+			data.caseNumber,
+			data.transactionId,
 			data.transactionDate
-		}.
-${ __(
-	'Our records indicate that this charge was a duplicate of a previous transaction. A refund has already been issued to the customer on',
-	'woocommerce-payments'
-) } ${ data.orderDate } ${ __(
-			'for the amount of',
-			'woocommerce-payments'
-		) } ${
-			dispute.amount
-				? `${ ( dispute.amount / 100 ).toFixed(
-						2
-				  ) } ${ dispute.currency?.toUpperCase() }`
-				: __( '[Refund Amount]', 'woocommerce-payments' )
-		}. ${ __(
-			"This refund should be visible on the customer's statement within 7 - 10 business days.",
-			'woocommerce-payments'
 		) }
+${ sprintf(
+	/* translators: %1$s: order date, %2$s: refund amount */
+	__(
+		"Our records indicate that this charge was a duplicate of a previous transaction. A refund has already been issued to the customer on %1$s for the amount of %2$s. This refund should be visible on the customer's statement within 7 - 10 business days.",
+		'woocommerce-payments'
+	),
+	data.orderDate,
+	dispute.amount
+		? `${ ( dispute.amount / 100 ).toFixed(
+				2
+		  ) } ${ dispute.currency?.toUpperCase() }`
+		: __( '[Refund Amount]', 'woocommerce-payments' )
+) }
 
 ${ __(
 	'To support our case, we are providing the following documentation:',
@@ -444,24 +530,25 @@ ${ __(
 	}
 
 	// is_not_duplicate
-	return `${ __(
-		'We are submitting evidence in response to chargeback',
-		'woocommerce-payments'
-	) } #${ data.caseNumber } ${ __(
-		'for transaction',
-		'woocommerce-payments'
-	) } #${ data.transactionId } ${ __( 'on', 'woocommerce-payments' ) } ${
+	return `${ sprintf(
+		/* translators: %1$s: case number, %2$s: transaction ID, %3$s: transaction date */
+		__(
+			'We are submitting evidence in response to chargeback #%1$s for transaction #%2$s on %3$s.',
+			'woocommerce-payments'
+		),
+		data.caseNumber,
+		data.transactionId,
 		data.transactionDate
-	}.
-${ __(
-	'Our records show that the customer placed two distinct orders:',
-	'woocommerce-payments'
-) } ${ data.caseNumber } ${ __( 'and', 'woocommerce-payments' ) } ${
-		data.transactionId
-	}. ${ __(
-		'Both transactions were legitimate, fulfilled independently, and are not duplicates.',
-		'woocommerce-payments'
 	) }
+${ sprintf(
+	/* translators: %1$s: case number, %2$s: transaction ID */
+	__(
+		'Our records show that the customer placed two distinct orders: %1$s and %2$s. Both transactions were legitimate, fulfilled independently, and are not duplicates.',
+		'woocommerce-payments'
+	),
+	data.caseNumber,
+	data.transactionId
+) }
 
 ${ __(
 	'To support our case, we are providing the following documentation:',
@@ -564,7 +651,7 @@ export const generateCoverLetter = (
 		duplicateStatus: duplicateStatus,
 	};
 
-	const attachmentsList = generateAttachments( dispute );
+	const attachmentsList = generateAttachments( dispute, duplicateStatus );
 	const header = generateHeader( data );
 	const recipient = generateRecipient( data );
 	const greeting = __(

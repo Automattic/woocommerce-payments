@@ -4,8 +4,7 @@
  * External dependencies
  */
 import React from 'react';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
-import { RadioControl } from 'wcpay/components/wp-components-wrapped/components/radio-control';
+import { Button, RadioControl } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { useState } from '@wordpress/element';
 import interpolateComponents from '@automattic/interpolate-components';
@@ -60,14 +59,19 @@ const RefundModal: React.FC< RefundModalProps > = ( {
 			title={ __( 'Refund transaction', 'woocommerce-payments' ) }
 			actions={
 				<>
-					<Button onClick={ handleModalCancel } variant="secondary">
+					<Button
+						onClick={ handleModalCancel }
+						variant="secondary"
+						__next40pxDefaultSize
+					>
 						{ __( 'Cancel', 'woocommerce-payments' ) }
 					</Button>
 					<Button
 						onClick={ handleRefund }
-						isPrimary
+						variant="primary"
 						isBusy={ isRefundInProgress }
 						disabled={ isRefundInProgress }
+						__next40pxDefaultSize
 					>
 						{ __( 'Refund transaction', 'woocommerce-payments' ) }
 					</Button>
@@ -95,7 +99,7 @@ const RefundModal: React.FC< RefundModalProps > = ( {
 					'Select a reason (Optional)',
 					'woocommerce-payments'
 				) }
-				selected={ reason }
+				selected={ reason || undefined }
 				options={ [
 					{
 						label: __( 'Duplicate order', 'woocommerce-payments' ),

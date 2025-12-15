@@ -1,6 +1,6 @@
 /* global jQuery */
 
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import React from 'react';
 import { __ } from '@wordpress/i18n';
 
@@ -12,7 +12,6 @@ import { isAwaitingResponse, isUnderReview } from 'wcpay/disputes/utils';
 import TestModeNotice from './test-mode-notice';
 import DisputedOrderNoticeHandler from 'wcpay/components/disputed-order-notice';
 import getStatusChangeStrategy from './order-status-change-strategies';
-import { WordPressComponentsContext } from 'wcpay/wordpress-components-context/context';
 
 function disableWooOrderRefundButton( disputeStatus ) {
 	const refundButton = document.querySelector( 'button.refund-items' );
@@ -111,28 +110,18 @@ jQuery( function ( $ ) {
 			return;
 		}
 
-		ReactDOM.render(
+		const root = createRoot( container );
+		root.render(
 			<>
-				{ testMode && (
-					<WordPressComponentsContext.Provider
-						value={ wp.components }
-					>
-						<TestModeNotice />
-					</WordPressComponentsContext.Provider>
-				) }
+				{ testMode && <TestModeNotice /> }
 
 				{ chargeId && orderTestModeMatch && (
-					<WordPressComponentsContext.Provider
-						value={ wp.components }
-					>
-						<DisputedOrderNoticeHandler
-							chargeId={ chargeId }
-							onDisableOrderRefund={ disableWooOrderRefundButton }
-						/>
-					</WordPressComponentsContext.Provider>
+					<DisputedOrderNoticeHandler
+						chargeId={ chargeId }
+						onDisableOrderRefund={ disableWooOrderRefundButton }
+					/>
 				) }
-			</>,
-			container
+			</>
 		);
 	}
 } );

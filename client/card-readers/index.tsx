@@ -5,14 +5,13 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
+import { TabPanel } from '@wordpress/components';
 
 /**
  * Internal dependencies.
  */
 import Page from 'components/page';
 import ReadersList from './list';
-import { TabPanel } from 'wcpay/components/wp-components-wrapped/components/tab-panel';
-
 import './style.scss';
 
 export const ConnectedReaders = (): JSX.Element => {

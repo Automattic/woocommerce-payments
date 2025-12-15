@@ -160,7 +160,7 @@ const TooltipPortal: React.FC< React.PropsWithChildren<
 	return createPortal( children, node.current );
 } );
 
-export type TooltipBaseProps = {
+type TooltipBaseProps = {
 	className?: string;
 	children?: React.ReactNode;
 	content: React.ReactNode;

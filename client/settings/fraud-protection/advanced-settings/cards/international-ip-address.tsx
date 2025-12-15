@@ -3,7 +3,7 @@
  */
 import React from 'react';
 import { __ } from '@wordpress/i18n';
-import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
+import { ExternalLink } from '@wordpress/components';
 import interpolateComponents from '@automattic/interpolate-components';
 
 /**
@@ -48,6 +48,7 @@ const InternationalIPAddressRuleCard: React.FC = () => {
 						),
 						components: {
 							ipAddressLink: (
+								// @ts-expect-error: children is provided when interpolating the component
 								<ExternalLink href="https://simple.wikipedia.org/wiki/IP_address" />
 							),
 							supportedCountriesLink: (

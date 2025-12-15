@@ -6,10 +6,12 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { Card } from 'wcpay/components/wp-components-wrapped/components/card';
-import { CheckboxControl } from 'wcpay/components/wp-components-wrapped/components/checkbox-control';
-import { Notice } from 'wcpay/components/wp-components-wrapped/components/notice';
-import { TextControl } from 'wcpay/components/wp-components-wrapped/components/text-control';
+import {
+	Card,
+	CheckboxControl,
+	Notice,
+	TextControl,
+} from '@wordpress/components';
 import CardBody from '../card-body';
 import {
 	useAccountStatementDescriptor,
@@ -79,7 +81,7 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 				/>
 				<ManualCaptureControl></ManualCaptureControl>
 				<h4>{ __( 'Customer statements', 'woocommerce-payments' ) }</h4>
-				<p className="transactions-customer-details">
+				<p>
 					{ __(
 						"Edit the way your store name appears on your customers' bank statements.",
 						'woocommerce-payments'
@@ -188,8 +190,7 @@ const Transactions = ( { setTransactionInputsValid } ) => {
 				</div>
 
 				<h4>{ __( 'Customer support', 'woocommerce-payments' ) }</h4>
-
-				<p className="transactions-customer-details">
+				<p>
 					{ __(
 						'Provide contact information where customers can reach you for support.',
 						'woocommerce-payments'

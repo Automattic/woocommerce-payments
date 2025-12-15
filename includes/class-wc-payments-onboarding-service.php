@@ -21,7 +21,6 @@ use WCPay\Logger;
 class WC_Payments_Onboarding_Service {
 
 	const TEST_MODE_OPTION                           = 'wcpay_onboarding_test_mode';
-	const ONBOARDING_ELIGIBILITY_MODAL_OPTION        = 'wcpay_onboarding_eligibility_modal_dismissed';
 	const ONBOARDING_CONNECTION_SUCCESS_MODAL_OPTION = 'wcpay_connection_success_modal_dismissed';
 	const ONBOARDING_INIT_IN_PROGRESS_TRANSIENT      = 'wcpay_onboarding_init_in_progress';
 
@@ -276,17 +275,16 @@ class WC_Payments_Onboarding_Service {
 	 *
 	 * Will return the session key used to initialise the embedded onboarding session.
 	 *
-	 * @param array   $self_assessment_data Self assessment data.
-	 * @param boolean $progressive Whether the onboarding is progressive.
-	 * @param array   $capabilities Optional. List keyed by capabilities IDs (payment methods) with boolean values
-	 *                             indicating whether the capability should be requested when the account is created
-	 *                             and enabled in the settings.
+	 * @param array $self_assessment_data Self assessment data.
+	 * @param array $capabilities Optional. List keyed by capabilities IDs (payment methods) with boolean values
+	 *                           indicating whether the capability should be requested when the account is created
+	 *                           and enabled in the settings.
 	 *
 	 * @return array Session data.
 	 *
 	 * @throws API_Exception|Exception
 	 */
-	public function create_embedded_kyc_session( array $self_assessment_data, bool $progressive = false, array $capabilities = [] ): array {
+	public function create_embedded_kyc_session( array $self_assessment_data, array $capabilities = [] ): array {
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			return [];
 		}
@@ -338,7 +336,6 @@ class WC_Payments_Onboarding_Service {
 				WC_Payments_Utils::array_filter_recursive( $user_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
 				WC_Payments_Utils::array_filter_recursive( $account_data ), // nosemgrep: audit.php.lang.misc.array-filter-no-callback -- output of array_filter is escaped.
 				$actioned_notes,
-				$progressive,
 				$this->get_referral_code()
 			);
 		} catch ( API_Exception $e ) {
@@ -888,15 +885,17 @@ class WC_Payments_Onboarding_Service {
 
 		update_option( '_wcpay_onboarding_stripe_connected', [] );
 		update_option( self::TEST_MODE_OPTION, 'no' );
+		self::clear_account_options();
 
 		// Discard any ongoing onboarding session.
 		delete_transient( WC_Payments_Account::ONBOARDING_STATE_TRANSIENT );
-		delete_option( WC_Payments_Account::EMBEDDED_KYC_IN_PROGRESS_OPTION );
+		$this->clear_embedded_kyc_in_progress();
 		delete_transient( WC_Payments_Account::WOOPAY_ENABLED_BY_DEFAULT_TRANSIENT );
 		$this->clear_onboarding_init_in_progress();
 
-		// Clear the cache to avoid stale data.
-		WC_Payments::get_account_service()->clear_cache();
+		// Clear the entire database cache since everything hinges on the account.
+		// If the account is gone, everything else is too.
+		$this->database_cache->delete_all();
 	}
 
 	/**
@@ -1004,17 +1003,7 @@ class WC_Payments_Onboarding_Service {
 	 * @return void
 	 */
 	public static function clear_account_options(): void {
-		delete_option( self::ONBOARDING_ELIGIBILITY_MODAL_OPTION );
 		delete_option( self::ONBOARDING_CONNECTION_SUCCESS_MODAL_OPTION );
-	}
-
-	/**
-	 * Set the onboarding eligibility modal dismissed option to true.
-	 *
-	 * @return void
-	 */
-	public static function set_onboarding_eligibility_modal_dismissed(): void {
-		update_option( self::ONBOARDING_ELIGIBILITY_MODAL_OPTION, true );
 	}
 
 	/**
@@ -1450,11 +1439,23 @@ class WC_Payments_Onboarding_Service {
 			$gateway->update_is_woopay_enabled( false );
 		}
 
-		// Update gateway option with the Apple/Google Pay capability.
+		// Update Apple/Google Pay gateway enabled state.
+		$google_pay_gateway = WC_Payments::get_payment_gateway_by_id( \WCPay\PaymentMethods\Configs\Definitions\GooglePayDefinition::get_id() );
+		$apple_pay_gateway  = WC_Payments::get_payment_gateway_by_id( \WCPay\PaymentMethods\Configs\Definitions\ApplePayDefinition::get_id() );
 		if ( ! empty( $capabilities['apple_google'] ) || ( ! empty( $capabilities['apple_pay'] ) || ! empty( $capabilities['google_pay'] ) ) ) {
-			$gateway->update_option( 'payment_request', 'yes' );
+			if ( $apple_pay_gateway ) {
+				$apple_pay_gateway->enable();
+			}
+			if ( $google_pay_gateway ) {
+				$google_pay_gateway->enable();
+			}
 		} else {
-			$gateway->update_option( 'payment_request', 'no' );
+			if ( $apple_pay_gateway ) {
+				$apple_pay_gateway->disable();
+			}
+			if ( $google_pay_gateway ) {
+				$google_pay_gateway->disable();
+			}
 		}
 	}
 
@@ -1531,6 +1532,9 @@ class WC_Payments_Onboarding_Service {
 		}
 
 		// Add default properties to every event.
+		$account_service = WC_Payments::get_account_service();
+		$tracking_info   = $account_service ? $account_service->get_tracking_info() : [];
+
 		$properties = array_merge(
 			$properties,
 			[
@@ -1539,7 +1543,7 @@ class WC_Payments_Onboarding_Service {
 				'wcpay_version'     => WCPAY_VERSION_NUMBER,
 				'woo_country_code'  => WC()->countries->get_base_country(),
 			],
-			WC_Payments::get_account_service()->get_tracking_info() ?? []
+			$tracking_info ?? []
 		);
 
 		wc_admin_record_tracks_event( $name, $properties );

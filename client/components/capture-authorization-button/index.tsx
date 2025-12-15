@@ -5,7 +5,7 @@
  */
 import React, { useState } from 'react';
 import { __ } from '@wordpress/i18n';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
+import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -41,8 +41,7 @@ const CaptureAuthorizationButton: React.FC< React.PropsWithChildren<
 
 	return (
 		<Button
-			isPrimary={ buttonIsPrimary }
-			isSecondary={ ! buttonIsPrimary }
+			variant={ buttonIsPrimary ? 'primary' : 'secondary' }
 			isSmall={ buttonIsSmall }
 			onClick={ () => {
 				onClick();
@@ -51,6 +50,7 @@ const CaptureAuthorizationButton: React.FC< React.PropsWithChildren<
 			} }
 			isBusy={ isLoading && isCaptureRequested } // Button should be in busy state when the capture is requested
 			disabled={ ( isLoading && isCaptureRequested ) || isRequesting } // Button should be disabled when the capture is requested
+			__next40pxDefaultSize
 		>
 			{ children || __( 'Capture', 'woocommerce-payments' ) }
 		</Button>

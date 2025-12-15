@@ -5,7 +5,7 @@ import React, { useEffect, useRef } from 'react';
 import { __ } from '@wordpress/i18n';
 import HelpOutlineIcon from 'gridicons/dist/help-outline';
 import { useState } from '@wordpress/element';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
+import { Button } from '@wordpress/components';
 
 /**
  * Internal dependencies
@@ -183,7 +183,6 @@ const ProtectionLevels: React.FC = () => {
 							level={ ProtectionLevel.BASIC }
 						/>
 					</li>
-					<hr className="fraud-protection__list-divider" />
 					<li className="fraud-protection__advanced-level-container">
 						<label htmlFor="fraud-protection-level-select_advanced-level">
 							<div className="fraud-protection-radio-wrapper">
@@ -209,6 +208,7 @@ const ProtectionLevels: React.FC = () => {
 							/>
 						</label>
 						<Button
+							// @ts-expect-error: not sure why href should not be declared - it is.
 							href={ getAdminUrl( {
 								page: 'wc-admin',
 								path: '/payments/fraud-protection',

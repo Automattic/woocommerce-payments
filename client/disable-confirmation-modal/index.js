@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
+import { Button } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import interpolateComponents from '@automattic/interpolate-components';
 
@@ -20,12 +20,7 @@ import PaymentDeleteIllustration from '../components/payment-delete-illustration
 import WooCardIcon from 'assets/images/cards/woo-card.svg?asset';
 import ConfirmationModal from '../components/confirmation-modal';
 import paymentMethodsMap from 'wcpay/payment-methods-map';
-import {
-	ApplePayIcon,
-	GooglePayIcon,
-	LinkIcon,
-	WooIconShort,
-} from 'wcpay/payment-methods-icons';
+import { LinkIcon, WooIconShort } from 'wcpay/payment-methods-icons';
 
 const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 	const [ enabledMethodIds ] = useEnabledPaymentMethodIds();
@@ -45,10 +40,19 @@ const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 			onRequestClose={ onClose }
 			actions={
 				<>
-					<Button onClick={ onConfirm } isPrimary isDestructive>
+					<Button
+						onClick={ onConfirm }
+						variant="primary"
+						isDestructive
+						__next40pxDefaultSize
+					>
 						Disable
 					</Button>
-					<Button onClick={ onClose } isSecondary>
+					<Button
+						onClick={ onClose }
+						variant="secondary"
+						__next40pxDefaultSize
+					>
 						Cancel
 					</Button>
 				</>
@@ -100,20 +104,14 @@ const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 					<>
 						<li>
 							<PaymentMethodIcon
-								Icon={ GooglePayIcon }
-								label={ __(
-									'Google Pay',
-									'woocommerce-payments'
-								) }
+								Icon={ paymentMethodsMap.google_pay.icon }
+								label={ paymentMethodsMap.google_pay.label }
 							/>
 						</li>
 						<li>
 							<PaymentMethodIcon
-								Icon={ ApplePayIcon }
-								label={ __(
-									'Apple Pay',
-									'woocommerce-payments'
-								) }
+								Icon={ paymentMethodsMap.apple_pay.icon }
+								label={ paymentMethodsMap.apple_pay.label }
 							/>
 						</li>
 					</>

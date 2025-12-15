@@ -369,6 +369,27 @@ export const usePaymentRequestEnabledSettings = () => {
 };
 
 /**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
+ */
+export const useAppleGooglePayInPaymentMethodsOptionsEnabledSettings = () => {
+	const {
+		updateIsAppleGooglePayInPaymentMethodsOptionsEnabled,
+	} = useDispatch( STORE_NAME );
+
+	const isAppleGooglePayInPaymentMethodsOptionsEnabled = useSelect(
+		( select ) =>
+			select(
+				STORE_NAME
+			).getIsAppleGooglePayInPaymentMethodsOptionsEnabled()
+	);
+
+	return [
+		isAppleGooglePayInPaymentMethodsOptionsEnabled,
+		updateIsAppleGooglePayInPaymentMethodsOptionsEnabled,
+	];
+};
+
+/**
  * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string[]>}
  */
 export const usePaymentRequestLocations = () => {

@@ -9,7 +9,7 @@ import { __ } from '@wordpress/i18n';
 /**
  * Internal dependencies
  */
-import { Modal } from 'wcpay/components/wp-components-wrapped/components/modal';
+import { Modal } from '@wordpress/components';
 import VatForm from '../form';
 import { VatFormOnCompleted } from '../types';
 

@@ -3,7 +3,7 @@
  * External dependencies
  */
 import React, { useState, useEffect, useLayoutEffect } from 'react';
-import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
+import { ExternalLink } from '@wordpress/components';
 import { __, sprintf } from '@wordpress/i18n';
 import { getQuery, updateQueryString } from '@woocommerce/navigation';
 import { dispatch } from '@wordpress/data';
@@ -31,6 +31,7 @@ import {
 import FraudProtection from '../fraud-protection';
 import DuplicatedPaymentMethodsContext from './duplicated-payment-methods-context';
 import VatFormModal from '../../vat/form-modal';
+import SpotlightPromotion from 'promotions/spotlight';
 import './style.scss';
 
 const ExpressCheckoutDescription = () => (
@@ -192,7 +193,14 @@ const SettingsManager = () => {
 	useEffect( () => {
 		const urlParams = new URLSearchParams( window.location.search );
 		if ( urlParams.get( 'woopayments-vat-details-modal' ) === 'true' ) {
-			if ( ! wcpaySettings.accountStatus.hasSubmittedVatData ) {
+			if ( ! wcpaySettings.accountStatus.isDocumentsEnabled ) {
+				dispatch( 'core/notices' ).createErrorNotice(
+					__(
+						'Tax details collection is not available for your account.',
+						'woocommerce-payments'
+					)
+				);
+			} else if ( ! wcpaySettings.accountStatus.hasSubmittedVatData ) {
 				setVatFormModalOpen( true );
 			} else {
 				dispatch( 'core/notices' ).createInfoNotice(
@@ -299,6 +307,9 @@ const SettingsManager = () => {
 				setModalOpen={ handleVatFormModalClose }
 				onCompleted={ handleVatFormModalCompleted }
 			/>
+			<ErrorBoundary>
+				<SpotlightPromotion />
+			</ErrorBoundary>
 		</SettingsLayout>
 	);
 };

@@ -5,8 +5,25 @@
 	}
 
 	h4 {
+		@include heading-md;
 		margin-top: 0;
-		margin-bottom: 1em;
+		margin-bottom: 24px;
+
+		&:not( :first-child ) {
+			margin-top: 32px;
+		}
+
+		+ p {
+			margin-top: calc( 8px );
+			margin-bottom: 24px;
+			font-size: 12px;
+			font-style: normal;
+			color: #757575;
+		}
+
+		&:has( + p ) {
+			margin-bottom: 0;
+		}
 	}
 
 	> * {

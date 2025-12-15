@@ -10,7 +10,7 @@ import interpolateComponents from '@automattic/interpolate-components';
 /**
  * Internal dependencies
  */
-import { CheckboxControl } from 'wcpay/components/wp-components-wrapped/components/checkbox-control';
+import { CheckboxControl } from '@wordpress/components';
 
 const EnabledCurrenciesModalCheckbox = ( {
 	onChange,

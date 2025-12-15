@@ -62,6 +62,14 @@ export function updateIsPaymentRequestEnabled( isEnabled ) {
 	return updateSettingsValues( { is_payment_request_enabled: isEnabled } );
 }
 
+export function updateIsAppleGooglePayInPaymentMethodsOptionsEnabled(
+	isEnabled
+) {
+	return updateSettingsValues( {
+		is_apple_google_pay_in_payment_methods_options_enabled: isEnabled,
+	} );
+}
+
 export function updateEnabledPaymentMethodIds( methodIds ) {
 	return updateSettingsValues( {
 		enabled_payment_method_ids: [ ...methodIds ],

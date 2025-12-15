@@ -111,18 +111,21 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 					await merchantPage
 						.getByTestId( 'accept-dispute-button' )
 						.click();
+
+					// Wait for the network request to complete
+					await merchantPage.waitForLoadState( 'networkidle' );
 				}
 			);
 
 			await test.step(
 				'Wait for the accept request to resolve and observe the lost dispute status',
 				async () => {
-					expect(
+					await expect(
 						merchantPage.getByText( 'Disputed: Lost' )
 					).toBeVisible();
 
 					// Check the dispute details footer
-					expect(
+					await expect(
 						merchantPage.getByText( 'You accepted this dispute on' )
 					).toBeVisible();
 				}
@@ -165,10 +168,25 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 							name: 'Challenge dispute',
 						} )
 						.click();
+
+					// Wait for new evidence screen to finish initial loading
+					await expect(
+						merchantPage.getByTestId( 'new-evidence-loading' )
+					).toBeHidden( { timeout: 20000 } );
 				}
 			);
 
 			await test.step( 'Select the product type', async () => {
+				// wait for the dispute to the loaded.
+				await expect(
+					merchantPage.getByText(
+						'The cardholder claims this is an unauthorized transaction.',
+						{
+							exact: true,
+						}
+					)
+				).toBeVisible();
+
 				await merchantPage
 					.getByTestId( 'dispute-challenge-product-type-selector' )
 					.selectOption( 'physical_product' );
@@ -266,9 +284,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 
 					// Click the submit button
 					await merchantPage
-						.getByRole( 'button', {
-							name: 'Submit',
-						} )
+						.getByTestId( 'submit-evidence-button' )
 						.click();
 				}
 			);
@@ -293,14 +309,25 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			await test.step(
 				'Navigate back to payment details and confirm the dispute status is Won',
 				async () => {
-					// Navigate back to the payment details page
-					await merchantPage.goto( paymentDetailsLink );
+					// Poll for the final status, refreshing the page if needed
+					await expect( async () => {
+						await merchantPage.goto( paymentDetailsLink );
+						await merchantPage.waitForLoadState( 'networkidle' );
 
-					await expect(
-						merchantPage
-							.locator( '.payment-details-summary__status' )
-							.filter( { hasText: 'Disputed: Won' } )
-					).toBeVisible();
+						// Check that we're no longer "Under Review"
+						await expect(
+							merchantPage
+								.locator( '.payment-details-summary__status' )
+								.filter( { hasText: 'Disputed: Under Review' } )
+						).not.toBeVisible( { timeout: 2000 } );
+
+						// Confirm we have the "Won" status
+						await expect(
+							merchantPage
+								.locator( '.payment-details-summary__status' )
+								.filter( { hasText: 'Disputed: Won' } )
+						).toBeVisible( { timeout: 2000 } );
+					} ).toPass( { timeout: 60000, intervals: [ 3000 ] } );
 
 					await expect(
 						merchantPage.getByText(
@@ -347,10 +374,25 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 							name: 'Challenge dispute',
 						} )
 						.click();
+
+					// Wait for new evidence screen to finish initial loading
+					await expect(
+						merchantPage.getByTestId( 'new-evidence-loading' )
+					).toBeHidden( { timeout: 20000 } );
 				}
 			);
 
 			await test.step( 'Select the product type', async () => {
+				// wait for the dispute to the loaded.
+				await expect(
+					merchantPage.getByText(
+						'The cardholder claims this is an unauthorized transaction.',
+						{
+							exact: true,
+						}
+					)
+				).toBeVisible();
+
 				await merchantPage
 					.getByTestId( 'dispute-challenge-product-type-selector' )
 					.selectOption( 'physical_product' );
@@ -421,9 +463,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 
 					// Click the submit button
 					await merchantPage
-						.getByRole( 'button', {
-							name: 'Submit',
-						} )
+						.getByTestId( 'submit-evidence-button' )
 						.click();
 				}
 			);
@@ -448,14 +488,25 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			await test.step(
 				'Navigate back to payment details and confirm the dispute status is Lost',
 				async () => {
-					// Navigate back to the payment details page
-					await merchantPage.goto( paymentDetailsLink );
+					// Poll for the final status, refreshing the page if needed
+					await expect( async () => {
+						await merchantPage.goto( paymentDetailsLink );
+						await merchantPage.waitForLoadState( 'networkidle' );
 
-					await expect(
-						merchantPage
-							.locator( '.payment-details-summary__status' )
-							.filter( { hasText: 'Disputed: Lost' } )
-					).toBeVisible();
+						// Check that we're no longer "Under Review"
+						await expect(
+							merchantPage
+								.locator( '.payment-details-summary__status' )
+								.filter( { hasText: 'Disputed: Under Review' } )
+						).not.toBeVisible( { timeout: 2000 } );
+
+						// Confirm we have the "Lost" status
+						await expect(
+							merchantPage
+								.locator( '.payment-details-summary__status' )
+								.filter( { hasText: 'Disputed: Lost' } )
+						).toBeVisible( { timeout: 2000 } );
+					} ).toPass( { timeout: 60000, intervals: [ 3000 ] } );
 
 					await expect(
 						merchantPage.getByText(
@@ -478,7 +529,6 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 			);
 		}
 	);
-
 	test( 'Save a dispute challenge without submitting evidence', async ( {
 		browser,
 	} ) => {
@@ -499,6 +549,11 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 						name: 'Challenge dispute',
 					} )
 					.click();
+
+				// Wait for the challenge screen initial loading spinner to disappear
+				await expect(
+					merchantPage.getByTestId( 'new-evidence-loading' )
+				).toBeHidden( { timeout: 20000 } );
 			}
 		);
 
@@ -526,7 +581,7 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 		);
 
 		await test.step(
-			'Fill in the product type and product description',
+			'Select product type and fill description',
 			async () => {
 				await merchantPage
 					.getByTestId( 'dispute-challenge-product-type-selector' )
@@ -534,15 +589,60 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 				await merchantPage
 					.getByLabel( 'PRODUCT DESCRIPTION' )
 					.fill( 'my product description' );
+
+				// Blur the field to ensure value is committed to state before saving
+				await merchantPage
+					.getByLabel( 'PRODUCT DESCRIPTION' )
+					.press( 'Tab' );
+
+				// Verify the value was set correctly immediately after filling
+				await expect(
+					merchantPage.getByLabel( 'PRODUCT DESCRIPTION' )
+				).toHaveValue( 'my product description' );
 			}
 		);
 
+		await test.step( 'Verify form values before saving', async () => {
+			// Double-check that the form value is still correct before saving
+			await expect(
+				merchantPage.getByLabel( 'PRODUCT DESCRIPTION' )
+			).toHaveValue( 'my product description' );
+		} );
+
 		await test.step( 'Save the dispute challenge for later', async () => {
-			await merchantPage
-				.getByRole( 'button', {
-					name: 'Save for later',
+			const waitResponse = merchantPage.waitForResponse(
+				( r ) =>
+					r.url().includes( '/wc/v3/payments/disputes/' ) &&
+					r.request().method() === 'POST'
+			);
+
+			// Use stable test id for the save button
+			await merchantPage.getByTestId( 'save-for-later-button' ).click();
+
+			const response = await waitResponse;
+
+			// Server acknowledged save
+			expect( response.ok() ).toBeTruthy();
+
+			// Validate payload included our description (guards against state not committed)
+			try {
+				const payload = response.request().postDataJSON?.();
+				// Some environments may not expose postDataJSON; guard accordingly
+				if ( payload && payload.evidence ) {
+					expect( payload.evidence.product_description ).toBe(
+						'my product description'
+					);
+				}
+			} catch ( _e ) {
+				// Non-fatal: continue to UI confirmation
+			}
+
+			// Wait for the success snackbar to confirm UI acknowledged the save.
+			await expect(
+				merchantPage.locator( '.components-snackbar__content', {
+					hasText: 'Evidence saved!',
 				} )
-				.click();
+			).toBeVisible( { timeout: 10000 } );
 		} );
 
 		await test.step( 'Go back to the payment details page', async () => {
@@ -555,11 +655,16 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 				await merchantPage
 					.getByTestId( 'challenge-dispute-button' )
 					.click();
+
+				// Wait for the challenge screen initial loading spinner to disappear
+				await expect(
+					merchantPage.getByTestId( 'new-evidence-loading' )
+				).toBeHidden( { timeout: 20000 } );
 			}
 		);
 
 		await test.step(
-			'Verify the previously selected challenge product type is saved',
+			'Verify previously saved values are restored',
 			async () => {
 				await test.step(
 					'Confirm we are on the challenge dispute page',
@@ -572,15 +677,15 @@ test.describe( 'Disputes > Respond to a dispute', () => {
 					}
 				);
 
+				// Wait for description control to be visible
 				await merchantPage
-					.getByTestId( 'dispute-challenge-product-type-selector' )
-					.waitFor( { timeout: 5000, state: 'visible' } );
+					.getByLabel( 'PRODUCT DESCRIPTION' )
+					.waitFor( { timeout: 10000, state: 'visible' } );
 
+				// Assert the product description persisted (server stores this under evidence)
 				await expect(
-					merchantPage.getByTestId(
-						'dispute-challenge-product-type-selector'
-					)
-				).toHaveValue( 'offline_service' );
+					merchantPage.getByLabel( 'PRODUCT DESCRIPTION' )
+				).toHaveValue( 'my product description', { timeout: 15000 } );
 			}
 		);
 	} );

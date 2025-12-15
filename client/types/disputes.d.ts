@@ -132,27 +132,6 @@ export interface CachedDispute {
 	due_by: string;
 }
 
-interface UploadFieldObject {
-	key: string;
-	label: string;
-}
-
-export interface FileUploadControlProps {
-	field: UploadFieldObject;
-	fileName: string;
-	disabled?: boolean;
-	isDone: boolean;
-	isLoading: boolean;
-	accept: string;
-	error?: string;
-	onFileChange( key: string, file: File ): Promise< void >;
-	onFileRemove( key: string ): void;
-	help?: string;
-	showPreview?: boolean;
-	uploadButtonLabel?: string;
-	type?: string;
-}
-
 export interface DisputesSummary {
 	disputesSummary: {
 		count?: number;

@@ -31,6 +31,8 @@ global.window.wcTracks = {
 	recordEvent: () => null,
 };
 
+global.IS_REACT_ACT_ENVIRONMENT = true;
+
 // Can be removed once a new version of @wordpress/jest-preset-default include it ( >= 10.1.0 )
 global.window.matchMedia = () => ( {
 	matches: false,
@@ -183,4 +185,6 @@ global.wooPaymentsPaymentMethodDefinitions = {
 		}
 	),
 	alipay: buildMockDefinition( 'alipay', 'Alipay', [ 'USD' ] ),
+	google_pay: buildMockDefinition( 'google_pay', 'Google Pay' ),
+	apple_pay: buildMockDefinition( 'apple_pay', 'Apple Pay' ),
 };

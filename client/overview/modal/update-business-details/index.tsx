@@ -3,13 +3,11 @@
  */
 import React, { useState } from 'react';
 import { sprintf } from '@wordpress/i18n';
+import { Button, Modal, Notice } from '@wordpress/components';
 
 /**
  * Internal dependencies
  */
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
-import { Modal } from 'wcpay/components/wp-components-wrapped/components/modal';
-import { Notice } from 'wcpay/components/wp-components-wrapped/components/notice';
 import strings from './strings';
 import './index.scss';
 import { recordEvent } from 'wcpay/tracks';
@@ -82,7 +80,7 @@ const UpdateBusinessDetailsModal = ( {
 					<hr />
 					<div className="wcpay-update-business-details-modal__footer">
 						<Button
-							variant={ 'secondary' }
+							variant="secondary"
 							onClick={ closeModal }
 							__next40pxDefaultSize
 						>
@@ -90,7 +88,7 @@ const UpdateBusinessDetailsModal = ( {
 						</Button>
 
 						<Button
-							variant={ 'primary' }
+							variant="primary"
 							onClick={ openAccountLink }
 							__next40pxDefaultSize
 						>

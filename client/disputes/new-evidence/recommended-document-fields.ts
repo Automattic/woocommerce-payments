@@ -18,6 +18,7 @@ export const DOCUMENT_FIELD_KEYS = {
 	CUSTOMER_SIGNATURE: 'customer_signature',
 	UNCATEGORIZED_FILE: 'uncategorized_file',
 	REFUND_POLICY: 'refund_policy',
+	REFUND_RECEIPT_DOCUMENTATION: 'uncategorized_file',
 	DUPLICATE_CHARGE_DOCUMENTATION: 'duplicate_charge_documentation',
 	CANCELLATION_POLICY: 'cancellation_policy',
 	ACCESS_ACTIVITY_LOG: 'access_activity_log',
@@ -26,17 +27,68 @@ export const DOCUMENT_FIELD_KEYS = {
 } as const;
 
 /**
+ * Get recommended document fields for the subscription_canceled dispute reason
+ *
+ * @param {string} productType - The product type (for subscription_canceled disputes)
+ * @return {Array<{key: string, label: string}>} Array of recommended document fields
+ */
+const getRecommendedDocumentFieldsForSubscriptionCanceled = (
+	productType?: string
+): Array< RecommendedDocument > => {
+	// Common fields for all subscription cancellation disputes
+	const fields: Array< RecommendedDocument > = [
+		{
+			key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+			label: __( 'Store refund policy', 'woocommerce-payments' ),
+			description: __(
+				"A screenshot of your store's refund policy.",
+				'woocommerce-payments'
+			),
+			order: 40,
+		},
+		{
+			key: DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
+			label: __( 'Terms of service', 'woocommerce-payments' ),
+			description: __(
+				"A screenshot of your store's terms of service.",
+				'woocommerce-payments'
+			),
+			order: 50,
+		},
+	];
+
+	// For the multiple product type only core fields are needed.
+	if ( 'multiple' === productType ) {
+		return fields;
+	}
+
+	fields.push( {
+		key: DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
+		label: __( 'Subscription logs', 'woocommerce-payments' ),
+		description: __(
+			'Order notes or the history of related orders. This should clearly show successful renewals before the dispute.',
+			'woocommerce-payments'
+		),
+		order: 30,
+	} );
+
+	return fields;
+};
+
+/**
  * Get recommended document fields based on dispute reason
  *
  * @param {string} reason - The dispute reason
  * @param {string} refundStatus - The refund status (for credit_not_processed disputes)
  * @param {string} duplicateStatus - The duplicate status (for duplicate disputes)
+ * @param {string} productType - The product type (for subscription_canceled disputes)
  * @return {Array<{key: string, label: string}>} Array of recommended document fields
  */
 const getRecommendedDocumentFields = (
 	reason: string,
 	refundStatus?: string,
-	duplicateStatus?: string
+	duplicateStatus?: string,
+	productType?: string
 ): Array< RecommendedDocument > => {
 	// Define fields with their order
 	const orderedFields = [
@@ -134,91 +186,76 @@ const getRecommendedDocumentFields = (
 		duplicate:
 			duplicateStatus === 'is_duplicate'
 				? [
-						// For is_duplicate: Order receipt, Customer communication, Proof of active subscription, Store refund policy, Terms of service, Other documents
+						// For is_duplicate: Order receipt, Refund receipt, Refund policy
 						{
-							key: DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
+							key: DOCUMENT_FIELD_KEYS.RECEIPT,
 							label: __(
-								'Proof of active subscription',
+								'Order receipt',
 								'woocommerce-payments'
 							),
 							description: __(
-								'Any documents showing the billing history, subscription status, or cancellation logs, for example.',
+								"A copy of the customer's receipt, which can be found in the receipt history for this transaction.",
 								'woocommerce-payments'
 							),
-							order: 30,
+							order: 10,
+						},
+						{
+							key:
+								DOCUMENT_FIELD_KEYS.REFUND_RECEIPT_DOCUMENTATION,
+							label: __(
+								'Refund receipt',
+								'woocommerce-payments'
+							),
+							description: __(
+								'A confirmation that the refund was processed.',
+								'woocommerce-payments'
+							),
+							order: 15,
 						},
 						{
 							key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
 							label: __(
-								'Store refund policy',
+								'Refund policy',
 								'woocommerce-payments'
 							),
 							description: __(
 								"A screenshot of your store's refund policy.",
 								'woocommerce-payments'
 							),
-							order: 40,
-						},
-						{
-							key: DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
-							label: __(
-								'Terms of service',
-								'woocommerce-payments'
-							),
-							description: __(
-								"A screenshot of your store's terms of service.",
-								'woocommerce-payments'
-							),
-							order: 50,
+							order: 20,
 						},
 				  ]
 				: [
-						// For is_not_duplicate: Order receipt, Customer communication, Store refund policy, Other documents
+						// For is_not_duplicate: Order receipt, Any additional receipts, Customer communication, Refund policy, Other documents
 						{
-							key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+							key:
+								DOCUMENT_FIELD_KEYS.DUPLICATE_CHARGE_DOCUMENTATION,
 							label: __(
-								'Store refund policy',
+								'Any additional receipts',
 								'woocommerce-payments'
 							),
 							description: __(
-								"A screenshot of your store's refund policy.",
+								'Receipt(s) for any other order(s) from this customer.',
 								'woocommerce-payments'
 							),
-							order: 30,
+							order: 12,
+						},
+						{
+							key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
+							label: __(
+								'Refund policy',
+								'woocommerce-payments'
+							),
+							description: __(
+								'A screenshot of the refund policy for the provided service.',
+								'woocommerce-payments'
+							),
+							order: 25,
 						},
 				  ],
-		subscription_canceled: [
-			{
-				key: DOCUMENT_FIELD_KEYS.ACCESS_ACTIVITY_LOG,
-				label: __(
-					'Proof of active subscription',
-					'woocommerce-payments'
-				),
-				description: __(
-					'Any documents showing the billing history, subscription status, or cancellation logs, for example.',
-					'woocommerce-payments'
-				),
-				order: 30,
-			},
-			{
-				key: DOCUMENT_FIELD_KEYS.REFUND_POLICY,
-				label: __( 'Store refund policy', 'woocommerce-payments' ),
-				description: __(
-					"A screenshot of your store's refund policy.",
-					'woocommerce-payments'
-				),
-				order: 40,
-			},
-			{
-				key: DOCUMENT_FIELD_KEYS.CANCELLATION_POLICY,
-				label: __( 'Terms of service', 'woocommerce-payments' ),
-				description: __(
-					"A screenshot of your store's terms of service.",
-					'woocommerce-payments'
-				),
-				order: 50,
-			},
-		],
+		subscription_canceled: getRecommendedDocumentFieldsForSubscriptionCanceled(
+			productType
+		),
 		fraudulent: [
 			{
 				key: DOCUMENT_FIELD_KEYS.CUSTOMER_SIGNATURE,
@@ -345,8 +382,15 @@ const getRecommendedDocumentFields = (
 		],
 	};
 
-	// For credit_not_processed with refund_was_not_owed, we need to filter out customer_signature from orderedFields
-	const baseFields = orderedFields;
+	// Filter base fields based on reason and status
+	let baseFields = orderedFields;
+
+	// For duplicate disputes with is_duplicate status, exclude all base fields
+	// The spec provides a complete list of exactly 3 fields for Scenario A:
+	// Order receipt, Refund receipt, Refund policy
+	if ( reason === 'duplicate' && duplicateStatus === 'is_duplicate' ) {
+		baseFields = [];
+	}
 
 	// Combine default fields with reason-specific fields
 	const allFields = [

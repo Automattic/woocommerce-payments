@@ -8,9 +8,7 @@ import { useState } from '@wordpress/element';
 /**
  * Internal dependencies
  */
-import { CheckboxControl } from 'wcpay/components/wp-components-wrapped/components/checkbox-control';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
-import { ExternalLink } from 'wcpay/components/wp-components-wrapped/components/external-link';
+import { CheckboxControl, Button, ExternalLink } from '@wordpress/components';
 import {
 	useManualCapture,
 	useCardPresentEligible,
@@ -76,6 +74,7 @@ const ManualCaptureControl = (): JSX.Element => {
 									),
 									components: {
 										a: (
+											// @ts-expect-error: children is provided when interpolating the component
 											<ExternalLink href="https://woocommerce.com/in-person-payments/" />
 										),
 									},
@@ -86,7 +85,7 @@ const ManualCaptureControl = (): JSX.Element => {
 				__nextHasNoMarginBottom
 			/>
 			{ isStripeBillingEnabled && (
-				<InlineNotice status="warning" isDismissible={ false } icon>
+				<InlineNotice status="warning" isDismissible={ false }>
 					{ __(
 						'Manual capture is not available when Stripe Billing is active.',
 						'woocommerce-payments'

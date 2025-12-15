@@ -162,6 +162,13 @@ class WC_Payments_Order_Service {
 	const WCPAY_MULTIBANCO_URL_META_KEY = '_wcpay_multibanco_url';
 
 	/**
+	 * Meta key for cached payment method details.
+	 *
+	 * @const string
+	 */
+	const PAYMENT_METHOD_DETAILS_META_KEY = '_wcpay_payment_method_details';
+
+	/**
 	 * Client for making requests to the WooCommerce Payments API
 	 *
 	 * @var WC_Payments_API_Client
@@ -962,8 +969,17 @@ class WC_Payments_Order_Service {
 		$payment_transaction_id = $payment_transaction['id'] ?? '';
 		$outcome                = $charge ? $charge->get_outcome() : null;
 		$risk_level             = $outcome ? $outcome['risk_level'] : null;
+
 		// next, save it in order meta.
 		$this->attach_intent_info_to_order__legacy( $order, $intent_id, $intent_status, $payment_method, $customer_id, $charge_id, $currency, $payment_transaction_id, $risk_level );
+
+		// Store payment method details when available.
+		if ( null !== $charge ) {
+			$payment_method_details = $charge->get_payment_method_details();
+			if ( $payment_method_details ) {
+				$this->store_payment_method_details( $order, $payment_method_details );
+			}
+		}
 	}
 
 	/**
@@ -1126,6 +1142,10 @@ class WC_Payments_Order_Service {
 			$this->set_fraud_meta_box_type_for_order( $order, Fraud_Meta_Box_Type::REVIEW_BLOCKED );
 		}
 
+		// Remove transaction fee since the authorization was canceled and no payment was processed.
+		$order->delete_meta_data( self::WCPAY_TRANSACTION_FEE_META_KEY );
+		$order->delete_meta_data( '_wcpay_net' );
+
 		$this->update_order_status( $order, Order_Status::CANCELLED );
 		$this->complete_order_processing( $order, $intent_data['intent_status'] );
 	}
@@ -1139,9 +1159,16 @@ class WC_Payments_Order_Service {
 	 * @return void
 	 */
 	private function mark_payment_completed( $order, $intent_data ) {
-		// Need to have a check for the intention status of `requires_capture`.
 		$note = $this->generate_payment_success_note( $intent_data['intent_id'], $intent_data['charge_id'], $this->get_order_amount( $order ) );
 		if ( $this->order_note_exists( $order, $note ) ) {
+			return;
+		}
+
+		// Check if a capture note already exists for this payment intent.
+		// This prevents adding a duplicate "charged" note when the payment was already
+		// processed via manual capture (race condition between capture flow and webhooks).
+		$capture_note = $this->generate_capture_success_note( $order, $intent_data['intent_id'], $intent_data['charge_id'] );
+		if ( $this->order_note_exists( $order, $capture_note ) ) {
 			return;
 		}
 
@@ -1302,7 +1329,9 @@ class WC_Payments_Order_Service {
 	 */
 	public function attach_transaction_fee_to_order( $order, $charge ) {
 		try {
-			if ( $charge && null !== $charge->get_application_fee_amount() ) {
+			// Only set transaction fee if the charge was actually captured.
+			// Canceled authorizations should not have fees since no payment was processed.
+			if ( $charge && null !== $charge->get_application_fee_amount() && $charge->is_captured() ) {
 				$order->update_meta_data(
 					self::WCPAY_TRANSACTION_FEE_META_KEY,
 					WC_Payments_Utils::interpret_stripe_amount( $charge->get_application_fee_amount(), $charge->get_currency() )
@@ -1345,6 +1374,10 @@ class WC_Payments_Order_Service {
 							$intent = $request->send();
 
 							$this->post_unique_capture_cancelled_note( $order, $intent_id, $charge->get_id() );
+
+							// Remove transaction fee since the authorization was canceled and no payment was processed.
+							$order->delete_meta_data( self::WCPAY_TRANSACTION_FEE_META_KEY );
+							$order->delete_meta_data( '_wcpay_net' );
 					}
 
 					$this->set_intention_status_for_order( $order, $intent->get_status() );
@@ -2337,6 +2370,32 @@ class WC_Payments_Order_Service {
 	}
 
 	/**
+	 * Store payment method details in the order meta.
+	 *
+	 * @param  WC_Order $order                  The order.
+	 * @param  array    $payment_method_details The payment method details.
+	 * @return void
+	 */
+	public function store_payment_method_details( WC_Order $order, array $payment_method_details ): void {
+		$order->update_meta_data( self::PAYMENT_METHOD_DETAILS_META_KEY, wp_json_encode( $payment_method_details ) );
+		$order->save_meta_data();
+	}
+
+	/**
+	 * Get cached payment method details from the order meta.
+	 *
+	 * @param  WC_Order $order The order.
+	 * @return array           The payment method details.
+	 */
+	public function get_payment_method_details( WC_Order $order ): ?array {
+		$json = $order->get_meta( self::PAYMENT_METHOD_DETAILS_META_KEY );
+		if ( '' === $json ) {
+			return null;
+		}
+		return json_decode( $json, true );
+	}
+
+	/**
 	 * Check if FROD is supported for the given country.
 	 *
 	 * @param string $country_code Two-letter country code.
@@ -2357,7 +2416,7 @@ class WC_Payments_Order_Service {
 	 * @return string
 	 */
 	private function get_frod_support_note( $formatted_amount ) {
-		$learn_more_url = 'https://woocommerce.com/document/woopayments/fees-and-debits/preventing-negative-balances/#adding-funds';
+		$learn_more_url = 'https://woocommerce.com/document/woopayments/fees/preventing-negative-balances/#adding-funds';
 		return sprintf(
 			WC_Payments_Utils::esc_interpolated_html(
 				/* translators: %s: Formatted refund amount */

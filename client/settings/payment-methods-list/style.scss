@@ -1,6 +1,10 @@
 .payment-methods {
 	position: relative;
 
+	.wcpay-card-body {
+		padding: 0;
+	}
+
 	.payment-methods-list {
 		margin: 0;
 	}
@@ -10,10 +14,6 @@
 			color: $white;
 			text-decoration: underline;
 		}
-	}
-
-	.wcpay-card-body:not( .payment-methods__express-checkouts ) {
-		padding: 0;
 	}
 
 	.components-popover__content {

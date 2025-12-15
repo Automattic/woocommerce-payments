@@ -1,20 +1,23 @@
 .deposits {
-	&__bank-information-help {
-		font-style: italic;
-		color: #757575;
-	}
 	.schedule-controls {
 		display: flex;
 		flex-wrap: wrap;
 		margin-bottom: 0;
+
+		.components-base-control {
+			margin-bottom: 0;
+		}
+
 		.components-select-control {
 			padding-right: 16px;
 			margin-bottom: 0;
 		}
 	}
+
 	.help-text {
 		color: #757575;
-		margin-top: 0;
+		margin-top: calc( 8px );
+		font-size: 12px;
 		margin-bottom: 1em;
 	}
 }

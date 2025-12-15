@@ -2,14 +2,13 @@
  * External dependencies
  */
 import React, { useState, useEffect, useCallback } from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 
 /**
  * Internal dependencies
  */
 import PluginDisableSurvey from './deactivation-survey';
 import { saveOption } from 'wcpay/data/settings/actions';
-import { WordPressComponentsContext } from 'wcpay/wordpress-components-context/context';
 
 const PluginsPage = () => {
 	const [ modalOpen, setModalOpen ] = useState( false );
@@ -99,9 +98,6 @@ const PluginsPage = () => {
 	);
 };
 
-ReactDOM.render(
-	<WordPressComponentsContext.Provider value={ wp.components }>
-		<PluginsPage />
-	</WordPressComponentsContext.Provider>,
-	document.querySelector( '#woopayments-plugins-page-app' )
-);
+const container = document.querySelector( '#woopayments-plugins-page-app' );
+const root = createRoot( container );
+root.render( <PluginsPage /> );

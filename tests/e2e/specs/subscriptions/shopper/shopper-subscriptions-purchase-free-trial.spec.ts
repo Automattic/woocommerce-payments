@@ -86,7 +86,7 @@ describeif( shouldRunSubscriptionsTests )(
 
 				// Add it to the cart and verify that the cart page shows the free trial details
 				await shopperPage
-					.getByRole( 'button', { name: 'Sign up now' } )
+					.getByRole( 'button', { name: 'Add to cart', exact: true } )
 					.click();
 				await goToCart( shopperPage );
 				await expect(
@@ -130,7 +130,7 @@ describeif( shouldRunSubscriptionsTests )(
 				const card = config.cards[ '3dsOTP' ];
 				await fillCardDetails( shopperPage, card );
 				await shopperPage
-					.getByRole( 'button', { name: 'Sign up now' } )
+					.getByRole( 'button', { name: 'Place order', exact: true } )
 					.click();
 				await shopperPage.frames()[ 0 ].waitForLoadState( 'load' );
 				await confirmCardAuthentication( shopperPage, true );

@@ -2,7 +2,7 @@
  * External dependencies
  */
 import React from 'react';
-import ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
 import { ExpressCheckoutElement, Elements } from '@stripe/react-stripe-js';
 import type { AvailablePaymentMethods } from '@stripe/stripe-js';
 import { memoize } from 'lodash';
@@ -49,7 +49,8 @@ const checkPaymentMethodIsAvailableInternal = (
 
 		bodyElement.appendChild( containerEl );
 
-		ReactDOM.render(
+		const root = createRoot( containerEl );
+		root.render(
 			<Elements
 				stripe={ api.loadStripeForExpressCheckout() }
 				options={ {
@@ -63,7 +64,7 @@ const checkPaymentMethodIsAvailableInternal = (
 					onConfirm={ () => null }
 					onLoadError={ () => {
 						resolve( false );
-						ReactDOM.unmountComponentAtNode( containerEl );
+						root.unmount();
 						containerEl.remove();
 					} }
 					options={ {
@@ -88,12 +89,11 @@ const checkPaymentMethodIsAvailableInternal = (
 								availablePaymentMethods?.[ paymentMethod ]
 							)
 						);
-						ReactDOM.unmountComponentAtNode( containerEl );
+						root.unmount();
 						containerEl.remove();
 					} }
 				/>
-			</Elements>,
-			containerEl
+			</Elements>
 		);
 	} );
 };

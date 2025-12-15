@@ -4,7 +4,7 @@
 import React from 'react';
 import { __, sprintf } from '@wordpress/i18n';
 import { createInterpolateElement, render, useState } from '@wordpress/element';
-import { Button } from 'wcpay/components/wp-components-wrapped/components/button';
+import { Button } from '@wordpress/components';
 
 import { recordEvent } from '../tracks';
 import UnconnectedImage from 'assets/images/subscriptions-empty-state-unconnected.svg?asset';
@@ -62,13 +62,14 @@ const ActionButtons = () => {
 				disabled={ isFinishingSetup }
 				href={ connectUrl }
 				isBusy={ isFinishingSetup }
-				isPrimary
+				variant="primary"
 				onClick={ () => {
 					recordEvent(
 						'wcpay_subscriptions_empty_state_finish_setup'
 					);
 					setIsFinishingSetup( true );
 				} }
+				__next40pxDefaultSize
 			>
 				{ __( 'Finish setup', 'woocommerce-payments' ) }
 			</Button>
@@ -76,13 +77,14 @@ const ActionButtons = () => {
 				disabled={ isCreatingProduct }
 				href={ newProductUrl }
 				isBusy={ isCreatingProduct }
-				isSecondary
+				variant="secondary"
 				onClick={ () => {
 					recordEvent(
 						'wcpay_subscriptions_empty_state_create_product'
 					);
 					setIsCreatingProduct( true );
 				} }
+				__next40pxDefaultSize
 			>
 				{ __( 'Create subscription product', 'woocommerce-payments' ) }
 			</Button>
