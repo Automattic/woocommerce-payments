@@ -94,24 +94,24 @@ test.describe( 'Order > Refund Failure', { tag: '@merchant' }, () => {
 						/Refund .* via WooPayments.+/
 					);
 
-					function* dialogHandler( dialog: Dialog ) {
-						yield dialog.accept();
-						expect( dialog.message() ).toBe(
-							'Invalid refund amount'
-						);
-						yield dialog.accept();
-					}
+					let dialogCount = 0;
+					const dialogMessages: string[] = [];
 
-					// Confirm the refund. There will be two dialogs shown, one for the refund
-					// confirmation, one for the error message. Accept the first one, and
-					// verify the second one.
-					adminPage.on(
-						'dialog',
-						( dialog ) => dialogHandler( dialog ).next().value
-					);
+					// Handle dialogs - there will be two: confirmation then error
+					adminPage.on( 'dialog', async ( dialog: Dialog ) => {
+						dialogCount++;
+						dialogMessages.push( dialog.message() );
+						await dialog.accept();
+					} );
 
-					// The above will happen once we click the refund button.
+					// Click the refund button - this triggers the dialogs
 					await refundButton.click();
+
+					// Wait for dialogs to be processed
+					await adminPage.waitForTimeout( 2000 );
+
+					// Verify we got the expected error dialog
+					expect( dialogMessages.some( ( msg ) => msg === 'Invalid refund amount' ) ).toBe( true );
 
 					// Verify that no entry is listed in the "Order refunds" section underneath the product line items
 					await expect(
