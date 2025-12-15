@@ -11,10 +11,7 @@
             "E2E_JP_BLOG_TOKEN",
             "E2E_JP_USER_TOKEN"
         ],
-        "plugins": {
-            "woocommerce": "woocommerce",
-            "jetpack": "jetpack"
-        }
+        "plugins": ["woocommerce", "jetpack"]
     },
     "test": {
         "phases": {
