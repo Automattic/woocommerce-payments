@@ -423,11 +423,11 @@ export const getFieldStyles = (
 	backgroundColor = null,
 	scope
 ) => {
-	// If selector is an array, get one element per selector type instead of all elements.
-	// This avoids performance issues with selectors that match many elements.
-	const elements = Array.isArray( selector )
-		? selector.map( ( s ) => scope.querySelector( s ) ).filter( Boolean )
-		: [ ...scope.querySelectorAll( selector ) ];
+	// If the selector is an array, get one element per selector type instead of all elements.
+	// This avoids performance issues with selectors that match too many elements.
+	const elements = ( Array.isArray( selector ) ? selector : [ selector ] )
+		.map( ( s ) => scope.querySelector( s ) )
+		.filter( Boolean );
 
 	if ( ! elements.length ) {
 		return {};
