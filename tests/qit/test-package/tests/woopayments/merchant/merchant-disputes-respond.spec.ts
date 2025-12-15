@@ -591,15 +591,20 @@ test.describe( 'Disputes > Respond to a dispute', { tag: '@merchant' }, () => {
 
 			// Wait for the success snackbar to confirm UI acknowledged the save.
 			await expect(
-				adminPage.locator( '.components-snackbar__content', {
-					hasText: 'Evidence saved!',
-				} )
+				adminPage
+					.locator( '.components-snackbar__content', {
+						hasText: 'Evidence saved!',
+					} )
+					.first()
 			).toBeVisible( { timeout: 10000 } );
+
+			// Allow state to settle after save completes
+			await adminPage.waitForTimeout( 1000 );
 
 			// Sanity-check the field didn't reset visually before leaving the page
 			await expect(
 				adminPage.getByLabel( 'PRODUCT DESCRIPTION' )
-			).toHaveValue( 'my product description' );
+			).toHaveValue( 'my product description', { timeout: 5000 } );
 		} );
 
 		await test.step( 'Go back to the payment details page', async () => {
