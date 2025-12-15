@@ -14,7 +14,7 @@ jest.mock( 'wcpay/checkout/classic/payment-processing', () => ( {
 	validateElements: jest.fn().mockResolvedValue(),
 } ) );
 jest.mock( 'wcpay/checkout/blocks/utils', () => ( {
-	useCustomerData: jest.fn().mockReturnValue( { billingAddress: {} } ),
+	useCustomerData: jest.fn().mockReturnValue( {} ),
 } ) );
 jest.mock( '../hooks', () => ( {
 	usePaymentCompleteHandler: () => null,
