@@ -14,23 +14,6 @@
 	}
 }
 
-.wcpay-checkout-email-field {
-	position: relative;
-}
-
-// Stripe Link button styles.
-.wcpay-checkout-email-field button.wcpay-stripelink-modal-trigger {
-	display: none;
-	position: absolute;
-	right: 5px;
-	width: 64px;
-	height: 40px;
-	background: no-repeat url( 'assets/images/payment-methods/link.svg?asset' );
-	background-color: none;
-	cursor: pointer;
-	border: none;
-}
-
 // Logo styles.
 #payment .payment_methods {
 	li[class*='payment_method_woocommerce_payments'] label {

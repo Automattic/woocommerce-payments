@@ -168,7 +168,40 @@ function wcpay_init() {
 	 * Check https://github.com/Automattic/woocommerce-payments/issues/4759
 	 */
 	\WCPay\WooPay\WooPay_Session::init();
-	( new WC_Payments_Payment_Request_Session() )->init();
+
+	/**
+	 * Only initialize the ECE product page session handler when needed to avoid interfering
+	 * with other payment methods like BNPL. This handler is specifically designed for
+	 * Express Checkout Elements (Google Pay/Apple Pay) on product pages.
+	 * See: https://github.com/Automattic/woocommerce-payments/pull/9021
+	 *
+	 * Initialize only when:
+	 * 1. On order-received page with custom session parameter (cart restoration needed), OR
+	 * 2. Store API request with ECE headers (product page ECE checkout in progress)
+	 */
+	$should_init_ece_session_handler = false;
+
+	// Check if this is an order-received page with our custom parameter (cart needs restoration).
+	// Note: We use strpos() on REQUEST_URI instead of is_order_received_page() because this runs
+	// at plugins_loaded, before WordPress parses the URL into $wp->query_vars.
+	// phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+	if ( ! empty( $_SERVER['REQUEST_URI'] ) &&
+		false !== strpos( $_SERVER['REQUEST_URI'], 'order-received' ) &&
+		false !== strpos( $_SERVER['REQUEST_URI'], 'woopayments-custom-session' ) ) {
+		$should_init_ece_session_handler = true;
+	}
+	// phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+
+	// Check if this is a Store API request with ECE headers (indicating product page ECE checkout).
+	// phpcs:disable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+	if ( ! empty( $_SERVER['HTTP_X_WOOPAYMENTS_TOKENIZED_CART_SESSION_NONCE'] ) ) {
+		$should_init_ece_session_handler = true;
+	}
+	// phpcs:enable WordPress.Security.ValidatedSanitizedInput.InputNotSanitized, WordPress.Security.ValidatedSanitizedInput.MissingUnslash
+
+	if ( $should_init_ece_session_handler ) {
+		( new WC_Payments_Payment_Request_Session() )->init();
+	}
 
 	// @todo This is a temporary solution that will be replaced by a dedicated VAT settings section.
 	// Remove this initialization when the permanent solution is implemented.

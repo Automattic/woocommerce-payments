@@ -19,7 +19,6 @@ import {
 	mountStripePaymentElement,
 	renderTerms,
 	createAndConfirmSetupIntent,
-	maybeEnableStripeLink,
 	blockUI,
 	unblockUI,
 } from './payment-processing';
@@ -384,7 +383,6 @@ jQuery( function ( $ ) {
 				);
 				restrictPaymentMethodToLocation( upeElement );
 			}
-			maybeEnableStripeLink( api );
 		}
 	}
 
