@@ -27,9 +27,11 @@ class WC_Payments_Features {
 	const WOOPAY_FIRST_PARTY_AUTH_FLAG_NAME                   = '_wcpay_feature_woopay_first_party_auth';
 	const WOOPAY_DIRECT_CHECKOUT_FLAG_NAME                    = '_wcpay_feature_woopay_direct_checkout';
 	const DISPUTE_ISSUER_EVIDENCE                             = '_wcpay_feature_dispute_issuer_evidence';
+	const DISPUTE_ADDITIONAL_EVIDENCE_TYPES                   = '_wcpay_feature_dispute_additional_evidence_types';
 	const WOOPAY_GLOBAL_THEME_SUPPORT_FLAG_NAME               = '_wcpay_feature_woopay_global_theme_support';
 	const WCPAY_DYNAMIC_CHECKOUT_PLACE_ORDER_BUTTON_FLAG_NAME = '_wcpay_feature_dynamic_checkout_place_order_button';
 	const ACCOUNT_DETAILS_FLAG_NAME                           = '_wcpay_feature_account_details';
+	const AMAZON_PAY_FLAG_NAME                                = '_wcpay_feature_amazon_pay';
 
 	/**
 	 * Indicates whether card payments are enabled for this (Stripe) account.
@@ -324,6 +326,17 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether Dispute Additional Evidence Types feature should be enabled. Disabled by default.
+	 *
+	 * This gates the new evidence form types (event, booking_reservation, other) for dispute challenges.
+	 *
+	 * @return bool
+	 */
+	public static function is_dispute_additional_evidence_types_enabled(): bool {
+		return '1' === get_option( self::DISPUTE_ADDITIONAL_EVIDENCE_TYPES, '0' );
+	}
+
+	/**
 	 * Checks whether the next deposit notice on the deposits list screen has been dismissed.
 	 *
 	 * @return bool
@@ -351,6 +364,15 @@ class WC_Payments_Features {
 	}
 
 	/**
+	 * Checks whether Amazon Pay is enabled.
+	 *
+	 * @return bool
+	 */
+	public static function is_amazon_pay_enabled(): bool {
+		return '1' === get_option( self::AMAZON_PAY_FLAG_NAME, '0' );
+	}
+
+	/**
 	 * Returns feature flags as an array suitable for display on the front-end.
 	 *
 	 * @return bool[]
@@ -363,9 +385,11 @@ class WC_Payments_Features {
 				'documents'                                => self::is_documents_section_enabled(),
 				'woopayExpressCheckout'                    => self::is_woopay_express_checkout_enabled(),
 				'isDisputeIssuerEvidenceEnabled'           => self::is_dispute_issuer_evidence_enabled(),
+				'isDisputeAdditionalEvidenceTypesEnabled'  => self::is_dispute_additional_evidence_types_enabled(),
 				'isFRTReviewFeatureActive'                 => self::is_frt_review_feature_active(),
 				'isDynamicCheckoutPlaceOrderButtonEnabled' => self::is_dynamic_checkout_place_order_button_enabled(),
 				'isAccountDetailsEnabled'                  => self::is_account_details_enabled(),
+				'amazonPay'                                => self::is_amazon_pay_enabled(),
 			]
 		);
 	}

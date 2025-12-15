@@ -78,6 +78,26 @@ const DisputeNotice: React.FC< DisputeNoticeProps > = ( {
 			  );
 	}
 	// Handle specific dispute reasons
+	else if ( 'noncompliant' === dispute.reason ) {
+		/* translators: %1$s is the bank name, eg "Chase Bank". %2$s is the deadline date, eg "Aug 18, 2023 11:59 PM". */
+		noticeText = bankName
+			? sprintf(
+					__(
+						'Your customer’s bank, %1$s, claims this payment violates Visa’s rules. <strong>You can challenge the dispute by %2$s, or accept it.</strong> If you accept the dispute, you will forfeit the funds and pay the dispute fee. Challenging adds an additional $500 USD dispute fee that is only returned to you if you win.',
+						'woocommerce-payments'
+					),
+					bankName,
+					dueByDate
+			  )
+			: sprintf(
+					__(
+						'Your customer’s bank claims this payment violates Visa’s rules. <strong>You can challenge the dispute by %1$s, or accept it.</strong> If you accept the dispute, you will forfeit the funds and pay the dispute fee. Challenging adds an additional $500 USD dispute fee that is only returned to you if you win.',
+						'woocommerce-payments'
+					),
+					dueByDate
+			  );
+	}
+	// General case for disputes
 	else {
 		/* translators: %1$s is the clients claim for the dispute, eg "The cardholder claims this is an unauthorized charge." %2$s is the bank name, eg "Chase Bank". %3$s is the deadline date, eg "Aug 18, 2023 11:59 PM". */
 		noticeText = bankName

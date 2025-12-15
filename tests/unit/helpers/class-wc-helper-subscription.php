@@ -128,6 +128,13 @@ class WC_Subscription extends WC_Mock_WC_Data {
 	public $customer_id = null;
 
 	/**
+	 * Payment tokens.
+	 *
+	 * @var array
+	 */
+	public $payment_tokens = [];
+
+	/**
 	 * A helper function for handling function calls not yet implimented on this helper.
 	 *
 	 * Attempts to get the value by checking if it has been set as an object property.
@@ -275,5 +282,13 @@ class WC_Subscription extends WC_Mock_WC_Data {
 
 	public function set_customer_id( $customer_id = null ) {
 		$this->customer_id = $customer_id ?? get_current_user_id();
+	}
+
+	public function get_payment_tokens() {
+		return $this->payment_tokens;
+	}
+
+	public function set_payment_tokens( $tokens ) {
+		$this->payment_tokens = $tokens;
 	}
 }

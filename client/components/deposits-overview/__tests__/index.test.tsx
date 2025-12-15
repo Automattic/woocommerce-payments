@@ -306,9 +306,12 @@ describe( 'Deposits Overview information', () => {
 			setSelectedCurrency: mockSetSelectedCurrency,
 		} );
 		const { getByText, queryByText } = render( <DepositsOverview /> );
-		getByText( /Your first payout is held for/, {
-			ignore: '.a11y-speak-region',
-		} );
+		getByText(
+			/Payout scheduling becomes available after the standard 7-day waiting period for new accounts is complete/,
+			{
+				ignore: '.a11y-speak-region',
+			}
+		);
 		expect( queryByText( 'Change deposit schedule' ) ).toBeFalsy();
 		expect( queryByText( 'View full deposits history' ) ).toBeFalsy();
 	} );
@@ -426,7 +429,11 @@ describe( 'Deposits Overview information', () => {
 		} );
 
 		const { queryByText } = render( <DepositsOverview /> );
-		expect( queryByText( /Your first payout is held for/ ) ).toBeFalsy();
+		expect(
+			queryByText(
+				/Payout scheduling becomes available after the standard 7-day waiting period for new accounts is complete/
+			)
+		).toBeFalsy();
 	} );
 
 	test( 'Confirm new account waiting period notice shows if within waiting period', () => {
@@ -444,10 +451,13 @@ describe( 'Deposits Overview information', () => {
 		} );
 
 		const { getByText, getByRole } = render( <DepositsOverview /> );
-		getByText( /Your first payout is held for/, {
-			ignore: '.a11y-speak-region',
-		} );
-		expect( getByRole( 'link', { name: /Why\?/ } ) ).toHaveAttribute(
+		getByText(
+			/Payout scheduling becomes available after the standard 7-day waiting period for new accounts is complete/,
+			{
+				ignore: '.a11y-speak-region',
+			}
+		);
+		expect( getByRole( 'link', { name: /Learn more/ } ) ).toHaveAttribute(
 			'href',
 			'https://woocommerce.com/document/woopayments/payouts/payout-schedule/#new-accounts'
 		);

@@ -5517,13 +5517,25 @@ exports[`PaymentDetailsSummary renders the information of a dispute-reversal cha
             <strong>
               Good news — you've won this dispute! The customer's bank reached this decision on -.
             </strong>
-             Your account has been credited with the disputed amount and fee. 
+             Your account has been credited with the disputed amount and fee.
+             
             <a
+              class="components-external-link"
               href="https://woocommerce.com/document/woopayments/fraud-and-disputes/"
-              rel="noopener noreferrer"
+              rel="external noreferrer noopener"
               target="_blank"
             >
-              Learn more about preventing disputes.
+              <span
+                class="components-external-link__contents"
+              >
+                Learn more about preventing disputes.
+              </span>
+              <span
+                aria-label="(opens in a new tab)"
+                class="components-external-link__icon"
+              >
+                ↗
+              </span>
             </a>
           </div>
           <div

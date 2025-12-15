@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+fix: when WooCommerce Core sends the email about the activated payment method, redirect the merchant to the main settings page instead of a non-existent page.

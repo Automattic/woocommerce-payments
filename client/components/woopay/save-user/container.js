@@ -8,7 +8,13 @@ const Container = ( { children, isBlocksCheckout } ) => {
 	return (
 		<>
 			<div className="woopay-save-new-user-container">
-				<h2>{ __( 'Save my info' ) }</h2>
+				<div className="wc-block-components-checkout-step__heading-container">
+					<div className="wc-block-components-checkout-step__heading">
+						<h2 className="wc-block-components-title wc-block-components-checkout-step__title">
+							{ __( 'Save my info' ) }
+						</h2>
+					</div>
+				</div>
 				{ children }
 			</div>
 		</>

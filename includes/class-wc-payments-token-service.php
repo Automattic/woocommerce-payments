@@ -10,8 +10,9 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WCPay\Logger;
-use WCPay\Payment_Methods\CC_Payment_Gateway;
 use WCPay\Constants\Payment_Method;
+use WCPay\PaymentMethods\Configs\Definitions\ApplePayDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\GooglePayDefinition;
 
 /**
  * Handles and process WC payment tokens API.
@@ -58,12 +59,13 @@ class WC_Payments_Token_Service {
 		add_filter( 'woocommerce_get_customer_payment_tokens', [ $this, 'woocommerce_get_customer_payment_tokens' ], 10, 3 );
 		add_filter( 'woocommerce_payment_methods_list_item', [ $this, 'get_account_saved_payment_methods_list_item_sepa' ], 10, 2 );
 		add_filter( 'woocommerce_payment_methods_list_item', [ $this, 'get_account_saved_payment_methods_list_item_link' ], 10, 2 );
+		add_filter( 'woocommerce_payment_methods_list_item', [ $this, 'get_account_saved_payment_methods_list_item_wallet' ], 10, 2 );
 		add_filter( 'woocommerce_get_credit_card_type_label', [ $this, 'normalize_sepa_label' ] );
 		add_filter( 'woocommerce_get_credit_card_type_label', [ $this, 'normalize_stripe_link_label' ] );
 	}
 
 	/**
-	 * Creates and add a token to an user, based on the payment_method object
+	 * Creates and add a token to a user, based on the payment_method object
 	 *
 	 * @param   array   $payment_method                                          Payment method to be added.
 	 * @param   WP_User $user                                                    User to attach payment method to.
@@ -82,13 +84,13 @@ class WC_Payments_Token_Service {
 				break;
 			case Payment_Method::LINK:
 				$token      = new WC_Payment_Token_WCPay_Link();
-				$gateway_id = CC_Payment_Gateway::GATEWAY_ID;
+				$gateway_id = WC_Payment_Gateway_WCPay::GATEWAY_ID;
 				$token->set_gateway_id( $gateway_id );
 				$token->set_email( $payment_method[ Payment_Method::LINK ]['email'] );
 				break;
 			case Payment_Method::CARD_PRESENT:
 				$token = new WC_Payment_Token_CC();
-				$token->set_gateway_id( CC_Payment_Gateway::GATEWAY_ID );
+				$token->set_gateway_id( WC_Payment_Gateway_WCPay::GATEWAY_ID );
 				$token->set_expiry_month( $payment_method[ Payment_Method::CARD_PRESENT ]['exp_month'] );
 				$token->set_expiry_year( $payment_method[ Payment_Method::CARD_PRESENT ]['exp_year'] );
 				$token->set_card_type( strtolower( $payment_method[ Payment_Method::CARD_PRESENT ]['brand'] ) );
@@ -96,12 +98,14 @@ class WC_Payments_Token_Service {
 				break;
 			default:
 				$token = new WC_Payment_Token_CC();
-				$token->set_gateway_id( CC_Payment_Gateway::GATEWAY_ID );
+				$token->set_gateway_id( WC_Payment_Gateway_WCPay::GATEWAY_ID );
 				$token->set_expiry_month( $payment_method[ Payment_Method::CARD ]['exp_month'] );
 				$token->set_expiry_year( $payment_method[ Payment_Method::CARD ]['exp_year'] );
 				$token->set_card_type( strtolower( $payment_method[ Payment_Method::CARD ]['display_brand'] ?? $payment_method[ Payment_Method::CARD ]['networks']['preferred'] ?? $payment_method[ Payment_Method::CARD ]['brand'] ) );
 				$token->set_last4( $payment_method[ Payment_Method::CARD ]['last4'] );
-
+				if ( ! empty( $payment_method[ Payment_Method::CARD ]['wallet']['type'] ) ) {
+					$token->add_meta_data( '_wcpay_wallet_type', $payment_method[ Payment_Method::CARD ]['wallet']['type'], true );
+				}
 		}
 		$token->set_token( $payment_method['id'] );
 		$token->set_user_id( $user->ID );
@@ -362,6 +366,41 @@ class WC_Payments_Token_Service {
 			$item['method']['last4'] = $payment_token->get_redacted_email();
 			$item['method']['brand'] = esc_html__( 'Stripe Link email', 'woocommerce-payments' );
 		}
+		return $item;
+	}
+
+	/**
+	 * Controls the output for Wallet tokens on the My account page.
+	 *
+	 * @param  array                                        $item          Individual list item from woocommerce_saved_payment_methods_list.
+	 * @param  WC_Payment_Token|WC_Payment_Token_WCPay_Link $payment_token The payment token associated with this method entry.
+	 * @return array                                        Filtered item
+	 */
+	public function get_account_saved_payment_methods_list_item_wallet( $item, $payment_token ) {
+		if ( 'cc' !== strtolower( $payment_token->get_type() ) ) {
+			return $item;
+		}
+
+		$wallet_type = $payment_token->get_meta( '_wcpay_wallet_type', true );
+
+		if ( empty( $wallet_type ) ) {
+			return $item;
+		}
+
+		// Google Pay and Apple Pay are separate payment methods, so we can retrieve them from the registered payment methods class.
+		$payment_method = WC_Payments::get_payment_method_by_id( $wallet_type );
+		if ( ! $payment_method || ! method_exists( $payment_method, 'get_title' ) ) {
+			return $item;
+		}
+
+		$original_brand          = $item['method']['brand'] ?? '';
+		$item['method']['brand'] = sprintf(
+			/* translators: 1: wallet name, 2: card brand */
+			_x( '%1$s %2$s', 'Payment token with wallet', 'woocommerce-payments' ),
+			$payment_method->get_title(),
+			$original_brand
+		);
+
 		return $item;
 	}
 

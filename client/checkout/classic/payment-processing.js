@@ -23,11 +23,7 @@ import {
 	getUpeSettings,
 	isLinkEnabled,
 } from 'wcpay/checkout/utils/upe';
-import enableStripeLinkPaymentMethod, {
-	switchToNewPaymentTokenElement,
-} from 'wcpay/checkout/stripe-link';
 import {
-	SHORTCODE_SHIPPING_ADDRESS_FIELDS,
 	SHORTCODE_BILLING_ADDRESS_FIELDS,
 	PAYMENT_METHOD_ERROR,
 } from 'wcpay/checkout/constants';
@@ -322,122 +318,6 @@ function appendSetupIntentToForm( $form, confirmedIntent ) {
 	input.value = confirmedIntent.id;
 
 	$form.append( input );
-}
-
-const ensureSameAsBillingIsUnchecked = () => {
-	const sameAsBillingCheckbox = document.getElementById(
-		'ship-to-different-address-checkbox'
-	);
-
-	if ( ! sameAsBillingCheckbox ) {
-		return;
-	}
-
-	if ( sameAsBillingCheckbox.checked === true ) {
-		return;
-	}
-
-	sameAsBillingCheckbox.checked = true;
-
-	if ( window.jQuery ) {
-		const $sameAsBillingCheckbox = window.jQuery( sameAsBillingCheckbox );
-
-		$sameAsBillingCheckbox.prop( 'checked', true ).change();
-	}
-};
-
-/**
- * If Link is enabled, add event listeners and handlers.
- *
- * @param {Object} api WCPayAPI instance.
- */
-export function maybeEnableStripeLink( api ) {
-	if ( isLinkEnabled( getUPEConfig( 'paymentMethodsConfig' ) ) ) {
-		enableStripeLinkPaymentMethod( {
-			api: api,
-			elements: gatewayUPEComponents.card.elements,
-			emailId: 'billing_email',
-			onAutofill: ( billingAddress, shippingAddress ) => {
-				const fillAddress = ( addressValues, fieldsMap ) => {
-					// in some cases, the address might be empty.
-					if ( ! addressValues ) return;
-
-					// setting the country first, in case the "state"/"county"/"province"
-					// select changes from a select to a text field (or vice-versa).
-					const countryElement = document.getElementById(
-						fieldsMap.country
-					);
-					if ( countryElement ) {
-						countryElement.value = addressValues.country;
-						// manually dispatching the "change" event, since the element might not be a `select2` component.
-						countryElement.dispatchEvent( new Event( 'change' ) );
-					}
-
-					Object.entries( addressValues ).forEach(
-						( [ piece, value ] ) => {
-							const element = document.getElementById(
-								fieldsMap[ piece ]
-							);
-							if ( element ) {
-								element.value = value;
-							}
-						}
-					);
-				};
-
-				// this is needed on shortcode checkout, but not on blocks checkout.
-				ensureSameAsBillingIsUnchecked();
-
-				fillAddress( billingAddress, SHORTCODE_BILLING_ADDRESS_FIELDS );
-				fillAddress(
-					shippingAddress,
-					SHORTCODE_SHIPPING_ADDRESS_FIELDS
-				);
-
-				// manually dispatching the "change" event, since the element might be a `select2` component.
-				document
-					.querySelectorAll(
-						`#${ SHORTCODE_BILLING_ADDRESS_FIELDS.country }, #${ SHORTCODE_BILLING_ADDRESS_FIELDS.state }, ` +
-							`#${ SHORTCODE_SHIPPING_ADDRESS_FIELDS.country }, #${ SHORTCODE_SHIPPING_ADDRESS_FIELDS.state }`
-					)
-					.forEach( ( element ) => {
-						if ( ! window.jQuery ) return;
-
-						const $element = window.jQuery( element );
-						if ( $element.data( 'select2' ) ) {
-							$element.trigger( 'change' );
-						}
-					} );
-			},
-			onButtonShow: ( linkAutofill ) => {
-				// Display StripeLink button if email field is prefilled.
-				const billingEmailInput = document.getElementById(
-					'billing_email'
-				);
-				if ( billingEmailInput.value !== '' ) {
-					const linkButtonTop =
-						billingEmailInput.offsetTop +
-						( billingEmailInput.offsetHeight - 40 ) / 2;
-					const stripeLinkButton = document.querySelector(
-						'.wcpay-stripelink-modal-trigger'
-					);
-					stripeLinkButton.style.display = 'block';
-					stripeLinkButton.style.top = `${ linkButtonTop }px`;
-				}
-
-				// Handle StripeLink button click.
-				const stripeLinkButton = document.querySelector(
-					'.wcpay-stripelink-modal-trigger'
-				);
-				stripeLinkButton.addEventListener( 'click', ( event ) => {
-					event.preventDefault();
-					// Trigger modal.
-					linkAutofill.launch( { email: billingEmailInput.value } );
-					switchToNewPaymentTokenElement();
-				} );
-			},
-		} );
-	}
 }
 
 /**

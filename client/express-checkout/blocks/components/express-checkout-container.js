@@ -12,6 +12,7 @@ import {
 	getExpressCheckoutButtonAppearance,
 	getExpressCheckoutData,
 } from '../../utils';
+import { transformPrice } from '../../transformers/wc-to-stripe';
 import '../express-checkout-element.scss';
 
 const ExpressCheckoutContainer = ( props ) => {
@@ -24,7 +25,12 @@ const ExpressCheckoutContainer = ( props ) => {
 	const options = {
 		mode: 'payment',
 		paymentMethodCreation: 'manual',
-		amount: ! isPreview ? billing.cartTotal.value : 10,
+		// ensuring that the total amount is transformed to the correct format.
+		amount: ! isPreview
+			? transformPrice( billing.cartTotal.value, {
+					currency_minor_unit: billing.currency.minorUnit ?? 0,
+			  } )
+			: 10,
 		currency: ! isPreview ? billing.currency.code.toLowerCase() : 'usd',
 		appearance: getExpressCheckoutButtonAppearance( buttonAttributes ),
 		locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',

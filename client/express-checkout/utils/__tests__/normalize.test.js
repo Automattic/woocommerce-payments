@@ -200,7 +200,6 @@ describe( 'Express checkout normalization', () => {
 				ship_to_different_address: 1,
 				terms: 1,
 				'wcpay-payment-method': paymentMethodId,
-				payment_request_type: 'express',
 				express_payment_type: 'express',
 				'wcpay-fraud-prevention-token': 'token123',
 			};
@@ -242,7 +241,6 @@ describe( 'Express checkout normalization', () => {
 				ship_to_different_address: 1,
 				terms: 1,
 				'wcpay-payment-method': paymentMethodId,
-				payment_request_type: undefined,
 				express_payment_type: undefined,
 				'wcpay-fraud-prevention-token': '',
 			};
@@ -288,7 +286,6 @@ describe( 'Express checkout normalization', () => {
 				ship_to_different_address: 1,
 				terms: 1,
 				'wcpay-payment-method': paymentMethodId,
-				payment_request_type: undefined,
 				express_payment_type: undefined,
 				'wcpay-fraud-prevention-token': '',
 			};

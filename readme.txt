@@ -4,7 +4,7 @@ Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.3
-Stable tag: 10.1.0
+Stable tag: 10.3.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -28,7 +28,7 @@ Features previously only available on your payment provider’s website are now 
 
 **Pay as you go**
 
-WooPayments is **free to install**, with **no setup fees or monthly fees**. Our pay-as-you-go pricing model means we're incentivized to help you succeed! [Read more about transaction fees](https://woocommerce.com/document/woopayments/fees-and-debits/fees/).
+WooPayments is **free to install**, with **no setup fees or monthly fees**. Our pay-as-you-go pricing model means we're incentivized to help you succeed! [Read more about transaction fees](https://woocommerce.com/document/woopayments/fees/).
 
 **Supported by the WooCommerce team**
 
@@ -86,6 +86,47 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 4. Manage Disputes
 
 == Changelog ==
+
+= 10.3.0 - 2025-12-10 =
+* Add - Add backend support for additional dispute evidence types (event, booking, other) behind feature flag.
+* Add - Adding ability to support payment method promotional campaigns (spotlight and badge treatments).
+* Add - Allow non-reusable payment methods to be used for the manually renewed subscriptions.
+* Add - chore: add amazon pay feature flag.
+* Add - Handling of the Visa Compliance disputes with attention to a specific dispute fee.
+* Fix - Comment: Update links to the WooPayments fees documentation.
+* Fix - fix: ensuring that the Express Checkout Buttons show the correct amounts for currencies formatted in unusual ways (e.g.: USD with zero decimals)
+* Fix - fix: payment method logos compatibility with WooCommerce Blocks in WC>=10.4
+* Fix - fix: text color of payment method icons on checkout page when a dark background is used
+* Fix - Fix deprecation warning about usage of `parent` in callables.
+* Fix - Fix styling of the WooPay button to make sure that the spinner is visible when loading.
+* Fix - Fix WooPay express button text clipping
+* Fix - Refunds and fees should not be tracked for canceled authorizations
+* Fix - WooPay component spacing issues on blocks and classic checkout.
+* Update - Change payout texts for  New Account Waiting Period to be consistent with new Account Details
+* Update - chore: update account fees docs URL
+* Update - Update “WooPayments” to “WooCommerce” mobile application in the Card Readers page.
+
+= 10.2.0 - 2025-11-06 =
+* Add - Add WooCommerce Tool to delete test orders.
+* Add - Sync store setup details with the Transact Platform.
+* Fix - Comment: fix JCB logo.
+* Fix - Fix - WCPay Subscriptions setting not persisting when unchecked
+* Fix - Fix missing payment method logos (JCB, CUP, CB) in checkout.
+* Fix - Fix payment method logos overflow in shortcode checkout after adding JCB and UnionPay logos.
+* Fix - Only show WooPay error messages for connection errors in available countries.
+* Fix - Prevent Express Checkout from being disabled on product page when updating quantity of variable products.
+* Fix - Prevent WooPayments-specific styles for the Checkout block to leak to other payment methods
+* Fix - Use Woo custom cap `pay_for_order` for validating the owner of order
+* Update - Avoid loading shipping zones when adjusting currencies for free shipping methods.
+* Update - Hide bundled subscription management UI while preserving renewal processing functionality
+* Update - Minor copy update to the delete test orders tool.
+* Update - Show message about bundled subscriptions until 10.2.0.
+* Dev - Add CLAUDE.md file to improve AI code assistance.
+* Dev - Bump WC tested up to version to 10.3.0.
+
+= 10.1.1 - 2025-10-27 =
+* Fix - Overrides the core `AbstractAutomatticAddressProvider`'s `load_scripts` method to only run if the core setting (`woocommerce_address_autocomplete_enabled` is enabled).
+
 
 = 10.1.0 - 2025-10-15 =
 * Add - Disputes - Add a loading state to the “Challenge dispute” flow
