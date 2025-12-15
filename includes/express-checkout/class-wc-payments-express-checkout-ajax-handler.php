@@ -59,8 +59,10 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 			2
 		);
 		add_filter( 'rest_pre_dispatch', [ $this, 'tokenized_cart_store_api_address_normalization' ], 10, 3 );
-		add_filter( 'rest_pre_dispatch', [ $this, 'maybe_add_avatax_filters_for_express_checkout' ], 5, 3 );
 		add_filter( 'woocommerce_get_country_locale', [ $this, 'modify_country_locale_for_express_checkout' ], 20 );
+
+		// Initialize third-party plugin compatibility.
+		( new WC_Payments_Express_Checkout_Avatax_Compatibility() )->maybe_init();
 	}
 
 	/**
@@ -525,47 +527,6 @@ class WC_Payments_Express_Checkout_Ajax_Handler {
 		}
 
 		return $locales;
-	}
-
-	/**
-	 * Adds Avatax compatibility filters for Express Checkout.
-	 *
-	 * Avatax plugin's tax calculation may be skipped during Express Checkout because it doesn't
-	 * recognize Store API requests as checkout context. This method forces Avatax to calculate
-	 * taxes during Express Checkout by adding filters that return true for the readiness checks.
-	 *
-	 * @param mixed            $response Response to replace the requested version with.
-	 * @param \WP_REST_Server  $server Server instance.
-	 * @param \WP_REST_Request $request Request used to generate the response.
-	 *
-	 * @return mixed
-	 */
-	public function maybe_add_avatax_filters_for_express_checkout( $response, $server, $request ) {
-		// Only add filters if we're in an Express Checkout context.
-		if ( ! $this->is_express_checkout_context() ) {
-			return $response;
-		}
-
-		// Only add filters if Avatax plugin is active.
-		if ( ! $this->is_avatax_plugin_active() ) {
-			return $response;
-		}
-
-		// Force Avatax to calculate taxes during Express Checkout.
-		// These filters ensure Avatax recognizes the Store API checkout as a valid checkout context.
-		add_filter( 'wc_avatax_cart_needs_calculation', '__return_true' );
-		add_filter( 'wc_avatax_checkout_ready_for_calculation', '__return_true' );
-
-		return $response;
-	}
-
-	/**
-	 * Check if Avatax plugin is active.
-	 *
-	 * @return bool True if Avatax is active, false otherwise.
-	 */
-	private function is_avatax_plugin_active() {
-		return class_exists( 'WC_AvaTax_Loader' ) || function_exists( 'wc_avatax' );
 	}
 
 	/**
