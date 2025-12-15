@@ -89,8 +89,7 @@ test.describe( 'Order > Refund Failure', { tag: '@merchant' }, () => {
 							state: 'visible',
 						}
 					);
-					const refundButtonText: string =
-						await refundButton.textContent();
+					const refundButtonText: string = await refundButton.textContent();
 					expect( refundButtonText ).toMatch(
 						/Refund .* via WooPayments.+/
 					);
