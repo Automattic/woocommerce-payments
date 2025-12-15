@@ -84,49 +84,49 @@ test.describe(
 				await test.step(
 					'Navigate to the Payments Overview screen',
 					() => {
-						// @todo
+						// @todo https://github.com/Automattic/woocommerce-payments/issues/9188
 					}
 				);
 
 				await test.step(
 					'Select a deposit currency using the currency select input',
 					async () => {
-						// @todo
+						// @todo https://github.com/Automattic/woocommerce-payments/issues/9188
 					}
 				);
 
 				await test.step(
 					'Observe the total account balance for the selected currency, ensuring it is correctly formatted with the currency symbol',
 					async () => {
-						// @todo
+						// @todo https://github.com/Automattic/woocommerce-payments/issues/9188
 					}
 				);
 
 				await test.step(
 					'Observe the available account balance the selected currency, ensuring it is correctly formatted with the currency symbol',
 					async () => {
-						// @todo
+						// @todo https://github.com/Automattic/woocommerce-payments/issues/9188
 					}
 				);
 
 				await test.step(
 					'Select a second deposit currency using the currency select input',
 					async () => {
-						// @todo
+						// @todo https://github.com/Automattic/woocommerce-payments/issues/9188
 					}
 				);
 
 				await test.step(
 					'Observe the total account balance for the selected currency, ensuring it is correctly formatted with the currency symbol',
 					async () => {
-						// @todo
+						// @todo https://github.com/Automattic/woocommerce-payments/issues/9188
 					}
 				);
 
 				await test.step(
 					'Observe the available account balance the selected currency, ensuring it is correctly formatted with the currency symbol',
 					async () => {
-						// @todo
+						// @todo https://github.com/Automattic/woocommerce-payments/issues/9188
 					}
 				);
 			}
