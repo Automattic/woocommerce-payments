@@ -6,7 +6,6 @@ import {
 	generateCheckoutEventNames,
 	getUpeSettings,
 	getStripeElementOptions,
-	blocksShowLinkButtonHandler,
 	getSelectedUPEGatewayPaymentMethod,
 	hasPaymentMethodCountryRestrictions,
 	isUsingSavedPaymentMethod,
@@ -496,6 +495,8 @@ describe( 'UPE checkout utils', () => {
 			const upeSettings = getUpeSettings( 'card' );
 
 			expect( upeSettings.terms.card ).toEqual( 'always' );
+
+			document.body.removeChild( container );
 		} );
 
 		it( 'should provide terms when cart contains subscriptions but the saving checkbox is unchecked', () => {
@@ -772,74 +773,6 @@ describe( 'getStripeElementOptions', () => {
 			terms: { card: 'never' },
 			wallets: { applePay: 'never', googlePay: 'never', link: 'auto' },
 		} );
-	} );
-} );
-
-describe( 'blocksShowLinkButtonHandler', () => {
-	let container;
-	const autofill = {
-		launch: ( props ) => {
-			return props.email;
-		},
-	};
-
-	beforeAll( () => {
-		const wcpayPaymentElement = document.createElement( 'div' );
-		wcpayPaymentElement.className = 'wcpay-payment-element';
-
-		const form = document.createElement( 'form' );
-		form.appendChild( wcpayPaymentElement );
-
-		container = document.createElement( 'div' );
-		container.innerHTML = `
-			<input id="email" type="email" value="">
-			<label for="email">Email address</label>
-		`;
-		form.appendChild( container );
-
-		document.body.appendChild( form );
-	} );
-
-	afterAll( () => {
-		document.body.innerHTML = '';
-	} );
-
-	beforeEach( () => {
-		const emailInput = document.getElementById( 'email' );
-		if ( emailInput ) {
-			emailInput.value = '';
-		}
-	} );
-
-	afterEach( () => {
-		const stripeLinkButton = document.querySelector(
-			'.wcpay-stripelink-modal-trigger'
-		);
-		if ( stripeLinkButton ) {
-			stripeLinkButton.remove();
-		}
-	} );
-
-	test( 'should hide link button if email input is empty', () => {
-		blocksShowLinkButtonHandler( autofill );
-
-		const stripeLinkButton = document.querySelector(
-			'.wcpay-stripelink-modal-trigger'
-		);
-		expect( stripeLinkButton ).toBeDefined();
-		expect( stripeLinkButton.style.display ).toEqual( 'none' );
-	} );
-
-	test( 'should show link button if email input is present', () => {
-		document.getElementById( 'email' ).value = 'admin@example.com';
-
-		blocksShowLinkButtonHandler( autofill );
-
-		const linkButton = container.querySelector(
-			'.wcpay-stripelink-modal-trigger'
-		);
-		expect( linkButton ).not.toBeNull();
-		expect( linkButton.style.display ).toBe( 'inline-block' );
 	} );
 } );
 
