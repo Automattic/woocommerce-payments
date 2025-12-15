@@ -1,7 +1,7 @@
 /**
  * External dependencies
  */
-import { useDispatch, useSelect } from '@wordpress/data';
+import { useSelect } from '@wordpress/data';
 
 /**
  * Internal dependencies
@@ -19,17 +19,7 @@ export const useCustomerData = () => {
 	const customerData = useSelect( ( select ) =>
 		select( WC_STORE_CART ).getCustomerData()
 	);
-	const {
-		setShippingAddress,
-		setBillingData,
-		setBillingAddress,
-	} = useDispatch( WC_STORE_CART );
 
-	return {
-		// Backward compatibility billingData/billingAddress
-		billingAddress: customerData.billingAddress || customerData.billingData,
-		// Backward compatibility setBillingData/setBillingAddress
-		setBillingAddress: setBillingAddress || setBillingData,
-		setShippingAddress,
-	};
+	// Backward compatibility billingData/billingAddress
+	return customerData.billingAddress || customerData.billingData;
 };
