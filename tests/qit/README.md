@@ -49,6 +49,10 @@ E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>'
 
 # Run tests filtered by tag (e.g., @blocks, @shopper)
 E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>' npm run test:qit-e2e -- -- --grep "@blocks"
+
+# Run a specific test project (e.g., merchant, shopper)
+E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>' npm run test:qit-e2e -- -- --project=merchant
+# Available projects are defined in playwright.config.js
 ```
 
 **Tip:** You can export the variables once per shell session instead of prepending each command:
