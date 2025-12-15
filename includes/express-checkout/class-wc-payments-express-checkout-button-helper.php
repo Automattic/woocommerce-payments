@@ -624,7 +624,8 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			'pending' => true,
 		];
 
-		$data['needs_shipping'] = ( wc_shipping_enabled() && 0 !== wc_get_shipping_method_count( true ) && $product->needs_shipping() );
+		$data['needs_shipping'] = ( wc_shipping_enabled() && $product->needs_shipping() );
+
 		$data['currency']       = strtolower( $currency );
 		$data['country_code']   = substr( get_option( 'woocommerce_default_country' ), 0, 2 );
 		$data['product_type']   = $product->get_type();

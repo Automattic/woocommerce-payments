@@ -425,4 +425,76 @@ class WC_Payments_Express_Checkout_Ajax_Handler_Test extends WCPAY_UnitTestCase 
 		$this->assertSame( 'VE', $shipping_address['state'] );
 		$this->assertSame( 'MI', $billing_address['state'] );
 	}
+
+	/**
+	 * Test that pending shipping method is rejected during checkout.
+	 */
+	public function test_validate_shipping_method_rejects_pending_method() {
+		$this->expectException( \Exception::class );
+		$this->expectExceptionMessage( 'Unable to process order. Shipping method is invalid.' );
+
+		$order            = WC_Helper_Order::create_order();
+		$shipping_item    = new WC_Order_Item_Shipping();
+		$shipping_item->set_method_id( 'pending' );
+		$shipping_item->set_method_title( 'Pending' );
+		$order->add_item( $shipping_item );
+		$order->save();
+
+		$request                  = new WP_REST_Request();
+		$request['payment_method'] = 'woocommerce_payments';
+		$request['payment_data']   = [
+			[
+				'key'   => 'express_payment_type',
+				'value' => 'google_pay',
+			],
+		];
+
+		$this->ajax_handler->validate_shipping_method( $order, $request );
+	}
+
+	/**
+	 * Test that valid shipping method passes validation.
+	 */
+	public function test_validate_shipping_method_accepts_valid_method() {
+		$order         = WC_Helper_Order::create_order();
+		$shipping_item = new WC_Order_Item_Shipping();
+		$shipping_item->set_method_id( 'flat_rate:1' );
+		$shipping_item->set_method_title( 'Flat Rate' );
+		$order->add_item( $shipping_item );
+		$order->save();
+
+		$request                  = new WP_REST_Request();
+		$request['payment_method'] = 'woocommerce_payments';
+		$request['payment_data']   = [
+			[
+				'key'   => 'express_payment_type',
+				'value' => 'google_pay',
+			],
+		];
+
+		// Should not throw exception.
+		$this->ajax_handler->validate_shipping_method( $order, $request );
+		$this->assertTrue( true );
+	}
+
+	/**
+	 * Test that validation is skipped for virtual products.
+	 */
+	public function test_validate_shipping_method_skips_virtual_products() {
+		$order = $this->createMock( WC_Order::class );
+		$order->method( 'needs_shipping_address' )->willReturn( false );
+
+		$request                  = new WP_REST_Request();
+		$request['payment_method'] = 'woocommerce_payments';
+		$request['payment_data']   = [
+			[
+				'key'   => 'express_payment_type',
+				'value' => 'google_pay',
+			],
+		];
+
+		// Should not throw exception for virtual products.
+		$this->ajax_handler->validate_shipping_method( $order, $request );
+		$this->assertTrue( true );
+	}
 }

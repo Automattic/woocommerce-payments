@@ -115,6 +115,16 @@ export const onConfirmHandler = async (
 	abortPayment,
 	event
 ) => {
+	// Validate shipping rate is not pending.
+	if ( event?.shippingRate?.id === 'pending' ) {
+		return abortPayment(
+			__(
+				'Unable to process order. Please ensure a valid shipping address is provided and shipping options are available.',
+				'woocommerce-payments'
+			)
+		);
+	}
+
 	const { error: submitError } = await elements.submit();
 	if ( submitError ) {
 		return abortPayment( submitError.message );
