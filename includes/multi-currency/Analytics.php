@@ -356,21 +356,11 @@ class Analytics {
 
 		$currency_args = $this->get_customer_currency_args_from_request();
 		if ( ! empty( $currency_args['currency_is'] ) ) {
-			/**
-			 * Skip implode complaining array_map as wrong argument.
-			 *
-			 * @psalm-suppress InvalidArgument
-			 */
 			$currency_is = sprintf( "'%s'", implode( "', '", array_map( 'esc_sql', $currency_args['currency_is'] ) ) );
 			$clauses[]   = "AND {$currency_field} IN ({$currency_is})";
 		}
 
 		if ( ! empty( $currency_args['currency_is_not'] ) ) {
-			/**
-			 * Skip implode complaining array_map as wrong argument.
-			 *
-			 * @psalm-suppress InvalidArgument
-			 */
 			$currency_is_not = sprintf( "'%s'", implode( "', '", array_map( 'esc_sql', $currency_args['currency_is_not'] ) ) );
 			$clauses[]       = "AND {$currency_field} NOT IN ({$currency_is_not})";
 		}
