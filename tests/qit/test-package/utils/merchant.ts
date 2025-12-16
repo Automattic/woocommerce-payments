@@ -92,16 +92,7 @@ export const ensureOrderIsProcessed = async ( page: Page, orderId: string ) => {
 			);
 
 			if ( ( await runButton.count() ) > 0 ) {
-				// Try $eval first (more reliable in QIT environments)
-				try {
-					await page.$eval(
-						'td:has-text("wc-admin_import_orders") a:has-text("Run")',
-						( el: HTMLLinkElement ) => el.click()
-					);
-				} catch ( evalError ) {
-					// Fallback to modern approach
-					await runButton.first().click( { timeout: 10000 } );
-				}
+				await runButton.first().click( { timeout: 10000 } );
 
 				// Wait for action to process
 				await page.waitForTimeout( 2000 );
