@@ -30,7 +30,7 @@ jobs:
       - name: "Set up PHP"
         uses: ./.github/actions/setup-php
       # install dependencies and run linter
-      - run: composer self-update && composer install --no-progress && ./vendor/bin/phpcs --standard=phpcs.xml.dist $(git ls-files | grep .php$) && composer run phpstan
+      - run: composer self-update && composer install --no-progress --ignore-platform-req=php && ./vendor/bin/phpcs --standard=phpcs.xml.dist $(git ls-files | grep .php$) && composer run phpstan
 
   generate-test-matrix:
     name: "Generate the matrix for php tests dynamically"

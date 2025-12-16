@@ -1,0 +1,24 @@
+{
+    "name": "woocommerce-payments-e2e-tests",
+    "version": "1.0.0",
+    "description": "WooCommerce Payments E2E Test Package for QIT",
+    "private": true,
+    "type": "module",
+    "engines": {
+        "node": ">=20"
+    },
+    "devDependencies": {
+        "@playwright/test": "^1.56.1",
+        "@types/node": "^20.0.0",
+        "allure-playwright": "^3.0.0",
+        "playwright-ctrf-json-reporter": "^0.0.26"
+    },
+    "dependencies": {
+        "@qit/helpers": "file:./qit-helpers"
+    },
+    "scripts": {
+        "test": "playwright test",
+        "test:headed": "playwright test --headed",
+        "test:debug": "playwright test --debug"
+    }
+}
