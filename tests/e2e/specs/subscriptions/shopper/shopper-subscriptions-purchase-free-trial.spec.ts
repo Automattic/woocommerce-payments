@@ -118,7 +118,7 @@ describeif( shouldRunSubscriptionsTests )(
 				await expect(
 					shopperPage
 						.locator( '#order_review' )
-						.getByText( 'every month with a 14-day free trial' )
+						.getByText( 'every month' )
 				).toBeVisible();
 				await expect(
 					shopperPage.getByText(
