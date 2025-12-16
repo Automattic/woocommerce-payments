@@ -73,7 +73,8 @@ E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>'
 E2E_JP_SITE_ID='<value>' E2E_JP_BLOG_TOKEN='<value>' E2E_JP_USER_TOKEN='<value>' npm run test:qit-e2e -- -- --grep "@blocks"
 ```
 
-**Tip:** You can export the variables once per shell session instead of prepending each command:
+> [!TIP]
+> You can export the variables once per shell session instead of prepending each command:
 
 ```bash
 set -a && source tests/qit/config/local.env && set +a
