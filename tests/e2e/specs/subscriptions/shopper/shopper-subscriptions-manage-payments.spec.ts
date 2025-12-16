@@ -21,7 +21,7 @@ const navigateToSubscriptionDetails = async (
 		.getByLabel( `View subscription number ${ subscriptionId }` )
 		.click();
 
-	await page.getByRole( 'link', { name: 'Change payment' } ).click();
+	await page.getByRole( 'link', { name: 'Change payment method' } ).click();
 
 	await expect(
 		page.getByRole( 'heading', {
