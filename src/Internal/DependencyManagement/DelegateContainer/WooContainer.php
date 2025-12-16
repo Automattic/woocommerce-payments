@@ -21,7 +21,6 @@ class WooContainer implements ContainerInterface {
 	 *
 	 * @param string $id Identifier of the entry to look for.
 	 * @return mixed Entry.
-	 * @phpstan-ignore-line // MissingThrowsDocblock.
 	 */
 	public function get( $id ) {
 		return wc_get_container()->get( $id );
