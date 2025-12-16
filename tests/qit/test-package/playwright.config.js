@@ -87,5 +87,7 @@ export default defineConfig( {
 			testDir: './tests/woopayments/merchant',
 			use: { ...devices[ 'Desktop Chrome' ] },
 		},
+		// Additional project for subscriptions subpackage
+		// will be added when those tests are migrated.
 	],
 } );
