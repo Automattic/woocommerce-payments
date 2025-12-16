@@ -118,7 +118,7 @@ describeif( shouldRunSubscriptionsTests )(
 				await expect(
 					shopperPage
 						.locator( '#order_review' )
-						.getByText( '/ month with a 14-day free trial' )
+						.getByText( 'every month with a 14-day free trial' )
 				).toBeVisible();
 				await expect(
 					shopperPage.getByText(
@@ -177,7 +177,9 @@ describeif( shouldRunSubscriptionsTests )(
 				subscriptionRow.getByRole( 'cell', { name: productName } )
 			).toBeVisible();
 			await expect(
-				subscriptionRow.getByRole( 'cell', { name: /\$9.99 \/ month/ } )
+				subscriptionRow.getByRole( 'cell', {
+					name: /\$9.99 every month/,
+				} )
 			).toBeVisible();
 			await expect(
 				subscriptionRow.getByText( renewalDateFormatted )
