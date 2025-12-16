@@ -109,7 +109,7 @@ describeif( shouldRunSubscriptionsTests )(
 
 					await expect(
 						row.getByRole( 'cell' ).nth( 2 )
-					).toContainText( '$9.99 / month' );
+					).toContainText( '$9.99 every month' );
 				}
 
 				await expect(

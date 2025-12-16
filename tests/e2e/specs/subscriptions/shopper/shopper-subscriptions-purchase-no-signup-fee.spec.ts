@@ -131,7 +131,7 @@ describeif( shouldRunSubscriptionsTests )(
 
 			await expect(
 				subscriptionsRow.locator( '.recurring_total' )
-			).toHaveText( /\$9\.99 \/ month/i );
+			).toHaveText( /\$9\.99 every month/i );
 
 			// Enable multicurrency if it was enabled before.
 			if ( wasMultiCurrencyEnabled ) {
