@@ -12,6 +12,11 @@ type WidgetEntry = {
 	instance?: unknown;
 };
 
+/**
+ * Default theme used as fallback when active theme detection fails.
+ */
+const DEFAULT_THEME = 'twentytwentyfour';
+
 const parseJson = < T >( value: string, fallback: T ): T => {
 	try {
 		return JSON.parse( value ) as T;
@@ -762,10 +767,10 @@ export const getActiveThemeSlug = async (): Promise< string > => {
 		const activeTheme = await qit.wp( 'option get stylesheet', true );
 		return typeof activeTheme === 'string'
 			? activeTheme.trim()
-			: 'twentytwentyfour';
+			: DEFAULT_THEME;
 	} catch ( error ) {
 		// Default fallback theme
-		return 'twentytwentyfour';
+		return DEFAULT_THEME;
 	}
 };
 
