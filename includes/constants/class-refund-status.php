@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * This class gives a list of all the possible WCPay refund status constants.
  *
- * @psalm-immutable
+ * @phpstan-immutable
  */
 class Refund_Status extends Base_Constant {
 	const PENDING   = 'pending';
