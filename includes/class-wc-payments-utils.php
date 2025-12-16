@@ -1234,6 +1234,8 @@ class WC_Payments_Utils {
 				return __( 'Subscription canceled', 'woocommerce-payments' );
 			case 'unrecognized':
 				return __( 'Unrecognized', 'woocommerce-payments' );
+			case 'noncompliant':
+				return __( 'Non-compliant', 'woocommerce-payments' );
 			default:
 			case 'general':
 				return __( 'General', 'woocommerce-payments' );

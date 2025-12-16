@@ -1,4 +1,0 @@
-Significance: patch
-Type: add
-
-Add backend support for additional dispute evidence types (event, booking, other) behind feature flag.

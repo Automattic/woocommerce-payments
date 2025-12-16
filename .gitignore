@@ -12,6 +12,7 @@ project.properties
 .sublimelinterrc
 .cursor/
 **/.claude/**/*.local.*
+.claude/local/
 .zed/
 .phpactor.json
 

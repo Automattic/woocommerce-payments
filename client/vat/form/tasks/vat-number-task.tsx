@@ -131,6 +131,38 @@ const getVatTaxIDValidationHint = () => {
 };
 
 /**
+ * Get localized error message for VAT validation errors.
+ * Maps known server error codes to localized messages using the appropriate tax ID name.
+ * Falls back to the server-provided message for unknown error codes.
+ *
+ * @param error - The error object containing code and message from the server.
+ * @return Localized error message.
+ */
+const getMappedVatErrorMessage = ( error: VatError ): string => {
+	const taxIdName = getVatTaxIDName();
+
+	switch ( error.code ) {
+		case 'wcpay_invalid_tax_number':
+			return sprintf(
+				/* translators: %s: tax ID name, e.g. VAT Number, Corporate Number */
+				__(
+					'The provided %s failed validation.',
+					'woocommerce-payments'
+				),
+				taxIdName
+			);
+		case 'wcpay_unsupported_tax_docs_country':
+			return __(
+				"Your account's country is not supported for tax ID validation.",
+				'woocommerce-payments'
+			);
+		default:
+			// Fall back in case the error code is not mapped.
+			return error.message;
+	}
+};
+
+/**
  * A two-step "task" for obtaining merchant's tax details.
  *
  * @param {VatFormOnCompleted} props.onCompleted - Callback to provide tax details on submit.
@@ -197,7 +229,9 @@ export const VatNumberTask = ( {
 			onCompleted( normalizedVatNumber, companyName, companyAddress );
 		} catch ( error ) {
 			setLoading( false );
-			setVatValidationError( ( error as VatError ).message );
+			setVatValidationError(
+				getMappedVatErrorMessage( error as VatError )
+			);
 		}
 	};
 
@@ -263,16 +297,6 @@ export const VatNumberTask = ( {
 					/>
 				) }
 
-				<Button
-					variant="primary"
-					disabled={ isVatButtonDisabled || isLoading }
-					isBusy={ isLoading }
-					onClick={ submit }
-					__next40pxDefaultSize
-				>
-					{ __( 'Continue', 'woocommerce-payments' ) }
-				</Button>
-
 				{ vatValidationError && (
 					<Notice
 						status="error"
@@ -282,6 +306,16 @@ export const VatNumberTask = ( {
 						{ vatValidationError }
 					</Notice>
 				) }
+
+				<Button
+					variant="primary"
+					disabled={ isVatButtonDisabled || isLoading }
+					isBusy={ isLoading }
+					onClick={ submit }
+					__next40pxDefaultSize
+				>
+					{ __( 'Continue', 'woocommerce-payments' ) }
+				</Button>
 			</CollapsibleBody>
 		</WizardTaskItem>
 	);

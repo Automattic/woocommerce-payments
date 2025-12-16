@@ -1,4 +1,0 @@
-Significance: minor
-Type: fix
-
-Fix styling of the WooPay button to make sure that the spinner is visible when loading.

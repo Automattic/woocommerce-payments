@@ -186,7 +186,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 		expect( container ).toMatchSnapshot();
 	} );
 
-	test( 'renders Visa compliance checkbox', () => {
+	test( 'renders Visa compliance checkbox unchecked when no staged evidence', () => {
 		const dispute = getBaseDispute();
 		const customer = getBaseBillingDetails();
 
@@ -208,6 +208,37 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 
 		expect( checkbox ).toBeInTheDocument();
 		expect( checkbox ).not.toBeChecked();
+	} );
+
+	test( 'renders Visa compliance checkbox checked when there is staged evidence', () => {
+		const dispute: Dispute = {
+			...getBaseDispute(),
+			evidence_details: {
+				due_by: 1694303999,
+				has_evidence: true, // Has staged evidence
+				past_due: false,
+				submission_count: 0,
+			},
+		};
+		const customer = getBaseBillingDetails();
+
+		renderWithContext(
+			<DisputeAwaitingResponseDetails
+				dispute={ dispute }
+				customer={ customer }
+				chargeCreated={ 1693453017 }
+				orderUrl="https://example.com/order/123"
+				paymentMethod="card"
+				bankName="Chase Bank"
+			/>
+		);
+
+		// Check for the checkbox with the $500 fee acknowledgment
+		const checkbox = screen.getByRole( 'checkbox', {
+			name: /By checking this box, you acknowledge that challenging this Visa compliance dispute incurs a \$500 USD fee/i,
+		} );
+
+		expect( checkbox ).toBeChecked();
 	} );
 
 	test( 'Challenge button is disabled when checkbox is not checked and no staged evidence', () => {
@@ -263,7 +294,7 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 		expect( challengeButton ).not.toBeDisabled();
 	} );
 
-	test( 'Challenge button is enabled when there is staged evidence (regardless of checkbox)', () => {
+	test( 'Challenge button is enabled when there is staged evidence (checkbox is auto-checked)', () => {
 		const dispute: Dispute = {
 			...getBaseDispute(),
 			evidence_details: {
@@ -290,8 +321,14 @@ describe( 'DisputeAwaitingResponseDetails - Visa Compliance', () => {
 			name: /Continue with challenge/i,
 		} );
 
-		// Button should be enabled even without checking the checkbox
+		// Button should be enabled because checkbox is auto-checked when staged evidence exists
 		expect( challengeButton ).not.toBeDisabled();
+
+		// Verify the checkbox is indeed checked
+		const checkbox = screen.getByRole( 'checkbox', {
+			name: /By checking this box, you acknowledge that challenging this Visa compliance dispute incurs a \$500 USD fee/i,
+		} );
+		expect( checkbox ).toBeChecked();
 	} );
 
 	test( 'renders correct help link for Visa compliance disputes', () => {

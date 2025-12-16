@@ -154,6 +154,7 @@ abstract class Request {
 		WC_Payments_API_Client::TERMINAL_READERS_API       => 'terminal/readers',
 		WC_Payments_API_Client::MINIMUM_RECURRING_AMOUNT_API => 'subscriptions/minimum_amount',
 		WC_Payments_API_Client::CAPITAL_API                => 'capital',
+		WC_Payments_API_Client::PROMOTIONS_API             => 'payment_method_promotions',
 		WC_Payments_API_Client::WEBHOOK_FETCH_API          => 'webhook/failed_events',
 		WC_Payments_API_Client::DOCUMENTS_API              => 'documents',
 		WC_Payments_API_Client::VAT_API                    => 'vat',

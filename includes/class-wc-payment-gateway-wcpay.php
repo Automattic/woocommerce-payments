@@ -55,10 +55,8 @@ use WCPay\Session_Rate_Limiter;
 use WCPay\Tracker;
 use WCPay\Internal\Service\Level3Service;
 use WCPay\Internal\Service\OrderService;
-use WCPay\Payment_Methods\Afterpay_Payment_Method;
 use WCPay\Payment_Methods\Becs_Payment_Method;
 use WCPay\Payment_Methods\CC_Payment_Method;
-use WCPay\Payment_Methods\Klarna_Payment_Method;
 use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\Payment_Methods\Multibanco_Payment_Method;
@@ -378,7 +376,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function get_title() {
 		if ( ! $this->title ) {
-			$this->title        = $this->payment_method->get_title();
+			$this->title        = $this->payment_method->get_title( $this->get_account_country() );
 			$this->method_title = "WooPayments ($this->title)";
 		}
 		return parent::get_title();
@@ -441,20 +439,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					'title'       => __( 'Payment request buttons', 'woocommerce-payments' ),
 					'type'        => 'title',
 					'description' => '',
-				],
-				'payment_request'                    => [
-					'title'       => __( 'Enable/disable', 'woocommerce-payments' ),
-					'label'       => sprintf(
-					/* translators: 1) br tag 2) Stripe anchor tag 3) Apple anchor tag */
-						__( 'Enable payment request buttons (Apple Pay, Google Pay, and more). %1$sBy using Apple Pay, you agree to %2$s and %3$s\'s Terms of Service.', 'woocommerce-payments' ),
-						'<br />',
-						'<a href="https://stripe.com/apple-pay/legal" target="_blank">Stripe</a>',
-						'<a href="https://developer.apple.com/apple-pay/acceptable-use-guidelines-for-websites/" target="_blank">Apple</a>'
-					),
-					'type'        => 'checkbox',
-					'description' => __( 'If enabled, users will be able to pay using Apple Pay, Google Pay or the Payment Request API if supported by the browser.', 'woocommerce-payments' ),
-					'default'     => empty( get_option( 'woocommerce_woocommerce_payments_settings' ) ) ? 'yes' : 'no', // Enable by default for new installations only.
-					'desc_tip'    => true,
 				],
 				'payment_request_button_type'        => [
 					'title'       => __( 'Button type', 'woocommerce-payments' ),
@@ -569,6 +553,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 */
 	public function init_hooks() {
 		add_action( 'init', [ $this, 'maybe_update_properties_with_country' ] );
+
 		// Only add certain actions/filter if this is the main gateway (i.e. not split UPE).
 		if ( self::GATEWAY_ID === $this->id ) {
 			add_action( 'woocommerce_order_actions', [ $this, 'add_order_actions' ] );
@@ -587,9 +572,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 			add_action( self::UPDATE_SAVED_PAYMENT_METHOD, [ $this, 'update_saved_payment_method' ], 10, 3 );
 
-			// Update the email field position.
-			add_filter( 'woocommerce_billing_fields', [ $this, 'checkout_update_email_field_priority' ], 50 );
-
 			add_action( 'woocommerce_update_order', [ $this, 'schedule_order_tracking' ], 10, 2 );
 			add_action( 'woocommerce_rest_checkout_process_payment_with_context', [ $this, 'setup_payment_error_handler' ], 10, 2 );
 
@@ -605,13 +587,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * Updates icon and title using the account country.
 	 * This method runs on init is not in the controller because get_account_country might
 	 * make a request to the API if the account data is not cached.
+	 * Needed for classic checkout.
 	 *
 	 * @return void
 	 */
 	public function maybe_update_properties_with_country(): void {
-		if ( Afterpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID !== $this->stripe_id ) {
+		if ( \WCPay\PaymentMethods\Configs\Definitions\AfterpayDefinition::get_id() !== $this->stripe_id ) {
 			return;
 		}
+
 		$account_country = $this->get_account_country();
 		$this->icon      = $this->payment_method->get_icon( $account_country );
 		$this->title     = $this->payment_method->get_title( $account_country );
@@ -957,7 +941,18 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 	 * @return bool Whether the setting to show the payment request buttons is enabled or not.
 	 */
 	public function is_payment_request_enabled() {
-		return 'yes' === $this->get_option( 'payment_request' );
+		$google_pay_gateway = WC_Payments::get_payment_gateway_by_id( \WCPay\PaymentMethods\Configs\Definitions\GooglePayDefinition::get_id() );
+		if ( $google_pay_gateway && $google_pay_gateway->is_enabled() ) {
+			return true;
+		}
+
+		// Fallback, just in case.
+		$apple_pay_gateway = WC_Payments::get_payment_gateway_by_id( \WCPay\PaymentMethods\Configs\Definitions\ApplePayDefinition::get_id() );
+		if ( $apple_pay_gateway && $apple_pay_gateway->is_enabled() ) {
+			return true;
+		}
+
+		return false;
 	}
 
 	/**
@@ -4087,8 +4082,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		$available_methods[] = Becs_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Sepa_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$available_methods[] = Afterpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-		$available_methods[] = Klarna_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Multibanco_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 		$available_methods[] = Grabpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
 
@@ -4302,80 +4295,6 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 		return $payment_method->is_reusable()
 			&& ( is_admin() || $payment_method->is_currency_valid( $this->get_account_domestic_currency() ) );
-	}
-
-	/**
-	 * Move the email field to the top of the Checkout page.
-	 *
-	 * @param array $fields WooCommerce checkout fields.
-	 *
-	 * @return array WooCommerce checkout fields.
-	 */
-	public function checkout_update_email_field_priority( $fields ) {
-		if ( is_checkout() || has_block( 'woocommerce/checkout' ) ) {
-			$is_link_enabled = in_array(
-				Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-				\WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout_filtered_by_fees( null, true ),
-				true
-			);
-
-			if ( $is_link_enabled && isset( $fields['billing_email'] ) ) {
-				// Update the field priority.
-				$fields['billing_email']['priority'] = 1;
-
-				// Add extra `wcpay-checkout-email-field` class.
-				$fields['billing_email']['class'][] = 'wcpay-checkout-email-field';
-
-				add_filter( 'woocommerce_form_field_email', [ $this, 'append_stripelink_button' ], 10, 4 );
-			}
-		}
-
-		return $fields;
-	}
-
-	/**
-	 * Append StripeLink button within email field for logged in users.
-	 *
-	 * @param string $field    - HTML content within email field.
-	 * @param string $key      - Key.
-	 * @param array  $args     - Arguments.
-	 * @param string $value    - Default value.
-	 *
-	 * @return string $field    - Updated email field content with the button appended.
-	 */
-	public function append_stripelink_button( $field, $key, $args, $value ) {
-		if ( 'billing_email' === $key ) {
-			$field = str_replace( '</span>', '<button class="wcpay-stripelink-modal-trigger"></button></span>', $field );
-		}
-		return $field;
-	}
-
-	/**
-	 * Get selected UPE payment methods.
-	 *
-	 * @param string $selected_upe_payment_type Selected payment methods.
-	 * @param array  $enabled_payment_methods Enabled payment methods.
-	 *
-	 * @return array
-	 */
-	protected function get_selected_upe_payment_methods( string $selected_upe_payment_type, array $enabled_payment_methods ) {
-		$payment_methods = [];
-		if ( '' !== $selected_upe_payment_type ) {
-			// Only update the payment_method_types if we have a reference to the payment type the customer selected.
-			$payment_methods[] = $selected_upe_payment_type;
-
-			if ( CC_Payment_Method::PAYMENT_METHOD_STRIPE_ID === $selected_upe_payment_type ) {
-				$is_link_enabled = in_array(
-					Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-					$enabled_payment_methods,
-					true
-				);
-				if ( $is_link_enabled ) {
-					$payment_methods[] = Link_Payment_Method::PAYMENT_METHOD_STRIPE_ID;
-				}
-			}
-		}
-		return $payment_methods;
 	}
 
 	/**

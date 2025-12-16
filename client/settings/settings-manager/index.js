@@ -31,6 +31,7 @@ import {
 import FraudProtection from '../fraud-protection';
 import DuplicatedPaymentMethodsContext from './duplicated-payment-methods-context';
 import VatFormModal from '../../vat/form-modal';
+import SpotlightPromotion from 'promotions/spotlight';
 import './style.scss';
 
 const ExpressCheckoutDescription = () => (
@@ -306,6 +307,9 @@ const SettingsManager = () => {
 				setModalOpen={ handleVatFormModalClose }
 				onCompleted={ handleVatFormModalCompleted }
 			/>
+			<ErrorBoundary>
+				<SpotlightPromotion />
+			</ErrorBoundary>
 		</SettingsLayout>
 	);
 };

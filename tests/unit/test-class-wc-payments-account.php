@@ -3649,7 +3649,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					'apple_google_pay_in_payment_methods_options' => 'yes',
 					'manual_capture'                       => 'no',
 					'enable_logging'                       => 'no',
-					'payment_request'                      => 'yes',
 					'payment_request_button_locations'     => [ 'product', 'cart' ],
 					'payment_request_button_type'          => 'default',
 					'payment_request_button_size'          => 'default',
@@ -3663,6 +3662,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 			}
 		);
 		$mock_gateway->method( 'is_saved_cards_enabled' )->willReturn( true );
+		$mock_gateway->method( 'is_payment_request_enabled' )->willReturn( true );
 
 		// Replace the real gateway with the mock.
 		WC_Payments::set_gateway( $mock_gateway );
@@ -3699,7 +3699,6 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertArrayHasKey( 'saved_cards_enabled', $captured_data );
 		$this->assertArrayHasKey( 'manual_capture_enabled', $captured_data );
 		$this->assertArrayHasKey( 'debug_log_enabled', $captured_data );
-		$this->assertArrayHasKey( 'payment_request', $captured_data );
 		$this->assertArrayHasKey( 'woopay', $captured_data );
 		$this->assertArrayHasKey( 'multi_currency_enabled', $captured_data );
 		$this->assertArrayHasKey( 'stripe_billing_enabled', $captured_data );
