@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Enum used in WCPay\Payment_Information to determine whether a payment was
  * initated by a merchant or a customer.
  *
- * @psalm-immutable
+ * @phpstan-immutable
  */
 class Payment_Capture_Type extends Base_Constant {
 	const AUTOMATIC = 'automatic_capture';

@@ -331,8 +331,6 @@ class WC_Payments_PM_Promotions_Service {
 	 * @param string $id The promotion ID (e.g., 'klarna-2026-promo__spotlight').
 	 *
 	 * @return array|null The promotion data or null if not found.
-	 *
-	 * @psalm-suppress InvalidReturnType, InvalidReturnStatement - Returns full promotion array from get_visible_promotions().
 	 */
 	private function find_promotion_by_id( string $id ): ?array {
 		$promotions = $this->get_visible_promotions();
@@ -358,8 +356,6 @@ class WC_Payments_PM_Promotions_Service {
 	 * @param string $payment_method_id The payment method ID (e.g., 'klarna').
 	 *
 	 * @return array|null The promotion data or null if not found.
-	 *
-	 * @psalm-suppress InvalidReturnType, InvalidReturnStatement - Returns full promotion array from get_visible_promotions().
 	 */
 	private function find_promotion_by_payment_method( string $payment_method_id ): ?array {
 		$promotions = $this->get_visible_promotions();
