@@ -248,11 +248,6 @@ class WC_Payments_Incentives_Service {
 		}
 
 		// Gather the store context data.
-		/**
-		 * The WC stub uses 'number' as the return type.
-		 *
-		 * @psalm-suppress UndefinedDocblockClass
-		 */
 		$store_context = [
 			'country'      => $country_code,
 			// Store locale, e.g. `en_US`.

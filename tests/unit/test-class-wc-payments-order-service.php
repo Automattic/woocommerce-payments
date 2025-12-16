@@ -282,6 +282,50 @@ class WC_Payments_Order_Service_Test extends WCPAY_UnitTestCase {
 	}
 
 	/**
+	 * Tests that the "charged" note is not added when a "captured" note already exists.
+	 * This prevents duplicate notes due to race conditions between manual capture and webhooks.
+	 *
+	 * @see https://github.com/Automattic/woocommerce-payments/issues/XXXXX
+	 */
+	public function test_mark_payment_completed_skips_when_capture_note_exists() {
+		// Arrange: Create a succeeded intent (simulating what webhook receives).
+		$intent = WC_Helper_Intention::create_intention( [ 'status' => Intent_Status::SUCCEEDED ] );
+
+		// Simulate the scenario where capture flow already completed:
+		// 1. Order status is already "processing" (paid status)
+		// 2. A "captured" note already exists
+		// 3. _intention_status is already "succeeded".
+		$this->order->set_status( Order_Status::PROCESSING );
+		$this->order->save();
+		$this->order_service->set_intention_status_for_order( $this->order, Intent_Status::SUCCEEDED );
+
+		// Add the capture note that would have been added by process_captured_payment().
+		$capture_note = sprintf(
+			'A payment of %s was <strong>successfully captured</strong> using WooPayments (<a href="%s" target="_blank" rel="noopener noreferrer">%s</a>).',
+			wp_strip_all_tags( html_entity_decode( wc_price( $this->order->get_total(), [ 'currency' => $this->order->get_currency() ] ) ) ),
+			WC_Payments_Utils::compose_transaction_url( $intent->get_id(), $intent->get_charge()->get_id() ),
+			$intent->get_id()
+		);
+		$this->order->add_order_note( $capture_note );
+
+		$notes_before = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+
+		// Act: Simulate webhook calling update_order_status_from_intent with a succeeded intent.
+		// Since _intention_status is already "succeeded" (not "requires_capture"),
+		// this would normally call mark_payment_completed() and add a "charged" note.
+		$this->order_service->update_order_status_from_intent( $this->order, $intent );
+
+		// Assert: No new notes should be added because the capture note already exists.
+		$notes_after = wc_get_order_notes( [ 'order_id' => $this->order->get_id() ] );
+		$this->assertEquals( count( $notes_before ), count( $notes_after ), 'No new notes should be added when capture note exists' );
+
+		// Assert: Verify that no "charged" note was added.
+		foreach ( $notes_after as $note ) {
+			$this->assertStringNotContainsString( 'successfully charged', $note->content, 'No "charged" note should exist' );
+		}
+	}
+
+	/**
 	 * Tests if the order is marked with the payment authorized correctly.
 	 * Public method update_order_status_from_intent calls private method mark_payment_authorized.
 	 *

@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * - https://stripe.com/docs/api/payment_intents/object#payment_intent_object-status
  * - https://stripe.com/docs/api/setup_intents/object#setup_intent_object-status
  *
- * @psalm-immutable
+ * @phpstan-immutable
  */
 class Intent_Status extends Base_Constant {
 	const REQUIRES_PAYMENT_METHOD = 'requires_payment_method';
