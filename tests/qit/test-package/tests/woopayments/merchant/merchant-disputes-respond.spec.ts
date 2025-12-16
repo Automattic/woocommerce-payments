@@ -598,9 +598,11 @@ test.describe( 'Disputes > Respond to a dispute', { tag: '@merchant' }, () => {
 					.first()
 			).toBeVisible( { timeout: 10000 } );
 
-			// Note: The form may reset visually after save due to React state refresh.
-			// This is acceptable - actual persistence is verified in the next step
-			// by navigating back and checking the value was restored from server.
+			// Allow Stripe API to complete the write operation before we navigate away.
+			// Without this delay, fetching the dispute again may hit a concurrent access
+			// error: "This object cannot be accessed right now because another API request
+			// or Stripe process is currently accessing it."
+			await adminPage.waitForTimeout( 3000 );
 		} );
 
 		await test.step( 'Go back to the payment details page', async () => {
