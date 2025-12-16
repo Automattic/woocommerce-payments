@@ -60,7 +60,30 @@ parameters:
         - { identifier: booleanOr.alwaysTrue }
         - { identifier: catch.neverThrown }
         - { identifier: class.noParent }
-        - { identifier: class.notFound }
+        - {
+            identifier: class.notFound
+            message: '#Automatewoo\\#'
+        }
+        - {
+            identifier: class.notFound
+            message: '#Automattic\\Jetpack#'
+        }
+        - {
+            identifier: class.notFound
+            message: '#Automattic\\WooCommerce\\(Utilities|StoreApi)#'
+        }
+        - {
+            identifier: class.notFound
+            message: '#MailPoet\\#'
+        }
+        - {
+            identifier: class.notFound
+            message: '#WC_Payments_Subscriptions_(Event_Handler|Migrator)#'
+        }
+        - {
+            identifier: class.notFound
+            message: '#WC_Product_Booking#'
+        }
         - { identifier: deadCode.unreachable }
         - { identifier: empty.property }
         - { identifier: empty.variable }
@@ -74,7 +97,10 @@ parameters:
         - { identifier: isset.offset }
         - { identifier: isset.property }
         - { identifier: isset.variable }
-        - { identifier: method.notFound }
+        - {
+            identifier: method.notFound
+            message: '#(WC_Session|WC_Payment_Token|WC_Data_Store)#'
+        }
         - { identifier: method.unused }
         - { identifier: method.resultUnused }
         - { identifier: method.childParameterType }
