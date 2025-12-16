@@ -16,28 +16,6 @@
 	padding: 0;
 }
 
-.wc-block-components-text-input button.wcpay-stripelink-modal-trigger {
-	top: 50%;
-	transform: translateY( -50% );
-}
-
-button.wcpay-stripelink-modal-trigger {
-	display: none;
-	position: absolute;
-	right: 5px;
-	width: 64px;
-	height: 40px;
-	background: no-repeat url( 'assets/images/payment-methods/link.svg?asset' );
-	background-color: transparent;
-	cursor: pointer;
-	border: none;
-}
-
-button.wcpay-stripelink-modal-trigger:hover {
-	background-color: transparent;
-	border-color: transparent;
-}
-
 .wc-block-checkout__payment-method {
 	input:checked ~ div {
 		/* stylelint-disable-next-line selector-id-pattern */
