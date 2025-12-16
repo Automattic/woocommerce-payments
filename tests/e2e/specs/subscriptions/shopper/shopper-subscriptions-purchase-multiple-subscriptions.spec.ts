@@ -117,7 +117,7 @@ describeif( shouldRunSubscriptionsTests )(
 						.getByRole( 'row', { name: 'total:' } )
 						.getByRole( 'cell' )
 						.nth( 1 )
-				).toContainText( '$19.98 USD / month' );
+				).toContainText( '$19.98 USD every month' );
 
 				// Confirm related order total matches payment
 				await expect(
