@@ -59,12 +59,8 @@ class WC_REST_WooPay_Session_Controller extends WP_REST_Controller {
 	 *
 	 * @return WP_Error|WP_REST_Response The initial session request data.
 	 */
-	public function get_session_data( WP_REST_Request $request ): WP_REST_Response {
+	public function get_session_data( WP_REST_Request $request ): object {
 		try {
-			// phpcs:ignore
-			/**
-			 * @psalm-suppress UndefinedClass
-			 */
 			$response = WooPay_Session::get_init_session_request( null, null, null, $request );
 
 			return rest_ensure_response( $response );

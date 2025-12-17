@@ -373,8 +373,6 @@ class WooPay_Tracker extends Jetpack_Tracks_Client {
 
 		/**
 		 * Ignore incorrect argument definition in Jetpack_Tracks_Event.
-		 *
-		 * @psalm-suppress InvalidArgument
 		 */
 		return new \Jetpack_Tracks_Event(
 			array_merge(

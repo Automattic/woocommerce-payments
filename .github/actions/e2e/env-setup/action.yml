@@ -44,7 +44,7 @@ runs:
     - name: Install composer dependencies
       if: ${{ steps.composer-cache.outputs.cache-hit == false }}
       shell: bash
-      run: composer install --no-progress
+      run: composer install --no-progress --no-dev
 
     # Install node dependencies if not present on cache
     - name: Install node dependencies
