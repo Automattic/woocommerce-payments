@@ -15,7 +15,7 @@
     "translate_project": "woocommerce/woocommerce-payments"
   },
   "scripts": {
-    "postinstall": "composer install",
+    "postinstall": "composer install --ignore-platform-req=php",
     "prepare": "is-ci || husky install",
     "build": "npm run build:deps && npm run build:release",
     "build:client": "NODE_ENV=production webpack",
@@ -48,7 +48,7 @@
     "test:qit-phpstan": "npm run build:release && ./tests/qit/phpstan.sh",
     "test:qit-phpstan-local": "npm run build:release && ./tests/qit/phpstan.sh --local",
     "test:qit-malware": "npm run build:release && ./tests/qit/malware.sh --local",
-    "test:qit-e2e": "./tests/qit/e2e-runner.sh",
+    "test:qit-e2e": "./vendor/bin/qit run:e2e woocommerce-payments --config tests/qit/qit.json --profile=default",
     "watch": "webpack --watch",
     "hmr": "webpack server",
     "start": "npm run watch",

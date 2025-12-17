@@ -1,0 +1,5 @@
+Significance: patch
+Type: dev
+Comment: Transition to use PHPStan as code analyzer instead of Psalm. It affects only WooPayments developers.
+
+

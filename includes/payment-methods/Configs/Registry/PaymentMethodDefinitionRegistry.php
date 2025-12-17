@@ -103,11 +103,10 @@ class PaymentMethodDefinitionRegistry {
 	/**
 	 * Register a payment method definition.
 	 *
-	 * @param string $definition_class The payment method definition class to register.
-	 * @psalm-param class-string<PaymentMethodDefinitionInterface> $definition_class
+	 * @param class-string<PaymentMethodDefinitionInterface> $definition_class The payment method definition class to register.
 	 * @throws \InvalidArgumentException If the class does not exist or does not implement PaymentMethodDefinitionInterface.
 	 */
-	public function register_payment_method( string $definition_class ): void {
+	public function register_payment_method( $definition_class ): void {
 		if ( ! class_exists( $definition_class ) ) {
 			throw new \InvalidArgumentException(
 				sprintf(
