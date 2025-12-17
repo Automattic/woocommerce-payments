@@ -19,8 +19,6 @@ if ( class_exists( AbstractCartRoute::class ) ) {
 		 * Helper method to get the instance of the class.
 		 *
 		 * @return WooPay_Store_Api_Token The instance of the class.
-		 *
-		 * @psalm-suppress InvalidArgument Psalm thinks namespace is incorrect.
 		 */
 		public static function init() {
 			$formatters        = new \Automattic\WooCommerce\StoreApi\Formatters();
@@ -52,10 +50,8 @@ if ( class_exists( AbstractCartRoute::class ) ) {
 		 * This function is used to get the cart token from the cart route.
 		 *
 		 * @return string The cart token.
-		 * @psalm-suppress UndefinedMethod
 		 */
 		public function get_cart_token() {
-			// @phpstan-ignore-next-line.
 			return parent::get_cart_token();
 		}
 	}
