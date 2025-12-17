@@ -5,7 +5,32 @@ import * as upeStyles from '..';
 
 describe( 'Getting styles for automated theming', () => {
 	const mockElement = document.createElement( 'input' );
+	// camelCase for direct property access (styles.fontFamily)
+	const cssPropertiesCamel = {
+		fontFamily:
+			'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
+		color: 'rgb(109, 109, 109)',
+		backgroundColor: 'rgba(0, 0, 0, 0)',
+		unsuportedProperty: 'some value',
+		outlineColor: 'rgb(150, 88, 138)',
+		outlineWidth: '1px',
+		fontSize: '12px',
+		padding: '10px',
+	};
+	// dashed for getPropertyValue (styles.getPropertyValue('font-family'))
+	const cssPropertiesDashed = {
+		'font-family':
+			'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
+		color: 'rgb(109, 109, 109)',
+		'background-color': 'rgba(0, 0, 0, 0)',
+		'unsuported-property': 'some value',
+		'outline-color': 'rgb(150, 88, 138)',
+		'outline-width': '1px',
+		'font-size': '12px',
+		padding: '10px',
+	};
 	const mockCSStyleDeclaration = {
+		...cssPropertiesCamel,
 		length: 8,
 		0: 'color',
 		1: 'backgroundColor',
@@ -15,20 +40,8 @@ describe( 'Getting styles for automated theming', () => {
 		5: 'outlineWidth',
 		6: 'fontSize',
 		7: 'padding',
-		getPropertyValue: ( propertyName ) => {
-			const cssProperties = {
-				fontFamily:
-					'"Source Sans Pro", HelveticaNeue-Light, "Helvetica Neue Light"',
-				color: 'rgb(109, 109, 109)',
-				backgroundColor: 'rgba(0, 0, 0, 0)',
-				unsuportedProperty: 'some value',
-				outlineColor: 'rgb(150, 88, 138)',
-				outlineWidth: '1px',
-				fontSize: '12px',
-				padding: '10px',
-			};
-			return cssProperties[ propertyName ];
-		},
+		getPropertyValue: ( propertyName ) =>
+			cssPropertiesDashed[ propertyName ],
 	};
 
 	test( 'getFieldStyles returns correct styles for inputs', () => {

@@ -10,3 +10,4 @@ vendor/*
 release/*
 tests/e2e/docker*
 tests/e2e/deps*
+tests/qit/test-package/*

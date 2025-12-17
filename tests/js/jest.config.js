@@ -46,7 +46,7 @@ module.exports = {
 		'<rootDir>/.*/build-module/',
 		'<rootDir>/docker/',
 		'<rootDir>/tests/e2e',
-		'<rootDir>/tests/qit/e2e',
+		'<rootDir>/tests/qit',
 	],
 	modulePathIgnorePatterns: [
 		'<rootDir>/docker/',
@@ -61,7 +61,7 @@ module.exports = {
 		'<rootDir>/.*/build-module/',
 		'<rootDir>/docker/',
 		'<rootDir>/tests/e2e',
-		'<rootDir>/tests/qit/e2e',
+		'<rootDir>/tests/qit',
 	],
 	transform: {
 		...tsjPreset.transform,
