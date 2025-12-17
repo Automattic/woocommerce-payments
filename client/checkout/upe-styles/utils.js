@@ -91,18 +91,6 @@ export const generateOutlineStyle = (
 };
 
 /**
- * Converts CSS property from dashed format to camel case.
- *
- * @param {string} string CSS property.
- * @return {string} Camel case string.
- */
-export const dashedToCamelCase = ( string ) => {
-	return string.replace( /-([a-z])/g, function ( g ) {
-		return g[ 1 ].toUpperCase();
-	} );
-};
-
-/**
  * Searches through array of CSS selectors and returns first visible background color.
  *
  * @param {Array}  selectors List of CSS selectors to check.

@@ -16,7 +16,7 @@ else
 	COVERAGE=60
 fi
 
-composer self-update && composer install --no-progress
+composer self-update && composer install --no-progress --ignore-platform-req=php
 # SVN is needed when installing WP.
 if ! [ -x "$(command -v svn)" ]; then
 	echo 'Installing SVN...'

@@ -59,9 +59,10 @@ class TranslationsLoader {
 	 * Runs in a cron thread, or in a visitor thread if triggered
 	 * by _maybe_update_plugins(), or in an auto-update thread.
 	 *
-	 * @param object $transient The update_plugins transient object.
+	 * @template T
+	 * @param T $transient The update_plugins transient object.
 	 *
-	 * @return object The same or a modified version of the transient.
+	 * @return T The same or a modified version of the transient.
 	 */
 	public function load_wcpay_translations( $transient ) {
 		try {

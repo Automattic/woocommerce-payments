@@ -84,7 +84,7 @@ class WooCommerceNameYourPrice extends BaseCompatibility {
 	 */
 	public function convert_cart_currency( $cart_item, $values ) {
 
-		if ( isset( $cart_item['nyp_original'] ) && isset( $cart_item['nyp_currency'] ) ) {
+		if ( function_exists( 'WC_Name_Your_Price' ) && isset( $cart_item['nyp_original'] ) && isset( $cart_item['nyp_currency'] ) ) {
 
 			// Store the original currency in $product meta.
 			$cart_item['data']->update_meta_data( self::NYP_CURRENCY, $cart_item['nyp_currency'] );
@@ -102,7 +102,6 @@ class WooCommerceNameYourPrice extends BaseCompatibility {
 				$cart_item['nyp'] = $this->multi_currency->get_raw_conversion( $raw_price, $selected_currency->get_code(), $from_currency );
 			}
 
-			// @phpstan-ignore-next-line.
 			$cart_item = WC_Name_Your_Price()->cart->set_cart_item( $cart_item );
 		}
 

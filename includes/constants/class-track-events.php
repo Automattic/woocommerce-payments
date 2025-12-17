@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Event names for WooCommerce Analytics.
  *
- * @psalm-immutable
+ * @phpstan-immutable
  */
 class Track_Events extends Base_Constant {
 	// Payment method events.
