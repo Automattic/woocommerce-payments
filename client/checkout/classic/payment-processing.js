@@ -34,6 +34,11 @@ const gatewayUPEComponents = {};
 let fingerprint = null;
 
 for ( const paymentMethodType in getUPEConfig( 'paymentMethodsConfig' ) ) {
+	const config = getUPEConfig( 'paymentMethodsConfig' )[ paymentMethodType ];
+	// Skip express checkout payment methods (Apple Pay, Google Pay) as they use the Custom Place Order Button API.
+	if ( config.isExpressCheckout ) {
+		continue;
+	}
 	gatewayUPEComponents[ paymentMethodType ] = {
 		elements: null,
 		upeElement: null,
@@ -97,7 +102,7 @@ export function unblockUI( $form ) {
  * If an error occurs, the function removes loading effect from the provided jQuery form and thus unblocks it,
  * and shows an error message in the checkout.
  *
- * @param {Object} elements The Stripe elements object to be validated.
+ * @param {StripeElements} elements The Stripe elements object to be validated.
  * @return {Promise} Promise for the checkout submission.
  */
 export function validateElements( elements ) {

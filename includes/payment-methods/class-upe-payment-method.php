@@ -280,6 +280,19 @@ class UPE_Payment_Method {
 	}
 
 	/**
+	 * Returns boolean dependent on whether payment method
+	 * is an express checkout method (e.g., Google Pay, Apple Pay)
+	 *
+	 * @return bool
+	 */
+	public function is_express_checkout() {
+		if ( null !== $this->definition ) {
+			return PaymentMethodUtils::is_express_checkout( $this->definition );
+		}
+		return false;
+	}
+
+	/**
 	 * Returns boolean dependent on whether payment method will accept charges
 	 * with chosen currency
 	 *

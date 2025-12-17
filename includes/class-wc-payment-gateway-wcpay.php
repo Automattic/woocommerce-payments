@@ -309,7 +309,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		$this->id           = static::GATEWAY_ID;
 		$this->icon         = $this->get_theme_icon();
-		$this->has_fields   = true;
+		$this->has_fields   = ! $this->payment_method->is_express_checkout();
 		$this->method_title = 'WooPayments';
 
 		$this->description = '';
@@ -366,6 +366,12 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// If the setting to enable saved cards is enabled, then we should support tokenization and adding payment methods.
 		if ( $this->is_saved_cards_enabled() ) {
 			array_push( $this->supports, 'tokenization', 'add_payment_method' );
+		}
+
+		// Set custom place order button for express checkout payment methods when the setting is enabled.
+		if ( $this->payment_method->is_express_checkout()
+			&& 'yes' === $this->get_option( 'apple_google_pay_in_payment_methods_options' ) ) {
+			$this->has_custom_place_order_button = true;
 		}
 	}
 
@@ -904,9 +910,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		}
 
 		// Disable the gateway if it should not be displayed on the checkout page.
-		$is_gateway_enabled = in_array( $this->stripe_id, $this->get_payment_method_ids_enabled_at_checkout(), true ) ? true : false;
-		if ( ! $is_gateway_enabled ) {
-			return false;
+		// Google Pay and Apple Pay are express payment methods with their own enabled settings,
+		// so they don't need to be in the upe_enabled_payment_method_ids list.
+		$is_express_payment_method = in_array( $this->stripe_id, [ 'google_pay', 'apple_pay' ], true );
+		if ( ! $is_express_payment_method ) {
+			$is_gateway_enabled = in_array( $this->stripe_id, $this->get_payment_method_ids_enabled_at_checkout(), true ) ? true : false;
+			if ( ! $is_gateway_enabled ) {
+				return false;
+			}
 		}
 
 		return parent::is_available() && ! $this->needs_setup();
@@ -2130,7 +2141,15 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 		// If $gateway_id begins with `woocommerce_payments_` payment method is a split UPE LPM.
 		// Otherwise, $gateway_id must be `woocommerce_payments`.
 		if ( substr( $gateway_id, 0, strlen( $split_upe_gateway_prefix ) ) === $split_upe_gateway_prefix ) {
-			return [ str_replace( $split_upe_gateway_prefix, '', $gateway_id ) ];
+			$payment_method_id = str_replace( $split_upe_gateway_prefix, '', $gateway_id );
+
+			// Express checkout methods (Apple Pay, Google Pay) use card as the underlying payment method.
+			$payment_method = WC_Payments::get_payment_method_by_id( $payment_method_id );
+			if ( $payment_method && $payment_method->is_express_checkout() ) {
+				return [ Payment_Method::CARD ];
+			}
+
+			return [ $payment_method_id ];
 		}
 
 		$eligible_payment_methods = WC_Payments::get_gateway()->get_payment_method_ids_enabled_at_checkout( $order_id, true );

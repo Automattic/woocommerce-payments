@@ -14,6 +14,15 @@
 	}
 }
 
+// Hide Apple Pay and Google Pay payment methods by default.
+// JS will show them after checking device/browser availability.
+#payment .payment_methods {
+	.payment_method_woocommerce_payments_apple_pay,
+	.payment_method_woocommerce_payments_google_pay {
+		display: none;
+	}
+}
+
 // Logo styles.
 #payment .payment_methods {
 	li[class*='payment_method_woocommerce_payments'] label {

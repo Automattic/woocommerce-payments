@@ -52,4 +52,11 @@ class PaymentMethodCapability {
 	 * @var string
 	 */
 	public const DOMESTIC_TRANSACTIONS_ONLY = 'domestic_transactions_only';
+
+	/**
+	 * Payment method is an express checkout method (e.g., Google Pay, Apple Pay)
+	 *
+	 * @var string
+	 */
+	public const EXPRESS_CHECKOUT = 'express_checkout';
 }
