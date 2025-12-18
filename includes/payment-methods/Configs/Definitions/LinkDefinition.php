@@ -83,7 +83,7 @@ class LinkDefinition implements PaymentMethodDefinitionInterface {
 	 * @return string[] Array of currency codes
 	 */
 	public static function get_supported_currencies(): array {
-		return [];
+		return [ Currency_Code::UNITED_STATES_DOLLAR ];
 	}
 
 	/**
