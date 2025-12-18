@@ -27,7 +27,6 @@ use WC_Payments_Customer_Service;
 use WC_Payment_Gateway_WCPay;
 use WC_Payments_Order_Service;
 use WC_Payments_Token_Service;
-use Exception;
 use WC_Payments;
 use WCPay\Duplicate_Payment_Prevention_Service;
 use WC_Payments_Localization_Service;
