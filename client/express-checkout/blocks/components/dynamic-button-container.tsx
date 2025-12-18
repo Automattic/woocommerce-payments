@@ -20,6 +20,7 @@ import {
 import { transformPrice } from '../../transformers/wc-to-stripe';
 import '../express-checkout-element.scss';
 import {
+	onCancelHandler,
 	onClickHandler,
 	onReadyHandler,
 } from 'wcpay/express-checkout/event-handlers';
@@ -310,6 +311,7 @@ const ExpressCheckoutContainer = ( {
 					onClick={ handleClick }
 					onConfirm={ handleConfirm }
 					onReady={ onReadyHandler }
+					onCancel={ onCancelHandler }
 				/>
 			</Elements>
 		</div>
