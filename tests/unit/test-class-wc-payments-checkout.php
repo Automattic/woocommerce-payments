@@ -95,7 +95,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 					'save_payment_method_checkbox',
 					'get_account_statement_descriptor',
 					'get_icon_url',
-					'get_upe_enabled_payment_method_ids_based_on_manual_capture',
+					'get_payment_method_ids_enabled_at_checkout',
 					'get_payment_method_ids_enabled_at_checkout_filtered_by_fees',
 					'is_subscription_item_in_cart',
 					'wc_payments_get_payment_method_by_id',
@@ -154,7 +154,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 
 		$this->mock_wcpay_gateway
 			->expects( $this->any() )
-			->method( 'get_upe_enabled_payment_method_ids_based_on_manual_capture' )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
 			->willReturn( [] );
 
 		$this->mock_wcpay_gateway
@@ -175,7 +175,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 
 		$this->mock_wcpay_gateway
 			->expects( $this->any() )
-			->method( 'get_upe_enabled_payment_method_ids_based_on_manual_capture' )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
 			->willReturn( [] );
 
 		$this->mock_wcpay_gateway
@@ -201,7 +201,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 
 		$this->mock_wcpay_gateway
 			->expects( $this->any() )
-			->method( 'get_upe_enabled_payment_method_ids_based_on_manual_capture' )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
 			->willReturn( [] );
 
 		$this->mock_wcpay_gateway
@@ -224,7 +224,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 	public function test_display_gateway_html_called() {
 			$this->mock_wcpay_gateway
 				->expects( $this->any() )
-				->method( 'get_upe_enabled_payment_method_ids_based_on_manual_capture' )
+				->method( 'get_payment_method_ids_enabled_at_checkout' )
 				->willReturn( [] );
 
 		$this->mock_wcpay_gateway
@@ -237,7 +237,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 	public function test_is_woopay_enabled_when_should_enable_woopay_and_enable_it_on_cart_or_checkout() {
 		$this->mock_wcpay_gateway
 			->expects( $this->any() )
-			->method( 'get_upe_enabled_payment_method_ids_based_on_manual_capture' )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
 			->willReturn( [] );
 
 		$this->mock_woopay_utilities->method( 'should_enable_woopay' )->willReturn( true );
@@ -250,7 +250,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 	public function test_is_woopay_enabled_false_when_should_not_enable_woopay() {
 		$this->mock_wcpay_gateway
 			->expects( $this->any() )
-			->method( 'get_upe_enabled_payment_method_ids_based_on_manual_capture' )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
 			->willReturn( [] );
 
 		$this->mock_woopay_utilities->method( 'should_enable_woopay' )->willReturn( false );
@@ -263,7 +263,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 	public function test_is_woopay_enabled_false_when_should_enable_woopay_but_not_enable_it_on_cart_or_checkout() {
 		$this->mock_wcpay_gateway
 			->expects( $this->any() )
-			->method( 'get_upe_enabled_payment_method_ids_based_on_manual_capture' )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
 			->willReturn( [] );
 
 		$this->mock_woopay_utilities->method( 'should_enable_woopay' )->willReturn( true );
@@ -276,7 +276,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 	public function test_return_icon_url() {
 		$this->mock_wcpay_gateway
 			->expects( $this->any() )
-			->method( 'get_upe_enabled_payment_method_ids_based_on_manual_capture' )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
 			->willReturn( [] );
 
 		$this->mock_wcpay_gateway
@@ -292,7 +292,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 	public function test_force_network_saved_cards_enabled_when_should_use_stripe_platform() {
 		$this->mock_wcpay_gateway
 			->expects( $this->any() )
-			->method( 'get_upe_enabled_payment_method_ids_based_on_manual_capture' )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
 			->willReturn( [] );
 
 		$this->mock_wcpay_gateway
@@ -306,7 +306,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 	public function test_force_network_saved_cards_disabled_when_should_not_use_stripe_platform() {
 		$this->mock_wcpay_gateway
 			->expects( $this->any() )
-			->method( 'get_upe_enabled_payment_method_ids_based_on_manual_capture' )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
 			->willReturn( [] );
 
 		$this->mock_wcpay_gateway
@@ -325,7 +325,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 		$dark_icon_url = 'test-dark-icon-url';
 		$this->mock_wcpay_gateway
 			->expects( $this->any() )
-			->method( 'get_upe_enabled_payment_method_ids_based_on_manual_capture' )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
 			->willReturn( [ 'card', 'link' ] );
 
 		$this->mock_wcpay_gateway
@@ -426,7 +426,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 
 		$this->mock_wcpay_gateway
 			->expects( $this->any() )
-			->method( 'get_upe_enabled_payment_method_ids_based_on_manual_capture' )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
 			->willReturn(
 				[
 					$payment_method_id,
@@ -465,7 +465,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 
 		$this->mock_wcpay_gateway
 			->expects( $this->any() )
-			->method( 'get_upe_enabled_payment_method_ids_based_on_manual_capture' )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
 			->willReturn(
 				[
 					Payment_Method::CARD,
@@ -494,7 +494,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 
 			$this->mock_wcpay_gateway
 				->expects( $this->any() )
-				->method( 'get_upe_enabled_payment_method_ids_based_on_manual_capture' )
+				->method( 'get_payment_method_ids_enabled_at_checkout' )
 				->willReturn(
 					[
 						Payment_Method::CARD,
@@ -523,7 +523,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 
 			$this->mock_wcpay_gateway
 				->expects( $this->any() )
-				->method( 'get_upe_enabled_payment_method_ids_based_on_manual_capture' )
+				->method( 'get_payment_method_ids_enabled_at_checkout' )
 				->willReturn(
 					[
 						Payment_Method::CARD,
@@ -544,7 +544,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 			->willReturn( 'US' );
 		$this->mock_wcpay_gateway
 			->expects( $this->any() )
-			->method( 'get_upe_enabled_payment_method_ids_based_on_manual_capture' )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
 			->willReturn(
 				[
 					Payment_Method::CARD,
@@ -603,7 +603,7 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 			->willReturn( $country );
 
 		$this->mock_wcpay_gateway
-			->method( 'get_upe_enabled_payment_method_ids_based_on_manual_capture' )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
 			->willReturn( [ 'card' ] );
 
 		$this->mock_wcpay_gateway
@@ -621,5 +621,36 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 			$expected_instructions,
 			$config['paymentMethodsConfig']['card']['testingInstructions']
 		);
+	}
+
+	/**
+	 * Tests that get_enabled_payment_method_config uses get_payment_method_ids_enabled_at_checkout
+	 * which filters payment methods by currency. This ensures Link is only available for USD.
+	 */
+	public function test_get_enabled_payment_method_config_uses_currency_filtered_payment_methods() {
+		$this->mock_wcpay_account
+			->method( 'get_account_country' )
+			->willReturn( 'US' );
+
+		// Simulate that get_payment_method_ids_enabled_at_checkout returns only 'card'
+		// (because Link would be filtered out for non-USD currency).
+		$this->mock_wcpay_gateway
+			->expects( $this->once() )
+			->method( 'get_payment_method_ids_enabled_at_checkout' )
+			->willReturn( [ 'card' ] );
+
+		$card_pm = new CC_Payment_Method( $this->mock_token_service );
+
+		$this->mock_wcpay_gateway
+			->method( 'wc_payments_get_payment_method_by_id' )
+			->with( 'card' )
+			->willReturn( $card_pm );
+
+		$config = $this->system_under_test->get_enabled_payment_method_config();
+
+		// Link should not be in the config because get_payment_method_ids_enabled_at_checkout
+		// filters it out based on currency.
+		$this->assertArrayHasKey( 'card', $config );
+		$this->assertArrayNotHasKey( 'link', $config );
 	}
 }
