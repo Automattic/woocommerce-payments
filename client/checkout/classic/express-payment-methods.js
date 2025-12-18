@@ -242,7 +242,7 @@ function registerCustomPlaceOrderButton( api, paymentMethodId, fingerprint ) {
 		eceButton: null,
 	};
 
-	wc.classicCheckout.registerCustomPlaceOrderButton( gatewayId, {
+	wc.customPlaceOrderButton.register( gatewayId, {
 		render: async function ( container, wcApi ) {
 			const cartTotal = getCartTotalFromDOM();
 
@@ -403,8 +403,8 @@ function registerCustomPlaceOrderButton( api, paymentMethodId, fingerprint ) {
 export function initExpressPaymentMethods( api ) {
 	if (
 		typeof wc === 'undefined' ||
-		! wc.classicCheckout ||
-		! wc.classicCheckout.registerCustomPlaceOrderButton
+		! wc.customPlaceOrderButton ||
+		! wc.customPlaceOrderButton.register
 	) {
 		return;
 	}
