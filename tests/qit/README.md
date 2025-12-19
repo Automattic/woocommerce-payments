@@ -97,3 +97,27 @@ npm run test:qit-e2e
 #### "Card testing attempt detected" errors
 
 If checkout tests fail with "Card testing attempt detected" errors, the test account may need server-side configuration to disable fraud protection for E2E testing. Contact the payments team for assistance.
+
+#### GitHub token errors during `composer install`
+
+When running `composer install`, you may encounter:
+
+```text
+Could not fetch https://api.github.com/repos/woocommerce/qit-cli/zipball/...
+please review your configured GitHub OAuth token
+```
+
+**Solution:** Use a fine-grained GitHub token with read-only access to public repositories.
+
+1. Go to GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens
+2. Create a new token with:
+   - **Repository access:** Public repositories (read-only)
+   - No additional permissions required
+3. Configure Composer to use the token:
+
+   ```bash
+   composer config --global github-oauth.github.com YOUR_TOKEN
+   ```
+
+> [!NOTE]
+> Classic PAT tokens may not work for accessing woocommerce repos. Fine-grained tokens with public repo read access are sufficient.
