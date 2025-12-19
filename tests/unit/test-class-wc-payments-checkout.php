@@ -11,10 +11,10 @@ use WCPay\Constants\Payment_Method;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\Payment_Methods\CC_Payment_Method;
-use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\EpsDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\IdealDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\LinkDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\P24Definition;
 
 /**
@@ -348,8 +348,8 @@ class WC_Payments_Checkout_Test extends WP_UnitTestCase {
 			->onlyMethods( [ 'get_icon', 'get_dark_icon' ] )
 			->getMock();
 
-		$link_pm = $this->getMockBuilder( Link_Payment_Method::class )
-			->setConstructorArgs( [ $this->mock_token_service ] )
+		$link_pm = $this->getMockBuilder( UPE_Payment_Method::class )
+			->setConstructorArgs( [ $this->mock_token_service, LinkDefinition::class ] )
 			->onlyMethods( [ 'get_icon', 'get_dark_icon' ] )
 			->getMock();
 
