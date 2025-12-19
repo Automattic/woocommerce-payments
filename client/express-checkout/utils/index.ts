@@ -12,6 +12,41 @@ interface MyWindow extends Window {
 declare let window: MyWindow;
 
 /**
+ * Subscription trial data for Apple Pay recurringPaymentRequest.
+ */
+export interface SubscriptionTrialData {
+	paymentDescription: string;
+	managementURL: string;
+	regularBilling: {
+		amount: number;
+		label: string;
+		recurringPaymentStartDate: string;
+		recurringPaymentIntervalUnit:
+			| 'year'
+			| 'month'
+			| 'day'
+			| 'hour'
+			| 'minute';
+		recurringPaymentIntervalCount: number;
+	};
+	trialBilling: {
+		amount: number;
+		label: string;
+		recurringPaymentIntervalUnit:
+			| 'year'
+			| 'month'
+			| 'day'
+			| 'hour'
+			| 'minute';
+		recurringPaymentIntervalCount: number;
+	};
+	applePayOnly: boolean;
+	has_trial: boolean;
+	trial_length: number;
+	trial_period: string;
+}
+
+/**
  * An /incomplete/ representation of the data that is loaded into the frontend for the Express Checkout.
  */
 export interface WCPayExpressCheckoutParams {
@@ -39,6 +74,7 @@ export interface WCPayExpressCheckoutParams {
 		needs_payer_phone: boolean;
 		needs_shipping: boolean;
 		currency_decimals: number;
+		allowed_shipping_countries?: string[];
 	};
 
 	/**
@@ -74,7 +110,14 @@ export interface WCPayExpressCheckoutParams {
 			detail: string;
 			amount: number;
 		};
+		subscription_trial?: SubscriptionTrialData;
 	};
+
+	/**
+	 * Subscription trial data for Apple Pay recurringPaymentRequest.
+	 * Available when cart contains a subscription with free trial.
+	 */
+	subscription_trial?: SubscriptionTrialData;
 
 	/**
 	 * Settings for the user authentication dialog and redirection.
@@ -202,10 +245,30 @@ export const getExpressCheckoutButtonAppearance = (
 };
 
 /**
+ * Gets subscription trial data from product or global params.
+ */
+export const getSubscriptionTrialData = (): SubscriptionTrialData | null => {
+	// Check product-level subscription trial data first.
+	const productData = getExpressCheckoutData( 'product' );
+	if ( productData?.subscription_trial ) {
+		return productData.subscription_trial;
+	}
+
+	// Check global subscription trial data (for cart/checkout pages).
+	const subscriptionTrial = getExpressCheckoutData( 'subscription_trial' );
+	if ( subscriptionTrial ) {
+		return subscriptionTrial as SubscriptionTrialData;
+	}
+
+	return null;
+};
+
+/**
  * Returns the style settings for the Express Checkout buttons.
  */
 export const getExpressCheckoutButtonStyleSettings = () => {
 	const buttonSettings = getExpressCheckoutData( 'button' );
+	const subscriptionTrialData = getSubscriptionTrialData();
 
 	const mapWooPaymentsThemeToButtonTheme = (
 		buttonType: string,
@@ -237,10 +300,14 @@ export const getExpressCheckoutButtonStyleSettings = () => {
 			? 'plain'
 			: buttonSettings?.type ?? 'plain';
 
-	return {
+	// If subscription has trial, only show Apple Pay (Google Pay doesn't support recurringPaymentRequest).
+	const hasSubscriptionTrial = subscriptionTrialData?.has_trial ?? false;
+
+	const settings: Record< string, unknown > = {
 		paymentMethods: {
 			applePay: 'always',
-			googlePay: 'always',
+			// Hide Google Pay for subscriptions with trial since it doesn't support recurringPaymentRequest.
+			googlePay: hasSubscriptionTrial ? 'never' : 'always',
 			amazonPay: 'never',
 			link: 'never',
 			paypal: 'never',
@@ -267,4 +334,50 @@ export const getExpressCheckoutButtonStyleSettings = () => {
 			55
 		),
 	};
+
+	// Add Apple Pay recurringPaymentRequest for subscriptions with trial.
+	// This allows Apple Pay to show even when the initial payment is $0.
+	// See: https://docs.stripe.com/js/elements_object/create_express_checkout_element#express_checkout_element_create-options-applePay
+	if ( subscriptionTrialData ) {
+		// When using recurringPaymentRequest, contact/shipping options must be at element creation time.
+		const checkoutData = getExpressCheckoutData( 'checkout' );
+		settings.emailRequired = true;
+		settings.phoneNumberRequired = checkoutData?.needs_payer_phone ?? false;
+		settings.shippingAddressRequired =
+			checkoutData?.needs_shipping ?? false;
+		settings.allowedShippingCountries =
+			checkoutData?.allowed_shipping_countries ?? [];
+
+		settings.applePay = {
+			recurringPaymentRequest: {
+				paymentDescription: subscriptionTrialData.paymentDescription,
+				managementURL: subscriptionTrialData.managementURL,
+				regularBilling: {
+					amount: subscriptionTrialData.regularBilling.amount,
+					label: subscriptionTrialData.regularBilling.label,
+					recurringPaymentStartDate: new Date(
+						subscriptionTrialData.regularBilling.recurringPaymentStartDate
+					),
+					recurringPaymentIntervalUnit:
+						subscriptionTrialData.regularBilling
+							.recurringPaymentIntervalUnit,
+					recurringPaymentIntervalCount:
+						subscriptionTrialData.regularBilling
+							.recurringPaymentIntervalCount,
+				},
+				trialBilling: {
+					amount: subscriptionTrialData.trialBilling.amount,
+					label: subscriptionTrialData.trialBilling.label,
+					recurringPaymentIntervalUnit:
+						subscriptionTrialData.trialBilling
+							.recurringPaymentIntervalUnit,
+					recurringPaymentIntervalCount:
+						subscriptionTrialData.trialBilling
+							.recurringPaymentIntervalCount,
+				},
+			},
+		};
+	}
+
+	return settings;
 };

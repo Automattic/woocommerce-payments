@@ -11,6 +11,7 @@ import { memoize } from 'lodash';
  * Internal dependencies
  */
 import type WCPayAPI from 'wcpay/checkout/api';
+import { getSubscriptionTrialData } from './index';
 
 // types from https://github.com/woocommerce/woocommerce/blob/360d9bc0f5709e6cf13c646860360fca9968ebb0/plugins/woocommerce/client/blocks/assets/js/types/type-defs/cart.ts
 interface CartTotals {
@@ -49,6 +50,16 @@ const checkPaymentMethodIsAvailableInternal = (
 
 		bodyElement.appendChild( containerEl );
 
+		// For subscriptions with free trial, the cart total may be 0.
+		// Stripe requires amount > 0, so use the recurring billing amount.
+		const subscriptionTrialData = getSubscriptionTrialData();
+		const recurringAmount =
+			subscriptionTrialData?.regularBilling?.amount ?? 0;
+		let elementAmount = Number( totalPrice );
+		if ( elementAmount === 0 && recurringAmount > 0 ) {
+			elementAmount = recurringAmount;
+		}
+
 		const root = createRoot( containerEl );
 		root.render(
 			<Elements
@@ -56,7 +67,7 @@ const checkPaymentMethodIsAvailableInternal = (
 				options={ {
 					mode: 'payment',
 					paymentMethodCreation: 'manual',
-					amount: Number( totalPrice ),
+					amount: elementAmount,
 					currency: currencyCode.toLowerCase(),
 				} }
 			>

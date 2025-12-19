@@ -19,6 +19,7 @@ import {
 	getExpressCheckoutButtonStyleSettings,
 	getExpressCheckoutData,
 	displayLoginConfirmation,
+	getSubscriptionTrialData,
 } from './utils';
 import {
 	onAbortPaymentHandler,
@@ -208,10 +209,22 @@ jQuery( ( $ ) => {
 			let addToCartErrorMessage = '';
 			let addToCartPromise = Promise.resolve();
 			const stripe = await api.getStripe();
+
+			// For subscriptions with free trial, the cart total may be 0.
+			// Stripe requires amount > 0 for elements(), so we use the recurring billing amount.
+			const subscriptionTrialData = getSubscriptionTrialData();
+			let elementAmount = creationOptions.total;
+			if (
+				elementAmount === 0 &&
+				subscriptionTrialData?.regularBilling?.amount > 0
+			) {
+				elementAmount = subscriptionTrialData.regularBilling.amount;
+			}
+
 			// https://docs.stripe.com/js/elements_object/create_without_intent
 			elements = stripe.elements( {
 				mode: 'payment',
-				amount: creationOptions.total,
+				amount: elementAmount,
 				currency: creationOptions.currency,
 				paymentMethodCreation: 'manual',
 				appearance: getExpressCheckoutButtonAppearance(),
@@ -324,25 +337,42 @@ jQuery( ( $ ) => {
 						  ]
 						: options.shippingRates;
 
+				// When using applePay.recurringPaymentRequest (for subscriptions with trial),
+				// certain params must NOT be passed on click - they should be at element creation.
+				const subscriptionTrialDataOnClick = getSubscriptionTrialData();
+				const hasRecurringPaymentRequest = !! subscriptionTrialDataOnClick?.has_trial;
+
 				onClickHandler( event );
-				event.resolve( {
-					// `options.displayItems`, `options.shippingAddressRequired`, `options.requestPhone`, `options.shippingRates`,
-					// are all coming from prior of the initialization.
-					// The "real" values will be updated once the button loads.
-					// They are preemptively initialized because the `event.resolve({})`
-					// needs to be called within 1 second of the `click` event.
-					business: {
-						name: getExpressCheckoutData( 'store_name' ),
-					},
-					emailRequired: true,
-					...options,
-					shippingRates: options.shippingAddressRequired
-						? shippingOptionsWithFallback
-						: undefined,
-					allowedShippingCountries: getExpressCheckoutData(
-						'checkout'
-					).allowed_shipping_countries,
-				} );
+
+				if ( hasRecurringPaymentRequest ) {
+					// For recurring payments, only pass minimal options on click.
+					// Other params are set at element creation via applePay.recurringPaymentRequest.
+					event.resolve( {
+						lineItems: options.lineItems,
+						shippingRates: options.shippingAddressRequired
+							? shippingOptionsWithFallback
+							: undefined,
+					} );
+				} else {
+					event.resolve( {
+						// `options.displayItems`, `options.shippingAddressRequired`, `options.requestPhone`, `options.shippingRates`,
+						// are all coming from prior of the initialization.
+						// The "real" values will be updated once the button loads.
+						// They are preemptively initialized because the `event.resolve({})`
+						// needs to be called within 1 second of the `click` event.
+						business: {
+							name: getExpressCheckoutData( 'store_name' ),
+						},
+						emailRequired: true,
+						...options,
+						shippingRates: options.shippingAddressRequired
+							? shippingOptionsWithFallback
+							: undefined,
+						allowedShippingCountries: getExpressCheckoutData(
+							'checkout'
+						).allowed_shipping_countries,
+					} );
+				}
 			} );
 
 			eceButton.on( 'shippingaddresschange', async ( event ) => {
@@ -441,7 +471,10 @@ jQuery( ( $ ) => {
 			}
 
 			const total = getTotalAmount();
-			if ( total === 0 ) {
+			const subscriptionTrialData = getSubscriptionTrialData();
+
+			// Allow subscription with trial even if total is 0 (Apple Pay supports this).
+			if ( total === 0 && ! subscriptionTrialData ) {
 				expressCheckoutButtonUi.hideContainer();
 				expressCheckoutButtonUi.getButtonSeparator().hide();
 			} else if ( cachedCartData ) {

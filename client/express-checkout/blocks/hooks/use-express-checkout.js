@@ -12,6 +12,7 @@ import {
 	displayLoginConfirmation,
 	getExpressCheckoutButtonStyleSettings,
 	getExpressCheckoutData,
+	getSubscriptionTrialData,
 	normalizeLineItems,
 } from '../../utils';
 import {
@@ -117,27 +118,42 @@ export const useExpressCheckout = ( {
 				currency_minor_unit: billing.currency.minorUnit ?? 0,
 			} );
 
-			const options = {
-				business: {
-					name: getExpressCheckoutData( 'store_name' ),
-				},
-				// if the transformed cart total is less than the total of `lineItems`, Stripe throws an error
-				// it can sometimes happen that the total is _slightly_ less, due to rounding errors on individual items/taxes/shipping
-				// (or with the `woocommerce_tax_round_at_subtotal` setting).
-				// if that happens, let's just not return any of the line items.
-				// This way, just the total amount will be displayed to the customer.
-				lineItems: cartTotals < lineItemsTotals ? [] : lineItems,
-				emailRequired: true,
-				shippingAddressRequired,
-				phoneNumberRequired:
-					getExpressCheckoutData( 'checkout' )?.needs_payer_phone ??
-					false,
-				shippingRates,
-				allowedShippingCountries: getExpressCheckoutData( 'checkout' )
-					.allowed_shipping_countries,
-			};
+			// When using applePay.recurringPaymentRequest (for subscriptions with trial),
+			// certain params must NOT be passed on click - they should be at element creation.
+			// See: https://docs.stripe.com/js/element/express_checkout_element
+			const subscriptionTrialData = getSubscriptionTrialData();
+			const hasRecurringPaymentRequest = !! subscriptionTrialData?.has_trial;
 
-			// console.log( '### options', options );
+			let options;
+			if ( hasRecurringPaymentRequest ) {
+				// For recurring payments, only pass minimal options on click.
+				// Other params are set at element creation via applePay.recurringPaymentRequest.
+				options = {
+					lineItems: cartTotals < lineItemsTotals ? [] : lineItems,
+					shippingRates,
+				};
+			} else {
+				options = {
+					business: {
+						name: getExpressCheckoutData( 'store_name' ),
+					},
+					// if the transformed cart total is less than the total of `lineItems`, Stripe throws an error
+					// it can sometimes happen that the total is _slightly_ less, due to rounding errors on individual items/taxes/shipping
+					// (or with the `woocommerce_tax_round_at_subtotal` setting).
+					// if that happens, let's just not return any of the line items.
+					// This way, just the total amount will be displayed to the customer.
+					lineItems: cartTotals < lineItemsTotals ? [] : lineItems,
+					emailRequired: true,
+					shippingAddressRequired,
+					phoneNumberRequired:
+						getExpressCheckoutData( 'checkout' )
+							?.needs_payer_phone ?? false,
+					shippingRates,
+					allowedShippingCountries: getExpressCheckoutData(
+						'checkout'
+					).allowed_shipping_countries,
+				};
+			}
 
 			// Click event from WC Blocks.
 			onClick();

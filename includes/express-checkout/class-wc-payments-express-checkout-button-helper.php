@@ -436,11 +436,17 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 		// Cart total is 0 or is on product page and product price is 0.
 		// Exclude pay-for-order pages from this check.
+		// Allow subscriptions with free trials (Apple Pay supports this via recurringPaymentRequest).
 		if (
 			( ! $this->is_product() && ! $this->is_pay_for_order_page() && 0.0 === (float) WC()->cart->get_total( 'edit' ) ) ||
 			( $this->is_product() && 0.0 === (float) $this->get_product()->get_price() )
-
 		) {
+			// Allow if cart contains subscription with trial (Apple Pay can handle this).
+			if ( $this->cart_contains_subscription_with_trial() || $this->product_has_trial() ) {
+				Logger::log( 'Order price is 0 but has subscription with trial ( Express Checkout Element button allowed for Apple Pay )' );
+				return true;
+			}
+
 			Logger::log( 'Order price is 0 ( Express Checkout Element button disabled )' );
 			return false;
 		}
@@ -519,11 +525,10 @@ class WC_Payments_Express_Checkout_Button_Helper {
 			}
 
 			/**
-			 * Trial subscriptions with shipping are not supported.
+			 * Trial subscriptions with shipping were previously not supported.
+			 * Now we allow them for Apple Pay via recurringPaymentRequest.
+			 * Google Pay will be hidden on the frontend for these cases.
 			 */
-			if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $_product ) && $_product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $_product ) > 0 ) {
-				return false;
-			}
 		}
 
 		// We don't support multiple packages with Express Checkout Element Buttons because we can't offer a good UX.
@@ -623,6 +628,12 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		$data['country_code']   = substr( get_option( 'woocommerce_default_country' ), 0, 2 );
 		$data['product_type']   = $product->get_type();
 
+		// Add subscription trial data for Apple Pay recurringPaymentRequest.
+		$subscription_trial_data = $this->get_subscription_trial_data( $product );
+		if ( $subscription_trial_data ) {
+			$data['subscription_trial'] = $subscription_trial_data;
+		}
+
 		return apply_filters( 'wcpay_payment_request_product_data', $data, $product );
 	}
 
@@ -666,12 +677,11 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		if ( is_null( $product ) || ! is_object( $product ) ) {
 			$is_supported = false;
 		} else {
-			// Simple subscription that needs shipping with free trials is not supported.
-			$is_free_trial_simple_subs = class_exists( 'WC_Subscriptions_Product' ) && $product->get_type() === 'subscription' && $product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $product ) > 0;
+			// Free trial subscriptions are now supported for Apple Pay via recurringPaymentRequest.
+			// Google Pay will be hidden on the frontend for these cases.
 
 			if (
 			! in_array( $product->get_type(), $this->supported_product_types(), true )
-			|| $is_free_trial_simple_subs
 			|| ( class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( $product ) ) // Pre Orders charge upon release not supported.
 			|| ( class_exists( 'WC_Composite_Products' ) && $product->is_type( 'composite' ) ) // Composite products are not supported on the product page.
 			|| ( class_exists( 'WC_Mix_and_Match' ) && $product->is_type( 'mix-and-match' ) ) // Mix and match products are not supported on the product page.
@@ -788,5 +798,168 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 */
 	public function sanitize_string( $string ) {
 		return trim( wc_strtolower( remove_accents( $string ) ) );
+	}
+
+	/**
+	 * Check if the cart contains a subscription with a free trial.
+	 *
+	 * @return bool True if cart contains subscription with free trial.
+	 */
+	public function cart_contains_subscription_with_trial() {
+		if ( ! class_exists( 'WC_Subscriptions_Product' ) || ! class_exists( 'WC_Subscriptions_Cart' ) ) {
+			return false;
+		}
+
+		if ( ! WC_Subscriptions_Cart::cart_contains_subscription() ) {
+			return false;
+		}
+
+		foreach ( WC()->cart->get_cart() as $cart_item ) {
+			$product = $cart_item['data'];
+			if ( WC_Subscriptions_Product::is_subscription( $product ) && WC_Subscriptions_Product::get_trial_length( $product ) > 0 ) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Check if the current product page has a subscription with a free trial.
+	 *
+	 * @return bool True if product has a free trial.
+	 */
+	public function product_has_trial() {
+		if ( ! $this->is_product() || ! class_exists( 'WC_Subscriptions_Product' ) ) {
+			return false;
+		}
+
+		$product = $this->get_product();
+		if ( ! $product || ! WC_Subscriptions_Product::is_subscription( $product ) ) {
+			return false;
+		}
+
+		return WC_Subscriptions_Product::get_trial_length( $product ) > 0;
+	}
+
+	/**
+	 * Get subscription trial data for Apple Pay recurringPaymentRequest.
+	 * This data is needed to display the recurring payment info in Apple Pay sheet.
+	 *
+	 * @param WC_Product|null $product Optional product. If null, uses cart data.
+	 * @return array|false Subscription trial data or false if not applicable.
+	 */
+	public function get_subscription_trial_data( $product = null ) {
+		if ( ! class_exists( 'WC_Subscriptions_Product' ) ) {
+			return false;
+		}
+
+		$currency = get_woocommerce_currency();
+
+		// If product is provided, get data from product.
+		if ( $product && WC_Subscriptions_Product::is_subscription( $product ) ) {
+			$trial_length = WC_Subscriptions_Product::get_trial_length( $product );
+			if ( $trial_length <= 0 ) {
+				return false;
+			}
+
+			return $this->build_subscription_trial_data_from_product( $product, $currency );
+		}
+
+		// Otherwise, get data from cart.
+		if ( ! class_exists( 'WC_Subscriptions_Cart' ) || ! WC_Subscriptions_Cart::cart_contains_subscription() ) {
+			return false;
+		}
+
+		// Find the subscription product with trial in cart.
+		foreach ( WC()->cart->get_cart() as $cart_item ) {
+			$cart_product = $cart_item['data'];
+			if ( WC_Subscriptions_Product::is_subscription( $cart_product ) && WC_Subscriptions_Product::get_trial_length( $cart_product ) > 0 ) {
+				return $this->build_subscription_trial_data_from_product( $cart_product, $currency );
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Build subscription trial data from a product for Apple Pay.
+	 *
+	 * @param WC_Product $product  The subscription product.
+	 * @param string     $currency The currency code.
+	 * @return array The subscription trial data for Apple Pay.
+	 */
+	private function build_subscription_trial_data_from_product( $product, $currency ) {
+		$trial_length      = WC_Subscriptions_Product::get_trial_length( $product );
+		$trial_period      = WC_Subscriptions_Product::get_trial_period( $product );
+		$billing_period    = WC_Subscriptions_Product::get_period( $product );
+		$billing_interval  = WC_Subscriptions_Product::get_interval( $product );
+		$recurring_price   = WC_Subscriptions_Product::get_price( $product );
+		$sign_up_fee       = WC_Subscriptions_Product::get_sign_up_fee( $product );
+
+		// Calculate trial end date.
+		$trial_end_date = new DateTime( 'now', wp_timezone() );
+		$trial_end_date->modify( "+{$trial_length} {$trial_period}" );
+
+		// Map WC Subscriptions period to Apple Pay interval unit.
+		$interval_unit_map = [
+			'day'   => 'day',
+			'week'  => 'day', // Apple Pay doesn't support week, convert to days.
+			'month' => 'month',
+			'year'  => 'year',
+		];
+
+		$apple_pay_interval_unit  = $interval_unit_map[ $billing_period ] ?? 'month';
+		$apple_pay_interval_count = (int) $billing_interval;
+
+		// Convert week to days if necessary.
+		if ( 'week' === $billing_period ) {
+			$apple_pay_interval_count = $apple_pay_interval_count * 7;
+		}
+
+		// Build the subscription management URL.
+		$management_url = wc_get_account_endpoint_url( 'subscriptions' );
+		if ( empty( $management_url ) || '#' === $management_url ) {
+			$management_url = home_url( '/my-account/subscriptions/' );
+		}
+
+		// Build trial billing info.
+		$trial_interval_unit = $interval_unit_map[ $trial_period ] ?? 'day';
+		$trial_interval_count = (int) $trial_length;
+		if ( 'week' === $trial_period ) {
+			$trial_interval_count = $trial_interval_count * 7;
+			$trial_interval_unit  = 'day';
+		}
+
+		// Calculate the sign-up fee amount (what's charged during trial, if any).
+		$trial_amount = $sign_up_fee > 0 ? WC_Payments_Utils::prepare_amount( $sign_up_fee, $currency ) : 0;
+
+		// translators: %s: Product name.
+		$payment_description = sprintf( __( '%s Subscription', 'woocommerce-payments' ), $product->get_name() );
+
+		return [
+			'paymentDescription'         => $payment_description,
+			'managementURL'              => $management_url,
+			'regularBilling'             => [
+				'amount'                        => WC_Payments_Utils::prepare_amount( $recurring_price, $currency ),
+				'label'                         => $product->get_name(),
+				'recurringPaymentStartDate'     => $trial_end_date->format( 'c' ),
+				'recurringPaymentIntervalUnit'  => $apple_pay_interval_unit,
+				'recurringPaymentIntervalCount' => $apple_pay_interval_count,
+			],
+			'trialBilling'               => [
+				'amount'                        => $trial_amount,
+				'label'                         => $sign_up_fee > 0
+					? __( 'Sign-up fee', 'woocommerce-payments' )
+					: __( 'Free trial', 'woocommerce-payments' ),
+				'recurringPaymentIntervalUnit'  => $trial_interval_unit,
+				'recurringPaymentIntervalCount' => $trial_interval_count,
+			],
+			// Pass this flag to frontend to indicate Apple Pay only should be shown.
+			'applePayOnly'              => true,
+			'has_trial'                  => true,
+			'trial_length'               => $trial_length,
+			'trial_period'               => $trial_period,
+		];
 	}
 }

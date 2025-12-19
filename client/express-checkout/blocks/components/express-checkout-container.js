@@ -11,6 +11,7 @@ import ExpressCheckoutComponent from './express-checkout-component';
 import {
 	getExpressCheckoutButtonAppearance,
 	getExpressCheckoutData,
+	getSubscriptionTrialData,
 } from '../../utils';
 import { transformPrice } from '../../transformers/wc-to-stripe';
 import '../express-checkout-element.scss';
@@ -22,15 +23,26 @@ const ExpressCheckoutContainer = ( props ) => {
 		return api.loadStripeForExpressCheckout();
 	}, [ api ] );
 
+	// For subscriptions with free trial, the cart total may be 0.
+	// Stripe requires amount > 0 for elements(), so we use the recurring billing amount.
+	const subscriptionTrialData = getSubscriptionTrialData();
+	let elementAmount = ! isPreview
+		? transformPrice( billing.cartTotal.value, {
+				currency_minor_unit: billing.currency.minorUnit ?? 0,
+		  } )
+		: 10;
+
+	if (
+		elementAmount === 0 &&
+		subscriptionTrialData?.regularBilling?.amount > 0
+	) {
+		elementAmount = subscriptionTrialData.regularBilling.amount;
+	}
+
 	const options = {
 		mode: 'payment',
 		paymentMethodCreation: 'manual',
-		// ensuring that the total amount is transformed to the correct format.
-		amount: ! isPreview
-			? transformPrice( billing.cartTotal.value, {
-					currency_minor_unit: billing.currency.minorUnit ?? 0,
-			  } )
-			: 10,
+		amount: elementAmount,
 		currency: ! isPreview ? billing.currency.code.toLowerCase() : 'usd',
 		appearance: getExpressCheckoutButtonAppearance( buttonAttributes ),
 		locale: getExpressCheckoutData( 'stripe' )?.locale ?? 'en',

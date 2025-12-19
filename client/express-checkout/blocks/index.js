@@ -10,6 +10,7 @@ import { PAYMENT_METHOD_NAME_EXPRESS_CHECKOUT_ELEMENT } from 'wcpay/checkout/con
 import { getConfig } from 'wcpay/utils/checkout';
 import ExpressCheckoutContainer from './components/express-checkout-container';
 import { checkPaymentMethodIsAvailable } from '../utils/checkPaymentMethodIsAvailable';
+import { getSubscriptionTrialData } from '../utils';
 import '../compatibility/wc-order-attribution';
 
 export const expressCheckoutElementApplePay = ( api ) => ( {
@@ -72,6 +73,13 @@ export const expressCheckoutElementGooglePay = ( api ) => ( {
 	},
 	canMakePayment: ( { cart } ) => {
 		if ( typeof wcpayExpressCheckoutParams === 'undefined' ) {
+			return false;
+		}
+
+		// Google Pay doesn't support recurringPaymentRequest, so hide it for subscriptions with trial.
+		// See: https://docs.stripe.com/js/elements_object/create_express_checkout_element#express_checkout_element_create-options-applePay
+		const subscriptionTrialData = getSubscriptionTrialData();
+		if ( subscriptionTrialData?.has_trial ) {
 			return false;
 		}
 
