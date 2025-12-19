@@ -1,4 +1,4 @@
 Significance: patch
 Type: fix
 
-fix: stripe link availability on checkout outside of USD
+Fix: Stripe Link availability on checkout outside of USD
