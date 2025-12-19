@@ -13,16 +13,12 @@ use WCPay\Core\Mode;
 use WCPay\Core\Server\Request;
 use WCPay\Migrations\Allowed_Payment_Request_Button_Types_Update;
 use WCPay\Payment_Methods\CC_Payment_Method;
-use WCPay\Payment_Methods\Becs_Payment_Method;
-use WCPay\Payment_Methods\Sepa_Payment_Method;
 use WCPay\Payment_Methods\UPE_Payment_Method;
-use WCPay\Payment_Methods\Multibanco_Payment_Method;
 use WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\SofortDefinition;
 use WCPay\WooPay_Tracker;
 use WCPay\WooPay\WooPay_Utilities;
 use WCPay\WooPay\WooPay_Order_Status_Sync;
-use WCPay\Payment_Methods\Link_Payment_Method;
 use WCPay\Session_Rate_Limiter;
 use WCPay\Database_Cache;
 use WCPay\WC_Payments_Checkout;
@@ -36,7 +32,6 @@ use WCPay\WooPay\WooPay_Scheduler;
 use WCPay\WooPay\WooPay_Session;
 use WCPay\Compatibility_Service;
 use WCPay\Duplicates_Detection_Service;
-use WCPay\Payment_Methods\Grabpay_Payment_Method;
 use WCPay\WC_Payments_Currency_Manager;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 
@@ -435,11 +430,6 @@ class WC_Payments {
 		include_once __DIR__ . '/class-wc-payments-checkout.php';
 		include_once __DIR__ . '/payment-methods/class-upe-payment-method.php';
 		include_once __DIR__ . '/payment-methods/class-cc-payment-method.php';
-		include_once __DIR__ . '/payment-methods/class-sepa-payment-method.php';
-		include_once __DIR__ . '/payment-methods/class-becs-payment-method.php';
-		include_once __DIR__ . '/payment-methods/class-link-payment-method.php';
-		include_once __DIR__ . '/payment-methods/class-multibanco-payment-method.php';
-		include_once __DIR__ . '/payment-methods/class-grabpay-payment-method.php';
 		include_once __DIR__ . '/inline-script-payloads/class-woo-payments-payment-methods-config.php';
 		include_once __DIR__ . '/express-checkout/class-wc-payments-express-checkout-button-helper.php';
 		include_once __DIR__ . '/class-wc-payment-token-wcpay-sepa.php';
@@ -578,11 +568,6 @@ class WC_Payments {
 		 */
 		$payment_method_classes = [
 			CC_Payment_Method::class,
-			Sepa_Payment_Method::class,
-			Becs_Payment_Method::class,
-			Link_Payment_Method::class,
-			Multibanco_Payment_Method::class,
-			Grabpay_Payment_Method::class,
 		];
 
 		$payment_methods = [];
