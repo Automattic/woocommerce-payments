@@ -20,7 +20,7 @@ import PaymentDeleteIllustration from '../components/payment-delete-illustration
 import WooCardIcon from 'assets/images/cards/woo-card.svg?asset';
 import ConfirmationModal from '../components/confirmation-modal';
 import paymentMethodsMap from 'wcpay/payment-methods-map';
-import { LinkIcon, WooIconShort } from 'wcpay/payment-methods-icons';
+import { WooIconShort } from 'wcpay/payment-methods-icons';
 
 const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 	const [ enabledMethodIds ] = useEnabledPaymentMethodIds();
@@ -119,11 +119,8 @@ const DisableConfirmationModal = ( { onClose, onConfirm } ) => {
 				{ isStripeLinkEnabled && (
 					<li>
 						<PaymentMethodIcon
-							Icon={ LinkIcon }
-							label={ __(
-								'Link by Stripe',
-								'woocommerce-payments'
-							) }
+							Icon={ paymentMethodsMap.link.icon }
+							label={ paymentMethodsMap.link.label }
 						/>
 					</li>
 				) }

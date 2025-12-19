@@ -15,8 +15,8 @@ import {
 	useWooPayEnabledSettings,
 } from 'wcpay/data';
 import './style.scss';
-import { LinkIcon } from 'wcpay/payment-methods-icons';
 import InlineNotice from 'wcpay/components/inline-notice';
+import methodsConfiguration from 'wcpay/payment-methods-map';
 
 const LinkExpressCheckoutItem = (): React.ReactElement | null => {
 	const availablePaymentMethodIds = useGetAvailablePaymentMethodIds();
@@ -52,12 +52,14 @@ const LinkExpressCheckoutItem = (): React.ReactElement | null => {
 		return null;
 	}
 
+	const { icon: LinkIcon } = methodsConfiguration.link;
+
 	return (
 		<li className="express-checkout" id="express-checkouts-link">
 			<div className="express-checkout__row">
 				<div className="express-checkout__checkbox">
 					<CheckboxControl
-						label={ __( 'Link by Stripe', 'woocommerce-payments' ) }
+						label={ methodsConfiguration.link.label }
 						disabled={ isWooPayEnabled }
 						checked={ isStripeLinkEnabled }
 						onChange={ updateStripeLinkCheckout }
@@ -71,53 +73,42 @@ const LinkExpressCheckoutItem = (): React.ReactElement | null => {
 								<LinkIcon />
 							</div>
 							<div className="express-checkout__label express-checkout__label-mobile">
-								{ __(
-									'Link by Stripe',
-									'woocommerce-payments'
-								) }
+								{ methodsConfiguration.link.label }
 							</div>
 							<div className="express-checkout__label-container">
 								<div className="express-checkout__label express-checkout__label-desktop">
-									{ __(
-										'Link by Stripe',
-										'woocommerce-payments'
-									) }
+									{ methodsConfiguration.link.label }
 								</div>
 								<div className="express-checkout__description">
+									{ methodsConfiguration.link.description }
+									{ ! isStripeLinkEnabled && ' ' }
 									{
 										/* eslint-disable jsx-a11y/anchor-has-content */
-										isStripeLinkEnabled
-											? /* eslint-disable max-len */
-											  __(
-													'Link autofills your customers’ payment and shipping details to deliver an easy and seamless checkout experience.',
+										! isStripeLinkEnabled &&
+											interpolateComponents( {
+												mixedString: __(
+													'By enabling this feature, you agree to the ' +
+														'{{stripeLinkTerms}}Link by Stripe terms{{/stripeLinkTerms}}, ' +
+														'and {{privacyPolicy}}Privacy Policy{{/privacyPolicy}}.',
 													'woocommerce-payments'
-											  )
-											: interpolateComponents( {
-													mixedString: __(
-														'Link autofills your customers’ payment and shipping details to ' +
-															'deliver an easy and seamless checkout experience. ' +
-															'By enabling this feature, you agree to the ' +
-															'{{stripeLinkTerms}}Link by Stripe terms{{/stripeLinkTerms}}, ' +
-															'and {{privacyPolicy}}Privacy Policy{{/privacyPolicy}}.',
-														'woocommerce-payments'
+												),
+												components: {
+													stripeLinkTerms: (
+														<a
+															target="_blank"
+															rel="noreferrer"
+															href="https://link.com/terms"
+														/>
 													),
-													components: {
-														stripeLinkTerms: (
-															<a
-																target="_blank"
-																rel="noreferrer"
-																href="https://link.com/terms"
-															/>
-														),
-														privacyPolicy: (
-															<a
-																target="_blank"
-																rel="noreferrer"
-																href="https://link.com/privacy"
-															/>
-														),
-													},
-											  } )
+													privacyPolicy: (
+														<a
+															target="_blank"
+															rel="noreferrer"
+															href="https://link.com/privacy"
+														/>
+													),
+												},
+											} )
 										/* eslint-enable jsx-a11y/anchor-has-content */
 										/* eslint-enable max-len */
 									}
