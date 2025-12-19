@@ -75,63 +75,63 @@ export const waitAndSkipTourComponent = async (
 	}
 };
 
-export const ensureOrderIsProcessed = async ( page: Page, orderId: string ) => {
-	// Navigate to action scheduler to manually run order import
-	await page.goto(
-		`/wp-admin/tools.php?page=action-scheduler&status=pending&s=${ orderId }`,
-		{ waitUntil: 'load' }
-	);
+export const ensureOrderIsProcessed = async (
+	page: Page,
+	orderId: string
+) => {
+	// Use WP-CLI to directly sync the order to WooCommerce Analytics tables.
+	// This is more reliable than clicking through Action Scheduler UI because:
+	// 1. Scheduled actions may not be in "pending" status (could be scheduled for future)
+	// 2. The UI approach has race conditions with action scheduling
+	// 3. Direct WP-CLI execution is synchronous and deterministic
 
-	// Wait for page content to load
-	await page.waitForLoadState( 'networkidle' );
+	try {
+		// First, run any pending wc-admin scheduled actions to ensure import jobs exist
+		await qit.wp(
+			'action-scheduler run --hooks=wc-admin_import_orders --force',
+			true
+		);
+	} catch ( error ) {
+		// Action may not exist yet, continue with direct sync
+	}
 
-	// Try multiple times to find and run the import action
-	let attempts = 0;
-	const maxAttempts = 2;
-
-	while ( attempts < maxAttempts ) {
+	// Force WooCommerce Analytics to sync the specific order using wc admin import
+	// This directly inserts the order into wp_wc_order_stats table
+	try {
+		await qit.wp(
+			`wc admin import --skip-orders=false --days=1`,
+			true
+		);
+	} catch ( error ) {
+		// Fallback: Try the legacy approach if wc admin import isn't available
 		try {
-			// Check if the run button exists
-			const runButton = page.locator(
-				'td:has-text("wc-admin_import_orders") a:has-text("Run")'
-			);
-
-			if ( ( await runButton.count() ) > 0 ) {
-				await runButton.first().click( { timeout: 10000 } );
-
-				// Wait for action to process
-				await page.waitForTimeout( 2000 );
-
-				// Check if the action is no longer pending (successfully processed)
-				await page.reload();
-				await page.waitForLoadState( 'networkidle' );
-
-				const stillPending = await page
-					.locator(
-						'td:has-text("wc-admin_import_orders") a:has-text("Run")'
-					)
-					.count();
-
-				if ( stillPending === 0 ) {
-					// Action processed successfully
-					break;
+			// Manually run the order stats sync for this specific order
+			const syncScript = `
+				if ( class_exists( 'Automattic\\\\WooCommerce\\\\Admin\\\\API\\\\Reports\\\\Orders\\\\Stats\\\\DataStore' ) ) {
+					$order = wc_get_order( ${ orderId } );
+					if ( $order ) {
+						Automattic\\\\WooCommerce\\\\Admin\\\\API\\\\Reports\\\\Orders\\\\Stats\\\\DataStore::sync_order( ${ orderId } );
+						echo 'synced';
+					}
 				}
-			} else {
-				// No pending import actions found
-				break;
-			}
-		} catch ( error ) {
-			// Continue to next attempt
-		}
-
-		attempts++;
-		if ( attempts < maxAttempts ) {
-			// Wait before retrying
-			await page.waitForTimeout( 1000 );
+			`;
+			await qit.wp( `eval '${ syncScript.replace( /'/g, "'\\''" ) }'`, true );
+		} catch ( innerError ) {
+			// Continue anyway - the order may already be synced
 		}
 	}
 
-	// Final wait for analytics data to be processed
+	// Also try running any queued analytics imports via action scheduler
+	try {
+		await qit.wp(
+			'action-scheduler run --hooks=wc-admin_import_orders,wc-admin_process_orders_milestone --force',
+			true
+		);
+	} catch ( error ) {
+		// Ignore errors - hooks may not exist
+	}
+
+	// Wait for analytics data to be fully indexed
 	await page.waitForTimeout( 2000 );
 };
 
