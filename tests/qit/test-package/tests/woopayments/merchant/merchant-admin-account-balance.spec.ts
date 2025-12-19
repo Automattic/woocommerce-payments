@@ -63,10 +63,12 @@ test.describe(
 			}
 		);
 
+		// @critical tag intentionally omitted until test is fully implemented.
+		// Unimplemented tests should not be marked critical as they provide false confidence in coverage.
 		test(
 			'View the total and available account balance for multiple deposit currencies',
 			{
-				tag: [ '@critical', '@todo' ],
+				tag: '@todo',
 				annotation: [
 					{
 						type: 'issue',

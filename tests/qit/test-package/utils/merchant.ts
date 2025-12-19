@@ -12,6 +12,11 @@ type WidgetEntry = {
 	instance?: unknown;
 };
 
+/**
+ * Default theme used as fallback when active theme detection fails.
+ */
+const DEFAULT_THEME = 'twentytwentyfour';
+
 const parseJson = < T >( value: string, fallback: T ): T => {
 	try {
 		return JSON.parse( value ) as T;
@@ -92,16 +97,7 @@ export const ensureOrderIsProcessed = async ( page: Page, orderId: string ) => {
 			);
 
 			if ( ( await runButton.count() ) > 0 ) {
-				// Try $eval first (more reliable in QIT environments)
-				try {
-					await page.$eval(
-						'td:has-text("wc-admin_import_orders") a:has-text("Run")',
-						( el: HTMLLinkElement ) => el.click()
-					);
-				} catch ( evalError ) {
-					// Fallback to modern approach
-					await runButton.first().click( { timeout: 10000 } );
-				}
+				await runButton.first().click( { timeout: 10000 } );
 
 				// Wait for action to process
 				await page.waitForTimeout( 2000 );
@@ -773,10 +769,10 @@ export const getActiveThemeSlug = async (): Promise< string > => {
 		const activeTheme = await qit.wp( 'option get stylesheet', true );
 		return typeof activeTheme === 'string'
 			? activeTheme.trim()
-			: 'twentytwentyfour';
+			: DEFAULT_THEME;
 	} catch ( error ) {
 		// Default fallback theme
-		return 'twentytwentyfour';
+		return DEFAULT_THEME;
 	}
 };
 

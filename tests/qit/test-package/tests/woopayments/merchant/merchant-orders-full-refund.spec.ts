@@ -2,12 +2,7 @@
  * Internal dependencies
  */
 import { test, expect } from '../../../fixtures/auth';
-import {
-	deactivateMulticurrency,
-	isMulticurrencyEnabled,
-	goToOrder,
-	goToPaymentDetails,
-} from '../../../utils/merchant';
+import { goToOrder, goToPaymentDetails } from '../../../utils/merchant';
 import { placeOrderWithCurrency } from '../../../utils/shopper';
 
 test.describe(
@@ -17,24 +12,6 @@ test.describe(
 		let orderId: string;
 		let orderAmount: string;
 		let paymentIntentId: string;
-		let wasMulticurrencyEnabled: boolean;
-
-		test.beforeAll( async ( { adminPage } ) => {
-			// Disable multi-currency in the merchant settings. This step is important because local environment setups
-			// might have multi-currency enabled. We need to ensure a consistent environment for the test.
-			wasMulticurrencyEnabled = await isMulticurrencyEnabled( adminPage );
-			if ( wasMulticurrencyEnabled ) {
-				await deactivateMulticurrency( adminPage );
-			}
-		} );
-
-		test.afterAll( async () => {
-			// Restore multi-currency state if it was previously enabled
-			if ( wasMulticurrencyEnabled ) {
-				// Note: We don't need to reactivate multicurrency as other specs manage their own state
-				// This is just for consistency with the legacy test
-			}
-		} );
 
 		test(
 			'should process a full refund for an order',

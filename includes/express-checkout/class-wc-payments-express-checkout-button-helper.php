@@ -490,14 +490,10 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * Checks the cart to see if all items are allowed to be used.
 	 *
 	 * @return boolean
-	 *
-	 * @psalm-suppress UndefinedClass
 	 */
 	public function has_allowed_items_in_cart() {
 		/**
 		 * Pre Orders compatbility where we don't support charge upon release.
-		 *
-		 * @psalm-suppress UndefinedClass
 		 */
 		if ( class_exists( 'WC_Pre_Orders_Cart' ) && WC_Pre_Orders_Cart::cart_contains_pre_order() && class_exists( 'WC_Pre_Orders_Product' ) && WC_Pre_Orders_Product::product_is_charged_upon_release( WC_Pre_Orders_Cart::get_pre_order_product() ) ) {
 			return false;
@@ -524,8 +520,6 @@ class WC_Payments_Express_Checkout_Button_Helper {
 
 			/**
 			 * Trial subscriptions with shipping are not supported.
-			 *
-			 * @psalm-suppress UndefinedClass
 			 */
 			if ( class_exists( 'WC_Subscriptions_Product' ) && WC_Subscriptions_Product::is_subscription( $_product ) && $_product->needs_shipping() && WC_Subscriptions_Product::get_trial_length( $_product ) > 0 ) {
 				return false;
@@ -669,12 +663,6 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		$product      = $this->get_product();
 		$is_supported = true;
 
-		/**
-		 * Ignore undefined classes from 3rd party plugins.
-		 *
-		 * @psalm-suppress UndefinedClass
-		 */
-
 		if ( is_null( $product ) || ! is_object( $product ) ) {
 			$is_supported = false;
 		} else {
@@ -713,8 +701,6 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	 * @return mixed Total price.
 	 *
 	 * @throws Invalid_Price_Exception Whenever a product has no price.
-	 *
-	 * @psalm-suppress UndefinedClass
 	 */
 	public function get_product_price( $product, ?bool $is_deposit = null, int $deposit_plan_id = 0 ) {
 		// If prices should include tax, using tax inclusive price.

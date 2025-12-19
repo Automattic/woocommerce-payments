@@ -12,10 +12,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 use WC_Payments;
-use WCPay\Payment_Methods\Becs_Payment_Method;
 use WCPay\Payment_Methods\CC_Payment_Method;
-use WCPay\Payment_Methods\Sepa_Payment_Method;
-use WCPay\Payment_Methods\Grabpay_Payment_Method;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 
 /**
@@ -90,11 +87,7 @@ class Duplicates_Detection_Service {
 		 * FLAG: PAYMENT_METHODS_LIST
 		 * As payment methods are converted to use definitions, they need to be removed from the list below.
 		 */
-		$keywords = [
-			'sepa'    => Sepa_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-			'becs'    => Becs_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-			'grabpay' => Grabpay_Payment_Method::PAYMENT_METHOD_STRIPE_ID,
-		];
+		$keywords = [];
 
 		// Get all payment method definitions.
 		$payment_method_definitions = PaymentMethodDefinitionRegistry::instance()->get_all_payment_method_definitions();
