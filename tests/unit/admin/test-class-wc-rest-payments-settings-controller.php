@@ -16,17 +16,16 @@ use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Duplicates_Detection_Service;
 use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\Payment_Methods\CC_Payment_Method;
-use WCPay\Payment_Methods\Becs_Payment_Method;
-use WCPay\Payment_Methods\Sepa_Payment_Method;
-use WCPay\Payment_Methods\Link_Payment_Method;
-use WCPay\PaymentMethods\Configs\Definitions\AffirmDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\ApplePayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\BecsDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\EpsDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\GooglePayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\IdealDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\LinkDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\P24Definition;
+use WCPay\PaymentMethods\Configs\Definitions\SepaDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\SofortDefinition;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 use WCPay\Session_Rate_Limiter;
@@ -164,19 +163,19 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$payment_method_definitions = [
 			ApplePayDefinition::class,
 			BancontactDefinition::class,
+			BecsDefinition::class,
 			EpsDefinition::class,
 			GiropayDefinition::class,
 			GooglePayDefinition::class,
 			IdealDefinition::class,
+			LinkDefinition::class,
 			P24Definition::class,
+			SepaDefinition::class,
 			SofortDefinition::class,
 		];
 
 		$payment_method_classes = [
-			Becs_Payment_Method::class,
 			CC_Payment_Method::class,
-			Sepa_Payment_Method::class,
-			Link_Payment_Method::class,
 		];
 
 		// Create the main payment method (CC) for the gateway constructor.
