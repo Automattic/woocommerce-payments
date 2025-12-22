@@ -684,7 +684,7 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 						sprintf(
 							'[DRY RUN] Order %d would be remediated: %s',
 							$order->get_id(),
-							implode( '; ', $changes )
+							wp_strip_all_tags( implode( '; ', $changes ) )
 						),
 						[ 'source' => 'wcpay-fee-remediation' ]
 					);
