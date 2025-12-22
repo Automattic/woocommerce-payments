@@ -3649,14 +3649,15 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 					'apple_google_pay_in_payment_methods_options' => 'yes',
 					'manual_capture'                       => 'no',
 					'enable_logging'                       => 'no',
-					'payment_request_button_locations'     => [ 'product', 'cart' ],
 					'payment_request_button_type'          => 'default',
 					'payment_request_button_size'          => 'default',
 					'payment_request_button_theme'         => 'dark',
 					'payment_request_button_border_radius' => '4',
-					'platform_checkout_button_locations'   => [ 'product', 'cart' ],
 					'platform_checkout_store_logo'         => '',
 					'platform_checkout_custom_message'     => '',
+					'express_checkout_product_methods'     => [ 'payment_request', 'woopay' ],
+					'express_checkout_cart_methods'        => [ 'payment_request', 'woopay' ],
+					'express_checkout_checkout_methods'    => [],
 				];
 				return $options[ $key ] ?? $default;
 			}
@@ -3755,7 +3756,7 @@ class WC_Payments_Account_Test extends WCPAY_UnitTestCase {
 		$this->assertArrayHasKey( 'button_theme', $captured_data['payment_request'] );
 		$this->assertArrayHasKey( 'button_border_radius', $captured_data['payment_request'] );
 		$this->assertTrue( $captured_data['payment_request']['enabled'] );
-		$this->assertEquals( [ 'product', 'cart' ], $captured_data['payment_request']['enabled_locations'] );
+		$this->assertEquals( [ 'product', 'cart' ], $captured_data['payment_request']['enabled_locations'] ); // payment_request is in product and cart, not checkout.
 		$this->assertEquals( 'default', $captured_data['payment_request']['button_type'] );
 		$this->assertEquals( 'default', $captured_data['payment_request']['button_size'] );
 		$this->assertEquals( 'dark', $captured_data['payment_request']['button_theme'] );

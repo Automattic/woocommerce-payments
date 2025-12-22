@@ -393,7 +393,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 
 		if ( self::GATEWAY_ID === $this->id ) {
 			$main_gateway_only_fields = [
-				'account_statement_descriptor'       => [
+				'account_statement_descriptor'      => [
 					'type'        => 'account_statement_descriptor',
 					'title'       => __( 'Customer bank statement', 'woocommerce-payments' ),
 					'description' => WC_Payments_Utils::esc_interpolated_html(
@@ -401,14 +401,14 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						[ 'a' => '<a href="https://woocommerce.com/document/woopayments/customization-and-translation/bank-statement-descriptor/" target="_blank" rel="noopener noreferrer">' ]
 					),
 				],
-				'manual_capture'                     => [
+				'manual_capture'                    => [
 					'title'       => __( 'Manual capture', 'woocommerce-payments' ),
 					'label'       => __( 'Issue an authorization on checkout, and capture later.', 'woocommerce-payments' ),
 					'type'        => 'checkbox',
 					'description' => __( 'Charge must be captured within 7 days of authorization, otherwise the authorization and order will be canceled.', 'woocommerce-payments' ),
 					'default'     => 'no',
 				],
-				'saved_cards'                        => [
+				'saved_cards'                       => [
 					'title'       => __( 'Saved cards', 'woocommerce-payments' ),
 					'label'       => __( 'Enable payment via saved cards', 'woocommerce-payments' ),
 					'type'        => 'checkbox',
@@ -416,7 +416,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					'default'     => 'yes',
 					'desc_tip'    => true,
 				],
-				'test_mode'                          => [
+				'test_mode'                         => [
 					'title'       => __( 'Test mode', 'woocommerce-payments' ),
 					'label'       => __( 'Enable test mode', 'woocommerce-payments' ),
 					'type'        => 'checkbox',
@@ -424,19 +424,19 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 					'default'     => 'no',
 					'desc_tip'    => true,
 				],
-				'enable_logging'                     => [
+				'enable_logging'                    => [
 					'title'       => __( 'Debug log', 'woocommerce-payments' ),
 					'label'       => __( 'When enabled debug notes will be added to the log.', 'woocommerce-payments' ),
 					'type'        => 'checkbox',
 					'description' => '',
 					'default'     => 'no',
 				],
-				'payment_request_details'            => [
+				'payment_request_details'           => [
 					'title'       => __( 'Payment request buttons', 'woocommerce-payments' ),
 					'type'        => 'title',
 					'description' => '',
 				],
-				'payment_request_button_type'        => [
+				'payment_request_button_type'       => [
 					'title'       => __( 'Button type', 'woocommerce-payments' ),
 					'type'        => 'select',
 					'description' => __( 'Select the button type you would like to show.', 'woocommerce-payments' ),
@@ -449,7 +449,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						'book'    => __( 'Book', 'woocommerce-payments' ),
 					],
 				],
-				'payment_request_button_theme'       => [
+				'payment_request_button_theme'      => [
 					'title'       => __( 'Button theme', 'woocommerce-payments' ),
 					'type'        => 'select',
 					'description' => __( 'Select the button theme you would like to show.', 'woocommerce-payments' ),
@@ -461,21 +461,21 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						'light-outline' => __( 'Light-Outline', 'woocommerce-payments' ),
 					],
 				],
-				'payment_request_button_height'      => [
+				'payment_request_button_height'     => [
 					'title'       => __( 'Button height', 'woocommerce-payments' ),
 					'type'        => 'text',
 					'description' => __( 'Enter the height you would like the button to be in pixels. Width will always be 100%.', 'woocommerce-payments' ),
 					'default'     => '44',
 					'desc_tip'    => true,
 				],
-				'payment_request_button_label'       => [
+				'payment_request_button_label'      => [
 					'title'       => __( 'Custom button label', 'woocommerce-payments' ),
 					'type'        => 'text',
 					'description' => __( 'Enter the custom text you would like the button to have.', 'woocommerce-payments' ),
 					'default'     => __( 'Buy now', 'woocommerce-payments' ),
 					'desc_tip'    => true,
 				],
-				'payment_request_button_locations'   => [
+				'payment_request_button_locations'  => [
 					'title'             => __( 'Button locations', 'woocommerce-payments' ),
 					'type'              => 'multiselect',
 					'description'       => __( 'Select where you would like to display the button.', 'woocommerce-payments' ),
@@ -495,13 +495,13 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						'data-placeholder' => __( 'Select pages', 'woocommerce-payments' ),
 					],
 				],
-				'upe_enabled_payment_method_ids'     => [
+				'upe_enabled_payment_method_ids'    => [
 					'title'   => __( 'Payments accepted on checkout', 'woocommerce-payments' ),
 					'type'    => 'multiselect',
 					'default' => [ 'card' ],
 					'options' => [],
 				],
-				'payment_request_button_size'        => [
+				'payment_request_button_size'       => [
 					'title'       => __( 'Size of the button displayed for Express Checkouts', 'woocommerce-payments' ),
 					'type'        => 'select',
 					'description' => __( 'Select the size of the button.', 'woocommerce-payments' ),
@@ -513,27 +513,40 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 						'large'  => __( 'Large', 'woocommerce-payments' ),
 					],
 				],
-				'platform_checkout_button_locations' => [
-					'title'             => __( 'WooPay button locations', 'woocommerce-payments' ),
-					'type'              => 'multiselect',
-					'description'       => __( 'Select where you would like to display the button.', 'woocommerce-payments' ),
-					'default'           => [
-						'product',
-						'cart',
-						'checkout',
-					],
-					'class'             => 'wc-enhanced-select',
-					'desc_tip'          => true,
-					'options'           => [
-						'product'  => __( 'Product', 'woocommerce-payments' ),
-						'cart'     => __( 'Cart', 'woocommerce-payments' ),
-						'checkout' => __( 'Checkout', 'woocommerce-payments' ),
-					],
-					'custom_attributes' => [
-						'data-placeholder' => __( 'Select pages', 'woocommerce-payments' ),
+				'platform_checkout_custom_message'  => [ 'default' => __( 'By placing this order, you agree to our [terms] and understand our [privacy_policy].', 'woocommerce-payments' ) ],
+				'express_checkout_product_methods'  => [
+					'title'   => __( 'Express checkout methods on product page', 'woocommerce-payments' ),
+					'type'    => 'multiselect',
+					'default' => [ 'payment_request', 'woopay' ],
+					'options' => [
+						'payment_request' => __( 'Apple Pay / Google Pay', 'woocommerce-payments' ),
+						'woopay'          => __( 'WooPay', 'woocommerce-payments' ),
+						'amazon_pay'      => __( 'Amazon Pay', 'woocommerce-payments' ),
+						'link'            => __( 'Link', 'woocommerce-payments' ),
 					],
 				],
-				'platform_checkout_custom_message'   => [ 'default' => __( 'By placing this order, you agree to our [terms] and understand our [privacy_policy].', 'woocommerce-payments' ) ],
+				'express_checkout_cart_methods'     => [
+					'title'   => __( 'Express checkout methods on cart page', 'woocommerce-payments' ),
+					'type'    => 'multiselect',
+					'default' => [ 'payment_request', 'woopay' ],
+					'options' => [
+						'payment_request' => __( 'Apple Pay / Google Pay', 'woocommerce-payments' ),
+						'woopay'          => __( 'WooPay', 'woocommerce-payments' ),
+						'amazon_pay'      => __( 'Amazon Pay', 'woocommerce-payments' ),
+						'link'            => __( 'Link', 'woocommerce-payments' ),
+					],
+				],
+				'express_checkout_checkout_methods' => [
+					'title'   => __( 'Express checkout methods on checkout page', 'woocommerce-payments' ),
+					'type'    => 'multiselect',
+					'default' => [ 'payment_request', 'woopay' ],
+					'options' => [
+						'payment_request' => __( 'Apple Pay / Google Pay', 'woocommerce-payments' ),
+						'woopay'          => __( 'WooPay', 'woocommerce-payments' ),
+						'amazon_pay'      => __( 'Amazon Pay', 'woocommerce-payments' ),
+						'link'            => __( 'Link', 'woocommerce-payments' ),
+					],
+				],
 			];
 
 			$this->form_fields = array_merge( $this->form_fields, $main_gateway_only_fields );

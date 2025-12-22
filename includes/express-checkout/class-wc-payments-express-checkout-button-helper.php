@@ -229,16 +229,19 @@ class WC_Payments_Express_Checkout_Button_Helper {
 	}
 
 	/**
-	 * Checks if button is available at a given location.
+	 * Checks if a specific express checkout method is enabled at a given location.
 	 *
-	 * @param string $location Location.
-	 * @param string $option_name Option name.
+	 * Uses the new location-centric settings (express_checkout_{location}_methods).
+	 *
+	 * @param string $location Location (product, cart, checkout).
+	 * @param string $method_id Method identifier (payment_request, woopay, amazon_pay, link).
 	 * @return boolean
 	 */
-	public function is_available_at( $location, $option_name ) {
-		$available_locations = $this->gateway->get_option( $option_name );
-		if ( $available_locations && is_array( $available_locations ) ) {
-			return in_array( $location, $available_locations, true );
+	public function is_express_checkout_method_enabled_at( $location, $method_id ) {
+		$enabled_methods = $this->gateway->get_option( "express_checkout_{$location}_methods" );
+
+		if ( $enabled_methods && is_array( $enabled_methods ) ) {
+			return in_array( $method_id, $enabled_methods, true );
 		}
 
 		return false;
@@ -384,17 +387,17 @@ class WC_Payments_Express_Checkout_Button_Helper {
 		}
 
 		// Product page, but not available in settings.
-		if ( $this->is_product() && ! $this->is_available_at( 'product', WC_Payments_Express_Checkout_Button_Handler::BUTTON_LOCATIONS ) ) {
+		if ( $this->is_product() && ! $this->is_express_checkout_method_enabled_at( 'product', 'payment_request' ) ) {
 			return false;
 		}
 
 		// Checkout page, but not available in settings.
-		if ( $this->is_checkout() && ! $this->is_available_at( 'checkout', WC_Payments_Express_Checkout_Button_Handler::BUTTON_LOCATIONS ) ) {
+		if ( $this->is_checkout() && ! $this->is_express_checkout_method_enabled_at( 'checkout', 'payment_request' ) ) {
 			return false;
 		}
 
 		// Cart page, but not available in settings.
-		if ( $this->is_cart() && ! $this->is_available_at( 'cart', WC_Payments_Express_Checkout_Button_Handler::BUTTON_LOCATIONS ) ) {
+		if ( $this->is_cart() && ! $this->is_express_checkout_method_enabled_at( 'cart', 'payment_request' ) ) {
 			return false;
 		}
 
