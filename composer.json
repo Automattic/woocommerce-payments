@@ -16,16 +16,17 @@
             "composer/installers": true,
             "automattic/jetpack-autoloader": true,
             "cweagans/composer-patches": true,
-            "kalessil/production-dependencies-guard": true
+            "kalessil/production-dependencies-guard": true,
+            "phpstan/extension-installer": true
         }
     },
     "require": {
         "php": ">=7.3",
         "ext-json": "*",
-        "automattic/jetpack-connection": "6.7.3",
-        "automattic/jetpack-config": "3.0.1",
-        "automattic/jetpack-autoloader": "5.0.2",
-        "automattic/jetpack-sync": "4.8.3",
+        "automattic/jetpack-connection": "6.19.12",
+        "automattic/jetpack-config": "3.1.1",
+        "automattic/jetpack-autoloader": "5.0.15",
+        "automattic/jetpack-sync": "4.24.1",
         "woocommerce/subscriptions-core": "6.7.1",
         "automattic/jetpack-constants": "3.0.8"
     },
@@ -35,7 +36,8 @@
         "woocommerce/woocommerce-sniffs": "1.0.0",
         "woocommerce/action-scheduler": "3.8.2",
         "kalessil/production-dependencies-guard": "dev-master",
-        "vimeo/psalm": "4.13.1",
+        "phpstan/phpstan": "^1.10",
+        "phpstan/extension-installer": "^1.3",
         "php-stubs/wordpress-stubs": "5.9.6",
         "php-stubs/woocommerce-stubs": "6.8.0",
         "rregeer/phpunit-coverage-check": "0.3.1",
@@ -43,7 +45,7 @@
         "cweagans/composer-patches": "1.7.1",
         "automattic/jetpack-changelogger": "3.3.2",
         "spatie/phpunit-watcher": "1.23.6",
-        "woocommerce/qit-cli": "0.10.0",
+        "woocommerce/qit-cli": "dev-trunk",
         "slevomat/coding-standard": "8.15.0",
         "dg/bypass-finals": "1.5.1",
         "sirbrillig/phpcs-variable-analysis": "^2.11",
@@ -58,13 +60,17 @@
         ],
         "phpcbf": [
             "phpcbf -p"
+        ],
+        "phpstan": [
+            "phpstan analyse"
         ]
     },
     "extra": {
         "scripts-description": {
             "test": "Run unit tests",
             "phpcs": "Analyze code against the WordPress coding standards with PHP_CodeSniffer",
-            "phpcbf": "Fix coding standards warnings/errors automatically with PHP Code Beautifier"
+            "phpcbf": "Fix coding standards warnings/errors automatically with PHP Code Beautifier",
+            "phpstan": "Run static analysis with PHPStan"
         },
         "installer-disable": true,
         "production-dependencies-guard": [

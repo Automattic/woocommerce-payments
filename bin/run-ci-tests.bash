@@ -8,7 +8,7 @@ IFS=$'\n\t'
 WCPAY_DIR="$GITHUB_WORKSPACE"
 
 echo 'Updating composer version & Install dependencies...'
-composer self-update && composer install --no-progress
+composer self-update && composer install --no-progress --ignore-platform-req=php
 
 # SVN is needed when installing WP.
 if ! [ -x "$(command -v svn)" ]; then

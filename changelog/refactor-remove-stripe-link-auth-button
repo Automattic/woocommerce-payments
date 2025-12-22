@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+refactor: remove Stripe Link autofill modal button from checkout

@@ -27,7 +27,7 @@ jobs:
       - name: "Set up PHP"
         uses: ./.github/actions/setup-php
       # Install composer packages.
-      - run: composer self-update && composer install --no-progress
+      - run: composer self-update && composer install --no-progress --ignore-platform-req=php
       # Fetch the target branch before running the check.
       - name: Fetch the target origin branch
         run: git fetch origin $GITHUB_BASE_REF

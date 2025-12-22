@@ -184,6 +184,7 @@ global.wooPaymentsPaymentMethodDefinitions = {
 			accepts_only_domestic_payment: true,
 		}
 	),
+	link: buildMockDefinition( 'link', 'Link by Stripe', [ 'USD' ] ),
 	alipay: buildMockDefinition( 'alipay', 'Alipay', [ 'USD' ] ),
 	google_pay: buildMockDefinition( 'google_pay', 'Google Pay' ),
 	apple_pay: buildMockDefinition( 'apple_pay', 'Apple Pay' ),

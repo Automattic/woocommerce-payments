@@ -360,7 +360,7 @@ class WC_Payments_Features {
 	 * @return bool
 	 */
 	public static function is_account_details_enabled(): bool {
-		return '1' === get_option( self::ACCOUNT_DETAILS_FLAG_NAME, '0' );
+		return '1' === get_option( self::ACCOUNT_DETAILS_FLAG_NAME, '1' );
 	}
 
 	/**

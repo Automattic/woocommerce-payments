@@ -16,7 +16,6 @@ import {
 	usePaymentRequestLocations,
 	useAppleGooglePayInPaymentMethodsOptionsEnabledSettings,
 } from 'wcpay/data';
-import GooglePayTestModeCompatibilityNotice from '../google-pay-test-mode-compatibility-notice';
 
 const PaymentRequestSettings = ( { section } ) => {
 	const [
@@ -35,23 +34,13 @@ const PaymentRequestSettings = ( { section } ) => {
 	] = usePaymentRequestLocations();
 
 	const makeLocationChangeHandler = ( location ) => ( isChecked ) => {
-		if ( isChecked ) {
-			updatePaymentRequestLocations( [
-				...paymentRequestLocations,
-				location,
-			] );
-		} else {
-			updatePaymentRequestLocations(
-				paymentRequestLocations.filter( ( name ) => name !== location )
-			);
-		}
+		updatePaymentRequestLocations( location, isChecked );
 	};
 
 	return (
 		<Card>
 			{ section === 'enable' && (
 				<CardBody className="wcpay-card-body">
-					<GooglePayTestModeCompatibilityNotice />
 					<div className="wcpay-payment-request-settings__enable">
 						{ wcpaySettings.featureFlags
 							.isDynamicCheckoutPlaceOrderButtonEnabled && (
