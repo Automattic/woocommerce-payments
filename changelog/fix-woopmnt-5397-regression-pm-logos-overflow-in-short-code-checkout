@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-Fix payment method logos overflow in shortcode checkout after adding JCB and UnionPay logos.

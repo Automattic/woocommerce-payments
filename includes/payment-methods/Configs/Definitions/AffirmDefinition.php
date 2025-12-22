@@ -90,15 +90,26 @@ class AffirmDefinition implements PaymentMethodDefinitionInterface {
 	}
 
 	/**
-	 * Get the list of supported countries
+	 * Get the list of supported countries.
 	 *
+	 * Affirm only supports domestic transactions, so when account_country is provided,
+	 * only that country is returned if it's in the supported list.
+	 *
+	 * @param string|null $account_country Optional. The merchant's account country.
 	 * @return string[] Array of country codes
 	 */
-	public static function get_supported_countries(): array {
-		return [
+	public static function get_supported_countries( ?string $account_country = null ): array {
+		$supported_countries = [
 			Country_Code::UNITED_STATES,
 			Country_Code::CANADA,
 		];
+
+		// Affirm only supports domestic transactions.
+		if ( null !== $account_country && in_array( strtoupper( $account_country ), $supported_countries, true ) ) {
+			return [ strtoupper( $account_country ) ];
+		}
+
+		return $supported_countries;
 	}
 
 	/**
@@ -188,7 +199,7 @@ class AffirmDefinition implements PaymentMethodDefinitionInterface {
 	 * @return bool
 	 */
 	public static function is_available_for( string $currency, string $account_country ): bool {
-		return PaymentMethodUtils::is_available_for( self::get_supported_currencies(), self::get_supported_countries(), $currency, $account_country );
+		return PaymentMethodUtils::is_available_for( self::get_supported_currencies(), self::get_supported_countries( $account_country ), $currency, $account_country );
 	}
 
 	/**

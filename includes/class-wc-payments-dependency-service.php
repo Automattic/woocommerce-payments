@@ -50,7 +50,7 @@ class WC_Payments_Dependency_Service {
 	/**
 	 * Render admin notices for unmet dependencies. Called on the admin_notices hook.
 	 *
-	 * @return null.
+	 * @return void
 	 */
 	public function display_admin_notices() {
 

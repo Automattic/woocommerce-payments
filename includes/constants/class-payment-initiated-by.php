@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Enum used in WCPay\Payment_Information to determine whether a payment was
  * initated by a merchant or a customer.
  *
- * @psalm-immutable
+ * @phpstan-immutable
  */
 class Payment_Initiated_By extends Base_Constant {
 	const MERCHANT = 'initiated_by_merchant';

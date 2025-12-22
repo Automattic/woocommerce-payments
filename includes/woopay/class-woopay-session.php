@@ -636,11 +636,6 @@ class WooPay_Session {
 			],
 		];
 
-		/**
-		 * Suppress psalm error from Jetpack Connection namespacing WP_Error.
-		 *
-		 * @psalm-suppress UndefinedDocblockClass
-		 */
 		$response = \Automattic\Jetpack\Connection\Client::remote_request( $args, wp_json_encode( $body ) );
 
 		if ( is_wp_error( $response ) || ! is_array( $response ) ) {

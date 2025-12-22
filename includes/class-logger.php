@@ -7,6 +7,7 @@
 
 namespace WCPay;
 
+use Throwable;
 use WCPay\Internal\Logger as InternalLogger;
 
 defined( 'ABSPATH' ) || exit; // block direct access.
@@ -82,11 +83,32 @@ class Logger {
 	/**
 	 * Creates a log entry of type error
 	 *
-	 * @param string               $message To send to the log file.
-	 * @param array<string, mixed> $context Context data.
+	 * @param string               $message to send to the log file.
+	 * @param array<string, mixed> $context context data.
 	 */
 	public static function error( $message, $context = [] ) {
 		self::log( $message, 'error', $context );
+	}
+
+	/**
+	 * Creates a log entry for exception
+	 *
+	 * @param string               $message Message to prepend to an exception.
+	 * @param Throwable            $e       Exception to log.
+	 * @param array<string, mixed> $context Context data.
+	 */
+	public static function exception( $message, $e, $context = [] ) {
+		self::error(
+			$message . ' Exception: ' . $e->getMessage(),
+			array_merge(
+				[
+					'exception' => get_class( $e ),
+					'code'      => $e->getCode(),
+					'trace'     => $e->getTraceAsString(),
+				],
+				$context
+			)
+		);
 	}
 
 	/**

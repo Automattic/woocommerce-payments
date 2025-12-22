@@ -16,17 +16,16 @@ use WCPay\Duplicate_Payment_Prevention_Service;
 use WCPay\Duplicates_Detection_Service;
 use WCPay\Payment_Methods\UPE_Payment_Method;
 use WCPay\Payment_Methods\CC_Payment_Method;
-use WCPay\Payment_Methods\Becs_Payment_Method;
-use WCPay\Payment_Methods\Sepa_Payment_Method;
-use WCPay\Payment_Methods\Link_Payment_Method;
-use WCPay\PaymentMethods\Configs\Definitions\AffirmDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\ApplePayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\BecsDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\EpsDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\GiropayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\GooglePayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\IdealDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\LinkDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\P24Definition;
+use WCPay\PaymentMethods\Configs\Definitions\SepaDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\SofortDefinition;
 use WCPay\PaymentMethods\Configs\Registry\PaymentMethodDefinitionRegistry;
 use WCPay\Session_Rate_Limiter;
@@ -102,6 +101,13 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	private $mock_session_service;
 
 	/**
+	 * Mock PM Promotions Service.
+	 *
+	 * @var WC_Payments_PM_Promotions_Service|MockObject
+	 */
+	private $mock_pm_promotions_service;
+
+	/**
 	 * Domestic currency.
 	 *
 	 * @var string
@@ -109,20 +115,27 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	private $domestic_currency = 'usd';
 
 	/**
+	 * Backup of the original payment_gateway_map
+	 *
+	 * @var array
+	 */
+	private $original_payment_gateway_map;
+
+	/**
 	 * Pre-test setup
 	 */
 	public function set_up() {
 		parent::set_up();
+
+		$this->original_payment_gateway_map = $this->get_payment_gateway_map();
 
 		self::$settings_route = '/wc/v3/' . ( $this->is_wpcom() ? 'sites/3/' : '' ) . 'payments/settings';
 
 		require_once __DIR__ . '/../helpers/class-wc-blocks-rest-api-registration-preventer.php';
 		WC_Blocks_REST_API_Registration_Preventer::prevent();
 
-		// Set the user so that we can pass the authentication.
 		wp_set_current_user( 1 );
 
-		// Mock the main class's cache service.
 		$this->_cache     = WC_Payments::get_database_cache();
 		$this->mock_cache = $this->createMock( Database_Cache::class );
 		WC_Payments::set_database_cache( $this->mock_cache );
@@ -143,25 +156,26 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->mock_localization_service         = $this->createMock( WC_Payments_Localization_Service::class );
 		$this->mock_fraud_service                = $this->createMock( WC_Payments_Fraud_Service::class );
 		$this->mock_duplicates_detection_service = $this->createMock( Duplicates_Detection_Service::class );
+		$this->mock_pm_promotions_service        = $this->createMock( WC_Payments_PM_Promotions_Service::class );
 
 		$mock_payment_methods = [];
 
 		$payment_method_definitions = [
 			ApplePayDefinition::class,
 			BancontactDefinition::class,
+			BecsDefinition::class,
 			EpsDefinition::class,
 			GiropayDefinition::class,
 			GooglePayDefinition::class,
 			IdealDefinition::class,
+			LinkDefinition::class,
 			P24Definition::class,
+			SepaDefinition::class,
 			SofortDefinition::class,
 		];
 
 		$payment_method_classes = [
-			Becs_Payment_Method::class,
 			CC_Payment_Method::class,
-			Sepa_Payment_Method::class,
-			Link_Payment_Method::class,
 		];
 
 		// Create the main payment method (CC) for the gateway constructor.
@@ -221,7 +235,7 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 			$this->mock_duplicates_detection_service,
 			$mock_rate_limiter
 		);
-		$this->controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->gateway, $this->mock_wcpay_account );
+		$this->controller = new WC_REST_Payments_Settings_Controller( $this->mock_api_client, $this->gateway, $this->mock_wcpay_account, $this->mock_pm_promotions_service );
 
 		$this->mock_api_client
 			->method( 'is_server_connected' )
@@ -246,10 +260,9 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 	public function tear_down() {
 		parent::tear_down();
 		WC_Blocks_REST_API_Registration_Preventer::stop_preventing();
-		// Restore the cache service in the main class.
 		WC_Payments::set_database_cache( $this->_cache );
+		$this->set_payment_gateway_map( $this->original_payment_gateway_map );
 
-		// resetting to prevent test pollution.
 		$reflection        = new \ReflectionClass( PaymentMethodDefinitionRegistry::class );
 		$instance_property = $reflection->getProperty( 'instance' );
 		$instance_property->setAccessible( true );
@@ -441,6 +454,54 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 		$this->controller->update_settings( $request );
 
 		$this->assertEquals( [ Payment_Method::CARD, Payment_Method::IDEAL ], WC_Payments::get_gateway()->get_option( 'upe_enabled_payment_method_ids' ) );
+	}
+
+	public function test_update_settings_calls_promotion_activation_for_newly_enabled_payment_methods() {
+		// Set up initial state: CARD is already enabled.
+		WC_Payments::get_gateway()->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD ] );
+
+		// Create a mock that expects maybe_activate_promotion_for_payment_method to be called only for IDEAL (the newly enabled method).
+		$mock_pm_promotions_service = $this->createMock( WC_Payments_PM_Promotions_Service::class );
+		$mock_pm_promotions_service->expects( $this->once() )
+			->method( 'maybe_activate_promotion_for_payment_method' )
+			->with( Payment_Method::IDEAL );
+
+		// Create controller with the specific mock.
+		$controller = new WC_REST_Payments_Settings_Controller(
+			$this->mock_api_client,
+			$this->gateway,
+			$this->mock_wcpay_account,
+			$mock_pm_promotions_service
+		);
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'enabled_payment_method_ids', [ Payment_Method::CARD, Payment_Method::IDEAL ] );
+
+		$controller->update_settings( $request );
+	}
+
+	public function test_update_settings_does_not_call_promotion_activation_when_no_new_payment_methods() {
+		// Set up initial state: CARD is already enabled.
+		WC_Payments::get_gateway()->update_option( 'upe_enabled_payment_method_ids', [ Payment_Method::CARD ] );
+
+		// Create a mock that expects maybe_activate_promotion_for_payment_method to never be called.
+		$mock_pm_promotions_service = $this->createMock( WC_Payments_PM_Promotions_Service::class );
+		$mock_pm_promotions_service->expects( $this->never() )
+			->method( 'maybe_activate_promotion_for_payment_method' );
+
+		// Create controller with the specific mock.
+		$controller = new WC_REST_Payments_Settings_Controller(
+			$this->mock_api_client,
+			$this->gateway,
+			$this->mock_wcpay_account,
+			$mock_pm_promotions_service
+		);
+
+		$request = new WP_REST_Request();
+		// Request with the same enabled payment methods (no change).
+		$request->set_param( 'enabled_payment_method_ids', [ Payment_Method::CARD ] );
+
+		$controller->update_settings( $request );
 	}
 
 	public function test_update_settings_fails_if_user_cannot_manage_woocommerce() {
@@ -1055,5 +1116,85 @@ class WC_REST_Payments_Settings_Controller_Test extends WCPAY_UnitTestCase {
 				new WP_Error( 'rest_invalid_pattern', 'Error: Invalid phone number: 123test' ),
 			],
 		];
+	}
+
+	public function test_update_is_payment_request_enabled_updates_google_pay_and_apple_pay() {
+		$google_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$google_pay_gateway->expects( $this->once() )->method( 'enable' );
+
+		$apple_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$apple_pay_gateway->expects( $this->once() )->method( 'enable' );
+
+		$this->set_payment_gateway_map(
+			[
+				'google_pay' => $google_pay_gateway,
+				'apple_pay'  => $apple_pay_gateway,
+			]
+		);
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_payment_request_enabled', true );
+
+		$this->controller->update_settings( $request );
+	}
+
+	public function test_update_is_payment_request_disabled_updates_google_pay_and_apple_pay() {
+		$google_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$google_pay_gateway->expects( $this->once() )->method( 'disable' );
+
+		$apple_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$apple_pay_gateway->expects( $this->once() )->method( 'disable' );
+
+		$this->set_payment_gateway_map(
+			[
+				'google_pay' => $google_pay_gateway,
+				'apple_pay'  => $apple_pay_gateway,
+			]
+		);
+
+		$request = new WP_REST_Request();
+		$request->set_param( 'is_payment_request_enabled', false );
+
+		$this->controller->update_settings( $request );
+	}
+
+	public function test_get_is_payment_request_enabled_reads_from_google_pay() {
+		$google_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$google_pay_gateway->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( true );
+
+		$this->set_payment_gateway_map( [ 'google_pay' => $google_pay_gateway ] );
+
+		$request  = new WP_REST_Request();
+		$response = $this->controller->get_settings( $request );
+		$data     = $response->get_data();
+
+		$this->assertTrue( $data['is_payment_request_enabled'] );
+	}
+
+	public function test_get_is_payment_request_enabled_falls_back_to_apple_pay() {
+		$apple_pay_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$apple_pay_gateway->expects( $this->once() )
+			->method( 'is_enabled' )
+			->willReturn( true );
+
+		$this->set_payment_gateway_map( [ 'apple_pay' => $apple_pay_gateway ] );
+
+		$request  = new WP_REST_Request();
+		$response = $this->controller->get_settings( $request );
+		$data     = $response->get_data();
+
+		$this->assertTrue( $data['is_payment_request_enabled'] );
+	}
+
+	public function test_get_is_payment_request_enabled_returns_false_when_both_unavailable() {
+		$this->set_payment_gateway_map( [] );
+
+		$request  = new WP_REST_Request();
+		$response = $this->controller->get_settings( $request );
+		$data     = $response->get_data();
+
+		$this->assertFalse( $data['is_payment_request_enabled'] );
 	}
 }

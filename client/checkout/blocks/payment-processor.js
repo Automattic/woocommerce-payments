@@ -14,15 +14,8 @@ import clsx from 'clsx';
  * Internal dependencies
  */
 import { usePaymentCompleteHandler, usePaymentFailHandler } from './hooks';
-import {
-	getStripeElementOptions,
-	blocksShowLinkButtonHandler,
-	getBlocksEmailValue,
-	isLinkEnabled,
-	getGatewayIdBy,
-} from 'wcpay/checkout/utils/upe';
+import { getStripeElementOptions } from 'wcpay/checkout/utils/upe';
 import { useCustomerData } from './utils';
-import enableStripeLinkPaymentMethod from 'wcpay/checkout/stripe-link';
 import { getUPEConfig } from 'wcpay/utils/checkout';
 import { validateElements } from 'wcpay/checkout/classic/payment-processing';
 import { PAYMENT_METHOD_ERROR } from 'wcpay/checkout/constants';
@@ -66,84 +59,12 @@ const PaymentProcessor = ( {
 } ) => {
 	const elements = useElements();
 	const hasLoadErrorRef = useRef( false );
-	const linkCleanupRef = useRef( null );
 
 	const paymentMethodsConfig = getUPEConfig( 'paymentMethodsConfig' );
 	const isTestMode = getUPEConfig( 'testMode' );
 	const gatewayId = upeMethods[ paymentMethodId ].gatewayId;
 	const gatewayConfig = getPaymentMethods()[ gatewayId ];
-	const {
-		billingAddress: billingData,
-		setShippingAddress,
-		setBillingAddress,
-	} = useCustomerData();
-
-	useEffect( () => {
-		if (
-			activePaymentMethod === getGatewayIdBy( 'card' ) &&
-			isLinkEnabled( paymentMethodsConfig )
-		) {
-			enableStripeLinkPaymentMethod( {
-				api: api,
-				elements: elements,
-				emailId: 'email',
-				onAutofill: ( billingAddress, shippingAddress ) => {
-					// in some cases (e.g.: customer doesn't select the payment method in the Link modal), the billing address is empty.
-					if ( billingAddress ) {
-						// setting the country first, in case the "state"/"county"/"province"
-						// select changes from a select to a text field (or vice-versa).
-						setBillingAddress( {
-							country: billingAddress.country,
-						} );
-						// after the country, we can safely set the other fields
-						setBillingAddress( {
-							...billingAddress,
-						} );
-					}
-
-					// in some cases (e.g.: customer doesn't select the shipping address method in the Link modal),
-					// the shipping address is empty.
-					if ( shippingAddress ) {
-						// setting the country first, in case the "state"/"county"/"province"
-						// select changes from a select to a text field (or vice-versa).
-						setShippingAddress( {
-							country: shippingAddress.country,
-						} );
-						// after the country, we can safely set the other fields
-						setShippingAddress( {
-							...shippingAddress,
-						} );
-					}
-
-					// after all the above, we can now set the email field by getting its value from the DOM.
-					setBillingAddress( {
-						email: getBlocksEmailValue(),
-					} );
-					setShippingAddress( {
-						email: getBlocksEmailValue(),
-					} );
-				},
-				onButtonShow: blocksShowLinkButtonHandler,
-			} ).then( ( cleanup ) => {
-				linkCleanupRef.current = cleanup;
-			} );
-
-			// Cleanup the Link button when the component unmounts
-			return () => {
-				if ( linkCleanupRef.current ) {
-					linkCleanupRef.current();
-					linkCleanupRef.current = null;
-				}
-			};
-		}
-	}, [
-		api,
-		elements,
-		activePaymentMethod,
-		paymentMethodsConfig,
-		setBillingAddress,
-		setShippingAddress,
-	] );
+	const billingData = useCustomerData();
 
 	useEffect(
 		() =>

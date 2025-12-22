@@ -16,7 +16,6 @@ use WCPay\Constants\Payment_Type;
 use WCPay\Constants\Payment_Initiated_By;
 use WCPay\Constants\Payment_Capture_Type;
 use WCPay\Exceptions\Invalid_Payment_Method_Exception;
-use WCPay\Payment_Methods\CC_Payment_Gateway;
 
 /**
  * Mostly a wrapper containing information on a single payment.
