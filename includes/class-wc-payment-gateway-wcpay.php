@@ -1550,7 +1550,7 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$request->set_amount( $converted_amount );
 				$request->set_currency_code( $currency );
 				$payment_method_id = $payment_information->get_payment_method();
-				if ( str_starts_with( $payment_method_id, 'ctoken_' ) ) {
+				if ( 0 === strpos( $payment_method_id, 'ctoken_' ) ) {
 					$request->set_confirmation_token( $payment_method_id );
 				} else {
 					$request->set_payment_method( $payment_method_id );

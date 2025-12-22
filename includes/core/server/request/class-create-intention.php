@@ -46,9 +46,9 @@ class Create_Intention extends Request {
 	}
 
 	/**
-	 * Payment method or confirmation token setter.
+	 * Payment method setter.
 	 *
-	 * @param string $payment_method_id ID of payment method or confirmation token to process charge with.
+	 * @param string $payment_method_id ID of payment method to process charge with.
 	 *
 	 * @return void
 	 * @throws Invalid_Request_Parameter_Exception
@@ -65,8 +65,10 @@ class Create_Intention extends Request {
 	 * @param string $confirmation_token The confirmation token.
 	 *
 	 * @return void
+	 * @throws Invalid_Request_Parameter_Exception
 	 */
 	public function set_confirmation_token( string $confirmation_token ) {
+		$this->validate_stripe_id( $confirmation_token, 'ctoken' );
 		$this->set_param( 'confirmation_token', $confirmation_token );
 	}
 
