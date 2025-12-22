@@ -287,14 +287,15 @@ class Payment_Information {
 	}
 
 	/**
-	 * Extracts the payment method from the provided request.
+	 * Extracts the payment method or confirmation token from the provided request.
 	 *
 	 * @param array $request Associative array containing payment request information.
 	 *
 	 * @return string
 	 */
 	public static function get_payment_method_from_request( array $request ): string {
-		foreach ( [ 'wcpay-payment-method', 'wcpay-payment-method-sepa' ] as $key ) {
+		// Check for confirmation token first (new ECE flow), then fall back to payment method (legacy flow).
+		foreach ( [ 'wcpay-confirmation-token', 'wcpay-payment-method', 'wcpay-payment-method-sepa' ] as $key ) {
 			if ( ! empty( $request[ $key ] ) ) {
 				$normalized = wc_clean( $request[ $key ] );
 				return is_string( $normalized ) ? $normalized : '';

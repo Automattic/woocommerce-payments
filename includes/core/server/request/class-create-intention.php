@@ -46,9 +46,9 @@ class Create_Intention extends Request {
 	}
 
 	/**
-	 * Payment method setter.
+	 * Payment method or confirmation token setter.
 	 *
-	 * @param string $payment_method_id ID of payment method to process charge with.
+	 * @param string $payment_method_id ID of payment method or confirmation token to process charge with.
 	 *
 	 * @return void
 	 * @throws Invalid_Request_Parameter_Exception
@@ -57,6 +57,17 @@ class Create_Intention extends Request {
 		// Including the 'card' prefix to support subscription renewals using legacy payment method IDs.
 		$this->validate_stripe_id( $payment_method_id, [ 'pm', 'src', 'card' ] );
 		$this->set_param( 'payment_method', $payment_method_id );
+	}
+
+	/**
+	 * Confirmation token setter.
+	 *
+	 * @param string $confirmation_token The confirmation token.
+	 *
+	 * @return void
+	 */
+	public function set_confirmation_token( string $confirmation_token ) {
+		$this->set_param( 'confirmation_token', $confirmation_token );
 	}
 
 	/**
