@@ -1,0 +1,4 @@
+Significance: patch
+Type: fix
+
+Fix fatal error on WooCommerce Settings Payments tab caused by missing hook in Get_PM_Promotions request class
