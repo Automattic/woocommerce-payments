@@ -12,7 +12,7 @@ use WCPay\Constants\Intent_Status;
 /**
  * Remediates incorrect transaction fees and refunds for canceled authorizations.
  *
- * Between April 2023 (commit 2d13751) and November 2025 (commit 3058f59ad),
+ * Between April 2023 / v5.8.0 (commit 2d13751) and November 2025 (commit 3058f59ad),
  * canceled authorizations incorrectly had transaction fees and refund objects created.
  * This migration cleans up those incorrect records.
  */
@@ -82,11 +82,6 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 	 * Bug introduction date (April 1, 2023 - commit 2d13751).
 	 */
 	const BUG_START_DATE = '2023-04-01';
-
-	/**
-	 * Version where bug was introduced (5.8.0 = April 2023, commit 2d13751).
-	 */
-	const BUG_INTRODUCED_VERSION = '5.8.0';
 
 	/**
 	 * Constructor.
