@@ -89,7 +89,6 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 		$expected = [
 			'processed'  => 0,
 			'remediated' => 0,
-			'skipped'    => 0,
 			'errors'     => 0,
 		];
 		$this->assertEquals( $expected, $this->remediation->get_stats() );

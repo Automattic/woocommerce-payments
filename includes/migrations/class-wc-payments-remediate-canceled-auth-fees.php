@@ -196,13 +196,12 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 	/**
 	 * Get remediation statistics.
 	 *
-	 * @return array Statistics array with keys: processed, remediated, skipped, errors.
+	 * @return array Statistics array with keys: processed, remediated, errors.
 	 */
 	public function get_stats(): array {
 		$default = [
 			'processed'  => 0,
 			'remediated' => 0,
-			'skipped'    => 0,
 			'errors'     => 0,
 		];
 
@@ -591,10 +590,9 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 		$stats = $this->get_stats();
 		wc_get_logger()->info(
 			sprintf(
-				'Remediation complete. Processed: %d, Remediated: %d, Skipped: %d, Errors: %d',
+				'Remediation complete. Processed: %d, Remediated: %d, Errors: %d',
 				$stats['processed'],
 				$stats['remediated'],
-				$stats['skipped'],
 				$stats['errors']
 			),
 			[ 'source' => 'wcpay-fee-remediation' ]
