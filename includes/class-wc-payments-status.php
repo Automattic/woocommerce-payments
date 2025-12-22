@@ -193,9 +193,12 @@ class WC_Payments_Status {
 				return __( 'Remediation has already been completed.', 'woocommerce-payments' );
 			}
 
-			// Check if already running.
-			if ( function_exists( 'as_has_scheduled_action' ) && as_has_scheduled_action( WC_Payments_Remediate_Canceled_Auth_Fees::ACTION_HOOK ) ) {
-				return __( 'Remediation is already in progress. Check the Action Scheduler for status.', 'woocommerce-payments' );
+			// Check if already running (either full action or dry run).
+			if ( function_exists( 'as_has_scheduled_action' ) ) {
+				if ( as_has_scheduled_action( WC_Payments_Remediate_Canceled_Auth_Fees::ACTION_HOOK ) ||
+					as_has_scheduled_action( WC_Payments_Remediate_Canceled_Auth_Fees::DRY_RUN_ACTION_HOOK ) ) {
+					return __( 'Remediation is already in progress. Check the Action Scheduler for status.', 'woocommerce-payments' );
+				}
 			}
 
 			// Schedule the remediation.
