@@ -246,6 +246,23 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 	}
 
 	/**
+	 * Clean up after dry run completes.
+	 *
+	 * Unlike the actual remediation cleanup, this removes ALL options including
+	 * status and stats, so merchants can still run the actual remediation afterward.
+	 * Dry run is just a preview - it shouldn't block the real action.
+	 *
+	 * @return void
+	 */
+	private function cleanup_dry_run(): void {
+		delete_option( self::LAST_ORDER_ID_OPTION_KEY );
+		delete_option( self::BATCH_SIZE_OPTION_KEY );
+		delete_option( self::DRY_RUN_OPTION_KEY );
+		delete_option( self::STATUS_OPTION_KEY );
+		delete_option( self::STATS_OPTION_KEY );
+	}
+
+	/**
 	 * Check if HPOS is enabled.
 	 *
 	 * This method is protected to allow mocking in tests.
@@ -478,19 +495,18 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 	 * @return void
 	 */
 	public function process_batch_dry_run(): void {
-		// Check if already complete.
-		if ( $this->is_complete() ) {
+		// Check if already complete (but only if not in dry run mode - dry run uses separate tracking).
+		if ( $this->is_complete() && ! $this->is_dry_run() ) {
 			return;
 		}
 
 		$batch_size = $this->get_batch_size();
 		$orders     = $this->get_affected_orders( $batch_size );
 
-		// If no orders found, mark as complete.
+		// If no orders found, dry run is done.
 		if ( empty( $orders ) ) {
-			$this->mark_complete();
 			$this->log_completion_dry_run();
-			$this->cleanup();
+			$this->cleanup_dry_run();
 			return;
 		}
 
@@ -521,10 +537,9 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 		if ( count( $orders ) === $batch_size ) {
 			$this->schedule_next_batch_dry_run();
 		} else {
-			// Last partial batch - mark complete.
-			$this->mark_complete();
+			// Last partial batch - dry run is done.
 			$this->log_completion_dry_run();
-			$this->cleanup();
+			$this->cleanup_dry_run();
 		}
 	}
 
