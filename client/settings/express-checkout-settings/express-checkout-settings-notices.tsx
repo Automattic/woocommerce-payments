@@ -1,4 +1,3 @@
-/** @format */
 /**
  * External dependencies
  */
@@ -58,10 +57,6 @@ const formatButtonList = ( buttonNames: string[] ) => {
 	);
 };
 
-/**
- * Notices displayed when settings are shared with other express checkout methods.
- * This component fetches enablement status internally using hooks.
- */
 const ExpressCheckoutSettingsNotices: React.FC< ExpressCheckoutSettingsNoticesProps > = ( {
 	currentMethod,
 } ) => {
