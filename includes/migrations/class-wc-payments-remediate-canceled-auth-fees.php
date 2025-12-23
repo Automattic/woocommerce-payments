@@ -696,10 +696,15 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 			$parent_order_id = $order->get_id();
 			foreach ( $wcpay_refunds as $refund ) {
 				$refund_id = $refund->get_id();
+
+				// Delete refund stats BEFORE deleting the refund (while it still exists).
+				// We do this proactively because the woocommerce_before_delete_order hook
+				// may not have its handlers registered in Action Scheduler context.
+				$this->delete_order_stats( $refund_id );
+
 				$refund->delete( true ); // Force delete, bypass trash.
 
 				// Fire the hook WC expects for refund deletion.
-				// This triggers analytics sync via WC's woocommerce_refund_deleted handler.
 				do_action( 'woocommerce_refund_deleted', $refund_id, $parent_order_id );
 			}
 
@@ -783,6 +788,42 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 			// Log but don't fail - analytics sync is not critical.
 			wc_get_logger()->warning(
 				sprintf( 'Failed to sync order %d to analytics: %s', $order_id, $e->getMessage() ),
+				[ 'source' => 'wcpay-fee-remediation' ]
+			);
+		}
+	}
+
+	/**
+	 * Delete order stats from WooCommerce Analytics.
+	 *
+	 * Uses WooCommerce's DataStore::delete_order() API to properly remove
+	 * the order/refund stats row from the wc_order_stats table.
+	 *
+	 * This must be called BEFORE the refund is deleted, while it still exists,
+	 * so the WC API can perform its internal checks.
+	 *
+	 * @param int $order_id Order or refund ID to delete stats for.
+	 * @return void
+	 */
+	protected function delete_order_stats( int $order_id ): void {
+		// Check if the DataStore class exists (requires WooCommerce Admin / WooCommerce 4.0+).
+		if ( ! class_exists( 'Automattic\WooCommerce\Admin\API\Reports\Orders\Stats\DataStore' ) ) {
+			return;
+		}
+
+		try {
+			// Use WooCommerce's proper API to delete the stats row.
+			// This handles all internal state management and fires appropriate hooks.
+			\Automattic\WooCommerce\Admin\API\Reports\Orders\Stats\DataStore::delete_order( $order_id );
+
+			wc_get_logger()->info(
+				sprintf( 'Deleted stats row for refund %d via WC DataStore API', $order_id ),
+				[ 'source' => 'wcpay-fee-remediation' ]
+			);
+		} catch ( Exception $e ) {
+			// Log but don't fail - analytics cleanup is not critical.
+			wc_get_logger()->warning(
+				sprintf( 'Failed to delete stats for order %d: %s', $order_id, $e->getMessage() ),
 				[ 'source' => 'wcpay-fee-remediation' ]
 			);
 		}

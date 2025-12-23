@@ -618,6 +618,61 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 		$this->assertTrue( true );
 	}
 
+	public function test_remediate_order_calls_delete_order_stats_for_each_wcpay_refund() {
+		$order = WC_Helper_Order::create_order();
+		$order->save();
+
+		// Create two WCPay refunds.
+		$refund1 = wc_create_refund(
+			[
+				'order_id' => $order->get_id(),
+				'amount'   => 10.00,
+				'reason'   => 'Test refund 1',
+			]
+		);
+		$refund1->update_meta_data( '_wcpay_refund_id', 're_test123' );
+		$refund1->save();
+
+		$refund2 = wc_create_refund(
+			[
+				'order_id' => $order->get_id(),
+				'amount'   => 5.00,
+				'reason'   => 'Test refund 2',
+			]
+		);
+		$refund2->update_meta_data( '_wcpay_refund_id', 're_test456' );
+		$refund2->save();
+
+		$refund1_id = $refund1->get_id();
+		$refund2_id = $refund2->get_id();
+
+		// Refresh the order to ensure it has the updated refunds with metadata.
+		$order = wc_get_order( $order->get_id() );
+
+		// Track which order IDs delete_order_stats is called with.
+		$deleted_order_ids = [];
+
+		// Create a mock that tracks delete_order_stats calls.
+		$mock_remediation = $this->getMockBuilder( WC_Payments_Remediate_Canceled_Auth_Fees::class )
+			->onlyMethods( [ 'delete_order_stats', 'sync_order_stats' ] )
+			->getMock();
+
+		// Capture each call to delete_order_stats.
+		$mock_remediation->expects( $this->exactly( 2 ) )
+			->method( 'delete_order_stats' )
+			->willReturnCallback(
+				function ( $order_id ) use ( &$deleted_order_ids ) {
+					$deleted_order_ids[] = $order_id;
+				}
+			);
+
+		$mock_remediation->remediate_order( $order );
+
+		// Verify delete_order_stats was called for both refunds.
+		$this->assertContains( $refund1_id, $deleted_order_ids, 'delete_order_stats should be called for refund 1' );
+		$this->assertContains( $refund2_id, $deleted_order_ids, 'delete_order_stats should be called for refund 2' );
+	}
+
 	public function test_remediate_order_calls_sync_order_stats() {
 		// Create a mock that tracks if sync_order_stats is called.
 		$mock_remediation = $this->getMockBuilder( WC_Payments_Remediate_Canceled_Auth_Fees::class )
@@ -669,9 +724,9 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 			2
 		);
 
-		// Create a mock that prevents sync_order_stats from running.
+		// Create a mock that prevents sync_order_stats and delete_order_stats from running.
 		$mock_remediation = $this->getMockBuilder( WC_Payments_Remediate_Canceled_Auth_Fees::class )
-			->onlyMethods( [ 'sync_order_stats' ] )
+			->onlyMethods( [ 'sync_order_stats', 'delete_order_stats' ] )
 			->getMock();
 
 		$mock_remediation->remediate_order( $order );
