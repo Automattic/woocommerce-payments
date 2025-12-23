@@ -265,6 +265,11 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 						'type'              => 'boolean',
 						'validate_callback' => 'rest_validate_request_arg',
 					],
+					'is_amazon_pay_enabled'                => [
+						'description'       => __( 'If Amazon Pay should be enabled.', 'woocommerce-payments' ),
+						'type'              => 'boolean',
+						'validate_callback' => 'rest_validate_request_arg',
+					],
 					'woopay_custom_message'                => [
 						'description'       => __( 'Custom message to display to WooPay customers.', 'woocommerce-payments' ),
 						'type'              => 'string',
@@ -527,6 +532,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 				'is_saved_cards_enabled'                 => $this->wcpay_gateway->is_saved_cards_enabled(),
 				'is_card_present_eligible'               => $this->wcpay_gateway->is_card_present_eligible() && isset( WC()->payment_gateways()->get_available_payment_gateways()['cod'] ),
 				'is_woopay_enabled'                      => WC_Payments_Features::is_woopay_eligible() && 'yes' === $this->wcpay_gateway->get_option( 'platform_checkout' ),
+				'is_amazon_pay_enabled'                  => $this->is_amazon_pay_enabled(),
 				'show_woopay_incompatibility_notice'     => get_option( 'woopay_invalid_extension_found', false ),
 				'woopay_custom_message'                  => $this->wcpay_gateway->get_option( 'platform_checkout_custom_message' ),
 				'woopay_store_logo'                      => $this->wcpay_gateway->get_option( 'platform_checkout_store_logo' ),
@@ -567,6 +573,7 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$this->update_payment_request_appearance( $request );
 		$this->update_is_saved_cards_enabled( $request );
 		$this->update_is_woopay_enabled( $request );
+		$this->update_is_amazon_pay_enabled( $request );
 		$this->update_is_woopay_global_theme_support_enabled( $request );
 		$this->update_woopay_store_logo( $request );
 		$this->update_woopay_custom_message( $request );
@@ -964,6 +971,40 @@ class WC_REST_Payments_Settings_Controller extends WC_Payments_REST_Controller {
 		$is_woopay_enabled = $request->get_param( 'is_woopay_enabled' );
 
 		$this->wcpay_gateway->update_is_woopay_enabled( $is_woopay_enabled );
+	}
+
+	/**
+	 * Updates the "Amazon Pay" enable/disable settings.
+	 *
+	 * @param WP_REST_Request $request Request object.
+	 */
+	private function update_is_amazon_pay_enabled( WP_REST_Request $request ) {
+		if ( ! $request->has_param( 'is_amazon_pay_enabled' ) ) {
+			return;
+		}
+
+		$amazon_pay_gateway = WC_Payments::get_payment_gateway_by_id( \WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition::get_id() );
+		if ( ! $amazon_pay_gateway ) {
+			return;
+		}
+
+		$is_amazon_pay_enabled = $request->get_param( 'is_amazon_pay_enabled' );
+		if ( $is_amazon_pay_enabled ) {
+			$amazon_pay_gateway->enable();
+		} else {
+			$amazon_pay_gateway->disable();
+		}
+	}
+
+	/**
+	 * Checks if Amazon Pay is enabled.
+	 *
+	 * @return bool
+	 */
+	private function is_amazon_pay_enabled(): bool {
+		$amazon_pay_gateway = WC_Payments::get_payment_gateway_by_id( \WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition::get_id() );
+
+		return $amazon_pay_gateway && $amazon_pay_gateway->is_enabled();
 	}
 
 	/**
