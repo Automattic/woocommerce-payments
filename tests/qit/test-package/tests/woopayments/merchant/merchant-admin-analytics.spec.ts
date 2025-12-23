@@ -49,17 +49,15 @@ test.describe( 'Admin order analytics', { tag: '@merchant' }, () => {
 		await expect( ordersTitle ).toBeVisible();
 
 		// Check for analytics data with retry mechanism
-		let hasData = false;
 		let attempts = 0;
 		const maxAttempts = 3;
 
-		while ( ! hasData && attempts < maxAttempts ) {
+		while ( attempts < maxAttempts ) {
 			const noDataText = adminPage.getByText( 'No data to display' );
 			const noDataCount = await noDataText.count();
 
 			if ( noDataCount === 0 ) {
-				hasData = true;
-				break;
+				break; // Data is present, exit retry loop
 			}
 
 			// If no data on first check, try refreshing
