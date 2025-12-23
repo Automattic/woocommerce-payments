@@ -301,21 +301,24 @@ describe( 'PaymentRequestSettings', () => {
 		await userEvent.click(
 			screen.getByLabelText( /Show on checkout page/ )
 		);
-		expect(
-			updatePaymentRequestLocationsHandler
-		).toHaveBeenLastCalledWith( [ 'checkout' ] );
+		expect( updatePaymentRequestLocationsHandler ).toHaveBeenLastCalledWith(
+			'checkout',
+			true
+		);
 
 		await userEvent.click(
 			screen.getByLabelText( /Show on product page/ )
 		);
-		expect(
-			updatePaymentRequestLocationsHandler
-		).toHaveBeenLastCalledWith( [ 'product' ] );
+		expect( updatePaymentRequestLocationsHandler ).toHaveBeenLastCalledWith(
+			'product',
+			true
+		);
 
 		await userEvent.click( screen.getByLabelText( /Show on cart page/ ) );
-		expect(
-			updatePaymentRequestLocationsHandler
-		).toHaveBeenLastCalledWith( [ 'cart' ] );
+		expect( updatePaymentRequestLocationsHandler ).toHaveBeenLastCalledWith(
+			'cart',
+			true
+		);
 	} );
 
 	it( 'triggers the hooks when the general settings are being interacted with', async () => {
@@ -380,18 +383,21 @@ describe( 'PaymentRequestSettings', () => {
 
 		// Uncheck each checkbox, and verify them what kind of action should have been called
 		await userEvent.click( screen.getByText( 'Show on product page' ) );
-		expect(
-			updatePaymentRequestLocationsHandler
-		).toHaveBeenLastCalledWith( [ 'checkout', 'cart' ] );
+		expect( updatePaymentRequestLocationsHandler ).toHaveBeenLastCalledWith(
+			'product',
+			false
+		);
 
 		await userEvent.click( screen.getByText( 'Show on checkout page' ) );
-		expect(
-			updatePaymentRequestLocationsHandler
-		).toHaveBeenLastCalledWith( [ 'product', 'cart' ] );
+		expect( updatePaymentRequestLocationsHandler ).toHaveBeenLastCalledWith(
+			'checkout',
+			false
+		);
 
 		await userEvent.click( screen.getByText( 'Show on cart page' ) );
-		expect(
-			updatePaymentRequestLocationsHandler
-		).toHaveBeenLastCalledWith( [ 'checkout', 'product' ] );
+		expect( updatePaymentRequestLocationsHandler ).toHaveBeenLastCalledWith(
+			'cart',
+			false
+		);
 	} );
 } );

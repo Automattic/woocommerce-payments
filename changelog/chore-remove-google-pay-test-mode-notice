@@ -1,0 +1,4 @@
+Significance: patch
+Type: update
+
+update: remove Google Pay test mode notice with live account, it's no longer necessary

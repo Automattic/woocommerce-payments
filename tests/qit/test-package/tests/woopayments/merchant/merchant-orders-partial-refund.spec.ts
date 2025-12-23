@@ -9,7 +9,7 @@ import {
 	placeOrderWithOptions,
 } from '../../../utils/shopper';
 
-type ConfigProduct = typeof config.products[ keyof typeof config.products ];
+type ConfigProduct = ( typeof config.products )[ keyof typeof config.products ];
 import {
 	goToOrder,
 	activateMulticurrency,
@@ -40,13 +40,15 @@ test.describe( 'Order > Partial refund', { tag: '@merchant' }, () => {
 	 * - test title
 	 * - object containing the items to be ordered, and the quantities and amounts to be refunded
 	 */
-	const dataTable: Array< [
-		string,
-		{
-			lineItems: Array< [ string, number ] >;
-			refundInputs: { refundQty: number; refundAmount: number }[];
-		}
-	] > = [
+	const dataTable: Array<
+		[
+			string,
+			{
+				lineItems: Array< [ string, number ] >;
+				refundInputs: { refundQty: number; refundAmount: number }[];
+			},
+		]
+	> = [
 		[
 			'Partially refund one product of two product order',
 			{
