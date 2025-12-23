@@ -9,18 +9,24 @@ import { getPaymentMethodSettingsUrl } from '../../utils';
  * Internal dependencies
  */
 import { Button, CheckboxControl } from '@wordpress/components';
-import { AmazonPayIcon } from 'wcpay/payment-methods-icons';
 import interpolateComponents from '@automattic/interpolate-components';
+import methodsConfiguration from '../../payment-methods-map';
 
 const AmazonPayExpressCheckoutItem = (): React.ReactElement => {
 	const [ isAmazonPayEnabled, setIsAmazonPayEnabled ] = useState( false );
+
+	const {
+		icon: AmazonPayIcon,
+		label,
+		description,
+	} = methodsConfiguration.amazon_pay;
 
 	return (
 		<li className="express-checkout" id="express-checkouts-amazon-pay">
 			<div className="express-checkout__row">
 				<div className="express-checkout__checkbox">
 					<CheckboxControl
-						label={ __( 'Amazon Pay', 'woocommerce-payments' ) }
+						label={ label }
 						checked={ isAmazonPayEnabled }
 						onChange={ setIsAmazonPayEnabled }
 						data-testid="amazon-pay-toggle"
@@ -34,23 +40,20 @@ const AmazonPayExpressCheckoutItem = (): React.ReactElement => {
 								<AmazonPayIcon />
 							</div>
 							<div className="express-checkout__label express-checkout__label-mobile">
-								{ __( 'Amazon Pay', 'woocommerce-payments' ) }
+								{ label }
 							</div>
 							<div className="express-checkout__label-container">
 								<div className="express-checkout__label express-checkout__label-desktop">
-									{ __(
-										'Amazon Pay',
-										'woocommerce-payments'
-									) }
+									{ label }
 								</div>
 								<div className="express-checkout__description">
+									{ description + ' ' }
 									{ interpolateComponents( {
 										mixedString: __(
 											/* eslint-disable-next-line max-len */
-											'Enhance sales by providing a quick, straightforward, and secure checkout experience. ' +
-												'By activating this feature, you accept ' +
+											'By activating this feature, you accept ' +
 												'{{stripeLink}}Stripe{{/stripeLink}} and ' +
-												"{{amazonLink}}Amazon{{/amazonLink}}'s terms of use. ",
+												"{{amazonLink}}Amazon{{/amazonLink}}'s terms of use.",
 											'woocommerce-payments'
 										),
 										/* eslint-disable jsx-a11y/anchor-has-content */

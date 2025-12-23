@@ -39,10 +39,6 @@ const iconComponent = (
 	/>
 );
 
-export const AmazonPayIcon = iconComponent(
-	AmazonPayAsset,
-	__( 'Amazon Pay', 'woocommerce-payments' )
-);
 export const AmericanExpressIcon = iconComponent(
 	AmexAsset,
 	__( 'American Express', 'woocommerce-payments' )
