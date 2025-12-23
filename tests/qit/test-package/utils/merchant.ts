@@ -76,37 +76,26 @@ export const waitAndSkipTourComponent = async (
 };
 
 export const ensureOrderIsProcessed = async ( page: Page ) => {
-	// Use WP-CLI to directly sync the order to WooCommerce Analytics tables.
-	// This is more reliable than clicking through Action Scheduler UI because:
-	// 1. Scheduled actions may not be in "pending" status (could be scheduled for future)
-	// 2. The UI approach has race conditions with action scheduling
-	// 3. Direct WP-CLI execution is synchronous and deterministic
+	// Sync the most recent order to WooCommerce Analytics tables.
+	// We call the sync functions directly via PHP eval since the 'wc admin' CLI
+	// command no longer exists in current WooCommerce versions.
+	const syncCommand = `
+		$order = wc_get_orders( array( 'limit' => 1, 'orderby' => 'date', 'order' => 'DESC' ) )[0];
+		if ( $order ) {
+			$id = $order->get_id();
+			Automattic\\WooCommerce\\Admin\\API\\Reports\\Orders\\Stats\\DataStore::sync_order( $id );
+			Automattic\\WooCommerce\\Admin\\API\\Reports\\Products\\DataStore::sync_order_products( $id );
+			Automattic\\WooCommerce\\Admin\\API\\Reports\\Customers\\DataStore::sync_order_customer( $id );
+		}
+	`;
 
 	try {
-		// First, run any pending wc-admin scheduled actions to ensure import jobs exist
-		await qit.wp(
-			'action-scheduler run --hooks=wc-admin_import_orders --force',
-			true
-		);
+		await qit.wp( `eval '${ syncCommand.replace( /'/g, `'"'"'` ) }'`, true );
 	} catch ( error ) {
-		// Action may not exist yet, continue with direct sync
+		// Sync may fail in some environments, continue anyway
 	}
 
-	// Force WooCommerce Analytics to sync the specific order using wc admin import
-	// This directly inserts the order into wp_wc_order_stats table
-	await qit.wp( `wc admin import --skip-orders=false --days=1`, true );
-
-	// Also try running any queued analytics imports via action scheduler
-	try {
-		await qit.wp(
-			'action-scheduler run --hooks=wc-admin_import_orders,wc-admin_process_orders_milestone --force',
-			true
-		);
-	} catch ( error ) {
-		// Ignore errors - hooks may not exist
-	}
-
-	// Wait for analytics data to be fully indexed
+	// Brief wait for analytics to update
 	await page.waitForTimeout( 2000 );
 };
 
