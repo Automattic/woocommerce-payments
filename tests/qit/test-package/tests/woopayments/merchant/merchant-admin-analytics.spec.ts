@@ -13,8 +13,6 @@ import {
 import { placeOrderWithCurrency } from '../../../utils/shopper';
 
 test.describe( 'Admin order analytics', { tag: '@merchant' }, () => {
-	let orderId: string;
-
 	// Extend timeout for the entire test suite to allow order processing
 	test.setTimeout( 120000 );
 
@@ -28,8 +26,8 @@ test.describe( 'Admin order analytics', { tag: '@merchant' }, () => {
 		}
 
 		// Place an order to ensure the analytics data is correct
-		orderId = await placeOrderWithCurrency( customerPage, 'USD' );
-		await ensureOrderIsProcessed( adminPage, orderId );
+		await placeOrderWithCurrency( customerPage, 'USD' );
+		await ensureOrderIsProcessed( adminPage );
 
 		// Give analytics more time to process the order data
 		await adminPage.waitForTimeout( 2000 );

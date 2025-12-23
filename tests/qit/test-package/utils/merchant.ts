@@ -75,10 +75,7 @@ export const waitAndSkipTourComponent = async (
 	}
 };
 
-export const ensureOrderIsProcessed = async (
-	page: Page,
-	orderId: string
-) => {
+export const ensureOrderIsProcessed = async ( page: Page ) => {
 	// Use WP-CLI to directly sync the order to WooCommerce Analytics tables.
 	// This is more reliable than clicking through Action Scheduler UI because:
 	// 1. Scheduled actions may not be in "pending" status (could be scheduled for future)
@@ -97,29 +94,7 @@ export const ensureOrderIsProcessed = async (
 
 	// Force WooCommerce Analytics to sync the specific order using wc admin import
 	// This directly inserts the order into wp_wc_order_stats table
-	try {
-		await qit.wp(
-			`wc admin import --skip-orders=false --days=1`,
-			true
-		);
-	} catch ( error ) {
-		// Fallback: Try the legacy approach if wc admin import isn't available
-		try {
-			// Manually run the order stats sync for this specific order
-			const syncScript = `
-				if ( class_exists( 'Automattic\\\\WooCommerce\\\\Admin\\\\API\\\\Reports\\\\Orders\\\\Stats\\\\DataStore' ) ) {
-					$order = wc_get_order( ${ orderId } );
-					if ( $order ) {
-						Automattic\\\\WooCommerce\\\\Admin\\\\API\\\\Reports\\\\Orders\\\\Stats\\\\DataStore::sync_order( ${ orderId } );
-						echo 'synced';
-					}
-				}
-			`;
-			await qit.wp( `eval '${ syncScript.replace( /'/g, "'\\''" ) }'`, true );
-		} catch ( innerError ) {
-			// Continue anyway - the order may already be synced
-		}
-	}
+	await qit.wp( `wc admin import --skip-orders=false --days=1`, true );
 
 	// Also try running any queued analytics imports via action scheduler
 	try {
