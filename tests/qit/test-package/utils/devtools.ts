@@ -61,7 +61,7 @@ const rateLimiterOption =
 	'wcpay_session_rate_limiter_disabled_wcpay_card_declined_registry';
 
 export const disableFailedTransactionRateLimiter = async () => {
-	await qit.wp( `option set ${ rateLimiterOption } yes`, true );
+	await qit.wp( `option set ${ rateLimiterOption } yes` );
 };
 
 /**
