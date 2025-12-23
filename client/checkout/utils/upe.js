@@ -253,6 +253,8 @@ export const getStripeElementOptions = (
 	paymentMethodsConfig
 ) => {
 	const options = {
+		// Disable Stripe's internal skeleton loader - we use LoadableBlock instead
+		loader: 'never',
 		fields: {
 			billingDetails: {
 				name: 'never',

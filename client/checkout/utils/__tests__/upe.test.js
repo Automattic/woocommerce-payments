@@ -624,6 +624,7 @@ describe( 'getStripeElementOptions', () => {
 		);
 
 		expect( options ).toEqual( {
+			loader: 'never',
 			fields: {
 				billingDetails: {
 					address: {
@@ -672,6 +673,7 @@ describe( 'getStripeElementOptions', () => {
 		);
 
 		expect( options ).toEqual( {
+			loader: 'never',
 			fields: {
 				billingDetails: {
 					address: {
@@ -712,6 +714,7 @@ describe( 'getStripeElementOptions', () => {
 		);
 
 		expect( options ).toEqual( {
+			loader: 'never',
 			fields: {
 				billingDetails: {
 					address: {
@@ -755,6 +758,7 @@ describe( 'getStripeElementOptions', () => {
 		);
 
 		expect( options ).toEqual( {
+			loader: 'never',
 			fields: {
 				billingDetails: {
 					address: {

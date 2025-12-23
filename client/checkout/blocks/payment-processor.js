@@ -55,6 +55,7 @@ const PaymentProcessor = ( {
 	shouldSavePayment,
 	fingerprint,
 	onLoadError = noop,
+	onReady = noop,
 	theme,
 } ) => {
 	const elements = useElements();
@@ -211,6 +212,7 @@ const PaymentProcessor = ( {
 					paymentMethodsConfig
 				) }
 				onLoadError={ setHasLoadError }
+				onReady={ onReady }
 				className="wcpay-payment-element"
 			/>
 		</>

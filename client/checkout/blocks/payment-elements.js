@@ -31,6 +31,9 @@ const PaymentElements = ( { api, ...props } ) => {
 		getUPEConfig( 'wcBlocksUPEAppearance' )
 	);
 	const [ fontRules, setFontRules ] = useState( [] );
+	const [ isPaymentElementReady, setIsPaymentElementReady ] = useState(
+		false
+	);
 
 	const [ fingerprint, fingerprintErrorMessage ] = useFingerprint();
 	const amount = Number( getUPEConfig( 'cartTotal' ) );
@@ -73,46 +76,67 @@ const PaymentElements = ( { api, ...props } ) => {
 		props.paymentMethodId,
 	] );
 
+	const isInitialized = appearance && stripeForUPE;
+	const isFullyReady = isInitialized && isPaymentElementReady;
+
 	return (
 		<>
-			<LoadableBlock
-				isLoading={ ! appearance || ! stripeForUPE }
-				numLines={ 3 }
-			>
-				<Elements
-					stripe={ stripeForUPE }
-					options={ {
-						mode: amount < 1 ? 'setup' : 'payment',
-						amount: amount,
-						currency: currency,
-						paymentMethodCreation: 'manual',
-						paymentMethodTypes: paymentMethodTypes,
-						appearance: appearance,
-						fonts: fontRules,
+			{ /* Show the placeholder until PaymentElement is fully ready */ }
+			{ ! isFullyReady && (
+				<LoadableBlock isLoading={ true } numLines={ 3 }>
+					{ null }
+				</LoadableBlock>
+			) }
+			{ /* Render Elements once initialized, but hide until PaymentElement is ready */ }
+			{ isInitialized && (
+				<div
+					style={ {
+						visibility: isPaymentElementReady
+							? 'visible'
+							: 'hidden',
+						position: isPaymentElementReady ? 'static' : 'absolute',
+						width: isPaymentElementReady ? 'auto' : '100%',
 					} }
 				>
-					{ paymentProcessorLoadErrorMessage?.error?.message && (
-						<div className="wc-block-components-notices">
-							<StoreNotice status="error" isDismissible={ false }>
-								<RawHTML>
-									{
-										paymentProcessorLoadErrorMessage.error
-											.message
-									}
-								</RawHTML>
-							</StoreNotice>
-						</div>
-					) }
-					<PaymentProcessor
-						api={ api }
-						errorMessage={ errorMessage }
-						fingerprint={ fingerprint }
-						onLoadError={ setPaymentProcessorLoadErrorMessage }
-						theme={ appearance?.theme }
-						{ ...props }
-					/>
-				</Elements>
-			</LoadableBlock>
+					<Elements
+						stripe={ stripeForUPE }
+						options={ {
+							mode: amount < 1 ? 'setup' : 'payment',
+							amount: amount,
+							currency: currency,
+							paymentMethodCreation: 'manual',
+							paymentMethodTypes: paymentMethodTypes,
+							appearance: appearance,
+							fonts: fontRules,
+						} }
+					>
+						{ paymentProcessorLoadErrorMessage?.error?.message && (
+							<div className="wc-block-components-notices">
+								<StoreNotice
+									status="error"
+									isDismissible={ false }
+								>
+									<RawHTML>
+										{
+											paymentProcessorLoadErrorMessage
+												.error.message
+										}
+									</RawHTML>
+								</StoreNotice>
+							</div>
+						) }
+						<PaymentProcessor
+							api={ api }
+							errorMessage={ errorMessage }
+							fingerprint={ fingerprint }
+							onLoadError={ setPaymentProcessorLoadErrorMessage }
+							onReady={ () => setIsPaymentElementReady( true ) }
+							theme={ appearance?.theme }
+							{ ...props }
+						/>
+					</Elements>
+				</div>
+			) }
 			<div ref={ containerRef } />
 		</>
 	);
