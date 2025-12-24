@@ -143,9 +143,9 @@ addFilter(
 	( config, { currency } ) => {
 		if ( ! currency ) return config;
 
-		const currencyData = Object.values( wcpaySettings.currencyData ).find(
-			( c ) => c.code === currency
-		);
+		const currencyData = Object.values(
+			wcpaySettings?.currencyData ?? {}
+		).find( ( c ) => c.code === currency );
 
 		if ( ! currencyData ) return config;
 
