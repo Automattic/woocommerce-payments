@@ -13,7 +13,7 @@ import { PAYMENT_METHOD_ERROR } from 'wcpay/checkout/constants';
 jest.mock( 'wcpay/checkout/classic/payment-processing', () => ( {
 	validateElements: jest.fn().mockResolvedValue(),
 } ) );
-jest.mock( 'wcpay/checkout/blocks/utils', () => ( {
+jest.mock( '../utils', () => ( {
 	useCustomerData: jest.fn().mockReturnValue( {} ),
 	getStripeElementOptions: jest.fn().mockReturnValue( {} ),
 } ) );
