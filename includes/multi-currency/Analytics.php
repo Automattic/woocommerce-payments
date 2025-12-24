@@ -163,7 +163,6 @@ class Analytics {
 		$this->register_admin_scripts();
 
 		wp_enqueue_script( self::SCRIPT_NAME );
-		wp_set_script_translations( self::SCRIPT_NAME, 'woocommerce-payments' );
 	}
 
 	/**
