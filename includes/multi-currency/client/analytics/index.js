@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
 
 const getCustomerCurrencies = () => {
 	return (
-		wcSettings.customerCurrencies.sort( ( a, b ) => {
+		wcSettings.customerCurrencies?.sort( ( a, b ) => {
 			return a.label < b.label ? -1 : 1;
 		} ) ?? []
 	);
