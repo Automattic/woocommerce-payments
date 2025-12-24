@@ -493,8 +493,9 @@ class WC_Payments_Remediate_Canceled_Auth_Fees_Test extends WCPAY_UnitTestCase {
 
 		$this->remediation->process_batch();
 
-		// After completion with partial batch, cleanup() is called and last_order_id is deleted.
-		$this->assertEquals( 0, $this->remediation->get_last_order_id() );
+		// After processing, last_order_id should be set to the highest processed order ID.
+		// This is used for pagination in subsequent batches.
+		$this->assertEquals( $order2->get_id(), $this->remediation->get_last_order_id() );
 	}
 
 	public function test_process_batch_marks_complete_when_no_orders() {

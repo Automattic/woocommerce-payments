@@ -472,15 +472,12 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 			[ 'source' => 'wcpay-fee-remediation' ]
 		);
 
-		// Schedule next batch if we got a full batch (indicates more to process).
-		if ( count( $orders ) === $batch_size ) {
-			$this->schedule_next_batch();
-		} else {
-			// Last partial batch - mark complete.
-			$this->mark_complete();
-			$this->log_completion();
-			$this->cleanup();
-		}
+		// Always schedule next batch to check for more orders.
+		// The batch will complete when get_affected_orders() returns empty.
+		// This is more reliable than checking count vs batch_size, which can
+		// incorrectly mark complete if the query returns fewer orders due to
+		// transient issues (DB performance, caching, etc.).
+		$this->schedule_next_batch();
 	}
 
 	/**
@@ -527,14 +524,9 @@ class WC_Payments_Remediate_Canceled_Auth_Fees {
 			[ 'source' => 'wcpay-fee-remediation' ]
 		);
 
-		// Schedule next batch if we got a full batch (indicates more to process).
-		if ( count( $orders ) === $batch_size ) {
-			$this->schedule_next_batch_dry_run();
-		} else {
-			// Last partial batch - dry run is done.
-			$this->log_completion_dry_run();
-			$this->cleanup_dry_run();
-		}
+		// Always schedule next batch to check for more orders.
+		// The batch will complete when get_affected_orders() returns empty.
+		$this->schedule_next_batch_dry_run();
 	}
 
 	/**
