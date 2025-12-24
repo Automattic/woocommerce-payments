@@ -428,10 +428,7 @@ export const getDiscountTooltipText = ( discountFee: DiscountFee ): string => {
 
 	return sprintf(
 		/* translators: %s: discount percentage */
-		__(
-			'You are getting %s%% off on processing fees.',
-			'woocommerce-payments'
-		),
+		__( 'You are saving %s%% on processing fees.', 'woocommerce-payments' ),
 		discountPercentage
 	);
 };
