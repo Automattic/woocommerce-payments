@@ -10,6 +10,7 @@ namespace WCPay\PaymentMethods\Configs\Registry;
 use WCPay\PaymentMethods\Configs\Definitions\AffirmDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\AfterpayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\AlipayDefinition;
+use WCPay\PaymentMethods\Configs\Definitions\AmazonPayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\ApplePayDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\BancontactDefinition;
 use WCPay\PaymentMethods\Configs\Definitions\BecsDefinition;
@@ -98,6 +99,11 @@ class PaymentMethodDefinitionRegistry {
 	public function init(): void {
 		foreach ( $this->available_definitions as $definition ) {
 			$this->register_payment_method( $definition );
+		}
+
+		// When Amazon Pay is promoted from feature flag, we can register it directly in the `available_definitions` array.
+		if ( \WC_Payments_Features::is_amazon_pay_enabled() ) {
+			$this->register_payment_method( AmazonPayDefinition::class );
 		}
 	}
 

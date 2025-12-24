@@ -17,7 +17,7 @@ import SettingsLayout from '../settings-layout';
 import LoadableSettingsSection from '../loadable-settings-section';
 import SaveSettingsSection from '../save-settings-section';
 import ErrorBoundary from '../../components/error-boundary';
-import { AmazonPayIcon, WooIcon } from 'wcpay/payment-methods-icons';
+import { WooIcon } from 'wcpay/payment-methods-icons';
 import methodsConfiguration from 'wcpay/payment-methods-map';
 
 const methods = {
@@ -122,19 +122,25 @@ const methods = {
 		sections: [
 			{
 				section: 'enable',
-				description: () => (
-					<>
-						<div className="express-checkout-settings__icon">
-							<AmazonPayIcon />
-						</div>
-						<p>
-							{ __(
-								'Allow your customers to collect payments via Amazon Pay.',
-								'woocommerce-payments'
-							) }
-						</p>
-					</>
-				),
+				description: () => {
+					const {
+						icon: AmazonPayIcon,
+					} = methodsConfiguration.amazon_pay;
+
+					return (
+						<>
+							<div className="express-checkout-settings__icon">
+								<AmazonPayIcon />
+							</div>
+							<p>
+								{ __(
+									'Allow your customers to collect payments via Amazon Pay.',
+									'woocommerce-payments'
+								) }
+							</p>
+						</>
+					);
+				},
 			},
 			{
 				section: 'general',

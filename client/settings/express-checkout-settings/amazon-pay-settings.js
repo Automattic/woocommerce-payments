@@ -104,7 +104,7 @@ const AmazonPaySettings = ( { section } ) => {
 								'woocommerce-payments'
 							) }
 							help={ __(
-								'Show Amazon Pay button on store pages for faster purchases. ' +
+								'Show Amazon Pay buttons on store pages for faster purchases. ' +
 									'Customers with Amazon accounts can use their stored payment information.',
 								'woocommerce-payments'
 							) }
