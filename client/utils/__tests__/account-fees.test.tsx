@@ -505,9 +505,7 @@ describe( 'Account fees utility functions', () => {
 
 			const result = getDiscountTooltipText( discountFee );
 
-			expect( result ).toBe(
-				'You are getting 15% off on processing fees.'
-			);
+			expect( result ).toBe( 'You are saving 15% on processing fees.' );
 		} );
 
 		it( 'uses volume_currency when available, falls back to currency', () => {
