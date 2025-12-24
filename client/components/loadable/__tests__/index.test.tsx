@@ -32,6 +32,52 @@ describe( 'Loadable', () => {
 			);
 			expect( container ).toMatchSnapshot();
 		} );
+
+		test( 'renders children in hidden container when renderChildrenWhileLoading is true', () => {
+			const placeholder = 'Loading...';
+			const { queryByText, container } = render(
+				<Loadable
+					isLoading={ true }
+					placeholder={ placeholder }
+					renderChildrenWhileLoading={ true }
+				>
+					<ChildComponent />
+				</Loadable>
+			);
+			// Placeholder should be visible
+			expect( queryByText( placeholder ) ).toBeInTheDocument();
+			// Children should also be rendered (in hidden container)
+			expect( queryByText( /loaded content/i ) ).toBeInTheDocument();
+			// Hidden container should exist
+			expect(
+				container.querySelector(
+					'.is-loadable-placeholder__hidden-content'
+				)
+			).toBeInTheDocument();
+		} );
+
+		test( 'does not render children when renderChildrenWhileLoading is false', () => {
+			const placeholder = 'Loading...';
+			const { queryByText, container } = render(
+				<Loadable
+					isLoading={ true }
+					placeholder={ placeholder }
+					renderChildrenWhileLoading={ false }
+				>
+					<ChildComponent />
+				</Loadable>
+			);
+			// Placeholder should be visible
+			expect( queryByText( placeholder ) ).toBeInTheDocument();
+			// Children should not be rendered
+			expect( queryByText( /loaded content/i ) ).not.toBeInTheDocument();
+			// Hidden container should not exist
+			expect(
+				container.querySelector(
+					'.is-loadable-placeholder__hidden-content'
+				)
+			).not.toBeInTheDocument();
+		} );
 	} );
 
 	describe( 'when inactive', () => {
@@ -44,30 +90,16 @@ describe( 'Loadable', () => {
 			expect( container ).toMatchSnapshot();
 		} );
 
-		test( 'renders simple value', () => {
-			const value = 'Simple loadable value';
+		test( 'renders string children', () => {
+			const text = 'Simple loadable text';
 			const { queryByText } = render(
-				<Loadable isLoading={ false } value={ value } />
+				<Loadable isLoading={ false }>{ text }</Loadable>
 			);
-			expect( queryByText( value ) ).toBeInTheDocument();
+			expect( queryByText( text ) ).toBeInTheDocument();
 		} );
 
-		test( 'prioritizes rendering children over simple value', () => {
-			const value = 'Simple loadable value';
-			const { queryByText } = render(
-				<Loadable isLoading={ false } value={ value }>
-					<ChildComponent />
-				</Loadable>
-			);
-			expect( queryByText( /loaded content/i ) ).toBeInTheDocument();
-			expect( queryByText( value ) ).not.toBeInTheDocument();
-		} );
-
-		test( 'renders nothing when neither children nor value passed', () => {
-			const { container, queryByText } = render(
-				<Loadable isLoading={ false } />
-			);
-			expect( queryByText( /loaded content/i ) ).not.toBeInTheDocument();
+		test( 'renders nothing when no children passed', () => {
+			const { container } = render( <Loadable isLoading={ false } /> );
 			expect( container.innerHTML ).toBe( '' );
 		} );
 	} );

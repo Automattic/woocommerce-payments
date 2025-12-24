@@ -62,8 +62,9 @@ const BalanceBlock: React.FC< BalanceBlockProps > = ( {
 					isLoading={ isLoading }
 					display="inline"
 					placeholder="loading amount"
-					value={ formatCurrency( amount, currencyCode ) }
-				/>
+				>
+					{ formatCurrency( amount, currencyCode ) }
+				</Loadable>
 			</p>
 		</div>
 	);

@@ -91,13 +91,9 @@ const PaymentTransactionBreakdown: React.FC< PaymentTransactionBreakdownProps > 
 	return captureEvent ? (
 		<Card size="large">
 			<CardHeader>
-				<Loadable
-					isLoading={ isLoading }
-					value={ __(
-						'Transaction breakdown',
-						'woocommerce-payments'
-					) }
-				/>
+				<Loadable isLoading={ isLoading }>
+					{ __( 'Transaction breakdown', 'woocommerce-payments' ) }
+				</Loadable>
 			</CardHeader>
 			<CardBody className="wcpay-transaction-breakdown">
 				<LoadableBlock isLoading={ isLoading } numLines={ 3 }>

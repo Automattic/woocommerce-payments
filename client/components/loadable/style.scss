@@ -23,4 +23,10 @@
 			margin: 0;
 		}
 	}
+
+	&__hidden-content {
+		position: absolute;
+		visibility: hidden;
+		width: 100%;
+	}
 }
