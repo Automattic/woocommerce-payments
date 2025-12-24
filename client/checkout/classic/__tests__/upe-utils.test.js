@@ -11,7 +11,6 @@ import {
 	togglePaymentMethodForCountry,
 	isBillingInformationMissing,
 } from '../upe-utils';
-
 import { getUPEConfig } from 'wcpay/utils/checkout';
 
 jest.mock( 'wcpay/utils/checkout' );

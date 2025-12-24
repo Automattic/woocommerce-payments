@@ -2,7 +2,6 @@
  * Internal dependencies
  */
 import { getStripeElementOptions } from '../utils';
-
 import { getUPEConfig } from 'wcpay/utils/checkout';
 
 jest.mock( 'wcpay/utils/checkout' );
