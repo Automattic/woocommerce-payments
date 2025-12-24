@@ -15,6 +15,7 @@ jest.mock( 'wcpay/checkout/classic/payment-processing', () => ( {
 } ) );
 jest.mock( 'wcpay/checkout/blocks/utils', () => ( {
 	useCustomerData: jest.fn().mockReturnValue( {} ),
+	getStripeElementOptions: jest.fn().mockReturnValue( {} ),
 } ) );
 jest.mock( '../hooks', () => ( {
 	usePaymentCompleteHandler: () => null,

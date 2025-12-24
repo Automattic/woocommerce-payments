@@ -14,19 +14,19 @@ import {
 	getFingerprint,
 } from 'wcpay/checkout/utils/fingerprint';
 import {
-	appendFraudPreventionTokenInputToForm,
-	appendPaymentMethodIdToForm,
-	appendPaymentMethodErrorDataToForm,
 	getPaymentMethodTypes,
-	getSelectedUPEGatewayPaymentMethod,
 	getTerms,
-	getUpeSettings,
 	isLinkEnabled,
 } from 'wcpay/checkout/utils/upe';
 import {
-	SHORTCODE_BILLING_ADDRESS_FIELDS,
-	PAYMENT_METHOD_ERROR,
-} from 'wcpay/checkout/constants';
+	appendFraudPreventionTokenInputToForm,
+	appendPaymentMethodIdToForm,
+	appendPaymentMethodErrorDataToForm,
+	getSelectedUPEGatewayPaymentMethod,
+	getUpeSettings,
+} from './upe-utils';
+import { PAYMENT_METHOD_ERROR } from 'wcpay/checkout/constants';
+import { SHORTCODE_BILLING_ADDRESS_FIELDS } from './constants';
 import PAYMENT_METHOD_IDS from 'wcpay/constants/payment-method';
 
 // It looks like on file import there are some side effects. Should probably be fixed.
