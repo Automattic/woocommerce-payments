@@ -43,6 +43,15 @@
                     "run": ["npx playwright test --project=shopper"]
                 }
             }
+        },
+        "woocommerce-payments/merchant": {
+            "description": "Merchant admin tests for WooPayments",
+            "tags": ["woopayments", "merchant", "admin"],
+            "test": {
+                "phases": {
+                    "run": ["npx playwright test --project=merchant"]
+                }
+            }
         }
     },
     "timeout": 1800
