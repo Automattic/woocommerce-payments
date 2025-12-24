@@ -10,7 +10,7 @@ import PaymentProcessor from '../payment-processor';
 import { PaymentElement } from '@stripe/react-stripe-js';
 import { PAYMENT_METHOD_ERROR } from 'wcpay/checkout/constants';
 
-jest.mock( 'wcpay/checkout/classic/payment-processing', () => ( {
+jest.mock( 'wcpay/checkout/utils/validate-elements', () => ( {
 	validateElements: jest.fn().mockResolvedValue(),
 } ) );
 jest.mock( '../utils', () => ( {

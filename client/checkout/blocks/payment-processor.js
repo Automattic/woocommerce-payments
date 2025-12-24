@@ -16,7 +16,7 @@ import clsx from 'clsx';
 import { usePaymentCompleteHandler, usePaymentFailHandler } from './hooks';
 import { useCustomerData, getStripeElementOptions } from './utils';
 import { getUPEConfig } from 'wcpay/utils/checkout';
-import { validateElements } from 'wcpay/checkout/classic/payment-processing';
+import { validateElements } from 'wcpay/checkout/utils/validate-elements';
 import { PAYMENT_METHOD_ERROR } from 'wcpay/checkout/constants';
 
 const getBillingDetails = ( billingData ) => {
