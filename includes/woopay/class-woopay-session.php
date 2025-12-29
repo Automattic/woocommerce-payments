@@ -50,13 +50,6 @@ class WooPay_Session {
 	private static $is_error_handler_registered = false;
 
 	/**
-	 * Prevents recursion if logging triggers another error.
-	 *
-	 * @var bool
-	 */
-	private static $is_handling_error = false;
-
-	/**
 	 * Init the hooks.
 	 *
 	 * @return void
@@ -1118,35 +1111,27 @@ class WooPay_Session {
 				}
 
 				// Log the fatal error.
-				if ( ! self::$is_handling_error ) {
-					self::$is_handling_error = true;
-					try {
-						Logger::error(
-							sprintf(
-								'WooPay checkout fatal error: %s in %s on line %d',
-								$error['message'],
-								$error['file'],
-								$error['line']
-							)
-						);
+				Logger::error(
+					sprintf(
+						'WooPay checkout fatal error: %s in %s on line %d',
+						$error['message'],
+						$error['file'],
+						$error['line']
+					)
+				);
 
-						// Add order note with the error details.
-						if ( self::$checkout_error_order_id ) {
-							$woopay_order = wc_get_order( self::$checkout_error_order_id );
-							if ( $woopay_order ) {
-								// Extract only the first line of the error message.
-								$error_first_line = strtok( $error['message'], "\n" );
-								$note             = sprintf(
-									/* translators: %s: error message */
-									__( 'WooPay checkout encountered a fatal error: %s', 'woocommerce-payments' ),
-									esc_html( $error_first_line )
-								);
-								$woopay_order->add_order_note( $note );
-							}
-						}
-						// Ignore logging failures and continue shutdown.
-					} finally {
-						self::$is_handling_error = false;
+				// Add order note with the error details.
+				if ( self::$checkout_error_order_id ) {
+					$woopay_order = wc_get_order( self::$checkout_error_order_id );
+					if ( $woopay_order ) {
+						// Extract only the first line of the error message.
+						$error_first_line = strtok( $error['message'], "\n" );
+						$note             = sprintf(
+							/* translators: %s: error message */
+							__( 'WooPay checkout encountered a fatal error: %s', 'woocommerce-payments' ),
+							esc_html( $error_first_line )
+						);
+						$woopay_order->add_order_note( $note );
 					}
 				}
 			}
