@@ -16,7 +16,7 @@ use WCPay\Core\Server\Request;
 class Get_PM_Promotions extends Request {
 
 	/**
-	 * Specifies the WordPress hook name that will be triggered upon calling the send() method.
+	 * Specifies the WordPress hook name that will be triggered upon making the request.
 	 *
 	 * @var string
 	 */
