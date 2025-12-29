@@ -2727,7 +2727,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 			'payment_request'        => [
 				'enabled'              => $gateway->is_payment_request_enabled(),
-				'enabled_locations'    => $gateway->get_option( 'payment_request_button_locations' ),
+				'enabled_locations'    => $this->get_express_checkout_method_locations( $gateway, 'payment_request' ),
 				'button_type'          => $gateway->get_option( 'payment_request_button_type' ),
 				'button_size'          => $gateway->get_option( 'payment_request_button_size' ),
 				'button_theme'         => $gateway->get_option( 'payment_request_button_theme' ),
@@ -2736,10 +2736,7 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 
 			'woopay'                 => [
 				'enabled'                 => WC_Payments_Features::is_woopay_enabled(),
-				'enabled_locations'       => $gateway->get_option(
-					'platform_checkout_button_locations',
-					array_keys( $gateway_form_fields['payment_request_button_locations']['options'] )
-				),
+				'enabled_locations'       => $this->get_express_checkout_method_locations( $gateway, 'woopay' ),
 				'store_logo'              => $gateway->get_option( 'platform_checkout_store_logo' ),
 				'custom_message'          => $gateway->get_option( 'platform_checkout_custom_message' ),
 				'invalid_extension_found' => (bool) get_option( 'woopay_invalid_extension_found', false ),
@@ -2888,6 +2885,30 @@ class WC_Payments_Account implements MultiCurrencyAccountInterface {
 				)
 			)
 		);
+	}
+
+	/**
+	 * Gets the locations where a specific express checkout method is enabled.
+	 *
+	 * Derives the locations from the location-centric express checkout settings.
+	 *
+	 * @param WC_Payment_Gateway_WCPay $gateway   The WCPay gateway instance.
+	 * @param string                   $method_id The method identifier (e.g., 'payment_request', 'woopay').
+	 *
+	 * @return array Array of location identifiers where the method is enabled.
+	 */
+	private function get_express_checkout_method_locations( WC_Payment_Gateway_WCPay $gateway, string $method_id ): array {
+		$locations         = [ 'product', 'cart', 'checkout' ];
+		$enabled_locations = [];
+
+		foreach ( $locations as $location ) {
+			$enabled_methods = $gateway->get_option( "express_checkout_{$location}_methods", [] );
+			if ( is_array( $enabled_methods ) && in_array( $method_id, $enabled_methods, true ) ) {
+				$enabled_locations[] = $location;
+			}
+		}
+
+		return $enabled_locations;
 	}
 
 	/**
