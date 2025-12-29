@@ -13,7 +13,6 @@ import { getPaymentMethodSettingsUrl } from '../../utils';
 import { usePaymentRequestEnabledSettings } from 'wcpay/data';
 import DuplicateNotice from 'wcpay/components/duplicate-notice';
 import DuplicatedPaymentMethodsContext from '../settings-manager/duplicated-payment-methods-context';
-import GooglePayTestModeCompatibilityNotice from '../google-pay-test-mode-compatibility-notice';
 import methodsConfiguration from '../../payment-methods-map';
 
 const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
@@ -69,10 +68,10 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 										methodsConfiguration.apple_pay
 											.description
 									}
-									{ isPaymentRequestEnabled && ' ' }
+									{ ! isPaymentRequestEnabled && ' ' }
 									{
 										/* eslint-disable jsx-a11y/anchor-has-content */
-										isPaymentRequestEnabled &&
+										! isPaymentRequestEnabled &&
 											interpolateComponents( {
 												mixedString: __(
 													/* eslint-disable-next-line max-len */
@@ -120,10 +119,10 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 										methodsConfiguration.google_pay
 											.description
 									}
-									{ isPaymentRequestEnabled && ' ' }
+									{ ! isPaymentRequestEnabled && ' ' }
 									{
 										/* eslint-disable jsx-a11y/anchor-has-content */
-										isPaymentRequestEnabled &&
+										! isPaymentRequestEnabled &&
 											interpolateComponents( {
 												mixedString: __(
 													/* eslint-disable-next-line max-len */
@@ -167,7 +166,6 @@ const AppleGooglePayExpressCheckoutItem = (): React.ReactElement => {
 					</div>
 				</div>
 			</div>
-			<GooglePayTestModeCompatibilityNotice />
 			{ isDuplicate && (
 				<DuplicateNotice
 					paymentMethod={ id }

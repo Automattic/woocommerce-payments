@@ -8,7 +8,6 @@ import {
 	getIsManualCaptureEnabled,
 	getAccountStatementDescriptor,
 	isSavingSettings,
-	getPaymentRequestLocations,
 	getIsPaymentRequestEnabled,
 	getIsAppleGooglePayInPaymentMethodsOptionsEnabled,
 	getAccountBusinessSupportEmail,
@@ -204,35 +203,6 @@ describe( 'Settings selectors tests', () => {
 			expect(
 				getIsAppleGooglePayInPaymentMethodsOptionsEnabled( state )
 			).toBeFalsy();
-		} );
-	} );
-
-	describe( 'getPaymentRequestLocations()', () => {
-		test( 'returns the value of state.settings.data.payment_request_enabled_locations', () => {
-			const state = {
-				settings: {
-					data: {
-						payment_request_enabled_locations: [
-							'product',
-							'cart',
-						],
-					},
-				},
-			};
-
-			expect( getPaymentRequestLocations( state ) ).toEqual( [
-				'product',
-				'cart',
-			] );
-		} );
-
-		test.each( [
-			[ undefined ],
-			[ {} ],
-			[ { settings: {} } ],
-			[ { settings: { data: {} } } ],
-		] )( 'returns [] if missing (tested state: %j)', ( state ) => {
-			expect( getPaymentRequestLocations( state ) ).toEqual( [] );
 		} );
 	} );
 

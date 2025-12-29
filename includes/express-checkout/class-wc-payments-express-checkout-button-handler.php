@@ -19,7 +19,6 @@ use WCPay\Fraud_Prevention\Fraud_Prevention_Service;
  * WC_Payments_Express_Checkout_Button_Handler class.
  */
 class WC_Payments_Express_Checkout_Button_Handler {
-	const BUTTON_LOCATIONS            = 'payment_request_button_locations';
 	const DEFAULT_BORDER_RADIUS_IN_PX = 4;
 
 	/**
