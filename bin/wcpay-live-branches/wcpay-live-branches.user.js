@@ -393,7 +393,7 @@
 			`);
 			const liveBranches = $( '<div id="wcpay-live-branches" />' ).append(
 				styles,
-				`<h2>🚀 WCPay Live Branches 🚀</h2>${ contents }`
+				`<h2>🚀 WooPayments Live Branches 🚀</h2>${ contents }`
 			);
 			$( '#wcpay-live-branches' ).remove();
 			$el.append( liveBranches );
