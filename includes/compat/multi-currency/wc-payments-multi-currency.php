@@ -44,6 +44,26 @@ function WC_Payments_Multi_Currency() { // phpcs:ignore WordPress.NamingConventi
 			WC_Payments::get_localization_service(),
 			WC_Payments::get_database_cache()
 		);
+
+		// Exclude deprecated currencies from multi-currency.
+		add_filter(
+			'wcpay_multi_currency_available_currencies',
+			function ( $available_currencies ) {
+				// Remove BGN (Bulgarian Lev) - Bulgaria transitioned to EUR in 2025.
+				return array_diff( $available_currencies, [ 'BGN' ] );
+			}
+		);
+
+		// Exclude deprecated currencies from WooCommerce general settings.
+		add_filter(
+			'woocommerce_currencies',
+			function ( $currencies ) {
+				// Remove BGN (Bulgarian Lev) - Bulgaria transitioned to EUR in 2025.
+				unset( $currencies['BGN'] );
+				return $currencies;
+			}
+		);
+
 		$instance->init_hooks();
 	}
 
