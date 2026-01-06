@@ -50,7 +50,12 @@ function WC_Payments_Multi_Currency() { // phpcs:ignore WordPress.NamingConventi
 			'wcpay_multi_currency_available_currencies',
 			function ( $available_currencies ) {
 				// Remove BGN (Bulgarian Lev) - Bulgaria transitioned to EUR in 2025.
-				return array_diff( $available_currencies, [ 'BGN' ] );
+				// Only remove if not currently enabled in multi-currency.
+				$enabled_currencies = get_option( 'wcpay_multi_currency_enabled_currencies', [] );
+				if ( ! in_array( 'BGN', $enabled_currencies, true ) ) {
+					$available_currencies = array_diff( $available_currencies, [ 'BGN' ] );
+				}
+				return $available_currencies;
 			}
 		);
 

@@ -174,7 +174,11 @@ function wcpay_init() {
 		'woocommerce_currencies',
 		function ( $currencies ) {
 			// Remove BGN (Bulgarian Lev) - Bulgaria transitioned to EUR in 2025.
-			unset( $currencies['BGN'] );
+			// Only remove if not currently in use as the store's base currency.
+			$current_currency = get_option( 'woocommerce_currency' );
+			if ( 'BGN' !== $current_currency ) {
+				unset( $currencies['BGN'] );
+			}
 			return $currencies;
 		}
 	);
