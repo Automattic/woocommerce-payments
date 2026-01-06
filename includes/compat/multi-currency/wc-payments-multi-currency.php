@@ -54,16 +54,6 @@ function WC_Payments_Multi_Currency() { // phpcs:ignore WordPress.NamingConventi
 			}
 		);
 
-		// Exclude deprecated currencies from WooCommerce general settings.
-		add_filter(
-			'woocommerce_currencies',
-			function ( $currencies ) {
-				// Remove BGN (Bulgarian Lev) - Bulgaria transitioned to EUR in 2025.
-				unset( $currencies['BGN'] );
-				return $currencies;
-			}
-		);
-
 		$instance->init_hooks();
 	}
 

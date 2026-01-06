@@ -169,6 +169,16 @@ function wcpay_init() {
 	 */
 	\WCPay\WooPay\WooPay_Session::init();
 
+	// Exclude deprecated currencies from WooCommerce general settings.
+	add_filter(
+		'woocommerce_currencies',
+		function ( $currencies ) {
+			// Remove BGN (Bulgarian Lev) - Bulgaria transitioned to EUR in 2025.
+			unset( $currencies['BGN'] );
+			return $currencies;
+		}
+	);
+
 	/**
 	 * Only initialize the ECE product page session handler when needed to avoid interfering
 	 * with other payment methods like BNPL. This handler is specifically designed for
