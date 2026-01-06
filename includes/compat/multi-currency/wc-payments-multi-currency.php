@@ -52,6 +52,10 @@ function WC_Payments_Multi_Currency() { // phpcs:ignore WordPress.NamingConventi
 				// Remove BGN (Bulgarian Lev) - Bulgaria transitioned to EUR in 2025.
 				// Only remove if not currently enabled in multi-currency.
 				$enabled_currencies = get_option( 'wcpay_multi_currency_enabled_currencies', [] );
+				// Handle edge case where option might be stored as string instead of array.
+				if ( ! is_array( $enabled_currencies ) ) {
+					return $available_currencies;
+				}
 				if ( ! in_array( 'BGN', $enabled_currencies, true ) ) {
 					$available_currencies = array_diff( $available_currencies, [ 'BGN' ] );
 				}
