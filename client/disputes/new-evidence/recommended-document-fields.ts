@@ -90,6 +90,30 @@ const getRecommendedDocumentFields = (
 	duplicateStatus?: string,
 	productType?: string
 ): Array< RecommendedDocument > => {
+	// Handle Visa Compliance (noncompliant) disputes
+	if ( reason === 'noncompliant' ) {
+		return [
+			{
+				key: DOCUMENT_FIELD_KEYS.CUSTOMER_COMMUNICATION,
+				label: __( 'Upload evidence', 'woocommerce-payments' ),
+				description: __(
+					'Submit any files you find relevant to this dispute.',
+					'woocommerce-payments'
+				),
+				order: 0,
+			},
+			{
+				key: DOCUMENT_FIELD_KEYS.UNCATEGORIZED_FILE,
+				label: __( 'Other documents', 'woocommerce-payments' ),
+				description: __(
+					'Any other relevant documents that will support your case.',
+					'woocommerce-payments'
+				),
+				order: 0,
+			},
+		];
+	}
+
 	// Define fields with their order
 	const orderedFields = [
 		// Default fields that apply to all dispute types

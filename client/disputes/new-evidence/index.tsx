@@ -44,6 +44,7 @@ import {
 	Spinner,
 	Flex,
 	FlexItem,
+	TextareaControl,
 } from '@wordpress/components';
 import { getAdminUrl } from 'wcpay/utils';
 import { StepperPanel } from 'wcpay/components/stepper';
@@ -391,10 +392,14 @@ export default ( { query }: { query: { id: string } } ) => {
 
 	// --- Step logic ---
 	const disputeReason = dispute?.reason;
+	const isVisaCompliance = isVisaComplianceDispute( dispute );
 	const hasShipping = needsShipping( disputeReason, productType );
-	const panelHeadings = hasShipping
-		? [ 'Purchase info', 'Shipping details', 'Review' ]
-		: [ 'Purchase info', 'Review' ];
+	let panelHeadings = [ 'Purchase info', 'Review' ];
+	if ( isVisaCompliance ) {
+		panelHeadings = [ 'Dispute information' ];
+	} else if ( hasShipping ) {
+		panelHeadings = [ 'Purchase info', 'Shipping details', 'Review' ];
+	}
 
 	useEffect( () => {
 		setIsAccordionOpen( currentStep === 0 );
@@ -573,8 +578,6 @@ export default ( { query }: { query: { id: string } } ) => {
 		dispute &&
 		dispute.status !== 'needs_response' &&
 		dispute.status !== 'warning_needs_response';
-
-	const isVisaCompliance = isVisaComplianceDispute( dispute );
 
 	// --- Accordion summary content (must be before any early returns) ---
 	const summaryItems = useMemo( () => {
@@ -953,9 +956,71 @@ export default ( { query }: { query: { id: string } } ) => {
 		</InlineNotice>
 	);
 
+	// --- Visa Compliance single-form content ---
+	const renderVisaComplianceContent = () => {
+		return (
+			<>
+				<h2 className="wcpay-dispute-evidence-new__stepper-title">
+					{ __(
+						'Tell us about the dispute',
+						'woocommerce-payments'
+					) }
+				</h2>
+				<p className="wcpay-dispute-evidence-new__stepper-subheading">
+					{ __(
+						'This is a compliance case and the issuer has indicated network rules have been violated. Please check for accuracy and upload any relevant documents.',
+						'woocommerce-payments'
+					) }
+				</p>
+
+				<section className="wcpay-dispute-evidence-visa-compliance">
+					<h3 className="wcpay-dispute-evidence-visa-compliance__heading">
+						{ __( 'Dispute details', 'woocommerce-payments' ) }
+					</h3>
+					<div className="wcpay-dispute-evidence-visa-compliance__subheading">
+						{ __(
+							'Input any context you think the issuer and network should have while reviewing this dispute.',
+							'woocommerce-payments'
+						) }
+					</div>
+					<TextareaControl
+						className="wcpay-dispute-evidence-visa-compliance__textarea"
+						__nextHasNoMarginBottom
+						label={ __(
+							'Why do you disagree with this dispute?',
+							'woocommerce-payments'
+						) }
+						value=""
+						onChange={ ( newValue: string ) => {
+							if ( readOnly ) {
+								return;
+							}
+							// Enforce 20000 character limit
+							if ( newValue.length <= 20000 ) {
+								setCoverLetter( newValue );
+							}
+						} }
+						disabled={ readOnly }
+						rows={ 10 }
+					/>
+				</section>
+
+				<RecommendedDocuments
+					fields={ recommendedDocumentsFields }
+					readOnly={ readOnly }
+				/>
+
+				{ inlineNoticeVisaCompliance() }
+			</>
+		);
+	};
+
 	// --- Step content ---
 	const renderStepContent = () => {
 		// if ( ! fields.length ) return null;
+		if ( isVisaCompliance ) {
+			return renderVisaComplianceContent();
+		}
 		if ( currentStep === 0 ) {
 			return (
 				<>
@@ -1154,7 +1219,7 @@ export default ( { query }: { query: { id: string } } ) => {
 	// --- Button rendering ---
 	const renderButtons = () => {
 		const reviewStep = hasShipping ? 2 : 1;
-		if ( currentStep === 0 ) {
+		if ( isVisaCompliance || currentStep === 0 ) {
 			return (
 				<div className="wcpay-dispute-evidence-new__button-row">
 					<Button
@@ -1293,35 +1358,40 @@ export default ( { query }: { query: { id: string } } ) => {
 			<TestModeNotice currentPage="disputes" isDetailsView={ true } />
 			<ErrorBoundary>
 				<div className="wcpay-dispute-evidence-new">
-					{ /* Section 1: Accordion */ }
-					<Accordion highDensity>
-						<AccordionBody
-							title={ __(
-								'Challenge dispute',
-								'woocommerce-payments'
-							) }
-							opened={ isAccordionOpen }
-							onToggle={ setIsAccordionOpen }
-						>
-							<AccordionRow>
-								<div className="evidence-summary__body">
-									{ dispute && (
-										<DisputeNotice
-											dispute={ dispute }
-											isUrgent={ true }
-											paymentMethod={
-												dispute.payment_method_details
-													?.type || null
-											}
-											bankName={ bankName }
+					{ /* Section 1: Accordion (hidden for Visa Compliance) */ }
+					{ ! isVisaCompliance && (
+						<Accordion highDensity>
+							<AccordionBody
+								title={ __(
+									'Challenge dispute',
+									'woocommerce-payments'
+								) }
+								opened={ isAccordionOpen }
+								onToggle={ setIsAccordionOpen }
+							>
+								<AccordionRow>
+									<div className="evidence-summary__body">
+										{ dispute && (
+											<DisputeNotice
+												dispute={ dispute }
+												isUrgent={ true }
+												paymentMethod={
+													dispute
+														.payment_method_details
+														?.type || null
+												}
+												bankName={ bankName }
+											/>
+										) }
+										<HorizontalList
+											items={ summaryItems }
 										/>
-									) }
-									<HorizontalList items={ summaryItems } />
-								</div>
-							</AccordionRow>
-						</AccordionBody>
-					</Accordion>
-					{ /* Section 2: Stepper or Confirmation */ }
+									</div>
+								</AccordionRow>
+							</AccordionBody>
+						</Accordion>
+					) }
+					{ /* Section 2: Visa Compliance, Stepper, or Confirmation */ }
 					{ showConfirmation ? (
 						<ConfirmationScreen
 							disputeId={ query.id }
