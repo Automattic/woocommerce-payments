@@ -4,7 +4,7 @@ Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment
 Requires at least: 6.0
 Tested up to: 6.8
 Requires PHP: 7.3
-Stable tag: 10.3.1
+Stable tag: 10.4.0
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -86,6 +86,58 @@ You can read our Terms of Service and other policies [here](https://woocommerce.
 4. Manage Disputes
 
 == Changelog ==
+
+= 10.4.0 - 2026-01-07 =
+* Add - Add duplicate charge documentation field for "Not Duplicate" dispute scenario.
+* Add - Adding ability to support payment method promotional campaigns (spotlight and badge treatments).
+* Add - feat: add Amazon Pay payment gateway class
+* Add - Open up new Account Details in the Overview page by enabling the feature flag by default
+* Add - When editing subscriptions, load payment methods whenever the customer is changed.
+* Fix - Add order note when WooPay checkout fails.
+* Fix - Attempt to fix when items remain in the cart after successful checkout (Affirm).
+* Fix - Avoid race conditions while capturing payments.
+* Fix - Comment: Update links to the WooPayments fees documentation.
+* Fix - fix: ensuring that the Express Checkout Buttons show the correct amounts for currencies formatted in unusual ways (e.g.: USD with zero decimals)
+* Fix - fix: order attribution data on block-based checkout
+* Fix - fix: payment method definitions merge conflicts
+* Fix - fix: payment method logos compatibility with WooCommerce Blocks in WC>=10.4
+* Fix - fix: redirect message styles on block-based checkout page
+* Fix - Fix: Stripe Link availability on checkout outside of USD
+* Fix - fix: VAT error messages localization
+* Fix - fix: when WooCommerce Core sends the email about the activated payment method, redirect the merchant to the main settings page instead of a non-existent page.
+* Fix - Fix number format when converting order prices.
+* Fix - Implemented amount mismatch detection for an already paid order.
+* Fix - refactor: remove Stripe Link autofill modal button from checkout
+* Fix - Resolve JavaScript errors in WooPay Direct Checkout on sites with WooCommerce 10.4+
+* Fix - Respect merchant tracking preferences for shopper events
+* Fix - Update wording related to the Visa Compliance disputes.
+* Update - chore: remove unused `wcBlocksCheckoutData` constant
+* Update - chore: update account fees docs URL
+* Update - Improve how server-side and client-side check tracking usage eligibility.
+* Update - refactor: convert Klarna payment method into a payment method definition
+* Update - refactor: Google Pay/Apple Pay settings storage consistency
+* Update - refactor: remove Afterpay_Payment_Method in favor of AfterpayDefinition
+* Update - refactor: remove payment_request_enabled_locations and woopay_enabled_locations in favor of a more future-proof express_checkout_product_methods express_checkout_cart_methods express_checkout_checkout_methods
+* Update - refactor: update payment method definition classes to delegate capabilities to PaymentMethodUtils
+* Update - update: bring back card borders on settings screens.
+* Update - update: payment method definition to determine eligible countries
+* Update - update: remove Google Pay test mode notice with live account, it's no longer necessary
+* Update - update: usage of WP best practices
+* Update - Update dispute evidence fields and cover letter for Booking/Reservation duplicate disputes
+* Update - Update suggested evidence for the Subscription Cancelled dispute reason.
+* Update - Update wording on promo rate information tooltip
+* Update - Update “WooPayments” to “WooCommerce” mobile application in the Card Readers page.
+* Dev - Add validation to prevent Request classes from using empty hook names, which could cause fatal errors on PHP 8.0+
+* Dev - Bump WC tested up to version to 10.4.0
+* Dev - chore: remove CC_Payment_Gateway class in favor of WC_Payment_Gateway_WCPay
+* Dev - Cleanup unneeded asset.
+* Dev - Fix failing E2E tests
+* Dev - Log exceptions during the payment process.
+* Dev - Migrate remaining shopper E2E specs to QIT (my account, multicurrency, alternative payment methods)
+* Dev - refactor: add Apple Pay and Google Pay payment definitions
+* Dev - refactor: migrate remaining non-card payment methods into payment method definitions
+* Dev - refactor: updating some payment methods to use payment definitions instead
+* Dev - Update Jetpack packages.
 
 = 10.3.1 - 2025-12-22 =
 * Fix - Fix fatal error on WooCommerce Settings Payments tab caused by missing hook in Get_PM_Promotions request class
