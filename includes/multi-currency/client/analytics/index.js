@@ -7,7 +7,7 @@ import { __ } from '@wordpress/i18n';
 
 const getCustomerCurrencies = () => {
 	return (
-		wcSettings.customerCurrencies.sort( ( a, b ) => {
+		wcSettings.customerCurrencies?.sort( ( a, b ) => {
 			return a.label < b.label ? -1 : 1;
 		} ) ?? []
 	);
@@ -143,9 +143,9 @@ addFilter(
 	( config, { currency } ) => {
 		if ( ! currency ) return config;
 
-		const currencyData = Object.values( wcpaySettings.currencyData ).find(
-			( c ) => c.code === currency
-		);
+		const currencyData = Object.values(
+			wcpaySettings?.currencyData ?? {}
+		).find( ( c ) => c.code === currency );
 
 		if ( ! currencyData ) return config;
 
