@@ -2,7 +2,7 @@
 Contributors: woocommerce, automattic
 Tags: woocommerce payments, apple pay, credit card, google pay, payment, payment gateway
 Requires at least: 6.0
-Tested up to: 6.8
+Tested up to: 6.9
 Requires PHP: 7.3
 Stable tag: 10.4.0
 License: GPLv2 or later
