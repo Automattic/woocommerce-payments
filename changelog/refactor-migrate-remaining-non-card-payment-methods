@@ -1,4 +1,0 @@
-Significance: patch
-Type: dev
-
-refactor: migrate remaining non-card payment methods into payment method definitions

@@ -1,4 +1,0 @@
-Significance: patch
-Type: update
-
-refactor: remove payment_request_enabled_locations and woopay_enabled_locations in favor of a more future-proof express_checkout_product_methods express_checkout_cart_methods express_checkout_checkout_methods
