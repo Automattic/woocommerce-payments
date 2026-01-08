@@ -990,7 +990,7 @@ export default ( { query }: { query: { id: string } } ) => {
 							'Why do you disagree with this dispute?',
 							'woocommerce-payments'
 						) }
-						value=""
+						value="Please enter any relevant details here."
 						onChange={ ( newValue: string ) => {
 							if ( readOnly ) {
 								return;
@@ -1219,7 +1219,62 @@ export default ( { query }: { query: { id: string } } ) => {
 	// --- Button rendering ---
 	const renderButtons = () => {
 		const reviewStep = hasShipping ? 2 : 1;
-		if ( isVisaCompliance || currentStep === 0 ) {
+		if ( isVisaCompliance ) {
+			return (
+				<div className="wcpay-dispute-evidence-new__button-row">
+					<Button
+						variant="secondary"
+						onClick={ () =>
+							( window.location.href = getAdminUrl( {
+								page: 'wc-admin',
+								path: '/payments/disputes/details',
+								id: dispute?.id,
+							} ) )
+						}
+						__next40pxDefaultSize
+					>
+						{ __( 'Cancel', 'woocommerce-payments' ) }
+					</Button>
+					<div className="wcpay-dispute-evidence-new__button-group-right">
+						{ ! readOnly && (
+							<Button
+								variant="tertiary"
+								onClick={ () => doSave( false ) }
+								data-testid="save-for-later-button"
+								__next40pxDefaultSize
+							>
+								{ __(
+									'Save for later',
+									'woocommerce-payments'
+								) }
+							</Button>
+						) }
+						{ ! readOnly && (
+							<Button
+								variant="primary"
+								onClick={ () => {
+									// Show browser confirmation dialog first
+									const confirmed = window.confirm(
+										__(
+											"Are you sure you're ready to submit this evidence? Evidence submissions are final.",
+											'woocommerce-payments'
+										)
+									);
+
+									if ( confirmed ) {
+										doSave( true );
+									}
+								} }
+								data-testid="submit-evidence-button"
+								__next40pxDefaultSize
+							>
+								{ __( 'Submit', 'woocommerce-payments' ) }
+							</Button>
+						) }
+					</div>
+				</div>
+			);
+		} else if ( currentStep === 0 ) {
 			return (
 				<div className="wcpay-dispute-evidence-new__button-row">
 					<Button
@@ -1263,8 +1318,7 @@ export default ( { query }: { query: { id: string } } ) => {
 					</div>
 				</div>
 			);
-		}
-		if ( currentStep < reviewStep ) {
+		} else if ( currentStep < reviewStep ) {
 			return (
 				<div className="wcpay-dispute-evidence-new__button-row">
 					<Button
