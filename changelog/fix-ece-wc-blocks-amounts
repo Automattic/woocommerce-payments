@@ -1,4 +1,0 @@
-Significance: patch
-Type: fix
-
-fix: ensuring that the Express Checkout Buttons show the correct amounts for currencies formatted in unusual ways (e.g.: USD with zero decimals)
