@@ -38,9 +38,7 @@ describe( 'NotificationSettings', () => {
 	it( 'renders the notification settings section', () => {
 		render( <NotificationSettings /> );
 
-		expect(
-			screen.getByLabelText( 'Communications email' )
-		).toBeInTheDocument();
+		expect( screen.getByLabelText( 'Email address' ) ).toBeInTheDocument();
 	} );
 
 	it( 'renders with the communications email input', () => {
@@ -61,7 +59,7 @@ describe( 'NotificationSettingsDescription', () => {
 		render( <NotificationSettingsDescription /> );
 
 		expect(
-			screen.getByRole( 'heading', { name: 'Notifications' } )
+			screen.getByRole( 'heading', { name: 'Account notifications' } )
 		).toBeInTheDocument();
 	} );
 
@@ -70,7 +68,7 @@ describe( 'NotificationSettingsDescription', () => {
 
 		expect(
 			screen.getByText(
-				'Configure how you receive important alerts about your WooPayments account.'
+				'Receive important notifications about your WooPayments account.'
 			)
 		).toBeInTheDocument();
 	} );
@@ -84,7 +82,7 @@ describe( 'NotificationSettingsDescription', () => {
 		expect( link ).toBeInTheDocument();
 		expect( link ).toHaveAttribute(
 			'href',
-			'https://woocommerce.com/document/woopayments/account-management/change-email-for-woopayments-alerts/'
+			'https://woocommerce.com/document/woopayments/settings-guide/#account-notifications'
 		);
 	} );
 } );

@@ -16,14 +16,14 @@ import './style.scss';
 
 export const NotificationSettingsDescription: React.FC = () => (
 	<>
-		<h2>{ __( 'Notifications', 'woocommerce-payments' ) }</h2>
+		<h2>{ __( 'Account notifications', 'woocommerce-payments' ) }</h2>
 		<p>
 			{ __(
-				'Configure how you receive important alerts about your WooPayments account.',
+				'Receive important notifications about your WooPayments account.',
 				'woocommerce-payments'
 			) }
 		</p>
-		<ExternalLink href="https://woocommerce.com/document/woopayments/account-management/change-email-for-woopayments-alerts/">
+		<ExternalLink href="https://woocommerce.com/document/woopayments/settings-guide/#account-notifications">
 			{ __( 'Learn more', 'woocommerce-payments' ) }
 		</ExternalLink>
 	</>

@@ -46,7 +46,7 @@ describe( 'NotificationsEmailInput', () => {
 		expect( screen.getByDisplayValue( oldEmail ) ).toBeInTheDocument();
 
 		const newEmail = 'new.communications@test.com';
-		fireEvent.change( screen.getByLabelText( 'Communications email' ), {
+		fireEvent.change( screen.getByLabelText( 'Email address' ), {
 			target: { value: newEmail },
 		} );
 
@@ -127,12 +127,13 @@ describe( 'NotificationsEmailInput', () => {
 		).toBeNull();
 	} );
 
-	it( 'renders help text', () => {
+	it( 'renders section header and description', () => {
 		render( <NotificationsEmailInput /> );
 
+		expect( screen.getByText( 'Notifications email' ) ).toBeInTheDocument();
 		expect(
 			screen.getByText(
-				'Email address used for WooPayments communications.'
+				'Provide an email address where you would like to receive communications about your WooPayments account.'
 			)
 		).toBeInTheDocument();
 	} );
@@ -152,7 +153,7 @@ describe( 'NotificationsEmailInput', () => {
 		).toBeNull();
 
 		// Trigger blur event
-		fireEvent.blur( screen.getByLabelText( 'Communications email' ) );
+		fireEvent.blur( screen.getByLabelText( 'Email address' ) );
 
 		// Error should be shown after blur
 		expect(
@@ -171,7 +172,7 @@ describe( 'NotificationsEmailInput', () => {
 		const { container } = render( <NotificationsEmailInput /> );
 
 		// Trigger blur event
-		fireEvent.blur( screen.getByLabelText( 'Communications email' ) );
+		fireEvent.blur( screen.getByLabelText( 'Email address' ) );
 
 		// No error should be shown for valid email
 		expect(
@@ -206,7 +207,7 @@ describe( 'NotificationsEmailInput', () => {
 		const { container } = render( <NotificationsEmailInput /> );
 
 		// Trigger blur to enable client-side validation
-		fireEvent.blur( screen.getByLabelText( 'Communications email' ) );
+		fireEvent.blur( screen.getByLabelText( 'Email address' ) );
 
 		// Server error should be shown instead of client-side error
 		expect(

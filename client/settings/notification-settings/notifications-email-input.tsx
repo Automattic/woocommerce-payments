@@ -54,6 +54,14 @@ const NotificationsEmailInput: React.FC = () => {
 
 	return (
 		<>
+			<h4>{ __( 'Notifications email', 'woocommerce-payments' ) }</h4>
+			<p className="settings__notifications-email-description">
+				{ __(
+					'Provide an email address where you would like to receive communications about your WooPayments account.',
+					'woocommerce-payments'
+				) }
+			</p>
+
 			{ errorMessage && (
 				<Notice status="error" isDismissible={ false }>
 					<span>{ errorMessage }</span>
@@ -62,11 +70,7 @@ const NotificationsEmailInput: React.FC = () => {
 
 			<TextControl
 				className="settings__notifications-email-input"
-				help={ __(
-					'Email address used for WooPayments communications.',
-					'woocommerce-payments'
-				) }
-				label={ __( 'Communications email', 'woocommerce-payments' ) }
+				label={ __( 'Email address', 'woocommerce-payments' ) }
 				value={ accountCommunicationsEmail }
 				onChange={ setAccountCommunicationsEmail }
 				onBlur={ () => setHasBlurred( true ) }

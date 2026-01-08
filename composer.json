@@ -16,7 +16,8 @@
             "composer/installers": true,
             "automattic/jetpack-autoloader": true,
             "cweagans/composer-patches": true,
-            "kalessil/production-dependencies-guard": true
+            "kalessil/production-dependencies-guard": true,
+            "phpstan/extension-installer": true
         }
     },
     "require": {

@@ -285,6 +285,16 @@ const SettingsManager = () => {
 				</div>
 			</SettingsSection>
 			<SettingsSection
+				description={ NotificationSettingsDescription }
+				id="notification-settings"
+			>
+				<LoadableSettingsSection numLines={ 20 }>
+					<ErrorBoundary>
+						<NotificationSettings />
+					</ErrorBoundary>
+				</LoadableSettingsSection>
+			</SettingsSection>
+			<SettingsSection
 				description={ FraudProtectionDescription }
 				id="fp-settings"
 			>
@@ -301,16 +311,6 @@ const SettingsManager = () => {
 				<LoadableSettingsSection numLines={ 20 }>
 					<ErrorBoundary>
 						<AdvancedSettings />
-					</ErrorBoundary>
-				</LoadableSettingsSection>
-			</SettingsSection>
-			<SettingsSection
-				description={ NotificationSettingsDescription }
-				id="notification-settings"
-			>
-				<LoadableSettingsSection numLines={ 20 }>
-					<ErrorBoundary>
-						<NotificationSettings />
 					</ErrorBoundary>
 				</LoadableSettingsSection>
 			</SettingsSection>
