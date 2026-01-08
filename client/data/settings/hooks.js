@@ -570,6 +570,26 @@ export const useWooPayStoreLogo = () => {
 export const useWooPayLocations = makeExpressCheckoutLocationHook( 'woopay' );
 
 /**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<boolean>}
+ */
+export const useAmazonPayEnabledSettings = () => {
+	const { updateIsAmazonPayEnabled } = useDispatch( STORE_NAME );
+
+	const isAmazonPayEnabled = useSelect( ( select ) =>
+		select( STORE_NAME ).getIsAmazonPayEnabled()
+	);
+
+	return [ isAmazonPayEnabled, updateIsAmazonPayEnabled ];
+};
+
+/**
+ * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string[]>}
+ */
+export const useAmazonPayLocations = makeExpressCheckoutLocationHook(
+	'amazon_pay'
+);
+
+/**
  * @return {import('wcpay/types/wcpay-data-settings-hooks').GenericSettingsHook<string>}
  */
 export const useCurrentProtectionLevel = () => {

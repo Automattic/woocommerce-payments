@@ -1,6 +1,7 @@
 /**
  * External dependencies
  */
+import React from 'react';
 import { fireEvent, render, screen, act } from '@testing-library/react';
 
 /**
@@ -13,6 +14,7 @@ import {
 	useTestMode,
 	useTestModeOnboarding,
 } from 'wcpay/data';
+import WCPaySettingsContext from 'wcpay/settings/wcpay-settings-context';
 
 jest.mock( 'wcpay/data', () => ( {
 	useDevMode: jest.fn(),
@@ -22,7 +24,17 @@ jest.mock( 'wcpay/data', () => ( {
 	useEnabledPaymentMethodIds: jest.fn().mockReturnValue( [ [ 'card' ] ] ),
 	useWooPayEnabledSettings: jest.fn().mockReturnValue( [ false ] ),
 	usePaymentRequestEnabledSettings: jest.fn().mockReturnValue( [ false ] ),
+	useAmazonPayEnabledSettings: jest.fn().mockReturnValue( [ false ] ),
 } ) );
+
+const renderWithSettingsProvider = ( ui ) =>
+	render(
+		<WCPaySettingsContext.Provider
+			value={ { featureFlags: { amazonPay: false } } }
+		>
+			{ ui }
+		</WCPaySettingsContext.Provider>
+	);
 
 describe( 'GeneralSettings', () => {
 	beforeEach( () => {
@@ -33,7 +45,7 @@ describe( 'GeneralSettings', () => {
 	} );
 
 	it( 'renders', () => {
-		render( <GeneralSettings /> );
+		renderWithSettingsProvider( <GeneralSettings /> );
 
 		expect(
 			screen.queryByText( 'Enable WooPayments' )
@@ -46,7 +58,7 @@ describe( 'GeneralSettings', () => {
 		( isEnabled ) => {
 			useIsWCPayEnabled.mockReturnValue( [ isEnabled ] );
 
-			render( <GeneralSettings /> );
+			renderWithSettingsProvider( <GeneralSettings /> );
 
 			const enableWCPayCheckbox = screen.getByLabelText(
 				'Enable WooPayments'
@@ -67,7 +79,7 @@ describe( 'GeneralSettings', () => {
 			updateIsWCPayEnabledMock,
 		] );
 
-		render( <GeneralSettings /> );
+		renderWithSettingsProvider( <GeneralSettings /> );
 
 		fireEvent.click( screen.getByLabelText( 'Enable WooPayments' ) );
 
@@ -83,7 +95,7 @@ describe( 'GeneralSettings', () => {
 		const updateIsWCPayEnabledMock = jest.fn();
 		useIsWCPayEnabled.mockReturnValue( [ true, updateIsWCPayEnabledMock ] );
 
-		render( <GeneralSettings /> );
+		renderWithSettingsProvider( <GeneralSettings /> );
 
 		fireEvent.click( screen.getByLabelText( 'Enable WooPayments' ) );
 
@@ -108,7 +120,7 @@ describe( 'GeneralSettings', () => {
 		'display of CheckBox when initial Test Mode = %s',
 		( isEnabled ) => {
 			useTestMode.mockReturnValue( [ isEnabled, jest.fn() ] );
-			render( <GeneralSettings /> );
+			renderWithSettingsProvider( <GeneralSettings /> );
 			const enableTestModeCheckbox = screen.getByLabelText(
 				'Enable test mode'
 			);
@@ -125,7 +137,7 @@ describe( 'GeneralSettings', () => {
 		'Checks Confirmation Modal display when initial Test Mode = %s',
 		( isEnabled ) => {
 			useTestMode.mockReturnValue( [ isEnabled, jest.fn() ] );
-			render( <GeneralSettings /> );
+			renderWithSettingsProvider( <GeneralSettings /> );
 			const enableTestModeCheckbox = screen.getByLabelText(
 				'Enable test mode'
 			);
@@ -144,7 +156,7 @@ describe( 'GeneralSettings', () => {
 	);
 
 	it( 'show the modal when the appropriate event is dispatched', () => {
-		render( <GeneralSettings /> );
+		renderWithSettingsProvider( <GeneralSettings /> );
 
 		act( () => {
 			document.dispatchEvent(

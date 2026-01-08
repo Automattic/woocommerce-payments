@@ -33,6 +33,9 @@ jest.mock( '../../../data', () => ( {
 	useWooPayEnabledSettings: jest.fn(),
 	useWooPayShowIncompatibilityNotice: jest.fn().mockReturnValue( false ),
 	useAppleGooglePayInPaymentMethodsOptionsEnabledSettings: jest.fn(),
+	useAmazonPayEnabledSettings: jest
+		.fn()
+		.mockReturnValue( [ false, jest.fn() ] ),
 } ) );
 
 jest.mock( '../payment-request-button-preview' );
