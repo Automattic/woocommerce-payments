@@ -223,6 +223,10 @@ export function updateIsWooPayEnabled( isEnabled ) {
 	return updateSettingsValues( { is_woopay_enabled: isEnabled } );
 }
 
+export function updateIsAmazonPayEnabled( isEnabled ) {
+	return updateSettingsValues( { is_amazon_pay_enabled: isEnabled } );
+}
+
 export function updateIsWooPayGlobalThemeSupportEnabled( isEnabled ) {
 	return updateSettingsValues( {
 		is_woopay_global_theme_support_enabled: isEnabled,

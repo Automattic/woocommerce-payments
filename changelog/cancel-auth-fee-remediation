@@ -1,0 +1,4 @@
+Significance: patch
+Type: add
+
+Add remediation tool to fix incorrect analytics data from canceled authorizations
