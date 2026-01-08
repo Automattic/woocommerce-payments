@@ -80,6 +80,16 @@ class Payment_Information_Test extends WCPAY_UnitTestCase {
 		$this->assertEquals( self::TOKEN, $payment_information->get_payment_method() );
 	}
 
+	public function test_is_using_confirmation_token_returns_true_for_confirmation_token() {
+		$payment_information = new Payment_Information( self::CONFIRMATION_TOKEN );
+		$this->assertTrue( $payment_information->is_using_confirmation_token() );
+	}
+
+	public function test_is_using_confirmation_token_returns_false_for_payment_method() {
+		$payment_information = new Payment_Information( self::PAYMENT_METHOD );
+		$this->assertFalse( $payment_information->is_using_confirmation_token() );
+	}
+
 	public function test_get_payment_token_returns_token() {
 		$payment_information = new Payment_Information( self::PAYMENT_METHOD, null, Payment_Type::SINGLE(), $this->card_token );
 		$this->assertEquals( $this->card_token, $payment_information->get_payment_token() );

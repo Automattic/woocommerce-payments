@@ -1562,11 +1562,11 @@ class WC_Payment_Gateway_WCPay extends WC_Payment_Gateway_CC {
 				$request = Create_And_Confirm_Intention::create();
 				$request->set_amount( $converted_amount );
 				$request->set_currency_code( $currency );
-				$payment_method_id = $payment_information->get_payment_method();
-				if ( 0 === strpos( $payment_method_id, 'ctoken_' ) ) {
-					$request->set_confirmation_token( $payment_method_id );
+				$payment_credential = $payment_information->get_payment_method();
+				if ( $payment_information->is_using_confirmation_token() ) {
+					$request->set_confirmation_token( $payment_credential );
 				} else {
-					$request->set_payment_method( $payment_method_id );
+					$request->set_payment_method( $payment_credential );
 				}
 				$request->set_customer( $customer_id );
 				$request->set_capture_method( $payment_information->is_using_manual_capture() );

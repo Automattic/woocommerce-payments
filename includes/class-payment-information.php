@@ -183,9 +183,9 @@ class Payment_Information {
 	}
 
 	/**
-	 * Returns the payment method ID.
+	 * Returns the payment method ID or confirmation token.
 	 *
-	 * @return string The payment method ID.
+	 * @return string The payment method ID or confirmation token.
 	 */
 	public function get_payment_method(): string {
 		// Use the token if we have it.
@@ -194,6 +194,17 @@ class Payment_Information {
 		}
 
 		return $this->payment_method;
+	}
+
+	/**
+	 * Returns whether the payment is using a confirmation token or a payment method.
+	 *
+	 * @see https://docs.stripe.com/payments/mobile/migration-confirmation-tokens
+	 *
+	 * @return bool True if using a confirmation token, false otherwise.
+	 */
+	public function is_using_confirmation_token(): bool {
+		return 0 === strpos( $this->get_payment_method(), 'ctoken_' );
 	}
 
 	/**
