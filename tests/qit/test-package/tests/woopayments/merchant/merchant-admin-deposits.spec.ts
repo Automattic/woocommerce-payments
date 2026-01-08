@@ -14,7 +14,7 @@ test.describe( 'Merchant deposits', { tag: '@merchant' }, () => {
 			.locator( '.woocommerce-table__table.is-loading' )
 			.waitFor( { state: 'hidden' } );
 
-		expect(
+		await expect(
 			adminPage.getByRole( 'heading', {
 				name: 'Payout history',
 			} )
