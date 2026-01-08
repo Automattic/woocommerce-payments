@@ -128,8 +128,9 @@ test.describe(
 			await expect(
 				adminPage.getByText( 'Account details' )
 			).toBeVisible();
+
 			await expect(
-				adminPage.getByText( 'Complete', { exact: true } )
+				adminPage.getByText( 'Connected', { exact: true } )
 			).toBeVisible();
 
 			// Ensure that the editor can access wp-admin pages screen.
