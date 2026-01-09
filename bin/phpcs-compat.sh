@@ -7,10 +7,10 @@ set -euo pipefail
 rm -rf vendor-dist
 
 # Install Composer normally to load PHPCS.
-composer install --no-progress
+composer install --no-progress --ignore-platform-req=php
 
 # Install non-dev dependencies in a separate folder (because we need phpcs, which is a dev dependency).
-COMPOSER_VENDOR_DIR=vendor-dist composer install --no-dev
+COMPOSER_VENDOR_DIR=vendor-dist composer install --no-dev --ignore-platform-req=php
 
 # Run PHPCS with the custom compatibility configuration.
 ./vendor/bin/phpcs --standard=phpcs-compat.xml.dist .

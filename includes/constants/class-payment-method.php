@@ -15,7 +15,7 @@ if ( ! defined( 'ABSPATH' ) ) {
  * Possible enum values for the type of the PaymentMethod.
  * https://stripe.com/docs/api/payment_methods/object#payment_method_object-type
  *
- * @psalm-immutable
+ * @phpstan-immutable
  */
 class Payment_Method extends Base_Constant {
 	/**

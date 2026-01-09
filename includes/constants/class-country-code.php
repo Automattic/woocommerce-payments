@@ -14,7 +14,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 /**
  * Country Code constants
  *
- * @psalm-immutable
+ * @phpstan-immutable
  */
 class Country_Code extends Base_Constant {
 	const AFGHANISTAN                      = 'AF';

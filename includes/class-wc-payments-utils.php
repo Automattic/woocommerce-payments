@@ -1234,6 +1234,8 @@ class WC_Payments_Utils {
 				return __( 'Subscription canceled', 'woocommerce-payments' );
 			case 'unrecognized':
 				return __( 'Unrecognized', 'woocommerce-payments' );
+			case 'noncompliant':
+				return __( 'Non-compliant', 'woocommerce-payments' );
 			default:
 			case 'general':
 				return __( 'General', 'woocommerce-payments' );
@@ -1291,8 +1293,6 @@ class WC_Payments_Utils {
 	 * Determine if the current page is a cart block.
 	 *
 	 * @return bool True if the current page is a cart block, false otherwise.
-	 *
-	 * @psalm-suppress UndefinedFunction
 	 */
 	public static function is_cart_block(): bool {
 		return has_block( 'woocommerce/cart' );

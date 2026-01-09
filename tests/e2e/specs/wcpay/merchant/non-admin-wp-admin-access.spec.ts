@@ -70,7 +70,7 @@ test.describe( 'Non-admin WP-Admin access', { tag: '@critical' }, () => {
 		await expect(
 			merchantPage.getByText( 'Account details' )
 		).toBeVisible();
-		await expect( merchantPage.getByText( 'Complete' ) ).toBeVisible();
+		await expect( merchantPage.getByText( 'Connected' ) ).toBeVisible();
 
 		// Ensure that the editor can access wp-admin pages screen.
 		await checkEditorAccess(

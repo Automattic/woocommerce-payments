@@ -136,10 +136,6 @@ export const getIsMultiCurrencyEnabled = ( state ) => {
 	return getSettings( state ).is_multi_currency_enabled || false;
 };
 
-export const getPaymentRequestLocations = ( state ) => {
-	return getSettings( state ).payment_request_enabled_locations || EMPTY_ARR;
-};
-
 export const getPaymentRequestButtonType = ( state ) => {
 	return getSettings( state ).payment_request_button_type || '';
 };
@@ -190,6 +186,10 @@ export const getIsWooPayEnabled = ( state ) => {
 	return getSettings( state ).is_woopay_enabled || false;
 };
 
+export const getIsAmazonPayEnabled = ( state ) => {
+	return getSettings( state ).is_amazon_pay_enabled || false;
+};
+
 export const getIsWooPayGlobalThemeSupportEnabled = ( state ) => {
 	return getSettings( state ).is_woopay_global_theme_support_enabled || false;
 };
@@ -200,10 +200,6 @@ export const getWooPayCustomMessage = ( state ) => {
 
 export const getWooPayStoreLogo = ( state ) => {
 	return getSettings( state ).woopay_store_logo || '';
-};
-
-export const getWooPayLocations = ( state ) => {
-	return getSettings( state ).woopay_enabled_locations || EMPTY_ARR;
 };
 
 export const getCurrentProtectionLevel = ( state ) => {
@@ -238,4 +234,16 @@ export const getStripeBillingMigratedCount = ( state ) => {
 
 export const getAccountCommunicationsEmail = ( state ) => {
 	return getSettings( state ).account_communications_email || '';
+};
+
+export const getExpressCheckoutProductMethods = ( state ) => {
+	return getSettings( state ).express_checkout_product_methods || EMPTY_ARR;
+};
+
+export const getExpressCheckoutCartMethods = ( state ) => {
+	return getSettings( state ).express_checkout_cart_methods || EMPTY_ARR;
+};
+
+export const getExpressCheckoutCheckoutMethods = ( state ) => {
+	return getSettings( state ).express_checkout_checkout_methods || EMPTY_ARR;
 };

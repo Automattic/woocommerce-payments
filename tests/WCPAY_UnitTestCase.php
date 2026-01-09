@@ -129,7 +129,7 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 			return;
 		}
 		// Since setMethodsExcept is deprecated, this is the only alternative I came upon.
-		$methods_to_mock = array_diff( get_class_methods( $request_class ), [ 'set_hook_args', 'assign_hook' ] );
+		$methods_to_mock = array_diff( get_class_methods( $request_class ), [ 'set_hook_args', 'assign_hook', 'get_hook' ] );
 
 		$request = $this->getMockBuilder( $request_class )
 			->setConstructorArgs( [ $api_client_mock, $http_mock, $request_class_constructor_id ] )
@@ -172,5 +172,32 @@ class WCPAY_UnitTestCase extends WP_UnitTestCase {
 		add_filter( 'wcpay_create_request', $fn, 10, 2 );
 
 		return $request;
+	}
+
+	/**
+	 * Gets the current payment_gateway_map from WC_Payments.
+	 *
+	 * @return array|null The current payment_gateway_map.
+	 */
+	protected function get_payment_gateway_map() {
+		$reflection = new \ReflectionClass( WC_Payments::class );
+		$property   = $reflection->getProperty( 'payment_gateway_map' );
+		$property->setAccessible( true );
+		$value = $property->getValue( null );
+		$property->setAccessible( false );
+		return $value;
+	}
+
+	/**
+	 * Sets the payment_gateway_map in WC_Payments.
+	 *
+	 * @param array $gateway_map Associative array of gateway_id => gateway_instance.
+	 */
+	protected function set_payment_gateway_map( $gateway_map ) {
+		$reflection = new \ReflectionClass( WC_Payments::class );
+		$property   = $reflection->getProperty( 'payment_gateway_map' );
+		$property->setAccessible( true );
+		$property->setValue( null, $gateway_map );
+		$property->setAccessible( false );
 	}
 }

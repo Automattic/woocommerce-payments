@@ -96,6 +96,86 @@ describe( 'VAT form', () => {
 	);
 } );
 
+describe( 'VAT form error messages use correct tax ID name per country', () => {
+	beforeAll( () => {
+		jest.spyOn( console, 'error' ).mockImplementation( () => null );
+		jest.spyOn( console, 'warn' ).mockImplementation( () => null );
+	} );
+
+	afterEach( () => {
+		mockApiFetch.mockClear();
+		mockOnCompleted.mockClear();
+	} );
+
+	it( 'should display "Corporate Number" in error message for Japan', async () => {
+		global.wcpaySettings = {
+			accountStatus: { country: 'JP' },
+		};
+
+		render( <VatForm onCompleted={ mockOnCompleted } /> );
+
+		await act( async () => {
+			await user.click(
+				screen.getByLabelText( 'I have a valid Corporate Number' )
+			);
+		} );
+
+		await act( async () => {
+			await user.type(
+				screen.getByRole( 'textbox', { name: 'Corporate Number' } ),
+				'1234567890123'
+			);
+		} );
+
+		mockApiFetch.mockRejectedValue( {
+			code: 'wcpay_invalid_tax_number',
+			message: 'The provided VAT number failed validation.',
+		} );
+
+		await act( async () => {
+			await user.click( screen.getByText( 'Continue' ) );
+		} );
+
+		await waitForVatValidationRequest( '1234567890123' );
+
+		screen.getAllByText(
+			'The provided Corporate Number failed validation.'
+		);
+	} );
+
+	it( 'should display "ABN" in error message for Australia', async () => {
+		global.wcpaySettings = {
+			accountStatus: { country: 'AU' },
+		};
+
+		render( <VatForm onCompleted={ mockOnCompleted } /> );
+
+		await act( async () => {
+			await user.click( screen.getByLabelText( 'I have a valid ABN' ) );
+		} );
+
+		await act( async () => {
+			await user.type(
+				screen.getByRole( 'textbox', { name: 'ABN' } ),
+				'12345678901'
+			);
+		} );
+
+		mockApiFetch.mockRejectedValue( {
+			code: 'wcpay_invalid_tax_number',
+			message: 'The provided VAT number failed validation.',
+		} );
+
+		await act( async () => {
+			await user.click( screen.getByText( 'Continue' ) );
+		} );
+
+		await waitForVatValidationRequest( '12345678901' );
+
+		screen.getAllByText( 'The provided ABN failed validation.' );
+	} );
+} );
+
 describe( 'VAT form', () => {
 	beforeAll( () => {
 		jest.spyOn( console, 'error' ).mockImplementation( () => null );
@@ -275,10 +355,11 @@ describe( 'VAT form', () => {
 				expect( screen.getByText( 'Continue' ) ).toBeEnabled();
 			} );
 
-			it( 'should display an error message when an invalid VAT number is submitted', async () => {
-				mockApiFetch.mockRejectedValue(
-					new Error( 'The provided VAT number failed validation' )
-				);
+			it( 'should display a localized error message when an invalid VAT number is submitted', async () => {
+				mockApiFetch.mockRejectedValue( {
+					code: 'wcpay_invalid_tax_number',
+					message: 'The provided VAT number failed validation.',
+				} );
 
 				await act( async () => {
 					await user.click( screen.getByText( 'Continue' ) );
@@ -290,11 +371,25 @@ describe( 'VAT form', () => {
 					'is-completed'
 				);
 
-				// This will fail if no notices are in the document, and will pass if one or more are found.
-				// The "more" part is needed because notices are added twice to the document due to a11y.
+				// Verify the localized error message is displayed (uses "VAT Number" for GB).
 				screen.getAllByText(
-					'The provided VAT number failed validation'
+					'The provided VAT Number failed validation.'
 				);
+			} );
+
+			it( 'should fall back to server message for unknown error codes', async () => {
+				mockApiFetch.mockRejectedValue( {
+					code: 'some_unknown_error_code',
+					message: 'Some unknown server error message',
+				} );
+
+				await act( async () => {
+					await user.click( screen.getByText( 'Continue' ) );
+				} );
+
+				await waitForVatValidationRequest( '123456789' );
+
+				screen.getAllByText( 'Some unknown server error message' );
 			} );
 
 			it( 'should proceed to the company-data step when a valid VAT number is submitted', async () => {

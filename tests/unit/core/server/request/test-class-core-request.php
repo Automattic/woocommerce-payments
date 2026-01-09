@@ -5,6 +5,7 @@
  * @package WooCommerce\Payments\Tests
  */
 
+use WCPay\Core\Exceptions\Server\Request\Invalid_Request_Parameter_Exception;
 use WCPay\Core\Server\Request;
 use WCPay\Core\Server\Request\Paginated;
 use WCPay\Core\Server\Request\List_Transactions;
@@ -155,5 +156,17 @@ class WCPay_Core_Request_Test extends WCPAY_UnitTestCase {
 		$filtered = $base->apply_filters( $hook );
 		$this->assertInstanceOf( Request_With_Id::class, $filtered );
 		$this->assertStringContainsString( $intent_id, $filtered->get_api() );
+	}
+
+	/**
+	 * Tests that send() throws an exception when the request class has no hook defined.
+	 */
+	public function test_send_throws_exception_when_hook_is_empty() {
+		$this->expectException( Invalid_Request_Parameter_Exception::class );
+		$this->expectExceptionMessage( 'must define a non-empty hook name' );
+
+		// My_Request doesn't define a $hook property, so it defaults to empty string.
+		$request = My_Request::create();
+		$request->send();
 	}
 }

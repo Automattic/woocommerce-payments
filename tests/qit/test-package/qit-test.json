@@ -1,0 +1,58 @@
+{
+    "$schema": "https://qit.woo.com/json-schema/test-package",
+    "package": "woocommerce-payments/woopayments-e2e-tests",
+    "test_type": "e2e",
+    "description": "WooCommerce Payments E2E tests for checkout flows, payment methods, and Jetpack integration",
+    "tags": ["woopayments", "checkout", "jetpack", "payments"],
+    "requires": {
+        "network": true,
+        "secrets": [
+            "E2E_JP_SITE_ID",
+            "E2E_JP_BLOG_TOKEN",
+            "E2E_JP_USER_TOKEN"
+        ],
+        "plugins": ["woocommerce", "jetpack"]
+    },
+    "test": {
+        "phases": {
+            "globalSetup": [
+                "./bootstrap/setup.sh"
+            ],
+            "setup": [
+                "npm ci",
+                "npx playwright install chromium --with-deps"
+            ],
+            "run": [
+                "npx playwright test"
+            ],
+            "teardown": [],
+            "globalTeardown": []
+        },
+        "results": {
+            "ctrf-json": "./results/ctrf.json",
+            "blob-dir": "./results/blob",
+            "allure-dir": "./results/allure"
+        }
+    },
+    "subpackages": {
+        "woocommerce-payments/shopper": {
+            "description": "Shopper checkout flow tests for WooPayments",
+            "tags": ["woopayments", "shopper", "checkout", "critical"],
+            "test": {
+                "phases": {
+                    "run": ["npx playwright test --project=shopper"]
+                }
+            }
+        },
+        "woocommerce-payments/merchant": {
+            "description": "Merchant admin tests for WooPayments",
+            "tags": ["woopayments", "merchant", "admin"],
+            "test": {
+                "phases": {
+                    "run": ["npx playwright test --project=merchant"]
+                }
+            }
+        }
+    },
+    "timeout": 1800
+}
