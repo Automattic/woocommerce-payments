@@ -452,6 +452,8 @@ describe( 'Recommended Documents', () => {
 
 		describe( 'Visa Compliance (noncompliant) reason', () => {
 			it( 'should return only customer communication and uncategorized file for noncompliant reason', () => {
+				// Enable the feature flag for Visa Compliance documents
+				global.wcpaySettings.featureFlags.isDisputeAdditionalEvidenceTypesEnabled = true;
 				const result = getRecommendedDocumentFields( 'noncompliant' );
 				expect( result ).toHaveLength( 2 );
 				expect( result[ 0 ].key ).toBe( 'customer_communication' );
