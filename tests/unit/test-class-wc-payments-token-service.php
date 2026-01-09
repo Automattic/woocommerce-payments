@@ -815,8 +815,8 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$user_id     = 1;
 		$cache_key   = '_wcpay_payment_methods';
 		$cached_data = [
-			'customer_id'                          => 'cus_12345',
-			'payment_methods_woocommerce_payments' => [
+			'customer_id'         => 'cus_12345',
+			'payment_method_card' => [
 				$this->generate_card_pm_response( 'pm_test1' ),
 				$this->generate_card_pm_response( 'pm_test2' ),
 			],
@@ -852,8 +852,8 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 	public function test_clearing_with_network_saved_cards_enabled( ?int $user_id = null ) {
 		$user_id     = 1;
 		$cached_data = [
-			'customer_id'                          => 'cus_12345',
-			'payment_methods_woocommerce_payments' => [
+			'customer_id'         => 'cus_12345',
+			'payment_method_card' => [
 				$this->generate_card_pm_response( 'pm_test1' ),
 			],
 		];
@@ -886,14 +886,14 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		$user_id_1     = 1;
 		$user_id_2     = 2;
 		$cached_data_1 = [
-			'customer_id'                          => 'cus_12345',
-			'payment_methods_woocommerce_payments' => [
+			'customer_id'         => 'cus_12345',
+			'payment_method_card' => [
 				$this->generate_card_pm_response( 'pm_test1' ),
 			],
 		];
 		$cached_data_2 = [
-			'customer_id'                          => 'cus_67890',
-			'payment_methods_woocommerce_payments' => [
+			'customer_id'         => 'cus_67890',
+			'payment_method_card' => [
 				$this->generate_card_pm_response( 'pm_test2' ),
 			],
 		];
@@ -934,12 +934,17 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 			$this->generate_card_pm_response( 'pm_cached2' ),
 		];
 		$cached_data            = [
-			'customer_id'                    => $customer_id,
-			'payment_methods_' . $gateway_id => $cached_payment_methods,
+			'customer_id'         => $customer_id,
+			'payment_method_card' => $cached_payment_methods,
 		];
 
 		// Add cached data to user meta.
 		update_user_meta( $user_id, WC_Payments_Token_Service::CACHED_PAYMENT_METHODS_META_KEY, $cached_data );
+
+		// Mock gateway to return only card payment methods.
+		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
+		$mock_gateway->method( 'get_upe_enabled_payment_method_ids' )->willReturn( [ Payment_Method::CARD ] );
+		WC_Payments::set_gateway( $mock_gateway );
 
 		// Verify customer service is not called (since we're using cached data).
 		$this->mock_customer_service
@@ -964,8 +969,8 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 			$this->generate_card_pm_response( 'pm_cached1' ),
 		];
 		$cached_data            = [
-			'customer_id'                    => $customer_id,
-			'payment_methods_' . $gateway_id => $cached_payment_methods,
+			'customer_id'         => $customer_id,
+			'payment_method_card' => $cached_payment_methods,
 		];
 
 		// Add cached data with different customer ID.
@@ -996,20 +1001,18 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		// Verify cache is updated with new customer ID and payment methods.
 		$updated_cache = get_user_meta( $user_id, WC_Payments_Token_Service::CACHED_PAYMENT_METHODS_META_KEY, true );
 		$this->assertEquals( $new_customer_id, $updated_cache['customer_id'] );
-		$this->assertEquals( $new_payment_methods, $updated_cache[ 'payment_methods_' . $gateway_id ] );
+		$this->assertEquals( $new_payment_methods, $updated_cache['payment_method_card'] );
 	}
 
 	/**
 	 * Test get_payment_methods_from_stripe method with no cached data.
 	 */
 	public function test_get_payment_methods_from_stripe_with_no_cached_data() {
-		$user_id         = 1;
-		$customer_id     = 'cus_12345';
-		$gateway_id      = 'woocommerce_payments';
-		$payment_methods = [
-			$this->generate_card_pm_response( 'pm_new1' ),
-			$this->generate_link_pm_response( 'pm_new2' ),
-		];
+		$user_id      = 1;
+		$customer_id  = 'cus_12345';
+		$gateway_id   = 'woocommerce_payments';
+		$card_methods = [ $this->generate_card_pm_response( 'pm_new1' ) ];
+		$link_methods = [ $this->generate_link_pm_response( 'pm_new2' ) ];
 
 		// Mock gateway to return enabled payment methods.
 		$mock_gateway = $this->createMock( WC_Payment_Gateway_WCPay::class );
@@ -1025,19 +1028,20 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 				[ $customer_id, Payment_Method::LINK ]
 			)
 			->willReturnOnConsecutiveCalls(
-				[ $payment_methods[0] ],
-				[ $payment_methods[1] ]
+				$card_methods,
+				$link_methods
 			);
 
 		$result = $this->call_sut_method( 'get_payment_methods_from_stripe', $user_id, $customer_id, $gateway_id );
 
 		// Verify payment methods are returned.
-		$this->assertEquals( $payment_methods, $result );
+		$this->assertEquals( array_merge( $card_methods, $link_methods ), $result );
 
-		// Verify cache is created with payment methods.
+		// Verify cache is created with payment methods by type.
 		$cached_data = get_user_meta( $user_id, WC_Payments_Token_Service::CACHED_PAYMENT_METHODS_META_KEY, true );
 		$this->assertEquals( $customer_id, $cached_data['customer_id'] );
-		$this->assertEquals( $payment_methods, $cached_data[ 'payment_methods_' . $gateway_id ] );
+		$this->assertEquals( $card_methods, $cached_data['payment_method_card'] );
+		$this->assertEquals( $link_methods, $cached_data['payment_method_link'] );
 	}
 
 	/**
@@ -1068,10 +1072,10 @@ class WC_Payments_Token_Service_Test extends WCPAY_UnitTestCase {
 		// Verify SEPA payment methods are returned.
 		$this->assertEquals( $payment_methods, $result );
 
-		// Verify cache is created with correct gateway key.
+		// Verify cache is created with correct payment method type key.
 		$cached_data = get_user_meta( $user_id, WC_Payments_Token_Service::CACHED_PAYMENT_METHODS_META_KEY, true );
 		$this->assertEquals( $customer_id, $cached_data['customer_id'] );
-		$this->assertEquals( $payment_methods, $cached_data[ 'payment_methods_' . $gateway_id ] );
+		$this->assertEquals( $payment_methods, $cached_data['payment_method_sepa_debit'] );
 	}
 
 	private function call_sut_method( $method_name, $user_id, $customer_id, $gateway_id ) {
