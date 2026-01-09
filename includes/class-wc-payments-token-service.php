@@ -11,8 +11,6 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 use WCPay\Logger;
 use WCPay\Constants\Payment_Method;
-use WCPay\PaymentMethods\Configs\Definitions\ApplePayDefinition;
-use WCPay\PaymentMethods\Configs\Definitions\GooglePayDefinition;
 
 /**
  * Handles and process WC payment tokens API.
@@ -256,49 +254,46 @@ class WC_Payments_Token_Service {
 	 * @return array Payment methods.
 	 */
 	private function get_payment_methods_from_stripe( $user_id, $customer_id, $gateway_id ) {
-		$cache_key   = 'payment_methods_' . $gateway_id;
-		$cached_data = get_user_meta( $user_id, self::CACHED_PAYMENT_METHODS_META_KEY, true );
+		// Prepare all payment method types that are to be retrieved, based on the gateway.
+		$types_to_retrieve = $this->get_retrievable_payment_method_types( $gateway_id );
 
-		// Start by checking the customer ID. If it is different, bust the cache.
-		if (
-			is_array( $cached_data )
-			&& (
-				( isset( $cached_data['customer_id'] ) && $cached_data['customer_id'] !== $customer_id )
-				|| ! isset( $cached_data['customer_id'] )
-			)
-		) {
-			$cached_data = [];
+		// Load cached data, verify it is for the same customer ID. Bust if they do not match.
+		$cache = get_user_meta( $user_id, self::CACHED_PAYMENT_METHODS_META_KEY, true );
+		if ( ! is_array( $cache ) || ! isset( $cache['customer_id'] ) || $cache['customer_id'] !== $customer_id ) {
+			$cache = [
+				'customer_id' => $customer_id,
+			];
 		}
-
-		// Now, if there is cached data, then it is for the right customer. Check for the gateway-specific cache key.
-		if (
-			is_array( $cached_data )
-			&& isset( $cached_data[ $cache_key ] )
-			&& is_array( $cached_data[ $cache_key ] )
-		) {
-			return $cached_data[ $cache_key ];
-		}
-
-		// Proceed loading payment methods.
-		$retrievable_payment_method_types = $this->get_retrievable_payment_method_types( $gateway_id );
 
 		$payment_methods = [];
-		foreach ( $retrievable_payment_method_types as $type ) {
-			$type_methods = $this->customer_service->get_payment_methods_for_customer( $customer_id, $type );
-			if ( is_array( $type_methods ) ) {
-				$payment_methods = array_merge( $payment_methods, $type_methods );
+
+		// Check whether all retrievable payment method types are cached.
+		// Combine with existing data in case there are cached PMs for other gateway IDs.
+		foreach ( $types_to_retrieve as $type ) {
+			if ( isset( $cache[ 'payment_method_' . $type ] ) ) {
+				$payment_methods = array_merge( $payment_methods, $cache[ 'payment_method_' . $type ] );
+				unset( $types_to_retrieve[ array_search( $type, $types_to_retrieve, true ) ] );
 			}
 		}
 
-		// Cache the payment methods. Combine with existing data in case there are cached PMs for other gateway IDs.
-		$new_cache = [
-			'customer_id' => $customer_id,
-			$cache_key    => $payment_methods,
-		];
+		if ( empty( $types_to_retrieve ) ) {
+			return $payment_methods;
+		}
+
+		foreach ( $types_to_retrieve as $type ) {
+			$type_methods = $this->customer_service->get_payment_methods_for_customer( $customer_id, $type );
+
+			// Add to cache.
+			$cache[ 'payment_method_' . $type ] = $type_methods;
+
+			// Add to the list that will be returned.
+			$payment_methods = array_merge( $payment_methods, $type_methods );
+		}
+
 		update_user_meta(
 			$user_id,
 			self::CACHED_PAYMENT_METHODS_META_KEY,
-			array_merge( $cached_data ? $cached_data : [], $new_cache )
+			$cache
 		);
 
 		return $payment_methods;

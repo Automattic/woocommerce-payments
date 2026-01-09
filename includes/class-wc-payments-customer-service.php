@@ -243,6 +243,7 @@ class WC_Payments_Customer_Service {
 	 *
 	 * @param string $customer_id The customer ID.
 	 * @param string $type        Type of payment methods to fetch.
+	 * @return array
 	 *
 	 * @throws API_Exception We only handle 'resource_missing' code types and rethrow anything else.
 	 */
