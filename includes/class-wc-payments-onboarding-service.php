@@ -123,10 +123,15 @@ class WC_Payments_Onboarding_Service {
 	 *
 	 * The data is retrieved from the server and is cached. If we can't retrieve, we will use whatever data we have.
 	 *
-	 * @param string $locale The locale to use to i18n the data.
+	 * @param string $locale       The locale to use to i18n the data.
+	 * @param bool   $__deprecated Force-refresh flag, deprecated.
 	 * @return ?array Fields data, or NULL if failed to retrieve.
 	 */
-	public function get_fields_data( string $locale = '' ): ?array {
+	public function get_fields_data( string $locale = '', bool $__deprecated = false ): ?array {
+		if ( false !== $__deprecated ) {
+			wc_deprecated_argument( __CLASS__ . '::' . __METHOD__, '10.5.0', 'Force-refresh argument is deprecated.' );
+		}
+
 		// If we don't have a server connection, return what data we currently have, regardless of expiry.
 		if ( ! $this->payments_api_client->is_server_connected() ) {
 			return $this->database_cache->get( Database_Cache::ONBOARDING_FIELDS_DATA_KEY, true );
