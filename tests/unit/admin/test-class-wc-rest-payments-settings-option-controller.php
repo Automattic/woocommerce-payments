@@ -54,11 +54,15 @@ class WC_REST_Payments_Settings_Option_Controller_Test extends WCPAY_UnitTestCas
 				'wcpay_fraud_protection_welcome_tour_dismissed',
 				true,
 			],
-			'invalid option: invalid_option'       => [
+			'valid option: wcpay_exit_survey_last_shown' => [
+				'wcpay_exit_survey_last_shown',
+				true,
+			],
+			'invalid option: invalid_option'             => [
 				'invalid_option',
 				false,
 			],
-			'invalid option: wcpay_invalid_option' => [
+			'invalid option: wcpay_invalid_option'       => [
 				'wcpay_invalid_option',
 				false,
 			],
@@ -72,6 +76,11 @@ class WC_REST_Payments_Settings_Option_Controller_Test extends WCPAY_UnitTestCas
 		$this->assertSame( $expected_result, $this->controller->validate_option_name( $option ) );
 	}
 
+	/**
+	 * Data provider for valid option values.
+	 *
+	 * @return array<string, array>
+	 */
 	public function provider_valid_values(): array {
 		return [
 			'bool option with true'          => [ 'wcpay_multi_currency_setup_completed', true ],
@@ -94,6 +103,11 @@ class WC_REST_Payments_Settings_Option_Controller_Test extends WCPAY_UnitTestCas
 		$this->assertTrue( $result );
 	}
 
+	/**
+	 * Data provider for invalid option values.
+	 *
+	 * @return array<string, array>
+	 */
 	public function provider_invalid_values(): array {
 		return [
 			'bool option with string'  => [ 'wcpay_multi_currency_setup_completed', 'string' ],
